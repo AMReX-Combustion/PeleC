@@ -81,10 +81,10 @@ NOTE: The config file cannot actually deal with environment variables...it requi
 absolute paths spelled out, or the scripts will fail.
 
 4. (optional) Create symbolic links 
-    ```
+    ...
     ln -s ${REGTEST_SCRATCH}/regression_testing/regtest.py .
     ln -s ${REGTEST_SCRATCH}/PeleC/Testing/Regression/PeleC-tests.ini .
-    ```
+    ...
 
 4.  Generate the initial benchmark solutions for all the tests listed
 in the .ini configuration file.  Rerunning this at any time will
