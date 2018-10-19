@@ -54,12 +54,12 @@ following environment variables are set
    *  REGTEST_RUNDIR: Location where reg test script will be run from
 
 The following example commands will clone the required repositories
-    ...
+    ``` 
     git clone git@github.com:AMReX-Codes/amrex.git ${REGTEST_SCRATCH}/amrex
     git clone git@github.com:AMReX-Codes/regression_testing ${REGTEST_SCRATCH}/regression_testing
     git clone git@github.com:AMReX-Combustion/PelePhysics.git ${REGTEST_SCRATCH}/PelePhysics
     git clone git@github.com:AMReX-Combustion/PeleC.git ${REGTEST_SCRATCH}/PeleC
-    ...
+    ``` 
 
 4. Move to the location where the tests will be built/run, preferably the 
 root folder of the PeleRegressionTesting repo, and create the test area expected 
