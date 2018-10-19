@@ -1,0 +1,10 @@
+&fortin
+  TestNum  = 1
+  numPoints = 512
+  OutputFile = 'Riemann'
+/
+
+&tagging
+  max_ftracerr_lev = 4
+  ftracerr = 150.d-6
+/

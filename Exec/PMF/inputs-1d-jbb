@@ -1,0 +1,69 @@
+# ------------------  INPUTS TO MAIN PROGRAM  -------------------
+stop_time = 6
+max_step = 10
+max_step = 6000
+
+# PROBLEM SIZE & GEOMETRY
+geometry.is_periodic = 0
+geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
+geometry.prob_lo     =        2.5
+geometry.prob_hi     =        3.5
+geometry.prob_lo     =        0.86
+geometry.prob_hi     =       .8975
+amr.n_cell           =   128
+
+#pelec.Riemann    = 0     # 0: HLL,  1: JBB,  2: HLLC
+# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
+# 0 = Interior           3 = Symmetry
+# 1 = Inflow             4 = SlipWall
+# 2 = Outflow            5 = NoSlipWall
+# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
+pelec.lo_bc       =     1
+pelec.hi_bc       =     2
+
+# TIME STEP CONTROL
+pelec.cfl            = 0.5     # cfl number for hyperbolic system
+pelec.init_shrink    = 0.3     # scale back initial timestep
+pelec.change_max     = 1.1     # scale back initial timestep
+pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
+
+# DIAGNOSTICS & VERBOSITY
+pelec.sum_interval = 1       # coarse time steps between computing mass on domain
+pelec.v            = 1       # verbosity in PeleC cpp files
+amr.v              = 1       # verbosity in Amr.cpp
+#amr.grid_log       = grdlog  # name of grid logging file
+
+# REFINEMENT / REGRIDDING 
+amr.max_level       = 5       # maximum level number allowed
+amr.ref_ratio       = 2 2 2 2 # refinement ratio
+amr.ref_ratio       = 4 4 2 2 2 # refinement ratio
+amr.regrid_int      = 2 2 2 2 2 # how often to regrid
+amr.blocking_factor = 8       # block factor in grid generation
+amr.max_grid_size   = 8
+amr.n_error_buf     = 4 4 4 4 4 # number of buffer cells in error est
+
+# CHECKPOINT FILES
+amr.checkpoint_files_output = 1
+amr.check_file              = chk    # root name of checkpoint file
+amr.check_int               = 10    # number of timesteps between checkpoints
+
+# PLOTFILES
+amr.plot_files_output = 1
+amr.plot_file         = plt     # root name of plotfile
+amr.plot_int          = 10   # number of timesteps between plotfiles
+
+#PROBIN FILENAME
+amr.probin_file = probin-1d-jbb
+
+amr.derive_plot_vars = density xmom ymom zmom eden Temp pressure x_velocity y_velocity
+pelec.plot_rhoy = 0
+pelec.plot_massfrac = 1
+pelec.do_react = 1
+pelec.do_hydro = 1
+pelec.diffuse_temp=1
+pelec.diffuse_enth=1
+pelec.diffuse_spec=1
+pelec.diffuse_vel=1
+pelec.sdc_iters = 2
+pelec.flame_trac_name = HO2
+pelec.fuel_name = H2

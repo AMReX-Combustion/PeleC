@@ -1,0 +1,23 @@
+&fortin
+
+  pamb = 4.053d7  ! 40 Patm
+  
+  phi_in = 0.2d0   ! mole fraction of CH3OCH3 in fuel
+  T_in   = 400.d0  ! temperature of fuel
+  vn_in  = 5.12d3  ! fuel injection velocity
+  
+  T_co  = 1525.d0   ! temperature of air
+  vn_co = 5.12d2    ! air injection velocity
+  
+  splitx  = 0.00569d0  ! where fuel and air split
+  xfrontw = .2d0       ! controls the width of split
+  
+  inflow_period = 1.d-5 ! period of sinusoidal variation of inflow velocity
+  inflow_vnmag  = 1.d3  ! magnitude of the variation
+
+  max_tracerr_lev = 4
+  tracerr = 1.d-8
+
+  max_vorterr_lev = 4
+  vorterr = 5.d4
+/
