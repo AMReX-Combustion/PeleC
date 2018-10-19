@@ -54,6 +54,7 @@ following environment variables are set
    *  REGTEST_RUNDIR: Location where reg test script will be run from
 
 The following example commands will clone the required repositories
+
     ```
     git clone git@github.com:AMReX-Codes/amrex.git ${REGTEST_SCRATCH}/amrex
     git clone git@github.com:AMReX-Codes/regression_testing ${REGTEST_SCRATCH}/regression_testing
@@ -69,7 +70,7 @@ by reg test scripts:
     cd ${REGTEST_RUNDIR}; mkdir -p TestData/PeleC
     ```
 
-4. Copy the template test file from this folder, PeleC-tests.ini, to 
+5. Copy the template test file from this folder, PeleC-tests.ini, to 
 ${REGTEST_SCRATCH}/PeleC/Testing/Regression/PeleC-tests.ini, and edit the locations for 
 the AMReX, PelePhysics and PeleC scratch clone locations within the script, as well as the 
 desired branch/SHA if necessary
@@ -80,13 +81,13 @@ Also set
 NOTE: The config file cannot actually deal with environment variables...it requires
 absolute paths spelled out, or the scripts will fail.
 
-4. (optional) Create symbolic links 
+6. (optional) Create symbolic links 
     ```
     ln -s ${REGTEST_SCRATCH}/regression_testing/regtest.py .
     ln -s ${REGTEST_SCRATCH}/PeleC/Testing/Regression/PeleC-tests.ini .
     ```
 
-5.  Generate the initial benchmark solutions for all the tests listed
+7.  Generate the initial benchmark solutions for all the tests listed
 in the .ini configuration file.  Rerunning this at any time will
 overwrite the previous versions of the benchmarks
 
@@ -94,7 +95,7 @@ overwrite the previous versions of the benchmarks
     ./regtest.py --make_benchmarks "<a useful comment>" PeleC-tests.ini
     ```
 
-6. Upon some trigger event, re-run the tests and format the results in
+8. Upon some trigger event, re-run the tests and format the results in
 html.  In this case, the results will appear as
 TestData/PeleC/web/index.html
 
