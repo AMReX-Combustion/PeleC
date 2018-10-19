@@ -54,13 +54,12 @@ following environment variables are set
    *  REGTEST_RUNDIR: Location where reg test script will be run from
 
 The following example commands will clone the required repositories
-
-    ``` 
+    ```
     git clone git@github.com:AMReX-Codes/amrex.git ${REGTEST_SCRATCH}/amrex
     git clone git@github.com:AMReX-Codes/regression_testing ${REGTEST_SCRATCH}/regression_testing
     git clone git@github.com:AMReX-Combustion/PelePhysics.git ${REGTEST_SCRATCH}/PelePhysics
     git clone git@github.com:AMReX-Combustion/PeleC.git ${REGTEST_SCRATCH}/PeleC
-    ``` 
+    ```
 
 4. Move to the location where the tests will be built/run, preferably the 
 root folder of the PeleRegressionTesting repo, and create the test area expected 
@@ -87,7 +86,7 @@ absolute paths spelled out, or the scripts will fail.
     ln -s ${REGTEST_SCRATCH}/PeleC/Testing/Regression/PeleC-tests.ini .
     ```
 
-4.  Generate the initial benchmark solutions for all the tests listed
+5.  Generate the initial benchmark solutions for all the tests listed
 in the .ini configuration file.  Rerunning this at any time will
 overwrite the previous versions of the benchmarks
 
@@ -95,7 +94,7 @@ overwrite the previous versions of the benchmarks
     ./regtest.py --make_benchmarks "<a useful comment>" PeleC-tests.ini
     ```
 
-5. Upon some trigger event, re-run the tests and format the results in
+6. Upon some trigger event, re-run the tests and format the results in
 html.  In this case, the results will appear as
 TestData/PeleC/web/index.html
 
