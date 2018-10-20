@@ -19,7 +19,7 @@
 # import os
 import sys
 # sys.path.insert(0, os.path.abspath('.'))
-sys.path.append("../breathe")
+#sys.path.append("../breathe")
 
 # -- General configuration ------------------------------------------------
 
@@ -30,15 +30,13 @@ sys.path.append("../breathe")
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['breathe',
-              'sphinx.ext.mathjax',
-              'sphinxfortran.fortran_domain']
+extensions = [ 'sphinx.ext.mathjax']
 
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
-breathe_projects = {"PeleC": "../doxygen_output/xml/"}
-breathe_default_project = "PeleC"
+#breathe_projects = {"PeleC": "../doxygen_output/xml/"}
+#breathe_default_project = "PeleC"
 
 fortran_src ='../../Source/Src_2d/'
 #fortran_ext =[' 'F90']
