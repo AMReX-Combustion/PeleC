@@ -2,6 +2,8 @@
 .. _GettingStarted:
 
 
+.. Warning:: This documentation is a placeholder, and contents should currently be considered a work in progress, out of context, or just plain wrong until this note is removed!
+
 Algorithms
 ==========
 
