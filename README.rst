@@ -22,12 +22,12 @@ To build `PeleC` and run a sample 2D flame problem:
 2. Set the environment variable, PELE_PHYSICS_HOME, and clone a copy of `PelePhysics` there. You should be placed in the `development` branch ::
 
     export PELE_PHYSICS_HOME=<location for PelePhysics>
-    git clone git@code.ornl.gov:Pele/PelePhysics.git ${PELE_PHYSICS_HOME}
+    git clone git@github.com:AMReX-Combustion/PelePhysics.git ${PELE_PHYSICS_HOME}
 
 3. Set the environment variable, PELEC_HOME, and clone a copy of `PeleC` there. You should be placed in the `development` branch ::
 
     export PELEC_HOME=<location for PeleC>
-    git clone git@code.ornl.gov:Pele/PeleC.git ${PELEC_HOME}
+    git clone git@github.com:AMReX-Combustion/PeleC.git ${PELEC_HOME}
 
 4. Move to an example build folder, build an executable, run a test case ::
 
@@ -75,7 +75,7 @@ To add a new feature to PeleC, the procedure is:
 
 3a. Check the pipeline status and make sure the regression tests passed
 
-4.  Submit a merge request through code.ornl.gov - be sure you are requesting to merge your branch to the development branch.
+4.  Submit a merge request through git@github.com:AMReX-Combustion/PeleC.git - be sure you are requesting to merge your branch to the development branch.
 
 Documentation
 -------------

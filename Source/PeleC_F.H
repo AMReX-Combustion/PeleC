@@ -461,6 +461,7 @@ extern "C"
                       const BL_FORT_FAB_ARG_3D(new_state),
                       BL_FORT_FAB_ARG_3D(forcing_src),
                       const amrex::Real* prob_lo, const amrex::Real* dx,
+                      const amrex::Real* xlo, const amrex::Real* xhi,
                       const amrex::Real* time, const amrex::Real* dt);
 
 #ifdef __cplusplus
