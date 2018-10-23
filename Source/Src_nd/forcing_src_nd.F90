@@ -10,10 +10,11 @@ module forcing_src_module
 
 contains
 
-  subroutine pc_forcing_src(lo,hi,&
-                            old_state,os_lo,os_hi,&
-                            new_state,ns_lo,ns_hi,&
-                            src,src_lo,src_hi,problo,dx,time,dt) bind(C, name = "pc_forcing_src")
+  subroutine pc_forcing_src(lo,hi, &
+                            old_state,os_lo,os_hi, &
+                            new_state,ns_lo,ns_hi, &
+                            src,src_lo,src_hi,problo,dx,xlo,xhi, &
+                            time,dt) bind(C, name = "pc_forcing_src")
 
     use bl_constants_module, only: ZERO
     use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ
@@ -25,6 +26,7 @@ contains
     integer,          intent(in   ) :: os_lo(3),os_hi(3)
     integer,          intent(in   ) :: ns_lo(3),ns_hi(3)
     integer,          intent(in   ) :: src_lo(3),src_hi(3)
+    double precision, intent(in   ) :: xlo(3), xhi(3)
     double precision, intent(in   ) :: old_state(os_lo(1):os_hi(1),os_lo(2):os_hi(2),os_lo(3):os_hi(3),NVAR)
     double precision, intent(in   ) :: new_state(ns_lo(1):ns_hi(1),ns_lo(2):ns_hi(2),ns_lo(3):ns_hi(3),NVAR)
     double precision, intent(inout) :: src(src_lo(1):src_hi(1),src_lo(2):src_hi(2),src_lo(3):src_hi(3),NVAR)
