@@ -350,21 +350,39 @@ contains
        u(3) = u(3)*(1.d0+pertmag*pert)
 
        call eos_tp(eos_state)
-       u_ext(UMX:UMZ) = eos_state % rho  *  u(1:3)
+
+       if (rho_only .eqv. .true.) then
+          u_ext(1) = eos_state % rho
+       else
+          u_ext(UMX:UMZ) = eos_state % rho  *  u(1:3)
+          u_ext(URHO) = eos_state % rho
+          u_ext(UEINT) = eos_state % rho  *  eos_state % e
+          u_ext(UEDEN) = eos_state % rho  * (eos_state % e + 0.5d0 * (u(1)**2 + u(2)**2 + u(3)**2))
+          u_ext(UTEMP) = eos_state % T
+          u_ext(UFS:UFS+nspec-1) = eos_state % rho  *  eos_state % massfrac(1:nspec)
+       endif
+
     else ! ouflow: extrapolate (rho,Y,u), set p, compute (rho,e,T)
-       eos_state % p = pamb
-       eos_state % rho = u_int(URHO)
-       rho_inv = 1.d0 / eos_state % rho
-       eos_state % massfrac = u_int(UFS:UFS+nspec-1) * rho_inv
-       u_ext(UMX:UMZ) = u_int(UMX:UMZ)
-       u(1:3) = u_ext(UMX:UMZ) * rho_inv
-       call eos_rp(eos_state)
+       if (rho_only .eqv. .true.) then
+          ! Don't have species, assume it's consistent
+          u_ext(1) = u_int(1)
+       else
+          eos_state % p = pamb
+          eos_state % rho = u_int(URHO)
+          rho_inv = 1.d0 / eos_state % rho
+          eos_state % massfrac = u_int(UFS:UFS+nspec-1) * rho_inv
+          u_ext(UMX:UMZ) = u_int(UMX:UMZ)
+          u(1:3) = u_ext(UMX:UMZ) * rho_inv
+          call eos_rp(eos_state)
+
+          u_ext(URHO) = eos_state % rho
+          u_ext(UEINT) = eos_state % rho  *  eos_state % e
+          u_ext(UEDEN) = eos_state % rho  * (eos_state % e + 0.5d0 * (u(1)**2 + u(2)**2 + u(3)**2))
+          u_ext(UTEMP) = eos_state % T
+          u_ext(UFS:UFS+nspec-1) = eos_state % rho  *  eos_state % massfrac(1:nspec)
+       endif
     endif
-    u_ext(URHO) = eos_state % rho
-    u_ext(UEINT) = eos_state % rho  *  eos_state % e
-    u_ext(UEDEN) = eos_state % rho  * (eos_state % e + 0.5d0 * (u(1)**2 + u(2)**2 + u(3)**2))
-    u_ext(UTEMP) = eos_state % T
-    u_ext(UFS:UFS+nspec-1) = eos_state % rho  *  eos_state % massfrac(1:nspec)
+
 
   end subroutine bcnormal
 
