@@ -120,7 +120,13 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
     FArrayBox dm_as_fine(Box::TheUnitBox(), NUM_STATE);
     FArrayBox fab_drho_as_crse(Box::TheUnitBox(), NUM_STATE);
     IArrayBox fab_rrflag_as_crse(Box::TheUnitBox());
-    
+
+    FArrayBox diffusion_flux[BL_SPACEDIM];
+    FArrayBox diffusion_source;
+    FArrayBox hydro_flux[BL_SPACEDIM];
+    FArrayBox hydro_source;
+    FArrayBox filtered_hydro_flux[BL_SPACEDIM];
+    FArrayBox filtered_hydro_source;
 
     int flag_nscbc_isAnyPerio = (geom.isAnyPeriodic()) ? 1 : 0; 
     int flag_nscbc_perio[BL_SPACEDIM]; // For 3D, we will know which corners have a periodicity
@@ -433,6 +439,17 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
         Real* sv_eb_flux_ptr = (nFlux>0 ? sv_eb_flux[local_i].dataPtr() : 0);
 #endif
 
+        // save off the diffusion source term and fluxes (don't want to filter these)
+        if (use_explicit_filter)
+        {
+          for (int i = 0; i < BL_SPACEDIM ; i++){
+            diffusion_flux[i].resize(flux_ec[i].box(), NUM_STATE);
+            diffusion_flux[i].copy(flux_ec[i], Density, Density, NUM_STATE);
+          }
+          diffusion_source.resize(Dterm.box(),NUM_STATE);
+          diffusion_source.copy(Dterm, Density, Density, NUM_STATE);
+        }
+
         { // Get face-centered hyperbolic fluxes and their divergences.
           // Get hyp flux at EB wall
           BL_PROFILE("PeleC::pc_hyp_mol_flux call");
@@ -461,8 +478,43 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
 #endif
                           geom.CellSize());
         }
+
+        // Filter hydro source term and fluxes here
+        if (use_explicit_filter)
+        {
+          // Get the hydro term
+          for (int i = 0; i < BL_SPACEDIM ; i++){
+            hydro_flux[i].resize(flux_ec[i].box(), NUM_STATE);
+            hydro_flux[i].linComb(flux_ec[i],flux_ec[i].box(),Density,diffusion_flux[i],diffusion_flux[i].box(),Density,1.0,-1.0,hydro_flux[i].box(),Density,NUM_STATE);
+          }
+          hydro_source.resize(Dterm.box(),NUM_STATE);
+          hydro_source.linComb(Dterm,Dterm.box(),Density,diffusion_source,diffusion_source.box(),Density,1.0,-1.0,hydro_source.box(),Density,NUM_STATE);
+
+          // Filter
+          const Box  fbox = amrex::grow(vbox,ng-1-nGrowF);
+          for (int i = 0; i < BL_SPACEDIM ; i++)  {
+            const Box& bxtmp = amrex::surroundingNodes(fbox,i);
+            filtered_hydro_flux[i].resize(bxtmp, NUM_STATE);
+            les_filter.apply_filter(bxtmp, hydro_flux[i], filtered_hydro_flux[i], Density, NUM_STATE);
+
+            hydro_flux[i].setVal(0);
+            hydro_flux[i].copy(filtered_hydro_flux[i], Density, Density, NUM_STATE);
+          }
+          filtered_hydro_source.resize(fbox, NUM_STATE);
+          les_filter.apply_filter(fbox, hydro_source, filtered_hydro_source, Density, NUM_STATE);
+          hydro_source.setVal(0);
+          hydro_source.copy(filtered_hydro_source, Density, Density, NUM_STATE);
+
+          // Combine with diffusion
+          for (int i = 0; i < BL_SPACEDIM ; i++){
+            flux_ec[i].linComb(diffusion_flux[i],diffusion_flux[i].box(),Density,hydro_flux[i],hydro_flux[i].box(),Density,1.0,-1.0,flux_ec[i].box(),Density,NUM_STATE);
+          }
+          Dterm.linComb(diffusion_source,diffusion_source.box(),Density,hydro_source,hydro_source.box(),Density,1.0,1.0,Dterm.box(),Density,NUM_STATE);
+        }
       }
 #endif
+
+
 
 #ifdef PELEC_USE_EB
       if (typ == FabType::singlevalued) {

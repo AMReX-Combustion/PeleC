@@ -63,6 +63,7 @@ pp.query("yl_ext_bc_type", yl_ext_bc_type);
 pp.query("yr_ext_bc_type", yr_ext_bc_type);
 pp.query("zl_ext_bc_type", zl_ext_bc_type);
 pp.query("zr_ext_bc_type", zr_ext_bc_type);
+pp.query("use_explicit_filter", use_explicit_filter);
 pp.query("eb_boundary_T", eb_boundary_T);
 pp.query("eb_isothermal", eb_isothermal);
 pp.query("eb_noslip", eb_noslip);

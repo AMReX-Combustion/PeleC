@@ -333,7 +333,7 @@ PeleC::do_sdc_iteration (Real time,
   if (do_hydro)
   {
     fill_Sborder = true;
-    nGrow_Sborder = NUM_GROW;
+    nGrow_Sborder = NUM_GROW+nGrowF;
   }
   else if (do_diffuse)
   {

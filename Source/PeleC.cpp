@@ -126,6 +126,9 @@ bool         PeleC::do_diffuse   = false;
 bool         PeleC::mms_initialized = false;
 #endif
 
+int           PeleC::les_filter_type = no_filter;
+int           PeleC::les_filter_fgr = 1;
+
 #ifdef PELE_USE_EB
 bool         PeleC::eb_initialized      = false;
 bool         PeleC::no_eb_in_domain     = true;
@@ -386,6 +389,11 @@ PeleC::read_params ()
   }
 #endif
 
+  if (use_explicit_filter){
+    pp.query("les_filter_type",les_filter_type);
+    pp.query("les_filter_fgr",les_filter_fgr);
+  }
+
   // for the moment, ppm_type = 0 does not support ppm_trace_sources --
   // we need to add the momentum sources to the states (and not
   // add it in trans_3d
@@ -553,6 +561,12 @@ PeleC::PeleC (Amr&            papa,
   {
     init_godunov_indices();
   }
+
+  // initialize filters and variables
+  if (use_explicit_filter){
+    init_filters();
+  }
+
 }
 
 PeleC::~PeleC ()
@@ -1245,6 +1259,11 @@ PeleC::post_restart ()
     init_godunov_indices();
   }
 
+  // initialize filters and variables
+  if (use_explicit_filter){
+    init_filters();
+  }
+
 #ifdef DO_PROBLEM_POST_RESTART
   problem_post_restart();
 #endif
@@ -1830,6 +1849,7 @@ PeleC::derive (const std::string& name,
 	       Real           time,
 	       int            ngrow)
 {
+
 #ifdef PELE_USE_EB
   if (name == "vfrac") {
     std::unique_ptr<MultiFab> mf(new MultiFab(grids, dmap, 1, ngrow, MFInfo()));
@@ -1925,6 +1945,44 @@ void
 PeleC::close_transport ()
 {
   pc_transport_close();
+}
+
+void
+PeleC::init_filters ()
+{
+  if (level > 0){
+    IntVect ref_ratio = parent->refRatio(level-1);
+    les_filter = Filter(les_filter_type, les_filter_fgr * std::pow(ref_ratio[0], level));
+  }
+  else{
+    les_filter = Filter(les_filter_type, les_filter_fgr);
+  }
+
+  nGrowF = les_filter.get_filter_ngrow();
+
+  // Add grow cells necessary for explicit filtering of source terms
+  if (do_hydro)
+  {
+    Sborder.define(grids,dmap,NUM_STATE,NUM_GROW+nGrowF,MFInfo(),Factory());
+    hydro_source.define(grids,dmap, NUM_STATE, hydro_source.nGrow()+nGrowF, MFInfo(),Factory());
+    sources_for_hydro.define(grids,dmap,NUM_STATE,sources_for_hydro.nGrow()+nGrowF,MFInfo(),Factory());
+  }
+
+  volume.clear();
+  volume.define(grids,dmap,1,NUM_GROW+nGrowF,MFInfo(),FArrayBoxFactory());
+  geom.GetVolume(volume);
+
+  for (int dir = 0; dir < BL_SPACEDIM; dir++)
+  {
+    area[dir].clear();
+    area[dir].define(getEdgeBoxArray(dir),dmap,1,NUM_GROW+nGrowF,MFInfo(),FArrayBoxFactory());
+    geom.GetFaceArea(area[dir],dir);
+  }
+
+  dLogArea[0].clear();
+#if (BL_SPACEDIM <= 2)
+  geom.GetDLogA(dLogArea[0],grids,dmap,0,NUM_GROW+nGrowF);
+#endif
 }
 
 #ifdef USE_MASA
