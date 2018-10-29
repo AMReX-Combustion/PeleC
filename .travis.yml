@@ -81,4 +81,4 @@ script:
   # - ctest --output-on-failure -j${JOBS}
   # But really we only get 50 min on Travis CI and building the tests
   # takes 28 min so we exclude some longer running tests
-  - cmake --build . -- -j${JOBS} && ctest --output-on-failure -j${JOBS} -E "(fiab-3d|cns_no_amr_mol_3d|cns_no_amr_3d)"
+  - cmake --build . -- -j${JOBS} && ctest --output-on-failure -j${JOBS} -E "(fiab-3d|cns_no_amr_mol_3d|cns_no_amr_3d|cns_les_no_amr_3d)"

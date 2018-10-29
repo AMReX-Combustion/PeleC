@@ -35,6 +35,7 @@ endif
 
 CEXE_sources += PeleC_MOL.cpp
 
+CEXE_sources += PeleC_les.cpp
 FEXE_headers += Filter_F.H
 CEXE_headers += Filter.H
 CEXE_sources += Filter.cpp

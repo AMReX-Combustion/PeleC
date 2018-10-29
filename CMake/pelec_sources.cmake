@@ -23,6 +23,7 @@ function(get_pelec_sources pelec_exe_name)
      ${PELEC_SOURCE_DIR}/sum_integrated_quantities.cpp
      ${PELEC_SOURCE_DIR}/sum_utils.cpp
      ${PELEC_SOURCE_DIR}/Filter.cpp
+     ${PELEC_SOURCE_DIR}/PeleC_les.cpp
      #${PELEC_SOURCE_DIR}/PeleC_error.cpp
   )
   if(PELEC_ENABLE_REACTIONS)
@@ -53,6 +54,7 @@ function(get_pelec_sources pelec_exe_name)
      ${PELEC_SOURCE_DIR}/riemann_${PELEC_DIM}d.F90
      ${PELEC_SOURCE_DIR}/set_bc_mask_${PELEC_DIM}d.f90
      ${PELEC_SOURCE_DIR}/filter_${PELEC_DIM}d.f90
+     ${PELEC_SOURCE_DIR}/lesterm_${PELEC_DIM}d.f90
      #${PELEC_SOURCE_DIR}/slope_mol_${PELEC_DIM}d.f90
      #${PELEC_SOURCE_DIR}/PeleC_mol_${PELEC_DIM}d.F90
   )
