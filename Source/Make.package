@@ -35,6 +35,10 @@ endif
 
 CEXE_sources += PeleC_MOL.cpp
 
+FEXE_headers += Filter_F.H
+CEXE_headers += Filter.H
+CEXE_sources += Filter.cpp
+
 ifeq ($(USE_MASA), TRUE)
 CEXE_sources += PeleC_mms.cpp
 endif

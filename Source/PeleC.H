@@ -24,6 +24,8 @@
 #include <SprayParticles.H>
 #endif
 
+#include <Filter.H>
+
 #include <iostream>
 
 using std::istream;
@@ -559,6 +561,8 @@ protected:
     static void init_transport ();
     static void close_transport ();
 
+    void init_filters ();
+
 #ifdef USE_MASA
     static void init_mms();
 #endif
@@ -636,6 +640,11 @@ protected:
     static int       diffuse_vel;
     static amrex::Real      diffuse_cutoff_density;
     static bool      do_diffuse;
+
+    static int       les_filter_type;
+    static int       les_filter_fgr;
+    Filter           les_filter;
+    int       nGrowF;
 
 #ifdef USE_MASA
     static bool      mms_initialized;

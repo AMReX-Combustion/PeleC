@@ -63,6 +63,7 @@ std::string PeleC::yl_ext_bc_type = "";
 std::string PeleC::yr_ext_bc_type = "";
 std::string PeleC::zl_ext_bc_type = "";
 std::string PeleC::zr_ext_bc_type = "";
+int         PeleC::use_explicit_filter = 0;
 amrex::Real PeleC::eb_boundary_T = 1.0;
 int         PeleC::eb_isothermal = 1;
 int         PeleC::eb_noslip = 1;

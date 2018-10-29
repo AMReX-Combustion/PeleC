@@ -133,6 +133,7 @@ module meth_params_module
   character (len=128), save :: yr_ext_bc_type
   character (len=128), save :: zl_ext_bc_type
   character (len=128), save :: zr_ext_bc_type
+  integer         , save :: use_explicit_filter
   double precision, save :: eb_small_vfrac
   integer         , save :: do_mms
   double precision, save :: cfl
@@ -164,11 +165,12 @@ module meth_params_module
   !$acc create(dual_energy_eta2, dual_energy_eta3, use_pslope) &
   !$acc create(fix_mass_flux, limit_fluxes_on_small_dens, density_reset_method) &
   !$acc create(allow_negative_energy, allow_small_energy, first_order_hydro) &
-  !$acc create(eb_small_vfrac, do_mms, cfl) &
-  !$acc create(dtnuc_e, dtnuc_X, dtnuc_mode) &
-  !$acc create(dxnuc, do_react, react_T_min) &
-  !$acc create(react_T_max, react_rho_min, react_rho_max) &
-  !$acc create(disable_shock_burning, do_acc, track_grid_losses)
+  !$acc create(use_explicit_filter, eb_small_vfrac, do_mms) &
+  !$acc create(cfl, dtnuc_e, dtnuc_X) &
+  !$acc create(dtnuc_mode, dxnuc, do_react) &
+  !$acc create(react_T_min, react_T_max, react_rho_min) &
+  !$acc create(react_rho_max, disable_shock_burning, do_acc) &
+  !$acc create(track_grid_losses)
 
   ! End the declarations of the ParmParse parameters
 
@@ -234,6 +236,7 @@ contains
     yr_ext_bc_type = "";
     zl_ext_bc_type = "";
     zr_ext_bc_type = "";
+    use_explicit_filter = 0;
     eb_small_vfrac = 1.0d-2;
     do_mms = 0;
     cfl = 0.8d0;
@@ -298,6 +301,7 @@ contains
     call pp%query("yr_ext_bc_type", yr_ext_bc_type)
     call pp%query("zl_ext_bc_type", zl_ext_bc_type)
     call pp%query("zr_ext_bc_type", zr_ext_bc_type)
+    call pp%query("use_explicit_filter", use_explicit_filter)
     call pp%query("eb_small_vfrac", eb_small_vfrac)
     call pp%query("do_mms", do_mms)
     call pp%query("cfl", cfl)
@@ -329,11 +333,12 @@ contains
     !$acc device(dual_energy_eta2, dual_energy_eta3, use_pslope) &
     !$acc device(fix_mass_flux, limit_fluxes_on_small_dens, density_reset_method) &
     !$acc device(allow_negative_energy, allow_small_energy, first_order_hydro) &
-    !$acc device(eb_small_vfrac, do_mms, cfl) &
-    !$acc device(dtnuc_e, dtnuc_X, dtnuc_mode) &
-    !$acc device(dxnuc, do_react, react_T_min) &
-    !$acc device(react_T_max, react_rho_min, react_rho_max) &
-    !$acc device(disable_shock_burning, do_acc, track_grid_losses)
+    !$acc device(use_explicit_filter, eb_small_vfrac, do_mms) &
+    !$acc device(cfl, dtnuc_e, dtnuc_X) &
+    !$acc device(dtnuc_mode, dxnuc, do_react) &
+    !$acc device(react_T_min, react_T_max, react_rho_min) &
+    !$acc device(react_rho_max, disable_shock_burning, do_acc) &
+    !$acc device(track_grid_losses)
 
 
     ! now set the external BC flags
