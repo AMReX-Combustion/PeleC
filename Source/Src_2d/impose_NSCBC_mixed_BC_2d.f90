@@ -1,4 +1,4 @@
-subroutine impose_NSCBC_mixed_BC(lo, hi, domlo, domhi, &
+subroutine imposeNSCBCmixedBC(lo, hi, domlo, domhi, &
                                     uin, uin_l1, uin_l2, uin_h1, uin_h2, &
                                    q, q_l1, q_l2, q_h1, q_h2, &
                                    qaux, qa_l1, qa_l2, qa_h1, qa_h2, &
@@ -2234,4 +2234,4 @@ end if
 
 call destroy(eos_state)
 
-end subroutine impose_NSCBC_mixed_BC
+end subroutine imposeNSCBCmixedBC
