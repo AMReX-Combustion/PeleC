@@ -530,7 +530,7 @@ PeleC::variableSetUp ()
     //   in order to use the correct interpolation.
     if (Xmom != Density+1)
 	amrex::Error("We are assuming Xmom = Density + 1 in PeleC_setup.cpp");
-    derive_lst.addComponent("magvort",desc_lst,State_Type,Density,4);
+    derive_lst.addComponent("magvort",desc_lst,State_Type,Density,NUM_STATE);
 
     //
     // Div(u)
@@ -585,17 +585,14 @@ PeleC::variableSetUp ()
     //
     // Velocities
     //
-    derive_lst.add("x_velocity",IndexType::TheCellType(),1,pc_dervel,the_same_box);
-    derive_lst.addComponent("x_velocity",desc_lst,State_Type,Density,1);
-    derive_lst.addComponent("x_velocity",desc_lst,State_Type,Xmom,1);
+    derive_lst.add("x_velocity",IndexType::TheCellType(),1,pc_dervelx,the_same_box);
+    derive_lst.addComponent("x_velocity",desc_lst,State_Type,Density,NUM_STATE);
 
-    derive_lst.add("y_velocity",IndexType::TheCellType(),1,pc_dervel,the_same_box);
-    derive_lst.addComponent("y_velocity",desc_lst,State_Type,Density,1);
-    derive_lst.addComponent("y_velocity",desc_lst,State_Type,Ymom,1);
+    derive_lst.add("y_velocity",IndexType::TheCellType(),1,pc_dervely,the_same_box);
+    derive_lst.addComponent("y_velocity",desc_lst,State_Type,Density,NUM_STATE);
 
-    derive_lst.add("z_velocity",IndexType::TheCellType(),1,pc_dervel,the_same_box);
-    derive_lst.addComponent("z_velocity",desc_lst,State_Type,Density,1);
-    derive_lst.addComponent("z_velocity",desc_lst,State_Type,Zmom,1);
+    derive_lst.add("z_velocity",IndexType::TheCellType(),1,pc_dervelz,the_same_box);
+    derive_lst.addComponent("z_velocity",desc_lst,State_Type,Density,NUM_STATE);
 
     // FIXME: Do we need a combustion-specific version of this function?
 //     //
