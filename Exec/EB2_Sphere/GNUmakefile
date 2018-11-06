@@ -5,6 +5,8 @@ DEBUG      = TRUE
 DEBUG      = FALSE
 
 #COMP       = Intel
+COMP       = IBM # Use for IBM xl* toolchain on summitdev
+#COMP       = gcc
 
 #DIM        = 1
 #DIM        = 2

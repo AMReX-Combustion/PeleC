@@ -542,7 +542,7 @@ contains
     integer :: nbr(-1:1,-1:1,-1:1)
     real(amrex_real) :: dM(0:Ncut-1), HD(0:Ncut-1), sum_kappa_inv
     
-    logical, intent(in) :: as_crse, as_fine
+    integer, intent(in) :: as_crse, as_fine
     integer, intent(in), dimension(3) :: rdclo,rdchi,rfclo,rfchi,dflo,dfhi,lmlo,lmhi
     real(amrex_real), intent(inout) :: rr_drho_crse(rdclo(1):rdchi(1),rdclo(2):rdchi(2),rdclo(3):rdchi(3),nc)
     real(amrex_real), intent(out) :: dm_as_fine(dflo(1):dfhi(1),dflo(2):dfhi(2),dflo(3):dfhi(3),nc)
@@ -623,7 +623,7 @@ contains
           !re redistribution book keeping
           as_crse_crse_cell = .false.
           as_crse_covered_cell = .false.
-          if (as_crse) then
+          if (as_crse .eq. 1) then
                 as_crse_crse_cell = is_inside(i,j,k,lo,hi) .and. &
                            rr_flag_crse(i,j,k) .eq. crse_fine_boundary_cell
                 as_crse_covered_cell = rr_flag_crse(i,j,k) .eq. covered_by_fine
@@ -631,7 +631,7 @@ contains
 
           as_fine_valid_cell = .false.  ! valid cells near box boundary
           as_fine_ghost_cell = .false.  ! ghost cells just outside valid region
-          if (as_fine) then
+          if (as_fine .eq. 1) then
             as_fine_valid_cell = is_inside(i,j,k,lo,hi)
             as_fine_ghost_cell = levmsk(i,j,k) .eq. levmsk_notcovered ! not covered by other grids
           end if
