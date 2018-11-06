@@ -119,7 +119,7 @@ contains
     use meth_params_module, only : URHO, UMX, UMY, UMZ, &
          UEDEN, UEINT, UFS, UTEMP, small_temp
     use prob_params_module, only: dim
-    use bl_constants_module, only: ZERO, HALF, M_PI
+    use bl_constants_module, only: ZERO, HALF, ONE, M_PI
     use extern_probin_module, only: const_viscosity, const_bulk_viscosity, const_conductivity, const_diffusivity
     use eos_module
 

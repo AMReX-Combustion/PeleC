@@ -152,7 +152,7 @@ contains
           enddo
        enddo
     enddo
-
+    
     call destroy(eos_state)
 
   end subroutine pc_deruplusc
@@ -205,8 +205,8 @@ contains
           end do
        end do
     end do
-
-    call build(eos_state)
+    
+    call destroy(eos_state)
 
   end subroutine pc_deruminusc
 
@@ -370,7 +370,7 @@ contains
           enddo
        enddo
     enddo
-
+    
     call destroy(eos_state)
 
   end subroutine pc_derpres
@@ -496,8 +496,8 @@ contains
           enddo
        enddo
     enddo
-
-    call build(eos_state)
+    
+    call destroy(eos_state)
 
   end subroutine pc_dersoundspeed
 
@@ -548,7 +548,7 @@ contains
           enddo
        enddo
     enddo
-
+    
     call destroy(eos_state)
 
   end subroutine pc_dermachnumber
@@ -600,7 +600,7 @@ contains
           enddo
        enddo
     enddo
-
+    
     call destroy(eos_state)
 
   end subroutine pc_derentropy
@@ -673,7 +673,7 @@ contains
           enddo
        enddo
     enddo
-
+    
     call destroy(eos_state)
 
   end subroutine pc_derenuctimescale
@@ -761,7 +761,7 @@ contains
           end do
        end do
     end do
- 
+    
     call destroy(eos_state)
 
   end subroutine pc_dermolefrac
@@ -927,9 +927,642 @@ contains
     end do
 
   end subroutine pc_derdivu
+  
+#ifdef DO_HIT_FORCE
+  subroutine pc_derforcing (forcing,u_lo,u_hi,nd, &
+                            dat,d_lo,d_hi,nc, &
+                            lo,hi,domlo,domhi,delta, &
+                            xlo,time,dt,bc,level,grid_no) &
+                            bind(C, name="pc_derforcing")
+!
+!     This routine will derive the energy being injected by the
+!     forcing term used for generating turbulence in probtype 14
+!     Requires velocity field, time, and the right parameters
+!     for the forcing term, i.e. probin, *somehow*
+!
+
+    use bl_constants_module, only: ZERO, HALF, M_PI, TWO
+    use probdata_module
+
+    implicit none
+      
+    integer          :: lo(3), hi(3)
+    integer          :: u_lo(3), u_hi(3), nd
+    integer          :: d_lo(3), d_hi(3), nc
+    integer          :: domlo(3), domhi(3)
+    integer          :: bc(3,2,nc)
+    double precision :: delta(3), xlo(3), time, dt
+    double precision :: forcing(u_lo(1):u_hi(1),u_lo(2):u_hi(2),u_lo(3):u_hi(3),nd)
+    double precision :: dat(d_lo(1):d_hi(1),d_lo(2):d_hi(2),d_lo(3):d_hi(3),nc)
+    integer          :: level, grid_no
+
+    ! Local
+    integer          :: i, j, k
+    integer :: kx, ky, kz
+    integer :: modx, mody, modz, xstep, ystep, zstep
+    integer :: nxmodes, nymodes, nzmodes
+    double precision :: f1, f2, f3
+    double precision :: HLx, HLy, HLz, hx, hy, hz
+    double precision :: infl_time, kappa, kappaMax
+    double precision :: kxd, kyd, kzd
+    double precision :: Lmin, twicePi, xT, x, y, z
+    double precision :: u, v, w, zlo
+
+    hx = delta(1)
+    hy = delta(2)
+    hz = delta(3)
+    twicePi=two*M_Pi
+
+!c     Homogeneous Isotropic Turbulence or Inflow
+
+    if (time_offset.gt.zero) then
+      infl_time = time + time_offset
+    else
+      infl_time = time
+    endif
+    zlo = xlo(3)
+
+    Lmin = min(Lx,Ly,Lz)
+    kappaMax = dble(nmodes)/Lmin + 1.0d-8
+    nxmodes = nmodes*int(0.5d0+Lx/Lmin)
+    nymodes = nmodes*int(0.5d0+Ly/Lmin)
+    nzmodes = nmodes*int(0.5d0+Lz/Lmin)
+    xstep = int(Lx/Lmin+0.5d0)
+    ystep = int(Ly/Lmin+0.5d0)
+    zstep = int(Lz/Lmin+0.5d0)
+
+    HLx = Lx
+    HLy = Ly
+    HLz = Lz
+
+    
+    do k = lo(3), hi(3)
+       z = xlo(3) + delta(3)*(dble(k-lo(3)) + HALF)
+       do j = lo(2), hi(2)
+          y = xlo(2) + delta(2)*(dble(j-lo(2)) + HALF)
+          do i = lo(1), hi(1)
+             x = xlo(1) + delta(1)*(dble(i-lo(1)) + HALF)
+             f1 = zero
+             f2 = zero
+             f3 = zero
+  
+             do kz = mode_start*zstep, nzmodes, zstep
+                kzd = dble(kz)
+                do ky = mode_start*ystep, nymodes, ystep
+                   kyd = dble(ky)
+                   do kx = mode_start*xstep, nxmodes, xstep
+                      kxd = dble(kx)
+                      kappa = sqrt( (kxd*kxd)/(Lx*Lx) + (kyd*kyd)/(Ly*Ly) + (kzd*kzd)/(Lz*Lz) )
+                      if (kappa.le.kappaMax) then
+                         xT = cos(FTX(kx,ky,kz)*infl_time+TAT(kx,ky,kz))
+                         if (div_free_force.eq.1) then
+                            f1 = f1 + xT * ( FAZ(kx,ky,kz)*twicePi*(kyd/HLy) &
+                                         * sin(twicePi*kxd*x/HLx+FPZX(kx,ky,kz)) &
+                                         * cos(twicePi*kyd*y/HLy+FPZY(kx,ky,kz)) &
+                                         * sin(twicePi*kzd*z/HLz+FPZZ(kx,ky,kz)) &
+                                        -    FAY(kx,ky,kz)*twicePi*(kzd/HLz) &
+                                         * sin(twicePi*kxd*x/HLx+FPYX(kx,ky,kz)) &
+                                         * sin(twicePi*kyd*y/HLy+FPYY(kx,ky,kz)) &
+                                         * cos(twicePi*kzd*z/HLz+FPYZ(kx,ky,kz)) )
+                            f2 = f2 + xT * ( FAX(kx,ky,kz)*twicePi*(kzd/HLz) &
+                                         * sin(twicePi*kxd*x/HLx+FPXX(kx,ky,kz)) &
+                                         * sin(twicePi*kyd*y/HLy+FPXY(kx,ky,kz)) &
+                                         * cos(twicePi*kzd*z/HLz+FPXZ(kx,ky,kz)) &
+                                        -    FAZ(kx,ky,kz)*twicePi*(kxd/HLx) &
+                                         * cos(twicePi*kxd*x/HLx+FPZX(kx,ky,kz)) &
+                                         * sin(twicePi*kyd*y/HLy+FPZY(kx,ky,kz)) &
+                                         * sin(twicePi*kzd*z/HLz+FPZZ(kx,ky,kz)) )
+                            f3 = f3 + xT * ( FAY(kx,ky,kz)*twicePi*(kxd/HLx) &
+                                         * cos(twicePi*kxd*x/HLx+FPYX(kx,ky,kz)) &
+                                         * sin(twicePi*kyd*y/HLy+FPYY(kx,ky,kz)) &
+                                         * sin(twicePi*kzd*z/HLz+FPYZ(kx,ky,kz)) &
+                                        -    FAX(kx,ky,kz)*twicePi*(kyd/HLy) &
+                                         * sin(twicePi*kxd*x/HLx+FPXX(kx,ky,kz)) &
+                                         * cos(twicePi*kyd*y/HLy+FPXY(kx,ky,kz)) &
+                                         * sin(twicePi*kzd*z/HLz+FPXZ(kx,ky,kz)) )
+                         else
+                            f1 = f1 + xT*FAX(kx,ky,kz)* cos(twicePi*kxd*x/HLx+FPX(kx,ky,kz)) &
+                                                      * sin(twicePi*kyd*y/HLy+FPY(kx,ky,kz)) &
+                                                      * sin(twicePi*kzd*z/HLz+FPZ(kx,ky,kz))
+                            f2 = f2 + xT*FAY(kx,ky,kz)* sin(twicePi*kxd*x/HLx+FPX(kx,ky,kz)) &
+                                                      * cos(twicePi*kyd*y/HLy+FPY(kx,ky,kz)) &
+                                                      * sin(twicePi*kzd*z/HLz+FPZ(kx,ky,kz))
+                            f3 = f3 + xT*FAZ(kx,ky,kz)* sin(twicePi*kxd*x/HLx+FPX(kx,ky,kz)) &
+                                                      * sin(twicePi*kyd*y/HLy+FPY(kx,ky,kz)) &
+                                                      * cos(twicePi*kzd*z/HLz+FPZ(kx,ky,kz))
+                         endif
+                      endif
+                   enddo
+                enddo
+             enddo
+                  
+             do kz = 1, zstep - 1
+                kzd = dble(kz)
+                do ky = mode_start, nymodes
+                   kyd = dble(ky)
+                   do kx = mode_start, nxmodes
+                      kxd = dble(kx)
+                      kappa = sqrt( (kxd*kxd)/(Lx*Lx) + (kyd*kyd)/(Ly*Ly) + (kzd*kzd)/(Lz*Lz) )
+                      if (kappa.le.kappaMax) then
+                         xT = cos(FTX(kx,ky,kz)*infl_time+TAT(kx,ky,kz))
+                         if (div_free_force.eq.1) then
+                            f1 = f1 + xT * ( FAZ(kx,ky,kz)*twicePi*(kyd/HLy) &
+                                         * sin(twicePi*kxd*x/HLx+FPZX(kx,ky,kz)) &
+                                         * cos(twicePi*kyd*y/HLy+FPZY(kx,ky,kz)) &
+                                         * sin(twicePi*kzd*z/HLz+FPZZ(kx,ky,kz)) &
+                                        -    FAY(kx,ky,kz)*twicePi*(kzd/HLz) &
+                                         * sin(twicePi*kxd*x/HLx+FPYX(kx,ky,kz)) &
+                                         * sin(twicePi*kyd*y/HLy+FPYY(kx,ky,kz)) &
+                                         * cos(twicePi*kzd*z/HLz+FPYZ(kx,ky,kz)) )
+                            f2 = f2 + xT * ( FAX(kx,ky,kz)*twicePi*(kzd/HLz) &
+                                         * sin(twicePi*kxd*x/HLx+FPXX(kx,ky,kz)) &
+                                         * sin(twicePi*kyd*y/HLy+FPXY(kx,ky,kz)) &
+                                         * cos(twicePi*kzd*z/HLz+FPXZ(kx,ky,kz)) &
+                                        -    FAZ(kx,ky,kz)*twicePi*(kxd/HLx) &
+                                         * cos(twicePi*kxd*x/HLx+FPZX(kx,ky,kz)) &
+                                         * sin(twicePi*kyd*y/HLy+FPZY(kx,ky,kz)) &
+                                         * sin(twicePi*kzd*z/HLz+FPZZ(kx,ky,kz)) )
+                            f3 = f3 + xT * ( FAY(kx,ky,kz)*twicePi*(kxd/HLx) &
+                                         * cos(twicePi*kxd*x/HLx+FPYX(kx,ky,kz)) &
+                                         * sin(twicePi*kyd*y/HLy+FPYY(kx,ky,kz)) &
+                                         * sin(twicePi*kzd*z/HLz+FPYZ(kx,ky,kz)) &
+                                        -    FAX(kx,ky,kz)*twicePi*(kyd/HLy) &
+                                         * sin(twicePi*kxd*x/HLx+FPXX(kx,ky,kz)) &
+                                         * cos(twicePi*kyd*y/HLy+FPXY(kx,ky,kz)) &
+                                         * sin(twicePi*kzd*z/HLz+FPXZ(kx,ky,kz)) )
+                         else
+                            f1 = f1 + xT*FAX(kx,ky,kz) * cos(twicePi*kxd*x/HLx+FPX(kx,ky,kz)) &
+                                                       * sin(twicePi*kyd*y/HLy+FPY(kx,ky,kz)) &
+                                                       * sin(twicePi*kzd*z/HLz+FPZ(kx,ky,kz))
+                            f2 = f2 + xT*FAY(kx,ky,kz) * sin(twicePi*kxd*x/HLx+FPX(kx,ky,kz)) &
+                                                       * cos(twicePi*kyd*y/HLy+FPY(kx,ky,kz)) &
+                                                       * sin(twicePi*kzd*z/HLz+FPZ(kx,ky,kz))
+                            f3 = f3 + xT*FAZ(kx,ky,kz) * sin(twicePi*kxd*x/HLx+FPX(kx,ky,kz)) &
+                                                       * sin(twicePi*kyd*y/HLy+FPY(kx,ky,kz)) &
+                                                       * cos(twicePi*kzd*z/HLz+FPZ(kx,ky,kz))
+                         endif
+                      endif
+                   enddo
+                enddo
+             enddo
+
+             u   = dat(i,j,k,2)
+             v   = dat(i,j,k,3)
+             w   = dat(i,j,k,4)
+                  
+             forcing(i,j,k,1) = dat(i,j,k,1) * ( u*f1 + v*f2 + w*f3 )
+                  
+          end do
+       end do
+    end do
 
 
+  end subroutine pc_derforcing
 
+  subroutine pc_derforcex (forcing,u_lo,u_hi,nd, &
+                            dat,d_lo,d_hi,nc, &
+                            lo,hi,domlo,domhi,delta, &
+                            xlo,time,dt,bc,level,grid_no) &
+                            bind(C, name="pc_derforcex")
+!
+!     This routine will derive the energy being injected by the
+!     forcing term used for generating turbulence in probtype 14
+!     Requires velocity field, time, and the right parameters
+!     for the forcing term, i.e. probin, *somehow*
+!
+
+    use bl_constants_module, only: ZERO, HALF, M_PI, TWO
+    use probdata_module
+
+    implicit none
+      
+    integer          :: lo(3), hi(3)
+    integer          :: u_lo(3), u_hi(3), nd
+    integer          :: d_lo(3), d_hi(3), nc
+    integer          :: domlo(3), domhi(3)
+    integer          :: bc(3,2,nc)
+    double precision :: delta(3), xlo(3), time, dt
+    double precision :: forcing(u_lo(1):u_hi(1),u_lo(2):u_hi(2),u_lo(3):u_hi(3),nd)
+    double precision :: dat(d_lo(1):d_hi(1),d_lo(2):d_hi(2),d_lo(3):d_hi(3),nc)
+    integer          :: level, grid_no
+
+    ! Local
+    integer          :: i, j, k
+    integer :: kx, ky, kz
+    integer :: xstep, ystep, zstep
+    integer :: nxmodes, nymodes, nzmodes
+    double precision :: f1
+    double precision :: HLx, HLy, HLz
+    double precision :: infl_time, kappa, kappaMax
+    double precision :: kxd, kyd, kzd
+    double precision :: Lmin, twicePi, xT, x, y, z
+    double precision :: zlo
+
+    twicePi=two*M_Pi
+
+!c     Homogeneous Isotropic Turbulence or Inflow
+
+    if (time_offset.gt.zero) then
+      infl_time = time + time_offset
+    else
+      infl_time = time
+    endif
+    zlo = xlo(3)
+
+    Lmin = min(Lx,Ly,Lz)
+    kappaMax = dble(nmodes)/Lmin + 1.0d-8
+    nxmodes = nmodes*int(0.5d0+Lx/Lmin)
+    nymodes = nmodes*int(0.5d0+Ly/Lmin)
+    nzmodes = nmodes*int(0.5d0+Lz/Lmin)
+    xstep = int(Lx/Lmin+0.5d0)
+    ystep = int(Ly/Lmin+0.5d0)
+    zstep = int(Lz/Lmin+0.5d0)
+
+    HLx = Lx
+    HLy = Ly
+    HLz = Lz
+    
+    forcing(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),:) = ZERO
+
+    !write(*,*) 'DEBUG ENTERING DERIVE X'
+               !    do kz = mode_start*zstep, nzmodes, zstep
+               !   kzd = dfloat(kz)
+               !   do ky = mode_start*ystep, nymodes, ystep
+               !      kyd = dfloat(ky)
+               !      do kx = mode_start*xstep, nxmodes, xstep
+               !         kxd = dfloat(kx)
+               !         kappa = sqrt( (kxd*kxd)/(Lx*Lx) + (kyd*kyd)/(Ly*Ly) + (kzd*kzd)/(Lz*Lz) )
+               !         if (kappa.le.kappaMax) then
+               !            write (*,*) "Mode"
+               !            write (*,*) "kappa = ",kx,ky,kz,kappa
+               !            write (*,*) "Amplitudes - C"
+               !            write (*,*) FAX(kx,ky,kz), FAY(kx,ky,kz), FAZ(kx,ky,kz)
+               !            write (*,*) "Frequencies"
+               !            write (*,*) FTX(kx,ky,kz), FTY(kx,ky,kz), FTZ(kx,ky,kz)
+               !            write (*,*) "Phases"
+               !            write (*,*) FPX(kx,ky,kz), FPY(kx,ky,kz), FPZ(kx,ky,kz)
+               !            write (*,*) "TAT"
+               !            write (*,*) TAT(kx,ky,kz)
+               !         endif
+               !      enddo
+               !   enddo
+               !enddo
+
+    
+    
+    do k = lo(3), hi(3)
+       z = xlo(3) + delta(3)*(dble(k-lo(3)) + HALF)
+       do j = lo(2), hi(2)
+          y = xlo(2) + delta(2)*(dble(j-lo(2)) + HALF)
+          do i = lo(1), hi(1)
+             x = xlo(1) + delta(1)*(dble(i-lo(1)) + HALF)
+             f1 = zero
+
+             do kz = mode_start*zstep, nzmodes, zstep
+                kzd = dble(kz)
+                do ky = mode_start*ystep, nymodes, ystep
+                   kyd = dble(ky)
+                   do kx = mode_start*xstep, nxmodes, xstep
+                      kxd = dble(kx)
+                      kappa = sqrt( (kxd*kxd)/(Lx*Lx) + (kyd*kyd)/(Ly*Ly) + (kzd*kzd)/(Lz*Lz) )
+                      if (kappa.le.kappaMax) then
+                         xT = cos(FTX(kx,ky,kz)*infl_time+TAT(kx,ky,kz))
+                         !write(*,*) 'DEBUG 1',i,j,k,kx,ky,kz,FTX(kx,ky,kz),infl_time,TAT(kx,ky,kz),xT
+                         if (div_free_force.eq.1) then
+                            f1 = f1 + xT * ( FAZ(kx,ky,kz)*twicePi*(kyd/HLy) &
+                                         * sin(twicePi*kxd*x/HLx+FPZX(kx,ky,kz)) &
+                                         * cos(twicePi*kyd*y/HLy+FPZY(kx,ky,kz)) &
+                                         * sin(twicePi*kzd*z/HLz+FPZZ(kx,ky,kz)) &
+                                        -    FAY(kx,ky,kz)*twicePi*(kzd/HLz) &
+                                         * sin(twicePi*kxd*x/HLx+FPYX(kx,ky,kz)) &
+                                         * sin(twicePi*kyd*y/HLy+FPYY(kx,ky,kz)) &
+                                         * cos(twicePi*kzd*z/HLz+FPYZ(kx,ky,kz)) )
+                         else
+
+                            f1 = f1 + xT*FAX(kx,ky,kz)* cos(twicePi*kxd*x/HLx+FPX(kx,ky,kz)) &
+                                                      * sin(twicePi*kyd*y/HLy+FPY(kx,ky,kz)) &
+                                                      * sin(twicePi*kzd*z/HLz+FPZ(kx,ky,kz))
+                         endif
+                      endif
+                   enddo
+                enddo
+             enddo
+                  
+             do kz = 1, zstep - 1
+                kzd = dble(kz)
+                do ky = mode_start, nymodes
+                   kyd = dble(ky)
+                   do kx = mode_start, nxmodes
+                      kxd = dble(kx)
+                      kappa = sqrt( (kxd*kxd)/(Lx*Lx) + (kyd*kyd)/(Ly*Ly) + (kzd*kzd)/(Lz*Lz) )
+                      if (kappa.le.kappaMax) then
+                         xT = cos(FTX(kx,ky,kz)*infl_time+TAT(kx,ky,kz))
+                         if (div_free_force.eq.1) then
+                            f1 = f1 + xT * ( FAZ(kx,ky,kz)*twicePi*(kyd/HLy) &
+                                         * sin(twicePi*kxd*x/HLx+FPZX(kx,ky,kz)) &
+                                         * cos(twicePi*kyd*y/HLy+FPZY(kx,ky,kz)) &
+                                         * sin(twicePi*kzd*z/HLz+FPZZ(kx,ky,kz)) &
+                                        -    FAY(kx,ky,kz)*twicePi*(kzd/HLz) &
+                                         * sin(twicePi*kxd*x/HLx+FPYX(kx,ky,kz)) &
+                                         * sin(twicePi*kyd*y/HLy+FPYY(kx,ky,kz)) &
+                                         * cos(twicePi*kzd*z/HLz+FPYZ(kx,ky,kz)) )
+                         else
+                            f1 = f1 + xT*FAX(kx,ky,kz) * cos(twicePi*kxd*x/HLx+FPX(kx,ky,kz)) &
+                                                       * sin(twicePi*kyd*y/HLy+FPY(kx,ky,kz)) &
+                                                       * sin(twicePi*kzd*z/HLz+FPZ(kx,ky,kz))
+                         endif
+                      endif
+                   enddo
+                enddo
+             enddo
+                   !write(*,*) 'DEBUG TOTO',i,j,k,x,y,z,f1
+             forcing(i,j,k,1) = dat(i,j,k,1) * f1
+                  
+          end do
+       end do
+    end do
+
+
+  end subroutine pc_derforcex
+  
+  subroutine pc_derforcey (forcing,u_lo,u_hi,nd, &
+                            dat,d_lo,d_hi,nc, &
+                            lo,hi,domlo,domhi,delta, &
+                            xlo,time,dt,bc,level,grid_no) &
+                            bind(C, name="pc_derforcey")
+!
+!     This routine will derive the energy being injected by the
+!     forcing term used for generating turbulence in probtype 14
+!     Requires velocity field, time, and the right parameters
+!     for the forcing term, i.e. probin, *somehow*
+!
+
+    use bl_constants_module, only: ZERO, HALF, M_PI, TWO
+    use probdata_module
+
+    implicit none
+      
+    integer          :: lo(3), hi(3)
+    integer          :: u_lo(3), u_hi(3), nd
+    integer          :: d_lo(3), d_hi(3), nc
+    integer          :: domlo(3), domhi(3)
+    integer          :: bc(3,2,nc)
+    double precision :: delta(3), xlo(3), time, dt
+    double precision :: forcing(u_lo(1):u_hi(1),u_lo(2):u_hi(2),u_lo(3):u_hi(3),nd)
+    double precision :: dat(d_lo(1):d_hi(1),d_lo(2):d_hi(2),d_lo(3):d_hi(3),nc)
+    integer          :: level, grid_no
+
+    ! Local
+    integer          :: i, j, k
+    integer :: kx, ky, kz
+    integer :: xstep, ystep, zstep
+    integer :: nxmodes, nymodes, nzmodes
+    double precision :: f2
+    double precision :: HLx, HLy, HLz
+    double precision :: infl_time, kappa, kappaMax
+    double precision :: kxd, kyd, kzd
+    double precision :: Lmin, twicePi, xT, x, y, z
+    double precision :: zlo
+
+    twicePi=two*M_Pi
+    forcing(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),:) = ZERO
+
+!c     Homogeneous Isotropic Turbulence or Inflow
+
+    if (time_offset.gt.zero) then
+      infl_time = time + time_offset
+    else
+      infl_time = time
+    endif
+    zlo = xlo(3)
+
+    Lmin = min(Lx,Ly,Lz)
+    kappaMax = dble(nmodes)/Lmin + 1.0d-8
+    nxmodes = nmodes*int(0.5d0+Lx/Lmin)
+    nymodes = nmodes*int(0.5d0+Ly/Lmin)
+    nzmodes = nmodes*int(0.5d0+Lz/Lmin)
+    xstep = int(Lx/Lmin+0.5d0)
+    ystep = int(Ly/Lmin+0.5d0)
+    zstep = int(Lz/Lmin+0.5d0)
+
+    HLx = Lx
+    HLy = Ly
+    HLz = Lz
+
+    
+    do k = lo(3), hi(3)
+       z = xlo(3) + delta(3)*(dble(k-lo(3)) + HALF)
+       do j = lo(2), hi(2)
+          y = xlo(2) + delta(2)*(dble(j-lo(2)) + HALF)
+          do i = lo(1), hi(1)
+             x = xlo(1) + delta(1)*(dble(i-lo(1)) + HALF)
+             f2 = zero
+  
+             do kz = mode_start*zstep, nzmodes, zstep
+                kzd = dble(kz)
+                do ky = mode_start*ystep, nymodes, ystep
+                   kyd = dble(ky)
+                   do kx = mode_start*xstep, nxmodes, xstep
+                      kxd = dble(kx)
+                      kappa = sqrt( (kxd*kxd)/(Lx*Lx) + (kyd*kyd)/(Ly*Ly) + (kzd*kzd)/(Lz*Lz) )
+                      if (kappa.le.kappaMax) then
+                         xT = cos(FTX(kx,ky,kz)*infl_time+TAT(kx,ky,kz))
+                         if (div_free_force.eq.1) then
+                            f2 = f2 + xT * ( FAX(kx,ky,kz)*twicePi*(kzd/HLz) &
+                                         * sin(twicePi*kxd*x/HLx+FPXX(kx,ky,kz)) &
+                                         * sin(twicePi*kyd*y/HLy+FPXY(kx,ky,kz)) &
+                                         * cos(twicePi*kzd*z/HLz+FPXZ(kx,ky,kz)) &
+                                        -    FAZ(kx,ky,kz)*twicePi*(kxd/HLx) &
+                                         * cos(twicePi*kxd*x/HLx+FPZX(kx,ky,kz)) &
+                                         * sin(twicePi*kyd*y/HLy+FPZY(kx,ky,kz)) &
+                                         * sin(twicePi*kzd*z/HLz+FPZZ(kx,ky,kz)) )
+                         else
+                            f2 = f2 + xT*FAY(kx,ky,kz)* sin(twicePi*kxd*x/HLx+FPX(kx,ky,kz)) &
+                                                      * cos(twicePi*kyd*y/HLy+FPY(kx,ky,kz)) &
+                                                      * sin(twicePi*kzd*z/HLz+FPZ(kx,ky,kz))
+                         endif
+                      endif
+                   enddo
+                enddo
+             enddo
+                  
+             do kz = 1, zstep - 1
+                kzd = dble(kz)
+                do ky = mode_start, nymodes
+                   kyd = dble(ky)
+                   do kx = mode_start, nxmodes
+                      kxd = dble(kx)
+                      kappa = sqrt( (kxd*kxd)/(Lx*Lx) + (kyd*kyd)/(Ly*Ly) + (kzd*kzd)/(Lz*Lz) )
+                      if (kappa.le.kappaMax) then
+                         xT = cos(FTX(kx,ky,kz)*infl_time+TAT(kx,ky,kz))
+                         if (div_free_force.eq.1) then
+                            f2 = f2 + xT * ( FAX(kx,ky,kz)*twicePi*(kzd/HLz) &
+                                         * sin(twicePi*kxd*x/HLx+FPXX(kx,ky,kz)) &
+                                         * sin(twicePi*kyd*y/HLy+FPXY(kx,ky,kz)) &
+                                         * cos(twicePi*kzd*z/HLz+FPXZ(kx,ky,kz)) &
+                                        -    FAZ(kx,ky,kz)*twicePi*(kxd/HLx) &
+                                         * cos(twicePi*kxd*x/HLx+FPZX(kx,ky,kz)) &
+                                         * sin(twicePi*kyd*y/HLy+FPZY(kx,ky,kz)) &
+                                         * sin(twicePi*kzd*z/HLz+FPZZ(kx,ky,kz)) )
+                         else
+                            f2 = f2 + xT*FAY(kx,ky,kz) * sin(twicePi*kxd*x/HLx+FPX(kx,ky,kz)) &
+                                                       * cos(twicePi*kyd*y/HLy+FPY(kx,ky,kz)) &
+                                                       * sin(twicePi*kzd*z/HLz+FPZ(kx,ky,kz))
+                         endif
+                      endif
+                   enddo
+                enddo
+             enddo
+                
+             forcing(i,j,k,1) = dat(i,j,k,1) * f2
+                  
+          end do
+       end do
+    end do
+
+
+  end subroutine pc_derforcey
+  
+  subroutine pc_derforcez (forcing,u_lo,u_hi,nd, &
+                            dat,d_lo,d_hi,nc, &
+                            lo,hi,domlo,domhi,delta, &
+                            xlo,time,dt,bc,level,grid_no) &
+                            bind(C, name="pc_derforcez")
+!
+!     This routine will derive the energy being injected by the
+!     forcing term used for generating turbulence in probtype 14
+!     Requires velocity field, time, and the right parameters
+!     for the forcing term, i.e. probin, *somehow*
+!
+
+    use bl_constants_module, only: ZERO, HALF, M_PI, TWO
+    use probdata_module
+
+    implicit none
+      
+    integer          :: lo(3), hi(3)
+    integer          :: u_lo(3), u_hi(3), nd
+    integer          :: d_lo(3), d_hi(3), nc
+    integer          :: domlo(3), domhi(3)
+    integer          :: bc(3,2,nc)
+    double precision :: delta(3), xlo(3), time, dt
+    double precision :: forcing(u_lo(1):u_hi(1),u_lo(2):u_hi(2),u_lo(3):u_hi(3),nd)
+    double precision :: dat(d_lo(1):d_hi(1),d_lo(2):d_hi(2),d_lo(3):d_hi(3),nc)
+    integer          :: level, grid_no
+
+    ! Local
+    integer          :: i, j, k
+    integer :: kx, ky, kz
+    integer :: xstep, ystep, zstep
+    integer :: nxmodes, nymodes, nzmodes
+    double precision :: f3
+    double precision :: HLx, HLy, HLz
+    double precision :: infl_time, kappa, kappaMax
+    double precision :: kxd, kyd, kzd
+    double precision :: Lmin, twicePi, xT, x, y, z
+    double precision :: zlo
+
+    twicePi=two*M_Pi
+    forcing(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),:) = ZERO
+
+!c     Homogeneous Isotropic Turbulence or Inflow
+
+    if (time_offset.gt.zero) then
+      infl_time = time + time_offset
+    else
+      infl_time = time
+    endif
+    zlo = xlo(3)
+
+    Lmin = min(Lx,Ly,Lz)
+    kappaMax = dble(nmodes)/Lmin + 1.0d-8
+    nxmodes = nmodes*int(0.5d0+Lx/Lmin)
+    nymodes = nmodes*int(0.5d0+Ly/Lmin)
+    nzmodes = nmodes*int(0.5d0+Lz/Lmin)
+    xstep = int(Lx/Lmin+0.5d0)
+    ystep = int(Ly/Lmin+0.5d0)
+    zstep = int(Lz/Lmin+0.5d0)
+
+    HLx = Lx
+    HLy = Ly
+    HLz = Lz
+
+    
+    do k = lo(3), hi(3)
+       z = xlo(3) + delta(3)*(dble(k-lo(3)) + HALF)
+       do j = lo(2), hi(2)
+          y = xlo(2) + delta(2)*(dble(j-lo(2)) + HALF)
+          do i = lo(1), hi(1)
+             x = xlo(1) + delta(1)*(dble(i-lo(1)) + HALF)
+             f3 = zero
+  
+             do kz = mode_start*zstep, nzmodes, zstep
+                kzd = dble(kz)
+                do ky = mode_start*ystep, nymodes, ystep
+                   kyd = dble(ky)
+                   do kx = mode_start*xstep, nxmodes, xstep
+                      kxd = dble(kx)
+                      kappa = sqrt( (kxd*kxd)/(Lx*Lx) + (kyd*kyd)/(Ly*Ly) + (kzd*kzd)/(Lz*Lz) )
+                      if (kappa.le.kappaMax) then
+                         xT = cos(FTX(kx,ky,kz)*infl_time+TAT(kx,ky,kz))
+                         if (div_free_force.eq.1) then
+                            f3 = f3 + xT * ( FAY(kx,ky,kz)*twicePi*(kxd/HLx) &
+                                         * cos(twicePi*kxd*x/HLx+FPYX(kx,ky,kz)) &
+                                         * sin(twicePi*kyd*y/HLy+FPYY(kx,ky,kz)) &
+                                         * sin(twicePi*kzd*z/HLz+FPYZ(kx,ky,kz)) &
+                                        -    FAX(kx,ky,kz)*twicePi*(kyd/HLy) &
+                                         * sin(twicePi*kxd*x/HLx+FPXX(kx,ky,kz)) &
+                                         * cos(twicePi*kyd*y/HLy+FPXY(kx,ky,kz)) &
+                                         * sin(twicePi*kzd*z/HLz+FPXZ(kx,ky,kz)) )
+                         else
+                            f3 = f3 + xT*FAZ(kx,ky,kz)* sin(twicePi*kxd*x/HLx+FPX(kx,ky,kz)) &
+                                                      * sin(twicePi*kyd*y/HLy+FPY(kx,ky,kz)) &
+                                                      * cos(twicePi*kzd*z/HLz+FPZ(kx,ky,kz))
+                         endif
+                      endif
+                   enddo
+                enddo
+             enddo
+                  
+             do kz = 1, zstep - 1
+                kzd = dble(kz)
+                do ky = mode_start, nymodes
+                   kyd = dble(ky)
+                   do kx = mode_start, nxmodes
+                      kxd = dble(kx)
+                      kappa = sqrt( (kxd*kxd)/(Lx*Lx) + (kyd*kyd)/(Ly*Ly) + (kzd*kzd)/(Lz*Lz) )
+                      if (kappa.le.kappaMax) then
+                         xT = cos(FTX(kx,ky,kz)*infl_time+TAT(kx,ky,kz))
+                         if (div_free_force.eq.1) then
+                            f3 = f3 + xT * ( FAY(kx,ky,kz)*twicePi*(kxd/HLx) &
+                                         * cos(twicePi*kxd*x/HLx+FPYX(kx,ky,kz)) &
+                                         * sin(twicePi*kyd*y/HLy+FPYY(kx,ky,kz)) &
+                                         * sin(twicePi*kzd*z/HLz+FPYZ(kx,ky,kz)) &
+                                        -    FAX(kx,ky,kz)*twicePi*(kyd/HLy) &
+                                         * sin(twicePi*kxd*x/HLx+FPXX(kx,ky,kz)) &
+                                         * cos(twicePi*kyd*y/HLy+FPXY(kx,ky,kz)) &
+                                         * sin(twicePi*kzd*z/HLz+FPXZ(kx,ky,kz)) )
+                         else
+                            f3 = f3 + xT*FAZ(kx,ky,kz) * sin(twicePi*kxd*x/HLx+FPX(kx,ky,kz)) &
+                                                       * sin(twicePi*kyd*y/HLy+FPY(kx,ky,kz)) &
+                                                       * cos(twicePi*kzd*z/HLz+FPZ(kx,ky,kz))
+                         endif
+                      endif
+                   enddo
+                enddo
+             enddo
+                 
+             forcing(i,j,k,1) = dat(i,j,k,1) * f3
+                  
+          end do
+       end do
+    end do
+
+
+  end subroutine pc_derforcez
+
+#endif
+  
   subroutine pc_derkineng(kineng,k_lo,k_hi,nk, &
                           dat,d_lo,d_hi,nc, &
                           lo,hi,domlo,domhi,delta, &

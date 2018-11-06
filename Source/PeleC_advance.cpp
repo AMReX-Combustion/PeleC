@@ -258,8 +258,6 @@ PeleC::do_sdc_advance(Real time,
       SDC), hydro, and the source terms.
   */
 
-  BL_PROFILE("PeleC::do_advance()");
-
   initialize_sdc_advance(time, dt, amr_iteration, amr_ncycle);
 
   if (do_react_load_balance) {

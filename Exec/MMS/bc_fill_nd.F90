@@ -272,7 +272,7 @@ contains
     use network, only: nspec, naux
     use prob_params_module, only : problo, probhi, dim
 
-    use bl_constants_module, only: M_PI
+    use bl_constants_module, only: M_PI, HALF
 
 #ifdef USE_MASA
     use masa
