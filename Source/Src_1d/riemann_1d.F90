@@ -830,7 +830,7 @@ contains
        enddo
 
     enddo
-    call destroy(eos_state)
+    !call destroy(eos_state)
 
   end subroutine riemannus
 
