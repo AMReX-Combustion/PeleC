@@ -1,9 +1,10 @@
 PRECISION  = DOUBLE
-USE_EB     = FALSE
 PROFILE    = FALSE
+USE_EB     = FALSE
 
 DEBUG      = TRUE
 DEBUG      = FALSE
+
 
 #DIM        = 1
 DIM        = 2
@@ -14,21 +15,22 @@ COMP	   = gcc
 USE_MPI    = TRUE
 USE_OMP    = FALSE
 
-#HYP_TYPE = MOL
-
 # define the location of the PELE top directory
 PELE_HOME    := ../../..
 
 # This sets the EOS directory in $(PELE_PHYSICS_HOME)/Eos
-Eos_dir     := GammaLaw
+Eos_dir     := Fuego
 
 # This sets the network directory in $(PELE_PHYSICS_HOME)/Reactions
-Reactions_dir := Null
+Reactions_dir := Fuego
+
+# This sets the model directory in $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism/Models
+Chemistry_Model := chem-H
 
 # This sets the transport directory in $(PELE_PHYSICS_HOME)/Transport
-Transport_dir := Constant
+Transport_dir := EGLib
 
 Bpack   := ./Make.package
 Blocs   := .
 
-include ../Make.PeleC
+include ../../Make.PeleC

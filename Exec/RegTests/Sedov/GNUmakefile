@@ -3,11 +3,11 @@ PROFILE    = FALSE
 USE_EB     = FALSE
 DEBUG      = FALSE
 
-DIM        = 2
+DIM        = 3
 
 COMP	   = gcc
 
-USE_MPI    = FALSE
+USE_MPI    = TRUE
 USE_OMP    = FALSE
 
 # define the location of the PELE top directory
@@ -23,11 +23,6 @@ Reactions_dir := Null
 Transport_dir := Constant
 
 Bpack   := ./Make.package
+Blocs   := .
 
-include ../Make.PeleC
-
-ifeq ($(DEBUG), TRUE)
-DEFINES += -DDEBUG
-endif
-
-DEFINES += -DBL_USE_EB
+include ../../Make.PeleC
