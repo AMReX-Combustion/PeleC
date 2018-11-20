@@ -24,7 +24,7 @@ Transport_dir := Constant
 
 Bpack   := ./Make.package
 
-include ../Make.PeleC
+include ../../Make.PeleC
 
 ifeq ($(DEBUG), TRUE)
 DEFINES += -DDEBUG
