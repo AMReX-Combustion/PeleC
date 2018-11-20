@@ -26,7 +26,7 @@ Transport_dir := Constant
 
 Bpack   := ./Make.package
 
-include ../Make.PeleC
+include ../../Make.PeleC
 
 DEFINES += -DO_HIT_FORCE
 
