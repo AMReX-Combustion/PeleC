@@ -18,10 +18,28 @@
 /
 
 &tagging
+  denerr = 1e20
+  dengrad = 1e20
+  max_denerr_lev = 3
+  max_dengrad_lev = 3
+
+  presserr = 1e20
+  pressgrad = 1e20
+  max_presserr_lev = 3
+  max_pressgrad_lev = 3
+  
   velerr = 1e20
-  velgrad = 500
+  velgrad = 1e20
   max_velerr_lev = 3
   max_velgrad_lev = 3
+
+  temperr  = 1e20
+  tempgrad = 1e20
+  max_velerr_lev = 3
+  max_velgrad_lev = 3
+
+  vorterr = 50000
+  max_vorterr_lev = 3
 /
 
 &extern
