@@ -42,4 +42,4 @@ Bpack   := ./Make.package
 Blocs   := .
 
 
-include ../Make.PeleC
+include ../../Make.PeleC
