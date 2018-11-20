@@ -34,4 +34,4 @@ Transport_dir := EGLib
 Bpack   := ./Make.package
 Blocs   := .
 
-include ../Make.PeleC
+include ../../Make.PeleC

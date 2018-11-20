@@ -1,14 +1,23 @@
 PRECISION  = DOUBLE
 PROFILE    = FALSE
-USE_EB     = FALSE
+
+DEBUG      = TRUE
 DEBUG      = FALSE
 
-DIM        = 2
+#COMP       = Intel
 
-COMP	   = gcc
+#DIM        = 1
+#DIM        = 2
+DIM        = 3
 
-USE_MPI    = FALSE
+USE_MPI    = TRUE
 USE_OMP    = FALSE
+
+USE_EB = TRUE
+
+HYP_TYPE = MOL
+#TINY_PROFILE = TRUE
+#PROFILE = TRUE
 
 # define the location of the PELE top directory
 PELE_HOME    := ../../..
@@ -17,15 +26,13 @@ PELE_HOME    := ../../..
 Eos_dir     := GammaLaw
 
 # This sets the network directory in $(PELE_PHYSICS_HOME)/Reactions
-Reactions_dir := Null
+Reactions_dir := Null_air
 
 # This sets the transport directory in $(PELE_PHYSICS_HOME)/Transport
 Transport_dir := Constant
 
 Bpack   := ./Make.package
+Blocs   := .
 
-include ../Make.PeleC
 
-ifeq ($(DEBUG), TRUE)
-DEFINES += -DDEBUG
-endif
+include ../../Make.PeleC
