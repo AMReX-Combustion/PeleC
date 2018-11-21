@@ -9,11 +9,15 @@ module pmf_module
 contains
 
   subroutine read_pmf()
-    character (len=20) :: ctmp1, ctmp2
+    character (len=20) :: ctmp1, ctmp2, fmt
     character (len=1) :: ctmp
     integer index, found, ist, reason, i, j, lsize, pos1, pos2, n
 
-    character(len=:), allocatable :: line
+    integer, parameter :: maxlinelen = 256
+    character(len=maxlinelen) :: line
+    character(len=maxlinelen) :: tline, name
+
+    integer :: idbg
 
     !     Read 2 header lines, first looks like VARIABLES = NAME1 NAME2 NAME3..., we dont care about second
     open(unit=32,file=pmf_filename,status='old')
@@ -26,54 +30,72 @@ contains
        read(32,'(A)',EOR=5,END=5,ADVANCE='NO') ctmp
        lsize = lsize+1
     enddo
-5   allocate(character(len=lsize) :: line)
+5   if (lsize .gt. maxlinelen) then
+       print *,'maxlinelen in pmf_generic not large enough for first line of data file'
+       stop
+    endif
     rewind(32)
-    read(32,'(A)') line
+
+    write(fmt,'("(A", I0, ")")') lsize
+    read(32,trim(fmt)) line
 
     ! Get number of variables
     ist = INDEX(line, "=")
     line = trim(line(ist+1:))
-
     pmf_M = 0
-    pos1 = 1
-    do while (line(pos1:pos1) .eq. ' ')
-       pos1 = pos1+1
-    enddo
+
+    tline = line
     DO
-       pos2 = INDEX(line(pos1:), " ")
-       IF (pos2 == 0) THEN
-          pmf_M = pmf_M + 1
+       do while (tline(1:1) .eq. ' ' .and. len(tline).gt.0)
+          tline = tline(2:)
+       enddo
+       pos1 = INDEX(tline, '"')
+
+       IF (len(tline).eq.0 .or. pos1 == 0) THEN
           EXIT
        END IF
        pmf_M = pmf_M + 1
-       pos1 = pos2+pos1
-       do while (line(pos1:pos1) .eq. ' ')
-          pos1 = pos1+1
-       enddo
+
+       tline = tline(pos1+1:)
+
+       pos1 = INDEX(tline, '"')
+
+       if (pos1.eq.0) then
+          print *,'variable name in data file missing a closing quote'
+       endif
+
+       tline = tline(pos1+1:)
+
+       if (len(trim(tline)).eq.0) EXIT
     END DO
+
+    ! Allocate space for names, and do all this all over again
+    ! (fortran text parsing is torture!)
     allocate(pmf_names(pmf_M))
-    pmf_M = pmf_M - 1 ! remove the X 
+    pmf_M = pmf_M - 1 ! remove the X
 
-    ! Get names
     n = 0
-    pos1 = 1
-    do while (line(pos1:pos1) .eq. ' ')
-       pos1 = pos1+1
-    enddo
-
+    tline = line
     DO
-       pos2 = INDEX(line(pos1:), " ")
-       IF (pos2 == 0) THEN
-          n = n+1
-          pmf_names(n) = line(pos1:)
+       do while (tline(1:1) .eq. ' ' .and. len(tline).gt.0)
+          tline = tline(2:)
+       enddo
+       pos1 = INDEX(tline, '"')
+
+       IF (len(tline).eq.0 .or. pos1 == 0) THEN
           EXIT
        END IF
-       n = n+1
-       pmf_names(n) = line(pos1:pos1+pos2-2)
-       pos1 = pos2+pos1
-       do while (line(pos1:pos1) .eq. ' ')
-          pos1 = pos1+1
-       enddo
+
+       tline = tline(pos1+1:)
+
+       pos1 = INDEX(tline, '"')
+
+       n = n + 1
+       pmf_names(n) = tline(:pos1-1)
+
+       tline = tline(pos1+1:)
+
+       if (len(trim(tline)).eq.0) EXIT
     END DO
 
     read(32,*) line! Throw away this line
@@ -85,13 +107,6 @@ contains
        pmf_N = pmf_N+1
     enddo
 2   continue
-
-    ! Strip quotes off names
-    do n=1,pmf_M+1
-       if (pmf_names(n)(1:1) .eq. '"') pmf_names(n) = pmf_names(n)(2:)
-       ist = len(trim(pmf_names(n)))
-       if (pmf_names(n)(ist:ist) .eq. '"') pmf_names(n) = pmf_names(n)(:ist-1)
-    enddo
 
     allocate(pmf_X(pmf_N))
     allocate(pmf_Y(pmf_N,pmf_M))
