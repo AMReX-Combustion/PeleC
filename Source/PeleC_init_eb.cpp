@@ -442,68 +442,133 @@ initialize_EB2 (const Geometry& geom, const int required_level, const int max_le
     auto gshop = EB2::makeShop(pr);
     EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
   }
+  else if (geom_type == "triangles")
+  {
+      int num_pts;
+      int max_tri=5;
+      ParmParse pp("triangles");
+      pp.get("num_tri", num_tri);
+      Vector<Array<Real,3>> alltri(max_tri);
+
+      //initalize all triangles with some dummy values
+      //that fall outside of the domain
+      
+
+      for(int itri=0;itri<max_tri;itri++)
+      {
+         
+         alltri[itri][0] =  
+      }
+
+
+      for(int itri = 0; itri < num_tri; itri++)
+      {
+          Array<Real,3> point{0.0,0.0,0.0};
+          std::string    pointstr = "poly_point_" + convertIntGG(ipt);
+          Vector<Real> vecpt;
+          pp.getarr(pointstr.c_str(), vecpt,  0, SpaceDim);
+          for(int idir = 0; idir < SpaceDim; idir++)
+          {
+              point[idir] = vecpt[idir] ;
+          }
+          polygon[ipt] = point;
+      }
+
+      Vector<EB2::PlaneIF> planes;
+      planes.resize(0);
+
+      int numPts = polygon.size();
+
+      for (int n = 0; n < numPts; n++)
+      {
+          Array<Real,3> normal{0.0,0.0,0.0};
+          Array<Real,3> point{0.0,0.0,0.0};
+
+          normal[0] = -(polygon[(n+1) % numPts][1] - polygon[n][1]);
+          normal[1] =  (polygon[(n+1) % numPts][0] - polygon[n][0]);
+
+          point = polygon[n];
+
+          EB2::PlaneIF plane(point,normal);
+
+          planes.push_back(plane);
+      }
+
+      // Intersect all the half planes/spaces to create an implicit function
+      // that represents the polygon
+      auto polygonIF = EB2::makeIntersection(planes[0],planes[1]);
+
+      for (int n=2; n < numPts; n++)
+      {
+          polygonIF = EB2::makeIntersection(polygonIF,planes[n])
+      }
+    
+      auto gshop = EB2::makeShop(polygonIF);
+      EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
+  }
+
 #endif
   else if (geom_type == "polygon_revolution")
   {
-    amrex::Print() << "polygon_revolution  geometry not currently supported. combustor?\n";
-    amrex::Abort();
-    amrex::Print() << "creating geometry from polygon surfaces of revolution" << std::endl;
-    bool insideRegular = false;
+      amrex::Print() << "polygon_revolution  geometry not currently supported. combustor?\n";
+      amrex::Abort();
+      amrex::Print() << "creating geometry from polygon surfaces of revolution" << std::endl;
+      bool insideRegular = false;
 
-// Data for polygons making up nozzle
-    Vector<Vector<RealArray> > polygons;
-    // For building each polygon - unlike original PeleEB, don't scale by domain size
-    int num_poly;
-    ppeb2.get("num_poly", num_poly);
-    polygons.resize(num_poly);
-    for(int ipoly = 0; ipoly < num_poly; ipoly++) {
-      std::string nptsstr = "poly_" + convertIntGG(ipoly) + "_num_pts";
-      int num_pts;
-      ppeb2.get(nptsstr.c_str(), num_pts);
-      Vector<RealArray> polygon(num_pts);
-      for(int ipt = 0; ipt < num_pts; ipt++)
-      {
-        RealArray point; point.fill(0.0);
-        std::string pointstr = "poly_" + convertIntGG(ipoly) + "_point_" + convertIntGG(ipt);
-        Vector<Real> vecpt;
-        ppeb2.getarr(pointstr.c_str(), vecpt,  0, SpaceDim);
-        for(int idir = 0; idir < SpaceDim; idir++)
-        {
-          point[idir] = vecpt[idir] ;
-        }
-        polygon[ipt] = point;
+      // Data for polygons making up nozzle
+      Vector<Vector<RealArray> > polygons;
+      // For building each polygon - unlike original PeleEB, don't scale by domain size
+      int num_poly;
+      ppeb2.get("num_poly", num_poly);
+      polygons.resize(num_poly);
+      for(int ipoly = 0; ipoly < num_poly; ipoly++) {
+          std::string nptsstr = "poly_" + convertIntGG(ipoly) + "_num_pts";
+          int num_pts;
+          ppeb2.get(nptsstr.c_str(), num_pts);
+          Vector<RealArray> polygon(num_pts);
+          for(int ipt = 0; ipt < num_pts; ipt++)
+          {
+              RealArray point; point.fill(0.0);
+              std::string pointstr = "poly_" + convertIntGG(ipoly) + "_point_" + convertIntGG(ipt);
+              Vector<Real> vecpt;
+              ppeb2.getarr(pointstr.c_str(), vecpt,  0, SpaceDim);
+              for(int idir = 0; idir < SpaceDim; idir++)
+              {
+                  point[idir] = vecpt[idir] ;
+              }
+              polygon[ipt] = point;
+          }
+          polygons[ipoly] = polygon;
       }
-      polygons[ipoly] = polygon;
-    }
-    Vector<EB2::PlaneIF> planes;
-    for (int ipoly = 0; ipoly < num_poly; ipoly++) {
-      const Vector<RealArray>& polygon = polygons[ipoly];
-      int numPts = polygon.size(); // Number of pts in this polygon
-      for (int n = 0; n < numPts; n++) {
-        // The normal and point is space used to specify each half plane/space
-        RealArray normal; normal.fill(0.0);
-        RealArray point;
+      Vector<EB2::PlaneIF> planes;
+      for (int ipoly = 0; ipoly < num_poly; ipoly++) {
+          const Vector<RealArray>& polygon = polygons[ipoly];
+          int numPts = polygon.size(); // Number of pts in this polygon
+          for (int n = 0; n < numPts; n++) {
+              // The normal and point is space used to specify each half plane/space
+              RealArray normal; normal.fill(0.0);
+              RealArray point;
 
-        // Set the normal remembering that the last point connects to the first
-        // point.
-        normal[0] = -(polygon[(n+1) % numPts][1] - polygon[n][1]);
-        normal[1] =  (polygon[(n+1) % numPts][0] - polygon[n][0]);
+              // Set the normal remembering that the last point connects to the first
+              // point.
+              normal[0] = -(polygon[(n+1) % numPts][1] - polygon[n][1]);
+              normal[1] =  (polygon[(n+1) % numPts][0] - polygon[n][0]);
 
-        point = polygon[n];
-        EB2::PlaneIF plane(point, normal);
-        planes.push_back(plane);
+              point = polygon[n];
+              EB2::PlaneIF plane(point, normal);
+              planes.push_back(plane);
+          }
+
       }
 
-    }
-    
-    //PolygonIF pf(planes);
-    //auto gshop = EB2::makeShop(pf);
-    //EB2::Build(gshop, geom, max_level, max_level);
+      //PolygonIF pf(planes);
+      //auto gshop = EB2::makeShop(pf);
+      //EB2::Build(gshop, geom, max_level, max_level);
 
 
   } else {
-        EB2::Build(geom, max_level, max_level);
-        // Need to somehow set no_eb_in_domain for this level?
+      EB2::Build(geom, max_level, max_level);
+      // Need to somehow set no_eb_in_domain for this level?
 
   }
 
