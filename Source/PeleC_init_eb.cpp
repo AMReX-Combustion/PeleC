@@ -24,6 +24,7 @@ using namespace amrex;
 #include <AMReX_EB2_IF_Ellipsoid.H>
 #include <AMReX_EB2_IF_Sphere.H>
 #include <AMReX_EB2_IF_Plane.H>
+#include <AMReX_EB2_IF_Extrusion.H>
 #include <AMReX_EB2_GeometryShop.H>
 #endif
 
@@ -442,68 +443,128 @@ initialize_EB2 (const Geometry& geom, const int required_level, const int max_le
     auto gshop = EB2::makeShop(pr);
     EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
   }
-  else if (geom_type == "triangles")
+  else if (geom_type == "extruded_triangles")
   {
-      int num_pts;
-      int max_tri=5;
-      ParmParse pp("triangles");
-      pp.get("num_tri", num_tri);
-      Vector<Array<Real,3>> alltri(max_tri);
+      //setting some constants
+      //the polygon is triangle
+      //we can only do a maximum of 5 triangles (change if needed)
+      const int npts_in_tri=3;
+      const int max_tri=5;
+      
+      //number of user defined triangles
+      int num_tri;
+      
+      ParmParse pp("extruded_triangles");
+      Vector<Array<Real,AMREX_SPACEDIM>> alltri(npts_in_tri*max_tri);
 
       //initalize all triangles with some dummy values
       //that fall outside of the domain
-      
+      //
+      const Real *problo,*probhi;
+      Real maxlen;
 
+      problo=geom.ProbLo();
+      probhi=geom.ProbHi();
+
+      maxlen=std::max(std::max(geom.ProbLength(0),geom.ProbLength(1)),geom.ProbLength(2));
+
+      //setting all triangles to be waaay outside the domain initially
       for(int itri=0;itri<max_tri;itri++)
       {
          
-         alltri[itri][0] =  
+         alltri[npts_in_tri*itri+0][0] = problo[0]+100.0*maxlen;
+         alltri[npts_in_tri*itri+0][1] = problo[1]-100.0*maxlen;
+         alltri[npts_in_tri*itri+0][2] = 0.0;
+         
+         alltri[npts_in_tri*itri+1][0] = probhi[0]+100.0*maxlen;
+         alltri[npts_in_tri*itri+1][1] = problo[1]-100.0*maxlen;
+         alltri[npts_in_tri*itri+1][2] = 0.0;
+         
+         alltri[npts_in_tri*itri+2][0] = probhi[0]+100.0*maxlen;
+         alltri[npts_in_tri*itri+2][1] = problo[1]+100.0*maxlen;
+         alltri[npts_in_tri*itri+2][2] = 0.0;
       }
-
+            
+      //get user defined number of triangles
+      pp.get("num_tri", num_tri);
 
       for(int itri = 0; itri < num_tri; itri++)
       {
-          Array<Real,3> point{0.0,0.0,0.0};
-          std::string    pointstr = "poly_point_" + convertIntGG(ipt);
-          Vector<Real> vecpt;
-          pp.getarr(pointstr.c_str(), vecpt,  0, SpaceDim);
-          for(int idir = 0; idir < SpaceDim; idir++)
+          Array<Real,AMREX_SPACEDIM> point{0.0,0.0,0.0};
+
+          for(int ipt=0;ipt<npts_in_tri;ipt++)
           {
-              point[idir] = vecpt[idir] ;
+              std::string  pointstr = "tri_" + convertIntGG(itri) + "_point_" 
+                  + convertIntGG(ipt);
+              Vector<Real> vecpt;
+              pp.getarr(pointstr.c_str(), vecpt,  0, SpaceDim);
+              for(int idir = 0; idir < SpaceDim; idir++)
+              {
+                  point[idir] = vecpt[idir] ;
+              }
+              alltri[npts_in_tri*itri+ipt] = point;
           }
-          polygon[ipt] = point;
       }
+      
+      //intersection of the 3 planes in a triangle for all triangles 
+      Vector < std::unique_ptr<EB2::IntersectionIF<EB2::PlaneIF,EB2::PlaneIF,EB2::PlaneIF>> > impfunc_triangles(max_tri);
 
-      Vector<EB2::PlaneIF> planes;
-      planes.resize(0);
-
-      int numPts = polygon.size();
-
-      for (int n = 0; n < numPts; n++)
+      for (int itri = 0; itri < max_tri; itri++)
       {
-          Array<Real,3> normal{0.0,0.0,0.0};
-          Array<Real,3> point{0.0,0.0,0.0};
+          //make sure points are in anti clockwise direction to set the inside of the 
+          //triangle as solid phase correctly
+          Array<Real,AMREX_SPACEDIM> norm0;
+          Array<Real,AMREX_SPACEDIM> norm1;
+          Array<Real,AMREX_SPACEDIM> norm2;
 
-          normal[0] = -(polygon[(n+1) % numPts][1] - polygon[n][1]);
-          normal[1] =  (polygon[(n+1) % numPts][0] - polygon[n][0]);
+          Array<Real,AMREX_SPACEDIM> point0;
+          Array<Real,AMREX_SPACEDIM> point1;
+          Array<Real,AMREX_SPACEDIM> point2;
 
-          point = polygon[n];
+          point0 = alltri[npts_in_tri*itri+0];
+          point1 = alltri[npts_in_tri*itri+1];
+          point2 = alltri[npts_in_tri*itri+2];
 
-          EB2::PlaneIF plane(point,normal);
+          norm0[0] = -(point1[1]-point0[1]);
+          norm0[1] =  (point1[0]-point0[0]); 
+          norm0[2] = 0.0;
 
-          planes.push_back(plane);
+          
+          norm1[0] = -(point2[1]-point1[1]);
+          norm1[1] =  (point2[0]-point1[0]); 
+          norm1[2] =  0.0;
+          
+          norm2[0] = -(point0[1]-point2[1]);
+          norm2[1] =  (point0[0]-point2[0]); 
+          norm2[2] =  0.0;
+
+          //normalize so that magnitude is 1
+          norm0[0] = norm0[0]/sqrt(norm0[0]*norm0[0]+norm0[1]*norm0[1]);
+          norm0[1] = norm0[1]/sqrt(norm0[0]*norm0[0]+norm0[1]*norm0[1]);
+          
+          //normalize so that magnitude is 1
+          norm1[0] = norm1[0]/sqrt(norm1[0]*norm1[0]+norm1[1]*norm1[1]);
+          norm1[1] = norm1[1]/sqrt(norm1[0]*norm1[0]+norm1[1]*norm1[1]);
+          
+          //normalize so that magnitude is 1
+          norm2[0] = norm2[0]/sqrt(norm2[0]*norm2[0]+norm2[1]*norm2[1]);
+          norm2[1] = norm2[1]/sqrt(norm2[0]*norm2[0]+norm2[1]*norm2[1]);
+
+          EB2::PlaneIF plane0(point0,norm0);
+          EB2::PlaneIF plane1(point1,norm1);
+          EB2::PlaneIF plane2(point2,norm2);
+
+          impfunc_triangles[itri] = std::unique_ptr<EB2::IntersectionIF<EB2::PlaneIF,EB2::PlaneIF,EB2::PlaneIF>>
+                              (new EB2::IntersectionIF<EB2::PlaneIF,EB2::PlaneIF,EB2::PlaneIF>(plane0, plane1, plane2));
+
       }
 
-      // Intersect all the half planes/spaces to create an implicit function
-      // that represents the polygon
-      auto polygonIF = EB2::makeIntersection(planes[0],planes[1]);
+      auto alltri_IF = EB2::makeUnion(*impfunc_triangles[0],*impfunc_triangles[1],
+              *impfunc_triangles[2],*impfunc_triangles[3],*impfunc_triangles[4]);
 
-      for (int n=2; n < numPts; n++)
-      {
-          polygonIF = EB2::makeIntersection(polygonIF,planes[n])
-      }
-    
-      auto gshop = EB2::makeShop(polygonIF);
+      auto alltri_extrude_IF = EB2::extrude(alltri_IF,SpaceDim-1); //along z
+
+      auto gshop = EB2::makeShop(alltri_extrude_IF);
       EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
   }
 
