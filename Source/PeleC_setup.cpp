@@ -530,7 +530,7 @@ PeleC::variableSetUp ()
     //   in order to use the correct interpolation.
     if (Xmom != Density+1)
 	amrex::Error("We are assuming Xmom = Density + 1 in PeleC_setup.cpp");
-    derive_lst.addComponent("magvort",desc_lst,State_Type,Density,4);
+    derive_lst.addComponent("magvort",desc_lst,State_Type,Density,NUM_STATE);
 
     //
     // Div(u)
@@ -556,6 +556,30 @@ PeleC::variableSetUp ()
     //
     derive_lst.add("logden",IndexType::TheCellType(),1,pc_derlogden,the_same_box);
     derive_lst.addComponent("logden",desc_lst,State_Type,Density,NUM_STATE);
+    
+#ifdef DO_HIT_FORCE
+    //
+    // forcing - used to calculate the rate of injection of energy in probtype 14 (HIT)
+    //
+    derive_lst.add("forcing",IndexType::TheCellType(),1,pc_derforcing,the_same_box);
+    derive_lst.addComponent("forcing",desc_lst,State_Type,Density,1);
+    derive_lst.addComponent("forcing",desc_lst,State_Type,Xmom,BL_SPACEDIM);
+    //
+    // forcex - used to put the forcing term in the plot file
+    //
+    derive_lst.add("forcex",IndexType::TheCellType(),1,pc_derforcex,the_same_box);
+    derive_lst.addComponent("forcex",desc_lst,State_Type,Density,1);
+    //
+    // forcey - used to put the forcing term in the plot file
+    //
+    derive_lst.add("forcey",IndexType::TheCellType(),1,pc_derforcey,the_same_box);
+    derive_lst.addComponent("forcey",desc_lst,State_Type,Density,1);
+    //
+    // forcez - used to put the forcing term in the plot file
+    //
+    derive_lst.add("forcez",IndexType::TheCellType(),1,pc_derforcez,the_same_box);
+    derive_lst.addComponent("forcez",desc_lst,State_Type,Density,1);
+#endif
 
     //
     // Y from rhoY
@@ -585,17 +609,14 @@ PeleC::variableSetUp ()
     //
     // Velocities
     //
-    derive_lst.add("x_velocity",IndexType::TheCellType(),1,pc_dervel,the_same_box);
-    derive_lst.addComponent("x_velocity",desc_lst,State_Type,Density,1);
-    derive_lst.addComponent("x_velocity",desc_lst,State_Type,Xmom,1);
+    derive_lst.add("x_velocity",IndexType::TheCellType(),1,pc_dervelx,the_same_box);
+    derive_lst.addComponent("x_velocity",desc_lst,State_Type,Density,NUM_STATE);
 
-    derive_lst.add("y_velocity",IndexType::TheCellType(),1,pc_dervel,the_same_box);
-    derive_lst.addComponent("y_velocity",desc_lst,State_Type,Density,1);
-    derive_lst.addComponent("y_velocity",desc_lst,State_Type,Ymom,1);
+    derive_lst.add("y_velocity",IndexType::TheCellType(),1,pc_dervely,the_same_box);
+    derive_lst.addComponent("y_velocity",desc_lst,State_Type,Density,NUM_STATE);
 
-    derive_lst.add("z_velocity",IndexType::TheCellType(),1,pc_dervel,the_same_box);
-    derive_lst.addComponent("z_velocity",desc_lst,State_Type,Density,1);
-    derive_lst.addComponent("z_velocity",desc_lst,State_Type,Zmom,1);
+    derive_lst.add("z_velocity",IndexType::TheCellType(),1,pc_dervelz,the_same_box);
+    derive_lst.addComponent("z_velocity",desc_lst,State_Type,Density,NUM_STATE);
 
     // FIXME: Do we need a combustion-specific version of this function?
 //     //

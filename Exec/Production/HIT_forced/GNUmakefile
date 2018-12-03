@@ -1,0 +1,35 @@
+PRECISION  = DOUBLE
+PROFILE    = FALSE
+USE_EB     = FALSE
+DEBUG      = FALSE
+
+DIM        = 3 
+
+COMP	   = gcc
+
+USE_MPI    = TRUE
+USE_OMP    = FALSE
+
+#HYP_TYPE = MOL
+
+# define the location of the PELE top directory
+PELE_HOME    := ../../..
+
+# This sets the EOS directory in $(PELE_PHYSICS_HOME)/Eos
+Eos_dir     := GammaLaw
+
+# This sets the network directory in $(PELE_PHYSICS_HOME)/Reactions
+Reactions_dir := Null
+
+# This sets the transport directory in $(PELE_PHYSICS_HOME)/Transport
+Transport_dir := Constant
+
+Bpack   := ./Make.package
+
+include ../../Make.PeleC
+
+DEFINES += -DO_HIT_FORCE
+
+ifeq ($(DEBUG), TRUE)
+DEFINES += -DDEBUG
+endif

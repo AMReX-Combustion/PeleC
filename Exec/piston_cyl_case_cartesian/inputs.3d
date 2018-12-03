@@ -1,0 +1,65 @@
+# ------------------  INPUTS TO MAIN PROGRAM  -------------------
+max_step = 6000
+stop_time = 6.0
+
+# PROBLEM SIZE & GEOMETRY
+geometry.is_periodic =  0   0  0
+geometry.coord_sys   =  0       # 0 => cart
+geometry.prob_lo     =  0    0    0 
+geometry.prob_hi     =  5.0  5.0 5.0
+amr.n_cell           =  64   64  64
+
+# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
+# 0 = Interior           3 = Symmetry
+# 1 = Inflow             4 = SlipWall
+# 2 = Outflow            5 = NoSlipWall
+# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
+pelec.lo_bc       =  5  5  5
+pelec.hi_bc       =  5  1  5
+
+# WHICH PHYSICS
+pelec.do_hydro = 1
+pelec.do_mol_AD = 1
+pelec.do_react = 0
+pelec.ppm_type = 2
+pelec.allow_negative_energy = 0
+pelec.diffuse_temp = 1
+pelec.diffuse_vel  = 1
+pelec.diffuse_spec = 1
+pelec.diffuse_enth = 1
+pelec.sdc_iters = 8
+
+# TIME STEP CONTROL
+pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
+pelec.cfl            = 0.3     # cfl number for hyperbolic system
+pelec.init_shrink    = 0.01    # scale back initial timestep
+pelec.change_max     = 1.05     # maximum increase in dt over successive steps
+
+# DIAGNOSTICS & VERBOSITY
+pelec.sum_interval   = 1       # timesteps between computing mass
+pelec.v              = 1       # verbosity in PeleC cpp files
+amr.v                = 1       # verbosity in Amr.cpp
+#amr.grid_log         = grdlog  # name of grid logging file
+
+# REFINEMENT / REGRIDDING
+amr.max_level       = 0       # maximum level number allowed
+amr.ref_ratio       = 2 2 2 2 # refinement ratio
+amr.regrid_int      = 2       # how often to regrid
+amr.blocking_factor = 8       # block factor in grid generation
+amr.max_grid_size   = 8
+amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
+
+# CHECKPOINT FILES
+amr.check_file      = chk      # root name of checkpoint file
+amr.check_int       = -1       # number of timesteps between checkpoints
+
+# PLOTFILES
+amr.plot_file        = plt
+amr.plot_int         = 50
+amr.derive_plot_vars = density x_velocity y_velocity z_velocity magvel Temp magvort pressure
+
+# PROBIN FILENAME
+amr.probin_file = probin
+
+eb2.use_eb2 = 0
+eb2.geom_type = "all_regular"
