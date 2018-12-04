@@ -148,16 +148,18 @@ PeleC::construct_hydro_source(const MultiFab& S, Real time, Real dt, int amr_ite
 
             }
 #elif (BL_SPACEDIM == 2)
-	    if (geom.isAnyPeriodic() && i_nscbc == 1)
-	    {
-	      impose_NSCBC_with_perio(lo, hi, domain_lo, domain_hi,
-				      BL_TO_FORTRAN(statein),
-				      BL_TO_FORTRAN(q),
-				      BL_TO_FORTRAN(qaux),
-				      BL_TO_FORTRAN(bcMask),
-				      &time, dx, &dt);
-        
-	    } else if (!geom.isAnyPeriodic() && i_nscbc == 1){
+	    //if (geom.isAnyPeriodic() && i_nscbc == 1)
+	    //{
+	//      impose_NSCBC_with_perio(lo, hi, domain_lo, domain_hi,
+	//			      BL_TO_FORTRAN(statein),
+	//			      BL_TO_FORTRAN(q),
+	//			      BL_TO_FORTRAN(qaux),
+	//			      BL_TO_FORTRAN(bcMask),
+	//			      &time, dx, &dt);
+	//       
+	    //} else if (!geom.isAnyPeriodic() && i_nscbc == 1){
+      if (i_nscbc == 1)
+            {
 	      impose_NSCBC_mixed_BC(lo, hi, domain_lo, domain_hi,
 				    BL_TO_FORTRAN(statein),
 				    BL_TO_FORTRAN(q),
