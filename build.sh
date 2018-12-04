@@ -12,7 +12,11 @@ git clone https://github.com/AMReX-Combustion/PelePhysics.git
 cd PelePhysics
 git checkout development
 popd
+
+echo "Building PeleC"
 cd Exec/RegTests/Sod
+export AMREX_HOME=/tmp/amrex
+export PELE_PHYSICS_HOME=/tmp/PelePhysics
 make -j4
 
 ## Then we build and deploy the sphinx / doxygen documentation
