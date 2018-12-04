@@ -16,6 +16,7 @@ pp.query("use_reactions_work_estimate", use_reactions_work_estimate);
 pp.query("load_balance_verbosity", load_balance_verbosity);
 pp.query("difmag", difmag);
 pp.query("small_dens", small_dens);
+pp.query("small_massfrac", small_massfrac);
 pp.query("small_temp", small_temp);
 pp.query("small_pres", small_pres);
 pp.query("small_ener", small_ener);
