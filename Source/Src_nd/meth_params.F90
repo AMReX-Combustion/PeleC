@@ -19,9 +19,6 @@ module meth_params_module
   ! number of ghost cells for the hyperbolic solver
   integer, parameter     :: NHYP    = 4
 
-  ! Number of parameters for GC-NSCBC
-  integer, parameter     :: nb_nscbc_params = 4
-
   ! NTHERM: number of thermodynamic variables
   integer, save :: NTHERM, NVAR
   integer, save :: URHO, UMX, UMY, UMZ, UMR, UML, UMP, UEDEN, UEINT, UTEMP, UFA, UFS, UFX

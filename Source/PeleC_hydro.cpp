@@ -136,42 +136,27 @@ PeleC::construct_hydro_source(const MultiFab& S, Real time, Real dt, int amr_ite
             // See the COVO test case for an example.
             // Here we test periodicity in the domain to choose the proper routine.
 
-#if (BL_SPACEDIM == 1)
-            if (i_nscbc == 1)
-            {
-              impose_NSCBC(lo, hi, domain_lo, domain_hi,
-                           BL_TO_FORTRAN(statein),
-                           BL_TO_FORTRAN(q),
-                           BL_TO_FORTRAN(qaux),
-                           BL_TO_FORTRAN(bcMask),
-                           &time, dx, &dt);
+#if (BL_SPACEDIM == 3)
 
-            }
-#elif (BL_SPACEDIM == 2)
-	    //if (geom.isAnyPeriodic() && i_nscbc == 1)
-	    //{
-	//      impose_NSCBC_with_perio(lo, hi, domain_lo, domain_hi,
-	//			      BL_TO_FORTRAN(statein),
-	//			      BL_TO_FORTRAN(q),
-	//			      BL_TO_FORTRAN(qaux),
-	//			      BL_TO_FORTRAN(bcMask),
-	//			      &time, dx, &dt);
-	//       
-	    //} else if (!geom.isAnyPeriodic() && i_nscbc == 1){
       if (i_nscbc == 1)
-            {
-	      impose_NSCBC_mixed_BC(lo, hi, domain_lo, domain_hi,
-				    BL_TO_FORTRAN(statein),
-				    BL_TO_FORTRAN(q),
-				    BL_TO_FORTRAN(qaux),
-				    BL_TO_FORTRAN(bcMask),
-				    &time, dx, &dt);
-	    }
-#else
-	    if (i_nscbc == 1)
 	    {
 	      amrex::Abort("GC_NSCBC not yet implemented in 3D");
 	    }
+
+#else
+
+      if (i_nscbc == 1)
+      {
+        impose_NSCBC(lo, hi, domain_lo, domain_hi,
+                     BL_TO_FORTRAN(statein),
+                     BL_TO_FORTRAN(q),
+                     BL_TO_FORTRAN(qaux),
+                     BL_TO_FORTRAN(bcMask),
+                     &time, dx, &dt);
+      }
+
+	    //if (geom.isAnyPeriodic() && i_nscbc == 1)
+
 #endif
 
 	    srctoprim(ARLIM_3D(qbx.loVect()), ARLIM_3D(qbx.hiVect()),

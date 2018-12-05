@@ -263,26 +263,10 @@ extern "C"
      const int* lo, const int* hi,
      const amrex::Real* dx, const amrex::Real* dt_old, amrex::Real* dt);
 
-#if (BL_SPACEDIM == 1)     
+#if (BL_SPACEDIM == 3)
+ ;
+#else
   void impose_NSCBC
-    (const int    lo[], const int    hi[],
-     const int domlo[], const int domhi[],
-     const BL_FORT_FAB_ARG(state),
-     BL_FORT_FAB_ARG(q),
-     BL_FORT_FAB_ARG(qaux),
-     BL_FORT_IFAB_ARG(bcMask),
-     const amrex::Real* time, const amrex::Real dx[], const amrex::Real* dt);
-#elif (BL_SPACEDIM == 2)     
-  //void impose_NSCBC_with_perio
-  //  (const int    lo[], const int    hi[],
-  //   const int domlo[], const int domhi[],
-  //   const BL_FORT_FAB_ARG(state),
-  //   BL_FORT_FAB_ARG(q),
-  //   BL_FORT_FAB_ARG(qaux),
-  //   BL_FORT_IFAB_ARG(bcMask),
-  //   const amrex::Real* time, const amrex::Real dx[], const amrex::Real* dt);
-  //  
-  void impose_NSCBC_mixed_BC
     (const int    lo[], const int    hi[],
      const int domlo[], const int domhi[],
      const BL_FORT_FAB_ARG(state),

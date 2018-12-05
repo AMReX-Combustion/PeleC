@@ -1,4 +1,11 @@
-subroutine impose_NSCBC(lo, hi, domlo, domhi, &
+module gc_nscbc_mod
+
+  private
+  public impose_NSCBC
+
+contains
+
+  subroutine impose_NSCBC(lo, hi, domlo, domhi, &
                         uin, uin_l1, uin_h1, &
                         q, q_l1, q_h1, &
                         qaux, qa_l1, qa_h1, &
@@ -20,7 +27,6 @@ subroutine impose_NSCBC(lo, hi, domlo, domhi, &
                                    QC, QDPDE, QDPDR, QCSML, QGAMC, &
                                    QVAR, QRHO, QU, QV, QREINT, QPRES, QTEMP, &
                                    QFS, QFX, QGAME, NHYP
-    use meth_params_module, only: nb_nscbc_params
  
     implicit none
    
@@ -60,7 +66,7 @@ subroutine impose_NSCBC(lo, hi, domlo, domhi, &
   integer          ::  uin_lo(1),  uin_hi(1)
   integer          :: i, j, n, hop
   integer          :: bc_type
-  double precision :: bc_params(nb_nscbc_params)
+  double precision :: bc_params(6)
   double precision :: wall_sign
   
   type (eos_t) :: eos_state
@@ -109,8 +115,9 @@ subroutine impose_NSCBC(lo, hi, domlo, domhi, &
      ! Compute LODI equations
      if (bc_type == Inflow) then
 
-       relax_U = bc_params(1)
-       relax_T = bc_params(3)
+       relax_T = bc_params(1)
+       relax_U = bc_params(2)
+
  
        L1 = (q(i,QU)-qaux(i,QC))* (dpdx - (q(i,QRHO)*qaux(i,QC))*dudx)
        L2 = relax_T * (q(i,QRHO)*qaux(i,QC)*qaux(i,QRSPEC)/probhi(1)) * (q(i,QTEMP) - INLET_TEMPERATURE) 
@@ -130,7 +137,7 @@ subroutine impose_NSCBC(lo, hi, domlo, domhi, &
      ! This is in contradiction with Granet AIAA 2010
      ! However for low Mach number a surface averaged Mach number is much more better
      ! as reported in the paper of Granet
-       sigma_out = bc_params(1)
+       sigma_out = bc_params(6)
        Kout = sigma_out*(1.0d0 - (mach_local_lo_x**2.0d0))*qaux(i,QC)/(probhi(1))
  
        L1 = (q(i,QU)-qaux(i,QC))* (dpdx - (q(i,QRHO)*qaux(i,QC))*dudx)
@@ -272,8 +279,8 @@ subroutine impose_NSCBC(lo, hi, domlo, domhi, &
      ! Compute LODI equations                        
      if (bc_type .eq. Inflow) then
      
-       relax_U = bc_params(1)
-       relax_T = bc_params(3)
+       relax_T = bc_params(1)
+       relax_U = bc_params(2)
 
        L1 = relax_U * ((q(i,QRHO)*qaux(i,QC)**2.0d0)*(1.0d0-mach_local_hi_x*mach_local_hi_x)/probhi(1)) * &
             (q(i,QU) - INLET_VX) 
@@ -289,7 +296,7 @@ subroutine impose_NSCBC(lo, hi, domlo, domhi, &
        ! This is in contradiction with Granet AIAA 2010
        ! However for low Mach number a surface averaged Mach number is much more better
        ! as reported in the paper of Granet
-       sigma_out = bc_params(1)
+       sigma_out = bc_params(6)
        Kout = sigma_out*(1.0d0 - (mach_local_hi_x**2.0d0))*qaux(i,QC)/(probhi(1))
 
        L1 = (Kout*(q(i,QPRES) - INLET_PRESSURE))
@@ -401,3 +408,5 @@ endif
 call destroy(eos_state)
 
 end subroutine impose_NSCBC
+
+end module gc_nscbc_mod
