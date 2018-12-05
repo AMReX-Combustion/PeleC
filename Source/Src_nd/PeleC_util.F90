@@ -440,43 +440,6 @@ contains
 
 
 
-  subroutine pc_normalize_species(u,u_lo,u_hi,lo,hi) bind(C, name="pc_normalize_species")
-
-    use network, only : nspec
-    use meth_params_module, only : NVAR, URHO, UFS
-    use bl_constants_module, only: ONE
-    use extern_probin_module, only: small_massfrac
-
-    implicit none
-
-    integer          :: lo(3), hi(3)
-    integer          :: u_lo(3), u_hi(3)
-    double precision :: u(u_lo(1):u_hi(1),u_lo(2):u_hi(2),u_lo(3):u_hi(3),NVAR)
-
-    ! Local variables
-    integer          :: i, j, k
-    double precision :: massfrac(nspec)
-
-    do k = lo(3), hi(3)
-       do j = lo(2), hi(2)
-          do i = lo(1), hi(1)
-
-             massfrac = u(i,j,k,UFS:UFS+nspec-1)
-
-             massfrac = max(small_massfrac * u(i,j,k,URHO), min(u(i,j,k,URHO), massfrac))
-
-             massfrac = u(i,j,k,URHO) * (massfrac / sum(massfrac))
-
-             u(i,j,k,UFS:UFS+nspec-1) = massfrac
-
-          enddo
-       enddo
-    enddo
-
-  end subroutine pc_normalize_species
-
-
-
   ! Given 3D spatial coordinates, return the cell-centered zone indices closest to it.
   ! Optionally we can also be edge-centered in any of the directions.
   
