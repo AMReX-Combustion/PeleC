@@ -273,6 +273,7 @@ extern "C"
      BL_FORT_FAB_ARG(q),
      BL_FORT_FAB_ARG(qaux),
      BL_FORT_IFAB_ARG(bcMask),
+     const int* flag_nscbc_isAnyPerio, const int flag_nscbc_perio[],
      const amrex::Real* time, const amrex::Real dx[], const amrex::Real* dt);
 #endif
 

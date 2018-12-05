@@ -242,8 +242,8 @@ contains
     integer :: flag_nscbc, which_bc_type
 
     flag_nscbc = 0
-    write(*,*) 'DEBUG bcnormal: bc_type: ',present(bc_type)
-    write(*,*) 'DEBUG bcnormal: bc_params: ',present(bc_params)
+    !write(*,*) 'DEBUG bcnormal: bc_type: ',present(bc_type)
+    !write(*,*) 'DEBUG bcnormal: bc_params: ',present(bc_params)
     
     ! When optional arguments are present, GC-NSCBC is activated
     ! Generic values are auto-filled for numerical parameters,
@@ -259,7 +259,7 @@ contains
       sigma_out = 0.25d0 ! For outflow only, relax parameter
       which_bc_type = Interior ! This is to ensure that nothing will be done if the user don't set anything
     endif
-    write(*,*) 'DEBUG bcnormal: flag_nscbc: ',flag_nscbc
+    !write(*,*) 'DEBUG bcnormal: flag_nscbc: ',flag_nscbc
     
     call build(eos_state)
 

@@ -21,8 +21,8 @@ amr.n_cell           =  128 64
 # 2 = Outflow            5 = NoSlipWall
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
 pelec.lo_bc       =  2  2 
-pelec.hi_bc       =  1  2 
-pelec.i_nscbc = 0 
+pelec.hi_bc       =  2  2 
+pelec.i_nscbc = 1 
 
 # WHICH PHYSICS
 pelec.do_hydro = 1

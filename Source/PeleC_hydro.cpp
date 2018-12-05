@@ -97,9 +97,14 @@ PeleC::construct_hydro_source(const MultiFab& S, Real time, Real dt, int amr_ite
 
 	Real cflLoc = -1.0e+200;
 	int is_finest_level = (level == finest_level) ? 1 : 0;
+  int flag_nscbc_isAnyPerio = (geom.isAnyPeriodic()) ? 1 : 0; 
+  int flag_nscbc_perio[BL_SPACEDIM]; // For 3D, we will know which corners have a periodicity
+  for (int d=0; d<BL_SPACEDIM; ++d) {
+        flag_nscbc_perio[d] = (Geometry::isPeriodic(d)) ? 1 : 0;
+    }
 	const int*  domain_lo = geom.Domain().loVect();
 	const int*  domain_hi = geom.Domain().hiVect();
-
+  
 	for (MFIter mfi(S_new,hydro_tile_size); mfi.isValid(); ++mfi)
 	{
 	    const Box& bx    = mfi.tilebox();
@@ -121,20 +126,19 @@ PeleC::construct_hydro_source(const MultiFab& S, Real time, Real dt, int amr_ite
                             // First integer is bc_type, second integer about slip/no-slip wall 
 	    bcMask.setVal(0);     // Initialize with Interior (= 0) everywhere
 
-            set_bc_mask(lo, hi, domain_lo, domain_hi, BL_TO_FORTRAN(bcMask));
+      set_bc_mask(lo, hi, domain_lo, domain_hi, BL_TO_FORTRAN(bcMask));
       
 	    ctoprim(ARLIM_3D(qbx.loVect()), ARLIM_3D(qbx.hiVect()),
 		    statein.dataPtr(), ARLIM_3D(statein.loVect()), ARLIM_3D(statein.hiVect()),
 		    q.dataPtr(), ARLIM_3D(q.loVect()), ARLIM_3D(q.hiVect()),
 		    qaux.dataPtr(), ARLIM_3D(qaux.loVect()), ARLIM_3D(qaux.hiVect()));
       
-            // Imposing Ghost-Cells Navier-Stokes Characteristic BCs if i_nscbc is on
-            // See Motheau et al. AIAA J. (In Press) for the theory. 
-            //
-            // The user should provide the proper bc_fill_module
-            // to temporary fill ghost-cells for EXT_DIR and to provide target BC values.
-            // See the COVO test case for an example.
-            // Here we test periodicity in the domain to choose the proper routine.
+      // Imposing Ghost-Cells Navier-Stokes Characteristic BCs if i_nscbc is on
+      // For the theory, see Motheau et al. AIAA J. Vol. 55, No. 10 : pp. 3399-3408, 2017. 
+      //
+      // The user should provide a bcnormal routine in bc_fill_module with 2 additional optional arguments
+      // to temporary fill ghost-cells for EXT_DIR and to provide target BC values.
+      // See the COVO test case for an example.
 
 #if (BL_SPACEDIM == 3)
 
@@ -152,10 +156,10 @@ PeleC::construct_hydro_source(const MultiFab& S, Real time, Real dt, int amr_ite
                      BL_TO_FORTRAN(q),
                      BL_TO_FORTRAN(qaux),
                      BL_TO_FORTRAN(bcMask),
+                     &flag_nscbc_isAnyPerio, flag_nscbc_perio, 
                      &time, dx, &dt);
       }
 
-	    //if (geom.isAnyPeriodic() && i_nscbc == 1)
 
 #endif
 

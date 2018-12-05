@@ -10,6 +10,7 @@ contains
                         q, q_l1, q_h1, &
                         qaux, qa_l1, qa_h1, &
                         bcMask, bcMask_l1, bcMask_h1, &
+                        flag_nscbc_isAnyPerio, flag_nscbc_perio, &
                         time,delta,dt) bind(C, name="impose_NSCBC")
     
  
@@ -37,6 +38,8 @@ contains
   integer, intent(in) :: qa_l1, qa_h1
   integer, intent(in) :: uin_l1, uin_h1
   integer, intent(in) :: bcMask_l1, bcMask_h1
+  integer, intent(in) :: flag_nscbc_isAnyPerio
+  integer, intent(in) :: flag_nscbc_perio(1)
   
   double precision, intent(inout) :: q(q_l1:q_h1,QVAR)
   double precision, intent(inout) :: qaux(qa_l1:qa_h1,NQAUX)
@@ -81,6 +84,11 @@ contains
   dx = delta(1)
   
   bcMask(:,:) = 0
+  
+  if ( flag_nscbc_isAnyPerio == 1) then
+    call bl_abort("If we have a periodicity in 1D, it makes absolutly no sense &
+           to use NSCBC and the code should not run this routine !")
+  endif
 
  !--------------------------------------------------------------------------   
  ! lower X
