@@ -79,6 +79,7 @@ contains
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEINT, UEDEN, UTEMP, UFS
     use prob_params_module, only : problo, probhi
     use eos_module
+    use bl_constants_module, only: M_PI, HALF
 
     implicit none
 

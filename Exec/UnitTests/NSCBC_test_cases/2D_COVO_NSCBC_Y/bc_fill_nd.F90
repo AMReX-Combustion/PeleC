@@ -2,14 +2,17 @@ module bc_fill_module
 
   implicit none
 
-! This is a dedicated module for GC-NSCBC
+! This is a dedicated routine for imposing GC-NSCBC
 ! (Ghost-Cells Navier-Stokes Characteristic Boundary Conditions)
-! See Motheau et al. AIAA J. (Submitted) for the theory. 
+! For the theory, see Motheau et al. AIAA J. Vol. 55, No. 10 : pp. 3399-3408, 2017. 
 
 ! PeleC requires ghost cells to be filled but it is not done in AMReX for EXT_DIR.
 ! So here we fill the corresponding ghost-cells with the target values provided by the user.
 ! These target values are temporary and ghost-cells will be recomputed with the NSCBC theory
-! in the routines 'impose_NSCBC_something' located in Src_(dim)d
+! in the routine 'impose_NSCBC' located in Src_(dim)d
+
+! Basically the only thing that GC-NSCBC requires is that the original bcnormal routine
+! must include 2 optional parameters that are called from 'impose_NSCBC' located in Src_(dim)d
 
 
 contains

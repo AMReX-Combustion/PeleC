@@ -1433,10 +1433,10 @@ contains
  !--------------------------------------------------------------------------   
  ! lower X
  !--------------------------------------------------------------------------
- write(*,*) 'DEBUG IN THE NSCBC ROUTINE'
+ !write(*,*) 'DEBUG IN THE NSCBC ROUTINE'
  if ((q_lo(1) < domlo(1)) .and. (physbc_lo(1) /= Interior)) then
    i = domlo(1)
-write(*,*) 'DEBUG IN THE LOWER X '
+!write(*,*) 'DEBUG IN THE LOWER X '
    do j = q_lo(2)+1,q_hi(2)-1
 
       !if ((j == domlo(2)) .or. (j == domhi(2))) cycle !Doing that to avoid ghost cells already filled by corners
@@ -1640,7 +1640,7 @@ write(*,*) 'DEBUG IN THE LOWER X '
  if ((q_hi(1) > domhi(1)) .and. (physbc_hi(1) /= Interior)) then
    i = domhi(1)
    
-   write(*,*) 'DEBUG IN THE UPPER X '
+   !write(*,*) 'DEBUG IN THE UPPER X '
    
    do j = q_lo(2)+1,q_hi(2)-1
    
@@ -1847,7 +1847,7 @@ endif
  
    j = domlo(2)
    
-   write(*,*) 'DEBUG IN THE LOWER Y '
+   !write(*,*) 'DEBUG IN THE LOWER Y '
    
    do i = q_lo(1)+1,q_hi(1)-1
    
@@ -2049,7 +2049,7 @@ endif
  
    j = domhi(2)
    
-   write(*,*) 'DEBUG IN THE UPPER Y '
+   !write(*,*) 'DEBUG IN THE UPPER Y '
    
    do i = q_lo(1)+1,q_hi(1)-1
      

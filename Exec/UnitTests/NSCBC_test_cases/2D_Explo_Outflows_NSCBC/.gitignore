@@ -1,0 +1,7 @@
+*.rg_0_rl_0
+/datlog
+*.f90
+plt*
+*.EXE
+*.gnu.MPI.ex
+*.0

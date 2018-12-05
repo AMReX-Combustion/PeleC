@@ -2,15 +2,17 @@ module bc_fill_module
 
   implicit none
 
-! This is a dedicated module for GC-NSCBC
+! This is a example routine for imposing GC-NSCBC
 ! (Ghost-Cells Navier-Stokes Characteristic Boundary Conditions)
-! See Motheau et al. AIAA J. (Submitted) for the theory. 
+! For the theory, see Motheau et al. AIAA J. Vol. 55, No. 10 : pp. 3399-3408, 2017. 
 
 ! PeleC requires ghost cells to be filled but it is not done in AMReX for EXT_DIR.
 ! So here we fill the corresponding ghost-cells with the target values provided by the user.
 ! These target values are temporary and ghost-cells will be recomputed with the NSCBC theory
-! in the routines 'impose_NSCBC_something' located in Src_(dim)d
+! in the routine 'impose_NSCBC' located in Src_(dim)d
 
+! Basically the only thing that GC-NSCBC requires is that the original bcnormal routine
+! must include 2 optional parameters that are called from 'impose_NSCBC' located in Src_(dim)d
 
 contains
 
@@ -36,7 +38,7 @@ contains
 
     do n = 1,NVAR
        call filcc_nd(adv(:,:,:,n),adv_lo,adv_hi,domlo,domhi,delta,xlo,bc(:,:,n))
-    enddo
+    enddoG
 
     ! Set flag for bc function
     rho_only = .FALSE.
@@ -311,7 +313,7 @@ contains
       relax_W = 0.5d0 ! For inflow only, relax parameter for z_velocity
       relax_T = 0.2d0 ! For inflow only, relax parameter for temperature
       beta = 0.2d0  ! Control the contribution of transverse terms
-      sigma_out = 0.6d0 ! For outflow only, relax parameter
+      sigma_out = 0.25d0 ! For outflow only, relax parameter
       which_bc_type = Interior ! This is to ensure that nothing will be done if the user don't set anything
     endif
     write(*,*) 'DEBUG bcnormal: flag_nscbc: ',flag_nscbc
