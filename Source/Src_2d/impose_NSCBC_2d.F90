@@ -9,7 +9,8 @@ contains
                                     uin, uin_l1, uin_l2, uin_h1, uin_h2, &
                                    q, q_l1, q_l2, q_h1, q_h2, &
                                    qaux, qa_l1, qa_l2, qa_h1, qa_h2, &
-                                   bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
+                                   x_bcMask, x_bcMask_l1, x_bcMask_l2, x_bcMask_h1, x_bcMask_h2, &
+                                   y_bcMask, y_bcMask_l1, y_bcMask_l2, y_bcMask_h1, y_bcMask_h2, &
                                    flag_nscbc_isAnyPerio, flag_nscbc_perio, &
                                    time,delta,dt,verbose) bind(C, name="impose_NSCBC")
     
@@ -21,10 +22,10 @@ contains
 
     use bl_constants_module
     use prob_params_module, only : physbc_lo, physbc_hi, problo, probhi, &
-                                   Interior, Inflow, Outflow, Symmetry, SlipWall, NoSlipWall
+                                   Interior, Inflow, Outflow, SlipWall, NoSlipWall
     
     use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP,&
-                                   UFA, UFS, UFX, NQAUX, QC, QGAMC, QRSPEC, &
+                                   UFS, NQAUX, QC, QGAMC, QRSPEC, &
                                    QC, QDPDE, QDPDR, QCSML, QGAMC, &
                                    QVAR, QRHO, QU, QV, QREINT, QPRES, QTEMP, &
                                    QFS, QFX, QGAME, NHYP
@@ -38,30 +39,30 @@ contains
   integer, intent(in) :: q_l1, q_l2, q_h1, q_h2
   integer, intent(in) :: qa_l1, qa_l2, qa_h1, qa_h2
   integer, intent(in) :: uin_l1, uin_l2, uin_h1, uin_h2
-  integer, intent(in) :: bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2
+  integer, intent(in) :: x_bcMask_l1, x_bcMask_l2, x_bcMask_h1, x_bcMask_h2
+  integer, intent(in) :: y_bcMask_l1, y_bcMask_l2, y_bcMask_h1, y_bcMask_h2
   integer, intent(in) :: flag_nscbc_isAnyPerio
   integer, intent(in) :: flag_nscbc_perio(2)
   
   double precision, intent(inout) :: q(q_l1:q_h1,q_l2:q_h2,QVAR)
   double precision, intent(inout) :: qaux(qa_l1:qa_h1,qa_l2:qa_h2,NQAUX)
   double precision, intent(inout) :: uin(uin_l1:uin_h1,uin_l2:uin_h2,NVAR)
-  integer, intent(inout) :: bcMask(bcMask_l1:bcMask_h1,bcMask_l2:bcMask_h2,2)
+  integer, intent(inout) :: x_bcMask(x_bcMask_l1:x_bcMask_h1,x_bcMask_l2:x_bcMask_h2)
+  integer, intent(inout) :: y_bcMask(y_bcMask_l1:y_bcMask_h1,y_bcMask_l2:y_bcMask_h2)
   double precision, intent(in) :: delta(2), dt, time
 
   ! Local
   double precision dx, dy
   double precision x, y
   
-  double precision :: drhodx, dudx, dvdx, dpdx, dx_vec
+  double precision :: drhodx, dudx, dvdx, dpdx
   double precision :: dpdy, dudy, dvdy, drhody
   double precision :: L1, L2, L3, L4, T1, T2, T3, T4
   double precision :: S1, S2, M1, M2, M3, M4
   double precision :: Kout, sigma_out, beta
-  double precision :: relax_U, relax_V, relax_T, magvel
-  double precision :: mach_max_hi_x_tmp, mach_local_hi_x
-  double precision :: mach_max_lo_x_tmp, mach_local_lo_x
-  double precision :: mach_max_hi_y_tmp, mach_local_hi_y
-  double precision :: mach_max_lo_y_tmp, mach_local_lo_y
+  double precision :: relax_U, relax_V, relax_T
+  double precision :: mach_local_hi_x, mach_local_lo_x
+  double precision :: mach_local_hi_y, mach_local_lo_y
   double precision :: mach_local_corner
   double precision :: INLET_PRESSURE, INLET_VX, INLET_VY, INLET_TEMPERATURE
   double precision :: INLET_PRESSURE_Xdir, INLET_VX_Xdir, INLET_VY_Xdir, INLET_TEMPERATURE_Xdir
@@ -90,7 +91,8 @@ contains
   dx = delta(1)
   dy = delta(2)
   
-  bcMask(:,:,:) = 0
+  x_bcMask(:,:) = 0
+  y_bcMask(:,:) = 0
 write(*,*) 'IN ROUTINE NSCBC, flag_nscbc_isAnyPerio ',flag_nscbc_isAnyPerio
 write(*,*) 'IN ROUTINE NSCBC, flag_nscbc_perio',flag_nscbc_perio
   if ( flag_nscbc_isAnyPerio == 0) then
@@ -113,8 +115,8 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    ! Calling user target BC values
    ! right face
    call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,.false.,bc_type,bc_params)
-   bcMask(i+1,j,1) = bc_type
-   if ((bc_type == NoSlipWall).or.(bc_type == SlipWall)) bcMask(i+1,j+1,1) = bc_type
+   x_bcMask(i+1,j) = bc_type
+   !if ((bc_type == NoSlipWall).or.(bc_type == SlipWall)) bcMask(i+1,j+1,1) = bc_type
    
    if (bc_type == Outflow) sigma_out = bc_params(6)
    beta = bc_params(5)
@@ -130,8 +132,9 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
  
    ! top face
    call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,-1,.false.,bc_type,bc_params)
-   bcMask(i,j+1,1) = bc_type
-   if ((bc_type == NoSlipWall).or.(bc_type == SlipWall)) bcMask(i+1,j+1,1) = bc_type
+   y_bcMask(i,j+1) = bc_type
+   !if ((bc_type == NoSlipWall).or.(bc_type == SlipWall)) bcMask(i+1,j+1,1) = bc_type
+   
    if (bc_type == Outflow) sigma_out = bc_params(6)
    beta = bc_params(5)
    
@@ -159,7 +162,7 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    drhodx = ((3.0d0/2.0d0)*q(i,j,QRHO)-2.0d0*q(i-1,j,QRHO)+0.5d0*q(i-2,j,QRHO))/dx
    
    ! Test BCs
-   if ((bcMask(i+1,j,1) == Outflow) .and. (bcMask(i,j+1,1) == Outflow)) then
+   if ((x_bcMask(i+1,j) == Outflow) .and. (y_bcMask(i,j+1) == Outflow)) then
    ! This is the case when the upper right corner is outflow/outflow
 
      ! LODI waves along X
@@ -188,15 +191,15 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
      L1 = -2.0d0*(S2*beta + 2.0d0*S1 - S2)/ ((beta*beta) - (2.0d0*beta) - 3.0d0)
      M1 = -2.0d0*(S1*(beta-1.0d0) + 2.0d0*S2)/ ((beta*beta) - (2.0d0*beta) - 3.0d0)
 
-   elseif (((bcMask(i+1,j,1) == Outflow) .and. (bcMask(i,j+1,1) == NoSlipWall)) .or. &
-           ((bcMask(i+1,j,1) == Outflow) .and. (bcMask(i,j+1,1) ==   SlipWall))) then
+   elseif (((x_bcMask(i+1,j) == Outflow) .and. (y_bcMask(i,j+1) == NoSlipWall)) .or. &
+           ((x_bcMask(i+1,j) == Outflow) .and. (y_bcMask(i,j+1) ==   SlipWall))) then
 
    ! This is the case when the upper right corner is wall(y)/outflow(x)
      ! Values long Y will be computed by mirror functions below
      dpdy = (q(i,j,QPRES)-q(i,j-1,QPRES))/(2.0d0*dy)
      dudy = (-q(i,j,QU)-q(i,j-1,QU))/(2.0d0*dy)
-     if (bcMask(i,j+1,2) == NoSlipWall) dvdy = (-q(i,j,QV)-q(i,j-1,QV))/(2.0d0*dy)
-     if (bcMask(i,j+1,2) == SlipWall) dvdy = (q(i,j,QV)-q(i,j-1,QV))/(2.0d0*dy)
+     if (y_bcMask(i,j+1) == NoSlipWall) dvdy = (-q(i,j,QV)-q(i,j-1,QV))/(2.0d0*dy)
+     if (y_bcMask(i,j+1) == SlipWall) dvdy = (q(i,j,QV)-q(i,j-1,QV))/(2.0d0*dy)
      drhody = (q(i,j,QRHO)-q(i,j-1,QRHO))/(2.0d0*dy)
      T1 = (q(i,j,QV)*(dpdy - q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
      T4 = (q(i,j,QV)*(dpdy + q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
@@ -210,14 +213,14 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
      L3 = q(i,j,QU) * dvdx 
      L4 = (q(i,j,QU)+qaux(i,j,QC))* (dpdx + (q(i,j,QRHO)*qaux(i,j,QC))*dudx) 
      
-   elseif (((bcMask(i+1,j,1)  == NoSlipWall) .and. (bcMask(i,j+1,1) == Outflow)) .or. &
-           ((bcMask(i+1,j,1)  == SlipWall) .and. (bcMask(i,j+1,1) == Outflow))) then
+   elseif (((x_bcMask(i+1,j)  == NoSlipWall) .and. (y_bcMask(i,j+1) == Outflow)) .or. &
+           ((x_bcMask(i+1,j)  == SlipWall) .and. (y_bcMask(i,j+1) == Outflow))) then
 
    ! This is the case when the upper right corner is outflow(y)/wall(x)
       call bl_error("NSCBC not implemented for upper right corner")
       
-   elseif (((bcMask(i+1,j,1)  == SlipWall) .or. (bcMask(i+1,j,1)  == NoSlipWall)) .and.  & 
-           ((bcMask(i,j+1,1) == SlipWall) .or. (bcMask(i,j+1,1) == NoSlipWall))) then
+   elseif (((x_bcMask(i+1,j)  == SlipWall) .or. (x_bcMask(i+1,j)  == NoSlipWall)) .and.  & 
+           ((y_bcMask(i,j+1) == SlipWall) .or. (y_bcMask(i,j+1) == NoSlipWall))) then
    ! This is the case when the upper right corner is wall(y)/wall(x)
      ! Values long Y will be computed by mirror functions below
 
@@ -282,11 +285,11 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
      q(i+4,j,QPRES) = -2.0d0*q(i-1,j,QPRES) - 13.0d0*q(i,j,QPRES) + 24.0d0*q(i+1,j,QPRES) - 12.0d0*q(i+2,j,QPRES) &
                      + 4.0d0*q(i+3,j,QPRES) - 12.0d0*dx*dpdx
 
-     if ((bcMask(i+1,j,1) .eq. NoSlipWall).or.(bcMask(i+1,j,1) .eq. SlipWall)) then
+     if ((x_bcMask(i+1,j) .eq. NoSlipWall).or.(x_bcMask(i+1,j) .eq. SlipWall)) then
      
-       if (bcMask(i+1,j,1) .eq. NoSlipWall) then
+       if (x_bcMask(i+1,j) .eq. NoSlipWall) then
          wall_sign = -1.0d0
-       else if (bcMask(i+1,j,1) .eq. SlipWall)  then
+       else if (x_bcMask(i+1,j) .eq. SlipWall)  then
          wall_sign = 1.0d0
        end if
        
@@ -346,11 +349,11 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
      q(i,j+4,QPRES) = -2.0d0*q(i,j-1,QPRES) - 13.0d0*q(i,j,QPRES) + 24.0d0*q(i,j+1,QPRES) - 12.0d0*q(i,j+2,QPRES) &
                      + 4.0d0*q(i,j+3,QPRES) - 12.0d0*dy*dpdy
  
-     if ((bcMask(i,j+1,1) .eq. NoSlipWall).or.(bcMask(i,j+1,1) .eq. SlipWall)) then
+     if ((y_bcMask(i,j+1) .eq. NoSlipWall).or.(y_bcMask(i,j+1) .eq. SlipWall)) then
      
-       if (bcMask(i,j+1,1) .eq. NoSlipWall) then
+       if (y_bcMask(i,j+1) .eq. NoSlipWall) then
          wall_sign = -1.0d0
-       else if (bcMask(i,j+1,1) .eq. SlipWall)  then
+       else if (y_bcMask(i,j+1) .eq. SlipWall)  then
          wall_sign = 1.0d0
        end if
        
@@ -429,8 +432,8 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    ! Calling user target BC values
    ! right face
    call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,.false.,bc_type,bc_params)
-   bcMask(i+1,j,1) = bc_type
-   if ((bc_type == NoSlipWall).or.(bc_type == SlipWall)) bcMask(i+1,j-1,1) = bc_type
+   x_bcMask(i+1,j) = bc_type
+   !if ((bc_type == NoSlipWall).or.(bc_type == SlipWall)) bcMask(i+1,j-1,1) = bc_type
 
    if (bc_type == Outflow) sigma_out = bc_params(6)
    beta = bc_params(5)
@@ -446,8 +449,8 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
 
    ! bottom face
    call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,1,.false.,bc_type,bc_params)
-   bcMask(i,j-1,1) = bc_type
-   if ((bc_type == NoSlipWall).or.(bc_type == SlipWall)) bcMask(i+1,j-1,1) = bc_type
+   y_bcMask(i,j) = bc_type
+   !if ((bc_type == NoSlipWall).or.(bc_type == SlipWall)) bcMask(i+1,j-1,1) = bc_type
    
    if (bc_type == Outflow) sigma_out = bc_params(6)
    beta = bc_params(5)
@@ -476,7 +479,7 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    drhodx = ((3.0d0/2.0d0)*q(i,j,QRHO)-2.0d0*q(i-1,j,QRHO)+0.5d0*q(i-2,j,QRHO))/dx
    
    ! Test BCs
-   if ((bcMask(i+1,j,1) == Outflow) .and. (bcMask(i,j-1,1) == Outflow)) then
+   if ((x_bcMask(i+1,j) == Outflow) .and. (y_bcMask(i,j) == Outflow)) then
    ! This is the case when the bottom right corner is outflow/outflow
 
      ! LODI waves along X
@@ -505,15 +508,15 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
      L1 = -2.0d0*(S2*beta + 2.0d0*S1 - S2)/ ((beta*beta) - (2.0d0*beta) - 3.0d0)
      M4 = -2.0d0*(S1*(beta-1.0d0) + 2.0d0*S2)/ ((beta*beta) - (2.0d0*beta) - 3.0d0)
      
-   elseif (((bcMask(i+1,j,1) == Outflow) .and. (bcMask(i,j-1,1) == NoSlipWall)) .or. &
-           ((bcMask(i+1,j,1) == Outflow) .and. (bcMask(i,j-1,1) == SlipWall))) then
+   elseif (((x_bcMask(i+1,j) == Outflow) .and. (y_bcMask(i,j) == NoSlipWall)) .or. &
+           ((x_bcMask(i+1,j) == Outflow) .and. (y_bcMask(i,j) == SlipWall))) then
               
    ! This is the case when the bottom right corner is wall(y)/outflow(x)
      ! Values long Y will be computed by mirror functions below
      dpdy = (q(i,j+1,QPRES)-q(i,j,QPRES))/(2.0d0*dy)
      dudy = (q(i,j+1,QU)+q(i,j,QU))/(2.0d0*dy)
-     if (bcMask(i,j,2) == NoSlipWall) dvdy = (q(i,j+1,QV)+q(i,j,QV))/(2.0d0*dy)
-     if (bcMask(i,j,2) == SlipWall) dvdy = (q(i,j+1,QV)-q(i,j,QV))/(2.0d0*dy)
+     if (y_bcMask(i,j) == NoSlipWall) dvdy = (q(i,j+1,QV)+q(i,j,QV))/(2.0d0*dy)
+     if (y_bcMask(i,j) == SlipWall) dvdy = (q(i,j+1,QV)-q(i,j,QV))/(2.0d0*dy)
      drhody = (q(i,j+1,QRHO)-q(i,j,QRHO))/(2.0d0*dy)
      T1 = (q(i,j,QV)*(dpdy - q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
      T4 = (q(i,j,QV)*(dpdy + q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
@@ -527,14 +530,14 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
      L3 = q(i,j,QU) * dvdx 
      L4 = (q(i,j,QU)+qaux(i,j,QC))* (dpdx + (q(i,j,QRHO)*qaux(i,j,QC))*dudx) 
      
-   elseif (((bcMask(i+1,j,1) == NoSlipWall) .and. (bcMask(i,j-1,1) == Outflow)) .or. &
-           ((bcMask(i+1,j,1) == SlipWall) .and. (bcMask(i,j-1,1) == Outflow))) then
+   elseif (((x_bcMask(i+1,j) == NoSlipWall) .and. (y_bcMask(i,j) == Outflow)) .or. &
+           ((x_bcMask(i+1,j) == SlipWall) .and. (y_bcMask(i,j) == Outflow))) then
               
    ! This is the case when the bottom right corner is outflow(y)/wall(x)
      call bl_error("NSCBC not implemented for bottom right corner")
 
-   elseif (((bcMask(i+1,j,1) == SlipWall) .or. (bcMask(i+1,j,1) == NoSlipWall)) .and.  & 
-           ((bcMask(i,j-1,1) == SlipWall) .or. (bcMask(i,j-1,1) == NoSlipWall))) then
+   elseif (((x_bcMask(i+1,j) == SlipWall) .or. (x_bcMask(i+1,j) == NoSlipWall)) .and.  & 
+           ((y_bcMask(i,j) == SlipWall) .or. (y_bcMask(i,j) == NoSlipWall))) then
      ! This is the case when the bottom right corner is wall(y)/wall(x)
       ! Values long Y will be computed by mirror functions below
 
@@ -599,11 +602,11 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
      q(i+4,j,QPRES) = -2.0d0*q(i-1,j,QPRES) - 13.0d0*q(i,j,QPRES) + 24.0d0*q(i+1,j,QPRES) - 12.0d0*q(i+2,j,QPRES) &
                      + 4.0d0*q(i+3,j,QPRES) - 12.0d0*dx*dpdx
 
-     if ((bcMask(i+1,j,1) .eq. NoSlipWall).or.(bcMask(i+1,j,1) .eq. SlipWall)) then
+     if ((x_bcMask(i+1,j) .eq. NoSlipWall).or.(x_bcMask(i+1,j) .eq. SlipWall)) then
 
-       if (bcMask(i+1,j,1) .eq. NoSlipWall) then
+       if (x_bcMask(i+1,j) .eq. NoSlipWall) then
          wall_sign = -1.0d0
-       else if (bcMask(i+1,j,1) .eq. SlipWall)  then
+       else if (x_bcMask(i+1,j) .eq. SlipWall)  then
          wall_sign = 1.0d0
        end if
 
@@ -664,11 +667,11 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
      q(i,j-4,QPRES) = -2.0d0*q(i,j+1,QPRES) - 13.0d0*q(i,j,QPRES) + 24.0d0*q(i,j-1,QPRES) - 12.0d0*q(i,j-2,QPRES) &
                      + 4.0d0*q(i,j-3,QPRES) + 12.0d0*dy*dpdy
      
-     if ((bcMask(i,j-1,1) .eq. NoSlipWall).or.(bcMask(i,j-1,1) .eq. SlipWall)) then
+     if ((y_bcMask(i,j) .eq. NoSlipWall).or.(y_bcMask(i,j) .eq. SlipWall)) then
 
-       if (bcMask(i,j-1,1) .eq. NoSlipWall) then
+       if (y_bcMask(i,j) .eq. NoSlipWall) then
          wall_sign = -1.0d0
-       else if (bcMask(i,j-1,1) .eq. SlipWall)  then
+       else if (y_bcMask(i,j) .eq. SlipWall)  then
          wall_sign = 1.0d0
        end if
 
@@ -747,8 +750,8 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    ! Calling user target BC values
    ! left face
    call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,bc_type,bc_params)
-   bcMask(i-1,j,1) = bc_type
-   if ((bc_type == NoSlipWall).or.(bc_type == SlipWall)) bcMask(i-1,j+1,1) = bc_type
+   x_bcMask(i,j) = bc_type
+   !if ((bc_type == NoSlipWall).or.(bc_type == SlipWall)) bcMask(i-1,j+1,1) = bc_type
 
    if (bc_type == Outflow) sigma_out = bc_params(6)
    relax_T = bc_params(1)
@@ -767,8 +770,8 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
 
    ! top face
    call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,-1,.false.,bc_type,bc_params)
-   bcMask(i,j+1,1) = bc_type
-   if ((bc_type == NoSlipWall).or.(bc_type == SlipWall)) bcMask(i-1,j+1,1) = bc_type
+   y_bcMask(i,j+1) = bc_type
+   !if ((bc_type == NoSlipWall).or.(bc_type == SlipWall)) bcMask(i-1,j+1,1) = bc_type
    
    if (bc_type == Outflow) sigma_out = bc_params(6)
    beta = bc_params(5)
@@ -797,7 +800,7 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    drhodx = ((-3.0d0/2.0d0)*q(i,j,QRHO)+2.0d0*q(i+1,j,QRHO)-0.5d0*q(i+2,j,QRHO))/dx
    
    ! Test BCs
-   if ((bcMask(i-1,j,1) == Outflow) .and. (bcMask(i,j+1,1) == Outflow)) then
+   if ((x_bcMask(i,j) == Outflow) .and. (y_bcMask(i,j+1) == Outflow)) then
    ! This is the case when the upper left corner is outflow/outflow
 
      ! LODI waves along X
@@ -826,7 +829,7 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
      L4 = -2.0d0*(S2*beta + 2.0d0*S1 - S2)/ ((beta*beta) - (2.0d0*beta) - 3.0d0)
      M1 = -2.0d0*(S1*(beta-1.0d0) + 2.0d0*S2)/ ((beta*beta) - (2.0d0*beta) - 3.0d0)
      
-   elseif ((bcMask(i-1,j,1) == Inflow) .and. (bcMask(i,j+1,1) == Outflow)) then
+   elseif ((x_bcMask(i,j) == Inflow) .and. (y_bcMask(i,j+1) == Outflow)) then
    ! This is the case when the upper left corner is inflow(x)/outflow(y)
 
      ! LODI waves along Y
@@ -846,15 +849,15 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
             (q(i,j,QU) - INLET_VX_Xdir))  ! - (q(i,j,QRHO)*qaux(i,j,QC)*M2) - (M4/2.0d0)
     
    
-   elseif (((bcMask(i-1,j,1) == Outflow) .and. (bcMask(i,j+1,1) == NoSlipWall)) .or. &
-           ((bcMask(i-1,j,1) == Outflow) .and. (bcMask(i,j+1,1) == SlipWall))) then
+   elseif (((x_bcMask(i,j) == Outflow) .and. (y_bcMask(i,j+1) == NoSlipWall)) .or. &
+           ((x_bcMask(i,j) == Outflow) .and. (y_bcMask(i,j+1) == SlipWall))) then
 
    ! This is the case when the upper right corner is wall(y)/outflow(x)
      ! Values long Y will be computed by mirror functions below
      dpdy = (q(i,j,QPRES)-q(i,j-1,QPRES))/(2.0d0*dy)
      dudy = (-q(i,j,QU)-q(i,j-1,QU))/(2.0d0*dy)
-     if (bcMask(i,j+1,2) == NoSlipWall) dvdy = (-q(i,j,QV)-q(i,j-1,QV))/(2.0d0*dy)
-     if (bcMask(i,j+1,2) == SlipWall) dvdy = (q(i,j,QV)-q(i,j-1,QV))/(2.0d0*dy)
+     if (y_bcMask(i,j+1) == NoSlipWall) dvdy = (-q(i,j,QV)-q(i,j-1,QV))/(2.0d0*dy)
+     if (y_bcMask(i,j+1) == SlipWall) dvdy = (q(i,j,QV)-q(i,j-1,QV))/(2.0d0*dy)
      drhody = (q(i,j,QRHO)-q(i,j-1,QRHO))/(2.0d0*dy)
      T4 = (q(i,j,QV)*(dpdy + q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
 
@@ -866,15 +869,15 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
      L3 = q(i,j,QU) * dvdx
      L4 = (Kout*(q(i,j,QPRES) - INLET_PRESSURE_Xdir)) - ((1.0d0 - beta)*T4)
      
-   elseif ((bcMask(i-1,j,1) == Inflow) .and. &
-           ((bcMask(i-1,j+1,1) == SlipWall).or.(bcMask(i,j+1,1) == NoSlipWall))) then
+   elseif ((x_bcMask(i,j) == Inflow) .and. &
+           ((y_bcMask(i,j+1) == SlipWall).or.(y_bcMask(i,j+1) == NoSlipWall))) then
            
    ! This is the case when the upper left corner is wall(y)/inflow(x)
    ! Values long Y will be computed by mirror functions below
      dpdy = (q(i,j,QPRES)-q(i,j-1,QPRES))/(2.0d0*dy)
      dudy = (-q(i,j,QU)-q(i,j-1,QU))/(2.0d0*dy)
-     if (bcMask(i,j+1,2) == NoSlipWall) dvdy = (-q(i,j,QV)-q(i,j-1,QV))/(2.0d0*dy)
-     if (bcMask(i,j+1,2) == SlipWall) dvdy = (q(i,j,QV)-q(i,j-1,QV))/(2.0d0*dy)
+     if (y_bcMask(i,j+1) == NoSlipWall) dvdy = (-q(i,j,QV)-q(i,j-1,QV))/(2.0d0*dy)
+     if (y_bcMask(i,j+1) == SlipWall) dvdy = (q(i,j,QV)-q(i,j-1,QV))/(2.0d0*dy)
      drhody = (q(i,j,QRHO)-q(i,j-1,QRHO))/(2.0d0*dy)
      T4 = (q(i,j,QV)*(dpdy + q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
 
@@ -885,8 +888,8 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
      L4 = relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local_corner*mach_local_corner)/probhi(1)) * &
           (q(i,j,QU) - INLET_VX_Xdir)  - ((1.0d0 - beta)*T4)
 
-   elseif (((bcMask(i-1,j,1) == SlipWall) .or. (bcMask(i-1,j,1) == NoSlipWall)) .and. &
-           ((bcMask(i,j+1,1) == SlipWall) .or. (bcMask(i,j+1,1) == NoSlipWall))) then
+   elseif (((x_bcMask(i,j) == SlipWall) .or. (x_bcMask(i,j) == NoSlipWall)) .and. &
+           ((y_bcMask(i,j+1) == SlipWall) .or. (y_bcMask(i,j+1) == NoSlipWall))) then
      ! This is the case when the upper left corner is wall(y)/wall(x)
        ! Values long Y will be computed by mirror functions below
  
@@ -951,11 +954,11 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
      q(i-4,j,QPRES) = -2.0d0*q(i+1,j,QPRES) - 13.0d0*q(i,j,QPRES) + 24.0d0*q(i-1,j,QPRES) - 12.0d0*q(i-2,j,QPRES) &
                      + 4.0d0*q(i-3,j,QPRES) + 12.0d0*dx*dpdx
 
-     if ((bcMask(i-1,j,1) .eq. NoSlipWall).or.(bcMask(i-1,j,1) .eq. SlipWall)) then
+     if ((x_bcMask(i,j) .eq. NoSlipWall).or.(x_bcMask(i,j) .eq. SlipWall)) then
      
-       if (bcMask(i-1,j,1) .eq. NoSlipWall) then
+       if (x_bcMask(i,j) .eq. NoSlipWall) then
          wall_sign = -1.0d0
-       else if (bcMask(i-1,j,1) .eq. SlipWall)  then
+       else if (x_bcMask(i,j) .eq. SlipWall)  then
          wall_sign = 1.0d0
        end if
        
@@ -1015,11 +1018,11 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
      q(i,j+4,QPRES) = -2.0d0*q(i,j-1,QPRES) - 13.0d0*q(i,j,QPRES) + 24.0d0*q(i,j+1,QPRES) - 12.0d0*q(i,j+2,QPRES) &
                      + 4.0d0*q(i,j+3,QPRES) - 12.0d0*dy*dpdy
                      
-     if ((bcMask(i,j+1,1) .eq. NoSlipWall).or.(bcMask(i,j+1,1) .eq. SlipWall)) then
+     if ((y_bcMask(i,j+1) .eq. NoSlipWall).or.(y_bcMask(i,j+1) .eq. SlipWall)) then
      
-       if (bcMask(i,j+1,1) .eq. NoSlipWall) then
+       if (y_bcMask(i,j+1) .eq. NoSlipWall) then
          wall_sign = -1.0d0
-       else if (bcMask(i,j+1,1) .eq. SlipWall)  then
+       else if (y_bcMask(i,j+1) .eq. SlipWall)  then
          wall_sign = 1.0d0
        end if
        
@@ -1097,8 +1100,8 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    ! Calling user target BC values
    ! left face
    call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,bc_type,bc_params)
-   bcMask(i-1,j,1) = bc_type
-   if ((bc_type == NoSlipWall).or.(bc_type == SlipWall)) bcMask(i-1,j-1,1) = bc_type
+   x_bcMask(i,j) = bc_type
+   !if ((bc_type == NoSlipWall).or.(bc_type == SlipWall)) bcMask(i-1,j-1,1) = bc_type
 
    if (bc_type == Outflow) sigma_out = bc_params(6)
    relax_T = bc_params(1)
@@ -1117,8 +1120,8 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
 
    ! bottom face
    call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,1,.false.,bc_type,bc_params)
-   bcMask(i,j-1,1) = bc_type
-   if ((bc_type == NoSlipWall).or.(bc_type == SlipWall)) bcMask(i-1,j-1,1) = bc_type
+   y_bcMask(i,j) = bc_type
+   !if ((bc_type == NoSlipWall).or.(bc_type == SlipWall)) bcMask(i-1,j-1,1) = bc_type
    
    if (bc_type == Outflow) sigma_out = bc_params(6)
    beta_Y = bc_params(5)
@@ -1148,7 +1151,7 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    drhodx = ((-3.0d0/2.0d0)*q(i,j,QRHO)+2.0d0*q(i+1,j,QRHO)-0.5d0*q(i+2,j,QRHO))/dx
    
    ! Test BCs
-   if ((bcMask(i-1,j,1) == Outflow) .and. (bcMask(i,j-1,1) == Outflow)) then
+   if ((x_bcMask(i,j) == Outflow) .and. (y_bcMask(i,j) == Outflow)) then
    ! This is the case when the bottom left corner is outflow/outflow
 
      ! LODI waves along X
@@ -1177,7 +1180,7 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
      L4 = -2.0d0*(S2*beta + 2.0d0*S1 - S2)/ ((beta*beta) - (2.0d0*beta) - 3.0d0)
      M4 = -2.0d0*(S1*(beta-1.0d0) + 2.0d0*S2)/ ((beta*beta) - (2.0d0*beta) - 3.0d0)
      
-   elseif ((bcMask(i-1,j,1) == Inflow) .and. (bcMask(i,j-1,1) == Outflow)) then
+   elseif ((x_bcMask(i,j) == Inflow) .and. (y_bcMask(i,j) == Outflow)) then
    ! This is the case when the bottom left corner is inflow(x)/outflow(y)
 
      ! LODI waves along Y
@@ -1193,15 +1196,15 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
      L4 = (relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local_corner*mach_local_corner)/probhi(1)) * &
             (q(i,j,QU) - INLET_VX_Xdir))  - (M1/2.0d0) - (q(i,j,QRHO)*qaux(i,j,QC)*M2)
             
-   elseif (((bcMask(i-1,j,1) == Outflow) .and. (bcMask(i,j-1,1) == NoSlipWall)) .or. &
-           ((bcMask(i-1,j,1) == Outflow) .and. (bcMask(i,j-1,1) == SlipWall))) then
+   elseif (((x_bcMask(i,j) == Outflow) .and. (y_bcMask(i,j) == NoSlipWall)) .or. &
+           ((x_bcMask(i,j) == Outflow) .and. (y_bcMask(i,j) == SlipWall))) then
            
    ! This is the case when the bottom left corner is wall(y)/outflow(x)
      ! Values long Y will be computed by mirror functions below
      dpdy = (q(i,j+1,QPRES)-q(i,j,QPRES))/(2.0d0*dy)
      dudy = (q(i,j+1,QU)+q(i,j,QU))/(2.0d0*dy)
-     if (bcMask(i,j,2) == NoSlipWall) dvdy = (q(i,j+1,QV)+q(i,j,QV))/(2.0d0*dy)
-     if (bcMask(i,j,2) == SlipWall) dvdy = (q(i,j+1,QV)-q(i,j,QV))/(2.0d0*dy)
+     if (y_bcMask(i,j) == NoSlipWall) dvdy = (q(i,j+1,QV)+q(i,j,QV))/(2.0d0*dy)
+     if (y_bcMask(i,j) == SlipWall) dvdy = (q(i,j+1,QV)-q(i,j,QV))/(2.0d0*dy)
      drhody = (q(i,j+1,QRHO)-q(i,j,QRHO))/(2.0d0*dy)
      T1 = (q(i,j,QV)*(dpdy - q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
      T4 = (q(i,j,QV)*(dpdy + q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
@@ -1213,16 +1216,16 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
      L3 = q(i,j,QU) * dvdx
      L4 = (Kout*(q(i,j,QPRES) - INLET_PRESSURE_Xdir)) - ((1.0d0 - beta)*T4)
      
-   elseif ((bcMask(i-1,j,1) == Inflow) .and. &
-           ((bcMask(i,j-1,1) == SlipWall).or.(bcMask(i,j-1,1) == NoSlipWall))) then
+   elseif ((x_bcMask(i,j) == Inflow) .and. &
+           ((y_bcMask(i,j) == SlipWall).or.(y_bcMask(i,j) == NoSlipWall))) then
 
    ! This is the case when the bottom left corner is wall(y)/inflow(x)
    ! Values long Y will be computed by mirror functions below
      dpdy = (q(i,j+1,QPRES)-q(i,j,QPRES))/(2.0d0*dy)
      dvdy = (q(i,j+1,QV)+q(i,j,QV))/(2.0d0*dy)
      drhody = (q(i,j+1,QRHO)+q(i,j,QRHO))/(2.0d0*dy)
-     if (bcMask(i,j,2) == NoSlipWall) dudy = (q(i,j+1,QU)+q(i,j,QU))/(2.0d0*dy)
-     if (bcMask(i,j,2) == SlipWall) dudy = (q(i,j+1,QU)-q(i,j,QU))/(2.0d0*dy)
+     if (y_bcMask(i,j) == NoSlipWall) dudy = (q(i,j+1,QU)+q(i,j,QU))/(2.0d0*dy)
+     if (y_bcMask(i,j) == SlipWall) dudy = (q(i,j+1,QU)-q(i,j,QU))/(2.0d0*dy)
      T1 = (q(i,j,QV)*(dpdy - q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
      T4 = (q(i,j,QV)*(dpdy + q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
      T3 = ((q(i,j,QV)*dvdy))+(dpdy/q(i,j,QRHO))
@@ -1239,8 +1242,8 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
           (q(i,j,QU) - INLET_VX_Xdir)  - ((1.0d0 - beta_X)*T4)
             
 
-  elseif (((bcMask(i,j-1,1) == SlipWall) .or. (bcMask(i,j-1,1) == NoSlipWall)) .and.  & 
-           ((bcMask(i-1,j,1) == SlipWall) .or. (bcMask(i-1,j,1) == NoSlipWall))) then
+  elseif (((x_bcMask(i,j) == SlipWall) .or. (x_bcMask(i,j) == NoSlipWall)) .and.  & 
+           ((y_bcMask(i,j) == SlipWall) .or. (y_bcMask(i,j) == NoSlipWall))) then
    ! This is the case when the bottom left corner is wall(y)/wall(x)
      ! Values long Y will be computed by mirror functions below
 
@@ -1305,11 +1308,11 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
      q(i-4,j,QPRES) = -2.0d0*q(i+1,j,QPRES) - 13.0d0*q(i,j,QPRES) + 24.0d0*q(i-1,j,QPRES) - 12.0d0*q(i-2,j,QPRES) &
                      + 4.0d0*q(i-3,j,QPRES) + 12.0d0*dx*dpdx
 
-     if ((bcMask(i-1,j,1) .eq. NoSlipWall).or.(bcMask(i-1,j,1) .eq. SlipWall)) then
+     if ((x_bcMask(i,j) .eq. NoSlipWall).or.(x_bcMask(i,j) .eq. SlipWall)) then
 
-       if (bcMask(i-1,j,1) .eq. NoSlipWall) then
+       if (x_bcMask(i,j) .eq. NoSlipWall) then
          wall_sign = -1.0d0
-       else if (bcMask(i-1,j,1) .eq. SlipWall)  then
+       else if (x_bcMask(i,j) .eq. SlipWall)  then
          wall_sign = 1.0d0
        end if
 
@@ -1370,11 +1373,11 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
      q(i,j-4,QPRES) = -2.0d0*q(i,j+1,QPRES) - 13.0d0*q(i,j,QPRES) + 24.0d0*q(i,j-1,QPRES) - 12.0d0*q(i,j-2,QPRES) &
                      + 4.0d0*q(i,j-3,QPRES) + 12.0d0*dy*dpdy
 
-     if ((bcMask(i,j-1,1) .eq. NoSlipWall).or.(bcMask(i,j-1,1) .eq. SlipWall)) then
+     if ((y_bcMask(i,j) .eq. NoSlipWall).or.(y_bcMask(i,j) .eq. SlipWall)) then
 
-       if (bcMask(i,j-1,1) .eq. NoSlipWall) then
+       if (y_bcMask(i,j) .eq. NoSlipWall) then
          wall_sign = -1.0d0
-       else if (bcMask(i,j-1,1) .eq. SlipWall)  then
+       else if (y_bcMask(i,j) .eq. SlipWall)  then
          wall_sign = 1.0d0
        end if
 
@@ -1477,12 +1480,16 @@ endif ! flag_nscbc_isAnyPerio )
 
      ! Calling user target BC values 
      call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,bc_type,bc_params)
-
-     if ((j == domlo(2)-1) .or. (j == domhi(2)+1)) then
+     !write(*,*) 'DEBUG CALLING BCNORMAL ',i,j,bc_type
+     if ((j < domlo(2)-1) .or. (j > domhi(2)+1)) then
        continue
      else
-       bcMask(i-1,j,1) = bc_type
+       x_bcMask(i,j) = bc_type
+       !write(*,*) 'DEBUG CALLING x_bcMask(i,j) ',i,j,x_bcMask(i,j)
      endif
+     
+     !write(*,*) 'DEBUG bc_type,  ',i,j,bc_type
+     !write(*,*) 'DEBUG bc_params ',i,j,bc_params
      
      eos_state %  T = U_ext(UTEMP)
      eos_state %  rho = U_ext(URHO)
@@ -1492,16 +1499,18 @@ endif ! flag_nscbc_isAnyPerio )
      INLET_VY = U_ext(UMY)/U_ext(URHO)
      INLET_TEMPERATURE = U_ext(UTEMP)
      INLET_PRESSURE = eos_state%p
-     !write(*,*) 'TOTO',i,j,bc_type,INLET_VX,INLET_VY,INLET_TEMPERATURE,INLET_PRESSURE
-     mach_local_lo_x = dsqrt(q(i,j,QU)**2.0d0 + q(i,j,QV)**2.0d0)/qaux(i,j,QC)
 
+     mach_local_lo_x = dsqrt(q(i,j,QU)**2.0d0 + q(i,j,QV)**2.0d0)/qaux(i,j,QC)
+     
      ! Compute LODI equations
      if (bc_type == Inflow) then
-
+ 
        relax_T = bc_params(1)      
        relax_U = bc_params(2)
        relax_V = bc_params(3)
        beta =  bc_params(5)
+           
+       !write(*,*) 'I AM IN INFLOW',relax_T,relax_U,relax_V,beta
                   
        L1 = (q(i,j,QU)-qaux(i,j,QC))* (dpdx - (q(i,j,QRHO)*qaux(i,j,QC))*dudx)  
        L2 = relax_T * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(1)) * (q(i,j,QTEMP) - INLET_TEMPERATURE) - ((1.0d0 - beta)*T2)
@@ -1543,7 +1552,9 @@ endif ! flag_nscbc_isAnyPerio )
        L3 = L3 / q(i,j,QU)
        L4 = L4 / (q(i,j,QU)+qaux(i,j,QC))
      endif
-       
+     
+      !write(*,*) 'DEBUG L waves ',i,j,L1,L2,L3,L4
+      
      ! Compute new spatial derivative
      drhodx = (L2 + 0.5d0*(L1 + L4))/(qaux(i,j,QC)**2.0d0)  
      dudx   = (L4-L1)/(2.0d0*qaux(i,j,QC)*q(i,j,QRHO))
@@ -1684,13 +1695,12 @@ endif ! flag_nscbc_isAnyPerio )
 
      ! Calling user target BC values 
      call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,.false.,bc_type,bc_params)
-     
-     if ((j == domlo(2)-1) .or. (j == domhi(2)+1)) then
+     if ((j < domlo(2)-1) .or. (j > domhi(2)+1)) then
        continue
      else
-       bcMask(i+1,j,1) = bc_type
+       x_bcMask(i+1,j) = bc_type
      endif
-     
+
      eos_state %  T = U_ext(UTEMP)
      eos_state %  rho = U_ext(URHO)
      eos_state % massfrac(1:nspec) = u_ext(UFS:UFS+nspec-1) / U_ext(URHO)
@@ -1893,13 +1903,12 @@ endif
                     
      ! Calling user target BC values 
      call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,1,.false.,bc_type,bc_params)
-     
-     if ((i == domlo(1)-1) .or. (i == domhi(1)+1)) then
+     if ((i < domlo(1)-1) .or. (i > domhi(1)+1)) then
        continue
      else
-       bcMask(i-1,j,1) = bc_type
+       y_bcMask(i,j) = bc_type
      endif
-     
+
      eos_state %  T = U_ext(UTEMP)
      eos_state %  rho = U_ext(URHO)
      eos_state % massfrac(1:nspec) = u_ext(UFS:UFS+nspec-1) / U_ext(URHO)
@@ -2097,11 +2106,10 @@ endif
      
      ! Calling user target BC values 
      call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,-1,.false.,bc_type,bc_params)
-     
-     if ((i == domlo(1)-1) .or. (i == domhi(1)+1)) then
+     if ((i < domlo(1)-1) .or. (i > domhi(1)+1)) then
        continue
      else
-       bcMask(i,j+1,1) = bc_type
+       y_bcMask(i,j+1) = bc_type
      endif
      
      eos_state %  T = U_ext(UTEMP)

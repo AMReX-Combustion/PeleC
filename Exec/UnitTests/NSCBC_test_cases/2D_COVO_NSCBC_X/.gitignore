@@ -5,3 +5,4 @@
 *.gnu.MPI.ex
 *.0
 plt*
+*.ex

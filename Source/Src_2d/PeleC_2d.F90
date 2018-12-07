@@ -6,7 +6,8 @@ subroutine pc_umdrv(is_finest_level, time, &
                     qaux, qa_l1, qa_l2, qa_h1, qa_h2, &
                     srcQ, srQ_l1, srQ_l2, srQ_h1, srQ_h2, &
                     update, updt_l1, updt_l2, updt_h1, updt_h2, &
-                    bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
+                    x_bcMask, x_bcMask_l1, x_bcMask_l2, x_bcMask_h1, x_bcMask_h2, &
+                    y_bcMask, y_bcMask_l1, y_bcMask_l2, y_bcMask_h1, y_bcMask_h2, &
                     delta, dt, &
                     flux1, flux1_l1, flux1_l2, flux1_h1, flux1_h2, &
                     flux2, flux2_l1, flux2_l2, flux2_h1, flux2_h2, &
@@ -47,9 +48,11 @@ subroutine pc_umdrv(is_finest_level, time, &
   integer, intent(in) :: area2_l1,area2_l2,area2_h1,area2_h2
   integer, intent(in) :: dloga_l1,dloga_l2,dloga_h1,dloga_h2
   integer, intent(in) :: vol_l1,vol_l2,vol_h1,vol_h2
-  integer, intent(in) :: bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2
+  integer, intent(in) :: x_bcMask_l1, x_bcMask_l2, x_bcMask_h1, x_bcMask_h2
+  integer, intent(in) :: y_bcMask_l1, y_bcMask_l2, y_bcMask_h1, y_bcMask_h2
 
-  integer, intent(inout) :: bcMask(bcMask_l1:bcMask_h1,bcMask_l2:bcMask_h2,2)
+  integer, intent(inout) :: x_bcMask(x_bcMask_l1:x_bcMask_h1,x_bcMask_l2:x_bcMask_h2)
+  integer, intent(inout) :: y_bcMask(y_bcMask_l1:y_bcMask_h1,y_bcMask_l2:y_bcMask_h2)
   double precision, intent(in) :: uin(uin_l1:uin_h1,uin_l2:uin_h2,NVAR)
   double precision, intent(inout) :: uout(uout_l1:uout_h1,uout_l2:uout_h2,NVAR)
   double precision, intent(inout) :: q(q_l1:q_h1,q_l2:q_h2,QVAR)
@@ -149,7 +152,8 @@ subroutine pc_umdrv(is_finest_level, time, &
                srcQ,srQ_l1,srQ_l2,srQ_h1,srQ_h2, &
                lo(1),lo(2),hi(1),hi(2),dx,dy,dt, &
                uout,uout_l1,uout_l2,uout_h1,uout_h2, &
-               bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
+               x_bcMask, x_bcMask_l1, x_bcMask_l2, x_bcMask_h1, x_bcMask_h2, &
+               y_bcMask, y_bcMask_l1, y_bcMask_l2, y_bcMask_h1, y_bcMask_h2, &
                flux1,flux1_l1,flux1_l2,flux1_h1,flux1_h2, &
                flux2,flux2_l1,flux2_l2,flux2_h1,flux2_h2, &
                q1, flux1_l1-1, flux1_l2-1, flux1_h1+1, flux1_h2+1, &

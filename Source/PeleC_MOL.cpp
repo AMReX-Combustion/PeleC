@@ -115,7 +115,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
     FArrayBox Qfab, Qaux, coeff_cc, Dterm;
     FArrayBox coeff_ec[BL_SPACEDIM], flux_ec[BL_SPACEDIM],
       tander_ec[BL_SPACEDIM], flatn;
-    IArrayBox bcMask;
+    //IArrayBox bcMask;
     FArrayBox dm_as_fine(Box::TheUnitBox(), NUM_STATE);
     FArrayBox fab_drho_as_crse(Box::TheUnitBox(), NUM_STATE);
     IArrayBox fab_rrflag_as_crse(Box::TheUnitBox());
@@ -187,14 +187,14 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
       Dterm.resize(cbox, NUM_STATE);
 
       // Pointwise mask for BC implementation
-      {
-        BL_PROFILE("PeleC::set_bc_mask call");
-        bcMask.resize(cbox, BL_SPACEDIM);
-        bcMask.setVal(0);
-        set_bc_mask(vbox.loVect(), vbox.hiVect(),
-                    dbox.loVect(), dbox.hiVect(),
-                    BL_TO_FORTRAN(bcMask));
-      }
+      //{
+      //  BL_PROFILE("PeleC::set_bc_mask call");
+      //  bcMask.resize(cbox, BL_SPACEDIM);
+      //  bcMask.setVal(0);
+      //  set_bc_mask(vbox.loVect(), vbox.hiVect(),
+      //              dbox.loVect(), dbox.hiVect(),
+      //              BL_TO_FORTRAN(bcMask));
+      //}
 
       for (int d=0; d<BL_SPACEDIM; ++d) {
         Box ebox = amrex::surroundingNodes(cbox,d);
@@ -422,7 +422,6 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
                           sv_ebbg_ptr, &Ncut,
                           sv_eb_flux_ptr, &nFlux,
 #endif
-                          BL_TO_FORTRAN_ANYD(bcMask),
                           geom.CellSize());
         }
       }

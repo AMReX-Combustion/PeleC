@@ -93,7 +93,7 @@ PeleC::construct_hydro_source(const MultiFab& S, Real time, Real dt, int amr_ite
 
 	FArrayBox pradial(Box::TheUnitBox(),1);
 	FArrayBox q, qaux, src_q;
-	IArrayBox bcMask;
+	IArrayBox bcMask[BL_SPACEDIM];
 
 	Real cflLoc = -1.0e+200;
 	int is_finest_level = (level == finest_level) ? 1 : 0;
@@ -122,23 +122,35 @@ PeleC::construct_hydro_source(const MultiFab& S, Real time, Real dt, int amr_ite
 	    q.resize(qbx, QVAR);
 	    qaux.resize(qbx, NQAUX);
 	    src_q.resize(qbx, QVAR);
-	    bcMask.resize(qbx,2); // The size is 2 and is not related to dimensions !
-                            // First integer is bc_type, second integer about slip/no-slip wall 
-	    bcMask.setVal(0);     // Initialize with Interior (= 0) everywhere
-
-      set_bc_mask(lo, hi, domain_lo, domain_hi, BL_TO_FORTRAN(bcMask));
+//	    bcMask.resize(qbx,1); 
+//	    bcMask.setVal(0);     // Initialize with Interior (= 0) everywhere
+//
+//      set_bc_mask(lo, hi, domain_lo, domain_hi, BL_TO_FORTRAN(bcMask));
       
 	    ctoprim(ARLIM_3D(qbx.loVect()), ARLIM_3D(qbx.hiVect()),
 		    statein.dataPtr(), ARLIM_3D(statein.loVect()), ARLIM_3D(statein.hiVect()),
 		    q.dataPtr(), ARLIM_3D(q.loVect()), ARLIM_3D(q.hiVect()),
 		    qaux.dataPtr(), ARLIM_3D(qaux.loVect()), ARLIM_3D(qaux.hiVect()));
       
-      // Imposing Ghost-Cells Navier-Stokes Characteristic BCs if i_nscbc is on
+      // Imposing Ghost-Cells Navier-Stokes Characteristic BCs if i_nscbc is .true.
       // For the theory, see Motheau et al. AIAA J. Vol. 55, No. 10 : pp. 3399-3408, 2017. 
       //
       // The user should provide a bcnormal routine in bc_fill_module with 2 additional optional arguments
       // to temporary fill ghost-cells for EXT_DIR and to provide target BC values.
       // See the COVO test case for an example.
+      
+      // Allocate fabs for bcMask. Note that we grow in the opposite direction
+      // because the Riemann solver wants a face value in a ghost-cell
+	    for (int i = 0; i < BL_SPACEDIM ; i++)  {
+		    const Box& bxtmp = amrex::surroundingNodes(bx,i);
+        Box TestBox(bxtmp);
+        for(int d=0; d<BL_SPACEDIM; ++d) {
+          if (i!=d) TestBox.grow(d,1);
+        }
+        
+		    bcMask[i].resize(TestBox,1);
+        bcMask[i].setVal(0);
+	    }
 
 #if (BL_SPACEDIM == 3)
 
@@ -155,11 +167,12 @@ PeleC::construct_hydro_source(const MultiFab& S, Real time, Real dt, int amr_ite
                      BL_TO_FORTRAN(statein),
                      BL_TO_FORTRAN(q),
                      BL_TO_FORTRAN(qaux),
-                     BL_TO_FORTRAN(bcMask),
+                     D_DECL(BL_TO_FORTRAN(bcMask[0]),
+	                          BL_TO_FORTRAN(bcMask[1]),
+                            BL_TO_FORTRAN(bcMask[2])),
                      &flag_nscbc_isAnyPerio, flag_nscbc_perio, 
                      &time, dx, &dt);
       }
-
 
 #endif
 
@@ -169,10 +182,10 @@ PeleC::construct_hydro_source(const MultiFab& S, Real time, Real dt, int amr_ite
 		      source_in.dataPtr(), ARLIM_3D(source_in.loVect()), ARLIM_3D(source_in.hiVect()),
 		      src_q.dataPtr(), ARLIM_3D(src_q.loVect()), ARLIM_3D(src_q.hiVect()));
 
-            // Allocate fabs for fluxes
+      // Allocate fabs for fluxes
 	    for (int i = 0; i < BL_SPACEDIM ; i++)  {
-		const Box& bxtmp = amrex::surroundingNodes(bx,i);
-		flux[i].resize(bxtmp,NUM_STATE);
+		    const Box& bxtmp = amrex::surroundingNodes(bx,i);
+		    flux[i].resize(bxtmp,NUM_STATE);
 	    }
 
 	    if (!Geometry::IsCartesian()) {
@@ -188,7 +201,9 @@ PeleC::construct_hydro_source(const MultiFab& S, Real time, Real dt, int amr_ite
 		 BL_TO_FORTRAN(qaux),
 		 BL_TO_FORTRAN(src_q),
 		 BL_TO_FORTRAN(source_out),
-		 BL_TO_FORTRAN(bcMask),
+		 D_DECL(BL_TO_FORTRAN(bcMask[0]),
+	          BL_TO_FORTRAN(bcMask[1]),
+            BL_TO_FORTRAN(bcMask[2])),
 		 dx, &dt,
 		 D_DECL(BL_TO_FORTRAN(flux[0]),
 			BL_TO_FORTRAN(flux[1]),

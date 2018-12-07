@@ -299,14 +299,13 @@ contains
     integer :: flag_nscbc, which_bc_type
 
     flag_nscbc = 0
-    !write(*,*) 'DEBUG bcnormal: bc_type: ',present(bc_type)
-    !write(*,*) 'DEBUG bcnormal: bc_params: ',present(bc_params)
     
     ! When optional arguments are present, GC-NSCBC is activated
     ! Generic values are auto-filled for numerical parameters,
     ! but should be set by the user for each BC
     ! Note that in the impose_NSCBC_xD.f90 routine, not all parameters are used in same time
     if (present(bc_type).and.present(bc_params)) then
+     
       flag_nscbc = 1
       relax_U = 0.5d0 ! For inflow only, relax parameter for x_velocity
       relax_V = 0.5d0 ! For inflow only, relax parameter for y_velocity
@@ -316,7 +315,6 @@ contains
       sigma_out = 0.25d0 ! For outflow only, relax parameter
       which_bc_type = Interior ! This is to ensure that nothing will be done if the user don't set anything
     endif
-    !write(*,*) 'DEBUG bcnormal: flag_nscbc: ',flag_nscbc
     
     call build(eos_state)
 
@@ -421,8 +419,12 @@ contains
     ! Here the optional parameters are filled by the local variables if they were present
     if (flag_nscbc == 1) then
       bc_type = which_bc_type
-      bc_params(1) = sigma_out
-      bc_params(4) = beta
+      bc_params(1) = relax_T
+      bc_params(2) = relax_U
+      bc_params(3) = relax_V
+      bc_params(4) = relax_W
+      bc_params(5) = beta
+      bc_params(6) = sigma_out
     end if
     
     call destroy(eos_state)

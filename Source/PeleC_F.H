@@ -272,15 +272,17 @@ extern "C"
      const BL_FORT_FAB_ARG(state),
      BL_FORT_FAB_ARG(q),
      BL_FORT_FAB_ARG(qaux),
-     BL_FORT_IFAB_ARG(bcMask),
+     D_DECL(BL_FORT_IFAB_ARG(x_bcMask),
+            BL_FORT_IFAB_ARG(y_bcMask),
+            BL_FORT_IFAB_ARG(z_bcMask)),
      const int* flag_nscbc_isAnyPerio, const int flag_nscbc_perio[],
      const amrex::Real* time, const amrex::Real dx[], const amrex::Real* dt);
 #endif
 
-  void set_bc_mask
-    (const int    lo[], const int    hi[],
-     const int domlo[], const int domhi[],
-     BL_FORT_IFAB_ARG(bcMask));
+  //void set_bc_mask
+  //  (const int    lo[], const int    hi[],
+  //   const int domlo[], const int domhi[],
+  //   BL_FORT_IFAB_ARG(bcMask));
   
   void pc_umdrv
     (const int* is_finest_level,
@@ -293,7 +295,9 @@ extern "C"
      BL_FORT_FAB_ARG(qaux),
      BL_FORT_FAB_ARG(src_q),
      BL_FORT_FAB_ARG(update),
-     BL_FORT_IFAB_ARG(bcMask),
+     D_DECL(BL_FORT_IFAB_ARG(x_bcMask),
+            BL_FORT_IFAB_ARG(y_bcMask),
+            BL_FORT_IFAB_ARG(z_bcMask)),
      const amrex::Real dx[], const amrex::Real* dt,
      D_DECL(BL_FORT_FAB_ARG(xflux),
             BL_FORT_FAB_ARG(yflux),
@@ -348,7 +352,6 @@ extern "C"
         const void* ebg, const int* nebg,
         const void* ebflux, const int* nebf,
 #endif
-        const BL_FORT_IFAB_ARG_3D(bcMask),
         const amrex::Real* h);
 
 
@@ -376,7 +379,6 @@ extern "C"
         const void* ebg, const int* nebg,
         const void* ebflux, const int* nebf,
 #endif
-        const BL_FORT_IFAB_ARG_3D(bcMask),
         const amrex::Real* h);
 
   void flush_output();

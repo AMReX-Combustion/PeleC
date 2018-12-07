@@ -7,54 +7,60 @@ module riemann_util_module
 
 contains
 
-  pure function bc_test(idir, i, j, bcMask, domlo, domhi) result (f)
+  pure function bc_test(idir, i, j, &
+                        bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
+                        domlo, domhi) result (f)
 
     use prob_params_module, only : physbc_lo, physbc_hi, Symmetry, SlipWall, NoSlipWall
     use meth_params_module, only: i_nscbc
     
-    integer, intent(in) :: idir, i, j, bcMask, domlo(*), domhi(*)
+    integer, intent(in) :: idir, i, j, domlo(*), domhi(*)
+    integer, intent(in) :: bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2
+    integer, intent(in) :: bcMask(bcMask_l1:bcMask_h1,bcMask_l2:bcMask_h2)
     integer :: f
 
     ! Enforce that fluxes through a symmetry plane or wall are hard zero.
     f = 1
 
     if (i_nscbc == 1) then
-   
+      
       if (idir == 1) then
+      
          if (i == domlo(1) .and. &
               (physbc_lo(1) == Symmetry .or. &
               physbc_lo(1) == SlipWall .or. &
-              bcMask == SlipWall .or. &
-              bcMask == NoSlipWall .or. &
+              bcMask(i,j) == SlipWall .or. &
+              bcMask(i,j) == NoSlipWall .or. &
               physbc_lo(1) == NoSlipWall) ) then
             f = 0
          endif
-  
+      
          if (i == domhi(1)+1 .and. &
               (physbc_hi(1) == Symmetry .or. &
               physbc_hi(1) == SlipWall .or. &
-              bcMask == SlipWall .or. &
-              bcMask == NoSlipWall .or. &
+              bcMask(i,j) == SlipWall .or. &
+              bcMask(i,j) == NoSlipWall .or. &
               physbc_hi(1) == NoSlipWall) ) then
             f = 0
          endif
       end if
-  
+      
       if (idir == 2) then
+            
          if (j == domlo(2) .and. &
               (physbc_lo(2) == Symmetry .or. &
               physbc_lo(2) == SlipWall .or. &
-              bcMask == SlipWall .or. &
-              bcMask == NoSlipWall .or. &
+              bcMask(i,j) == SlipWall .or. &
+              bcMask(i,j) == NoSlipWall .or. &
               physbc_lo(2) == NoSlipWall) ) then
             f = 0
          endif
-  
+      
          if (j == domhi(2)+1 .and. &
               (physbc_hi(2) == Symmetry .or. &
               physbc_hi(2) == SlipWall .or. &
-              bcMask == SlipWall .or. &
-              bcMask == NoSlipWall .or. &
+              bcMask(i,j) == SlipWall .or. &
+              bcMask(i,j) == NoSlipWall .or. &
               physbc_hi(2) == NoSlipWall) ) then
             f = 0
          end if
