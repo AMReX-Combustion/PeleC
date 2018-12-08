@@ -1,0 +1,22 @@
+language: generic
+
+python:
+  - "3.6"
+
+before_install:
+  - sudo add-apt-repository -y ppa:deadsnakes/ppa
+  - sudo apt-get update
+  - sudo apt-get install -y mpich2 gfortran python3.6 python3.6-venv 
+
+install:
+
+script: bash ./build.sh
+
+env:
+  global:
+  - COMMIT_AUTHOR_EMAIL: "ray.grout@nrel.gov"
+
+addons:
+  apt:
+    packages:
+      - doxygen

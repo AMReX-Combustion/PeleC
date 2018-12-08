@@ -50,6 +50,9 @@ difmag                       Real          0.1                y
 # the small density cutoff.  Densities below this value will be reset
 small_dens                   Real          1.e-200            y
 
+# the small mass fraction cutoff.  Densities below this value will be reset
+small_massfrac                   Real          1.e-200            y
+
 # the small temperature cutoff.  Temperatures below this value will
 # be reset
 small_temp                   Real          1.e-200            y

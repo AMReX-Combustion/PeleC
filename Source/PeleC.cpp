@@ -1400,31 +1400,7 @@ PeleC::avgDown ()
 void
 PeleC::normalize_species (MultiFab& S)
 {
-  int ng = S.nGrow();
-
-#ifdef PELE_USE_EB
-  auto const& fact = dynamic_cast<EBFArrayBoxFactory const&>(S.Factory());
-  auto const& flags = fact.getMultiEBCellFlagFab();
-#endif
-
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
-  for (MFIter mfi(S,true); mfi.isValid(); ++mfi)
-  {
-    const Box& bx = mfi.growntilebox(ng);
-
-#ifdef PELE_USE_EB
-    const auto& flag_fab = flags[mfi];
-    FabType typ = flag_fab.getType(bx);
-    if (typ == FabType::covered) {
-      continue;
-    }
-#endif
-
-    auto& Sfab = S[mfi];
-    pc_normalize_species(BL_TO_FORTRAN_3D(Sfab),ARLIM_3D(bx.loVect()),ARLIM_3D(bx.hiVect()));
-  }
+    amrex::Abort("We don't normalize species!");
 }
 
 void
