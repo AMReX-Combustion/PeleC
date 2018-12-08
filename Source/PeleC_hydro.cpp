@@ -151,6 +151,13 @@ PeleC::construct_hydro_source(const MultiFab& S, Real time, Real dt, int amr_ite
 		    bcMask[i].resize(TestBox,1);
         bcMask[i].setVal(0);
 	    }
+      
+      // Becase bcMask is read in the Riemann solver in any case,
+      // here we put physbc values in the appropriate faces for the non-nscbc case
+      set_bc_mask(lo, hi, domain_lo, domain_hi,
+                  D_DECL(BL_TO_FORTRAN(bcMask[0]),
+	                       BL_TO_FORTRAN(bcMask[1]),
+                         BL_TO_FORTRAN(bcMask[2])));
 
 #if (BL_SPACEDIM == 3)
 

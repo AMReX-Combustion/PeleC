@@ -1138,7 +1138,8 @@ contains
           if ((idir == 1).and.(i == domhi(1)+1)) idx = 1
           if ((idir == 2).and.(j == domlo(2)))   idy = 0
           if ((idir == 2).and.(j == domhi(2)+1)) idy = 1
-          !write(*,*) 'DEBUG RIEMAMNN',i,j
+          !if (idir == 1) write(*,*) 'DEBUG RIEMAMNN',i,j,bcMask(0,j)
+          !if (idir == 2) write(*,*) 'DEBUG RIEMAMNN',i,j,bcMask(i,domhi(2)+1)
           qint(i,j,iu) = bc_test(idir, i, j, &
                                  bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
                                  domlo, domhi) * qint(i,j,iu)

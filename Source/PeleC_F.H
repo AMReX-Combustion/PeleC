@@ -279,10 +279,12 @@ extern "C"
      const amrex::Real* time, const amrex::Real dx[], const amrex::Real* dt);
 #endif
 
-  //void set_bc_mask
-  //  (const int    lo[], const int    hi[],
-  //   const int domlo[], const int domhi[],
-  //   BL_FORT_IFAB_ARG(bcMask));
+  void set_bc_mask
+    (const int    lo[], const int    hi[],
+     const int domlo[], const int domhi[],
+      D_DECL(BL_FORT_IFAB_ARG(x_bcMask),
+            BL_FORT_IFAB_ARG(y_bcMask),
+            BL_FORT_IFAB_ARG(z_bcMask)));
   
   void pc_umdrv
     (const int* is_finest_level,

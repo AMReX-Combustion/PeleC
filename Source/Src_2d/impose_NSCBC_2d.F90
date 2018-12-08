@@ -116,7 +116,6 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    ! right face
    call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,.false.,bc_type,bc_params)
    x_bcMask(i+1,j) = bc_type
-   !if ((bc_type == NoSlipWall).or.(bc_type == SlipWall)) bcMask(i+1,j+1,1) = bc_type
    
    if (bc_type == Outflow) sigma_out = bc_params(6)
    beta = bc_params(5)
@@ -133,7 +132,6 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    ! top face
    call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,-1,.false.,bc_type,bc_params)
    y_bcMask(i,j+1) = bc_type
-   !if ((bc_type == NoSlipWall).or.(bc_type == SlipWall)) bcMask(i+1,j+1,1) = bc_type
    
    if (bc_type == Outflow) sigma_out = bc_params(6)
    beta = bc_params(5)
@@ -160,7 +158,7 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    dudx = ((3.0d0/2.0d0)*q(i,j,QU)-2.0d0*q(i-1,j,QU)+0.5d0*q(i-2,j,QU))/dx
    dvdx = ((3.0d0/2.0d0)*q(i,j,QV)-2.0d0*q(i-1,j,QV)+0.5d0*q(i-2,j,QV))/dx
    drhodx = ((3.0d0/2.0d0)*q(i,j,QRHO)-2.0d0*q(i-1,j,QRHO)+0.5d0*q(i-2,j,QRHO))/dx
-   
+
    ! Test BCs
    if ((x_bcMask(i+1,j) == Outflow) .and. (y_bcMask(i,j+1) == Outflow)) then
    ! This is the case when the upper right corner is outflow/outflow
@@ -221,6 +219,7 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
       
    elseif (((x_bcMask(i+1,j)  == SlipWall) .or. (x_bcMask(i+1,j)  == NoSlipWall)) .and.  & 
            ((y_bcMask(i,j+1) == SlipWall) .or. (y_bcMask(i,j+1) == NoSlipWall))) then
+           
    ! This is the case when the upper right corner is wall(y)/wall(x)
      ! Values long Y will be computed by mirror functions below
 
@@ -433,7 +432,6 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    ! right face
    call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,.false.,bc_type,bc_params)
    x_bcMask(i+1,j) = bc_type
-   !if ((bc_type == NoSlipWall).or.(bc_type == SlipWall)) bcMask(i+1,j-1,1) = bc_type
 
    if (bc_type == Outflow) sigma_out = bc_params(6)
    beta = bc_params(5)
@@ -450,7 +448,6 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    ! bottom face
    call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,1,.false.,bc_type,bc_params)
    y_bcMask(i,j) = bc_type
-   !if ((bc_type == NoSlipWall).or.(bc_type == SlipWall)) bcMask(i+1,j-1,1) = bc_type
    
    if (bc_type == Outflow) sigma_out = bc_params(6)
    beta = bc_params(5)
@@ -751,7 +748,6 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    ! left face
    call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,bc_type,bc_params)
    x_bcMask(i,j) = bc_type
-   !if ((bc_type == NoSlipWall).or.(bc_type == SlipWall)) bcMask(i-1,j+1,1) = bc_type
 
    if (bc_type == Outflow) sigma_out = bc_params(6)
    relax_T = bc_params(1)
@@ -771,7 +767,6 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    ! top face
    call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,-1,.false.,bc_type,bc_params)
    y_bcMask(i,j+1) = bc_type
-   !if ((bc_type == NoSlipWall).or.(bc_type == SlipWall)) bcMask(i-1,j+1,1) = bc_type
    
    if (bc_type == Outflow) sigma_out = bc_params(6)
    beta = bc_params(5)
@@ -1101,7 +1096,6 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    ! left face
    call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,bc_type,bc_params)
    x_bcMask(i,j) = bc_type
-   !if ((bc_type == NoSlipWall).or.(bc_type == SlipWall)) bcMask(i-1,j-1,1) = bc_type
 
    if (bc_type == Outflow) sigma_out = bc_params(6)
    relax_T = bc_params(1)
@@ -1121,7 +1115,6 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    ! bottom face
    call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,1,.false.,bc_type,bc_params)
    y_bcMask(i,j) = bc_type
-   !if ((bc_type == NoSlipWall).or.(bc_type == SlipWall)) bcMask(i-1,j-1,1) = bc_type
    
    if (bc_type == Outflow) sigma_out = bc_params(6)
    beta_Y = bc_params(5)
