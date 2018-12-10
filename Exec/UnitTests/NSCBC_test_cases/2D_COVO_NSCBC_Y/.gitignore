@@ -3,3 +3,4 @@
 *.EXE
 plt*
 *.gnu.MPI.ex
+/extern.f90

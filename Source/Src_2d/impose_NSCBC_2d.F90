@@ -1441,7 +1441,7 @@ endif ! flag_nscbc_isAnyPerio )
  !write(*,*) 'DEBUG IN THE NSCBC ROUTINE'
  if ((q_lo(1) < domlo(1)) .and. (physbc_lo(1) /= Interior)) then
    i = domlo(1)
-!write(*,*) 'DEBUG IN THE LOWER X '
+!write(*,*) 'DEBUG IN THE LOWER X ',lbound(x_bcMask),ubound(x_bcMask)
    do j = q_lo(2)+1,q_hi(2)-1
 
       if ( flag_nscbc_isAnyPerio == 0) then
@@ -1473,8 +1473,8 @@ endif ! flag_nscbc_isAnyPerio )
 
      ! Calling user target BC values 
      call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,bc_type,bc_params)
-     !write(*,*) 'DEBUG CALLING BCNORMAL ',i,j,bc_type
-     if ((j < domlo(2)-1) .or. (j > domhi(2)+1)) then
+     !write(*,*) 'DEBUG CALLING BCNORMAL ',i,j,bc_type,q_lo(2),q_hi(2)
+     if ((j < q_lo(2)+3) .or. (j > q_hi(2)-3)) then
        continue
      else
        x_bcMask(i,j) = bc_type
@@ -1688,7 +1688,7 @@ endif ! flag_nscbc_isAnyPerio )
 
      ! Calling user target BC values 
      call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,.false.,bc_type,bc_params)
-     if ((j < domlo(2)-1) .or. (j > domhi(2)+1)) then
+     if ((j < q_lo(2)+3) .or. (j > q_hi(2)-3)) then
        continue
      else
        x_bcMask(i+1,j) = bc_type
@@ -1896,7 +1896,7 @@ endif
                     
      ! Calling user target BC values 
      call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,1,.false.,bc_type,bc_params)
-     if ((i < domlo(1)-1) .or. (i > domhi(1)+1)) then
+     if ((i < q_lo(1)+3) .or. (i > q_hi(1)-3)) then
        continue
      else
        y_bcMask(i,j) = bc_type
@@ -2099,7 +2099,7 @@ endif
      
      ! Calling user target BC values 
      call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,-1,.false.,bc_type,bc_params)
-     if ((i < domlo(1)-1) .or. (i > domhi(1)+1)) then
+     if ((i < q_lo(1)+3) .or. (i > q_hi(1)-3)) then
        continue
      else
        y_bcMask(i,j+1) = bc_type
