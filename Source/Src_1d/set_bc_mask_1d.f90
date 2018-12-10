@@ -23,9 +23,15 @@ contains
     integer, intent(inout) :: x_bcMask(x_bcMask_l1:x_bcMask_h1,x_bcMask_l2:x_bcMask_h2)
 
   
-    x_bcMask(domlo(1),  x_bcMask_l2:x_bcMask_h2) = physbc_lo(1)
-    x_bcMask(domhi(1)+1,x_bcMask_l2:x_bcMask_h2) = physbc_hi(1)
+    if (x_bcMask_l1 < domlo(1)) then
+    ! Left x face
+      x_bcMask(domlo(1),  x_bcMask_l2:x_bcMask_h2) = physbc_lo(1)
+    end if
     
+    if (x_bcMask_h1 > domhi(1)) then
+    ! Right x face
+      x_bcMask(domhi(1)+1,x_bcMask_l2:x_bcMask_h2) = physbc_hi(1)
+    end if
 
    
   end subroutine set_bc_mask
