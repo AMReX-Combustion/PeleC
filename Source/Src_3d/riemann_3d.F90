@@ -68,7 +68,7 @@ contains
     double precision, intent(in) :: csml(qd_lo(1):qd_hi(1),qd_lo(2):qd_hi(2),qd_lo(3):qd_hi(3))
     double precision, intent(in) ::  shk(s_lo(1):s_hi(1),s_lo(2):s_hi(2),s_lo(3):s_hi(3))
 
-    integer, intent(in) :: bcMask(bcMask_lo(1):bcMask_hi(1),bcMask_lo(2):bcMask_hi(2),bcMask_lo(3):bcMask_hi(3),2)
+    integer, intent(in) :: bcMask(bcMask_lo(1):bcMask_hi(1),bcMask_lo(2):bcMask_hi(2),bcMask_lo(3):bcMask_hi(3))
     
     ! local variables
     integer i, j
@@ -1008,9 +1008,11 @@ contains
 
     double precision, pointer :: us1d(:)
 
-    double precision :: u_adv
+    double precision :: u_adv, u_adv2
 
     integer :: iu, iv1, iv2, im1, im2, im3
+    logical :: special_bnd_lo, special_bnd_hi, special_bnd_lo_x, special_bnd_hi_x
+    double precision :: bnd_fac_x, bnd_fac_y, bnd_fac_z
     double precision :: wwinv, roinv, co2inv
 
     call bl_allocate(us1d,ilo,ihi)
@@ -1040,7 +1042,38 @@ contains
        im3 = UMY
     end if
 
+     special_bnd_lo = (physbc_lo(idir) .eq. Symmetry &
+         .or.         physbc_lo(idir) .eq. SlipWall &
+         .or.         physbc_lo(idir) .eq. NoSlipWall)
+    special_bnd_hi = (physbc_hi(idir) .eq. Symmetry &
+         .or.         physbc_hi(idir) .eq. SlipWall &
+         .or.         physbc_hi(idir) .eq. NoSlipWall)
+
+    if (idir .eq. 1) then
+       special_bnd_lo_x = special_bnd_lo
+       special_bnd_hi_x = special_bnd_hi
+    else
+       special_bnd_lo_x = .false.
+       special_bnd_hi_x = .false.
+    end if
+
+    bnd_fac_z = ONE
+    if (idir.eq.3) then
+       if ( k3d .eq. domlo(3)   .and. special_bnd_lo .or. &
+            k3d .eq. domhi(3)+1 .and. special_bnd_hi ) then
+          bnd_fac_z = ZERO
+       end if
+    end if
+
     do j = jlo, jhi
+
+       bnd_fac_y = ONE
+       if (idir .eq. 2) then
+          if ( j .eq. domlo(2)   .and. special_bnd_lo .or. &
+               j .eq. domhi(2)+1 .and. special_bnd_hi ) then
+             bnd_fac_y = ZERO
+          end if
+       end if
 
        !dir$ ivdep
        do i = ilo, ihi
@@ -1168,11 +1201,34 @@ contains
           qint(i,j,kc,GDGAME) = qint(i,j,kc,GDPRES)/regdnv + ONE
           qint(i,j,kc,GDPRES) = max(qint(i,j,kc,GDPRES),small_pres)
           u_adv = qint(i,j,kc,iu)
+          u_adv2 = qint(i,j,kc,iu)
 
+          
+          if ( special_bnd_lo_x .and. i.eq.domlo(1) .or. &
+               special_bnd_hi_x .and. i.eq.domhi(1)+1 ) then
+             bnd_fac_x = ZERO
+          else
+             bnd_fac_x = ONE
+          end if
+          u_adv = u_adv * bnd_fac_x*bnd_fac_y*bnd_fac_z
+          
           ! Enforce that fluxes through a symmetry plane or wall are hard zero.
-          u_adv = u_adv* bc_test_3d(idir, i, j, k3d, &
+          u_adv2 = u_adv2* bc_test_3d(idir, i, j, k3d, &
                 bcMask,bcMask_lo(1),bcMask_lo(2),bcMask_lo(3),bcMask_hi(1),bcMask_hi(2),bcMask_hi(3), &
-                                 domlo, domhi) 
+                                 domlo, domhi)
+                                 
+          if (u_adv /= u_adv2) then
+          write(*,*) 'DEBUG PROB HERE'
+          end if
+          
+          
+          if ((bnd_fac_x*bnd_fac_y*bnd_fac_z) /= (bc_test_3d(idir, i, j, k3d, &
+                bcMask,bcMask_lo(1),bcMask_lo(2),bcMask_lo(3),bcMask_hi(1),bcMask_hi(2),bcMask_hi(3), &
+                                 domlo, domhi)))  then
+            write(*,*) 'DEBUG 4 PROB HERE',idir,i,j,k3d,(bnd_fac_x*bnd_fac_y*bnd_fac_z),(bc_test_3d(idir, i, j, k3d, &
+                bcMask,bcMask_lo(1),bcMask_lo(2),bcMask_lo(3),bcMask_hi(1),bcMask_hi(2),bcMask_hi(3), &
+                                 domlo, domhi)),bcMask(i,j,k3d)
+          end if
 
           ! Compute fluxes, order as conserved state (not q)
           uflx(i,j,kflux,URHO) = qint(i,j,kc,GDRHO)*u_adv
@@ -1258,7 +1314,7 @@ contains
     double precision :: uflx(uflx_lo(1):uflx_hi(1),uflx_lo(2):uflx_hi(2),uflx_lo(3):uflx_hi(3),NVAR)
     double precision :: qint(q_lo(1):q_hi(1),q_lo(2):q_hi(2),q_lo(3):q_hi(3),NGDNV)
 
-    integer :: bcMask(bcMask_lo(1):bcMask_hi(1),bcMask_lo(2):bcMask_hi(2),bcMask_lo(3):bcMask_hi(3),2)
+    integer :: bcMask(bcMask_lo(1):bcMask_hi(1),bcMask_lo(2):bcMask_hi(2),bcMask_lo(3):bcMask_hi(3))
     
     ! Note:  Here k3d is the k corresponding to the full 3d array --
     !         it should be used for print statements or tests against domlo, domhi, etc
