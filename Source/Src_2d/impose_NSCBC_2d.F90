@@ -1450,19 +1450,16 @@ endif ! flag_nscbc_isAnyPerio )
       
       x   = (dble(i)+HALF)*dx
       y   = (dble(j)+HALF)*dy
-
-     !2nd order
-     dpdx = ((-3.0d0/2.0d0)*q(i,j,QPRES)+2.0d0*q(i+1,j,QPRES)-0.5d0*q(i+2,j,QPRES))/dx
-     dudx = ((-3.0d0/2.0d0)*q(i,j,QU)+2.0d0*q(i+1,j,QU)-0.5d0*q(i+2,j,QU))/dx
-     dvdx = ((-3.0d0/2.0d0)*q(i,j,QV)+2.0d0*q(i+1,j,QV)-0.5d0*q(i+2,j,QV))/dx
-     drhodx = ((-3.0d0/2.0d0)*q(i,j,QRHO)+2.0d0*q(i+1,j,QRHO)-0.5d0*q(i+2,j,QRHO))/dx
+     
+     ! Normal derivative along x
+     call normal_derivative(i, j, 1, 1, dx, &
+                            dpdx, dudx, dvdx, drhodx, &
+                            q, q_l1, q_l2, q_h1, q_h2)
  
-     ! Derivative along y
-     ! 2nd order Central
-     dpdy = (q(i,j+1,QPRES)-q(i,j-1,QPRES))/(2.0d0*dy)
-     dudy = (q(i,j+1,QU)-q(i,j-1,QU))/(2.0d0*dy)
-     dvdy = (q(i,j+1,QV)-q(i,j-1,QV))/(2.0d0*dy)
-     drhody = (q(i,j+1,QRHO)-q(i,j-1,QRHO))/(2.0d0*dy)
+     ! Tangential (to idir=x axis) derivative along y 
+     call tangential_derivative(i, j, 1, dy, &
+                               dpdy, dudy, dvdy, drhody, &
+                               q, q_l1, q_l2, q_h1, q_h2)
 
      ! Compute transverse terms
      T1 = (q(i,j,QV)*(dpdy - q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
@@ -1666,18 +1663,15 @@ endif ! flag_nscbc_isAnyPerio )
      x   = (dble(i)+HALF)*dx
      y   = (dble(j)+HALF)*dy
      
-     !2nd order
-     dpdx = ((3.0d0/2.0d0)*q(i,j,QPRES)-2.0d0*q(i-1,j,QPRES)+0.5d0*q(i-2,j,QPRES))/dx
-     dudx = ((3.0d0/2.0d0)*q(i,j,QU)-2.0d0*q(i-1,j,QU)+0.5d0*q(i-2,j,QU))/dx
-     dvdx = ((3.0d0/2.0d0)*q(i,j,QV)-2.0d0*q(i-1,j,QV)+0.5d0*q(i-2,j,QV))/dx
-     drhodx = ((3.0d0/2.0d0)*q(i,j,QRHO)-2.0d0*q(i-1,j,QRHO)+0.5d0*q(i-2,j,QRHO))/dx
+     ! Normal derivative along x
+     call normal_derivative(i, j, 1, -1, dx, &
+                            dpdx, dudx, dvdx, drhodx, &
+                            q, q_l1, q_l2, q_h1, q_h2)
        
-     ! Derivative along y
-     ! 2nd order Central for interior point
-     dpdy = (q(i,j+1,QPRES)-q(i,j-1,QPRES))/(2.0d0*dy)
-     dudy = (q(i,j+1,QU)-q(i,j-1,QU))/(2.0d0*dy)
-     dvdy = (q(i,j+1,QV)-q(i,j-1,QV))/(2.0d0*dy)
-     drhody = (q(i,j+1,QRHO)-q(i,j-1,QRHO))/(2.0d0*dy)
+     ! Tangential (to idir=x axis) derivative along y 
+     call tangential_derivative(i, j, 1, dy, &
+                               dpdy, dudy, dvdy, drhody, &
+                               q, q_l1, q_l2, q_h1, q_h2)
   
      ! Compute transverse terms
      T1 = (q(i,j,QV)*(dpdy - q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
@@ -1873,19 +1867,16 @@ endif
      
      x   = (dble(i)+HALF)*dx
      y   = (dble(j)+HALF)*dy
+     
+     ! Normal derivative along y
+     call normal_derivative(i, j, 2, 1, dy, &
+                            dpdy, dudy, dvdy, drhody, &
+                            q, q_l1, q_l2, q_h1, q_h2)
 
-     !2nd order
-     dpdy = ((-3.0d0/2.0d0)*q(i,j,QPRES)+2.0d0*q(i,j+1,QPRES)-0.5d0*q(i,j+2,QPRES))/dy
-     dudy = ((-3.0d0/2.0d0)*q(i,j,QU)+2.0d0*q(i,j+1,QU)-0.5d0*q(i,j+2,QU))/dy
-     dvdy = ((-3.0d0/2.0d0)*q(i,j,QV)+2.0d0*q(i,j+1,QV)-0.5d0*q(i,j+2,QV))/dy
-     drhody = ((-3.0d0/2.0d0)*q(i,j,QRHO)+2.0d0*q(i,j+1,QRHO)-0.5d0*q(i,j+2,QRHO))/dy
-
-     ! Derivative along x
-     ! Central
-     dpdx = (q(i+1,j,QPRES)-q(i-1,j,QPRES))/(2.0d0*dx)
-     dudx = (q(i+1,j,QU)-q(i-1,j,QU))/(2.0d0*dx)
-     dvdx = (q(i+1,j,QV)-q(i-1,j,QV))/(2.0d0*dx)
-     drhodx = (q(i+1,j,QRHO)-q(i-1,j,QRHO))/(2.0d0*dx)
+     ! Tangential (to idir=y axis) derivative along x 
+     call tangential_derivative(i, j, 2, dx, &
+                               dpdx, dudx, dvdx, drhodx, &
+                               q, q_l1, q_l2, q_h1, q_h2)
       
      ! Compute transverse terms
      T1 = (q(i,j,QU)*(dpdx - q(i,j,QRHO)*qaux(i,j,QC)*dvdx)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dudx)
@@ -2077,18 +2068,15 @@ endif
      x   = (dble(i)+HALF)*dx
      y   = (dble(j)+HALF)*dy 
    
-     !2nd order
-     dpdy = ((3.0d0/2.0d0)*q(i,j,QPRES)-2.0d0*q(i,j-1,QPRES)+0.5d0*q(i,j-2,QPRES))/dy
-     dudy = ((3.0d0/2.0d0)*q(i,j,QU)-2.0d0*q(i,j-1,QU)+0.5d0*q(i,j-2,QU))/dy
-     dvdy = ((3.0d0/2.0d0)*q(i,j,QV)-2.0d0*q(i,j-1,QV)+0.5d0*q(i,j-2,QV))/dy
-     drhody = ((3.0d0/2.0d0)*q(i,j,QRHO)-2.0d0*q(i,j-1,QRHO)+0.5d0*q(i,j-2,QRHO))/dy
+     ! Normal derivative along y
+     call normal_derivative(i, j, 2, -1, dy, &
+                            dpdy, dudy, dvdy, drhody, &
+                            q, q_l1, q_l2, q_h1, q_h2)
 
-     ! Derivative along x
-     ! Central
-     dpdx = (q(i+1,j,QPRES)-q(i-1,j,QPRES))/(2.0d0*dx)
-     dudx = (q(i+1,j,QU)-q(i-1,j,QU))/(2.0d0*dx)
-     dvdx = (q(i+1,j,QV)-q(i-1,j,QV))/(2.0d0*dx)
-     drhodx = (q(i+1,j,QRHO)-q(i-1,j,QRHO))/(2.0d0*dx)
+     ! Tangential (to idir=y axis) derivative along x 
+     call tangential_derivative(i, j, 2, dx, &
+                               dpdx, dudx, dvdx, drhodx, &
+                               q, q_l1, q_l2, q_h1, q_h2)
       
      ! Compute transverse terms
      T1 = (q(i,j,QU)*(dpdx - q(i,j,QRHO)*qaux(i,j,QC)*dvdx)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dudx)
@@ -2269,5 +2257,114 @@ end if
 call destroy(eos_state)
 
 end subroutine impose_NSCBC
+
+
+!-------------------------------------------------
+! Generic routines below
+!-------------------------------------------------
+
+
+  subroutine normal_derivative(i, j, idir, isign, delta, &
+                               dp, du, dv, drho, &
+                               q, q_l1, q_l2, q_h1, q_h2)
+                               
+                               
+  use meth_params_module, only : QVAR, QPRES, QU, QV, QRHO
+  
+  integer, intent(in) :: i,j,idir,isign
+  integer, intent(in) :: q_l1, q_l2, q_h1, q_h2
+  double precision, intent(in) :: delta
+  double precision, intent(in) :: q(q_l1:q_h1,q_l2:q_h2,QVAR)
+  
+  double precision, intent(out) :: dp, du, dv, drho
+  
+  
+  if (idir == 1) then
+    if (isign == 1) then
+    
+      ! 2nd order
+      dp = ((-3.0d0/2.0d0)*q(i,j,QPRES)+2.0d0*q(i+1,j,QPRES)-0.5d0*q(i+2,j,QPRES))/delta
+      du = ((-3.0d0/2.0d0)*q(i,j,QU)+2.0d0*q(i+1,j,QU)-0.5d0*q(i+2,j,QU))/delta
+      dv = ((-3.0d0/2.0d0)*q(i,j,QV)+2.0d0*q(i+1,j,QV)-0.5d0*q(i+2,j,QV))/delta
+      drho = ((-3.0d0/2.0d0)*q(i,j,QRHO)+2.0d0*q(i+1,j,QRHO)-0.5d0*q(i+2,j,QRHO))/delta
+      
+    elseif (isign == -1) then
+    
+       !2nd order
+       dp = ((3.0d0/2.0d0)*q(i,j,QPRES)-2.0d0*q(i-1,j,QPRES)+0.5d0*q(i-2,j,QPRES))/delta
+       du = ((3.0d0/2.0d0)*q(i,j,QU)-2.0d0*q(i-1,j,QU)+0.5d0*q(i-2,j,QU))/delta
+       dv = ((3.0d0/2.0d0)*q(i,j,QV)-2.0d0*q(i-1,j,QV)+0.5d0*q(i-2,j,QV))/delta
+       drho = ((3.0d0/2.0d0)*q(i,j,QRHO)-2.0d0*q(i-1,j,QRHO)+0.5d0*q(i-2,j,QRHO))/delta
+    
+    else
+      call bl_abort("Problem of isign in impose_NSCBC_2d:normal_derivative")
+    end if
+    
+  elseif (idir == 2) then
+  
+    if (isign == 1) then
+  
+      !2nd order
+      dp = ((-3.0d0/2.0d0)*q(i,j,QPRES)+2.0d0*q(i,j+1,QPRES)-0.5d0*q(i,j+2,QPRES))/delta
+      du = ((-3.0d0/2.0d0)*q(i,j,QU)+2.0d0*q(i,j+1,QU)-0.5d0*q(i,j+2,QU))/delta
+      dv = ((-3.0d0/2.0d0)*q(i,j,QV)+2.0d0*q(i,j+1,QV)-0.5d0*q(i,j+2,QV))/delta
+      drho = ((-3.0d0/2.0d0)*q(i,j,QRHO)+2.0d0*q(i,j+1,QRHO)-0.5d0*q(i,j+2,QRHO))/delta
+     
+    elseif (isign == -1) then
+    
+      !2nd order
+      dp = ((3.0d0/2.0d0)*q(i,j,QPRES)-2.0d0*q(i,j-1,QPRES)+0.5d0*q(i,j-2,QPRES))/delta
+      du = ((3.0d0/2.0d0)*q(i,j,QU)-2.0d0*q(i,j-1,QU)+0.5d0*q(i,j-2,QU))/delta
+      dv = ((3.0d0/2.0d0)*q(i,j,QV)-2.0d0*q(i,j-1,QV)+0.5d0*q(i,j-2,QV))/delta
+      drho = ((3.0d0/2.0d0)*q(i,j,QRHO)-2.0d0*q(i,j-1,QRHO)+0.5d0*q(i,j-2,QRHO))/delta
+  
+    else
+      call bl_abort("Problem of isign in impose_NSCBC_2d:normal_derivative")
+    end if
+  
+  else
+      call bl_abort("Problem of idir in impose_NSCBC_2d:normal_derivative")
+  end if
+  
+  end subroutine normal_derivative
+  
+  !----------------
+  
+  subroutine tangential_derivative(i, j, idir, delta, &
+                               dp, du, dv, drho, &
+                               q, q_l1, q_l2, q_h1, q_h2)
+                               
+                               
+  use meth_params_module, only : QVAR, QPRES, QU, QV, QRHO
+  
+  integer, intent(in) :: i,j,idir
+  integer, intent(in) :: q_l1, q_l2, q_h1, q_h2
+  double precision, intent(in) :: delta
+  double precision, intent(in) :: q(q_l1:q_h1,q_l2:q_h2,QVAR)
+  
+  double precision, intent(out) :: dp, du, dv, drho
+  
+  ! Warning, idir means the normal direction and this routine compute the tangential derivative
+  if (idir == 1) then
+
+    ! 2nd order Central
+    dp = (q(i,j+1,QPRES)-q(i,j-1,QPRES))/(2.0d0*delta)
+    du = (q(i,j+1,QU)-q(i,j-1,QU))/(2.0d0*delta)
+    dv = (q(i,j+1,QV)-q(i,j-1,QV))/(2.0d0*delta)
+    drho = (q(i,j+1,QRHO)-q(i,j-1,QRHO))/(2.0d0*delta)
+      
+  elseif (idir == 2) then
+  
+    ! 2nd order Central
+    dp = (q(i+1,j,QPRES)-q(i-1,j,QPRES))/(2.0d0*delta)
+    du = (q(i+1,j,QU)-q(i-1,j,QU))/(2.0d0*delta)
+    dv = (q(i+1,j,QV)-q(i-1,j,QV))/(2.0d0*delta)
+    drho = (q(i+1,j,QRHO)-q(i-1,j,QRHO))/(2.0d0*delta)
+    
+  else
+      call bl_abort("Problem of idir in impose_NSCBC_2d:tangential_derivative")
+  end if
+  
+  end subroutine tangential_derivative
 
 end module gc_nscbc_mod
