@@ -103,6 +103,140 @@ contains
     endif
   
   end function bc_test
+  
+  pure function bc_test_3d(idir, i, j, k, &
+                        bcMask, bcMask_l1, bcMask_l2, bcMask_l3, bcMask_h1, bcMask_h2, bcMask_h3, &
+                        domlo, domhi) result (f)
+
+    use prob_params_module, only : physbc_lo, physbc_hi, Symmetry, SlipWall, NoSlipWall
+    use meth_params_module, only: i_nscbc
+    
+    integer, intent(in) :: idir, i, j, k, domlo(*), domhi(*)
+    integer, intent(in) :: bcMask_l1, bcMask_l2, bcMask_l3, bcMask_h1, bcMask_h2, bcMask_h3
+    integer, intent(in) :: bcMask(bcMask_l1:bcMask_h1,bcMask_l2:bcMask_h2,bcMask_l3:bcMask_h3)
+    integer :: f
+
+    ! Enforce that fluxes through a symmetry plane or wall are hard zero.
+    f = 1
+
+     
+       if (idir == 1) then
+      
+         if (i == domlo(1) .and. &
+              (bcMask(i,j,k) == SlipWall .or. &
+               bcMask(i,j,k) == Symmetry .or. &
+               bcMask(i,j,k) == NoSlipWall  )) then
+            f = 0
+         endif
+      
+         if (i == domhi(1)+1 .and. &
+              (bcMask(i,j,k) == SlipWall .or. &
+               bcMask(i,j,k) == Symmetry .or. &
+               bcMask(i,j,k) == NoSlipWall  )) then
+            f = 0
+         endif
+      end if
+      
+      if (idir == 2) then
+            
+         if (j == domlo(2) .and. &
+              (bcMask(i,j,k) == SlipWall .or. &
+               bcMask(i,j,k) == Symmetry .or. &
+               bcMask(i,j,k) == NoSlipWall  )) then
+            f = 0
+         endif
+      
+         if (j == domhi(2)+1 .and. &
+              (bcMask(i,j,k) == SlipWall .or. &
+               bcMask(i,j,k) == Symmetry .or. &
+               bcMask(i,j,k) == NoSlipWall  )) then
+            f = 0
+         end if
+      endif
+      
+      if (idir == 3) then
+            
+         if (k == domlo(3) .and. &
+              (bcMask(i,j,k) == SlipWall .or. &
+               bcMask(i,j,k) == Symmetry .or. &
+               bcMask(i,j,k) == NoSlipWall  )) then
+            f = 0
+         endif
+      
+         if (k == domhi(3)+1 .and. &
+              (bcMask(i,j,k) == SlipWall .or. &
+               bcMask(i,j,k) == Symmetry .or. &
+               bcMask(i,j,k) == NoSlipWall  )) then
+            f = 0
+         end if
+      endif
+      
+      
+      !if (idir == 1) then
+      !
+      !   if (i == domlo(1) .and. &
+      !        (physbc_lo(1) == Symmetry .or. &
+      !        physbc_lo(1) == SlipWall .or. &
+      !        bcMask(i,j,k) == SlipWall .or. &
+      !        bcMask(i,j,k) == NoSlipWall .or. &
+      !        physbc_lo(1) == NoSlipWall) ) then
+      !      f = 0
+      !   endif
+      !
+      !   if (i == domhi(1)+1 .and. &
+      !        (physbc_hi(1) == Symmetry .or. &
+      !        physbc_hi(1) == SlipWall .or. &
+      !        bcMask(i,j,k) == SlipWall .or. &
+      !        bcMask(i,j,k) == NoSlipWall .or. &
+      !        physbc_hi(1) == NoSlipWall) ) then
+      !      f = 0
+      !   endif
+      !end if
+      !
+      !if (idir == 2) then
+      !      
+      !   if (j == domlo(2) .and. &
+      !        (physbc_lo(2) == Symmetry .or. &
+      !        physbc_lo(2) == SlipWall .or. &
+      !        bcMask(i,j,k) == SlipWall .or. &
+      !        bcMask(i,j,k) == NoSlipWall .or. &
+      !        physbc_lo(2) == NoSlipWall) ) then
+      !      f = 0
+      !   endif
+      !
+      !   if (j == domhi(2)+1 .and. &
+      !        (physbc_hi(2) == Symmetry .or. &
+      !        physbc_hi(2) == SlipWall .or. &
+      !        bcMask(i,j,k) == SlipWall .or. &
+      !        bcMask(i,j,k) == NoSlipWall .or. &
+      !        physbc_hi(2) == NoSlipWall) ) then
+      !      f = 0
+      !   end if
+      !endif
+      !
+      !if (idir == 3) then
+      !      
+      !   if (k == domlo(3) .and. &
+      !        (physbc_lo(3) == Symmetry .or. &
+      !        physbc_lo(3) == SlipWall .or. &
+      !        bcMask(i,j,k) == SlipWall .or. &
+      !        bcMask(i,j,k) == NoSlipWall .or. &
+      !        physbc_lo(3) == NoSlipWall) ) then
+      !      f = 0
+      !   endif
+      !
+      !   if (k == domhi(3)+1 .and. &
+      !        (physbc_hi(3) == Symmetry .or. &
+      !        physbc_hi(3) == SlipWall .or. &
+      !        bcMask(i,j,k) == SlipWall .or. &
+      !        bcMask(i,j,k) == NoSlipWall .or. &
+      !        physbc_hi(3) == NoSlipWall) ) then
+      !      f = 0
+      !   end if
+      !endif
+
+  
+  end function bc_test_3d
 
   pure subroutine outflow_hack(ul,ur,vl,vr,v2l,v2r,rel,rer,&
        idir, i, j, domlo, domhi)

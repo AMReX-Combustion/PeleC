@@ -100,8 +100,8 @@ contains
     call build(eos_state)
 
     xcen = (2.0d0*probhi(1)/4.0d0)
-    ycen = (2.0d0*probhi(2)/4.0d0)
-    zcen = (2.0d0*probhi(3)/4.0d0)
+    ycen = (2.0d0*probhi(2)/6.0d0)
+    zcen = (2.0d0*probhi(3)/8.0d0)
 
     eos_state % p = p_ref
     eos_state % T = T_ref
