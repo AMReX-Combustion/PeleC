@@ -4,3 +4,5 @@ plt*
 *.EXE
 *.gnu.MPI.ex
 *.0
+/AMReX_buildInfo.cpp
+/extern.f90

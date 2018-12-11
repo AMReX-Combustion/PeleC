@@ -857,12 +857,6 @@ contains
 
           ! Enforce that fluxes through a symmetry plane or wall are hard zero.
           ! Here the NSCBC info about if we have a wall or not is contained in the ghost-cell
-          idx = 0
-          idy = 0
-          if ((idir == 1).and.(i == domlo(1)))   idx = 0
-          if ((idir == 1).and.(i == domhi(1)+1)) idx = 1
-          if ((idir == 2).and.(j == domlo(2)))   idy = 0
-          if ((idir == 2).and.(j == domhi(2)+1)) idy = 1
           qint(i,j,iu) = bc_test(idir, i, j, &
                                  bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
                                  domlo, domhi) * qint(i,j,iu)
@@ -1132,12 +1126,6 @@ contains
           
           ! enforce that the fluxes through a symmetry plane or wall are zero
           ! Here the NSCBC info about if we have a wall or not is contained in the ghost-cell
-          idx = 0
-          idy = 0
-          if ((idir == 1).and.(i == domlo(1)))   idx = 0
-          if ((idir == 1).and.(i == domhi(1)+1)) idx = 1
-          if ((idir == 2).and.(j == domlo(2)))   idy = 0
-          if ((idir == 2).and.(j == domhi(2)+1)) idy = 1
           !if (idir == 1) write(*,*) 'DEBUG RIEMAMNN',i,j,bcMask(0,j)
           !if (idir == 2) write(*,*) 'DEBUG RIEMAMNN',i,j,bcMask(i,domhi(2)+1)
           qint(i,j,iu) = bc_test(idir, i, j, &
@@ -1274,12 +1262,6 @@ contains
        do i = ilo, ihi
        
         ! Here the NSCBC info about if we have a wall or not is contained in the ghost-cell
-        idx = 0
-        idy = 0
-        if ((idir == 1).and.(i == domlo(1)))   idx = 0
-        if ((idir == 1).and.(i == domhi(1)+1)) idx = 1
-        if ((idir == 2).and.(j == domlo(2)))   idy = 0
-        if ((idir == 2).and.(j == domhi(2)+1)) idy = 1
         bc_test_mask = bc_test(idir, i, j, &
                                bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
                                domlo, domhi)
@@ -1522,12 +1504,6 @@ contains
           ! now we do the HLLC construction
 
           ! Here the NSCBC info about if we have a wall or not is contained in the ghost-cell
-          idx = 0
-          idy = 0
-          if ((idir == 1).and.(i == domlo(1)))   idx = 0
-          if ((idir == 1).and.(i == domhi(1)+1)) idx = 1
-          if ((idir == 2).and.(j == domlo(2)))   idy = 0
-          if ((idir == 2).and.(j == domhi(2)+1)) idy = 1
           bnd_fac = bc_test(idir, i, j, &
                             bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
                             domlo, domhi)

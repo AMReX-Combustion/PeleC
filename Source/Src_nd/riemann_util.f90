@@ -22,25 +22,21 @@ contains
     ! Enforce that fluxes through a symmetry plane or wall are hard zero.
     f = 1
 
-    if (i_nscbc == 1) then
+    !if (i_nscbc == 1) then
       
       if (idir == 1) then
       
          if (i == domlo(1) .and. &
-              (physbc_lo(1) == Symmetry .or. &
-              physbc_lo(1) == SlipWall .or. &
+              (bcMask(i,j) == Symmetry .or. &
               bcMask(i,j) == SlipWall .or. &
-              bcMask(i,j) == NoSlipWall .or. &
-              physbc_lo(1) == NoSlipWall) ) then
+              bcMask(i,j) == NoSlipWall )) then
             f = 0
          endif
       
          if (i == domhi(1)+1 .and. &
-              (physbc_hi(1) == Symmetry .or. &
-              physbc_hi(1) == SlipWall .or. &
+              (bcMask(i,j) == Symmetry .or. &
               bcMask(i,j) == SlipWall .or. &
-              bcMask(i,j) == NoSlipWall .or. &
-              physbc_hi(1) == NoSlipWall) ) then
+              bcMask(i,j) == NoSlipWall )) then
             f = 0
          endif
       end if
@@ -48,59 +44,19 @@ contains
       if (idir == 2) then
             
          if (j == domlo(2) .and. &
-              (physbc_lo(2) == Symmetry .or. &
-              physbc_lo(2) == SlipWall .or. &
+              (bcMask(i,j) == Symmetry .or. &
               bcMask(i,j) == SlipWall .or. &
-              bcMask(i,j) == NoSlipWall .or. &
-              physbc_lo(2) == NoSlipWall) ) then
+              bcMask(i,j) == NoSlipWall )) then
             f = 0
          endif
       
          if (j == domhi(2)+1 .and. &
-              (physbc_hi(2) == Symmetry .or. &
-              physbc_hi(2) == SlipWall .or. &
+              (bcMask(i,j) == Symmetry .or. &
               bcMask(i,j) == SlipWall .or. &
-              bcMask(i,j) == NoSlipWall .or. &
-              physbc_hi(2) == NoSlipWall) ) then
+              bcMask(i,j) == NoSlipWall )) then
             f = 0
          end if
       endif
-      
-    elseif (i_nscbc == 0) then
-  
-       if (idir == 1) then
-         if (i == domlo(1) .and. &
-              (physbc_lo(1) == Symmetry .or. &
-               physbc_lo(1) == SlipWall .or. &
-               physbc_lo(1) == NoSlipWall) ) then
-            f = 0
-         endif
-  
-         if (i == domhi(1)+1 .and. &
-              (physbc_hi(1) == Symmetry .or. &
-               physbc_hi(1) == SlipWall .or. &
-               physbc_hi(1) == NoSlipWall) ) then
-            f = 0
-         endif
-      end if
-  
-      if (idir == 2) then
-         if (j == domlo(2) .and. &
-              (physbc_lo(2) == Symmetry .or. &
-               physbc_lo(2) == SlipWall .or. &
-               physbc_lo(2) == NoSlipWall) ) then
-            f = 0
-         endif
-  
-         if (j == domhi(2)+1 .and. &
-              (physbc_hi(2) == Symmetry .or. &
-               physbc_hi(2) == SlipWall .or. &
-               physbc_hi(2) == NoSlipWall) ) then
-            f = 0
-         end if
-      endif
-  
-    endif
   
   end function bc_test
   
