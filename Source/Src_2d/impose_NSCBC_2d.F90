@@ -1480,6 +1480,7 @@ endif ! flag_nscbc_isAnyPerio )
        x_bcMask(i,j) = bc_type
      endif
           
+     ! Computing the LODI system waves
      call compute_waves(i, j, 1, 1, &
                         bc_type, bc_params, bc_target, &
                         T1, T2, T3, T4, &
@@ -1487,103 +1488,14 @@ endif ! flag_nscbc_isAnyPerio )
                         dpdx, dudx, dvdx, drhodx, &
                         q, q_l1, q_l2, q_h1, q_h2, &
                         qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-     
-     ! Compute new spatial derivative
-     drhodx = (L2 + 0.5d0*(L1 + L4))/(qaux(i,j,QC)**2.0d0)  
-     dudx   = (L4-L1)/(2.0d0*qaux(i,j,QC)*q(i,j,QRHO))
-     dvdx   = L3
-     dpdx   = 0.5d0*(L1+L4)
-       
-     ! Update ghost cells
-     ! 2nd order
-     q(i-1,j,QU)    = q(i+1,j,QU) - 2.0d0*dx*dudx
-     q(i-1,j,QV)    = q(i+1,j,QV) - 2.0d0*dx*dvdx 
-     q(i-1,j,QRHO)  = q(i+1,j,QRHO)  - 2.0d0*dx*drhodx
-     q(i-1,j,QPRES) = q(i+1,j,QPRES) - 2.0d0*dx*dpdx
-   
-     !---------------- 
-     q(i-2,j,QU)    = -2.0d0*q(i+1,j,QU) - 3.0d0*q(i,j,QU) + 6.0d0*q(i-1,j,QU) + 6.0d0*dx*dudx
-     q(i-2,j,QV)    = -2.0d0*q(i+1,j,QV) - 3.0d0*q(i,j,QV) + 6.0d0*q(i-1,j,QV) + 6.0d0*dx*dvdx
-     q(i-2,j,QRHO)    = -2.0d0*q(i+1,j,QRHO) - 3.0d0*q(i,j,QRHO) + 6.0d0*q(i-1,j,QRHO) + 6.0d0*dx*drhodx
-     q(i-2,j,QPRES)    = -2.0d0*q(i+1,j,QPRES) - 3.0d0*q(i,j,QPRES) + 6.0d0*q(i-1,j,QPRES) + 6.0d0*dx*dpdx
- 
-     q(i-3,j,QU)    = 3.0d0*q(i+1,j,QU) +10.0d0*q(i,j,QU) - 18.0d0*q(i-1,j,QU) + 6.0d0*q(i-2,j,QU) - 12.0d0*dx*dudx
-     q(i-3,j,QV)    = 3.0d0*q(i+1,j,QV) +10.0d0*q(i,j,QV) - 18.0d0*q(i-1,j,QV) + 6.0d0*q(i-2,j,QV) - 12.0d0*dx*dvdx
-     q(i-3,j,QRHO)    = 3.0d0*q(i+1,j,QRHO) +10.0d0*q(i,j,QRHO) - 18.0d0*q(i-1,j,QRHO) + 6.0d0*q(i-2,j,QRHO) - 12.0d0*dx*drhodx
-     q(i-3,j,QPRES)    = 3.0d0*q(i+1,j,QPRES) +10.0d0*q(i,j,QPRES) - 18.0d0*q(i-1,j,QPRES) + 6.0d0*q(i-2,j,QPRES) - 12.0d0*dx*dpdx
- 
-     q(i-4,j,QU)    = -2.0d0*q(i+1,j,QU) - 13.0d0*q(i,j,QU) + 24.0d0*q(i-1,j,QU) - 12.0d0*q(i-2,j,QU)  &
-                     + 4.0d0*q(i-3,j,QU) + 12.0d0*dx*dudx
-     q(i-4,j,QV)    = -2.0d0*q(i+1,j,QV) - 13.0d0*q(i,j,QV) + 24.0d0*q(i-1,j,QV) - 12.0d0*q(i-2,j,QV) &
-                     + 4.0d0*q(i-3,j,QV) + 12.0d0*dx*dvdx
-     q(i-4,j,QRHO)  = -2.0d0*q(i+1,j,QRHO) - 13.0d0*q(i,j,QRHO) + 24.0d0*q(i-1,j,QRHO) - 12.0d0*q(i-2,j,QRHO) &
-                     + 4.0d0*q(i-3,j,QRHO) + 12.0d0*dx*drhodx
-     q(i-4,j,QPRES) = -2.0d0*q(i+1,j,QPRES) - 13.0d0*q(i,j,QPRES) + 24.0d0*q(i-1,j,QPRES) - 12.0d0*q(i-2,j,QPRES) &
-                     + 4.0d0*q(i-3,j,QPRES) + 12.0d0*dx*dpdx
- 
-     if ((bc_type .eq. NoSlipWall).or.(bc_type .eq. SlipWall)) then
-     
-       if (bc_type .eq. NoSlipWall) then
-         wall_sign = -1.0d0
-       else if (bc_type .eq. SlipWall)  then
-         wall_sign = 1.0d0
-       end if
-       
-       q(i-1,j,QU)    = -q(i,j,QU)
-       q(i-2,j,QU)    = -q(i+1,j,QU)
-       q(i-3,j,QU)    = -q(i+2,j,QU)
-       q(i-4,j,QU)    = -q(i+3,j,QU)
-
-       q(i-1,j,QV)    = wall_sign*q(i,j,QV)
-       q(i-2,j,QV)    = wall_sign*q(i+1,j,QV)
-       q(i-3,j,QV)    = wall_sign*q(i+2,j,QV)
-       q(i-4,j,QV)    = wall_sign*q(i+3,j,QV)
-       
-       q(i-1,j,QRHO)  = q(i,j,QRHO)
-       q(i-2,j,QRHO)  = q(i+1,j,QRHO)
-       q(i-3,j,QRHO)  = q(i+2,j,QRHO)
-       q(i-4,j,QRHO)  = q(i+3,j,QRHO)
-       
-       q(i-1,j,QPRES)  = q(i,j,QPRES)
-       q(i-2,j,QPRES)  = q(i+1,j,QPRES)
-       q(i-3,j,QPRES)  = q(i+2,j,QPRES)
-       q(i-4,j,QPRES)  = q(i+3,j,QPRES)
-     
-     end if
-
- 
-     ! Recompute missing values thanks to EOS
-     do hop=domlo(1)-1,-4,-1
-     
-       eos_state % p        = q(hop,j,QPRES )
-       eos_state % rho      = q(hop,j,QRHO  )
-       eos_state % massfrac = q(hop,j,QFS:QFS+nspec-1)
-       eos_state % aux      = q(hop,j,QFX:QFX+naux-1)
-
-       call eos_rp(eos_state)
-       q(hop,j,QTEMP)  = eos_state % T
-       q(hop,j,QREINT) = eos_state % e * q(hop,j,QRHO)
-       q(hop,j,QGAME)  = q(hop,j,QPRES) / q(hop,j,QREINT) + ONE
-       
-       qaux(hop,j,QDPDR)  = eos_state % dpdr_e
-       qaux(hop,j,QDPDE)  = eos_state % dpde
-       qaux(hop,j,QGAMC)  = eos_state % gam1
-       qaux(hop,j,QC   )  = eos_state % cs
-       qaux(hop,j,QCSML)  = max(small, small * qaux(hop,j,QC))
-
-       uin(hop,j,URHO )  = eos_state % rho 
-       uin(hop,j,UMX  )  = q(hop,j,QU ) * eos_state % rho 
-       uin(hop,j,UMY  )  = q(hop,j,QV ) * eos_state % rho 
-       uin(hop,j,UMZ  ) = 0.0d0
-       uin(hop,j,UEINT) = eos_state % rho   *  eos_state % e
-       uin(hop,j,UEDEN) = eos_state % rho  &
-          * (eos_state % e + 0.5d0 * (uin(hop,j,UMX)**2 + uin(hop,j,UMY)**2))
-       uin(hop,j,UTEMP) = eos_state % T
-       do n=1, nspec
-          uin(hop,j,UFS+n-1) = eos_state % rho  *  eos_state % massfrac(n)
-       end do   
-       
-     enddo
+          
+     ! Recomputing ghost-cells values with the LODI waves
+     call update_ghost_cells(i, j, bc_type, 1, 1, dx, &
+                              domlo, domhi, &
+                               L1, L2, L3, L4, &
+                               uin, uin_l1, uin_l2, uin_h1, uin_h2, &
+                               q, q_l1, q_l2, q_h1, q_h2, &
+                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
 
    enddo
  end if
@@ -1628,108 +1540,23 @@ endif ! flag_nscbc_isAnyPerio )
      else
        x_bcMask(i+1,j) = bc_type
      endif
-
+ 
+     ! Computing the LODI system waves
      call compute_waves(i, j, 1, -1, &
                         bc_type, bc_params, bc_target, &
                         T1, T2, T3, T4, &
                         L1, L2, L3, L4, &
                         dpdx, dudx, dvdx, drhodx, &
                         q, q_l1, q_l2, q_h1, q_h2, &
-                        qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+                        qaux, qa_l1, qa_l2, qa_h1, qa_h2)    
      
-     ! Compute new spatial derivative
-     drhodx = (L2 + 0.5d0*(L1 + L4))/(qaux(i,j,QC)**2.0d0)  
-     dudx   = (L4-L1)/(2.0d0*qaux(i,j,QC)*q(i,j,QRHO))
-     dvdx   = L3
-     dpdx   = 0.5d0*(L1+L4)
-
-     ! 2nd order
-     q(i+1,j,QU)    = q(i-1,j,QU) + 2.0d0*dx*dudx
-     q(i+1,j,QV)    = q(i-1,j,QV) + 2.0d0*dx*dvdx
-     q(i+1,j,QRHO)  = q(i-1,j,QRHO)  + 2.0d0*dx*drhodx
-     q(i+1,j,QPRES) = q(i-1,j,QPRES) + 2.0d0*dx*dpdx
-
-     !----------------
-     q(i+2,j,QU)    = -2.0d0*q(i-1,j,QU) - 3.0d0*q(i,j,QU) + 6.0d0*q(i+1,j,QU) - 6.0d0*dx*dudx
-     q(i+2,j,QV)    = -2.0d0*q(i-1,j,QV) - 3.0d0*q(i,j,QV) + 6.0d0*q(i+1,j,QV) - 6.0d0*dx*dvdx
-     q(i+2,j,QRHO)  = -2.0d0*q(i-1,j,QRHO) - 3.0d0*q(i,j,QRHO) + 6.0d0*q(i+1,j,QRHO) - 6.0d0*dx*drhodx
-     q(i+2,j,QPRES) = -2.0d0*q(i-1,j,QPRES) - 3.0d0*q(i,j,QPRES) + 6.0d0*q(i+1,j,QPRES) - 6.0d0*dx*dpdx
-
-     q(i+3,j,QU)    = 3.0d0*q(i-1,j,QU) +10.0d0*q(i,j,QU) - 18.0d0*q(i+1,j,QU) + 6.0d0*q(i+2,j,QU) + 12.0d0*dx*dudx
-     q(i+3,j,QV)    = 3.0d0*q(i-1,j,QV) +10.0d0*q(i,j,QV) - 18.0d0*q(i+1,j,QV) + 6.0d0*q(i+2,j,QV) + 12.0d0*dx*dvdx
-     q(i+3,j,QRHO)  = 3.0d0*q(i-1,j,QRHO) +10.0d0*q(i,j,QRHO) - 18.0d0*q(i+1,j,QRHO) + 6.0d0*q(i+2,j,QRHO) + 12.0d0*dx*drhodx
-     q(i+3,j,QPRES)  = 3.0d0*q(i-1,j,QPRES) +10.0d0*q(i,j,QPRES) - 18.0d0*q(i+1,j,QPRES) + 6.0d0*q(i+2,j,QPRES) + 12.0d0*dx*dpdx
-
-     q(i+4,j,QU)    = -2.0d0*q(i-1,j,QU) - 13.0d0*q(i,j,QU) + 24.0d0*q(i+1,j,QU) - 12.0d0*q(i+2,j,QU)  & 
-                     + 4.0d0*q(i+3,j,QU) - 12.0d0*dx*dudx 
-     q(i+4,j,QV)    = -2.0d0*q(i-1,j,QV) - 13.0d0*q(i,j,QV) + 24.0d0*q(i+1,j,QV) - 12.0d0*q(i+2,j,QV) &
-                       + 4.0d0*q(i+3,j,QV) - 12.0d0*dx*dvdx
-     q(i+4,j,QRHO)  = -2.0d0*q(i-1,j,QRHO) - 13.0d0*q(i,j,QRHO) + 24.0d0*q(i+1,j,QRHO) - 12.0d0*q(i+2,j,QRHO) &
-                     + 4.0d0*q(i+3,j,QRHO) - 12.0d0*dx*drhodx
-     q(i+4,j,QPRES) = -2.0d0*q(i-1,j,QPRES) - 13.0d0*q(i,j,QPRES) + 24.0d0*q(i+1,j,QPRES) - 12.0d0*q(i+2,j,QPRES) &
-                     + 4.0d0*q(i+3,j,QPRES) - 12.0d0*dx*dpdx
-
-     if ((bc_type .eq. NoSlipWall).or.(bc_type .eq. SlipWall)) then
-     
-       if (bc_type .eq. NoSlipWall) then
-         wall_sign = -1.0d0
-       else if (bc_type .eq. SlipWall)  then
-         wall_sign = 1.0d0
-       end if
-       
-       q(i+1,j,QU)    = -q(i,j,QU)
-       q(i+2,j,QU)    = -q(i-1,j,QU)
-       q(i+3,j,QU)    = -q(i-2,j,QU)
-       q(i+4,j,QU)    = -q(i-3,j,QU)
-
-       q(i+1,j,QV)    = wall_sign*q(i,j,QV)
-       q(i+2,j,QV)    = wall_sign*q(i-1,j,QV)
-       q(i+3,j,QV)    = wall_sign*q(i-2,j,QV)
-       q(i+4,j,QV)    = wall_sign*q(i-3,j,QV)
-
-       q(i+1,j,QRHO)  = q(i,j,QRHO)
-       q(i+2,j,QRHO)  = q(i-1,j,QRHO)
-       q(i+3,j,QRHO)  = q(i-2,j,QRHO)
-       q(i+4,j,QRHO)  = q(i-3,j,QRHO)
-
-       q(i+1,j,QPRES)  = q(i,j,QPRES)
-       q(i+2,j,QPRES)  = q(i-1,j,QPRES)
-       q(i+3,j,QPRES)  = q(i-2,j,QPRES)
-       q(i+4,j,QPRES)  = q(i-3,j,QPRES)
-     
-     end if
-
-     ! Recompute missing values thanks to EOS
-     do hop= domhi(1)+1,domhi(1)+4,1
-     
-       eos_state % p        = q(hop,j,QPRES )
-       eos_state % rho      = q(hop,j,QRHO  )
-       eos_state % massfrac = q(hop,j,QFS:QFS+nspec-1)
-       eos_state % aux      = q(hop,j,QFX:QFX+naux-1)
-
-       call eos_rp(eos_state)
-       q(hop,j,QTEMP)  = eos_state % T
-       q(hop,j,QREINT) = eos_state % e * q(hop,j,QRHO)
-       q(hop,j,QGAME)  = q(hop,j,QPRES) / q(hop,j,QREINT) + ONE
-       
-       qaux(hop,j,QDPDR)  = eos_state % dpdr_e
-       qaux(hop,j,QDPDE)  = eos_state % dpde
-       qaux(hop,j,QGAMC)  = eos_state % gam1
-       qaux(hop,j,QC   )  = eos_state % cs
-       qaux(hop,j,QCSML)  = max(small, small * qaux(hop,j,QC))
-
-       uin(hop,j,URHO )  = eos_state % rho 
-       uin(hop,j,UMX  )  = q(hop,j,QU ) * eos_state % rho 
-       uin(hop,j,UMY  )  = q(hop,j,QV ) * eos_state % rho 
-       uin(hop,j,UMZ  ) = 0.0d0
-       uin(hop,j,UEINT) = eos_state % rho   *  eos_state % e
-       uin(hop,j,UEDEN) = eos_state % rho  &
-          * (eos_state % e + 0.5d0 * (uin(hop,j,UMX)**2 + uin(hop,j,UMY)**2))
-       uin(hop,j,UTEMP) = eos_state % T
-       do n=1, nspec
-          uin(hop,j,UFS+n-1) = eos_state % rho  *  eos_state % massfrac(n)
-       end do 
-     enddo
+     ! Recomputing ghost-cells values with the LODI waves
+     call update_ghost_cells(i, j, bc_type, 1, -1, dx, &
+                              domlo, domhi, &
+                               L1, L2, L3, L4, &
+                               uin, uin_l1, uin_l2, uin_h1, uin_h2, &
+                               q, q_l1, q_l2, q_h1, q_h2, &
+                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
 
   enddo
 endif
@@ -2228,7 +2055,7 @@ end subroutine impose_NSCBC
   
   ! Local
   double precision :: mach_local, TARGET_VX, TARGET_VY, TARGET_TEMPERATURE, TARGET_PRESSURE
-  double precision :: beta, relax_T, relax_U, relax_V, sigma_out, Kout, local_probhi
+  double precision :: beta, relax_T, relax_U, relax_V, sigma_out, Kout
   
   if ((idir == 1) .or. (idir == 2)) then
     continue
@@ -2242,19 +2069,12 @@ end subroutine impose_NSCBC
     call bl_abort("Problem of isign in impose_NSCBC_2d:compute_waves")
   end if
   
-  if (idir == 1) then
-    local_probhi = probhi(1)
-  elseif (idir == 2) then
-    local_probhi = probhi(2)
-  endif
-  
   mach_local = dsqrt(q(i,j,QU)**2.0d0 + q(i,j,QV)**2.0d0)/qaux(i,j,QC)
      
   TARGET_VX = bc_target(1)
   TARGET_VY = bc_target(2)
   TARGET_TEMPERATURE = bc_target(4)
   TARGET_PRESSURE = bc_target(5)
-     
      
   ! Compute LODI equations
   if (bc_type == Inflow) then
@@ -2269,27 +2089,27 @@ end subroutine impose_NSCBC
       if (idir == 1) L1 = (q(i,j,QU)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*du)
       if (idir == 2) L1 = (q(i,j,QV)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*dv)
     elseif (isign == -1) then
-      if (idir == 1) L1 = relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/local_probhi) * &
+      if (idir == 1) L1 = relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
          (q(i,j,QU) - TARGET_VX)  -  ((1.0d0 - beta)*T1)
-      if (idir == 2) L1 = relax_V * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/local_probhi) * &
+      if (idir == 2) L1 = relax_V * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
          (q(i,j,QV) - TARGET_VY)  -  ((1.0d0 - beta)*T1)
     else
       call bl_abort("Problem of isign in impose_NSCBC_2d:compute_waves")
     endif
        
-    L2 = relax_T * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/local_probhi) &
+    L2 = relax_T * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(idir)) &
                  * (q(i,j,QTEMP) - TARGET_TEMPERATURE) - ((1.0d0 - beta)*T2)
                     
-    if (idir == 1) L3 = relax_V * (qaux(i,j,QC)/local_probhi) * (q(i,j,QV) - TARGET_VY) &
+    if (idir == 1) L3 = relax_V * (qaux(i,j,QC)/probhi(idir)) * (q(i,j,QV) - TARGET_VY) &
                    - ((1.0d0 - beta)*T3)
-    if (idir == 2) L3 = relax_U * (qaux(i,j,QC)/local_probhi) * (q(i,j,QU) - TARGET_VX)  &
+    if (idir == 2) L3 = relax_U * (qaux(i,j,QC)/probhi(idir)) * (q(i,j,QU) - TARGET_VX)  &
                    - ((1.0d0 - beta)*T3)
        
        
     if (isign == 1) then
-      if (idir == 1) L4 = relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/local_probhi) * &
+      if (idir == 1) L4 = relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
                      (q(i,j,QU) - TARGET_VX)  - ((1.0d0 - beta)*T4)
-      if (idir == 2) L4 = relax_V * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/local_probhi) * &
+      if (idir == 2) L4 = relax_V * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
                      (q(i,j,QV) - TARGET_VY) - ((1.0d0 - beta)*T4)
     elseif (isign == -1) then     
       if (idir == 1) L4 = (q(i,j,QU)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*du)
@@ -2311,7 +2131,7 @@ end subroutine impose_NSCBC
     ! as reported in the paper of Granet
     sigma_out = bc_params(6)
     beta =  mach_local 
-    Kout = sigma_out*(1.0d0 - (mach_local**2.0d0))*(qaux(i,j,QC)/local_probhi)
+    Kout = sigma_out*(1.0d0 - (mach_local**2.0d0))*(qaux(i,j,QC)/probhi(idir))
 
     if (isign == 1) then
       if (idir == 1) L1 = (q(i,j,QU)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*du)
@@ -2368,9 +2188,190 @@ end subroutine impose_NSCBC
        L4 = L4 / (q(i,j,QV)+qaux(i,j,QC))
      endif
   end if
-     
-  
   
   end subroutine compute_waves
+  
+  !-------------------------
+  
+  subroutine update_ghost_cells(i, j, bc_type, idir, isign, delta, &
+                                domlo, domhi, &
+                                L1, L2, L3, L4, &
+                                uin, uin_l1, uin_l2, uin_h1, uin_h2, &
+                                q, q_l1, q_l2, q_h1, q_h2, &
+                                qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+                               
+  use eos_module
+  use bl_constants_module, only : ONE
+  use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP,&
+                                 UFS, NQAUX, QC, QGAMC, QRSPEC, &
+                                 QC, QDPDE, QDPDR, QCSML, QGAMC, &
+                                 QVAR, QRHO, QU, QV, QREINT, QPRES, QTEMP, &
+                                 QFS, QFX, QGAME, NHYP
+  use prob_params_module, only : SlipWall, NoSlipWall
+  
+  
+  integer, intent(in) :: i,j,idir,isign,bc_type
+  integer, intent(in) :: domlo(2), domhi(2)
+  integer, intent(in) :: q_l1, q_l2, q_h1, q_h2
+  integer, intent(in) :: qa_l1, qa_l2, qa_h1, qa_h2
+  integer, intent(in) :: uin_l1, uin_l2, uin_h1, uin_h2
+  double precision, intent(in) :: L1, L2, L3, L4
+  double precision, intent(in) :: delta
+  double precision, intent(inout) :: q(q_l1:q_h1,q_l2:q_h2,QVAR)
+  double precision, intent(inout) :: qaux(qa_l1:qa_h1,qa_l2:qa_h2,NQAUX)
+  double precision, intent(inout) :: uin(uin_l1:uin_h1,uin_l2:uin_h2,NVAR)
+    
+  integer :: idx_gc1, idx_gc2, idx_gc3, idx_gc4, idx_int1, idx_int2, idx_int3
+  integer :: idx_start, idx_end, hop, n
+  double precision :: drho, du, dv, dp, wall_sign
+  double precision, parameter :: small = 1.d-8
+  
+  type (eos_t) :: eos_state
+  
+  call build(eos_state)
+  
+  if ((idir == 1) .or. (idir == 2)) then
+    continue
+  else
+    call bl_abort("Problem of idir in impose_NSCBC_2d:compute_waves")
+  end if
+  
+  if ((isign == 1) .or. (isign == -1)) then
+    continue
+  else
+    call bl_abort("Problem of isign in impose_NSCBC_2d:compute_waves")
+  end if
+  
+  ! Compute new spatial derivative
+  drho = (L2 + 0.5d0*(L1 + L4))/(qaux(i,j,QC)**2.0d0)  
+  du   = (L4-L1)/(2.0d0*qaux(i,j,QC)*q(i,j,QRHO))
+  dv   = L3
+  dp   = 0.5d0*(L1+L4)
+    
+    if (isign == 1) then
+      idx_gc1 = i-1
+      idx_gc2 = i-2
+      idx_gc3 = i-3
+      idx_gc4 = i-4
+      idx_int1 = i+1
+      idx_int2 = i+2
+      idx_int3 = i+3
+    elseif (isign == -1) then
+      idx_gc1 = i+1
+      idx_gc2 = i+2
+      idx_gc3 = i+3
+      idx_gc4 = i+4
+      idx_int1 = i-1
+      idx_int2 = i-2
+      idx_int3 = i-3
+    endif
+  
+    if (idir == 1) then
+       
+     ! Update ghost cells
+     ! 2nd order
+     q(idx_gc1,j,QU)    = q(idx_int1,j,QU) - 2.0d0*delta*du*isign
+     q(idx_gc1,j,QV)    = q(idx_int1,j,QV) - 2.0d0*delta*dv*isign 
+     q(idx_gc1,j,QRHO)  = q(idx_int1,j,QRHO)  - 2.0d0*delta*drho*isign
+     q(idx_gc1,j,QPRES) = q(idx_int1,j,QPRES) - 2.0d0*delta*dp*isign
+   
+     !---------------- 
+     q(idx_gc2,j,QU)    = -2.0d0*q(idx_int1,j,QU) - 3.0d0*q(i,j,QU) + 6.0d0*q(idx_gc1,j,QU) + 6.0d0*delta*du*isign
+     q(idx_gc2,j,QV)    = -2.0d0*q(idx_int1,j,QV) - 3.0d0*q(i,j,QV) + 6.0d0*q(idx_gc1,j,QV) + 6.0d0*delta*dv*isign
+     q(idx_gc2,j,QRHO)    = -2.0d0*q(idx_int1,j,QRHO) - 3.0d0*q(i,j,QRHO) + 6.0d0*q(idx_gc1,j,QRHO) + 6.0d0*delta*drho*isign
+     q(idx_gc2,j,QPRES)    = -2.0d0*q(idx_int1,j,QPRES) - 3.0d0*q(i,j,QPRES) + 6.0d0*q(idx_gc1,j,QPRES) + 6.0d0*delta*dp*isign
+  
+     q(idx_gc3,j,QU)    = 3.0d0*q(idx_int1,j,QU) +10.0d0*q(i,j,QU) - 18.0d0*q(idx_gc1,j,QU) + 6.0d0*q(idx_gc2,j,QU) - 12.0d0*delta*du*isign
+     q(idx_gc3,j,QV)    = 3.0d0*q(idx_int1,j,QV) +10.0d0*q(i,j,QV) - 18.0d0*q(idx_gc1,j,QV) + 6.0d0*q(idx_gc2,j,QV) - 12.0d0*delta*dv*isign
+     q(idx_gc3,j,QRHO)    = 3.0d0*q(idx_int1,j,QRHO) +10.0d0*q(i,j,QRHO) - 18.0d0*q(idx_gc1,j,QRHO) + 6.0d0*q(idx_gc2,j,QRHO) - 12.0d0*delta*drho*isign
+     q(idx_gc3,j,QPRES)    = 3.0d0*q(idx_int1,j,QPRES) +10.0d0*q(i,j,QPRES) - 18.0d0*q(idx_gc1,j,QPRES) + 6.0d0*q(idx_gc2,j,QPRES) - 12.0d0*delta*dp*isign
+  
+     q(idx_gc4,j,QU)    = -2.0d0*q(idx_int1,j,QU) - 13.0d0*q(i,j,QU) + 24.0d0*q(idx_gc1,j,QU) - 12.0d0*q(idx_gc2,j,QU)  &
+                     + 4.0d0*q(idx_gc3,j,QU) + 12.0d0*delta*du*isign
+     q(idx_gc4,j,QV)    = -2.0d0*q(idx_int1,j,QV) - 13.0d0*q(i,j,QV) + 24.0d0*q(idx_gc1,j,QV) - 12.0d0*q(idx_gc2,j,QV) &
+                     + 4.0d0*q(idx_gc3,j,QV) + 12.0d0*delta*dv*isign
+     q(idx_gc4,j,QRHO)  = -2.0d0*q(idx_int1,j,QRHO) - 13.0d0*q(i,j,QRHO) + 24.0d0*q(idx_gc1,j,QRHO) - 12.0d0*q(idx_gc2,j,QRHO) &
+                     + 4.0d0*q(idx_gc3,j,QRHO) + 12.0d0*delta*drho*isign
+     q(idx_gc4,j,QPRES) = -2.0d0*q(idx_int1,j,QPRES) - 13.0d0*q(i,j,QPRES) + 24.0d0*q(idx_gc1,j,QPRES) - 12.0d0*q(idx_gc2,j,QPRES) &
+                     + 4.0d0*q(idx_gc3,j,QPRES) + 12.0d0*delta*dp*isign
+  
+     if ((bc_type .eq. NoSlipWall).or.(bc_type .eq. SlipWall)) then
+     
+       if (bc_type .eq. NoSlipWall) then
+         wall_sign = -1.0d0
+       else if (bc_type .eq. SlipWall)  then
+         wall_sign = 1.0d0
+       end if
+       
+       q(idx_gc1,j,QU)    = -q(i,j,QU)
+       q(idx_gc2,j,QU)    = -q(idx_int1,j,QU)
+       q(idx_gc3,j,QU)    = -q(idx_int2,j,QU)
+       q(idx_gc4,j,QU)    = -q(idx_int3,j,QU)
+  
+       q(idx_gc1,j,QV)    = wall_sign*q(i,j,QV)
+       q(idx_gc2,j,QV)    = wall_sign*q(idx_int1,j,QV)
+       q(idx_gc3,j,QV)    = wall_sign*q(idx_int2,j,QV)
+       q(idx_gc4,j,QV)    = wall_sign*q(idx_int3,j,QV)
+       
+       q(idx_gc1,j,QRHO)  = q(i,j,QRHO)
+       q(idx_gc2,j,QRHO)  = q(idx_int1,j,QRHO)
+       q(idx_gc3,j,QRHO)  = q(idx_int2,j,QRHO)
+       q(idx_gc4,j,QRHO)  = q(idx_int3,j,QRHO)
+       
+       q(idx_gc1,j,QPRES)  = q(i,j,QPRES)
+       q(idx_gc2,j,QPRES)  = q(idx_int1,j,QPRES)
+       q(idx_gc3,j,QPRES)  = q(idx_int2,j,QPRES)
+       q(idx_gc4,j,QPRES)  = q(idx_int3,j,QPRES)
+     
+     end if
+  
+     if (isign == 1) then
+       idx_start = domlo(idir)-1
+       idx_end   = domlo(idir)-4
+     elseif (isign == -1) then
+       idx_start = domhi(idir)+1
+       idx_end   = domhi(idir)+4
+     endif
+     
+     ! Recompute missing values thanks to EOS
+     do hop=idx_start,idx_end,-isign
+     
+       eos_state % p        = q(hop,j,QPRES )
+       eos_state % rho      = q(hop,j,QRHO  )
+       eos_state % massfrac = q(hop,j,QFS:QFS+nspec-1)
+       eos_state % aux      = q(hop,j,QFX:QFX+naux-1)
+  
+       call eos_rp(eos_state)
+       q(hop,j,QTEMP)  = eos_state % T
+       q(hop,j,QREINT) = eos_state % e * q(hop,j,QRHO)
+       q(hop,j,QGAME)  = q(hop,j,QPRES) / q(hop,j,QREINT) + ONE
+       
+       qaux(hop,j,QDPDR)  = eos_state % dpdr_e
+       qaux(hop,j,QDPDE)  = eos_state % dpde
+       qaux(hop,j,QGAMC)  = eos_state % gam1
+       qaux(hop,j,QC   )  = eos_state % cs
+       qaux(hop,j,QCSML)  = max(small, small * qaux(hop,j,QC))
+  
+       ! Here the update of the conservative variables uin seems to have only an impact
+       ! on the application of artificial viscosity difmag. 
+       uin(hop,j,URHO )  = eos_state % rho 
+       uin(hop,j,UMX  )  = q(hop,j,QU ) * eos_state % rho 
+       uin(hop,j,UMY  )  = q(hop,j,QV ) * eos_state % rho 
+       uin(hop,j,UMZ  ) = 0.0d0
+       uin(hop,j,UEINT) = eos_state % rho   *  eos_state % e
+       uin(hop,j,UEDEN) = eos_state % rho  &
+          * (eos_state % e + 0.5d0 * (uin(hop,j,UMX)**2 + uin(hop,j,UMY)**2))
+       uin(hop,j,UTEMP) = eos_state % T
+       do n=1, nspec
+          uin(hop,j,UFS+n-1) = eos_state % rho  *  eos_state % massfrac(n)
+       end do   
+       
+     enddo
+  
+  endif
+  
+  call destroy(eos_state)
+  
+  end subroutine update_ghost_cells
   
 end module gc_nscbc_mod
