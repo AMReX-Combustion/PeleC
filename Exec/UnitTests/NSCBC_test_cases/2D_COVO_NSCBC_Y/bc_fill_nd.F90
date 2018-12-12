@@ -275,7 +275,7 @@ contains
   end subroutine pc_reactfill
   
   
-    subroutine bcnormal(x,u_int,u_ext,dir,sgn,rho_only,bc_type,bc_params)
+    subroutine bcnormal(x,u_int,u_ext,dir,sgn,rho_only,bc_type,bc_params,bc_target)
 
     use probdata_module
     use eos_type_module
@@ -296,6 +296,7 @@ contains
     integer :: dir,sgn
     integer, optional, intent(out) :: bc_type
     double precision, optional, intent(out) :: bc_params(6)
+    double precision, optional, intent(out) :: bc_target(5)
 
     type (eos_t) :: eos_state
     double precision :: u(3)
@@ -309,7 +310,7 @@ contains
     ! Generic values are auto-filled for numerical parameters,
     ! but should be set by the user for each BC
     ! Note that in the impose_NSCBC_xD.f90 routine, not all parameters are used in same time
-    if (present(bc_type).and.present(bc_params)) then
+    if (present(bc_type).and.present(bc_params).and.present(bc_target)) then
       flag_nscbc = 1
       relax_U = 0.5d0 ! For inflow only, relax parameter for x_velocity
       relax_V = 0.5d0 ! For inflow only, relax parameter for y_velocity
@@ -429,6 +430,11 @@ contains
       bc_params(4) = relax_W
       bc_params(5) = beta
       bc_params(6) = sigma_out
+      bc_target(1) = U_ext(UMX)/U_ext(URHO)
+      bc_target(2) = U_ext(UMY)/U_ext(URHO)
+      bc_target(3) = 0.0d0
+      bc_target(4) = U_ext(UTEMP)
+      bc_target(5) = eos_state%p
     end if
  
     call destroy(eos_state)

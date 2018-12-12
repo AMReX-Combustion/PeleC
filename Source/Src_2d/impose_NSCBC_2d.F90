@@ -77,6 +77,7 @@ contains
   integer          :: i, j, n, hop
   integer          :: bc_type
   double precision :: bc_params(6)
+  double precision :: bc_target(5)
   double precision :: wall_sign, beta_X, beta_Y
   
   type (eos_t) :: eos_state
@@ -93,8 +94,8 @@ contains
   
   x_bcMask(:,:) = 0
   y_bcMask(:,:) = 0
-write(*,*) 'IN ROUTINE NSCBC, flag_nscbc_isAnyPerio ',flag_nscbc_isAnyPerio
-write(*,*) 'IN ROUTINE NSCBC, flag_nscbc_perio',flag_nscbc_perio
+!write(*,*) 'IN ROUTINE NSCBC, flag_nscbc_isAnyPerio ',flag_nscbc_isAnyPerio
+!write(*,*) 'IN ROUTINE NSCBC, flag_nscbc_perio',flag_nscbc_perio
   if ( flag_nscbc_isAnyPerio == 0) then
 write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
 
@@ -114,7 +115,7 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    
    ! Calling user target BC values
    ! right face
-   call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,.false.,bc_type,bc_params)
+   call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,.false.,bc_type,bc_params,bc_target)
    x_bcMask(i+1,j) = bc_type
    
    if (bc_type == Outflow) sigma_out = bc_params(6)
@@ -130,7 +131,7 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    INLET_PRESSURE_Xdir = eos_state%p
  
    ! top face
-   call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,-1,.false.,bc_type,bc_params)
+   call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,-1,.false.,bc_type,bc_params,bc_target)
    y_bcMask(i,j+1) = bc_type
    
    if (bc_type == Outflow) sigma_out = bc_params(6)
@@ -430,7 +431,7 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
   
    ! Calling user target BC values
    ! right face
-   call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,.false.,bc_type,bc_params)
+   call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,.false.,bc_type,bc_params,bc_target)
    x_bcMask(i+1,j) = bc_type
 
    if (bc_type == Outflow) sigma_out = bc_params(6)
@@ -446,7 +447,7 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    INLET_PRESSURE_Xdir = eos_state%p
 
    ! bottom face
-   call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,1,.false.,bc_type,bc_params)
+   call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,1,.false.,bc_type,bc_params,bc_target)
    y_bcMask(i,j) = bc_type
    
    if (bc_type == Outflow) sigma_out = bc_params(6)
@@ -746,7 +747,7 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    
    ! Calling user target BC values
    ! left face
-   call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,bc_type,bc_params)
+   call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,bc_type,bc_params,bc_target)
    x_bcMask(i,j) = bc_type
 
    if (bc_type == Outflow) sigma_out = bc_params(6)
@@ -765,7 +766,7 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    INLET_PRESSURE_Xdir = eos_state%p
 
    ! top face
-   call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,-1,.false.,bc_type,bc_params)
+   call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,-1,.false.,bc_type,bc_params,bc_target)
    y_bcMask(i,j+1) = bc_type
    
    if (bc_type == Outflow) sigma_out = bc_params(6)
@@ -1094,7 +1095,7 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
 
    ! Calling user target BC values
    ! left face
-   call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,bc_type,bc_params)
+   call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,bc_type,bc_params,bc_target)
    x_bcMask(i,j) = bc_type
 
    if (bc_type == Outflow) sigma_out = bc_params(6)
@@ -1113,7 +1114,7 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    INLET_PRESSURE_Xdir = eos_state%p
 
    ! bottom face
-   call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,1,.false.,bc_type,bc_params)
+   call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,1,.false.,bc_type,bc_params,bc_target)
    y_bcMask(i,j) = bc_type
    
    if (bc_type == Outflow) sigma_out = bc_params(6)
@@ -1438,10 +1439,10 @@ endif ! flag_nscbc_isAnyPerio )
  !--------------------------------------------------------------------------   
  ! lower X
  !--------------------------------------------------------------------------
- !write(*,*) 'DEBUG IN THE NSCBC ROUTINE'
+
  if ((q_lo(1) < domlo(1)) .and. (physbc_lo(1) /= Interior)) then
    i = domlo(1)
-!write(*,*) 'DEBUG IN THE LOWER X ',lbound(x_bcMask),ubound(x_bcMask)
+
    do j = q_lo(2)+1,q_hi(2)-1
 
       if ( flag_nscbc_isAnyPerio == 0) then
@@ -1462,89 +1463,31 @@ endif ! flag_nscbc_isAnyPerio )
                                q, q_l1, q_l2, q_h1, q_h2)
 
      ! Compute transverse terms
-     T1 = (q(i,j,QV)*(dpdy - q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
-     T2 = (q(i,j,QV)*((qaux(i,j,QC)*qaux(i,j,QC)*drhody)-dpdy)) + &
-          (qaux(i,j,QC)*qaux(i,j,QC)*q(i,j,QRHO)*dvdy) - (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
-     T3 = ((q(i,j,QV)*dvdy))+(dpdy/q(i,j,QRHO))
-     T4 = (q(i,j,QV)*(dpdy + q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
-
+     call compute_transverse_terms(i, j, 1,  &
+                               T1, T2, T3, T4, &
+                               dpdy, dudy, dvdy, drhody, &
+                               q, q_l1, q_l2, q_h1, q_h2, &
+                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+     
+     
      ! Calling user target BC values 
-     call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,bc_type,bc_params)
-     !write(*,*) 'DEBUG CALLING BCNORMAL ',i,j,bc_type,q_lo(2),q_hi(2)
+     call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,bc_type,bc_params,bc_target)
+     
+     ! Filling bcMask with specific user defined BC type
      if ((j < q_lo(2)+3) .or. (j > q_hi(2)-3)) then
-       continue
+       continue ! There is just 1 ghost-cell with bcMask because of the Riemann solver
      else
        x_bcMask(i,j) = bc_type
-       !write(*,*) 'DEBUG CALLING x_bcMask(i,j) ',i,j,x_bcMask(i,j)
      endif
+          
+     call compute_waves(i, j, 1, 1, &
+                        bc_type, bc_params, bc_target, &
+                        T1, T2, T3, T4, &
+                        L1, L2, L3, L4, &
+                        dpdx, dudx, dvdx, drhodx, &
+                        q, q_l1, q_l2, q_h1, q_h2, &
+                        qaux, qa_l1, qa_l2, qa_h1, qa_h2)
      
-     !write(*,*) 'DEBUG bc_type,  ',i,j,bc_type
-     !write(*,*) 'DEBUG bc_params ',i,j,bc_params
-     
-     eos_state %  T = U_ext(UTEMP)
-     eos_state %  rho = U_ext(URHO)
-     eos_state % massfrac(1:nspec) = u_ext(UFS:UFS+nspec-1) / U_ext(URHO)
-     call eos_rt(eos_state)
-     INLET_VX = U_ext(UMX)/U_ext(URHO)
-     INLET_VY = U_ext(UMY)/U_ext(URHO)
-     INLET_TEMPERATURE = U_ext(UTEMP)
-     INLET_PRESSURE = eos_state%p
-
-     mach_local_lo_x = dsqrt(q(i,j,QU)**2.0d0 + q(i,j,QV)**2.0d0)/qaux(i,j,QC)
-     
-     ! Compute LODI equations
-     if (bc_type == Inflow) then
- 
-       relax_T = bc_params(1)      
-       relax_U = bc_params(2)
-       relax_V = bc_params(3)
-       beta =  bc_params(5)
-           
-       !write(*,*) 'I AM IN INFLOW',relax_T,relax_U,relax_V,beta
-                  
-       L1 = (q(i,j,QU)-qaux(i,j,QC))* (dpdx - (q(i,j,QRHO)*qaux(i,j,QC))*dudx)  
-       L2 = relax_T * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(1)) * (q(i,j,QTEMP) - INLET_TEMPERATURE) - ((1.0d0 - beta)*T2)
-       L3 = relax_V * (qaux(i,j,QC)/probhi(1)) * (q(i,j,QV) - INLET_VY)  !- ((1.0d0 - beta)*T3)
-       L4 = relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local_lo_x*mach_local_lo_x)/probhi(1)) * &
-            (q(i,j,QU) - INLET_VX)  - ((1.0d0 - beta)*T4)
-            
-     elseif ((bc_type == SlipWall).or.(bc_type == NoSlipWall)) then
-     
-       ! Values long Y will be computed by mirror functions below
-       
-     elseif (bc_type == Outflow) then
-       
-     ! We find that using a local Mach number gives better results for high Mach nb.
-     ! This is in contradiction with Granet AIAA 2010
-     ! However for low Mach number a surface averaged Mach number is much more better
-     ! as reported in the paper of Granet
-       sigma_out = bc_params(6)
-       beta =  mach_local_lo_x 
-       Kout = sigma_out*(1.0d0 - (mach_local_lo_x**2.0d0))*qaux(i,j,QC)/(probhi(1))
-
-       L1 = (q(i,j,QU)-qaux(i,j,QC))* (dpdx - (q(i,j,QRHO)*qaux(i,j,QC))*dudx)
-       L2 = q(i,j,QU) * ( ((qaux(i,j,QC)**2.0d0)*drhodx) - dpdx)
-       L3 = q(i,j,QU) * dvdx
-       L4 = (Kout*(q(i,j,QPRES) - INLET_PRESSURE)) - ((1.0d0 - beta)*T4)
-       
-     else
-       call bl_error("Error:: This BC is not yet implemented for lo_x in characteristic form")
-     endif
- 
-     if (q(i,j,QU) == 0.0d0) then
-       L1 = L1 / (q(i,j,QU)-qaux(i,j,QC))
-       L2 = 0.0d0
-       L3 = 0.0d0
-       L4 = L4 / (q(i,j,QU)+qaux(i,j,QC))
-     else       
-       L1 = L1 / (q(i,j,QU)-qaux(i,j,QC))
-       L2 = L2 / q(i,j,QU)
-       L3 = L3 / q(i,j,QU)
-       L4 = L4 / (q(i,j,QU)+qaux(i,j,QC))
-     endif
-     
-      !write(*,*) 'DEBUG L waves ',i,j,L1,L2,L3,L4
-      
      ! Compute new spatial derivative
      drhodx = (L2 + 0.5d0*(L1 + L4))/(qaux(i,j,QC)**2.0d0)  
      dudx   = (L4-L1)/(2.0d0*qaux(i,j,QC)*q(i,j,QRHO))
@@ -1651,9 +1594,7 @@ endif ! flag_nscbc_isAnyPerio )
  
  if ((q_hi(1) > domhi(1)) .and. (physbc_hi(1) /= Interior)) then
    i = domhi(1)
-   
-   !write(*,*) 'DEBUG IN THE UPPER X '
-   
+      
    do j = q_lo(2)+1,q_hi(2)-1
    
      if ( flag_nscbc_isAnyPerio == 0) then
@@ -1674,82 +1615,28 @@ endif ! flag_nscbc_isAnyPerio )
                                q, q_l1, q_l2, q_h1, q_h2)
   
      ! Compute transverse terms
-     T1 = (q(i,j,QV)*(dpdy - q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
-     T2 = (q(i,j,QV)*((qaux(i,j,QC)*qaux(i,j,QC)*drhody)-dpdy)) + &
-          (qaux(i,j,QC)*qaux(i,j,QC)*q(i,j,QRHO)*dvdy) - (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
-     T3 = ((q(i,j,QV)*dvdy))+(dpdy/q(i,j,QRHO))
-     T4 = (q(i,j,QV)*(dpdy + q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
-
-     ! Calling user target BC values 
-     call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,.false.,bc_type,bc_params)
+     call compute_transverse_terms(i, j, 1,  &
+                               T1, T2, T3, T4, &
+                               dpdy, dudy, dvdy, drhody, &
+                               q, q_l1, q_l2, q_h1, q_h2, &
+                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+     
+     ! Filling bcMask with specific user defined BC type 
+     call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,.false.,bc_type,bc_params,bc_target)
      if ((j < q_lo(2)+3) .or. (j > q_hi(2)-3)) then
-       continue
+       continue ! There is just 1 ghost-cell with bcMask because of the Riemann solver
      else
        x_bcMask(i+1,j) = bc_type
      endif
 
-     eos_state %  T = U_ext(UTEMP)
-     eos_state %  rho = U_ext(URHO)
-     eos_state % massfrac(1:nspec) = u_ext(UFS:UFS+nspec-1) / U_ext(URHO)
-     call eos_rt(eos_state)
-     INLET_VX = U_ext(UMX)/U_ext(URHO)
-     INLET_VY = U_ext(UMY)/U_ext(URHO)
-     INLET_TEMPERATURE = U_ext(UTEMP)
-     INLET_PRESSURE = eos_state%p
-
-     mach_local_hi_x = dsqrt(q(i,j,QU)**2.0d0 + q(i,j,QV)**2.0d0)/qaux(i,j,QC)
-
-     ! Compute LODI equations                        
-     if (bc_type .eq. Inflow) then
+     call compute_waves(i, j, 1, -1, &
+                        bc_type, bc_params, bc_target, &
+                        T1, T2, T3, T4, &
+                        L1, L2, L3, L4, &
+                        dpdx, dudx, dvdx, drhodx, &
+                        q, q_l1, q_l2, q_h1, q_h2, &
+                        qaux, qa_l1, qa_l2, qa_h1, qa_h2)
      
-       relax_T = bc_params(1)      
-       relax_U = bc_params(2)
-       relax_V = bc_params(3)
-       beta = bc_params(5)
-
-       L1 = relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local_hi_x*mach_local_hi_x)/probhi(1)) * &
-            (q(i,j,QU) - INLET_VX)  - T1
-       L2 = relax_T * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(1)) * (q(i,j,QTEMP) - INLET_TEMPERATURE) - T2
-         
-       L3 = relax_V * (qaux(i,j,QC)/probhi(1)) * (q(i,j,QV) - INLET_VY) ! - ((1.0d0 - beta)*T3)
-       L4 = (q(i,j,QU)+qaux(i,j,QC))* (dpdx + (q(i,j,QRHO)*qaux(i,j,QC))*dudx)  
-         
-     elseif (bc_type .eq. Outflow) then
-     
-       ! We find that using a local Mach number gives better results for high Mach nb.
-       ! This is in contradiction with Granet AIAA 2010
-       ! However for low Mach number a surface averaged Mach number is much more better
-       ! as reported in the paper of Granet
-       sigma_out = bc_params(6)
-       beta = mach_local_hi_x 
-
-       Kout = sigma_out*(1.0d0 - (mach_local_hi_x**2.0d0))*qaux(i,j,QC)/(probhi(1))
-
-       L1 = (Kout*(q(i,j,QPRES) - INLET_PRESSURE)) - ((1.0d0 - beta)*T1)
-       L2 = q(i,j,QU) * ( ((qaux(i,j,QC)**2.0d0)*drhodx) - dpdx) 
-       L3 = q(i,j,QU) * dvdx 
-       L4 = (q(i,j,QU)+qaux(i,j,QC))* (dpdx + (q(i,j,QRHO)*qaux(i,j,QC))*dudx) 
-   
-     elseif ((bc_type == SlipWall).or.(bc_type == NoSlipWall)) then
-     
-       ! Values long Y will be computed by mirror functions below
-       
-     else
-       call bl_error("Error:: This BC is not yet implemented for hi_x in characteristic form")
-     endif
-   
-     if (q(i,j,QU) == 0.0d0) then
-       L1 = L1 / (q(i,j,QU)-qaux(i,j,QC))
-       L2 = 0.0d0
-       L3 = 0.0d0
-       L4 = L4 / (q(i,j,QU)+qaux(i,j,QC))
-     else
-       L1 = L1 / (q(i,j,QU)-qaux(i,j,QC))
-       L2 = L2 / q(i,j,QU)
-       L3 = L3 / q(i,j,QU)
-       L4 = L4 / (q(i,j,QU)+qaux(i,j,QC))
-     endif
-       
      ! Compute new spatial derivative
      drhodx = (L2 + 0.5d0*(L1 + L4))/(qaux(i,j,QC)**2.0d0)  
      dudx   = (L4-L1)/(2.0d0*qaux(i,j,QC)*q(i,j,QRHO))
@@ -1879,76 +1766,27 @@ endif
                                q, q_l1, q_l2, q_h1, q_h2)
       
      ! Compute transverse terms
-     T1 = (q(i,j,QU)*(dpdx - q(i,j,QRHO)*qaux(i,j,QC)*dvdx)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dudx)
-     T2 = (q(i,j,QU)*((qaux(i,j,QC)*qaux(i,j,QC)*drhodx)-dpdx)) + &
-          (qaux(i,j,QC)*qaux(i,j,QC)*q(i,j,QRHO)*dudx) - (qaux(i,j,QGAMC) * q(i,j,QPRES)*dudx)
-     T3 = ((q(i,j,QU)*dudx))+(dpdx/q(i,j,QRHO))
-     T4 = (q(i,j,QU)*(dpdx + q(i,j,QRHO)*qaux(i,j,QC)*dvdx)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dudx)
-                    
-     ! Calling user target BC values 
-     call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,1,.false.,bc_type,bc_params)
+     call compute_transverse_terms(i, j, 2,  &
+                               T1, T2, T3, T4, &
+                               dpdx, dudx, dvdx, drhodx, &
+                               q, q_l1, q_l2, q_h1, q_h2, &
+                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+                               
+     ! Filling bcMask with specific user defined BC type
+     call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,1,.false.,bc_type,bc_params,bc_target)
      if ((i < q_lo(1)+3) .or. (i > q_hi(1)-3)) then
-       continue
+       continue ! There is just 1 ghost-cell with bcMask because of the Riemann solver
      else
        y_bcMask(i,j) = bc_type
      endif
-
-     eos_state %  T = U_ext(UTEMP)
-     eos_state %  rho = U_ext(URHO)
-     eos_state % massfrac(1:nspec) = u_ext(UFS:UFS+nspec-1) / U_ext(URHO)
-     call eos_rt(eos_state)
-     INLET_VX = U_ext(UMX)/U_ext(URHO)
-     INLET_VY = U_ext(UMY)/U_ext(URHO)
-     INLET_TEMPERATURE = U_ext(UTEMP)
-     INLET_PRESSURE = eos_state%p
-
-     mach_local_lo_y = dsqrt(q(i,j,QU)**2.0d0 + q(i,j,QV)**2.0d0)/qaux(i,j,QC)
-     
-     ! Compute LODI equations
-     if (bc_type .eq. Inflow) then
-     
-       relax_T = bc_params(1)      
-       relax_U = bc_params(2)
-       relax_V = bc_params(3)
-       beta =  bc_params(5)
-
-       L1 = (q(i,j,QV)-qaux(i,j,QC))* (dpdy - (q(i,j,QRHO)*qaux(i,j,QC))*dvdy)  
-       L2 = relax_T * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(2)) * (q(i,j,QTEMP) - INLET_TEMPERATURE) - T2
-       
-       L3 = relax_U * (qaux(i,j,QC)/probhi(2)) * (q(i,j,QU) - INLET_VX)  !- ((1.0d0 - beta)*T3)
-       L4 = relax_V * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local_lo_y*mach_local_lo_y)/probhi(2)) * &
-            (q(i,j,QV) - INLET_VY) - ((1.0d0 - beta)*T4)
-     
-     elseif ((bc_type == SlipWall).or.(bc_type == NoSlipWall)) then
-     
-       ! Values long Y will be computed by mirror functions below
     
-     elseif (bc_type .eq. Outflow) then
-     
-       sigma_out = bc_params(6)
-       beta = mach_local_lo_y
-       Kout = sigma_out*(1.0d0 - (mach_local_lo_y**2.0d0))*qaux(i,j,QC)/(probhi(2))
-     
-       L1 = (q(i,j,QV)-qaux(i,j,QC))* (dpdy - (q(i,j,QRHO)*qaux(i,j,QC))*dvdy)
-       L2 = q(i,j,QV) * ( ((qaux(i,j,QC)**2.0d0)*drhody) - dpdy)
-       L3 = q(i,j,QV) * dudy
-       L4 = (Kout*(q(i,j,QPRES) - INLET_PRESSURE)) - ((1.0d0 - beta)*T4)
-       
-     else
-       call bl_error("Error:: This BC is not yet implemented for lo_y in characteristic form")
-     endif
-
-     if (q(i,j,QV) == 0.0d0) then
-       L1 = L1 / (q(i,j,QV)-qaux(i,j,QC))
-       L2 = 0.0d0
-       L3 = 0.0d0
-       L4 = L4 / (q(i,j,QV)+qaux(i,j,QC))
-     else
-       L1 = L1 / (q(i,j,QV)-qaux(i,j,QC))
-       L2 = L2 / q(i,j,QV)
-       L3 = L3 / q(i,j,QV)
-       L4 = L4 / (q(i,j,QV)+qaux(i,j,QC))
-     endif 
+     call compute_waves(i, j, 2, 1, &
+                        bc_type, bc_params, bc_target, &
+                        T1, T2, T3, T4, &
+                        L1, L2, L3, L4, &
+                        dpdy, dudy, dvdy, drhody, &
+                        q, q_l1, q_l2, q_h1, q_h2, &
+                        qaux, qa_l1, qa_l2, qa_h1, qa_h2)
        
      ! Compute new spatial derivative
      drhody = (L2 + 0.5d0*(L1 + L4))/(qaux(i,j,QC)**2.0d0)  
@@ -2079,78 +1917,27 @@ endif
                                q, q_l1, q_l2, q_h1, q_h2)
       
      ! Compute transverse terms
-     T1 = (q(i,j,QU)*(dpdx - q(i,j,QRHO)*qaux(i,j,QC)*dvdx)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dudx)
-     T2 = (q(i,j,QU)*((qaux(i,j,QC)*qaux(i,j,QC)*drhodx)-dpdx)) + &
-          (qaux(i,j,QC)*qaux(i,j,QC)*q(i,j,QRHO)*dudx) - (qaux(i,j,QGAMC) * q(i,j,QPRES)*dudx)
-     T3 = ((q(i,j,QU)*dudx))+(dpdx/q(i,j,QRHO))
-     T4 = (q(i,j,QU)*(dpdx + q(i,j,QRHO)*qaux(i,j,QC)*dvdx)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dudx)
-     
-     ! Calling user target BC values 
-     call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,-1,.false.,bc_type,bc_params)
+     call compute_transverse_terms(i, j, 2,  &
+                               T1, T2, T3, T4, &
+                               dpdx, dudx, dvdx, drhodx, &
+                               q, q_l1, q_l2, q_h1, q_h2, &
+                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+                               
+     ! Filling bcMask with specific user defined BC type 
+     call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,-1,.false.,bc_type,bc_params,bc_target)
      if ((i < q_lo(1)+3) .or. (i > q_hi(1)-3)) then
-       continue
+       continue ! There is just 1 ghost-cell with bcMask because of the Riemann solver
      else
        y_bcMask(i,j+1) = bc_type
      endif
-     
-     eos_state %  T = U_ext(UTEMP)
-     eos_state %  rho = U_ext(URHO)
-     eos_state % massfrac(1:nspec) = u_ext(UFS:UFS+nspec-1) / U_ext(URHO)
-     call eos_rt(eos_state)
-     INLET_VX = U_ext(UMX)/U_ext(URHO)
-     INLET_VY = U_ext(UMY)/U_ext(URHO)
-     INLET_TEMPERATURE = U_ext(UTEMP)
-     INLET_PRESSURE = eos_state%p
-     
-     mach_local_hi_y = dsqrt(q(i,j,QU)**2.0d0 + q(i,j,QV)**2.0d0)/qaux(i,j,QC)
-       
-     ! Compute LODI equations
-     if (bc_type .eq. Inflow) then
-     
-       relax_T = bc_params(1)      
-       relax_U = bc_params(2)
-       relax_V = bc_params(3)
-       beta =  bc_params(5)
-
-       ! Compute relax parameter
-       L1 = relax_V * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local_hi_y*mach_local_hi_y)/probhi(2)) * &
-            (q(i,j,QV) - INLET_VY)  - T1
-       L2 = relax_T * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(2)) * (q(i,j,QTEMP) - INLET_TEMPERATURE) - T2
-       
-       L3 = relax_U * (qaux(i,j,QC)/probhi(2)) * (q(i,j,QU) - INLET_VX) - ((1.0d0 - beta)*T3)
-       L4 = (q(i,j,QV)+qaux(i,j,QC))* (dpdy + (q(i,j,QRHO)*qaux(i,j,QC))*dvdy)
-             
-     elseif ((bc_type == SlipWall).or.(bc_type == NoSlipWall)) then
-     
-       ! Values long Y will be computed by mirror functions below
-       
-     elseif (bc_type .eq. Outflow) then
-     
-       sigma_out = bc_params(6)
-       beta = mach_local_hi_y 
-
-       Kout = sigma_out*(1.0d0 - (mach_local_hi_y**2.0d0))*qaux(i,j,QC)/(probhi(2))
-   
-       L1 = (Kout*(q(i,j,QPRES) - INLET_PRESSURE)) - ((1.0d0 - beta )*T1)
-       L2 = q(i,j,QV) * ( ((qaux(i,j,QC)**2.0d0)*drhody) - dpdy)
-       L3 = q(i,j,QV) * dudy
-       L4 = (q(i,j,QV)+qaux(i,j,QC))* (dpdy + (q(i,j,QRHO)*qaux(i,j,QC))*dvdy)
-        
-     else
-       call bl_error("Error:: This BC is not yet implemented for hi_y in characteristic form")
-     endif
-    
-     if (q(i,j,QV) == 0.0d0) then
-       L1 = L1 / (q(i,j,QV)-qaux(i,j,QC))
-       L2 = 0.0d0
-       L3 = 0.0d0
-       L4 = L4 / (q(i,j,QV)+qaux(i,j,QC))
-     else
-       L1 = L1 / (q(i,j,QV)-qaux(i,j,QC))
-       L2 = L2 / q(i,j,QV)
-       L3 = L3 / q(i,j,QV)
-       L4 = L4 / (q(i,j,QV)+qaux(i,j,QC))
-     endif
+          
+     call compute_waves(i, j, 2, -1, &
+                        bc_type, bc_params, bc_target, &
+                        T1, T2, T3, T4, &
+                        L1, L2, L3, L4, &
+                        dpdy, dudy, dvdy, drhody, &
+                        q, q_l1, q_l2, q_h1, q_h2, &
+                        qaux, qa_l1, qa_l2, qa_h1, qa_h2)
       
      ! Compute new spatial derivative
      drhody = (L2 + 0.5d0*(L1 + L4))/(qaux(i,j,QC)**2.0d0)  
@@ -2366,5 +2153,224 @@ end subroutine impose_NSCBC
   end if
   
   end subroutine tangential_derivative
+  
+  !-----------------
+  
+  subroutine compute_transverse_terms(i, j, idir,  &
+                               T1, T2, T3, T4, &
+                               dp, du, dv, drho, &
+                               q, q_l1, q_l2, q_h1, q_h2, &
+                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+                               
+                               
+  use meth_params_module, only : QVAR, QPRES, QU, QV, QRHO, NQAUX, QC, QGAMC
+  
+  integer, intent(in) :: i,j,idir
+  integer, intent(in) :: q_l1, q_l2, q_h1, q_h2
+  integer, intent(in) :: qa_l1, qa_l2, qa_h1, qa_h2
+  double precision, intent(in) :: q(q_l1:q_h1,q_l2:q_h2,QVAR)
+  double precision, intent(in) :: qaux(qa_l1:qa_h1,qa_l2:qa_h2,NQAUX)
+  double precision, intent(in) :: dp, du, dv, drho
+  
+  double precision, intent(out) :: T1, T2, T3, T4
+  
+  if (idir == 1) then
+  
+     T1 = (q(i,j,QV)*(dp - q(i,j,QRHO)*qaux(i,j,QC)*du)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dv)
+     T2 = (q(i,j,QV)*((qaux(i,j,QC)*qaux(i,j,QC)*drho)-dp)) + &
+          (qaux(i,j,QC)*qaux(i,j,QC)*q(i,j,QRHO)*dv) - (qaux(i,j,QGAMC) * q(i,j,QPRES)*dv)
+     T3 = ((q(i,j,QV)*dv))+(dp/q(i,j,QRHO))
+     T4 = (q(i,j,QV)*(dp + q(i,j,QRHO)*qaux(i,j,QC)*du)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dv)
+  
+  
+  elseif (idir == 2) then
+  
+     T1 = (q(i,j,QU)*(dp - q(i,j,QRHO)*qaux(i,j,QC)*dv)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*du)
+     T2 = (q(i,j,QU)*((qaux(i,j,QC)*qaux(i,j,QC)*drho)-dp)) + &
+          (qaux(i,j,QC)*qaux(i,j,QC)*q(i,j,QRHO)*du) - (qaux(i,j,QGAMC) * q(i,j,QPRES)*du)
+     T3 = ((q(i,j,QU)*du))+(dp/q(i,j,QRHO))
+     T4 = (q(i,j,QU)*(dp + q(i,j,QRHO)*qaux(i,j,QC)*dv)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*du)
+           
+  else
+      call bl_abort("Problem of idir in impose_NSCBC_2d:compute_transverse_terms")
+  end if
 
+  end subroutine compute_transverse_terms
+  
+  !--------------------
+  
+  subroutine compute_waves(i, j, idir, isign, &
+                           bc_type, bc_params, bc_target, &
+                           T1, T2, T3, T4, &
+                           L1, L2, L3, L4, &
+                           dp, du, dv, drho, &
+                           q, q_l1, q_l2, q_h1, q_h2, &
+                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+                               
+                               
+  use meth_params_module, only : QVAR, QPRES, QU, QV, QRHO, NQAUX, QC, QGAMC, QTEMP, QRSPEC
+  use prob_params_module, only : probhi, Interior, Inflow, Outflow, SlipWall, NoSlipWall
+  
+  integer, intent(in) :: i,j,idir,isign
+  integer, intent(in) :: q_l1, q_l2, q_h1, q_h2
+  integer, intent(in) :: qa_l1, qa_l2, qa_h1, qa_h2
+  double precision, intent(in) :: q(q_l1:q_h1,q_l2:q_h2,QVAR)
+  double precision, intent(in) :: qaux(qa_l1:qa_h1,qa_l2:qa_h2,NQAUX)
+  double precision, intent(in) :: dp, du, dv, drho
+  
+  integer, intent(in)          :: bc_type
+  double precision, intent(in) :: bc_params(6)
+  double precision, intent(in) :: bc_target(5)
+  
+  double precision, intent(in) :: T1, T2, T3, T4
+  
+  double precision, intent(out) :: L1, L2, L3, L4
+  
+  ! Local
+  double precision :: mach_local, TARGET_VX, TARGET_VY, TARGET_TEMPERATURE, TARGET_PRESSURE
+  double precision :: beta, relax_T, relax_U, relax_V, sigma_out, Kout, local_probhi
+  
+  if ((idir == 1) .or. (idir == 2)) then
+    continue
+  else
+    call bl_abort("Problem of idir in impose_NSCBC_2d:compute_waves")
+  end if
+  
+  if ((isign == 1) .or. (isign == -1)) then
+    continue
+  else
+    call bl_abort("Problem of isign in impose_NSCBC_2d:compute_waves")
+  end if
+  
+  if (idir == 1) then
+    local_probhi = probhi(1)
+  elseif (idir == 2) then
+    local_probhi = probhi(2)
+  endif
+  
+  mach_local = dsqrt(q(i,j,QU)**2.0d0 + q(i,j,QV)**2.0d0)/qaux(i,j,QC)
+     
+  TARGET_VX = bc_target(1)
+  TARGET_VY = bc_target(2)
+  TARGET_TEMPERATURE = bc_target(4)
+  TARGET_PRESSURE = bc_target(5)
+     
+     
+  ! Compute LODI equations
+  if (bc_type == Inflow) then
+ 
+    relax_T = bc_params(1)      
+    relax_U = bc_params(2)
+    relax_V = bc_params(3)
+    beta =  bc_params(5)
+           
+    !write(*,*) 'I AM IN INFLOW',relax_T,relax_U,relax_V,beta
+    if (isign == 1) then      
+      if (idir == 1) L1 = (q(i,j,QU)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*du)
+      if (idir == 2) L1 = (q(i,j,QV)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*dv)
+    elseif (isign == -1) then
+      if (idir == 1) L1 = relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/local_probhi) * &
+         (q(i,j,QU) - TARGET_VX)  -  ((1.0d0 - beta)*T1)
+      if (idir == 2) L1 = relax_V * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/local_probhi) * &
+         (q(i,j,QV) - TARGET_VY)  -  ((1.0d0 - beta)*T1)
+    else
+      call bl_abort("Problem of isign in impose_NSCBC_2d:compute_waves")
+    endif
+       
+    L2 = relax_T * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/local_probhi) &
+                 * (q(i,j,QTEMP) - TARGET_TEMPERATURE) - ((1.0d0 - beta)*T2)
+                    
+    if (idir == 1) L3 = relax_V * (qaux(i,j,QC)/local_probhi) * (q(i,j,QV) - TARGET_VY) &
+                   - ((1.0d0 - beta)*T3)
+    if (idir == 2) L3 = relax_U * (qaux(i,j,QC)/local_probhi) * (q(i,j,QU) - TARGET_VX)  &
+                   - ((1.0d0 - beta)*T3)
+       
+       
+    if (isign == 1) then
+      if (idir == 1) L4 = relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/local_probhi) * &
+                     (q(i,j,QU) - TARGET_VX)  - ((1.0d0 - beta)*T4)
+      if (idir == 2) L4 = relax_V * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/local_probhi) * &
+                     (q(i,j,QV) - TARGET_VY) - ((1.0d0 - beta)*T4)
+    elseif (isign == -1) then     
+      if (idir == 1) L4 = (q(i,j,QU)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*du)
+      if (idir == 2) L4 = (q(i,j,QV)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*dv)
+    else
+      call bl_abort("Problem of isign in impose_NSCBC_2d:compute_waves")
+    endif 
+
+            
+  elseif ((bc_type == SlipWall).or.(bc_type == NoSlipWall)) then
+     
+    ! Values long Y will be computed by mirror functions below
+       
+  elseif (bc_type == Outflow) then
+       
+    ! We find that using a local Mach number gives better results for high Mach nb.
+    ! This is in contradiction with Granet AIAA 2010
+    ! However for low Mach number a surface averaged Mach number is much more better
+    ! as reported in the paper of Granet
+    sigma_out = bc_params(6)
+    beta =  mach_local 
+    Kout = sigma_out*(1.0d0 - (mach_local**2.0d0))*(qaux(i,j,QC)/local_probhi)
+
+    if (isign == 1) then
+      if (idir == 1) L1 = (q(i,j,QU)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*du)
+      if (idir == 2) L1 = (q(i,j,QV)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*dv)
+    elseif (isign == -1) then
+      L1 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE)) - ((1.0d0 - beta)*T1)
+    else
+      call bl_abort("Problem of isign in impose_NSCBC_2d:compute_waves")
+    endif
+  
+    if (idir == 1) then
+      L2 = q(i,j,QU) * ( ((qaux(i,j,QC)**2.0d0)*drho) - dp)
+      L3 = q(i,j,QU) * dv
+    elseif (idir == 2) then
+      L2 = q(i,j,QV) * ( ((qaux(i,j,QC)**2.0d0)*drho) - dp)
+      L3 = q(i,j,QV) * du
+    endif
+       
+    if (isign == 1) then
+      L4 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE)) - ((1.0d0 - beta)*T4)
+    elseif (isign == -1) then
+      if (idir == 1) L4 = (q(i,j,QU)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*du)
+      if (idir == 2) L4 = (q(i,j,QV)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*dv)
+    else
+      call bl_abort("Problem of isign in impose_NSCBC_2d:compute_waves")
+    endif 
+       
+  else
+    call bl_error("Error:: This BC is not yet implemented for lo_x in characteristic form")
+  endif
+ 
+  if (idir == 1) then
+     if (q(i,j,QU) == 0.0d0) then
+       L1 = L1 / (q(i,j,QU)-qaux(i,j,QC))
+       L2 = 0.0d0
+       L3 = 0.0d0
+       L4 = L4 / (q(i,j,QU)+qaux(i,j,QC))
+     else       
+       L1 = L1 / (q(i,j,QU)-qaux(i,j,QC))
+       L2 = L2 / q(i,j,QU)
+       L3 = L3 / q(i,j,QU)
+       L4 = L4 / (q(i,j,QU)+qaux(i,j,QC))
+     endif
+  elseif (idir == 2) then
+     if (q(i,j,QV) == 0.0d0) then
+       L1 = L1 / (q(i,j,QV)-qaux(i,j,QC))
+       L2 = 0.0d0
+       L3 = 0.0d0
+       L4 = L4 / (q(i,j,QV)+qaux(i,j,QC))
+     else
+       L1 = L1 / (q(i,j,QV)-qaux(i,j,QC))
+       L2 = L2 / q(i,j,QV)
+       L3 = L3 / q(i,j,QV)
+       L4 = L4 / (q(i,j,QV)+qaux(i,j,QC))
+     endif
+  end if
+     
+  
+  
+  end subroutine compute_waves
+  
 end module gc_nscbc_mod

@@ -26,8 +26,8 @@ pelec.i_nscbc = 1
 
 # WHICH PHYSICS
 pelec.do_hydro = 1
-pelec.diffuse_vel = 0 
-pelec.diffuse_temp = 0 
+pelec.diffuse_vel = 1 
+pelec.diffuse_temp = 1 
 pelec.do_react = 0
 pelec.do_grav = 0
 pelec.allow_negative_energy = 0
