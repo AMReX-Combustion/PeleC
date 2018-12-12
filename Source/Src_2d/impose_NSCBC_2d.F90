@@ -1838,9 +1838,9 @@ end subroutine impose_NSCBC
   elseif (idir == 2) then
   
      T1 = (q(i,j,QU)*(dp - q(i,j,QRHO)*qaux(i,j,QC)*dv)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*du)
-     T2 = (q(i,j,QU)*((qaux(i,j,QC)*qaux(i,j,QC)*drho)-dp)) + &
+     T2 = ((q(i,j,QU)*du))+(dp/q(i,j,QRHO))
+     T3 = (q(i,j,QU)*((qaux(i,j,QC)*qaux(i,j,QC)*drho)-dp)) + &
           (qaux(i,j,QC)*qaux(i,j,QC)*q(i,j,QRHO)*du) - (qaux(i,j,QGAMC) * q(i,j,QPRES)*du)
-     T3 = ((q(i,j,QU)*du))+(dp/q(i,j,QRHO))
      T4 = (q(i,j,QU)*(dp + q(i,j,QRHO)*qaux(i,j,QC)*dv)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*du)
            
   else
@@ -1908,41 +1908,41 @@ end subroutine impose_NSCBC
     relax_U = bc_params(2)
     relax_V = bc_params(3)
     beta =  bc_params(5)
-           
-    !write(*,*) 'I AM IN INFLOW',relax_T,relax_U,relax_V,beta
-    if (isign == 1) then      
-      if (idir == 1) L1 = (q(i,j,QU)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*du)
-      if (idir == 2) L1 = (q(i,j,QV)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*dv)
-    elseif (isign == -1) then
-      if (idir == 1) L1 = relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
-         (q(i,j,QU) - TARGET_VX)  -  ((1.0d0 - beta)*T1)
-      if (idir == 2) L1 = relax_V * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
-         (q(i,j,QV) - TARGET_VY)  -  ((1.0d0 - beta)*T1)
-    else
-      call bl_abort("Problem of isign in impose_NSCBC_2d:compute_waves")
-    endif
-       
-    L2 = relax_T * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(idir)) &
-                 * (q(i,j,QTEMP) - TARGET_TEMPERATURE) - ((1.0d0 - beta)*T2)
-                    
-    if (idir == 1) L3 = relax_V * (qaux(i,j,QC)/probhi(idir)) * (q(i,j,QV) - TARGET_VY) &
-                   - ((1.0d0 - beta)*T3)
-    if (idir == 2) L3 = relax_U * (qaux(i,j,QC)/probhi(idir)) * (q(i,j,QU) - TARGET_VX)  &
-                   - ((1.0d0 - beta)*T3)
-       
-       
-    if (isign == 1) then
-      if (idir == 1) L4 = relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
+    
+    if (idir == 1) then
+      if (isign == 1) then      
+        L1 = (q(i,j,QU)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*du)
+        L4 = relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
                      (q(i,j,QU) - TARGET_VX)  - ((1.0d0 - beta)*T4)
-      if (idir == 2) L4 = relax_V * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
-                     (q(i,j,QV) - TARGET_VY) - ((1.0d0 - beta)*T4)
-    elseif (isign == -1) then     
-      if (idir == 1) L4 = (q(i,j,QU)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*du)
-      if (idir == 2) L4 = (q(i,j,QV)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*dv)
-    else
-      call bl_abort("Problem of isign in impose_NSCBC_2d:compute_waves")
-    endif 
+      elseif (isign == -1) then
+        L1 = relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
+                        (q(i,j,QU) - TARGET_VX)  -  ((1.0d0 - beta)*T1)
+        L4 = (q(i,j,QU)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*du)
+      endif
+    
+      L2 = relax_T * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(idir)) &
+                 * (q(i,j,QTEMP) - TARGET_TEMPERATURE) - ((1.0d0 - beta)*T2)
+      L3 = relax_V * (qaux(i,j,QC)/probhi(idir)) * (q(i,j,QV) - TARGET_VY) &
+                   - ((1.0d0 - beta)*T3)
 
+    elseif (idir == 2) then
+    
+      if (isign == 1) then      
+         L1 = (q(i,j,QV)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*dv)
+         L4 = relax_V * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
+                       (q(i,j,QV) - TARGET_VY) - ((1.0d0 - beta)*T4)
+      elseif (isign == -1) then
+         L1 = relax_V * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
+                         (q(i,j,QV) - TARGET_VY)  -  ((1.0d0 - beta)*T1)
+         L4 = (q(i,j,QV)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*dv)
+      endif
+  
+      L2 = relax_U * (qaux(i,j,QC)/probhi(idir)) * (q(i,j,QU) - TARGET_VX)  &
+                     - ((1.0d0 - beta)*T2)
+      L3 = relax_T * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(idir)) &
+                   * (q(i,j,QTEMP) - TARGET_TEMPERATURE) - ((1.0d0 - beta)*T3)
+
+    endif
             
   elseif ((bc_type == SlipWall).or.(bc_type == NoSlipWall)) then
      
@@ -1958,32 +1958,34 @@ end subroutine impose_NSCBC
     beta =  mach_local 
     Kout = sigma_out*(1.0d0 - (mach_local**2.0d0))*(qaux(i,j,QC)/probhi(idir))
 
-    if (isign == 1) then
-      if (idir == 1) L1 = (q(i,j,QU)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*du)
-      if (idir == 2) L1 = (q(i,j,QV)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*dv)
-    elseif (isign == -1) then
-      L1 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE)) - ((1.0d0 - beta)*T1)
-    else
-      call bl_abort("Problem of isign in impose_NSCBC_2d:compute_waves")
-    endif
-  
     if (idir == 1) then
+        
+      if (isign == 1) then
+        L1 = (q(i,j,QU)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*du)
+        L4 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE)) - ((1.0d0 - beta)*T4)
+      elseif (isign == -1) then
+        L1 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE)) - ((1.0d0 - beta)*T1)
+        L4 = (q(i,j,QU)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*du)
+      endif
+    
       L2 = q(i,j,QU) * ( ((qaux(i,j,QC)**2.0d0)*drho) - dp)
       L3 = q(i,j,QU) * dv
-    elseif (idir == 2) then
-      L2 = q(i,j,QV) * ( ((qaux(i,j,QC)**2.0d0)*drho) - dp)
-      L3 = q(i,j,QV) * du
+    
+    elseif(idir == 2) then
+    
+      if (isign == 1) then
+        L1 = (q(i,j,QV)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*dv)
+        L4 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE)) - ((1.0d0 - beta)*T4)
+      elseif (isign == -1) then
+        L1 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE)) - ((1.0d0 - beta)*T1)
+        L4 = (q(i,j,QV)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*dv)
+      endif
+    
+      L2 = q(i,j,QV) * du
+      L3 = q(i,j,QV) * ( ((qaux(i,j,QC)**2.0d0)*drho) - dp)
+          
     endif
-       
-    if (isign == 1) then
-      L4 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE)) - ((1.0d0 - beta)*T4)
-    elseif (isign == -1) then
-      if (idir == 1) L4 = (q(i,j,QU)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*du)
-      if (idir == 2) L4 = (q(i,j,QV)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*dv)
-    else
-      call bl_abort("Problem of isign in impose_NSCBC_2d:compute_waves")
-    endif 
-       
+
   else
     call bl_error("Error:: This BC is not yet implemented for lo_x in characteristic form")
   endif
@@ -2068,17 +2070,20 @@ end subroutine impose_NSCBC
   end if
   
   ! Compute new spatial derivative
-  drho = (L2 + 0.5d0*(L1 + L4))/(qaux(i,j,QC)**2.0d0)  
-  du   = (L4-L1)/(2.0d0*qaux(i,j,QC)*q(i,j,QRHO))
-  dv   = L3
-  dp   = 0.5d0*(L1+L4)
+  
     
   if (idir == 1) then
     local_index = i
+    drho = (L2 + 0.5d0*(L1 + L4))/(qaux(i,j,QC)**2.0d0)  
+  du   = (L4-L1)/(2.0d0*qaux(i,j,QC)*q(i,j,QRHO))
+  dv   = L3
+  dp   = 0.5d0*(L1+L4)
   elseif (idir == 2) then
     local_index = j
-    dv = du
-    du = L3
+    drho = (L3 + 0.5d0*(L1 + L4))/(qaux(i,j,QC)**2.0d0)  
+  dv   = (L4-L1)/(2.0d0*qaux(i,j,QC)*q(i,j,QRHO))
+  du   = L2
+  dp   = 0.5d0*(L1+L4)
   endif
     
     if (isign == 1) then
