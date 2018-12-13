@@ -113,6 +113,16 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    x   = (dble(i)+HALF)*dx
    y   = (dble(j)+HALF)*dy
    
+   ! Normal derivative along x
+   call normal_derivative(i, j, 1, -1, dx, &
+                          dpdx, dudx, dvdx, drhodx, &
+                          q, q_l1, q_l2, q_h1, q_h2)
+                            
+   ! Normal derivative along y
+   call normal_derivative(i, j, 2, -1, dy, &
+                          dpdy, dudy, dvdy, drhody, &
+                          q, q_l1, q_l2, q_h1, q_h2)
+
    ! Calling user target BC values
    ! right face
    call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,.false.,bc_type,bc_params,bc_target)
@@ -147,18 +157,6 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    INLET_PRESSURE_Ydir = eos_state%p
  
    mach_local_corner = dsqrt(q(i,j,QU)**2.0d0 + q(i,j,QV)**2.0d0)/qaux(i,j,QC)
-
-   ! Derivatives along Y
-   dpdy = ((3.0d0/2.0d0)*q(i,j,QPRES)-2.0d0*q(i,j-1,QPRES)+0.5d0*q(i,j-2,QPRES))/dy
-   dudy = ((3.0d0/2.0d0)*q(i,j,QU)-2.0d0*q(i,j-1,QU)+0.5d0*q(i,j-2,QU))/dy
-   dvdy = ((3.0d0/2.0d0)*q(i,j,QV)-2.0d0*q(i,j-1,QV)+0.5d0*q(i,j-2,QV))/dy
-   drhody = ((3.0d0/2.0d0)*q(i,j,QRHO)-2.0d0*q(i,j-1,QRHO)+0.5d0*q(i,j-2,QRHO))/dy
-
-   ! Derivative along X
-   dpdx = ((3.0d0/2.0d0)*q(i,j,QPRES)-2.0d0*q(i-1,j,QPRES)+0.5d0*q(i-2,j,QPRES))/dx
-   dudx = ((3.0d0/2.0d0)*q(i,j,QU)-2.0d0*q(i-1,j,QU)+0.5d0*q(i-2,j,QU))/dx
-   dvdx = ((3.0d0/2.0d0)*q(i,j,QV)-2.0d0*q(i-1,j,QV)+0.5d0*q(i-2,j,QV))/dx
-   drhodx = ((3.0d0/2.0d0)*q(i,j,QRHO)-2.0d0*q(i-1,j,QRHO)+0.5d0*q(i-2,j,QRHO))/dx
 
    ! Test BCs
    if ((x_bcMask(i+1,j) == Outflow) .and. (y_bcMask(i,j+1) == Outflow)) then
@@ -285,6 +283,16 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
   
    x   = (dble(i)+HALF)*dx
    y   = (dble(j)+HALF)*dy
+   
+   ! Normal derivative along x
+   call normal_derivative(i, j, 1, -1, dx, &
+                          dpdx, dudx, dvdx, drhodx, &
+                          q, q_l1, q_l2, q_h1, q_h2)
+                            
+   ! Normal derivative along y
+   call normal_derivative(i, j, 2, 1, dy, &
+                          dpdy, dudy, dvdy, drhody, &
+                          q, q_l1, q_l2, q_h1, q_h2)
   
    ! Calling user target BC values
    ! right face
@@ -320,19 +328,7 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    INLET_PRESSURE_Ydir = eos_state%p
 
    mach_local_corner = dsqrt(q(i,j,QU)**2.0d0 + q(i,j,QV)**2.0d0)/qaux(i,j,QC)
-
-   ! Derivatives along Y
-   dpdy = ((-3.0d0/2.0d0)*q(i,j,QPRES)+2.0d0*q(i,j+1,QPRES)-0.5d0*q(i,j+2,QPRES))/dy
-   dudy = ((-3.0d0/2.0d0)*q(i,j,QU)+2.0d0*q(i,j+1,QU)-0.5d0*q(i,j+2,QU))/dy
-   dvdy = ((-3.0d0/2.0d0)*q(i,j,QV)+2.0d0*q(i,j+1,QV)-0.5d0*q(i,j+2,QV))/dy
-   drhody = ((-3.0d0/2.0d0)*q(i,j,QRHO)+2.0d0*q(i,j+1,QRHO)-0.5d0*q(i,j+2,QRHO))/dy
-
-   ! Derivative along X
-   dpdx = ((3.0d0/2.0d0)*q(i,j,QPRES)-2.0d0*q(i-1,j,QPRES)+0.5d0*q(i-2,j,QPRES))/dx
-   dudx = ((3.0d0/2.0d0)*q(i,j,QU)-2.0d0*q(i-1,j,QU)+0.5d0*q(i-2,j,QU))/dx
-   dvdx = ((3.0d0/2.0d0)*q(i,j,QV)-2.0d0*q(i-1,j,QV)+0.5d0*q(i-2,j,QV))/dx
-   drhodx = ((3.0d0/2.0d0)*q(i,j,QRHO)-2.0d0*q(i-1,j,QRHO)+0.5d0*q(i-2,j,QRHO))/dx
-   
+  
    ! Test BCs
    if ((x_bcMask(i+1,j) == Outflow) .and. (y_bcMask(i,j) == Outflow)) then
    ! This is the case when the bottom right corner is outflow/outflow
@@ -458,6 +454,16 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    x   = (dble(i)+HALF)*dx
    y   = (dble(j)+HALF)*dy
    
+   ! Normal derivative along x
+   call normal_derivative(i, j, 1, 1, dx, &
+                          dpdx, dudx, dvdx, drhodx, &
+                          q, q_l1, q_l2, q_h1, q_h2)
+                            
+   ! Normal derivative along y
+   call normal_derivative(i, j, 2, -1, dy, &
+                          dpdy, dudy, dvdy, drhody, &
+                          q, q_l1, q_l2, q_h1, q_h2)
+   
    ! Calling user target BC values
    ! left face
    call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,bc_type,bc_params,bc_target)
@@ -495,18 +501,6 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    INLET_PRESSURE_Ydir = eos_state%p
 
    mach_local_corner = dsqrt(q(i,j,QU)**2.0d0 + q(i,j,QV)**2.0d0)/qaux(i,j,QC)
- 
-   ! Derivatives along Y
-   dpdy = ((3.0d0/2.0d0)*q(i,j,QPRES)-2.0d0*q(i,j-1,QPRES)+0.5d0*q(i,j-2,QPRES))/dy
-   dudy = ((3.0d0/2.0d0)*q(i,j,QU)-2.0d0*q(i,j-1,QU)+0.5d0*q(i,j-2,QU))/dy
-   dvdy = ((3.0d0/2.0d0)*q(i,j,QV)-2.0d0*q(i,j-1,QV)+0.5d0*q(i,j-2,QV))/dy
-   drhody = ((3.0d0/2.0d0)*q(i,j,QRHO)-2.0d0*q(i,j-1,QRHO)+0.5d0*q(i,j-2,QRHO))/dy
-
-   ! Derivative along X
-   dpdx = ((-3.0d0/2.0d0)*q(i,j,QPRES)+2.0d0*q(i+1,j,QPRES)-0.5d0*q(i+2,j,QPRES))/dx
-   dudx = ((-3.0d0/2.0d0)*q(i,j,QU)+2.0d0*q(i+1,j,QU)-0.5d0*q(i+2,j,QU))/dx
-   dvdx = ((-3.0d0/2.0d0)*q(i,j,QV)+2.0d0*q(i+1,j,QV)-0.5d0*q(i+2,j,QV))/dx
-   drhodx = ((-3.0d0/2.0d0)*q(i,j,QRHO)+2.0d0*q(i+1,j,QRHO)-0.5d0*q(i+2,j,QRHO))/dx
    
    ! Test BCs
    if ((x_bcMask(i,j) == Outflow) .and. (y_bcMask(i,j+1) == Outflow)) then
@@ -663,6 +657,16 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
 
    x   = (dble(i)+HALF)*dx
    y   = (dble(j)+HALF)*dy
+   
+   ! Normal derivative along x
+   call normal_derivative(i, j, 1, 1, dx, &
+                          dpdx, dudx, dvdx, drhodx, &
+                          q, q_l1, q_l2, q_h1, q_h2)
+                            
+   ! Normal derivative along y
+   call normal_derivative(i, j, 2, 1, dy, &
+                          dpdy, dudy, dvdy, drhody, &
+                          q, q_l1, q_l2, q_h1, q_h2)
 
    ! Calling user target BC values
    ! left face
@@ -702,19 +706,7 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    INLET_PRESSURE_Ydir = eos_state%p
 
    mach_local_corner = dsqrt(q(i,j,QU)**2.0d0 + q(i,j,QV)**2.0d0)/qaux(i,j,QC)
-
-   ! Derivatives along Y
-   dpdy = ((-3.0d0/2.0d0)*q(i,j,QPRES)+2.0d0*q(i,j+1,QPRES)-0.5d0*q(i,j+2,QPRES))/dy
-   dudy = ((-3.0d0/2.0d0)*q(i,j,QU)+2.0d0*q(i,j+1,QU)-0.5d0*q(i,j+2,QU))/dy
-   dvdy = ((-3.0d0/2.0d0)*q(i,j,QV)+2.0d0*q(i,j+1,QV)-0.5d0*q(i,j+2,QV))/dy
-   drhody = ((-3.0d0/2.0d0)*q(i,j,QRHO)+2.0d0*q(i,j+1,QRHO)-0.5d0*q(i,j+2,QRHO))/dy
-
-   ! Derivative along X
-   dpdx = ((-3.0d0/2.0d0)*q(i,j,QPRES)+2.0d0*q(i+1,j,QPRES)-0.5d0*q(i+2,j,QPRES))/dx
-   dudx = ((-3.0d0/2.0d0)*q(i,j,QU)+2.0d0*q(i+1,j,QU)-0.5d0*q(i+2,j,QU))/dx
-   dvdx = ((-3.0d0/2.0d0)*q(i,j,QV)+2.0d0*q(i+1,j,QV)-0.5d0*q(i+2,j,QV))/dx
-   drhodx = ((-3.0d0/2.0d0)*q(i,j,QRHO)+2.0d0*q(i+1,j,QRHO)-0.5d0*q(i+2,j,QRHO))/dx
-   
+  
    ! Test BCs
    if ((x_bcMask(i,j) == Outflow) .and. (y_bcMask(i,j) == Outflow)) then
    ! This is the case when the bottom left corner is outflow/outflow
