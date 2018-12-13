@@ -63,11 +63,10 @@ contains
   
   integer          :: q_lo(2), q_hi(2)
   integer          :: uin_lo(2),  uin_hi(2)
-  integer          :: i, j, n, hop
+  integer          :: i, j
   integer          :: bc_type, x_bc_type, y_bc_type
   double precision :: bc_params(6), x_bc_params(6), y_bc_params(6)
   double precision :: bc_target(5), x_bc_target(5), y_bc_target(5)
-  double precision :: wall_sign, beta_X, beta_Y
   
   type (eos_t) :: eos_state
   call build(eos_state)
@@ -1316,19 +1315,19 @@ end subroutine impose_NSCBC
       M4 = (q(i,j,QV)+qaux(i,j,QC))* (dpdy + (q(i,j,QRHO)*qaux(i,j,QC))*dvdy)
       T1 = -0.5d0*M4 - (q(i,j,QRHO)*qaux(i,j,QC))*M2
     endif
-        
+
     ! Compute transverse terms
     Kout = x_bc_params(6)*(1.0d0 - (mach_local**2.0d0))*qaux(i,j,QC)/(probhi(1))
     S1 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE))
 
     Kout = y_bc_params(6)*(1.0d0 - (mach_local**2.0d0))*qaux(i,j,QC)/(probhi(2))
     S2 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE))
+
+    beta = 0.5d0*(x_bc_params(5) + y_bc_params(5))
  
     S2 = S2 + (1.0d0-beta)*T2
     S1 = S1 + (1.0d0-beta)*T1
      
-    beta = 0.5d0*(x_bc_params(5) + y_bc_params(5))
-      
     if (x_isign == 1) then
       L4 = -2.0d0*(S2*beta + 2.0d0*S1 - S2)/ ((beta*beta) - (2.0d0*beta) - 3.0d0)
     elseif (x_isign == -1) then
@@ -1341,8 +1340,6 @@ end subroutine impose_NSCBC
       M1 = -2.0d0*(S1*(beta-1.0d0) + 2.0d0*S2)/ ((beta*beta) - (2.0d0*beta) - 3.0d0)
     endif
         
-
-    
      
   ! elseif ((x_bcMask(i,j) == Inflow) .and. (y_bcMask(i,j) == Outflow)) then
   ! ! This is the case when the bottom left corner is inflow(x)/outflow(y)
@@ -1411,9 +1408,9 @@ end subroutine impose_NSCBC
   ! ! This is the case when the bottom left corner is wall(y)/wall(x)
   !   ! Values long Y will be computed by mirror functions below
 
-    else
-      call bl_error("NSCBC not implemented for bottom left corner")
-    endif 
+  else
+    call bl_error("NSCBC not implemented for bottom left corner")
+  endif 
 
   if (q(i,j,QV) == 0.0d0) then
        M1 = M1 / (q(i,j,QV)-qaux(i,j,QC))
