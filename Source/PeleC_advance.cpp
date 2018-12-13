@@ -92,6 +92,12 @@ PeleC::do_mol_advance(Real time,
   MultiFab& I_R = get_new_data(Reactions_Type);
 #endif
 
+#ifdef PELE_USE_EB
+  set_body_state(U_old);
+  set_body_state(U_new);
+#endif
+
+
   // Compute S^{n} = MOLRhs(U^{n})
   if (verbose) { amrex::Print() << "... Computing MOL source term at t^{n} " << std::endl; }
   FillPatch(*this, Sborder, nGrowTr, time, State_Type, 0, NUM_STATE);
