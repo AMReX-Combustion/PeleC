@@ -20,6 +20,7 @@ Contents:
    writing_documentation.rst
    ./validation/validation.rst
    ./verification/verification.rst
+   ./miscellaneous/miscellaneous.rst
 
 
 README

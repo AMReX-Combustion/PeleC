@@ -155,6 +155,10 @@ module hyp_advection_module
     nextra = 0
 #endif
 
+   !initialize flux_tmp to 0
+   !don't want fortran to fill it with wrong values
+    flux_tmp = 0.d0
+
     do L=1,dim
        qt_lo(L) = lo(L) - nextra
        qt_hi(L) = hi(L) + nextra
