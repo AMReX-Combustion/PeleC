@@ -22,17 +22,13 @@ contains
 
     use bl_constants_module
     use prob_params_module, only : physbc_lo, physbc_hi, problo, probhi, &
-                                   Interior, Inflow, Outflow, SlipWall, NoSlipWall
+                                   Interior
     
-    use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP,&
-                                   UFS, NQAUX, QC, QGAMC, QRSPEC, &
-                                   QC, QDPDE, QDPDR, QCSML, QGAMC, &
-                                   QVAR, QRHO, QU, QV, QREINT, QPRES, QTEMP, &
-                                   QFS, QFX, QGAME, NHYP
+    use meth_params_module, only : NVAR, NQAUX,QVAR
     use bc_fill_module, only: bcnormal
  
     implicit none
-   
+    
 
   integer, intent(in) :: lo(2), hi(2), verbose
   integer, intent(in) :: domlo(2), domhi(2)
@@ -57,27 +53,20 @@ contains
   
   double precision :: drhodx, dudx, dvdx, dpdx
   double precision :: dpdy, dudy, dvdy, drhody
-  double precision :: L1, L2, L3, L4, T1, T2, T3, T4
-  double precision :: S1, S2, M1, M2, M3, M4
-  double precision :: Kout, sigma_out, beta
-  double precision :: relax_U, relax_V, relax_T
-  double precision :: mach_local_hi_x, mach_local_lo_x
-  double precision :: mach_local_hi_y, mach_local_lo_y
-  double precision :: mach_local_corner
-  double precision :: INLET_PRESSURE, INLET_VX, INLET_VY, INLET_TEMPERATURE
-  double precision :: INLET_PRESSURE_Xdir, INLET_VX_Xdir, INLET_VY_Xdir, INLET_TEMPERATURE_Xdir
-  double precision :: INLET_PRESSURE_Ydir, INLET_VX_Ydir, INLET_VY_Ydir, INLET_TEMPERATURE_Ydir
-  
+  double precision :: L1, L2, L3, L4
+  double precision :: M1, M2, M3, M4
+  double precision :: T1, T2, T3, T4
+
   double precision :: U_dummy(NVAR)
   double precision :: U_ext(NVAR)
   double precision, parameter :: small = 1.d-8
   
   integer          :: q_lo(2), q_hi(2)
-  integer          ::  uin_lo(2),  uin_hi(2)
+  integer          :: uin_lo(2),  uin_hi(2)
   integer          :: i, j, n, hop
-  integer          :: bc_type
-  double precision :: bc_params(6)
-  double precision :: bc_target(5)
+  integer          :: bc_type, x_bc_type, y_bc_type
+  double precision :: bc_params(6), x_bc_params(6), y_bc_params(6)
+  double precision :: bc_target(5), x_bc_target(5), y_bc_target(5)
   double precision :: wall_sign, beta_X, beta_Y
   
   type (eos_t) :: eos_state
@@ -109,10 +98,10 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
 
    i = domhi(1)
    j = domhi(2)
-
+   
    x   = (dble(i)+HALF)*dx
    y   = (dble(j)+HALF)*dy
-   
+  
    ! Normal derivative along x
    call normal_derivative(i, j, 1, -1, dx, &
                           dpdx, dudx, dvdx, drhodx, &
@@ -125,149 +114,42 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
 
    ! Calling user target BC values
    ! right face
-   call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,.false.,bc_type,bc_params,bc_target)
-   x_bcMask(i+1,j) = bc_type
-   
-   if (bc_type == Outflow) sigma_out = bc_params(6)
-   beta = bc_params(5)
+   call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,.false.,x_bc_type,x_bc_params,x_bc_target)
+   x_bcMask(i+1,j) = x_bc_type
     
-   eos_state %  T = U_ext(UTEMP)
-   eos_state %  rho = U_ext(URHO)
-   eos_state % massfrac(1:nspec) = u_ext(UFS:UFS+nspec-1) / U_ext(URHO)
-   call eos_rt(eos_state)
-   INLET_VX_Xdir = U_ext(UMX)/U_ext(URHO)
-   INLET_VY_Xdir = U_ext(UMY)/U_ext(URHO)
-   INLET_TEMPERATURE_Xdir = U_ext(UTEMP)
-   INLET_PRESSURE_Xdir = eos_state%p
- 
    ! top face
-   call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,-1,.false.,bc_type,bc_params,bc_target)
-   y_bcMask(i,j+1) = bc_type
+   call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,-1,.false.,y_bc_type,y_bc_params,y_bc_target)
+   y_bcMask(i,j+1) = y_bc_type
    
-   if (bc_type == Outflow) sigma_out = bc_params(6)
-   beta = bc_params(5)
-   
-   eos_state %  T = U_ext(UTEMP)
-   eos_state %  rho = U_ext(URHO)
-   eos_state % massfrac(1:nspec) = u_ext(UFS:UFS+nspec-1) / U_ext(URHO)
-   call eos_rt(eos_state)
-   INLET_VX_Ydir = U_ext(UMX)/U_ext(URHO)
-   INLET_VY_Ydir = U_ext(UMY)/U_ext(URHO)
-   INLET_TEMPERATURE_Ydir = U_ext(UTEMP)
-   INLET_PRESSURE_Ydir = eos_state%p
- 
-   mach_local_corner = dsqrt(q(i,j,QU)**2.0d0 + q(i,j,QV)**2.0d0)/qaux(i,j,QC)
-
-   ! Test BCs
-   if ((x_bcMask(i+1,j) == Outflow) .and. (y_bcMask(i,j+1) == Outflow)) then
-   ! This is the case when the upper right corner is outflow/outflow
-
-     ! LODI waves along X
-     L2 = q(i,j,QU) * ( ((qaux(i,j,QC)**2.0d0)*drhodx) - dpdx)
-     L3 = q(i,j,QU) * dvdx
-     L4 = (q(i,j,QU)+qaux(i,j,QC))* (dpdx + (q(i,j,QRHO)*qaux(i,j,QC))*dudx)
-
-     ! LODI waves along Y
-     M2 = q(i,j,QV) * dudy
-     M3 = q(i,j,QV) * ( ((qaux(i,j,QC)**2.0d0)*drhody) - dpdy) 
-     M4 = (q(i,j,QV)+qaux(i,j,QC))* (dpdy + (q(i,j,QRHO)*qaux(i,j,QC))*dvdy) 
-
-     ! Compute transverse terms
-     Kout = sigma_out*(1.0d0 - (mach_local_corner**2.0d0))*qaux(i,j,QC)/(probhi(1))
-
-     T1 = -0.5d0*M4 + (q(i,j,QRHO)*qaux(i,j,QC))*M2
-     S1 = (Kout*(q(i,j,QPRES) - INLET_PRESSURE_Xdir))
-
-     Kout = sigma_out*(1.0d0 - (mach_local_corner**2.0d0))*qaux(i,j,QC)/(probhi(2))
-     T2 = -0.5d0*L4 + (q(i,j,QRHO)*qaux(i,j,QC))*L3
-     S2 = (Kout*(q(i,j,QPRES) - INLET_PRESSURE_Xdir))
- 
-     S2 = S2 + (1.0d0-beta)*T2 
-     S1 = S1 + (1.0d0-beta)*T1
-   
-     L1 = -2.0d0*(S2*beta + 2.0d0*S1 - S2)/ ((beta*beta) - (2.0d0*beta) - 3.0d0)
-     M1 = -2.0d0*(S1*(beta-1.0d0) + 2.0d0*S2)/ ((beta*beta) - (2.0d0*beta) - 3.0d0)
-
-   elseif (((x_bcMask(i+1,j) == Outflow) .and. (y_bcMask(i,j+1) == NoSlipWall)) .or. &
-           ((x_bcMask(i+1,j) == Outflow) .and. (y_bcMask(i,j+1) ==   SlipWall))) then
-
-   ! This is the case when the upper right corner is wall(y)/outflow(x)
-     ! Values long Y will be computed by mirror functions below
-     dpdy = (q(i,j,QPRES)-q(i,j-1,QPRES))/(2.0d0*dy)
-     dudy = (-q(i,j,QU)-q(i,j-1,QU))/(2.0d0*dy)
-     if (y_bcMask(i,j+1) == NoSlipWall) dvdy = (-q(i,j,QV)-q(i,j-1,QV))/(2.0d0*dy)
-     if (y_bcMask(i,j+1) == SlipWall) dvdy = (q(i,j,QV)-q(i,j-1,QV))/(2.0d0*dy)
-     drhody = (q(i,j,QRHO)-q(i,j-1,QRHO))/(2.0d0*dy)
-     T1 = (q(i,j,QV)*(dpdy - q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
-     T4 = (q(i,j,QV)*(dpdy + q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
-
-     
-     ! LODI waves along X
-     Kout = sigma_out*(1.0d0 - (mach_local_corner**2.0d0))*qaux(i,j,QC)/(probhi(1))
-
-     L1 = (Kout*(q(i,j,QPRES) - INLET_PRESSURE_Xdir)) - ((1.0d0 - beta)*T1)
-     L2 = q(i,j,QU) * ( ((qaux(i,j,QC)**2.0d0)*drhodx) - dpdx) 
-     L3 = q(i,j,QU) * dvdx 
-     L4 = (q(i,j,QU)+qaux(i,j,QC))* (dpdx + (q(i,j,QRHO)*qaux(i,j,QC))*dudx) 
-     
-   elseif (((x_bcMask(i+1,j)  == NoSlipWall) .and. (y_bcMask(i,j+1) == Outflow)) .or. &
-           ((x_bcMask(i+1,j)  == SlipWall) .and. (y_bcMask(i,j+1) == Outflow))) then
-
-   ! This is the case when the upper right corner is outflow(y)/wall(x)
-      call bl_error("NSCBC not implemented for upper right corner")
-      
-   elseif (((x_bcMask(i+1,j)  == SlipWall) .or. (x_bcMask(i+1,j)  == NoSlipWall)) .and.  & 
-           ((y_bcMask(i,j+1) == SlipWall) .or. (y_bcMask(i,j+1) == NoSlipWall))) then
-           
-   ! This is the case when the upper right corner is wall(y)/wall(x)
-     ! Values long Y will be computed by mirror functions below
-
-   else
-     call bl_error("NSCBC not implemented for upper right corner")
-   endif
-
-   if (q(i,j,QV) == 0.0d0) then
-       M1 = M1 / (q(i,j,QV)-qaux(i,j,QC))
-       M2 = 0.0d0
-       M3 = 0.0d0
-       M4 = M4 / (q(i,j,QV)+qaux(i,j,QC))
-   else
-       M1 = M1 / (q(i,j,QV)-qaux(i,j,QC))
-       M2 = M2 / q(i,j,QV)
-       M3 = M3 / q(i,j,QV)
-       M4 = M4 / (q(i,j,QV)+qaux(i,j,QC))
-   endif   
-
-   if (q(i,j,QU) == 0.0d0) then
-       L1 = L1 / (q(i,j,QU)-qaux(i,j,QC))
-       L2 = 0.0d0
-       L3 = 0.0d0
-       L4 = L4 / (q(i,j,QU)+qaux(i,j,QC))
-   else
-       L1 = L1 / (q(i,j,QU)-qaux(i,j,QC))
-       L2 = L2 / q(i,j,QU)
-       L3 = L3 / q(i,j,QU)
-       L4 = L4 / (q(i,j,QU)+qaux(i,j,QC))
-   endif
+   ! Computing the LODI system waves
+   call compute_waves_corner(i, j, -1, -1, &
+                             x_bc_type, x_bc_params, x_bc_target, &
+                             y_bc_type, y_bc_params, y_bc_target, &
+                             L1, L2, L3, L4, &
+                             M1, M2, M3, M4, &
+                             dpdx, dudx, dvdx, drhodx, &
+                             dpdy, dudy, dvdy, drhody, &
+                             q, q_l1, q_l2, q_h1, q_h2, &
+                             qaux, qa_l1, qa_l2, qa_h1, qa_h2) 
 
    ! Along X
    ! Recomputing ghost-cells values with the LODI waves
-     call update_ghost_cells(i, j, x_bcMask(i+1,j), 1, -1, dx, &
-                              domlo, domhi, &
-                               L1, L2, L3, L4, &
-                               uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-                               q, q_l1, q_l2, q_h1, q_h2, &
-                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+   call update_ghost_cells(i, j, x_bcMask(i+1,j), 1, -1, dx, &
+                           domlo, domhi, &
+                           L1, L2, L3, L4, &
+                           uin, uin_l1, uin_l2, uin_h1, uin_h2, &
+                           q, q_l1, q_l2, q_h1, q_h2, &
+                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
 
 
    ! Along Y
    ! Recomputing ghost-cells values with the LODI waves
-     call update_ghost_cells(i, j, y_bcMask(i,j+1), 2, -1, dy, &
-                              domlo, domhi, &
-                               M1, M2, M3, M4, &
-                               uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-                               q, q_l1, q_l2, q_h1, q_h2, &
-                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+   call update_ghost_cells(i, j, y_bcMask(i,j+1), 2, -1, dy, &
+                           domlo, domhi, &
+                           M1, M2, M3, M4, &
+                           uin, uin_l1, uin_l2, uin_h1, uin_h2, &
+                           q, q_l1, q_l2, q_h1, q_h2, &
+                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
  endif
  
  
@@ -280,10 +162,10 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
 
    i = domhi(1)
    j = domlo(2)
-  
+   
    x   = (dble(i)+HALF)*dx
    y   = (dble(j)+HALF)*dy
-   
+     
    ! Normal derivative along x
    call normal_derivative(i, j, 1, -1, dx, &
                           dpdx, dudx, dvdx, drhodx, &
@@ -296,148 +178,42 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
   
    ! Calling user target BC values
    ! right face
-   call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,.false.,bc_type,bc_params,bc_target)
-   x_bcMask(i+1,j) = bc_type
-
-   if (bc_type == Outflow) sigma_out = bc_params(6)
-   beta = bc_params(5)
-
-   eos_state %  T = U_ext(UTEMP)
-   eos_state %  rho = U_ext(URHO)
-   eos_state % massfrac(1:nspec) = u_ext(UFS:UFS+nspec-1) / U_ext(URHO)
-   call eos_rt(eos_state)
-   INLET_VX_Xdir = U_ext(UMX)/U_ext(URHO)
-   INLET_VY_Xdir = U_ext(UMY)/U_ext(URHO)
-   INLET_TEMPERATURE_Xdir = U_ext(UTEMP)
-   INLET_PRESSURE_Xdir = eos_state%p
+   call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,.false.,x_bc_type,x_bc_params,x_bc_target)
+   x_bcMask(i+1,j) = x_bc_type
 
    ! bottom face
-   call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,1,.false.,bc_type,bc_params,bc_target)
-   y_bcMask(i,j) = bc_type
+   call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,1,.false.,y_bc_type,y_bc_params,y_bc_target)
+   y_bcMask(i,j) = y_bc_type
    
-   if (bc_type == Outflow) sigma_out = bc_params(6)
-   beta = bc_params(5)
-
-   eos_state %  T = U_ext(UTEMP)
-   eos_state %  rho = U_ext(URHO)
-   eos_state % massfrac(1:nspec) = u_ext(UFS:UFS+nspec-1) / U_ext(URHO)
-   call eos_rt(eos_state)
-   INLET_VX_Ydir = U_ext(UMX)/U_ext(URHO)
-   INLET_VY_Ydir = U_ext(UMY)/U_ext(URHO)
-   INLET_TEMPERATURE_Ydir = U_ext(UTEMP)
-   INLET_PRESSURE_Ydir = eos_state%p
-
-   mach_local_corner = dsqrt(q(i,j,QU)**2.0d0 + q(i,j,QV)**2.0d0)/qaux(i,j,QC)
-  
-   ! Test BCs
-   if ((x_bcMask(i+1,j) == Outflow) .and. (y_bcMask(i,j) == Outflow)) then
-   ! This is the case when the bottom right corner is outflow/outflow
-
-     ! LODI waves along X
-     L2 = q(i,j,QU) * ( ((qaux(i,j,QC)**2.0d0)*drhodx) - dpdx)
-     L3 = q(i,j,QU) * dvdx
-     L4 = (q(i,j,QU)+qaux(i,j,QC))* (dpdx + (q(i,j,QRHO)*qaux(i,j,QC))*dudx)
-
-     ! LODI waves along Y
-     M1 = (q(i,j,QV)-qaux(i,j,QC))* (dpdy - (q(i,j,QRHO)*qaux(i,j,QC))*dvdy) 
-     M2 = q(i,j,QV) * dudy
-     M3 = q(i,j,QV) * ( ((qaux(i,j,QC)**2.0d0)*drhody) - dpdy) 
-
-     ! Compute transverse terms
-     Kout = sigma_out*(1.0d0 - (mach_local_corner**2.0d0))*qaux(i,j,QC)/(probhi(1))
-
-     T1 = -0.5d0*M1 + (q(i,j,QRHO)*qaux(i,j,QC))*M2
-     S1 = (Kout*(q(i,j,QPRES) - INLET_PRESSURE_Ydir))
-
-     Kout = sigma_out*(1.0d0 - (mach_local_corner**2.0d0))*qaux(i,j,QC)/(probhi(2))
-     T2 = -0.5d0*L4 - (q(i,j,QRHO)*qaux(i,j,QC))*L3
-     S2 = (Kout*(q(i,j,QPRES) - INLET_PRESSURE_Ydir))
- 
-     S2 = S2 + (1.0d0-beta)*T2
-     S1 = S1 + (1.0d0-beta)*T1
+   ! Computing the LODI system waves
+   call compute_waves_corner(i, j, -1, 1, &
+                             x_bc_type, x_bc_params, x_bc_target, &
+                             y_bc_type, y_bc_params, y_bc_target, &
+                             L1, L2, L3, L4, &
+                             M1, M2, M3, M4, &
+                             dpdx, dudx, dvdx, drhodx, &
+                             dpdy, dudy, dvdy, drhody, &
+                             q, q_l1, q_l2, q_h1, q_h2, &
+                             qaux, qa_l1, qa_l2, qa_h1, qa_h2) 
    
-     L1 = -2.0d0*(S2*beta + 2.0d0*S1 - S2)/ ((beta*beta) - (2.0d0*beta) - 3.0d0)
-     M4 = -2.0d0*(S1*(beta-1.0d0) + 2.0d0*S2)/ ((beta*beta) - (2.0d0*beta) - 3.0d0)
-     
-   elseif (((x_bcMask(i+1,j) == Outflow) .and. (y_bcMask(i,j) == NoSlipWall)) .or. &
-           ((x_bcMask(i+1,j) == Outflow) .and. (y_bcMask(i,j) == SlipWall))) then
-              
-   ! This is the case when the bottom right corner is wall(y)/outflow(x)
-     ! Values long Y will be computed by mirror functions below
-     dpdy = (q(i,j+1,QPRES)-q(i,j,QPRES))/(2.0d0*dy)
-     dudy = (q(i,j+1,QU)+q(i,j,QU))/(2.0d0*dy)
-     if (y_bcMask(i,j) == NoSlipWall) dvdy = (q(i,j+1,QV)+q(i,j,QV))/(2.0d0*dy)
-     if (y_bcMask(i,j) == SlipWall) dvdy = (q(i,j+1,QV)-q(i,j,QV))/(2.0d0*dy)
-     drhody = (q(i,j+1,QRHO)-q(i,j,QRHO))/(2.0d0*dy)
-     T1 = (q(i,j,QV)*(dpdy - q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
-     T4 = (q(i,j,QV)*(dpdy + q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
-
-     
-     ! LODI waves along X
-     Kout = sigma_out*(1.0d0 - (mach_local_corner**2.0d0))*qaux(i,j,QC)/(probhi(1))
-
-     L1 = (Kout*(q(i,j,QPRES) - INLET_PRESSURE_Xdir)) - ((1.0d0 - beta)*T1)
-     L2 = q(i,j,QU) * ( ((qaux(i,j,QC)**2.0d0)*drhodx) - dpdx) 
-     L3 = q(i,j,QU) * dvdx 
-     L4 = (q(i,j,QU)+qaux(i,j,QC))* (dpdx + (q(i,j,QRHO)*qaux(i,j,QC))*dudx) 
-     
-   elseif (((x_bcMask(i+1,j) == NoSlipWall) .and. (y_bcMask(i,j) == Outflow)) .or. &
-           ((x_bcMask(i+1,j) == SlipWall) .and. (y_bcMask(i,j) == Outflow))) then
-              
-   ! This is the case when the bottom right corner is outflow(y)/wall(x)
-     call bl_error("NSCBC not implemented for bottom right corner")
-
-   elseif (((x_bcMask(i+1,j) == SlipWall) .or. (x_bcMask(i+1,j) == NoSlipWall)) .and.  & 
-           ((y_bcMask(i,j) == SlipWall) .or. (y_bcMask(i,j) == NoSlipWall))) then
-     ! This is the case when the bottom right corner is wall(y)/wall(x)
-      ! Values long Y will be computed by mirror functions below
-
-   else
-     call bl_error("NSCBC not implemented for bottom right corner")
-   endif  
-     
-   if (q(i,j,QV) == 0.0d0) then
-       M1 = M1 / (q(i,j,QV)-qaux(i,j,QC))
-       M2 = 0.0d0
-       M3 = 0.0d0
-       M4 = M4 / (q(i,j,QV)+qaux(i,j,QC))
-   else
-       M1 = M1 / (q(i,j,QV)-qaux(i,j,QC))
-       M2 = M2 / q(i,j,QV)
-       M3 = M3 / q(i,j,QV)
-       M4 = M4 / (q(i,j,QV)+qaux(i,j,QC))
-   endif   
-
-   if (q(i,j,QU) == 0.0d0) then
-       L1 = L1 / (q(i,j,QU)-qaux(i,j,QC))
-       L2 = 0.0d0
-       L3 = 0.0d0
-       L4 = L4 / (q(i,j,QU)+qaux(i,j,QC))
-   else
-       L1 = L1 / (q(i,j,QU)-qaux(i,j,QC))
-       L2 = L2 / q(i,j,QU)
-       L3 = L3 / q(i,j,QU)
-       L4 = L4 / (q(i,j,QU)+qaux(i,j,QC))
-   endif
-
    ! Along X
    ! Recomputing ghost-cells values with the LODI waves
-     call update_ghost_cells(i, j, x_bcMask(i+1,j), 1, -1, dx, &
-                              domlo, domhi, &
-                               L1, L2, L3, L4, &
-                               uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-                               q, q_l1, q_l2, q_h1, q_h2, &
-                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+   call update_ghost_cells(i, j, x_bcMask(i+1,j), 1, -1, dx, &
+                           domlo, domhi, &
+                           L1, L2, L3, L4, &
+                           uin, uin_l1, uin_l2, uin_h1, uin_h2, &
+                           q, q_l1, q_l2, q_h1, q_h2, &
+                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
 
 
    ! Along Y
    ! Recomputing ghost-cells values with the LODI waves
-     call update_ghost_cells(i, j, y_bcMask(i,j), 2, 1, dy, &
-                              domlo, domhi, &
-                               M1, M2, M3, M4, &
-                               uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-                               q, q_l1, q_l2, q_h1, q_h2, &
-                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+   call update_ghost_cells(i, j, y_bcMask(i,j), 2, 1, dy, &
+                           domlo, domhi, &
+                           M1, M2, M3, M4, &
+                           uin, uin_l1, uin_l2, uin_h1, uin_h2, &
+                           q, q_l1, q_l2, q_h1, q_h2, &
+                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
 
  endif
  
@@ -453,7 +229,7 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    
    x   = (dble(i)+HALF)*dx
    y   = (dble(j)+HALF)*dy
-   
+      
    ! Normal derivative along x
    call normal_derivative(i, j, 1, 1, dx, &
                           dpdx, dudx, dvdx, drhodx, &
@@ -466,182 +242,42 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
    
    ! Calling user target BC values
    ! left face
-   call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,bc_type,bc_params,bc_target)
-   x_bcMask(i,j) = bc_type
-
-   if (bc_type == Outflow) sigma_out = bc_params(6)
-   relax_T = bc_params(1)
-   relax_U = bc_params(2)
-   relax_V = bc_params(3)
-   beta =  bc_params(5)
-
-   eos_state %  T = U_ext(UTEMP)
-   eos_state %  rho = U_ext(URHO)
-   eos_state % massfrac(1:nspec) = u_ext(UFS:UFS+nspec-1) / U_ext(URHO)
-   call eos_rt(eos_state)
-   INLET_VX_Xdir = U_ext(UMX)/U_ext(URHO)
-   INLET_VY_Xdir = U_ext(UMY)/U_ext(URHO)
-   INLET_TEMPERATURE_Xdir = U_ext(UTEMP)
-   INLET_PRESSURE_Xdir = eos_state%p
+   call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,x_bc_type,x_bc_params,x_bc_target)
+   x_bcMask(i,j) = x_bc_type
 
    ! top face
-   call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,-1,.false.,bc_type,bc_params,bc_target)
-   y_bcMask(i,j+1) = bc_type
+   call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,-1,.false.,y_bc_type,y_bc_params,y_bc_target)
+   y_bcMask(i,j+1) = y_bc_type
    
-   if (bc_type == Outflow) sigma_out = bc_params(6)
-   beta = bc_params(5)
-
-   eos_state %  T = U_ext(UTEMP)
-   eos_state %  rho = U_ext(URHO)
-   eos_state % massfrac(1:nspec) = u_ext(UFS:UFS+nspec-1) / U_ext(URHO)
-   call eos_rt(eos_state)
-   INLET_VX_Ydir = U_ext(UMX)/U_ext(URHO)
-   INLET_VY_Ydir = U_ext(UMY)/U_ext(URHO)
-   INLET_TEMPERATURE_Ydir = U_ext(UTEMP)
-   INLET_PRESSURE_Ydir = eos_state%p
-
-   mach_local_corner = dsqrt(q(i,j,QU)**2.0d0 + q(i,j,QV)**2.0d0)/qaux(i,j,QC)
+   ! Computing the LODI system waves
+   call compute_waves_corner(i, j, 1, -1, &
+                             x_bc_type, x_bc_params, x_bc_target, &
+                             y_bc_type, y_bc_params, y_bc_target, &
+                             L1, L2, L3, L4, &
+                             M1, M2, M3, M4, &
+                             dpdx, dudx, dvdx, drhodx, &
+                             dpdy, dudy, dvdy, drhody, &
+                             q, q_l1, q_l2, q_h1, q_h2, &
+                             qaux, qa_l1, qa_l2, qa_h1, qa_h2) 
    
-   ! Test BCs
-   if ((x_bcMask(i,j) == Outflow) .and. (y_bcMask(i,j+1) == Outflow)) then
-   ! This is the case when the upper left corner is outflow/outflow
-
-     ! LODI waves along X
-     L1 = (q(i,j,QU)-qaux(i,j,QC))* (dpdx - (q(i,j,QRHO)*qaux(i,j,QC))*dudx)
-     L2 = q(i,j,QU) * ( ((qaux(i,j,QC)**2.0d0)*drhodx) - dpdx)
-     L3 = q(i,j,QU) * dvdx
-
-     ! LODI waves along Y
-     M2 = q(i,j,QV) * dudy
-     M3 = q(i,j,QV) * ( ((qaux(i,j,QC)**2.0d0)*drhody) - dpdy) 
-     M4 = (q(i,j,QV)+qaux(i,j,QC))* (dpdy + (q(i,j,QRHO)*qaux(i,j,QC))*dvdy) 
-
-     ! Compute transverse terms
-     Kout = sigma_out*(1.0d0 - (mach_local_corner**2.0d0))*qaux(i,j,QC)/(probhi(1))
-
-     T1 = -0.5d0*M4 - (q(i,j,QRHO)*qaux(i,j,QC))*M2
-     S1 = (Kout*(q(i,j,QPRES) - INLET_PRESSURE_Xdir))
-
-     Kout = sigma_out*(1.0d0 - (mach_local_corner**2.0d0))*qaux(i,j,QC)/(probhi(2))
-     T2 = -0.5d0*L1 + (q(i,j,QRHO)*qaux(i,j,QC))*L3
-     S2 = (Kout*(q(i,j,QPRES) - INLET_PRESSURE_Xdir))
- 
-     S2 = S2 + (1.0d0-beta)*T2
-     S1 = S1 + (1.0d0-beta)*T1
-   
-     L4 = -2.0d0*(S2*beta + 2.0d0*S1 - S2)/ ((beta*beta) - (2.0d0*beta) - 3.0d0)
-     M1 = -2.0d0*(S1*(beta-1.0d0) + 2.0d0*S2)/ ((beta*beta) - (2.0d0*beta) - 3.0d0)
-     
-   elseif ((x_bcMask(i,j) == Inflow) .and. (y_bcMask(i,j+1) == Outflow)) then
-   ! This is the case when the upper left corner is inflow(x)/outflow(y)
-
-     ! LODI waves along Y
-     M1 = 0.0d0 ! Compatibility condition
-     Kout = sigma_out*(1.0d0 - (mach_local_corner**2.0d0))*qaux(i,j,QC)/(probhi(2))
-     
-       M1 = (Kout*(q(i,j,QPRES) - INLET_PRESSURE_Ydir)) !- ((1.0d0 - beta )*T1)
-     M2 = q(i,j,QV) * dudy
-     M3 = q(i,j,QV) * ( ((qaux(i,j,QC)**2.0d0)*drhody) - dpdy)
-     M4 = (q(i,j,QV)+qaux(i,j,QC))* (dpdy + (q(i,j,QRHO)*qaux(i,j,QC))*dvdy) 
-     
-     ! LODI waves along X
-     L1 = (q(i,j,QU)-qaux(i,j,QC))* (dpdx - (q(i,j,QRHO)*qaux(i,j,QC))*dudx)  
-     L2 = relax_T * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(1)) * (q(i,j,QTEMP) - INLET_TEMPERATURE_Xdir) !- M3
-     L3 = (relax_V * (qaux(i,j,QC)/probhi(1)) * (q(i,j,QV) - INLET_VY_Xdir))  !- (M4/(2.0d0*q(i,j,QRHO)*qaux(i,j,QC)))
-     L4 = (relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local_corner*mach_local_corner)/probhi(1)) * &
-            (q(i,j,QU) - INLET_VX_Xdir))  ! - (q(i,j,QRHO)*qaux(i,j,QC)*M2) - (M4/2.0d0)
-    
-   
-   elseif (((x_bcMask(i,j) == Outflow) .and. (y_bcMask(i,j+1) == NoSlipWall)) .or. &
-           ((x_bcMask(i,j) == Outflow) .and. (y_bcMask(i,j+1) == SlipWall))) then
-
-   ! This is the case when the upper right corner is wall(y)/outflow(x)
-     ! Values long Y will be computed by mirror functions below
-     dpdy = (q(i,j,QPRES)-q(i,j-1,QPRES))/(2.0d0*dy)
-     dudy = (-q(i,j,QU)-q(i,j-1,QU))/(2.0d0*dy)
-     if (y_bcMask(i,j+1) == NoSlipWall) dvdy = (-q(i,j,QV)-q(i,j-1,QV))/(2.0d0*dy)
-     if (y_bcMask(i,j+1) == SlipWall) dvdy = (q(i,j,QV)-q(i,j-1,QV))/(2.0d0*dy)
-     drhody = (q(i,j,QRHO)-q(i,j-1,QRHO))/(2.0d0*dy)
-     T4 = (q(i,j,QV)*(dpdy + q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
-
-     ! LODI waves along X
-     Kout = sigma_out*(1.0d0 - (mach_local_corner**2.0d0))*qaux(i,j,QC)/(probhi(1))
-
-     L1 = (q(i,j,QU)-qaux(i,j,QC))* (dpdx - (q(i,j,QRHO)*qaux(i,j,QC))*dudx)
-     L2 = q(i,j,QU) * ( ((qaux(i,j,QC)**2.0d0)*drhodx) - dpdx)
-     L3 = q(i,j,QU) * dvdx
-     L4 = (Kout*(q(i,j,QPRES) - INLET_PRESSURE_Xdir)) - ((1.0d0 - beta)*T4)
-     
-   elseif ((x_bcMask(i,j) == Inflow) .and. &
-           ((y_bcMask(i,j+1) == SlipWall).or.(y_bcMask(i,j+1) == NoSlipWall))) then
-           
-   ! This is the case when the upper left corner is wall(y)/inflow(x)
-   ! Values long Y will be computed by mirror functions below
-     dpdy = (q(i,j,QPRES)-q(i,j-1,QPRES))/(2.0d0*dy)
-     dudy = (-q(i,j,QU)-q(i,j-1,QU))/(2.0d0*dy)
-     if (y_bcMask(i,j+1) == NoSlipWall) dvdy = (-q(i,j,QV)-q(i,j-1,QV))/(2.0d0*dy)
-     if (y_bcMask(i,j+1) == SlipWall) dvdy = (q(i,j,QV)-q(i,j-1,QV))/(2.0d0*dy)
-     drhody = (q(i,j,QRHO)-q(i,j-1,QRHO))/(2.0d0*dy)
-     T4 = (q(i,j,QV)*(dpdy + q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
-
-     ! LODI waves along X
-     L1 = (q(i,j,QU)-qaux(i,j,QC))* (dpdx - (q(i,j,QRHO)*qaux(i,j,QC))*dudx)  
-     L2 = relax_T * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(1)) * (q(i,j,QTEMP) - INLET_TEMPERATURE_Xdir) - ((1.0d0 - beta)*T2)
-     L3 = relax_V * (qaux(i,j,QC)/probhi(1)) * (q(i,j,QV) - INLET_VY_Xdir)  - ((1.0d0 - beta)*T3)
-     L4 = relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local_corner*mach_local_corner)/probhi(1)) * &
-          (q(i,j,QU) - INLET_VX_Xdir)  - ((1.0d0 - beta)*T4)
-
-   elseif (((x_bcMask(i,j) == SlipWall) .or. (x_bcMask(i,j) == NoSlipWall)) .and. &
-           ((y_bcMask(i,j+1) == SlipWall) .or. (y_bcMask(i,j+1) == NoSlipWall))) then
-     ! This is the case when the upper left corner is wall(y)/wall(x)
-       ! Values long Y will be computed by mirror functions below
- 
-   else
-     call bl_error("NSCBC not implemented for upper left corner")
-   endif 
-
-   if (q(i,j,QV) == 0.0d0) then
-       M1 = M1 / (q(i,j,QV)-qaux(i,j,QC))
-       M2 = 0.0d0
-       M3 = 0.0d0
-       M4 = M4 / (q(i,j,QV)+qaux(i,j,QC))
-   else
-       M1 = M1 / (q(i,j,QV)-qaux(i,j,QC))
-       M2 = M2 / q(i,j,QV)
-       M3 = M3 / q(i,j,QV)
-       M4 = M4 / (q(i,j,QV)+qaux(i,j,QC))
-   endif   
-
-   if (q(i,j,QU) == 0.0d0) then
-       L1 = L1 / (q(i,j,QU)-qaux(i,j,QC))
-       L2 = 0.0d0
-       L3 = 0.0d0
-       L4 = L4 / (q(i,j,QU)+qaux(i,j,QC))
-   else
-       L1 = L1 / (q(i,j,QU)-qaux(i,j,QC))
-       L2 = L2 / q(i,j,QU)
-       L3 = L3 / q(i,j,QU)
-       L4 = L4 / (q(i,j,QU)+qaux(i,j,QC))
-   endif
-
    ! Along X
    ! Recomputing ghost-cells values with the LODI waves
-     call update_ghost_cells(i, j, x_bcMask(i,j), 1, 1, dx, &
-                              domlo, domhi, &
-                               L1, L2, L3, L4, &
-                               uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-                               q, q_l1, q_l2, q_h1, q_h2, &
-                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+   call update_ghost_cells(i, j, x_bcMask(i,j), 1, 1, dx, &
+                           domlo, domhi, &
+                           L1, L2, L3, L4, &
+                           uin, uin_l1, uin_l2, uin_h1, uin_h2, &
+                           q, q_l1, q_l2, q_h1, q_h2, &
+                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
 
 
    ! Along Y
    ! Recomputing ghost-cells values with the LODI waves
-     call update_ghost_cells(i, j, y_bcMask(i,j+1), 2, -1, dy, &
-                              domlo, domhi, &
-                               M1, M2, M3, M4, &
-                               uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-                               q, q_l1, q_l2, q_h1, q_h2, &
-                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+   call update_ghost_cells(i, j, y_bcMask(i,j+1), 2, -1, dy, &
+                           domlo, domhi, &
+                           M1, M2, M3, M4, &
+                           uin, uin_l1, uin_l2, uin_h1, uin_h2, &
+                           q, q_l1, q_l2, q_h1, q_h2, &
+                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
 
  endif
  
@@ -654,7 +290,7 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
 
    i = domlo(1)
    j = domlo(2)
-
+   
    x   = (dble(i)+HALF)*dx
    y   = (dble(j)+HALF)*dy
    
@@ -670,186 +306,41 @@ write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
 
    ! Calling user target BC values
    ! left face
-   call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,bc_type,bc_params,bc_target)
-   x_bcMask(i,j) = bc_type
+   call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,x_bc_type,x_bc_params,x_bc_target)
+   x_bcMask(i,j) = x_bc_type
 
-   if (bc_type == Outflow) sigma_out = bc_params(6)
-   relax_T = bc_params(1)
-   relax_U = bc_params(2)
-   relax_V = bc_params(3)
-   beta_X =  bc_params(5)
+   !! bottom face
+   call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,1,.false.,y_bc_type,y_bc_params,y_bc_target)
+   y_bcMask(i,j) = y_bc_type
 
-   eos_state %  T = U_ext(UTEMP)
-   eos_state %  rho = U_ext(URHO)
-   eos_state % massfrac(1:nspec) = u_ext(UFS:UFS+nspec-1) / U_ext(URHO)
-   call eos_rt(eos_state)
-   INLET_VX_Xdir = U_ext(UMX)/U_ext(URHO)
-   INLET_VY_Xdir = U_ext(UMY)/U_ext(URHO)
-   INLET_TEMPERATURE_Xdir = U_ext(UTEMP)
-   INLET_PRESSURE_Xdir = eos_state%p
-
-   ! bottom face
-   call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,1,.false.,bc_type,bc_params,bc_target)
-   y_bcMask(i,j) = bc_type
-   
-   if (bc_type == Outflow) sigma_out = bc_params(6)
-   beta_Y = bc_params(5)
-   beta = beta_X
-
-   eos_state %  T = U_ext(UTEMP)
-   eos_state %  rho = U_ext(URHO)
-   eos_state % massfrac(1:nspec) = u_ext(UFS:UFS+nspec-1) / U_ext(URHO)
-   call eos_rt(eos_state)
-   INLET_VX_Ydir = U_ext(UMX)/U_ext(URHO)
-   INLET_VY_Ydir = U_ext(UMY)/U_ext(URHO)
-   INLET_TEMPERATURE_Ydir = U_ext(UTEMP)
-   INLET_PRESSURE_Ydir = eos_state%p
-
-   mach_local_corner = dsqrt(q(i,j,QU)**2.0d0 + q(i,j,QV)**2.0d0)/qaux(i,j,QC)
+   ! Computing the LODI system waves
+   call compute_waves_corner(i, j, 1, 1, &
+                           x_bc_type, x_bc_params, x_bc_target, &
+                           y_bc_type, y_bc_params, y_bc_target, &
+                           L1, L2, L3, L4, &
+                           M1, M2, M3, M4, &
+                           dpdx, dudx, dvdx, drhodx, &
+                           dpdy, dudy, dvdy, drhody, &
+                           q, q_l1, q_l2, q_h1, q_h2, &
+                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)  
   
-   ! Test BCs
-   if ((x_bcMask(i,j) == Outflow) .and. (y_bcMask(i,j) == Outflow)) then
-   ! This is the case when the bottom left corner is outflow/outflow
-
-     ! LODI waves along X
-     L1 = (q(i,j,QU)-qaux(i,j,QC))* (dpdx - (q(i,j,QRHO)*qaux(i,j,QC))*dudx)
-     L2 = q(i,j,QU) * ( ((qaux(i,j,QC)**2.0d0)*drhodx) - dpdx)
-     L3 = q(i,j,QU) * dvdx
-
-     ! LODI waves along Y
-     M1 = (q(i,j,QV)-qaux(i,j,QC))* (dpdy - (q(i,j,QRHO)*qaux(i,j,QC))*dvdy) 
-     M2 = q(i,j,QV) * dudy
-     M3 = q(i,j,QV) * ( ((qaux(i,j,QC)**2.0d0)*drhody) - dpdy)  
-
-     ! Compute transverse terms
-     Kout = sigma_out*(1.0d0 - (mach_local_corner**2.0d0))*qaux(i,j,QC)/(probhi(1))
-
-     T1 = -0.5d0*M1 - (q(i,j,QRHO)*qaux(i,j,QC))*M2
-     S1 = (Kout*(q(i,j,QPRES) - INLET_PRESSURE_Xdir))
-
-     Kout = sigma_out*(1.0d0 - (mach_local_corner**2.0d0))*qaux(i,j,QC)/(probhi(2))
-     T2 = -0.5d0*L1 - (q(i,j,QRHO)*qaux(i,j,QC))*L3
-     S2 = (Kout*(q(i,j,QPRES) - INLET_PRESSURE_Xdir))
- 
-     S2 = S2 + (1.0d0-beta)*T2
-     S1 = S1 + (1.0d0-beta)*T1
-   
-     L4 = -2.0d0*(S2*beta + 2.0d0*S1 - S2)/ ((beta*beta) - (2.0d0*beta) - 3.0d0)
-     M4 = -2.0d0*(S1*(beta-1.0d0) + 2.0d0*S2)/ ((beta*beta) - (2.0d0*beta) - 3.0d0)
-     
-   elseif ((x_bcMask(i,j) == Inflow) .and. (y_bcMask(i,j) == Outflow)) then
-   ! This is the case when the bottom left corner is inflow(x)/outflow(y)
-
-     ! LODI waves along Y
-     M1 = (q(i,j,QV)-qaux(i,j,QC))* (dpdy - (q(i,j,QRHO)*qaux(i,j,QC))*dvdy) 
-     M2 = q(i,j,QV) * dudy
-     M3 = q(i,j,QV) * ( ((qaux(i,j,QC)**2.0d0)*drhody) - dpdy)
-     M4 = 0.0d0 ! Compatibility condition
-     
-     ! LODI waves along X
-     L1 = (q(i,j,QU)-qaux(i,j,QC))* (dpdx - (q(i,j,QRHO)*qaux(i,j,QC))*dudx)  
-     L2 = relax_T * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(1)) * (q(i,j,QTEMP) - INLET_TEMPERATURE_Xdir) - M3
-     L3 = (relax_V * (qaux(i,j,QC)/probhi(1)) * (q(i,j,QV) - INLET_VY_Xdir))  + (M1/(2.0d0*q(i,j,QRHO)*qaux(i,j,QC)))
-     L4 = (relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local_corner*mach_local_corner)/probhi(1)) * &
-            (q(i,j,QU) - INLET_VX_Xdir))  - (M1/2.0d0) - (q(i,j,QRHO)*qaux(i,j,QC)*M2)
-            
-   elseif (((x_bcMask(i,j) == Outflow) .and. (y_bcMask(i,j) == NoSlipWall)) .or. &
-           ((x_bcMask(i,j) == Outflow) .and. (y_bcMask(i,j) == SlipWall))) then
-           
-   ! This is the case when the bottom left corner is wall(y)/outflow(x)
-     ! Values long Y will be computed by mirror functions below
-     dpdy = (q(i,j+1,QPRES)-q(i,j,QPRES))/(2.0d0*dy)
-     dudy = (q(i,j+1,QU)+q(i,j,QU))/(2.0d0*dy)
-     if (y_bcMask(i,j) == NoSlipWall) dvdy = (q(i,j+1,QV)+q(i,j,QV))/(2.0d0*dy)
-     if (y_bcMask(i,j) == SlipWall) dvdy = (q(i,j+1,QV)-q(i,j,QV))/(2.0d0*dy)
-     drhody = (q(i,j+1,QRHO)-q(i,j,QRHO))/(2.0d0*dy)
-     T1 = (q(i,j,QV)*(dpdy - q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
-     T4 = (q(i,j,QV)*(dpdy + q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
-
-     ! LODI waves along X
-     Kout = sigma_out*(1.0d0 - (mach_local_corner**2.0d0))*qaux(i,j,QC)/(probhi(1))
-     L1 = (q(i,j,QU)-qaux(i,j,QC))* (dpdx - (q(i,j,QRHO)*qaux(i,j,QC))*dudx)
-     L2 = q(i,j,QU) * ( ((qaux(i,j,QC)**2.0d0)*drhodx) - dpdx)
-     L3 = q(i,j,QU) * dvdx
-     L4 = (Kout*(q(i,j,QPRES) - INLET_PRESSURE_Xdir)) - ((1.0d0 - beta)*T4)
-     
-   elseif ((x_bcMask(i,j) == Inflow) .and. &
-           ((y_bcMask(i,j) == SlipWall).or.(y_bcMask(i,j) == NoSlipWall))) then
-
-   ! This is the case when the bottom left corner is wall(y)/inflow(x)
-   ! Values long Y will be computed by mirror functions below
-     dpdy = (q(i,j+1,QPRES)-q(i,j,QPRES))/(2.0d0*dy)
-     dvdy = (q(i,j+1,QV)+q(i,j,QV))/(2.0d0*dy)
-     drhody = (q(i,j+1,QRHO)+q(i,j,QRHO))/(2.0d0*dy)
-     if (y_bcMask(i,j) == NoSlipWall) dudy = (q(i,j+1,QU)+q(i,j,QU))/(2.0d0*dy)
-     if (y_bcMask(i,j) == SlipWall) dudy = (q(i,j+1,QU)-q(i,j,QU))/(2.0d0*dy)
-     T1 = (q(i,j,QV)*(dpdy - q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
-     T4 = (q(i,j,QV)*(dpdy + q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
-     T3 = ((q(i,j,QV)*dvdy))+(dpdy/q(i,j,QRHO))
-     T2 = (q(i,j,QV)*((qaux(i,j,QC)*qaux(i,j,QC)*drhody)-dpdy)) + &
-          (qaux(i,j,QC)*qaux(i,j,QC)*q(i,j,QRHO)*dvdy) - (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
-     beta_X = mach_local_corner
-
-     ! LODI waves along X
-     L1 = (q(i,j,QU)-qaux(i,j,QC))* (dpdx - (q(i,j,QRHO)*qaux(i,j,QC))*dudx)  
-     L2 = relax_T * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(1)) * (q(i,j,QTEMP) - INLET_TEMPERATURE_Xdir) - ((1.0d0 - beta_X)*T2)
-
-     L3 = relax_V * (qaux(i,j,QC)/probhi(1)) * (q(i,j,QV) - INLET_VY_Xdir)  !- ((1.0d0 - beta_X)*T3)
-     L4 = relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local_corner*mach_local_corner)/probhi(1)) * &
-          (q(i,j,QU) - INLET_VX_Xdir)  - ((1.0d0 - beta_X)*T4)
-            
-
-  elseif (((x_bcMask(i,j) == SlipWall) .or. (x_bcMask(i,j) == NoSlipWall)) .and.  & 
-           ((y_bcMask(i,j) == SlipWall) .or. (y_bcMask(i,j) == NoSlipWall))) then
-   ! This is the case when the bottom left corner is wall(y)/wall(x)
-     ! Values long Y will be computed by mirror functions below
-
-   else
-     call bl_error("NSCBC not implemented for bottom left corner")
-   endif 
-
-   if (q(i,j,QV) == 0.0d0) then
-       M1 = M1 / (q(i,j,QV)-qaux(i,j,QC))
-       M2 = 0.0d0
-       M3 = 0.0d0
-       M4 = M4 / (q(i,j,QV)+qaux(i,j,QC))
-   else
-       M1 = M1 / (q(i,j,QV)-qaux(i,j,QC))
-       M2 = M2 / q(i,j,QV)
-       M3 = M3 / q(i,j,QV)
-       M4 = M4 / (q(i,j,QV)+qaux(i,j,QC))
-   endif   
-
-   if (q(i,j,QU) == 0.0d0) then
-       L1 = L1 / (q(i,j,QU)-qaux(i,j,QC))
-       L2 = 0.0d0
-       L3 = 0.0d0
-       L4 = L4 / (q(i,j,QU)+qaux(i,j,QC))
-   else
-       L1 = L1 / (q(i,j,QU)-qaux(i,j,QC))
-       L2 = L2 / q(i,j,QU)
-       L3 = L3 / q(i,j,QU)
-       L4 = L4 / (q(i,j,QU)+qaux(i,j,QC))
-   endif
-
    ! Along X
    ! Recomputing ghost-cells values with the LODI waves
-     call update_ghost_cells(i, j, x_bcMask(i,j), 1, 1, dx, &
-                              domlo, domhi, &
-                               L1, L2, L3, L4, &
-                               uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-                               q, q_l1, q_l2, q_h1, q_h2, &
-                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-
+   call update_ghost_cells(i, j, x_bcMask(i,j), 1, 1, dx, &
+                           domlo, domhi, &
+                           L1, L2, L3, L4, &
+                           uin, uin_l1, uin_l2, uin_h1, uin_h2, &
+                           q, q_l1, q_l2, q_h1, q_h2, &
+                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
 
    ! Along Y
    ! Recomputing ghost-cells values with the LODI waves
-     call update_ghost_cells(i, j, y_bcMask(i,j), 2, 1, dy, &
-                              domlo, domhi, &
-                               M1, M2, M3, M4, &
-                               uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-                               q, q_l1, q_l2, q_h1, q_h2, &
-                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+   call update_ghost_cells(i, j, y_bcMask(i,j), 2, 1, dy, &
+                           domlo, domhi, &
+                           M1, M2, M3, M4, &
+                           uin, uin_l1, uin_l2, uin_h1, uin_h2, &
+                           q, q_l1, q_l2, q_h1, q_h2, &
+                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
 
  endif
 
@@ -865,13 +356,13 @@ endif ! flag_nscbc_isAnyPerio )
 
    do j = q_lo(2)+1,q_hi(2)-1
 
-      if ( flag_nscbc_isAnyPerio == 0) then
-        if ((j == domlo(2)) .or. (j == domhi(2))) cycle !Doing that to avoid ghost cells already filled by corners
-      endif
-      
       x   = (dble(i)+HALF)*dx
       y   = (dble(j)+HALF)*dy
      
+      if ( flag_nscbc_isAnyPerio == 0) then
+        if ((j == domlo(2)) .or. (j == domhi(2))) cycle !Doing that to avoid ghost cells already filled by corners
+      endif
+           
      ! Normal derivative along x
      call normal_derivative(i, j, 1, 1, dx, &
                             dpdx, dudx, dvdx, drhodx, &
@@ -929,12 +420,12 @@ endif ! flag_nscbc_isAnyPerio )
       
    do j = q_lo(2)+1,q_hi(2)-1
    
+     x   = (dble(i)+HALF)*dx
+     y   = (dble(j)+HALF)*dy
+   
      if ( flag_nscbc_isAnyPerio == 0) then
        if ((j == domlo(2)) .or. (j == domhi(2))) cycle !Doing that to avoid ghost cells already filled by corners 
      endif
-     
-     x   = (dble(i)+HALF)*dx
-     y   = (dble(j)+HALF)*dy
      
      ! Normal derivative along x
      call normal_derivative(i, j, 1, -1, dx, &
@@ -995,13 +486,13 @@ endif
    
    do i = q_lo(1)+1,q_hi(1)-1
    
+     x   = (dble(i)+HALF)*dx
+     y   = (dble(j)+HALF)*dy
+   
      if ( flag_nscbc_isAnyPerio == 0) then
        if ((i == domlo(1)) .or. (i == domhi(1))) cycle !Doing that to avoid ghost cells already filled by corners
      endif
-     
-     x   = (dble(i)+HALF)*dx
-     y   = (dble(j)+HALF)*dy
-     
+          
      ! Normal derivative along y
      call normal_derivative(i, j, 2, 1, dy, &
                             dpdy, dudy, dvdy, drhody, &
@@ -1059,13 +550,13 @@ endif
    
    do i = q_lo(1)+1,q_hi(1)-1
      
+     x   = (dble(i)+HALF)*dx
+     y   = (dble(j)+HALF)*dy
+   
      if ( flag_nscbc_isAnyPerio == 0) then
        if ((i == domlo(1)) .or. (i == domhi(1))) cycle !Doing that to avoid ghost cells already filled by corners
      endif
-     
-     x   = (dble(i)+HALF)*dx
-     y   = (dble(j)+HALF)*dy 
-   
+        
      ! Normal derivative along y
      call normal_derivative(i, j, 2, -1, dy, &
                             dpdy, dudy, dvdy, drhody, &
@@ -1730,5 +1221,226 @@ end subroutine impose_NSCBC
   call destroy(eos_state)
   
   end subroutine update_ghost_cells
+  
+    !--------------------
+  
+  subroutine compute_waves_corner(i, j, x_isign, y_isign, &
+                           x_bc_type, x_bc_params, x_bc_target, &
+                           y_bc_type, y_bc_params, y_bc_target, &
+                           L1, L2, L3, L4, &
+                           M1, M2, M3, M4, &
+                           dpdx, dudx, dvdx, drhodx, &
+                           dpdy, dudy, dvdy, drhody, &
+                           q, q_l1, q_l2, q_h1, q_h2, &
+                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+                               
+                               
+  use meth_params_module, only : QVAR, QPRES, QU, QV, QRHO, NQAUX, QC, QGAMC, QTEMP, QRSPEC
+  use prob_params_module, only : probhi, Interior, Inflow, Outflow, SlipWall, NoSlipWall
+  
+  integer, intent(in) :: i, j, x_isign, y_isign
+  integer, intent(in) :: q_l1, q_l2, q_h1, q_h2
+  integer, intent(in) :: qa_l1, qa_l2, qa_h1, qa_h2
+  double precision, intent(in) :: q(q_l1:q_h1,q_l2:q_h2,QVAR)
+  double precision, intent(in) :: qaux(qa_l1:qa_h1,qa_l2:qa_h2,NQAUX)
+  double precision, intent(in) :: dpdx, dudx, dvdx, drhodx
+  double precision, intent(in) :: dpdy, dudy, dvdy, drhody
+  
+  integer, intent(in)          :: x_bc_type, y_bc_type
+  double precision, intent(in) :: x_bc_params(6), y_bc_params(6)
+  double precision, intent(in) :: x_bc_target(5), y_bc_target(5)
+  
+  double precision, intent(out) :: L1, L2, L3, L4
+  double precision, intent(out) :: M1, M2, M3, M4
+  
+  ! Local
+  double precision :: mach_local, TARGET_VX, TARGET_VY, TARGET_TEMPERATURE, TARGET_PRESSURE
+  double precision :: Xdir_TARGET_VX, Xdir_TARGET_VY, Xdir_TARGET_TEMPERATURE, Xdir_TARGET_PRESSURE
+  double precision :: Ydir_TARGET_VX, Ydir_TARGET_VY, Ydir_TARGET_TEMPERATURE, Ydir_TARGET_PRESSURE
+  double precision :: beta, relax_T, relax_U, relax_V, sigma_out, Kout
+  double precision :: S1, S2, T1, T2
+  
+  
+  if ((x_isign == 1) .or. (x_isign == -1)) then
+    continue
+  else
+    call bl_abort("Problem of x_isign in impose_NSCBC_2d:compute_waves_corner")
+  end if
+  
+  if ((y_isign == 1) .or. (y_isign == -1)) then
+    continue
+  else
+    call bl_abort("Problem of y_isign in impose_NSCBC_2d:compute_waves_corner")
+  end if
+  
+  
+  mach_local = dsqrt(q(i,j,QU)**2.0d0 + q(i,j,QV)**2.0d0)/qaux(i,j,QC)
+     
+  Xdir_TARGET_VX = x_bc_target(1)
+  Xdir_TARGET_VY = x_bc_target(2)
+  Xdir_TARGET_TEMPERATURE = x_bc_target(4)
+  Xdir_TARGET_PRESSURE = x_bc_target(5)
+  
+  Ydir_TARGET_VX = y_bc_target(1)
+  Ydir_TARGET_VY = y_bc_target(2)
+  Ydir_TARGET_TEMPERATURE = y_bc_target(4)
+  Ydir_TARGET_PRESSURE = y_bc_target(5)
+  
+  TARGET_PRESSURE = 0.5d0*(Xdir_TARGET_PRESSURE+Ydir_TARGET_PRESSURE)
+     
+  ! Test BCs
+  if ((x_bc_type == Outflow) .and. (y_bc_type == Outflow)) then
+
+    ! LODI waves along X
+    if (x_isign == 1) then
+      L1 = (q(i,j,QU)-qaux(i,j,QC))* (dpdx - (q(i,j,QRHO)*qaux(i,j,QC))*dudx)
+      L2 = q(i,j,QU) * ( ((qaux(i,j,QC)**2.0d0)*drhodx) - dpdx)
+      L3 = q(i,j,QU) * dvdx
+      T2 = -0.5d0*L1 - (q(i,j,QRHO)*qaux(i,j,QC))*L3
+    elseif (x_isign == -1) then
+      L2 = q(i,j,QU) * ( ((qaux(i,j,QC)**2.0d0)*drhodx) - dpdx)
+      L3 = q(i,j,QU) * dvdx
+      L4 = (q(i,j,QU)+qaux(i,j,QC))* (dpdx + (q(i,j,QRHO)*qaux(i,j,QC))*dudx)
+      T2 = -0.5d0*L4 - (q(i,j,QRHO)*qaux(i,j,QC))*L3
+    endif
+    
+    ! LODI waves along Y
+    if (y_isign == 1) then
+      M1 = (q(i,j,QV)-qaux(i,j,QC))* (dpdy - (q(i,j,QRHO)*qaux(i,j,QC))*dvdy) 
+      M2 = q(i,j,QV) * dudy
+      M3 = q(i,j,QV) * ( ((qaux(i,j,QC)**2.0d0)*drhody) - dpdy)
+      T1 = -0.5d0*M1 - (q(i,j,QRHO)*qaux(i,j,QC))*M2
+    elseif (y_isign == -1) then
+      M2 = q(i,j,QV) * dudy
+      M3 = q(i,j,QV) * ( ((qaux(i,j,QC)**2.0d0)*drhody) - dpdy)
+      M4 = (q(i,j,QV)+qaux(i,j,QC))* (dpdy + (q(i,j,QRHO)*qaux(i,j,QC))*dvdy)
+      T1 = -0.5d0*M4 - (q(i,j,QRHO)*qaux(i,j,QC))*M2
+    endif
+        
+    ! Compute transverse terms
+    Kout = x_bc_params(6)*(1.0d0 - (mach_local**2.0d0))*qaux(i,j,QC)/(probhi(1))
+    S1 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE))
+
+    Kout = y_bc_params(6)*(1.0d0 - (mach_local**2.0d0))*qaux(i,j,QC)/(probhi(2))
+    S2 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE))
+ 
+    S2 = S2 + (1.0d0-beta)*T2
+    S1 = S1 + (1.0d0-beta)*T1
+     
+    beta = 0.5d0*(x_bc_params(5) + y_bc_params(5))
+      
+    if (x_isign == 1) then
+      L4 = -2.0d0*(S2*beta + 2.0d0*S1 - S2)/ ((beta*beta) - (2.0d0*beta) - 3.0d0)
+    elseif (x_isign == -1) then
+      L1 = -2.0d0*(S2*beta + 2.0d0*S1 - S2)/ ((beta*beta) - (2.0d0*beta) - 3.0d0)
+    endif
+      
+    if (y_isign == 1) then
+      M4 = -2.0d0*(S1*(beta-1.0d0) + 2.0d0*S2)/ ((beta*beta) - (2.0d0*beta) - 3.0d0)
+    elseif (y_isign == -1) then
+      M1 = -2.0d0*(S1*(beta-1.0d0) + 2.0d0*S2)/ ((beta*beta) - (2.0d0*beta) - 3.0d0)
+    endif
+        
+
+    
+     
+  ! elseif ((x_bcMask(i,j) == Inflow) .and. (y_bcMask(i,j) == Outflow)) then
+  ! ! This is the case when the bottom left corner is inflow(x)/outflow(y)
+  !
+  !   ! LODI waves along Y
+  !   M1 = (q(i,j,QV)-qaux(i,j,QC))* (dpdy - (q(i,j,QRHO)*qaux(i,j,QC))*dvdy) 
+  !   M2 = q(i,j,QV) * dudy
+  !   M3 = q(i,j,QV) * ( ((qaux(i,j,QC)**2.0d0)*drhody) - dpdy)
+  !   M4 = 0.0d0 ! Compatibility condition
+  !   
+  !   ! LODI waves along X
+  !   L1 = (q(i,j,QU)-qaux(i,j,QC))* (dpdx - (q(i,j,QRHO)*qaux(i,j,QC))*dudx)  
+  !   L2 = relax_T * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(1)) * (q(i,j,QTEMP) - INLET_TEMPERATURE_Xdir) - M3
+  !   L3 = (relax_V * (qaux(i,j,QC)/probhi(1)) * (q(i,j,QV) - INLET_VY_Xdir))  + (M1/(2.0d0*q(i,j,QRHO)*qaux(i,j,QC)))
+  !   L4 = (relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local_corner*mach_local_corner)/probhi(1)) * &
+  !          (q(i,j,QU) - INLET_VX_Xdir))  - (M1/2.0d0) - (q(i,j,QRHO)*qaux(i,j,QC)*M2)
+  !          
+  ! elseif (((x_bcMask(i,j) == Outflow) .and. (y_bcMask(i,j) == NoSlipWall)) .or. &
+  !         ((x_bcMask(i,j) == Outflow) .and. (y_bcMask(i,j) == SlipWall))) then
+  !         
+  ! ! This is the case when the bottom left corner is wall(y)/outflow(x)
+  !   ! Values long Y will be computed by mirror functions below
+  !   dpdy = (q(i,j+1,QPRES)-q(i,j,QPRES))/(2.0d0*dy)
+  !   dudy = (q(i,j+1,QU)+q(i,j,QU))/(2.0d0*dy)
+  !   if (y_bcMask(i,j) == NoSlipWall) dvdy = (q(i,j+1,QV)+q(i,j,QV))/(2.0d0*dy)
+  !   if (y_bcMask(i,j) == SlipWall) dvdy = (q(i,j+1,QV)-q(i,j,QV))/(2.0d0*dy)
+  !   drhody = (q(i,j+1,QRHO)-q(i,j,QRHO))/(2.0d0*dy)
+  !   T1 = (q(i,j,QV)*(dpdy - q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
+  !   T4 = (q(i,j,QV)*(dpdy + q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
+  !
+  !   ! LODI waves along X
+  !   Kout = sigma_out*(1.0d0 - (mach_local_corner**2.0d0))*qaux(i,j,QC)/(probhi(1))
+  !   L1 = (q(i,j,QU)-qaux(i,j,QC))* (dpdx - (q(i,j,QRHO)*qaux(i,j,QC))*dudx)
+  !   L2 = q(i,j,QU) * ( ((qaux(i,j,QC)**2.0d0)*drhodx) - dpdx)
+  !   L3 = q(i,j,QU) * dvdx
+  !   L4 = (Kout*(q(i,j,QPRES) - INLET_PRESSURE_Xdir)) - ((1.0d0 - beta)*T4)
+  !   
+  ! elseif ((x_bcMask(i,j) == Inflow) .and. &
+  !         ((y_bcMask(i,j) == SlipWall).or.(y_bcMask(i,j) == NoSlipWall))) then
+  !
+  ! ! This is the case when the bottom left corner is wall(y)/inflow(x)
+  ! ! Values long Y will be computed by mirror functions below
+  !   dpdy = (q(i,j+1,QPRES)-q(i,j,QPRES))/(2.0d0*dy)
+  !   dvdy = (q(i,j+1,QV)+q(i,j,QV))/(2.0d0*dy)
+  !   drhody = (q(i,j+1,QRHO)+q(i,j,QRHO))/(2.0d0*dy)
+  !   if (y_bcMask(i,j) == NoSlipWall) dudy = (q(i,j+1,QU)+q(i,j,QU))/(2.0d0*dy)
+  !   if (y_bcMask(i,j) == SlipWall) dudy = (q(i,j+1,QU)-q(i,j,QU))/(2.0d0*dy)
+  !   T1 = (q(i,j,QV)*(dpdy - q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
+  !   T4 = (q(i,j,QV)*(dpdy + q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
+  !   T3 = ((q(i,j,QV)*dvdy))+(dpdy/q(i,j,QRHO))
+  !   T2 = (q(i,j,QV)*((qaux(i,j,QC)*qaux(i,j,QC)*drhody)-dpdy)) + &
+  !        (qaux(i,j,QC)*qaux(i,j,QC)*q(i,j,QRHO)*dvdy) - (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
+  !   beta_X = mach_local_corner
+  !
+  !   ! LODI waves along X
+  !   L1 = (q(i,j,QU)-qaux(i,j,QC))* (dpdx - (q(i,j,QRHO)*qaux(i,j,QC))*dudx)  
+  !   L2 = relax_T * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(1)) * (q(i,j,QTEMP) - INLET_TEMPERATURE_Xdir) - ((1.0d0 - beta_X)*T2)
+  !
+  !   L3 = relax_V * (qaux(i,j,QC)/probhi(1)) * (q(i,j,QV) - INLET_VY_Xdir)  !- ((1.0d0 - beta_X)*T3)
+  !   L4 = relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local_corner*mach_local_corner)/probhi(1)) * &
+  !        (q(i,j,QU) - INLET_VX_Xdir)  - ((1.0d0 - beta_X)*T4)
+  !          
+  !
+  !elseif (((x_bcMask(i,j) == SlipWall) .or. (x_bcMask(i,j) == NoSlipWall)) .and.  & 
+  !         ((y_bcMask(i,j) == SlipWall) .or. (y_bcMask(i,j) == NoSlipWall))) then
+  ! ! This is the case when the bottom left corner is wall(y)/wall(x)
+  !   ! Values long Y will be computed by mirror functions below
+
+    else
+      call bl_error("NSCBC not implemented for bottom left corner")
+    endif 
+
+  if (q(i,j,QV) == 0.0d0) then
+       M1 = M1 / (q(i,j,QV)-qaux(i,j,QC))
+       M2 = 0.0d0
+       M3 = 0.0d0
+       M4 = M4 / (q(i,j,QV)+qaux(i,j,QC))
+  else
+       M1 = M1 / (q(i,j,QV)-qaux(i,j,QC))
+       M2 = M2 / q(i,j,QV)
+       M3 = M3 / q(i,j,QV)
+       M4 = M4 / (q(i,j,QV)+qaux(i,j,QC))
+  endif   
+
+  if (q(i,j,QU) == 0.0d0) then
+       L1 = L1 / (q(i,j,QU)-qaux(i,j,QC))
+       L2 = 0.0d0
+       L3 = 0.0d0
+       L4 = L4 / (q(i,j,QU)+qaux(i,j,QC))
+  else
+       L1 = L1 / (q(i,j,QU)-qaux(i,j,QC))
+       L2 = L2 / q(i,j,QU)
+       L3 = L3 / q(i,j,QU)
+       L4 = L4 / (q(i,j,QU)+qaux(i,j,QC))
+  endif
+   
+  
+  end subroutine compute_waves_corner
+  
   
 end module gc_nscbc_mod
