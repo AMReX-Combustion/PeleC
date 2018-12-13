@@ -165,9 +165,6 @@ extern "C"
      amrex::Real* E_added, amrex::Real* frac_change,
      const int* verbose);
 
-  void pc_normalize_species
-    (BL_FORT_FAB_ARG_3D(S_new), const int* lo, const int* hi);
-
   void compute_temp
     (const int* lo, const int* hi,
      const BL_FORT_FAB_ARG_3D(state));

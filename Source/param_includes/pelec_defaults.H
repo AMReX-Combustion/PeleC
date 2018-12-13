@@ -16,6 +16,7 @@ int         PeleC::use_reactions_work_estimate = 0;
 int         PeleC::load_balance_verbosity = 0;
 amrex::Real PeleC::difmag = 0.1;
 amrex::Real PeleC::small_dens = 1.e-200;
+amrex::Real PeleC::small_massfrac = 1.e-200;
 amrex::Real PeleC::small_temp = 1.e-200;
 amrex::Real PeleC::small_pres = 1.e-200;
 amrex::Real PeleC::small_ener = -1.e200;

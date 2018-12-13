@@ -16,6 +16,7 @@ static int use_reactions_work_estimate;
 static int load_balance_verbosity;
 static amrex::Real difmag;
 static amrex::Real small_dens;
+static amrex::Real small_massfrac;
 static amrex::Real small_temp;
 static amrex::Real small_pres;
 static amrex::Real small_ener;
