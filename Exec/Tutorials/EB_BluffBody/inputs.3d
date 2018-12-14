@@ -66,11 +66,15 @@ amr.derive_plot_vars=ALL
 # PROBIN FILENAME
 amr.probin_file = probin.3d
 
-geom_type = "polygon_extrude"
-num_poly = 1
+#extruded triangles lets the user create a maximum of 5 triangles 
+#in 2D that will be extruded in the z direction
+#make sure the coordinates are in anti-clockwise direction 
+eb2.geom_type = "extruded_triangles"
+extruded_triangles.num_tri = 2
+extruded_triangles.tri_0_point_0 = 4.25    3.01  0.0
+extruded_triangles.tri_0_point_1 = 5.25    2.01  0.0
+extruded_triangles.tri_0_point_2 = 5.25    4.01  0.0
 
-poly_0_num_pts  = 4
-poly_0_point_0  =  0.35   0.25  0.0 #outside the domain
-poly_0_point_1  =  0.365  0.235  0.0 #outside the domain
-poly_0_point_2  =  0.38   0.25  0.0
-poly_0_point_3  =  0.365 0.265  0.0
+extruded_triangles.tri_1_point_0 = 5.25   2.01  0.0
+extruded_triangles.tri_1_point_1 = 6.25   3.01  0.0
+extruded_triangles.tri_1_point_2 = 5.25   4.01   0.0

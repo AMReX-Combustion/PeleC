@@ -24,6 +24,7 @@ using namespace amrex;
 #include <AMReX_EB2_IF_Ellipsoid.H>
 #include <AMReX_EB2_IF_Sphere.H>
 #include <AMReX_EB2_IF_Plane.H>
+#include <AMReX_EB2_IF_Extrusion.H>
 #include <AMReX_EB2_GeometryShop.H>
 #endif
 
@@ -442,68 +443,193 @@ initialize_EB2 (const Geometry& geom, const int required_level, const int max_le
     auto gshop = EB2::makeShop(pr);
     EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
   }
+  else if (geom_type == "extruded_triangles")
+  {
+      //setting some constants
+      //the polygon is triangle
+      //we can only do a maximum of 5 triangles (change if needed)
+      const int npts_in_tri=3;
+      const int max_tri=5;
+      
+      //number of user defined triangles
+      int num_tri;
+      
+      ParmParse pp("extruded_triangles");
+      Vector<Array<Real,AMREX_SPACEDIM>> alltri(npts_in_tri*max_tri);
+
+      //initalize all triangles with some dummy values
+      //that fall outside of the domain
+      //
+      const Real *problo,*probhi;
+      Real maxlen;
+
+      problo=geom.ProbLo();
+      probhi=geom.ProbHi();
+
+      maxlen=std::max(std::max(geom.ProbLength(0),geom.ProbLength(1)),geom.ProbLength(2));
+
+      //setting all triangles to be waaay outside the domain initially
+      for(int itri=0;itri<max_tri;itri++)
+      {
+         
+         alltri[npts_in_tri*itri+0][0] = problo[0]+100.0*maxlen;
+         alltri[npts_in_tri*itri+0][1] = problo[1]-100.0*maxlen;
+         alltri[npts_in_tri*itri+0][2] = 0.0;
+         
+         alltri[npts_in_tri*itri+1][0] = probhi[0]+100.0*maxlen;
+         alltri[npts_in_tri*itri+1][1] = problo[1]-100.0*maxlen;
+         alltri[npts_in_tri*itri+1][2] = 0.0;
+         
+         alltri[npts_in_tri*itri+2][0] = probhi[0]+100.0*maxlen;
+         alltri[npts_in_tri*itri+2][1] = problo[1]+100.0*maxlen;
+         alltri[npts_in_tri*itri+2][2] = 0.0;
+      }
+            
+      //get user defined number of triangles
+      pp.get("num_tri", num_tri);
+
+      for(int itri = 0; itri < num_tri; itri++)
+      {
+          Array<Real,AMREX_SPACEDIM> point{0.0,0.0,0.0};
+
+          for(int ipt=0;ipt<npts_in_tri;ipt++)
+          {
+              std::string  pointstr = "tri_" + convertIntGG(itri) + "_point_" 
+                  + convertIntGG(ipt);
+              Vector<Real> vecpt;
+              pp.getarr(pointstr.c_str(), vecpt,  0, SpaceDim);
+              for(int idir = 0; idir < SpaceDim; idir++)
+              {
+                  point[idir] = vecpt[idir] ;
+              }
+              alltri[npts_in_tri*itri+ipt] = point;
+          }
+      }
+      
+      //intersection of the 3 planes in a triangle for all triangles 
+      Vector < std::unique_ptr<EB2::IntersectionIF<EB2::PlaneIF,EB2::PlaneIF,EB2::PlaneIF>> > impfunc_triangles(max_tri);
+
+      for (int itri = 0; itri < max_tri; itri++)
+      {
+          //make sure points are in anti clockwise direction to set the inside of the 
+          //triangle as solid phase correctly
+          Array<Real,AMREX_SPACEDIM> norm0;
+          Array<Real,AMREX_SPACEDIM> norm1;
+          Array<Real,AMREX_SPACEDIM> norm2;
+
+          Array<Real,AMREX_SPACEDIM> point0;
+          Array<Real,AMREX_SPACEDIM> point1;
+          Array<Real,AMREX_SPACEDIM> point2;
+
+          point0 = alltri[npts_in_tri*itri+0];
+          point1 = alltri[npts_in_tri*itri+1];
+          point2 = alltri[npts_in_tri*itri+2];
+
+          norm0[0] = -(point1[1]-point0[1]);
+          norm0[1] =  (point1[0]-point0[0]); 
+          norm0[2] = 0.0;
+
+          
+          norm1[0] = -(point2[1]-point1[1]);
+          norm1[1] =  (point2[0]-point1[0]); 
+          norm1[2] =  0.0;
+          
+          norm2[0] = -(point0[1]-point2[1]);
+          norm2[1] =  (point0[0]-point2[0]); 
+          norm2[2] =  0.0;
+
+          //normalize so that magnitude is 1
+          norm0[0] = norm0[0]/sqrt(norm0[0]*norm0[0]+norm0[1]*norm0[1]);
+          norm0[1] = norm0[1]/sqrt(norm0[0]*norm0[0]+norm0[1]*norm0[1]);
+          
+          //normalize so that magnitude is 1
+          norm1[0] = norm1[0]/sqrt(norm1[0]*norm1[0]+norm1[1]*norm1[1]);
+          norm1[1] = norm1[1]/sqrt(norm1[0]*norm1[0]+norm1[1]*norm1[1]);
+          
+          //normalize so that magnitude is 1
+          norm2[0] = norm2[0]/sqrt(norm2[0]*norm2[0]+norm2[1]*norm2[1]);
+          norm2[1] = norm2[1]/sqrt(norm2[0]*norm2[0]+norm2[1]*norm2[1]);
+
+          EB2::PlaneIF plane0(point0,norm0);
+          EB2::PlaneIF plane1(point1,norm1);
+          EB2::PlaneIF plane2(point2,norm2);
+
+          impfunc_triangles[itri] = std::unique_ptr<EB2::IntersectionIF<EB2::PlaneIF,EB2::PlaneIF,EB2::PlaneIF>>
+                              (new EB2::IntersectionIF<EB2::PlaneIF,EB2::PlaneIF,EB2::PlaneIF>(plane0, plane1, plane2));
+
+      }
+
+      auto alltri_IF = EB2::makeUnion(*impfunc_triangles[0],*impfunc_triangles[1],
+              *impfunc_triangles[2],*impfunc_triangles[3],*impfunc_triangles[4]);
+
+      auto alltri_extrude_IF = EB2::extrude(alltri_IF,SpaceDim-1); //along z
+
+      auto gshop = EB2::makeShop(alltri_extrude_IF);
+      EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
+  }
+
 #endif
   else if (geom_type == "polygon_revolution")
   {
-    amrex::Print() << "polygon_revolution  geometry not currently supported. combustor?\n";
-    amrex::Abort();
-    amrex::Print() << "creating geometry from polygon surfaces of revolution" << std::endl;
-    bool insideRegular = false;
+      amrex::Print() << "polygon_revolution  geometry not currently supported. combustor?\n";
+      amrex::Abort();
+      amrex::Print() << "creating geometry from polygon surfaces of revolution" << std::endl;
+      bool insideRegular = false;
 
-// Data for polygons making up nozzle
-    Vector<Vector<RealArray> > polygons;
-    // For building each polygon - unlike original PeleEB, don't scale by domain size
-    int num_poly;
-    ppeb2.get("num_poly", num_poly);
-    polygons.resize(num_poly);
-    for(int ipoly = 0; ipoly < num_poly; ipoly++) {
-      std::string nptsstr = "poly_" + convertIntGG(ipoly) + "_num_pts";
-      int num_pts;
-      ppeb2.get(nptsstr.c_str(), num_pts);
-      Vector<RealArray> polygon(num_pts);
-      for(int ipt = 0; ipt < num_pts; ipt++)
-      {
-        RealArray point; point.fill(0.0);
-        std::string pointstr = "poly_" + convertIntGG(ipoly) + "_point_" + convertIntGG(ipt);
-        Vector<Real> vecpt;
-        ppeb2.getarr(pointstr.c_str(), vecpt,  0, SpaceDim);
-        for(int idir = 0; idir < SpaceDim; idir++)
-        {
-          point[idir] = vecpt[idir] ;
-        }
-        polygon[ipt] = point;
+      // Data for polygons making up nozzle
+      Vector<Vector<RealArray> > polygons;
+      // For building each polygon - unlike original PeleEB, don't scale by domain size
+      int num_poly;
+      ppeb2.get("num_poly", num_poly);
+      polygons.resize(num_poly);
+      for(int ipoly = 0; ipoly < num_poly; ipoly++) {
+          std::string nptsstr = "poly_" + convertIntGG(ipoly) + "_num_pts";
+          int num_pts;
+          ppeb2.get(nptsstr.c_str(), num_pts);
+          Vector<RealArray> polygon(num_pts);
+          for(int ipt = 0; ipt < num_pts; ipt++)
+          {
+              RealArray point; point.fill(0.0);
+              std::string pointstr = "poly_" + convertIntGG(ipoly) + "_point_" + convertIntGG(ipt);
+              Vector<Real> vecpt;
+              ppeb2.getarr(pointstr.c_str(), vecpt,  0, SpaceDim);
+              for(int idir = 0; idir < SpaceDim; idir++)
+              {
+                  point[idir] = vecpt[idir] ;
+              }
+              polygon[ipt] = point;
+          }
+          polygons[ipoly] = polygon;
       }
-      polygons[ipoly] = polygon;
-    }
-    Vector<EB2::PlaneIF> planes;
-    for (int ipoly = 0; ipoly < num_poly; ipoly++) {
-      const Vector<RealArray>& polygon = polygons[ipoly];
-      int numPts = polygon.size(); // Number of pts in this polygon
-      for (int n = 0; n < numPts; n++) {
-        // The normal and point is space used to specify each half plane/space
-        RealArray normal; normal.fill(0.0);
-        RealArray point;
+      Vector<EB2::PlaneIF> planes;
+      for (int ipoly = 0; ipoly < num_poly; ipoly++) {
+          const Vector<RealArray>& polygon = polygons[ipoly];
+          int numPts = polygon.size(); // Number of pts in this polygon
+          for (int n = 0; n < numPts; n++) {
+              // The normal and point is space used to specify each half plane/space
+              RealArray normal; normal.fill(0.0);
+              RealArray point;
 
-        // Set the normal remembering that the last point connects to the first
-        // point.
-        normal[0] = -(polygon[(n+1) % numPts][1] - polygon[n][1]);
-        normal[1] =  (polygon[(n+1) % numPts][0] - polygon[n][0]);
+              // Set the normal remembering that the last point connects to the first
+              // point.
+              normal[0] = -(polygon[(n+1) % numPts][1] - polygon[n][1]);
+              normal[1] =  (polygon[(n+1) % numPts][0] - polygon[n][0]);
 
-        point = polygon[n];
-        EB2::PlaneIF plane(point, normal);
-        planes.push_back(plane);
+              point = polygon[n];
+              EB2::PlaneIF plane(point, normal);
+              planes.push_back(plane);
+          }
+
       }
 
-    }
-    
-    //PolygonIF pf(planes);
-    //auto gshop = EB2::makeShop(pf);
-    //EB2::Build(gshop, geom, max_level, max_level);
+      //PolygonIF pf(planes);
+      //auto gshop = EB2::makeShop(pf);
+      //EB2::Build(gshop, geom, max_level, max_level);
 
 
   } else {
-        EB2::Build(geom, max_level, max_level);
-        // Need to somehow set no_eb_in_domain for this level?
+      EB2::Build(geom, max_level, max_level);
+      // Need to somehow set no_eb_in_domain for this level?
 
   }
 
