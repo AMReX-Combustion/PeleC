@@ -766,8 +766,23 @@ PeleC::init (AmrLevel &old)
   MultiFab& React_new = get_new_data(Reactions_Type);
   MultiFab& react_src_new = get_new_data(SDC_React_Type);
 
-  if (do_react)
+  if (do_react && !do_mol_AD)
   {
+    amrex::Abort("SDC needs ghost zones for Reactions_Type to be filled appropriately - see PeleC.cpp L771");
+    /*
+
+     There is something we need to fix here... what we think is happening is that
+     Reactions_Type gets filled using pc_reactfill, and on an inlet there is nothing
+     implemented to put somethign sensible in the ghost zones for EXT_DIR. Source needs to have some other
+     boundary condition with sane logic.  The way it is now, we think that when fillpatch
+     interpolates to a fine level along a physical boundary (even the cells inside), and uses
+     ghost data from the coarse level, that data is garbage.
+
+     Several possibilities... one is to extrapolate state and then compute rates for I_R, another is
+     to extrapolate rates. Leaving this as a todo for MSD!
+
+           - Ray & Hari
+     */
     FillPatch(old,React_new,0,cur_time,Reactions_Type,0,React_new.nComp());
     FillPatch(old,react_src_new,0,cur_time,SDC_React_Type,0,react_src_new.nComp());
   }
