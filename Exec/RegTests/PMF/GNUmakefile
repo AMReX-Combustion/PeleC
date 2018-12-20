@@ -6,12 +6,11 @@ PROFILE    = FALSE
 
 DEBUG      = FALSE
 
-DIM        = 1
-DIM        = 2
+DIM        = 3
 
-COMP	   = gcc
+COMP	   = gnu
 
-USE_MPI    = TRUE
+USE_MPI    = FALSE
 
 USE_REACT  = TRUE
 
