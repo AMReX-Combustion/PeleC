@@ -82,11 +82,8 @@ contains
   
   x_bcMask(:,:) = 0
   y_bcMask(:,:) = 0
-!write(*,*) 'IN ROUTINE NSCBC, flag_nscbc_isAnyPerio ',flag_nscbc_isAnyPerio
-!write(*,*) 'IN ROUTINE NSCBC, flag_nscbc_perio',flag_nscbc_perio
-  if ( flag_nscbc_isAnyPerio == 0) then
-write(*,*) 'WE DONT HAVE PERIO, SO WE HAVE CORNERS'
 
+  if ( flag_nscbc_isAnyPerio == 0) then
 
  !--------------------------------------------------------------------------   
  ! upper right corner (Lx,Ly)
@@ -758,176 +755,7 @@ end subroutine impose_NSCBC
   end if
 
   end subroutine compute_transverse_terms
-  
-  !--------------------
-  
-  subroutine compute_waves(i, j, idir, isign, &
-                           bc_type, bc_params, bc_target, &
-                           T1, T2, T3, T4, &
-                           L1, L2, L3, L4, &
-                           dp, du, dv, drho, &
-                           q, q_l1, q_l2, q_h1, q_h2, &
-                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-                               
-                               
-  use meth_params_module, only : QVAR, QPRES, QU, QV, QRHO, NQAUX, QC, QGAMC, QTEMP, QRSPEC
-  use prob_params_module, only : probhi, Interior, Inflow, Outflow, SlipWall, NoSlipWall
-  
-  integer, intent(in) :: i,j,idir,isign
-  integer, intent(in) :: q_l1, q_l2, q_h1, q_h2
-  integer, intent(in) :: qa_l1, qa_l2, qa_h1, qa_h2
-  double precision, intent(in) :: q(q_l1:q_h1,q_l2:q_h2,QVAR)
-  double precision, intent(in) :: qaux(qa_l1:qa_h1,qa_l2:qa_h2,NQAUX)
-  double precision, intent(in) :: dp, du, dv, drho
-  
-  integer, intent(in)          :: bc_type
-  double precision, intent(in) :: bc_params(6)
-  double precision, intent(in) :: bc_target(5)
-  
-  double precision, intent(in) :: T1, T2, T3, T4
-  
-  double precision, intent(out) :: L1, L2, L3, L4
-  
-  ! Local
-  double precision :: mach_local, TARGET_VX, TARGET_VY, TARGET_TEMPERATURE, TARGET_PRESSURE
-  double precision :: beta, relax_T, relax_U, relax_V, sigma_out, Kout
-  
-  if ((idir == 1) .or. (idir == 2)) then
-    continue
-  else
-    call bl_abort("Problem of idir in impose_NSCBC_2d:compute_waves")
-  end if
-  
-  if ((isign == 1) .or. (isign == -1)) then
-    continue
-  else
-    call bl_abort("Problem of isign in impose_NSCBC_2d:compute_waves")
-  end if
-  
-  mach_local = dsqrt(q(i,j,QU)**2.0d0 + q(i,j,QV)**2.0d0)/qaux(i,j,QC)
-     
-  TARGET_VX = bc_target(1)
-  TARGET_VY = bc_target(2)
-  TARGET_TEMPERATURE = bc_target(4)
-  TARGET_PRESSURE = bc_target(5)
-     
-  ! Compute LODI equations
-  if (bc_type == Inflow) then
- 
-    relax_T = bc_params(1)      
-    relax_U = bc_params(2)
-    relax_V = bc_params(3)
-    beta =  bc_params(5)
     
-    if (idir == 1) then
-      if (isign == 1) then      
-        L1 = (q(i,j,QU)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*du)
-        L4 = relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
-                     (q(i,j,QU) - TARGET_VX)  - ((1.0d0 - beta)*T4)
-      elseif (isign == -1) then
-        L1 = relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
-                        (q(i,j,QU) - TARGET_VX)  -  ((1.0d0 - beta)*T1)
-        L4 = (q(i,j,QU)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*du)
-      endif
-    
-      L2 = relax_T * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(idir)) &
-                 * (q(i,j,QTEMP) - TARGET_TEMPERATURE) - ((1.0d0 - beta)*T2)
-      L3 = relax_V * (qaux(i,j,QC)/probhi(idir)) * (q(i,j,QV) - TARGET_VY) &
-                   - ((1.0d0 - beta)*T3)
-
-    elseif (idir == 2) then
-    
-      if (isign == 1) then      
-         L1 = (q(i,j,QV)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*dv)
-         L4 = relax_V * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
-                       (q(i,j,QV) - TARGET_VY) - ((1.0d0 - beta)*T4)
-      elseif (isign == -1) then
-         L1 = relax_V * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
-                         (q(i,j,QV) - TARGET_VY)  -  ((1.0d0 - beta)*T1)
-         L4 = (q(i,j,QV)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*dv)
-      endif
-  
-      L2 = relax_U * (qaux(i,j,QC)/probhi(idir)) * (q(i,j,QU) - TARGET_VX)  &
-                     - ((1.0d0 - beta)*T2)
-      L3 = relax_T * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(idir)) &
-                   * (q(i,j,QTEMP) - TARGET_TEMPERATURE) - ((1.0d0 - beta)*T3)
-
-    endif
-            
-  elseif ((bc_type == SlipWall).or.(bc_type == NoSlipWall)) then
-     
-    ! Values long Y will be computed by mirror functions below
-       
-  elseif (bc_type == Outflow) then
-       
-    ! We find that using a local Mach number gives better results for high Mach nb.
-    ! This is in contradiction with Granet AIAA 2010
-    ! However for low Mach number a surface averaged Mach number is much more better
-    ! as reported in the paper of Granet
-    sigma_out = bc_params(6)
-    beta =  mach_local 
-    Kout = sigma_out*(1.0d0 - (mach_local**2.0d0))*(qaux(i,j,QC)/probhi(idir))
-
-    if (idir == 1) then
-        
-      if (isign == 1) then
-        L1 = (q(i,j,QU)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*du)
-        L4 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE)) - ((1.0d0 - beta)*T4)
-      elseif (isign == -1) then
-        L1 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE)) - ((1.0d0 - beta)*T1)
-        L4 = (q(i,j,QU)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*du)
-      endif
-    
-      L2 = q(i,j,QU) * ( ((qaux(i,j,QC)**2.0d0)*drho) - dp)
-      L3 = q(i,j,QU) * dv
-    
-    elseif(idir == 2) then
-    
-      if (isign == 1) then
-        L1 = (q(i,j,QV)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*dv)
-        L4 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE)) - ((1.0d0 - beta)*T4)
-      elseif (isign == -1) then
-        L1 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE)) - ((1.0d0 - beta)*T1)
-        L4 = (q(i,j,QV)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*dv)
-      endif
-    
-      L2 = q(i,j,QV) * du
-      L3 = q(i,j,QV) * ( ((qaux(i,j,QC)**2.0d0)*drho) - dp)
-          
-    endif
-
-  else
-    call bl_error("Error:: This BC is not yet implemented for lo_x in characteristic form")
-  endif
- 
-  if (idir == 1) then
-     if (q(i,j,QU) == 0.0d0) then
-       L1 = L1 / (q(i,j,QU)-qaux(i,j,QC))
-       L2 = 0.0d0
-       L3 = 0.0d0
-       L4 = L4 / (q(i,j,QU)+qaux(i,j,QC))
-     else       
-       L1 = L1 / (q(i,j,QU)-qaux(i,j,QC))
-       L2 = L2 / q(i,j,QU)
-       L3 = L3 / q(i,j,QU)
-       L4 = L4 / (q(i,j,QU)+qaux(i,j,QC))
-     endif
-  elseif (idir == 2) then
-     if (q(i,j,QV) == 0.0d0) then
-       L1 = L1 / (q(i,j,QV)-qaux(i,j,QC))
-       L2 = 0.0d0
-       L3 = 0.0d0
-       L4 = L4 / (q(i,j,QV)+qaux(i,j,QC))
-     else
-       L1 = L1 / (q(i,j,QV)-qaux(i,j,QC))
-       L2 = L2 / q(i,j,QV)
-       L3 = L3 / q(i,j,QV)
-       L4 = L4 / (q(i,j,QV)+qaux(i,j,QC))
-     endif
-  end if
-  
-  end subroutine compute_waves
-  
   !-------------------------
   
   subroutine update_ghost_cells(i, j, bc_type, idir, isign, delta, &
@@ -1221,6 +1049,175 @@ end subroutine impose_NSCBC
   
   end subroutine update_ghost_cells
   
+  !--------------------
+  
+  subroutine compute_waves(i, j, idir, isign, &
+                           bc_type, bc_params, bc_target, &
+                           T1, T2, T3, T4, &
+                           L1, L2, L3, L4, &
+                           dp, du, dv, drho, &
+                           q, q_l1, q_l2, q_h1, q_h2, &
+                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+                               
+                               
+  use meth_params_module, only : QVAR, QPRES, QU, QV, QRHO, NQAUX, QC, QGAMC, QTEMP, QRSPEC
+  use prob_params_module, only : probhi, Interior, Inflow, Outflow, SlipWall, NoSlipWall
+  
+  integer, intent(in) :: i,j,idir,isign
+  integer, intent(in) :: q_l1, q_l2, q_h1, q_h2
+  integer, intent(in) :: qa_l1, qa_l2, qa_h1, qa_h2
+  double precision, intent(in) :: q(q_l1:q_h1,q_l2:q_h2,QVAR)
+  double precision, intent(in) :: qaux(qa_l1:qa_h1,qa_l2:qa_h2,NQAUX)
+  double precision, intent(in) :: dp, du, dv, drho
+  
+  integer, intent(in)          :: bc_type
+  double precision, intent(in) :: bc_params(6)
+  double precision, intent(in) :: bc_target(5)
+  
+  double precision, intent(in) :: T1, T2, T3, T4
+  
+  double precision, intent(out) :: L1, L2, L3, L4
+  
+  ! Local
+  double precision :: mach_local, TARGET_VX, TARGET_VY, TARGET_TEMPERATURE, TARGET_PRESSURE
+  double precision :: beta, relax_T, relax_U, relax_V, sigma_out, Kout
+  
+  if ((idir == 1) .or. (idir == 2)) then
+    continue
+  else
+    call bl_abort("Problem of idir in impose_NSCBC_2d:compute_waves")
+  end if
+  
+  if ((isign == 1) .or. (isign == -1)) then
+    continue
+  else
+    call bl_abort("Problem of isign in impose_NSCBC_2d:compute_waves")
+  end if
+  
+  mach_local = dsqrt(q(i,j,QU)**2.0d0 + q(i,j,QV)**2.0d0)/qaux(i,j,QC)
+     
+  TARGET_VX = bc_target(1)
+  TARGET_VY = bc_target(2)
+  TARGET_TEMPERATURE = bc_target(4)
+  TARGET_PRESSURE = bc_target(5)
+     
+  ! Compute LODI equations
+  if (bc_type == Inflow) then
+ 
+    relax_T = bc_params(1)      
+    relax_U = bc_params(2)
+    relax_V = bc_params(3)
+    beta =  bc_params(5)
+       
+    if (idir == 1) then
+      if (isign == 1) then      
+        L1 = (q(i,j,QU)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*du)
+        L4 = relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
+                     (q(i,j,QU) - TARGET_VX)  !- ((1.0d0 - beta)*T4)
+      elseif (isign == -1) then
+        L1 = relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
+                        (q(i,j,QU) - TARGET_VX) ! -  ((1.0d0 - beta)*T1)
+        L4 = (q(i,j,QU)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*du)
+      endif
+    
+      L2 = relax_T * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(idir)) &
+                 * (q(i,j,QTEMP) - TARGET_TEMPERATURE) !- ((1.0d0 - beta)*T2)
+      L3 = relax_V * (qaux(i,j,QC)/probhi(idir)) * (q(i,j,QV) - TARGET_VY) !&
+                   !- ((1.0d0 - beta)*T3)
+
+    elseif (idir == 2) then
+    
+      if (isign == 1) then      
+         L1 = (q(i,j,QV)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*dv)
+         L4 = relax_V * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
+                       (q(i,j,QV) - TARGET_VY) - ((1.0d0 - beta)*T4)
+      elseif (isign == -1) then
+         L1 = relax_V * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
+                         (q(i,j,QV) - TARGET_VY)  -  ((1.0d0 - beta)*T1)
+         L4 = (q(i,j,QV)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*dv)
+      endif
+  
+      L2 = relax_U * (qaux(i,j,QC)/probhi(idir)) * (q(i,j,QU) - TARGET_VX)  &
+                     - ((1.0d0 - beta)*T2)
+      L3 = relax_T * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(idir)) &
+                   * (q(i,j,QTEMP) - TARGET_TEMPERATURE) - ((1.0d0 - beta)*T3)
+
+    endif
+            
+  elseif ((bc_type == SlipWall).or.(bc_type == NoSlipWall)) then
+     
+    ! Values long Y will be computed by mirror functions below
+       
+  elseif (bc_type == Outflow) then
+       
+    ! We find that using a local Mach number gives better results for high Mach nb.
+    ! This is in contradiction with Granet AIAA 2010
+    ! However for low Mach number a surface averaged Mach number is much more better
+    ! as reported in the paper of Granet
+    sigma_out = bc_params(6)
+    beta =  mach_local 
+    Kout = sigma_out*(1.0d0 - (mach_local**2.0d0))*(qaux(i,j,QC)/probhi(idir))
+
+    if (idir == 1) then
+        
+      if (isign == 1) then
+        L1 = (q(i,j,QU)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*du)
+        L4 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE)) - ((1.0d0 - beta)*T4)
+      elseif (isign == -1) then
+        L1 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE)) - ((1.0d0 - beta)*T1)
+        L4 = (q(i,j,QU)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*du)
+      endif
+    
+      L2 = q(i,j,QU) * ( ((qaux(i,j,QC)**2.0d0)*drho) - dp)
+      L3 = q(i,j,QU) * dv
+    
+    elseif(idir == 2) then
+
+      if (isign == 1) then
+        L1 = (q(i,j,QV)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*dv)
+        L4 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE)) - ((1.0d0 - beta)*T4)
+      elseif (isign == -1) then
+        L1 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE)) - ((1.0d0 - beta)*T1)
+        L4 = (q(i,j,QV)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*dv)
+      endif
+    
+      L2 = q(i,j,QV) * du
+      L3 = q(i,j,QV) * ( ((qaux(i,j,QC)**2.0d0)*drho) - dp)
+          
+    endif
+
+  else
+    call bl_error("Error:: This BC is not yet implemented for lo_x in characteristic form")
+  endif
+ 
+  if (idir == 1) then
+     if (q(i,j,QU) == 0.0d0) then
+       L1 = L1 / (q(i,j,QU)-qaux(i,j,QC))
+       L2 = 0.0d0
+       L3 = 0.0d0
+       L4 = L4 / (q(i,j,QU)+qaux(i,j,QC))
+     else       
+       L1 = L1 / (q(i,j,QU)-qaux(i,j,QC))
+       L2 = L2 / q(i,j,QU)
+       L3 = L3 / q(i,j,QU)
+       L4 = L4 / (q(i,j,QU)+qaux(i,j,QC))
+     endif
+  elseif (idir == 2) then
+     if (q(i,j,QV) == 0.0d0) then
+       L1 = L1 / (q(i,j,QV)-qaux(i,j,QC))
+       L2 = 0.0d0
+       L3 = 0.0d0
+       L4 = L4 / (q(i,j,QV)+qaux(i,j,QC))
+     else
+       L1 = L1 / (q(i,j,QV)-qaux(i,j,QC))
+       L2 = L2 / q(i,j,QV)
+       L3 = L3 / q(i,j,QV)
+       L4 = L4 / (q(i,j,QV)+qaux(i,j,QC))
+     endif
+  end if
+  
+  end subroutine compute_waves
+
     !--------------------
   
   subroutine compute_waves_corner(i, j, x_isign, y_isign, &
@@ -1256,7 +1253,7 @@ end subroutine impose_NSCBC
   double precision :: mach_local, TARGET_VX, TARGET_VY, TARGET_TEMPERATURE, TARGET_PRESSURE
   double precision :: Xdir_TARGET_VX, Xdir_TARGET_VY, Xdir_TARGET_TEMPERATURE, Xdir_TARGET_PRESSURE
   double precision :: Ydir_TARGET_VX, Ydir_TARGET_VY, Ydir_TARGET_TEMPERATURE, Ydir_TARGET_PRESSURE
-  double precision :: beta, relax_T, relax_U, relax_V, sigma_out, Kout
+  double precision :: beta, relax_T, relax_U, relax_V, sigma_out, Kout, trans_wave
   double precision :: S1, S2, T1, T2
   
   
@@ -1286,33 +1283,35 @@ end subroutine impose_NSCBC
   Ydir_TARGET_PRESSURE = y_bc_target(5)
   
   TARGET_PRESSURE = 0.5d0*(Xdir_TARGET_PRESSURE+Ydir_TARGET_PRESSURE)
+  
+  
+  ! Numerical LODI waves along X
+  L1 = (q(i,j,QU)-qaux(i,j,QC))* (dpdx - (q(i,j,QRHO)*qaux(i,j,QC))*dudx)
+  L2 = q(i,j,QU) * ( ((qaux(i,j,QC)**2.0d0)*drhodx) - dpdx)
+  L3 = q(i,j,QU) * dvdx
+  L4 = (q(i,j,QU)+qaux(i,j,QC))* (dpdx + (q(i,j,QRHO)*qaux(i,j,QC))*dudx)
+  
+  ! Numerical LODI waves along Y
+  M1 = (q(i,j,QV)-qaux(i,j,QC))* (dpdy - (q(i,j,QRHO)*qaux(i,j,QC))*dvdy) 
+  M2 = q(i,j,QV) * dudy
+  M3 = q(i,j,QV) * ( ((qaux(i,j,QC)**2.0d0)*drhody) - dpdy)
+  M4 = (q(i,j,QV)+qaux(i,j,QC))* (dpdy + (q(i,j,QRHO)*qaux(i,j,QC))*dvdy)
+  
      
-  ! Test BCs
+  ! Evaluating missing waves with analytical model depending on the BC combination and location 
   if ((x_bc_type == Outflow) .and. (y_bc_type == Outflow)) then
 
     ! LODI waves along X
     if (x_isign == 1) then
-      L1 = (q(i,j,QU)-qaux(i,j,QC))* (dpdx - (q(i,j,QRHO)*qaux(i,j,QC))*dudx)
-      L2 = q(i,j,QU) * ( ((qaux(i,j,QC)**2.0d0)*drhodx) - dpdx)
-      L3 = q(i,j,QU) * dvdx
       T2 = -0.5d0*L1 - (q(i,j,QRHO)*qaux(i,j,QC))*L3
     elseif (x_isign == -1) then
-      L2 = q(i,j,QU) * ( ((qaux(i,j,QC)**2.0d0)*drhodx) - dpdx)
-      L3 = q(i,j,QU) * dvdx
-      L4 = (q(i,j,QU)+qaux(i,j,QC))* (dpdx + (q(i,j,QRHO)*qaux(i,j,QC))*dudx)
       T2 = -0.5d0*L4 - (q(i,j,QRHO)*qaux(i,j,QC))*L3
     endif
     
     ! LODI waves along Y
     if (y_isign == 1) then
-      M1 = (q(i,j,QV)-qaux(i,j,QC))* (dpdy - (q(i,j,QRHO)*qaux(i,j,QC))*dvdy) 
-      M2 = q(i,j,QV) * dudy
-      M3 = q(i,j,QV) * ( ((qaux(i,j,QC)**2.0d0)*drhody) - dpdy)
       T1 = -0.5d0*M1 - (q(i,j,QRHO)*qaux(i,j,QC))*M2
     elseif (y_isign == -1) then
-      M2 = q(i,j,QV) * dudy
-      M3 = q(i,j,QV) * ( ((qaux(i,j,QC)**2.0d0)*drhody) - dpdy)
-      M4 = (q(i,j,QV)+qaux(i,j,QC))* (dpdy + (q(i,j,QRHO)*qaux(i,j,QC))*dvdy)
       T1 = -0.5d0*M4 - (q(i,j,QRHO)*qaux(i,j,QC))*M2
     endif
 
@@ -1340,76 +1339,49 @@ end subroutine impose_NSCBC
       M1 = -2.0d0*(S1*(beta-1.0d0) + 2.0d0*S2)/ ((beta*beta) - (2.0d0*beta) - 3.0d0)
     endif
         
-     
-  ! elseif ((x_bcMask(i,j) == Inflow) .and. (y_bcMask(i,j) == Outflow)) then
-  ! ! This is the case when the bottom left corner is inflow(x)/outflow(y)
-  !
-  !   ! LODI waves along Y
-  !   M1 = (q(i,j,QV)-qaux(i,j,QC))* (dpdy - (q(i,j,QRHO)*qaux(i,j,QC))*dvdy) 
-  !   M2 = q(i,j,QV) * dudy
-  !   M3 = q(i,j,QV) * ( ((qaux(i,j,QC)**2.0d0)*drhody) - dpdy)
-  !   M4 = 0.0d0 ! Compatibility condition
-  !   
-  !   ! LODI waves along X
-  !   L1 = (q(i,j,QU)-qaux(i,j,QC))* (dpdx - (q(i,j,QRHO)*qaux(i,j,QC))*dudx)  
-  !   L2 = relax_T * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(1)) * (q(i,j,QTEMP) - INLET_TEMPERATURE_Xdir) - M3
-  !   L3 = (relax_V * (qaux(i,j,QC)/probhi(1)) * (q(i,j,QV) - INLET_VY_Xdir))  + (M1/(2.0d0*q(i,j,QRHO)*qaux(i,j,QC)))
-  !   L4 = (relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local_corner*mach_local_corner)/probhi(1)) * &
-  !          (q(i,j,QU) - INLET_VX_Xdir))  - (M1/2.0d0) - (q(i,j,QRHO)*qaux(i,j,QC)*M2)
-  !          
-  ! elseif (((x_bcMask(i,j) == Outflow) .and. (y_bcMask(i,j) == NoSlipWall)) .or. &
-  !         ((x_bcMask(i,j) == Outflow) .and. (y_bcMask(i,j) == SlipWall))) then
-  !         
-  ! ! This is the case when the bottom left corner is wall(y)/outflow(x)
-  !   ! Values long Y will be computed by mirror functions below
-  !   dpdy = (q(i,j+1,QPRES)-q(i,j,QPRES))/(2.0d0*dy)
-  !   dudy = (q(i,j+1,QU)+q(i,j,QU))/(2.0d0*dy)
-  !   if (y_bcMask(i,j) == NoSlipWall) dvdy = (q(i,j+1,QV)+q(i,j,QV))/(2.0d0*dy)
-  !   if (y_bcMask(i,j) == SlipWall) dvdy = (q(i,j+1,QV)-q(i,j,QV))/(2.0d0*dy)
-  !   drhody = (q(i,j+1,QRHO)-q(i,j,QRHO))/(2.0d0*dy)
-  !   T1 = (q(i,j,QV)*(dpdy - q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
-  !   T4 = (q(i,j,QV)*(dpdy + q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
-  !
-  !   ! LODI waves along X
-  !   Kout = sigma_out*(1.0d0 - (mach_local_corner**2.0d0))*qaux(i,j,QC)/(probhi(1))
-  !   L1 = (q(i,j,QU)-qaux(i,j,QC))* (dpdx - (q(i,j,QRHO)*qaux(i,j,QC))*dudx)
-  !   L2 = q(i,j,QU) * ( ((qaux(i,j,QC)**2.0d0)*drhodx) - dpdx)
-  !   L3 = q(i,j,QU) * dvdx
-  !   L4 = (Kout*(q(i,j,QPRES) - INLET_PRESSURE_Xdir)) - ((1.0d0 - beta)*T4)
-  !   
-  ! elseif ((x_bcMask(i,j) == Inflow) .and. &
-  !         ((y_bcMask(i,j) == SlipWall).or.(y_bcMask(i,j) == NoSlipWall))) then
-  !
-  ! ! This is the case when the bottom left corner is wall(y)/inflow(x)
-  ! ! Values long Y will be computed by mirror functions below
-  !   dpdy = (q(i,j+1,QPRES)-q(i,j,QPRES))/(2.0d0*dy)
-  !   dvdy = (q(i,j+1,QV)+q(i,j,QV))/(2.0d0*dy)
-  !   drhody = (q(i,j+1,QRHO)+q(i,j,QRHO))/(2.0d0*dy)
-  !   if (y_bcMask(i,j) == NoSlipWall) dudy = (q(i,j+1,QU)+q(i,j,QU))/(2.0d0*dy)
-  !   if (y_bcMask(i,j) == SlipWall) dudy = (q(i,j+1,QU)-q(i,j,QU))/(2.0d0*dy)
-  !   T1 = (q(i,j,QV)*(dpdy - q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
-  !   T4 = (q(i,j,QV)*(dpdy + q(i,j,QRHO)*qaux(i,j,QC)*dudy)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
-  !   T3 = ((q(i,j,QV)*dvdy))+(dpdy/q(i,j,QRHO))
-  !   T2 = (q(i,j,QV)*((qaux(i,j,QC)*qaux(i,j,QC)*drhody)-dpdy)) + &
-  !        (qaux(i,j,QC)*qaux(i,j,QC)*q(i,j,QRHO)*dvdy) - (qaux(i,j,QGAMC) * q(i,j,QPRES)*dvdy)
-  !   beta_X = mach_local_corner
-  !
-  !   ! LODI waves along X
-  !   L1 = (q(i,j,QU)-qaux(i,j,QC))* (dpdx - (q(i,j,QRHO)*qaux(i,j,QC))*dudx)  
-  !   L2 = relax_T * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(1)) * (q(i,j,QTEMP) - INLET_TEMPERATURE_Xdir) - ((1.0d0 - beta_X)*T2)
-  !
-  !   L3 = relax_V * (qaux(i,j,QC)/probhi(1)) * (q(i,j,QV) - INLET_VY_Xdir)  !- ((1.0d0 - beta_X)*T3)
-  !   L4 = relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local_corner*mach_local_corner)/probhi(1)) * &
-  !        (q(i,j,QU) - INLET_VX_Xdir)  - ((1.0d0 - beta_X)*T4)
-  !          
-  !
-  !elseif (((x_bcMask(i,j) == SlipWall) .or. (x_bcMask(i,j) == NoSlipWall)) .and.  & 
-  !         ((y_bcMask(i,j) == SlipWall) .or. (y_bcMask(i,j) == NoSlipWall))) then
-  ! ! This is the case when the bottom left corner is wall(y)/wall(x)
-  !   ! Values long Y will be computed by mirror functions below
+  elseif ((x_bc_type == Inflow) .and. (y_bc_type == Outflow)) then
+  
+    if (y_isign == 1) then
+      M4 = 0.0d0 ! Compatibility condition
+      trans_wave = M1
+      !Kout = y_bc_params(6)*(1.0d0 - (mach_local**2.0d0))*qaux(i,j,QC)/(probhi(2))
+      !M4 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE)) !- ((1.0d0 - beta )*T1)
+    elseif (y_isign == -1) then
+      M1 = 0.0d0 ! Compatibility condition
+      !Kout = y_bc_params(6)*(1.0d0 - (mach_local**2.0d0))*qaux(i,j,QC)/(probhi(2))
+      !M1 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE)) !- ((1.0d0 - beta )*T1)
+      trans_wave = M4
+    endif
+
+    if (x_isign == 1) then
+      L2 = x_bc_params(1) * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(1)) &
+                          * (q(i,j,QTEMP) - Xdir_TARGET_TEMPERATURE) -  ((1.0d0 - x_bc_params(5))*M2) !- M3
+      L3 = (x_bc_params(3) * (qaux(i,j,QC)/probhi(1)) * (q(i,j,QV) - Xdir_TARGET_VY)) &
+                            - ((1.0d0 - x_bc_params(5))*M3) !- (trans_wave/(2.0d0*q(i,j,QRHO)*qaux(i,j,QC)))
+      L4 = (x_bc_params(2) * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(1)) * &
+                              (q(i,j,QU) - Xdir_TARGET_VX)) - ((1.0d0 - x_bc_params(5))*trans_wave) !- (0.5d0*trans_wave)!  - (q(i,j,QRHO)*qaux(i,j,QC)*M2)
+    elseif (x_isign == -1) then
+      call bl_abort("impose_NSCBC_2D:Inflow/Outflow corner at domhi not done yet")
+    endif
+    
+    
+    !1111
+    !
+    !    L1 = (q(i,j,QU)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*du)
+    !    L4 = relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
+    !                 (q(i,j,QU) - TARGET_VX)  - ((1.0d0 - beta)*T4)
+    !
+    !
+    !  L2 = relax_T * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(idir)) &
+    !             * (q(i,j,QTEMP) - TARGET_TEMPERATURE) - ((1.0d0 - beta)*T2)
+    !  L3 = relax_V * (qaux(i,j,QC)/probhi(idir)) * (q(i,j,QV) - TARGET_VY) &
+    !               - ((1.0d0 - beta)*T3)
+    !      11111         
+                   
+                   
 
   else
-    call bl_error("NSCBC not implemented for bottom left corner")
+    call bl_error("impose_NSCBC_2D:NSCBC not implemented for this corner")
   endif 
 
   if (q(i,j,QV) == 0.0d0) then
