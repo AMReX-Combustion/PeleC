@@ -58,12 +58,8 @@ PeleC::fill_forcing_source (Real time, Real dt,
 #endif
   for (MFIter mfi(forcing_src,true); mfi.isValid(); ++mfi)
   {
-//    const Box& bx = mfi.growntilebox(ng);
-
+    const Box& bx = mfi.growntilebox(ng);
     RealBox gridloc = RealBox(grids[mfi.index()],geom.CellSize(),geom.ProbLo());
-    const Box& bx     = mfi.validbox();
-    const int* lo      = bx.loVect();
-    const int* hi      = bx.hiVect();
 
 #ifdef PELE_USE_EB
     const auto& flag_fab = flags[mfi];
@@ -77,7 +73,7 @@ PeleC::fill_forcing_source (Real time, Real dt,
     const auto& Snfab = state_new[mfi];
     auto& Ffab = forcing_src[mfi];
 
-    pc_forcing_src(ARLIM_3D(lo), ARLIM_3D(hi),
+    pc_forcing_src(ARLIM_3D(bx.loVect()), ARLIM_3D(bx.hiVect()),
                    BL_TO_FORTRAN_3D(Sofab),
                    BL_TO_FORTRAN_3D(Snfab),
                    BL_TO_FORTRAN_3D(Ffab),

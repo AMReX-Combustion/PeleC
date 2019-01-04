@@ -5,6 +5,16 @@ module gc_nscbc_mod
 
 contains
 
+!------------------------------
+! Imposing Ghost-Cells Navier-Stokes Characteristic BCs if i_nscbc is .true.
+! For the theory, see Motheau et al. AIAA J. Vol. 55, No. 10 : pp. 3399-3408, 2017. 
+!
+! Note that for the corner treatment, we depart from the AIAA paper, because
+! we found out that the corner coupling method was superfluous and that providing
+! transverse terms computed from one-sided derivative do the job.
+!
+!------------------------------
+
  subroutine impose_NSCBC(lo, hi, domlo, domhi, &
                                     uin, uin_l1, uin_l2, uin_h1, uin_h2, &
                                    q, q_l1, q_l2, q_h1, q_h2, &
@@ -14,22 +24,20 @@ contains
                                    flag_nscbc_isAnyPerio, flag_nscbc_perio, &
                                    time,delta,dt,verbose) bind(C, name="impose_NSCBC")
     
- 
-    use bl_error_module
-    use network, only : nspec
-    use eos_module
-    use fundamental_constants_module, only: k_B, n_A
+  use bl_error_module
+  use network, only : nspec
+  use eos_module
+  use fundamental_constants_module, only: k_B, n_A
 
-    use bl_constants_module
-    use prob_params_module, only : physbc_lo, physbc_hi, problo, probhi, &
-                                   Interior
+  use bl_constants_module
+  use prob_params_module, only : physbc_lo, physbc_hi, problo, probhi, &
+                                 Interior
     
-    use meth_params_module, only : NVAR, NQAUX,QVAR
-    use bc_fill_module, only: bcnormal
+  use meth_params_module, only : NVAR, NQAUX,QVAR
+  use bc_fill_module, only: bcnormal
  
-    implicit none
+  implicit none
     
-
   integer, intent(in) :: lo(2), hi(2), verbose
   integer, intent(in) :: domlo(2), domhi(2)
   integer, intent(in) :: q_l1, q_l2, q_h1, q_h2
@@ -56,6 +64,8 @@ contains
   double precision :: L1, L2, L3, L4
   double precision :: M1, M2, M3, M4
   double precision :: T1, T2, T3, T4
+  double precision :: T1_X, T2_X, T3_X, T4_X
+  double precision :: T1_Y, T2_Y, T3_Y, T4_Y
 
   double precision :: U_dummy(NVAR)
   double precision :: U_ext(NVAR)
@@ -107,6 +117,20 @@ contains
    call normal_derivative(i, j, 2, -1, dy, &
                           dpdy, dudy, dvdy, drhody, &
                           q, q_l1, q_l2, q_h1, q_h2)
+                          
+   ! Compute transverse terms to x
+   call compute_transverse_terms(i, j, 1,  &
+                               T1_X, T2_X, T3_X, T4_X, &
+                               dpdy, dudy, dvdy, drhody, &
+                               q, q_l1, q_l2, q_h1, q_h2, &
+                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+                               
+   ! Compute transverse terms to y
+   call compute_transverse_terms(i, j, 2,  &
+                               T1_Y, T2_Y, T3_Y, T4_Y, &
+                               dpdx, dudx, dvdx, drhodx, &
+                               q, q_l1, q_l2, q_h1, q_h2, &
+                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
 
    ! Calling user target BC values
    ! right face
@@ -123,6 +147,8 @@ contains
                              y_bc_type, y_bc_params, y_bc_target, &
                              L1, L2, L3, L4, &
                              M1, M2, M3, M4, &
+                             T1_X, T2_X, T3_X, T4_X, &
+                             T1_Y, T2_Y, T3_Y, T4_Y, &
                              dpdx, dudx, dvdx, drhodx, &
                              dpdy, dudy, dvdy, drhody, &
                              q, q_l1, q_l2, q_h1, q_h2, &
@@ -148,7 +174,6 @@ contains
                            qaux, qa_l1, qa_l2, qa_h1, qa_h2)
  endif
  
- 
  !--------------------------------------------------------------------------   
  ! Bottom right corner (Lx,0)
  ! phi = 1, psi = 4
@@ -171,7 +196,21 @@ contains
    call normal_derivative(i, j, 2, 1, dy, &
                           dpdy, dudy, dvdy, drhody, &
                           q, q_l1, q_l2, q_h1, q_h2)
-  
+                          
+   ! Compute transverse terms to x
+   call compute_transverse_terms(i, j, 1,  &
+                               T1_X, T2_X, T3_X, T4_X, &
+                               dpdy, dudy, dvdy, drhody, &
+                               q, q_l1, q_l2, q_h1, q_h2, &
+                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+                               
+   ! Compute transverse terms to y
+   call compute_transverse_terms(i, j, 2,  &
+                               T1_Y, T2_Y, T3_Y, T4_Y, &
+                               dpdx, dudx, dvdx, drhodx, &
+                               q, q_l1, q_l2, q_h1, q_h2, &
+                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+
    ! Calling user target BC values
    ! right face
    call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,.false.,x_bc_type,x_bc_params,x_bc_target)
@@ -187,6 +226,8 @@ contains
                              y_bc_type, y_bc_params, y_bc_target, &
                              L1, L2, L3, L4, &
                              M1, M2, M3, M4, &
+                             T1_X, T2_X, T3_X, T4_X, &
+                             T1_Y, T2_Y, T3_Y, T4_Y, &
                              dpdx, dudx, dvdx, drhodx, &
                              dpdy, dudy, dvdy, drhody, &
                              q, q_l1, q_l2, q_h1, q_h2, &
@@ -235,6 +276,21 @@ contains
    call normal_derivative(i, j, 2, -1, dy, &
                           dpdy, dudy, dvdy, drhody, &
                           q, q_l1, q_l2, q_h1, q_h2)
+                          
+   ! Compute transverse terms to x
+   call compute_transverse_terms(i, j, 1,  &
+                               T1_X, T2_X, T3_X, T4_X, &
+                               dpdy, dudy, dvdy, drhody, &
+                               q, q_l1, q_l2, q_h1, q_h2, &
+                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+                               
+   ! Compute transverse terms to y
+   call compute_transverse_terms(i, j, 2,  &
+                               T1_Y, T2_Y, T3_Y, T4_Y, &
+                               dpdx, dudx, dvdx, drhodx, &
+                               q, q_l1, q_l2, q_h1, q_h2, &
+                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+                          
    
    ! Calling user target BC values
    ! left face
@@ -244,13 +300,15 @@ contains
    ! top face
    call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,-1,.false.,y_bc_type,y_bc_params,y_bc_target)
    y_bcMask(i,j+1) = y_bc_type
-   
+
    ! Computing the LODI system waves
    call compute_waves_corner(i, j, 1, -1, &
                              x_bc_type, x_bc_params, x_bc_target, &
                              y_bc_type, y_bc_params, y_bc_target, &
                              L1, L2, L3, L4, &
                              M1, M2, M3, M4, &
+                             T1_X, T2_X, T3_X, T4_X, &
+                             T1_Y, T2_Y, T3_Y, T4_Y, &
                              dpdx, dudx, dvdx, drhodx, &
                              dpdy, dudy, dvdy, drhody, &
                              q, q_l1, q_l2, q_h1, q_h2, &
@@ -299,7 +357,22 @@ contains
    call normal_derivative(i, j, 2, 1, dy, &
                           dpdy, dudy, dvdy, drhody, &
                           q, q_l1, q_l2, q_h1, q_h2)
-
+                          
+      
+   ! Compute transverse terms to x
+   call compute_transverse_terms(i, j, 1,  &
+                               T1_X, T2_X, T3_X, T4_X, &
+                               dpdy, dudy, dvdy, drhody, &
+                               q, q_l1, q_l2, q_h1, q_h2, &
+                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+                               
+   ! Compute transverse terms to y
+   call compute_transverse_terms(i, j, 2,  &
+                               T1_Y, T2_Y, T3_Y, T4_Y, &
+                               dpdx, dudx, dvdx, drhodx, &
+                               q, q_l1, q_l2, q_h1, q_h2, &
+                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+                          
    ! Calling user target BC values
    ! left face
    call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,x_bc_type,x_bc_params,x_bc_target)
@@ -315,6 +388,8 @@ contains
                            y_bc_type, y_bc_params, y_bc_target, &
                            L1, L2, L3, L4, &
                            M1, M2, M3, M4, &
+                           T1_X, T2_X, T3_X, T4_X, &
+                           T1_Y, T2_Y, T3_Y, T4_Y, &
                            dpdx, dudx, dvdx, drhodx, &
                            dpdy, dudy, dvdy, drhody, &
                            q, q_l1, q_l2, q_h1, q_h2, &
@@ -342,7 +417,6 @@ contains
 
 endif ! flag_nscbc_isAnyPerio ) 
 
-  
  !--------------------------------------------------------------------------   
  ! lower X
  !--------------------------------------------------------------------------
@@ -376,7 +450,6 @@ endif ! flag_nscbc_isAnyPerio )
                                q, q_l1, q_l2, q_h1, q_h2, &
                                qaux, qa_l1, qa_l2, qa_h1, qa_h2)
      
-     
      ! Calling user target BC values 
      call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,bc_type,bc_params,bc_target)
      
@@ -403,7 +476,7 @@ endif ! flag_nscbc_isAnyPerio )
                                uin, uin_l1, uin_l2, uin_h1, uin_h2, &
                                q, q_l1, q_l2, q_h1, q_h2, &
                                qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-
+                               
    enddo
  end if
   
@@ -467,8 +540,6 @@ endif ! flag_nscbc_isAnyPerio )
 
   enddo
 endif
-
-
 
  !--------------------------------------------------------------------------   
  ! lower Y
@@ -598,8 +669,6 @@ endif
    enddo
 end if
 
-
-
 call destroy(eos_state)
 
 end subroutine impose_NSCBC
@@ -698,7 +767,7 @@ end subroutine impose_NSCBC
     du = (q(i,j+1,QU)-q(i,j-1,QU))/(2.0d0*delta)
     dv = (q(i,j+1,QV)-q(i,j-1,QV))/(2.0d0*delta)
     drho = (q(i,j+1,QRHO)-q(i,j-1,QRHO))/(2.0d0*delta)
-      
+    
   elseif (idir == 2) then
   
     ! 2nd order Central
@@ -1113,17 +1182,17 @@ end subroutine impose_NSCBC
       if (isign == 1) then      
         L1 = (q(i,j,QU)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*du)
         L4 = relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
-                     (q(i,j,QU) - TARGET_VX)  !- ((1.0d0 - beta)*T4)
+                     (q(i,j,QU) - TARGET_VX)  - ((1.0d0 - beta)*T4)
       elseif (isign == -1) then
         L1 = relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
-                        (q(i,j,QU) - TARGET_VX) ! -  ((1.0d0 - beta)*T1)
+                        (q(i,j,QU) - TARGET_VX) - ((1.0d0 - beta)*T1)
         L4 = (q(i,j,QU)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*du)
       endif
     
       L2 = relax_T * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(idir)) &
-                 * (q(i,j,QTEMP) - TARGET_TEMPERATURE) !- ((1.0d0 - beta)*T2)
-      L3 = relax_V * (qaux(i,j,QC)/probhi(idir)) * (q(i,j,QV) - TARGET_VY) !&
-                   !- ((1.0d0 - beta)*T3)
+                 * (q(i,j,QTEMP) - TARGET_TEMPERATURE) - ((1.0d0 - beta)*T2)
+      L3 = relax_V * (qaux(i,j,QC)/probhi(idir)) * (q(i,j,QV) - TARGET_VY) &
+                     - ((1.0d0 - beta)*T3)
 
     elseif (idir == 2) then
     
@@ -1225,6 +1294,8 @@ end subroutine impose_NSCBC
                            y_bc_type, y_bc_params, y_bc_target, &
                            L1, L2, L3, L4, &
                            M1, M2, M3, M4, &
+                           T1_X, T2_X, T3_X, T4_X, &
+                           T1_Y, T2_Y, T3_Y, T4_Y, &
                            dpdx, dudx, dvdx, drhodx, &
                            dpdy, dudy, dvdy, drhody, &
                            q, q_l1, q_l2, q_h1, q_h2, &
@@ -1245,16 +1316,17 @@ end subroutine impose_NSCBC
   integer, intent(in)          :: x_bc_type, y_bc_type
   double precision, intent(in) :: x_bc_params(6), y_bc_params(6)
   double precision, intent(in) :: x_bc_target(5), y_bc_target(5)
+  double precision, intent(in) :: T1_X, T2_X, T3_X, T4_X
+  double precision, intent(in) :: T1_Y, T2_Y, T3_Y, T4_Y
   
   double precision, intent(out) :: L1, L2, L3, L4
   double precision, intent(out) :: M1, M2, M3, M4
   
   ! Local
-  double precision :: mach_local, TARGET_VX, TARGET_VY, TARGET_TEMPERATURE, TARGET_PRESSURE
+  double precision :: mach_local
   double precision :: Xdir_TARGET_VX, Xdir_TARGET_VY, Xdir_TARGET_TEMPERATURE, Xdir_TARGET_PRESSURE
   double precision :: Ydir_TARGET_VX, Ydir_TARGET_VY, Ydir_TARGET_TEMPERATURE, Ydir_TARGET_PRESSURE
-  double precision :: beta, relax_T, relax_U, relax_V, sigma_out, Kout, trans_wave
-  double precision :: S1, S2, T1, T2
+  double precision :: Kout
   
   
   if ((x_isign == 1) .or. (x_isign == -1)) then
@@ -1282,9 +1354,6 @@ end subroutine impose_NSCBC
   Ydir_TARGET_TEMPERATURE = y_bc_target(4)
   Ydir_TARGET_PRESSURE = y_bc_target(5)
   
-  TARGET_PRESSURE = 0.5d0*(Xdir_TARGET_PRESSURE+Ydir_TARGET_PRESSURE)
-  
-  
   ! Numerical LODI waves along X
   L1 = (q(i,j,QU)-qaux(i,j,QC))* (dpdx - (q(i,j,QRHO)*qaux(i,j,QC))*dudx)
   L2 = q(i,j,QU) * ( ((qaux(i,j,QC)**2.0d0)*drhodx) - dpdx)
@@ -1297,93 +1366,46 @@ end subroutine impose_NSCBC
   M3 = q(i,j,QV) * ( ((qaux(i,j,QC)**2.0d0)*drhody) - dpdy)
   M4 = (q(i,j,QV)+qaux(i,j,QC))* (dpdy + (q(i,j,QRHO)*qaux(i,j,QC))*dvdy)
   
-     
-  ! Evaluating missing waves with analytical model depending on the BC combination and location 
-  if ((x_bc_type == Outflow) .and. (y_bc_type == Outflow)) then
-
-    ! LODI waves along X
-    if (x_isign == 1) then
-      T2 = -0.5d0*L1 - (q(i,j,QRHO)*qaux(i,j,QC))*L3
-    elseif (x_isign == -1) then
-      T2 = -0.5d0*L4 - (q(i,j,QRHO)*qaux(i,j,QC))*L3
-    endif
-    
-    ! LODI waves along Y
-    if (y_isign == 1) then
-      T1 = -0.5d0*M1 - (q(i,j,QRHO)*qaux(i,j,QC))*M2
-    elseif (y_isign == -1) then
-      T1 = -0.5d0*M4 - (q(i,j,QRHO)*qaux(i,j,QC))*M2
-    endif
-
-    ! Compute transverse terms
+  ! Evaluating missing waves with analytical model depending on the BCs and location 
+  if (x_bc_type == Outflow) then
+  
     Kout = x_bc_params(6)*(1.0d0 - (mach_local**2.0d0))*qaux(i,j,QC)/(probhi(1))
-    S1 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE))
-
-    Kout = y_bc_params(6)*(1.0d0 - (mach_local**2.0d0))*qaux(i,j,QC)/(probhi(2))
-    S2 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE))
-
-    beta = 0.5d0*(x_bc_params(5) + y_bc_params(5))
- 
-    S2 = S2 + (1.0d0-beta)*T2
-    S1 = S1 + (1.0d0-beta)*T1
-     
     if (x_isign == 1) then
-      L4 = -2.0d0*(S2*beta + 2.0d0*S1 - S2)/ ((beta*beta) - (2.0d0*beta) - 3.0d0)
+      L4 = (Kout*(q(i,j,QPRES) - Xdir_TARGET_PRESSURE)) - ((1.0d0 - x_bc_params(5))*T4_X)
     elseif (x_isign == -1) then
-      L1 = -2.0d0*(S2*beta + 2.0d0*S1 - S2)/ ((beta*beta) - (2.0d0*beta) - 3.0d0)
+      L1 = (Kout*(q(i,j,QPRES) - Xdir_TARGET_PRESSURE)) - ((1.0d0 - x_bc_params(5))*T1_X)
     endif
       
-    if (y_isign == 1) then
-      M4 = -2.0d0*(S1*(beta-1.0d0) + 2.0d0*S2)/ ((beta*beta) - (2.0d0*beta) - 3.0d0)
-    elseif (y_isign == -1) then
-      M1 = -2.0d0*(S1*(beta-1.0d0) + 2.0d0*S2)/ ((beta*beta) - (2.0d0*beta) - 3.0d0)
-    endif
-        
-  elseif ((x_bc_type == Inflow) .and. (y_bc_type == Outflow)) then
+  elseif (x_bc_type == Inflow) then
   
-    if (y_isign == 1) then
-      M4 = 0.0d0 ! Compatibility condition
-      trans_wave = M1
-      !Kout = y_bc_params(6)*(1.0d0 - (mach_local**2.0d0))*qaux(i,j,QC)/(probhi(2))
-      !M4 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE)) !- ((1.0d0 - beta )*T1)
-    elseif (y_isign == -1) then
-      M1 = 0.0d0 ! Compatibility condition
-      !Kout = y_bc_params(6)*(1.0d0 - (mach_local**2.0d0))*qaux(i,j,QC)/(probhi(2))
-      !M1 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE)) !- ((1.0d0 - beta )*T1)
-      trans_wave = M4
-    endif
-
     if (x_isign == 1) then
       L2 = x_bc_params(1) * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(1)) &
-                          * (q(i,j,QTEMP) - Xdir_TARGET_TEMPERATURE) -  ((1.0d0 - x_bc_params(5))*M2) !- M3
-      L3 = (x_bc_params(3) * (qaux(i,j,QC)/probhi(1)) * (q(i,j,QV) - Xdir_TARGET_VY)) &
-                            - ((1.0d0 - x_bc_params(5))*M3) !- (trans_wave/(2.0d0*q(i,j,QRHO)*qaux(i,j,QC)))
+                          * (q(i,j,QTEMP) - Xdir_TARGET_TEMPERATURE) - ((1.0d0 - x_bc_params(5))*T2_X)
+      L3 = (x_bc_params(3) * (qaux(i,j,QC)/probhi(1)) * (q(i,j,QV) - Xdir_TARGET_VY))   - ((1.0d0 - x_bc_params(5))*T3_X)
       L4 = (x_bc_params(2) * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(1)) * &
-                              (q(i,j,QU) - Xdir_TARGET_VX)) - ((1.0d0 - x_bc_params(5))*trans_wave) !- (0.5d0*trans_wave)!  - (q(i,j,QRHO)*qaux(i,j,QC)*M2)
+                              (q(i,j,QU) - Xdir_TARGET_VX)) - ((1.0d0 - x_bc_params(5))*T4_X)
     elseif (x_isign == -1) then
       call bl_abort("impose_NSCBC_2D:Inflow/Outflow corner at domhi not done yet")
     endif
     
-    
-    !1111
-    !
-    !    L1 = (q(i,j,QU)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*du)
-    !    L4 = relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
-    !                 (q(i,j,QU) - TARGET_VX)  - ((1.0d0 - beta)*T4)
-    !
-    !
-    !  L2 = relax_T * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(idir)) &
-    !             * (q(i,j,QTEMP) - TARGET_TEMPERATURE) - ((1.0d0 - beta)*T2)
-    !  L3 = relax_V * (qaux(i,j,QC)/probhi(idir)) * (q(i,j,QV) - TARGET_VY) &
-    !               - ((1.0d0 - beta)*T3)
-    !      11111         
-                   
-                   
-
   else
-    call bl_error("impose_NSCBC_2D:NSCBC not implemented for this corner")
-  endif 
-
+    call bl_abort("impose_NSCBC_2D: this corner for x_dir is not implemented")
+  endif
+     
+  
+  if (y_bc_type == Outflow) then
+  
+      Kout = y_bc_params(6)*(1.0d0 - (mach_local**2.0d0))*qaux(i,j,QC)/(probhi(2))
+      if (y_isign == 1) then
+        M4 = (Kout*(q(i,j,QPRES) - Ydir_TARGET_PRESSURE)) - ((1.0d0 -  y_bc_params(5))*T4_Y)
+      elseif (y_isign == -1) then
+        M1 = (Kout*(q(i,j,QPRES) - Ydir_TARGET_PRESSURE)) - ((1.0d0 -  y_bc_params(5))*T1_Y)
+      endif
+      
+  else
+    call bl_abort("impose_NSCBC_2D: this corner for y_dir is not implemented")
+  endif   
+     
   if (q(i,j,QV) == 0.0d0) then
        M1 = M1 / (q(i,j,QV)-qaux(i,j,QC))
        M2 = 0.0d0

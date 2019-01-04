@@ -326,7 +326,7 @@ contains
         relax_U = 1.0d0
         relax_V = 1.0d0
         relax_T = - relax_V
-        beta = 0.5d0  
+        beta = 0.6d0  
            
         which_bc_type = Inflow
            
@@ -348,7 +348,7 @@ contains
         ! Set outflow pressure
         which_bc_type = Outflow      
         sigma_out = 0.28d0
-        beta = 0.5d0
+        beta = 0.6d0
        
         u(1:3) = 0.d0
         eos_state % massfrac(1) = 1.d0
