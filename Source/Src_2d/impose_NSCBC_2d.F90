@@ -1341,7 +1341,6 @@ end subroutine impose_NSCBC
     call bl_abort("Problem of y_isign in impose_NSCBC_2d:compute_waves_corner")
   end if
   
-  
   mach_local = dsqrt(q(i,j,QU)**2.0d0 + q(i,j,QV)**2.0d0)/qaux(i,j,QC)
      
   Xdir_TARGET_VX = x_bc_target(1)
@@ -1387,7 +1386,9 @@ end subroutine impose_NSCBC
     elseif (x_isign == -1) then
       call bl_abort("impose_NSCBC_2D:Inflow/Outflow corner at domhi not done yet")
     endif
-    
+  
+  elseif ((x_bc_type == SlipWall).or.(x_bc_type == NoSlipWall)) then
+    continue
   else
     call bl_abort("impose_NSCBC_2D: this corner for x_dir is not implemented")
   endif
@@ -1402,6 +1403,8 @@ end subroutine impose_NSCBC
         M1 = (Kout*(q(i,j,QPRES) - Ydir_TARGET_PRESSURE)) - ((1.0d0 -  y_bc_params(5))*T1_Y)
       endif
       
+  elseif ((y_bc_type == SlipWall).or.(y_bc_type == NoSlipWall)) then
+    continue
   else
     call bl_abort("impose_NSCBC_2D: this corner for y_dir is not implemented")
   endif   
