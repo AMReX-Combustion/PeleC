@@ -471,11 +471,11 @@ endif ! flag_nscbc_isAnyPerio )
           
      ! Recomputing ghost-cells values with the LODI waves
      call update_ghost_cells(i, j, bc_type, 1, 1, dx, &
-                              domlo, domhi, &
-                               L1, L2, L3, L4, &
-                               uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-                               q, q_l1, q_l2, q_h1, q_h2, &
-                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+                             domlo, domhi, &
+                             L1, L2, L3, L4, &
+                             uin, uin_l1, uin_l2, uin_h1, uin_h2, &
+                             q, q_l1, q_l2, q_h1, q_h2, &
+                             qaux, qa_l1, qa_l2, qa_h1, qa_h2)
                                
    enddo
  end if
@@ -532,11 +532,11 @@ endif ! flag_nscbc_isAnyPerio )
      
      ! Recomputing ghost-cells values with the LODI waves
      call update_ghost_cells(i, j, bc_type, 1, -1, dx, &
-                              domlo, domhi, &
-                               L1, L2, L3, L4, &
-                               uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-                               q, q_l1, q_l2, q_h1, q_h2, &
-                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+                             domlo, domhi, &
+                             L1, L2, L3, L4, &
+                             uin, uin_l1, uin_l2, uin_h1, uin_h2, &
+                             q, q_l1, q_l2, q_h1, q_h2, &
+                             qaux, qa_l1, qa_l2, qa_h1, qa_h2)
 
   enddo
 endif
@@ -548,9 +548,7 @@ endif
  if ((q_lo(2) < domlo(2)) .and. (physbc_lo(2) /= Interior)) then
  
    j = domlo(2)
-   
-   !write(*,*) 'DEBUG IN THE LOWER Y '
-   
+      
    do i = q_lo(1)+1,q_hi(1)-1
    
      x   = (dble(i)+HALF)*dx
@@ -596,11 +594,11 @@ endif
  
      ! Recomputing ghost-cells values with the LODI waves
      call update_ghost_cells(i, j, bc_type, 2, 1, dy, &
-                              domlo, domhi, &
-                               L1, L2, L3, L4, &
-                               uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-                               q, q_l1, q_l2, q_h1, q_h2, &
-                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+                             domlo, domhi, &
+                             L1, L2, L3, L4, &
+                             uin, uin_l1, uin_l2, uin_h1, uin_h2, &
+                             q, q_l1, q_l2, q_h1, q_h2, &
+                             qaux, qa_l1, qa_l2, qa_h1, qa_h2)
    
    enddo
  end if
@@ -612,9 +610,7 @@ endif
  if ((q_hi(2) > domhi(2)) .and. (physbc_hi(2) /= Interior)) then
  
    j = domhi(2)
-   
-   !write(*,*) 'DEBUG IN THE UPPER Y '
-   
+      
    do i = q_lo(1)+1,q_hi(1)-1
      
      x   = (dble(i)+HALF)*dx
@@ -660,11 +656,11 @@ endif
 
      ! Recomputing ghost-cells values with the LODI waves
      call update_ghost_cells(i, j, bc_type, 2, -1, dy, &
-                              domlo, domhi, &
-                               L1, L2, L3, L4, &
-                               uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-                               q, q_l1, q_l2, q_h1, q_h2, &
-                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+                             domlo, domhi, &
+                             L1, L2, L3, L4, &
+                             uin, uin_l1, uin_l2, uin_h1, uin_h2, &
+                             q, q_l1, q_l2, q_h1, q_h2, &
+                             qaux, qa_l1, qa_l2, qa_h1, qa_h2)
    
    enddo
 end if
@@ -878,7 +874,6 @@ end subroutine impose_NSCBC
   
   ! Compute new spatial derivative
   
-    
   if (idir == 1) then
     local_index = i
     drho = (L2 + 0.5d0*(L1 + L4))/(qaux(i,j,QC)**2.0d0)  
@@ -915,11 +910,8 @@ end subroutine impose_NSCBC
       idx_end   = domhi(idir)+4
     endif
     
-
-  
     if (idir == 1) then
     
-       
      ! Update ghost cells
      ! 2nd order
      q(idx_gc1,j,QU)    = q(idx_int1,j,QU) - 2.0d0*delta*du*isign
@@ -977,8 +969,6 @@ end subroutine impose_NSCBC
      
      end if
   
-
-     
      ! Recompute missing values thanks to EOS
      do hop=idx_start,idx_end,-isign
      
@@ -1051,15 +1041,15 @@ end subroutine impose_NSCBC
          wall_sign = 1.0d0
        end if
        
-       q(i,idx_gc1,QU)    = -q(i,j,QU)
-       q(i,idx_gc2,QU)    = -q(i,idx_int1,QU)
-       q(i,idx_gc3,QU)    = -q(i,idx_int2,QU)
-       q(i,idx_gc4,QU)    = -q(i,idx_int3,QU)
-  
-       q(i,idx_gc1,QV)    = wall_sign*q(i,j,QV)
-       q(i,idx_gc2,QV)    = wall_sign*q(i,idx_int1,QV)
-       q(i,idx_gc3,QV)    = wall_sign*q(i,idx_int2,QV)
-       q(i,idx_gc4,QV)    = wall_sign*q(i,idx_int3,QV)
+       q(i,idx_gc1,QU)    = wall_sign*q(i,j,QU)
+       q(i,idx_gc2,QU)    = wall_sign*q(i,idx_int1,QU)
+       q(i,idx_gc3,QU)    = wall_sign*q(i,idx_int2,QU)
+       q(i,idx_gc4,QU)    = wall_sign*q(i,idx_int3,QU)
+       
+       q(i,idx_gc1,QV)    = -q(i,j,QV)
+       q(i,idx_gc2,QV)    = -q(i,idx_int1,QV)
+       q(i,idx_gc3,QV)    = -q(i,idx_int2,QV)
+       q(i,idx_gc4,QV)    = -q(i,idx_int3,QV)
        
        q(i,idx_gc1,QRHO)  = q(i,j,QRHO)
        q(i,idx_gc2,QRHO)  = q(i,idx_int1,QRHO)
@@ -1072,9 +1062,7 @@ end subroutine impose_NSCBC
        q(i,idx_gc4,QPRES)  = q(i,idx_int3,QPRES)
      
      end if
-  
-
-     
+      
      ! Recompute missing values thanks to EOS
      do hop=idx_start,idx_end,-isign
      
@@ -1109,9 +1097,7 @@ end subroutine impose_NSCBC
        end do   
        
      enddo
-  
-  
-  
+    
   endif
   
   call destroy(eos_state)

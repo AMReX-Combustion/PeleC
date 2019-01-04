@@ -261,9 +261,7 @@ contains
     
     call build(eos_state)
 
-    ! For this test case, all BCs are outflow, so we don't care about the direction and the sign
-
-    ! Set outflow pressure
+    ! For this test case, all BCs are walls, so we don't care about the direction and the sign
     which_bc_type = SlipWall
     sigma_out = 0.28d0
     beta = 0.5d0
