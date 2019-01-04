@@ -81,6 +81,7 @@ contains
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEINT, UEDEN, UTEMP, UFS
     use prob_params_module, only : problo, probhi
     use eos_module
+    use bl_constants_module, only: M_PI, HALF
 
     implicit none
 
@@ -103,8 +104,6 @@ contains
     xcen = (probhi(1)/2.0d0)
     ycen = (probhi(2)/2.0d0)
 
-    write(*,*) 'POUET',p_ref, T_ref, gamma_const
-
     eos_state % p = p_ref
     eos_state % T = T_ref
     eos_state % massfrac(1) = 1.d0
@@ -112,16 +111,6 @@ contains
 
     call eos_tp(eos_state)
     c_0 = eos_state % cs
-    write(*,*) 'POUET',c_0, eos_state % rho, eos_state %wbar 
-
-    write(*,*) 'AHAH lo',lo
-    write(*,*) 'AHAH hi',hi
-    write(*,*) 'AHAH nvar',nvar
-    write(*,*) 'AHAH state_lo', state_lo
-    write(*,*) 'AHAH state_hi',state_hi
-    write(*,*) 'AHAH dx', dx
-    write(*,*) 'AHAH xlo',xlo
-    write(*,*) 'AHAH xhi',xhi
 
 
     !  c_0 = sqrt(gamma*287.84956*300.0d0)

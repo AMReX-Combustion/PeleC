@@ -19,22 +19,23 @@ contains
                         time,delta,dt) bind(C, name="impose_NSCBC")
     
  
-    use bl_error_module
-    use network, only : nspec
-    use eos_module
-    use fundamental_constants_module, only: k_B, n_A
+  use bl_error_module
+  use network, only : nspec
+  use eos_module
+  use fundamental_constants_module, only: k_B, n_A
 
-    use bl_constants_module
-    use prob_params_module, only : physbc_lo, physbc_hi, problo, probhi, &
-                                   Interior, Inflow, Outflow, Symmetry, SlipWall, NoSlipWall
+  use bl_constants_module
+  use bc_fill_module, only: bcnormal
+  use prob_params_module, only : physbc_lo, physbc_hi, problo, probhi, &
+                                 Interior, Inflow, Outflow, Symmetry, SlipWall, NoSlipWall
     
-    use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP,&
-                                   UFA, UFS, UFX, NQAUX, QC, QGAMC, QRSPEC, &
-                                   QC, QDPDE, QDPDR, QCSML, QGAMC, &
-                                   QVAR, QRHO, QU, QV, QREINT, QPRES, QTEMP, &
-                                   QFS, QFX, QGAME, NHYP
+  use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP,&
+                                 UFA, UFS, UFX, NQAUX, QC, QGAMC, QRSPEC, &
+                                 QC, QDPDE, QDPDR, QCSML, QGAMC, &
+                                 QVAR, QRHO, QU, QV, QREINT, QPRES, QTEMP, &
+                                 QFS, QFX, QGAME, NHYP
  
-    implicit none
+  implicit none
    
 
   integer, intent(in) :: lo(1), hi(1)
@@ -49,7 +50,7 @@ contains
   double precision, intent(inout) :: q(q_l1:q_h1,QVAR)
   double precision, intent(inout) :: qaux(qa_l1:qa_h1,NQAUX)
   double precision, intent(inout) :: uin(uin_l1:uin_h1,NVAR)
-  integer, intent(inout) :: bcMask(bcMask_l1:bcMask_h1,2)
+  integer, intent(inout) :: bcMask(bcMask_l1:bcMask_h1)
   double precision, intent(in) :: delta(1), dt, time
 
   ! Local
@@ -62,20 +63,18 @@ contains
   double precision :: S1, S2
   double precision :: Kout, sigma_out
   double precision :: relax_U, relax_T, magvel
-  double precision :: mach_max_hi_x_tmp, mach_local_hi_x
-  double precision :: mach_max_lo_x_tmp, mach_local_lo_x
-  double precision :: INLET_PRESSURE, INLET_VX, INLET_VY, INLET_TEMPERATURE
+   double precision :: mach_local
+  double precision :: TARGET_PRESSURE, TARGET_VX, TARGET_TEMPERATURE
   
   double precision :: U_dummy(NVAR)
   double precision :: U_ext(NVAR)
   double precision, parameter :: small = 1.d-8
   
   integer          :: q_lo(1), q_hi(1)
-  integer          ::  uin_lo(1),  uin_hi(1)
-  integer          :: i, j, n, hop
+  integer          :: uin_lo(1),  uin_hi(1)
+  integer          :: i, n, hop
   integer          :: bc_type
-  double precision :: bc_params(6)
-  double precision :: wall_sign
+  double precision :: bc_params(6), bc_target(5)
   
   type (eos_t) :: eos_state
   call build(eos_state)
@@ -88,7 +87,7 @@ contains
  
   dx = delta(1)
   
-  bcMask(:,:) = 0
+  bcMask(:) = 0
   
   if ( flag_nscbc_isAnyPerio == 1) then
     call bl_abort("If we have a periodicity in 1D, it makes absolutly no sense &
@@ -100,45 +99,37 @@ contains
  !--------------------------------------------------------------------------
  
  if ((q_lo(1) < domlo(1)) .and. (physbc_lo(1) /= Interior)) then
+ 
    i = domlo(1)
  
       x   = (dble(i)+HALF)*dx
 
-     !2nd order
+     ! Normal derivative along x
      dpdx = ((-3.0d0/2.0d0)*q(i,QPRES)+2.0d0*q(i+1,QPRES)-0.5d0*q(i+2,QPRES))/dx
      dudx = ((-3.0d0/2.0d0)*q(i,QU)+2.0d0*q(i+1,QU)-0.5d0*q(i+2,QU))/dx
      dvdx = ((-3.0d0/2.0d0)*q(i,QV)+2.0d0*q(i+1,QV)-0.5d0*q(i+2,QV))/dx
      drhodx = ((-3.0d0/2.0d0)*q(i,QRHO)+2.0d0*q(i+1,QRHO)-0.5d0*q(i+2,QRHO))/dx
  
      ! Calling user target BC values 
-     call bcnormal_nscbc([x,y,0.0d0],U_dummy,U_ext,1,1,bc_type,bc_params,.false.)
-     bcMask(i-1,1) = bc_type
+     call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,bc_type,bc_params,bc_target)
+     
+     bcMask(i) = bc_type
 
-     eos_state %  T = U_ext(UTEMP)
-     eos_state %  rho = U_ext(URHO)
-     eos_state % massfrac(1:nspec) = u_ext(UFS:UFS+nspec-1) / U_ext(URHO)
-     call eos_rt(eos_state)
-     INLET_VX = U_ext(UMX)/U_ext(URHO)
-     INLET_VY = U_ext(UMY)/U_ext(URHO)
-     INLET_TEMPERATURE = U_ext(UTEMP)
-     INLET_PRESSURE = eos_state%p
-
-     mach_local_lo_x = q(i,QU)/qaux(i,QC)
+     mach_local = q(i,QU)/qaux(i,QC)
 
      ! Compute LODI equations
      if (bc_type == Inflow) then
 
        relax_T = bc_params(1)
        relax_U = bc_params(2)
+       TARGET_VX = bc_target(1)
+       TARGET_TEMPERATURE = bc_target(4)
 
- 
        L1 = (q(i,QU)-qaux(i,QC))* (dpdx - (q(i,QRHO)*qaux(i,QC))*dudx)
-       L2 = relax_T * (q(i,QRHO)*qaux(i,QC)*qaux(i,QRSPEC)/probhi(1)) * (q(i,QTEMP) - INLET_TEMPERATURE) 
-         
+       L2 = relax_T * (q(i,QRHO)*qaux(i,QC)*qaux(i,QRSPEC)/probhi(1)) * (q(i,QTEMP) - TARGET_TEMPERATURE)  
        L3 = 0.0d0
-       L4 = relax_U * ((q(i,QRHO)*qaux(i,QC)**2.0d0)*(1.0d0-mach_local_lo_x*mach_local_lo_x)/probhi(1)) * &
-            (q(i,QU) - INLET_VX)  
-            
+       L4 = relax_U * ((q(i,QRHO)*qaux(i,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(1)) * &
+            (q(i,QU) - TARGET_VX)  
             
      elseif ((bc_type == SlipWall).or.(bc_type == NoSlipWall)) then
      
@@ -151,12 +142,14 @@ contains
      ! However for low Mach number a surface averaged Mach number is much more better
      ! as reported in the paper of Granet
        sigma_out = bc_params(6)
-       Kout = sigma_out*(1.0d0 - (mach_local_lo_x**2.0d0))*qaux(i,QC)/(probhi(1))
+       TARGET_PRESSURE = bc_target(5)
+       
+       Kout = sigma_out*(1.0d0 - (mach_local**2.0d0))*qaux(i,QC)/(probhi(1))
  
        L1 = (q(i,QU)-qaux(i,QC))* (dpdx - (q(i,QRHO)*qaux(i,QC))*dudx)
        L2 = q(i,QU) * ( ((qaux(i,QC)**2.0d0)*drhodx) - dpdx)
        L3 = 0.0d0
-       L4 = (Kout*(q(i,QPRES) - INLET_PRESSURE)) 
+       L4 = (Kout*(q(i,QPRES) - TARGET_PRESSURE)) 
        
      else
        call bl_error("Error:: This BC is not yet implemented for lo_x in characteristic form")
@@ -220,7 +213,6 @@ contains
      
      end if
  
- 
      ! Recompute missing values thanks to EOS
      do hop=domlo(1)-1,-4,-1
      
@@ -264,6 +256,7 @@ contains
  !--------------------------------------------------------------------------
  
  if ((q_hi(1) > domhi(1)) .and. (physbc_hi(1) /= Interior)) then
+ 
    i = domhi(1)
    
      x   = (dble(i)+HALF)*dx
@@ -275,31 +268,23 @@ contains
      drhodx = ((3.0d0/2.0d0)*q(i,QRHO)-2.0d0*q(i-1,QRHO)+0.5d0*q(i-2,QRHO))/dx
        
      ! Calling user target BC values 
-     call bcnormal_nscbc([x,y,0.0d0],U_dummy,U_ext,1,-1,bc_type,bc_params,.false.)
-     bcMask(i+1,1) = bc_type
-     
-     eos_state %  T = U_ext(UTEMP)
-     eos_state %  rho = U_ext(URHO)
-     eos_state % massfrac(1:nspec) = u_ext(UFS:UFS+nspec-1) / U_ext(URHO)
-     call eos_rt(eos_state)
-     INLET_VX = U_ext(UMX)/U_ext(URHO)
-     INLET_VY = U_ext(UMY)/U_ext(URHO)
-     INLET_TEMPERATURE = U_ext(UTEMP)
-     INLET_PRESSURE = eos_state%p
+     call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,.false.,bc_type,bc_params,bc_target)
 
-     mach_local_hi_x = q(i,QU) /qaux(i,QC)
+     bcMask(i) = bc_type
+
+     mach_local = q(i,QU)/qaux(i,QC)
 
      ! Compute LODI equations                        
      if (bc_type .eq. Inflow) then
      
        relax_T = bc_params(1)
        relax_U = bc_params(2)
+       TARGET_VX = bc_target(1)
+       TARGET_TEMPERATURE = bc_target(4)
 
-       L1 = relax_U * ((q(i,QRHO)*qaux(i,QC)**2.0d0)*(1.0d0-mach_local_hi_x*mach_local_hi_x)/probhi(1)) * &
-            (q(i,QU) - INLET_VX) 
-              
-       L2 = relax_T * (q(i,QRHO)*qaux(i,QC)*qaux(i,QRSPEC)/probhi(1)) * (q(i,QTEMP) - INLET_TEMPERATURE) 
-         
+       L1 = relax_U * ((q(i,QRHO)*qaux(i,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(1)) * &
+            (q(i,QU) - TARGET_VX)       
+       L2 = relax_T * (q(i,QRHO)*qaux(i,QC)*qaux(i,QRSPEC)/probhi(1)) * (q(i,QTEMP) - TARGET_TEMPERATURE) 
        L3 = 0.d0
        L4 = (q(i,QU)+qaux(i,QC))* (dpdx + (q(i,QRHO)*qaux(i,QC))*dudx)  
          
@@ -310,9 +295,11 @@ contains
        ! However for low Mach number a surface averaged Mach number is much more better
        ! as reported in the paper of Granet
        sigma_out = bc_params(6)
-       Kout = sigma_out*(1.0d0 - (mach_local_hi_x**2.0d0))*qaux(i,QC)/(probhi(1))
+       TARGET_PRESSURE = bc_target(5)
+       
+       Kout = sigma_out*(1.0d0 - (mach_local**2.0d0))*qaux(i,QC)/(probhi(1))
 
-       L1 = (Kout*(q(i,QPRES) - INLET_PRESSURE))
+       L1 = (Kout*(q(i,QPRES) - TARGET_PRESSURE))
        L2 = q(i,QU) * ( ((qaux(i,QC)**2.0d0)*drhodx) - dpdx) 
        L3 = 0.0d0
        L4 = (q(i,QU)+qaux(i,QC))* (dpdx + (q(i,QRHO)*qaux(i,QC))*dudx) 

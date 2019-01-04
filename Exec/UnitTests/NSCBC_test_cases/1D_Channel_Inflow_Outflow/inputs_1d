@@ -1,5 +1,5 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
-max_step = 5000000 
+max_step = 100000 
 stop_time = 3.0e4
 #pelec.fixed_dt = 2e-7
 # PROBLEM SIZE & GEOMETRY
@@ -38,7 +38,7 @@ pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
 pelec.sum_interval   = 1       # timesteps between computing mass
 pelec.v              = 1       # verbosity in Castro.cpp
 amr.v                = 1       # verbosity in Amr.cpp
-amr.data_log         = datlog
+#amr.data_log         = datlog
 #amr.grid_log        = grdlog  # name of grid logging file
 
 # REFINEMENT / REGRIDDING 
