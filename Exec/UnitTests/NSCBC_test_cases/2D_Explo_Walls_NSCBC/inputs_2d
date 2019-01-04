@@ -1,9 +1,9 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
-max_step = 100000
+max_step = 1000
 stop_time = 1.0e-3
 #pelec.fixed_dt = 1e-10
 # PROBLEM SIZE & GEOMETRY
-geometry.is_periodic = 0 1 
+geometry.is_periodic = 0 0 
 geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
 geometry.prob_lo     =   0.0  0.0
 geometry.prob_hi     =   0.026  0.013
@@ -20,9 +20,9 @@ amr.n_cell           =  128 64
 # 1 = Inflow             4 = SlipWall
 # 2 = Outflow            5 = NoSlipWall
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
-pelec.lo_bc       =  4  0 
-pelec.hi_bc       =  4  0 
-pelec.i_nscbc =  1
+pelec.lo_bc       =  4  4 
+pelec.hi_bc       =  4  4 
+pelec.i_nscbc = 1 
 
 # WHICH PHYSICS
 pelec.do_hydro = 1
