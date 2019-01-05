@@ -159,15 +159,6 @@ PeleC::construct_hydro_source(const MultiFab& S, Real time, Real dt, int amr_ite
 	                       BL_TO_FORTRAN(bcMask[1]),
                          BL_TO_FORTRAN(bcMask[2])));
 
-#if (BL_SPACEDIM == 3)
-
-      if (i_nscbc == 1)
-	    {
-	      amrex::Abort("GC_NSCBC not yet implemented in 3D");
-	    }
-
-#else
-
       if (i_nscbc == 1)
       {
         impose_NSCBC(lo, hi, domain_lo, domain_hi,
@@ -180,8 +171,6 @@ PeleC::construct_hydro_source(const MultiFab& S, Real time, Real dt, int amr_ite
                      &flag_nscbc_isAnyPerio, flag_nscbc_perio, 
                      &time, dx, &dt);
       }
-
-#endif
 
 	    srctoprim(ARLIM_3D(qbx.loVect()), ARLIM_3D(qbx.hiVect()),
 		      q.dataPtr(), ARLIM_3D(q.loVect()), ARLIM_3D(q.hiVect()),

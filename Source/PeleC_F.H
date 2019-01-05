@@ -260,9 +260,6 @@ extern "C"
      const int* lo, const int* hi,
      const amrex::Real* dx, const amrex::Real* dt_old, amrex::Real* dt);
 
-#if (BL_SPACEDIM == 3)
- ;
-#else
   void impose_NSCBC
     (const int    lo[], const int    hi[],
      const int domlo[], const int domhi[],
@@ -274,7 +271,6 @@ extern "C"
             BL_FORT_IFAB_ARG(z_bcMask)),
      const int* flag_nscbc_isAnyPerio, const int flag_nscbc_perio[],
      const amrex::Real* time, const amrex::Real dx[], const amrex::Real* dt);
-#endif
 
   void set_bc_mask
     (const int    lo[], const int    hi[],

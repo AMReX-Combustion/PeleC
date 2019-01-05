@@ -100,35 +100,6 @@ contains
        end do
     end if
 
-    !     ZLO
-    if ( (bc(2,1,1).eq.EXT_DIR).and. adv_lo(2).lt.domlo(2)) then
-       do i = adv_lo(1), adv_hi(1)
-          x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
-          do j = adv_lo(2), domlo(2)-1
-             x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
-             do k = adv_lo(3), adv_hi(3)
-                x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(i,j,domlo(3),:),adv(i,j,k,:),3,+1,rho_only)
-             end do
-          end do
-       end do
-    end if
-    
-    !     ZHI
-    if ( (bc(2,2,1).eq.EXT_DIR).and. adv_hi(2).gt.domhi(2)) then
-       do i = adv_lo(1), adv_hi(1)
-          x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
-          do j = domhi(2)+1, adv_hi(2)
-             x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
-             do k = adv_lo(3), adv_hi(3)
-                x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(i,j,domhi(3),:),adv(i,j,k,:),3,-1,rho_only)
-             end do
-          end do
-       end do
-    end if
-
-
 
   end subroutine pc_hypfill
 
@@ -212,35 +183,6 @@ contains
           end do
        end do
     end if
-
-    !     ZLO
-    if ( (bc(3,1,1).eq.EXT_DIR).and.adv_lo(3).lt.domlo(3)) then
-       do i = adv_lo(1), adv_hi(1)
-          x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
-          do j = adv_lo(2), domlo(2)-1
-             x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
-             do k = adv_lo(3), adv_hi(3)
-                x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(i,j,domlo(3)),adv(i,j,k),3,+1,rho_only)
-             end do
-          end do
-       end do
-    end if
-    
-    !     ZHI
-    if ( (bc(3,2,1).eq.EXT_DIR).and.adv_hi(3).gt.domhi(3)) then
-       do i = adv_lo(1), adv_hi(1)
-          x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
-          do j = domhi(2)+1, adv_hi(2)
-             x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
-             do k = adv_lo(3), adv_hi(3)
-                x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(i,j,domhi(3)),adv(i,j,k),3,-1,rho_only)
-             end do
-          end do
-       end do
-    end if
-
 
     
   end subroutine pc_denfill
