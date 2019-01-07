@@ -72,11 +72,11 @@ ifdef Chemistry_Model
   CHEM_HOME = $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism/Models/$(Chemistry_Model)
   VPATH_LOCATIONS += $(CHEM_HOME)
   Bpack += $(CHEM_HOME)/Make.package
+  Blocs += $(CHEM_HOME)
 
-  CHEM_HOME1 = $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism/
+  CHEM_HOME1 = $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism
   VPATH_LOCATIONS += $(CHEM_HOME1)
   Bpack += $(CHEM_HOME1)/Make.package
-  Blocs += $(CHEM_HOME1)
   Blocs += $(CHEM_HOME1)
 endif
 
