@@ -6,4 +6,3 @@ plt*
 *.0
 /AMReX_buildInfo.cpp
 /output.dat
-/extern.f90

@@ -1202,6 +1202,11 @@ end subroutine impose_NSCBC
   elseif ((bc_type == SlipWall).or.(bc_type == NoSlipWall)) then
      
     ! Values long Y will be computed by mirror functions below
+    ! but we set waves values to 0 to avoid undefined variables
+    L1 = 0.0d0
+    L2 = 0.0d0
+    L3 = 0.0d0
+    L4 = 0.0d0
        
   elseif (bc_type == Outflow) then
        
