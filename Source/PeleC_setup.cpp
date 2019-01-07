@@ -39,6 +39,11 @@ static int tang_vel_bc[] =
     INT_DIR, EXT_DIR, FOEXTRAP, REFLECT_EVEN, REFLECT_EVEN, REFLECT_ODD
 };
 
+static int react_src_bc[] =
+{
+    INT_DIR, FOEXTRAP, FOEXTRAP, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN
+};
+
 static
 void
 set_scalar_bc (BCRec& bc, const BCRec& phys_bc)
@@ -86,6 +91,19 @@ set_y_vel_bc(BCRec& bc, const BCRec& phys_bc)
     bc.setLo(2,tang_vel_bc[lo_bc[2]]);
     bc.setHi(2,tang_vel_bc[hi_bc[2]]);
 #endif
+}
+
+static
+void
+set_react_src_bc (BCRec& bc, const BCRec& phys_bc)
+{
+    const int* lo_bc = phys_bc.lo();
+    const int* hi_bc = phys_bc.hi();
+    for (int i = 0; i < BL_SPACEDIM; i++)
+    {
+	bc.setLo(i,react_src_bc[lo_bc[i]]);
+	bc.setHi(i,react_src_bc[hi_bc[i]]);
+    }
 }
 
 static
@@ -442,7 +460,7 @@ PeleC::variableSetUp ()
     std::string name_react;
     for (int i=0; i<NumSpec; ++i)
     {
-	set_scalar_bc(bc,phys_bc);
+	set_react_src_bc(bc,phys_bc);
 	name_react = "rho_omega_" + spec_names[i];
 	desc_lst.setComponent(Reactions_Type, i, name_react, bc,BndryFunc(pc_reactfill));
     }
