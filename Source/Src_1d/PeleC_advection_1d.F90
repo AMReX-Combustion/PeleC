@@ -58,7 +58,7 @@ contains
     double precision  flux(fd_l1   :fd_h1,NVAR)
     double precision  srcQ(src_l1  :src_h1,QVAR)
     double precision    q1(q1_l1:q1_h1,NGDNV)
-    integer bcMask(bcMask_l1:bcMask_h1,2)
+    integer bcMask(bcMask_l1:bcMask_h1)
     double precision dloga(dloga_l1:dloga_h1)
     
     ! Left and right state arrays (edge centered, cell centered)

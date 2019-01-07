@@ -44,7 +44,7 @@ subroutine pc_umdrv(is_finest_level, time, &
   integer, intent(in) :: vol_l1, vol_h1
   integer, intent(in) :: bcMask_l1, bcMask_h1
   
-  integer, intent(inout) :: bcMask(bcMask_l1:bcMask_h1,2)
+  integer, intent(inout) :: bcMask(bcMask_l1:bcMask_h1)
   double precision, intent(in) ::      uin(  uin_l1:  uin_h1,NVAR)
   double precision, intent(inout) ::  uout( uout_l1: uout_h1,NVAR)
   double precision, intent(inout) ::     q(    q_l1:    q_h1,QVAR)

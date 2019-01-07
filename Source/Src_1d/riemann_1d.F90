@@ -52,7 +52,7 @@ contains
     double precision     c( qd_l1: qd_h1)
     double precision  csml( qd_l1: qd_h1)
     
-    integer, intent(inout) :: bcMask(qd_l1:qd_h1,2)
+    integer, intent(inout) :: bcMask(qd_l1:qd_h1)
 
     ! Local variables
     integer i
@@ -128,7 +128,7 @@ contains
     double precision :: smallc(ilo:ihi+1)
     double precision :: uflx(uflx_l1:uflx_h1, NVAR)
     double precision ::  qint(qg_l1:qg_h1, NGDNV)
-    integer :: bcMask(qd_l1:qd_h1,2)
+    integer :: bcMask(qd_l1:qd_h1)
 
     integer :: ilo,ihi
     integer :: n, nqp, ipassive
@@ -650,7 +650,7 @@ contains
     double precision gamcl(ilo:ihi+1), gamcr(ilo:ihi+1)
     double precision  uflx(uflx_l1:uflx_h1, NVAR)
     double precision  qint( qg_l1: qg_h1, NGDNV)
-    integer :: bcMask(qd_l1:qd_h1,2)
+    integer :: bcMask(qd_l1:qd_h1)
 
     double precision rgdnv, regdnv, ustar, v1gdnv, v2gdnv
     double precision rl, ul, v1l, v2l, pl, rel
