@@ -890,8 +890,7 @@ end subroutine impose_NSCBC
                            dp, du, dv, drho, &
                            q, q_l1, q_l2, q_h1, q_h2, &
                            qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-                               
-                               
+                                                    
   use meth_params_module, only : QVAR, QPRES, QU, QV, QRHO, NQAUX, QC, QGAMC, QTEMP, QRSPEC
   use prob_params_module, only : probhi, Interior, Inflow, Outflow, SlipWall, NoSlipWall
   
@@ -928,6 +927,8 @@ end subroutine impose_NSCBC
   
   mach_local = dsqrt(q(i,j,QU)**2.0d0 + q(i,j,QV)**2.0d0)/qaux(i,j,QC)
      
+  !--------
+  ! Recasting targets values and numerical parameters   
   TARGET_VX = bc_target(1)
   TARGET_VY = bc_target(2)
   TARGET_TEMPERATURE = bc_target(4)
@@ -944,7 +945,9 @@ end subroutine impose_NSCBC
     beta =  bc_params(5)
   endif
   sigma_out = bc_params(6)
-  
+
+  !--------
+  ! Computing known numerical LODI waves  
   if (idir == 1) then
     ! Numerical LODI waves along X
     L1 = (q(i,j,QU)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*du)
@@ -959,7 +962,8 @@ end subroutine impose_NSCBC
     L4 = (q(i,j,QV)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*dv)
   endif
      
-  ! Compute missing waves
+  !--------
+  ! Computing missing LODI waves from BC model
   if (bc_type == Inflow) then
         
     if (idir == 1) then
@@ -1016,6 +1020,8 @@ end subroutine impose_NSCBC
     call bl_error("Error:: This BC is not yet implemented in characteristic form")
   endif
  
+  !--------
+  ! Shaping the waves to be at the good dimension
   if (idir == 1) then
     L1 = L1 / (q(i,j,QU)-qaux(i,j,QC))
     L4 = L4 / (q(i,j,QU)+qaux(i,j,QC))
