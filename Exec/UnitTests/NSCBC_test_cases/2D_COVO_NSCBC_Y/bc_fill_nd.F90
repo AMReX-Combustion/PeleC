@@ -352,7 +352,7 @@ contains
         ! Set outflow pressure
         which_bc_type = Outflow      
         sigma_out = 0.28d0
-        beta = 0.6d0
+        beta = -1.0d0 ! This means that local mach number will be used
        
         u(1:3) = 0.d0
         eos_state % massfrac(1) = 1.d0
@@ -392,7 +392,7 @@ contains
        ! Set outflow pressure
        which_bc_type = Outflow
        sigma_out = 0.28d0
-       beta = 0.6d0
+       beta = -1.0d0 ! This means that local mach number will be used
   
        u(1:3) = 0.d0
        eos_state % massfrac(1) = 1.d0

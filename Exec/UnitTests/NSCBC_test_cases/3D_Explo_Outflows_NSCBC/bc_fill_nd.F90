@@ -330,16 +330,6 @@ contains
     which_bc_type = Outflow
     sigma_out = 0.28d0
     beta = 0.5d0
-
-     if (dir == 1) then           
-      if (sgn == 1) then        
-       
-        ! Set outflow pressure   
-        which_bc_type = SlipWall
-      end if
-    end if
-
-
   
     u(1:3) = 0.d0
     eos_state % massfrac(1) = 1.d0

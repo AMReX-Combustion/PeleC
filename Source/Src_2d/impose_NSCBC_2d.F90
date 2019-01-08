@@ -75,6 +75,7 @@ contains
   integer          :: uin_lo(2),  uin_hi(2)
   integer          :: i, j
   integer          :: bc_type, x_bc_type, y_bc_type
+   integer          :: x_isign, y_isign, x_idx_Mask, y_idx_Mask
   double precision :: bc_params(6), x_bc_params(6), y_bc_params(6)
   double precision :: bc_target(5), x_bc_target(5), y_bc_target(5)
   
@@ -95,327 +96,103 @@ contains
 
   if ( flag_nscbc_isAnyPerio == 0) then
 
- !--------------------------------------------------------------------------   
- ! upper right corner (Lx,Ly)
- ! phi = 1, psi = 1
- !--------------------------------------------------------------------------
-
- if ((q_hi(1) > domhi(1)) .and. (q_hi(2) > domhi(2))) then
-
-   i = domhi(1)
-   j = domhi(2)
-   
-   x   = (dble(i)+HALF)*dx
-   y   = (dble(j)+HALF)*dy
-  
-   ! Normal derivative along x
-   call normal_derivative(i, j, 1, -1, dx, &
-                          dpdx, dudx, dvdx, drhodx, &
-                          q, q_l1, q_l2, q_h1, q_h2)
-                            
-   ! Normal derivative along y
-   call normal_derivative(i, j, 2, -1, dy, &
-                          dpdy, dudy, dvdy, drhody, &
-                          q, q_l1, q_l2, q_h1, q_h2)
-                          
-   ! Compute transverse terms to x
-   call compute_transverse_terms(i, j, 1,  &
-                               T1_X, T2_X, T3_X, T4_X, &
-                               dpdy, dudy, dvdy, drhody, &
-                               q, q_l1, q_l2, q_h1, q_h2, &
-                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-                               
-   ! Compute transverse terms to y
-   call compute_transverse_terms(i, j, 2,  &
-                               T1_Y, T2_Y, T3_Y, T4_Y, &
-                               dpdx, dudx, dvdx, drhodx, &
-                               q, q_l1, q_l2, q_h1, q_h2, &
-                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-
-   ! Calling user target BC values
-   ! right face
-   call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,.false.,x_bc_type,x_bc_params,x_bc_target)
-   x_bcMask(i+1,j) = x_bc_type
-    
-   ! top face
-   call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,-1,.false.,y_bc_type,y_bc_params,y_bc_target)
-   y_bcMask(i,j+1) = y_bc_type
-   
-   ! Computing the LODI system waves
-   call compute_waves_corner(i, j, -1, -1, &
-                             x_bc_type, x_bc_params, x_bc_target, &
-                             y_bc_type, y_bc_params, y_bc_target, &
-                             L1, L2, L3, L4, &
-                             M1, M2, M3, M4, &
-                             T1_X, T2_X, T3_X, T4_X, &
-                             T1_Y, T2_Y, T3_Y, T4_Y, &
-                             dpdx, dudx, dvdx, drhodx, &
-                             dpdy, dudy, dvdy, drhody, &
-                             q, q_l1, q_l2, q_h1, q_h2, &
-                             qaux, qa_l1, qa_l2, qa_h1, qa_h2) 
-
-   ! Along X
-   ! Recomputing ghost-cells values with the LODI waves
-   call update_ghost_cells(i, j, x_bcMask(i+1,j), 1, -1, dx, &
-                           domlo, domhi, &
-                           L1, L2, L3, L4, &
-                           uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-                           q, q_l1, q_l2, q_h1, q_h2, &
-                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-
-
-   ! Along Y
-   ! Recomputing ghost-cells values with the LODI waves
-   call update_ghost_cells(i, j, y_bcMask(i,j+1), 2, -1, dy, &
-                           domlo, domhi, &
-                           M1, M2, M3, M4, &
-                           uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-                           q, q_l1, q_l2, q_h1, q_h2, &
-                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
- endif
+    if       (((q_hi(1) > domhi(1)) .or. (q_lo(1) < domlo(1))) &
+       .and. ((q_hi(2) > domhi(2)) .or. (q_lo(2) < domlo(2)))) then
  
- !--------------------------------------------------------------------------   
- ! Bottom right corner (Lx,0)
- ! phi = 1, psi = 4
- !--------------------------------------------------------------------------
-
- if ((q_hi(1) > domhi(1)) .and. (q_lo(2) < domlo(2))) then
-
-   i = domhi(1)
-   j = domlo(2)
+      if (q_hi(1) > domhi(1)) then
+        i = domhi(1)
+        x_isign = -1
+        x_idx_Mask = i+1
+      elseif (q_lo(1) < domlo(1)) then
+        i = domlo(1)
+        x_isign = 1
+        x_idx_Mask = i
+      endif
+ 
+      if (q_hi(2) > domhi(2)) then
+        j = domhi(2)
+        y_isign = -1
+        y_idx_Mask = j+1
+      elseif (q_lo(2) < domlo(2)) then
+        j = domlo(2)
+        y_isign = 1
+        y_idx_Mask = j
+      endif
    
-   x   = (dble(i)+HALF)*dx
-   y   = (dble(j)+HALF)*dy
+      x   = (dble(i)+HALF)*dx
+      y   = (dble(j)+HALF)*dy
+  
+      ! Normal derivative along x
+      call normal_derivative(i, j, 1, x_isign, dx, &
+                             dpdx, dudx, dvdx, drhodx, &
+                             q, q_l1, q_l2, q_h1, q_h2)
+                            
+      ! Normal derivative along y
+      call normal_derivative(i, j, 2, y_isign, dy, &
+                             dpdy, dudy, dvdy, drhody, &
+                             q, q_l1, q_l2, q_h1, q_h2)
+                            
+      ! Compute transverse terms to x
+      call compute_transverse_terms(i, j, 1,  &
+                                    T1_X, T2_X, T3_X, T4_X, &
+                                    dpdy, dudy, dvdy, drhody, &
+                                    q, q_l1, q_l2, q_h1, q_h2, &
+                                    qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+                                   
+      ! Compute transverse terms to y
+      call compute_transverse_terms(i, j, 2,  &
+                                    T1_Y, T2_Y, T3_Y, T4_Y, &
+                                    dpdx, dudx, dvdx, drhodx, &
+                                    q, q_l1, q_l2, q_h1, q_h2, &
+                                    qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+   
+      ! Calling user target BC values
+      ! x face
+      call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,x_isign,.false.,x_bc_type,x_bc_params,x_bc_target)
+      x_bcMask(x_idx_Mask,j) = x_bc_type
+      
+      ! y face
+      call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,y_isign,.false.,y_bc_type,y_bc_params,y_bc_target)
+      y_bcMask(i,y_idx_Mask) = y_bc_type
      
-   ! Normal derivative along x
-   call normal_derivative(i, j, 1, -1, dx, &
-                          dpdx, dudx, dvdx, drhodx, &
-                          q, q_l1, q_l2, q_h1, q_h2)
-                            
-   ! Normal derivative along y
-   call normal_derivative(i, j, 2, 1, dy, &
-                          dpdy, dudy, dvdy, drhody, &
-                          q, q_l1, q_l2, q_h1, q_h2)
+      ! Computing the LODI system waves along X
+      call compute_waves(i, j, 1, x_isign, &
+                         x_bc_type, x_bc_params, x_bc_target, &
+                         T1_X, T2_X, T3_X, T4_X, &
+                         L1, L2, L3, L4, &
+                         dpdx, dudx, dvdx, drhodx, &
+                         q, q_l1, q_l2, q_h1, q_h2, &
+                         qaux, qa_l1, qa_l2, qa_h1, qa_h2)
                           
-   ! Compute transverse terms to x
-   call compute_transverse_terms(i, j, 1,  &
-                               T1_X, T2_X, T3_X, T4_X, &
-                               dpdy, dudy, dvdy, drhody, &
-                               q, q_l1, q_l2, q_h1, q_h2, &
-                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-                               
-   ! Compute transverse terms to y
-   call compute_transverse_terms(i, j, 2,  &
-                               T1_Y, T2_Y, T3_Y, T4_Y, &
-                               dpdx, dudx, dvdx, drhodx, &
-                               q, q_l1, q_l2, q_h1, q_h2, &
-                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-
-   ! Calling user target BC values
-   ! right face
-   call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,.false.,x_bc_type,x_bc_params,x_bc_target)
-   x_bcMask(i+1,j) = x_bc_type
-
-   ! bottom face
-   call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,1,.false.,y_bc_type,y_bc_params,y_bc_target)
-   y_bcMask(i,j) = y_bc_type
+      ! Computing the LODI system waves along Y
+      call compute_waves(i, j, 2, y_isign, &
+                         y_bc_type, y_bc_params, y_bc_target, &
+                         T1_Y, T2_Y, T3_Y, T4_Y, &
+                         M1, M2, M3, M4, &
+                         dpdy, dudy, dvdy, drhody, &
+                         q, q_l1, q_l2, q_h1, q_h2, &
+                         qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+     
+      ! Along X
+      ! Recomputing ghost-cells values with the LODI waves
+      call update_ghost_cells(i, j, x_bc_type, 1, x_isign, dx, &
+                              domlo, domhi, &
+                              L1, L2, L3, L4, &
+                              uin, uin_l1, uin_l2, uin_h1, uin_h2, &
+                              q, q_l1, q_l2, q_h1, q_h2, &
+                              qaux, qa_l1, qa_l2, qa_h1, qa_h2)
    
-   ! Computing the LODI system waves
-   call compute_waves_corner(i, j, -1, 1, &
-                             x_bc_type, x_bc_params, x_bc_target, &
-                             y_bc_type, y_bc_params, y_bc_target, &
-                             L1, L2, L3, L4, &
-                             M1, M2, M3, M4, &
-                             T1_X, T2_X, T3_X, T4_X, &
-                             T1_Y, T2_Y, T3_Y, T4_Y, &
-                             dpdx, dudx, dvdx, drhodx, &
-                             dpdy, dudy, dvdy, drhody, &
-                             q, q_l1, q_l2, q_h1, q_h2, &
-                             qaux, qa_l1, qa_l2, qa_h1, qa_h2) 
-   
-   ! Along X
-   ! Recomputing ghost-cells values with the LODI waves
-   call update_ghost_cells(i, j, x_bcMask(i+1,j), 1, -1, dx, &
-                           domlo, domhi, &
-                           L1, L2, L3, L4, &
-                           uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-                           q, q_l1, q_l2, q_h1, q_h2, &
-                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-
-
-   ! Along Y
-   ! Recomputing ghost-cells values with the LODI waves
-   call update_ghost_cells(i, j, y_bcMask(i,j), 2, 1, dy, &
-                           domlo, domhi, &
-                           M1, M2, M3, M4, &
-                           uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-                           q, q_l1, q_l2, q_h1, q_h2, &
-                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-
- endif
- 
- !--------------------------------------------------------------------------   
- ! upper left corner (0,Ly)
- ! phi = 4, psi = 1
- !--------------------------------------------------------------------------
-
- if ((q_lo(1) < domlo(1)) .and. (q_hi(2) > domhi(2))) then
-
-   i = domlo(1)
-   j = domhi(2)
-   
-   x   = (dble(i)+HALF)*dx
-   y   = (dble(j)+HALF)*dy
-      
-   ! Normal derivative along x
-   call normal_derivative(i, j, 1, 1, dx, &
-                          dpdx, dudx, dvdx, drhodx, &
-                          q, q_l1, q_l2, q_h1, q_h2)
-                            
-   ! Normal derivative along y
-   call normal_derivative(i, j, 2, -1, dy, &
-                          dpdy, dudy, dvdy, drhody, &
-                          q, q_l1, q_l2, q_h1, q_h2)
-                          
-   ! Compute transverse terms to x
-   call compute_transverse_terms(i, j, 1,  &
-                               T1_X, T2_X, T3_X, T4_X, &
-                               dpdy, dudy, dvdy, drhody, &
-                               q, q_l1, q_l2, q_h1, q_h2, &
-                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-                               
-   ! Compute transverse terms to y
-   call compute_transverse_terms(i, j, 2,  &
-                               T1_Y, T2_Y, T3_Y, T4_Y, &
-                               dpdx, dudx, dvdx, drhodx, &
-                               q, q_l1, q_l2, q_h1, q_h2, &
-                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-                          
-   
-   ! Calling user target BC values
-   ! left face
-   call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,x_bc_type,x_bc_params,x_bc_target)
-   x_bcMask(i,j) = x_bc_type
-
-   ! top face
-   call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,-1,.false.,y_bc_type,y_bc_params,y_bc_target)
-   y_bcMask(i,j+1) = y_bc_type
-
-   ! Computing the LODI system waves
-   call compute_waves_corner(i, j, 1, -1, &
-                             x_bc_type, x_bc_params, x_bc_target, &
-                             y_bc_type, y_bc_params, y_bc_target, &
-                             L1, L2, L3, L4, &
-                             M1, M2, M3, M4, &
-                             T1_X, T2_X, T3_X, T4_X, &
-                             T1_Y, T2_Y, T3_Y, T4_Y, &
-                             dpdx, dudx, dvdx, drhodx, &
-                             dpdy, dudy, dvdy, drhody, &
-                             q, q_l1, q_l2, q_h1, q_h2, &
-                             qaux, qa_l1, qa_l2, qa_h1, qa_h2) 
-   
-   ! Along X
-   ! Recomputing ghost-cells values with the LODI waves
-   call update_ghost_cells(i, j, x_bcMask(i,j), 1, 1, dx, &
-                           domlo, domhi, &
-                           L1, L2, L3, L4, &
-                           uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-                           q, q_l1, q_l2, q_h1, q_h2, &
-                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-
-
-   ! Along Y
-   ! Recomputing ghost-cells values with the LODI waves
-   call update_ghost_cells(i, j, y_bcMask(i,j+1), 2, -1, dy, &
-                           domlo, domhi, &
-                           M1, M2, M3, M4, &
-                           uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-                           q, q_l1, q_l2, q_h1, q_h2, &
-                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-
- endif
- 
- !--------------------------------------------------------------------------   
- ! Bottom left corner (0,0)
- ! phi = 4, psi = 4
- !--------------------------------------------------------------------------
-
- if ((q_lo(1) < domlo(1)) .and. (q_lo(2) < domlo(2))) then
-
-   i = domlo(1)
-   j = domlo(2)
-   
-   x   = (dble(i)+HALF)*dx
-   y   = (dble(j)+HALF)*dy
-   
-   ! Normal derivative along x
-   call normal_derivative(i, j, 1, 1, dx, &
-                          dpdx, dudx, dvdx, drhodx, &
-                          q, q_l1, q_l2, q_h1, q_h2)
-                            
-   ! Normal derivative along y
-   call normal_derivative(i, j, 2, 1, dy, &
-                          dpdy, dudy, dvdy, drhody, &
-                          q, q_l1, q_l2, q_h1, q_h2)
-                          
-      
-   ! Compute transverse terms to x
-   call compute_transverse_terms(i, j, 1,  &
-                               T1_X, T2_X, T3_X, T4_X, &
-                               dpdy, dudy, dvdy, drhody, &
-                               q, q_l1, q_l2, q_h1, q_h2, &
-                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-                               
-   ! Compute transverse terms to y
-   call compute_transverse_terms(i, j, 2,  &
-                               T1_Y, T2_Y, T3_Y, T4_Y, &
-                               dpdx, dudx, dvdx, drhodx, &
-                               q, q_l1, q_l2, q_h1, q_h2, &
-                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-                          
-   ! Calling user target BC values
-   ! left face
-   call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,x_bc_type,x_bc_params,x_bc_target)
-   x_bcMask(i,j) = x_bc_type
-
-   !! bottom face
-   call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,1,.false.,y_bc_type,y_bc_params,y_bc_target)
-   y_bcMask(i,j) = y_bc_type
-
-   ! Computing the LODI system waves
-   call compute_waves_corner(i, j, 1, 1, &
-                           x_bc_type, x_bc_params, x_bc_target, &
-                           y_bc_type, y_bc_params, y_bc_target, &
-                           L1, L2, L3, L4, &
-                           M1, M2, M3, M4, &
-                           T1_X, T2_X, T3_X, T4_X, &
-                           T1_Y, T2_Y, T3_Y, T4_Y, &
-                           dpdx, dudx, dvdx, drhodx, &
-                           dpdy, dudy, dvdy, drhody, &
-                           q, q_l1, q_l2, q_h1, q_h2, &
-                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)  
-  
-   ! Along X
-   ! Recomputing ghost-cells values with the LODI waves
-   call update_ghost_cells(i, j, x_bcMask(i,j), 1, 1, dx, &
-                           domlo, domhi, &
-                           L1, L2, L3, L4, &
-                           uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-                           q, q_l1, q_l2, q_h1, q_h2, &
-                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-
-   ! Along Y
-   ! Recomputing ghost-cells values with the LODI waves
-   call update_ghost_cells(i, j, y_bcMask(i,j), 2, 1, dy, &
-                           domlo, domhi, &
-                           M1, M2, M3, M4, &
-                           uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-                           q, q_l1, q_l2, q_h1, q_h2, &
-                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-
- endif
-
-endif ! flag_nscbc_isAnyPerio ) 
+      ! Along Y
+      ! Recomputing ghost-cells values with the LODI waves
+      call update_ghost_cells(i, j, y_bc_type, 2, y_isign, dy, &
+                              domlo, domhi, &
+                              M1, M2, M3, M4, &
+                              uin, uin_l1, uin_l2, uin_h1, uin_h2, &
+                              q, q_l1, q_l2, q_h1, q_h2, &
+                              qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+    
+    endif
+  endif ! flag_nscbc_isAnyPerio ) 
 
  !--------------------------------------------------------------------------   
  ! lower X
@@ -1155,24 +932,43 @@ end subroutine impose_NSCBC
   TARGET_VY = bc_target(2)
   TARGET_TEMPERATURE = bc_target(4)
   TARGET_PRESSURE = bc_target(5)
-     
-  ! Compute LODI equations
-  if (bc_type == Inflow) then
- 
-    relax_T = bc_params(1)      
-    relax_U = bc_params(2)
-    relax_V = bc_params(3)
+  
+  relax_T = bc_params(1)      
+  relax_U = bc_params(2)
+  relax_V = bc_params(3)
+  ! Here we have the abilities to set beta=local Mach number
+  ! it may works better for outflow BCs
+  if (bc_params(5) < 0.0d0) then 
+    beta = mach_local
+  else
     beta =  bc_params(5)
-       
+  endif
+  sigma_out = bc_params(6)
+  
+  if (idir == 1) then
+    ! Numerical LODI waves along X
+    L1 = (q(i,j,QU)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*du)
+    L2 = q(i,j,QU) * ( ((qaux(i,j,QC)**2.0d0)*drho) - dp)
+    L3 = q(i,j,QU) * dv
+    L4 = (q(i,j,QU)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*du)
+  elseif (idir == 2) then
+    ! Numerical LODI waves along Y
+    L1 = (q(i,j,QV)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*dv) 
+    L2 = q(i,j,QV) * du
+    L3 = q(i,j,QV) * ( ((qaux(i,j,QC)**2.0d0)*drho) - dp)
+    L4 = (q(i,j,QV)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*dv)
+  endif
+     
+  ! Compute missing waves
+  if (bc_type == Inflow) then
+        
     if (idir == 1) then
       if (isign == 1) then      
-        L1 = (q(i,j,QU)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*du)
         L4 = relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
                      (q(i,j,QU) - TARGET_VX)  - ((1.0d0 - beta)*T4)
       elseif (isign == -1) then
         L1 = relax_U * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
                         (q(i,j,QU) - TARGET_VX) - ((1.0d0 - beta)*T1)
-        L4 = (q(i,j,QU)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*du)
       endif
     
       L2 = relax_T * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(idir)) &
@@ -1183,13 +979,11 @@ end subroutine impose_NSCBC
     elseif (idir == 2) then
     
       if (isign == 1) then      
-         L1 = (q(i,j,QV)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*dv)
          L4 = relax_V * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
                        (q(i,j,QV) - TARGET_VY) - ((1.0d0 - beta)*T4)
       elseif (isign == -1) then
          L1 = relax_V * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
                          (q(i,j,QV) - TARGET_VY)  -  ((1.0d0 - beta)*T1)
-         L4 = (q(i,j,QV)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*dv)
       endif
   
       L2 = relax_U * (qaux(i,j,QC)/probhi(idir)) * (q(i,j,QU) - TARGET_VX)  &
@@ -1210,222 +1004,40 @@ end subroutine impose_NSCBC
        
   elseif (bc_type == Outflow) then
        
-    ! We find that using a local Mach number gives better results for high Mach nb.
-    ! This is in contradiction with Granet AIAA 2010
-    ! However for low Mach number a surface averaged Mach number is much more better
-    ! as reported in the paper of Granet
-    sigma_out = bc_params(6)
-    beta =  mach_local 
     Kout = sigma_out*(1.0d0 - (mach_local**2.0d0))*(qaux(i,j,QC)/probhi(idir))
-
-    if (idir == 1) then
-        
-      if (isign == 1) then
-        L1 = (q(i,j,QU)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*du)
-        L4 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE)) - ((1.0d0 - beta)*T4)
-      elseif (isign == -1) then
-        L1 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE)) - ((1.0d0 - beta)*T1)
-        L4 = (q(i,j,QU)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*du)
-      endif
     
-      L2 = q(i,j,QU) * ( ((qaux(i,j,QC)**2.0d0)*drho) - dp)
-      L3 = q(i,j,QU) * dv
-    
-    elseif(idir == 2) then
-
-      if (isign == 1) then
-        L1 = (q(i,j,QV)-qaux(i,j,QC))* (dp - (q(i,j,QRHO)*qaux(i,j,QC))*dv)
-        L4 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE)) - ((1.0d0 - beta)*T4)
-      elseif (isign == -1) then
-        L1 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE)) - ((1.0d0 - beta)*T1)
-        L4 = (q(i,j,QV)+qaux(i,j,QC))* (dp + (q(i,j,QRHO)*qaux(i,j,QC))*dv)
-      endif
-    
-      L2 = q(i,j,QV) * du
-      L3 = q(i,j,QV) * ( ((qaux(i,j,QC)**2.0d0)*drho) - dp)
-          
+    if (isign == 1) then
+      L4 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE)) - ((1.0d0 - beta)*T4)
+    elseif (isign == -1) then
+      L1 = (Kout*(q(i,j,QPRES) - TARGET_PRESSURE)) - ((1.0d0 - beta)*T1)
     endif
 
   else
-    call bl_error("Error:: This BC is not yet implemented for lo_x in characteristic form")
+    call bl_error("Error:: This BC is not yet implemented in characteristic form")
   endif
  
   if (idir == 1) then
-     if (q(i,j,QU) == 0.0d0) then
-       L1 = L1 / (q(i,j,QU)-qaux(i,j,QC))
-       L2 = 0.0d0
-       L3 = 0.0d0
-       L4 = L4 / (q(i,j,QU)+qaux(i,j,QC))
-     else       
-       L1 = L1 / (q(i,j,QU)-qaux(i,j,QC))
-       L2 = L2 / q(i,j,QU)
-       L3 = L3 / q(i,j,QU)
-       L4 = L4 / (q(i,j,QU)+qaux(i,j,QC))
-     endif
+    L1 = L1 / (q(i,j,QU)-qaux(i,j,QC))
+    L4 = L4 / (q(i,j,QU)+qaux(i,j,QC))
+    if (q(i,j,QU) == 0.0d0) then  
+      L2 = 0.0d0
+      L3 = 0.0d0
+    else       
+      L2 = L2 / q(i,j,QU)
+      L3 = L3 / q(i,j,QU)
+    endif
   elseif (idir == 2) then
-     if (q(i,j,QV) == 0.0d0) then
-       L1 = L1 / (q(i,j,QV)-qaux(i,j,QC))
-       L2 = 0.0d0
-       L3 = 0.0d0
-       L4 = L4 / (q(i,j,QV)+qaux(i,j,QC))
-     else
-       L1 = L1 / (q(i,j,QV)-qaux(i,j,QC))
-       L2 = L2 / q(i,j,QV)
-       L3 = L3 / q(i,j,QV)
-       L4 = L4 / (q(i,j,QV)+qaux(i,j,QC))
-     endif
+    L1 = L1 / (q(i,j,QV)-qaux(i,j,QC))
+    L4 = L4 / (q(i,j,QV)+qaux(i,j,QC))
+    if (q(i,j,QV) == 0.0d0) then
+      L2 = 0.0d0
+      L3 = 0.0d0
+    else
+      L2 = L2 / q(i,j,QV)
+      L3 = L3 / q(i,j,QV)
+    endif
   end if
   
   end subroutine compute_waves
-
-    !--------------------
-  
-  subroutine compute_waves_corner(i, j, x_isign, y_isign, &
-                           x_bc_type, x_bc_params, x_bc_target, &
-                           y_bc_type, y_bc_params, y_bc_target, &
-                           L1, L2, L3, L4, &
-                           M1, M2, M3, M4, &
-                           T1_X, T2_X, T3_X, T4_X, &
-                           T1_Y, T2_Y, T3_Y, T4_Y, &
-                           dpdx, dudx, dvdx, drhodx, &
-                           dpdy, dudy, dvdy, drhody, &
-                           q, q_l1, q_l2, q_h1, q_h2, &
-                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-                               
-                               
-  use meth_params_module, only : QVAR, QPRES, QU, QV, QRHO, NQAUX, QC, QGAMC, QTEMP, QRSPEC
-  use prob_params_module, only : probhi, Interior, Inflow, Outflow, SlipWall, NoSlipWall
-  
-  integer, intent(in) :: i, j, x_isign, y_isign
-  integer, intent(in) :: q_l1, q_l2, q_h1, q_h2
-  integer, intent(in) :: qa_l1, qa_l2, qa_h1, qa_h2
-  double precision, intent(in) :: q(q_l1:q_h1,q_l2:q_h2,QVAR)
-  double precision, intent(in) :: qaux(qa_l1:qa_h1,qa_l2:qa_h2,NQAUX)
-  double precision, intent(in) :: dpdx, dudx, dvdx, drhodx
-  double precision, intent(in) :: dpdy, dudy, dvdy, drhody
-  
-  integer, intent(in)          :: x_bc_type, y_bc_type
-  double precision, intent(in) :: x_bc_params(6), y_bc_params(6)
-  double precision, intent(in) :: x_bc_target(5), y_bc_target(5)
-  double precision, intent(in) :: T1_X, T2_X, T3_X, T4_X
-  double precision, intent(in) :: T1_Y, T2_Y, T3_Y, T4_Y
-  
-  double precision, intent(out) :: L1, L2, L3, L4
-  double precision, intent(out) :: M1, M2, M3, M4
-  
-  ! Local
-  double precision :: mach_local
-  double precision :: Xdir_TARGET_VX, Xdir_TARGET_VY, Xdir_TARGET_TEMPERATURE, Xdir_TARGET_PRESSURE
-  double precision :: Ydir_TARGET_VX, Ydir_TARGET_VY, Ydir_TARGET_TEMPERATURE, Ydir_TARGET_PRESSURE
-  double precision :: Kout
-  
-  
-  if ((x_isign == 1) .or. (x_isign == -1)) then
-    continue
-  else
-    call bl_abort("Problem of x_isign in impose_NSCBC_2d:compute_waves_corner")
-  end if
-  
-  if ((y_isign == 1) .or. (y_isign == -1)) then
-    continue
-  else
-    call bl_abort("Problem of y_isign in impose_NSCBC_2d:compute_waves_corner")
-  end if
-  
-  mach_local = dsqrt(q(i,j,QU)**2.0d0 + q(i,j,QV)**2.0d0)/qaux(i,j,QC)
-     
-  Xdir_TARGET_VX = x_bc_target(1)
-  Xdir_TARGET_VY = x_bc_target(2)
-  Xdir_TARGET_TEMPERATURE = x_bc_target(4)
-  Xdir_TARGET_PRESSURE = x_bc_target(5)
-  
-  Ydir_TARGET_VX = y_bc_target(1)
-  Ydir_TARGET_VY = y_bc_target(2)
-  Ydir_TARGET_TEMPERATURE = y_bc_target(4)
-  Ydir_TARGET_PRESSURE = y_bc_target(5)
-  
-  ! Numerical LODI waves along X
-  L1 = (q(i,j,QU)-qaux(i,j,QC))* (dpdx - (q(i,j,QRHO)*qaux(i,j,QC))*dudx)
-  L2 = q(i,j,QU) * ( ((qaux(i,j,QC)**2.0d0)*drhodx) - dpdx)
-  L3 = q(i,j,QU) * dvdx
-  L4 = (q(i,j,QU)+qaux(i,j,QC))* (dpdx + (q(i,j,QRHO)*qaux(i,j,QC))*dudx)
-  
-  ! Numerical LODI waves along Y
-  M1 = (q(i,j,QV)-qaux(i,j,QC))* (dpdy - (q(i,j,QRHO)*qaux(i,j,QC))*dvdy) 
-  M2 = q(i,j,QV) * dudy
-  M3 = q(i,j,QV) * ( ((qaux(i,j,QC)**2.0d0)*drhody) - dpdy)
-  M4 = (q(i,j,QV)+qaux(i,j,QC))* (dpdy + (q(i,j,QRHO)*qaux(i,j,QC))*dvdy)
-  
-  ! Evaluating missing waves with analytical model depending on the BCs and location 
-  if (x_bc_type == Outflow) then
-  
-    Kout = x_bc_params(6)*(1.0d0 - (mach_local**2.0d0))*qaux(i,j,QC)/(probhi(1))
-    if (x_isign == 1) then
-      L4 = (Kout*(q(i,j,QPRES) - Xdir_TARGET_PRESSURE)) - ((1.0d0 - x_bc_params(5))*T4_X)
-    elseif (x_isign == -1) then
-      L1 = (Kout*(q(i,j,QPRES) - Xdir_TARGET_PRESSURE)) - ((1.0d0 - x_bc_params(5))*T1_X)
-    endif
-      
-  elseif (x_bc_type == Inflow) then
-  
-    if (x_isign == 1) then
-      L2 = x_bc_params(1) * (q(i,j,QRHO)*qaux(i,j,QC)*qaux(i,j,QRSPEC)/probhi(1)) &
-                          * (q(i,j,QTEMP) - Xdir_TARGET_TEMPERATURE) - ((1.0d0 - x_bc_params(5))*T2_X)
-      L3 = (x_bc_params(3) * (qaux(i,j,QC)/probhi(1)) * (q(i,j,QV) - Xdir_TARGET_VY))   - ((1.0d0 - x_bc_params(5))*T3_X)
-      L4 = (x_bc_params(2) * ((q(i,j,QRHO)*qaux(i,j,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(1)) * &
-                              (q(i,j,QU) - Xdir_TARGET_VX)) - ((1.0d0 - x_bc_params(5))*T4_X)
-    elseif (x_isign == -1) then
-      call bl_abort("impose_NSCBC_2D:Inflow/Outflow corner at domhi not done yet")
-    endif
-  
-  elseif ((x_bc_type == SlipWall).or.(x_bc_type == NoSlipWall)) then
-    continue
-  else
-    call bl_abort("impose_NSCBC_2D: this corner for x_dir is not implemented")
-  endif
-     
-  
-  if (y_bc_type == Outflow) then
-  
-      Kout = y_bc_params(6)*(1.0d0 - (mach_local**2.0d0))*qaux(i,j,QC)/(probhi(2))
-      if (y_isign == 1) then
-        M4 = (Kout*(q(i,j,QPRES) - Ydir_TARGET_PRESSURE)) - ((1.0d0 -  y_bc_params(5))*T4_Y)
-      elseif (y_isign == -1) then
-        M1 = (Kout*(q(i,j,QPRES) - Ydir_TARGET_PRESSURE)) - ((1.0d0 -  y_bc_params(5))*T1_Y)
-      endif
-      
-  elseif ((y_bc_type == SlipWall).or.(y_bc_type == NoSlipWall)) then
-    continue
-  else
-    call bl_abort("impose_NSCBC_2D: this corner for y_dir is not implemented")
-  endif   
-     
-  if (q(i,j,QV) == 0.0d0) then
-       M1 = M1 / (q(i,j,QV)-qaux(i,j,QC))
-       M2 = 0.0d0
-       M3 = 0.0d0
-       M4 = M4 / (q(i,j,QV)+qaux(i,j,QC))
-  else
-       M1 = M1 / (q(i,j,QV)-qaux(i,j,QC))
-       M2 = M2 / q(i,j,QV)
-       M3 = M3 / q(i,j,QV)
-       M4 = M4 / (q(i,j,QV)+qaux(i,j,QC))
-  endif   
-
-  if (q(i,j,QU) == 0.0d0) then
-       L1 = L1 / (q(i,j,QU)-qaux(i,j,QC))
-       L2 = 0.0d0
-       L3 = 0.0d0
-       L4 = L4 / (q(i,j,QU)+qaux(i,j,QC))
-  else
-       L1 = L1 / (q(i,j,QU)-qaux(i,j,QC))
-       L2 = L2 / q(i,j,QU)
-       L3 = L3 / q(i,j,QU)
-       L4 = L4 / (q(i,j,QU)+qaux(i,j,QC))
-  endif
-   
-  
-  end subroutine compute_waves_corner
-  
   
 end module gc_nscbc_mod
