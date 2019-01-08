@@ -39,6 +39,11 @@ static int tang_vel_bc[] =
     INT_DIR, EXT_DIR, FOEXTRAP, REFLECT_EVEN, REFLECT_EVEN, REFLECT_ODD
 };
 
+static int react_src_bc[] =
+{
+    INT_DIR, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN
+};
+
 static
 void
 set_scalar_bc (BCRec& bc, const BCRec& phys_bc)
@@ -86,6 +91,19 @@ set_y_vel_bc(BCRec& bc, const BCRec& phys_bc)
     bc.setLo(2,tang_vel_bc[lo_bc[2]]);
     bc.setHi(2,tang_vel_bc[hi_bc[2]]);
 #endif
+}
+
+static
+void
+set_react_src_bc (BCRec& bc, const BCRec& phys_bc)
+{
+    const int* lo_bc = phys_bc.lo();
+    const int* hi_bc = phys_bc.hi();
+    for (int i = 0; i < BL_SPACEDIM; i++)
+    {
+	bc.setLo(i,react_src_bc[lo_bc[i]]);
+	bc.setHi(i,react_src_bc[hi_bc[i]]);
+    }
 }
 
 static
@@ -355,6 +373,8 @@ PeleC::variableSetUp ()
 
     Vector<BCRec>       bcs(NUM_STATE);
     Vector<std::string> name(NUM_STATE);
+    Vector<BCRec>       react_bcs(NumSpec+1);
+    Vector<std::string> react_name(NumSpec+1);
 
     BCRec bc;
     cnt = 0;
@@ -439,14 +459,20 @@ PeleC::variableSetUp ()
 			  BndryFunc(pc_denfill,pc_hypfill));
 
 #ifdef REACTIONS
-    std::string name_react;
-    for (int i=0; i<NumSpec; ++i)
-    {
-	set_scalar_bc(bc,phys_bc);
-	name_react = "rho_omega_" + spec_names[i];
-	desc_lst.setComponent(Reactions_Type, i, name_react, bc,BndryFunc(pc_reactfill));
+    for (int i=0; i<NumSpec; ++i) {
+      set_react_src_bc(bc, phys_bc);
+      react_bcs[i] = bc;
+      react_name[i] = "rho_omega_" + spec_names[i];
     }
-    desc_lst.setComponent(Reactions_Type, NumSpec  , "rhoe_dot", bc, BndryFunc(pc_reactfill));
+   set_react_src_bc(bc, phys_bc);
+   react_bcs[NumSpec] = bc;
+   react_name[NumSpec] = "rhoe_dot";
+
+   desc_lst.setComponent(Reactions_Type,
+                         0,
+                         react_name,
+                         react_bcs,
+                         BndryFunc(pc_denfill, pc_reactfill));
 #endif
 
 #ifdef REACTIONS
