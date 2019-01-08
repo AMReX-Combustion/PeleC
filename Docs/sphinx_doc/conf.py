@@ -57,7 +57,7 @@ master_doc = 'index'
 # General information about the project.
 project = u'PeleC'
 copyright = u'AMReX Copyright (c) 2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory and the Alliance for Sustainable Energy, LLC., through National Renewable Energy Laboratory (subject to receipt of any required approvals from the U.S. Dept. of Energy).  All rights reserved.'
-author = u'J.B. Bell, M.S. Day, D. Graves, M. Henry de Frahan, R.W. Grout'
+author = u'J.B. Bell, M.S. Day, D. Graves, M. Henry de Frahan, R.W. Grout, J. Rood'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
