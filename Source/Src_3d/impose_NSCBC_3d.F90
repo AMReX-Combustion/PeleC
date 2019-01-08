@@ -35,7 +35,7 @@ contains
                                  Interior
     
   use meth_params_module, only : NVAR, NQAUX,QVAR
-  use bc_fill_module
+  use bc_fill_module, only: bcnormal
  
   implicit none
     
