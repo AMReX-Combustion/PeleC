@@ -25,7 +25,7 @@ contains
   use fundamental_constants_module, only: k_B, n_A
 
   use bl_constants_module
-  use bc_fill_module, only: bcnormal
+  use bc_fill_module
   use prob_params_module, only : physbc_lo, physbc_hi, problo, probhi, &
                                  Interior, Inflow, Outflow, Symmetry, SlipWall, NoSlipWall
     
