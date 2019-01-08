@@ -492,7 +492,7 @@ contains
                           dpdx, dudx, dvdx, dwdx, drhodx, &
                           q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3, &
                           qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
-        !write(*,*) 'IN LOW X waves',L1, L2, L3, L4, L5
+
        ! Recomputing ghost-cells values with the LODI waves
        call update_ghost_cells(i, j, k, bc_type, 1, 1, dx, &
                                domlo, domhi, &
@@ -584,130 +584,322 @@ contains
    enddo
  endif
  
-!
-! !--------------------------------------------------------------------------   
-! ! lower Y
-! !--------------------------------------------------------------------------
-! 
-! if ((q_lo(2) < domlo(2)) .and. (physbc_lo(2) /= Interior)) then
-! 
-!   j = domlo(2)
-!      
-!   do i = q_lo(1)+1,q_hi(1)-1
-!   
-!     x   = (dble(i)+HALF)*dx
-!     y   = (dble(j)+HALF)*dy
-!   
-!     if ( flag_nscbc_isAnyPerio == 0) then
-!       if ((i == domlo(1)) .or. (i == domhi(1))) cycle !Doing that to avoid ghost cells already filled by corners
-!     endif
-!          
-!     ! Normal derivative along y
-!     call normal_derivative(i, j, 2, 1, dy, &
-!                            dpdy, dudy, dvdy, drhody, &
-!                            q, q_l1, q_l2, q_h1, q_h2)
-!
-!     ! Tangential (to idir=y axis) derivative along x 
-!     call tangential_derivative(i, j, 2, dx, &
-!                               dpdx, dudx, dvdx, drhodx, &
-!                               q, q_l1, q_l2, q_h1, q_h2)
-!      
-!     ! Compute transverse terms
-!     call compute_transverse_terms(i, j, 2,  &
-!                               T1, T2, T3, T4, &
-!                               dpdx, dudx, dvdx, drhodx, &
-!                               q, q_l1, q_l2, q_h1, q_h2, &
-!                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-!                               
-!     ! Filling bcMask with specific user defined BC type
-!     call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,1,.false.,bc_type,bc_params,bc_target)
-!     if ((i < q_lo(1)+3) .or. (i > q_hi(1)-3)) then
-!       continue ! There is just 1 ghost-cell with bcMask because of the Riemann solver
-!     else
-!       y_bcMask(i,j) = bc_type
-!     endif
-!     
-!     ! Computing the LODI system waves
-!     call compute_waves(i, j, 2, 1, &
-!                        bc_type, bc_params, bc_target, &
-!                        T1, T2, T3, T4, &
-!                        L1, L2, L3, L4, &
-!                        dpdy, dudy, dvdy, drhody, &
-!                        q, q_l1, q_l2, q_h1, q_h2, &
-!                        qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-! 
-!     ! Recomputing ghost-cells values with the LODI waves
-!     call update_ghost_cells(i, j, bc_type, 2, 1, dy, &
-!                             domlo, domhi, &
-!                             L1, L2, L3, L4, &
-!                             uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-!                             q, q_l1, q_l2, q_h1, q_h2, &
-!                             qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-!   
-!   enddo
-! end if
-!     
-!!--------------------------------------------------------------------------   
-!! upper Y
-!!--------------------------------------------------------------------------
-!
-! if ((q_hi(2) > domhi(2)) .and. (physbc_hi(2) /= Interior)) then
-! 
-!   j = domhi(2)
-!      
-!   do i = q_lo(1)+1,q_hi(1)-1
-!     
-!     x   = (dble(i)+HALF)*dx
-!     y   = (dble(j)+HALF)*dy
-!   
-!     if ( flag_nscbc_isAnyPerio == 0) then
-!       if ((i == domlo(1)) .or. (i == domhi(1))) cycle !Doing that to avoid ghost cells already filled by corners
-!     endif
-!        
-!     ! Normal derivative along y
-!     call normal_derivative(i, j, 2, -1, dy, &
-!                            dpdy, dudy, dvdy, drhody, &
-!                            q, q_l1, q_l2, q_h1, q_h2)
-!
-!     ! Tangential (to idir=y axis) derivative along x 
-!     call tangential_derivative(i, j, 2, dx, &
-!                               dpdx, dudx, dvdx, drhodx, &
-!                               q, q_l1, q_l2, q_h1, q_h2)
-!      
-!     ! Compute transverse terms
-!     call compute_transverse_terms(i, j, 2,  &
-!                               T1, T2, T3, T4, &
-!                               dpdx, dudx, dvdx, drhodx, &
-!                               q, q_l1, q_l2, q_h1, q_h2, &
-!                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-!                               
-!     ! Filling bcMask with specific user defined BC type 
-!     call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,-1,.false.,bc_type,bc_params,bc_target)
-!     if ((i < q_lo(1)+3) .or. (i > q_hi(1)-3)) then
-!       continue ! There is just 1 ghost-cell with bcMask because of the Riemann solver
-!     else
-!       y_bcMask(i,j+1) = bc_type
-!     endif
-!    
-!     ! Computing the LODI system waves
-!     call compute_waves(i, j, 2, -1, &
-!                        bc_type, bc_params, bc_target, &
-!                        T1, T2, T3, T4, &
-!                        L1, L2, L3, L4, &
-!                        dpdy, dudy, dvdy, drhody, &
-!                        q, q_l1, q_l2, q_h1, q_h2, &
-!                        qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-!
-!     ! Recomputing ghost-cells values with the LODI waves
-!     call update_ghost_cells(i, j, bc_type, 2, -1, dy, &
-!                             domlo, domhi, &
-!                             L1, L2, L3, L4, &
-!                             uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-!                             q, q_l1, q_l2, q_h1, q_h2, &
-!                             qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-!   
-!   enddo
-!end if
+
+ !--------------------------------------------------------------------------   
+ ! lower Y
+ !--------------------------------------------------------------------------
+ 
+ if ((q_lo(2) < domlo(2)) .and. (physbc_lo(2) /= Interior)) then
+ 
+   j = domlo(2)
+   y   = (dble(j)+HALF)*dy
+      
+   do i = q_lo(1)+1,q_hi(1)-1
+   
+     x   = (dble(i)+HALF)*dx
+   
+     if ( flag_nscbc_isAnyPerio == 0) then
+       if ((i == domlo(1)) .or. (i == domhi(1))) cycle !Doing that to avoid ghost cells already filled by corners
+     endif
+     
+     do k = q_lo(3)+1,q_hi(3)-1
+
+       z   = (dble(k)+HALF)*dz
+
+       if ( flag_nscbc_isAnyPerio == 0) then
+         if ((k== domlo(3)) .or. (k == domhi(3))) cycle !Doing that to avoid ghost cells already filled by corners
+       endif
+      
+       ! Normal derivative along y
+       call normal_derivative(i, j, k, 2, 1, dy, &
+                              dpdy, dudy, dvdy, dwdy, drhody, &
+                              q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3)
+
+       ! Tangential derivative along x 
+       call tangential_derivative(i, j, k, 1, dx, &
+                                  dpdx, dudx, dvdx, dwdx, drhodx, &
+                                  q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3)
+
+       ! Tangential derivative along z
+       call tangential_derivative(i, j, k, 3, dz, &
+                                  dpdz, dudz, dvdz, dwdz, drhodz, &
+                                  q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3)
+
+       ! Compute transverse terms
+       call compute_transverse_terms(i, j, k, 2,  &
+                               T1_Y, T2_Y, T3_Y, T4_Y, T5_Y, &
+                               dpdx, dudx, dvdx, dwdx, drhodx, &
+                               dpdy, dudy, dvdy, dwdy, drhody, &
+                               dpdz, dudz, dvdz, dwdz, drhodz, &
+                               q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3, &
+                               qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3) 
+                               
+       ! Filling bcMask with specific user defined BC type
+       call bcnormal([x,y,z],U_dummy,U_ext,2,1,.false.,bc_type,bc_params,bc_target)
+       if ((i < q_lo(1)+3) .or. (i > q_hi(1)-3) .or. (k < q_lo(3)+3) .or. (k > q_hi(3)-3)) then
+         continue ! There is just 1 ghost-cell with bcMask because of the Riemann solver
+       else
+         y_bcMask(i,j,k) = bc_type
+       endif
+     
+       ! Computing the LODI system waves
+       call compute_waves(i, j, k, 2, 1, &
+                          bc_type, bc_params, bc_target, &
+                          T1_Y, T2_Y, T3_Y, T4_Y, T5_Y, &
+                          L1, L2, L3, L4, L5, &
+                          dpdy, dudy, dvdy, dwdy, drhody, &
+                          q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3, &
+                          qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
+
+       ! Recomputing ghost-cells values with the LODI waves
+       call update_ghost_cells(i, j, k, bc_type, 2, 1, dy, &
+                               domlo, domhi, &
+                               L1, L2, L3, L4, L5, &
+                               uin, uin_l1, uin_l2, uin_l3, uin_h1, uin_h2, uin_h3, &
+                               q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3, &
+                               qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
+
+     enddo
+   enddo
+ end if
+     
+!--------------------------------------------------------------------------   
+! upper Y
+!--------------------------------------------------------------------------
+
+ if ((q_hi(2) > domhi(2)) .and. (physbc_hi(2) /= Interior)) then
+ 
+   j = domhi(2)
+   y   = (dble(j)+HALF)*dy
+      
+   do i = q_lo(1)+1,q_hi(1)-1
+     
+     x   = (dble(i)+HALF)*dx
+     
+     if ( flag_nscbc_isAnyPerio == 0) then
+       if ((i == domlo(1)) .or. (i == domhi(1))) cycle !Doing that to avoid ghost cells already filled by corners
+     endif
+     
+     do k = q_lo(3)+1,q_hi(3)-1
+
+       z   = (dble(k)+HALF)*dz
+
+       if ( flag_nscbc_isAnyPerio == 0) then
+         if ((k== domlo(3)) .or. (k == domhi(3))) cycle !Doing that to avoid ghost cells already filled by corners
+       endif
+     
+        
+       ! Normal derivative along y
+       call normal_derivative(i, j, k, 2, -1, dy, &
+                              dpdy, dudy, dvdy, dwdy, drhody, &
+                              q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3)
+
+       ! Tangential derivative along x 
+       call tangential_derivative(i, j, k, 1, dx, &
+                                  dpdx, dudx, dvdx, dwdx, drhodx, &
+                                  q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3)
+
+       ! Tangential derivative along z
+       call tangential_derivative(i, j, k, 3, dz, &
+                                  dpdz, dudz, dvdz, dwdz, drhodz, &
+                                  q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3)
+
+       ! Compute transverse terms
+       call compute_transverse_terms(i, j, k, 2,  &
+                               T1_Y, T2_Y, T3_Y, T4_Y, T5_Y, &
+                               dpdx, dudx, dvdx, dwdx, drhodx, &
+                               dpdy, dudy, dvdy, dwdy, drhody, &
+                               dpdz, dudz, dvdz, dwdz, drhodz, &
+                               q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3, &
+                               qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
+                              
+     ! Filling bcMask with specific user defined BC type 
+     call bcnormal([x,y,z],U_dummy,U_ext,2,-1,.false.,bc_type,bc_params,bc_target)
+     if ((i < q_lo(1)+3) .or. (i > q_hi(1)-3) .or. (k < q_lo(3)+3) .or. (k > q_hi(3)-3)) then
+       continue ! There is just 1 ghost-cell with bcMask because of the Riemann solver
+     else
+       y_bcMask(i,j+1,k) = bc_type
+     endif
+    
+     ! Computing the LODI system waves
+     call compute_waves(i, j, k, 2, -1, &
+                          bc_type, bc_params, bc_target, &
+                          T1_Y, T2_Y, T3_Y, T4_Y, T5_Y, &
+                          L1, L2, L3, L4, L5, &
+                          dpdy, dudy, dvdy, dwdy, drhody, &
+                          q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3, &
+                          qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
+
+     ! Recomputing ghost-cells values with the LODI waves
+     call update_ghost_cells(i, j, k, bc_type, 2, -1, dy, &
+                             domlo, domhi, &
+                             L1, L2, L3, L4, L5, &
+                             uin, uin_l1, uin_l2, uin_l3, uin_h1, uin_h2, uin_h3, &
+                             q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3, &
+                             qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
+
+     enddo
+   enddo
+end if
+
+
+ !--------------------------------------------------------------------------   
+ ! lower Z
+ !--------------------------------------------------------------------------
+ 
+ if ((q_lo(3) < domlo(3)) .and. (physbc_lo(3) /= Interior)) then
+ 
+   k = domlo(3)
+   z   = (dble(k)+HALF)*dz
+      
+   do i = q_lo(1)+1,q_hi(1)-1
+   
+     x   = (dble(i)+HALF)*dx
+   
+     if ( flag_nscbc_isAnyPerio == 0) then
+       if ((i == domlo(1)) .or. (i == domhi(1))) cycle !Doing that to avoid ghost cells already filled by corners
+     endif
+     
+     do j = q_lo(2)+1,q_hi(2)-1
+
+       y   = (dble(j)+HALF)*dy
+
+       if ( flag_nscbc_isAnyPerio == 0) then
+         if ((j == domlo(2)) .or. (j == domhi(2))) cycle !Doing that to avoid ghost cells already filled by corners
+       endif
+      
+       ! Normal derivative along y
+       call normal_derivative(i, j, k, 3, 1, dz, &
+                              dpdz, dudz, dvdz, dwdz, drhodz, &
+                              q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3)
+
+       ! Tangential derivative along x 
+       call tangential_derivative(i, j, k, 1, dx, &
+                                  dpdx, dudx, dvdx, dwdx, drhodx, &
+                                  q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3)
+
+       ! Tangential derivative along z
+       call tangential_derivative(i, j, k, 2, dy, &
+                                  dpdy, dudy, dvdy, dwdy, drhody, &
+                                  q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3)
+
+       ! Compute transverse terms
+       call compute_transverse_terms(i, j, k, 3,  &
+                               T1_Z, T2_Z, T3_Z, T4_Z, T5_Z, &
+                               dpdx, dudx, dvdx, dwdx, drhodx, &
+                               dpdy, dudy, dvdy, dwdy, drhody, &
+                               dpdz, dudz, dvdz, dwdz, drhodz, &
+                               q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3, &
+                               qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3) 
+                               
+       ! Filling bcMask with specific user defined BC type
+       call bcnormal([x,y,z],U_dummy,U_ext,3,1,.false.,bc_type,bc_params,bc_target)
+       if ((i < q_lo(1)+3) .or. (i > q_hi(1)-3) .or. (j < q_lo(2)+3) .or. (j > q_hi(2)-3)) then
+         continue ! There is just 1 ghost-cell with bcMask because of the Riemann solver
+       else
+         z_bcMask(i,j,k) = bc_type
+       endif
+     
+       ! Computing the LODI system waves
+       call compute_waves(i, j, k, 3, 1, &
+                          bc_type, bc_params, bc_target, &
+                          T1_Z, T2_Z, T3_Z, T4_Z, T5_Z, &
+                          L1, L2, L3, L4, L5, &
+                          dpdz, dudz, dvdz, dwdz, drhodz, &
+                          q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3, &
+                          qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
+
+       ! Recomputing ghost-cells values with the LODI waves
+       call update_ghost_cells(i, j, k, bc_type, 3, 1, dz, &
+                               domlo, domhi, &
+                               L1, L2, L3, L4, L5, &
+                               uin, uin_l1, uin_l2, uin_l3, uin_h1, uin_h2, uin_h3, &
+                               q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3, &
+                               qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
+
+     enddo
+   enddo
+ end if
+     
+!--------------------------------------------------------------------------   
+! upper Z
+!--------------------------------------------------------------------------
+
+ if ((q_hi(3) > domhi(3)) .and. (physbc_hi(3) /= Interior)) then
+ 
+   k = domhi(3)
+   z   = (dble(k)+HALF)*dz
+      
+   do i = q_lo(1)+1,q_hi(1)-1
+   
+     x   = (dble(i)+HALF)*dx
+   
+     if ( flag_nscbc_isAnyPerio == 0) then
+       if ((i == domlo(1)) .or. (i == domhi(1))) cycle !Doing that to avoid ghost cells already filled by corners
+     endif
+     
+     do j = q_lo(2)+1,q_hi(2)-1
+
+       y   = (dble(j)+HALF)*dy
+
+       if ( flag_nscbc_isAnyPerio == 0) then
+         if ((j == domlo(2)) .or. (j == domhi(2))) cycle !Doing that to avoid ghost cells already filled by corners
+       endif
+      
+       ! Normal derivative along y
+       call normal_derivative(i, j, k, 3, -1, dz, &
+                              dpdz, dudz, dvdz, dwdz, drhodz, &
+                              q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3)
+
+       ! Tangential derivative along x 
+       call tangential_derivative(i, j, k, 1, dx, &
+                                  dpdx, dudx, dvdx, dwdx, drhodx, &
+                                  q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3)
+
+       ! Tangential derivative along z
+       call tangential_derivative(i, j, k, 2, dy, &
+                                  dpdy, dudy, dvdy, dwdy, drhody, &
+                                  q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3)
+
+       ! Compute transverse terms
+       call compute_transverse_terms(i, j, k, 3,  &
+                               T1_Z, T2_Z, T3_Z, T4_Z, T5_Z, &
+                               dpdx, dudx, dvdx, dwdx, drhodx, &
+                               dpdy, dudy, dvdy, dwdy, drhody, &
+                               dpdz, dudz, dvdz, dwdz, drhodz, &
+                               q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3, &
+                               qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3) 
+                               
+       ! Filling bcMask with specific user defined BC type
+       call bcnormal([x,y,z],U_dummy,U_ext,3,-1,.false.,bc_type,bc_params,bc_target)
+       if ((i < q_lo(1)+3) .or. (i > q_hi(1)-3) .or. (j < q_lo(2)+3) .or. (j > q_hi(2)-3)) then
+         continue ! There is just 1 ghost-cell with bcMask because of the Riemann solver
+       else
+         z_bcMask(i,j,k) = bc_type
+       endif
+     
+       ! Computing the LODI system waves
+       call compute_waves(i, j, k, 3, -1, &
+                          bc_type, bc_params, bc_target, &
+                          T1_Z, T2_Z, T3_Z, T4_Z, T5_Z, &
+                          L1, L2, L3, L4, L5, &
+                          dpdz, dudz, dvdz, dwdz, drhodz, &
+                          q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3, &
+                          qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
+
+       ! Recomputing ghost-cells values with the LODI waves
+       call update_ghost_cells(i, j, k, bc_type, 3, -1, dz, &
+                               domlo, domhi, &
+                               L1, L2, L3, L4, L5, &
+                               uin, uin_l1, uin_l2, uin_l3, uin_h1, uin_h2, uin_h3, &
+                               q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3, &
+                               qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
+
+     enddo
+   enddo
+ end if
+
+
 
 call destroy(eos_state)
 
@@ -911,12 +1103,38 @@ end subroutine impose_NSCBC
   
   elseif (idir == 2) then
   
-     !T1 = (q(i,j,QU)*(dp - q(i,j,QRHO)*qaux(i,j,QC)*dv)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*du)
-     !T2 = ((q(i,j,QU)*du))+(dp/q(i,j,QRHO))
-     !T3 = (q(i,j,QU)*((qaux(i,j,QC)*qaux(i,j,QC)*drho)-dp)) + &
-     !     (qaux(i,j,QC)*qaux(i,j,QC)*q(i,j,QRHO)*du) - (qaux(i,j,QGAMC) * q(i,j,QPRES)*du)
-     !T4 = (q(i,j,QU)*(dp + q(i,j,QRHO)*qaux(i,j,QC)*dv)) + (qaux(i,j,QGAMC) * q(i,j,QPRES)*du)
+     T1 =  (q(i,j,k,QU)*(dpdx - q(i,j,k,QRHO)*qaux(i,j,k,QC)*dvdx)) &
+         + (q(i,j,k,QW)*(dpdz - q(i,j,k,QRHO)*qaux(i,j,k,QC)*dvdz)) &  
+         + (qaux(i,j,k,QGAMC) * q(i,j,k,QPRES)*(dudx + dwdz))
+     
+     T2 = q(i,j,k,QU)*dudx + q(i,j,k,QW)*dudz + dpdx*inv_rho
+     
+     T3 =  (q(i,j,k,QU)*((qaux(i,j,k,QC)*qaux(i,j,k,QC)*drhodx)-dpdx))  &
+         + (q(i,j,k,QW)*((qaux(i,j,k,QC)*qaux(i,j,k,QC)*drhodz)-dpdz))
+     
+     T4 = q(i,j,k,QU)*dwdx + q(i,j,k,QW)*dwdz + dpdz*inv_rho
+     
+     T5 =  (q(i,j,k,QU)*(dpdx + q(i,j,k,QRHO)*qaux(i,j,k,QC)*dvdx)) &
+         + (q(i,j,k,QW)*(dpdz + q(i,j,k,QRHO)*qaux(i,j,k,QC)*dvdz)) &  
+         + (qaux(i,j,k,QGAMC) * q(i,j,k,QPRES)*(dudx + dwdz))
            
+  elseif (idir == 3) then
+  
+     T1 =  (q(i,j,k,QU)*(dpdx - q(i,j,k,QRHO)*qaux(i,j,k,QC)*dwdx)) &
+         + (q(i,j,k,QV)*(dpdy - q(i,j,k,QRHO)*qaux(i,j,k,QC)*dwdz)) &  
+         + (qaux(i,j,k,QGAMC) * q(i,j,k,QPRES)*(dudx + dvdy))
+     
+     T2 =  q(i,j,k,QU)*dudx + q(i,j,k,QV)*dudy + dpdx*inv_rho
+     
+     T3 =  q(i,j,k,QU)*dvdx + q(i,j,k,QV)*dvdy + dpdy*inv_rho
+     
+     T4 =  (q(i,j,k,QU)*((qaux(i,j,k,QC)*qaux(i,j,k,QC)*drhodx)-dpdx))  &
+         + (q(i,j,k,QV)*((qaux(i,j,k,QC)*qaux(i,j,k,QC)*drhody)-dpdy))
+     
+     T5 =  (q(i,j,k,QU)*(dpdx + q(i,j,k,QRHO)*qaux(i,j,k,QC)*dwdx)) &
+         + (q(i,j,k,QV)*(dpdy + q(i,j,k,QRHO)*qaux(i,j,k,QC)*dwdz)) &  
+         + (qaux(i,j,k,QGAMC) * q(i,j,k,QPRES)*(dudx + dvdy))
+     
   else
       call bl_abort("Problem of idir in impose_NSCBC_2d:compute_transverse_terms")
   end if
@@ -1239,6 +1457,115 @@ end subroutine impose_NSCBC
        
      enddo
     
+  elseif (idir == 3) then
+       
+     ! Update ghost cells
+     ! 2nd order
+     q(i,j,idx_gc1,QU)    = q(i,j,idx_int1,QU) - 2.0d0*delta*du*isign
+     q(i,j,idx_gc1,QV)    = q(i,j,idx_int1,QV) - 2.0d0*delta*dv*isign
+     q(i,j,idx_gc1,QW)    = q(i,j,idx_int1,QW) - 2.0d0*delta*dw*isign
+     q(i,j,idx_gc1,QRHO)  = q(i,j,idx_int1,QRHO)  - 2.0d0*delta*drho*isign
+     q(i,j,idx_gc1,QPRES) = q(i,j,idx_int1,QPRES) - 2.0d0*delta*dp*isign
+   
+     !---------------- 
+     q(i,j,idx_gc2,QU)    = -2.0d0*q(i,j,idx_int1,QU) - 3.0d0*q(i,j,k,QU) + 6.0d0*q(i,j,idx_gc1,QU) + 6.0d0*delta*du*isign
+     q(i,j,idx_gc2,QV)    = -2.0d0*q(i,j,idx_int1,QV) - 3.0d0*q(i,j,k,QV) + 6.0d0*q(i,j,idx_gc1,QV) + 6.0d0*delta*dv*isign
+     q(i,j,idx_gc2,QW)    = -2.0d0*q(i,j,idx_int1,QW) - 3.0d0*q(i,j,k,QW) + 6.0d0*q(i,j,idx_gc1,QW) + 6.0d0*delta*dw*isign
+     q(i,j,idx_gc2,QRHO)  = -2.0d0*q(i,j,idx_int1,QRHO) - 3.0d0*q(i,j,k,QRHO) + 6.0d0*q(i,j,idx_gc1,QRHO) + 6.0d0*delta*drho*isign
+     q(i,j,idx_gc2,QPRES) = -2.0d0*q(i,j,idx_int1,QPRES) - 3.0d0*q(i,j,k,QPRES) + 6.0d0*q(i,j,idx_gc1,QPRES) + 6.0d0*delta*dp*isign
+  
+     q(i,j,idx_gc3,QU)    = 3.0d0*q(i,j,idx_int1,QU) +10.0d0*q(i,j,k,QU) - 18.0d0*q(i,j,idx_gc1,QU) &
+                        + 6.0d0*q(i,j,idx_gc2,QU) - 12.0d0*delta*du*isign
+     q(i,j,idx_gc3,QV)    = 3.0d0*q(i,j,idx_int1,QV) +10.0d0*q(i,j,k,QV) - 18.0d0*q(i,j,idx_gc1,QV) &
+                        + 6.0d0*q(i,j,idx_gc2,QV) - 12.0d0*delta*dv*isign
+     q(i,j,idx_gc3,QW)    = 3.0d0*q(i,j,idx_int1,QW) +10.0d0*q(i,j,k,QW) - 18.0d0*q(i,j,idx_gc1,QW) &
+                        + 6.0d0*q(i,j,idx_gc2,QW) - 12.0d0*delta*dw*isign
+     q(i,j,idx_gc3,QRHO)  = 3.0d0*q(i,j,idx_int1,QRHO) +10.0d0*q(i,j,k,QRHO) - 18.0d0*q(i,j,idx_gc1,QRHO) &
+                        + 6.0d0*q(i,j,idx_gc2,QRHO) - 12.0d0*delta*drho*isign
+     q(i,j,idx_gc3,QPRES) = 3.0d0*q(i,j,idx_int1,QPRES) +10.0d0*q(i,j,k,QPRES) - 18.0d0*q(i,j,idx_gc1,QPRES) &
+                        + 6.0d0*q(i,j,idx_gc2,QPRES) - 12.0d0*delta*dp*isign
+  
+     q(i,j,idx_gc4,QU)    = -2.0d0*q(i,j,idx_int1,QU) - 13.0d0*q(i,j,k,QU) + 24.0d0*q(i,j,idx_gc1,QU) - 12.0d0*q(i,j,idx_gc2,QU)  &
+                     + 4.0d0*q(i,j,idx_gc3,QU) + 12.0d0*delta*du*isign
+     q(i,j,idx_gc4,QV)    = -2.0d0*q(i,j,idx_int1,QV) - 13.0d0*q(i,j,k,QV) + 24.0d0*q(i,j,idx_gc1,QV) - 12.0d0*q(i,j,idx_gc2,QV) &
+                     + 4.0d0*q(i,j,idx_gc3,QV) + 12.0d0*delta*dv*isign
+     q(i,j,idx_gc4,QW)    = -2.0d0*q(i,j,idx_int1,QW) - 13.0d0*q(i,j,k,QW) + 24.0d0*q(i,j,idx_gc1,QW) - 12.0d0*q(i,j,idx_gc2,QW) &
+                     + 4.0d0*q(i,j,idx_gc3,QW) + 12.0d0*delta*dw*isign
+     q(i,j,idx_gc4,QRHO)  = -2.0d0*q(i,j,idx_int1,QRHO) - 13.0d0*q(i,j,k,QRHO) + 24.0d0*q(i,j,idx_gc1,QRHO) - 12.0d0*q(i,j,idx_gc2,QRHO) &
+                     + 4.0d0*q(i,j,idx_gc3,QRHO) + 12.0d0*delta*drho*isign
+     q(i,j,idx_gc4,QPRES) = -2.0d0*q(i,j,idx_int1,QPRES) - 13.0d0*q(i,j,k,QPRES) + 24.0d0*q(i,j,idx_gc1,QPRES) - 12.0d0*q(i,j,idx_gc2,QPRES) &
+                     + 4.0d0*q(i,j,idx_gc3,QPRES) + 12.0d0*delta*dp*isign
+  
+     if ((bc_type .eq. NoSlipWall).or.(bc_type .eq. SlipWall)) then
+     
+       if (bc_type .eq. NoSlipWall) then
+         wall_sign = -1.0d0
+       else if (bc_type .eq. SlipWall)  then
+         wall_sign = 1.0d0
+       end if
+       
+       q(i,j,idx_gc1,QU)    = wall_sign*q(i,j,k,QU)
+       q(i,j,idx_gc2,QU)    = wall_sign*q(i,j,idx_int1,QU)
+       q(i,j,idx_gc3,QU)    = wall_sign*q(i,j,idx_int2,QU)
+       q(i,j,idx_gc4,QU)    = wall_sign*q(i,j,idx_int3,QU)
+       
+       q(i,j,idx_gc1,QV)    = -q(i,j,k,QV)
+       q(i,j,idx_gc2,QV)    = -q(i,j,idx_int1,QV)
+       q(i,j,idx_gc3,QV)    = -q(i,j,idx_int2,QV)
+       q(i,j,idx_gc4,QV)    = -q(i,j,idx_int3,QV)
+       
+       q(i,j,idx_gc1,QW)    = wall_sign*q(i,j,k,QW)
+       q(i,j,idx_gc2,QW)    = wall_sign*q(i,j,idx_int1,QW)
+       q(i,j,idx_gc3,QW)    = wall_sign*q(i,j,idx_int2,QW)
+       q(i,j,idx_gc4,QW)    = wall_sign*q(i,j,idx_int3,QW)
+       
+       q(i,j,idx_gc1,QRHO)  = q(i,j,k,QRHO)
+       q(i,j,idx_gc2,QRHO)  = q(i,j,idx_int1,QRHO)
+       q(i,j,idx_gc3,QRHO)  = q(i,j,idx_int2,QRHO)
+       q(i,j,idx_gc4,QRHO)  = q(i,j,idx_int3,QRHO)
+       
+       q(i,j,idx_gc1,QPRES)  = q(i,j,k,QPRES)
+       q(i,j,idx_gc2,QPRES)  = q(i,j,idx_int1,QPRES)
+       q(i,j,idx_gc3,QPRES)  = q(i,j,idx_int2,QPRES)
+       q(i,j,idx_gc4,QPRES)  = q(i,j,idx_int3,QPRES)
+     
+     end if
+      
+     ! Recompute missing values thanks to EOS
+     do hop=idx_start,idx_end,-isign
+     
+       eos_state % p        = q(i,j,hop,QPRES )
+       eos_state % rho      = q(i,j,hop,QRHO  )
+       eos_state % massfrac = q(i,j,hop,QFS:QFS+nspec-1)
+       eos_state % aux      = q(i,j,hop,QFX:QFX+naux-1)
+  
+       call eos_rp(eos_state)
+       q(i,j,hop,QTEMP)  = eos_state % T
+       q(i,j,hop,QREINT) = eos_state % e * q(i,j,hop,QRHO)
+       q(i,j,hop,QGAME)  = q(i,j,hop,QPRES) / q(i,j,hop,QREINT) + ONE
+       
+       qaux(i,j,hop,QDPDR)  = eos_state % dpdr_e
+       qaux(i,j,hop,QDPDE)  = eos_state % dpde
+       qaux(i,j,hop,QGAMC)  = eos_state % gam1
+       qaux(i,j,hop,QC   )  = eos_state % cs
+       qaux(i,j,hop,QCSML)  = max(small, small * qaux(i,j,hop,QC))
+  
+       ! Here the update of the conservative variables uin seems to have only an impact
+       ! on the application of artificial viscosity difmag. 
+       uin(i,j,hop,URHO )  = eos_state % rho 
+       uin(i,j,hop,UMX  )  = q(i,j,hop,QU ) * eos_state % rho 
+       uin(i,j,hop,UMY  )  = q(i,j,hop,QV ) * eos_state % rho 
+       uin(i,j,hop,UMZ  )  = q(i,j,hop,QW ) * eos_state % rho 
+       uin(i,j,hop,UEINT) = eos_state % rho   *  eos_state % e
+       uin(i,j,hop,UEDEN) = eos_state % rho  &
+          * (eos_state % e + 0.5d0 * (uin(i,j,hop,UMX)**2 + uin(i,j,hop,UMY)**2 + uin(i,j,hop,UMZ)**2))
+       uin(i,j,hop,UTEMP) = eos_state % T
+       do n=1, nspec
+          uin(i,j,hop,UFS+n-1) = eos_state % rho  *  eos_state % massfrac(n)
+       end do   
+       
+     enddo
+  
   endif
   
   call destroy(eos_state)
@@ -1299,7 +1626,7 @@ end subroutine impose_NSCBC
   TARGET_VZ = bc_target(3)
   TARGET_TEMPERATURE = bc_target(4)
   TARGET_PRESSURE = bc_target(5)
-     !write(*,*) 'DEBUG 0',idir,isign,bc_type
+
   ! Compute LODI equations
   if (bc_type == Inflow) then
  
@@ -1346,6 +1673,8 @@ end subroutine impose_NSCBC
       L4 = relax_W * (qaux(i,j,k,QC)/probhi(idir)) * (q(i,j,k,QW) - TARGET_VZ) &
                      - ((1.0d0 - beta)*T4)
 
+    else
+      call bl_error("Error:: Inflow BC is not yet implemented for z dir in characteristic form")
     endif
             
   elseif ((bc_type == SlipWall).or.(bc_type == NoSlipWall)) then
@@ -1370,7 +1699,6 @@ end subroutine impose_NSCBC
 
     if (idir == 1) then
 
-        !write(*,*) 'DEBUG 1',L1,L5
       if (isign == 1) then
         L1 = (q(i,j,k,QU)-qaux(i,j,k,QC))* (dp - (q(i,j,k,QRHO)*qaux(i,j,k,QC))*du)
         L5 = (Kout*(q(i,j,k,QPRES) - TARGET_PRESSURE)) - ((1.0d0 - beta)*T5)
@@ -1379,7 +1707,6 @@ end subroutine impose_NSCBC
         L4 = (q(i,j,k,QU)+qaux(i,j,k,QC))* (dp + (q(i,j,k,QRHO)*qaux(i,j,k,QC))*du)
       endif
 
-        !write(*,*) 'DEBUG 2',L1,L5
       L2 = q(i,j,k,QU) * ( ((qaux(i,j,k,QC)**2.0d0)*drho) - dp)
       L3 = q(i,j,k,QU) * dv
       L4 = q(i,j,k,QU) * dw
@@ -1398,12 +1725,26 @@ end subroutine impose_NSCBC
       L3 = q(i,j,k,QV) * ( ((qaux(i,j,k,QC)**2.0d0)*drho) - dp)
       L4 = q(i,j,k,QV) * dw
           
+    elseif(idir == 3) then
+
+      if (isign == 1) then
+        L1 = (q(i,j,k,QW)-qaux(i,j,k,QC))* (dp - (q(i,j,k,QRHO)*qaux(i,j,k,QC))*dw)
+        L5 = (Kout*(q(i,j,k,QPRES) - TARGET_PRESSURE)) - ((1.0d0 - beta)*T5)
+      elseif (isign == -1) then
+        L1 = (Kout*(q(i,j,k,QPRES) - TARGET_PRESSURE)) - ((1.0d0 - beta)*T1)
+        L5 = (q(i,j,k,QW)+qaux(i,j,k,QC))* (dp + (q(i,j,k,QRHO)*qaux(i,j,k,QC))*dw)
+      endif
+    
+      L2 = q(i,j,k,QW) * du
+      L3 = q(i,j,k,QW) * dv
+      L4 = q(i,j,k,QW) * ( ((qaux(i,j,k,QC)**2.0d0)*drho) - dp)
+    
     endif
 
   else
     call bl_error("Error:: This BC is not yet implemented for x dir in characteristic form")
   endif
- !write(*,*) 'DEBUG 2',L1,L2,L3,L4,L5
+
   if (idir == 1) then
     L1 = L1 / (q(i,j,k,QU)-qaux(i,j,k,QC))
     L5 = L5 / (q(i,j,k,QU)+qaux(i,j,k,QC))
@@ -1418,7 +1759,7 @@ end subroutine impose_NSCBC
     endif
   elseif (idir == 2) then
     L1 = L1 / (q(i,j,k,QV)-qaux(i,j,k,QC))
-    L4 = L4 / (q(i,j,k,QV)+qaux(i,j,k,QC))
+    L5 = L5 / (q(i,j,k,QV)+qaux(i,j,k,QC))
     if (q(i,j,k,QV) == 0.0d0) then
       L2 = 0.0d0
       L3 = 0.0d0
@@ -1427,6 +1768,18 @@ end subroutine impose_NSCBC
       L2 = L2 / q(i,j,k,QV)
       L3 = L3 / q(i,j,k,QV)
       L4 = L4 / q(i,j,k,QV)
+    endif
+  elseif (idir == 3) then
+    L1 = L1 / (q(i,j,k,QW)-qaux(i,j,k,QC))
+    L5 = L5 / (q(i,j,k,QW)+qaux(i,j,k,QC))
+    if (q(i,j,k,QW) == 0.0d0) then
+      L2 = 0.0d0
+      L3 = 0.0d0
+      L4 = 0.0d0
+     else
+      L2 = L2 / q(i,j,k,QW)
+      L3 = L3 / q(i,j,k,QW)
+      L4 = L4 / q(i,j,k,QW)
     endif
   end if
   
