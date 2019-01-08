@@ -101,329 +101,381 @@ contains
   y_bcMask(:,:,:) = 0
   z_bcMask(:,:,:) = 0
 
-!  if ( flag_nscbc_isAnyPerio == 0) then
-!
-! !--------------------------------------------------------------------------   
-! ! upper right corner (Lx,Ly)
-! ! phi = 1, psi = 1
-! !--------------------------------------------------------------------------
-!
-! if ((q_hi(1) > domhi(1)) .and. (q_hi(2) > domhi(2))) then
-!
-!   i = domhi(1)
-!   j = domhi(2)
-!   
-!   x   = (dble(i)+HALF)*dx
-!   y   = (dble(j)+HALF)*dy
-!  
-!   ! Normal derivative along x
-!   call normal_derivative(i, j, 1, -1, dx, &
-!                          dpdx, dudx, dvdx, drhodx, &
-!                          q, q_l1, q_l2, q_h1, q_h2)
-!                            
-!   ! Normal derivative along y
-!   call normal_derivative(i, j, 2, -1, dy, &
-!                          dpdy, dudy, dvdy, drhody, &
-!                          q, q_l1, q_l2, q_h1, q_h2)
-!                          
-!   ! Compute transverse terms to x
-!   call compute_transverse_terms(i, j, 1,  &
-!                               T1_X, T2_X, T3_X, T4_X, &
-!                               dpdy, dudy, dvdy, drhody, &
-!                               q, q_l1, q_l2, q_h1, q_h2, &
-!                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-!                               
-!   ! Compute transverse terms to y
-!   call compute_transverse_terms(i, j, 2,  &
-!                               T1_Y, T2_Y, T3_Y, T4_Y, &
-!                               dpdx, dudx, dvdx, drhodx, &
-!                               q, q_l1, q_l2, q_h1, q_h2, &
-!                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-!
-!   ! Calling user target BC values
-!   ! right face
-!   call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,.false.,x_bc_type,x_bc_params,x_bc_target)
-!   x_bcMask(i+1,j) = x_bc_type
-!    
-!   ! top face
-!   call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,-1,.false.,y_bc_type,y_bc_params,y_bc_target)
-!   y_bcMask(i,j+1) = y_bc_type
-!   
-!   ! Computing the LODI system waves
-!   call compute_waves_corner(i, j, -1, -1, &
-!                             x_bc_type, x_bc_params, x_bc_target, &
-!                             y_bc_type, y_bc_params, y_bc_target, &
-!                             L1, L2, L3, L4, &
-!                             M1, M2, M3, M4, &
-!                             T1_X, T2_X, T3_X, T4_X, &
-!                             T1_Y, T2_Y, T3_Y, T4_Y, &
-!                             dpdx, dudx, dvdx, drhodx, &
-!                             dpdy, dudy, dvdy, drhody, &
-!                             q, q_l1, q_l2, q_h1, q_h2, &
-!                             qaux, qa_l1, qa_l2, qa_h1, qa_h2) 
-!
-!   ! Along X
-!   ! Recomputing ghost-cells values with the LODI waves
-!   call update_ghost_cells(i, j, x_bcMask(i+1,j), 1, -1, dx, &
-!                           domlo, domhi, &
-!                           L1, L2, L3, L4, &
-!                           uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-!                           q, q_l1, q_l2, q_h1, q_h2, &
-!                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-!
-!
-!   ! Along Y
-!   ! Recomputing ghost-cells values with the LODI waves
-!   call update_ghost_cells(i, j, y_bcMask(i,j+1), 2, -1, dy, &
-!                           domlo, domhi, &
-!                           M1, M2, M3, M4, &
-!                           uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-!                           q, q_l1, q_l2, q_h1, q_h2, &
-!                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-! endif
-! 
-! !--------------------------------------------------------------------------   
-! ! Bottom right corner (Lx,0)
-! ! phi = 1, psi = 4
-! !--------------------------------------------------------------------------
-!
-! if ((q_hi(1) > domhi(1)) .and. (q_lo(2) < domlo(2))) then
-!
-!   i = domhi(1)
-!   j = domlo(2)
-!   
-!   x   = (dble(i)+HALF)*dx
-!   y   = (dble(j)+HALF)*dy
-!     
-!   ! Normal derivative along x
-!   call normal_derivative(i, j, 1, -1, dx, &
-!                          dpdx, dudx, dvdx, drhodx, &
-!                          q, q_l1, q_l2, q_h1, q_h2)
-!                            
-!   ! Normal derivative along y
-!   call normal_derivative(i, j, 2, 1, dy, &
-!                          dpdy, dudy, dvdy, drhody, &
-!                          q, q_l1, q_l2, q_h1, q_h2)
-!                          
-!   ! Compute transverse terms to x
-!   call compute_transverse_terms(i, j, 1,  &
-!                               T1_X, T2_X, T3_X, T4_X, &
-!                               dpdy, dudy, dvdy, drhody, &
-!                               q, q_l1, q_l2, q_h1, q_h2, &
-!                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-!                               
-!   ! Compute transverse terms to y
-!   call compute_transverse_terms(i, j, 2,  &
-!                               T1_Y, T2_Y, T3_Y, T4_Y, &
-!                               dpdx, dudx, dvdx, drhodx, &
-!                               q, q_l1, q_l2, q_h1, q_h2, &
-!                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-!
-!   ! Calling user target BC values
-!   ! right face
-!   call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,.false.,x_bc_type,x_bc_params,x_bc_target)
-!   x_bcMask(i+1,j) = x_bc_type
-!
-!   ! bottom face
-!   call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,1,.false.,y_bc_type,y_bc_params,y_bc_target)
-!   y_bcMask(i,j) = y_bc_type
-!   
-!   ! Computing the LODI system waves
-!   call compute_waves_corner(i, j, -1, 1, &
-!                             x_bc_type, x_bc_params, x_bc_target, &
-!                             y_bc_type, y_bc_params, y_bc_target, &
-!                             L1, L2, L3, L4, &
-!                             M1, M2, M3, M4, &
-!                             T1_X, T2_X, T3_X, T4_X, &
-!                             T1_Y, T2_Y, T3_Y, T4_Y, &
-!                             dpdx, dudx, dvdx, drhodx, &
-!                             dpdy, dudy, dvdy, drhody, &
-!                             q, q_l1, q_l2, q_h1, q_h2, &
-!                             qaux, qa_l1, qa_l2, qa_h1, qa_h2) 
-!   
-!   ! Along X
-!   ! Recomputing ghost-cells values with the LODI waves
-!   call update_ghost_cells(i, j, x_bcMask(i+1,j), 1, -1, dx, &
-!                           domlo, domhi, &
-!                           L1, L2, L3, L4, &
-!                           uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-!                           q, q_l1, q_l2, q_h1, q_h2, &
-!                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-!
-!
-!   ! Along Y
-!   ! Recomputing ghost-cells values with the LODI waves
-!   call update_ghost_cells(i, j, y_bcMask(i,j), 2, 1, dy, &
-!                           domlo, domhi, &
-!                           M1, M2, M3, M4, &
-!                           uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-!                           q, q_l1, q_l2, q_h1, q_h2, &
-!                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-!
-! endif
-! 
-! !--------------------------------------------------------------------------   
-! ! upper left corner (0,Ly)
-! ! phi = 4, psi = 1
-! !--------------------------------------------------------------------------
-!
-! if ((q_lo(1) < domlo(1)) .and. (q_hi(2) > domhi(2))) then
-!
-!   i = domlo(1)
-!   j = domhi(2)
-!   
-!   x   = (dble(i)+HALF)*dx
-!   y   = (dble(j)+HALF)*dy
-!      
-!   ! Normal derivative along x
-!   call normal_derivative(i, j, 1, 1, dx, &
-!                          dpdx, dudx, dvdx, drhodx, &
-!                          q, q_l1, q_l2, q_h1, q_h2)
-!                            
-!   ! Normal derivative along y
-!   call normal_derivative(i, j, 2, -1, dy, &
-!                          dpdy, dudy, dvdy, drhody, &
-!                          q, q_l1, q_l2, q_h1, q_h2)
-!                          
-!   ! Compute transverse terms to x
-!   call compute_transverse_terms(i, j, 1,  &
-!                               T1_X, T2_X, T3_X, T4_X, &
-!                               dpdy, dudy, dvdy, drhody, &
-!                               q, q_l1, q_l2, q_h1, q_h2, &
-!                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-!                               
-!   ! Compute transverse terms to y
-!   call compute_transverse_terms(i, j, 2,  &
-!                               T1_Y, T2_Y, T3_Y, T4_Y, &
-!                               dpdx, dudx, dvdx, drhodx, &
-!                               q, q_l1, q_l2, q_h1, q_h2, &
-!                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-!                          
-!   
-!   ! Calling user target BC values
-!   ! left face
-!   call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,x_bc_type,x_bc_params,x_bc_target)
-!   x_bcMask(i,j) = x_bc_type
-!
-!   ! top face
-!   call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,-1,.false.,y_bc_type,y_bc_params,y_bc_target)
-!   y_bcMask(i,j+1) = y_bc_type
-!
-!   ! Computing the LODI system waves
-!   call compute_waves_corner(i, j, 1, -1, &
-!                             x_bc_type, x_bc_params, x_bc_target, &
-!                             y_bc_type, y_bc_params, y_bc_target, &
-!                             L1, L2, L3, L4, &
-!                             M1, M2, M3, M4, &
-!                             T1_X, T2_X, T3_X, T4_X, &
-!                             T1_Y, T2_Y, T3_Y, T4_Y, &
-!                             dpdx, dudx, dvdx, drhodx, &
-!                             dpdy, dudy, dvdy, drhody, &
-!                             q, q_l1, q_l2, q_h1, q_h2, &
-!                             qaux, qa_l1, qa_l2, qa_h1, qa_h2) 
-!   
-!   ! Along X
-!   ! Recomputing ghost-cells values with the LODI waves
-!   call update_ghost_cells(i, j, x_bcMask(i,j), 1, 1, dx, &
-!                           domlo, domhi, &
-!                           L1, L2, L3, L4, &
-!                           uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-!                           q, q_l1, q_l2, q_h1, q_h2, &
-!                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-!
-!
-!   ! Along Y
-!   ! Recomputing ghost-cells values with the LODI waves
-!   call update_ghost_cells(i, j, y_bcMask(i,j+1), 2, -1, dy, &
-!                           domlo, domhi, &
-!                           M1, M2, M3, M4, &
-!                           uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-!                           q, q_l1, q_l2, q_h1, q_h2, &
-!                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-!
-! endif
-! 
-! !--------------------------------------------------------------------------   
-! ! Bottom left corner (0,0)
-! ! phi = 4, psi = 4
-! !--------------------------------------------------------------------------
-!
-! if ((q_lo(1) < domlo(1)) .and. (q_lo(2) < domlo(2))) then
-!
-!   i = domlo(1)
-!   j = domlo(2)
-!   
-!   x   = (dble(i)+HALF)*dx
-!   y   = (dble(j)+HALF)*dy
-!   
-!   ! Normal derivative along x
-!   call normal_derivative(i, j, 1, 1, dx, &
-!                          dpdx, dudx, dvdx, drhodx, &
-!                          q, q_l1, q_l2, q_h1, q_h2)
-!                            
-!   ! Normal derivative along y
-!   call normal_derivative(i, j, 2, 1, dy, &
-!                          dpdy, dudy, dvdy, drhody, &
-!                          q, q_l1, q_l2, q_h1, q_h2)
-!                          
-!      
-!   ! Compute transverse terms to x
-!   call compute_transverse_terms(i, j, 1,  &
-!                               T1_X, T2_X, T3_X, T4_X, &
-!                               dpdy, dudy, dvdy, drhody, &
-!                               q, q_l1, q_l2, q_h1, q_h2, &
-!                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-!                               
-!   ! Compute transverse terms to y
-!   call compute_transverse_terms(i, j, 2,  &
-!                               T1_Y, T2_Y, T3_Y, T4_Y, &
-!                               dpdx, dudx, dvdx, drhodx, &
-!                               q, q_l1, q_l2, q_h1, q_h2, &
-!                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-!                          
-!   ! Calling user target BC values
-!   ! left face
-!   call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,x_bc_type,x_bc_params,x_bc_target)
-!   x_bcMask(i,j) = x_bc_type
-!
-!   !! bottom face
-!   call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,1,.false.,y_bc_type,y_bc_params,y_bc_target)
-!   y_bcMask(i,j) = y_bc_type
-!
-!   ! Computing the LODI system waves
-!   call compute_waves_corner(i, j, 1, 1, &
-!                           x_bc_type, x_bc_params, x_bc_target, &
-!                           y_bc_type, y_bc_params, y_bc_target, &
-!                           L1, L2, L3, L4, &
-!                           M1, M2, M3, M4, &
-!                           T1_X, T2_X, T3_X, T4_X, &
-!                           T1_Y, T2_Y, T3_Y, T4_Y, &
-!                           dpdx, dudx, dvdx, drhodx, &
-!                           dpdy, dudy, dvdy, drhody, &
-!                           q, q_l1, q_l2, q_h1, q_h2, &
-!                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)  
-!  
-!   ! Along X
-!   ! Recomputing ghost-cells values with the LODI waves
-!   call update_ghost_cells(i, j, x_bcMask(i,j), 1, 1, dx, &
-!                           domlo, domhi, &
-!                           L1, L2, L3, L4, &
-!                           uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-!                           q, q_l1, q_l2, q_h1, q_h2, &
-!                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-!
-!   ! Along Y
-!   ! Recomputing ghost-cells values with the LODI waves
-!   call update_ghost_cells(i, j, y_bcMask(i,j), 2, 1, dy, &
-!                           domlo, domhi, &
-!                           M1, M2, M3, M4, &
-!                           uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-!                           q, q_l1, q_l2, q_h1, q_h2, &
-!                           qaux, qa_l1, qa_l2, qa_h1, qa_h2)
-!
-! endif
-!
-!endif ! flag_nscbc_isAnyPerio ) 
+  if ( flag_nscbc_isAnyPerio == 0) then
+
+ !--------------------------------------------------------------------------   
+ ! corner (Lx,Ly,Lz)
+ !--------------------------------------------------------------------------
+
+ if ((q_hi(1) > domhi(1)) .and. (q_hi(2) > domhi(2)) .and. (q_hi(3) > domhi(3))) then
+
+   i = domhi(1)
+   j = domhi(2)
+   k = domhi(3)
+   
+   x   = (dble(i)+HALF)*dx
+   y   = (dble(j)+HALF)*dy
+   z   = (dble(j)+HALF)*dz
+  
+   ! Normal derivative along x
+   call normal_derivative(i, j, k, 1, -1, dx, &
+                          dpdx, dudx, dvdx, dwdx, drhodx, &
+                          q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3)
+
+                            
+   ! Normal derivative along y
+   call normal_derivative(i, j, k, 2, -1, dx, &
+                          dpdy, dudy, dvdy, dwdy, drhody, &
+                          q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3)
+  
+   ! Normal derivative along z
+   call normal_derivative(i, j, k, 3, -1, dx, &
+                          dpdyz dudz, dvdz, dwdz, drhodz, &
+                          q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3)
+                          
+   ! Compute transverse terms to x
+   call compute_transverse_terms(i, j, 1,  &
+                               T1_X, T2_X, T3_X, T4_X, &
+                               dpdy, dudy, dvdy, drhody, &
+                               q, q_l1, q_l2, q_h1, q_h2, &
+                               qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+                               
+   ! Compute transverse terms for X
+   call compute_transverse_terms(i, j, k, 1,  &
+                                 T1_X, T2_X, T3_X, T4_X, T5_X, &
+                                 dpdx, dudx, dvdx, dwdx, drhodx, &
+                                 dpdy, dudy, dvdy, dwdy, drhody, &
+                                 dpdz, dudz, dvdz, dwdz, drhodz, &
+                                 q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3, &
+                                 qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
+                                 
+   ! Compute transverse terms for X
+   call compute_transverse_terms(i, j, k, 2,  &
+                                 T1_Y, T2_Y, T3_Y, T4_Y, T5_Y, &
+                                 dpdx, dudx, dvdx, dwdx, drhodx, &
+                                 dpdy, dudy, dvdy, dwdy, drhody, &
+                                 dpdz, dudz, dvdz, dwdz, drhodz, &
+                                 q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3, &
+                                 qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
+                                 
+   ! Compute transverse terms for X
+   call compute_transverse_terms(i, j, k, 3,  &
+                                 T1_Z, T2_Z, T3_Z, T4_Z, T5_Z, &
+                                 dpdx, dudx, dvdx, dwdx, drhodx, &
+                                 dpdy, dudy, dvdy, dwdy, drhody, &
+                                 dpdz, dudz, dvdz, dwdz, drhodz, &
+                                 q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3, &
+                                 qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
+
+
+   ! Calling user target BC values
+   ! x face
+   call bcnormal([x,y,z],U_dummy,U_ext,1,-1,.false.,x_bc_type,x_bc_params,x_bc_target)
+   x_bcMask(i+1,j) = x_bc_type
+    
+   ! y face
+   call bcnormal([x,y,z],U_dummy,U_ext,2,-1,.false.,y_bc_type,y_bc_params,y_bc_target)
+   y_bcMask(i,j+1) = y_bc_type
+   
+   ! z face
+   call bcnormal([x,y,z],U_dummy,U_ext,3,-1,.false.,z_bc_type,z_bc_params,z_bc_target)
+   z_bcMask(i,j+1) = z_bc_type
+   
+   ! Computing the LODI system waves along X
+   call compute_waves(i, j, k, 1, -1, &
+                      x_bc_type, x_bc_params, x_bc_target, &
+                      T1_X, T2_X, T3_X, T4_X, T5_X, &
+                      L1, L2, L3, L4, L5, &
+                      dpdx, dudx, dvdx, dwdx, drhodx, &
+                      q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3, &
+                      qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
+   
+   ! Computing the LODI system waves along Y
+   call compute_waves(i, j, k, 2, -1, &
+                      y_bc_type, y_bc_params, y_bc_target, &
+                      T1_Y, T2_Y, T3_Y, T4_Y, T5_Y, &
+                      M1, M2, M3, M4, M5, &
+                      dpdy, dudy, dvdy, dwdy, drhody, &
+                      q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3, &
+                      qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
+    
+   ! Computing the LODI system waves along Z
+   call compute_waves(i, j, k, 3, -1, &
+                      z_bc_type, z_bc_params, z_bc_target, &
+                      T1_Z, T2_Z, T3_Z, T4_Z, T5_Z, &
+                      N1, N2, N3, N4, N5, &
+                      dpdz, dudz, dvdz, dwdz, drhodz, &
+                      q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3, &
+                      qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
+
+   ! Recomputing ghost-cells values with the LODI waves along X
+   call update_ghost_cells(i, j, k, x_bc_type, 1, -1, dx, &
+                           domlo, domhi, &
+                           L1, L2, L3, L4, L5, &
+                           uin, uin_l1, uin_l2, uin_l3, uin_h1, uin_h2, uin_h3, &
+                           q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3, &
+                           qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
+                   
+   ! Recomputing ghost-cells values with the LODI waves along Y
+   call update_ghost_cells(i, j, k, y_bc_type, 2, -1, dy, &
+                           domlo, domhi, &
+                           M1, M2, M3, M4, M5, &
+                           uin, uin_l1, uin_l2, uin_l3, uin_h1, uin_h2, uin_h3, &
+                           q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3, &
+                           qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
+                           
+   ! Recomputing ghost-cells values with the LODI waves along Y
+   call update_ghost_cells(i, j, k, z_bc_type, 3, -1, dz, &
+                           domlo, domhi, &
+                           N1, N2, N3, N4, N5, &
+                           uin, uin_l1, uin_l2, uin_l3, uin_h1, uin_h2, uin_h3, &
+                           q, q_l1, q_l2, q_l3, q_h1, q_h2, q_h3, &
+                           qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
+                           
+ endif
+ !
+ !!--------------------------------------------------------------------------   
+ !! Bottom right corner (Lx,0)
+ !! phi = 1, psi = 4
+ !!--------------------------------------------------------------------------
+ !
+ !if ((q_hi(1) > domhi(1)) .and. (q_lo(2) < domlo(2))) then
+ !
+ !  i = domhi(1)
+ !  j = domlo(2)
+ !  
+ !  x   = (dble(i)+HALF)*dx
+ !  y   = (dble(j)+HALF)*dy
+ !    
+ !  ! Normal derivative along x
+ !  call normal_derivative(i, j, 1, -1, dx, &
+ !                         dpdx, dudx, dvdx, drhodx, &
+ !                         q, q_l1, q_l2, q_h1, q_h2)
+ !                           
+ !  ! Normal derivative along y
+ !  call normal_derivative(i, j, 2, 1, dy, &
+ !                         dpdy, dudy, dvdy, drhody, &
+ !                         q, q_l1, q_l2, q_h1, q_h2)
+ !                         
+ !  ! Compute transverse terms to x
+ !  call compute_transverse_terms(i, j, 1,  &
+ !                              T1_X, T2_X, T3_X, T4_X, &
+ !                              dpdy, dudy, dvdy, drhody, &
+ !                              q, q_l1, q_l2, q_h1, q_h2, &
+ !                              qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+ !                              
+ !  ! Compute transverse terms to y
+ !  call compute_transverse_terms(i, j, 2,  &
+ !                              T1_Y, T2_Y, T3_Y, T4_Y, &
+ !                              dpdx, dudx, dvdx, drhodx, &
+ !                              q, q_l1, q_l2, q_h1, q_h2, &
+ !                              qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+ !
+ !  ! Calling user target BC values
+ !  ! right face
+ !  call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,.false.,x_bc_type,x_bc_params,x_bc_target)
+ !  x_bcMask(i+1,j) = x_bc_type
+ !
+ !  ! bottom face
+ !  call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,1,.false.,y_bc_type,y_bc_params,y_bc_target)
+ !  y_bcMask(i,j) = y_bc_type
+ !  
+ !  ! Computing the LODI system waves
+ !  call compute_waves_corner(i, j, -1, 1, &
+ !                            x_bc_type, x_bc_params, x_bc_target, &
+ !                            y_bc_type, y_bc_params, y_bc_target, &
+ !                            L1, L2, L3, L4, &
+ !                            M1, M2, M3, M4, &
+ !                            T1_X, T2_X, T3_X, T4_X, &
+ !                            T1_Y, T2_Y, T3_Y, T4_Y, &
+ !                            dpdx, dudx, dvdx, drhodx, &
+ !                            dpdy, dudy, dvdy, drhody, &
+ !                            q, q_l1, q_l2, q_h1, q_h2, &
+ !                            qaux, qa_l1, qa_l2, qa_h1, qa_h2) 
+ !  
+ !  ! Along X
+ !  ! Recomputing ghost-cells values with the LODI waves
+ !  call update_ghost_cells(i, j, x_bcMask(i+1,j), 1, -1, dx, &
+ !                          domlo, domhi, &
+ !                          L1, L2, L3, L4, &
+ !                          uin, uin_l1, uin_l2, uin_h1, uin_h2, &
+ !                          q, q_l1, q_l2, q_h1, q_h2, &
+ !                          qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+ !
+ !
+ !  ! Along Y
+ !  ! Recomputing ghost-cells values with the LODI waves
+ !  call update_ghost_cells(i, j, y_bcMask(i,j), 2, 1, dy, &
+ !                          domlo, domhi, &
+ !                          M1, M2, M3, M4, &
+ !                          uin, uin_l1, uin_l2, uin_h1, uin_h2, &
+ !                          q, q_l1, q_l2, q_h1, q_h2, &
+ !                          qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+ !
+ !endif
+ !
+ !!--------------------------------------------------------------------------   
+ !! upper left corner (0,Ly)
+ !! phi = 4, psi = 1
+ !!--------------------------------------------------------------------------
+ !
+ !if ((q_lo(1) < domlo(1)) .and. (q_hi(2) > domhi(2))) then
+ !
+ !  i = domlo(1)
+ !  j = domhi(2)
+ !  
+ !  x   = (dble(i)+HALF)*dx
+ !  y   = (dble(j)+HALF)*dy
+ !     
+ !  ! Normal derivative along x
+ !  call normal_derivative(i, j, 1, 1, dx, &
+ !                         dpdx, dudx, dvdx, drhodx, &
+ !                         q, q_l1, q_l2, q_h1, q_h2)
+ !                           
+ !  ! Normal derivative along y
+ !  call normal_derivative(i, j, 2, -1, dy, &
+ !                         dpdy, dudy, dvdy, drhody, &
+ !                         q, q_l1, q_l2, q_h1, q_h2)
+ !                         
+ !  ! Compute transverse terms to x
+ !  call compute_transverse_terms(i, j, 1,  &
+ !                              T1_X, T2_X, T3_X, T4_X, &
+ !                              dpdy, dudy, dvdy, drhody, &
+ !                              q, q_l1, q_l2, q_h1, q_h2, &
+ !                              qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+ !                              
+ !  ! Compute transverse terms to y
+ !  call compute_transverse_terms(i, j, 2,  &
+ !                              T1_Y, T2_Y, T3_Y, T4_Y, &
+ !                              dpdx, dudx, dvdx, drhodx, &
+ !                              q, q_l1, q_l2, q_h1, q_h2, &
+ !                              qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+ !                         
+ !  
+ !  ! Calling user target BC values
+ !  ! left face
+ !  call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,x_bc_type,x_bc_params,x_bc_target)
+ !  x_bcMask(i,j) = x_bc_type
+ !
+ !  ! top face
+ !  call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,-1,.false.,y_bc_type,y_bc_params,y_bc_target)
+ !  y_bcMask(i,j+1) = y_bc_type
+ !
+ !  ! Computing the LODI system waves
+ !  call compute_waves_corner(i, j, 1, -1, &
+ !                            x_bc_type, x_bc_params, x_bc_target, &
+ !                            y_bc_type, y_bc_params, y_bc_target, &
+ !                            L1, L2, L3, L4, &
+ !                            M1, M2, M3, M4, &
+ !                            T1_X, T2_X, T3_X, T4_X, &
+ !                            T1_Y, T2_Y, T3_Y, T4_Y, &
+ !                            dpdx, dudx, dvdx, drhodx, &
+ !                            dpdy, dudy, dvdy, drhody, &
+ !                            q, q_l1, q_l2, q_h1, q_h2, &
+ !                            qaux, qa_l1, qa_l2, qa_h1, qa_h2) 
+ !  
+ !  ! Along X
+ !  ! Recomputing ghost-cells values with the LODI waves
+ !  call update_ghost_cells(i, j, x_bcMask(i,j), 1, 1, dx, &
+ !                          domlo, domhi, &
+ !                          L1, L2, L3, L4, &
+ !                          uin, uin_l1, uin_l2, uin_h1, uin_h2, &
+ !                          q, q_l1, q_l2, q_h1, q_h2, &
+ !                          qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+ !
+ !
+ !  ! Along Y
+ !  ! Recomputing ghost-cells values with the LODI waves
+ !  call update_ghost_cells(i, j, y_bcMask(i,j+1), 2, -1, dy, &
+ !                          domlo, domhi, &
+ !                          M1, M2, M3, M4, &
+ !                          uin, uin_l1, uin_l2, uin_h1, uin_h2, &
+ !                          q, q_l1, q_l2, q_h1, q_h2, &
+ !                          qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+ !
+ !endif
+ !
+ !!--------------------------------------------------------------------------   
+ !! Bottom left corner (0,0)
+ !! phi = 4, psi = 4
+ !!--------------------------------------------------------------------------
+ !
+ !if ((q_lo(1) < domlo(1)) .and. (q_lo(2) < domlo(2))) then
+ !
+ !  i = domlo(1)
+ !  j = domlo(2)
+ !  
+ !  x   = (dble(i)+HALF)*dx
+ !  y   = (dble(j)+HALF)*dy
+ !  
+ !  ! Normal derivative along x
+ !  call normal_derivative(i, j, 1, 1, dx, &
+ !                         dpdx, dudx, dvdx, drhodx, &
+ !                         q, q_l1, q_l2, q_h1, q_h2)
+ !                           
+ !  ! Normal derivative along y
+ !  call normal_derivative(i, j, 2, 1, dy, &
+ !                         dpdy, dudy, dvdy, drhody, &
+ !                         q, q_l1, q_l2, q_h1, q_h2)
+ !                         
+ !     
+ !  ! Compute transverse terms to x
+ !  call compute_transverse_terms(i, j, 1,  &
+ !                              T1_X, T2_X, T3_X, T4_X, &
+ !                              dpdy, dudy, dvdy, drhody, &
+ !                              q, q_l1, q_l2, q_h1, q_h2, &
+ !                              qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+ !                              
+ !  ! Compute transverse terms to y
+ !  call compute_transverse_terms(i, j, 2,  &
+ !                              T1_Y, T2_Y, T3_Y, T4_Y, &
+ !                              dpdx, dudx, dvdx, drhodx, &
+ !                              q, q_l1, q_l2, q_h1, q_h2, &
+ !                              qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+ !                         
+ !  ! Calling user target BC values
+ !  ! left face
+ !  call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,x_bc_type,x_bc_params,x_bc_target)
+ !  x_bcMask(i,j) = x_bc_type
+ !
+ !  !! bottom face
+ !  call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,1,.false.,y_bc_type,y_bc_params,y_bc_target)
+ !  y_bcMask(i,j) = y_bc_type
+ !
+ !  ! Computing the LODI system waves
+ !  call compute_waves_corner(i, j, 1, 1, &
+ !                          x_bc_type, x_bc_params, x_bc_target, &
+ !                          y_bc_type, y_bc_params, y_bc_target, &
+ !                          L1, L2, L3, L4, &
+ !                          M1, M2, M3, M4, &
+ !                          T1_X, T2_X, T3_X, T4_X, &
+ !                          T1_Y, T2_Y, T3_Y, T4_Y, &
+ !                          dpdx, dudx, dvdx, drhodx, &
+ !                          dpdy, dudy, dvdy, drhody, &
+ !                          q, q_l1, q_l2, q_h1, q_h2, &
+ !                          qaux, qa_l1, qa_l2, qa_h1, qa_h2)  
+ ! 
+ !  ! Along X
+ !  ! Recomputing ghost-cells values with the LODI waves
+ !  call update_ghost_cells(i, j, x_bcMask(i,j), 1, 1, dx, &
+ !                          domlo, domhi, &
+ !                          L1, L2, L3, L4, &
+ !                          uin, uin_l1, uin_l2, uin_h1, uin_h2, &
+ !                          q, q_l1, q_l2, q_h1, q_h2, &
+ !                          qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+ !
+ !  ! Along Y
+ !  ! Recomputing ghost-cells values with the LODI waves
+ !  call update_ghost_cells(i, j, y_bcMask(i,j), 2, 1, dy, &
+ !                          domlo, domhi, &
+ !                          M1, M2, M3, M4, &
+ !                          uin, uin_l1, uin_l2, uin_h1, uin_h2, &
+ !                          q, q_l1, q_l2, q_h1, q_h2, &
+ !                          qaux, qa_l1, qa_l2, qa_h1, qa_h2)
+ !
+ !endif
+
+endif ! flag_nscbc_isAnyPerio ) 
 
  !--------------------------------------------------------------------------   
  ! lower X

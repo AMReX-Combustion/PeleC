@@ -45,7 +45,7 @@ contains
     rho_only = .FALSE.
 
     !     XLO
-    if ( (bc(1,1,1).eq.EXT_DIR).and. adv_lo(1).lt.domlo(1)) then
+    if ( (bc(1,1,1).eq.EXT_DIR.or.bc(1,1,1).eq.FOEXTRAP).and. adv_lo(1).lt.domlo(1)) then
        do i = adv_lo(1), domlo(1)-1
           x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
           do j = adv_lo(2), adv_hi(2)
@@ -59,7 +59,7 @@ contains
     end if
 
     !     XHI
-    if ( (bc(1,2,1).eq.EXT_DIR).and. adv_hi(1).gt.domhi(1)) then
+    if ( (bc(1,2,1).eq.EXT_DIR.or.bc(1,2,1).eq.FOEXTRAP).and. adv_hi(1).gt.domhi(1)) then
        do i = domhi(1)+1, adv_hi(1)
           x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
           do j = adv_lo(2), adv_hi(2)
@@ -72,63 +72,65 @@ contains
        end do
     end if
 
-    !     YLO
-    if ( (bc(2,1,1).eq.EXT_DIR).and. adv_lo(2).lt.domlo(2)) then
-       do i = adv_lo(1), adv_hi(1)
-          x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
-          do j = adv_lo(2), domlo(2)-1
-             x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
-             do k = adv_lo(3), adv_hi(3)
-                x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(i,domlo(2),k,:),adv(i,j,k,:),2,+1,rho_only)
+    if (dim .gt. 1) then
+       !     YLO
+       if ( (bc(2,1,1).eq.EXT_DIR.or.bc(2,1,1).eq.FOEXTRAP).and. adv_lo(2).lt.domlo(2)) then
+          do i = adv_lo(1), adv_hi(1)
+             x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
+             do j = adv_lo(2), domlo(2)-1
+                x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
+                do k = adv_lo(3), adv_hi(3)
+                   x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
+                   call bcnormal(x,adv(i,domlo(2),k,:),adv(i,j,k,:),2,+1,rho_only)
+                end do
              end do
           end do
-       end do
-    end if
+       end if
 
-    !     YHI
-    if ( (bc(2,2,1).eq.EXT_DIR).and. adv_hi(2).gt.domhi(2)) then
-       do i = adv_lo(1), adv_hi(1)
-          x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
-          do j = domhi(2)+1, adv_hi(2)
-             x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
-             do k = adv_lo(3), adv_hi(3)
-                x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(i,domhi(2),k,:),adv(i,j,k,:),2,-1,rho_only)
+       !     YHI
+       if ( (bc(2,2,1).eq.EXT_DIR.or.bc(2,2,1).eq.FOEXTRAP).and. adv_hi(2).gt.domhi(2)) then
+          do i = adv_lo(1), adv_hi(1)
+             x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
+             do j = domhi(2)+1, adv_hi(2)
+                x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
+                do k = adv_lo(3), adv_hi(3)
+                   x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
+                   call bcnormal(x,adv(i,domhi(2),k,:),adv(i,j,k,:),2,-1,rho_only)
+                end do
              end do
           end do
-       end do
-    end if
+       end if
 
-    !     ZLO
-    if ( (bc(2,1,1).eq.EXT_DIR).and. adv_lo(2).lt.domlo(2)) then
-       do i = adv_lo(1), adv_hi(1)
-          x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
-          do j = adv_lo(2), domlo(2)-1
-             x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
-             do k = adv_lo(3), adv_hi(3)
-                x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(i,j,domlo(3),:),adv(i,j,k,:),3,+1,rho_only)
+       if (dim .gt. 2) then
+          !     ZLO
+          if ( (bc(3,1,1).eq.EXT_DIR.or.bc(3,1,1).eq.FOEXTRAP).and. adv_lo(3).lt.domlo(3)) then
+             do i = adv_lo(1), adv_hi(1)
+                x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
+                do j = adv_lo(2), adv_hi(2)
+                   x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
+                   do k = adv_lo(3), domlo(3)-1
+                      x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
+                      call bcnormal(x,adv(i,j,domlo(3),:),adv(i,j,k,:),3,+1,rho_only)
+                   end do
+                end do
              end do
-          end do
-       end do
-    end if
-    
-    !     ZHI
-    if ( (bc(2,2,1).eq.EXT_DIR).and. adv_hi(2).gt.domhi(2)) then
-       do i = adv_lo(1), adv_hi(1)
-          x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
-          do j = domhi(2)+1, adv_hi(2)
-             x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
-             do k = adv_lo(3), adv_hi(3)
-                x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(i,j,domhi(3),:),adv(i,j,k,:),3,-1,rho_only)
+          end if
+
+          !     ZHI
+          if ( (bc(3,2,1).eq.EXT_DIR.or.bc(3,2,1).eq.FOEXTRAP).and. adv_hi(3).gt.domhi(3)) then
+             do i = adv_lo(1), adv_hi(1)
+                x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
+                do j = adv_lo(2), adv_hi(2)
+                   x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
+                   do k = domhi(3)+1, adv_hi(3)
+                      x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
+                      call bcnormal(x,adv(i,j,domhi(3),:),adv(i,j,k,:),3,-1,rho_only)
+                   end do
+                end do
              end do
-          end do
-       end do
+          end if
+       end if
     end if
-
-
 
   end subroutine pc_hypfill
 
@@ -158,7 +160,7 @@ contains
     rho_only = .TRUE.
 
     !     XLO
-    if ( (bc(1,1,1).eq.EXT_DIR).and.adv_lo(1).lt.domlo(1)) then
+    if ( (bc(1,1,1).eq.EXT_DIR.or.bc(1,1,1).eq.FOEXTRAP).and.adv_lo(1).lt.domlo(1)) then
        do i = adv_lo(1), domlo(1)-1
           x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
           do j = adv_lo(2), adv_hi(2)
@@ -172,7 +174,7 @@ contains
     end if
 
     !     XHI
-    if ( (bc(1,2,1).eq.EXT_DIR).and.adv_hi(1).gt.domhi(1)) then
+    if ( (bc(1,2,1).eq.EXT_DIR.or.bc(1,2,1).eq.FOEXTRAP).and.adv_hi(1).gt.domhi(1)) then
        do i = domhi(1)+1, adv_hi(1)
           x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
           do j = adv_lo(2), adv_hi(2)
@@ -185,63 +187,65 @@ contains
        end do
     end if
 
-    !     YLO
-    if ( (bc(2,1,1).eq.EXT_DIR).and.adv_lo(2).lt.domlo(2)) then
-       do i = adv_lo(1), adv_hi(1)
-          x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
-          do j = adv_lo(2), domlo(2)-1
-             x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
-             do k = adv_lo(3), adv_hi(3)
-                x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(i,domlo(2),k),adv(i,j,k),2,+1,rho_only)
+    if (dim > 1) then
+       !     YLO
+       if ( (bc(2,1,1).eq.EXT_DIR.or.bc(2,1,1).eq.FOEXTRAP).and.adv_lo(2).lt.domlo(2)) then
+          do i = adv_lo(1), adv_hi(1)
+             x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
+             do j = adv_lo(2), domlo(2)-1
+                x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
+                do k = adv_lo(3), adv_hi(3)
+                   x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
+                   call bcnormal(x,adv(i,domlo(2),k),adv(i,j,k),2,+1,rho_only)
+                end do
              end do
           end do
-       end do
-    end if
+       end if
 
-    !     YHI
-    if ( (bc(2,2,1).eq.EXT_DIR).and.adv_hi(2).gt.domhi(2)) then
-       do i = adv_lo(1), adv_hi(1)
-          x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
-          do j = domhi(2)+1, adv_hi(2)
-             x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
-             do k = adv_lo(3), adv_hi(3)
-                x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(i,domhi(2),k),adv(i,j,k),2,-1,rho_only)
+       !     YHI
+       if ( (bc(2,2,1).eq.EXT_DIR.or.bc(2,2,1).eq.FOEXTRAP).and.adv_hi(2).gt.domhi(2)) then
+          do i = adv_lo(1), adv_hi(1)
+             x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
+             do j = domhi(2)+1, adv_hi(2)
+                x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
+                do k = adv_lo(3), adv_hi(3)
+                   x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
+                   call bcnormal(x,adv(i,domhi(2),k),adv(i,j,k),2,-1,rho_only)
+                end do
              end do
           end do
-       end do
-    end if
+       end if
 
-    !     ZLO
-    if ( (bc(3,1,1).eq.EXT_DIR).and.adv_lo(3).lt.domlo(3)) then
-       do i = adv_lo(1), adv_hi(1)
-          x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
-          do j = adv_lo(2), domlo(2)-1
-             x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
-             do k = adv_lo(3), adv_hi(3)
-                x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(i,j,domlo(3)),adv(i,j,k),3,+1,rho_only)
+       if (dim > 2) then
+          !     ZLO
+          if ( (bc(3,1,1).eq.EXT_DIR.or.bc(3,1,1).eq.FOEXTRAP).and.adv_lo(3).lt.domlo(3)) then
+             do i = adv_lo(1), adv_hi(1)
+                x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
+                do j = adv_lo(2), domlo(2)-1
+                   x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
+                   do k = adv_lo(3), adv_hi(3)
+                      x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
+                      call bcnormal(x,adv(i,j,domlo(3)),adv(i,j,k),3,+1,rho_only)
+                   end do
+                end do
              end do
-          end do
-       end do
-    end if
-    
-    !     ZHI
-    if ( (bc(3,2,1).eq.EXT_DIR).and.adv_hi(3).gt.domhi(3)) then
-       do i = adv_lo(1), adv_hi(1)
-          x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
-          do j = domhi(2)+1, adv_hi(2)
-             x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
-             do k = adv_lo(3), adv_hi(3)
-                x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(i,j,domhi(3)),adv(i,j,k),3,-1,rho_only)
+          end if
+
+          !     ZHI
+          if ( (bc(3,2,1).eq.EXT_DIR.or.bc(3,2,1).eq.FOEXTRAP).and.adv_hi(3).gt.domhi(3)) then
+             do i = adv_lo(1), adv_hi(1)
+                x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
+                do j = domhi(2)+1, adv_hi(2)
+                   x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
+                   do k = adv_lo(3), adv_hi(3)
+                      x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
+                      call bcnormal(x,adv(i,j,domhi(3)),adv(i,j,k),3,-1,rho_only)
+                   end do
+                end do
              end do
-          end do
-       end do
+          end if
+       end if
     end if
-
-
     
   end subroutine pc_denfill
 
@@ -321,10 +325,21 @@ contains
 
     ! For this test case, all BCs are outflow, so we don't care about the direction and the sign
 
+
     ! Set outflow pressure
     which_bc_type = Outflow
     sigma_out = 0.28d0
     beta = 0.5d0
+
+     if (dir == 1) then           
+      if (sgn == 1) then        
+       
+        ! Set outflow pressure   
+        which_bc_type = SlipWall
+      end if
+    end if
+
+
   
     u(1:3) = 0.d0
     eos_state % massfrac(1) = 1.d0
