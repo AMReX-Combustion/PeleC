@@ -1,5 +1,5 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
-max_step = 200
+max_step = 100
 stop_time = 1.0e-3
 #pelec.fixed_dt = 1e-10
 # PROBLEM SIZE & GEOMETRY
@@ -10,8 +10,8 @@ geometry.prob_hi     =   0.013  0.013 0.013
 # use with single level
 #amr.n_cell           =  8 8
 amr.n_cell           =  16  16  16
-#amr.n_cell           =  32 32
-amr.n_cell           =  64 64 64
+amr.n_cell           =  32 32 32
+#amr.n_cell           =  64 64 64
 #amr.n_cell           =  128 128
 #amr.n_cell           =  256 256
 
@@ -22,7 +22,7 @@ amr.n_cell           =  64 64 64
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
 pelec.lo_bc       =  4  4  4
 pelec.hi_bc       =  4  4  4
-pelec.i_nscbc =  0
+pelec.i_nscbc =  1
 
 # WHICH PHYSICS
 pelec.do_hydro = 1

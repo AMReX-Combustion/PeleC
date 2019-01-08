@@ -1088,7 +1088,6 @@ end subroutine impose_NSCBC
          + (q(i,j,k,QW)*(dpdz - q(i,j,k,QRHO)*qaux(i,j,k,QC)*dudz)) &  
          + (qaux(i,j,k,QGAMC) * q(i,j,k,QPRES)*(dvdy + dwdz))
      
-     
      T2 =  (q(i,j,k,QV)*((qaux(i,j,k,QC)*qaux(i,j,k,QC)*drhody)-dpdy))  &
          + (q(i,j,k,QW)*((qaux(i,j,k,QC)*qaux(i,j,k,QC)*drhodz)-dpdz))
        
@@ -1508,16 +1507,16 @@ end subroutine impose_NSCBC
        q(i,j,idx_gc2,QU)    = wall_sign*q(i,j,idx_int1,QU)
        q(i,j,idx_gc3,QU)    = wall_sign*q(i,j,idx_int2,QU)
        q(i,j,idx_gc4,QU)    = wall_sign*q(i,j,idx_int3,QU)
+              
+       q(i,j,idx_gc1,QV)    = wall_sign*q(i,j,k,QV)
+       q(i,j,idx_gc2,QV)    = wall_sign*q(i,j,idx_int1,QV)
+       q(i,j,idx_gc3,QV)    = wall_sign*q(i,j,idx_int2,QV)
+       q(i,j,idx_gc4,QV)    = wall_sign*q(i,j,idx_int3,QV)
        
-       q(i,j,idx_gc1,QV)    = -q(i,j,k,QV)
-       q(i,j,idx_gc2,QV)    = -q(i,j,idx_int1,QV)
-       q(i,j,idx_gc3,QV)    = -q(i,j,idx_int2,QV)
-       q(i,j,idx_gc4,QV)    = -q(i,j,idx_int3,QV)
-       
-       q(i,j,idx_gc1,QW)    = wall_sign*q(i,j,k,QW)
-       q(i,j,idx_gc2,QW)    = wall_sign*q(i,j,idx_int1,QW)
-       q(i,j,idx_gc3,QW)    = wall_sign*q(i,j,idx_int2,QW)
-       q(i,j,idx_gc4,QW)    = wall_sign*q(i,j,idx_int3,QW)
+       q(i,j,idx_gc1,QW)    = -q(i,j,k,QW)
+       q(i,j,idx_gc2,QW)    = -q(i,j,idx_int1,QW)
+       q(i,j,idx_gc3,QW)    = -q(i,j,idx_int2,QW)
+       q(i,j,idx_gc4,QW)    = -q(i,j,idx_int3,QW)
        
        q(i,j,idx_gc1,QRHO)  = q(i,j,k,QRHO)
        q(i,j,idx_gc2,QRHO)  = q(i,j,idx_int1,QRHO)
