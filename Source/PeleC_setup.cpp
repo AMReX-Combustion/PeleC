@@ -373,6 +373,8 @@ PeleC::variableSetUp ()
 
     Vector<BCRec>       bcs(NUM_STATE);
     Vector<std::string> name(NUM_STATE);
+    Vector<BCRec>       react_bcs(NumSpec+1);
+    Vector<std::string> react_name(NumSpec+1);
 
     BCRec bc;
     cnt = 0;
@@ -457,14 +459,20 @@ PeleC::variableSetUp ()
 			  BndryFunc(pc_denfill,pc_hypfill));
 
 #ifdef REACTIONS
-    std::string name_react;
-    for (int i=0; i<NumSpec; ++i)
-    {
-	set_react_src_bc(bc,phys_bc);
-	name_react = "rho_omega_" + spec_names[i];
-	desc_lst.setComponent(Reactions_Type, i, name_react, bc,BndryFunc(pc_reactfill));
+    for (int i=0; i<NumSpec; ++i) {
+      set_react_src_bc(bc, phys_bc);
+      react_bcs[i] = bc;
+      react_name[i] = "rho_omega_" + spec_names[i];
     }
-    desc_lst.setComponent(Reactions_Type, NumSpec  , "rhoe_dot", bc, BndryFunc(pc_reactfill));
+   set_react_src_bc(bc, phys_bc);
+   react_bcs[NumSpec] = bc;
+   react_name[NumSpec] = "rhoe_dot";
+
+   desc_lst.setComponent(Reactions_Type,
+                         0,
+                         react_name,
+                         react_bcs,
+                         BndryFunc(pc_denfill, pc_reactfill));
 #endif
 
 #ifdef REACTIONS
