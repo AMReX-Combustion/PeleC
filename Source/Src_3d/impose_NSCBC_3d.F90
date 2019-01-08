@@ -1252,8 +1252,8 @@ end subroutine impose_NSCBC
      q(idx_gc2,j,k,QU)    = -2.0d0*q(idx_int1,j,k,QU) - 3.0d0*q(i,j,k,QU) + 6.0d0*q(idx_gc1,j,k,QU) + 6.0d0*delta*du*isign
      q(idx_gc2,j,k,QV)    = -2.0d0*q(idx_int1,j,k,QV) - 3.0d0*q(i,j,k,QV) + 6.0d0*q(idx_gc1,j,k,QV) + 6.0d0*delta*dv*isign
      q(idx_gc2,j,k,QW)    = -2.0d0*q(idx_int1,j,k,QW) - 3.0d0*q(i,j,k,QW) + 6.0d0*q(idx_gc1,j,k,QW) + 6.0d0*delta*dw*isign
-     q(idx_gc2,j,k,QRHO)    = -2.0d0*q(idx_int1,j,k,QRHO) - 3.0d0*q(i,j,k,QRHO) + 6.0d0*q(idx_gc1,j,k,QRHO) + 6.0d0*delta*drho*isign
-     q(idx_gc2,j,k,QPRES)    = -2.0d0*q(idx_int1,j,k,QPRES) - 3.0d0*q(i,j,k,QPRES) + 6.0d0*q(idx_gc1,j,k,QPRES) + 6.0d0*delta*dp*isign
+     q(idx_gc2,j,k,QRHO)  = -2.0d0*q(idx_int1,j,k,QRHO) - 3.0d0*q(i,j,k,QRHO) + 6.0d0*q(idx_gc1,j,k,QRHO) + 6.0d0*delta*drho*isign
+     q(idx_gc2,j,k,QPRES) = -2.0d0*q(idx_int1,j,k,QPRES) - 3.0d0*q(i,j,k,QPRES) + 6.0d0*q(idx_gc1,j,k,QPRES) + 6.0d0*delta*dp*isign
   
      q(idx_gc3,j,k,QU)    = 3.0d0*q(idx_int1,j,k,QU) +10.0d0*q(i,j,k,QU) - 18.0d0*q(idx_gc1,j,k,QU) &
                           + 6.0d0*q(idx_gc2,j,k,QU) - 12.0d0*delta*du*isign
@@ -1703,7 +1703,7 @@ end subroutine impose_NSCBC
         L5 = (Kout*(q(i,j,k,QPRES) - TARGET_PRESSURE)) - ((1.0d0 - beta)*T5)
       elseif (isign == -1) then
         L1 = (Kout*(q(i,j,k,QPRES) - TARGET_PRESSURE)) - ((1.0d0 - beta)*T1)
-        L4 = (q(i,j,k,QU)+qaux(i,j,k,QC))* (dp + (q(i,j,k,QRHO)*qaux(i,j,k,QC))*du)
+        L5 = (q(i,j,k,QU)+qaux(i,j,k,QC))* (dp + (q(i,j,k,QRHO)*qaux(i,j,k,QC))*du)
       endif
 
       L2 = q(i,j,k,QU) * ( ((qaux(i,j,k,QC)**2.0d0)*drho) - dp)
