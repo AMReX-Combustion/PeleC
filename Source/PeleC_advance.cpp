@@ -579,19 +579,6 @@ PeleC::initialize_sdc_advance(Real time,
 
   for (int i = 0; i < num_state_type; ++i)
   {
-    // The following is a hack to make sure that we only
-    // ever have new data for a few state types that only
-    // ever need new time data; by doing a swap now, we'll
-    // guarantee that allocOldData() does nothing. We do
-    // this because we never need the old data, so we
-    // don't want to allocate memory for it.
-#ifdef REACTIONS
-    if (i == SDC_React_Type)
-    {
-      state[i].swapTimeLevels(0.0);
-    }
-#endif
-
     state[i].allocOldData();
     state[i].swapTimeLevels(dt);
   }

@@ -384,14 +384,6 @@ PeleC::setPlotVariables ()
 {
     AmrLevel::setPlotVariables();
 
-    // Don't add the SDC_React_Type data to the plotfile, we only
-    // want to store it in the checkpoints.
-
-#ifdef REACTIONS
-    for (int i = 0; i < desc_lst[SDC_React_Type].nComp(); i++)
-	parent->deleteStatePlotVar(desc_lst[SDC_React_Type].name(i));
-#endif
-
     ParmParse pp("pelec");
 
 #ifdef AMREX_USE_EB

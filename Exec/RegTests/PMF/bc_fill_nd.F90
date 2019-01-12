@@ -249,7 +249,7 @@ contains
 
   end subroutine pc_denfill
 
-  subroutine bcnormal(x,u_int,u_ext,dir,sgn,rho_only)
+  subroutine bcnormal(x,u_int,u_ext,dir,sgn,rho_only,bc_type,bc_params,bc_target)
 
     use probdata_module
     use eos_type_module
@@ -267,6 +267,10 @@ contains
     double precision :: u_int(NVAR),u_ext(NVAR)
     logical rho_only
     integer :: dir,sgn, nPMF
+
+    integer, optional, intent(out) :: bc_type
+    double precision, optional, intent(out) :: bc_params(6)
+    double precision, optional, intent(out) :: bc_target(5)
 
     type (eos_t) :: eos_state
     double precision :: u(3), rho_inv

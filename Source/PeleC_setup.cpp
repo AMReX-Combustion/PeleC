@@ -363,14 +363,6 @@ PeleC::variableSetUp ()
 			   &cell_cons_interp,state_data_extrap,store_in_checkpoint);
 #endif
 
-    // We also want to store the reactions source.
-#ifdef REACTIONS
-    store_in_checkpoint = true;
-    desc_lst.addDescriptor(SDC_React_Type, IndexType::TheCellType(),
-			   StateDescriptor::Point,NUM_GROW,QVAR,
-			   &cell_cons_interp,state_data_extrap,store_in_checkpoint);
-#endif
-
     Vector<BCRec>       bcs(NUM_STATE);
     Vector<std::string> name(NUM_STATE);
     Vector<BCRec>       react_bcs(NumSpec+1);
@@ -473,15 +465,6 @@ PeleC::variableSetUp ()
                          react_name,
                          react_bcs,
                          BndryFunc(pc_denfill, pc_reactfill));
-#endif
-
-#ifdef REACTIONS
-    for (int i = 0; i < QVAR; ++i) {
-	char buf[64];
-	sprintf(buf, "sdc_react_source_%d", i);
-	set_scalar_bc(bc,phys_bc);
-	desc_lst.setComponent(SDC_React_Type,i,std::string(buf),bc,BndryFunc(pc_denfill));
-    }
 #endif
 
 

@@ -495,7 +495,6 @@ PeleC::PeleC (Amr&            papa,
   
 #ifdef REACTIONS
   get_new_data(Reactions_Type).setVal(0.0);
-  get_new_data(SDC_React_Type).setVal(0.0);
 #endif
 
   // initialize the Godunov state array used in hydro -- we wait
@@ -692,7 +691,6 @@ PeleC::initData ()
 
 #ifdef REACTIONS
   get_new_data(Reactions_Type).setVal(0.);
-  get_new_data(SDC_React_Type).setVal(0.0);
 #endif
 
   if (do_mol_load_balance || do_react_load_balance)
@@ -764,17 +762,14 @@ PeleC::init (AmrLevel &old)
 
 #ifdef REACTIONS
   MultiFab& React_new = get_new_data(Reactions_Type);
-  MultiFab& react_src_new = get_new_data(SDC_React_Type);
 
   if (do_react)
   {
     FillPatch(old,React_new,0,cur_time,Reactions_Type,0,React_new.nComp());
-    FillPatch(old,react_src_new,0,cur_time,SDC_React_Type,0,react_src_new.nComp());
   }
   else
   {
     React_new.setVal(0);
-    react_src_new.setVal(0);
   }
 #endif
 
@@ -1392,9 +1387,6 @@ PeleC::avgDown ()
   avgDown(Reactions_Type);
 #endif
 
-#ifdef REACTIONS
-  avgDown(SDC_React_Type);
-#endif
 }
 
 void

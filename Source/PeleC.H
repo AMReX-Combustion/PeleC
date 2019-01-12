@@ -33,8 +33,7 @@ using std::ostream;
 
 enum StateType { State_Type = 0
 #ifdef REACTIONS
-                 ,Reactions_Type,
-                 SDC_React_Type
+                 ,Reactions_Type
 #endif
                  , Work_Estimate_Type
 };
