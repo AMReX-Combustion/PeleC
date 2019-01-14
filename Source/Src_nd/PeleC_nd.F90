@@ -572,16 +572,16 @@ subroutine set_method_params(dm,Density,Xmom,Eden,Eint,Temp, &
 
   ! Update device variables
 
-  !$acc update &
-  !$acc device(NTHERM, NVAR) &
-  !$acc device(NQ) &
-  !$acc device(URHO, UMX, UMY, UMZ, UMR, UML, UMP, UEDEN, UEINT, UTEMP, UFA, UFS, UFX) &
-  !$acc device(USHK) &
-  !$acc device(QTHERM, QVAR) &
-  !$acc device(QRHO, QU, QV, QW, QPRES, QREINT, QTEMP, QGAME) &
-  !$acc device(QFA, QFS, QFX) &
-  !$acc device(NQAUX, QGAMC, QC, QCSML, QDPDR, QDPDE, QRSPEC) &
-  !$acc device(small_dens, small_temp)
+  !acc update &
+  !acc device(NTHERM, NVAR) &
+  !acc device(NQ) &
+  !acc device(URHO, UMX, UMY, UMZ, UMR, UML, UMP, UEDEN, UEINT, UTEMP, UFA, UFS, UFX) &
+  !acc device(USHK) &
+  !acc device(QTHERM, QVAR) &
+  !acc device(QRHO, QU, QV, QW, QPRES, QREINT, QTEMP, QGAME) &
+  !acc device(QFA, QFS, QFX) &
+  !acc device(NQAUX, QGAMC, QC, QCSML, QDPDR, QDPDE, QRSPEC) &
+  !acc device(small_dens, small_temp)
 
 end subroutine set_method_params
 

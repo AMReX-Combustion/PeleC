@@ -1,6 +1,6 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 stop_time = 6
-max_step = 5
+max_step = 2
 
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic = 1 1 0
@@ -37,7 +37,7 @@ amr.max_grid_size   = 64
 amr.n_error_buf     = 2 8 2 2 # number of buffer cells in error est
 
 # CHECKPOINT FILES
-amr.checkpoint_files_output = 1
+amr.checkpoint_files_output = 0
 amr.check_file              = chk    # root name of checkpoint file
 amr.check_int               = 500    # number of timesteps between checkpoints
 
@@ -59,3 +59,5 @@ pelec.diffuse_spec=1
 pelec.diffuse_vel=1
 pelec.sdc_iters = 2
 pelec.flame_trac_name = HO2
+
+amrex.signal_handling=0
