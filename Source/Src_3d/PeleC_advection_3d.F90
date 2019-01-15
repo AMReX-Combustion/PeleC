@@ -528,9 +528,11 @@ contains
                       z_bcMask,z_bcMask_lo,z_bcMask_hi, &
                       3,lo(1),hi(1),lo(2),hi(2),kc,k3d,k3d,domlo,domhi)
 
-          do j=lo(2)-1,hi(2)+1
-             do i=lo(1)-1,hi(1)+1
-                q3(i,j,k3d,:) = qgdnvzf(i,j,kc,:)
+          do n=1,NGDNV
+             do j=lo(2)-1,hi(2)+1
+                do i=lo(1)-1,hi(1)+1
+                   q3(i,j,k3d,n) = qgdnvzf(i,j,kc,n)
+                end do
              end do
           end do
 
@@ -600,9 +602,11 @@ contains
                          x_bcMask,x_bcMask_lo,x_bcMask_hi, &
                          1,lo(1),hi(1)+1,lo(2),hi(2),km,k3d-1,k3d-1,domlo,domhi)
 
-             do j=lo(2)-1,hi(2)+1
-                do i=lo(1)-1,hi(1)+2
-                   q1(i,j,k3d-1,:) = qgdnvxf(i,j,km,:)
+             do n=1,NGDNV
+                do j=lo(2)-1,hi(2)+1
+                   do i=lo(1)-1,hi(1)+2
+                      q1(i,j,k3d-1,n) = qgdnvxf(i,j,km,n)
+                   end do
                 end do
              end do
 
@@ -615,9 +619,11 @@ contains
                          y_bcMask,y_bcMask_lo,y_bcMask_hi, &
                          2,lo(1),hi(1),lo(2),hi(2)+1,km,k3d-1,k3d-1,domlo,domhi)
 
-             do j=lo(2)-1,hi(2)+2
-                do i=lo(1)-1,hi(1)+1
-                   q2(i,j,k3d-1,:) = qgdnvyf(i,j,km,:)
+             do n=1,NGDNV
+                do j=lo(2)-1,hi(2)+2
+                   do i=lo(1)-1,hi(1)+1
+                      q2(i,j,k3d-1,n) = qgdnvyf(i,j,km,n)
+                   end do
                 end do
              end do
 
@@ -795,51 +801,44 @@ contains
     integer          :: domlo(3), domhi(3)
     double precision :: loc(3), ang_mom(3)
 
-    do n = 1, NVAR
+    do n = 1, UTEMP-1
+       call update_var(uin, uin_lo, uin_hi, &
+                   flux1, flux1_lo, flux1_hi, &
+                   flux2, flux2_lo, flux2_hi, &
+                   flux3, flux3_lo, flux3_hi, &
+                   div,lo,hi,dx,n)
+    enddo
 
-       if ( n == UTEMP ) then
+    do n = UTEMP+1, NVAR
+       call update_var(uin, uin_lo, uin_hi, &
+                   flux1, flux1_lo, flux1_hi, &
+                   flux2, flux2_lo, flux2_hi, &
+                   flux3, flux3_lo, flux3_hi, &
+                   div,lo,hi,dx,n)
+    enddo
 
-          flux1(lo(1):hi(1)+1,lo(2):hi(2),lo(3):hi(3),n) = ZERO
-          flux2(lo(1):hi(1),lo(2):hi(2)+1,lo(3):hi(3),n) = ZERO
-          flux3(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3)+1,n) = ZERO
-
-       else
-
-          do k = lo(3),hi(3)
-             do j = lo(2),hi(2)
-                do i = lo(1),hi(1)+1
-                   div1 = FOURTH*(div(i,j,k) + div(i,j+1,k) + div(i,j,k+1) + div(i,j+1,k+1))
-                   div1 = difmag*min(ZERO,div1)
-
-                   flux1(i,j,k,n) = flux1(i,j,k,n) + dx(1) * div1 * (uin(i,j,k,n)-uin(i-1,j,k,n))
-                enddo
-             enddo
+    do k = lo(3),hi(3)
+       do j = lo(2),hi(2)
+          do i = lo(1),hi(1)+1
+             flux1(i,j,k,UTEMP) = ZERO
           enddo
+       enddo
+    enddo
 
-          do k = lo(3),hi(3)
-             do j = lo(2),hi(2)+1
-                do i = lo(1),hi(1)
-                   div1 = FOURTH*(div(i,j,k) + div(i+1,j,k) + div(i,j,k+1) + div(i+1,j,k+1))
-                   div1 = difmag*min(ZERO,div1)
-
-                   flux2(i,j,k,n) = flux2(i,j,k,n) + dx(2) * div1 * (uin(i,j,k,n)-uin(i,j-1,k,n))
-                enddo
-             enddo
+    do k = lo(3),hi(3)
+       do j = lo(2),hi(2)+1
+          do i = lo(1),hi(1)
+             flux2(i,j,k,UTEMP) = ZERO
           enddo
+       enddo
+    enddo
 
-          do k = lo(3),hi(3)+1
-             do j = lo(2),hi(2)
-                do i = lo(1),hi(1)
-                   div1 = FOURTH*(div(i,j,k) + div(i+1,j,k) + div(i,j+1,k) + div(i+1,j+1,k))
-                   div1 = difmag*min(ZERO,div1)
-
-                   flux3(i,j,k,n) = flux3(i,j,k,n) + dx(3) * div1 * (uin(i,j,k,n)-uin(i,j,k-1,n))
-                enddo
-             enddo
+    do k = lo(3),hi(3)+1
+       do j = lo(2),hi(2)
+          do i = lo(1),hi(1)
+             flux3(i,j,k,UTEMP) = ZERO
           enddo
-
-       endif
-
+       enddo
     enddo
 
     if (limit_fluxes_on_small_dens == 1) then
@@ -862,7 +861,6 @@ contains
                                   lo,hi)
 
     ! Make the fluxes extensive
-
     do n = 1, NVAR
        do k = lo(3), hi(3)
           do j = lo(2), hi(2)
@@ -894,36 +892,33 @@ contains
     enddo
 
     ! Fill the update array.
-
     do n = 1, NVAR
        do k = lo(3), hi(3)
           do j = lo(2), hi(2)
              do i = lo(1), hi(1)
-
                 volinv = ONE / vol(i,j,k)
-
                 update(i,j,k,n) = update(i,j,k,n) + ( flux1(i,j,k,n) - flux1(i+1,j,k,n) + &
                                                       flux2(i,j,k,n) - flux2(i,j+1,k,n) + &
                                                       flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * volinv
-
-                ! Add the p div(u) source term to (rho e).
-
-                if (n .eq. UEINT) then
-
-                   update(i,j,k,n) = update(i,j,k,n) - pdivu(i,j,k)
-
-                endif
-
              enddo
           enddo
        enddo
     enddo
 
+    do k = lo(3), hi(3)
+       do j = lo(2), hi(2)
+          do i = lo(1), hi(1)
+             update(i,j,k,UEINT) = update(i,j,k,UEINT) - pdivu(i,j,k)
+          enddo
+       enddo
+    enddo
 
     ! Add up some diagnostic quantities. Note that we are not dividing by the cell volume.
-
     if (verbose .eq. 1) then
-
+       !acc kernels
+       !acc loop collapse(3) &
+       !acc& reduction(+:mass_added_flux) reduction(+:xmom_added_flux) reduction(+:ymom_added_flux) &
+       !acc& reduction(+:zmom_added_flux) reduction(+:E_added_flux)
        do k = lo(3), hi(3)
           do j = lo(2), hi(2)
              do i = lo(1), hi(1)
@@ -945,160 +940,218 @@ contains
              enddo
           enddo
        enddo
-
+       !acc end kernels
     endif
 
-    if (track_grid_losses .eq. 1) then
+    !if (track_grid_losses .eq. 1) then
 
-       domlo = domlo_level(:,amr_level)
-       domhi = domhi_level(:,amr_level)
+    !   domlo = domlo_level(:,amr_level)
+    !   domhi = domhi_level(:,amr_level)
 
-       if (lo(3) .le. domlo(3) .and. hi(3) .ge. domlo(3)) then
+    !   if (lo(3) .le. domlo(3) .and. hi(3) .ge. domlo(3)) then
 
-          k = domlo(3)
-          do j = lo(2), hi(2)
-             do i = lo(1), hi(1)
+    !      k = domlo(3)
+    !      do j = lo(2), hi(2)
+    !         do i = lo(1), hi(1)
 
-                loc = position(i,j,k,ccz=.false.)
+    !            loc = position(i,j,k,ccz=.false.)
 
-                mass_lost = mass_lost - dt*flux3(i,j,k,URHO)
-                xmom_lost = xmom_lost - dt*flux3(i,j,k,UMX)
-                ymom_lost = ymom_lost - dt*flux3(i,j,k,UMY)
-                zmom_lost = zmom_lost - dt*flux3(i,j,k,UMZ)
-                eden_lost = eden_lost - dt*flux3(i,j,k,UEDEN)
+    !            mass_lost = mass_lost - dt*flux3(i,j,k,URHO)
+    !            xmom_lost = xmom_lost - dt*flux3(i,j,k,UMX)
+    !            ymom_lost = ymom_lost - dt*flux3(i,j,k,UMY)
+    !            zmom_lost = zmom_lost - dt*flux3(i,j,k,UMZ)
+    !            eden_lost = eden_lost - dt*flux3(i,j,k,UEDEN)
 
-                ang_mom   = linear_to_angular_momentum(loc - center, flux3(i,j,k,UMX:UMZ))
-                xang_lost = xang_lost - ang_mom(1)*dt
-                yang_lost = yang_lost - ang_mom(2)*dt
-                zang_lost = zang_lost - ang_mom(3)*dt
+    !            ang_mom   = linear_to_angular_momentum(loc - center, flux3(i,j,k,UMX:UMZ))
+    !            xang_lost = xang_lost - ang_mom(1)*dt
+    !            yang_lost = yang_lost - ang_mom(2)*dt
+    !            zang_lost = zang_lost - ang_mom(3)*dt
 
-             enddo
-          enddo
+    !         enddo
+    !      enddo
 
-       endif
+    !   endif
 
-       if (lo(3) .le. domhi(3) .and. hi(3) .ge. domhi(3)) then
+    !   if (lo(3) .le. domhi(3) .and. hi(3) .ge. domhi(3)) then
 
-          k = domhi(3) + 1
-          do j = lo(2), hi(2)
-             do i = lo(1), hi(1)
+    !      k = domhi(3) + 1
+    !      do j = lo(2), hi(2)
+    !         do i = lo(1), hi(1)
 
-                loc = position(i,j,k,ccz=.false.)
+    !            loc = position(i,j,k,ccz=.false.)
 
-                mass_lost = mass_lost + dt*flux3(i,j,k,URHO)
-                xmom_lost = xmom_lost + dt*flux3(i,j,k,UMX)
-                ymom_lost = ymom_lost + dt*flux3(i,j,k,UMY)
-                zmom_lost = zmom_lost + dt*flux3(i,j,k,UMZ)
-                eden_lost = eden_lost + dt*flux3(i,j,k,UEDEN)
+    !            mass_lost = mass_lost + dt*flux3(i,j,k,URHO)
+    !            xmom_lost = xmom_lost + dt*flux3(i,j,k,UMX)
+    !            ymom_lost = ymom_lost + dt*flux3(i,j,k,UMY)
+    !            zmom_lost = zmom_lost + dt*flux3(i,j,k,UMZ)
+    !            eden_lost = eden_lost + dt*flux3(i,j,k,UEDEN)
 
-                ang_mom   = linear_to_angular_momentum(loc - center, flux3(i,j,k,UMX:UMZ))
-                xang_lost = xang_lost + ang_mom(1)*dt
-                yang_lost = yang_lost + ang_mom(2)*dt
-                zang_lost = zang_lost + ang_mom(3)*dt
+    !            ang_mom   = linear_to_angular_momentum(loc - center, flux3(i,j,k,UMX:UMZ))
+    !            xang_lost = xang_lost + ang_mom(1)*dt
+    !            yang_lost = yang_lost + ang_mom(2)*dt
+    !            zang_lost = zang_lost + ang_mom(3)*dt
 
-             enddo
-          enddo
+    !         enddo
+    !      enddo
 
-       endif
+    !   endif
 
-       if (lo(2) .le. domlo(2) .and. hi(2) .ge. domlo(2)) then
+    !   if (lo(2) .le. domlo(2) .and. hi(2) .ge. domlo(2)) then
 
-          j = domlo(2)
-          do k = lo(3), hi(3)
-             do i = lo(1), hi(1)
+    !      j = domlo(2)
+    !      do k = lo(3), hi(3)
+    !         do i = lo(1), hi(1)
 
-                loc = position(i,j,k,ccy=.false.)
+    !            loc = position(i,j,k,ccy=.false.)
 
-                mass_lost = mass_lost - dt*flux2(i,j,k,URHO)
-                xmom_lost = xmom_lost - dt*flux2(i,j,k,UMX)
-                ymom_lost = ymom_lost - dt*flux2(i,j,k,UMY)
-                zmom_lost = zmom_lost - dt*flux2(i,j,k,UMZ)
-                eden_lost = eden_lost - dt*flux2(i,j,k,UEDEN)
+    !            mass_lost = mass_lost - dt*flux2(i,j,k,URHO)
+    !            xmom_lost = xmom_lost - dt*flux2(i,j,k,UMX)
+    !            ymom_lost = ymom_lost - dt*flux2(i,j,k,UMY)
+    !            zmom_lost = zmom_lost - dt*flux2(i,j,k,UMZ)
+    !            eden_lost = eden_lost - dt*flux2(i,j,k,UEDEN)
 
-                ang_mom   = linear_to_angular_momentum(loc - center, flux2(i,j,k,UMX:UMZ))
-                xang_lost = xang_lost - ang_mom(1)*dt
-                yang_lost = yang_lost - ang_mom(2)*dt
-                zang_lost = zang_lost - ang_mom(3)*dt
+    !            ang_mom   = linear_to_angular_momentum(loc - center, flux2(i,j,k,UMX:UMZ))
+    !            xang_lost = xang_lost - ang_mom(1)*dt
+    !            yang_lost = yang_lost - ang_mom(2)*dt
+    !            zang_lost = zang_lost - ang_mom(3)*dt
 
-             enddo
-          enddo
+    !         enddo
+    !      enddo
 
-       endif
+    !   endif
 
-       if (lo(2) .le. domhi(2) .and. hi(2) .ge. domhi(2)) then
+    !   if (lo(2) .le. domhi(2) .and. hi(2) .ge. domhi(2)) then
 
-          j = domhi(2) + 1
-          do k = lo(3), hi(3)
-             do i = lo(1), hi(1)
+    !      j = domhi(2) + 1
+    !      do k = lo(3), hi(3)
+    !         do i = lo(1), hi(1)
 
-                loc = position(i,j,k,ccy=.false.)
+    !            loc = position(i,j,k,ccy=.false.)
 
-                mass_lost = mass_lost + dt*flux2(i,j,k,URHO)
-                xmom_lost = xmom_lost + dt*flux2(i,j,k,UMX)
-                ymom_lost = ymom_lost + dt*flux2(i,j,k,UMY)
-                zmom_lost = zmom_lost + dt*flux2(i,j,k,UMZ)
-                eden_lost = eden_lost + dt*flux2(i,j,k,UEDEN)
+    !            mass_lost = mass_lost + dt*flux2(i,j,k,URHO)
+    !            xmom_lost = xmom_lost + dt*flux2(i,j,k,UMX)
+    !            ymom_lost = ymom_lost + dt*flux2(i,j,k,UMY)
+    !            zmom_lost = zmom_lost + dt*flux2(i,j,k,UMZ)
+    !            eden_lost = eden_lost + dt*flux2(i,j,k,UEDEN)
 
-                ang_mom   = linear_to_angular_momentum(loc - center, flux2(i,j,k,UMX:UMZ))
-                xang_lost = xang_lost + ang_mom(1)*dt
-                yang_lost = yang_lost + ang_mom(2)*dt
-                zang_lost = zang_lost + ang_mom(3)*dt
+    !            ang_mom   = linear_to_angular_momentum(loc - center, flux2(i,j,k,UMX:UMZ))
+    !            xang_lost = xang_lost + ang_mom(1)*dt
+    !            yang_lost = yang_lost + ang_mom(2)*dt
+    !            zang_lost = zang_lost + ang_mom(3)*dt
 
-             enddo
-          enddo
+    !         enddo
+    !      enddo
 
-       endif
+    !   endif
 
-       if (lo(1) .le. domlo(1) .and. hi(1) .ge. domlo(1)) then
+    !   if (lo(1) .le. domlo(1) .and. hi(1) .ge. domlo(1)) then
 
-          i = domlo(1)
-          do k = lo(3), hi(3)
-             do j = lo(2), hi(2)
+    !      i = domlo(1)
+    !      do k = lo(3), hi(3)
+    !         do j = lo(2), hi(2)
 
-                loc = position(i,j,k,ccx=.false.)
+    !            loc = position(i,j,k,ccx=.false.)
 
-                mass_lost = mass_lost - dt*flux1(i,j,k,URHO)
-                xmom_lost = xmom_lost - dt*flux1(i,j,k,UMX)
-                ymom_lost = ymom_lost - dt*flux1(i,j,k,UMY)
-                zmom_lost = zmom_lost - dt*flux1(i,j,k,UMZ)
-                eden_lost = eden_lost - dt*flux1(i,j,k,UEDEN)
+    !            mass_lost = mass_lost - dt*flux1(i,j,k,URHO)
+    !            xmom_lost = xmom_lost - dt*flux1(i,j,k,UMX)
+    !            ymom_lost = ymom_lost - dt*flux1(i,j,k,UMY)
+    !            zmom_lost = zmom_lost - dt*flux1(i,j,k,UMZ)
+    !            eden_lost = eden_lost - dt*flux1(i,j,k,UEDEN)
 
-                ang_mom   = linear_to_angular_momentum(loc - center, flux1(i,j,k,UMX:UMZ))
-                xang_lost = xang_lost - ang_mom(1)*dt
-                yang_lost = yang_lost - ang_mom(2)*dt
-                zang_lost = zang_lost - ang_mom(3)*dt
+    !            ang_mom   = linear_to_angular_momentum(loc - center, flux1(i,j,k,UMX:UMZ))
+    !            xang_lost = xang_lost - ang_mom(1)*dt
+    !            yang_lost = yang_lost - ang_mom(2)*dt
+    !            zang_lost = zang_lost - ang_mom(3)*dt
 
-             enddo
-          enddo
+    !         enddo
+    !      enddo
 
-       endif
+    !   endif
 
-       if (lo(1) .le. domhi(1) .and. hi(1) .ge. domhi(1)) then
+    !   if (lo(1) .le. domhi(1) .and. hi(1) .ge. domhi(1)) then
 
-          i = domhi(1) + 1
-          do k = lo(3), hi(3)
-             do j = lo(2), hi(2)
+    !      i = domhi(1) + 1
+    !      do k = lo(3), hi(3)
+    !         do j = lo(2), hi(2)
 
-                loc = position(i,j,k,ccx=.false.)
+    !            loc = position(i,j,k,ccx=.false.)
 
-                mass_lost = mass_lost + dt*flux1(i,j,k,URHO)
-                xmom_lost = xmom_lost + dt*flux1(i,j,k,UMX)
-                ymom_lost = ymom_lost + dt*flux1(i,j,k,UMY)
-                zmom_lost = zmom_lost + dt*flux1(i,j,k,UMZ)
-                eden_lost = eden_lost + dt*flux1(i,j,k,UEDEN)
+    !            mass_lost = mass_lost + dt*flux1(i,j,k,URHO)
+    !            xmom_lost = xmom_lost + dt*flux1(i,j,k,UMX)
+    !            ymom_lost = ymom_lost + dt*flux1(i,j,k,UMY)
+    !            zmom_lost = zmom_lost + dt*flux1(i,j,k,UMZ)
+    !            eden_lost = eden_lost + dt*flux1(i,j,k,UEDEN)
 
-                ang_mom   = linear_to_angular_momentum(loc - center, flux1(i,j,k,UMX:UMZ))
-                xang_lost = xang_lost + ang_mom(1)*dt
-                yang_lost = yang_lost + ang_mom(2)*dt
-                zang_lost = zang_lost + ang_mom(3)*dt
+    !            ang_mom   = linear_to_angular_momentum(loc - center, flux1(i,j,k,UMX:UMZ))
+    !            xang_lost = xang_lost + ang_mom(1)*dt
+    !            yang_lost = yang_lost + ang_mom(2)*dt
+    !            zang_lost = zang_lost + ang_mom(3)*dt
 
-             enddo
-          enddo
+    !         enddo
+    !      enddo
 
-       endif
+    !   endif
 
-    endif
+    !endif
 
   end subroutine consup
+
+  subroutine update_var(uin,uin_lo,uin_hi, &
+                    flux1,flux1_lo,flux1_hi, &
+                    flux2,flux2_lo,flux2_hi, &
+                    flux3,flux3_lo,flux3_hi, &
+                    div,lo,hi,dx,n)
+
+    use meth_params_module, only : difmag, NVAR, URHO, UMX, UMY, UMZ
+    use bl_constants_module, only : ZERO, FOURTH
+
+    integer, intent(in) ::       lo(3),       hi(3)
+    integer, intent(in) ::   uin_lo(3),   uin_hi(3)
+    integer, intent(in) :: flux1_lo(3), flux1_hi(3)
+    integer, intent(in) :: flux2_lo(3), flux2_hi(3)
+    integer, intent(in) :: flux3_lo(3), flux3_hi(3)
+
+    double precision, intent(in) :: uin(uin_lo(1):uin_hi(1),uin_lo(2):uin_hi(2),uin_lo(3):uin_hi(3),NVAR)
+    double precision, intent(inout) :: flux1(flux1_lo(1):flux1_hi(1),flux1_lo(2):flux1_hi(2),flux1_lo(3):flux1_hi(3),NVAR)
+    double precision, intent(inout) :: flux2(flux2_lo(1):flux2_hi(1),flux2_lo(2):flux2_hi(2),flux2_lo(3):flux2_hi(3),NVAR)
+    double precision, intent(inout) :: flux3(flux3_lo(1):flux3_hi(1),flux3_lo(2):flux3_hi(2),flux3_lo(3):flux3_hi(3),NVAR)
+    double precision, intent(in) :: div(lo(1):hi(1)+1,lo(2):hi(2)+1,lo(3):hi(3)+1)
+    double precision, intent(in) :: dx(3)
+    integer, intent(in) :: n
+
+    double precision :: div1
+    integer          :: i, j, k
+
+    do k = lo(3),hi(3)
+       do j = lo(2),hi(2)
+          do i = lo(1),hi(1)+1
+             div1 = FOURTH*(div(i,j,k) + div(i,j+1,k) + div(i,j,k+1) + div(i,j+1,k+1))
+             div1 = difmag*min(ZERO,div1)
+             flux1(i,j,k,n) = flux1(i,j,k,n) + dx(1) * div1 * (uin(i,j,k,n)-uin(i-1,j,k,n))
+          enddo
+       enddo
+    enddo
+
+    do k = lo(3),hi(3)
+       do j = lo(2),hi(2)+1
+          do i = lo(1),hi(1)
+             div1 = FOURTH*(div(i,j,k) + div(i+1,j,k) + div(i,j,k+1) + div(i+1,j,k+1))
+             div1 = difmag*min(ZERO,div1)
+             flux2(i,j,k,n) = flux2(i,j,k,n) + dx(2) * div1 * (uin(i,j,k,n)-uin(i,j-1,k,n))
+          enddo
+       enddo
+    enddo
+
+    do k = lo(3),hi(3)+1
+       do j = lo(2),hi(2)
+          do i = lo(1),hi(1)
+             div1 = FOURTH*(div(i,j,k) + div(i+1,j,k) + div(i,j+1,k) + div(i+1,j+1,k))
+             div1 = difmag*min(ZERO,div1)
+             flux3(i,j,k,n) = flux3(i,j,k,n) + dx(3) * div1 * (uin(i,j,k,n)-uin(i,j,k-1,n))
+          enddo
+       enddo
+    enddo
+
+  end subroutine update_var
 
 end module advection_module

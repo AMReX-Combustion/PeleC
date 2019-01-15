@@ -1,13 +1,16 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 stop_time = 6
-max_step = 2
+max_step = 5
 
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic = 1 1 0
 geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
-geometry.prob_lo     =   0.0        0.0       1.0
-geometry.prob_hi     =   0.3125     0.3125    6.0
-amr.n_cell           =   8          8         128
+#geometry.prob_lo     =   0.5        0.5       0.5
+#geometry.prob_hi     =   3.0        3.0       3.0
+#amr.n_cell           =   64         64        64 
+geometry.prob_lo     =   0.25        0.25       0.25
+geometry.prob_hi     =   1.5        1.5       1.5
+amr.n_cell           =   32         32        32 
 
 #pelec.Riemann    = 0     # 0: HLL,  1: JBB,  2: HLLC
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
@@ -29,7 +32,7 @@ amr.v              = 1       # verbosity in Amr.cpp
 #amr.grid_log       = grdlog  # name of grid logging file
 
 # REFINEMENT / REGRIDDING 
-amr.max_level       = 2       # maximum level number allowed
+amr.max_level       = 1       # maximum level number allowed
 amr.ref_ratio       = 2 2 2 2 # refinement ratio
 amr.regrid_int      = 2 2 2 2 # how often to regrid
 amr.blocking_factor = 8       # block factor in grid generation

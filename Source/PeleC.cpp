@@ -151,7 +151,7 @@ IntVect      PeleC::hydro_tile_size(1024);
 //IntVect      PeleC::hydro_tile_size(1024,16);
 IntVect      PeleC::hydro_tile_size(1024,1024);
 #else
-IntVect      PeleC::hydro_tile_size(1024,16,16);
+IntVect      PeleC::hydro_tile_size(1024,1024,1024);
 #endif
 
 // this will be reset upon restart

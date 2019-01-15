@@ -8,11 +8,11 @@ DEBUG      = FALSE
 
 DIM        = 3
 
-COMP	   = pgi
+COMP	   = gnu
 
 USE_MPI    = FALSE
 
-USE_ACC    = TRUE
+USE_ACC    = FALSE
 
 USE_REACT  = TRUE
 
