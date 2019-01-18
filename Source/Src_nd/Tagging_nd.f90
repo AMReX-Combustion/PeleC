@@ -327,12 +327,16 @@ contains
     double precision :: ax, ay, az
     integer          :: i, j, k
 
+! WARNING: TO DO: fix the flame tracer (here = 7)
+! we need to find a way to pass here the index of the tracer in the species array
+write(*,*) 'WARNING THERE IS A HACK IN pc_ftracerror PLEASE FIX THIS ROUTINE'
+
     !     Tag on regions of high ftracerature
     if (level .lt. max_ftracerr_lev) then
        do k = lo(3), hi(3)
           do j = lo(2), hi(2)
              do i = lo(1), hi(1)
-                if (ftrac(i,j,k,1) .ge. ftracerr) then
+                if (ftrac(i,j,k,7) .ge. ftracerr) then
                    tag(i,j,k) = set
                 endif
              enddo

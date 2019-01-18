@@ -45,7 +45,7 @@ PeleC::ErrorSetUp ()
       const std::string name = "Y("+flame_trac_name+")";
       if (ParallelDescriptor::IOProcessor())
         std::cout << "Flame tracer will be " << name << '\n';
-      err_list.add(name,1,ErrorRec::Special,pc_ftracerror);
+      err_list.add("massfrac",1,ErrorRec::Special,pc_ftracerror);
     }
     else
     {

@@ -20,6 +20,7 @@ static Box grow_box_by_one (const Box& b) { return amrex::grow(b,1); }
 
 typedef StateDescriptor::BndryFunc BndryFunc;
 
+
 //
 // Components are:
 //  Interior, Inflow, Outflow,  Symmetry,     SlipWall,     NoSlipWall
@@ -444,11 +445,20 @@ PeleC::variableSetUp ()
 	name[cnt] = "rho_" + aux_names[i];
     }
 
-    desc_lst.setComponent(State_Type,
-			  Density,
-			  name,
-			  bcs,
-			  BndryFunc(pc_denfill,pc_hypfill));
+//    StateDescriptor::BndryFunc bndryfunc_hyp(pc_bcfill_hyp);
+    
+//    desc_lst.setComponent(State_Type,
+//			  Density,
+//			  name,
+//			  bcs,
+//			  StateDescriptor::BndryFunc(pc_bcfill_hyp));
+
+desc_lst.setComponent(State_Type,
+Density,
+name,
+bcs,
+BndryFunc(pc_denfill,pc_hypfill));
+
 
 #ifdef REACTIONS
     for (int i=0; i<NumSpec; ++i) {
@@ -490,8 +500,7 @@ PeleC::variableSetUp ()
     // Kinetic energy
     //
     derive_lst.add("kineng",IndexType::TheCellType(),1,pc_derkineng,the_same_box);
-    derive_lst.addComponent("kineng",desc_lst,State_Type,Density,1);
-    derive_lst.addComponent("kineng",desc_lst,State_Type,Xmom,3);
+    derive_lst.addComponent("kineng",desc_lst,State_Type,Density,NUM_STATE);
 
     //
     // Enstrophy
@@ -545,8 +554,7 @@ PeleC::variableSetUp ()
     // Div(u)
     //
     derive_lst.add("divu",IndexType::TheCellType(),1,pc_derdivu,grow_box_by_one);
-    derive_lst.addComponent("divu",desc_lst,State_Type,Density,1);
-    derive_lst.addComponent("divu",desc_lst,State_Type,Xmom,3);
+    derive_lst.addComponent("divu",desc_lst,State_Type,Density,NUM_STATE);
 
     //
     // Internal energy as derived from rho*E, part of the state
@@ -570,6 +578,9 @@ PeleC::variableSetUp ()
     //
     // forcing - used to calculate the rate of injection of energy in probtype 14 (HIT)
     //
+
+// WARNING: TO DO LATER: CHANGE THE NUM_STATE IN addComponent
+
     derive_lst.add("forcing",IndexType::TheCellType(),1,pc_derforcing,the_same_box);
     derive_lst.addComponent("forcing",desc_lst,State_Type,Density,1);
     derive_lst.addComponent("forcing",desc_lst,State_Type,Xmom,BL_SPACEDIM);
@@ -593,26 +604,42 @@ PeleC::variableSetUp ()
     //
     // Y from rhoY
     //
+//    for (int i = 0; i < NumSpec; i++){
+//        std::string spec_string = "Y("+spec_names[i]+")";
+//        derive_lst.add(spec_string,IndexType::TheCellType(),1,pc_derspec,the_same_box);
+//        derive_lst.addComponent(spec_string,desc_lst,State_Type,Density,1);
+//        derive_lst.addComponent(spec_string,desc_lst,State_Type,FirstSpec+i,1);
+//    }
+    Vector<std::string> var_names_massfrac(NumSpec);
     for (int i = 0; i < NumSpec; i++){
-        std::string spec_string = "Y("+spec_names[i]+")";
-        derive_lst.add(spec_string,IndexType::TheCellType(),1,pc_derspec,the_same_box);
-        derive_lst.addComponent(spec_string,desc_lst,State_Type,Density,1);
-        derive_lst.addComponent(spec_string,desc_lst,State_Type,FirstSpec+i,1);
+      var_names_massfrac[i] = "Y("+spec_names[i]+")";
     }
+    for (int i = 0; i < NumSpec; i++){
+    std::cout << var_names_massfrac[i] << std::endl ;
+}
+
+
+    derive_lst.add("massfrac",IndexType::TheCellType(),NumSpec,var_names_massfrac,
+                   pc_derspec,the_same_box);
+    derive_lst.addComponent("massfrac",desc_lst,State_Type,Density,NUM_STATE);
+
     //
     // Species mole fractions
     //
     
     Vector<std::string> var_names_molefrac(NumSpec);
-    for (int i = 0; i < NumSpec; i++)
+    for (int i = 0; i < NumSpec; i++){
       var_names_molefrac[i] = "X("+spec_names[i]+")";
-      
-    //for (int i = 0; i < NumSpec; i++)
-    //std::cout << var_names_molefrac[i] << endl ;
+    }  
+    for (int i = 0; i < NumSpec; i++){
+    std::cout << var_names_molefrac[i] << std::endl ;
+}
      
     derive_lst.add("molefrac",IndexType::TheCellType(),NumSpec,var_names_molefrac,
                    pc_dermolefrac,the_same_box);
     derive_lst.addComponent("molefrac",desc_lst,State_Type,Density,NUM_STATE);
+
+
     //derive_lst.addComponent("molefrac",desc_lst,State_Type,FirstSpec,NumSpec);
 
     //
@@ -638,15 +665,13 @@ PeleC::variableSetUp ()
 //     derive_lst.addComponent("t_sound_t_enuc",desc_lst,Reactions_Type,NumSpec,1);
 
     derive_lst.add("magvel",IndexType::TheCellType(),1,pc_dermagvel,the_same_box);
-    derive_lst.addComponent("magvel",desc_lst,State_Type,Density,1);
-    derive_lst.addComponent("magvel",desc_lst,State_Type,Xmom,3);
+    derive_lst.addComponent("magvel",desc_lst,State_Type,Density,NUM_STATE);
 
     derive_lst.add("radvel",IndexType::TheCellType(),1,pc_derradialvel,the_same_box);
-    derive_lst.addComponent("radvel",desc_lst,State_Type,Density,1);
-    derive_lst.addComponent("radvel",desc_lst,State_Type,Xmom,3);
+    derive_lst.addComponent("radvel",desc_lst,State_Type,Density,NUM_STATE);
 
     derive_lst.add("magmom",IndexType::TheCellType(),1,pc_dermagmom,the_same_box);
-    derive_lst.addComponent("magmom",desc_lst,State_Type,Xmom,3);
+    derive_lst.addComponent("magmom",desc_lst,State_Type,Density,NUM_STATE);
 
 #ifdef AMREX_USE_EB
     derive_lst.add("vfrac",IndexType::TheCellType(),1,pc_dermagvel,the_same_box); // A dummy
@@ -669,17 +694,17 @@ PeleC::variableSetUp ()
     derive_lst.addComponent("particle_density",desc_lst,State_Type,Density,1);
 #endif
 
-    for (int i = 0; i < NumSpec; i++)  {
-	derive_lst.add(spec_names[i],IndexType::TheCellType(),1,pc_derspec,the_same_box);
-	derive_lst.addComponent(spec_names[i],desc_lst,State_Type,Density,1);
-	derive_lst.addComponent(spec_names[i],desc_lst,State_Type,FirstSpec+i,1);
-    }
+//    for (int i = 0; i < NumSpec; i++)  {
+//	derive_lst.add(spec_names[i],IndexType::TheCellType(),1,pc_derspec,the_same_box);
+//	derive_lst.addComponent(spec_names[i],desc_lst,State_Type,Density,1);
+//	derive_lst.addComponent(spec_names[i],desc_lst,State_Type,FirstSpec+i,1);
+//    }
 
-    for (int i = 0; i < NumAux; i++)  {
-	derive_lst.add(aux_names[i],IndexType::TheCellType(),1,pc_derspec,the_same_box);
-	derive_lst.addComponent(aux_names[i],desc_lst,State_Type,Density,1);
-	derive_lst.addComponent(aux_names[i],desc_lst,State_Type,FirstAux+i,1);
-    }
+//    for (int i = 0; i < NumAux; i++)  {
+//	derive_lst.add(aux_names[i],IndexType::TheCellType(),1,pc_derspec,the_same_box);
+//	derive_lst.addComponent(aux_names[i],desc_lst,State_Type,Density,1);
+//	derive_lst.addComponent(aux_names[i],desc_lst,State_Type,FirstAux+i,1);
+//    }
 
 #if 0
     //

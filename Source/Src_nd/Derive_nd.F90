@@ -216,6 +216,9 @@ contains
                           dat,d_lo,d_hi,nc,lo,hi,domlo, &
                           domhi,delta,xlo,time,dt,bc,level,grid_no) &
                           bind(C, name="pc_dermagvel")
+
+    use meth_params_module, only : URHO, UMX, UMY, UMZ
+
     !
     ! This routine will derive magnitude of velocity.
     !
@@ -237,10 +240,10 @@ contains
     do k = lo(3), hi(3)
        do j = lo(2), hi(2)
           do i = lo(1), hi(1)
-             dat1inv = 1.d0/dat(i,j,k,1)
-             magvel(i,j,k,1) = sqrt( (dat(i,j,k,2) * dat1inv)**2 + &
-                  (dat(i,j,k,3) * dat1inv)**2 + &
-                  (dat(i,j,k,4) * dat1inv)**2 )
+             dat1inv = 1.d0/dat(i,j,k,URHO)
+             magvel(i,j,k,1) = sqrt( (dat(i,j,k,UMX) * dat1inv)**2 + &
+                  (dat(i,j,k,UMY) * dat1inv)**2 + &
+                  (dat(i,j,k,UMZ) * dat1inv)**2 )
           end do
        end do
     end do
@@ -256,6 +259,7 @@ contains
     !
     ! This routine will derive the radial velocity.
     !
+    use meth_params_module, only : URHO, UMX, UMY, UMZ
     use bl_constants_module
     use prob_params_module, only: center
 
@@ -281,9 +285,9 @@ contains
           do i = lo(1), hi(1)
              x = xlo(1) + (dble(i-lo(1))+HALF) * delta(1) - center(1)
              r = sqrt(x*x+y*y+z*z)
-             radvel(i,j,k,1) = ( dat(i,j,k,2)*x + &
-                  dat(i,j,k,3)*y + &
-                  dat(i,j,k,4)*z ) / ( dat(i,j,k,1)*r )
+             radvel(i,j,k,1) = ( dat(i,j,k,UMX)*x + &
+                  dat(i,j,k,UMY)*y + &
+                  dat(i,j,k,UMZ)*z ) / ( dat(i,j,k,URHO)*r )
           end do
        end do
     end do
@@ -299,6 +303,9 @@ contains
     !
     ! This routine will derive magnitude of momentum.
     !
+
+    use meth_params_module, only : UMX, UMY, UMZ
+
     implicit none
 
     integer          :: lo(3), hi(3)
@@ -316,7 +323,7 @@ contains
     do k = lo(3), hi(3)
        do j = lo(2), hi(2)
           do i = lo(1), hi(1)
-             magmom(i,j,k,1) = sqrt( dat(i,j,k,1)**2 + dat(i,j,k,2)**2 + dat(i,j,k,3)**2 )
+             magmom(i,j,k,1) = sqrt( dat(i,j,k,UMX)**2 + dat(i,j,k,UMY)**2 + dat(i,j,k,UMZ)**2 )
           end do
        end do
     end do
@@ -684,6 +691,9 @@ contains
                         dat,d_lo,d_hi,nc,lo,hi,domlo, &
                         domhi,delta,xlo,time,dt,bc,level,grid_no) &
                         bind(C, name="pc_derspec")
+
+    use meth_params_module, only: URHO, UEINT, UTEMP, UFS, UFX
+    use network, only: nspec
     !
     ! This routine derives the mass fractions of the species.
     !
@@ -704,7 +714,7 @@ contains
     do k = lo(3), hi(3)
        do j = lo(2), hi(2)
           do i = lo(1), hi(1)
-             spec(i,j,k,1) = dat(i,j,k,2) / dat(i,j,k,1)
+             spec(i,j,k,:) = dat(i,j,k,UFS:UFS+nspec-1) / dat(i,j,k,URHO)
           end do
        end do
     end do
@@ -890,6 +900,7 @@ contains
 
     use bl_constants_module
     use prob_params_module, only: dg
+    use meth_params_module, only : URHO, UMX, UMY, UMZ
 
     implicit none
 
@@ -909,12 +920,12 @@ contains
     do k = lo(3), hi(3)
        do j = lo(2), hi(2)
           do i = lo(1), hi(1)
-             uhi = dat(i+1*dg(1),j,k,2) / dat(i+1*dg(1),j,k,1)
-             ulo = dat(i-1*dg(1),j,k,2) / dat(i-1*dg(1),j,k,1)
-             vhi = dat(i,j+1*dg(2),k,3) / dat(i,j+1*dg(2),k,1)
-             vlo = dat(i,j-1*dg(2),k,3) / dat(i,j-1*dg(2),k,1)
-             whi = dat(i,j,k+1*dg(3),4) / dat(i,j,k+1*dg(3),1)
-             wlo = dat(i,j,k-1*dg(3),4) / dat(i,j,k-1*dg(3),1)
+             uhi = dat(i+1*dg(1),j,k,UMX) / dat(i+1*dg(1),j,k,URHO)
+             ulo = dat(i-1*dg(1),j,k,UMX) / dat(i-1*dg(1),j,k,URHO)
+             vhi = dat(i,j+1*dg(2),k,UMY) / dat(i,j+1*dg(2),k,URHO)
+             vlo = dat(i,j-1*dg(2),k,UMY) / dat(i,j-1*dg(2),k,URHO)
+             whi = dat(i,j,k+1*dg(3),UMZ) / dat(i,j,k+1*dg(3),URHO)
+             wlo = dat(i,j,k-1*dg(3),UMZ) / dat(i,j,k-1*dg(3),URHO)
              divu(i,j,k,1) = HALF * (uhi-ulo) / delta(1)
              if (delta(2) > ZERO) then
                 divu(i,j,k,1) = divu(i,j,k,1) + HALF * (vhi-vlo) / delta(2)
@@ -1573,6 +1584,7 @@ contains
     !
 
     use bl_constants_module
+    use meth_params_module, only: URHO, UMX, UMY, UMZ
 
     implicit none
 
@@ -1591,9 +1603,9 @@ contains
     do k = lo(3), hi(3)
        do j = lo(2), hi(2)
           do i = lo(1), hi(1)
-             kineng(i,j,k,1) = HALF / dat(i,j,k,1) * ( dat(i,j,k,2)**2 + &
-                  dat(i,j,k,3)**2 + &
-                  dat(i,j,k,4)**2 )
+             kineng(i,j,k,1) = HALF / dat(i,j,k,URHO) * ( dat(i,j,k,UMX)**2 + &
+                  dat(i,j,k,UMY)**2 + &
+                  dat(i,j,k,UMZ)**2 )
           end do
        end do
     end do

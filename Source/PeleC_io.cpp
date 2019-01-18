@@ -412,36 +412,42 @@ PeleC::setPlotVariables ()
 
     bool plot_massfrac = false;
     pp.query("plot_massfrac",plot_massfrac);
-    if (plot_massfrac)
-    {
-	if (plot_massfrac)
-	{
-	    //
-	    // Get the number of species from the network model.
-	    //
-	    get_num_spec(&NumSpec);
-	    //
-	    // Get the species names from the network model.
-	    //
-	    for (int i = 0; i < NumSpec; i++)
-	    {
-		int len = 20;
-		Vector<int> int_spec_names(len);
-		//
-		// This call return the actual length of each string in "len"
-		//
-		get_spec_names(int_spec_names.dataPtr(),&i,&len);
-		char* spec_name = new char[len+1];
-		for (int j = 0; j < len; j++)
-		    spec_name[j] = int_spec_names[j];
-		spec_name[len] = '\0';
-		string spec_string = "Y(";
-		spec_string += spec_name;
-		spec_string += ')';
-		parent->addDerivePlotVar(spec_string);
-		delete [] spec_name;
-	    }
-	}
+//    if (plot_massfrac)
+//    {
+//	if (plot_massfrac)
+//	{
+//	    //
+//	    // Get the number of species from the network model.
+//	    //
+//	    get_num_spec(&NumSpec);
+//	    //
+//	    // Get the species names from the network model.
+//	    //
+//	    for (int i = 0; i < NumSpec; i++)
+//	    {
+//		int len = 20;
+//		Vector<int> int_spec_names(len);
+//		//
+//		// This call return the actual length of each string in "len"
+//		//
+//		get_spec_names(int_spec_names.dataPtr(),&i,&len);
+//		char* spec_name = new char[len+1];
+//		for (int j = 0; j < len; j++)
+//		    spec_name[j] = int_spec_names[j];
+//		spec_name[len] = '\0';
+//		string spec_string = "Y(";
+//		spec_string += spec_name;
+//		spec_string += ')';
+//		parent->addDerivePlotVar(spec_string);
+//		delete [] spec_name;
+//	    }
+//	}
+//    }
+ 
+    if (plot_massfrac) {
+        parent->addDerivePlotVar("massfrac");
+    } else {
+        parent->deleteDerivePlotVar("massfrac");
     }
     
     bool plot_moleFrac = false;
