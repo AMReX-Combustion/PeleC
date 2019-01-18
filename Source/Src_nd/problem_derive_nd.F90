@@ -16,6 +16,8 @@ contains
     ! solution and the MMS solution
     !
 
+    use meth_params_module, only : URHO
+
     use bl_constants_module
 #ifdef USE_MASA
     use masa
@@ -48,7 +50,7 @@ contains
 
              ! Get error
              rho = masa_eval_3d_exact_rho(x,y,z)
-             rhommserror(i,j,k,1) = dat(i,j,k,1) - rho
+             rhommserror(i,j,k,1) = dat(i,j,k,URHO) - rho
 
           end do
        end do
@@ -69,7 +71,7 @@ contains
     ! This routine will calculate the error between the velocity
     ! solution and the MMS solution
     !
-
+    use meth_params_module, only : URHO, UMX
     use bl_constants_module
 #ifdef USE_MASA
     use masa
@@ -102,8 +104,8 @@ contains
 
              ! Get error
              u = masa_eval_3d_exact_u(x,y,z)
-             rhoinv = 1.d0/dat(i,j,k,1)
-             ummserror(i,j,k,1) = dat(i,j,k,2) * rhoinv - u
+             rhoinv = 1.d0/dat(i,j,k,URHO)
+             ummserror(i,j,k,1) = dat(i,j,k,UMX) * rhoinv - u
 
           end do
        end do
@@ -122,7 +124,7 @@ contains
     ! This routine will calculate the error between the velocity
     ! solution and the MMS solution
     !
-
+    use meth_params_module, only : URHO, UMY
     use bl_constants_module
 #ifdef USE_MASA
     use masa
@@ -155,8 +157,8 @@ contains
 
              ! Get error
              v = masa_eval_3d_exact_v(x,y,z)
-             rhoinv = 1.d0/dat(i,j,k,1)
-             vmmserror(i,j,k,1) = dat(i,j,k,2) * rhoinv - v
+             rhoinv = 1.d0/dat(i,j,k,URHO)
+             vmmserror(i,j,k,1) = dat(i,j,k,UMY) * rhoinv - v
 
           end do
        end do
@@ -175,7 +177,7 @@ contains
     ! This routine will calculate the error between the velocity
     ! solution and the MMS solution
     !
-
+    use meth_params_module, only : URHO, UMZ
     use bl_constants_module
 #ifdef USE_MASA
     use masa
@@ -208,8 +210,8 @@ contains
 
              ! Get error
              w = masa_eval_3d_exact_w(x,y,z)
-             rhoinv = 1.d0/dat(i,j,k,1)
-             wmmserror(i,j,k,1) = dat(i,j,k,2) * rhoinv - w
+             rhoinv = 1.d0/dat(i,j,k,URHO)
+             wmmserror(i,j,k,1) = dat(i,j,k,UMZ) * rhoinv - w
 
           end do
        end do

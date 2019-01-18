@@ -951,7 +951,7 @@ contains
 !     Requires velocity field, time, and the right parameters
 !     for the forcing term, i.e. probin, *somehow*
 !
-
+    use meth_params_module, only : URHO, UMX, UMY, UMZ
     use bl_constants_module, only: ZERO, HALF, M_PI, TWO
     use probdata_module
 
@@ -1117,9 +1117,9 @@ contains
                 enddo
              enddo
 
-             u   = dat(i,j,k,2)
-             v   = dat(i,j,k,3)
-             w   = dat(i,j,k,4)
+             u   = dat(i,j,k,UMX)
+             v   = dat(i,j,k,UMY)
+             w   = dat(i,j,k,UMZ)
                   
              forcing(i,j,k,1) = dat(i,j,k,1) * ( u*f1 + v*f2 + w*f3 )
                   
@@ -1286,8 +1286,8 @@ contains
                    enddo
                 enddo
              enddo
-                   !write(*,*) 'DEBUG TOTO',i,j,k,x,y,z,f1
-             forcing(i,j,k,1) = dat(i,j,k,1) * f1
+
+             forcing(i,j,k,1) = dat(i,j,k,URHO) * f1
                   
           end do
        end do
@@ -1425,7 +1425,7 @@ contains
                 enddo
              enddo
                 
-             forcing(i,j,k,1) = dat(i,j,k,1) * f2
+             forcing(i,j,k,1) = dat(i,j,k,URHO) * f2
                   
           end do
        end do
@@ -1563,7 +1563,7 @@ contains
                 enddo
              enddo
                  
-             forcing(i,j,k,1) = dat(i,j,k,1) * f3
+             forcing(i,j,k,1) = dat(i,j,k,URHO) * f3
                   
           end do
        end do

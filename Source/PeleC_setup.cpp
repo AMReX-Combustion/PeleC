@@ -447,17 +447,17 @@ PeleC::variableSetUp ()
 
 //    StateDescriptor::BndryFunc bndryfunc_hyp(pc_bcfill_hyp);
     
-//    desc_lst.setComponent(State_Type,
-//			  Density,
-//			  name,
-//			  bcs,
-//			  StateDescriptor::BndryFunc(pc_bcfill_hyp));
+    desc_lst.setComponent(State_Type,
+			  Density,
+			  name,
+			  bcs,
+			  StateDescriptor::BndryFunc(pc_bcfill_hyp));
 
-desc_lst.setComponent(State_Type,
-Density,
-name,
-bcs,
-BndryFunc(pc_denfill,pc_hypfill));
+//desc_lst.setComponent(State_Type,
+//Density,
+//name,
+//bcs,
+//BndryFunc(pc_denfill,pc_hypfill));
 
 
 #ifdef REACTIONS
@@ -544,10 +544,6 @@ BndryFunc(pc_denfill,pc_hypfill));
     // Vorticity
     //
     derive_lst.add("magvort",IndexType::TheCellType(),1,pc_dermagvort,grow_box_by_one);
-    // Here we exploit the fact that Xmom = Density + 1
-    //   in order to use the correct interpolation.
-    if (Xmom != Density+1)
-	amrex::Error("We are assuming Xmom = Density + 1 in PeleC_setup.cpp");
     derive_lst.addComponent("magvort",desc_lst,State_Type,Density,NUM_STATE);
 
     //
@@ -579,26 +575,23 @@ BndryFunc(pc_denfill,pc_hypfill));
     // forcing - used to calculate the rate of injection of energy in probtype 14 (HIT)
     //
 
-// WARNING: TO DO LATER: CHANGE THE NUM_STATE IN addComponent
-
     derive_lst.add("forcing",IndexType::TheCellType(),1,pc_derforcing,the_same_box);
-    derive_lst.addComponent("forcing",desc_lst,State_Type,Density,1);
-    derive_lst.addComponent("forcing",desc_lst,State_Type,Xmom,BL_SPACEDIM);
+    derive_lst.addComponent("forcing",desc_lst,State_Type,Density,NUM_STATE);
     //
     // forcex - used to put the forcing term in the plot file
     //
     derive_lst.add("forcex",IndexType::TheCellType(),1,pc_derforcex,the_same_box);
-    derive_lst.addComponent("forcex",desc_lst,State_Type,Density,1);
+    derive_lst.addComponent("forcex",desc_lst,State_Type,Density,NUM_STATE);
     //
     // forcey - used to put the forcing term in the plot file
     //
     derive_lst.add("forcey",IndexType::TheCellType(),1,pc_derforcey,the_same_box);
-    derive_lst.addComponent("forcey",desc_lst,State_Type,Density,1);
+    derive_lst.addComponent("forcey",desc_lst,State_Type,Density,NUM_STATE);
     //
     // forcez - used to put the forcing term in the plot file
     //
     derive_lst.add("forcez",IndexType::TheCellType(),1,pc_derforcez,the_same_box);
-    derive_lst.addComponent("forcez",desc_lst,State_Type,Density,1);
+    derive_lst.addComponent("forcez",desc_lst,State_Type,Density,NUM_STATE);
 #endif
 
     //
