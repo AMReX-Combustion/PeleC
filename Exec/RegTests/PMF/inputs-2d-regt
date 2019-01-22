@@ -35,7 +35,7 @@ amr.max_level       = 2       # maximum level number allowed
 amr.ref_ratio       = 2 2 2 2 # refinement ratio
 amr.regrid_int      = 2 2 2 2 # how often to regrid
 amr.blocking_factor = 8       # block factor in grid generation
-amr.max_grid_size   = 64
+amr.max_grid_size   = 2048 #64
 amr.n_error_buf     = 2 8 2 2 # number of buffer cells in error est
 
 # CHECKPOINT FILES
@@ -51,7 +51,8 @@ amr.plot_int          = 100     # number of timesteps between plotfiles
 #PROBIN FILENAME
 amr.probin_file = probin-regt
 
-amr.derive_plot_vars = density xmom ymom zmom eden Temp pressure x_velocity y_velocity
+amr.derive_plot_vars = density xmom ymom zmom eden Temp pressure x_velocity y_velocity magvort kineng divu magvel radvel magmom
+
 pelec.plot_rhoy = 0
 pelec.plot_massfrac = 1
 pelec.do_react = 1
