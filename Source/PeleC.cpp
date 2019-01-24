@@ -1558,6 +1558,77 @@ PeleC::errorEst (TagBoxArray& tags,
 {
   BL_PROFILE("PeleC::errorEst()");
 
+#if 1
+
+std::cout << "WE ARE IN NEW ROUTINE" << std::endl;
+
+
+  MultiFab& S_new = get_new_data(State_Type);
+  const Real cur_time = state[State_Type].curTime();
+  FillPatch(*this,S_new,0,cur_time,State_Type,0,NUM_STATE);
+
+  MultiFab rho(S_new.boxArray(), S_new.DistributionMap(), NUM_STATE, 1);
+  FillPatch(*this, rho, rho.nGrow(), cur_time, State_Type, Density, NUM_STATE, 0);
+ 
+  const int*  domlo = geom.Domain().loVect();
+  const int*  domhi = geom.Domain().hiVect();
+  const Real* dx        = geom.CellSize();
+  const Real* prob_lo   = geom.ProbLo();
+
+  
+
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
+  {
+    Vector<int>  itags;
+
+    for (MFIter mfi(S_new,false); mfi.isValid(); ++mfi)
+    {
+      FArrayBox   &datfab = rho[mfi];
+      auto&       tagfab  = tags[mfi];
+      const Box&  tilebx  = mfi.tilebox();
+      
+      const RealBox& pbx  = RealBox(tilebx,geom.CellSize(),geom.ProbLo());
+      const Box&  datbox  = datfab.box();
+
+      // We cannot pass tagfab to Fortran becuase it is BaseFab<char>.
+      // So we are going to get a temporary integer array.
+      tagfab.get_itags(itags, tilebx);
+
+      int*        tptr    = itags.dataPtr();
+      const int*  tlo     = tilebx.loVect();
+      const int*  thi     = tilebx.hiVect();
+      const int*  lo      = tlo;
+      const int*  hi      = thi;
+      const Real* xlo     = pbx.lo();
+      Real*       dat     = datfab.dataPtr();
+      const int*  dlo     = datbox.loVect();
+      const int*  dhi     = datbox.hiVect();
+      const int   ncomp   = datfab.nComp();
+
+      pc_denerror(tptr,ARLIM_3D(tlo), ARLIM_3D(thi),
+                  &tagval, &clearval,
+                  BL_TO_FORTRAN_3D(rho[mfi]),
+                  ARLIM_3D(lo),ARLIM_3D(hi), &ncomp, domlo,domhi, 
+                  ZFILL(dx), ZFILL(xlo), ZFILL(prob_lo), &time, &level);
+      
+      
+      //set_problem_tags(tptr,  ARLIM_3D(tlo), ARLIM_3D(thi),
+      //                 BL_TO_FORTRAN_3D(S_new[mfi]),
+      //                 &tagval, &clearval,
+      //                 ARLIM_3D(tilebx.loVect()), ARLIM_3D(tilebx.hiVect()),
+      //                 ZFILL(dx), ZFILL(prob_lo), &time, &level);
+
+      // Now update the tags in the TagBox.
+      tagfab.tags_and_untags(itags, tilebx);
+    }
+  } 
+  
+#else
+
+std::cout << "WE ARE IN OLD ROUTINE" << std::endl;
+
   set_amr_info(level, -1, -1, -1.0, -1.0);
 
   const int*  domain_lo = geom.Domain().loVect();
@@ -1644,6 +1715,7 @@ PeleC::errorEst (TagBoxArray& tags,
       tagfab.tags_and_untags(itags, tilebx);
     }
   }
+#endif
 }
 
 std::unique_ptr<MultiFab>

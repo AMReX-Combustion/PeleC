@@ -177,17 +177,17 @@ extern "C"
      BL_FORT_FAB_ARG_3D(S_new),
      const int& verbose);
 
-//  void pc_hypfill
-//    (BL_FORT_FAB_ARG_3D(state),
-//     const int* dlo, const int* dhi,
-//     const amrex::Real* dx, const amrex::Real* glo, 
-//     const amrex::Real* time, const int* bc);
-
   void pc_hypfill
     (BL_FORT_FAB_ARG_3D(state),
      const int* dlo, const int* dhi,
      const amrex::Real* dx, const amrex::Real* glo, 
-     const amrex::Real time, const int* bc);
+     const amrex::Real* time, const int* bc);
+
+  //void pc_hypfill
+  //  (BL_FORT_FAB_ARG_3D(state),
+  //   const int* dlo, const int* dhi,
+  //   const amrex::Real* dx, const amrex::Real* glo, 
+  //   const amrex::Real time, const int* bc);
     
     void pc_hypfill2
     (BL_FORT_FAB_ARG_3D(state),

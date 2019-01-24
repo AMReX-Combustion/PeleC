@@ -52,7 +52,7 @@ std::cout << "DEBUG dcomp " << dcomp << "  numcomp " << numcomp << "  bcomp " <<
 
 //amrex::Print() << data;
 
-pc_hypfill(BL_TO_FORTRAN_3D(data),ARLIM_3D(domlo),ARLIM_3D(domhi),ZFILL(dx),ZFILL(xlo),time,bc);
+//pc_hypfill(BL_TO_FORTRAN_3D(data),ARLIM_3D(domlo),ARLIM_3D(domhi),ZFILL(dx),ZFILL(xlo),time,bc);
 
 
 
