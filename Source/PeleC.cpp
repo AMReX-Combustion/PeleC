@@ -1563,12 +1563,9 @@ PeleC::errorEst (TagBoxArray& tags,
 std::cout << "WE ARE IN NEW ROUTINE" << std::endl;
 
 
-  MultiFab& S_new = get_new_data(State_Type);
   const Real cur_time = state[State_Type].curTime();
-  FillPatch(*this,S_new,0,cur_time,State_Type,0,NUM_STATE);
-
-  MultiFab rho(S_new.boxArray(), S_new.DistributionMap(), NUM_STATE, 1);
-  FillPatch(*this, rho, rho.nGrow(), cur_time, State_Type, Density, NUM_STATE, 0);
+  MultiFab S_data(get_new_data(State_Type).boxArray(), get_new_data(State_Type).DistributionMap(), NUM_STATE, 1);
+  FillPatch(*this, S_data, S_data.nGrow(), cur_time, State_Type, Density, NUM_STATE, 0);
  
   const int*  domlo = geom.Domain().loVect();
   const int*  domhi = geom.Domain().hiVect();
@@ -1583,9 +1580,9 @@ std::cout << "WE ARE IN NEW ROUTINE" << std::endl;
   {
     Vector<int>  itags;
 
-    for (MFIter mfi(S_new,false); mfi.isValid(); ++mfi)
+    for (MFIter mfi(S_data,false); mfi.isValid(); ++mfi)
     {
-      FArrayBox   &datfab = rho[mfi];
+      FArrayBox   &datfab = S_data[mfi];
       auto&       tagfab  = tags[mfi];
       const Box&  tilebx  = mfi.tilebox();
       
@@ -1609,16 +1606,11 @@ std::cout << "WE ARE IN NEW ROUTINE" << std::endl;
 
       pc_denerror(tptr,ARLIM_3D(tlo), ARLIM_3D(thi),
                   &tagval, &clearval,
-                  BL_TO_FORTRAN_3D(rho[mfi]),
+                  BL_TO_FORTRAN_3D(S_data[mfi]),
                   ARLIM_3D(lo),ARLIM_3D(hi), &ncomp, domlo,domhi, 
                   ZFILL(dx), ZFILL(xlo), ZFILL(prob_lo), &time, &level);
       
-      
-      //set_problem_tags(tptr,  ARLIM_3D(tlo), ARLIM_3D(thi),
-      //                 BL_TO_FORTRAN_3D(S_new[mfi]),
-      //                 &tagval, &clearval,
-      //                 ARLIM_3D(tilebx.loVect()), ARLIM_3D(tilebx.hiVect()),
-      //                 ZFILL(dx), ZFILL(prob_lo), &time, &level);
+
 
       // Now update the tags in the TagBox.
       tagfab.tags_and_untags(itags, tilebx);
