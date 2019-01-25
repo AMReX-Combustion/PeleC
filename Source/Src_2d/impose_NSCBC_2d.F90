@@ -148,11 +148,11 @@ contains
    
       ! Calling user target BC values
       ! x face
-      call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,x_isign,.false.,x_bc_type,x_bc_params,x_bc_target)
+      call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,x_isign,x_bc_type,x_bc_params,x_bc_target)
       x_bcMask(x_idx_Mask,j) = x_bc_type
       
       ! y face
-      call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,y_isign,.false.,y_bc_type,y_bc_params,y_bc_target)
+      call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,y_isign,y_bc_type,y_bc_params,y_bc_target)
       y_bcMask(i,y_idx_Mask) = y_bc_type
      
       ! Computing the LODI system waves along X
@@ -228,7 +228,7 @@ contains
                                qaux, qa_l1, qa_l2, qa_h1, qa_h2)
      
      ! Calling user target BC values 
-     call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,bc_type,bc_params,bc_target)
+     call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,bc_type,bc_params,bc_target)
      
      ! Filling bcMask with specific user defined BC type
      if ((j < q_lo(2)+3) .or. (j > q_hi(2)-3)) then
@@ -291,7 +291,7 @@ contains
                                qaux, qa_l1, qa_l2, qa_h1, qa_h2)
      
      ! Filling bcMask with specific user defined BC type 
-     call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,.false.,bc_type,bc_params,bc_target)
+     call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,bc_type,bc_params,bc_target)
      if ((j < q_lo(2)+3) .or. (j > q_hi(2)-3)) then
        continue ! There is just 1 ghost-cell with bcMask because of the Riemann solver
      else
@@ -353,7 +353,7 @@ endif
                                qaux, qa_l1, qa_l2, qa_h1, qa_h2)
                                
      ! Filling bcMask with specific user defined BC type
-     call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,1,.false.,bc_type,bc_params,bc_target)
+     call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,1,bc_type,bc_params,bc_target)
      if ((i < q_lo(1)+3) .or. (i > q_hi(1)-3)) then
        continue ! There is just 1 ghost-cell with bcMask because of the Riemann solver
      else
@@ -415,7 +415,7 @@ endif
                                qaux, qa_l1, qa_l2, qa_h1, qa_h2)
                                
      ! Filling bcMask with specific user defined BC type 
-     call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,-1,.false.,bc_type,bc_params,bc_target)
+     call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,-1,bc_type,bc_params,bc_target)
      if ((i < q_lo(1)+3) .or. (i > q_hi(1)-3)) then
        continue ! There is just 1 ghost-cell with bcMask because of the Riemann solver
      else

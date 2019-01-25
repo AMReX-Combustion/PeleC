@@ -113,7 +113,8 @@ contains
     use network, only: nspec
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, UTEMP
     use prob_params_module, only : problo, center, dim
-
+    use bl_constants_module, only: ZERO, HALF
+    
     implicit none
 
     integer :: level, nvar

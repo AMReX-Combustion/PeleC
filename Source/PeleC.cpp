@@ -1667,7 +1667,7 @@ std::cout << "WE ARE IN NEW ROUTINE" << std::endl;
       S_derData.setVal(0.0);
       pc_dermagvort(S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),&ncp,
                  BL_TO_FORTRAN_3D(S_data[mfi]),&ncomp,
-                 ARLIM_3D(dlo),ARLIM_3D(dhi),domlo,domhi,
+                 ARLIM_3D(lo),ARLIM_3D(hi),domlo,domhi,
                  ZFILL(dx), ZFILL(xlo),&time,&dt,bc,&level,&level);
       
       // Tagging magVorticity
@@ -1740,7 +1740,16 @@ std::cout << "WE ARE IN NEW ROUTINE" << std::endl;
         }
       } 
           
-      
+      //----------------------
+
+      //pc_vfracerror(tptr,ARLIM_3D(tlo), ARLIM_3D(thi),
+      //            &tagval, &clearval,
+      //            vfrac.dataPtr(), ARLIM_3D(vfrac.loVect()), ARLIM_3D(vfrac.hiVect()),
+      //            ARLIM_3D(lo),ARLIM_3D(hi), &ncomp, domlo,domhi, 
+      //            ZFILL(dx), ZFILL(xlo), ZFILL(prob_lo), &time, &level);
+      //
+      //// Now update the tags in the TagBox.
+      //tagfab.tags(itags, tilebx);
       
     }
   } 

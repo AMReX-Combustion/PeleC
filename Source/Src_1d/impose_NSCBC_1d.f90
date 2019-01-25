@@ -111,7 +111,7 @@ contains
      drhodx = ((-3.0d0/2.0d0)*q(i,QRHO)+2.0d0*q(i+1,QRHO)-0.5d0*q(i+2,QRHO))/dx
  
      ! Calling user target BC values 
-     call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,.false.,bc_type,bc_params,bc_target)
+     call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,bc_type,bc_params,bc_target)
      
      bcMask(i) = bc_type
 
@@ -273,7 +273,7 @@ contains
      drhodx = ((3.0d0/2.0d0)*q(i,QRHO)-2.0d0*q(i-1,QRHO)+0.5d0*q(i-2,QRHO))/dx
        
      ! Calling user target BC values 
-     call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,.false.,bc_type,bc_params,bc_target)
+     call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,bc_type,bc_params,bc_target)
 
      bcMask(i) = bc_type
 
