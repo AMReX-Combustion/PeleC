@@ -55,7 +55,6 @@ contains
       z_bcMask(z_bcMask_l1:z_bcMask_h1, z_bcMask_l2:z_bcMask_h2, domhi(3)+1) = physbc_hi(3)
     end if
 
-   !write(*,*) 'DEBUG IN SET_BC_MASK',x_bcMask(0,:,:)
   end subroutine set_bc_mask
 
 end module bc_mask_module

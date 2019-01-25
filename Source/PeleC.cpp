@@ -1611,7 +1611,8 @@ std::cout << "WE ARE IN NEW ROUTINE" << std::endl;
       const int   ncp   = S_derData.nComp();
       const int* bc =  bcs[0].data();
 
-
+// TO DO FIX ME: I don't think we need to do tagfab.tag after each pc_error call
+//               because the fortran tagging routines don't erase the array
       
       // Tagging Density
       pc_denerror(tptr,ARLIM_3D(tlo), ARLIM_3D(thi),
@@ -1622,8 +1623,7 @@ std::cout << "WE ARE IN NEW ROUTINE" << std::endl;
       
       // Now update the tags in the TagBox.
       tagfab.tags_and_untags(itags, tilebx);
-      
-      
+            
       //----------------------
       // Recasting pressure
       // Warning: bcs are dummy values, and level is passed as grid_no in the fortran routine
@@ -1633,7 +1633,6 @@ std::cout << "WE ARE IN NEW ROUTINE" << std::endl;
                  BL_TO_FORTRAN_3D(S_data[mfi]),&ncomp,
                  ARLIM_3D(dlo),ARLIM_3D(dhi),domlo,domhi,
                  ZFILL(dx), ZFILL(xlo),&time,&dt,bc,&level,&level);
-      //amrex::Print() << S_derData;
       
       // Tagging Pressure
       pc_presserror(tptr,ARLIM_3D(tlo), ARLIM_3D(thi),
@@ -1724,7 +1723,7 @@ std::cout << "WE ARE IN NEW ROUTINE" << std::endl;
                  ARLIM_3D(dlo),ARLIM_3D(dhi),domlo,domhi,
                  ZFILL(dx), ZFILL(xlo),&time,&dt,bc,&level,&level,&idx);
         
-        // Tagging magVorticity
+        // Tagging Flame Tracer
         pc_ftracerror(tptr,ARLIM_3D(tlo), ARLIM_3D(thi),
                   &tagval, &clearval,
                   S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),

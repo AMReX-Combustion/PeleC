@@ -32,7 +32,6 @@ contains
 
     integer          :: i, j, k
 
-    write(*,*) 'DEBUG AHAHAHAH ',idx,UFS+idx
     do k = lo(3), hi(3)
        do j = lo(2), hi(2)
           do i = lo(1), hi(1)
@@ -426,9 +425,7 @@ contains
     type (eos_t) :: eos_state
 
     call build(eos_state)
-!write(*,*) 'DEBUG IN DERPRES'
-!write(*,*) 'lo, hi, ',lo,hi
-!write(*,*) 'lbound, ubound',lbound(u),ubound(u)
+
     do k = lo(3), hi(3)
        do j = lo(2), hi(2)
           do i = lo(1), hi(1)
