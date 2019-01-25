@@ -445,23 +445,11 @@ PeleC::variableSetUp ()
 	name[cnt] = "rho_" + aux_names[i];
     }
 
-#if 1
-//    StateDescriptor::BndryFunc bndryfunc_hyp(pc_bcfill_hyp);
-    
-    desc_lst.setComponent(State_Type,
-			  Density,
-			  name,
-			  bcs,
-			  StateDescriptor::BndryFunc(pc_bcfill_hyp));
-#else
-
-desc_lst.setComponent(State_Type,
-Density,
-name,
-bcs,
-BndryFunc(pc_denfill,pc_hypfill));
-
-#endif
+  desc_lst.setComponent(State_Type,
+                        Density,
+                        name,
+                        bcs,
+                        StateDescriptor::BndryFunc(pc_bcfill_hyp));
 
 #ifdef REACTIONS
     for (int i=0; i<NumSpec; ++i) {
@@ -477,7 +465,7 @@ BndryFunc(pc_denfill,pc_hypfill));
                          0,
                          react_name,
                          react_bcs,
-                         BndryFunc(pc_denfill, pc_reactfill));
+                         StateDescriptor::BndryFunc(pc_reactfill_hyp));
 #endif
 
 

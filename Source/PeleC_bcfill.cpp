@@ -37,3 +37,30 @@ pc_hypfill(BL_TO_FORTRAN_3D(data),ARLIM_3D(domlo),ARLIM_3D(domhi),
 
 
 }
+
+
+void pc_reactfill_hyp (Box const& bx, FArrayBox& data,
+                 const int dcomp, const int numcomp,
+                 Geometry const& geom, const Real time,
+                 const Vector<BCRec>& bcr, const int bcomp,
+                 const int scomp)
+{
+//AMREX_ALWAYS_ASSERT();
+
+const int* domlo      = geom.Domain().loVect();
+const int* domhi      = geom.Domain().hiVect();
+const Real* dx  = geom.CellSize();
+
+const RealBox pbx  = RealBox(bx,geom.CellSize(),geom.ProbLo());
+const Real* xlo     = pbx.lo();
+
+const int* bc =  bcr[bcomp].data();
+
+const amrex::Real& time_f=time;
+
+pc_reactfill(BL_TO_FORTRAN_3D(data),ARLIM_3D(domlo),ARLIM_3D(domhi),
+           ZFILL(dx),ZFILL(xlo),&time_f,bc);
+
+
+
+}

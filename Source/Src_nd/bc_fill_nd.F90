@@ -34,30 +34,6 @@ contains
 
   end subroutine pc_hypfill
 
-
-
-  subroutine pc_denfill(adv,adv_lo,adv_hi,domlo,domhi,delta,xlo,time,bc) &
-       bind(C, name="pc_denfill")
-
-    use prob_params_module, only: dim  
-
-    implicit none
-
-    include 'AMReX_bc_types.fi'
-
-    integer          :: adv_lo(3),adv_hi(3)
-    integer          :: bc(dim,2,*)
-    integer          :: domlo(3), domhi(3)
-    double precision :: delta(3), xlo(3), time
-    double precision :: adv(adv_lo(1):adv_hi(1),adv_lo(2):adv_hi(2),adv_lo(3):adv_hi(3))
-
-    call filcc_nd(adv,adv_lo,adv_hi,domlo,domhi,delta,xlo,bc)
-
-  end subroutine pc_denfill
-
-
-  
-
   subroutine pc_reactfill(react,react_lo,react_hi,domlo,domhi,delta,xlo,time,bc) &
        bind(C, name="pc_reactfill")
 
@@ -90,7 +66,7 @@ contains
 ! Gghost-cells will be recomputed with the NSCBC theory
 ! in the routine 'impose_NSCBC' located in Src_(dim)d
 
-  subroutine bcnormal(x,u_int,u_ext,dir,sgn,rho_only,bc_type,bc_params,bc_target)
+  subroutine bcnormal(x,u_int,u_ext,dir,sgn,bc_type,bc_params,bc_target)
 
     use probdata_module
     use eos_type_module
@@ -107,7 +83,6 @@ contains
   
     double precision :: x(3)
     double precision :: u_int(*),u_ext(*)
-    logical rho_only
     integer :: dir,sgn
     integer, optional, intent(out) :: bc_type
     double precision, optional, intent(out) :: bc_params(6)
@@ -153,23 +128,16 @@ contains
     eos_state % T = u_int(UTEMP)
     call eos_tp(eos_state)
     
-    if (rho_only .EQV. .TRUE. ) then
-  
-       u_ext(1) = eos_state % rho
-  
-    else
-  
-       u_ext(UFS:UFS+nspec-1) = eos_state % massfrac * eos_state % rho
-       u_ext(URHO)               = eos_state % rho
-       u_ext(UMX)                = eos_state % rho  *  u(1)
-       u_ext(UMY)                = eos_state % rho  *  u(2)
-       u_ext(UMZ)                = eos_state % rho  *  u(3)
-       u_ext(UTEMP)              = eos_state % T
-       u_ext(UEINT)              = eos_state % rho  *   eos_state % e
-       u_ext(UEDEN)              = eos_state % rho  *  (eos_state % e + 0.5d0 * (u(1)**2 + u(2)**2) + u(3)**2)
-  
-    endif
-    
+
+    u_ext(UFS:UFS+nspec-1) = eos_state % massfrac * eos_state % rho
+    u_ext(URHO)               = eos_state % rho
+    u_ext(UMX)                = eos_state % rho  *  u(1)
+    u_ext(UMY)                = eos_state % rho  *  u(2)
+    u_ext(UMZ)                = eos_state % rho  *  u(3)
+    u_ext(UTEMP)              = eos_state % T
+    u_ext(UEINT)              = eos_state % rho  *   eos_state % e
+    u_ext(UEDEN)              = eos_state % rho  *  (eos_state % e + 0.5d0 * (u(1)**2 + u(2)**2) + u(3)**2)
+      
     ! Here the optional parameters are filled by the local variables if they were present
      if (flag_nscbc == 1) then
       bc_type = which_bc_type

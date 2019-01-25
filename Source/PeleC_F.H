@@ -183,18 +183,6 @@ extern "C"
      const amrex::Real* dx, const amrex::Real* glo, 
      const amrex::Real* time, const int* bc);
 
-    void pc_hypfill2
-    (BL_FORT_FAB_ARG_3D(state),
-     const int* dlo, const int* dhi,
-     const amrex::Real* dx, const amrex::Real* glo,
-     const amrex::Real time, const int* bc);
-
-  void pc_denfill
-    (BL_FORT_FAB_ARG_3D(state),
-     const int* dlo, const int* dhi,
-     const amrex::Real* dx, const amrex::Real* glo, 
-     const amrex::Real* time, const int* bc);
-
   void pc_xmomfill
     (BL_FORT_FAB_ARG_3D(state),
      const int* dlo, const int* dhi,
