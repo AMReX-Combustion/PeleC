@@ -471,6 +471,7 @@ write(*,*) 'WARNING THERE IS A HACK IN pc_ftracerror PLEASE FIX THIS ROUTINE'
              do i = lo(1), hi(1)
                 if (vel(i,j,k,1) .ge. velerr) then
                    tag(i,j,k) = set
+                   write(*,*) 'HELLO 1',i,j,k,vel(i,j,k,1) 
                 endif
              enddo
           enddo
@@ -489,6 +490,7 @@ write(*,*) 'WARNING THERE IS A HACK IN pc_ftracerror PLEASE FIX THIS ROUTINE'
                 ay = MAX(ay,ABS(vel(i,j,k,1) - vel(i,j-1*dg(2),k,1)))
                 az = MAX(az,ABS(vel(i,j,k,1) - vel(i,j,k-1*dg(3),1)))
                 if ( MAX(ax,ay,az) .ge. velgrad) then
+                !write(*,*) 'HELLO 2',i,j,k,MAX(ax,ay,az) .ge. dengrad
                    tag(i,j,k) = set
                 endif
              enddo
