@@ -444,12 +444,12 @@ void XGraph1d::dumpXGraph(MultiFab& q, MultiFab& qf,int comp,
    std::vector< std::list<XGGrid> > xgg_lev(q.boxArray().size());
    for (MFIter mfi(q); mfi.isValid(); ++mfi) {
       const int i = mfi.index();
-      const int* nx = q[mfi].length();
+      const int nx = q[mfi].length()[0];
       amrptr->Geom(lev).CellCenter(q[mfi].box().smallEnd(),&xl);
       bool is_data=false;
       XGGrid xggtmp;
       xgg_lev[i].push_back(xggtmp);
-      for(int j = 0; j < *nx; j++) {
+      for(int j = 0; j < nx; j++) {
          if(*(q[mfi].dataPtr(0)+j) != blackout) {
             XGPt ptmp;
             ptmp.x=xl+dx*j;
