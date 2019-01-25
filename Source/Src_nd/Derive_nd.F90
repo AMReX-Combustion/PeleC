@@ -9,6 +9,40 @@ contains
 ! All subroutines in this file must be threadsafe because they are called
 ! inside OpenMP parallel regions.
 
+  subroutine pc_derspectrac(spectrac,v_lo,v_hi,nv, &
+                       dat,d_lo,d_hi,nc,lo,hi,domlo, &
+                       domhi,delta,xlo,time,dt,bc,level,grid_no,idx) &
+                       bind(C, name="pc_derspectrac")
+    !
+    ! This routine will derive the velocity from the momentum.
+    !
+    use meth_params_module, only : URHO, UFS
+    implicit none
+
+    integer          :: lo(3), hi(3)
+    integer          :: v_lo(3), v_hi(3), nv
+    integer          :: d_lo(3), d_hi(3), nc
+    integer          :: domlo(3), domhi(3)
+    integer          :: bc(3,2,nc)
+    double precision :: delta(3), xlo(3), time, dt
+    double precision :: spectrac(v_lo(1):v_hi(1),v_lo(2):v_hi(2),v_lo(3):v_hi(3),nv)
+    double precision :: dat(d_lo(1):d_hi(1),d_lo(2):d_hi(2),d_lo(3):d_hi(3),nc)
+    integer          :: level, grid_no
+    integer          :: idx
+
+    integer          :: i, j, k
+
+    write(*,*) 'DEBUG AHAHAHAH ',idx,UFS+idx
+    do k = lo(3), hi(3)
+       do j = lo(2), hi(2)
+          do i = lo(1), hi(1)
+             spectrac(i,j,k,1) = dat(i,j,k,UFS+idx) / dat(i,j,k,URHO)
+          end do
+       end do
+    end do
+
+  end subroutine pc_derspectrac
+
   subroutine pc_dervelx(vel,v_lo,v_hi,nv, &
                        dat,d_lo,d_hi,nc,lo,hi,domlo, &
                        domhi,delta,xlo,time,dt,bc,level,grid_no) &
