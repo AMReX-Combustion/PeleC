@@ -330,6 +330,39 @@ contains
 
   end subroutine pc_dermagmom
 
+  subroutine pc_dertemp(temp,m_lo,m_hi,nv, &
+                        dat,d_lo,d_hi,nc,lo,hi,domlo, &
+                        domhi,delta,xlo,time,dt,bc,level,grid_no) &
+                        bind(C, name="pc_dertemp")
+    !
+    ! This routine will derive the temperature.
+    !
+
+    use meth_params_module, only : UTEMP
+
+    implicit none
+
+    integer          :: lo(3), hi(3)
+    integer          :: m_lo(3), m_hi(3), nv
+    integer          :: d_lo(3), d_hi(3), nc
+    integer          :: domlo(3), domhi(3)
+    integer          :: bc(3,2,nc)
+    double precision :: delta(3), xlo(3), time, dt
+    double precision :: temp(m_lo(1):m_hi(1),m_lo(2):m_hi(2),m_lo(3):m_hi(3),nv)
+    double precision ::    dat(d_lo(1):d_hi(1),d_lo(2):d_hi(2),d_lo(3):d_hi(3),nc)
+    integer          :: level, grid_no
+
+    integer          :: i, j, k
+
+    do k = lo(3), hi(3)
+       do j = lo(2), hi(2)
+          do i = lo(1), hi(1)
+             temp(i,j,k,1) = dat(i,j,k,UTEMP)
+          end do
+       end do
+    end do
+
+  end subroutine pc_dertemp
 
 
   subroutine pc_derpres(p,p_lo,p_hi,ncomp_p, &
@@ -359,7 +392,9 @@ contains
     type (eos_t) :: eos_state
 
     call build(eos_state)
-
+!write(*,*) 'DEBUG IN DERPRES'
+!write(*,*) 'lo, hi, ',lo,hi
+!write(*,*) 'lbound, ubound',lbound(u),ubound(u)
     do k = lo(3), hi(3)
        do j = lo(2), hi(2)
           do i = lo(1), hi(1)
