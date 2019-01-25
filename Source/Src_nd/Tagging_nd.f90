@@ -211,19 +211,19 @@ contains
     double precision :: ax, ay, az
     integer          :: i, j, k
 
-     write(*,*) 'DEBUG nd ',nd
-    write(*,*) 'DEBUG lo, hi ',lo,hi
-    write(*,*) 'DEBUG taglo, taghi ',taglo,taghi
-    write(*,*) 'DEBUG denlo, denhi ',denlo,denhi
-    write(*,*) 'DEBUG xlo, problo ',xlo,problo
-    write(*,*) 'DEBUG denerr, dengrad ',denerr, dengrad
+    ! write(*,*) 'DEBUG nd ',nd
+    !write(*,*) 'DEBUG lo, hi ',lo,hi
+    !write(*,*) 'DEBUG taglo, taghi ',taglo,taghi
+    !write(*,*) 'DEBUG denlo, denhi ',denlo,denhi
+    !write(*,*) 'DEBUG xlo, problo ',xlo,problo
+    !write(*,*) 'DEBUG denerr, dengrad ',denerr, dengrad
     
     !     Tag on regions of high density
     if (level .lt. max_denerr_lev) then
        do k = lo(3), hi(3)
           do j = lo(2), hi(2)
              do i = lo(1), hi(1)
-write(*,*) 'DEBUG density ',den(i,j,k,1)
+!write(*,*) 'DEBUG density ',den(i,j,k,1)
                 if (den(i,j,k,1) .ge. denerr) then
                    tag(i,j,k) = set
                 endif
@@ -244,7 +244,7 @@ write(*,*) 'DEBUG density ',den(i,j,k,1)
                 ay = MAX(ay,ABS(den(i,j,k,1) - den(i,j-1*dg(2),k,1)))
                 az = MAX(az,ABS(den(i,j,k,1) - den(i,j,k-1*dg(3),1)))
                 if ( MAX(ax,ay,az) .ge. dengrad) then
-                write(*,*) 'HELLO',i,j,k,MAX(ax,ay,az) .ge. dengrad
+                !write(*,*) 'HELLO',i,j,k,MAX(ax,ay,az) .ge. dengrad
                    tag(i,j,k) = set
                 endif
              enddo

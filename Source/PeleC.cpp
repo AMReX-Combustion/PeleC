@@ -1570,9 +1570,12 @@ std::cout << "WE ARE IN NEW ROUTINE" << std::endl;
   const int*  domlo = geom.Domain().loVect();
   const int*  domhi = geom.Domain().hiVect();
   const Real* dx        = geom.CellSize();
+  Real dt = parent->dtLevel(level);
   const Real* prob_lo   = geom.ProbLo();
 
+  Vector<BCRec>       bcs(NUM_STATE);
   
+  FArrayBox S_pressure;
 
 #ifdef _OPENMP
 #pragma omp parallel
@@ -1604,16 +1607,43 @@ std::cout << "WE ARE IN NEW ROUTINE" << std::endl;
       const int*  dhi     = datbox.hiVect();
       const int   ncomp   = datfab.nComp();
 
+      S_pressure.resize(datbox, 1);
+      const int   ncp   = S_pressure.nComp();
+      const int* bc =  bcs[0].data();
+
+
+      
+      // Tagging Density
       pc_denerror(tptr,ARLIM_3D(tlo), ARLIM_3D(thi),
                   &tagval, &clearval,
                   BL_TO_FORTRAN_3D(S_data[mfi]),
                   ARLIM_3D(lo),ARLIM_3D(hi), &ncomp, domlo,domhi, 
                   ZFILL(dx), ZFILL(xlo), ZFILL(prob_lo), &time, &level);
       
-
-
       // Now update the tags in the TagBox.
       tagfab.tags_and_untags(itags, tilebx);
+      
+      
+      // Recasting pressure
+      // Warning: bcs are dummy values, and level is passed as grid_no in the fortran routine
+      //          they are not used, but one may want the correct values 
+      pc_derpres(S_pressure.dataPtr(), ARLIM_3D(S_pressure.loVect()), ARLIM_3D(S_pressure.hiVect()),&ncp,
+                 BL_TO_FORTRAN_3D(S_data[mfi]),&ncomp,
+                 ARLIM_3D(dlo),ARLIM_3D(dhi),domlo,domhi,
+                 ZFILL(dx), ZFILL(xlo),&time,&dt,bc,&level,&level);
+      //amrex::Print() << S_pressure;
+      
+      // Tagging Pressure
+      pc_presserror(tptr,ARLIM_3D(tlo), ARLIM_3D(thi),
+                  &tagval, &clearval,
+                  S_pressure.dataPtr(), ARLIM_3D(S_pressure.loVect()), ARLIM_3D(S_pressure.hiVect()),
+                  ARLIM_3D(lo),ARLIM_3D(hi), &ncomp, domlo,domhi, 
+                  ZFILL(dx), ZFILL(xlo), ZFILL(prob_lo), &time, &level);
+      
+      // Now update the tags in the TagBox.
+      tagfab.tags_and_untags(itags, tilebx);
+      
+      
     }
   } 
   
