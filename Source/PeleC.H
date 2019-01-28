@@ -4,7 +4,6 @@
 #include <AMReX_BC_TYPES.H>
 #include <AMReX_AmrLevel.H>
 #include <AMReX_iMultiFab.H>
-#include <AMReX_ErrorList.H>
 #ifdef PELE_USE_EB
 #include <AMReX_EBFArrayBox.H>
 #include <EBStencilTypes.H>
@@ -118,10 +117,6 @@ public:
     // Define data descriptors.
     //
     static void variableSetUp ();
-    //
-    // Define tagging functions.
-    //
-    static void ErrorSetUp ();
     //
     // Cleanup data descriptors at end of run.
     //
@@ -605,7 +600,6 @@ protected:
     static bool      dump_old;
     static int       radius_grow;
     static int       verbose;
-    static amrex::ErrorList err_list;
     static amrex::BCRec     phys_bc;
     static int       NUM_GROW, QTHERM, QVAR, cQRHO, cQU, cQV, cQW, cQGAME, cQPRES, cQREINT, cQTEMP, cQFA, cQFS, cQFX, NQAUX, cQGAMC, cQC, cQCSML, cQDPDR, cQDPDE, cQRSPEC;
 
@@ -703,8 +697,6 @@ protected:
                  amrex::Geometry const& geom, const amrex::Real time,
                  const amrex::Vector<amrex::BCRec>& bcr, const int bcomp,
                  const int scomp);
-
-
 
 
 //

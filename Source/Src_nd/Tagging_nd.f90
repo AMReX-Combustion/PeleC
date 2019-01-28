@@ -24,10 +24,6 @@ module tagging_module
 
 contains
 
-  ! ::: -----------------------------------------------------------
-  ! ::: This routine will tag high error cells based on the density
-  ! ::: -----------------------------------------------------------
-
   ! All tagging subroutines in this file must be threadsafe because
   ! they are called inside OpenMP parallel regions.
 
@@ -210,7 +206,7 @@ contains
 
     double precision :: ax, ay, az
     integer          :: i, j, k
-    
+
     !     Tag on regions of high density
     if (level .lt. max_denerr_lev) then
        do k = lo(3), hi(3)
@@ -242,7 +238,7 @@ contains
           enddo
        enddo
     endif
-    
+
   end subroutine pc_denerror
 
   ! ::: -----------------------------------------------------------

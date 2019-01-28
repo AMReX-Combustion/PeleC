@@ -73,7 +73,6 @@ module hyp_advection_module
     integer, intent(in) ::    fltd_lo(2), fltd_hi(2)
     integer, intent(in) ::        Vlo(2),     Vhi(2)
     integer, intent(in) ::        Dlo(2),     Dhi(2)
-    integer, intent(in) ::        blo(2),     bhi(2)
     double precision, intent(in) :: h(2)
 
 #ifdef PELEC_USE_EB

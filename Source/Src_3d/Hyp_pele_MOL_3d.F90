@@ -40,9 +40,10 @@ module hyp_advection_module
                      flatn, fltd_lo, fltd_hi, &
                      V, Vlo, Vhi, &
                      D, Dlo, Dhi,&
+#ifdef PELEC_USE_EB
                      flag, fglo, fghi, &
                      ebg, Nebg, ebflux, nebflux, &
-                     bcMask, blo, bhi, &
+#endif
                      h) &
                      bind(C,name="pc_hyp_mol_flux")
 
@@ -82,7 +83,6 @@ module hyp_advection_module
     integer, intent(in) ::    fltd_lo(3), fltd_hi(3)
     integer, intent(in) ::        Vlo(3),     Vhi(3)
     integer, intent(in) ::        Dlo(3),     Dhi(3)
-    integer, intent(in) ::        blo(3),     bhi(3)
     double precision, intent(in) :: h(3)
 
 #ifdef PELEC_USE_EB
@@ -107,7 +107,6 @@ module hyp_advection_module
     double precision, intent(inout) :: flux3(fd3_lo(1):fd3_hi(1),fd3_lo(2):fd3_hi(2),fd3_lo(3):fd3_hi(3),NVAR)
     double precision, intent(inout) ::     V(   Vlo(1):   Vhi(1),   Vlo(2):   Vhi(2),   Vlo(3):   Vhi(3))
     double precision, intent(inout) ::     D(   Dlo(1):   Dhi(1),   Dlo(2):   Dhi(2),   Dlo(3):   Dhi(3),NVAR)
-    integer,          intent(inout) ::bcMask(   blo(1):   bhi(1),   blo(2):   bhi(2),   blo(3):   bhi(3),3)
 
     integer :: i, j, k, nsp, L, ivar
     integer :: qt_lo(3), qt_hi(3)

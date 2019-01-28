@@ -22,11 +22,11 @@ contains
     integer          :: bc(dim,2,*)
     integer          :: domlo(3), domhi(3)
     double precision :: delta(3), xlo(3), time
+!    double precision, value :: time
     double precision :: adv(adv_lo(1):adv_hi(1),adv_lo(2):adv_hi(2),adv_lo(3):adv_hi(3),NVAR)
 
     double precision :: x(3)
     integer :: i, j, k, n
-    logical rho_only
 
     do n = 1,NVAR
        call filcc_nd(adv(:,:,:,n),adv_lo,adv_hi,domlo,domhi,delta,xlo,bc(:,:,n))
@@ -39,9 +39,6 @@ contains
     ! either case....how do we know it's Outflow?  We have to assume
     ! that the setup routines converted Outflow to FOEXTRAP.
 
-    !     Set flag for bc function
-    rho_only = .FALSE.
-
     !     XLO
     if ( (bc(1,1,1).eq.EXT_DIR).and. adv_lo(1).lt.domlo(1)) then
        do i = adv_lo(1), domlo(1)-1
@@ -50,7 +47,7 @@ contains
              x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
              do k = adv_lo(3), adv_hi(3)
                 x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(domlo(1),j,k,:),adv(i,j,k,:),1,+1,rho_only)
+                call bcnormal(x,adv(domlo(1),j,k,:),adv(i,j,k,:),1,+1)
              end do
           end do
        end do
@@ -64,7 +61,7 @@ contains
              x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
              do k = adv_lo(3), adv_hi(3)
                 x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(domhi(1),j,k,:),adv(i,j,k,:),1,-1,rho_only)
+                call bcnormal(x,adv(domhi(1),j,k,:),adv(i,j,k,:),1,-1)
              end do
           end do
        end do
@@ -79,7 +76,7 @@ contains
                 x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
                 do k = adv_lo(3), adv_hi(3)
                    x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                   call bcnormal(x,adv(i,domlo(2),k,:),adv(i,j,k,:),2,+1,rho_only)
+                   call bcnormal(x,adv(i,domlo(2),k,:),adv(i,j,k,:),2,+1)
                 end do
              end do
           end do
@@ -93,7 +90,7 @@ contains
                 x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
                 do k = adv_lo(3), adv_hi(3)
                    x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                   call bcnormal(x,adv(i,domhi(2),k,:),adv(i,j,k,:),2,-1,rho_only)
+                   call bcnormal(x,adv(i,domhi(2),k,:),adv(i,j,k,:),2,-1)
                 end do
              end do
           end do
@@ -108,7 +105,7 @@ contains
                    x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
                    do k = adv_lo(3), adv_hi(3)
                       x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                      call bcnormal(x,adv(i,j,domlo(3),:),adv(i,j,k,:),3,+1,rho_only)
+                      call bcnormal(x,adv(i,j,domlo(3),:),adv(i,j,k,:),3,+1)
                    end do
                 end do
              end do
@@ -122,7 +119,7 @@ contains
                    x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
                    do k = adv_lo(3), adv_hi(3)
                       x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                      call bcnormal(x,adv(i,j,domhi(3),:),adv(i,j,k,:),3,-1,rho_only)
+                      call bcnormal(x,adv(i,j,domhi(3),:),adv(i,j,k,:),3,-1)
                    end do
                 end do
              end do
@@ -133,7 +130,28 @@ contains
   end subroutine pc_hypfill
 
 
-  subroutine bcnormal(x,u_int,u_ext,dir,sgn,rho_only)
+  subroutine pc_reactfill(react,react_lo,react_hi,domlo,domhi,delta,xlo,time,bc) &
+       bind(C, name="pc_reactfill")
+
+    use prob_params_module, only: dim  
+
+    implicit none
+
+    include 'AMReX_bc_types.fi'
+
+    integer          :: react_lo(3),react_hi(3)
+    integer          :: bc(dim,2,*)
+    integer          :: domlo(3), domhi(3)
+    double precision :: delta(3), xlo(3), time
+    double precision :: react(react_lo(1):react_hi(1),react_lo(2):react_hi(2),react_lo(3):react_hi(3))
+
+    call filcc_nd(react,react_lo,react_hi,domlo,domhi,delta,xlo,bc)
+
+  end subroutine pc_reactfill
+
+
+
+  subroutine bcnormal(x,u_int,u_ext,dir,sgn,bc_type,bc_params,bc_target)
 
     use probdata_module
     use network, only: nspec
@@ -146,14 +164,14 @@ contains
     double precision :: x(3)
     double precision :: u_int(*),u_ext(*)
     double precision :: p_int !internal pressure
-    logical rho_only
+
+    integer, optional, intent(out) :: bc_type
+    double precision, optional, intent(out) :: bc_params(6)
+    double precision, optional, intent(out) :: bc_target(5)
 
     integer :: dir,sgn
     type (eos_t) :: eos_state,eos_state_int
 
-    if (rho_only .EQV. .TRUE. ) then
-       u_ext(URHO) = dens_domain
-    else
 
        !subsonic velocity inlet
        !user specified velocity is used
@@ -185,7 +203,6 @@ contains
 
        call destroy(eos_state)
 
-    endif
 
   end subroutine bcnormal
 

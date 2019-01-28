@@ -704,11 +704,6 @@ PeleC::variableSetUp ()
     // Problem-specific adds
 #include <Problem_Derives.H>
 
-    //
-    // DEFINE ERROR ESTIMATION QUANTITIES
-    //
-    ErrorSetUp();
-
     // Set list of active sources
     set_active_sources();
 }
