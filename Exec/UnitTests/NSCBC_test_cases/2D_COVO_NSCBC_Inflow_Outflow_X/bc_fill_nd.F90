@@ -34,14 +34,10 @@ contains
 
     double precision :: x(3)
     integer :: i, j, k, n
-    logical rho_only
 
     do n = 1,NVAR
        call filcc_nd(adv(:,:,:,n),adv_lo,adv_hi,domlo,domhi,delta,xlo,bc(:,:,n))
     enddo
-
-    ! Set flag for bc function
-    rho_only = .FALSE.
 
     !     XLO
     if ( (bc(1,1,1).eq.EXT_DIR).and. adv_lo(1).lt.domlo(1)) then
@@ -51,7 +47,7 @@ contains
              x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
              do k = adv_lo(3), adv_hi(3)
                 x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(domlo(1),j,k,:),adv(i,j,k,:),1,+1,rho_only)
+                call bcnormal(x,adv(domlo(1),j,k,:),adv(i,j,k,:),1,+1,time)
              end do
           end do
        end do
@@ -65,7 +61,7 @@ contains
              x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
              do k = adv_lo(3), adv_hi(3)
                 x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(domhi(1),j,k,:),adv(i,j,k,:),1,-1,rho_only)
+                call bcnormal(x,adv(domhi(1),j,k,:),adv(i,j,k,:),1,-1,time)
              end do
           end do
        end do
@@ -79,7 +75,7 @@ contains
              x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
              do k = adv_lo(3), adv_hi(3)
                 x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(i,domlo(2),k,:),adv(i,j,k,:),2,+1,rho_only)
+                call bcnormal(x,adv(i,domlo(2),k,:),adv(i,j,k,:),2,+1,time)
              end do
           end do
        end do
@@ -93,7 +89,7 @@ contains
              x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
              do k = adv_lo(3), adv_hi(3)
                 x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(i,domhi(2),k,:),adv(i,j,k,:),2,-1,rho_only)
+                call bcnormal(x,adv(i,domhi(2),k,:),adv(i,j,k,:),2,-1,time)
              end do
           end do
        end do
@@ -107,7 +103,7 @@ contains
     !         x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
     !         do k = adv_lo(3), adv_hi(3)
     !            x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-    !            call bcnormal_nscbc(x,adv(i,j,domlo(3),:),adv(i,j,k,:),3,+1,bc_type,bc_params,rho_only)
+    !            call bcnormal_nscbc(x,adv(i,j,domlo(3),:),adv(i,j,k,:),3,+1,bc_type,bc_params,time)
     !         end do
     !      end do
     !   end do
@@ -121,7 +117,7 @@ contains
     !         x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
     !         do k = adv_lo(3), adv_hi(3)
     !            x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-    !            call bcnormal_nscbc(x,adv(i,j,domhi(3),:),adv(i,j,k,:),3,-1,bc_type,bc_params,rho_only)
+    !            call bcnormal_nscbc(x,adv(i,j,domhi(3),:),adv(i,j,k,:),3,-1,bc_type,bc_params,time)
     !         end do
     !      end do
     !   end do
@@ -148,7 +144,6 @@ contains
 
     double precision :: x(3)
     integer :: i, j, k, n
-    logical rho_only
 
     do n = 1,NVAR
        call filcc_nd(adv(:,:,:,n),adv_lo,adv_hi,domlo,domhi,delta,xlo,bc(:,:,n))
@@ -156,7 +151,7 @@ contains
   end subroutine pc_reactfill
   
   
-    subroutine bcnormal(x,u_int,u_ext,dir,sgn,rho_only,bc_type,bc_params,bc_target)
+    subroutine bcnormal(x,u_int,u_ext,dir,sgn,time,bc_type,bc_params,bc_target)
 
     use probdata_module
     use eos_type_module
@@ -171,9 +166,8 @@ contains
     
     implicit none
 
-    double precision :: x(3)
+    double precision :: x(3), time
     double precision :: u_int(*),u_ext(*)
-    logical rho_only
     integer :: dir,sgn
     integer, optional, intent(out) :: bc_type
     double precision, optional, intent(out) :: bc_params(6)
@@ -282,12 +276,6 @@ contains
     end if
 
 
-    if (rho_only .EQV. .TRUE. ) then
-
-       u_ext(1) = eos_state % rho
-
-    else
- 
        u_ext(UFS:UFS+nspec-1) = eos_state % massfrac * eos_state % rho
        u_ext(URHO)               = eos_state % rho
        u_ext(UMX)                = eos_state % rho  *  u(1)
@@ -297,7 +285,6 @@ contains
        u_ext(UEINT)              = eos_state % rho  *   eos_state % e
        u_ext(UEDEN)              = eos_state % rho  *  (eos_state % e + 0.5d0 * (u(1)**2 + u(2)**2) + u(3)**2)
 
-    endif
     
     ! Here the optional parameters are filled by the local variables if they were present
     if (flag_nscbc == 1) then
