@@ -66,7 +66,7 @@ contains
 ! Gghost-cells will be recomputed with the NSCBC theory
 ! in the routine 'impose_NSCBC' located in Src_(dim)d
 
-  subroutine bcnormal(x,u_int,u_ext,dir,sgn,bc_type,bc_params,bc_target)
+  subroutine bcnormal(x,u_int,u_ext,dir,sgn,time,bc_type,bc_params,bc_target)
 
     use probdata_module
     use eos_type_module
@@ -83,6 +83,7 @@ contains
   
     double precision :: x(3)
     double precision :: u_int(*),u_ext(*)
+    double precision :: time
     integer :: dir,sgn
     integer, optional, intent(out) :: bc_type
     double precision, optional, intent(out) :: bc_params(6)

@@ -16,13 +16,13 @@ contains
 !------------------------------
 
  subroutine impose_NSCBC(lo, hi, domlo, domhi, &
-                                    uin, uin_l1, uin_l2, uin_h1, uin_h2, &
-                                   q, q_l1, q_l2, q_h1, q_h2, &
-                                   qaux, qa_l1, qa_l2, qa_h1, qa_h2, &
-                                   x_bcMask, x_bcMask_l1, x_bcMask_l2, x_bcMask_h1, x_bcMask_h2, &
-                                   y_bcMask, y_bcMask_l1, y_bcMask_l2, y_bcMask_h1, y_bcMask_h2, &
-                                   flag_nscbc_isAnyPerio, flag_nscbc_perio, &
-                                   time,delta,dt,verbose) bind(C, name="impose_NSCBC")
+                         uin, uin_l1, uin_l2, uin_h1, uin_h2, &
+                         q, q_l1, q_l2, q_h1, q_h2, &
+                         qaux, qa_l1, qa_l2, qa_h1, qa_h2, &
+                         x_bcMask, x_bcMask_l1, x_bcMask_l2, x_bcMask_h1, x_bcMask_h2, &
+                         y_bcMask, y_bcMask_l1, y_bcMask_l2, y_bcMask_h1, y_bcMask_h2, &
+                         flag_nscbc_isAnyPerio, flag_nscbc_perio, &
+                         time,delta,dt,verbose) bind(C, name="impose_NSCBC")
     
   use bl_error_module
   use network, only : nspec
@@ -148,11 +148,11 @@ contains
    
       ! Calling user target BC values
       ! x face
-      call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,x_isign,x_bc_type,x_bc_params,x_bc_target)
+      call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,x_isign,time,x_bc_type,x_bc_params,x_bc_target)
       x_bcMask(x_idx_Mask,j) = x_bc_type
       
       ! y face
-      call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,y_isign,y_bc_type,y_bc_params,y_bc_target)
+      call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,y_isign,time,y_bc_type,y_bc_params,y_bc_target)
       y_bcMask(i,y_idx_Mask) = y_bc_type
      
       ! Computing the LODI system waves along X
@@ -228,7 +228,7 @@ contains
                                qaux, qa_l1, qa_l2, qa_h1, qa_h2)
      
      ! Calling user target BC values 
-     call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,bc_type,bc_params,bc_target)
+     call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,time,bc_type,bc_params,bc_target)
      
      ! Filling bcMask with specific user defined BC type
      if ((j < q_lo(2)+3) .or. (j > q_hi(2)-3)) then
@@ -291,7 +291,7 @@ contains
                                qaux, qa_l1, qa_l2, qa_h1, qa_h2)
      
      ! Filling bcMask with specific user defined BC type 
-     call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,bc_type,bc_params,bc_target)
+     call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,time,bc_type,bc_params,bc_target)
      if ((j < q_lo(2)+3) .or. (j > q_hi(2)-3)) then
        continue ! There is just 1 ghost-cell with bcMask because of the Riemann solver
      else
@@ -353,7 +353,7 @@ endif
                                qaux, qa_l1, qa_l2, qa_h1, qa_h2)
                                
      ! Filling bcMask with specific user defined BC type
-     call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,1,bc_type,bc_params,bc_target)
+     call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,1,time,bc_type,bc_params,bc_target)
      if ((i < q_lo(1)+3) .or. (i > q_hi(1)-3)) then
        continue ! There is just 1 ghost-cell with bcMask because of the Riemann solver
      else
@@ -415,7 +415,7 @@ endif
                                qaux, qa_l1, qa_l2, qa_h1, qa_h2)
                                
      ! Filling bcMask with specific user defined BC type 
-     call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,-1,bc_type,bc_params,bc_target)
+     call bcnormal([x,y,0.0d0],U_dummy,U_ext,2,-1,time,bc_type,bc_params,bc_target)
      if ((i < q_lo(1)+3) .or. (i > q_hi(1)-3)) then
        continue ! There is just 1 ghost-cell with bcMask because of the Riemann solver
      else

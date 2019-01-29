@@ -11,12 +11,12 @@ contains
 !------------------------------
 
   subroutine impose_NSCBC(lo, hi, domlo, domhi, &
-                        uin, uin_l1, uin_h1, &
-                        q, q_l1, q_h1, &
-                        qaux, qa_l1, qa_h1, &
-                        bcMask, bcMask_l1, bcMask_h1, &
-                        flag_nscbc_isAnyPerio, flag_nscbc_perio, &
-                        time,delta,dt) bind(C, name="impose_NSCBC")
+                          uin, uin_l1, uin_h1, &
+                          q, q_l1, q_h1, &
+                          qaux, qa_l1, qa_h1, &
+                          bcMask, bcMask_l1, bcMask_h1, &
+                          flag_nscbc_isAnyPerio, flag_nscbc_perio, &
+                          time,delta,dt) bind(C, name="impose_NSCBC")
     
  
   use bl_error_module
@@ -111,7 +111,7 @@ contains
      drhodx = ((-3.0d0/2.0d0)*q(i,QRHO)+2.0d0*q(i+1,QRHO)-0.5d0*q(i+2,QRHO))/dx
  
      ! Calling user target BC values 
-     call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,bc_type,bc_params,bc_target)
+     call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,1,time,bc_type,bc_params,bc_target)
      
      bcMask(i) = bc_type
 
@@ -273,7 +273,7 @@ contains
      drhodx = ((3.0d0/2.0d0)*q(i,QRHO)-2.0d0*q(i-1,QRHO)+0.5d0*q(i-2,QRHO))/dx
        
      ! Calling user target BC values 
-     call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,bc_type,bc_params,bc_target)
+     call bcnormal([x,y,0.0d0],U_dummy,U_ext,1,-1,time,bc_type,bc_params,bc_target)
 
      bcMask(i) = bc_type
 

@@ -190,15 +190,15 @@ contains
 
     ! Calling user target BC values
     ! x face
-    call bcnormal([x,y,z],U_dummy,U_ext,1,x_isign,x_bc_type,x_bc_params,x_bc_target)
+    call bcnormal([x,y,z],U_dummy,U_ext,1,x_isign,time,x_bc_type,x_bc_params,x_bc_target)
     x_bcMask(x_idx_Mask,j,k) = x_bc_type
     
     ! y face
-    call bcnormal([x,y,z],U_dummy,U_ext,2,y_isign,y_bc_type,y_bc_params,y_bc_target)
+    call bcnormal([x,y,z],U_dummy,U_ext,2,y_isign,time,y_bc_type,y_bc_params,y_bc_target)
     y_bcMask(i,y_idx_Mask,k) = y_bc_type
    
     ! z face
-    call bcnormal([x,y,z],U_dummy,U_ext,3,z_isign,z_bc_type,z_bc_params,z_bc_target)
+    call bcnormal([x,y,z],U_dummy,U_ext,3,z_isign,time,z_bc_type,z_bc_params,z_bc_target)
     z_bcMask(i,j,z_idx_Mask) = z_bc_type
    
     ! Computing the LODI system waves along X
@@ -307,7 +307,7 @@ endif ! flag_nscbc_isAnyPerio )
                                qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
             
        ! Calling user target BC values 
-       call bcnormal([x,y,z],U_dummy,U_ext,1,1,bc_type,bc_params,bc_target)
+       call bcnormal([x,y,z],U_dummy,U_ext,1,1,time,bc_type,bc_params,bc_target)
      
        ! Filling bcMask with specific user defined BC type
        if ((j < q_lo(2)+3) .or. (j > q_hi(2)-3) .or. (k < q_lo(3)+3) .or. (k > q_hi(3)-3)) then
@@ -388,7 +388,7 @@ endif ! flag_nscbc_isAnyPerio )
                                qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
 
        ! Filling bcMask with specific user defined BC type 
-       call bcnormal([x,y,z],U_dummy,U_ext,1,-1,bc_type,bc_params,bc_target)
+       call bcnormal([x,y,z],U_dummy,U_ext,1,-1,time,bc_type,bc_params,bc_target)
        if ((j < q_lo(2)+3) .or. (j > q_hi(2)-3) .or. (k < q_lo(3)+3) .or. (k > q_hi(3)-3)) then
          continue ! There is just 1 ghost-cell with bcMask because of the Riemann solver
        else
@@ -466,7 +466,7 @@ endif ! flag_nscbc_isAnyPerio )
                                qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3) 
                                
        ! Filling bcMask with specific user defined BC type
-       call bcnormal([x,y,z],U_dummy,U_ext,2,1,bc_type,bc_params,bc_target)
+       call bcnormal([x,y,z],U_dummy,U_ext,2,1,time,bc_type,bc_params,bc_target)
        if ((i < q_lo(1)+3) .or. (i > q_hi(1)-3) .or. (k < q_lo(3)+3) .or. (k > q_hi(3)-3)) then
          continue ! There is just 1 ghost-cell with bcMask because of the Riemann solver
        else
@@ -545,7 +545,7 @@ endif ! flag_nscbc_isAnyPerio )
                                qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
                               
      ! Filling bcMask with specific user defined BC type 
-     call bcnormal([x,y,z],U_dummy,U_ext,2,-1,bc_type,bc_params,bc_target)
+     call bcnormal([x,y,z],U_dummy,U_ext,2,-1,time,bc_type,bc_params,bc_target)
      if ((i < q_lo(1)+3) .or. (i > q_hi(1)-3) .or. (k < q_lo(3)+3) .or. (k > q_hi(3)-3)) then
        continue ! There is just 1 ghost-cell with bcMask because of the Riemann solver
      else
@@ -624,7 +624,7 @@ end if
                                qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3) 
                                
        ! Filling bcMask with specific user defined BC type
-       call bcnormal([x,y,z],U_dummy,U_ext,3,1,bc_type,bc_params,bc_target)
+       call bcnormal([x,y,z],U_dummy,U_ext,3,1,time,bc_type,bc_params,bc_target)
        if ((i < q_lo(1)+3) .or. (i > q_hi(1)-3) .or. (j < q_lo(2)+3) .or. (j > q_hi(2)-3)) then
          continue ! There is just 1 ghost-cell with bcMask because of the Riemann solver
        else
@@ -702,7 +702,7 @@ end if
                                qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3) 
                                
        ! Filling bcMask with specific user defined BC type
-       call bcnormal([x,y,z],U_dummy,U_ext,3,-1,bc_type,bc_params,bc_target)
+       call bcnormal([x,y,z],U_dummy,U_ext,3,-1,time,bc_type,bc_params,bc_target)
        if ((i < q_lo(1)+3) .or. (i > q_hi(1)-3) .or. (j < q_lo(2)+3) .or. (j > q_hi(2)-3)) then
          continue ! There is just 1 ghost-cell with bcMask because of the Riemann solver
        else
