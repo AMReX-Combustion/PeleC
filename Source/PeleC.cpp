@@ -1582,6 +1582,7 @@ PeleC::errorEst (TagBoxArray& tags,
       FArrayBox   &datfab = S_data[mfi];
       auto&       tagfab  = tags[mfi];
       const Box&  tilebx  = mfi.tilebox();
+      const int&  grid_no  = mfi.index();
       
       const RealBox& pbx  = RealBox(tilebx,geom.CellSize(),geom.ProbLo());
       const Box&  datbox  = datfab.box();
@@ -1608,9 +1609,6 @@ PeleC::errorEst (TagBoxArray& tags,
       S_derData.resize(datbox, 1);
       const int   ncp   = S_derData.nComp();
       const int* bc =  bcs[0].data();
-
-// TO DO FIX ME: I don't think we need to do tagfab.tag after each pc_error call
-//               because the fortran tagging routines don't erase the array
       
       // Tagging Density
       pc_denerror(tptr,ARLIM_3D(tlo), ARLIM_3D(thi),
@@ -1627,7 +1625,7 @@ PeleC::errorEst (TagBoxArray& tags,
       pc_derpres(S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),&ncp,
                  BL_TO_FORTRAN_3D(S_data[mfi]),&ncomp,
                  ARLIM_3D(dlo),ARLIM_3D(dhi),domlo,domhi,
-                 ZFILL(dx), ZFILL(xlo),&time,&dt,bc,&level,&level);
+                 ZFILL(dx), ZFILL(xlo),&time,&dt,bc,&level,&grid_no);
       
       // Tagging Pressure
       pc_presserror(tptr,ARLIM_3D(tlo), ARLIM_3D(thi),
@@ -1637,27 +1635,61 @@ PeleC::errorEst (TagBoxArray& tags,
                   ZFILL(dx), ZFILL(xlo), ZFILL(prob_lo), &time, &level);
 
       //----------------------
-      // Recasting magvel
+      // Recasting vel_x
       S_derData.setVal(0.0);
-      pc_dermagvel(S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),&ncp,
+      pc_dervelx(S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),&ncp,
                  BL_TO_FORTRAN_3D(S_data[mfi]),&ncomp,
                  ARLIM_3D(dlo),ARLIM_3D(dhi),domlo,domhi,
-                 ZFILL(dx), ZFILL(xlo),&time,&dt,bc,&level,&level);
+                 ZFILL(dx), ZFILL(xlo),&time,&dt,bc,&level,&grid_no);
 
-      // Tagging magvel
+      // Tagging vel_x
       pc_velerror(tptr,ARLIM_3D(tlo), ARLIM_3D(thi),
                   &tagval, &clearval,
                   S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),
                   ARLIM_3D(lo),ARLIM_3D(hi), &ncomp, domlo,domhi, 
                   ZFILL(dx), ZFILL(xlo), ZFILL(prob_lo), &time, &level);
       
+#if (BL_SPACEDIM >= 2) 
+      //----------------------
+      // Recasting vel_y
+      S_derData.setVal(0.0);
+      pc_dervely(S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),&ncp,
+                 BL_TO_FORTRAN_3D(S_data[mfi]),&ncomp,
+                 ARLIM_3D(dlo),ARLIM_3D(dhi),domlo,domhi,
+                 ZFILL(dx), ZFILL(xlo),&time,&dt,bc,&level,&grid_no);
+
+      // Tagging vel_y
+      pc_velerror(tptr,ARLIM_3D(tlo), ARLIM_3D(thi),
+                  &tagval, &clearval,
+                  S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),
+                  ARLIM_3D(lo),ARLIM_3D(hi), &ncomp, domlo,domhi, 
+                  ZFILL(dx), ZFILL(xlo), ZFILL(prob_lo), &time, &level);
+#endif
+
+#if (BL_SPACEDIM == 3)
+      //----------------------
+      // Recasting vel_z
+      S_derData.setVal(0.0);
+      pc_dervelz(S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),&ncp,
+                 BL_TO_FORTRAN_3D(S_data[mfi]),&ncomp,
+                 ARLIM_3D(dlo),ARLIM_3D(dhi),domlo,domhi,
+                 ZFILL(dx), ZFILL(xlo),&time,&dt,bc,&level,&grid_no);
+
+      // Tagging vel_z
+      pc_velerror(tptr,ARLIM_3D(tlo), ARLIM_3D(thi),
+                  &tagval, &clearval,
+                  S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),
+                  ARLIM_3D(lo),ARLIM_3D(hi), &ncomp, domlo,domhi, 
+                  ZFILL(dx), ZFILL(xlo), ZFILL(prob_lo), &time, &level);
+#endif
+
       //----------------------
       // Recasting magVort
       S_derData.setVal(0.0);
       pc_dermagvort(S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),&ncp,
                  BL_TO_FORTRAN_3D(S_data[mfi]),&ncomp,
                  ARLIM_3D(lo),ARLIM_3D(hi),domlo,domhi,
-                 ZFILL(dx), ZFILL(xlo),&time,&dt,bc,&level,&level);
+                 ZFILL(dx), ZFILL(xlo),&time,&dt,bc,&level,&grid_no);
       
       // Tagging magVorticity
       pc_vorterror(tptr,ARLIM_3D(tlo), ARLIM_3D(thi),
@@ -1672,7 +1704,7 @@ PeleC::errorEst (TagBoxArray& tags,
       pc_dertemp(S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),&ncp,
                  BL_TO_FORTRAN_3D(S_data[mfi]),&ncomp,
                  ARLIM_3D(dlo),ARLIM_3D(dhi),domlo,domhi,
-                 ZFILL(dx), ZFILL(xlo),&time,&dt,bc,&level,&level);
+                 ZFILL(dx), ZFILL(xlo),&time,&dt,bc,&level,&grid_no);
       
       // Tagging Temperature
       pc_temperror(tptr,ARLIM_3D(tlo), ARLIM_3D(thi),
@@ -1704,7 +1736,7 @@ PeleC::errorEst (TagBoxArray& tags,
         pc_derspectrac(S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),&ncp,
                  BL_TO_FORTRAN_3D(S_data[mfi]),&ncomp,
                  ARLIM_3D(dlo),ARLIM_3D(dhi),domlo,domhi,
-                 ZFILL(dx), ZFILL(xlo),&time,&dt,bc,&level,&level,&idx);
+                 ZFILL(dx), ZFILL(xlo),&time,&dt,bc,&level,&grid_no,&idx);
         
         // Tagging Flame Tracer
         pc_ftracerror(tptr,ARLIM_3D(tlo), ARLIM_3D(thi),
