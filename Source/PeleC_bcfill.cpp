@@ -58,9 +58,10 @@ const int* bc =  bcr[bcomp].data();
 
 const amrex::Real& time_f=time;
 
+#ifdef REACTIONS
 pc_reactfill(BL_TO_FORTRAN_3D(data),ARLIM_3D(domlo),ARLIM_3D(domhi),
            ZFILL(dx),ZFILL(xlo),&time_f,bc);
-
+#endif
 
 
 }

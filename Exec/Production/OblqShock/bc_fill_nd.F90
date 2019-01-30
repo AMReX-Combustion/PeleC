@@ -26,7 +26,6 @@ contains
 
     double precision :: x(3)
     integer :: i, j, k, n
-    logical rho_only
 
     do n = 1,NVAR
        call filcc_nd(adv(:,:,:,n),adv_lo,adv_hi,domlo,domhi,delta,xlo,bc(:,:,n))
@@ -39,9 +38,6 @@ contains
     ! either case....how do we know it's Outflow?  We have to assume
     ! that the setup routines converted Outflow to FOEXTRAP.
 
-    !     Set flag for bc function
-    rho_only = .FALSE.
-
     !     XLO
     if ( (bc(1,1,1).eq.EXT_DIR).and. adv_lo(1).lt.domlo(1)) then
        do i = adv_lo(1), domlo(1)-1
@@ -50,7 +46,7 @@ contains
              x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
              do k = adv_lo(3), adv_hi(3)
                 x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(domlo(1),j,k,:),adv(i,j,k,:),1,+1,rho_only)
+                call bcnormal(x,adv(domlo(1),j,k,:),adv(i,j,k,:),1,+1,time)
              end do
           end do
        end do
@@ -64,7 +60,7 @@ contains
              x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
              do k = adv_lo(3), adv_hi(3)
                 x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(domhi(1),j,k,:),adv(i,j,k,:),1,-1,rho_only)
+                call bcnormal(x,adv(domhi(1),j,k,:),adv(i,j,k,:),1,-1,time)
              end do
           end do
        end do
@@ -79,7 +75,7 @@ contains
                 x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
                 do k = adv_lo(3), adv_hi(3)
                    x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                   call bcnormal(x,adv(i,domlo(2),k,:),adv(i,j,k,:),2,+1,rho_only)
+                   call bcnormal(x,adv(i,domlo(2),k,:),adv(i,j,k,:),2,+1,time)
                 end do
              end do
           end do
@@ -93,7 +89,7 @@ contains
                 x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
                 do k = adv_lo(3), adv_hi(3)
                    x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                   call bcnormal(x,adv(i,domhi(2),k,:),adv(i,j,k,:),2,-1,rho_only)
+                   call bcnormal(x,adv(i,domhi(2),k,:),adv(i,j,k,:),2,-1,time)
                 end do
              end do
           end do
@@ -108,7 +104,7 @@ contains
                    x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
                    do k = adv_lo(3), adv_hi(3)
                       x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                      call bcnormal(x,adv(i,j,domlo(3),:),adv(i,j,k,:),3,+1,rho_only)
+                      call bcnormal(x,adv(i,j,domlo(3),:),adv(i,j,k,:),3,+1,time)
                    end do
                 end do
              end do
@@ -122,7 +118,7 @@ contains
                    x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
                    do k = adv_lo(3), adv_hi(3)
                       x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                      call bcnormal(x,adv(i,j,domhi(3),:),adv(i,j,k,:),3,-1,rho_only)
+                      call bcnormal(x,adv(i,j,domhi(3),:),adv(i,j,k,:),3,-1,time)
                    end do
                 end do
              end do
@@ -133,7 +129,7 @@ contains
   end subroutine pc_hypfill
 
 
-  subroutine bcnormal(x,u_int,u_ext,dir,sgn,rho_only)
+  subroutine bcnormal(x,u_int,u_ext,dir,sgn,time,bc_type,bc_params,bc_target)
 
     use probdata_module
     use network, only: nspec
@@ -143,18 +139,16 @@ contains
 
     implicit none
 
-    double precision :: x(3)
+    double precision :: x(3),time
     double precision :: u_int(*),u_ext(*)
-    logical rho_only
+    integer, optional, intent(out) :: bc_type
+    double precision, optional, intent(out) :: bc_params(6)
+    double precision, optional, intent(out) :: bc_target(5)
 
     integer :: dir,sgn
     type (eos_t) :: eos_state
 
     ! for the Sedov problem, we will always set the state to the ambient conditions
-
-    if (rho_only .EQV. .TRUE. ) then
-       u_ext(1) = dens_domain
-    else
 
        call build(eos_state)
 
@@ -170,13 +164,14 @@ contains
        u_ext(UMY)    = eos_state % rho * vy_in
        u_ext(UMZ)    = 0.d0
        u_ext(UEINT)  = eos_state % rho * eos_state % e
-       u_ext(UEDEN)  = u_ext(UEINT)+0.5d0*dens_domain*(vx_in**2+vy_in**2) 
+       u_ext(UEDEN)  = u_ext(UEINT)+0.5d0*dens_domain*(vx_in**2+vy_in**2)
        u_ext(UFS:UFS+nspec-1)  = eos_state % rho * eos_state % massfrac(:)
 
        call destroy(eos_state)
 
-    endif
 
   end subroutine bcnormal
+
+
 
 end module bc_fill_module

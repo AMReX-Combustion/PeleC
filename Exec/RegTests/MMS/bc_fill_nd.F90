@@ -25,11 +25,6 @@ contains
 
     double precision :: x(3)
     integer :: i, j, k, n
-    logical rho_only
-
-    type (eos_t) :: eos_state
-
-    call build(eos_state)
 
     do n = 1,NVAR
        call filcc_nd(adv(:,:,:,n),adv_lo,adv_hi,domlo,domhi,delta,xlo,bc(:,:,n))
@@ -42,9 +37,6 @@ contains
     ! either case....how do we know it's Outflow?  We have to assume
     ! that the setup routines converted Outflow to FOEXTRAP.
 
-    ! Set flag for bc function
-    rho_only = .FALSE.
-
     !     XLO
     if ( (bc(1,1,1).eq.EXT_DIR.or.bc(1,1,1).eq.FOEXTRAP).and. adv_lo(1).lt.domlo(1)) then
        do i = adv_lo(1), domlo(1)-1
@@ -53,7 +45,7 @@ contains
              x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
              do k = adv_lo(3), adv_hi(3)
                 x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(domlo(1),j,k,:),adv(i,j,k,:),1,+1,bc(1,1,1),eos_state,rho_only,time)
+                call bcnormal(x,adv(domlo(1),j,k,:),adv(i,j,k,:),1,+1,time)
              end do
           end do
        end do
@@ -67,7 +59,7 @@ contains
              x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
              do k = adv_lo(3), adv_hi(3)
                 x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(domhi(1),j,k,:),adv(i,j,k,:),1,-1,bc(1,2,1),eos_state,rho_only,time)
+                call bcnormal(x,adv(domhi(1),j,k,:),adv(i,j,k,:),1,-1,time)
              end do
           end do
        end do
@@ -82,7 +74,7 @@ contains
                 x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
                 do k = adv_lo(3), adv_hi(3)
                    x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                   call bcnormal(x,adv(i,domlo(2),k,:),adv(i,j,k,:),2,+1,bc(2,1,1),eos_state,rho_only,time)
+                   call bcnormal(x,adv(i,domlo(2),k,:),adv(i,j,k,:),2,+1,time)
                 end do
              end do
           end do
@@ -96,7 +88,7 @@ contains
                 x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
                 do k = adv_lo(3), adv_hi(3)
                    x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                   call bcnormal(x,adv(i,domhi(2),k,:),adv(i,j,k,:),2,-1,bc(2,2,1),eos_state,rho_only,time)
+                   call bcnormal(x,adv(i,domhi(2),k,:),adv(i,j,k,:),2,-1,time)
                 end do
              end do
           end do
@@ -111,7 +103,7 @@ contains
                    x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
                    do k = adv_lo(3), domlo(3)-1
                       x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                      call bcnormal(x,adv(i,j,domlo(3),:),adv(i,j,k,:),3,+1,bc(3,1,1),eos_state,rho_only,time)
+                      call bcnormal(x,adv(i,j,domlo(3),:),adv(i,j,k,:),3,+1,time)
                    end do
                 end do
              end do
@@ -125,7 +117,7 @@ contains
                    x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
                    do k = domhi(3)+1, adv_hi(3)
                       x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                      call bcnormal(x,adv(i,j,domhi(3),:),adv(i,j,k,:),3,-1,bc(3,2,1),eos_state,rho_only,time)
+                      call bcnormal(x,adv(i,j,domhi(3),:),adv(i,j,k,:),3,-1,time)
                    end do
                 end do
              end do
@@ -133,11 +125,9 @@ contains
        end if
     end if
 
-    call destroy(eos_state)
-
   end subroutine pc_hypfill
 
-  subroutine bcnormal(x,u_int,u_ext,dir,sgn,bc,eos_state,rho_only,time)
+  subroutine bcnormal(x,u_int,u_ext,dir,sgn,time,bc_type,bc_params,bc_target)
 
     use probdata_module
     use eos_type_module
@@ -159,24 +149,23 @@ contains
     double precision :: x(3),vint(3)
     double precision :: u_int(NVAR),u_ext(NVAR)
     double precision :: time
-    logical rho_only
     integer :: dir,sgn,bc
     type (eos_t) :: eos_state
     double precision :: rho,u,v,w,p,eint
+
+    integer, optional, intent(out) :: bc_type
+    double precision, optional, intent(out) :: bc_params(6)
+    double precision, optional, intent(out) :: bc_target(5)
 
 #ifdef USE_MASA
 
     call build(eos_state)
 
-
     ! inflow
-    if(bc .eq. EXT_DIR .and. sgn .eq. 1) then
+    if(sgn .eq. 1) then
 
        rho = masa_eval_3d_exact_rho(x(1),x(2),x(3))
 
-       if(rho_only .eqv. .true.) then
-          u_ext(URHO) = rho
-       else
           u = masa_eval_3d_exact_u(x(1),x(2),x(3))
           v = masa_eval_3d_exact_v(x(1),x(2),x(3))
           w = masa_eval_3d_exact_w(x(1),x(2),x(3))
@@ -197,16 +186,12 @@ contains
           u_ext(UTEMP)           = eos_state % T
           u_ext(UEINT)           = rho * eint
           u_ext(UEDEN)           = rho * (eint + HALF * (u**2 + v**2 + w**2))
-       endif
 
     ! outflow
-    else if(bc .eq. EXT_DIR .and. sgn .eq. -1) then
+    else if(sgn .eq. -1) then
 
        rho = masa_eval_3d_exact_rho(x(1),x(2),x(3))
 
-       if(rho_only .eqv. .true.) then
-          u_ext(URHO) = rho
-       else
           u = masa_eval_3d_exact_u(x(1),x(2),x(3))
           v = masa_eval_3d_exact_v(x(1),x(2),x(3))
           w = masa_eval_3d_exact_w(x(1),x(2),x(3))
@@ -227,13 +212,15 @@ contains
           u_ext(UTEMP)           = eos_state % T
           u_ext(UEINT)           = rho * eint
           u_ext(UEDEN)           = rho * (eint + HALF * (u**2 + v**2 + w**2))
-       endif
 
     endif
 
 #else
     call bl_error('MASA is not turned on. Turn on with USE_MASA=TRUE.')
 #endif
+
+    call destroy(eos_state)
+
   end subroutine bcnormal
 
   subroutine pc_reactfill(adv,adv_lo,adv_hi,domlo,domhi,delta,xlo,time,bc) &

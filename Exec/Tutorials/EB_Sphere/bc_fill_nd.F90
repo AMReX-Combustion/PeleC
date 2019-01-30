@@ -26,11 +26,7 @@ contains
 
     double precision :: x(3)
     integer :: i, j, k, n
-    logical rho_only
 
-    type (eos_t) :: eos_state
-
-    call build(eos_state)
 
     do n = 1,NVAR
        call filcc_nd(adv(:,:,:,n),adv_lo,adv_hi,domlo,domhi,delta,xlo,bc(:,:,n))
@@ -43,9 +39,6 @@ contains
     ! either case....how do we know it's Outflow?  We have to assume
     ! that the setup routines converted Outflow to FOEXTRAP.
 
-    ! Set flag for bc function
-    rho_only = .FALSE.
-
     !     XLO
     if ( (bc(1,1,1).eq.EXT_DIR.or.bc(1,1,1).eq.FOEXTRAP).and. adv_lo(1).lt.domlo(1)) then
        do i = adv_lo(1), domlo(1)-1
@@ -54,7 +47,7 @@ contains
              x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
              do k = adv_lo(3), adv_hi(3)
                 x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(domlo(1),j,k,:),adv(i,j,k,:),1,+1,bc(1,1,1),eos_state,rho_only,time)
+                call bcnormal(x,adv(domlo(1),j,k,:),adv(i,j,k,:),1,+1,time)
              end do
           end do
        end do
@@ -68,7 +61,7 @@ contains
              x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
              do k = adv_lo(3), adv_hi(3)
                 x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(domhi(1),j,k,:),adv(i,j,k,:),1,-1,bc(1,2,1),eos_state,rho_only,time)
+                call bcnormal(x,adv(domhi(1),j,k,:),adv(i,j,k,:),1,-1,time)
              end do
           end do
        end do
@@ -83,7 +76,7 @@ contains
                 x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
                 do k = adv_lo(3), adv_hi(3)
                    x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                   call bcnormal(x,adv(i,domlo(2),k,:),adv(i,j,k,:),2,+1,bc(2,1,1),eos_state,rho_only,time)
+                   call bcnormal(x,adv(i,domlo(2),k,:),adv(i,j,k,:),2,+1,time)
                 end do
              end do
           end do
@@ -97,7 +90,7 @@ contains
                 x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
                 do k = adv_lo(3), adv_hi(3)
                    x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                   call bcnormal(x,adv(i,domhi(2),k,:),adv(i,j,k,:),2,-1,bc(2,2,1),eos_state,rho_only,time)
+                   call bcnormal(x,adv(i,domhi(2),k,:),adv(i,j,k,:),2,-1,time)
                 end do
              end do
           end do
@@ -112,7 +105,7 @@ contains
                    x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
                    do k = adv_lo(3), domlo(3)-1
                       x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                      call bcnormal(x,adv(i,j,domlo(3),:),adv(i,j,k,:),3,+1,bc(3,1,1),eos_state,rho_only,time)
+                      call bcnormal(x,adv(i,j,domlo(3),:),adv(i,j,k,:),3,+1,time)
                    end do
                 end do
              end do
@@ -126,7 +119,7 @@ contains
                    x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
                    do k = domhi(3)+1, adv_hi(3)
                       x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                      call bcnormal(x,adv(i,j,domhi(3),:),adv(i,j,k,:),3,-1,bc(3,2,1),eos_state,rho_only,time)
+                      call bcnormal(x,adv(i,j,domhi(3),:),adv(i,j,k,:),3,-1,time)
                    end do
                 end do
              end do
@@ -134,11 +127,10 @@ contains
        end if
     end if
 
-    call destroy(eos_state)
 
   end subroutine pc_hypfill
 
-  subroutine bcnormal(x,u_int,u_ext,dir,sgn,bc,eos_state,rho_only,time)
+  subroutine bcnormal(x,u_int,u_ext,dir,sgn,time,bc_type,bc_params,bc_target)
 
     use probdata_module
     use eos_type_module
@@ -156,9 +148,12 @@ contains
     double precision :: x(3)
     double precision :: u_int(NVAR),u_ext(NVAR)
     double precision :: time
-    logical rho_only
-    integer :: dir,sgn,bc
+    integer :: dir,sgn
     type (eos_t) :: eos_state
+
+    integer, optional, intent(out) :: bc_type
+    double precision, optional, intent(out) :: bc_params(6)
+    double precision, optional, intent(out) :: bc_target(5)
 
     double precision :: u(3), rho_inv
     double precision :: r, rmax, xcen(dim)
@@ -167,6 +162,8 @@ contains
     double precision :: holespace(dim), dist(dim), radius, holeRad
     integer :: nHoles, idholes(dim), d(dim)
     double precision :: pert
+
+    call build(eos_state)
 
     nHoles = 40
     holespace = (probhi - problo) / DBLE(nHoles)
@@ -182,7 +179,7 @@ contains
          +        d(3)*(dist(1)**2 + dist(2)**2))
 
 
-    if (bc.eq.EXT_DIR) then ! inflow: extrapolate none, set (Y,u,p,T), compute (rho,e)
+    if (sgn .eq. 1) then ! inflow: extrapolate none, set (Y,u,p,T), compute (rho,e)
        r = 0.0
        rmax = 0.0
        do i = 1, dim
@@ -217,23 +214,15 @@ contains
 
        call eos_tp(eos_state)
 
-       if (rho_only .eqv. .true.) then
-          u_ext(1) = eos_state % rho
-       else
           u_ext(UMX:UMZ) = eos_state % rho  *  u(1:3)
           u_ext(URHO) = eos_state % rho
           u_ext(UEINT) = eos_state % rho  *  eos_state % e
           u_ext(UEDEN) = eos_state % rho  * (eos_state % e + 0.5d0 * (u(1)**2 + u(2)**2 + u(3)**2))
           u_ext(UTEMP) = eos_state % T
           u_ext(UFS:UFS+nspec-1) = eos_state % rho  *  eos_state % massfrac(1:nspec)
-       endif
 
        
-    else ! ouflow: extrapolate (rho,Y,u), set p, compute (rho,e,T)
-       if (rho_only .eqv. .true.) then
-          ! Don't have species, assume it's consistent
-          u_ext(1) = u_int(1)
-       else
+    elseif (sgn .eq. -1) then ! ouflow: extrapolate (rho,Y,u), set p, compute (rho,e,T)
           eos_state % p = pamb
           eos_state % rho = u_int(URHO)
           rho_inv = 1.d0 / eos_state % rho
@@ -247,8 +236,9 @@ contains
           u_ext(UEDEN) = eos_state % rho  * (eos_state % e + 0.5d0 * (u(1)**2 + u(2)**2 + u(3)**2))
           u_ext(UTEMP) = eos_state % T
           u_ext(UFS:UFS+nspec-1) = eos_state % rho  *  eos_state % massfrac(1:nspec)
-       endif
     endif
+
+  call destroy(eos_state)
 
   end subroutine bcnormal
 
