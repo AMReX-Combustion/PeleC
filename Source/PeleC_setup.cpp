@@ -588,20 +588,13 @@ PeleC::variableSetUp ()
     //
     // Y from rhoY
     //
-//    for (int i = 0; i < NumSpec; i++){
-//        std::string spec_string = "Y("+spec_names[i]+")";
-//        derive_lst.add(spec_string,IndexType::TheCellType(),1,pc_derspec,the_same_box);
-//        derive_lst.addComponent(spec_string,desc_lst,State_Type,Density,1);
-//        derive_lst.addComponent(spec_string,desc_lst,State_Type,FirstSpec+i,1);
-//    }
     Vector<std::string> var_names_massfrac(NumSpec);
     for (int i = 0; i < NumSpec; i++){
       var_names_massfrac[i] = "Y("+spec_names[i]+")";
     }
     for (int i = 0; i < NumSpec; i++){
     std::cout << var_names_massfrac[i] << std::endl ;
-}
-
+    }
 
     derive_lst.add("massfrac",IndexType::TheCellType(),NumSpec,var_names_massfrac,
                    pc_derspec,the_same_box);
@@ -617,14 +610,11 @@ PeleC::variableSetUp ()
     }  
     for (int i = 0; i < NumSpec; i++){
     std::cout << var_names_molefrac[i] << std::endl ;
-}
+    }
      
     derive_lst.add("molefrac",IndexType::TheCellType(),NumSpec,var_names_molefrac,
                    pc_dermolefrac,the_same_box);
     derive_lst.addComponent("molefrac",desc_lst,State_Type,Density,NUM_STATE);
-
-
-    //derive_lst.addComponent("molefrac",desc_lst,State_Type,FirstSpec,NumSpec);
 
     //
     // Velocities
@@ -637,16 +627,6 @@ PeleC::variableSetUp ()
 
     derive_lst.add("z_velocity",IndexType::TheCellType(),1,pc_dervelz,the_same_box);
     derive_lst.addComponent("z_velocity",desc_lst,State_Type,Density,NUM_STATE);
-
-    // FIXME: Do we need a combustion-specific version of this function?
-//     //
-//     // Nuclear energy generation timescale t_e == e / edot
-//     // Sound-crossing time t_s == dx / c_s
-//     // Ratio of these is t_s_t_e == t_s / t_e
-//     //
-//     derive_lst.add("t_sound_t_enuc",IndexType::TheCellType(),1,pc_derenuctimescale,the_same_box);
-//     derive_lst.addComponent("t_sound_t_enuc",desc_lst,State_Type,Density,NUM_STATE);
-//     derive_lst.addComponent("t_sound_t_enuc",desc_lst,Reactions_Type,NumSpec,1);
 
     derive_lst.add("magvel",IndexType::TheCellType(),1,pc_dermagvel,the_same_box);
     derive_lst.addComponent("magvel",desc_lst,State_Type,Density,NUM_STATE);
@@ -677,18 +657,6 @@ PeleC::variableSetUp ()
     derive_lst.add("particle_density",IndexType::TheCellType(),1,pc_dernull,the_same_box);
     derive_lst.addComponent("particle_density",desc_lst,State_Type,Density,1);
 #endif
-
-//    for (int i = 0; i < NumSpec; i++)  {
-//	derive_lst.add(spec_names[i],IndexType::TheCellType(),1,pc_derspec,the_same_box);
-//	derive_lst.addComponent(spec_names[i],desc_lst,State_Type,Density,1);
-//	derive_lst.addComponent(spec_names[i],desc_lst,State_Type,FirstSpec+i,1);
-//    }
-
-//    for (int i = 0; i < NumAux; i++)  {
-//	derive_lst.add(aux_names[i],IndexType::TheCellType(),1,pc_derspec,the_same_box);
-//	derive_lst.addComponent(aux_names[i],desc_lst,State_Type,Density,1);
-//	derive_lst.addComponent(aux_names[i],desc_lst,State_Type,FirstAux+i,1);
-//    }
 
 #if 0
     //
