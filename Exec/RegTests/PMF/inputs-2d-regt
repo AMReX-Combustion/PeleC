@@ -9,7 +9,7 @@ geometry.prob_lo     =   0.0        1.0
 geometry.prob_hi     =   0.3125     6.0
 amr.n_cell           =   8          128
 
-#pelec.Riemann    = 0     # 0: HLL,  1: JBB,  2: HLLC
+#pelec.riemann_solver    = 3     # 0: HLL,  1: JBB,  2: HLLC
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
 # 0 = Interior           3 = Symmetry
 # 1 = Inflow             4 = SlipWall

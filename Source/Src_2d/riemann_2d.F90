@@ -1010,9 +1010,6 @@ contains
           pr = qr(i,j,QPRES)
           rer = qr(i,j,QREINT)
 
-          !call outflow_hack(ul,ur,vl,vr,v2l,v2r,pl,pr,rel,rer,&
-          !                  idir, i, j, domlo, domhi)
-
           csmall = smallc(i,j)
           wsmall = small_dens*csmall
           wl = max(wsmall,sqrt(abs(gamcl(i,j)*pl*rl)))
@@ -1184,13 +1181,10 @@ contains
                        bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
                        idir, ilo1, ihi1, ilo2, ihi2, domlo, domhi)
 
-    use prob_params_module, only : coord_type
+    use prob_params_module, only : coord_type,Outflow
     use network, only : nspec
 
     use eos_module
-
-
-
 
     integer :: qpd_l1, qpd_l2, qpd_h1, qpd_h2
     integer :: gd_l1, gd_l2, gd_h1, gd_h2
@@ -1222,12 +1216,9 @@ contains
     ! for outflow hack
     double precision :: ul, vl, v2l, rel, ur, vr, v2r, rer 
 
-
     double precision :: rgd, regd, ustar
     integer :: bc_test_mask
   
-
-
 
     integer :: iu, iv1, iv2
 
@@ -1265,9 +1256,9 @@ contains
         bc_test_mask = bc_test(idir, i, j, &
                                bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
                                domlo, domhi)
+                               
         !TODO: consider transposing ql, qr on pass into this routine so that passing the species doesn't make a
         ! strided copy into a temporary
-
 
          ul = ql(i,j,iu)
          vl = ql(i,j,iv1)
@@ -1279,8 +1270,8 @@ contains
         v2r = qr(i,j,iv2)
         rer = qr(i,j,QREINT)
         
-
         call outflow_hack(ul,ur,vl,vr,v2l,v2r,rel,rer,&
+                          bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
                           idir, i, j, domlo, domhi)
 !
 
