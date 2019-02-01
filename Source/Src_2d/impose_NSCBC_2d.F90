@@ -263,7 +263,7 @@ contains
  
  if ((q_hi(1) > domhi(1)) .and. (physbc_hi(1) /= Interior)) then
    i = domhi(1)
-      
+
    do j = q_lo(2)+1,q_hi(2)-1
    
      x   = (dble(i)+HALF)*dx
@@ -321,13 +321,13 @@ endif
  !--------------------------------------------------------------------------   
  ! lower Y
  !--------------------------------------------------------------------------
- 
+
  if ((q_lo(2) < domlo(2)) .and. (physbc_lo(2) /= Interior)) then
  
    j = domlo(2)
       
    do i = q_lo(1)+1,q_hi(1)-1
-   
+
      x   = (dble(i)+HALF)*dx
      y   = (dble(j)+HALF)*dy
    
@@ -421,7 +421,7 @@ endif
      else
        y_bcMask(i,j+1) = bc_type
      endif
-    
+
      ! Computing the LODI system waves
      call compute_waves(i, j, 2, -1, &
                         bc_type, bc_params, bc_target, &
@@ -629,7 +629,7 @@ end subroutine impose_NSCBC
   double precision, intent(inout) :: uin(uin_l1:uin_h1,uin_l2:uin_h2,NVAR)
     
   integer :: idx_gc1, idx_gc2, idx_gc3, idx_gc4, idx_int1, idx_int2, idx_int3
-  integer :: idx_start, idx_end, hop, n, local_index
+  integer :: idx_start, idx_end, hop, n, local_index, bndy_loc
   double precision :: drho, du, dv, dp, wall_sign
   double precision, parameter :: small = 1.d-8
   
@@ -656,7 +656,7 @@ end subroutine impose_NSCBC
     drho = (L2 + 0.5d0*(L1 + L4))/(qaux(i,j,QC)**2.0d0)  
     du   = (L4-L1)/(2.0d0*qaux(i,j,QC)*q(i,j,QRHO))
     dv   = L3
-    dp   = 0.5d0*(L1+L4)
+    dp   = 0.5d0*(L1+L4) 
   elseif (idir == 2) then
     local_index = j
     drho = (L3 + 0.5d0*(L1 + L4))/(qaux(i,j,QC)**2.0d0)
@@ -664,7 +664,7 @@ end subroutine impose_NSCBC
     dv   = (L4-L1)/(2.0d0*qaux(i,j,QC)*q(i,j,QRHO))
     dp   = 0.5d0*(L1+L4)
   endif
-    
+     
     if (isign == 1) then
       idx_gc1 = local_index-1
       idx_gc2 = local_index-2
@@ -675,6 +675,7 @@ end subroutine impose_NSCBC
       idx_int3 = local_index+3
       idx_start = domlo(idir)-1
       idx_end   = domlo(idir)-4
+      bndy_loc = domlo(idir)
     elseif (isign == -1) then
       idx_gc1 = local_index+1
       idx_gc2 = local_index+2
@@ -685,6 +686,7 @@ end subroutine impose_NSCBC
       idx_int3 = local_index-3
       idx_start = domhi(idir)+1
       idx_end   = domhi(idir)+4
+      bndy_loc = domhi(idir)
     endif
     
     if (idir == 1) then
@@ -751,8 +753,8 @@ end subroutine impose_NSCBC
      
        eos_state % p        = q(hop,j,QPRES )
        eos_state % rho      = q(hop,j,QRHO  )
-       eos_state % massfrac = q(hop,j,QFS:QFS+nspec-1)
-       eos_state % aux      = q(hop,j,QFX:QFX+naux-1)
+       eos_state % massfrac = q(bndy_loc,j,QFS:QFS+nspec-1)
+       eos_state % aux      = q(bndy_loc,j,QFX:QFX+naux-1)
   
        call eos_rp(eos_state)
        q(hop,j,QTEMP)  = eos_state % T
@@ -845,8 +847,8 @@ end subroutine impose_NSCBC
      
        eos_state % p        = q(i,hop,QPRES )
        eos_state % rho      = q(i,hop,QRHO  )
-       eos_state % massfrac = q(i,hop,QFS:QFS+nspec-1)
-       eos_state % aux      = q(i,hop,QFX:QFX+naux-1)
+       eos_state % massfrac = q(i,bndy_loc,QFS:QFS+nspec-1)
+       eos_state % aux      = q(i,bndy_loc,QFX:QFX+naux-1)
   
        call eos_rp(eos_state)
        q(i,hop,QTEMP)  = eos_state % T

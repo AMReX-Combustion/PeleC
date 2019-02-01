@@ -1728,9 +1728,9 @@ PeleC::errorEst (TagBoxArray& tags,
     
         if (idx >= 0)
         {
-          const std::string name = "Y("+flame_trac_name+")";
-          if (ParallelDescriptor::IOProcessor())
-            std::cout << " Flame tracer will be " << name << '\n';
+          //const std::string name = "Y("+flame_trac_name+")";
+          //if (ParallelDescriptor::IOProcessor())
+          //  std::cout << " Flame tracer will be " << name << '\n';
         
         S_derData.setVal(0.0);
         pc_derspectrac(S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),&ncp,

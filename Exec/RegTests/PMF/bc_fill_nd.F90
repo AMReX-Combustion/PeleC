@@ -189,7 +189,7 @@ contains
         ! Set outflow pressure
         which_bc_type = Outflow
         sigma_out = 0.28d0
-        beta = 0.6d0
+        beta = -1.0d0
 
         call pmf(probhi(dir),probhi(dir),pmf_vals,nPMF)
 
@@ -220,10 +220,10 @@ contains
 !    if (dir == 1) then
       if (sgn == 1) then
 
-        relax_U = 10.0d0
-        relax_V = 10.0d0
-        relax_T = - relax_V
-        beta = 0.6d0
+        relax_U = 0.10d0
+        relax_V = 1.0d0
+        relax_T = - 0.1d0
+        beta = 1.0d0
 
         which_bc_type = Inflow
 
@@ -263,7 +263,7 @@ contains
       bc_params(6) = sigma_out
       bc_target(1) = U_ext(UMX)/U_ext(URHO)
       bc_target(2) = U_ext(UMY)/U_ext(URHO)
-      bc_target(3) = 0.0d0
+      bc_target(3) = U_ext(UMZ)/U_ext(URHO)
       bc_target(4) = U_ext(UTEMP)
       bc_target(5) = eos_state%p
     end if

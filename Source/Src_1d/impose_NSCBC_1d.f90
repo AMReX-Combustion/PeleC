@@ -224,7 +224,7 @@ contains
        eos_state % p        = q(hop,QPRES )
        eos_state % rho      = q(hop,QRHO  )
        ! Here we do 0th-order extrapolation for species mass fraction
-       !eos_state % massfrac = q(domlo(1),QFS:QFS+nspec-1)
+       eos_state % massfrac = q(domlo(1),QFS:QFS+nspec-1)
        eos_state % aux      = q(domlo(1),QFX:QFX+naux-1)
 
        call eos_rp(eos_state)
@@ -380,8 +380,8 @@ contains
      
        eos_state % p        = q(hop,QPRES )
        eos_state % rho      = q(hop,QRHO  )
-       !eos_state % massfrac = q(hop,QFS:QFS+nspec-1)
-       eos_state % aux      = q(hop,QFX:QFX+naux-1)
+       eos_state % massfrac = q(domhi(1),QFS:QFS+nspec-1)
+       eos_state % aux      = q(domhi(1),QFX:QFX+naux-1)
 
        call eos_rp(eos_state)
        q(hop,QTEMP)  = eos_state % T
