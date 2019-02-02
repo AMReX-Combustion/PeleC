@@ -584,7 +584,8 @@ PeleC::writeJobInfo (const std::string& dir)
     }
 
     jobInfoFile << " Boundary conditions\n";
-    Vector<int> lo_bc_out(BL_SPACEDIM), hi_bc_out(BL_SPACEDIM);
+    Vector<string> lo_bc_out(BL_SPACEDIM);
+    Vector<string> hi_bc_out(BL_SPACEDIM);
     ParmParse pp("pelec");
     pp.getarr("lo_bc",lo_bc_out,0,BL_SPACEDIM);
     pp.getarr("hi_bc",hi_bc_out,0,BL_SPACEDIM);
@@ -592,20 +593,16 @@ PeleC::writeJobInfo (const std::string& dir)
 
     // these names correspond to the integer flags setup in the
     // PeleC_setup.cpp
-    const char* names_bc[] =
-	{ "interior", "inflow", "outflow",
-	  "symmetry", "slipwall", "noslipwall" };
 
-
-    jobInfoFile << "   -x: " << names_bc[lo_bc_out[0]] << "\n";
-    jobInfoFile << "   +x: " << names_bc[hi_bc_out[0]] << "\n";
+    jobInfoFile << "   -x: " << lo_bc_out[0] << "\n";
+    jobInfoFile << "   +x: " << hi_bc_out[0] << "\n";
     if (BL_SPACEDIM >= 2) {
-	jobInfoFile << "   -y: " << names_bc[lo_bc_out[1]] << "\n";
-	jobInfoFile << "   +y: " << names_bc[hi_bc_out[1]] << "\n";
+	jobInfoFile << "   -y: " << lo_bc_out[1] << "\n";
+	jobInfoFile << "   +y: " << hi_bc_out[1] << "\n";
     }
     if (BL_SPACEDIM == 3) {
-	jobInfoFile << "   -z: " << names_bc[lo_bc_out[2]] << "\n";
-	jobInfoFile << "   +z: " << names_bc[hi_bc_out[2]] << "\n";
+	jobInfoFile << "   -z: " << lo_bc_out[2] << "\n";
+	jobInfoFile << "   +z: " << hi_bc_out[2] << "\n";
     }
 
     jobInfoFile << "\n\n";

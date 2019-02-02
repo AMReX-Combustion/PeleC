@@ -1,7 +1,7 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 stop_time = 6
 max_step = 30 
-max_step = 5000
+max_step = 500
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic = 1 0
 geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
@@ -17,8 +17,8 @@ pelec.i_nscbc = 1
 # 1 = Inflow             4 = SlipWall
 # 2 = Outflow            5 = NoSlipWall
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
-pelec.lo_bc       =  0   1
-pelec.hi_bc       =  0   2
+pelec.lo_bc       =  "Interior" "Inflow"
+pelec.hi_bc       =  "Interior" "Outflow"
 
 # TIME STEP CONTROL
 pelec.cfl            = 0.5     # cfl number for hyperbolic system

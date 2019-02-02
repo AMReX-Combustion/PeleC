@@ -225,14 +225,55 @@ PeleC::read_params ()
   pp.query("dump_old",dump_old);
 
   // Get boundary conditions
+  Vector<string> lo_bc_char(BL_SPACEDIM);
+  Vector<string> hi_bc_char(BL_SPACEDIM);
+  pp.getarr("lo_bc",lo_bc_char,0,BL_SPACEDIM);
+  pp.getarr("hi_bc",hi_bc_char,0,BL_SPACEDIM); 
+
   Vector<int> lo_bc(BL_SPACEDIM), hi_bc(BL_SPACEDIM);
-  pp.getarr("lo_bc",lo_bc,0,BL_SPACEDIM);
-  pp.getarr("hi_bc",hi_bc,0,BL_SPACEDIM);
+  for (int dir = 0; dir<BL_SPACEDIM; dir++){
+    if (!lo_bc_char[dir].compare("Interior")){
+      lo_bc[dir] = 0;
+    } else if (!lo_bc_char[dir].compare("Inflow")){
+      lo_bc[dir] = 1;
+    } else if (!lo_bc_char[dir].compare("UserBC")){
+      lo_bc[dir] = 6;
+    } else if (!lo_bc_char[dir].compare("Symmetry")){
+      lo_bc[dir] = 3;
+    } else if (!lo_bc_char[dir].compare("SlipWall")){
+      lo_bc[dir] = 4;
+    } else if (!lo_bc_char[dir].compare("NoSlipWall")){
+      lo_bc[dir] = 5;
+    } else {
+      amrex::Abort("Wrong boundary condition word in lo_bc, please use: Interior, UserBC, Symmetry, SlipWall, NoSlipWall");
+    }
+    
+    if (!hi_bc_char[dir].compare("Interior")){
+      hi_bc[dir] = 0;
+    } else if (!hi_bc_char[dir].compare("Outflow")){
+      hi_bc[dir] = 2;
+    } else if (!hi_bc_char[dir].compare("UserBC")){
+      hi_bc[dir] = 6;
+    } else if (!hi_bc_char[dir].compare("Symmetry")){
+      hi_bc[dir] = 3;
+    } else if (!hi_bc_char[dir].compare("SlipWall")){
+      hi_bc[dir] = 4;
+    } else if (!hi_bc_char[dir].compare("NoSlipWall")){
+      hi_bc[dir] = 5;
+    } else {
+      amrex::Abort("Wrong boundary condition word in hi_bc, please use: Interior, UserBC, Symmetry, SlipWall, NoSlipWall");
+    }
+  }
+
+  
   for (int i = 0; i < BL_SPACEDIM; i++)
   {
     phys_bc.setLo(i,lo_bc[i]);
     phys_bc.setHi(i,hi_bc[i]);
   }
+  
+  
+  std::cout << "DEBUG phys_bc " << phys_bc << std::endl;
 
   //
   // Check phys_bc against possible periodic geometry
