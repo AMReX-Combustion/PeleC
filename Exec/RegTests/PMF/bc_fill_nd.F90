@@ -173,7 +173,6 @@ contains
       sigma_out = 0.25d0 ! For outflow only, relax parameter
       which_bc_type = Interior ! This is to ensure that nothing will be done if the user don't set anything
     endif
-   
 
     call build(eos_state)
     allocate(pmf_vals(nspec+4))

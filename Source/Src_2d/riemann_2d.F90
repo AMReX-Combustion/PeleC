@@ -1181,7 +1181,7 @@ contains
                        bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
                        idir, ilo1, ihi1, ilo2, ihi2, domlo, domhi)
 
-    use prob_params_module, only : coord_type,Outflow
+    use prob_params_module, only : coord_type
     use network, only : nspec
 
     use eos_module

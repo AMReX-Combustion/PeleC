@@ -17,6 +17,7 @@ using namespace amrex;
 void
 PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
                      amrex::MultiFab&       MOLSrcTerm,
+                     amrex::Real            time,
                      amrex::Real            dt,
                      amrex::Real            flux_factor) {
   BL_PROFILE("PeleC::getMOLSrcTerm()");
@@ -113,12 +114,22 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
 #endif
   {
     FArrayBox Qfab, Qaux, coeff_cc, Dterm;
+    IArrayBox bcMask[BL_SPACEDIM];
     FArrayBox coeff_ec[BL_SPACEDIM], flux_ec[BL_SPACEDIM],
       tander_ec[BL_SPACEDIM], flatn;
     //IArrayBox bcMask;
     FArrayBox dm_as_fine(Box::TheUnitBox(), NUM_STATE);
     FArrayBox fab_drho_as_crse(Box::TheUnitBox(), NUM_STATE);
     IArrayBox fab_rrflag_as_crse(Box::TheUnitBox());
+    
+
+    int flag_nscbc_isAnyPerio = (geom.isAnyPeriodic()) ? 1 : 0; 
+    int flag_nscbc_perio[BL_SPACEDIM]; // For 3D, we will know which corners have a periodicity
+    for (int d=0; d<BL_SPACEDIM; ++d) {
+        flag_nscbc_perio[d] = (Geometry::isPeriodic(d)) ? 1 : 0;
+    }
+	  const int*  domain_lo = geom.Domain().loVect();
+	  const int*  domain_hi = geom.Domain().hiVect();
 
     for (MFIter mfi(S, MFItInfo().EnableTiling(hydro_tile_size).SetDynamic(true));
          mfi.isValid(); ++mfi) {
@@ -131,6 +142,9 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
       const Box  gbox = amrex::grow(vbox,ng);
       const Box  cbox = amrex::grow(vbox,ng-1);
       const Box& dbox = geom.Domain();
+      
+      const int* lo = vbox.loVect();
+	    const int* hi = vbox.hiVect();
 
 #ifdef PELE_USE_EB
       const EBFArrayBox& Sfab = static_cast<const EBFArrayBox&>(S[mfi]);
@@ -167,6 +181,43 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
                 Qfab.dataPtr(), ARLIM_3D(Qfab.loVect()), ARLIM_3D(Qfab.hiVect()),
                 Qaux.dataPtr(), ARLIM_3D(Qaux.loVect()), ARLIM_3D(Qaux.hiVect()));
       }
+      
+      
+      
+      for (int i = 0; i < BL_SPACEDIM ; i++)  {
+		    const Box& bxtmp = amrex::surroundingNodes(vbox,i);
+        Box TestBox(bxtmp);
+        for(int d=0; d<BL_SPACEDIM; ++d) {
+          if (i!=d) TestBox.grow(d,1);
+        }
+        
+		    bcMask[i].resize(TestBox,1);
+        bcMask[i].setVal(0);
+	    }
+      
+      // Becase bcMask is read in the Riemann solver in any case,
+      // here we put physbc values in the appropriate faces for the non-nscbc case
+      set_bc_mask(lo, hi, domain_lo, domain_hi,
+                  D_DECL(BL_TO_FORTRAN(bcMask[0]),
+	                       BL_TO_FORTRAN(bcMask[1]),
+                         BL_TO_FORTRAN(bcMask[2])));
+
+//      if (i_nscbc == 1)
+//      {
+//        impose_NSCBC(lo, hi, domain_lo, domain_hi,
+//                     BL_TO_FORTRAN(Sfab),
+//                     BL_TO_FORTRAN(Qfab),
+//                     BL_TO_FORTRAN(Qaux),
+//                     D_DECL(BL_TO_FORTRAN(bcMask[0]),
+//	                          BL_TO_FORTRAN(bcMask[1]),
+//                            BL_TO_FORTRAN(bcMask[2])),
+//                     &flag_nscbc_isAnyPerio, flag_nscbc_perio, 
+//                     &time, dx, &dt);
+//      }
+//      
+//      
+//      
+      
 
       // Compute transport coefficients, coincident with Q
       {
@@ -225,6 +276,9 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
                                              cbox.hiVect(),
                                              dbox.loVect(),
                                              dbox.hiVect(),
+                                             D_DECL(BL_TO_FORTRAN(bcMask[0]),
+	                                                  BL_TO_FORTRAN(bcMask[1]),
+                                                    BL_TO_FORTRAN(bcMask[2])),
                                              BL_TO_FORTRAN_ANYD(Qfab),
                                              BL_TO_FORTRAN_ANYD(tander_ec[d]),
                                              geom.CellSize(), &d);
@@ -260,6 +314,9 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
                     cbox.hiVect(),
                     dbox.loVect(),
                     dbox.hiVect(),
+                    D_DECL(BL_TO_FORTRAN(bcMask[0]),
+	                  BL_TO_FORTRAN(bcMask[1]),
+                    BL_TO_FORTRAN(bcMask[2])),
                     BL_TO_FORTRAN_ANYD(Qfab),
                     BL_TO_FORTRAN_N_ANYD(coeff_ec[0], dComp_rhoD),
                     BL_TO_FORTRAN_N_ANYD(coeff_ec[0], dComp_mu),
