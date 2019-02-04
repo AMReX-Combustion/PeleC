@@ -2,14 +2,16 @@ Input Files and Controls
 ========================
 
 
-The input file specified on the command line is a free-format text files, one entry per row, that specifies input data processed by the AMReX ``ParmParse`` module, for example:
+The input file specified on the command line is a free-format text file, one entry per row, that specifies input data processed by the AMReX ``ParmParse`` module.
+
+This file needs to specified along with the execuatable as an `argv` option, for example:
 
 
 ::
 
 	mpirun -np 64 ./Pele2d.xxx,yyy.ex inputs
 
-As well, any entry that can be specified in the inputs file can also be specified on the command line; values specified on the command line override values in the inpute file, e.g.:
+Also, any entry that can be specified in the inputs file can also be specified on the command line; values specified on the command line override values in the inpute file, e.g.:
 
 ::
 
@@ -17,29 +19,59 @@ As well, any entry that can be specified in the inputs file can also be specifie
 
 The available options are divided into groups: those that control primarily AMReX are prefaced with `amr.` while those that are specific to Pele are prefaced with `pelec.`.
 
-A typical input file looks something like the example below; a full list of Pele-specific input parameters are in `PeleC/Source/_cpp_parameters`. These parameters, once read, are available in the `PeleC` object for use from c++ and are also copied to the module `prob_params_module` for use in FORTRAN. 
+A typical input file looks something like the example below; a full list of Pele-specific input parameters are in `PeleC/Source/_cpp_parameters`. 
+These parameters, once read, are available in the `PeleC` object for use from c++ and are also copied to the module `prob_params_module` for use in FORTRAN. 
 
 ::
 
     # ------------------  INPUTS TO MAIN PROGRAM  -------------------
-    stop_time = 6
+    #absolute stop time for the simulation
+    stop_time = 6 
+
+    #maximum number of time steps at base AMR level
     max_step = 30 
+    # ---------------------------------------------------------------
     
+    #------------------------
     # PROBLEM SIZE & GEOMETRY
-    geometry.is_periodic = 1 0
-    geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
-    geometry.prob_lo     =   0.0        1.0
-    geometry.prob_hi     =   0.3125     6.0
-    amr.n_cell           =   8          128
+    # -----------------------
+
+    #flag for periodicity (here x direction is periodic)
+    geometry.is_periodic = 1 0 0  
     
-    #pelec.Riemann    = 0     # 0: HLL,  1: JBB,  2: HLLC
+    #0 => cart, 1 => RZ  2=>spherical
+    geometry.coord_sys   = 0      
+
+    #coordinates of domain's lower corner
+    geometry.prob_lo     =   -0.3     0.0   0.0     
+
+    #coordiates of domain's upper corner
+    geometry.prob_hi     =    0.3     0.3   0.15  
+
+    #number of cells along each direction at base level (note: dx=dy=dz)
+    amr.n_cell           =    128     64    32   
+    # ---------------------------------------------------------------
+
+    # ---------------------------------------------------------------
+    PeleC specific inputs
+    # ---------------------------------------------------------------
+
+    # 0: Collela, Glaz and Ferguson (default)
+    # 1: Collela and Glaz  
+    # 2: HLLC
+    pelec.riemann_solver    = 0     
+
     # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
     # 0 = Interior           3 = Symmetry
     # 1 = Inflow             4 = SlipWall
     # 2 = Outflow            5 = NoSlipWall
     # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
-    pelec.lo_bc       =  0   1
-    pelec.hi_bc       =  0   2
+
+    #boundary condition at the lower face of each coordinate direction
+    pelec.lo_bc       =  0   1  0          
+    
+    #boundary condition at the upper face of each coordinate direction
+    pelec.hi_bc       =  0   2  0          
     
     # TIME STEP CONTROL
     pelec.cfl            = 0.5     # cfl number for hyperbolic system
@@ -48,9 +80,9 @@ A typical input file looks something like the example below; a full list of Pele
     pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
     
     # DIAGNOSTICS & VERBOSITY
-    pelec.sum_interval = 1       # coarse time steps between computing mass     on domain
-    pelec.v            = 1       # verbosity in PeleC cpp files
-    amr.v              = 1       # verbosity in Amr.cpp
+    pelec.sum_interval = 1        # coarse time steps between computing mass on domain
+    pelec.v            = 1        # verbosity in PeleC cpp files
+    amr.v              = 1        # verbosity in Amr.cpp
     #amr.grid_log       = grdlog  # name of grid logging file
     
     # REFINEMENT / REGRIDDING 
