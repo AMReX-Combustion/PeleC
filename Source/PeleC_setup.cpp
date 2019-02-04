@@ -20,7 +20,32 @@ static Box grow_box_by_one (const Box& b) { return amrex::grow(b,1); }
 
 typedef StateDescriptor::BndryFunc BndryFunc;
 
+#if 1
+//
+// Components are:
+//  Interior, Inflow, Outflow,  Symmetry,     SlipWall,     NoSlipWall, UserBC
+//
+static int scalar_bc[] =
+{
+    INT_DIR, EXT_DIR, FOEXTRAP, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN, EXT_DIR
+};
 
+static int norm_vel_bc[] =
+{
+    INT_DIR, EXT_DIR, FOEXTRAP, REFLECT_ODD,  REFLECT_ODD,  REFLECT_ODD, EXT_DIR
+};
+
+static int tang_vel_bc[] =
+{
+    INT_DIR, EXT_DIR, FOEXTRAP, REFLECT_EVEN, REFLECT_EVEN, REFLECT_ODD, EXT_DIR
+};
+
+static int react_src_bc[] =
+{
+    INT_DIR, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN
+};
+
+#else
 //
 // Components are:
 //  Interior, Inflow, Outflow,  Symmetry,     SlipWall,     NoSlipWall
@@ -44,6 +69,8 @@ static int react_src_bc[] =
 {
     INT_DIR, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN
 };
+
+#endif
 
 static
 void
@@ -306,7 +333,7 @@ PeleC::variableSetUp ()
     Vector<int> probin_file_name(probin_file_length);
   
     for (int i = 0; i < probin_file_length; i++)
-	probin_file_name[i] = probin_file[i];
+	    probin_file_name[i] = probin_file[i];
   
     get_tagging_params(probin_file_name.dataPtr(),&probin_file_length);
   
@@ -592,9 +619,6 @@ PeleC::variableSetUp ()
     for (int i = 0; i < NumSpec; i++){
       var_names_massfrac[i] = "Y("+spec_names[i]+")";
     }
-    for (int i = 0; i < NumSpec; i++){
-    std::cout << var_names_massfrac[i] << std::endl ;
-    }
 
     derive_lst.add("massfrac",IndexType::TheCellType(),NumSpec,var_names_massfrac,
                    pc_derspec,the_same_box);
@@ -608,9 +632,6 @@ PeleC::variableSetUp ()
     for (int i = 0; i < NumSpec; i++){
       var_names_molefrac[i] = "X("+spec_names[i]+")";
     }  
-    for (int i = 0; i < NumSpec; i++){
-    std::cout << var_names_molefrac[i] << std::endl ;
-    }
      
     derive_lst.add("molefrac",IndexType::TheCellType(),NumSpec,var_names_molefrac,
                    pc_dermolefrac,the_same_box);

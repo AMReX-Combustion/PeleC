@@ -1,7 +1,7 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 stop_time = 6
 max_step = 30 
-max_step = 100
+max_step = 500
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic = 1 0
 geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
@@ -20,8 +20,8 @@ pelec.i_nscbc = 1
 pelec.lo_bc       =  "Interior" "UserBC"
 pelec.hi_bc       =  "Interior" "UserBC"
 
-pelec.lo_bc       =  "Interior" "Inflow"
-pelec.hi_bc       =  "Interior" "Outflow"
+#pelec.lo_bc       =  "Interior" "Inflow"
+#pelec.hi_bc       =  "Interior" "Outflow"
 
 # TIME STEP CONTROL
 pelec.cfl            = 0.5     # cfl number for hyperbolic system
@@ -40,7 +40,7 @@ amr.max_level       = 2       # maximum level number allowed
 amr.ref_ratio       = 2 2 2 2 # refinement ratio
 amr.regrid_int      = 2 2 2 2 # how often to regrid
 amr.blocking_factor = 8       # block factor in grid generation
-amr.max_grid_size   = 64
+amr.max_grid_size   = 2048 #64
 amr.n_error_buf     = 2 8 2 2 # number of buffer cells in error est
 
 # CHECKPOINT FILES

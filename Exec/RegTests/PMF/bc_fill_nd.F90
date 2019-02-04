@@ -28,6 +28,15 @@ contains
     do n = 1,NVAR
        call filcc_nd(adv(:,:,:,n),adv_lo,adv_hi,domlo,domhi,delta,xlo,bc(:,:,n))
     enddo
+write(*,*) 'BC names', INT_DIR, EXT_DIR, FOEXTRAP, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN
+write(*,*) 'DEBUG NVAR',NVAR
+write(*,*) 'DEBUG BC_FILL_ND 1',bc(:,:,1)
+write(*,*) 'DEBUG BC_FILL_ND 2',bc(:,:,2)
+write(*,*) 'DEBUG BC_FILL_ND 3',bc(:,:,3)
+write(*,*) 'DEBUG BC_FILL_ND 4',bc(:,:,4)
+write(*,*) 'DEBUG BC_FILL_ND 5',bc(:,:,5)
+write(*,*) 'DEBUG BC_FILL_ND 6',bc(:,:,6)
+write(*,*) 'DEBUG BC_FILL_ND 7',bc(:,:,7)
 
     ! The strategy here is to set Dirichlet condition for inflow and
     ! outflow boundaries, and let the Riemann solver sort out the proper

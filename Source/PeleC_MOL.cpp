@@ -117,7 +117,6 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
     IArrayBox bcMask[BL_SPACEDIM];
     FArrayBox coeff_ec[BL_SPACEDIM], flux_ec[BL_SPACEDIM],
       tander_ec[BL_SPACEDIM], flatn;
-    //IArrayBox bcMask;
     FArrayBox dm_as_fine(Box::TheUnitBox(), NUM_STATE);
     FArrayBox fab_drho_as_crse(Box::TheUnitBox(), NUM_STATE);
     IArrayBox fab_rrflag_as_crse(Box::TheUnitBox());
@@ -216,7 +215,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
 //      }
 //      
 //      
-//      
+      
       
 
       // Compute transport coefficients, coincident with Q
@@ -236,16 +235,6 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
 
       // Container on grown region, for hybrid divergence & redistribution
       Dterm.resize(cbox, NUM_STATE);
-
-      // Pointwise mask for BC implementation
-      //{
-      //  BL_PROFILE("PeleC::set_bc_mask call");
-      //  bcMask.resize(cbox, BL_SPACEDIM);
-      //  bcMask.setVal(0);
-      //  set_bc_mask(vbox.loVect(), vbox.hiVect(),
-      //              dbox.loVect(), dbox.hiVect(),
-      //              BL_TO_FORTRAN(bcMask));
-      //}
 
       for (int d=0; d<BL_SPACEDIM; ++d) {
         Box ebox = amrex::surroundingNodes(cbox,d);
