@@ -73,46 +73,100 @@ These parameters, once read, are available in the `PeleC` object for use from c+
     #boundary condition at the upper face of each coordinate direction
     pelec.hi_bc       =  0   2  0          
     
+    #------------------------
     # TIME STEP CONTROL
+    #------------------------
+
     pelec.cfl            = 0.5     # cfl number for hyperbolic system
-    pelec.init_shrink    = 0.3     # scale back initial timestep
-    pelec.change_max     = 1.1     # scale back initial timestep
+    pelec.init_shrink    = 0.3     # first timestep is scaled by this factor
+    pelec.change_max     = 1.1     # maximum factor by which timestep can increase
     pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
+
+    #------------------------
+    # WHICH PHYSICS
+    #------------------------
     
+    
+    pelec.do_hydro = 1               # enable hyperbolic term
+    pelec.do_mol_AD = 1              # use method of lines (MOL)
+    pelec.do_react = 0               # enable chemical reactions
+    pelec.ppm_type = 2               # piecewise parabolic reconstruction type
+    pelec.allow_negative_energy = 0  # flag to allow negative internal energy
+    pelec.diffuse_temp = 0           # enable thermal diffusion
+    pelec.diffuse_vel  = 0           # enable viscous diffusion
+    pelec.diffuse_spec = 0           # enable species diffusion
+    
+    #------------------------
     # DIAGNOSTICS & VERBOSITY
-    pelec.sum_interval = 1        # coarse time steps between computing mass on domain
+    #------------------------
+    
+    # coarse time steps between computing integral of 
+    # conserved variables in the  domain
+    # these values should stabilize at steady state
+    pelec.sum_interval = 1       
+
     pelec.v            = 1        # verbosity in PeleC cpp files
     amr.v              = 1        # verbosity in Amr.cpp
     #amr.grid_log       = grdlog  # name of grid logging file
+    # ---------------------------------------------------------------
     
+    # ---------------------------------------------------------------
+    AMR specific inputs
+    # ---------------------------------------------------------------
+    
+    #------------------------
     # REFINEMENT / REGRIDDING 
+    #------------------------
+    
     amr.max_level       = 2       # maximum level number allowed
-    amr.ref_ratio       = 2 2 2 2 # refinement ratio
+    amr.ref_ratio       = 2 2 2 2 # refinement ratio across levels
     amr.regrid_int      = 2 2 2 2 # how often to regrid
     amr.blocking_factor = 8       # block factor in grid generation
-    amr.max_grid_size   = 64
-    amr.n_error_buf     = 2 8 2 2 # number of buffer cells in error est
+    amr.max_grid_size   = 64      # maximum number of cells per box along x,y,z
     
+    #specify species name as flame tracer for 
+    #refinement purposes
+    pelec.flame_trac_name = HO2
+    
+    #------------------------
     # CHECKPOINT FILES
+    #------------------------
+
     amr.checkpoint_files_output = 1
-    amr.check_file              = chk    # root name of checkpoint file
-    amr.check_int               = 500    # number of timesteps between     checkpoints
+    amr.check_file              = chk    # root name of checkpoint/restart file
+    amr.check_int               = 500    # number of timesteps between checkpoints
     
+    #------------------------
     # PLOTFILES
+    #------------------------
+    
     amr.plot_files_output = 1
     amr.plot_file         = plt     # root name of plotfile
     amr.plot_int          = 100     # number of timesteps between plotfiles
+
+    #pick which all derived variables to plot
+    amr.derive_plot_vars  = pressure x_velocity y_velocity
     
-    #PROBIN FILENAME
-    amr.probin_file = probin-regt
+    # probin filename that has tagging and other namelists
+    amr.probin_file = probin 
+    # ---------------------------------------------------------------
     
-    amr.derive_plot_vars = density xmom ymom zmom eden Temp pressure     x_velocity y_velocity
-    pelec.plot_rhoy = 0
-    pelec.plot_massfrac = 1
-    pelec.do_react = 1
-    pelec.diffuse_temp=1
-    pelec.diffuse_enth=1
-    pelec.diffuse_spec=1
-    pelec.diffuse_vel=1
-    pelec.sdc_iters = 2
-    pelec.flame_trac_name = HO2
+    # ---------------------------------------------------------------
+    Embedded boundary (EB) inputs
+    # ---------------------------------------------------------------
+
+    pelec.eb_isothermal = 1     # isothermal wall at EB
+    pelec.eb_boundary_T = 300.  # EB wall temperature    
+    eb_verbosity = 1            # verbosity of EB data
+
+    
+    #------------------------
+    # EB geometry
+    #------------------------
+
+    eb2.geom_type = sphere  
+    eb2.sphere_radius = 0.1     
+    eb2.sphere_center = 0.0 0.15 0.075
+    eb2.sphere_has_fluid_inside = 0
+    
+    # ---------------------------------------------------------------
