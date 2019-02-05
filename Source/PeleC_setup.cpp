@@ -20,57 +20,31 @@ static Box grow_box_by_one (const Box& b) { return amrex::grow(b,1); }
 
 typedef StateDescriptor::BndryFunc BndryFunc;
 
-#if 1
+
 //
 // Components are:
-//  Interior, Inflow, Outflow,  Symmetry,     SlipWall,     NoSlipWall, UserBC
+//  Interior, UserBC,  Symmetry,     SlipWall,     NoSlipWall
 //
 static int scalar_bc[] =
 {
-    INT_DIR, EXT_DIR, FOEXTRAP, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN, EXT_DIR
+    INT_DIR, EXT_DIR,  REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN
 };
 
 static int norm_vel_bc[] =
 {
-    INT_DIR, EXT_DIR, FOEXTRAP, REFLECT_ODD,  REFLECT_ODD,  REFLECT_ODD, EXT_DIR
+    INT_DIR, EXT_DIR,  REFLECT_ODD,  REFLECT_ODD,  REFLECT_ODD
 };
 
 static int tang_vel_bc[] =
 {
-    INT_DIR, EXT_DIR, FOEXTRAP, REFLECT_EVEN, REFLECT_EVEN, REFLECT_ODD, EXT_DIR
+    INT_DIR, EXT_DIR,  REFLECT_EVEN, REFLECT_EVEN, REFLECT_ODD
 };
 
 static int react_src_bc[] =
 {
-    INT_DIR, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN
+    INT_DIR, REFLECT_EVEN,  REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN
 };
 
-#else
-//
-// Components are:
-//  Interior, Inflow, Outflow,  Symmetry,     SlipWall,     NoSlipWall
-//
-static int scalar_bc[] =
-{
-    INT_DIR, EXT_DIR, FOEXTRAP, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN
-};
-
-static int norm_vel_bc[] =
-{
-    INT_DIR, EXT_DIR, FOEXTRAP, REFLECT_ODD,  REFLECT_ODD,  REFLECT_ODD
-};
-
-static int tang_vel_bc[] =
-{
-    INT_DIR, EXT_DIR, FOEXTRAP, REFLECT_EVEN, REFLECT_EVEN, REFLECT_ODD
-};
-
-static int react_src_bc[] =
-{
-    INT_DIR, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN
-};
-
-#endif
 
 static
 void

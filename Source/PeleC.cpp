@@ -234,32 +234,28 @@ PeleC::read_params ()
   for (int dir = 0; dir<BL_SPACEDIM; dir++){
     if (!lo_bc_char[dir].compare("Interior")){
       lo_bc[dir] = 0;
-    } else if (!lo_bc_char[dir].compare("Inflow")){
-      lo_bc[dir] = 1;
     } else if (!lo_bc_char[dir].compare("UserBC")){
-      lo_bc[dir] = 6;
+      lo_bc[dir] = 1;
     } else if (!lo_bc_char[dir].compare("Symmetry")){
-      lo_bc[dir] = 3;
+      lo_bc[dir] = 2;
     } else if (!lo_bc_char[dir].compare("SlipWall")){
-      lo_bc[dir] = 4;
+      lo_bc[dir] = 3;
     } else if (!lo_bc_char[dir].compare("NoSlipWall")){
-      lo_bc[dir] = 5;
+      lo_bc[dir] = 4;
     } else {
       amrex::Abort("Wrong boundary condition word in lo_bc, please use: Interior, UserBC, Symmetry, SlipWall, NoSlipWall");
     }
     
     if (!hi_bc_char[dir].compare("Interior")){
       hi_bc[dir] = 0;
-    } else if (!hi_bc_char[dir].compare("Outflow")){
-      hi_bc[dir] = 2;
     } else if (!hi_bc_char[dir].compare("UserBC")){
-      hi_bc[dir] = 6;
+      hi_bc[dir] = 1;
     } else if (!hi_bc_char[dir].compare("Symmetry")){
-      hi_bc[dir] = 3;
+      hi_bc[dir] = 2;
     } else if (!hi_bc_char[dir].compare("SlipWall")){
-      hi_bc[dir] = 4;
+      hi_bc[dir] = 3;
     } else if (!hi_bc_char[dir].compare("NoSlipWall")){
-      hi_bc[dir] = 5;
+      hi_bc[dir] = 4;
     } else {
       amrex::Abort("Wrong boundary condition word in hi_bc, please use: Interior, UserBC, Symmetry, SlipWall, NoSlipWall");
     }

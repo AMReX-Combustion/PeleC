@@ -201,23 +201,19 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
 	                       BL_TO_FORTRAN(bcMask[1]),
                          BL_TO_FORTRAN(bcMask[2])));
 
-//      if (i_nscbc == 1)
-//      {
-//        impose_NSCBC(lo, hi, domain_lo, domain_hi,
-//                     BL_TO_FORTRAN(Sfab),
-//                     BL_TO_FORTRAN(Qfab),
-//                     BL_TO_FORTRAN(Qaux),
-//                     D_DECL(BL_TO_FORTRAN(bcMask[0]),
-//	                          BL_TO_FORTRAN(bcMask[1]),
-//                            BL_TO_FORTRAN(bcMask[2])),
-//                     &flag_nscbc_isAnyPerio, flag_nscbc_perio, 
-//                     &time, dx, &dt);
-//      }
-//      
-//      
+      if (i_nscbc == 1)
+      {
+        impose_NSCBC(lo, hi, domain_lo, domain_hi,
+                     BL_TO_FORTRAN(Sfab),
+                     BL_TO_FORTRAN(Qfab),
+                     BL_TO_FORTRAN(Qaux),
+                     D_DECL(BL_TO_FORTRAN(bcMask[0]),
+	                          BL_TO_FORTRAN(bcMask[1]),
+                            BL_TO_FORTRAN(bcMask[2])),
+                     &flag_nscbc_isAnyPerio, flag_nscbc_perio, 
+                     &time, dx, &dt);
+      }
       
-      
-
       // Compute transport coefficients, coincident with Q
       {
         BL_PROFILE("PeleC::get_transport_coeffs call");
@@ -265,9 +261,6 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
                                              cbox.hiVect(),
                                              dbox.loVect(),
                                              dbox.hiVect(),
-                                             D_DECL(BL_TO_FORTRAN(bcMask[0]),
-	                                                  BL_TO_FORTRAN(bcMask[1]),
-                                                    BL_TO_FORTRAN(bcMask[2])),
                                              BL_TO_FORTRAN_ANYD(Qfab),
                                              BL_TO_FORTRAN_ANYD(tander_ec[d]),
                                              geom.CellSize(), &d);
@@ -303,9 +296,6 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
                     cbox.hiVect(),
                     dbox.loVect(),
                     dbox.hiVect(),
-                    D_DECL(BL_TO_FORTRAN(bcMask[0]),
-	                  BL_TO_FORTRAN(bcMask[1]),
-                    BL_TO_FORTRAN(bcMask[2])),
                     BL_TO_FORTRAN_ANYD(Qfab),
                     BL_TO_FORTRAN_N_ANYD(coeff_ec[0], dComp_rhoD),
                     BL_TO_FORTRAN_N_ANYD(coeff_ec[0], dComp_mu),

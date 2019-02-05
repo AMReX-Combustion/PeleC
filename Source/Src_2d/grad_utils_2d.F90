@@ -20,13 +20,11 @@ module grad_utils_module
 contains
 
   subroutine pc_compute_tangential_vel_derivs(lo,  hi, dlo, dhi,&
-       x_bcMask, x_bcMask_l1, x_bcMask_l2, x_bcMask_h1, x_bcMask_h2, &
-       y_bcMask, y_bcMask_l1, y_bcMask_l2, y_bcMask_h1, y_bcMask_h2, &
        Q,   Qlo,   Qhi,&
        td,  tdlo,  tdhi,&
        deltax, idir) bind(C, name = "pc_compute_tangential_vel_derivs")
 
-    use prob_params_module, only : physbc_lo, physbc_hi, Inflow
+    use prob_params_module, only : physbc_lo, physbc_hi
     use meth_params_module, only : QVAR, QU, QV
     use bl_constants_module
 
@@ -41,12 +39,6 @@ contains
     double precision, intent(inout) :: td(tdlo(1):tdhi(1),tdlo(2):tdhi(2),dim)
     double precision, intent(in   ) :: deltax(2)
     
-    integer, intent(in) :: x_bcMask_l1, x_bcMask_l2, x_bcMask_h1, x_bcMask_h2
-    integer, intent(in) :: y_bcMask_l1, y_bcMask_l2, y_bcMask_h1, y_bcMask_h2
-
-    integer, intent(inout) :: x_bcMask(x_bcMask_l1:x_bcMask_h1,x_bcMask_l2:x_bcMask_h2)
-    integer, intent(inout) :: y_bcMask(y_bcMask_l1:y_bcMask_h1,y_bcMask_l2:y_bcMask_h2)
-
     integer :: i, j
     double precision :: dxinv(2)
 
@@ -57,35 +49,6 @@ contains
              td(i,j,1:dim) = FOURTH*dxinv(2)*(Q(i,j+1,QU:QV)+Q(i-1,j+1,QU:QV)-Q(i,j-1,QU:QV)-Q(i-1,j-1,QU:QV))
           enddo
        enddo
-
-       ! Fix boundaries (since Dirichlet values passed in cell containers actually specified on face)
-       if (lo(idir+1).lt.dlo(idir+1)) then
-          do j=lo(2),hi(2)
-             do i=lo(1),dlo(1)
-               if (x_bcMask(i,j).eq.Inflow) then
-                 td(i,j,1:dim) = HALF*dxinv(2)*(Q(i-1,j+1,QU:QV)-Q(i-1,j-1,QU:QV))
-               endif
-             enddo
-          enddo
-       endif
-    else
-       do j=lo(2),hi(2)+1
-          do i=lo(1),hi(1)
-             td(i,j,1:dim) = FOURTH*dxinv(1)*(Q(i+1,j,QU:QV)+Q(i+1,j-1,QU:QV)-Q(i-1,j,QU:QV)-Q(i-1,j-1,QU:QV))
-          enddo
-       enddo
-
-       ! Fix boundaries (since Dirichlet values passed in cell containers actually specified on face)
-       if (lo(idir+1).lt.dlo(idir+1)) then
-          do j=lo(2),dlo(2)
-             do i=lo(1),hi(1)
-               if (y_bcMask(i,j).eq.Inflow) then
-                 td(i,j,1:dim) = HALF*dxinv(1)*(Q(i+1,j-1,QU:QV)-Q(i-1,j-1,QU:QV))
-               endif
-             enddo
-          enddo
-       endif
-
     endif
   end subroutine pc_compute_tangential_vel_derivs
 
@@ -97,7 +60,7 @@ contains
        flag, fglo, fghi, &
        deltax, idir) bind(C, name = "pc_compute_tangential_vel_derivs_eb")
 
-    use prob_params_module, only : physbc_lo, physbc_hi, Inflow
+    use prob_params_module, only : physbc_lo, physbc_hi
     use meth_params_module, only : QVAR, QU, QV
     use bl_constants_module
     use amrex_ebcellflag_module, only : get_neighbor_cells
@@ -115,7 +78,7 @@ contains
     double precision, intent(inout) :: td(tdlo(0):tdhi(0),tdlo(1):tdhi(1),dim)
     integer,          intent(in   ) :: flag(fglo(0):fghi(0),fglo(1):fghi(1))
     double precision, intent(in   ) :: deltax(0:1)
-
+    
     integer :: i, j, L, ii, jj, cnt
     double precision :: dxinv(0:1)
     integer :: nbrLO(-1:1,-1:1), nbrHI(-1:1,-1:1), nxy(-1:0,-1:1), nyx(-1:1, -1:0), g(-1:0,-1:0,dim)
@@ -133,14 +96,6 @@ contains
              call get_neighbor_cells(flag(i-1,j),nbrLO)
              call get_neighbor_cells(flag(i  ,j),nbrHI)
              nxy = nbrLO(0:1,-1:1) * nbrHI(-1:0,-1:1)
-
-             ! Fix boundaries (since Dirichlet values passed in cell containers actually specified on face)
-             if (i.lt.dlo(idir) .and. physbc_lo(idir+1).eq.Inflow) then
-                nxy( 0,-1:1) = 0 ! only use i-1 values
-             endif
-             if (i.gt.dhi(idir) .and. physbc_hi(idir+1).eq.Inflow) then
-                nxy(-1,-1:1) = 0 ! only use i values
-             endif
 
              cnt = 0
              g = 0
@@ -165,14 +120,6 @@ contains
              call get_neighbor_cells(flag(i,j-1),nbrLO)
              call get_neighbor_cells(flag(i,j  ),nbrHI)
              nyx = nbrLO(-1:1,0:1) * nbrHI(-1:1,-1:0)
-
-             ! Fix boundaries (since Dirichlet values passed in cell containers actually specified on face)
-             if (j.lt.dlo(idir) .and. physbc_lo(idir+1).eq.Inflow) then
-                nyx(-1:1, 0) = 0 ! only use j-1 values
-             endif
-             if (j.gt.dhi(idir) .and. physbc_hi(idir+1).eq.Inflow) then
-                nyx(-1:1,-1) = 0 ! only use j values
-             endif
 
              cnt = 0
              g = 0

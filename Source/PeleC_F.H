@@ -96,9 +96,6 @@ extern "C"
 #if (BL_SPACEDIM > 1)
   void pc_compute_tangential_vel_derivs(const int* lo, const int* hi,
                                         const int* dlo, const int* dhi,
-                                        D_DECL(BL_FORT_IFAB_ARG(x_bcMask),
-                                               BL_FORT_IFAB_ARG(y_bcMask),
-                                               BL_FORT_IFAB_ARG(z_bcMask)),
                                         const amrex::Real* Q, const int* Qlo, const int* Qhi,
                                         amrex::Real* td, const int* tdlo, const int* tdhi,
                                         const amrex::Real* dx, const int* idir);
@@ -124,9 +121,6 @@ extern "C"
 
   void pc_diffterm(const int* lo,  const int* hi,
 		   const int* dmnlo,  const int* dmnhi,
-       D_DECL(BL_FORT_IFAB_ARG(x_bcMask),
-              BL_FORT_IFAB_ARG(y_bcMask),
-              BL_FORT_IFAB_ARG(z_bcMask)),
 		   const BL_FORT_FAB_ARG_3D(Q),
 		   const BL_FORT_FAB_ARG_3D(Dx),
 		   const BL_FORT_FAB_ARG_3D(mux),
