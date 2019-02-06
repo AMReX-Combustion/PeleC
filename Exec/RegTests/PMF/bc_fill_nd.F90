@@ -181,8 +181,7 @@ contains
        call init_bc()
     end if
 
-! at hi X
-!    if (dir == 1) then
+! at hi BC
       if (sgn == -1) then
 
         ! Set outflow pressure
@@ -215,12 +214,19 @@ contains
 !    endif
 
 
-! at low X
-!    if (dir == 1) then
+! at low BC
       if (sgn == 1) then
-
-        relax_U = 0.10d0
-        relax_V = 1.0d0
+        if (dir == 2) then
+          relax_U = 0.10d0
+          relax_V = 1.0d0
+        elseif (dir == 1) then
+          relax_V = 0.10d0
+          relax_U = 1.0d0
+        elseif (dir == 3) then
+          relax_V = 0.10d0
+          relax_U = 0.10d0
+          relax_W = 1.0d0
+        endif
         relax_T = - 0.1d0
         beta = 1.0d0
 
@@ -249,7 +255,6 @@ contains
         u_ext(UFS:UFS+nspec-1) = eos_state % rho  *  eos_state % massfrac(1:nspec)
 
       endif
- !   endif
 
 ! Here the optional parameters are filled by the local variables if they were present
     if (flag_nscbc == 1) then

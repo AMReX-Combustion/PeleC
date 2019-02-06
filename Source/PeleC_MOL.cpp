@@ -201,7 +201,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
 	                       BL_TO_FORTRAN(bcMask[1]),
                          BL_TO_FORTRAN(bcMask[2])));
 
-      if (i_nscbc == 1)
+      if (nscbc_diff == 1)
       {
         impose_NSCBC(lo, hi, domain_lo, domain_hi,
                      BL_TO_FORTRAN(Sfab),

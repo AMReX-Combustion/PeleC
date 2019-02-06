@@ -286,9 +286,13 @@ PeleC::variableSetUp ()
     if (ParallelDescriptor::IOProcessor())
 	std::cout << "\nTime in set_method_params: " << run_stop << '\n' ;
   
-    if (i_nscbc == 1 && ParallelDescriptor::IOProcessor())
-	std::cout << "Using Ghost-Cells Navier-Stokes Characteristic BCs: i_nscbc = " << i_nscbc << '\n' << '\n' ;
+    if (nscbc_adv == 1 && ParallelDescriptor::IOProcessor())
+	std::cout << '\n' << "Using Ghost-Cells Navier-Stokes Characteristic BCs for advection: nscbc_adv = " << nscbc_adv << '\n' << '\n' ;
 
+    if (nscbc_diff == 1 && ParallelDescriptor::IOProcessor())
+	std::cout << "Using Ghost-Cells Navier-Stokes Characteristic BCs for diffusion: nscbc_diff = " << nscbc_diff << '\n' << '\n' ;
+
+  
     int coord_type = Geometry::Coord();
 
     // Get the center variable from the inputs and pass it directly to Fortran.

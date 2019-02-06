@@ -128,12 +128,12 @@ PeleC::construct_hydro_source(const MultiFab& S, Real time, Real dt, int amr_ite
 		    q.dataPtr(), ARLIM_3D(q.loVect()), ARLIM_3D(q.hiVect()),
 		    qaux.dataPtr(), ARLIM_3D(qaux.loVect()), ARLIM_3D(qaux.hiVect()));
       
-      // Imposing Ghost-Cells Navier-Stokes Characteristic BCs if i_nscbc is .true.
+      // Imposing Ghost-Cells Navier-Stokes Characteristic BCs if "UserBC" are used
       // For the theory, see Motheau et al. AIAA J. Vol. 55, No. 10 : pp. 3399-3408, 2017. 
       //
-      // The user should provide a bcnormal routine in bc_fill_module with 2 additional optional arguments
+      // The user should provide a bcnormal routine in bc_fill_module with additional optional arguments
       // to temporary fill ghost-cells for EXT_DIR and to provide target BC values.
-      // See the COVO test case for an example.
+      // See the examples.
       
       // Allocate fabs for bcMask. Note that we grow in the opposite direction
       // because the Riemann solver wants a face value in a ghost-cell
@@ -155,7 +155,7 @@ PeleC::construct_hydro_source(const MultiFab& S, Real time, Real dt, int amr_ite
 	                       BL_TO_FORTRAN(bcMask[1]),
                          BL_TO_FORTRAN(bcMask[2])));
 
-      if (i_nscbc == 1)
+      if (nscbc_adv == 1)
       {
         impose_NSCBC(lo, hi, domain_lo, domain_hi,
                      BL_TO_FORTRAN(statein),

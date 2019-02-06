@@ -12,7 +12,6 @@ contains
                         domlo, domhi) result (f)
 
     use prob_params_module, only : physbc_lo, physbc_hi, Symmetry, SlipWall, NoSlipWall
-    use meth_params_module, only: i_nscbc
     
     integer, intent(in) :: idir, i, j, domlo(*), domhi(*)
     integer, intent(in) :: bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2
@@ -63,7 +62,6 @@ contains
                         domlo, domhi) result (f)
 
     use prob_params_module, only : physbc_lo, physbc_hi, Symmetry, SlipWall, NoSlipWall
-    use meth_params_module, only: i_nscbc
     
     integer, intent(in) :: idir, i, j, k, domlo(*), domhi(*)
     integer, intent(in) :: bcMask_l1, bcMask_l2, bcMask_l3, bcMask_h1, bcMask_h2, bcMask_h3

@@ -6,7 +6,7 @@ module gc_nscbc_mod
 contains
 
 !------------------------------
-! Imposing Ghost-Cells Navier-Stokes Characteristic BCs if i_nscbc is .true.
+! Imposing Ghost-Cells Navier-Stokes Characteristic BCs
 ! For the theory, see Motheau et al. AIAA J. Vol. 55, No. 10 : pp. 3399-3408, 2017.
 !------------------------------
 
