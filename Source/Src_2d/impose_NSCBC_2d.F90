@@ -30,8 +30,7 @@ contains
   use fundamental_constants_module, only: k_B, n_A
 
   use bl_constants_module
-  use prob_params_module, only : physbc_lo, physbc_hi, problo, probhi, &
-                                 Interior
+  use prob_params_module, only : physbc_lo, physbc_hi, problo, probhi, UserBC
     
   use meth_params_module, only : NVAR, NQAUX,QVAR
   use bc_fill_module, only: bcnormal
@@ -198,7 +197,7 @@ contains
  ! lower X
  !--------------------------------------------------------------------------
 
- if ((q_lo(1) < domlo(1)) .and. (physbc_lo(1) /= Interior)) then
+ if ((q_lo(1) < domlo(1)) .and. (physbc_lo(1) == UserBC)) then
    i = domlo(1)
 
    do j = q_lo(2)+1,q_hi(2)-1
@@ -261,7 +260,7 @@ contains
  ! upper X
  !--------------------------------------------------------------------------
  
- if ((q_hi(1) > domhi(1)) .and. (physbc_hi(1) /= Interior)) then
+ if ((q_hi(1) > domhi(1)) .and. (physbc_hi(1) == UserBC)) then
    i = domhi(1)
 
    do j = q_lo(2)+1,q_hi(2)-1
@@ -322,7 +321,7 @@ endif
  ! lower Y
  !--------------------------------------------------------------------------
 
- if ((q_lo(2) < domlo(2)) .and. (physbc_lo(2) /= Interior)) then
+ if ((q_lo(2) < domlo(2)) .and. (physbc_lo(2) == UserBC)) then
  
    j = domlo(2)
       
@@ -384,7 +383,7 @@ endif
 ! upper Y
 !--------------------------------------------------------------------------
 
- if ((q_hi(2) > domhi(2)) .and. (physbc_hi(2) /= Interior)) then
+ if ((q_hi(2) > domhi(2)) .and. (physbc_hi(2) == UserBC)) then
  
    j = domhi(2)
       
@@ -894,7 +893,7 @@ end subroutine impose_NSCBC
                            qaux, qa_l1, qa_l2, qa_h1, qa_h2)
                                                     
   use meth_params_module, only : QVAR, QPRES, QU, QV, QRHO, NQAUX, QC, QGAMC, QTEMP, QRSPEC
-  use prob_params_module, only : probhi, Interior, Inflow, Outflow, SlipWall, NoSlipWall
+  use prob_params_module, only : probhi, UserBC, Inflow, Outflow, SlipWall, NoSlipWall
   
   integer, intent(in) :: i,j,idir,isign
   integer, intent(in) :: q_l1, q_l2, q_h1, q_h2

@@ -3,7 +3,7 @@ max_step = 50000
 stop_time = 0.001
 
 # PROBLEM SIZE & GEOMETRY
-geometry.is_periodic = 0    0    0
+geometry.is_periodic = 1    1    1
 geometry.coord_sys   = 0    # 0 = Cartesian
 geometry.prob_lo     = 0.0  0.0  0.0
 geometry.prob_hi     = 1.0  1.0  1.0
@@ -15,10 +15,6 @@ amr.n_cell           = 64   64   64
 # 1 = Inflow             4 = SlipWall
 # 2 = Outflow            5 = NoSlipWall
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
-pelec.lo_bc       =  2   2   2
-pelec.hi_bc       =  2   2   2
-
-geometry.is_periodic = 1 1 1
 pelec.lo_bc       =    0 0 0
 pelec.hi_bc       =    0 0 0
 
