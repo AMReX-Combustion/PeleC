@@ -27,7 +27,7 @@ contains
   use bl_constants_module
   use bc_fill_module, only: bcnormal
   use prob_params_module, only : physbc_lo, physbc_hi, problo, probhi, &
-                                 Interior, Inflow, Outflow, Symmetry, SlipWall, NoSlipWall
+                                 UserBC, Inflow, Outflow, Symmetry, SlipWall, NoSlipWall
     
   use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP,&
                                  UFA, UFS, UFX, NQAUX, QC, QGAMC, QRSPEC, &
@@ -98,7 +98,7 @@ contains
  ! lower X
  !--------------------------------------------------------------------------
  
- if ((q_lo(1) < domlo(1)) .and. (physbc_lo(1) /= Interior)) then
+ if ((q_lo(1) < domlo(1)) .and. (physbc_lo(1) == UserBC)) then
  
    i = domlo(1)
  
@@ -260,7 +260,7 @@ contains
  ! upper X
  !--------------------------------------------------------------------------
  
- if ((q_hi(1) > domhi(1)) .and. (physbc_hi(1) /= Interior)) then
+ if ((q_hi(1) > domhi(1)) .and. (physbc_hi(1) == UserBC)) then
  
    i = domhi(1)
    

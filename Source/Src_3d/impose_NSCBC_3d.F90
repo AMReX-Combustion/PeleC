@@ -31,8 +31,7 @@ contains
   use fundamental_constants_module, only: k_B, n_A
 
   use bl_constants_module
-  use prob_params_module, only : physbc_lo, physbc_hi, problo, probhi, &
-                                 Interior
+  use prob_params_module, only : physbc_lo, physbc_hi, problo, probhi, UserBC
     
   use meth_params_module, only : NVAR, NQAUX,QVAR
   use bc_fill_module, only: bcnormal
@@ -261,7 +260,7 @@ endif ! flag_nscbc_isAnyPerio )
  ! lower X
  !--------------------------------------------------------------------------
 
- if ((q_lo(1) < domlo(1)) .and. (physbc_lo(1) /= Interior)) then
+ if ((q_lo(1) < domlo(1)) .and. (physbc_lo(1) == UserBC)) then
 
    i = domlo(1)
    x   = (dble(i)+HALF)*dx
@@ -341,7 +340,7 @@ endif ! flag_nscbc_isAnyPerio )
  ! upper X
  !--------------------------------------------------------------------------
  
- if ((q_hi(1) > domhi(1)) .and. (physbc_hi(1) /= Interior)) then
+ if ((q_hi(1) > domhi(1)) .and. (physbc_hi(1) == UserBC)) then
 
    i = domhi(1)
    x   = (dble(i)+HALF)*dx
@@ -420,7 +419,7 @@ endif ! flag_nscbc_isAnyPerio )
  ! lower Y
  !--------------------------------------------------------------------------
  
- if ((q_lo(2) < domlo(2)) .and. (physbc_lo(2) /= Interior)) then
+ if ((q_lo(2) < domlo(2)) .and. (physbc_lo(2) == UserBC)) then
  
    j = domlo(2)
    y   = (dble(j)+HALF)*dy
@@ -498,7 +497,7 @@ endif ! flag_nscbc_isAnyPerio )
 ! upper Y
 !--------------------------------------------------------------------------
 
- if ((q_hi(2) > domhi(2)) .and. (physbc_hi(2) /= Interior)) then
+ if ((q_hi(2) > domhi(2)) .and. (physbc_hi(2) == UserBC)) then
  
    j = domhi(2)
    y   = (dble(j)+HALF)*dy
@@ -578,7 +577,7 @@ end if
  ! lower Z
  !--------------------------------------------------------------------------
  
- if ((q_lo(3) < domlo(3)) .and. (physbc_lo(3) /= Interior)) then
+ if ((q_lo(3) < domlo(3)) .and. (physbc_lo(3) == UserBC)) then
  
    k = domlo(3)
    z   = (dble(k)+HALF)*dz
@@ -656,7 +655,7 @@ end if
 ! upper Z
 !--------------------------------------------------------------------------
 
- if ((q_hi(3) > domhi(3)) .and. (physbc_hi(3) /= Interior)) then
+ if ((q_hi(3) > domhi(3)) .and. (physbc_hi(3) == UserBC)) then
  
    k = domhi(3)
    z   = (dble(k)+HALF)*dz
@@ -1409,7 +1408,7 @@ end subroutine impose_NSCBC
                            qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
                                 
   use meth_params_module, only : QVAR, QPRES, QU, QV, QW, QRHO, NQAUX, QC, QGAMC, QTEMP, QRSPEC
-  use prob_params_module, only : probhi, Interior, Inflow, Outflow, SlipWall, NoSlipWall
+  use prob_params_module, only : probhi, Inflow, Outflow, SlipWall, NoSlipWall
   
   integer, intent(in) :: i, j, k, idir, isign
   integer, intent(in) :: q_l1, q_l2, q_l3, q_h1, q_h2, q_h3

@@ -11,9 +11,6 @@ module bc_fill_module
 ! These target values are temporary and ghost-cells will be recomputed with the NSCBC theory
 ! in the routine 'impose_NSCBC' located in Src_(dim)d
 
-! Basically the only thing that GC-NSCBC requires is that the original bcnormal routine
-! must include 2 optional parameters that are called from 'impose_NSCBC' located in Src_(dim)d
-
 
 contains
 
@@ -41,7 +38,7 @@ contains
     enddo
 
     !     XLO
-    if ( (bc(1,1,1).eq.EXT_DIR.or.bc(1,1,1).eq.FOEXTRAP).and. adv_lo(1).lt.domlo(1)) then
+    if ( (bc(1,1,1).eq.EXT_DIR).and. adv_lo(1).lt.domlo(1)) then
        do i = adv_lo(1), domlo(1)-1
           x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
           do j = adv_lo(2), adv_hi(2)
@@ -55,7 +52,7 @@ contains
     end if
 
     !     XHI
-    if ( (bc(1,2,1).eq.EXT_DIR.or.bc(1,2,1).eq.FOEXTRAP).and. adv_hi(1).gt.domhi(1)) then
+    if ( (bc(1,2,1).eq.EXT_DIR).and. adv_hi(1).gt.domhi(1)) then
        do i = domhi(1)+1, adv_hi(1)
           x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
           do j = adv_lo(2), adv_hi(2)
@@ -70,7 +67,7 @@ contains
 
     if (dim .gt. 1) then
        !     YLO
-       if ( (bc(2,1,1).eq.EXT_DIR.or.bc(2,1,1).eq.FOEXTRAP).and. adv_lo(2).lt.domlo(2)) then
+       if ( (bc(2,1,1).eq.EXT_DIR).and. adv_lo(2).lt.domlo(2)) then
           do i = adv_lo(1), adv_hi(1)
              x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
              do j = adv_lo(2), domlo(2)-1
@@ -84,7 +81,7 @@ contains
        end if
 
        !     YHI
-       if ( (bc(2,2,1).eq.EXT_DIR.or.bc(2,2,1).eq.FOEXTRAP).and. adv_hi(2).gt.domhi(2)) then
+       if ( (bc(2,2,1).eq.EXT_DIR).and. adv_hi(2).gt.domhi(2)) then
           do i = adv_lo(1), adv_hi(1)
              x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
              do j = domhi(2)+1, adv_hi(2)
@@ -99,7 +96,7 @@ contains
 
        if (dim .gt. 2) then
           !     ZLO
-          if ( (bc(3,1,1).eq.EXT_DIR.or.bc(3,1,1).eq.FOEXTRAP).and. adv_lo(3).lt.domlo(3)) then
+          if ( (bc(3,1,1).eq.EXT_DIR).and. adv_lo(3).lt.domlo(3)) then
              do i = adv_lo(1), adv_hi(1)
                 x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
                 do j = adv_lo(2), adv_hi(2)
@@ -113,7 +110,7 @@ contains
           end if
 
           !     ZHI
-          if ( (bc(3,2,1).eq.EXT_DIR.or.bc(3,2,1).eq.FOEXTRAP).and. adv_hi(3).gt.domhi(3)) then
+          if ( (bc(3,2,1).eq.EXT_DIR).and. adv_hi(3).gt.domhi(3)) then
              do i = adv_lo(1), adv_hi(1)
                 x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
                 do j = adv_lo(2), adv_hi(2)

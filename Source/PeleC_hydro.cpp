@@ -137,16 +137,15 @@ PeleC::construct_hydro_source(const MultiFab& S, Real time, Real dt, int amr_ite
       
       // Allocate fabs for bcMask. Note that we grow in the opposite direction
       // because the Riemann solver wants a face value in a ghost-cell
-	    for (int i = 0; i < BL_SPACEDIM ; i++)  {
-		    const Box& bxtmp = amrex::surroundingNodes(bx,i);
+      for (int i = 0; i < BL_SPACEDIM ; i++)  {
+        const Box& bxtmp = amrex::surroundingNodes(bx,i);
         Box TestBox(bxtmp);
         for(int d=0; d<BL_SPACEDIM; ++d) {
           if (i!=d) TestBox.grow(d,1);
         }
-        
-		    bcMask[i].resize(TestBox,1);
+        bcMask[i].resize(TestBox,1);
         bcMask[i].setVal(0);
-	    }
+      }
       
       // Becase bcMask is read in the Riemann solver in any case,
       // here we put physbc values in the appropriate faces for the non-nscbc case

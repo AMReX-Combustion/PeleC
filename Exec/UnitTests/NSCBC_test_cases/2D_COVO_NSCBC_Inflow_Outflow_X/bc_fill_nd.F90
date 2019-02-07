@@ -11,8 +11,6 @@ module bc_fill_module
 ! These target values are temporary and ghost-cells will be recomputed with the NSCBC theory
 ! in the routine 'impose_NSCBC' located in Src_(dim)d
 
-! Basically the only thing that GC-NSCBC requires is that the original bcnormal routine
-! must include 2 optional parameters that are called from 'impose_NSCBC' located in Src_(dim)d
 
 contains
 
@@ -219,16 +217,14 @@ contains
         call eos_tp(eos_state)
     
       end if
-    end if
 
 ! at hi X
-    if (dir == 1) then
       if (sgn == -1) then
       
         ! Set outflow pressure
         which_bc_type = Outflow      
         sigma_out = 0.28d0
-        beta = 0.60d0
+        beta = -0.60d0
        
         u(1:3) = 0.d0
         eos_state % massfrac(1) = 1.d0
@@ -246,7 +242,7 @@ contains
         ! Set inflow      
         which_bc_type = Outflow
         sigma_out = 0.28d0
-        beta = .60d0
+        beta = -.60d0
            
         u(1:3) = 0.0d0 
         eos_state % massfrac(1) = 1.d0
@@ -255,16 +251,14 @@ contains
         call eos_tp(eos_state)
     
       end if
-    end if
 
 ! at hi Y
-    if (dir == 2) then
       if (sgn == -1) then
       
        ! Set outflow pressure
        which_bc_type = Outflow
        sigma_out = 0.28d0
-       beta = .60d0
+       beta = -.60d0
   
        u(1:3) = 0.d0
        eos_state % massfrac(1) = 1.d0

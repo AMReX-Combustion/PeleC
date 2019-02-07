@@ -23,28 +23,27 @@ typedef StateDescriptor::BndryFunc BndryFunc;
 
 //
 // Components are:
-//  Interior, UserBC,  Symmetry,     SlipWall,     NoSlipWall
+//  Interior, Inflow, Outflow,  Symmetry,     SlipWall,     NoSlipWall, UserBC
 //
 static int scalar_bc[] =
 {
-    INT_DIR, EXT_DIR,  REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN
+    INT_DIR, EXT_DIR, FOEXTRAP, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN, EXT_DIR
 };
 
 static int norm_vel_bc[] =
 {
-    INT_DIR, EXT_DIR,  REFLECT_ODD,  REFLECT_ODD,  REFLECT_ODD
+    INT_DIR, EXT_DIR, FOEXTRAP, REFLECT_ODD,  REFLECT_ODD,  REFLECT_ODD, EXT_DIR
 };
 
 static int tang_vel_bc[] =
 {
-    INT_DIR, EXT_DIR,  REFLECT_EVEN, REFLECT_EVEN, REFLECT_ODD
+    INT_DIR, EXT_DIR, FOEXTRAP, REFLECT_EVEN, REFLECT_EVEN, REFLECT_ODD, EXT_DIR
 };
 
 static int react_src_bc[] =
 {
-    INT_DIR, REFLECT_EVEN,  REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN
+    INT_DIR, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN
 };
-
 
 static
 void

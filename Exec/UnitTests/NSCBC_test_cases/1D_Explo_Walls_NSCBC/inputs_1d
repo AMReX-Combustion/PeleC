@@ -15,14 +15,12 @@ amr.n_cell           =  64 64 64
 #amr.n_cell           =  128 128
 #amr.n_cell           =  256 256
 
-# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
-# 0 = Interior           3 = Symmetry
-# 1 = Inflow             4 = SlipWall
-# 2 = Outflow            5 = NoSlipWall
-# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
-pelec.lo_bc       =  4  
-pelec.hi_bc       =  4 
-pelec.i_nscbc = 1 
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+# Interior, UserBC, Symmetry, SlipWall, NoSlipWall
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+
+pelec.lo_bc       =  "SlipWall"
+pelec.hi_bc       =  "SlipWall"
 
 # WHICH PHYSICS
 pelec.do_hydro = 1

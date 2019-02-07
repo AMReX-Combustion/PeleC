@@ -11,9 +11,6 @@ module bc_fill_module
 ! These target values are temporary and ghost-cells will be recomputed with the NSCBC theory
 ! in the routine 'impose_NSCBC' located in Src_(dim)d
 
-! Basically the only thing that GC-NSCBC requires is that the original bcnormal routine
-! must include 2 optional parameters that are called from 'impose_NSCBC' located in Src_(dim)d
-
 contains
 
   subroutine pc_hypfill(adv,adv_lo,adv_hi,domlo,domhi,delta,xlo,time,bc) &

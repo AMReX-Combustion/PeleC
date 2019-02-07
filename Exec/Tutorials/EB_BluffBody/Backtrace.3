@@ -1,0 +1,45 @@
+=== If no file names and line numbers are shown below, one can run
+            addr2line -Cfie my_exefile my_line_address
+    to convert `my_line_address` (e.g., 0x4a6b) into file name and line number.
+
+=== Please note that the line number reported by addr2line may not be accurate.
+    One can use
+            readelf -wl my_exefile | grep my_line_address'
+    to find out the offset for that line.
+
+ 0: ./PeleC3d.gnu.MPI.ex() [0x4eed9b]
+    amrex::BLBackTrace::print_backtrace_info(_IO_FILE*)
+    /home/emotheau/GitCodes/amrex/Src/Base/AMReX_BLBackTrace.cpp:108
+
+ 1: ./PeleC3d.gnu.MPI.ex() [0x4f0325]
+    amrex::BLBackTrace::handler(int)
+    /home/emotheau/GitCodes/amrex/Src/Base/AMReX_BLBackTrace.cpp:55
+
+ 2: ./PeleC3d.gnu.MPI.ex() [0x5f7657]
+    PeleC::read_params()
+    /home/emotheau/GitCodes/PeleC_GitHub/Source/PeleC.cpp:246
+
+ 3: ./PeleC3d.gnu.MPI.ex() [0x602d8b]
+    PeleC::variableSetUp()
+    /home/emotheau/GitCodes/PeleC_GitHub/Source/PeleC_setup.cpp:172
+
+ 4: ./PeleC3d.gnu.MPI.ex() [0x5610dc]
+    amrex::Amr::InitAmr()
+    /home/emotheau/GitCodes/amrex/Src/Amr/AMReX_Amr.cpp:285
+
+ 5: ./PeleC3d.gnu.MPI.ex() [0x563129]
+    amrex::Amr::Amr()
+    /home/emotheau/GitCodes/amrex/Src/Amr/AMReX_Amr.cpp:242
+
+ 6: ./PeleC3d.gnu.MPI.ex() [0x413de3]
+    main
+    /home/emotheau/GitCodes/PeleC_GitHub/Source/main.cpp:127
+
+ 7: /lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xf0) [0x7fe04a3c7830]
+    ??
+    ??:0
+
+ 8: ./PeleC3d.gnu.MPI.ex() [0x414ae9]
+    _start
+    ??:?
+
