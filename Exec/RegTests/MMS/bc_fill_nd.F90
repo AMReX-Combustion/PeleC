@@ -30,15 +30,8 @@ contains
        call filcc_nd(adv(:,:,:,n),adv_lo,adv_hi,domlo,domhi,delta,xlo,bc(:,:,n))
     enddo
 
-    ! The strategy here is to set Dirichlet condition for inflow and
-    ! outflow boundaries, and let the Riemann solver sort out the proper
-    ! upwinding.  However, this decision makes this routine look
-    ! somewhat non-orthodox, in that we need to set external values in
-    ! either case....how do we know it's Outflow?  We have to assume
-    ! that the setup routines converted Outflow to FOEXTRAP.
-
     !     XLO
-    if ( (bc(1,1,1).eq.EXT_DIR.or.bc(1,1,1).eq.FOEXTRAP).and. adv_lo(1).lt.domlo(1)) then
+    if ( (bc(1,1,1).eq.EXT_DIR).and. adv_lo(1).lt.domlo(1)) then
        do i = adv_lo(1), domlo(1)-1
           x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
           do j = adv_lo(2), adv_hi(2)
@@ -52,7 +45,7 @@ contains
     end if
 
     !     XHI
-    if ( (bc(1,2,1).eq.EXT_DIR.or.bc(1,2,1).eq.FOEXTRAP).and. adv_hi(1).gt.domhi(1)) then
+    if ( (bc(1,2,1).eq.EXT_DIR).and. adv_hi(1).gt.domhi(1)) then
        do i = domhi(1)+1, adv_hi(1)
           x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
           do j = adv_lo(2), adv_hi(2)
@@ -67,7 +60,7 @@ contains
 
     if (dim .gt. 1) then
        !     YLO
-       if ( (bc(2,1,1).eq.EXT_DIR.or.bc(2,1,1).eq.FOEXTRAP).and. adv_lo(2).lt.domlo(2)) then
+       if ( (bc(2,1,1).eq.EXT_DIR).and. adv_lo(2).lt.domlo(2)) then
           do i = adv_lo(1), adv_hi(1)
              x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
              do j = adv_lo(2), domlo(2)-1
@@ -81,7 +74,7 @@ contains
        end if
 
        !     YHI
-       if ( (bc(2,2,1).eq.EXT_DIR.or.bc(2,2,1).eq.FOEXTRAP).and. adv_hi(2).gt.domhi(2)) then
+       if ( (bc(2,2,1).eq.EXT_DIR).and. adv_hi(2).gt.domhi(2)) then
           do i = adv_lo(1), adv_hi(1)
              x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
              do j = domhi(2)+1, adv_hi(2)
@@ -96,7 +89,7 @@ contains
 
        if (dim .gt. 2) then
           !     ZLO
-          if ( (bc(3,1,1).eq.EXT_DIR.or.bc(3,1,1).eq.FOEXTRAP).and. adv_lo(3).lt.domlo(3)) then
+          if ( (bc(3,1,1).eq.EXT_DIR).and. adv_lo(3).lt.domlo(3)) then
              do i = adv_lo(1), adv_hi(1)
                 x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
                 do j = adv_lo(2), adv_hi(2)
@@ -110,7 +103,7 @@ contains
           end if
 
           !     ZHI
-          if ( (bc(3,2,1).eq.EXT_DIR.or.bc(3,2,1).eq.FOEXTRAP).and. adv_hi(3).gt.domhi(3)) then
+          if ( (bc(3,2,1).eq.EXT_DIR).and. adv_hi(3).gt.domhi(3)) then
              do i = adv_lo(1), adv_hi(1)
                 x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
                 do j = adv_lo(2), adv_hi(2)
@@ -135,6 +128,7 @@ contains
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UTEMP, UEDEN, UEINT, UFS, NVAR
     use network, only: nspec, naux
     use prob_params_module, only : problo, probhi, dim
+    integer :: flag_nscbc
 
     use bl_constants_module, only: M_PI, HALF
 
@@ -157,14 +151,36 @@ contains
     double precision, optional, intent(out) :: bc_params(6)
     double precision, optional, intent(out) :: bc_target(5)
 
+    flag_nscbc = 0
+
+    ! When optional arguments are present, GC-NSCBC is activated
+    ! Generic values are auto-filled for numerical parameters,
+    ! but should be set by the user for each BC
+    ! Note that in the impose_NSCBC_xD.f90 routine, not all parameters are used in same time
+    if (present(bc_type).and.present(bc_params).and.present(bc_target)) then
+
+      flag_nscbc = 1
+      relax_U = 0.5d0 ! For inflow only, relax parameter for x_velocity
+      relax_V = 0.5d0 ! For inflow only, relax parameter for y_velocity
+      relax_W = 0.5d0 ! For inflow only, relax parameter for z_velocity
+      relax_T = 0.2d0 ! For inflow only, relax parameter for temperature
+      beta = 0.2d0  ! Control the contribution of transverse terms
+      sigma_out = 0.25d0 ! For outflow only, relax parameter
+      which_bc_type = Interior ! This is to ensure that nothing will be done if the user don't set anything
+    endif
+    
+    if (flag_nscbc == 1) then
+      call bl_abort("For the MMS test case, NSCBC should be turned off")
+    endif
 #ifdef USE_MASA
 
     call build(eos_state)
 
+    if (dir == 1)
     ! inflow
-    if(sgn .eq. 1) then
+      if(sgn .eq. -1) then
 
-       rho = masa_eval_3d_exact_rho(x(1),x(2),x(3))
+          rho = masa_eval_3d_exact_rho(x(1),x(2),x(3))
 
           u = masa_eval_3d_exact_u(x(1),x(2),x(3))
           v = masa_eval_3d_exact_v(x(1),x(2),x(3))
@@ -188,9 +204,9 @@ contains
           u_ext(UEDEN)           = rho * (eint + HALF * (u**2 + v**2 + w**2))
 
     ! outflow
-    else if(sgn .eq. -1) then
+      else if(sgn .eq. 1) then
 
-       rho = masa_eval_3d_exact_rho(x(1),x(2),x(3))
+          rho = masa_eval_3d_exact_rho(x(1),x(2),x(3))
 
           u = masa_eval_3d_exact_u(x(1),x(2),x(3))
           v = masa_eval_3d_exact_v(x(1),x(2),x(3))
@@ -213,6 +229,63 @@ contains
           u_ext(UEINT)           = rho * eint
           u_ext(UEDEN)           = rho * (eint + HALF * (u**2 + v**2 + w**2))
 
+      endif
+    endif
+    
+     if (dir == 3)
+    ! inflow
+      if(sgn .eq. 1) then
+
+          rho = masa_eval_3d_exact_rho(x(1),x(2),x(3))
+
+          u = masa_eval_3d_exact_u(x(1),x(2),x(3))
+          v = masa_eval_3d_exact_v(x(1),x(2),x(3))
+          w = masa_eval_3d_exact_w(x(1),x(2),x(3))
+          p = masa_eval_3d_exact_p(x(1),x(2),x(3))
+
+          eos_state % rho = rho
+          eos_state % p = p
+          eos_state % massfrac    = 0.d0
+          eos_state % massfrac(1) = 1.d0
+          call eos_rp(eos_state)
+          eint = eos_state % e
+
+          u_ext(URHO)            = rho
+          u_ext(UFS:UFS+nspec-1) = rho * eos_state % massfrac(1:nspec)
+          u_ext(UMX)             = rho * u
+          u_ext(UMY)             = rho * v
+          u_ext(UMZ)             = rho * w
+          u_ext(UTEMP)           = eos_state % T
+          u_ext(UEINT)           = rho * eint
+          u_ext(UEDEN)           = rho * (eint + HALF * (u**2 + v**2 + w**2))
+
+    ! outflow
+      else if(sgn .eq. -1) then
+
+          rho = masa_eval_3d_exact_rho(x(1),x(2),x(3))
+
+          u = masa_eval_3d_exact_u(x(1),x(2),x(3))
+          v = masa_eval_3d_exact_v(x(1),x(2),x(3))
+          w = masa_eval_3d_exact_w(x(1),x(2),x(3))
+          p = masa_eval_3d_exact_p(x(1),x(2),x(3))
+
+          eos_state % rho = rho
+          eos_state % p = p
+          eos_state % massfrac    = 0.d0
+          eos_state % massfrac(1) = 1.d0
+          call eos_rp(eos_state)
+          eint = eos_state % e
+
+          u_ext(URHO)            = rho
+          u_ext(UFS:UFS+nspec-1) = rho * eos_state % massfrac(1:nspec)
+          u_ext(UMX)             = rho * u
+          u_ext(UMY)             = rho * v
+          u_ext(UMZ)             = rho * w
+          u_ext(UTEMP)           = eos_state % T
+          u_ext(UEINT)           = rho * eint
+          u_ext(UEDEN)           = rho * (eint + HALF * (u**2 + v**2 + w**2))
+
+    endif
     endif
 
 #else
