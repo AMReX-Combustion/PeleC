@@ -7,7 +7,7 @@ PROFILE    = FALSE
 DEBUG      = FALSE
 
 DIM        = 1
-#DIM        = 2
+DIM        = 2
 
 COMP	   = gcc
 
@@ -28,8 +28,8 @@ Eos_dir     := Fuego
 Reactions_dir := Fuego
 
 # This sets the model directory in $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism/Models
-Chemistry_Model := Davis
-# Chemistry_Model := LiDryer
+#Chemistry_Model := Davis
+Chemistry_Model := LiDryer
 
 # This sets the transport directory in $(PELE_PHYSICS_HOME)/Transport
 Transport_dir := EGLib

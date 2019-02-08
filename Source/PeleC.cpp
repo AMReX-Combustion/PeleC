@@ -1632,7 +1632,6 @@ PeleC::errorEst (TagBoxArray& tags,
       const int*  lo      = tlo;
       const int*  hi      = thi;
       const Real* xlo     = pbx.lo();
-      Real*       dat     = datfab.dataPtr();
       const int*  dlo     = datbox.loVect();
       const int*  dhi     = datbox.hiVect();
       const int   ncomp   = datfab.nComp();

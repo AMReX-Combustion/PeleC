@@ -136,14 +136,14 @@ contains
     use prob_params_module, only : Interior, Inflow, Outflow, SlipWall, NoSlipWall, &
                                    problo, probhi, dim
 
-    use meth_params_module, only : URHO, UMX, UMY, UMZ, UTEMP, UEDEN, UEINT, UFS
+    use meth_params_module, only : URHO, UMX, UMY, UMZ, UTEMP, UEDEN, UEINT, UFS, NVAR
     use eos_type_module
     use eos_module
 
     implicit none
 
     double precision :: x(3),time, u(3)
-    double precision :: u_int(*),u_ext(*)
+    double precision :: u_int(NVAR),u_ext(NVAR)
     integer, optional, intent(out) :: bc_type
     double precision, optional, intent(out) :: bc_params(6)
     double precision, optional, intent(out) :: bc_target(5)
@@ -239,7 +239,6 @@ call build(eos_state)
        u_ext(UTEMP)              = eos_state % T
        u_ext(UEINT)              = eos_state % rho  *   eos_state % e
        u_ext(UEDEN)              = eos_state % rho  *  (eos_state % e + 0.5d0 * (u(1)**2 + u(2)**2) + u(3)**2)
-
 
       ! Here the optional parameters are filled by the local variables if they were present
     if (flag_nscbc == 1) then

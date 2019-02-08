@@ -3,7 +3,7 @@ max_step = 500
 stop_time = 6.0
 
 # PROBLEM SIZE & GEOMETRY
-geometry.is_periodic =  0   0  0
+geometry.is_periodic =  0    0    0
 geometry.coord_sys   =  0       # 0 => cart
 geometry.prob_lo     =  0    0    0 
 geometry.prob_hi     =  5.0  3.0  1.0
@@ -13,8 +13,9 @@ amr.n_cell           =  120   72   24
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 
-pelec.lo_bc       =  "UserBC"  "UserBC"  "UserBC"
-pelec.hi_bc       =  "UserBC"  "UserBC"  "UserBC"
+pelec.lo_bc       =  "UserBC"  "Outflow"  "Outflow"
+pelec.hi_bc       =  "Outflow"  "Outflow"  "Outflow"
+
 
 pelec.nscbc_adv = 0
 pelec.nscbc_diff = 0
@@ -52,7 +53,7 @@ amr.v                = 1       # verbosity in Amr.cpp
 amr.max_level       = 0       # maximum level number allowed
 amr.ref_ratio       = 2 2 2 2 # refinement ratio
 amr.regrid_int      = 2       # how often to regrid
-amr.blocking_factor = 2       # block factor in grid generation
+amr.blocking_factor = 8       # block factor in grid generation
 amr.max_grid_size   = 256
 
 # CHECKPOINT FILES
