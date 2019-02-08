@@ -81,6 +81,7 @@ contains
   integer          :: i, j, k
   integer          :: bc_type, x_bc_type, y_bc_type, z_bc_type
   integer          :: x_isign, y_isign, z_isign, x_idx_Mask, y_idx_Mask, z_idx_Mask
+  integer          :: test_keyword_x, test_keyword_y, test_keyword_z
   double precision :: bc_params(6), x_bc_params(6), y_bc_params(6), z_bc_params(6)
   double precision :: bc_target(5), x_bc_target(5), y_bc_target(5), z_bc_target(5)
   
@@ -112,30 +113,36 @@ contains
        .and. ((q_hi(3) > domhi(3)) .or. (q_lo(3) < domlo(3)))) then
 
     if (q_hi(1) > domhi(1)) then
+      test_keyword_x = physbc_hi(1)
       i = domhi(1)
       x_isign = -1
       x_idx_Mask = i+1
     elseif (q_lo(1) < domlo(1)) then
+      test_keyword_x = physbc_lo(1)
       i = domlo(1)
       x_isign = 1
       x_idx_Mask = i
     endif
  
     if (q_hi(2) > domhi(2)) then
+      test_keyword_y = physbc_hi(2)
       j = domhi(2)
       y_isign = -1
       y_idx_Mask = j+1
     elseif (q_lo(2) < domlo(2)) then
+      test_keyword_y = physbc_lo(2)
       j = domlo(2)
       y_isign = 1
       y_idx_Mask = j
     endif
  
     if (q_hi(3) > domhi(3)) then
+      test_keyword_z = physbc_hi(3)
       k = domhi(3)
       z_isign = -1
       z_idx_Mask = k+1
     elseif (q_lo(3) < domlo(3)) then
+      test_keyword_z = physbc_lo(3)
       k = domlo(3)
       z_isign = 1
       z_idx_Mask = k
@@ -189,17 +196,29 @@ contains
 
     ! Calling user target BC values
     ! x face
-    call bcnormal([x,y,z],U_dummy,U_ext,1,x_isign,time,x_bc_type,x_bc_params,x_bc_target)
+    if (test_keyword_x == UserBC) then
+      call bcnormal([x,y,z],U_dummy,U_ext,1,x_isign,time,x_bc_type,x_bc_params,x_bc_target)
+    else
+      x_bc_type = test_keyword_x
+    endif
     x_bcMask(x_idx_Mask,j,k) = x_bc_type
     
     ! y face
-    call bcnormal([x,y,z],U_dummy,U_ext,2,y_isign,time,y_bc_type,y_bc_params,y_bc_target)
+    if (test_keyword_y == UserBC) then
+      call bcnormal([x,y,z],U_dummy,U_ext,2,y_isign,time,y_bc_type,y_bc_params,y_bc_target)
+    else
+      y_bc_type = test_keyword_y
+    endif
     y_bcMask(i,y_idx_Mask,k) = y_bc_type
    
     ! z face
-    call bcnormal([x,y,z],U_dummy,U_ext,3,z_isign,time,z_bc_type,z_bc_params,z_bc_target)
+    if (test_keyword_z == UserBC) then
+      call bcnormal([x,y,z],U_dummy,U_ext,3,z_isign,time,z_bc_type,z_bc_params,z_bc_target)
+    else
+      z_bc_type = test_keyword_z
+    endif
     z_bcMask(i,j,z_idx_Mask) = z_bc_type
-   
+    
     ! Computing the LODI system waves along X
     call compute_waves(i, j, k, 1, x_isign, &
                        x_bc_type, x_bc_params, x_bc_target, &
