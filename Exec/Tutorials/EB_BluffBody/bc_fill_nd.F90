@@ -227,7 +227,10 @@ contains
         sigma_out = 0.28d0
         beta = 1.0d0
 
-        u(1:3) = 0.d0
+        u(1) = vx_in
+        u(2) = vy_in
+        u(3) = 0.0d0
+
         eos_state % massfrac(1) = 1.d0
         eos_state % p = p_domain
         eos_state % rho = dens_domain
@@ -245,7 +248,9 @@ contains
         sigma_out = 0.28d0
         beta = 1.0d0
 
-        u(1:3) = 0.d0
+        u(1) = vx_in
+        u(2) = vy_in
+        u(3) = 0.0d0
         eos_state % massfrac(1) = 1.d0
         eos_state % p = p_domain
         eos_state % rho = dens_domain
@@ -262,7 +267,9 @@ contains
         sigma_out = 0.28d0
         beta = 1.0d0
 
-        u(1:3) = 0.d0
+        u(1) = vx_in
+        u(2) = vy_in
+        u(3) = 0.0d0
         eos_state % massfrac(1) = 1.d0
         eos_state % p = p_domain
         eos_state % rho = dens_domain

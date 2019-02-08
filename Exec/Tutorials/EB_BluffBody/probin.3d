@@ -23,8 +23,8 @@
   
   velerr = 1e20
   velgrad = 1000.0
-  max_velerr_lev = -3
-  max_velgrad_lev = -3
+  max_velerr_lev = 3
+  max_velgrad_lev = 3
 
 /
 
