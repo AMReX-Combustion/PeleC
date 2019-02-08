@@ -13,8 +13,8 @@ amr.n_cell           =  120   72   24
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 
-pelec.lo_bc       =  "UserBC"  "Outflow"  "Outflow"
-pelec.hi_bc       =  "Outflow"  "Outflow"  "Outflow"
+pelec.lo_bc       =  "UserBC"  "UserBC"  "UserBC"
+pelec.hi_bc       =  "UserBC"  "UserBC"  "UserBC"
 
 
 pelec.nscbc_adv = 0
