@@ -1528,8 +1528,25 @@ end subroutine impose_NSCBC
       L4 = relax_W * (qaux(i,j,k,QC)/probhi(idir)) * (q(i,j,k,QW) - TARGET_VZ) &
                      - ((1.0d0 - beta)*T4)
 
+    elseif (idir == 3) then
+    
+      if (isign == 1) then      
+         L5 = relax_W * ((q(i,j,k,QRHO)*qaux(i,j,k,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
+                       (q(i,j,k,QW) - TARGET_VZ) - ((1.0d0 - beta)*T5)
+      elseif (isign == -1) then
+         L1 = relax_W * ((q(i,j,k,QRHO)*qaux(i,j,k,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
+                         (q(i,j,k,QW) - TARGET_VZ)  -  ((1.0d0 - beta)*T1)
+      endif
+      
+      L2 = relax_W * (qaux(i,j,k,QC)/probhi(idir)) * (q(i,j,k,QU) - TARGET_VX) &
+                     - ((1.0d0 - beta)*T2)
+      L3 = relax_W * (qaux(i,j,k,QC)/probhi(idir)) * (q(i,j,k,QV) - TARGET_VY) &
+                     - ((1.0d0 - beta)*T3)
+      L4 = relax_T * (q(i,j,k,QRHO)*qaux(i,j,k,QC)*qaux(i,j,k,QRSPEC)/probhi(idir)) &
+                   * (q(i,j,k,QTEMP) - TARGET_TEMPERATURE) - ((1.0d0 - beta)*T4)
+    
     else
-      call bl_error("Error:: Inflow BC is not yet implemented for z dir in characteristic form")
+      call bl_error("Error:: Wait, is this the fourth dimension?")
     endif
             
   elseif ((bc_type == SlipWall).or.(bc_type == NoSlipWall)) then

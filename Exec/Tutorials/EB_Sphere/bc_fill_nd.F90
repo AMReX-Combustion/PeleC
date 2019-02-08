@@ -40,7 +40,7 @@ contains
     ! that the setup routines converted Outflow to FOEXTRAP.
 
     !     XLO
-    if ( (bc(1,1,1).eq.EXT_DIR.or.bc(1,1,1).eq.FOEXTRAP).and. adv_lo(1).lt.domlo(1)) then
+    if ( (bc(1,1,1).eq.EXT_DIR).and. adv_lo(1).lt.domlo(1)) then
        do i = adv_lo(1), domlo(1)-1
           x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
           do j = adv_lo(2), adv_hi(2)
@@ -54,7 +54,7 @@ contains
     end if
 
     !     XHI
-    if ( (bc(1,2,1).eq.EXT_DIR.or.bc(1,2,1).eq.FOEXTRAP).and. adv_hi(1).gt.domhi(1)) then
+    if ( (bc(1,2,1).eq.EXT_DIR).and. adv_hi(1).gt.domhi(1)) then
        do i = domhi(1)+1, adv_hi(1)
           x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
           do j = adv_lo(2), adv_hi(2)
@@ -69,7 +69,7 @@ contains
 
     if (dim .gt. 1) then
        !     YLO
-       if ( (bc(2,1,1).eq.EXT_DIR.or.bc(2,1,1).eq.FOEXTRAP).and. adv_lo(2).lt.domlo(2)) then
+       if ( (bc(2,1,1).eq.EXT_DIR).and. adv_lo(2).lt.domlo(2)) then
           do i = adv_lo(1), adv_hi(1)
              x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
              do j = adv_lo(2), domlo(2)-1
@@ -83,7 +83,7 @@ contains
        end if
 
        !     YHI
-       if ( (bc(2,2,1).eq.EXT_DIR.or.bc(2,2,1).eq.FOEXTRAP).and. adv_hi(2).gt.domhi(2)) then
+       if ( (bc(2,2,1).eq.EXT_DIR).and. adv_hi(2).gt.domhi(2)) then
           do i = adv_lo(1), adv_hi(1)
              x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
              do j = domhi(2)+1, adv_hi(2)
@@ -98,7 +98,7 @@ contains
 
        if (dim .gt. 2) then
           !     ZLO
-          if ( (bc(3,1,1).eq.EXT_DIR.or.bc(3,1,1).eq.FOEXTRAP).and. adv_lo(3).lt.domlo(3)) then
+          if ( (bc(3,1,1).eq.EXT_DIR).and. adv_lo(3).lt.domlo(3)) then
              do i = adv_lo(1), adv_hi(1)
                 x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
                 do j = adv_lo(2), adv_hi(2)
@@ -112,7 +112,7 @@ contains
           end if
 
           !     ZHI
-          if ( (bc(3,2,1).eq.EXT_DIR.or.bc(3,2,1).eq.FOEXTRAP).and. adv_hi(3).gt.domhi(3)) then
+          if ( (bc(3,2,1).eq.EXT_DIR).and. adv_hi(3).gt.domhi(3)) then
              do i = adv_lo(1), adv_hi(1)
                 x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
                 do j = adv_lo(2), adv_hi(2)
@@ -135,9 +135,9 @@ contains
     use probdata_module
     use eos_type_module
     use eos_module
-    use meth_params_module, only : URHO, UMX, UMZ, UTEMP, UEDEN, UEINT, UFS, NVAR
+    use meth_params_module, only : URHO, UMX, UMY, UMZ, UTEMP, UEDEN, UEINT, UFS, NVAR
     use network, only: nspec, naux
-    use prob_params_module, only : problo, probhi, dim
+    use prob_params_module, only : problo, probhi, dim, Interior, Inflow, Outflow, SlipWall, NoSlipWall
         
     use bl_constants_module, only: M_PI
     
@@ -155,6 +155,10 @@ contains
     double precision, optional, intent(out) :: bc_params(6)
     double precision, optional, intent(out) :: bc_target(5)
 
+    double precision :: relax_U, relax_V, relax_W, relax_T, beta, sigma_out
+    integer :: flag_nscbc, which_bc_type
+
+
     double precision :: u(3), rho_inv
     double precision :: r, rmax, xcen(dim)
     integer :: i
@@ -162,6 +166,24 @@ contains
     double precision :: holespace(dim), dist(dim), radius, holeRad
     integer :: nHoles, idholes(dim), d(dim)
     double precision :: pert
+
+    flag_nscbc = 0
+
+    ! When optional arguments are present, GC-NSCBC is activated
+    ! Generic values are auto-filled for numerical parameters,
+    ! but should be set by the user for each BC
+    ! Note that in the impose_NSCBC_xD.f90 routine, not all parameters are used in same time
+    if (present(bc_type).and.present(bc_params).and.present(bc_target)) then
+
+      flag_nscbc = 1
+      relax_U = 0.5d0 ! For inflow only, relax parameter for x_velocity
+      relax_V = 0.5d0 ! For inflow only, relax parameter for y_velocity
+      relax_W = 0.5d0 ! For inflow only, relax parameter for z_velocity
+      relax_T = 0.2d0 ! For inflow only, relax parameter for temperature
+      beta = 0.2d0  ! Control the contribution of transverse terms
+      sigma_out = 0.25d0 ! For outflow only, relax parameter
+      which_bc_type = Interior ! This is to ensure that nothing will be done if the user don't set anything
+    endif
 
     call build(eos_state)
 
@@ -180,6 +202,17 @@ contains
 
 
     if (sgn .eq. 1) then ! inflow: extrapolate none, set (Y,u,p,T), compute (rho,e)
+
+
+        relax_U = 0.20d0
+        relax_V = 0.20d0
+        relax_W = 1.0d0
+        relax_T = - 0.2d0
+        beta = 1.0d0
+
+        which_bc_type = Inflow
+
+
        r = 0.0
        rmax = 0.0
        do i = 1, dim
@@ -223,6 +256,12 @@ contains
 
        
     elseif (sgn .eq. -1) then ! ouflow: extrapolate (rho,Y,u), set p, compute (rho,e,T)
+
+          which_bc_type = Outflow
+          sigma_out = 0.28d0
+          beta = 1.0d0
+ 
+
           eos_state % p = pamb
           eos_state % rho = u_int(URHO)
           rho_inv = 1.d0 / eos_state % rho
@@ -237,6 +276,24 @@ contains
           u_ext(UTEMP) = eos_state % T
           u_ext(UFS:UFS+nspec-1) = eos_state % rho  *  eos_state % massfrac(1:nspec)
     endif
+
+      ! Here the optional parameters are filled by the local variables if they were present
+    if (flag_nscbc == 1) then
+      bc_type = which_bc_type
+      bc_params(1) = relax_T
+      bc_params(2) = relax_U
+      bc_params(3) = relax_V
+      bc_params(4) = relax_W
+      bc_params(5) = beta
+      bc_params(6) = sigma_out
+      bc_target(1) = U_ext(UMX)/U_ext(URHO)
+      bc_target(2) = U_ext(UMY)/U_ext(URHO)
+      bc_target(3) = U_ext(UMZ)/U_ext(URHO)
+      bc_target(4) = U_ext(UTEMP)
+      bc_target(5) = eos_state%p
+    end if
+
+
 
   call destroy(eos_state)
 

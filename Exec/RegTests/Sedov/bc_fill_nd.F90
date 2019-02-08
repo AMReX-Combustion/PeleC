@@ -177,26 +177,23 @@ contains
 
     ! for the Sedov problem, we will always set the state to the ambient conditions
 
-       call build(eos_state)
+    call build(eos_state)
 
-       eos_state % rho = dens_ambient
-       eos_state % p = p_ambient
-       eos_state % massfrac = 0.d0
-       eos_state % massfrac(1) = 1.d0
+    eos_state % rho = dens_ambient
+    eos_state % p = p_ambient
+    eos_state % massfrac = 0.d0
+    eos_state % massfrac(1) = 1.d0
 
-       call eos_rp(eos_state)
-u=0
-!       u_ext(URHO)   = eos_state % rho
-       u_ext(UMX)    = 0.d0
-       u_ext(UMY)    = 0.d0
-       u_ext(UMZ)    = 0.d0
-!       u_ext(UEINT)  = eos_state % rho * eos_state % e
-!       u_ext(UEDEN)  = u_ext(UEDEN)
-        u_ext(URHO ) = eos_state % rho
-        u_ext(UEINT) = eos_state % rho  *  eos_state % e
-        u_ext(UEDEN) = eos_state % rho  * (eos_state % e + 0.5d0 * (u(1)**2 + u(2)**2 + u(3)**2))
-        u_ext(UTEMP) = eos_state % T
-       u_ext(UFS:UFS+nspec-1)  = eos_state % rho * eos_state % massfrac(:)
+    call eos_rp(eos_state)
+    u(:)=0
+    u_ext(UMX)    = 0.d0
+    u_ext(UMY)    = 0.d0
+    u_ext(UMZ)    = 0.d0
+    u_ext(URHO ) = eos_state % rho
+    u_ext(UEINT) = eos_state % rho  *  eos_state % e
+    u_ext(UEDEN) = eos_state % rho  * (eos_state % e + 0.5d0 * (u(1)**2 + u(2)**2 + u(3)**2))
+    u_ext(UTEMP) = eos_state % T
+    u_ext(UFS:UFS+nspec-1)  = eos_state % rho * eos_state % massfrac(:)
 
 ! Here the optional parameters are filled by the local variables if they were present
     if (flag_nscbc == 1) then

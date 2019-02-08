@@ -12,23 +12,19 @@ amr.n_cell           =  256 256 256
 amr.n_cell           =  64 64 64
 #amr.n_cell           =  128 128 128
 
-# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
-# 0 = Interior           3 = Symmetry
-# 1 = Inflow             4 = SlipWall
-# 2 = Outflow            5 = NoSlipWall
-# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
-pelec.lo_bc       =  5 5 1 
-pelec.hi_bc       =  5 5 2 
-#pelec.lo_bc       =  2   4   4
-#pelec.hi_bc       =  2   4   4
 
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+# Interior, UserBC, Symmetry, SlipWall, NoSlipWall
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 
+pelec.lo_bc       =  "NoSlipWall"  "NoSlipWall"  "UserBC"
+pelec.hi_bc       =  "NoSlipWall"  "NoSlipWall"  "UserBC"
+ 
 # Problem setup
 pelec.eb_boundary_T = 300.
 pelec.eb_isothermal = 1
 eb_verbosity = 1
 eos_gamma = 1.4
-
 
 
 # WHICH PHYSICS
@@ -70,7 +66,7 @@ amr.check_int       = 200         # number of timesteps between checkpoints
 
 # PLOTFILES
 amr.plot_file       = eb2_sphere_plt  # root name of plotfile
-amr.plot_int        = 500          # number of timesteps between plotfiles
+amr.plot_int        = 200          # number of timesteps between plotfiles
 #amr.derive_plot_vars = ALL # density xmom ymom zmom eden Temp pressure  # these variables appear in the plotfile
 amr.derive_plot_vars = density x_velocity y_velocity z_velocity pressure # these variables appear in the plotfile
 
