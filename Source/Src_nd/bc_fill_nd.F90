@@ -28,10 +28,33 @@ contains
 
     integer          :: n
 
+    ! If the boundary conditions are Interior, Symmetry, SlipWall or NoSlipWall
+    ! we call filcc_nd to fill the ghost cells
+    
     do n = 1,NVAR
        call filcc_nd(adv(:,:,:,n),adv_lo,adv_hi,domlo,domhi,delta,xlo,bc(:,:,n))
     enddo
 
+    ! However, if the boundary condition is "User Defined" with the keyword UserBC
+    ! this means that we use EXT_DIR to prescribe "by hand" the values in the ghost cells.
+    ! Below is an example for the lo_x direction.
+    ! For a more complex example, please look at the bc_fill_nd.F90 file in Exec/RegTests/PMF
+    
+    !!     XLO
+    !if ( (bc(1,1,1).eq.EXT_DIR).and. adv_lo(1).lt.domlo(1)) then
+    !   do i = adv_lo(1), domlo(1)-1
+    !      x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
+    !      do j = adv_lo(2), adv_hi(2)
+    !         x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
+    !         do k = adv_lo(3), adv_hi(3)
+    !            x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
+    !            call bcnormal(x,adv(domlo(1),j,k,:),adv(i,j,k,:),1,+1,time)
+    !         end do
+    !      end do
+    !   end do
+    !end if
+
+    
   end subroutine pc_hypfill
 
   subroutine pc_reactfill(react,react_lo,react_hi,domlo,domhi,delta,xlo,time,bc) &
@@ -63,8 +86,13 @@ contains
 ! the physical target values (bc_target)
 ! and numerical parameters associated to the BC (bc_params)
 
-! Gghost-cells will be recomputed with the NSCBC theory
+! Ghost-cells will be recomputed with the NSCBC theory
 ! in the routine 'impose_NSCBC' located in Src_(dim)d
+
+! Note that the 'impose_NSCBC' routine is calling bcnormal with all the optional arguments
+! The bcnormal routine is also called by pc_hypfill to fill ghost cells. In that case,
+! the ghost cells are filled with the target state values, but will be recomputed with the NSCBC
+! theory just before the computation of advection and diffusion operators.
 
   subroutine bcnormal(x,u_int,u_ext,dir,sgn,time,bc_type,bc_params,bc_target)
 
@@ -106,14 +134,19 @@ contains
       relax_U = 0.5d0 ! For inflow only, relax parameter for x_velocity
       relax_V = 0.5d0 ! For inflow only, relax parameter for y_velocity
       relax_W = 0.5d0 ! For inflow only, relax parameter for z_velocity
-      relax_T = 0.2d0 ! For inflow only, relax parameter for temperature
-      beta = 0.2d0  ! Control the contribution of transverse terms
-      sigma_out = 0.6d0 ! For outflow only, relax parameter
+      relax_T = -0.2d0 ! For inflow only, relax parameter for temperature
+      beta = 1.0d0  ! Control the contribution of transverse terms, here they will be discarded
+      sigma_out = -0.6d0 ! For outflow only, relax parameter. A negative value means that the local Mach number will be used
       which_bc_type = Interior ! This is to ensure that nothing will be done if the user don't set anything
     endif
     
     call build(eos_state)
   
+    write(*,*) ' '
+    write(*,*) ' WARNING WARNING WARNING'
+    write(*,*) ' The default bcnormal routine in Src_nd has been called'
+    write(*,*) ' This is because you have the keyword UserBC in the input file'
+    call bl_abort("You have set UserBC in the input file, so you must provide your own bc_fill_nd.F90 routine")
   
     ! Below is an example where we impose outflow condition everywhere
     ! The user can impose any combination of BCs on all faces with the help of idir and isign
