@@ -61,17 +61,15 @@ These parameters, once read, are available in the `PeleC` object for use from c+
     # 2: HLLC
     pelec.riemann_solver    = 0     
 
-    # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
-    # 0 = Interior           3 = Symmetry
-    # 1 = Inflow             4 = SlipWall
-    # 2 = Outflow            5 = NoSlipWall
-    # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
+    # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+    # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
+    # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 
     #boundary condition at the lower face of each coordinate direction
-    pelec.lo_bc       =  0   1  0          
+    pelec.lo_bc       =  "Interior"  "UserBC"  "SlipWall"        
     
     #boundary condition at the upper face of each coordinate direction
-    pelec.hi_bc       =  0   2  0          
+    pelec.hi_bc       =  "Interior"  "UserBC"  "SlipWall"          
     
     #------------------------
     # TIME STEP CONTROL
