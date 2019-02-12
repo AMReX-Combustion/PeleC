@@ -78,12 +78,15 @@ PeleC::volWgtSum (const std::string& name,
     Real s = 0.0;
     const Box& box  = mfi.tilebox();
 
+    FArrayBox vol(box);
+    vol.setVal(1.0);
 #ifdef PELE_USE_EB
     const auto& flag_fab = flags[mfi];
     FabType typ = flag_fab.getType(box);
     if (typ == FabType::covered) {
       continue;
     }
+    vol.copy(vfrac[mfi], box, 0, box, 0, 1);
 #endif
 
     auto& fab = (*mf)[mfi];
@@ -91,18 +94,12 @@ PeleC::volWgtSum (const std::string& name,
     const int* lo   = box.loVect();
     const int* hi   = box.hiVect();
 
+    vol.mult(volume[mfi]);
 
     //
     // Note that this routine will do a volume weighted sum of
     // whatever quantity is passed in, not strictly the "mass".
     //
-    const auto& vfab = volume[mfi];
-
-    FArrayBox vol;
-    vol.resize(box);
-    vol.copy(vfrac[mfi], box, 0, box, 0, 1);
-    vol.mult(volume[mfi]);
-
     pc_summass(ARLIM_3D(lo),ARLIM_3D(hi),BL_TO_FORTRAN_3D(fab),
                ZFILL(dx),BL_TO_FORTRAN_3D(vol),&s);
 
