@@ -1775,56 +1775,8 @@ PeleC::init_mms()
 #endif
 
 void
-PeleC::reset_internal_energy(MultiFab& S_new, int ng)
-{
-    Real sum  = 0.;
-    Real sum0 = 0.;
-
-    if (parent->finestLevel() == 0 && print_energy_diagnostics)
-    {
-        // Pass in the multifab and the component
-        sum0 = volWgtSumMF(&S_new,Eden,true);
-    }
-
-    // Ensure (rho e) isn't too small or negative
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
-    for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
-    {
-        const Box& bx = mfi.growntilebox(ng);
-
-        reset_internal_e(ARLIM_3D(bx.loVect()), ARLIM_3D(bx.hiVect()),
-                         BL_TO_FORTRAN_3D(S_new[mfi]),
-			 print_fortran_warnings);
-    }
-
-    // Flush Fortran output
-
-    if (verbose)
-	flush_output();
-
-    if (parent->finestLevel() == 0 && print_energy_diagnostics)
-    {
-        // Pass in the multifab and the component
-        sum = volWgtSumMF(&S_new,Eden,true);
-#ifdef BL_LAZY
-	Lazy::QueueReduction( [=] () mutable {
-#endif
-		ParallelDescriptor::ReduceRealSum(sum0);
-		ParallelDescriptor::ReduceRealSum(sum);
-		if (ParallelDescriptor::IOProcessor() && std::abs(sum-sum0) > 0)
-		    std::cout << "(rho E) added from reset terms                 : " << sum-sum0 << " out of " << sum0 << std::endl;
-#ifdef BL_LAZY
-	    });
-#endif
-    }
-}
-
-void
 PeleC::computeTemp(MultiFab& S, int ng)
 {
-  reset_internal_energy(S, ng);
 
 #ifdef PELE_USE_EB
   auto const& fact = dynamic_cast<EBFArrayBoxFactory const&>(S.Factory());
@@ -1963,8 +1915,6 @@ PeleC::clean_state(MultiFab& S)
 
   //normalize_species(S);
 
-  //reset_internal_energy(S,S.nGrow());
-
   return frac_change;
 }
 
@@ -1977,8 +1927,6 @@ PeleC::clean_state(MultiFab& S,
   Real frac_change = enforce_min_density(S_old, S);
 
   //normalize_species(S);
-
-  //reset_internal_energy(S,S.nGrow());
 
   return frac_change;
 }
