@@ -433,6 +433,8 @@ public:
     void react_state(amrex::Real time, amrex::Real dt, bool init=false, amrex::MultiFab* A_aux = nullptr);
 #endif
 
+    void reset_internal_energy (amrex::MultiFab& State, int ng);
+
     void computeTemp (amrex::MultiFab& State, int ng);
 
     void getMOLSrcTerm (const amrex::MultiFab& S,
@@ -442,6 +444,7 @@ public:
 
     amrex::Real volWgtSum (const std::string& name, amrex::Real time, bool local=false, bool finemask=true);
     amrex::Real volWgtSquaredSum (const std::string& name, amrex::Real time, bool local=false);
+    amrex::Real volWgtSumMF (amrex::MultiFab* mf, int comp, bool local=false, bool finemask=false);
 
 
 #ifdef USE_MASA
