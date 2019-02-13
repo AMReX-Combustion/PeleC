@@ -186,8 +186,10 @@ PeleC::volWgtSumMF (MultiFab* mf, int comp, bool local, bool finemask) {
     const Real* dx      = geom.CellSize();
 
     BL_ASSERT(mf != 0);
-    const MultiFab& mask = getLevel(level+1).build_fine_mask();
-
+    MultiFab* mask;
+    if (level < parent->finestLevel() && finemask) {
+        mask = &(getLevel(level+1).build_fine_mask());
+    }
 #ifdef PELE_USE_EB
     auto const& fact = dynamic_cast<EBFArrayBoxFactory const&>(mf->Factory());
     auto const& flags = fact.getMultiEBCellFlagFab();
@@ -217,7 +219,7 @@ PeleC::volWgtSumMF (MultiFab* mf, int comp, bool local, bool finemask) {
 #endif
         vol.mult(volume[mfi]);
         if (level < parent->finestLevel() && finemask) {
-            vol.mult(mask[mfi]);
+            vol.mult((*mask)[mfi]);
         }
 
         //
