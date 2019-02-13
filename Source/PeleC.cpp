@@ -445,6 +445,9 @@ PeleC::PeleC (Amr&            papa,
                                                                       MFInfo(), Factory()));
   }
 
+#ifdef AMREX_PARTICLES
+    Sborder.define(grids,dmap,NUM_STATE,NUM_GROW,MFInfo(),Factory(
+#endif
   if (do_hydro)
   {
     Sborder.define(grids,dmap,NUM_STATE,NUM_GROW,MFInfo(),Factory());

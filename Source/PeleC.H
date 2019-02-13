@@ -198,6 +198,11 @@ public:
     void particle_est_time_step(amrex::Real& est_dt);
 
     //
+    //
+    // Derived quantities associated with particles
+    //
+    std::unique_ptr<amrex::MultiFab> particle_derive (const std::string& name, amrex::Real time, int ngrow);
+
     // Default cfl of particles in Particle class
     //
     static amrex::Real particle_cfl;
@@ -441,6 +446,10 @@ public:
                         amrex::Real                   flux_factor);
 
     amrex::Real volWgtSum (const std::string& name, amrex::Real time, bool local=false, bool finemask=true);
+
+    amrex::Real volWgtSumMF (amrex::MultiFab* mf, int comp, bool local=false);
+
+    amrex::Real volWgtSquaredSum (const std::string& name, amrex::Real time, bool local=false);
 
 #ifdef USE_MASA
     amrex::Real mms_volWgtSquaredSumDiff (int comp, amrex::Real time, bool local=false);

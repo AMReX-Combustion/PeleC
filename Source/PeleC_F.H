@@ -289,6 +289,17 @@ extern "C"
      const amrex::Real* time, const amrex::Real dx[], const amrex::Real* dt);
 #endif
 
+  void impose_NSCBC
+    (const int    lo[], const int    hi[],
+     const int domlo[], const int domhi[],
+     const BL_FORT_FAB_ARG(uin),
+     const BL_FORT_FAB_ARG(q),
+     const BL_FORT_FAB_ARG(qaux),
+     BL_FORT_IFAB_ARG(bcMask),
+     const int flag_nscbc_isAnyPerio, const int flag_nscbc_perio[], 
+     const amrex::Real* time, const amrex::Real dx[], const amrex::Real* dt,
+     const int& verbose);
+
   void set_bc_mask
     (const int    lo[], const int    hi[],
      const int domlo[], const int domhi[],

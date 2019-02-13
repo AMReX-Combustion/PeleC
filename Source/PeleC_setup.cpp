@@ -254,8 +254,8 @@ PeleC::variableSetUp ()
     pfld_spc = pfld_p + 1;
     n_pfld = pfld_spc + NumSpec; // increase this for multi-component droplets
 
-    std::cout << "n_pstate = " << n_pstate << std::endl << "declared components: " << SPRAY_COMPONENTS << std::endl;
-    BL_ASSERT(n_pstate == SPRAY_COMPONENTS);
+//  std::cout << "n_pstate = " << n_pstate << std::endl << "declared components: " << SPRAY_COMPONENTS << std::endl;
+//  BL_ASSERT(n_pstate == SPRAY_COMPONENTS);
 
 #endif
     
