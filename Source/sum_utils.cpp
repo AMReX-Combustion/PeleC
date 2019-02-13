@@ -64,8 +64,6 @@ PeleC::volWgtSum (const std::string& name,
   }
 
 #ifdef PELE_USE_EB
-  MultiFab::Multiply(*mf,vfrac,0,0,1,0);
-
   auto const& fact = dynamic_cast<EBFArrayBoxFactory const&>(mf->Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
 #endif
@@ -113,4 +111,69 @@ PeleC::volWgtSum (const std::string& name,
   return sum;
 }
 
+Real
+PeleC::volWgtSquaredSum (const std::string& name,
+			 Real               time,
+			 bool               local)
+{
+    BL_PROFILE("PeleC::volWgtSquaredSum()");
 
+    Real        sum     = 0.0;
+    const Real* dx      = geom.CellSize();
+    auto   mf      = derive(name,time,0);
+
+    BL_ASSERT(mf != 0);
+
+    if (level < parent->finestLevel())
+    {
+	const MultiFab& mask = getLevel(level+1).build_fine_mask();
+	MultiFab::Multiply(*mf, mask, 0, 0, 1, 0);
+    }
+
+#ifdef PELE_USE_EB
+    MultiFab::Multiply(*mf,vfrac,0,0,1,0);
+
+    auto const& fact = dynamic_cast<EBFArrayBoxFactory const&>(mf->Factory());
+    auto const& flags = fact.getMultiEBCellFlagFab();
+#endif
+
+#ifdef _OPENMP
+#pragma omp parallel reduction(+:sum)
+#endif
+    for (MFIter mfi(*mf,true); mfi.isValid(); ++mfi)
+    {
+        FArrayBox& fab = (*mf)[mfi];
+
+        Real s = 0.0;
+        const Box& box  = mfi.tilebox();
+        const int* lo   = box.loVect();
+        const int* hi   = box.hiVect();
+
+        FArrayBox vol(box);
+        vol.setVal(1.0);
+#ifdef PELE_USE_EB
+        const auto& flag_fab = flags[mfi];
+        FabType typ = flag_fab.getType(box);
+        if (typ == FabType::covered) {
+          continue;
+        }
+        vol.copy(vfrac[mfi], box, 0, box, 0, 1);
+#endif
+        vol.mult(volume[mfi]);
+        //
+        // Note that this routine will do a volume weighted sum of
+        // whatever quantity is passed in, not strictly the "mass".
+        //
+
+	pc_sumsquared(ARLIM_3D(lo),ARLIM_3D(hi),BL_TO_FORTRAN_3D(fab),
+		      ZFILL(dx),BL_TO_FORTRAN_3D(vol),&s);
+
+        sum += s;
+    }
+
+
+    if (!local)
+	ParallelDescriptor::ReduceRealSum(sum);
+
+    return sum;
+}

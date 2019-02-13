@@ -438,6 +438,8 @@ public:
                         amrex::Real                   flux_factor);
 
     amrex::Real volWgtSum (const std::string& name, amrex::Real time, bool local=false, bool finemask=true);
+    amrex::Real volWgtSquaredSum (const std::string& name, amrex::Real time, bool local=false);
+
 
 #ifdef USE_MASA
     amrex::Real mms_volWgtSquaredSumDiff (int comp, amrex::Real time, bool local=false);
