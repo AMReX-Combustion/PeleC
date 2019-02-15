@@ -821,217 +821,163 @@ contains
   subroutine riemann_md_vec( rl, ul, vl, v2l, pl, rel, spl, gamcl, &
        rr, ur, vr, v2r, pr, rer, spr, gamcr,&
        qint_iu, vgd, wgd, qint_gdpres, qint_gdgame, &
-       regd, rgd, ustar, gdnv_state, nsp, &
+       regd, rgd, ustar, &
+       gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, &
+       gdnv_state_e, gdnv_state_gam1, gdnv_state_cs, nsp, &
        uflx_rho, uflx_u, uflx_v, uflx_w, uflx_eden, uflx_eint, &
        bc_test_val, csmall, cav, VECLEN)
 
-    use eos_module
-    use meth_params_module, only : small_dens, small_pres
+    !$acc routine(eos_rp1) seq
+    !$acc routine(riemann_md_vec) seq
 
+    USE eos_module, ONLY: eos_rp1
+    USE meth_params_module, ONLY: small_dens, small_pres
 
     implicit none
 
-    ! Inputs
     integer, intent(in) :: nsp, VECLEN
-    double precision, intent(in), dimension(VECLEN) :: rl, ul, vl, v2l, pl, rel, gamcl 
-    double precision, intent(in), dimension(VECLEN) :: rr, ur, vr, v2r, pr, rer,  gamcr ! Right state
-    double precision, intent(in), dimension(VECLEN,nsp) :: spl, spr
-    ! always idir=1          integer, intent(in) :: idir, coord_type
+    double precision, intent(in) :: rl, ul, vl, v2l, pl, rel, gamcl
+    double precision, intent(in) :: rr, ur, vr, v2r, pr, rer, gamcr
+    double precision, intent(in), dimension(nsp) :: spl, spr
     integer, intent(in) :: bc_test_val
-    double precision, intent(in), dimension(VECLEN) :: csmall, cav
+    double precision, intent(in) :: csmall, cav
+    double precision, intent(out) :: rgd, regd, ustar
+    double precision, intent(out) :: qint_iu, vgd, wgd, qint_gdpres, qint_gdgame
+    double precision, intent(inout) :: gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac(nsp)
+    double precision, intent(out) :: gdnv_state_e, gdnv_state_gam1, gdnv_state_cs
+    double precision, intent(inout) :: uflx_rho, uflx_u, uflx_v, uflx_w, uflx_eden, uflx_eint
 
-    ! Work values sent back to compute passive scalar flux
-    double precision, intent(out), dimension(VECLEN) :: rgd, regd, ustar 
-    double precision, intent(out), dimension(VECLEN) :: qint_iu, vgd, wgd, qint_gdpres, qint_gdgame
-
-    ! Work arrays passed in becase allocation/construction is expensive, do it elsewhere
-    type(eos_t), intent(inout) :: gdnv_state
-
-
-    ! Outputs
-
-    double precision, intent(inout), dimension(VECLEN) :: uflx_rho, uflx_u, uflx_v, uflx_w, uflx_eden, uflx_eint
-
-    ! Local work variables
-    double precision, dimension(VECLEN) :: csr, csl, wl, wr, rhoetot, scr 
-    double precision, dimension(VECLEN) :: rstar, cstar, estar, pstar
-    double precision, dimension(VECLEN) :: ro, uo, po, reo, co, drho
-    double precision, dimension(VECLEN) :: sgnm, spin, spout, ushock, frac
-    double precision, dimension(VECLEN) :: wsmall, psmall, rsmall
-    double precision, dimension(VECLEN,nsp) :: sp
-
-    integer :: vii, n
-
-    ! Yuck.
+    double precision :: csr, csl, wl, wr, rhoetot, scr
+    double precision :: rstar, cstar, estar, pstar
+    double precision :: ro, uo, po, reo, co, drho
+    double precision :: sgnm, spin, spout, ushock, frac
+    double precision :: wsmall, psmall, rsmall
+    double precision, dimension(nsp) :: sp
+    logical :: mask
+    integer :: n
     double precision, parameter:: small = 1.d-8
-    real (amrex_real), parameter :: smallu = 1.e-12_amrex_real
-    real (amrex_real), parameter :: Hsmallu = 0.5e-12_amrex_real
+    double precision, parameter :: smallu = 1.e-12
+    double precision, parameter :: Hsmallu = 0.5e-12
 
     rsmall = small_dens
     wsmall = small_dens*csmall
     psmall = small_pres
 
-    do vii = 1, VECLEN
-       gdnv_state%rho = rl(vii)
-       gdnv_state%p = pl(vii)
-       !unncessary for gamma law
-       gdnv_state%massfrac = spl(vii,:)
-       !dir$ inline recursive
-       call eos_rp(gdnv_state)
-       csl(vii) = gdnv_state%cs
-    enddo
+    gdnv_state_rho = rl
+    gdnv_state_p = pl
+    gdnv_state_massfrac = spl(:)
+    call eos_rp1(gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, gdnv_state_e, gdnv_state_gam1, gdnv_state_cs, nsp)
+    csl = gdnv_state_cs
 
-    do vii = 1, VECLEN
-       gdnv_state%rho = rr(vii)
-       gdnv_state%p = pr(vii)
-       !unncessary for gamma law
-       gdnv_state%massfrac = spr(vii,:)
-       !dir$ inline recursive
-       call eos_rp(gdnv_state)
-       csr(vii) = gdnv_state%cs
-    enddo
+    gdnv_state_rho = rr
+    gdnv_state_p = pr
+    gdnv_state_massfrac = spr(:)
+    call eos_rp1(gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, gdnv_state_e, gdnv_state_gam1, gdnv_state_cs, nsp)
+    csr = gdnv_state_cs
 
     wl = sqrt(abs(gamcl*pl*rl))
     wl = merge(wsmall, wl, wl<wsmall)
-
     wr = sqrt(abs(gamcr*pr*rr))
     wr = merge(wsmall, wr, wr<wsmall)
-
     pstar = ((wr*pl + wl*pr) + wl*wr*(ul - ur))/(wl + wr)
     ustar = ((wl*ul + wr*ur) + (pl - pr))/(wl + wr)
-
     pstar = merge(psmall,pstar,pstar<psmall)
 
-    ro = merge(rl, rr, ustar > ZERO)
-    uo = merge(ul, ur, ustar > ZERO)
-    po = merge(pl, pr, ustar > ZERO)
+    mask = ustar > 0.d0
+    ro = merge(rl, rr, mask)
+    uo = merge(ul, ur, mask)
+    po = merge(pl, pr, mask)
+
     do n=1,nsp
-       sp(:,n) = merge(spl(:,n), spr(:,n), ustar > ZERO)
-    enddo
-    ! for symmetry preservation, if ustar is really small, then we
-    ! set it to zero
-    where(abs(ustar) < Hsmallu*(abs(ul) + abs(ur)) .or. ustar.eq.0)
-       ustar = ZERO
-       ro = HALF*(rl+rr)
-       uo = HALF*(ul+ur)
-       po = HALF*(pl+pr)
-    end where
-    do n=1,nsp
-       where(abs(ustar) < Hsmallu*(abs(ul) + abs(ur)) .or. ustar.eq.0)
-          sp(:,n) = HALF*(spl(:,n)+spr(:,n))
-       end where
+       sp(n) = merge(spl(n), spr(n), mask)
     enddo
 
-    do vii = 1, VECLEN
-       gdnv_state%rho = ro(vii)
-       gdnv_state%p = po(vii)
-       !unncessary for gamma law
-       gdnv_state%massfrac = sp(vii,:)
-       !dir$ inline recursive
-       call eos_rp(gdnv_state)
-       reo(vii) = gdnv_state%rho * gdnv_state%e
-       co(vii) = gdnv_state%cs
+    mask =  abs(ustar) < Hsmallu*(abs(ul) + abs(ur)) .or. ustar.eq.0
+    ustar = merge(0.d0, ustar, mask)
+    ro = merge(0.5d0*(rl+rr), ro, mask)
+    uo = merge(0.5d0*(ul+ur), uo, mask)
+    po = merge(0.5d0*(pl+pr), po, mask)
+
+    do n=1,nsp
+       sp(n) = merge(0.5d0*(spl(n)+spr(n)), sp(n), mask)
     enddo
+
+    gdnv_state_rho = ro
+    gdnv_state_p = po
+    gdnv_state_massfrac = sp(:)
+    call eos_rp1(gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, gdnv_state_e, gdnv_state_gam1, gdnv_state_cs, nsp)
+    reo = gdnv_state_rho * gdnv_state_e
+    co = gdnv_state_cs
 
     drho = (pstar - po)/co**2
     rstar = ro + drho
     rstar = merge(rsmall, rstar, rstar<rsmall)
 
-    ! At star state, mass fractions are upwinded, have rho, p.  Calc c and rhoe
-    do vii = 1, VECLEN
-       gdnv_state%rho = rstar(vii)
-       gdnv_state%p = pstar(vii)
-       gdnv_state%massfrac = sp(vii,:)
-       !dir$ inline recursive
-       call eos_rp(gdnv_state)
-       cstar(vii) = gdnv_state%cs
-       estar(vii) = gdnv_state%rho * gdnv_state%e
-    enddo
+    gdnv_state_rho = rstar
+    gdnv_state_p = pstar
+    gdnv_state_massfrac = sp(:)
+    call eos_rp1(gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, gdnv_state_e, gdnv_state_gam1, gdnv_state_cs, nsp)
+    cstar = gdnv_state_cs
+    estar = gdnv_state_rho * gdnv_state_e
 
-    ! No is there a vector version of sign? dunno.
-    do vii = 1, VECLEN
-       sgnm(vii) = sign(ONE,ustar(vii))
-    enddo
+    sgnm = sign(1.d0,ustar)
 
     spout = co - sgnm*uo
     spin = cstar - sgnm*ustar
+    ushock = 0.5d0*(spin + spout)
 
-    ushock = HALF*(spin + spout)
-
-    spout = merge(spout, ushock, pstar<po)
-    spin = merge(spin, ushock, pstar < po)
+    mask = pstar<po
+    spout = merge(spout, ushock, mask)
+    spin = merge(spin, ushock, mask)
 
     scr = merge(small*cav, spout-spin, spout .eq. spin)
+    frac = (1.d0 + (spout + spin)/scr)*0.5d0
+    frac = max(0.d0,min(1.d0,frac))
 
-    frac = (ONE + (spout + spin)/scr)*HALF
-    frac = max(ZERO,min(ONE,frac))
+    mask = ustar > 0.d0
+    vgd = merge(vl, vr, mask)
+    wgd = merge(v2l, v2r, mask)
 
-    vgd = merge(vl, vr, ustar > ZERO)
-    wgd = merge(v2l, v2r, ustar > ZERO)
+    mask = ustar .eq. 0.d0
+    vgd = merge(0.5d0*(vl+vr), vgd, mask)
+    wgd = merge(0.5d0*(v2l+v2r), wgd, mask)
+    rgd = frac*rstar + (1.d0 - frac)*ro
+    qint_iu = frac*ustar + (1.d0 - frac)*uo
+    qint_gdpres = frac*pstar + (1.d0 - frac)*po
 
-    where (ustar .eq. ZERO)
-       vgd = HALF*(vl+vr)
-       wgd = HALF*(v2l+v2r)
-    end where
+    gdnv_state_rho = rgd
+    gdnv_state_p = qint_gdpres
+    gdnv_state_massfrac = sp(:)
+    call eos_rp1(gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, gdnv_state_e, gdnv_state_gam1, gdnv_state_cs, nsp)
+    regd = gdnv_state_rho * gdnv_state_e
 
-    rgd = frac*rstar + (ONE - frac)*ro
+    mask = spout < 0.d0
+    rgd = merge(ro, rgd, mask)
+    qint_iu = merge(uo, qint_iu, mask)
+    qint_gdpres = merge(po, qint_gdpres, mask)
+    regd = merge(reo, regd, mask)
 
-    qint_iu = frac*ustar + (ONE - frac)*uo
-    qint_gdpres = frac*pstar + (ONE - frac)*po
+    mask = spin >= 0.d0
+    rgd = merge(rstar, rgd, mask)
+    qint_iu = merge(ustar, qint_iu, mask)
+    qint_gdpres = merge(pstar, qint_gdpres, mask)
+    regd = merge(estar, regd, mask)
 
-    do vii = 1, VECLEN
-       gdnv_state%rho = rgd(vii)
-       gdnv_state%p = qint_gdpres(vii)
-       gdnv_state%massfrac = sp(vii,:)
-       !dir$ inline recursive
-       call eos_rp(gdnv_state)
-       regd(vii) = gdnv_state%rho * gdnv_state%e
-    enddo
+    gdnv_state_rho = rgd
+    gdnv_state_p = qint_gdpres
+    gdnv_state_massfrac = sp(:)
+    call eos_rp1(gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, gdnv_state_e, gdnv_state_gam1, gdnv_state_cs, nsp)
+    regd = gdnv_state_rho * gdnv_state_e
 
-    where (spout < ZERO)
-       rgd = ro
-       qint_iu = uo
-       qint_gdpres = po
-       regd = reo
-    end where
-
-    where (spin >= ZERO) 
-       rgd = rstar
-       qint_iu = ustar
-       qint_gdpres = pstar
-       regd = estar
-    end where
-
-    do vii = 1, VECLEN
-       gdnv_state%rho = rgd(vii)
-       gdnv_state%p = qint_gdpres(vii)
-       gdnv_state%massfrac = sp(vii,:)
-       !dir$ inline recursive
-       call eos_rp(gdnv_state)
-       regd(vii) = gdnv_state%rho * gdnv_state%e
-    enddo
-
-    ! not sure what this should be for radiation?
-    qint_gdgame = qint_gdpres/regd + ONE
-
-    ! enforce that the fluxes through a symmetry plane or wall are zero
+    qint_gdgame = qint_gdpres/regd + 1.d0
     qint_iu = bc_test_val * qint_iu
-
-    ! Compute fluxes, order as conserved state (not q)
     uflx_rho = rgd*qint_iu
-
-    ! note: for axisymmetric geometries, we should not include the
-    ! pressure in the r-direction, since div{F} + grad{p} cannot
-    ! be written in a flux difference form
     uflx_u = uflx_rho*qint_iu + qint_gdpres
     uflx_v = uflx_rho*vgd
     uflx_w = uflx_rho*wgd
-
-    rhoetot = regd + HALF*rgd*(qint_iu**2 + vgd**2 + wgd**2)
-
+    rhoetot = regd + 0.5d0*rgd*(qint_iu**2 + vgd**2 + wgd**2)
     uflx_eden = qint_iu*(rhoetot + qint_gdpres)
     uflx_eint = qint_iu*regd
-
 
   end subroutine riemann_md_vec
 

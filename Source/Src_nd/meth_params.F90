@@ -149,6 +149,22 @@ module meth_params_module
   integer         , save :: do_acc
   integer         , save :: track_grid_losses
 
+  ! Create versions of these variables on the GPU
+  ! the device update is then done in PeleC_nd.f90
+  !$acc declare &
+  !$acc create(NVAR) &
+  !$acc create(URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP, UFA, UFS,UFX) &
+  !$acc create(QVAR) &
+  !$acc create(QRHO, QU, QV, QW, QPRES, QREINT, QTEMP) &
+  !$acc create(QGAME) &
+  !$acc create(QFS) &
+  !$acc create(nqaux, qc, qcsml, nadv)
+
+  !$acc declare &
+  !$acc create(small_dens) &
+  !$acc create(small_pres) &
+  !$acc create(plm_iorder)
+
   !acc declare &
   !acc create(levmsk_interior, levmsk_covered, levmsk_notcovered) &
   !acc create(levmsk_physbnd, difmag, small_dens) &
