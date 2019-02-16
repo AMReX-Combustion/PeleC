@@ -1,23 +1,13 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 stop_time = 6
-max_step = 5
+max_step = 2
 
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic = 1 1 0
 geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
 geometry.prob_lo     =   0.0        0.0       1.0
-geometry.prob_hi     =   2.5     2.5    3.5
-amr.n_cell           =   64       64         64
-
-#geometry.prob_lo     =   0.5        0.5       0.5
-#geometry.prob_hi     =   3.0        3.0       3.0
-#amr.n_cell           =   64         64        64 
-#geometry.prob_lo     =   0.25        0.25       0.25
-#geometry.prob_hi     =   1.5        1.5       1.5
-#amr.n_cell           =   32         32        32 
-#geometry.prob_lo     =   0.0        0.0       3.34375
-#geometry.prob_hi     =   0.3125     0.3125    3.65625
-#amr.n_cell           =   32         32        32
+geometry.prob_hi     =   2.5        2.5       3.5
+amr.n_cell           =   64         64        64
 
 #pelec.Riemann    = 0     # 0: HLL,  1: JBB,  2: HLLC
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
@@ -71,5 +61,7 @@ pelec.diffuse_spec=1
 pelec.diffuse_vel=1
 pelec.sdc_iters = 2
 pelec.flame_trac_name = HO2
+pelec.do_mol_AD=1
+eb2.geom_type=all_regular
 
 amrex.signal_handling=0

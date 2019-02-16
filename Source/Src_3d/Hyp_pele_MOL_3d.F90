@@ -59,7 +59,7 @@ module hyp_advection_module
     use slope_module, only : slopex, slopey, slopez
     use actual_network, only : nspec, naux
     use eos_type_module
-    use eos_module, only : eos_t, eos_rp
+    use eos_module, only : eos_rp1
     use riemann_module, only: cmpflx, shock
     use amrex_constants_module
     use amrex_fort_module, only : amrex_real
@@ -141,8 +141,13 @@ module hyp_advection_module
     integer :: nextra
     integer, parameter :: coord_type = 0
     integer, parameter :: bc_test_val = 1
-
-    type (eos_t) :: eos_state, gdnv_state
+    
+    real(amrex_real) :: eos_state_rho
+    real(amrex_real) :: eos_state_p
+    real(amrex_real) :: eos_state_massfrac(nspec)
+    real(amrex_real) :: eos_state_gam1
+    real(amrex_real) :: eos_state_e
+    real(amrex_real) :: eos_state_cs
 
     integer, parameter :: R_RHO = 1
     integer, parameter :: R_UN  = 2
