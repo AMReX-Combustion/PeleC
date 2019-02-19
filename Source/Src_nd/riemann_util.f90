@@ -7,104 +7,133 @@ module riemann_util_module
 
 contains
 
-  pure function bc_test(idir, i, j, bcMask, domlo, domhi) result (f)
+  pure function bc_test(idir, i, j, &
+                        bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
+                        domlo, domhi) result (f)
 
     use prob_params_module, only : physbc_lo, physbc_hi, Symmetry, SlipWall, NoSlipWall
-    use meth_params_module, only: i_nscbc
     
-    integer, intent(in) :: idir, i, j, bcMask, domlo(*), domhi(*)
+    integer, intent(in) :: idir, i, j, domlo(*), domhi(*)
+    integer, intent(in) :: bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2
+    integer, intent(in) :: bcMask(bcMask_l1:bcMask_h1,bcMask_l2:bcMask_h2)
     integer :: f
 
     ! Enforce that fluxes through a symmetry plane or wall are hard zero.
     f = 1
-
-    if (i_nscbc == 1) then
-   
-      if (idir == 1) then
-         if (i == domlo(1) .and. &
-              (physbc_lo(1) == Symmetry .or. &
-              physbc_lo(1) == SlipWall .or. &
-              bcMask == SlipWall .or. &
-              bcMask == NoSlipWall .or. &
-              physbc_lo(1) == NoSlipWall) ) then
+      
+    if (idir == 1) then
+      
+      if (i == domlo(1) .and. &
+              (bcMask(i,j) == Symmetry .or. &
+              bcMask(i,j) == SlipWall .or. &
+              bcMask(i,j) == NoSlipWall )) then
             f = 0
-         endif
-  
-         if (i == domhi(1)+1 .and. &
-              (physbc_hi(1) == Symmetry .or. &
-              physbc_hi(1) == SlipWall .or. &
-              bcMask == SlipWall .or. &
-              bcMask == NoSlipWall .or. &
-              physbc_hi(1) == NoSlipWall) ) then
-            f = 0
-         endif
-      end if
-  
-      if (idir == 2) then
-         if (j == domlo(2) .and. &
-              (physbc_lo(2) == Symmetry .or. &
-              physbc_lo(2) == SlipWall .or. &
-              bcMask == SlipWall .or. &
-              bcMask == NoSlipWall .or. &
-              physbc_lo(2) == NoSlipWall) ) then
-            f = 0
-         endif
-  
-         if (j == domhi(2)+1 .and. &
-              (physbc_hi(2) == Symmetry .or. &
-              physbc_hi(2) == SlipWall .or. &
-              bcMask == SlipWall .or. &
-              bcMask == NoSlipWall .or. &
-              physbc_hi(2) == NoSlipWall) ) then
-            f = 0
-         end if
       endif
       
-    elseif (i_nscbc == 0) then
-  
-       if (idir == 1) then
-         if (i == domlo(1) .and. &
-              (physbc_lo(1) == Symmetry .or. &
-               physbc_lo(1) == SlipWall .or. &
-               physbc_lo(1) == NoSlipWall) ) then
+      if (i == domhi(1)+1 .and. &
+              (bcMask(i,j) == Symmetry .or. &
+              bcMask(i,j) == SlipWall .or. &
+              bcMask(i,j) == NoSlipWall )) then
             f = 0
-         endif
-  
-         if (i == domhi(1)+1 .and. &
-              (physbc_hi(1) == Symmetry .or. &
-               physbc_hi(1) == SlipWall .or. &
-               physbc_hi(1) == NoSlipWall) ) then
-            f = 0
-         endif
-      end if
-  
-      if (idir == 2) then
-         if (j == domlo(2) .and. &
-              (physbc_lo(2) == Symmetry .or. &
-               physbc_lo(2) == SlipWall .or. &
-               physbc_lo(2) == NoSlipWall) ) then
-            f = 0
-         endif
-  
-         if (j == domhi(2)+1 .and. &
-              (physbc_hi(2) == Symmetry .or. &
-               physbc_hi(2) == SlipWall .or. &
-               physbc_hi(2) == NoSlipWall) ) then
-            f = 0
-         end if
       endif
-  
+    end if
+      
+    if (idir == 2) then
+            
+      if (j == domlo(2) .and. &
+              (bcMask(i,j) == Symmetry .or. &
+              bcMask(i,j) == SlipWall .or. &
+              bcMask(i,j) == NoSlipWall )) then
+            f = 0
+      endif
+      
+      if (j == domhi(2)+1 .and. &
+              (bcMask(i,j) == Symmetry .or. &
+              bcMask(i,j) == SlipWall .or. &
+              bcMask(i,j) == NoSlipWall )) then
+            f = 0
+      end if
     endif
   
   end function bc_test
+  
+  pure function bc_test_3d(idir, i, j, k, &
+                        bcMask, bcMask_l1, bcMask_l2, bcMask_l3, bcMask_h1, bcMask_h2, bcMask_h3, &
+                        domlo, domhi) result (f)
+
+    use prob_params_module, only : physbc_lo, physbc_hi, Symmetry, SlipWall, NoSlipWall
+    
+    integer, intent(in) :: idir, i, j, k, domlo(*), domhi(*)
+    integer, intent(in) :: bcMask_l1, bcMask_l2, bcMask_l3, bcMask_h1, bcMask_h2, bcMask_h3
+    integer, intent(in) :: bcMask(bcMask_l1:bcMask_h1,bcMask_l2:bcMask_h2,bcMask_l3:bcMask_h3)
+    integer :: f
+
+    ! Enforce that fluxes through a symmetry plane or wall are hard zero.
+    f = 1
+     
+    if (idir == 1) then
+      
+      if (i == domlo(1) .and. &
+              (bcMask(i,j,k) == SlipWall .or. &
+               bcMask(i,j,k) == Symmetry .or. &
+               bcMask(i,j,k) == NoSlipWall  )) then
+            f = 0
+      endif
+      
+      if (i == domhi(1)+1 .and. &
+              (bcMask(i,j,k) == SlipWall .or. &
+               bcMask(i,j,k) == Symmetry .or. &
+               bcMask(i,j,k) == NoSlipWall  )) then
+            f = 0
+      endif
+    end if
+      
+    if (idir == 2) then
+            
+      if (j == domlo(2) .and. &
+              (bcMask(i,j,k) == SlipWall .or. &
+               bcMask(i,j,k) == Symmetry .or. &
+               bcMask(i,j,k) == NoSlipWall  )) then
+            f = 0
+      endif
+      
+      if (j == domhi(2)+1 .and. &
+              (bcMask(i,j,k) == SlipWall .or. &
+               bcMask(i,j,k) == Symmetry .or. &
+               bcMask(i,j,k) == NoSlipWall  )) then
+            f = 0
+      end if
+    endif
+      
+    if (idir == 3) then
+            
+      if (k == domlo(3) .and. &
+              (bcMask(i,j,k) == SlipWall .or. &
+               bcMask(i,j,k) == Symmetry .or. &
+               bcMask(i,j,k) == NoSlipWall  )) then
+            f = 0
+      endif
+      
+      if (k == domhi(3)+1 .and. &
+              (bcMask(i,j,k) == SlipWall .or. &
+               bcMask(i,j,k) == Symmetry .or. &
+               bcMask(i,j,k) == NoSlipWall  )) then
+            f = 0
+      end if
+    endif
+        
+  end function bc_test_3d
 
   pure subroutine outflow_hack(ul,ur,vl,vr,v2l,v2r,rel,rer,&
-       idir, i, j, domlo, domhi)
+                               bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
+                               idir, i, j, domlo, domhi)
 
     use prob_params_module, only : physbc_lo, physbc_hi, Outflow
 
     double precision, intent(inout) :: ul,ur,vl,vr,v2l,v2r,rel,rer
     integer, intent(in) :: idir, i, j, domlo(*), domhi(*)
+    integer, intent(in) :: bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2
+    integer, intent(in) :: bcMask(bcMask_l1:bcMask_h1,bcMask_l2:bcMask_h2)
     integer :: idx
 
     if (idir == 1) then
@@ -113,14 +142,14 @@ contains
        idx = j
     endif
 
-    if (idx == domlo(idir) .and. physbc_lo(idir) == Outflow) then
+    if (idx == domlo(idir) .and. bcMask(i,j) == Outflow) then
        ul = ur
        vl = vr
        v2l = v2r
        rel = rer
     endif
 
-    if (idx == domhi(idir)+1 .and. physbc_hi(idir) == Outflow) then
+    if (idx == domhi(idir)+1 .and. bcMask(i,j) == Outflow) then
        ur = ul
        vr = vl
        v2r = v2l
@@ -606,14 +635,6 @@ contains
     double precision, parameter:: small = 1.d-8
     real (kind=dp_t), parameter :: smallu = 1.e-12_dp_t
 
-
-    ! Double yuck.
-    ! TODO: Do this outside, pass in a flag to set left = right or right=left
-    !call outflow_hack(ul,ur,vl,vr,v2l,v2r,pl,pr,rel,rer,&
-
-    !                  idir, i, j, domlo, domhi)
-    !
-
     wsmall = small_dens*csmall
 
     gdnv_state%rho = rl
@@ -846,13 +867,6 @@ contains
     real (kind=dp_t), parameter :: smallu = 1.e-12_dp_t
     real (kind=dp_t), parameter :: Hsmallu = 0.5e-12_dp_t
 
-
-    ! Double yuck.
-    ! TODO: Do this outside, pass in a flag to set left = right or right=left
-    !call outflow_hack(ul,ur,vl,vr,v2l,v2r,pl,pr,rel,rer,&
-
-    !                  idir, i, j, domlo, domhi)
-    !
     rsmall = small_dens
     wsmall = small_dens*csmall
     psmall = small_pres

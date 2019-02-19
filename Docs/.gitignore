@@ -1,0 +1,3 @@
+doxygen_output/*
+sphinx_doc/_build/*
+/doxy.log

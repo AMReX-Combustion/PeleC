@@ -24,6 +24,8 @@ contains
 ! ::: :: dx          => (const)  grid spacing in X direction
 ! ::: :: dy          => (const)  grid spacing in Y direction
 ! ::: :: dt          => (const)  time stepsize
+! ::: :: x_bcMask    => (const) bc_type in X direction on X edges
+! ::: :: y_bcMask    => (const) bc_type in Y direction on Y edges
 ! ::: :: flux1      <=  (modify) flux in X direction on X edges
 ! ::: :: flux2      <=  (modify) flux in Y direction on Y edges
 ! ::: ----------------------------------------------------------------
@@ -33,7 +35,8 @@ contains
                      srcQ, src_l1, src_l2, src_h1, src_h2, &
                      ilo1, ilo2, ihi1, ihi2, dx, dy, dt, &
                      uout, uout_l1, uout_l2, uout_h1, uout_h2, &
-                     bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
+                     x_bcMask, x_bcMask_l1, x_bcMask_l2, x_bcMask_h1, x_bcMask_h2, &
+                     y_bcMask, y_bcMask_l1, y_bcMask_l2, y_bcMask_h1, y_bcMask_h2, &
                      flux1, fd1_l1, fd1_l2, fd1_h1, fd1_h2, &
                      flux2, fd2_l1, fd2_l2, fd2_h1, fd2_h2, &
                      q1, q1_l1, q1_l2, q1_h1, q1_h2, &
@@ -59,7 +62,8 @@ contains
     integer dloga_l1, dloga_l2, dloga_h1, dloga_h2
     integer src_l1, src_l2, src_h1, src_h2
     integer uout_l1, uout_l2, uout_h1, uout_h2
-    integer bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2
+    integer x_bcMask_l1, x_bcMask_l2, x_bcMask_h1, x_bcMask_h2
+    integer y_bcMask_l1, y_bcMask_l2, y_bcMask_h1, y_bcMask_h2
     integer fd1_l1, fd1_l2, fd1_h1, fd1_h2
     integer fd2_l1, fd2_l2, fd2_h1, fd2_h2
     integer q1_l1, q1_l2, q1_h1, q1_h2
@@ -70,17 +74,18 @@ contains
     integer ilo1, ilo2, ihi1, ihi2
     integer domlo(2), domhi(2)
   
-    integer bcMask(bcMask_l1:bcMask_h1,bcMask_l2:bcMask_h2,2)
+    integer x_bcMask(x_bcMask_l1:x_bcMask_h1,x_bcMask_l2:x_bcMask_h2)
+    integer y_bcMask(y_bcMask_l1:y_bcMask_h1,y_bcMask_l2:y_bcMask_h2)
 
     double precision dx, dy, dt
-    double precision     q(qd_l1:qd_h1,qd_l2:qd_h2,QVAR)
-    double precision  qaux(qa_l1:qa_h1,qa_l2:qa_h2,NQAUX)
+    double precision q(qd_l1:qd_h1,qd_l2:qd_h2,QVAR)
+    double precision qaux(qa_l1:qa_h1,qa_l2:qa_h2,NQAUX)
     double precision flatn(qd_l1:qd_h1,qd_l2:qd_h2)
-    double precision  srcQ(src_l1:src_h1,src_l2:src_h2,QVAR)
+    double precision srcQ(src_l1:src_h1,src_l2:src_h2,QVAR)
     double precision dloga(dloga_l1:dloga_h1,dloga_l2:dloga_h2)
     double precision q1(q1_l1:q1_h1,q1_l2:q1_h2,NGDNV)
     double precision q2(q2_l1:q2_h1,q2_l2:q2_h2,NGDNV)
-    double precision  uout(uout_l1:uout_h1,uout_l2:uout_h2,NVAR)
+    double precision uout(uout_l1:uout_h1,uout_l2:uout_h2,NVAR)
     double precision flux1(fd1_l1:fd1_h1,fd1_l2:fd1_h2,NVAR)
     double precision flux2(fd2_l1:fd2_h1,fd2_l2:fd2_h2,NVAR)
     double precision area1(area1_l1:area1_h1,area1_l2:area1_h2)
@@ -158,7 +163,7 @@ contains
                 fx, ilo1, ilo2-1, ihi1+1, ihi2+1, &
                 qgdxtmp, q1_l1, q1_l2, q1_h1, q1_h2, &
                 qaux(:,:,QGAMC), qaux(:,:,QCSML), qaux(:,:,QC), qd_l1, qd_l2, qd_h1, qd_h2, &
-                bcMask, &
+                x_bcMask, x_bcMask_l1, x_bcMask_l2, x_bcMask_h1, x_bcMask_h2, &
                 shk, ilo1-1, ilo2-1, ihi1+1, ihi2+1, &
                 1, ilo1, ihi1, ilo2-1, ihi2+1, domlo, domhi)
 
@@ -168,7 +173,7 @@ contains
                 fy, ilo1-1, ilo2, ihi1+1, ihi2+1, &
                 q2, q2_l1, q2_l2, q2_h1, q2_h2, &
                 qaux(:,:,QGAMC), qaux(:,:,QCSML), qaux(:,:,QC), qd_l1, qd_l2, qd_h1, qd_h2, &
-                bcMask, &
+                y_bcMask, y_bcMask_l1, y_bcMask_l2, y_bcMask_h1, y_bcMask_h2, &
                 shk, ilo1-1, ilo2-1, ihi1+1, ihi2+1, &
                 2, ilo1-1, ihi1+1, ilo2, ihi2, domlo, domhi)
 
@@ -190,7 +195,7 @@ contains
                 flux1, fd1_l1, fd1_l2, fd1_h1, fd1_h2, &
                 q1, q1_l1, q1_l2, q1_h1, q1_h2, &
                 qaux(:,:,QGAMC), qaux(:,:,QCSML), qaux(:,:,QC), qd_l1, qd_l2, qd_h1, qd_h2, &
-                bcMask, &
+                x_bcMask, x_bcMask_l1, x_bcMask_l2, x_bcMask_h1, x_bcMask_h2, &
                 shk, ilo1-1, ilo2-1, ihi1+1, ihi2+1, &
                 1, ilo1, ihi1, ilo2, ihi2, domlo, domhi)
 
@@ -214,7 +219,7 @@ contains
                 flux2, fd2_l1, fd2_l2, fd2_h1, fd2_h2, &
                 q2, q2_l1, q2_l2, q2_h1, q2_h2, &
                 qaux(:,:,QGAMC), qaux(:,:,QCSML), qaux(:,:,QC), qd_l1, qd_l2, qd_h1, qd_h2, &
-                bcMask, &
+                y_bcMask, y_bcMask_l1, y_bcMask_l2, y_bcMask_h1, y_bcMask_h2, &
                 shk, ilo1-1, ilo2-1, ihi1+1, ihi2+1, &
                 2, ilo1, ihi1, ilo2, ihi2, domlo, domhi)
 

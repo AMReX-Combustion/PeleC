@@ -162,6 +162,7 @@ contains
                 eos_state % T = pmf_vals(1)
 
                 eos_state % p = pamb
+
                 u = 0
                 u(dim) = pmf_vals(2)
 

@@ -42,7 +42,6 @@ module hyp_advection_module
                      flag, fglo, fghi, &
                      ebg, Nebg, ebflux, nebflux, &
 #endif
-                     bcMask, blo, bhi, &
                      h) bind(C,name="pc_hyp_mol_flux")
 
     use amrex_mempool_module, only : bl_allocate, bl_deallocate
@@ -74,7 +73,6 @@ module hyp_advection_module
     integer, intent(in) ::    fltd_lo(2), fltd_hi(2)
     integer, intent(in) ::        Vlo(2),     Vhi(2)
     integer, intent(in) ::        Dlo(2),     Dhi(2)
-    integer, intent(in) ::        blo(2),     bhi(2)
     double precision, intent(in) :: h(2)
 
 #ifdef PELEC_USE_EB
@@ -97,7 +95,6 @@ module hyp_advection_module
     double precision, intent(inout) :: flux2(fd2_lo(1):fd2_hi(1),fd2_lo(2):fd2_hi(2),NVAR)
     double precision, intent(inout) ::     V(   Vlo(1):   Vhi(1),   Vlo(2):   Vhi(2))
     double precision, intent(inout) ::     D(   Dlo(1):   Dhi(1),   Dlo(2):   Dhi(2),NVAR)
-    integer,          intent(inout) ::bcMask(   blo(1):   bhi(1),   blo(2):   bhi(2),2)
 
     integer :: i, j, nsp, L, ivar
     integer :: qt_lo(2), qt_hi(2)

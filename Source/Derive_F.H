@@ -7,6 +7,24 @@ extern "C"
 {
 #endif
 
+  void pc_derspectrac
+    (BL_FORT_FAB_ARG_3D(der),const int* nvar,
+     const BL_FORT_FAB_ARG_3D(data),const int* ncomp,
+     const int* lo, const int* hi,
+     const int* domain_lo, const int* domain_hi,
+     const amrex::Real* delta, const amrex::Real* xlo,
+     const amrex::Real* time, const amrex::Real* dt, const int* bcrec, 
+     const int* level, const int* grid_no, const int* idx);
+
+  void pc_dertemp
+    (BL_FORT_FAB_ARG_3D(der),const int* nvar,
+     const BL_FORT_FAB_ARG_3D(data),const int* ncomp,
+     const int* lo, const int* hi,
+     const int* domain_lo, const int* domain_hi,
+     const amrex::Real* delta, const amrex::Real* xlo,
+     const amrex::Real* time, const amrex::Real* dt, const int* bcrec, 
+     const int* level, const int* grid_no);
+
   void pc_derpres
     (BL_FORT_FAB_ARG_3D(der),const int* nvar,
      const BL_FORT_FAB_ARG_3D(data),const int* ncomp,

@@ -384,14 +384,6 @@ PeleC::setPlotVariables ()
 {
     AmrLevel::setPlotVariables();
 
-    // Don't add the SDC_React_Type data to the plotfile, we only
-    // want to store it in the checkpoints.
-
-#ifdef REACTIONS
-    for (int i = 0; i < desc_lst[SDC_React_Type].nComp(); i++)
-	parent->deleteStatePlotVar(desc_lst[SDC_React_Type].name(i));
-#endif
-
     ParmParse pp("pelec");
 
 #ifdef AMREX_USE_EB
@@ -420,36 +412,42 @@ PeleC::setPlotVariables ()
 
     bool plot_massfrac = false;
     pp.query("plot_massfrac",plot_massfrac);
-    if (plot_massfrac)
-    {
-	if (plot_massfrac)
-	{
-	    //
-	    // Get the number of species from the network model.
-	    //
-	    get_num_spec(&NumSpec);
-	    //
-	    // Get the species names from the network model.
-	    //
-	    for (int i = 0; i < NumSpec; i++)
-	    {
-		int len = 20;
-		Vector<int> int_spec_names(len);
-		//
-		// This call return the actual length of each string in "len"
-		//
-		get_spec_names(int_spec_names.dataPtr(),&i,&len);
-		char* spec_name = new char[len+1];
-		for (int j = 0; j < len; j++)
-		    spec_name[j] = int_spec_names[j];
-		spec_name[len] = '\0';
-		string spec_string = "Y(";
-		spec_string += spec_name;
-		spec_string += ')';
-		parent->addDerivePlotVar(spec_string);
-		delete [] spec_name;
-	    }
-	}
+//    if (plot_massfrac)
+//    {
+//	if (plot_massfrac)
+//	{
+//	    //
+//	    // Get the number of species from the network model.
+//	    //
+//	    get_num_spec(&NumSpec);
+//	    //
+//	    // Get the species names from the network model.
+//	    //
+//	    for (int i = 0; i < NumSpec; i++)
+//	    {
+//		int len = 20;
+//		Vector<int> int_spec_names(len);
+//		//
+//		// This call return the actual length of each string in "len"
+//		//
+//		get_spec_names(int_spec_names.dataPtr(),&i,&len);
+//		char* spec_name = new char[len+1];
+//		for (int j = 0; j < len; j++)
+//		    spec_name[j] = int_spec_names[j];
+//		spec_name[len] = '\0';
+//		string spec_string = "Y(";
+//		spec_string += spec_name;
+//		spec_string += ')';
+//		parent->addDerivePlotVar(spec_string);
+//		delete [] spec_name;
+//	    }
+//	}
+//    }
+ 
+    if (plot_massfrac) {
+        parent->addDerivePlotVar("massfrac");
+    } else {
+        parent->deleteDerivePlotVar("massfrac");
     }
     
     bool plot_moleFrac = false;
@@ -586,7 +584,8 @@ PeleC::writeJobInfo (const std::string& dir)
     }
 
     jobInfoFile << " Boundary conditions\n";
-    Vector<int> lo_bc_out(BL_SPACEDIM), hi_bc_out(BL_SPACEDIM);
+    Vector<string> lo_bc_out(BL_SPACEDIM);
+    Vector<string> hi_bc_out(BL_SPACEDIM);
     ParmParse pp("pelec");
     pp.getarr("lo_bc",lo_bc_out,0,BL_SPACEDIM);
     pp.getarr("hi_bc",hi_bc_out,0,BL_SPACEDIM);
@@ -594,20 +593,16 @@ PeleC::writeJobInfo (const std::string& dir)
 
     // these names correspond to the integer flags setup in the
     // PeleC_setup.cpp
-    const char* names_bc[] =
-	{ "interior", "inflow", "outflow",
-	  "symmetry", "slipwall", "noslipwall" };
 
-
-    jobInfoFile << "   -x: " << names_bc[lo_bc_out[0]] << "\n";
-    jobInfoFile << "   +x: " << names_bc[hi_bc_out[0]] << "\n";
+    jobInfoFile << "   -x: " << lo_bc_out[0] << "\n";
+    jobInfoFile << "   +x: " << hi_bc_out[0] << "\n";
     if (BL_SPACEDIM >= 2) {
-	jobInfoFile << "   -y: " << names_bc[lo_bc_out[1]] << "\n";
-	jobInfoFile << "   +y: " << names_bc[hi_bc_out[1]] << "\n";
+	jobInfoFile << "   -y: " << lo_bc_out[1] << "\n";
+	jobInfoFile << "   +y: " << hi_bc_out[1] << "\n";
     }
     if (BL_SPACEDIM == 3) {
-	jobInfoFile << "   -z: " << names_bc[lo_bc_out[2]] << "\n";
-	jobInfoFile << "   +z: " << names_bc[hi_bc_out[2]] << "\n";
+	jobInfoFile << "   -z: " << lo_bc_out[2] << "\n";
+	jobInfoFile << "   +z: " << hi_bc_out[2] << "\n";
     }
 
     jobInfoFile << "\n\n";

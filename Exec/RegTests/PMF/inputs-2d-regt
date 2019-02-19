@@ -1,7 +1,7 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 stop_time = 6
 max_step = 30 
-
+max_step = 100 
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic = 1 0
 geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
@@ -9,14 +9,12 @@ geometry.prob_lo     =   0.0        1.0
 geometry.prob_hi     =   0.3125     6.0
 amr.n_cell           =   8          128
 
-#pelec.Riemann    = 0     # 0: HLL,  1: JBB,  2: HLLC
-# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
-# 0 = Interior           3 = Symmetry
-# 1 = Inflow             4 = SlipWall
-# 2 = Outflow            5 = NoSlipWall
-# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
-pelec.lo_bc       =  0   1
-pelec.hi_bc       =  0   2
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+# Interior, UserBC, Symmetry, SlipWall, NoSlipWall
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+pelec.lo_bc       =  "Interior" "UserBC"
+pelec.hi_bc       =  "Interior" "UserBC"
+
 
 # TIME STEP CONTROL
 pelec.cfl            = 0.5     # cfl number for hyperbolic system
@@ -39,7 +37,7 @@ amr.max_grid_size   = 64
 amr.n_error_buf     = 2 8 2 2 # number of buffer cells in error est
 
 # CHECKPOINT FILES
-amr.checkpoint_files_output = 1
+amr.checkpoint_files_output = 0
 amr.check_file              = chk    # root name of checkpoint file
 amr.check_int               = 500    # number of timesteps between checkpoints
 
@@ -51,7 +49,8 @@ amr.plot_int          = 100     # number of timesteps between plotfiles
 #PROBIN FILENAME
 amr.probin_file = probin-regt
 
-amr.derive_plot_vars = density xmom ymom zmom eden Temp pressure x_velocity y_velocity
+amr.derive_plot_vars = density xmom ymom zmom eden Temp pressure x_velocity y_velocity magvort kineng divu magvel radvel magmom
+
 pelec.plot_rhoy = 0
 pelec.plot_massfrac = 1
 pelec.do_react = 1

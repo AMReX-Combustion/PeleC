@@ -1,33 +1,48 @@
-   subroutine set_bc_mask(lo, hi, domlo, domhi, &
-                          bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2) &
-      bind(C, name="set_bc_mask")
- 
-      use prob_params_module, only : physbc_lo, physbc_hi, problo, probhi, &
-                                   Interior, Inflow, Outflow, Symmetry, SlipWall, NoSlipWall
-    
-      implicit none
+module bc_mask_module
+
+  private
+  public set_bc_mask
+
+contains
+
+  subroutine set_bc_mask(lo, hi, domlo, domhi, &
+                         x_bcMask, x_bcMask_l1, x_bcMask_l2, x_bcMask_h1, x_bcMask_h2, &
+                         y_bcMask, y_bcMask_l1, y_bcMask_l2, y_bcMask_h1, y_bcMask_h2) &
+                         bind(C, name="set_bc_mask")
+      
+  
+    use prob_params_module, only : physbc_lo, physbc_hi, problo, probhi
    
-     integer, intent(in   ) :: lo(2), hi(2), domlo(2), domhi(2)
-     integer, intent(in   ) :: bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2
-     integer, intent(inout) :: bcMask(bcMask_l1:bcMask_h1,bcMask_l2:bcMask_h2,2)
+    implicit none
+     
+  
+    integer, intent(in) :: lo(2), hi(2)
+    integer, intent(in) :: domlo(2), domhi(2)
+  
+    integer, intent(in) :: x_bcMask_l1, x_bcMask_l2, x_bcMask_h1, x_bcMask_h2
+    integer, intent(in) :: y_bcMask_l1, y_bcMask_l2, y_bcMask_h1, y_bcMask_h2
+  
+    integer, intent(inout) :: x_bcMask(x_bcMask_l1:x_bcMask_h1,x_bcMask_l2:x_bcMask_h2)
+    integer, intent(inout) :: y_bcMask(y_bcMask_l1:y_bcMask_h1,y_bcMask_l2:y_bcMask_h2)
+  
+    if (x_bcMask_l1 == domlo(1)) then
+      x_bcMask(domlo(1),  x_bcMask_l2:x_bcMask_h2) = physbc_lo(1)
+    end if
+    
+    if (x_bcMask_h1 == domhi(1)+1) then
+      x_bcMask(domhi(1)+1,x_bcMask_l2:x_bcMask_h2) = physbc_hi(1)
+    end if
+    
+    if (y_bcMask_l2 == domlo(2)) then
+      y_bcMask(y_bcMask_l1:y_bcMask_h1,domlo(2)) = physbc_lo(2)
+    end if
 
-     ! comp=1 holds physical bc type (Inflow, Outflow, NoSlipWall
-     ! comp=2 hold flag for whether is adiabatic (=0) or isothermal (=1)   TODO: check this
+    if (y_bcMask_h2 == domhi(2)+1) then
+      y_bcMask(y_bcMask_l1:y_bcMask_h1,domhi(2)+1) = physbc_hi(2)
+    end if
+   
+  end subroutine set_bc_mask
 
-     if (bcMask_l1 < domlo(1)) then
-        bcMask(domlo(1),bcMask_l2:bcMask_h2  ,1) = physbc_lo(1)
-     end if
+end module bc_mask_module
 
-     if (bcMask_h1 > domhi(1)) then
-        bcMask(domhi(1)+1,bcMask_l2:bcMask_h2,1) = physbc_hi(1)
-     end if
 
-     if (bcMask_l2 < domlo(2)) then
-        bcMask(bcMask_l1:bcMask_h1,domlo(2)  ,1) = physbc_lo(2)
-     end if
-
-     if (bcMask_h2 > domhi(2)) then
-        bcMask(bcMask_l1:bcMask_h1,domhi(2)+1,1) = physbc_hi(2)
-     end if
-
-   end subroutine set_bc_mask

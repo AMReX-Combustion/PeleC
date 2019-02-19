@@ -52,7 +52,7 @@ contains
     double precision     c( qd_l1: qd_h1)
     double precision  csml( qd_l1: qd_h1)
     
-    integer, intent(inout) :: bcMask(qd_l1:qd_h1,2)
+    integer, intent(inout) :: bcMask(qd_l1:qd_h1)
 
     ! Local variables
     integer i
@@ -128,7 +128,7 @@ contains
     double precision :: smallc(ilo:ihi+1)
     double precision :: uflx(uflx_l1:uflx_h1, NVAR)
     double precision ::  qint(qg_l1:qg_h1, NGDNV)
-    integer :: bcMask(qd_l1:qd_h1,2)
+    integer :: bcMask(qd_l1:qd_h1)
 
     integer :: ilo,ihi
     integer :: n, nqp, ipassive
@@ -633,7 +633,7 @@ contains
                        bcMask, qd_l1, qd_h1, &
                        ilo,ihi,domlo,domhi)
 
-    use prob_params_module, only : physbc_lo, physbc_hi, Outflow, Symmetry
+    use prob_params_module, only : physbc_lo, physbc_hi, Symmetry
     double precision, parameter:: small = 1.d-8
 
     integer ilo,ihi
@@ -650,7 +650,7 @@ contains
     double precision gamcl(ilo:ihi+1), gamcr(ilo:ihi+1)
     double precision  uflx(uflx_l1:uflx_h1, NVAR)
     double precision  qint( qg_l1: qg_h1, NGDNV)
-    integer :: bcMask(qd_l1:qd_h1,2)
+    integer :: bcMask(qd_l1:qd_h1)
 
     double precision rgdnv, regdnv, ustar, v1gdnv, v2gdnv
     double precision rl, ul, v1l, v2l, pl, rel
@@ -663,17 +663,8 @@ contains
     double precision wsmall, csmall
     integer ipassive, n, nqp
     integer k
-    logical :: fix_mass_flux_lo, fix_mass_flux_hi
 
     ! Solve Riemann Problem
-
-    fix_mass_flux_lo = (fix_mass_flux == 1) .and. &
-                       (physbc_lo(1) == Outflow) .and. &
-                       (ilo == domlo(1))
-
-    fix_mass_flux_hi = (fix_mass_flux == 1) .and. &
-                       (physbc_hi(1) == Outflow) .and. &
-                       (ihi == domhi(1))
 
     do k = ilo, ihi+1
        rl  = ql(k,QRHO)
@@ -792,18 +783,6 @@ contains
        endif
 
        if (k == 0 .and. physbc_lo(1) == Symmetry) qint(k,GDU) = ZERO
-
-       if (fix_mass_flux_lo .and. k == domlo(1) .and. qint(k,GDU) >= ZERO) then
-          rgdnv    = ql(k,QRHO)
-          qint(k,GDU) = ql(k,QU)
-          regdnv   = ql(k,QREINT)
-       end if
-
-       if (fix_mass_flux_hi .and. k == domhi(1)+1 .and. qint(k,GDU) <= ZERO) then
-          rgdnv    = qr(k,QRHO)
-          qint(k,GDU) = qr(k,QU)
-          regdnv   = qr(k,QREINT)
-       end if
 
        ! Compute fluxes, order as conserved state (not q)
 
