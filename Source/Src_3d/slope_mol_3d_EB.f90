@@ -8,10 +8,6 @@ module slope_module
 
 contains
 
-! ::: 
-! ::: ------------------------------------------------------------------
-! ::: 
-
       subroutine slopex(q,flatn,qd_lo,qd_hi, &
                         dqx,qt_lo,qt_hi, &
                         ilo1,ilo2,ilo3,ihi1,ihi2,ihi3,qvar,nqaux,&
@@ -53,8 +49,7 @@ contains
       integer :: nbr(-1:1,-1:1,-1:1)
       logical :: flagArrayL, flagArrayR
 
-      !$acc data present(dqx,q,qd_lo,qd_hi,qt_lo,qt_hi,ilo1,ilo2,ihi1,ihi2,ilo3,ihi3,qvar,nqaux,domlo,domhi,qaux,qa_lo,qa_hi,flag,fglo,fghi)
-      !$acc parallel loop gang vector collapse(3) private(nbr,dlft,drgt,flagarrayl,flagarrayr,n,dcen,dlim)
+      !$acc parallel loop gang vector collapse(3) private(nbr,dlft,drgt,flagarrayl,flagarrayr,n,dcen,dlim) present(dqx,q,qd_lo,qd_hi,qt_lo,qt_hi,ilo1,ilo2,ihi1,ihi2,ilo3,ihi3,qvar,nqaux,domlo,domhi,qaux,qa_lo,qa_hi,flag,fglo,fghi)
       do k = ilo3, ihi3
          do j = ilo2, ihi2
             do i = ilo1, ihi1
@@ -88,7 +83,6 @@ contains
          enddo
       enddo
       !$acc end parallel
-      !$acc end data
 
     end subroutine slopex
 
@@ -133,8 +127,7 @@ contains
       integer :: nbr(-1:1,-1:1,-1:1)
       logical :: flagArrayL, flagArrayR
 
-      !$acc data present(dqy,q,qd_lo,qd_hi,qt_lo,qt_hi,ilo1,ilo2,ihi1,ihi2,ilo3,ihi3,qvar,nqaux,domlo,domhi,qaux,qa_lo,qa_hi,flag,fglo,fghi)
-      !$acc parallel loop gang vector collapse(3) private(nbr,dlft,drgt,flagarrayl,flagarrayr,n,dcen,dlim)
+      !$acc parallel loop gang vector collapse(3) private(nbr,dlft,drgt,flagarrayl,flagarrayr,n,dcen,dlim) present(dqy,q,qd_lo,qd_hi,qt_lo,qt_hi,ilo1,ilo2,ihi1,ihi2,ilo3,ihi3,qvar,nqaux,domlo,domhi,qaux,qa_lo,qa_hi,flag,fglo,fghi)
       do k = ilo3, ihi3
          do j = ilo2, ihi2
             do i = ilo1, ihi1
@@ -168,7 +161,6 @@ contains
          enddo
       enddo
       !$acc end parallel
-      !$acc end data
 
     end subroutine slopey
 
@@ -213,8 +205,7 @@ contains
       integer :: nbr(-1:1,-1:1,-1:1)
       logical :: flagArrayL, flagArrayR
 
-      !$acc data present(dqz,q,qd_lo,qd_hi,qt_lo,qt_hi,ilo1,ilo2,ihi1,ihi2,ilo3,ihi3,qvar,nqaux,domlo,domhi,qaux,qa_lo,qa_hi,flag,fglo,fghi)
-      !$acc parallel loop gang vector collapse(3) private(nbr,dlft,drgt,flagarrayl,flagarrayr,n,dcen,dlim)
+      !$acc parallel loop gang vector collapse(3) private(nbr,dlft,drgt,flagarrayl,flagarrayr,n,dcen,dlim) present(dqz,q,qd_lo,qd_hi,qt_lo,qt_hi,ilo1,ilo2,ihi1,ihi2,ilo3,ihi3,qvar,nqaux,domlo,domhi,qaux,qa_lo,qa_hi,flag,fglo,fghi)
       do k = ilo3, ihi3
          do j = ilo2, ihi2
             do i = ilo1, ihi1
@@ -248,7 +239,6 @@ contains
          enddo
       enddo
       !$acc end parallel
-      !$acc end data
 
     end subroutine slopez
 

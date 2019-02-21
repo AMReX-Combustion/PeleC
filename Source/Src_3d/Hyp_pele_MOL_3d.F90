@@ -177,17 +177,18 @@ module hyp_advection_module
     do L=1,3
        qt_lo(L) = lo(L) - nextra
        qt_hi(L) = hi(L) + nextra
-       !if (qt_lo(L)-1 .lt. qd_lo(L) .or. qt_hi(L)+1 .gt. qd_hi(L)) then
-       !   stop 1
-       !endif
+       if (qt_lo(L)-1 .lt. qd_lo(L) .or. qt_hi(L)+1 .gt. qd_hi(L)) then
+          stop 1
+       endif
     enddo
 
     allocate(dqx(qt_lo(1):qt_hi(1), qt_lo(2):qt_hi(2), qt_lo(3):qt_hi(3), 1:QVAR))
     allocate(dqy(qt_lo(1):qt_hi(1), qt_lo(2):qt_hi(2), qt_lo(3):qt_hi(3), 1:QVAR))
     allocate(dqz(qt_lo(1):qt_hi(1), qt_lo(2):qt_hi(2), qt_lo(3):qt_hi(3), 1:QVAR))
 
-    !$acc data create(dqx,dqy,dqz) copy(flux1,flux2,flux3,d) copyin(v,ru,inv_mwt,ax,ay,az,q,flatn,qd_lo,qd_hi,qt_lo,qt_hi,ilo1,ilo2,ilo3,ihi1,ihi2,ihi3,qvar,nqaux,domlo,domhi,qaux,qa_lo,qa_hi,flag,fglo,fghi,lo,hi)
-    !$acc parallel loop gang vector collapse(4)
+    !$acc enter data create(dqx,dqy,dqz) copyin(flux1,flux2,flux3,d) copyin(v,ru,inv_mwt,ax,ay,az,q,flatn,qd_lo,qd_hi,qt_lo,qt_hi,ilo1,ilo2,ilo3,ihi1,ihi2,ihi3,qvar,nqaux,domlo,domhi,qaux,qa_lo,qa_hi,flag,fglo,fghi,lo,hi)
+
+    !$acc parallel loop gang vector collapse(4) present(qt_lo,dqx)
     do n = 1, qvar
        do k = qt_lo(3), qt_hi(3)
           do j = qt_lo(2), qt_hi(2)
@@ -208,7 +209,7 @@ module hyp_advection_module
                   flag,fglo,fghi)
     end if
 
-    !$acc parallel loop gang vector collapse(3) private(qtempl,qtempr,gamc_l,rhoe_l,rhoe_r,gamc_r,u_gd, v_gd, w_gd, p_gd, game_gd, re_gd, r_gd, ustar, eos_state_rho, eos_state_p, eos_state_massfrac, eos_state_e, eos_state_gam1, eos_state_cs, flux_tmp, csmall, cavg, vic, ivar)
+    !$acc parallel loop gang vector collapse(3) private(qtempl,qtempr,gamc_l,rhoe_l,rhoe_r,gamc_r,u_gd,v_gd,w_gd,p_gd,game_gd,re_gd,r_gd,ustar,eos_state_rho,eos_state_p,eos_state_massfrac,eos_state_e,eos_state_gam1,eos_state_cs,flux_tmp,csmall,cavg,vic,ivar) present(q,qaux,dqx,ax,flux1)
     do k = ilo3, ihi3
        do j = ilo2, ihi2
           do i = ilo1+1, ihi1
@@ -292,7 +293,7 @@ module hyp_advection_module
     enddo
     !$acc end parallel
 
-    !$acc parallel loop gang vector collapse(4)
+    !$acc parallel loop gang vector collapse(4) present(qt_lo,dqy)
     do n = 1, qvar
        do k = qt_lo(3), qt_hi(3)
           do j = qt_lo(2), qt_hi(2)
@@ -313,10 +314,10 @@ module hyp_advection_module
                   flag,fglo,fghi)
     end if
 
-    !$acc parallel loop gang vector collapse(3) private(qtempl,qtempr,gamc_l,rhoe_l,rhoe_r,gamc_r,u_gd, v_gd, w_gd, p_gd, game_gd, re_gd, r_gd, ustar, eos_state_rho, eos_state_p, eos_state_massfrac, eos_state_e, eos_state_gam1, eos_state_cs, flux_tmp, csmall, cavg, vic, ivar)
-    do k = lo(3)-nextra, hi(3)+nextra
-       do j = lo(2)-nextra+1, hi(2)+nextra
-          do i = lo(1)-nextra, hi(1)+nextra
+    !$acc parallel loop gang vector collapse(3) private(qtempl,qtempr,gamc_l,rhoe_l,rhoe_r,gamc_r,u_gd,v_gd,w_gd,p_gd,game_gd,re_gd,r_gd,ustar,eos_state_rho,eos_state_p,eos_state_massfrac,eos_state_e,eos_state_gam1,eos_state_cs,flux_tmp,csmall,cavg,vic,ivar) present(dqy,qaux,q,ay,flux2)
+    do k = ilo3, ihi3
+       do j = ilo2+1, ihi2
+          do i = ilo1, ihi1
              qtempl(R_UN) = q(i,j-1,k,QV) + 0.5d0 * ((dqy(i,j-1,k,2) - dqy(i,j-1,k,1)) / q(i,j-1,k,QRHO))
              qtempl(R_P) = q(i,j-1,k,QPRES) + 0.5d0 * (dqy(i,j-1,k,1) + dqy(i,j-1,k,2)) * qaux(i,j-1,k,QC)
              qtempl(R_UT1) = q(i,j-1,k,QU) + 0.5d0 * dqy(i,j-1,k,3)
@@ -398,7 +399,7 @@ module hyp_advection_module
     enddo
     !$acc end parallel
 
-    !$acc parallel loop gang vector collapse(4)
+    !$acc parallel loop gang vector collapse(4) present(qt_lo,dqz)
     do n = 1, qvar
        do k = qt_lo(3), qt_hi(3)
           do j = qt_lo(2), qt_hi(2)
@@ -419,10 +420,10 @@ module hyp_advection_module
                   flag,fglo,fghi)
     end if
 
-    !$acc parallel loop gang vector collapse(3) private(qtempl,qtempr,gamc_l,rhoe_l,rhoe_r,gamc_r,u_gd, v_gd, w_gd, p_gd, game_gd, re_gd, r_gd, ustar, eos_state_rho, eos_state_p, eos_state_massfrac, eos_state_e, eos_state_gam1, eos_state_cs, flux_tmp, csmall, cavg, vic, ivar)
-    do k = lo(3)-nextra+1, hi(3)+nextra
-       do j = lo(2)-nextra, hi(2)+nextra
-          do i = lo(1)-nextra, hi(1)+nextra
+    !$acc parallel loop gang vector collapse(3) private(qtempl,qtempr,gamc_l,rhoe_l,rhoe_r,gamc_r,u_gd,v_gd,w_gd,p_gd,game_gd,re_gd,r_gd,ustar,eos_state_rho,eos_state_p,eos_state_massfrac,eos_state_e,eos_state_gam1,eos_state_cs,flux_tmp,csmall,cavg,vic,ivar) present(q,qaux,dqz,az,flux3)
+    do k = ilo3+1, ihi3
+       do j = ilo2, ihi2
+          do i = ilo1, ihi1
              qtempl(R_UN) = q(i,j,k-1,QW) + 0.5d0 * ((dqz(i,j,k-1,2) - dqz(i,j,k-1,1)) / q(i,j,k-1,QRHO))
              qtempl(R_P) = q(i,j,k-1,QPRES) + 0.5d0 * (dqz(i,j,k-1,1) + dqz(i,j,k-1,2)) * qaux(i,j,k-1,QC)
              qtempl(R_UT1) = q(i,j,k-1,QU) + 0.5d0 * dqz(i,j,k-1,3)
@@ -507,7 +508,7 @@ module hyp_advection_module
     enddo
     !$acc end parallel
 
-    !$acc parallel loop gang vector collapse(4)
+    !$acc parallel loop gang vector collapse(4) present(d,flux1,flux2,flux3,v)
     do ivar=1,NVAR
        do k = lo(3)-nextra+1, hi(3)+nextra-1
           do j = lo(2)-nextra+1, hi(2)+nextra-1
@@ -520,7 +521,7 @@ module hyp_advection_module
        enddo
     enddo
     !$acc end parallel
-    !$acc end data
+    !$acc exit data delete(dqx,dqy,dqz) copyout(flux1,flux2,flux3,d) delete(v,ru,inv_mwt,ax,ay,az,q,flatn,qd_lo,qd_hi,qt_lo,qt_hi,ilo1,ilo2,ilo3,ihi1,ihi2,ihi3,qvar,nqaux,domlo,domhi,qaux,qa_lo,qa_hi,flag,fglo,fghi,lo,hi)
 
     deallocate(dqx)
     deallocate(dqy)

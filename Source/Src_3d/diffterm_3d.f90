@@ -116,11 +116,11 @@ contains
     double precision :: dlnpk, gfack(lo(3):hi(3)+1)
     double precision :: X(lo(1)-1:hi(1)+1,lo(2)-1:hi(2)+1,lo(3)-1:hi(3)+1,1:nspec)
     double precision :: hii(lo(1)-1:hi(1)+1,lo(2)-1:hi(2)+1,lo(3)-1:hi(3)+1,1:nspec)
-
     double precision, parameter :: twoThirds = 2.d0/3.d0
     double precision :: dxinv(3)
-    !$acc routine(eos_ytx_vec) gang nohost
-    !$acc routine(eos_hi_vec) gang nohost
+
+    !$acc routine(eos_ytx_vec) gang
+    !$acc routine(eos_hi_vec) gang
 
     dxinv = 1.d0/deltax
 
@@ -128,15 +128,15 @@ contains
     gfacj = dxinv(2)
     gfack = dxinv(3)
 
-    !$acc data copyin(dlnpi,dlnpj,dlnpk,hi,lo,ax,ay,az,tx,ty,tz,dx,dy,dz,lamx,lamy,lamz,gfaci,gfacj,gfack,mux,muy,muz,xix,xiy,xiz,dxinv,v,hii,x,q,nspec,qfs,qvar,qfs,dmnlo,dmnhi,physbc_lo,physbc_hi) create(vc) copy(fx,fy,fz) copyout(d)
+    !$acc enter data copyin(dlnpi,dlnpj,dlnpk,hi,lo,ax,ay,az,tx,ty,tz,dx,dy,dz,lamx,lamy,lamz,gfaci,gfacj,gfack,mux,muy,muz,xix,xiy,xiz,dxinv,v,hii,x,q,nspec,qfs,qvar,qfs,dmnlo,dmnhi,physbc_lo,physbc_hi) create(vc) copyin(fx,fy,fz) create(d)
 
-    !$acc parallel
+    !$acc parallel present(q,x,lo,hi,hii)
     call eos_ytx_vec(q,x,lo,hi,nspec,qfs,qvar)
     call eos_hi_vec(q,hii,lo,hi,nspec,qtemp,qvar,qfs)
     !$acc end parallel
 
-    !$acc kernels
-    !$acc loop collapse(3)
+    !$acc kernels present(dlnpi,dlnpj,dlnpk,hi,lo,ax,ay,az,tx,ty,tz,dx,dy,dz,lamx,lamy,lamz,gfaci,gfacj,gfack,mux,muy,muz,xix,xiy,xiz,dxinv,v,hii,x,q,nspec,qfs,qvar,qfs,dmnlo,dmnhi,physbc_lo,physbc_hi,vc,fx,fy,fz,d)
+    !$acc loop collapse(3) private(dtdx,dudx,dvdx,dwdx,dudy,dvdy,dudz,dwdz,tauxx,tauxy,tauxz,uface1,uface2,uface3)
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)+1
@@ -170,7 +170,6 @@ contains
           enddo
        enddo
     enddo
-    !$acc wait(1)
     !$acc loop seq
     do n=1,nspec
        !$acc loop collapse(3)
@@ -420,7 +419,7 @@ contains
        end do
     end do
     !$acc end kernels
-    !$acc end data
+    !$acc exit data delete(dlnpi,dlnpj,dlnpk,hi,lo,ax,ay,az,tx,ty,tz,dx,dy,dz,lamx,lamy,lamz,gfaci,gfacj,gfack,mux,muy,muz,xix,xiy,xiz,dxinv,v,hii,x,q,nspec,qfs,qvar,qfs,dmnlo,dmnhi,physbc_lo,physbc_hi) delete(vc) copyout(fx,fy,fz) copyout(d)
 
   end subroutine pc_diffterm
 
