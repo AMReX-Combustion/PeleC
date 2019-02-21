@@ -49,7 +49,14 @@ contains
              td(i,j,1:dim) = FOURTH*dxinv(2)*(Q(i,j+1,QU:QV)+Q(i-1,j+1,QU:QV)-Q(i,j-1,QU:QV)-Q(i-1,j-1,QU:QV))
           enddo
        enddo
+    else
+       do j=lo(2),hi(2)+1
+          do i=lo(1),hi(1)
+             td(i,j,1:dim) = FOURTH*dxinv(1)*(Q(i+1,j,QU:QV)+Q(i+1,j-1,QU:QV)-Q(i-1,j,QU:QV)-Q(i-1,j-1,QU:QV))
+          enddo
+       enddo
     endif
+    
   end subroutine pc_compute_tangential_vel_derivs
 
 #ifdef PELEC_USE_EB
