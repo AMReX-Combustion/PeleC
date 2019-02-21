@@ -1,6 +1,7 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 stop_time = 6
-max_step = 1000
+max_step = 10
+max_step = 6000
 
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic = 0
@@ -15,8 +16,8 @@ amr.n_cell           =   128
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
-pelec.lo_bc       =   "UserBC"
-pelec.hi_bc       =   "UserBC"
+pelec.lo_bc       =  "Hard"
+pelec.hi_bc       =  "Hard"
 
 # TIME STEP CONTROL
 pelec.cfl            = 0.5     # cfl number for hyperbolic system
