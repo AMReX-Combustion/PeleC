@@ -266,6 +266,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
                                              geom.CellSize(), &d);
           }
 #ifdef PELE_USE_EB
+          /*
           if (typ == FabType::singlevalued) {
             // Reset tangential derivatives to avoid using covered (invalid) data
             if (Ncut > 0) {
@@ -283,7 +284,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
             }
           } else if (typ == FabType::multivalued) {
             amrex::Abort("multi-valued eb tangential derivatives to be implemented");
-          }
+          }*/
 #endif
         }  // diffuse_vel
 #endif

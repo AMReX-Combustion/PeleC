@@ -26,66 +26,176 @@ contains
 
     use prob_params_module, only : physbc_lo, physbc_hi
     use meth_params_module, only : QVAR, QU, QV, QW
-    use amrex_constants_module
 
     implicit none
 
     integer, intent(in   ) ::   lo(3),  hi(3)
     integer, intent(in   ) ::  dlo(3), dhi(3)
     integer, intent(in   ) ::  Qlo(3), Qhi(3)
-    integer, intent(inout) :: tdlo(3),tdhi(3)
+    integer, intent(in   ) :: tdlo(3),tdhi(3)
     integer, intent(in   ) :: idir
     real(rt), intent(in   ) ::  Q( Qlo(1): Qhi(1), Qlo(2): Qhi(2), Qlo(3): Qhi(3),QVAR)
-    real(rt), intent(inout) :: td(tdlo(1):tdhi(1),tdlo(2):tdhi(2),tdlo(3):tdhi(3),6)
+    real(rt), intent(out  ) :: td(tdlo(1):tdhi(1),tdlo(2):tdhi(2),tdlo(3):tdhi(3),6)
     real(rt), intent(in   ) :: deltax(3)
 
     integer :: i, j, k
     real(rt) :: dxinv(3)
 
     dxinv = 1.d0/deltax
+
+    !$acc enter data copyin(q,dxinv,lo,hi,dlo,dhi) create(td)
     if (idir .eq. 0) then
+       !$acc parallel loop gang vector collapse(3) present(q,td,lo,hi,dxinv)
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)+1
-                td(i,j,k,1) = FOURTH*dxinv(2)*(Q(i,j+1,k,QU)+Q(i-1,j+1,k,QU)-Q(i,j-1,k,QU)-Q(i-1,j-1,k,QU))
-                td(i,j,k,2) = FOURTH*dxinv(2)*(Q(i,j+1,k,QV)+Q(i-1,j+1,k,QV)-Q(i,j-1,k,QV)-Q(i-1,j-1,k,QV))
-                td(i,j,k,3) = FOURTH*dxinv(2)*(Q(i,j+1,k,QW)+Q(i-1,j+1,k,QW)-Q(i,j-1,k,QW)-Q(i-1,j-1,k,QW))
-                td(i,j,k,4) = FOURTH*dxinv(3)*(Q(i,j,k+1,QU)+Q(i-1,j,k+1,QU)-Q(i,j,k-1,QU)-Q(i-1,j,k-1,QU))
-                td(i,j,k,5) = FOURTH*dxinv(3)*(Q(i,j,k+1,QV)+Q(i-1,j,k+1,QV)-Q(i,j,k-1,QV)-Q(i-1,j,k-1,QV))
-                td(i,j,k,6) = FOURTH*dxinv(3)*(Q(i,j,k+1,QW)+Q(i-1,j,k+1,QW)-Q(i,j,k-1,QW)-Q(i-1,j,k-1,QW))
+                td(i,j,k,1) = 0.25d0*dxinv(2)*(Q(i,j+1,k,QU)+Q(i-1,j+1,k,QU)-Q(i,j-1,k,QU)-Q(i-1,j-1,k,QU))
+                td(i,j,k,2) = 0.25d0*dxinv(2)*(Q(i,j+1,k,QV)+Q(i-1,j+1,k,QV)-Q(i,j-1,k,QV)-Q(i-1,j-1,k,QV))
+                td(i,j,k,3) = 0.25d0*dxinv(2)*(Q(i,j+1,k,QW)+Q(i-1,j+1,k,QW)-Q(i,j-1,k,QW)-Q(i-1,j-1,k,QW))
+                td(i,j,k,4) = 0.25d0*dxinv(3)*(Q(i,j,k+1,QU)+Q(i-1,j,k+1,QU)-Q(i,j,k-1,QU)-Q(i-1,j,k-1,QU))
+                td(i,j,k,5) = 0.25d0*dxinv(3)*(Q(i,j,k+1,QV)+Q(i-1,j,k+1,QV)-Q(i,j,k-1,QV)-Q(i-1,j,k-1,QV))
+                td(i,j,k,6) = 0.25d0*dxinv(3)*(Q(i,j,k+1,QW)+Q(i-1,j,k+1,QW)-Q(i,j,k-1,QW)-Q(i-1,j,k-1,QW))
              enddo
           enddo
        enddo
+       !$acc end parallel
+
+       ! Fix boundaries (since Dirichlet values passed in cell containers actually specified on face)
+       if (lo(idir+1).lt.dlo(idir+1) .and. physbc_lo(idir+1).eq.Inflow) then
+          !$acc parallel loop gang vector collapse(3) present(q,td,lo,hi,dlo,dxinv)
+          do k=lo(3),hi(3)
+             do j=lo(2),hi(2)
+                do i=lo(1),dlo(1)
+                   td(i,j,k,1) = 0.5d0*dxinv(2)*(Q(i-1,j+1,k,QU)-Q(i-1,j-1,k,QU))
+                   td(i,j,k,2) = 0.5d0*dxinv(2)*(Q(i-1,j+1,k,QV)-Q(i-1,j-1,k,QV))
+                   td(i,j,k,3) = 0.5d0*dxinv(2)*(Q(i-1,j+1,k,QW)-Q(i-1,j-1,k,QW))
+                   td(i,j,k,4) = 0.5d0*dxinv(3)*(Q(i-1,j,k+1,QU)-Q(i-1,j,k-1,QU))
+                   td(i,j,k,5) = 0.5d0*dxinv(3)*(Q(i-1,j,k+1,QV)-Q(i-1,j,k-1,QV))
+                   td(i,j,k,6) = 0.5d0*dxinv(3)*(Q(i-1,j,k+1,QW)-Q(i-1,j,k-1,QW))
+                enddo
+             enddo
+          enddo
+          !$acc end parallel
+       endif
+       if (hi(idir+1).gt.dhi(idir+1) .and. physbc_hi(idir+1).eq.Inflow) then
+          !$acc parallel loop gang vector collapse(3) present(q,td,lo,hi,dhi,dxinv)
+          do k=lo(3),hi(3)
+             do j=lo(2),hi(2)
+                do i=dhi(1)+1,hi(1)+1
+                   td(i,j,k,1) = 0.5d0*dxinv(2)*(Q(i,j+1,k,QU)-Q(i,j-1,k,QU))
+                   td(i,j,k,2) = 0.5d0*dxinv(2)*(Q(i,j+1,k,QV)-Q(i,j-1,k,QV))
+                   td(i,j,k,3) = 0.5d0*dxinv(2)*(Q(i,j+1,k,QW)-Q(i,j-1,k,QW))
+                   td(i,j,k,4) = 0.5d0*dxinv(3)*(Q(i,j,k+1,QU)-Q(i,j,k-1,QU))
+                   td(i,j,k,5) = 0.5d0*dxinv(3)*(Q(i,j,k+1,QV)-Q(i,j,k-1,QV))
+                   td(i,j,k,6) = 0.5d0*dxinv(3)*(Q(i,j,k+1,QW)-Q(i,j,k-1,QW))
+                enddo
+             enddo
+          enddo
+          !$acc end parallel
+       endif
 
     else if (idir .eq. 1) then
+       !$acc parallel loop gang vector collapse(3) present(q,td,lo,hi,dxinv)
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)+1
              do i=lo(1),hi(1)
-                td(i,j,k,1) = FOURTH*dxinv(1)*(Q(i+1,j,k,QU)+Q(i+1,j-1,k,QU)-Q(i-1,j,k,QU)-Q(i-1,j-1,k,QU))
-                td(i,j,k,2) = FOURTH*dxinv(1)*(Q(i+1,j,k,QV)+Q(i+1,j-1,k,QV)-Q(i-1,j,k,QV)-Q(i-1,j-1,k,QV))
-                td(i,j,k,3) = FOURTH*dxinv(1)*(Q(i+1,j,k,QW)+Q(i+1,j-1,k,QW)-Q(i-1,j,k,QW)-Q(i-1,j-1,k,QW))
-                td(i,j,k,4) = FOURTH*dxinv(3)*(Q(i,j,k+1,QU)+Q(i,j-1,k+1,QU)-Q(i,j,k-1,QU)-Q(i,j-1,k-1,QU))
-                td(i,j,k,5) = FOURTH*dxinv(3)*(Q(i,j,k+1,QV)+Q(i,j-1,k+1,QV)-Q(i,j,k-1,QV)-Q(i,j-1,k-1,QV))
-                td(i,j,k,6) = FOURTH*dxinv(3)*(Q(i,j,k+1,QW)+Q(i,j-1,k+1,QW)-Q(i,j,k-1,QW)-Q(i,j-1,k-1,QW))
+                td(i,j,k,1) = 0.25d0*dxinv(1)*(Q(i+1,j,k,QU)+Q(i+1,j-1,k,QU)-Q(i-1,j,k,QU)-Q(i-1,j-1,k,QU))
+                td(i,j,k,2) = 0.25d0*dxinv(1)*(Q(i+1,j,k,QV)+Q(i+1,j-1,k,QV)-Q(i-1,j,k,QV)-Q(i-1,j-1,k,QV))
+                td(i,j,k,3) = 0.25d0*dxinv(1)*(Q(i+1,j,k,QW)+Q(i+1,j-1,k,QW)-Q(i-1,j,k,QW)-Q(i-1,j-1,k,QW))
+                td(i,j,k,4) = 0.25d0*dxinv(3)*(Q(i,j,k+1,QU)+Q(i,j-1,k+1,QU)-Q(i,j,k-1,QU)-Q(i,j-1,k-1,QU))
+                td(i,j,k,5) = 0.25d0*dxinv(3)*(Q(i,j,k+1,QV)+Q(i,j-1,k+1,QV)-Q(i,j,k-1,QV)-Q(i,j-1,k-1,QV))
+                td(i,j,k,6) = 0.25d0*dxinv(3)*(Q(i,j,k+1,QW)+Q(i,j-1,k+1,QW)-Q(i,j,k-1,QW)-Q(i,j-1,k-1,QW))
              enddo
           enddo
        enddo
+       !$acc end parallel
+
+       ! Fix boundaries (since Dirichlet values passed in cell containers actually specified on face)
+       if (lo(idir+1).lt.dlo(idir+1) .and. physbc_lo(idir+1).eq.Inflow) then
+          !$acc parallel loop gang vector collapse(3) present(q,td,lo,hi,dlo,dxinv)
+          do k=lo(3),hi(3)
+             do j=lo(2),dlo(2)
+                do i=lo(1),hi(1)
+                   td(i,j,k,1) = 0.5d0*dxinv(1)*(Q(i+1,j-1,k,QU)-Q(i-1,j-1,k,QU))
+                   td(i,j,k,2) = 0.5d0*dxinv(1)*(Q(i+1,j-1,k,QV)-Q(i-1,j-1,k,QV))
+                   td(i,j,k,3) = 0.5d0*dxinv(1)*(Q(i+1,j-1,k,QW)-Q(i-1,j-1,k,QW))
+                   td(i,j,k,4) = 0.5d0*dxinv(3)*(Q(i,j-1,k+1,QU)-Q(i,j-1,k-1,QU))
+                   td(i,j,k,5) = 0.5d0*dxinv(3)*(Q(i,j-1,k+1,QV)-Q(i,j-1,k-1,QV))
+                   td(i,j,k,6) = 0.5d0*dxinv(3)*(Q(i,j-1,k+1,QW)-Q(i,j-1,k-1,QW))
+                enddo
+             enddo
+          enddo
+          !$acc end parallel
+       endif
+       if (hi(idir+1).gt.dhi(idir+1) .and. physbc_hi(idir+1).eq.Inflow) then
+          !$acc parallel loop gang vector collapse(3) present(q,td,lo,hi,dhi,dxinv)
+          do k=lo(3),hi(3)
+             do j=dhi(2)+1,hi(2)+1
+                do i=lo(1),hi(1)
+                   td(i,j,k,1) = 0.5d0*dxinv(1)*(Q(i+1,j,k,QU)-Q(i-1,j,k,QU))
+                   td(i,j,k,2) = 0.5d0*dxinv(1)*(Q(i+1,j,k,QV)-Q(i-1,j,k,QV))
+                   td(i,j,k,3) = 0.5d0*dxinv(1)*(Q(i+1,j,k,QW)-Q(i-1,j,k,QW))
+                   td(i,j,k,4) = 0.5d0*dxinv(3)*(Q(i,j,k+1,QU)-Q(i,j,k-1,QU))
+                   td(i,j,k,5) = 0.5d0*dxinv(3)*(Q(i,j,k+1,QV)-Q(i,j,k-1,QV))
+                   td(i,j,k,6) = 0.5d0*dxinv(3)*(Q(i,j,k+1,QW)-Q(i,j,k-1,QW))
+                enddo
+             enddo
+          enddo
+          !$acc end parallel
+       endif
 
     else
+       !$acc parallel loop gang vector collapse(3) present(q,td,lo,hi,dxinv)
        do k=lo(3),hi(3)+1
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)
-                td(i,j,k,1) = FOURTH*dxinv(1)*(Q(i+1,j,k,QU)+Q(i+1,j,k-1,QU)-Q(i-1,j,k,QU)-Q(i-1,j,k-1,QU))
-                td(i,j,k,2) = FOURTH*dxinv(1)*(Q(i+1,j,k,QV)+Q(i+1,j,k-1,QV)-Q(i-1,j,k,QV)-Q(i-1,j,k-1,QV))
-                td(i,j,k,3) = FOURTH*dxinv(1)*(Q(i+1,j,k,QW)+Q(i+1,j,k-1,QW)-Q(i-1,j,k,QW)-Q(i-1,j,k-1,QW))
-                td(i,j,k,4) = FOURTH*dxinv(2)*(Q(i,j+1,k,QU)+Q(i,j+1,k-1,QU)-Q(i,j-1,k,QU)-Q(i,j-1,k-1,QU))
-                td(i,j,k,5) = FOURTH*dxinv(2)*(Q(i,j+1,k,QV)+Q(i,j+1,k-1,QV)-Q(i,j-1,k,QV)-Q(i,j-1,k-1,QV))
-                td(i,j,k,6) = FOURTH*dxinv(2)*(Q(i,j+1,k,QW)+Q(i,j+1,k-1,QW)-Q(i,j-1,k,QW)-Q(i,j-1,k-1,QW)) 
+                td(i,j,k,1) = 0.25d0*dxinv(1)*(Q(i+1,j,k,QU)+Q(i+1,j,k-1,QU)-Q(i-1,j,k,QU)-Q(i-1,j,k-1,QU))
+                td(i,j,k,2) = 0.25d0*dxinv(1)*(Q(i+1,j,k,QV)+Q(i+1,j,k-1,QV)-Q(i-1,j,k,QV)-Q(i-1,j,k-1,QV))
+                td(i,j,k,3) = 0.25d0*dxinv(1)*(Q(i+1,j,k,QW)+Q(i+1,j,k-1,QW)-Q(i-1,j,k,QW)-Q(i-1,j,k-1,QW))
+                td(i,j,k,4) = 0.25d0*dxinv(2)*(Q(i,j+1,k,QU)+Q(i,j+1,k-1,QU)-Q(i,j-1,k,QU)-Q(i,j-1,k-1,QU))
+                td(i,j,k,5) = 0.25d0*dxinv(2)*(Q(i,j+1,k,QV)+Q(i,j+1,k-1,QV)-Q(i,j-1,k,QV)-Q(i,j-1,k-1,QV))
+                td(i,j,k,6) = 0.25d0*dxinv(2)*(Q(i,j+1,k,QW)+Q(i,j+1,k-1,QW)-Q(i,j-1,k,QW)-Q(i,j-1,k-1,QW)) 
              enddo
           enddo
        enddo
+       !$acc end parallel
+
+       ! Fix boundaries (since Dirichlet values passed in cell containers actually specified on face)
+       if (lo(idir+1).lt.dlo(idir+1) .and. physbc_lo(idir+1).eq.Inflow) then
+          !$acc parallel loop gang vector collapse(3) present(q,td,lo,hi,dlo,dxinv)
+          do k=lo(3),dlo(3)
+             do j=lo(2),hi(2)
+                do i=lo(1),hi(1)
+                   td(i,j,k,1) = 0.5d0*dxinv(1)*(Q(i+1,j,k-1,QU)-Q(i-1,j,k-1,QU))
+                   td(i,j,k,2) = 0.5d0*dxinv(1)*(Q(i+1,j,k-1,QV)-Q(i-1,j,k-1,QV))
+                   td(i,j,k,3) = 0.5d0*dxinv(1)*(Q(i+1,j,k-1,QW)-Q(i-1,j,k-1,QW))
+                   td(i,j,k,4) = 0.5d0*dxinv(2)*(Q(i,j+1,k-1,QU)-Q(i,j-1,k-1,QU))
+                   td(i,j,k,5) = 0.5d0*dxinv(2)*(Q(i,j+1,k-1,QV)-Q(i,j-1,k-1,QV))
+                   td(i,j,k,6) = 0.5d0*dxinv(2)*(Q(i,j+1,k-1,QW)-Q(i,j-1,k-1,QW))
+                enddo
+             enddo
+          enddo
+          !$acc end parallel
+       endif
+       if (hi(idir+1).gt.dhi(idir+1) .and. physbc_hi(idir+1).eq.Inflow) then
+          !$acc parallel loop gang vector collapse(3) present(q,td,lo,hi,dhi,dxinv)
+          do k=dhi(3)+1,hi(3)+1
+             do j=lo(2),hi(2)
+                do i=lo(1),hi(1)
+                   td(i,j,k,1) = 0.5d0*dxinv(1)*(Q(i+1,j,k,QU)-Q(i-1,j,k,QU))
+                   td(i,j,k,2) = 0.5d0*dxinv(1)*(Q(i+1,j,k,QV)-Q(i-1,j,k,QV))
+                   td(i,j,k,3) = 0.5d0*dxinv(1)*(Q(i+1,j,k,QW)-Q(i-1,j,k,QW))
+                   td(i,j,k,4) = 0.5d0*dxinv(2)*(Q(i,j+1,k,QU)-Q(i,j-1,k,QU))
+                   td(i,j,k,5) = 0.5d0*dxinv(2)*(Q(i,j+1,k,QV)-Q(i,j-1,k,QV))
+                   td(i,j,k,6) = 0.5d0*dxinv(2)*(Q(i,j+1,k,QW)-Q(i,j-1,k,QW))
+                enddo
+             enddo
+          enddo
+          !$acc end parallel
+       endif
+
     endif
-    
+    !$acc exit data copyout(td) delete(dxinv,lo,hi,dlo,dhi)
   end subroutine pc_compute_tangential_vel_derivs
 
 #ifdef PELEC_USE_EB

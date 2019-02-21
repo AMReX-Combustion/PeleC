@@ -128,7 +128,7 @@ contains
     gfacj = dxinv(2)
     gfack = dxinv(3)
 
-    !$acc enter data copyin(dlnpi,dlnpj,dlnpk,hi,lo,ax,ay,az,tx,ty,tz,dx,dy,dz,lamx,lamy,lamz,gfaci,gfacj,gfack,mux,muy,muz,xix,xiy,xiz,dxinv,v,hii,x,q,nspec,qfs,qvar,qfs,dmnlo,dmnhi,physbc_lo,physbc_hi) create(vc) copyin(fx,fy,fz) create(d)
+    !$acc enter data copyin(dlnpi,dlnpj,dlnpk,hi,lo,ax,ay,az,tx,ty,tz,dx,dy,dz,lamx,lamy,lamz,gfaci,gfacj,gfack,mux,muy,muz,xix,xiy,xiz,dxinv,v,hii,x,nspec,qfs,qvar,qfs,dmnlo,dmnhi,physbc_lo,physbc_hi,fx,fy,fz) create(vc,d)
 
     !$acc parallel present(q,x,lo,hi,hii)
     call eos_ytx_vec(q,x,lo,hi,nspec,qfs,qvar)
@@ -419,7 +419,7 @@ contains
        end do
     end do
     !$acc end kernels
-    !$acc exit data delete(dlnpi,dlnpj,dlnpk,hi,lo,ax,ay,az,tx,ty,tz,dx,dy,dz,lamx,lamy,lamz,gfaci,gfacj,gfack,mux,muy,muz,xix,xiy,xiz,dxinv,v,hii,x,q,nspec,qfs,qvar,qfs,dmnlo,dmnhi,physbc_lo,physbc_hi) delete(vc) copyout(fx,fy,fz) copyout(d)
+    !$acc exit data delete(dlnpi,dlnpj,dlnpk,hi,lo,ax,ay,az,tx,ty,tz,dx,dy,dz,lamx,lamy,lamz,gfaci,gfacj,gfack,mux,muy,muz,xix,xiy,xiz,dxinv,v,hii,x,q,nspec,qfs,qvar,qfs,dmnlo,dmnhi,physbc_lo,physbc_hi,vc) copyout(fx,fy,fz,d)
 
   end subroutine pc_diffterm
 
