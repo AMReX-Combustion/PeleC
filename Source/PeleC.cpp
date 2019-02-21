@@ -234,6 +234,10 @@ PeleC::read_params ()
   for (int dir = 0; dir<BL_SPACEDIM; dir++){
     if (!lo_bc_char[dir].compare("Interior")){
       lo_bc[dir] = 0;
+    } else if (!lo_bc_char[dir].compare("Inflow")){
+      lo_bc[dir] = 1;
+    } else if (!lo_bc_char[dir].compare("Outflow")){
+      lo_bc[dir] = 2;
     } else if (!lo_bc_char[dir].compare("UserBC")){
       lo_bc[dir] = 6;
     } else if (!lo_bc_char[dir].compare("Symmetry")){
@@ -250,6 +254,8 @@ PeleC::read_params ()
       hi_bc[dir] = 0;
     } else if (!hi_bc_char[dir].compare("UserBC")){
       hi_bc[dir] = 6;
+    } else if (!hi_bc_char[dir].compare("Outflow")){
+      hi_bc[dir] = 2;
     } else if (!hi_bc_char[dir].compare("Symmetry")){
       hi_bc[dir] = 3;
     } else if (!hi_bc_char[dir].compare("SlipWall")){

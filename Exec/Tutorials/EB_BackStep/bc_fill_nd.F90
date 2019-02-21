@@ -26,21 +26,10 @@ contains
 
     double precision :: x(3)
     integer :: i, j, k, n
-    logical rho_only
 
     do n = 1,NVAR
        call filcc_nd(adv(:,:,:,n),adv_lo,adv_hi,domlo,domhi,delta,xlo,bc(:,:,n))
     enddo
-
-    ! The strategy here is to set Dirichlet condition for inflow and
-    ! outflow boundaries, and let the Riemann solver sort out the proper
-    ! upwinding.  However, this decision makes this routine look
-    ! somewhat non-orthodox, in that we need to set external values in
-    ! either case....how do we know it's Outflow?  We have to assume
-    ! that the setup routines converted Outflow to FOEXTRAP.
-
-    !     Set flag for bc function
-    rho_only = .FALSE.
 
     !     XLO
     if ( (bc(1,1,1).eq.EXT_DIR).and. adv_lo(1).lt.domlo(1)) then
@@ -50,7 +39,7 @@ contains
              x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
              do k = adv_lo(3), adv_hi(3)
                 x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(domlo(1),j,k,:),adv(i,j,k,:),1,+1,rho_only)
+                call bcnormal(x,adv(domlo(1),j,k,:),adv(i,j,k,:),1,+1,time)
              end do
           end do
        end do
@@ -64,7 +53,7 @@ contains
              x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
              do k = adv_lo(3), adv_hi(3)
                 x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(domhi(1),j,k,:),adv(i,j,k,:),1,-1,rho_only)
+                call bcnormal(x,adv(domhi(1),j,k,:),adv(i,j,k,:),1,-1,time)
              end do
           end do
        end do
@@ -79,7 +68,7 @@ contains
                 x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
                 do k = adv_lo(3), adv_hi(3)
                    x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                   call bcnormal(x,adv(i,domlo(2),k,:),adv(i,j,k,:),2,+1,rho_only)
+                   call bcnormal(x,adv(i,domlo(2),k,:),adv(i,j,k,:),2,+1,time)
                 end do
              end do
           end do
@@ -93,7 +82,7 @@ contains
                 x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
                 do k = adv_lo(3), adv_hi(3)
                    x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                   call bcnormal(x,adv(i,domhi(2),k,:),adv(i,j,k,:),2,-1,rho_only)
+                   call bcnormal(x,adv(i,domhi(2),k,:),adv(i,j,k,:),2,-1,time)
                 end do
              end do
           end do
@@ -108,7 +97,7 @@ contains
                    x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
                    do k = adv_lo(3), adv_hi(3)
                       x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                      call bcnormal(x,adv(i,j,domlo(3),:),adv(i,j,k,:),3,+1,rho_only)
+                      call bcnormal(x,adv(i,j,domlo(3),:),adv(i,j,k,:),3,+1,time)
                    end do
                 end do
              end do
@@ -122,7 +111,7 @@ contains
                    x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
                    do k = adv_lo(3), adv_hi(3)
                       x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                      call bcnormal(x,adv(i,j,domhi(3),:),adv(i,j,k,:),3,-1,rho_only)
+                      call bcnormal(x,adv(i,j,domhi(3),:),adv(i,j,k,:),3,-1,time)
                    end do
                 end do
              end do
@@ -133,164 +122,77 @@ contains
   end subroutine pc_hypfill
 
 
-    subroutine pc_denfill(adv,adv_lo,adv_hi,domlo,domhi,delta,xlo,time,bc) &
-       bind(C, name="pc_denfill")
-
-    use prob_params_module, only: dim  
-    use eos_type_module
-    use eos_module
-
-    implicit none
-
-    include 'AMReX_bc_types.fi'
-
-    integer          :: adv_lo(3),adv_hi(3)
-    integer          :: bc(dim,2,*)
-    integer          :: domlo(3), domhi(3)
-    double precision :: delta(3), xlo(3), time
-    double precision :: adv(adv_lo(1):adv_hi(1),adv_lo(2):adv_hi(2),adv_lo(3):adv_hi(3))
-
-    double precision :: x(3)
-    logical rho_only
-    integer :: i,j,k
-
-    call filcc_nd(adv,adv_lo,adv_hi,domlo,domhi,delta,xlo,bc)
-
-    ! Note: this function should not be needed, technically, but is
-    ! provided to filpatch because there are many times in the algorithm
-    ! when just the density is needed.  We try to rig up the filling so
-    ! that the same function is called here and in hypfill where all the
-    ! states are filled.
-
-    rho_only = .TRUE.
-
-    !     XLO
-    if ( (bc(1,1,1).eq.EXT_DIR).and.adv_lo(1).lt.domlo(1)) then
-       do i = adv_lo(1), domlo(1)-1
-          x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
-          do j = adv_lo(2), adv_hi(2)
-             x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
-             do k = adv_lo(3), adv_hi(3)
-                x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(domlo(1),j,k),adv(i,j,k),1,+1,rho_only)
-             end do
-          end do
-       end do
-    end if
-
-    !     XHI
-    if ( (bc(1,2,1).eq.EXT_DIR).and.adv_hi(1).gt.domhi(1)) then
-       do i = domhi(1)+1, adv_hi(1)
-          x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
-          do j = adv_lo(2), adv_hi(2)
-             x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
-             do k = adv_lo(3), adv_hi(3)
-                x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(domhi(1),j,k),adv(i,j,k),1,-1,rho_only)
-             end do
-          end do
-       end do
-    end if
-
-    if (dim > 1) then
-       !     YLO
-       if ( (bc(2,1,1).eq.EXT_DIR).and.adv_lo(2).lt.domlo(2)) then
-          do i = adv_lo(1), adv_hi(1)
-             x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
-             do j = adv_lo(2), domlo(2)-1
-                x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
-                do k = adv_lo(3), adv_hi(3)
-                   x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                   call bcnormal(x,adv(i,domlo(2),k),adv(i,j,k),2,+1,rho_only)
-                end do
-             end do
-          end do
-       end if
-
-       !     YHI
-       if ( (bc(2,2,1).eq.EXT_DIR).and.adv_hi(2).gt.domhi(2)) then
-          do i = adv_lo(1), adv_hi(1)
-             x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
-             do j = domhi(2)+1, adv_hi(2)
-                x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
-                do k = adv_lo(3), adv_hi(3)
-                   x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                   call bcnormal(x,adv(i,domhi(2),k),adv(i,j,k),2,-1,rho_only)
-                end do
-             end do
-          end do
-       end if
-
-       if (dim > 2) then
-          !     ZLO
-          if ( (bc(3,1,1).eq.EXT_DIR).and.adv_lo(3).lt.domlo(3)) then
-             do i = adv_lo(1), adv_hi(1)
-                x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
-                do j = adv_lo(2), domlo(2)-1
-                   x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
-                   do k = adv_lo(3), adv_hi(3)
-                      x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                      call bcnormal(x,adv(i,j,domlo(3)),adv(i,j,k),3,+1,rho_only)
-                   end do
-                end do
-             end do
-          end if
-
-          !     ZHI
-          if ( (bc(3,2,1).eq.EXT_DIR).and.adv_hi(3).gt.domhi(3)) then
-             do i = adv_lo(1), adv_hi(1)
-                x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
-                do j = domhi(2)+1, adv_hi(2)
-                   x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
-                   do k = adv_lo(3), adv_hi(3)
-                      x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                      call bcnormal(x,adv(i,j,domhi(3)),adv(i,j,k),3,-1,rho_only)
-                   end do
-                end do
-             end do
-          end if
-       end if
-    end if
-  end subroutine pc_denfill
-
-
-  subroutine bcnormal(x,u_int,u_ext,dir,sgn,rho_only)
+  subroutine bcnormal(x,u_int,u_ext,dir,sgn,time,bc_type,bc_params,bc_target)
 
     use probdata_module
     use network, only: nspec
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, UTEMP
+    use prob_params_module, only : Interior, Inflow, Outflow, SlipWall, NoSlipWall, &
+                                   problo, probhi, dim
+
     use eos_type_module
     use eos_module
 
     implicit none
 
-    double precision :: x(3)
+    integer, optional, intent(out) :: bc_type
+    double precision, optional, intent(out) :: bc_params(6)
+    double precision, optional, intent(out) :: bc_target(5)
+
+    double precision :: relax_U, relax_V, relax_W, relax_T, beta, sigma_out
+    integer :: flag_nscbc, which_bc_type
+
+    double precision :: x(3),time
     double precision :: u_int(*),u_ext(*)
     double precision :: p_int !internal pressure
-    logical rho_only
 
     integer :: dir,sgn
-    type (eos_t) :: eos_state,eos_state_int
+    type (eos_t) :: eos_state
 
-    if (rho_only .EQV. .TRUE. ) then
-       u_ext(URHO) = dens_domain
-    else
 
-       !subsonic velocity inlet
-       !user specified velocity is used
-       !but pressure is interpolated from inside
+    flag_nscbc = 0
+
+    ! When optional arguments are present, GC-NSCBC is activated
+    ! Generic values are auto-filled for numerical parameters,
+    ! but should be set by the user for each BC
+    ! Note that in the impose_NSCBC_xD.f90 routine, not all parameters are used in same time
+    if (present(bc_type).and.present(bc_params).and.present(bc_target)) then
+
+      flag_nscbc = 1
+      relax_U = 0.5d0 ! For inflow only, relax parameter for x_velocity
+      relax_V = 0.5d0 ! For inflow only, relax parameter for y_velocity
+      relax_W = 0.5d0 ! For inflow only, relax parameter for z_velocity
+      relax_T = 0.2d0 ! For inflow only, relax parameter for temperature
+      beta = 0.2d0  ! Control the contribution of transverse terms
+      sigma_out = 0.25d0 ! For outflow only, relax parameter
+      which_bc_type = Interior ! This is to ensure that nothing will be done if the user don't set anything
+    endif
+
+! at lo BC
+      if (sgn == 1) then
+      
+         relax_V = 0.010d0
+         relax_U = 0.20d0
+         relax_W = 0.01d0
+         relax_T = - 0.01d0
+         beta = 1.0d0
+
+         which_bc_type = Inflow
+   
+       elseif (sgn == -1) then
+
+         ! Set outflow pressure
+         which_bc_type = Outflow
+         sigma_out = 0.28d0
+         beta = -1.0d0
+  
+       endif
+
 
        call build(eos_state)
-       call  build(eos_state_int)
-
-       eos_state_int % rho = u_int(URHO)
-       eos_state_int % T = u_int(UTEMP) 
-       eos_state_int % massfrac = 0.d0
-       eos_state_int % massfrac(nspec) = 1.d0
-       call eos_rt(eos_state_int)
 
        eos_state % rho = dens_domain
-       eos_state % p = eos_state_int % p
+       eos_state % p = p_domain 
        eos_state % massfrac = 0.d0
        eos_state % massfrac(nspec) = 1.d0
 
@@ -302,11 +204,28 @@ contains
        u_ext(UMZ)    = 0.d0
        u_ext(UEINT)  = eos_state % rho * eos_state % e
        u_ext(UEDEN)  = u_ext(UEINT)+0.5d0*dens_domain*(vx_in**2+vy_in**2)
+       u_ext(UTEMP) = eos_state % T
        u_ext(UFS:UFS+nspec-1)  = eos_state % rho * eos_state % massfrac(:)
 
-       call destroy(eos_state)
 
-    endif
+! Here the optional parameters are filled by the local variables if they were present
+    if (flag_nscbc == 1) then
+      bc_type = which_bc_type
+      bc_params(1) = relax_T
+      bc_params(2) = relax_U
+      bc_params(3) = relax_V
+      bc_params(4) = relax_W
+      bc_params(5) = beta
+      bc_params(6) = sigma_out
+      bc_target(1) = u_ext(UMX)/U_ext(URHO)
+      bc_target(2) = u_ext(UMY)/U_ext(URHO)
+      bc_target(3) = u_ext(UMZ)/U_ext(URHO)
+      bc_target(4) = u_ext(UTEMP)
+      bc_target(5) = eos_state%p
+    end if
+
+call destroy(eos_state)
+
 
   end subroutine bcnormal
 

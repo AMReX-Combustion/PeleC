@@ -31,14 +31,7 @@ contains
        call filcc_nd(adv(:,:,:,n),adv_lo,adv_hi,domlo,domhi,delta,xlo,bc(:,:,n))
     enddo
 
-    ! The strategy here is to set Dirichlet condition for inflow and
-    ! outflow boundaries, and let the Riemann solver sort out the proper
-    ! upwinding.  However, this decision makes this routine look
-    ! somewhat non-orthodox, in that we need to set external values in
-    ! either case....how do we know it's Outflow?  We have to assume
-    ! that the setup routines converted Outflow to FOEXTRAP.
-
-    !     XLO
+!     XLO
     if ( (bc(1,1,1).eq.EXT_DIR).and. adv_lo(1).lt.domlo(1)) then
        do i = adv_lo(1), domlo(1)-1
           x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
@@ -52,7 +45,7 @@ contains
        end do
     end if
 
-    !     XHI
+   !      XHI
     if ( (bc(1,2,1).eq.EXT_DIR).and. adv_hi(1).gt.domhi(1)) then
        do i = domhi(1)+1, adv_hi(1)
           x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
@@ -100,9 +93,9 @@ contains
           if ( (bc(3,1,1).eq.EXT_DIR).and. adv_lo(3).lt.domlo(3)) then
              do i = adv_lo(1), adv_hi(1)
                 x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
-                do j = adv_lo(2), domlo(2)-1
+                do j = adv_lo(2), adv_hi(2)
                    x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
-                   do k = adv_lo(3), adv_hi(3)
+                   do k = adv_lo(3), domlo(3)-1
                       x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
                       call bcnormal(x,adv(i,j,domlo(3),:),adv(i,j,k,:),3,+1,time)
                    end do
@@ -114,9 +107,9 @@ contains
           if ( (bc(3,2,1).eq.EXT_DIR).and. adv_hi(3).gt.domhi(3)) then
              do i = adv_lo(1), adv_hi(1)
                 x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
-                do j = domhi(2)+1, adv_hi(2)
+                do j = adv_lo(2), adv_hi(2)
                    x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
-                   do k = adv_lo(3), adv_hi(3)
+                   do k = domhi(3)+1, adv_hi(3)
                       x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
                       call bcnormal(x,adv(i,j,domhi(3),:),adv(i,j,k,:),3,-1,time)
                    end do
@@ -143,7 +136,7 @@ contains
     implicit none
 
     double precision :: x(3),time, u(3)
-    double precision :: u_int(NVAR),u_ext(NVAR)
+    double precision :: u_int(*),u_ext(*)
     integer, optional, intent(out) :: bc_type
     double precision, optional, intent(out) :: bc_params(6)
     double precision, optional, intent(out) :: bc_target(5)
@@ -173,9 +166,7 @@ contains
       which_bc_type = Interior ! This is to ensure that nothing will be done if the user don't set anything
     endif
 
-call build(eos_state)
-
-
+u(:) = 0.0d0
 
    if (dir == 1) then
      if (sgn == 1) then
@@ -184,15 +175,17 @@ call build(eos_state)
     ! for the Sedov problem, we will always set the state to the ambient conditions
 
         relax_U = 1.00d0
-        relax_V = 0.20d0
-        relax_W = 0.20d0
-        relax_T = - 0.2d0
+        relax_V = 0.10d0
+        relax_W = 0.10d0
+        relax_T = - 0.1d0
         beta = 1.0d0
 
         which_bc_type = Inflow
 
+        u(1) = vx_in
+        u(2) = vy_in
+        u(3) = 0.0d0
 
-         
      elseif (sgn .eq. -1) then
 
           which_bc_type = Outflow
@@ -216,8 +209,11 @@ call build(eos_state)
       beta = 1.0d0
    endif
 
+        u(1) = vx_in
+        u(2) = vy_in
+        u(3) = 0.0d0
 
-
+       call build(eos_state)
 
        eos_state % rho = dens_domain
        eos_state % p = p_domain
@@ -225,11 +221,6 @@ call build(eos_state)
        eos_state % massfrac(nspec) = 1.d0
 
        call eos_rp(eos_state)
-
-       u(1) = vx_in
-       u(2) = vy_in
-       u(3) = 0.0d0
-
 
        u_ext(UFS:UFS+nspec-1) = eos_state % massfrac * eos_state % rho
        u_ext(URHO)               = eos_state % rho
@@ -249,20 +240,16 @@ call build(eos_state)
       bc_params(4) = relax_W
       bc_params(5) = beta
       bc_params(6) = sigma_out
-      bc_target(1) = U_ext(UMX)/U_ext(URHO)
-      bc_target(2) = U_ext(UMY)/U_ext(URHO)
-      bc_target(3) = U_ext(UMZ)/U_ext(URHO)
-      bc_target(4) = U_ext(UTEMP)
+      bc_target(1) = u_ext(UMX)/U_ext(URHO)
+      bc_target(2) = u_ext(UMY)/U_ext(URHO)
+      bc_target(3) = u_ext(UMZ)/U_ext(URHO)
+      bc_target(4) = u_ext(UTEMP)
       bc_target(5) = eos_state%p
     end if
-
-
 
        call destroy(eos_state)
 
 
   end subroutine bcnormal
-
-
 
 end module bc_fill_module

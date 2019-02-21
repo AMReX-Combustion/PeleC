@@ -60,11 +60,14 @@ PeleC::initialize_eb2_structs() {
   BL_PROFILE("PeleC::initialize_eb2_structs()");
   amrex::Print() << "Initializing EB2 structs" << std::endl;
 
+  
+  // NOTE: THIS NEEDS TO BE REPLACED WITH A FLAGFAB 
+  
   // n.b., could set this to 1 if geometry is all_regular as an optimization
   no_eb_in_domain = 0;
 
   //  1->regular, 0->irregular, -1->covered, 2->outside
-  ebmask.define(grids, dmap,  1, 0);
+  ebmask.define(grids, dmap,  1, 3);
 
   static_assert(std::is_standard_layout<EBBndryGeom>::value,
                 "EBBndryGeom is not standard layout");

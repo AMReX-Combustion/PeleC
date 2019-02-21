@@ -37,23 +37,95 @@ contains
 
     ! However, if the boundary condition is "User Defined" with the keyword UserBC
     ! this means that we use EXT_DIR to prescribe "by hand" the values in the ghost cells.
-    ! Below is an example for the lo_x direction.
-    ! For a more complex example, please look at the bc_fill_nd.F90 file in Exec/RegTests/PMF
+    ! Below is an example that you can uncomment
     
-    !!     XLO
-    !if ( (bc(1,1,1).eq.EXT_DIR).and. adv_lo(1).lt.domlo(1)) then
-    !   do i = adv_lo(1), domlo(1)-1
-    !      x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
-    !      do j = adv_lo(2), adv_hi(2)
-    !         x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
-    !         do k = adv_lo(3), adv_hi(3)
-    !            x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-    !            call bcnormal(x,adv(domlo(1),j,k,:),adv(i,j,k,:),1,+1,time)
-    !         end do
-    !      end do
-    !   end do
-    !end if
-
+   !!     XLO
+   ! if ( (bc(1,1,1).eq.EXT_DIR).and. adv_lo(1).lt.domlo(1)) then
+   !    do i = adv_lo(1), domlo(1)-1
+   !       x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
+   !       do j = adv_lo(2), adv_hi(2)
+   !          x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
+   !          do k = adv_lo(3), adv_hi(3)
+   !             x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
+   !             call bcnormal(x,adv(domlo(1),j,k,:),adv(i,j,k,:),1,+1,time)
+   !          end do
+   !       end do
+   !    end do
+   ! end if
+   !
+   ! !     XHI
+   ! if ( (bc(1,2,1).eq.EXT_DIR).and. adv_hi(1).gt.domhi(1)) then
+   !    do i = domhi(1)+1, adv_hi(1)
+   !       x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
+   !       do j = adv_lo(2), adv_hi(2)
+   !          x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
+   !          do k = adv_lo(3), adv_hi(3)
+   !             x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
+   !             call bcnormal(x,adv(domhi(1),j,k,:),adv(i,j,k,:),1,-1,time)
+   !          end do
+   !       end do
+   !    end do
+   ! end if
+   !
+   ! if (dim .gt. 1) then
+   !    !     YLO
+   !    if ( (bc(2,1,1).eq.EXT_DIR).and. adv_lo(2).lt.domlo(2)) then
+   !       do i = adv_lo(1), adv_hi(1)
+   !          x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
+   !          do j = adv_lo(2), domlo(2)-1
+   !             x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
+   !             do k = adv_lo(3), adv_hi(3)
+   !                x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
+   !                call bcnormal(x,adv(i,domlo(2),k,:),adv(i,j,k,:),2,+1,time)
+   !             end do
+   !          end do
+   !       end do
+   !    end if
+   !
+   !    !     YHI
+   !    if ( (bc(2,2,1).eq.EXT_DIR).and. adv_hi(2).gt.domhi(2)) then
+   !       do i = adv_lo(1), adv_hi(1)
+   !          x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
+   !          do j = domhi(2)+1, adv_hi(2)
+   !             x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
+   !             do k = adv_lo(3), adv_hi(3)
+   !                x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
+   !                call bcnormal(x,adv(i,domhi(2),k,:),adv(i,j,k,:),2,-1,time)
+   !             end do
+   !          end do
+   !       end do
+   !    end if
+   !
+   !    if (dim .gt. 2) then
+   !       !     ZLO
+   !       if ( (bc(3,1,1).eq.EXT_DIR).and. adv_lo(3).lt.domlo(3)) then
+   !          do i = adv_lo(1), adv_hi(1)
+   !             x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
+   !             do j = adv_lo(2), adv_hi(2)
+   !                x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
+   !                do k = adv_lo(3), domlo(3)-1
+   !                   x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
+   !                   call bcnormal(x,adv(i,j,domlo(3),:),adv(i,j,k,:),3,+1,time)
+   !                end do
+   !             end do
+   !          end do
+   !       end if
+   !
+   !       !     ZHI
+   !       if ( (bc(3,2,1).eq.EXT_DIR).and. adv_hi(3).gt.domhi(3)) then
+   !          do i = adv_lo(1), adv_hi(1)
+   !             x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
+   !             do j = adv_lo(2), adv_hi(2)
+   !                x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
+   !                do k = domhi(3)+1, adv_hi(3)
+   !                   x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
+   !                   call bcnormal(x,adv(i,j,domhi(3),:),adv(i,j,k,:),3,-1,time)
+   !                end do
+   !             end do
+   !          end do
+   !       end if
+   !    end if
+   ! end if
     
   end subroutine pc_hypfill
 

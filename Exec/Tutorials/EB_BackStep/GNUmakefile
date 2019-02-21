@@ -4,7 +4,7 @@ DEBUG      = FALSE
 
 DIM        = 3
 
-COMP	   = intel
+COMP	   = gnu
 
 USE_MPI    = TRUE
 USE_OMP    = FALSE
