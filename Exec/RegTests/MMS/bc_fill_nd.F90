@@ -127,8 +127,8 @@ contains
     use eos_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UTEMP, UEDEN, UEINT, UFS, NVAR
     use network, only: nspec, naux
-    use prob_params_module, only : problo, probhi, dim
-    integer :: flag_nscbc
+    use prob_params_module, only : Interior, Inflow, Outflow, SlipWall, NoSlipWall, &
+                                   problo, probhi, dim
 
     use bl_constants_module, only: M_PI, HALF
 
@@ -150,6 +150,9 @@ contains
     integer, optional, intent(out) :: bc_type
     double precision, optional, intent(out) :: bc_params(6)
     double precision, optional, intent(out) :: bc_target(5)
+
+    double precision :: relax_U, relax_V, relax_W, relax_T, beta, sigma_out
+    integer :: flag_nscbc, which_bc_type
 
     flag_nscbc = 0
 
@@ -176,117 +179,28 @@ contains
 
     call build(eos_state)
 
-    if (dir == 1)
-    ! inflow
-      if(sgn .eq. -1) then
-
-          rho = masa_eval_3d_exact_rho(x(1),x(2),x(3))
-
-          u = masa_eval_3d_exact_u(x(1),x(2),x(3))
-          v = masa_eval_3d_exact_v(x(1),x(2),x(3))
-          w = masa_eval_3d_exact_w(x(1),x(2),x(3))
-          p = masa_eval_3d_exact_p(x(1),x(2),x(3))
-
-          eos_state % rho = rho
-          eos_state % p = p
-          eos_state % massfrac    = 0.d0
-          eos_state % massfrac(1) = 1.d0
-          call eos_rp(eos_state)
-          eint = eos_state % e
-
-          u_ext(URHO)            = rho
-          u_ext(UFS:UFS+nspec-1) = rho * eos_state % massfrac(1:nspec)
-          u_ext(UMX)             = rho * u
-          u_ext(UMY)             = rho * v
-          u_ext(UMZ)             = rho * w
-          u_ext(UTEMP)           = eos_state % T
-          u_ext(UEINT)           = rho * eint
-          u_ext(UEDEN)           = rho * (eint + HALF * (u**2 + v**2 + w**2))
-
-    ! outflow
-      else if(sgn .eq. 1) then
-
-          rho = masa_eval_3d_exact_rho(x(1),x(2),x(3))
-
-          u = masa_eval_3d_exact_u(x(1),x(2),x(3))
-          v = masa_eval_3d_exact_v(x(1),x(2),x(3))
-          w = masa_eval_3d_exact_w(x(1),x(2),x(3))
-          p = masa_eval_3d_exact_p(x(1),x(2),x(3))
-
-          eos_state % rho = rho
-          eos_state % p = p
-          eos_state % massfrac    = 0.d0
-          eos_state % massfrac(1) = 1.d0
-          call eos_rp(eos_state)
-          eint = eos_state % e
-
-          u_ext(URHO)            = rho
-          u_ext(UFS:UFS+nspec-1) = rho * eos_state % massfrac(1:nspec)
-          u_ext(UMX)             = rho * u
-          u_ext(UMY)             = rho * v
-          u_ext(UMZ)             = rho * w
-          u_ext(UTEMP)           = eos_state % T
-          u_ext(UEINT)           = rho * eint
-          u_ext(UEDEN)           = rho * (eint + HALF * (u**2 + v**2 + w**2))
-
-      endif
-    endif
+    rho = masa_eval_3d_exact_rho(x(1),x(2),x(3))
     
-     if (dir == 3)
-    ! inflow
-      if(sgn .eq. 1) then
+    u = masa_eval_3d_exact_u(x(1),x(2),x(3))
+    v = masa_eval_3d_exact_v(x(1),x(2),x(3))
+    w = masa_eval_3d_exact_w(x(1),x(2),x(3))
+    p = masa_eval_3d_exact_p(x(1),x(2),x(3))
+    
+    eos_state % rho = rho
+    eos_state % p = p
+    eos_state % massfrac    = 0.d0
+    eos_state % massfrac(1) = 1.d0
+    call eos_rp(eos_state)
+    eint = eos_state % e
 
-          rho = masa_eval_3d_exact_rho(x(1),x(2),x(3))
-
-          u = masa_eval_3d_exact_u(x(1),x(2),x(3))
-          v = masa_eval_3d_exact_v(x(1),x(2),x(3))
-          w = masa_eval_3d_exact_w(x(1),x(2),x(3))
-          p = masa_eval_3d_exact_p(x(1),x(2),x(3))
-
-          eos_state % rho = rho
-          eos_state % p = p
-          eos_state % massfrac    = 0.d0
-          eos_state % massfrac(1) = 1.d0
-          call eos_rp(eos_state)
-          eint = eos_state % e
-
-          u_ext(URHO)            = rho
-          u_ext(UFS:UFS+nspec-1) = rho * eos_state % massfrac(1:nspec)
-          u_ext(UMX)             = rho * u
-          u_ext(UMY)             = rho * v
-          u_ext(UMZ)             = rho * w
-          u_ext(UTEMP)           = eos_state % T
-          u_ext(UEINT)           = rho * eint
-          u_ext(UEDEN)           = rho * (eint + HALF * (u**2 + v**2 + w**2))
-
-    ! outflow
-      else if(sgn .eq. -1) then
-
-          rho = masa_eval_3d_exact_rho(x(1),x(2),x(3))
-
-          u = masa_eval_3d_exact_u(x(1),x(2),x(3))
-          v = masa_eval_3d_exact_v(x(1),x(2),x(3))
-          w = masa_eval_3d_exact_w(x(1),x(2),x(3))
-          p = masa_eval_3d_exact_p(x(1),x(2),x(3))
-
-          eos_state % rho = rho
-          eos_state % p = p
-          eos_state % massfrac    = 0.d0
-          eos_state % massfrac(1) = 1.d0
-          call eos_rp(eos_state)
-          eint = eos_state % e
-
-          u_ext(URHO)            = rho
-          u_ext(UFS:UFS+nspec-1) = rho * eos_state % massfrac(1:nspec)
-          u_ext(UMX)             = rho * u
-          u_ext(UMY)             = rho * v
-          u_ext(UMZ)             = rho * w
-          u_ext(UTEMP)           = eos_state % T
-          u_ext(UEINT)           = rho * eint
-          u_ext(UEDEN)           = rho * (eint + HALF * (u**2 + v**2 + w**2))
-
-    endif
-    endif
+    u_ext(URHO)            = rho
+    u_ext(UFS:UFS+nspec-1) = rho * eos_state % massfrac(1:nspec)
+    u_ext(UMX)             = rho * u
+    u_ext(UMY)             = rho * v
+    u_ext(UMZ)             = rho * w
+    u_ext(UTEMP)           = eos_state % T
+    u_ext(UEINT)           = rho * eint
+    u_ext(UEDEN)           = rho * (eint + HALF * (u**2 + v**2 + w**2))
 
 #else
     call bl_error('MASA is not turned on. Turn on with USE_MASA=TRUE.')
