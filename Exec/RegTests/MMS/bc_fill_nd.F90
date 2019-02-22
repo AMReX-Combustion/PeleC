@@ -128,7 +128,8 @@ contains
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UTEMP, UEDEN, UEINT, UFS, NVAR
     use network, only: nspec, naux
     use prob_params_module, only : problo, probhi, dim
-    integer :: flag_nscbc
+    use prob_params_module, only : Interior, Inflow, Outflow, SlipWall, NoSlipWall, &
+                                   problo, probhi, dim
 
     use bl_constants_module, only: M_PI, HALF
 
@@ -150,6 +151,8 @@ contains
     integer, optional, intent(out) :: bc_type
     double precision, optional, intent(out) :: bc_params(6)
     double precision, optional, intent(out) :: bc_target(5)
+    double precision :: relax_U, relax_V, relax_W, relax_T, beta, sigma_out
+    integer :: flag_nscbc, which_bc_type
 
     flag_nscbc = 0
 
