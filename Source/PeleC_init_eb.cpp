@@ -67,7 +67,7 @@ PeleC::initialize_eb2_structs() {
   no_eb_in_domain = 0;
 
   //  1->regular, 0->irregular, -1->covered, 2->outside
-  ebmask.define(grids, dmap,  1, 3);
+  ebmask.define(grids, dmap,  1, 0);
 
   static_assert(std::is_standard_layout<EBBndryGeom>::value,
                 "EBBndryGeom is not standard layout");

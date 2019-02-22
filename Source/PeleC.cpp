@@ -275,8 +275,7 @@ PeleC::read_params ()
     phys_bc.setLo(i,lo_bc[i]);
     phys_bc.setHi(i,hi_bc[i]);
   }
-  
-  
+    
   //
   // Check phys_bc against possible periodic geometry
   // if periodic, must have internal BC marked.

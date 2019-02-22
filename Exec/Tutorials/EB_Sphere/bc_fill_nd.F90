@@ -201,18 +201,6 @@ contains
          +        d(3)*(dist(1)**2 + dist(2)**2))
 
 
-    if (sgn .eq. 1) then ! inflow: extrapolate none, set (Y,u,p,T), compute (rho,e)
-
-
-        relax_U = 0.20d0
-        relax_V = 0.20d0
-        relax_W = 1.0d0
-        relax_T = - 0.2d0
-        beta = 1.0d0
-
-        which_bc_type = Inflow
-
-
        r = 0.0
        rmax = 0.0
        do i = 1, dim
@@ -255,27 +243,6 @@ contains
           u_ext(UFS:UFS+nspec-1) = eos_state % rho  *  eos_state % massfrac(1:nspec)
 
        
-    elseif (sgn .eq. -1) then ! ouflow: extrapolate (rho,Y,u), set p, compute (rho,e,T)
-
-          which_bc_type = Outflow
-          sigma_out = 0.28d0
-          beta = 1.0d0
- 
-
-          eos_state % p = pamb
-          eos_state % rho = u_int(URHO)
-          rho_inv = 1.d0 / eos_state % rho
-          eos_state % massfrac = u_int(UFS:UFS+nspec-1) * rho_inv
-          u_ext(UMX:UMZ) = u_int(UMX:UMZ)
-          u(1:3) = u_ext(UMX:UMZ) * rho_inv
-          call eos_rp(eos_state)
-
-          u_ext(URHO) = eos_state % rho
-          u_ext(UEINT) = eos_state % rho  *  eos_state % e
-          u_ext(UEDEN) = eos_state % rho  * (eos_state % e + 0.5d0 * (u(1)**2 + u(2)**2 + u(3)**2))
-          u_ext(UTEMP) = eos_state % T
-          u_ext(UFS:UFS+nspec-1) = eos_state % rho  *  eos_state % massfrac(1:nspec)
-    endif
 
       ! Here the optional parameters are filled by the local variables if they were present
     if (flag_nscbc == 1) then
@@ -323,4 +290,5 @@ contains
   end subroutine pc_reactfill
 
 end module bc_fill_module
+
 

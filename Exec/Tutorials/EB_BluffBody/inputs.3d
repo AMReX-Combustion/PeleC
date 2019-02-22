@@ -10,15 +10,13 @@ geometry.prob_lo     =  0    0    0
 geometry.prob_hi     =  12.0  6.0  1.5
 amr.n_cell           =  128   64   16
 
-
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 
-pelec.lo_bc       =  "UserBC"  "UserBC" "Interior"
-pelec.hi_bc       =  "UserBC"  "UserBC" "Interior"
+pelec.lo_bc       =  "Hard"     "FOExtrap" "Interior"
+pelec.hi_bc       =  "FOExtrap" "FOExtrap" "Interior"
 
-pelec.nscbc_diff = 1
 
 # Problem setup
 pelec.eb_boundary_T = 300.
@@ -50,7 +48,7 @@ amr.v                = 1       # verbosity in Amr.cpp
 #amr.grid_log         = grdlog  # name of grid logging file
 
 # REFINEMENT / REGRIDDING
-amr.max_level       = 0      # maximum level number allowed
+amr.max_level       = 2       # maximum level number allowed
 amr.ref_ratio       = 2 2 2 2 # refinement ratio
 amr.regrid_int      = 2       # how often to regrid
 amr.blocking_factor = 8       # block factor in grid generation
@@ -62,7 +60,7 @@ amr.check_int       = -1       # number of timesteps between checkpoints
 
 # PLOTFILES
 amr.plot_file       = plt
-amr.plot_int        = 10
+amr.plot_int        = 100
 amr.derive_plot_vars=ALL
 
 # PROBIN FILENAME
