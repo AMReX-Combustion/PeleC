@@ -38,7 +38,7 @@ contains
     ! either case....how do we know it's Outflow?  We have to assume
     ! that the setup routines converted Outflow to FOEXTRAP.
 
-    !     XLO
+   !     XLO
     if ( (bc(1,1,1).eq.EXT_DIR).and. adv_lo(1).lt.domlo(1)) then
        do i = adv_lo(1), domlo(1)-1
           x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
@@ -51,7 +51,7 @@ contains
           end do
        end do
     end if
-
+   
     !     XHI
     if ( (bc(1,2,1).eq.EXT_DIR).and. adv_hi(1).gt.domhi(1)) then
        do i = domhi(1)+1, adv_hi(1)
@@ -65,7 +65,7 @@ contains
           end do
        end do
     end if
-
+   
     if (dim .gt. 1) then
        !     YLO
        if ( (bc(2,1,1).eq.EXT_DIR).and. adv_lo(2).lt.domlo(2)) then
@@ -80,7 +80,7 @@ contains
              end do
           end do
        end if
-
+   
        !     YHI
        if ( (bc(2,2,1).eq.EXT_DIR).and. adv_hi(2).gt.domhi(2)) then
           do i = adv_lo(1), adv_hi(1)
@@ -94,29 +94,29 @@ contains
              end do
           end do
        end if
-
+   
        if (dim .gt. 2) then
           !     ZLO
           if ( (bc(3,1,1).eq.EXT_DIR).and. adv_lo(3).lt.domlo(3)) then
              do i = adv_lo(1), adv_hi(1)
                 x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
-                do j = adv_lo(2), domlo(2)-1
+                do j = adv_lo(2), adv_hi(2)
                    x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
-                   do k = adv_lo(3), adv_hi(3)
+                   do k = adv_lo(3), domlo(3)-1
                       x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
                       call bcnormal(x,adv(i,j,domlo(3),:),adv(i,j,k,:),3,+1,time)
                    end do
                 end do
              end do
           end if
-
+   
           !     ZHI
           if ( (bc(3,2,1).eq.EXT_DIR).and. adv_hi(3).gt.domhi(3)) then
              do i = adv_lo(1), adv_hi(1)
                 x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
-                do j = domhi(2)+1, adv_hi(2)
+                do j = adv_lo(2), adv_hi(2)
                    x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
-                   do k = adv_lo(3), adv_hi(3)
+                   do k = domhi(3)+1, adv_hi(3)
                       x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
                       call bcnormal(x,adv(i,j,domhi(3),:),adv(i,j,k,:),3,-1,time)
                    end do
@@ -133,91 +133,24 @@ contains
 
     use probdata_module
     use network, only: nspec
-    use prob_params_module, only : Interior, Inflow, Outflow, SlipWall, NoSlipWall, &
-                                   problo, probhi, dim
-
-    use meth_params_module, only : URHO, UMX, UMY, UMZ, UTEMP, UEDEN, UEINT, UFS, NVAR
+    use meth_params_module, only : URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS
     use eos_type_module
     use eos_module
 
     implicit none
 
-    double precision :: x(3),time, u(3)
-    double precision :: u_int(NVAR),u_ext(NVAR)
+    double precision :: x(3),time
+    double precision :: u_int(*),u_ext(*)
+
     integer, optional, intent(out) :: bc_type
     double precision, optional, intent(out) :: bc_params(6)
     double precision, optional, intent(out) :: bc_target(5)
 
-    integer :: flag_nscbc, which_bc_type
-    double precision :: relax_U, relax_V, relax_W, relax_T, beta, sigma_out
-
-
     integer :: dir,sgn
     type (eos_t) :: eos_state
 
-    flag_nscbc = 0
-
-    ! When optional arguments are present, GC-NSCBC is activated
-    ! Generic values are auto-filled for numerical parameters,
-    ! but should be set by the user for each BC
-    ! Note that in the impose_NSCBC_xD.f90 routine, not all parameters are used in same time
-    if (present(bc_type).and.present(bc_params).and.present(bc_target)) then
-
-      flag_nscbc = 1
-      relax_U = 0.5d0 ! For inflow only, relax parameter for x_velocity
-      relax_V = 0.5d0 ! For inflow only, relax parameter for y_velocity
-      relax_W = 0.5d0 ! For inflow only, relax parameter for z_velocity
-      relax_T = 0.2d0 ! For inflow only, relax parameter for temperature
-      beta = 0.2d0  ! Control the contribution of transverse terms
-      sigma_out = 0.25d0 ! For outflow only, relax parameter
-      which_bc_type = Interior ! This is to ensure that nothing will be done if the user don't set anything
-    endif
-
-call build(eos_state)
-
-
-
-   if (dir == 1) then
-     if (sgn == 1) then
-
-
     ! for the Sedov problem, we will always set the state to the ambient conditions
-
-        relax_U = 1.00d0
-        relax_V = 0.20d0
-        relax_W = 0.20d0
-        relax_T = - 0.2d0
-        beta = 1.0d0
-
-        which_bc_type = Inflow
-
-
-         
-     elseif (sgn .eq. -1) then
-
-          which_bc_type = Outflow
-          sigma_out = 0.28d0
-          beta = 1.0d0
-
-     endif
-   endif
-
-   if (dir == 2) then
-     
-      which_bc_type = Outflow
-      sigma_out = 0.28d0
-      beta = 1.0d0
-
-   endif
-
-   if (dir == 3) then
-      which_bc_type = Outflow
-      sigma_out = 0.28d0
-      beta = 1.0d0
-   endif
-
-
-
+       call build(eos_state)
 
        eos_state % rho = dens_domain
        eos_state % p = p_domain
@@ -226,43 +159,17 @@ call build(eos_state)
 
        call eos_rp(eos_state)
 
-       u(1) = vx_in
-       u(2) = vy_in
-       u(3) = 0.0d0
-
-
-       u_ext(UFS:UFS+nspec-1) = eos_state % massfrac * eos_state % rho
-       u_ext(URHO)               = eos_state % rho
-       u_ext(UMX)                = eos_state % rho  *  u(1)
-       u_ext(UMY)                = eos_state % rho  *  u(2)
-       u_ext(UMZ)                = eos_state % rho  *  u(3)
-       u_ext(UTEMP)              = eos_state % T
-       u_ext(UEINT)              = eos_state % rho  *   eos_state % e
-       u_ext(UEDEN)              = eos_state % rho  *  (eos_state % e + 0.5d0 * (u(1)**2 + u(2)**2) + u(3)**2)
-
-      ! Here the optional parameters are filled by the local variables if they were present
-    if (flag_nscbc == 1) then
-      bc_type = which_bc_type
-      bc_params(1) = relax_T
-      bc_params(2) = relax_U
-      bc_params(3) = relax_V
-      bc_params(4) = relax_W
-      bc_params(5) = beta
-      bc_params(6) = sigma_out
-      bc_target(1) = U_ext(UMX)/U_ext(URHO)
-      bc_target(2) = U_ext(UMY)/U_ext(URHO)
-      bc_target(3) = U_ext(UMZ)/U_ext(URHO)
-      bc_target(4) = U_ext(UTEMP)
-      bc_target(5) = eos_state%p
-    end if
-
-
+       u_ext(URHO)   = eos_state % rho
+       u_ext(UMX)    = eos_state % rho * vx_in
+       u_ext(UMY)    = eos_state % rho * vy_in
+       u_ext(UMZ)    = 0.d0
+       u_ext(UEINT)  = eos_state % rho * eos_state % e
+       u_ext(UEDEN)  = u_ext(UEINT)+0.5d0*dens_domain*(vx_in**2+vy_in**2)
+       u_ext(UFS:UFS+nspec-1)  = eos_state % rho * eos_state % massfrac(:)
 
        call destroy(eos_state)
 
 
   end subroutine bcnormal
-
-
 
 end module bc_fill_module

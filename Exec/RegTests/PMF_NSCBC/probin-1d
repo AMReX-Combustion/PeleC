@@ -1,0 +1,16 @@
+&fortin
+  pamb = 101325000.d0  
+  phi_in = -.5d0
+  pertmag = .02d0
+  pertmag = .001d0
+  pmf_datafile = "Davis_H2_p100_2phi1_0000tu0100.dat"
+/
+
+&extern
+  react_T_min = 90
+/
+
+&tagging
+  max_ftracerr_lev = 4
+  ftracerr = 150.d-6
+/

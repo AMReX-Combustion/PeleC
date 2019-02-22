@@ -196,7 +196,7 @@ contains
     do_hydro = -1;
     do_mol_AD = 0;
     nscbc_adv = 1;
-    nscbc_diff = 1 ;
+    nscbc_diff = 0 ;
     hybrid_hydro = 0;
     ppm_type = 1;
     ppm_trace_sources = 1;

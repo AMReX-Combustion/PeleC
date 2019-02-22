@@ -15,8 +15,8 @@ amr.n_cell           =   16	    512
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
-pelec.lo_bc       =  "Interior" "UserBC"
-pelec.hi_bc       =  "Interior" "UserBC"
+pelec.lo_bc       =  "Interior" "Hard"
+pelec.hi_bc       =  "Interior" "Hard"
 
 # TIME STEP CONTROL
 pelec.cfl            = 0.5     # cfl number for hyperbolic system

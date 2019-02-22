@@ -2,19 +2,6 @@ module bc_fill_module
 
   implicit none
 
-! This is a dedicated routine for imposing GC-NSCBC
-! (Ghost-Cells Navier-Stokes Characteristic Boundary Conditions)
-! For the theory, see Motheau et al. AIAA J. Vol. 55, No. 10 : pp. 3399-3408, 2017. 
-
-! PeleC requires ghost cells to be filled but it is not done in AMReX for EXT_DIR.
-! So here we fill the corresponding ghost-cells with the target values provided by the user.
-! These target values are temporary and ghost-cells will be recomputed with the NSCBC theory
-! in the routine 'impose_NSCBC' located in Src_(dim)d
-
-! Basically the only thing that GC-NSCBC requires is that the original bcnormal routine
-! must include 2 optional parameters that are called from 'impose_NSCBC' located in Src_(dim)d
-
-
 contains
 
   subroutine pc_hypfill(adv,adv_lo,adv_hi,domlo,domhi,delta,xlo,time,bc) &
@@ -40,7 +27,7 @@ contains
        call filcc_nd(adv(:,:,:,n),adv_lo,adv_hi,domlo,domhi,delta,xlo,bc(:,:,n))
     enddo
 
-    !     XLO
+   !     XLO
     if ( (bc(1,1,1).eq.EXT_DIR).and. adv_lo(1).lt.domlo(1)) then
        do i = adv_lo(1), domlo(1)-1
           x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
@@ -53,7 +40,7 @@ contains
           end do
        end do
     end if
-
+   
     !     XHI
     if ( (bc(1,2,1).eq.EXT_DIR).and. adv_hi(1).gt.domhi(1)) then
        do i = domhi(1)+1, adv_hi(1)
@@ -67,35 +54,66 @@ contains
           end do
        end do
     end if
-
-    !     YLO
-    if ( (bc(2,1,1).eq.EXT_DIR).and. adv_lo(2).lt.domlo(2)) then
-       do i = adv_lo(1), adv_hi(1)
-          x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
-          do j = adv_lo(2), domlo(2)-1
-             x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
-             do k = adv_lo(3), adv_hi(3)
-                x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(i,domlo(2),k,:),adv(i,j,k,:),2,+1,time)
+   
+    if (dim .gt. 1) then
+       !     YLO
+       if ( (bc(2,1,1).eq.EXT_DIR).and. adv_lo(2).lt.domlo(2)) then
+          do i = adv_lo(1), adv_hi(1)
+             x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
+             do j = adv_lo(2), domlo(2)-1
+                x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
+                do k = adv_lo(3), adv_hi(3)
+                   x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
+                   call bcnormal(x,adv(i,domlo(2),k,:),adv(i,j,k,:),2,+1,time)
+                end do
              end do
           end do
-       end do
-    end if
-
-    !     YHI
-    if ( (bc(2,2,1).eq.EXT_DIR).and. adv_hi(2).gt.domhi(2)) then
-       do i = adv_lo(1), adv_hi(1)
-          x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
-          do j = domhi(2)+1, adv_hi(2)
-             x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
-             do k = adv_lo(3), adv_hi(3)
-                x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
-                call bcnormal(x,adv(i,domhi(2),k,:),adv(i,j,k,:),2,-1,time)
+       end if
+   
+       !     YHI
+       if ( (bc(2,2,1).eq.EXT_DIR).and. adv_hi(2).gt.domhi(2)) then
+          do i = adv_lo(1), adv_hi(1)
+             x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
+             do j = domhi(2)+1, adv_hi(2)
+                x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
+                do k = adv_lo(3), adv_hi(3)
+                   x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
+                   call bcnormal(x,adv(i,domhi(2),k,:),adv(i,j,k,:),2,-1,time)
+                end do
              end do
           end do
-       end do
+       end if
+   
+       if (dim .gt. 2) then
+          !     ZLO
+          if ( (bc(3,1,1).eq.EXT_DIR).and. adv_lo(3).lt.domlo(3)) then
+             do i = adv_lo(1), adv_hi(1)
+                x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
+                do j = adv_lo(2), adv_hi(2)
+                   x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
+                   do k = adv_lo(3), domlo(3)-1
+                      x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
+                      call bcnormal(x,adv(i,j,domlo(3),:),adv(i,j,k,:),3,+1,time)
+                   end do
+                end do
+             end do
+          end if
+   
+          !     ZHI
+          if ( (bc(3,2,1).eq.EXT_DIR).and. adv_hi(3).gt.domhi(3)) then
+             do i = adv_lo(1), adv_hi(1)
+                x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
+                do j = adv_lo(2), adv_hi(2)
+                   x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
+                   do k = domhi(3)+1, adv_hi(3)
+                      x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
+                      call bcnormal(x,adv(i,j,domhi(3),:),adv(i,j,k,:),3,-1,time)
+                   end do
+                end do
+             end do
+          end if
+       end if
     end if
-
 
   end subroutine pc_hypfill
 
@@ -176,18 +194,18 @@ contains
     ! Set outflow pressure
     which_bc_type = Outflow
     sigma_out = 0.28d0
-    beta = 0.4d0
+    beta = -1.0d0
   
     u(1:3) = 0.d0
     eos_state % massfrac(1) = 1.d0
 
-if (sgn == 1) then
-eos_state%p = 1.0d0
-eos_state%rho = 1.0d0
-elseif (sgn == -1) then
-eos_state%p = 0.1d0
-eos_state%rho = 0.1250d0
-endif
+    if (sgn == 1) then
+      eos_state%p = 1.0d0
+      eos_state%rho = 1.0d0
+    elseif (sgn == -1) then
+      eos_state%p = 0.1d0
+      eos_state%rho = 0.1250d0
+    endif
 
     call eos_rp(eos_state)
 
@@ -200,13 +218,7 @@ endif
        u_ext(UEINT)              = eos_state % rho  *   eos_state % e
        u_ext(UEDEN)              = eos_state % rho  *  (eos_state % e + 0.5d0 * (u(1)**2 + u(2)**2) + u(3)**2)
 
-!    eos_state % massfrac(:) = u_ext(UFS:UFS+nspec-1)
-!    eos_state % T = u_ext(UTEMP)
-!    eos_state % rho = u_ext(URHO)
-!    call eos_rt(eos_state)
 
-
-   write(*,*) 'DEBUG TOTO',eos_state % T, eos_state % rho, eos_state%p
     ! Here the optional parameters are filled by the local variables if they were present
     if (flag_nscbc == 1) then
       bc_type = which_bc_type

@@ -12,19 +12,19 @@ amr.n_cell           =  256 256 256
 amr.n_cell           =  64 64 64
 #amr.n_cell           =  128 128 128
 
-
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 
-pelec.lo_bc       =  "NoSlipWall"  "NoSlipWall"  "UserBC"
-pelec.hi_bc       =  "NoSlipWall"  "NoSlipWall"  "UserBC"
- 
+pelec.lo_bc       =  "NoSlipWall"  "NoSlipWall"  "Hard"
+pelec.hi_bc       =  "NoSlipWall"  "NoSlipWall"  "FOExtrap"
+
 # Problem setup
 pelec.eb_boundary_T = 300.
 pelec.eb_isothermal = 1
 eb_verbosity = 1
 eos_gamma = 1.4
+
 
 
 # WHICH PHYSICS

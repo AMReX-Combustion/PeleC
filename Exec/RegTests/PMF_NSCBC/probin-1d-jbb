@@ -1,0 +1,13 @@
+&fortin
+  pamb = 1013250.d0  
+  pamb = 20265000.d0  
+  phi_in = -.5d0
+  pertmag = .02d0
+  pertmag = .0002d0
+  pmf_datafile = "LiDryer_H2_p100_phi1_0000tu0300.dat"
+/
+
+&tagging
+  max_ftracerr_lev = 4
+  ftracerr = 1.d-6
+/
