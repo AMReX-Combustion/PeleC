@@ -88,11 +88,6 @@ contains
   dx = delta(1)
   
   bcMask(:) = 0
-  
-  if ( flag_nscbc_isAnyPerio == 1) then
-    call bl_abort("If we have a periodicity in 1D, it makes absolutly no sense &
-           to use NSCBC and the code should not run this routine !")
-  endif
 
  !--------------------------------------------------------------------------   
  ! lower X
