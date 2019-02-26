@@ -17,7 +17,7 @@ contains
       use meth_params_module, only : QVAR, QRHO, QU, QV, QW, &
                                      QREINT, QPRES, &
                                      npassive, qpass_map, small_dens, small_pres, ppm_type
-      use bl_constants_module
+      use amrex_constants_module
 
       implicit none
 
@@ -430,7 +430,7 @@ contains
       use meth_params_module, only : QVAR, QRHO, QU, QV, QW, &
                                      QREINT, QPRES, &
                                      npassive, qpass_map, small_dens, small_pres, ppm_type
-      use bl_constants_module
+      use amrex_constants_module
 
       implicit none
 

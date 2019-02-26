@@ -76,7 +76,7 @@ contains
 
     use amrex_mempool_module, only : bl_allocate, bl_deallocate
     use meth_params_module, only : ppm_type
-    use bl_constants_module
+    use amrex_constants_module
 
     implicit none
 
@@ -535,7 +535,7 @@ contains
 
     use amrex_mempool_module, only : bl_allocate, bl_deallocate
     use meth_params_module, only : ppm_type
-    use bl_constants_module
+    use amrex_constants_module
 
     implicit none
 

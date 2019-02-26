@@ -26,7 +26,7 @@ subroutine pc_umdrv(is_finest_level, time, &
                                  first_order_hydro
   use advection_util_2d_module, only : divu
   use advection_util_module, only : compute_cfl
-  use bl_constants_module, only : ZERO, ONE
+  use amrex_constants_module, only : ZERO, ONE
   use flatten_module, only : uflaten
   use prob_params_module, only : coord_type
   use advection_module, only : umeth2d, consup

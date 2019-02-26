@@ -24,7 +24,7 @@ contains
   use eos_module
   use fundamental_constants_module, only: k_B, n_A
 
-  use bl_constants_module
+  use amrex_constants_module
   use bc_fill_module, only: bcnormal
   use prob_params_module, only : physbc_lo, physbc_hi, problo, probhi, &
                                  UserBC, Inflow, Outflow, Symmetry, SlipWall, NoSlipWall

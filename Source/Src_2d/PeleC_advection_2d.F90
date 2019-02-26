@@ -54,7 +54,7 @@ contains
     use trace_ppm_module, only : trace_ppm
     use transverse_module, only : transx, transy
     use riemann_module, only: cmpflx, shock
-    use bl_constants_module, only : ZERO, HALF
+    use amrex_constants_module, only : ZERO, HALF
     implicit none
 
     integer qd_l1, qd_l2, qd_h1, qd_h2
@@ -268,7 +268,7 @@ contains
                                    UEDEN, UEINT, UTEMP, NGDNV, GDPRES, track_grid_losses, &
                                    limit_fluxes_on_small_dens, QVAR
     use prob_params_module, only : coord_type, domlo_level, domhi_level, center
-    use bl_constants_module, only : ZERO, HALF
+    use amrex_constants_module, only : ZERO, HALF
     use advection_util_2d_module, only : normalize_species_fluxes
     use advection_util_module, only: limit_hydro_fluxes_on_small_dens
     use pelec_util_module, only : position, linear_to_angular_momentum

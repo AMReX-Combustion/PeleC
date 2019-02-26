@@ -12,7 +12,7 @@
 
 module meth_params_module
 
-  use bl_error_module
+  use amrex_error_module
 
   implicit none
 

@@ -92,7 +92,7 @@ contains
     use prob_params_module, only : problo, dim
     use eos_module
     use network, only: nspec
-    use bl_constants_module, only: M_PI, HALF
+    use amrex_constants_module, only: M_PI, HALF
 
     implicit none
 

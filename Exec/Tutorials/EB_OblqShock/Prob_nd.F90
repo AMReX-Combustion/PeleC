@@ -76,7 +76,7 @@ contains
     use network, only: nspec
     use probdata_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP, UFS
-    use bl_constants_module, only: M_PI, FOUR3RD, ONE, HALF, ZERO
+    use amrex_constants_module, only: M_PI, FOUR3RD, ONE, HALF, ZERO
     use eos_type_module
     use eos_module
     implicit none

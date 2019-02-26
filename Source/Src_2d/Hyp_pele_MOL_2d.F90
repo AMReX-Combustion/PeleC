@@ -54,7 +54,7 @@ module hyp_advection_module
     use eos_type_module
     use eos_module, only : eos_t, eos_rp
     use riemann_module, only: cmpflx, shock
-    use bl_constants_module
+    use amrex_constants_module
     use amrex_fort_module, only : amrex_real
 
     implicit none

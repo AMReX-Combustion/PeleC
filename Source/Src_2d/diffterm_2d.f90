@@ -34,7 +34,7 @@ contains
 
     use actual_network, only     : nspec
     use meth_params_module, only : NVAR, UMX, UMY, UMZ, UEDEN, UFS, QVAR, QU, QV, QPRES, QTEMP, QFS, QRHO
-    use bl_constants_module
+    use amrex_constants_module
     use eos_type_module
     use eos_module
     use prob_params_module, only : physbc_lo, physbc_hi

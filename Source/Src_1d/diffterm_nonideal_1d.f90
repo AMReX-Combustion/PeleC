@@ -26,7 +26,7 @@ contains
 
     use actual_network, only     : nspec
     use meth_params_module, only : NVAR, UMX, UEDEN, UFS, QVAR, QU, QPRES, QTEMP, QFS, QRHO
-    use bl_constants_module
+    use amrex_constants_module
     use eos_type_module
     use eos_module
 

@@ -21,7 +21,7 @@ subroutine pc_umdrv(is_finest_level, time, &
   use meth_params_module, only : QVAR, QU, QV, QW, QPRES, &
                                  NQAUX, NVAR, NHYP, use_flattening, &
                                  NGDNV, GDU, GDPRES, first_order_hydro
-  use bl_constants_module, only : ZERO, HALF, ONE
+  use amrex_constants_module, only : ZERO, HALF, ONE
   use advection_util_module, only : compute_cfl
   use flatten_module, only : uflaten
   use prob_params_module, only : coord_type

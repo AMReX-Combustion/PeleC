@@ -32,7 +32,7 @@ contains
                         new_state,ns_lo,ns_hi,&
                         src,src_lo,src_hi,problo,dx,time,dt) bind(C, name = "pc_ext_src")
 
-    use bl_constants_module, only: ZERO
+    use amrex_constants_module, only: ZERO
     use meth_params_module, only : NVAR
 
     implicit none

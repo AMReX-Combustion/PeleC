@@ -1,7 +1,7 @@
 module riemann_module
 
-  use bl_types
-  use bl_constants_module
+  use amrex_fort_module
+  use amrex_constants_module
 
     use meth_params_module, only : NQ, QVAR, NVAR, QRHO, QU, QV, QW, QPRES, QREINT, &
                                    QFS, QFX, &

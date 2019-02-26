@@ -1,7 +1,7 @@
 module riemann_module
 
-  use bl_types
-  use bl_constants_module
+  use amrex_fort_module
+  use amrex_constants_module
   use riemann_util_module
 
   use meth_params_module, only : NQ, QVAR, NVAR, QRHO, QU, QV, QW, &
@@ -20,7 +20,7 @@ module riemann_module
 
   public cmpflx, shock, riemanncg
 
-  real (kind=dp_t), parameter :: smallu = 1.e-12_dp_t
+  real (amrex_real), parameter :: smallu = 1.e-12_amrex_real
 
 contains
 
@@ -375,7 +375,7 @@ contains
 
     ! this implements the approximate Riemann solver of Colella & Glaz (1985)
 
-    use bl_error_module
+    use amrex_fort_module
     use network, only : nspec, naux
     use eos_type_module
     use eos_module

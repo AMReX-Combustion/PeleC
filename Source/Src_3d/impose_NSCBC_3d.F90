@@ -25,12 +25,12 @@ contains
                          flag_nscbc_isAnyPerio, flag_nscbc_perio, &
                          time,delta,dt,verbose) bind(C, name="impose_NSCBC")
     
-  use bl_error_module
+  use amrex_fort_module
   use network, only : nspec
   use eos_module
   use fundamental_constants_module, only: k_B, n_A
 
-  use bl_constants_module
+  use amrex_constants_module
   use prob_params_module, only : physbc_lo, physbc_hi, problo, probhi, UserBC
     
   use meth_params_module, only : NVAR, NQAUX,QVAR
@@ -995,7 +995,7 @@ end subroutine impose_NSCBC
                                 qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
                                
   use eos_module
-  use bl_constants_module, only : ONE
+  use amrex_constants_module, only : ONE
   use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP,&
                                  UFS, NQAUX, QC, QGAMC, QRSPEC, &
                                  QC, QDPDE, QDPDR, QCSML, QGAMC, &

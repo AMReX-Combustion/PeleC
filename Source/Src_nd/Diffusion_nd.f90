@@ -251,7 +251,7 @@ contains
        bind(C, name="pc_move_transport_coeffs_to_ec")
 
     use prob_params_module, only : physbc_lo, physbc_hi
-    use bl_constants_module
+    use amrex_constants_module
 
     implicit none
 
@@ -260,8 +260,8 @@ contains
     integer         , intent(in   ) :: c_lo(3), c_hi(3)
     integer         , intent(in   ) :: e_lo(3), e_hi(3)
     integer         , intent(in   ) :: dir, nc, do_harmonic
-    real (kind=dp_t), intent(in   ) :: cfab(c_lo(1):c_hi(1),c_lo(2):c_hi(2),c_lo(3):c_hi(3),nc)
-    real (kind=dp_t), intent(inout) :: efab(e_lo(1):e_hi(1),e_lo(2):e_hi(2),e_lo(3):e_hi(3),nc)
+    real (amrex_real), intent(in   ) :: cfab(c_lo(1):c_hi(1),c_lo(2):c_hi(2),c_lo(3):c_hi(3),nc)
+    real (amrex_real), intent(inout) :: efab(e_lo(1):e_hi(1),e_lo(2):e_hi(2),e_lo(3):e_hi(3),nc)
 
     ! local variables
     integer          :: i, j, k, n

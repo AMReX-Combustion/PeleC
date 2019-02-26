@@ -18,7 +18,7 @@ contains
 
     use meth_params_module, only : URHO
 
-    use bl_constants_module
+    use amrex_constants_module
 #ifdef USE_MASA
     use masa
 #endif
@@ -72,7 +72,7 @@ contains
     ! solution and the MMS solution
     !
     use meth_params_module, only : URHO, UMX
-    use bl_constants_module
+    use amrex_constants_module
 #ifdef USE_MASA
     use masa
 #endif
@@ -125,7 +125,7 @@ contains
     ! solution and the MMS solution
     !
     use meth_params_module, only : URHO, UMY
-    use bl_constants_module
+    use amrex_constants_module
 #ifdef USE_MASA
     use masa
 #endif
@@ -178,7 +178,7 @@ contains
     ! solution and the MMS solution
     !
     use meth_params_module, only : URHO, UMZ
-    use bl_constants_module
+    use amrex_constants_module
 #ifdef USE_MASA
     use masa
 #endif
@@ -231,7 +231,7 @@ contains
     ! solution and the MMS solution
     !
 
-    use bl_constants_module
+    use amrex_constants_module
     use meth_params_module, only : URHO, UEINT, UTEMP, UFS, UFX
     use eos_module
 #ifdef USE_MASA

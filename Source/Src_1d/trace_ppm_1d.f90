@@ -17,7 +17,7 @@ contains
                        qxm,qxp,qpd_l1,qpd_h1, &
                        ilo,ihi,domlo,domhi,dx,dt)
 
-    use bl_constants_module
+    use amrex_constants_module
     use meth_params_module, only : QVAR, QRHO, QU, QREINT, QPRES, &
          QGAME, &
          small_dens, small_pres, fix_mass_flux, &

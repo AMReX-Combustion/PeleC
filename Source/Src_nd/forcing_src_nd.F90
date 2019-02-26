@@ -16,7 +16,7 @@ contains
                             src,src_lo,src_hi,problo,dx,xlo,xhi, &
                             time,dt) bind(C, name = "pc_forcing_src")
 
-    use bl_constants_module, only: ZERO
+    use amrex_constants_module, only: ZERO
     use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ
     use prob_params_module, only: dim
 

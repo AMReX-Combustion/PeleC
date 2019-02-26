@@ -26,7 +26,7 @@ contains
 
     use prob_params_module, only : physbc_lo, physbc_hi
     use meth_params_module, only : QVAR, QU, QV, QW
-    use bl_constants_module
+    use amrex_constants_module
 
     implicit none
 
@@ -98,7 +98,7 @@ contains
 
     use prob_params_module, only : physbc_lo, physbc_hi
     use meth_params_module, only : QVAR, QU, QV, QW
-    use bl_constants_module
+    use amrex_constants_module
     use amrex_ebcellflag_module, only : get_neighbor_cells
 
     implicit none

@@ -21,7 +21,7 @@ contains
          npassive, qpass_map, small_dens, ppm_type, fix_mass_flux, use_pslope
     use prob_params_module, only : physbc_lo, physbc_hi
     use slope_module, only : uslope, pslope
-    use bl_constants_module
+    use amrex_constants_module
 
     implicit none
 

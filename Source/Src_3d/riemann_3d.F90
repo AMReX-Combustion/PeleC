@@ -1,7 +1,7 @@
 module riemann_module
 
-  use bl_types
-  use bl_constants_module
+  use amrex_fort_module
+  use amrex_constants_module
   use riemann_util_module
   use meth_params_module, only : NQ, QVAR, NVAR, QRHO, QU, QV, QW, &
                                  QPRES, QGAME, QREINT, QFS, &
@@ -19,7 +19,7 @@ module riemann_module
 
   public cmpflx, shock
 
-  real (kind=dp_t), parameter :: smallu = 1.e-12_dp_t
+  real (amrex_real), parameter :: smallu = 1.e-12_amrex_real
 
 contains
 
@@ -258,7 +258,7 @@ contains
   subroutine shock(q,qd_lo,qd_hi,shk,s_lo,s_hi,lo,hi,dx)
 
     use prob_params_module, only : coord_type
-    use bl_constants_module
+    use amrex_constants_module
 
     integer, intent(in) :: qd_lo(3), qd_hi(3)
     integer, intent(in) :: s_lo(3), s_hi(3)

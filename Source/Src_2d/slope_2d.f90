@@ -16,7 +16,7 @@ contains
                     dq,qpd_l1,qpd_l2,qpd_h1,qpd_h2, &
                     ilo1,ilo2,ihi1,ihi2,nv,idir)
 
-    use bl_constants_module        
+    use amrex_constants_module        
 
     implicit none
 
@@ -116,7 +116,7 @@ contains
                     src,src_l1,src_l2,src_h1,src_h2, &
                     ilo1,ilo2,ihi1,ihi2,dx,dy,idir)
     
-    use bl_constants_module
+    use amrex_constants_module
     use meth_params_module, only: QU, QV, QVAR
     
     implicit none
@@ -225,7 +225,7 @@ contains
                           dx, dy, &
                           ilo, jlo, ihi, jhi)
 
-    use bl_constants_module        
+    use amrex_constants_module        
 
     implicit none
 
