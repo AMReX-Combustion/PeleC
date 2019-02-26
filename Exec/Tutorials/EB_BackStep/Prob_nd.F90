@@ -11,7 +11,7 @@ contains
   subroutine amrex_probinit (init,name,namlen,problo,probhi) bind(C, name = "amrex_probinit")
     
     use probdata_module
-    use bl_error_module
+    use amrex_fort_module
     use extern_probin_module, only: const_viscosity, const_bulk_viscosity, const_conductivity, const_diffusivity
     use eos_module
 
