@@ -10,82 +10,35 @@ Algorithms
 PeleC Timestepping
 ------------------
 
-PeleC uses two method of timestepping: a second order explicit method, and a spectral defferred correction (SDC) approach. The SDC approach uses iteration to couple the various source terms (advection, diffusion, reaction, spray) together. These approaches share several code modules to perform the update. 
+PeleC uses two method of timestepping: a second order explicit method, and a spectral defferred correction (SDC) approach. These approaches share several code modules to perform the update; both used an iteration to couple the various physics together.
 
 
-Spectral Deferred Correction
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 
- .. note::
-  	This section under development
+Standard Time Advance
+~~~~~~~~~~~~~~~~~~~~~
+The standard time advance is a second order predictor-corrector approach with (optional) fixed point iteration to tightly couple the reaction and transport. The Advection and diffusio (:math:`AD`) terms are computed explicitly using a finite-volume formulation; reaction trerms are integrated with VODE (SUNDIALS) with a forcing term that includes advection and diffusion (:math:`F_{AD}`). For cold start the reaction term (:math:`I_R`) is evaluated from the instantaneous state without a forcing term.
 
 .. math::
+   S^n = AD(\overbrace{u^n}^\text{FillPatch at $t^n$})
 
-	\Omega_i \Rightarrow \text{source term for all components from } i^{\text{th}} \text{physics}
+   u^* = u^n + dt(S^n +I_R)
 
-	S \Rightarrow \text{State}
+   S^{n+1}= AD(\overbrace{u^*}^\text{FillPatch at $t^{n+1}$})
 
-	S(t) \Rightarrow \text{Fillpached state}
+   u^{**} = \frac{1}{2}(u^n+u^*) + \frac{1}{2}\left(S^{n+1}+I_R\right){dt}
 
-.. math::
-	\Omega^\text{old} \leftarrow f(S(t))
-	
-.. math::
-	\Omega^{\text{new}} \leftarrow 	\Omega^{\text{old}}
+   F_{AD} = \frac{1}{dt} (u^{**} -u^n) - I_R
 
-.. math::
-	\Omega^H \leftarrow h(S(t))
+   \text{update } I_R(u^n, F_{AD}) \text{ and }  u^{n+1} = u^n + dt(F_{AD} +I_R)\text{.}
 
-.. math::
-	S^\text{new} \leftarrow S^\text{old} + 0.5\Delta t \sum_i \left[\Omega_i^\text{old} + \Omega_i^\text{new} \right] + (\Delta t)\Omega^H + (\Delta t )I_R
+
+Without reaction this would be the end of the timestep; with reaction, we iterate :math:`mol\_iters` times:
 
 .. math::
-	\Omega^\text{new} \leftarrow f'(S(t))
+   S^{n+1}= AD(\overbrace{u^{n+1}}^\text{FillPatch at $t^{n+1}$})
 
-.. math::
-	S^\text{new} \leftarrow r( \Omega^\text{old}, \Omega^\text{new}, S^\text{old}, S^\text{new})
+   F_{AD} = \frac{1}{2}(S^n+S^{n+1})
 
-
-Reaction update:
-
-
-.. math::
-	(\rho e_k)^\dagger = \frac{1}{2\rho^\dagger}\rho u_i^\dagger \rho u_i^\dagger
-
-.. math::
-	\hat{\rho} = \sum_i (\rho Y_i)^\dagger
-
-.. math::
-	e = \frac{\rho^\dagger - (\rho e_k)^\dagger}{\rho^\dagger}
-
-.. math::
-	\dot{(\rho e_k)} = \frac{\left[ (\rho e)^\ddagger - (\rho e_k)^\ddagger \right] - (\hat{\rho}e)}{\Delta t}
-
-.. math::
-	\dot{(\rho Y)_{\text{ext},k}} = a_{\text{ext},k} \qquad k \in \text{species}
-
-.. math::
-	(\rho Y)_k^\ddagger, e^\ddagger, T^\ddagger \leftarrow R\left[T^\dagger, (\rho Y)^\dagger, \dot{(\rho e_k)}, \dot{(\rho Y)_{\text{ext},k}} \right]
-
-.. math::
-	\rho^\ddagger = \sum_k (\rho Y_k)^\ddagger
-
-.. math::
-	(\rho u_i)^\ddagger = (\rho u_i)^\dagger + \Delta t a_i \qquad i \in UMX,UMZ
-
-.. math::
-	(\rho e)^\ddagger = \rho^\ddagger e^\ddagger
-
-.. math::
-	(\rho E)^\ddagger = (\rho e)^\ddagger + \frac{1}{2}\rho^\ddagger (\rho u_i)^\ddagger  (\rho u_i)^\ddagger
-
-If updating, copy to S...
-
-.. math::
-	I_{R,k} = \frac{\rho Y_k)^\ddagger - (\rho Y_l)^\dagger}{\Delta t} - a_k \qquad k \in \text{species}
-
-.. math::
-	I_{R,k} = \frac{(\rho e)^\ddagger - (\rho e)^\dagger}{\Delta t} - a_k \qquad k \in \text{UEDEN}
+   \text{update } I_R(u^n, F_{AD}) \text{ and }  u^{n+1} = u^n + dt(F_{AD} +I_R)\text{.}
 
 
 Hyperbolics
