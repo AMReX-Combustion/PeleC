@@ -12,7 +12,7 @@ contains
     
     use probdata_module
     use prob_params_module, only: dim
-    use bl_error_module
+    use amrex_fort_module
     implicit none
 
     integer :: init, namlen

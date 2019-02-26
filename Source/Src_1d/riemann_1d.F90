@@ -20,8 +20,7 @@ module riemann_module
 
   public cmpflx
 
-  real (kind=dp_t), parameter :: smallu = 1.e-12_dp_t
-
+  real (amrex_real), parameter :: smallu = 1.e-12_amrex_real
 contains
 
 ! :::
