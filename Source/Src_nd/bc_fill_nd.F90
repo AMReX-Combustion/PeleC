@@ -6,6 +6,7 @@ module bc_fill_module
 
 contains
 
+
   ! All subroutines in this file must be threadsafe because they are called
   ! inside OpenMP parallel regions.
   
@@ -27,35 +28,106 @@ contains
 
     integer          :: n
 
+    ! If the boundary conditions are Interior, Symmetry, SlipWall or NoSlipWall
+    ! we call filcc_nd to fill the ghost cells
+    
     do n = 1,NVAR
        call filcc_nd(adv(:,:,:,n),adv_lo,adv_hi,domlo,domhi,delta,xlo,bc(:,:,n))
     enddo
 
+    ! However, if the boundary condition is "User Defined" with the keyword UserBC
+    ! this means that we use EXT_DIR to prescribe "by hand" the values in the ghost cells.
+    ! Below is an example that you can uncomment
+    
+   !!     XLO
+   ! if ( (bc(1,1,1).eq.EXT_DIR).and. adv_lo(1).lt.domlo(1)) then
+   !    do i = adv_lo(1), domlo(1)-1
+   !       x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
+   !       do j = adv_lo(2), adv_hi(2)
+   !          x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
+   !          do k = adv_lo(3), adv_hi(3)
+   !             x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
+   !             call bcnormal(x,adv(domlo(1),j,k,:),adv(i,j,k,:),1,+1,time)
+   !          end do
+   !       end do
+   !    end do
+   ! end if
+   !
+   ! !     XHI
+   ! if ( (bc(1,2,1).eq.EXT_DIR).and. adv_hi(1).gt.domhi(1)) then
+   !    do i = domhi(1)+1, adv_hi(1)
+   !       x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
+   !       do j = adv_lo(2), adv_hi(2)
+   !          x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
+   !          do k = adv_lo(3), adv_hi(3)
+   !             x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
+   !             call bcnormal(x,adv(domhi(1),j,k,:),adv(i,j,k,:),1,-1,time)
+   !          end do
+   !       end do
+   !    end do
+   ! end if
+   !
+   ! if (dim .gt. 1) then
+   !    !     YLO
+   !    if ( (bc(2,1,1).eq.EXT_DIR).and. adv_lo(2).lt.domlo(2)) then
+   !       do i = adv_lo(1), adv_hi(1)
+   !          x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
+   !          do j = adv_lo(2), domlo(2)-1
+   !             x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
+   !             do k = adv_lo(3), adv_hi(3)
+   !                x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
+   !                call bcnormal(x,adv(i,domlo(2),k,:),adv(i,j,k,:),2,+1,time)
+   !             end do
+   !          end do
+   !       end do
+   !    end if
+   !
+   !    !     YHI
+   !    if ( (bc(2,2,1).eq.EXT_DIR).and. adv_hi(2).gt.domhi(2)) then
+   !       do i = adv_lo(1), adv_hi(1)
+   !          x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
+   !          do j = domhi(2)+1, adv_hi(2)
+   !             x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
+   !             do k = adv_lo(3), adv_hi(3)
+   !                x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
+   !                call bcnormal(x,adv(i,domhi(2),k,:),adv(i,j,k,:),2,-1,time)
+   !             end do
+   !          end do
+   !       end do
+   !    end if
+   !
+   !    if (dim .gt. 2) then
+   !       !     ZLO
+   !       if ( (bc(3,1,1).eq.EXT_DIR).and. adv_lo(3).lt.domlo(3)) then
+   !          do i = adv_lo(1), adv_hi(1)
+   !             x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
+   !             do j = adv_lo(2), adv_hi(2)
+   !                x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
+   !                do k = adv_lo(3), domlo(3)-1
+   !                   x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
+   !                   call bcnormal(x,adv(i,j,domlo(3),:),adv(i,j,k,:),3,+1,time)
+   !                end do
+   !             end do
+   !          end do
+   !       end if
+   !
+   !       !     ZHI
+   !       if ( (bc(3,2,1).eq.EXT_DIR).and. adv_hi(3).gt.domhi(3)) then
+   !          do i = adv_lo(1), adv_hi(1)
+   !             x(1) = xlo(1) + delta(1)*(dble(i-adv_lo(1)) + 0.5d0)
+   !             do j = adv_lo(2), adv_hi(2)
+   !                x(2) = xlo(2) + delta(2)*(dble(j-adv_lo(2)) + 0.5d0)
+   !                do k = domhi(3)+1, adv_hi(3)
+   !                   x(3) = xlo(3) + delta(3)*(dble(k-adv_lo(3)) + 0.5d0)
+   !                   call bcnormal(x,adv(i,j,domhi(3),:),adv(i,j,k,:),3,-1,time)
+   !                end do
+   !             end do
+   !          end do
+   !       end if
+   !    end if
+   ! end if
+    
   end subroutine pc_hypfill
-
-
-
-  subroutine pc_denfill(adv,adv_lo,adv_hi,domlo,domhi,delta,xlo,time,bc) &
-       bind(C, name="pc_denfill")
-
-    use prob_params_module, only: dim  
-
-    implicit none
-
-    include 'AMReX_bc_types.fi'
-
-    integer          :: adv_lo(3),adv_hi(3)
-    integer          :: bc(dim,2,*)
-    integer          :: domlo(3), domhi(3)
-    double precision :: delta(3), xlo(3), time
-    double precision :: adv(adv_lo(1):adv_hi(1),adv_lo(2):adv_hi(2),adv_lo(3):adv_hi(3))
-
-    call filcc_nd(adv,adv_lo,adv_hi,domlo,domhi,delta,xlo,bc)
-
-  end subroutine pc_denfill
-
-
-  
 
   subroutine pc_reactfill(react,react_lo,react_hi,domlo,domhi,delta,xlo,time,bc) &
        bind(C, name="pc_reactfill")
@@ -86,29 +158,34 @@ contains
 ! the physical target values (bc_target)
 ! and numerical parameters associated to the BC (bc_params)
 
-! Gghost-cells will be recomputed with the NSCBC theory
+! Ghost-cells will be recomputed with the NSCBC theory
 ! in the routine 'impose_NSCBC' located in Src_(dim)d
 
-  subroutine bcnormal(x,u_int,u_ext,dir,sgn,rho_only,bc_type,bc_params,bc_target)
+! Note that the 'impose_NSCBC' routine is calling bcnormal with all the optional arguments
+! The bcnormal routine is also called by pc_hypfill to fill ghost cells. In that case,
+! the ghost cells are filled with the target state values, but will be recomputed with the NSCBC
+! theory just before the computation of advection and diffusion operators.
+
+  subroutine bcnormal(x,u_int,u_ext,dir,sgn,time,bc_type,bc_params,bc_target)
 
     use probdata_module
     use eos_type_module
     use eos_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UTEMP, UEDEN, UEINT, UFS
-    use network, only: nspec, naux, molec_wt
+!   use network, only: nspec, naux, molec_wt
+    use network, only: nspec, naux
     use prob_params_module, only : Interior, Inflow, Outflow, SlipWall, NoSlipWall, &
                                    problo, probhi
     
     
-    use bl_constants_module, only: M_PI
+    use amrex_constants_module, only: M_PI
     
     implicit none
   
     double precision :: x(3)
     double precision :: u_int(*),u_ext(*)
-    logical rho_only
+    double precision, intent(in) :: time
     integer :: dir,sgn
-    integer :: bc_type
     integer, optional, intent(out) :: bc_type
     double precision, optional, intent(out) :: bc_params(6)
     double precision, optional, intent(out) :: bc_target(5)
@@ -130,14 +207,19 @@ contains
       relax_U = 0.5d0 ! For inflow only, relax parameter for x_velocity
       relax_V = 0.5d0 ! For inflow only, relax parameter for y_velocity
       relax_W = 0.5d0 ! For inflow only, relax parameter for z_velocity
-      relax_T = 0.2d0 ! For inflow only, relax parameter for temperature
-      beta = 0.2d0  ! Control the contribution of transverse terms
-      sigma_out = 0.6d0 ! For outflow only, relax parameter
+      relax_T = -0.2d0 ! For inflow only, relax parameter for temperature
+      beta = 1.0d0  ! Control the contribution of transverse terms, here they will be discarded
+      sigma_out = -0.6d0 ! For outflow only, relax parameter. A negative value means that the local Mach number will be used
       which_bc_type = Interior ! This is to ensure that nothing will be done if the user don't set anything
     endif
     
     call build(eos_state)
   
+    write(*,*) ' '
+    write(*,*) ' WARNING WARNING WARNING'
+    write(*,*) ' The default bcnormal routine in Src_nd has been called'
+    write(*,*) ' This is because you have the keyword UserBC in the input file'
+    call bl_abort("You have set UserBC in the input file, so you must provide your own bc_fill_nd.F90 routine")
   
     ! Below is an example where we impose outflow condition everywhere
     ! The user can impose any combination of BCs on all faces with the help of idir and isign
@@ -153,23 +235,16 @@ contains
     eos_state % T = u_int(UTEMP)
     call eos_tp(eos_state)
     
-    if (rho_only .EQV. .TRUE. ) then
-  
-       u_ext(1) = eos_state % rho
-  
-    else
-  
-       u_ext(UFS:UFS+nspec-1) = eos_state % massfrac * eos_state % rho
-       u_ext(URHO)               = eos_state % rho
-       u_ext(UMX)                = eos_state % rho  *  u(1)
-       u_ext(UMY)                = eos_state % rho  *  u(2)
-       u_ext(UMZ)                = eos_state % rho  *  u(3)
-       u_ext(UTEMP)              = eos_state % T
-       u_ext(UEINT)              = eos_state % rho  *   eos_state % e
-       u_ext(UEDEN)              = eos_state % rho  *  (eos_state % e + 0.5d0 * (u(1)**2 + u(2)**2) + u(3)**2)
-  
-    endif
-    
+
+    u_ext(UFS:UFS+nspec-1) = eos_state % massfrac * eos_state % rho
+    u_ext(URHO)               = eos_state % rho
+    u_ext(UMX)                = eos_state % rho  *  u(1)
+    u_ext(UMY)                = eos_state % rho  *  u(2)
+    u_ext(UMZ)                = eos_state % rho  *  u(3)
+    u_ext(UTEMP)              = eos_state % T
+    u_ext(UEINT)              = eos_state % rho  *   eos_state % e
+    u_ext(UEDEN)              = eos_state % rho  *  (eos_state % e + 0.5d0 * (u(1)**2 + u(2)**2) + u(3)**2)
+      
     ! Here the optional parameters are filled by the local variables if they were present
      if (flag_nscbc == 1) then
       bc_type = which_bc_type

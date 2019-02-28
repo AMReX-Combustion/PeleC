@@ -17,7 +17,7 @@ contains
                                      bind(C, name="enforce_minimum_density")
 
     use meth_params_module, only : NVAR, URHO, UEINT, UEDEN, small_dens, density_reset_method
-    use bl_constants_module, only : ZERO
+    use amrex_constants_module, only : ZERO
 
     implicit none
 
@@ -201,7 +201,7 @@ contains
 
   subroutine reset_to_small_state(old_state, new_state, idx, lo, hi, verbose)
 
-    use bl_constants_module, only: ZERO
+    use amrex_constants_module, only: ZERO
     use network, only: nspec, naux
     use meth_params_module, only: NVAR, URHO, UMX, UMY, UMZ, UTEMP, UEINT, UEDEN, UFS, small_temp, small_dens, npassive, upass_map
     use eos_type_module
@@ -265,7 +265,7 @@ contains
 
   subroutine reset_to_zone_state(old_state, new_state, input_state, idx, lo, hi, verbose)
 
-    use bl_constants_module, only: ZERO
+    use amrex_constants_module, only: ZERO
     use meth_params_module, only: NVAR, URHO
 
     implicit none
@@ -302,7 +302,7 @@ contains
                          lo, hi, dt, dx, courno) &
                          bind(C, name = "compute_cfl")
 
-    use bl_constants_module, only: ZERO, ONE
+    use amrex_constants_module, only: ZERO, ONE
     use meth_params_module, only: QVAR, QRHO, QU, QV, QW, QC, NQAUX
     use prob_params_module, only: dim
 
@@ -401,7 +401,7 @@ contains
                                    QREINT, QPRES, QTEMP, QGAME, QFS, QFX, &
                                    QC, QCSML, QGAMC, QDPDR, QDPDE, QRSPEC, NQAUX, &
                                    npassive, upass_map, qpass_map
-    use bl_constants_module, only: ZERO, HALF, ONE
+    use amrex_constants_module, only: ZERO, HALF, ONE
     use pelec_util_module, only: position
     implicit none
 
@@ -504,7 +504,7 @@ contains
                                    QVAR, QRHO, QU, QV, QW, &
                                    QREINT, QPRES, QDPDR, QDPDE, NQAUX, &
                                    npassive, upass_map, qpass_map
-    use bl_constants_module, only: ZERO, HALF, ONE
+    use amrex_constants_module, only: ZERO, HALF, ONE
     use pelec_util_module, only: position
 
     implicit none
@@ -573,7 +573,7 @@ contains
 
   function dflux(u, q, dir, idx, include_pressure) result(flux)
 
-    use bl_constants_module, only: ZERO
+    use amrex_constants_module, only: ZERO
     use meth_params_module, only: NVAR, URHO, UMX, UMZ, UEDEN, UEINT, &
                                   QVAR, QU, QPRES, &
                                   npassive, upass_map
@@ -641,7 +641,7 @@ contains
 #endif
                                               lo,hi,dt,dx)
 
-    use bl_constants_module, only: ZERO, HALF, ONE, TWO
+    use amrex_constants_module, only: ZERO, HALF, ONE, TWO
     use meth_params_module, only: NVAR, QVAR, URHO, UEINT, UFS, UFX, &
                                   small_dens, small_temp, cfl, &
                                   allow_small_energy, allow_negative_energy

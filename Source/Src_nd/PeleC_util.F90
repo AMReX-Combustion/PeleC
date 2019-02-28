@@ -12,7 +12,7 @@ contains
     use amrinfo_module, only: amr_level
     use prob_params_module, only: problo, probhi, physbc_lo, physbc_hi, dx_level, &
                                   domlo_level, domhi_level, Interior
-    use bl_constants_module, only: ZERO, HALF
+    use amrex_constants_module, only: ZERO, HALF
 
     ! Input arguments
     integer :: i, j, k
@@ -81,7 +81,7 @@ contains
        bind(C, name="pc_enforce_consistent_e")
 
     use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT
-    use bl_constants_module
+    use amrex_constants_module
 
     implicit none
 
@@ -125,7 +125,7 @@ contains
     use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, UFX, &
          UTEMP, small_temp, allow_negative_energy, allow_small_energy, &
          dual_energy_eta2, dual_energy_update_E_from_e
-    use bl_constants_module
+    use amrex_constants_module
 
     implicit none
 
@@ -336,7 +336,7 @@ contains
     use eos_module
     use meth_params_module, only : NVAR, URHO, UEDEN, UEINT, UTEMP, &
          UFS, UFX, allow_negative_energy, dual_energy_update_E_from_e
-    use bl_constants_module
+    use amrex_constants_module
 
     implicit none
 
@@ -407,7 +407,7 @@ contains
 
     use network           , only : nspec
     use meth_params_module, only : NVAR, URHO, UFS
-    use bl_constants_module
+    use amrex_constants_module
 
     implicit none
 
@@ -469,7 +469,7 @@ contains
   function area(i, j, k, dir)
 
     use amrinfo_module, only: amr_level
-    use bl_constants_module, only: ZERO, ONE, TWO, M_PI, FOUR
+    use amrex_constants_module, only: ZERO, ONE, TWO, M_PI, FOUR
     use prob_params_module, only: dim, coord_type, dx_level
 
     implicit none
@@ -598,7 +598,7 @@ contains
   function volume(i, j, k)
 
     use amrinfo_module, only: amr_level
-    use bl_constants_module, only: ZERO, HALF, FOUR3RD, TWO, M_PI
+    use amrex_constants_module, only: ZERO, HALF, FOUR3RD, TWO, M_PI
     use prob_params_module, only: dim, coord_type, dx_level
 
     implicit none
@@ -681,7 +681,7 @@ contains
 
     use meth_params_module, only : URHO, UMX, UMY, UMZ
     use prob_params_module, only : center, dim
-    use bl_constants_module
+    use amrex_constants_module
 
     implicit none
 

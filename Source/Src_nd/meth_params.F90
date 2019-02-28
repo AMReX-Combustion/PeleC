@@ -12,15 +12,12 @@
 
 module meth_params_module
 
-  use bl_error_module
+  use amrex_error_module
 
   implicit none
 
   ! number of ghost cells for the hyperbolic solver
   integer, parameter     :: NHYP    = 4
-
-  ! Number of parameters for GC-NSCBC
-  integer, parameter     :: nb_nscbc_params = 4
 
   ! NTHERM: number of thermodynamic variables
   integer, save :: NTHERM, NVAR
@@ -100,7 +97,8 @@ module meth_params_module
   double precision, save :: small_ener
   integer         , save :: do_hydro
   integer         , save :: do_mol_AD
-  integer         , save :: i_nscbc
+  integer         , save :: nscbc_adv
+  integer         , save :: nscbc_diff
   integer         , save :: hybrid_hydro
   integer         , save :: ppm_type
   integer         , save :: ppm_trace_sources
@@ -154,7 +152,7 @@ module meth_params_module
   !$acc create(levmsk_physbnd, difmag, small_dens) &
   !$acc create(small_massfrac, small_temp, small_pres) &
   !$acc create(small_ener, do_hydro, do_mol_AD) &
-  !$acc create(i_nscbc, hybrid_hydro, ppm_type) &
+  !$acc create(nscbc_adv, nscbc_diff, hybrid_hydro, ppm_type) &
   !$acc create(ppm_trace_sources, ppm_temp_fix, ppm_predict_gammae) &
   !$acc create(ppm_reference_eigenvectors, plm_iorder, hybrid_riemann) &
   !$acc create(riemann_solver, cg_maxiter, cg_tol) &
@@ -197,7 +195,8 @@ contains
     small_ener = -1.d200;
     do_hydro = -1;
     do_mol_AD = 0;
-    i_nscbc = 0;
+    nscbc_adv = 1;
+    nscbc_diff = 0 ;
     hybrid_hydro = 0;
     ppm_type = 1;
     ppm_trace_sources = 1;
@@ -258,7 +257,8 @@ contains
     call pp%query("small_ener", small_ener)
     call pp%query("do_hydro", do_hydro)
     call pp%query("do_mol_AD", do_mol_AD)
-    call pp%query("i_nscbc", i_nscbc)
+    call pp%query("nscbc_adv", nscbc_adv)
+    call pp%query("nscbc_diff", nscbc_diff)
     call pp%query("hybrid_hydro", hybrid_hydro)
     call pp%query("ppm_type", ppm_type)
     call pp%query("ppm_trace_sources", ppm_trace_sources)
@@ -312,7 +312,7 @@ contains
     !$acc device(levmsk_physbnd, difmag, small_dens) &
     !$acc device(small_massfrac, small_temp, small_pres) &
     !$acc device(small_ener, do_hydro, do_mol_AD) &
-    !$acc device(i_nscbc, hybrid_hydro, ppm_type) &
+    !$acc device(nscbc_adv, nscbc_diff, hybrid_hydro, ppm_type) &
     !$acc device(ppm_trace_sources, ppm_temp_fix, ppm_predict_gammae) &
     !$acc device(ppm_reference_eigenvectors, plm_iorder, hybrid_riemann) &
     !$acc device(riemann_solver, cg_maxiter, cg_tol) &

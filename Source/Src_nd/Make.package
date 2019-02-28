@@ -37,8 +37,6 @@ f90EXE_sources += parmparse_mod.f90
 f90EXE_sources += string_mod.f90
 CEXE_sources   += parmparse_fi.cpp
 
-#f90EXE_sources += bc_normal_nscbc.f90
-
 #ifeq ($(USE_MASA), TRUE)
 F90EXE_sources += mms_src_nd.F90
 #endif
