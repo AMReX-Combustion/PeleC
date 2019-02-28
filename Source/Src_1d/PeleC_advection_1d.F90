@@ -58,7 +58,7 @@ contains
     double precision  flux(fd_l1   :fd_h1,NVAR)
     double precision  srcQ(src_l1  :src_h1,QVAR)
     double precision    q1(q1_l1:q1_h1,NGDNV)
-    integer bcMask(bcMask_l1:bcMask_h1,2)
+    integer bcMask(bcMask_l1:bcMask_h1)
     double precision dloga(dloga_l1:dloga_h1)
     
     ! Left and right state arrays (edge centered, cell centered)
@@ -122,7 +122,7 @@ contains
     use meth_params_module, only : difmag, NVAR, URHO, UMX, UMY, UMZ, &
                                    UEDEN, UEINT, UTEMP, track_grid_losses, &
                                    limit_fluxes_on_small_dens, QVAR, NGDNV, GDPRES
-    use bl_constants_module
+    use amrex_constants_module
     use advection_util_1d_module, only: normalize_species_fluxes
     use advection_util_module, only : limit_hydro_fluxes_on_small_dens
     use prob_params_module, only : domlo_level, domhi_level, center, coord_type

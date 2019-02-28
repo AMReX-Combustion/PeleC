@@ -11,7 +11,7 @@ contains
                  Ip,Im,ilo,ihi,dx,dt)
        
     use meth_params_module, only : ppm_type
-    use bl_constants_module
+    use amrex_constants_module
 
     implicit none
        

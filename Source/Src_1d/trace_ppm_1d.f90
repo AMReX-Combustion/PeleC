@@ -17,14 +17,14 @@ contains
                        qxm,qxp,qpd_l1,qpd_h1, &
                        ilo,ihi,domlo,domhi,dx,dt)
 
-    use bl_constants_module
+    use amrex_constants_module
     use meth_params_module, only : QVAR, QRHO, QU, QREINT, QPRES, &
          QGAME, &
          small_dens, small_pres, fix_mass_flux, &
          ppm_type, ppm_trace_sources, ppm_temp_fix, &
          ppm_predict_gammae, ppm_reference_eigenvectors, &
          npassive, qpass_map
-    use prob_params_module, only : physbc_lo, physbc_hi, Outflow
+    use prob_params_module, only : physbc_lo, physbc_hi
     use ppm_module, only : ppm
 
     implicit none
@@ -91,8 +91,6 @@ contains
 
     double precision :: tau_s
 
-    logical :: fix_mass_flux_lo, fix_mass_flux_hi
-
     double precision, allocatable :: Ip(:,:,:)
     double precision, allocatable :: Im(:,:,:)
 
@@ -101,11 +99,6 @@ contains
 
     double precision, allocatable :: Ip_gc(:,:,:)
     double precision, allocatable :: Im_gc(:,:,:)
-
-    fix_mass_flux_lo = (fix_mass_flux == 1) .and. (physbc_lo(1) == Outflow) &
-         .and. (ilo == domlo(1))
-    fix_mass_flux_hi = (fix_mass_flux == 1) .and. (physbc_hi(1) == Outflow) &
-         .and. (ihi == domhi(1))
 
     if (ppm_type == 0) then
        print *,'Oops -- shouldnt be in trace_ppm with ppm_type = 0'
@@ -569,23 +562,6 @@ contains
 
     end do
 
-    ! Enforce constant mass flux rate if specified
-    if (fix_mass_flux_lo) then
-       qxm(ilo,QRHO  ) = q(domlo(1)-1,QRHO)
-       qxm(ilo,QU    ) = q(domlo(1)-1,QU  )
-       qxm(ilo,QPRES ) = q(domlo(1)-1,QPRES)
-       qxm(ilo,QREINT) = q(domlo(1)-1,QREINT)
-    end if
-
-    ! Enforce constant mass flux rate if specified
-    if (fix_mass_flux_hi) then
-       qxp(ihi+1,QRHO  ) = q(domhi(1)+1,QRHO)
-       qxp(ihi+1,QU    ) = q(domhi(1)+1,QU  )
-       qxp(ihi+1,QPRES ) = q(domhi(1)+1,QPRES)
-       qxp(ihi+1,QREINT) = q(domhi(1)+1,QREINT)
-    end if
-
-
     !-------------------------------------------------------------------------
     ! Now do the passively advected quantities
     !-------------------------------------------------------------------------
@@ -628,9 +604,6 @@ contains
              qxm(i+1,n) = q(i,n) + HALF*(Ip(i,2,n) - q(i,n))
           endif
        enddo
-
-       if (fix_mass_flux_hi) qxp(ihi+1,n) = q(ihi+1,n)
-       if (fix_mass_flux_lo) qxm(ilo,n) = q(ilo-1,n)
 
     enddo
 

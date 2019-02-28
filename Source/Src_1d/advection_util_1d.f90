@@ -12,7 +12,7 @@ contains
 
     use network, only : nspec
     use meth_params_module, only : NVAR, URHO, UFS
-    use bl_constants_module
+    use amrex_constants_module
 
     implicit none
     
@@ -49,7 +49,7 @@ contains
 
     use network, only : nspec
     use meth_params_module, only : NVAR, URHO, UFS
-    use bl_constants_module    
+    use amrex_constants_module    
 
     implicit none
 

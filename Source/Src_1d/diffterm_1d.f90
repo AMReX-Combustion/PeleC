@@ -26,10 +26,10 @@ contains
 
     use actual_network, only     : nspec
     use meth_params_module, only : NVAR, UMX, UMY, UMZ, UEDEN, UFS, QVAR, QU, QV, QPRES, QTEMP, QFS, QRHO
-    use bl_constants_module
+    use amrex_constants_module
     use eos_type_module
     use eos_module
-    use prob_params_module, only : physbc_lo, physbc_hi, Inflow
+    use prob_params_module, only : physbc_lo, physbc_hi
 
     implicit none
 
@@ -75,9 +75,7 @@ contains
     enddo
 
     gfaci = dxinv(1)
-    if (lo(1).le.dmnlo(1) .and. physbc_lo(1).eq.Inflow) gfaci(dmnlo(1)) = gfaci(dmnlo(1)) * TWO
-    if (hi(1).gt.dmnhi(1) .and. physbc_hi(1).eq.Inflow) gfaci(dmnhi(1)+1) = gfaci(dmnhi(1)+1) * TWO
-
+ 
     do i=lo(1),hi(1)+1
        dTdx = gfaci(i) * (Q(i,QTEMP) - Q(i-1,QTEMP))
        dudx = gfaci(i) * (Q(i,QU)    - Q(i-1,QU))
