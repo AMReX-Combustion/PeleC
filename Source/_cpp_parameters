@@ -70,8 +70,10 @@ do_hydro                     int          -1                  y
 # uses MOL aapproach to timestep advection and diffusion
 do_mol_AD                 int          0                   y
 
-# permits Ghost-Cells Navier-Stokes Boundary Conditions to be turned on and off 
-i_nscbc                     int          0                  y
+# permits Ghost-Cells Navier-Stokes Boundary Conditions to be turned on and off
+# for advective terms (adv) and for diffusion terms (diff)
+nscbc_adv                      int          1                  y
+nscbc_diff                     int          0                  y 
 
 # if true, define an additional source term
 add_ext_src                  int           0

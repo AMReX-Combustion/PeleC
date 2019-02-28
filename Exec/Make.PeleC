@@ -72,6 +72,7 @@ ifdef Chemistry_Model
   CHEM_HOME = $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism/Models/$(Chemistry_Model)
   VPATH_LOCATIONS += $(CHEM_HOME)
   Bpack += $(CHEM_HOME)/Make.package
+  Blocs += $(CHEM_HOME)
 
   CHEM_HOME1 = $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism
   VPATH_LOCATIONS += $(CHEM_HOME1)
@@ -118,7 +119,7 @@ endif
 Bdirs   := Source Source/param_includes Source/Src_nd Source/Src_$(DIM)d Source/TurbInflow
 
 ifeq ($(USE_EB), TRUE)
-  Pdirs := Base EB Amr Boundary AmrCore
+  Pdirs := Base EB Amr Boundary AmrCore F_Interfaces F_Interfaces/Base
 else 
   Pdirs := Base Amr Boundary AmrCore
 endif
@@ -153,9 +154,9 @@ EXTERN_CORE += $(TOP)/constants
 INCLUDE_LOCATIONS += $(TOP)/constants
 VPATH_LOCATIONS   += $(TOP)/constants
 
-include $(AMREX_HOME)/Src/F_BaseLib/FParallelMG.mak
-INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/F_BaseLib
-VPATH_LOCATIONS   += $(AMREX_HOME)/Src/F_BaseLib
+include $(AMREX_HOME)/Src/F_Interfaces/Base/Make.package
+INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/F_Interfaces/Base
+VPATH_LOCATIONS   += $(AMREX_HOME)/Src/F_Interfaces/Base
 
 # runtime parameter support for extern/ routines
 f90EXE_sources += extern.f90

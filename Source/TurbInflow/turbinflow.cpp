@@ -7,8 +7,8 @@
 
 #include <AMReX_REAL.H>
 #include <AMReX_Utility.H>
-#include </ascldap/users/marient/ECP/amrex-master/Src/EB/AMReX_EBFArrayBox.H>
 #include <AMReX_ParallelDescriptor.H>
+#include <AMReX_EBFArrayBox.H>
 
 #ifdef _OPENM
 #include <omp.h>
