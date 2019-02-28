@@ -6,7 +6,9 @@ subroutine pc_umdrv(is_finest_level, time, &
                     qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3, &
                     srcQ, srQ_l1, srQ_l2, srQ_l3, srQ_h1, srQ_h2, srQ_h3, &
                     update, updt_l1, updt_l2, updt_l3, updt_h1, updt_h2, updt_h3, &
-                    bcMask, bcMask_l1, bcMask_l2, bcMask_l3, bcMask_h1, bcMask_h2, bcMask_h3, &
+                    x_bcMask, x_bcMask_l1, x_bcMask_l2, x_bcMask_l3, x_bcMask_h1, x_bcMask_h2, x_bcMask_h3, &
+                    y_bcMask, y_bcMask_l1, y_bcMask_l2, y_bcMask_l3, y_bcMask_h1, y_bcMask_h2, y_bcMask_h3, &
+                    z_bcMask, z_bcMask_l1, z_bcMask_l2, z_bcMask_l3, z_bcMask_h1, z_bcMask_h2, z_bcMask_h3, &
                     delta, dt, &
                     flux1, flux1_l1, flux1_l2, flux1_l3, flux1_h1, flux1_h2, flux1_h3, &
                     flux2, flux2_l1, flux2_l2, flux2_l3, flux2_h1, flux2_h2, flux2_h3, &
@@ -26,7 +28,7 @@ subroutine pc_umdrv(is_finest_level, time, &
                                  first_order_hydro
   use advection_util_3d_module, only : divu
   use advection_util_module, only : compute_cfl
-  use bl_constants_module, only : ZERO, ONE
+  use amrex_constants_module, only : ZERO, ONE
   use flatten_module, only: uflaten
   use advection_module, only : umeth3d, consup
   implicit none
@@ -47,9 +49,13 @@ subroutine pc_umdrv(is_finest_level, time, &
   integer, intent(in) :: area2_l1, area2_l2, area2_l3, area2_h1, area2_h2, area2_h3
   integer, intent(in) :: area3_l1, area3_l2, area3_l3, area3_h1, area3_h2, area3_h3
   integer, intent(in) :: vol_l1, vol_l2, vol_l3, vol_h1, vol_h2, vol_h3
-  integer, intent(in) :: bcMask_l1, bcMask_l2, bcMask_l3, bcMask_h1, bcMask_h2, bcMask_h3
+  integer, intent(in) :: x_bcMask_l1, x_bcMask_l2, x_bcMask_l3, x_bcMask_h1, x_bcMask_h2, x_bcMask_h3
+  integer, intent(in) :: y_bcMask_l1, y_bcMask_l2, y_bcMask_l3, y_bcMask_h1, y_bcMask_h2, y_bcMask_h3
+  integer, intent(in) :: z_bcMask_l1, z_bcMask_l2, z_bcMask_l3, z_bcMask_h1, z_bcMask_h2, z_bcMask_h3
 
-  integer, intent(inout) :: bcMask(bcMask_l1:bcMask_h1,bcMask_l2:bcMask_h2,bcMask_l3:bcMask_h3,2)
+  integer, intent(inout) :: x_bcMask(x_bcMask_l1:x_bcMask_h1,x_bcMask_l2:x_bcMask_h2,x_bcMask_l3:x_bcMask_h3)
+  integer, intent(inout) :: y_bcMask(y_bcMask_l1:y_bcMask_h1,y_bcMask_l2:y_bcMask_h2,y_bcMask_l3:y_bcMask_h3)
+  integer, intent(inout) :: z_bcMask(z_bcMask_l1:z_bcMask_h1,z_bcMask_l2:z_bcMask_h2,z_bcMask_l3:z_bcMask_h3)
   double precision, intent(in) :: uin(uin_l1:uin_h1, uin_l2:uin_h2, uin_l3:uin_h3, NVAR)
   double precision, intent(inout) :: uout(uout_l1:uout_h1, uout_l2:uout_h2, uout_l3:uout_h3, NVAR)
   double precision, intent(inout) :: q(q_l1:q_h1, q_l2:q_h2, q_l3:q_h3, QVAR)
@@ -84,7 +90,9 @@ subroutine pc_umdrv(is_finest_level, time, &
   integer :: ngq, ngf
   integer :: uin_lo(3), uin_hi(3)
   integer :: uout_lo(3), uout_hi(3)
-  integer :: bcMask_lo(3), bcMask_hi(3)
+  integer :: x_bcMask_lo(3), x_bcMask_hi(3)
+  integer :: y_bcMask_lo(3), y_bcMask_hi(3)
+  integer :: z_bcMask_lo(3), z_bcMask_hi(3)
   integer :: updt_lo(3), updt_hi(3)
   integer :: flux1_lo(3), flux1_hi(3)
   integer :: flux2_lo(3), flux2_hi(3)
@@ -116,8 +124,14 @@ subroutine pc_umdrv(is_finest_level, time, &
   uout_lo = [ uout_l1, uout_l2, uout_l3 ]
   uout_hi = [ uout_h1, uout_h2, uout_h3 ]
   
-  bcMask_lo = [ bcMask_l1, bcMask_l2, bcMask_l3 ]
-  bcMask_hi = [ bcMask_h1, bcMask_h2, bcMask_h3 ]
+  x_bcMask_lo = [ x_bcMask_l1, x_bcMask_l2, x_bcMask_l3 ]
+  x_bcMask_hi = [ x_bcMask_h1, x_bcMask_h2, x_bcMask_h3 ]
+  
+  y_bcMask_lo = [ y_bcMask_l1, y_bcMask_l2, y_bcMask_l3 ]
+  y_bcMask_hi = [ y_bcMask_h1, y_bcMask_h2, y_bcMask_h3 ]
+  
+  z_bcMask_lo = [ z_bcMask_l1, z_bcMask_l2, z_bcMask_l3 ]
+  z_bcMask_hi = [ z_bcMask_h1, z_bcMask_h2, z_bcMask_h3 ]
 
   updt_lo = [ updt_l1, updt_l2, updt_l3 ]
   updt_hi = [ updt_h1, updt_h2, updt_h3 ]
@@ -181,7 +195,9 @@ subroutine pc_umdrv(is_finest_level, time, &
                srcQ,srQ_lo,srQ_hi, &
                lo,hi,delta,dt, &
                uout,uout_lo,uout_hi, &
-               bcMask,bcMask_lo,bcMask_hi, &
+               x_bcMask,x_bcMask_lo,x_bcMask_hi, &
+               y_bcMask,y_bcMask_lo,y_bcMask_hi, &
+               z_bcMask,z_bcMask_lo,z_bcMask_hi, &
                flux1,flux1_lo,flux1_hi, &
                flux2,flux2_lo,flux2_hi, &
                flux3,flux3_lo,flux3_hi, &

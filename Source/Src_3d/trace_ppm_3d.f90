@@ -24,7 +24,7 @@ contains
          ppm_type, ppm_trace_sources, &
          ppm_reference_eigenvectors, ppm_predict_gammae, &
          npassive, qpass_map
-    use bl_constants_module
+    use amrex_constants_module
 
     implicit none
 
@@ -971,7 +971,7 @@ contains
          ppm_type, ppm_trace_sources, &
          ppm_reference_eigenvectors, ppm_predict_gammae, &
          npassive, qpass_map
-    use bl_constants_module
+    use amrex_constants_module
 
     implicit none
 

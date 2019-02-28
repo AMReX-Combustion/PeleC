@@ -24,9 +24,9 @@ contains
        td,  tdlo,  tdhi,&
        deltax, idir) bind(C, name = "pc_compute_tangential_vel_derivs")
 
-    use prob_params_module, only : physbc_lo, physbc_hi, Inflow
+    use prob_params_module, only : physbc_lo, physbc_hi
     use meth_params_module, only : QVAR, QU, QV, QW
-    use bl_constants_module
+    use amrex_constants_module
 
     implicit none
 
@@ -57,36 +57,6 @@ contains
           enddo
        enddo
 
-       ! Fix boundaries (since Dirichlet values passed in cell containers actually specified on face)
-       if (lo(idir+1).lt.dlo(idir+1) .and. physbc_lo(idir+1).eq.Inflow) then
-          do k=lo(3),hi(3)
-             do j=lo(2),hi(2)
-                do i=lo(1),dlo(1)
-                   td(i,j,k,1) = HALF*dxinv(2)*(Q(i-1,j+1,k,QU)-Q(i-1,j-1,k,QU))
-                   td(i,j,k,2) = HALF*dxinv(2)*(Q(i-1,j+1,k,QV)-Q(i-1,j-1,k,QV))
-                   td(i,j,k,3) = HALF*dxinv(2)*(Q(i-1,j+1,k,QW)-Q(i-1,j-1,k,QW))
-                   td(i,j,k,4) = HALF*dxinv(3)*(Q(i-1,j,k+1,QU)-Q(i-1,j,k-1,QU))
-                   td(i,j,k,5) = HALF*dxinv(3)*(Q(i-1,j,k+1,QV)-Q(i-1,j,k-1,QV))
-                   td(i,j,k,6) = HALF*dxinv(3)*(Q(i-1,j,k+1,QW)-Q(i-1,j,k-1,QW))
-                enddo
-             enddo
-          enddo
-       endif
-       if (hi(idir+1).gt.dhi(idir+1) .and. physbc_hi(idir+1).eq.Inflow) then
-          do k=lo(3),hi(3)
-             do j=lo(2),hi(2)
-                do i=dhi(1)+1,hi(1)+1
-                   td(i,j,k,1) = HALF*dxinv(2)*(Q(i,j+1,k,QU)-Q(i,j-1,k,QU))
-                   td(i,j,k,2) = HALF*dxinv(2)*(Q(i,j+1,k,QV)-Q(i,j-1,k,QV))
-                   td(i,j,k,3) = HALF*dxinv(2)*(Q(i,j+1,k,QW)-Q(i,j-1,k,QW))
-                   td(i,j,k,4) = HALF*dxinv(3)*(Q(i,j,k+1,QU)-Q(i,j,k-1,QU))
-                   td(i,j,k,5) = HALF*dxinv(3)*(Q(i,j,k+1,QV)-Q(i,j,k-1,QV))
-                   td(i,j,k,6) = HALF*dxinv(3)*(Q(i,j,k+1,QW)-Q(i,j,k-1,QW))
-                enddo
-             enddo
-          enddo
-       endif
-
     else if (idir .eq. 1) then
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)+1
@@ -101,36 +71,6 @@ contains
           enddo
        enddo
 
-       ! Fix boundaries (since Dirichlet values passed in cell containers actually specified on face)
-       if (lo(idir+1).lt.dlo(idir+1) .and. physbc_lo(idir+1).eq.Inflow) then
-          do k=lo(3),hi(3)
-             do j=lo(2),dlo(2)
-                do i=lo(1),hi(1)
-                   td(i,j,k,1) = HALF*dxinv(1)*(Q(i+1,j-1,k,QU)-Q(i-1,j-1,k,QU))
-                   td(i,j,k,2) = HALF*dxinv(1)*(Q(i+1,j-1,k,QV)-Q(i-1,j-1,k,QV))
-                   td(i,j,k,3) = HALF*dxinv(1)*(Q(i+1,j-1,k,QW)-Q(i-1,j-1,k,QW))
-                   td(i,j,k,4) = HALF*dxinv(3)*(Q(i,j-1,k+1,QU)-Q(i,j-1,k-1,QU))
-                   td(i,j,k,5) = HALF*dxinv(3)*(Q(i,j-1,k+1,QV)-Q(i,j-1,k-1,QV))
-                   td(i,j,k,6) = HALF*dxinv(3)*(Q(i,j-1,k+1,QW)-Q(i,j-1,k-1,QW))
-                enddo
-             enddo
-          enddo
-       endif
-       if (hi(idir+1).gt.dhi(idir+1) .and. physbc_hi(idir+1).eq.Inflow) then
-          do k=lo(3),hi(3)
-             do j=dhi(2)+1,hi(2)+1
-                do i=lo(1),hi(1)
-                   td(i,j,k,1) = HALF*dxinv(1)*(Q(i+1,j,k,QU)-Q(i-1,j,k,QU))
-                   td(i,j,k,2) = HALF*dxinv(1)*(Q(i+1,j,k,QV)-Q(i-1,j,k,QV))
-                   td(i,j,k,3) = HALF*dxinv(1)*(Q(i+1,j,k,QW)-Q(i-1,j,k,QW))
-                   td(i,j,k,4) = HALF*dxinv(3)*(Q(i,j,k+1,QU)-Q(i,j,k-1,QU))
-                   td(i,j,k,5) = HALF*dxinv(3)*(Q(i,j,k+1,QV)-Q(i,j,k-1,QV))
-                   td(i,j,k,6) = HALF*dxinv(3)*(Q(i,j,k+1,QW)-Q(i,j,k-1,QW))
-                enddo
-             enddo
-          enddo
-       endif
-
     else
        do k=lo(3),hi(3)+1
           do j=lo(2),hi(2)
@@ -144,38 +84,8 @@ contains
              enddo
           enddo
        enddo
-
-       ! Fix boundaries (since Dirichlet values passed in cell containers actually specified on face)
-       if (lo(idir+1).lt.dlo(idir+1) .and. physbc_lo(idir+1).eq.Inflow) then
-          do k=lo(3),dlo(3)
-             do j=lo(2),hi(2)
-                do i=lo(1),hi(1)
-                   td(i,j,k,1) = HALF*dxinv(1)*(Q(i+1,j,k-1,QU)-Q(i-1,j,k-1,QU))
-                   td(i,j,k,2) = HALF*dxinv(1)*(Q(i+1,j,k-1,QV)-Q(i-1,j,k-1,QV))
-                   td(i,j,k,3) = HALF*dxinv(1)*(Q(i+1,j,k-1,QW)-Q(i-1,j,k-1,QW))
-                   td(i,j,k,4) = HALF*dxinv(2)*(Q(i,j+1,k-1,QU)-Q(i,j-1,k-1,QU))
-                   td(i,j,k,5) = HALF*dxinv(2)*(Q(i,j+1,k-1,QV)-Q(i,j-1,k-1,QV))
-                   td(i,j,k,6) = HALF*dxinv(2)*(Q(i,j+1,k-1,QW)-Q(i,j-1,k-1,QW))
-                enddo
-             enddo
-          enddo
-       endif
-       if (hi(idir+1).gt.dhi(idir+1) .and. physbc_hi(idir+1).eq.Inflow) then
-          do k=dhi(3)+1,hi(3)+1
-             do j=lo(2),hi(2)
-                do i=lo(1),hi(1)
-                   td(i,j,k,1) = HALF*dxinv(1)*(Q(i+1,j,k,QU)-Q(i-1,j,k,QU))
-                   td(i,j,k,2) = HALF*dxinv(1)*(Q(i+1,j,k,QV)-Q(i-1,j,k,QV))
-                   td(i,j,k,3) = HALF*dxinv(1)*(Q(i+1,j,k,QW)-Q(i-1,j,k,QW))
-                   td(i,j,k,4) = HALF*dxinv(2)*(Q(i,j+1,k,QU)-Q(i,j-1,k,QU))
-                   td(i,j,k,5) = HALF*dxinv(2)*(Q(i,j+1,k,QV)-Q(i,j-1,k,QV))
-                   td(i,j,k,6) = HALF*dxinv(2)*(Q(i,j+1,k,QW)-Q(i,j-1,k,QW))
-                enddo
-             enddo
-          enddo
-       endif
-
     endif
+    
   end subroutine pc_compute_tangential_vel_derivs
 
 #ifdef PELEC_USE_EB
@@ -186,9 +96,9 @@ contains
        flag, fglo, fghi, &
        deltax, idir) bind(C, name = "pc_compute_tangential_vel_derivs_eb")
 
-    use prob_params_module, only : physbc_lo, physbc_hi, Inflow
+    use prob_params_module, only : physbc_lo, physbc_hi
     use meth_params_module, only : QVAR, QU, QV, QW
-    use bl_constants_module
+    use amrex_constants_module
     use amrex_ebcellflag_module, only : get_neighbor_cells
 
     implicit none

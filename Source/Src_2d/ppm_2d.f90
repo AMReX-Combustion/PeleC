@@ -16,7 +16,7 @@ contains
                      ilo1,ilo2,ihi1,ihi2,dx,dy,dt)
 
         use meth_params_module, only : ppm_type
-        use bl_constants_module
+        use amrex_constants_module
 
         implicit none
 

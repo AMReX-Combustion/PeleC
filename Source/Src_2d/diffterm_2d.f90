@@ -34,10 +34,10 @@ contains
 
     use actual_network, only     : nspec
     use meth_params_module, only : NVAR, UMX, UMY, UMZ, UEDEN, UFS, QVAR, QU, QV, QPRES, QTEMP, QFS, QRHO
-    use bl_constants_module
+    use amrex_constants_module
     use eos_type_module
     use eos_module
-    use prob_params_module, only : physbc_lo, physbc_hi, Inflow
+    use prob_params_module, only : physbc_lo, physbc_hi
 
     implicit none
 
@@ -63,7 +63,7 @@ contains
 
     integer, intent(in) ::    Dlo(2),   Dhi(2)
     integer, intent(in) ::    Vlo(2),   Vhi(2)
-
+    
     double precision, intent(in   ) ::    Q(   Qlo(1):   Qhi(1),   Qlo(2):   Qhi(2), QVAR)
     double precision, intent(in   ) ::   Dx(  Dxlo(1):  Dxhi(1),  Dxlo(2):  Dxhi(2), nspec)
     double precision, intent(in   ) ::  mux( muxlo(1): muxhi(1), muxlo(2): muxhi(2) )
@@ -104,9 +104,7 @@ contains
     do j=lo(2),hi(2)
 
        gfaci = dxinv(1)
-       if (lo(1).le.dmnlo(1) .and. physbc_lo(1).eq.Inflow) gfaci(dmnlo(1)) = gfaci(dmnlo(1)) * TWO
-       if (hi(1).gt.dmnhi(1) .and. physbc_hi(1).eq.Inflow) gfaci(dmnhi(1)+1) = gfaci(dmnhi(1)+1) * TWO
-
+       
        do i=lo(1),hi(1)+1
           dTdx = gfaci(i) * (Q(i,j,QTEMP) - Q(i-1,j,QTEMP))
           dudx = gfaci(i) * (Q(i,j,QU)    - Q(i-1,j,QU))
@@ -188,10 +186,9 @@ contains
     do i=lo(1),hi(1)
 
        gfacj = dxinv(2)
-       if (lo(2).le.dmnlo(2) .and. physbc_lo(2).eq.Inflow) gfacj(dmnlo(2)) = gfacj(dmnlo(2)) * TWO
-       if (hi(2).gt.dmnhi(2) .and. physbc_hi(2).eq.Inflow) gfacj(dmnhi(2)+1) = gfacj(dmnhi(2)+1) * TWO
-
+       
        do j=lo(2),hi(2)+1
+              
           dTdy = gfacj(j) * (Q(i,j,QTEMP) - Q(i,j-1,QTEMP))
           dudy = gfacj(j) * (Q(i,j,QU)    - Q(i,j-1,QU))
           dvdy = gfacj(j) * (Q(i,j,QV)    - Q(i,j-1,QV))

@@ -6,7 +6,7 @@ module gc_nscbc_mod
 contains
 
 !------------------------------
-! Imposing Ghost-Cells Navier-Stokes Characteristic BCs if i_nscbc is .true.
+! Imposing Ghost-Cells Navier-Stokes Characteristic BCs.
 ! For the theory, see Motheau et al. AIAA J. Vol. 55, No. 10 : pp. 3399-3408, 2017. 
 !
 ! Note that for the corner treatment, we depart from the AIAA paper, because
@@ -25,14 +25,13 @@ contains
                          flag_nscbc_isAnyPerio, flag_nscbc_perio, &
                          time,delta,dt,verbose) bind(C, name="impose_NSCBC")
     
-  use bl_error_module
+  use amrex_fort_module
   use network, only : nspec
   use eos_module
   use fundamental_constants_module, only: k_B, n_A
 
-  use bl_constants_module
-  use prob_params_module, only : physbc_lo, physbc_hi, problo, probhi, &
-                                 Interior
+  use amrex_constants_module
+  use prob_params_module, only : physbc_lo, physbc_hi, problo, probhi, UserBC
     
   use meth_params_module, only : NVAR, NQAUX,QVAR
   use bc_fill_module, only: bcnormal
@@ -82,6 +81,7 @@ contains
   integer          :: i, j, k
   integer          :: bc_type, x_bc_type, y_bc_type, z_bc_type
   integer          :: x_isign, y_isign, z_isign, x_idx_Mask, y_idx_Mask, z_idx_Mask
+  integer          :: test_keyword_x, test_keyword_y, test_keyword_z
   double precision :: bc_params(6), x_bc_params(6), y_bc_params(6), z_bc_params(6)
   double precision :: bc_target(5), x_bc_target(5), y_bc_target(5), z_bc_target(5)
   
@@ -113,30 +113,36 @@ contains
        .and. ((q_hi(3) > domhi(3)) .or. (q_lo(3) < domlo(3)))) then
 
     if (q_hi(1) > domhi(1)) then
+      test_keyword_x = physbc_hi(1)
       i = domhi(1)
       x_isign = -1
       x_idx_Mask = i+1
     elseif (q_lo(1) < domlo(1)) then
+      test_keyword_x = physbc_lo(1)
       i = domlo(1)
       x_isign = 1
       x_idx_Mask = i
     endif
  
     if (q_hi(2) > domhi(2)) then
+      test_keyword_y = physbc_hi(2)
       j = domhi(2)
       y_isign = -1
       y_idx_Mask = j+1
     elseif (q_lo(2) < domlo(2)) then
+      test_keyword_y = physbc_lo(2)
       j = domlo(2)
       y_isign = 1
       y_idx_Mask = j
     endif
  
     if (q_hi(3) > domhi(3)) then
+      test_keyword_z = physbc_hi(3)
       k = domhi(3)
       z_isign = -1
       z_idx_Mask = k+1
     elseif (q_lo(3) < domlo(3)) then
+      test_keyword_z = physbc_lo(3)
       k = domlo(3)
       z_isign = 1
       z_idx_Mask = k
@@ -190,17 +196,29 @@ contains
 
     ! Calling user target BC values
     ! x face
-    call bcnormal([x,y,z],U_dummy,U_ext,1,x_isign,.false.,x_bc_type,x_bc_params,x_bc_target)
+    if (test_keyword_x == UserBC) then
+      call bcnormal([x,y,z],U_dummy,U_ext,1,x_isign,time,x_bc_type,x_bc_params,x_bc_target)
+    else
+      x_bc_type = test_keyword_x
+    endif
     x_bcMask(x_idx_Mask,j,k) = x_bc_type
     
     ! y face
-    call bcnormal([x,y,z],U_dummy,U_ext,2,y_isign,.false.,y_bc_type,y_bc_params,y_bc_target)
+    if (test_keyword_y == UserBC) then
+      call bcnormal([x,y,z],U_dummy,U_ext,2,y_isign,time,y_bc_type,y_bc_params,y_bc_target)
+    else
+      y_bc_type = test_keyword_y
+    endif
     y_bcMask(i,y_idx_Mask,k) = y_bc_type
    
     ! z face
-    call bcnormal([x,y,z],U_dummy,U_ext,3,z_isign,.false.,z_bc_type,z_bc_params,z_bc_target)
+    if (test_keyword_z == UserBC) then
+      call bcnormal([x,y,z],U_dummy,U_ext,3,z_isign,time,z_bc_type,z_bc_params,z_bc_target)
+    else
+      z_bc_type = test_keyword_z
+    endif
     z_bcMask(i,j,z_idx_Mask) = z_bc_type
-   
+    
     ! Computing the LODI system waves along X
     call compute_waves(i, j, k, 1, x_isign, &
                        x_bc_type, x_bc_params, x_bc_target, &
@@ -261,7 +279,7 @@ endif ! flag_nscbc_isAnyPerio )
  ! lower X
  !--------------------------------------------------------------------------
 
- if ((q_lo(1) < domlo(1)) .and. (physbc_lo(1) /= Interior)) then
+ if ((q_lo(1) < domlo(1)) .and. (physbc_lo(1) == UserBC)) then
 
    i = domlo(1)
    x   = (dble(i)+HALF)*dx
@@ -307,7 +325,7 @@ endif ! flag_nscbc_isAnyPerio )
                                qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
             
        ! Calling user target BC values 
-       call bcnormal([x,y,z],U_dummy,U_ext,1,1,.false.,bc_type,bc_params,bc_target)
+       call bcnormal([x,y,z],U_dummy,U_ext,1,1,time,bc_type,bc_params,bc_target)
      
        ! Filling bcMask with specific user defined BC type
        if ((j < q_lo(2)+3) .or. (j > q_hi(2)-3) .or. (k < q_lo(3)+3) .or. (k > q_hi(3)-3)) then
@@ -341,7 +359,7 @@ endif ! flag_nscbc_isAnyPerio )
  ! upper X
  !--------------------------------------------------------------------------
  
- if ((q_hi(1) > domhi(1)) .and. (physbc_hi(1) /= Interior)) then
+ if ((q_hi(1) > domhi(1)) .and. (physbc_hi(1) == UserBC)) then
 
    i = domhi(1)
    x   = (dble(i)+HALF)*dx
@@ -388,7 +406,7 @@ endif ! flag_nscbc_isAnyPerio )
                                qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
 
        ! Filling bcMask with specific user defined BC type 
-       call bcnormal([x,y,z],U_dummy,U_ext,1,-1,.false.,bc_type,bc_params,bc_target)
+       call bcnormal([x,y,z],U_dummy,U_ext,1,-1,time,bc_type,bc_params,bc_target)
        if ((j < q_lo(2)+3) .or. (j > q_hi(2)-3) .or. (k < q_lo(3)+3) .or. (k > q_hi(3)-3)) then
          continue ! There is just 1 ghost-cell with bcMask because of the Riemann solver
        else
@@ -420,7 +438,7 @@ endif ! flag_nscbc_isAnyPerio )
  ! lower Y
  !--------------------------------------------------------------------------
  
- if ((q_lo(2) < domlo(2)) .and. (physbc_lo(2) /= Interior)) then
+ if ((q_lo(2) < domlo(2)) .and. (physbc_lo(2) == UserBC)) then
  
    j = domlo(2)
    y   = (dble(j)+HALF)*dy
@@ -466,7 +484,7 @@ endif ! flag_nscbc_isAnyPerio )
                                qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3) 
                                
        ! Filling bcMask with specific user defined BC type
-       call bcnormal([x,y,z],U_dummy,U_ext,2,1,.false.,bc_type,bc_params,bc_target)
+       call bcnormal([x,y,z],U_dummy,U_ext,2,1,time,bc_type,bc_params,bc_target)
        if ((i < q_lo(1)+3) .or. (i > q_hi(1)-3) .or. (k < q_lo(3)+3) .or. (k > q_hi(3)-3)) then
          continue ! There is just 1 ghost-cell with bcMask because of the Riemann solver
        else
@@ -498,7 +516,7 @@ endif ! flag_nscbc_isAnyPerio )
 ! upper Y
 !--------------------------------------------------------------------------
 
- if ((q_hi(2) > domhi(2)) .and. (physbc_hi(2) /= Interior)) then
+ if ((q_hi(2) > domhi(2)) .and. (physbc_hi(2) == UserBC)) then
  
    j = domhi(2)
    y   = (dble(j)+HALF)*dy
@@ -545,7 +563,7 @@ endif ! flag_nscbc_isAnyPerio )
                                qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
                               
      ! Filling bcMask with specific user defined BC type 
-     call bcnormal([x,y,z],U_dummy,U_ext,2,-1,.false.,bc_type,bc_params,bc_target)
+     call bcnormal([x,y,z],U_dummy,U_ext,2,-1,time,bc_type,bc_params,bc_target)
      if ((i < q_lo(1)+3) .or. (i > q_hi(1)-3) .or. (k < q_lo(3)+3) .or. (k > q_hi(3)-3)) then
        continue ! There is just 1 ghost-cell with bcMask because of the Riemann solver
      else
@@ -578,7 +596,7 @@ end if
  ! lower Z
  !--------------------------------------------------------------------------
  
- if ((q_lo(3) < domlo(3)) .and. (physbc_lo(3) /= Interior)) then
+ if ((q_lo(3) < domlo(3)) .and. (physbc_lo(3) == UserBC)) then
  
    k = domlo(3)
    z   = (dble(k)+HALF)*dz
@@ -624,7 +642,7 @@ end if
                                qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3) 
                                
        ! Filling bcMask with specific user defined BC type
-       call bcnormal([x,y,z],U_dummy,U_ext,3,1,.false.,bc_type,bc_params,bc_target)
+       call bcnormal([x,y,z],U_dummy,U_ext,3,1,time,bc_type,bc_params,bc_target)
        if ((i < q_lo(1)+3) .or. (i > q_hi(1)-3) .or. (j < q_lo(2)+3) .or. (j > q_hi(2)-3)) then
          continue ! There is just 1 ghost-cell with bcMask because of the Riemann solver
        else
@@ -656,7 +674,7 @@ end if
 ! upper Z
 !--------------------------------------------------------------------------
 
- if ((q_hi(3) > domhi(3)) .and. (physbc_hi(3) /= Interior)) then
+ if ((q_hi(3) > domhi(3)) .and. (physbc_hi(3) == UserBC)) then
  
    k = domhi(3)
    z   = (dble(k)+HALF)*dz
@@ -702,7 +720,7 @@ end if
                                qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3) 
                                
        ! Filling bcMask with specific user defined BC type
-       call bcnormal([x,y,z],U_dummy,U_ext,3,-1,.false.,bc_type,bc_params,bc_target)
+       call bcnormal([x,y,z],U_dummy,U_ext,3,-1,time,bc_type,bc_params,bc_target)
        if ((i < q_lo(1)+3) .or. (i > q_hi(1)-3) .or. (j < q_lo(2)+3) .or. (j > q_hi(2)-3)) then
          continue ! There is just 1 ghost-cell with bcMask because of the Riemann solver
        else
@@ -977,7 +995,7 @@ end subroutine impose_NSCBC
                                 qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
                                
   use eos_module
-  use bl_constants_module, only : ONE
+  use amrex_constants_module, only : ONE
   use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP,&
                                  UFS, NQAUX, QC, QGAMC, QRSPEC, &
                                  QC, QDPDE, QDPDR, QCSML, QGAMC, &
@@ -1409,7 +1427,7 @@ end subroutine impose_NSCBC
                            qaux, qa_l1, qa_l2, qa_l3, qa_h1, qa_h2, qa_h3)
                                 
   use meth_params_module, only : QVAR, QPRES, QU, QV, QW, QRHO, NQAUX, QC, QGAMC, QTEMP, QRSPEC
-  use prob_params_module, only : probhi, Interior, Inflow, Outflow, SlipWall, NoSlipWall
+  use prob_params_module, only : probhi, Inflow, Outflow, SlipWall, NoSlipWall
   
   integer, intent(in) :: i, j, k, idir, isign
   integer, intent(in) :: q_l1, q_l2, q_l3, q_h1, q_h2, q_h3
@@ -1529,8 +1547,25 @@ end subroutine impose_NSCBC
       L4 = relax_W * (qaux(i,j,k,QC)/probhi(idir)) * (q(i,j,k,QW) - TARGET_VZ) &
                      - ((1.0d0 - beta)*T4)
 
+    elseif (idir == 3) then
+    
+      if (isign == 1) then      
+         L5 = relax_W * ((q(i,j,k,QRHO)*qaux(i,j,k,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
+                       (q(i,j,k,QW) - TARGET_VZ) - ((1.0d0 - beta)*T5)
+      elseif (isign == -1) then
+         L1 = relax_W * ((q(i,j,k,QRHO)*qaux(i,j,k,QC)**2.0d0)*(1.0d0-mach_local*mach_local)/probhi(idir)) * &
+                         (q(i,j,k,QW) - TARGET_VZ)  -  ((1.0d0 - beta)*T1)
+      endif
+      
+      L2 = relax_W * (qaux(i,j,k,QC)/probhi(idir)) * (q(i,j,k,QU) - TARGET_VX) &
+                     - ((1.0d0 - beta)*T2)
+      L3 = relax_W * (qaux(i,j,k,QC)/probhi(idir)) * (q(i,j,k,QV) - TARGET_VY) &
+                     - ((1.0d0 - beta)*T3)
+      L4 = relax_T * (q(i,j,k,QRHO)*qaux(i,j,k,QC)*qaux(i,j,k,QRSPEC)/probhi(idir)) &
+                   * (q(i,j,k,QTEMP) - TARGET_TEMPERATURE) - ((1.0d0 - beta)*T4)
+    
     else
-      call bl_error("Error:: Inflow BC is not yet implemented for z dir in characteristic form")
+      call bl_error("Error:: Wait, is this the fourth dimension?")
     endif
             
   elseif ((bc_type == SlipWall).or.(bc_type == NoSlipWall)) then

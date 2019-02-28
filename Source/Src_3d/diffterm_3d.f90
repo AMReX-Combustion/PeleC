@@ -41,10 +41,10 @@ contains
 
     use actual_network, only     : nspec
     use meth_params_module, only : NVAR, UMX, UMY, UMZ, UEDEN, UFS, QVAR, QU, QV, QW, QPRES, QTEMP, QFS, QRHO
-    use bl_constants_module
+    use amrex_constants_module
     use eos_type_module
     use eos_module
-    use prob_params_module, only : physbc_lo, physbc_hi, Inflow
+    use prob_params_module, only : physbc_lo, physbc_hi
 
     implicit none
 
@@ -126,14 +126,8 @@ contains
     call eos_hi_vec(Q(lo(1)-1:hi(1)+1,lo(2)-1:hi(2)+1,lo(3)-1:hi(3)+1,QFS:QFS+nspec-1),lo,hi,Q(lo(1)-1:hi(1)+1,lo(2)-1:hi(2)+1,lo(3)-1:hi(3)+1,QTEMP),lo,hi,hii,lo,hi,lo,hi,nspec)
 
     gfaci = dxinv(1)
-    if (lo(1).le.dmnlo(1) .and. physbc_lo(1).eq.Inflow) gfaci(dmnlo(1)) = gfaci(dmnlo(1)) * TWO
-    if (hi(1).gt.dmnhi(1) .and. physbc_hi(1).eq.Inflow) gfaci(dmnhi(1)+1) = gfaci(dmnhi(1)+1) * TWO
     gfacj = dxinv(2)
-    if (lo(2).le.dmnlo(2) .and. physbc_lo(2).eq.Inflow) gfacj(dmnlo(2)) = gfacj(dmnlo(2)) * TWO
-    if (hi(2).gt.dmnhi(2) .and. physbc_hi(2).eq.Inflow) gfacj(dmnhi(2)+1) = gfacj(dmnhi(2)+1) * TWO
     gfack = dxinv(3)
-    if (lo(3).le.dmnlo(3) .and. physbc_lo(3).eq.Inflow) gfack(dmnlo(3)) = gfack(dmnlo(3)) * TWO
-    if (hi(3).gt.dmnhi(3) .and. physbc_hi(3).eq.Inflow) gfack(dmnhi(3)+1) = gfack(dmnhi(3)+1) * TWO
 
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)

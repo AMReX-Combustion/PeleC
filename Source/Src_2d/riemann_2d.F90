@@ -1,7 +1,7 @@
 module riemann_module
 
-  use bl_types
-  use bl_constants_module
+  use amrex_fort_module
+  use amrex_constants_module
   use riemann_util_module
 
   use meth_params_module, only : NQ, QVAR, NVAR, QRHO, QU, QV, QW, &
@@ -20,7 +20,7 @@ module riemann_module
 
   public cmpflx, shock, riemanncg
 
-  real (kind=dp_t), parameter :: smallu = 1.e-12_dp_t
+  real (amrex_real), parameter :: smallu = 1.e-12_amrex_real
 
 contains
 
@@ -32,7 +32,7 @@ contains
                     flx,flx_l1,flx_l2,flx_h1,flx_h2, &
                     qint, qg_l1,qg_l2,qg_h1,qg_h2, &
                     gamc,csml,c,qd_l1,qd_l2,qd_h1,qd_h2, &
-                    bcMask, &
+                    bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
                     shk,s_l1,s_l2,s_h1,s_h2, &
                     idir,ilo,ihi,jlo,jhi,domlo,domhi)
 
@@ -43,12 +43,13 @@ contains
     integer, intent(in) :: flx_l1,flx_l2,flx_h1,flx_h2
     integer, intent(in) :: qg_l1,qg_l2,qg_h1,qg_h2
     integer, intent(in) :: qd_l1,qd_l2,qd_h1,qd_h2
+    integer, intent(in) :: bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2
 
     integer, intent(in) :: s_l1,s_l2,s_h1,s_h2
     integer, intent(in) :: idir,ilo,ihi,jlo,jhi
     integer, intent(in) :: domlo(2),domhi(2)
 
-    integer, intent(inout) :: bcMask(qd_l1:qd_h1,qd_l2:qd_h2,2)
+    integer, intent(inout) :: bcMask(bcMask_l1:bcMask_h1,bcMask_l2:bcMask_h2)
     
     double precision, intent(inout) :: qint(qg_l1:qg_h1,qg_l2:qg_h2,NGDNV)
 
@@ -179,7 +180,7 @@ contains
                       gamcm, gamcp, cavg, smallc, ilo-1, jlo-1, ihi+1, jhi+1, &
                       flx, flx_l1, flx_l2, flx_h1, flx_h2, &
                       qint, qg_l1, qg_l2, qg_h1, qg_h2, &
-                      bcMask, qd_l1, qd_h1,qd_l2, qd_h2, &
+                      bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
                       idir, ilo, ihi, jlo, jhi, domlo, domhi)
 
     elseif (riemann_solver == 1) then
@@ -188,7 +189,7 @@ contains
                       gamcm, gamcp, cavg, smallc, ilo-1, jlo-1, ihi+1, jhi+1, &
                       flx, flx_l1, flx_l2, flx_h1, flx_h2, &
                       qint, qg_l1, qg_l2, qg_h1, qg_h2, &
-                      bcMask, qd_l1, qd_h1,qd_l2, qd_h2, &
+                      bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
                       idir, ilo, ihi, jlo, jhi, domlo, domhi)
 
     elseif (riemann_solver == 2) then
@@ -197,7 +198,7 @@ contains
                  gamcm, gamcp, cavg, smallc, ilo-1, jlo-1, ihi+1, jhi+1, &
                  flx, flx_l1, flx_l2, flx_h1, flx_h2, &
                  qint, qg_l1, qg_l2, qg_h1, qg_h2, &
-                 bcMask, qd_l1, qd_h1,qd_l2, qd_h2, &
+                 bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
                  idir, ilo, ihi, jlo, jhi, domlo, domhi)
 
     elseif (riemann_solver == 3) then
@@ -206,7 +207,7 @@ contains
                       gamcm, gamcp, cavg, smallc, ilo-1, jlo-1, ihi+1, jhi+1, &
                       flx, flx_l1, flx_l2, flx_h1, flx_h2, &
                       qint, qg_l1, qg_l2, qg_h1, qg_h2, &
-                      bcMask, qd_l1, qd_h1,qd_l2, qd_h2, &
+                      bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
                       idir, ilo, ihi, jlo, jhi, domlo, domhi)
 
     else
@@ -369,12 +370,12 @@ contains
                        gamcl,gamcr,cav,smallc,gd_l1,gd_l2,gd_h1,gd_h2, &
                        uflx,uflx_l1,uflx_l2,uflx_h1,uflx_h2, &
                        qint, qg_l1,qg_l2,qg_h1,qg_h2, &
-                       bcMask, qd_l1, qd_h1,qd_l2, qd_h2, &
+                       bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
                        idir,ilo1,ihi1,ilo2,ihi2,domlo,domhi)
 
     ! this implements the approximate Riemann solver of Colella & Glaz (1985)
 
-    use bl_error_module
+    use amrex_fort_module
     use network, only : nspec, naux
     use eos_type_module
     use eos_module
@@ -389,6 +390,7 @@ contains
     integer :: qg_l1,qg_l2,qg_h1,qg_h2
     integer :: idir,ilo1,ihi1,ilo2,ihi2
     integer :: qd_l1, qd_h1,qd_l2, qd_h2
+    integer :: bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2
     integer :: domlo(2),domhi(2)
 
     double precision :: ql(qpd_l1:qpd_h1,qpd_l2:qpd_h2,QVAR)
@@ -399,7 +401,7 @@ contains
     double precision :: smallc(gd_l1:gd_h1,gd_l2:gd_h2)
     double precision :: uflx(uflx_l1:uflx_h1,uflx_l2:uflx_h2,NVAR)
     double precision :: qint(qg_l1:qg_h1,qg_l2:qg_h2,NGDNV)
-    integer :: bcMask(qd_l1:qd_h1,qd_l2:qd_h2,2)
+    integer :: bcMask(bcMask_l1:bcMask_h1,bcMask_l2:bcMask_h2)
 
     integer :: i,j,ilo,jlo,ihi,jhi, ipassive
     integer :: n, nqp
@@ -855,13 +857,9 @@ contains
 
           ! Enforce that fluxes through a symmetry plane or wall are hard zero.
           ! Here the NSCBC info about if we have a wall or not is contained in the ghost-cell
-          idx = 0
-          idy = 0
-          if ((idir == 1).and.(i == domlo(1)))   idx =-1
-          if ((idir == 1).and.(i == domhi(1)+1)) idx = 1
-          if ((idir == 2).and.(j == domlo(2)))   idy =-1
-          if ((idir == 2).and.(j == domhi(2)+1)) idy = 1
-          qint(i,j,iu) = bc_test(idir, i, j, bcMask(i+idx,j+idy,1), domlo, domhi) * qint(i,j,iu)
+          qint(i,j,iu) = bc_test(idir, i, j, &
+                                 bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
+                                 domlo, domhi) * qint(i,j,iu)
 
           ! Compute fluxes, order as conserved state (not q)
           uflx(i,j,URHO) = rgdnv*qint(i,j,iu)
@@ -920,7 +918,7 @@ contains
                        gamcl, gamcr, cav, smallc, gd_l1, gd_l2, gd_h1, gd_h2, &
                        uflx, uflx_l1, uflx_l2, uflx_h1, uflx_h2, &
                        qint, qg_l1, qg_l2, qg_h1, qg_h2, &
-                       bcMask, qd_l1, qd_h1,qd_l2, qd_h2, &
+                       bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
                        idir, ilo1, ihi1, ilo2, ihi2, domlo, domhi)
 
     use prob_params_module, only : coord_type
@@ -933,6 +931,7 @@ contains
     integer :: qg_l1, qg_l2, qg_h1, qg_h2
     integer :: idir, ilo1, ihi1, ilo2, ihi2
     integer :: qd_l1, qd_h1,qd_l2, qd_h2
+    integer :: bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2
     integer :: domlo(2),domhi(2)
 
     double precision :: ql(qpd_l1:qpd_h1,qpd_l2:qpd_h2,NQ)
@@ -944,7 +943,7 @@ contains
     double precision :: smallc(gd_l1:gd_h1,gd_l2:gd_h2)
     double precision :: uflx(uflx_l1:uflx_h1,uflx_l2:uflx_h2,NVAR)
     double precision :: qint(qg_l1:qg_h1,qg_l2:qg_h2,NGDNV)
-    integer :: bcMask(qd_l1:qd_h1,qd_l2:qd_h2,2)
+    integer :: bcMask(bcMask_l1:bcMask_h1,bcMask_l2:bcMask_h2)
     integer :: ilo,ihi,jlo,jhi
     integer :: n, nqp
     integer :: i, j, ipassive
@@ -1010,9 +1009,6 @@ contains
 
           pr = qr(i,j,QPRES)
           rer = qr(i,j,QREINT)
-
-          !call outflow_hack(ul,ur,vl,vr,v2l,v2r,pl,pr,rel,rer,&
-          !                  idir, i, j, domlo, domhi)
 
           csmall = smallc(i,j)
           wsmall = small_dens*csmall
@@ -1127,13 +1123,11 @@ contains
           
           ! enforce that the fluxes through a symmetry plane or wall are zero
           ! Here the NSCBC info about if we have a wall or not is contained in the ghost-cell
-          idx = 0
-          idy = 0
-          if ((idir == 1).and.(i == domlo(1)))   idx =-1
-          if ((idir == 1).and.(i == domhi(1)+1)) idx = 1
-          if ((idir == 2).and.(j == domlo(2)))   idy =-1
-          if ((idir == 2).and.(j == domhi(2)+1)) idy = 1
-          qint(i,j,iu) = bc_test(idir, i, j, bcMask(i+idx,j+idy,1), domlo, domhi) * qint(i,j,iu)
+          !if (idir == 1) write(*,*) 'DEBUG RIEMAMNN',i,j,bcMask(0,j)
+          !if (idir == 2) write(*,*) 'DEBUG RIEMAMNN',i,j,bcMask(i,domhi(2)+1)
+          qint(i,j,iu) = bc_test(idir, i, j, &
+                                 bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
+                                 domlo, domhi) * qint(i,j,iu)
 
           ! Compute fluxes, order as conserved state (not q)
           uflx(i,j,URHO) = rgd*qint(i,j,iu)
@@ -1184,7 +1178,7 @@ contains
                        gamcl, gamcr, cav, smallc, gd_l1, gd_l2, gd_h1, gd_h2, &
                        uflx, uflx_l1, uflx_l2, uflx_h1, uflx_h2, &
                        qint, qg_l1, qg_l2, qg_h1, qg_h2, &
-                       bcMask, qd_l1, qd_h1,qd_l2, qd_h2, &
+                       bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
                        idir, ilo1, ihi1, ilo2, ihi2, domlo, domhi)
 
     use prob_params_module, only : coord_type
@@ -1192,15 +1186,13 @@ contains
 
     use eos_module
 
-
-
-
     integer :: qpd_l1, qpd_l2, qpd_h1, qpd_h2
     integer :: gd_l1, gd_l2, gd_h1, gd_h2
     integer :: uflx_l1, uflx_l2, uflx_h1, uflx_h2
     integer :: qg_l1, qg_l2, qg_h1, qg_h2
     integer :: idir, ilo1, ihi1, ilo2, ihi2
     integer :: qd_l1, qd_h1,qd_l2, qd_h2
+    integer :: bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2
     integer :: domlo(2),domhi(2)
 
     double precision :: ql(qpd_l1:qpd_h1,qpd_l2:qpd_h2,NQ)
@@ -1213,7 +1205,7 @@ contains
     double precision :: uflx(uflx_l1:uflx_h1,uflx_l2:uflx_h2,NVAR)
     double precision :: qint(qg_l1:qg_h1,qg_l2:qg_h2,NGDNV)
     double precision :: qavg, uflx_w_dummy
-    integer :: bcMask(qd_l1:qd_h1,qd_l2:qd_h2,2)
+    integer :: bcMask(bcMask_l1:bcMask_h1,bcMask_l2:bcMask_h2)
     integer :: ilo,ihi,jlo,jhi
     integer :: n, nqp
     integer :: i, j, ipassive
@@ -1224,12 +1216,9 @@ contains
     ! for outflow hack
     double precision :: ul, vl, v2l, rel, ur, vr, v2r, rer 
 
-
     double precision :: rgd, regd, ustar
     integer :: bc_test_mask
   
-
-
 
     integer :: iu, iv1, iv2
 
@@ -1264,16 +1253,12 @@ contains
        do i = ilo, ihi
        
         ! Here the NSCBC info about if we have a wall or not is contained in the ghost-cell
-        idx = 0
-        idy = 0
-        if ((idir == 1).and.(i == domlo(1)))   idx =-1
-        if ((idir == 1).and.(i == domhi(1)+1)) idx = 1
-        if ((idir == 2).and.(j == domlo(2)))   idy =-1
-        if ((idir == 2).and.(j == domhi(2)+1)) idy = 1
-        bc_test_mask = bc_test(idir, i, j, bcMask(i+idx,j+idy,1), domlo, domhi)
+        bc_test_mask = bc_test(idir, i, j, &
+                               bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
+                               domlo, domhi)
+                               
         !TODO: consider transposing ql, qr on pass into this routine so that passing the species doesn't make a
         ! strided copy into a temporary
-
 
          ul = ql(i,j,iu)
          vl = ql(i,j,iv1)
@@ -1285,8 +1270,8 @@ contains
         v2r = qr(i,j,iv2)
         rer = qr(i,j,QREINT)
         
-
         call outflow_hack(ul,ur,vl,vr,v2l,v2r,rel,rer,&
+                          bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
                           idir, i, j, domlo, domhi)
 !
 
@@ -1333,7 +1318,7 @@ contains
                   gamcl, gamcr, cav, smallc, gd_l1, gd_l2, gd_h1, gd_h2, &
                   uflx, uflx_l1, uflx_l2, uflx_h1, uflx_h2, &
                   qint, qg_l1, qg_l2, qg_h1, qg_h2, &
-                  bcMask, qd_l1, qd_h1,qd_l2, qd_h2, &
+                  bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
                   idir, ilo1, ihi1, ilo2, ihi2, domlo, domhi)
 
     ! this is an implementation of the HLLC solver described in Toro's
@@ -1351,6 +1336,7 @@ contains
     integer :: qg_l1, qg_l2, qg_h1, qg_h2
     integer :: idir, ilo1, ihi1, ilo2, ihi2
     integer :: qd_l1, qd_h1,qd_l2, qd_h2
+    integer :: bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2
     integer :: domlo(2),domhi(2)
 
     double precision :: ql(qpd_l1:qpd_h1,qpd_l2:qpd_h2,QVAR)
@@ -1361,7 +1347,7 @@ contains
     double precision :: smallc(gd_l1:gd_h1,gd_l2:gd_h2)
     double precision :: uflx(uflx_l1:uflx_h1,uflx_l2:uflx_h2,NVAR)
     double precision :: qint(qg_l1:qg_h1,qg_l2:qg_h2,NGDNV)
-    integer :: bcMask(qd_l1:qd_h1,qd_l2:qd_h2,2)
+    integer :: bcMask(bcMask_l1:bcMask_h1,bcMask_l2:bcMask_h2)
 
     integer :: ilo,ihi,jlo,jhi
     integer :: i, j
@@ -1509,13 +1495,9 @@ contains
           ! now we do the HLLC construction
 
           ! Here the NSCBC info about if we have a wall or not is contained in the ghost-cell
-          idx = 0
-          idy = 0
-          if ((idir == 1).and.(i == domlo(1)))   idx =-1
-          if ((idir == 1).and.(i == domhi(1)+1)) idx = 1
-          if ((idir == 2).and.(j == domlo(2)))   idy =-1
-          if ((idir == 2).and.(j == domhi(2)+1)) idy = 1
-          bnd_fac = bc_test(idir, i, j, bcMask(i+idx,j+idy,1), domlo, domhi)
+          bnd_fac = bc_test(idir, i, j, &
+                            bcMask, bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2, &
+                            domlo, domhi)
           
           ! use the simplest estimates of the wave speeds
           S_l = min(ul - sqrt(gamcl(i,j)*pl/rl), ur - sqrt(gamcr(i,j)*pr/rr))
