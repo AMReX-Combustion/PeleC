@@ -102,7 +102,7 @@ PeleC::do_mol_advance(Real time,
   if (verbose) { amrex::Print() << "... Computing MOL source term at t^{n} " << std::endl; }
   FillPatch(*this, Sborder, nGrowTr, time, State_Type, 0, NUM_STATE);
   Real flux_factor = 0;
-  getMOLSrcTerm(Sborder, S, dt, flux_factor);
+  getMOLSrcTerm(Sborder, S, time, dt, flux_factor);
 
   // Add in MMS source
 #ifdef USE_MASA
@@ -132,7 +132,7 @@ PeleC::do_mol_advance(Real time,
   if (verbose) { amrex::Print() << "... Computing MOL source term at t^{n+1} " << std::endl; }
   FillPatch(*this, Sborder, nGrowTr, time+dt, State_Type, 0, NUM_STATE);
   flux_factor = mol_iters > 1 ?  0 : 1;
-  getMOLSrcTerm(Sborder, S, dt, flux_factor);
+  getMOLSrcTerm(Sborder, S, time, dt, flux_factor);
 
   // Add in MMS source
 #ifdef USE_MASA
@@ -173,7 +173,7 @@ PeleC::do_mol_advance(Real time,
       if (verbose) { amrex::Print() << "... Re-computing MOL source term at t^{n+1} (iter = " << mol_iter << " of " << mol_iters << ")" << std::endl; }
       FillPatch(*this, Sborder, nGrowTr, time + dt, State_Type, 0, NUM_STATE);
       flux_factor = mol_iter==mol_iters  ?  1  : 0;
-      getMOLSrcTerm(Sborder, S_new, dt, flux_factor);
+      getMOLSrcTerm(Sborder, S_new, time, dt, flux_factor);
 
       // F_{AD} = (1/2)(S_old + S_new)
       MultiFab::LinComb(S, 0.5, S_old, 0, 0.5, S_new, 0, 0, NUM_STATE, 0);
@@ -440,7 +440,7 @@ PeleC::do_sdc_iteration (Real time,
       }
       BL_ASSERT(!do_mol_AD); // Currently this combo only managed through MOL integrator
       Real flux_factor_old = 0.5;
-      getMOLSrcTerm(Sborder,*old_sources[diff_src],dt,flux_factor_old);
+      getMOLSrcTerm(Sborder,*old_sources[diff_src],time,dt,flux_factor_old);
     }
 
     // Initialize sources at t_new by copying from t_old
@@ -471,7 +471,7 @@ PeleC::do_sdc_iteration (Real time,
     }
     FillPatch(*this, Sborder, nGrowTr, time + dt, State_Type, 0, NUM_STATE);
     Real flux_factor_new = sub_iteration==sub_ncycle-1 ? 0.5 : 0;
-    getMOLSrcTerm(Sborder,*new_sources[diff_src],dt,flux_factor_new);
+    getMOLSrcTerm(Sborder,*new_sources[diff_src],time,dt,flux_factor_new);
   }
 
   // Build other (neither spray nor diffusion) sources at t_new
@@ -613,19 +613,6 @@ PeleC::initialize_sdc_advance(Real time,
 
   for (int i = 0; i < num_state_type; ++i)
   {
-    // The following is a hack to make sure that we only
-    // ever have new data for a few state types that only
-    // ever need new time data; by doing a swap now, we'll
-    // guarantee that allocOldData() does nothing. We do
-    // this because we never need the old data, so we
-    // don't want to allocate memory for it.
-#ifdef REACTIONS
-    if (i == SDC_React_Type)
-    {
-      state[i].swapTimeLevels(0.0);
-    }
-#endif
-
     state[i].allocOldData();
     state[i].swapTimeLevels(dt);
   }

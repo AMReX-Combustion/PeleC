@@ -67,7 +67,7 @@ extern "C"
   void set_problem_params
     (const int& dm,
      const int* physbc_lo, const int* physbc_hi,
-     const int& Interior_value, const int& Inflow_value,
+     const int& Interior_value, const int& userBC_value, const int& Inflow_value,
      const int& Outflow_value, const int& Symmetry_value,
      const int& SlipWall_value, const int& NoSlipWall_value,
      const int& coord_type,
@@ -183,12 +183,6 @@ extern "C"
      const amrex::Real* dx, const amrex::Real* glo, 
      const amrex::Real* time, const int* bc);
 
-  void pc_denfill
-    (BL_FORT_FAB_ARG_3D(state),
-     const int* dlo, const int* dhi,
-     const amrex::Real* dx, const amrex::Real* glo, 
-     const amrex::Real* time, const int* bc);
-
   void pc_xmomfill
     (BL_FORT_FAB_ARG_3D(state),
      const int* dlo, const int* dhi,
@@ -260,50 +254,24 @@ extern "C"
      const int* lo, const int* hi,
      const amrex::Real* dx, const amrex::Real* dt_old, amrex::Real* dt);
 
-#if (BL_SPACEDIM == 1)     
   void impose_NSCBC
     (const int    lo[], const int    hi[],
      const int domlo[], const int domhi[],
      const BL_FORT_FAB_ARG(state),
      BL_FORT_FAB_ARG(q),
      BL_FORT_FAB_ARG(qaux),
-     BL_FORT_IFAB_ARG(bcMask),
+     D_DECL(BL_FORT_IFAB_ARG(x_bcMask),
+            BL_FORT_IFAB_ARG(y_bcMask),
+            BL_FORT_IFAB_ARG(z_bcMask)),
+     const int* flag_nscbc_isAnyPerio, const int flag_nscbc_perio[],
      const amrex::Real* time, const amrex::Real dx[], const amrex::Real* dt);
-#elif (BL_SPACEDIM == 2)     
-  void impose_NSCBC_with_perio
-    (const int    lo[], const int    hi[],
-     const int domlo[], const int domhi[],
-     const BL_FORT_FAB_ARG(state),
-     BL_FORT_FAB_ARG(q),
-     BL_FORT_FAB_ARG(qaux),
-     BL_FORT_IFAB_ARG(bcMask),
-     const amrex::Real* time, const amrex::Real dx[], const amrex::Real* dt);
-    
-  void impose_NSCBC_mixed_BC
-    (const int    lo[], const int    hi[],
-     const int domlo[], const int domhi[],
-     const BL_FORT_FAB_ARG(state),
-     BL_FORT_FAB_ARG(q),
-     BL_FORT_FAB_ARG(qaux),
-     BL_FORT_IFAB_ARG(bcMask),
-     const amrex::Real* time, const amrex::Real dx[], const amrex::Real* dt);
-#endif
-
-  void impose_NSCBC
-    (const int    lo[], const int    hi[],
-     const int domlo[], const int domhi[],
-     const BL_FORT_FAB_ARG(uin),
-     const BL_FORT_FAB_ARG(q),
-     const BL_FORT_FAB_ARG(qaux),
-     BL_FORT_IFAB_ARG(bcMask),
-     const int flag_nscbc_isAnyPerio, const int flag_nscbc_perio[], 
-     const amrex::Real* time, const amrex::Real dx[], const amrex::Real* dt,
-     const int& verbose);
 
   void set_bc_mask
     (const int    lo[], const int    hi[],
      const int domlo[], const int domhi[],
-     BL_FORT_IFAB_ARG(bcMask));
+      D_DECL(BL_FORT_IFAB_ARG(x_bcMask),
+            BL_FORT_IFAB_ARG(y_bcMask),
+            BL_FORT_IFAB_ARG(z_bcMask)));
   
   void pc_umdrv
     (const int* is_finest_level,
@@ -316,7 +284,9 @@ extern "C"
      BL_FORT_FAB_ARG(qaux),
      BL_FORT_FAB_ARG(src_q),
      BL_FORT_FAB_ARG(update),
-     BL_FORT_IFAB_ARG(bcMask),
+     D_DECL(BL_FORT_IFAB_ARG(x_bcMask),
+            BL_FORT_IFAB_ARG(y_bcMask),
+            BL_FORT_IFAB_ARG(z_bcMask)),
      const amrex::Real dx[], const amrex::Real* dt,
      D_DECL(BL_FORT_FAB_ARG(xflux),
             BL_FORT_FAB_ARG(yflux),
@@ -371,7 +341,6 @@ extern "C"
         const void* ebg, const int* nebg,
         const void* ebflux, const int* nebf,
 #endif
-        const BL_FORT_IFAB_ARG_3D(bcMask),
         const amrex::Real* h);
 
 
@@ -399,7 +368,6 @@ extern "C"
         const void* ebg, const int* nebg,
         const void* ebflux, const int* nebf,
 #endif
-        const BL_FORT_IFAB_ARG_3D(bcMask),
         const amrex::Real* h);
 
   void flush_output();
