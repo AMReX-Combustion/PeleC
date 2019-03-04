@@ -18,11 +18,10 @@ contains
                           flag_nscbc_isAnyPerio, flag_nscbc_perio, &
                           time,delta,dt) bind(C, name="impose_NSCBC")
     
- 
-  use amrex_error_module
   use network, only : nspec
   use eos_module
   use fundamental_constants_module, only: k_B, n_A
+  use amrex_fort_module
 
   use amrex_constants_module
   use bc_fill_module, only: bcnormal

@@ -28,6 +28,7 @@ int         PeleC::add_ext_src = 0;
 int         PeleC::add_forcing_src = 0;
 int         PeleC::hybrid_hydro = 0;
 int         PeleC::ppm_type = 1;
+int         PeleC::weno_variant = 1;
 int         PeleC::ppm_trace_sources = 1;
 int         PeleC::ppm_temp_fix = 0;
 int         PeleC::ppm_predict_gammae = 0;

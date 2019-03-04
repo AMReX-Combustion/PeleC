@@ -90,7 +90,13 @@ hybrid_hydro                 int           0                  y
 # 0: piecewise linear;
 # 1: classic Colella \& Woodward ppm;
 # 2: extrema-preserving ppm
+# 3: Hybrid WENO-PPM
 ppm_type                     int           1                  y
+
+# For Hybrid WENO-PPM (ppm_type=3), which kind of WENO reconstruction method?
+# 0 : Classical JS method (dissipative)
+# 1 : WENO-Z (more robust than JS)
+weno_variant                 int           1                  y
 
 # to we reconstruct and trace under the parabolas of the source
 # terms to the velocity
