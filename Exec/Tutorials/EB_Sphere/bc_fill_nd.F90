@@ -139,7 +139,7 @@ contains
     use network, only: nspec, naux
     use prob_params_module, only : problo, probhi, dim, Interior, Inflow, Outflow, SlipWall, NoSlipWall
         
-    use bl_constants_module, only: M_PI
+    use amrex_constants_module, only: M_PI
     
     implicit none
 
