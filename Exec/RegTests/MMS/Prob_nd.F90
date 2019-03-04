@@ -11,7 +11,7 @@ contains
   subroutine amrex_probinit (init,name,namlen,problo,probhi) bind(C, name = "amrex_probinit")
     
     use probdata_module
-    use bl_error_module
+    use amrex_fort_module
     implicit none
 
     integer :: init, namlen
@@ -111,7 +111,7 @@ contains
        state,state_lo,state_hi, &
        delta,xlo,xhi) bind(C, name="pc_initdata")
 
-    use parallel
+    use amrex_parallel_module
     use probdata_module
     use network, only: nspec, naux, molec_wt
     use fundamental_constants_module, only: k_B, n_A
@@ -220,7 +220,7 @@ contains
     call masa_set_param("deltabar",delta(1))
 
     ! Display and check
-    if ( parallel_ioprocessor() ) then
+    if ( amrex_parallel_ioprocessor() ) then
        call masa_display_param()
     endif
     call masa_sanity_check()

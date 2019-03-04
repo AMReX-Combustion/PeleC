@@ -19,7 +19,7 @@ contains
                           time,delta,dt) bind(C, name="impose_NSCBC")
     
  
-  use bl_error_module
+  use amrex_error_module
   use network, only : nspec
   use eos_module
   use fundamental_constants_module, only: k_B, n_A
