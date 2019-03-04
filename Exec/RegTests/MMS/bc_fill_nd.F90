@@ -131,7 +131,7 @@ contains
     use prob_params_module, only : Interior, Inflow, Outflow, SlipWall, NoSlipWall, &
                                    problo, probhi, dim
 
-    use bl_constants_module, only: M_PI, HALF
+    use amrex_constants_module, only: M_PI, HALF
 
 #ifdef USE_MASA
     use masa
