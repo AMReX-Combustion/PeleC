@@ -34,7 +34,7 @@ subroutine pc_initdata(level,time,lo,hi,nvar, &
                        state,state_lo,state_hi, &
                        dx,xlo,xhi)
 
-  use bl_error_module
+  use amrex_fort_module
 
   implicit none
 

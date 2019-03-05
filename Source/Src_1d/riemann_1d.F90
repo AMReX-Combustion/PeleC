@@ -106,7 +106,7 @@ contains
 
     ! this implements the approximate Riemann solver of Colella & Glaz (1985)
 
-    use amrex_error_module
+    use amrex_fort_module
     use network, only : nspec, naux
     use eos_type_module
     use eos_module
@@ -808,7 +808,6 @@ contains
        enddo
 
     enddo
-    !call destroy(eos_state)
 
   end subroutine riemannus
 
