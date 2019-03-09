@@ -262,6 +262,10 @@ contains
                 call weno5js_face(s(i-3:i+2,j), vl, vr)
               case (1)
                 call weno5z_face(s(i-3:i+2,j), vl, vr)
+              case (2)
+                call weno3z_face(s(i-3:i+2,j), vl, vr)
+              case (3)
+                call weno7z_face(s(i-4:i+3,j), vl, vr)
               end select     
               sedge_weno_p(i,j) = vr
               sedge_weno_m(i,j) = vl
@@ -527,6 +531,10 @@ contains
                 call weno5js_face(s(i,j-3:j+2), vl, vr)
               case (1)
                 call weno5z_face(s(i,j-3:j+2), vl, vr)
+              case (2)
+                call weno3z_face(s(i,j-3:j+2), vl, vr)
+              case (3)
+                call weno7z_face(s(i,j-4:j+3), vl, vr)
               end select     
               sedge_weno_p(i,j) = vr
               sedge_weno_m(i,j) = vl
