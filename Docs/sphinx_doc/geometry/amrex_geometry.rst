@@ -11,7 +11,3 @@ There are a few key AMReX facilities used to enable the EB capability.
 
 
 .. _geom:
-
-
-
-

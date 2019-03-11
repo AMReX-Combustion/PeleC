@@ -59,7 +59,7 @@ The unsplit piecewise parabolic method is used for regular geometries and is the
 
 Method of Lines with Characteristic Extrapolation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. _Method_of_lines: 
+.. _MOL: 
 
 An alternative formulation well suited to Embedded Boundary geometry treatment and also available for regular grids is available and based on a method of lines approach.
 

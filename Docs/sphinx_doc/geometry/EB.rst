@@ -23,7 +23,7 @@ process are:
 4. Actual construction of the diffusion and advection components of the PeleC time advance.
 
 AMReX data structures and functions provide for the first 3 steps.  
-Step 4 is implemented using a "method-of-lines" update within PeleC. 
+Step 4 is implemented using a "method-of-lines" update within PeleC (see section :ref:`MOL<MOL>`). 
 
 Embedded Boundary Representation
 --------------------------------
@@ -205,7 +205,7 @@ After the geometry is created, the following are populated in the Pelc::init_eb 
 
 At present, the geometry must be static, so the above structures are valid for the life of the PeleC AMRLevel object. 
 
-The relevant functions are:
+.. The relevant functions are:
 
 
 .. doxygenfunction:: PeleC::init_eb
@@ -213,6 +213,68 @@ The relevant functions are:
 
 .. doxygenfunction:: PeleC::initialize_eb_structs
 
+.. include:: geometry_init.rst
 
 
 
+
+Basic work iterator for for EB geometry
+---------------------------------------
+
+First fillpatch
+
+
+.. code-block:: c
+
+    {
+      FillPatchIterator fpi(*this, coeff_cc, nGrowTr, time, State_Type, 0, NUM_STATE);
+      MultiFab& S = fpi.get_mf(); 
+    
+      cons_to_prim(S,Q,Qaux);
+    
+      if (level > 0) 
+      {   
+        const BoxArray& crse_grids = getLevel(level-1).boxArray();
+        const DistributionMapping& dmc = getLevel(level-1).DistributionMap();
+        MultiFab Sc(crse_grids,dmc,NUM_STATE,nGrowTr);
+        FillPatch(getLevel(level-1),Sc,nGrowTr,time,State_Type,0,NUM_STATE);
+    
+        Qc.define(crse_grids,dmc,QVAR,nGrowTr);
+        Qcaux.define(crse_grids,dmc,NQAUX>0?NQAUX:1,nGrowTr);
+        cons_to_prim(Sc,Qc,Qcaux);
+      }
+    }
+
+
+
+
+Then iterate over `MultiFab`s:
+
+
+.. code-block:: c
+
+    EBFArrayBox& feb = static_cast<EBFArrayBox&>(Q[mfi]);
+    const auto& flag_fab = feb.getEBCellFlagFab();
+    FabType typ = flag_fab.getType(cbox);
+    if (typ == FabType::covered)
+    {
+    }
+    else if (typ == FabType::singlevalued)
+    {
+      pc_compute_tangential_vel_derivs_eb(cbox.loVect(), cbox.hiVect(),
+                                          BL_TO_FORTRAN_3D(Q[mfi]),
+                                          BL_TO_FORTRAN_3D(tander_ec[d]),
+                                          BL_TO_FORTRAN_ANYD(flag_fab),
+                                          geom.CellSize(),&d);
+    }
+    else if (typ == FabType::multivalued)
+    {
+      amrex::Abort("multi-valued eb tangential derivatives to be implemented");
+    }
+    else
+    {
+      pc_compute_tangential_vel_derivs(cbox.loVect(), cbox.hiVect(),
+                                       BL_TO_FORTRAN_3D(Q[mfi]),
+                                       BL_TO_FORTRAN_3D(tander_ec[d]),
+                                       geom.CellSize(),&d);
+    }
