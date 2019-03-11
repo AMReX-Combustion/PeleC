@@ -13,7 +13,7 @@ Equations
 Conservative system
 ~~~~~~~~~~~~~~~~~~~
 
-PeleC advances the following set of fully compressible equations for the conserved state vector: :math:`\mathbf{U} = (\rho, \rho \mathbf{u}, \rho E, \rho A_k, \rho X_k, \rho Y_k):`
+PeleC advances the following set of fully compressible equations for the conserved state vector: :math:`\mathbf{U} = (\rho, \rho \mathbf{u}, \rho E, \rho Y_k, \rho A_k, \rho B_k):`
 
 .. math::
  
@@ -21,21 +21,21 @@ PeleC advances the following set of fully compressible equations for the conserv
   \frac{\partial \rho}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u}) + S_{{\rm ext},\rho}, \\
   \frac{\partial (\rho \mathbf{u})}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} \mathbf{u}) - \nabla p +\rho \mathbf{g} + \mathbf{S}_{{\rm ext},\rho\mathbf{u}}, \\
   \frac{\partial (\rho E)}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} E + p \mathbf{u}) + \rho \mathbf{u} \cdot \mathbf{g} - \sum_k {\rho q_k \dot\omega_k} + \nabla\cdot k_{\rm th} \nabla T + S_{{\rm ext},\rho E}, \\
+  \frac{\partial (\rho Y_k)}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} Y_k) + \rho \dot\omega_k + S_{{\rm ext},\rho Y_k}, \\
   \frac{\partial (\rho A_k)}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} A_k) + S_{{\rm ext},\rho A_k}, \\
-  \frac{\partial (\rho X_k)}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} X_k) + \rho \dot\omega_k + S_{{\rm ext},\rho X_k}, \\
-  \frac{\partial (\rho Y_k)}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} Y_k) + S_{{\rm ext},\rho Y_k}.\label{eq:compressible-equations}
+  \frac{\partial (\rho B_k)}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} B_k) + S_{{\rm ext},\rho B_k}.
   \end{eqnarray}
 
 
 Here :math:`\rho, \mathbf{u}, T, p`, and :math:`k_{\rm th}` are the density, velocity,
 temperature, pressure, and thermal conductivity, respectively, and :math:`E
 = e + \mathbf{u} \cdot \mathbf{u} / 2` is the total energy with :math:`e` representing the
-internal energy.  In addition, :math:`X_k` is the mass fraction of the :math:`k^{\rm th}` species,
+internal energy.  In addition, :math:`Y_k` is the mass fraction of the :math:`k^{\rm th}` species,
 with associated production rate, :math:`\dot\omega_k`, and
 energy release, :math:`q_k`.  Here :math:`\mathbf{g}` is the gravitational vector, and
-:math:`S_{{\rm ext},\rho}, \mathbf{S}_{{\rm ext}\rho\mathbf{u}}`, etc., are user-specified
+:math:`S_{{\rm ext},\rho}, \mathbf{S}_{{\rm ext},\rho\mathbf{u}}`, etc., are user-specified
 source terms.  :math:`A_k` is an advected quantity, i.e., a tracer.  We also
-carry around auxiliary variables, :math:`Y_k`, which have a user-defined
+carry around auxiliary variables, :math:`B_k`, which have a user-defined
 evolution equation, but by default are treated as advected quantities.
 
 In the code we also carry around :math:`T` and :math:`\rho e` in the conservative
@@ -64,7 +64,7 @@ Primitive Forms
 ~~~~~~~~~~~~~~~
 
 PeleC uses the primitive form of the fluid equations, defined in terms of
-the state $\Qb = (\rho, \ub, p, \rho e, A_k, X_k, Y_k)$, to construct the
+the state :math:`\Qb = (\rho, \ub, p, \rho e, Y_k, A_k, B_k)`, to construct the
 interface states that are input to the Riemann problem. All of the primitive variables are derived from the conservative state
 vector. This task is performed in the routine ``ctoprim`` located in ``Src_nd/advection_util_nd.F90``.
 
@@ -76,9 +76,9 @@ The primitive variable equations for density, velocity, and pressure are:
   \frac{\partial\mathbf{u}}{\partial t} &=& -\mathbf{u}\cdot\nabla\mathbf{u} - \frac{1}{\rho}\nabla p + \mathbf{g} + 
   \frac{1}{\rho} (\mathbf{S}_{{\rm ext},\rho\mathbf{u}} - \mathbf{u} \; S_{{\rm ext},\rho}) \\
   \frac{\partial p}{\partial t} &=& -\mathbf{u}\cdot\nabla p - \rho c^2\nabla\cdot\mathbf{u} +
-  \left(\frac{\partial p}{\partial \rho}\right)_{e,X}S_{{\rm ext},\rho}\nonumber\\
-  &&+\  \frac{1}{\rho}\sum_k\left(\frac{\partial p}{\partial X_k}\right)_{\rho,e,X_j,j\neq k}\left(\rho\dot\omega_k + S_{{\rm ext},\rho X_k} - X_kS_{{\rm ext},\rho}\right)\nonumber\\
-  && +\  \frac{1}{\rho}\left(\frac{\partial p}{\partial e}\right)_{\rho,X}\left[-eS_{{\rm ext},\rho} - \sum_k\rho q_k\dot\omega_k + \nabla\cdot k_{\rm th}\nabla T \right.\nonumber\\
+  \left(\frac{\partial p}{\partial \rho}\right)_{e,Y}S_{{\rm ext},\rho}\nonumber\\
+  &&+\  \frac{1}{\rho}\sum_k\left(\frac{\partial p}{\partial Y_k}\right)_{\rho,e,Y_j,j\neq k}\left(\rho\dot\omega_k + S_{{\rm ext},\rho Y_k} - Y_kS_{{\rm ext},\rho}\right)\nonumber\\
+  && +\  \frac{1}{\rho}\left(\frac{\partial p}{\partial e}\right)_{\rho,Y}\left[-eS_{{\rm ext},\rho} - \sum_k\rho q_k\dot\omega_k + \nabla\cdot k_{\rm th}\nabla T \right.\nonumber\\
   && \quad\qquad\qquad\qquad+\ S_{{\rm ext},\rho E} - \mathbf{u}\cdot\left(\mathbf{S}_{{\rm ext},\rho\mathbf{u}} - \frac{\mathbf{u}}{2}S_{{\rm ext},\rho}\right)\Biggr] 
   \end{eqnarray}
 
@@ -86,12 +86,12 @@ The advected quantities appear as:
 
 .. math::
   \begin{eqnarray}
+  \frac{\partial Y_k}{\partial t} &=& -\mathbf{u}\cdot\nabla Y_k + \dot\omega_k + \frac{1}{\rho}
+                                     ( S_{{\rm ext},\rho Y_k}  - Y_k S_{{\rm ext},\rho} ), \\
   \frac{\partial A_k}{\partial t} &=& -\mathbf{u}\cdot\nabla A_k + \frac{1}{\rho}
                                      ( S_{{\rm ext},\rho A_k} - A_k S_{{\rm ext},\rho} ), \\
-  \frac{\partial X_k}{\partial t} &=& -\mathbf{u}\cdot\nabla X_k + \dot\omega_k + \frac{1}{\rho}
-                                     ( S_{{\rm ext},\rho X_k}  - X_k S_{{\rm ext},\rho} ), \\
-  \frac{\partial Y_k}{\partial t} &=& -\mathbf{u}\cdot\nabla Y_k + \frac{1}{\rho} 
-                                     ( S_{{\rm ext},\rho Y_k}  - Y_k S_{{\rm ext},\rho} ).
+  \frac{\partial B_k}{\partial t} &=& -\mathbf{u}\cdot\nabla B_k + \frac{1}{\rho} 
+                                     ( S_{{\rm ext},\rho B_k}  - B_k S_{{\rm ext},\rho} ).
   \end{eqnarray}
 
 
@@ -130,47 +130,44 @@ accounted for in the characteristic integration in the PPM algorithm.  The sourc
 
 .. math::
   \begin{equation}
-    \Sb_{\Qb}^n =
+    \mathbf{S}_{\mathbf{Q}}^n =
     \left(\begin{array}{c}
     S_\rho \\
-    \Sb_{\mathbf{u}} \\
+    S_{\mathbf{u}} \\
     S_p \\
     S_{\rho e} \\
+    S_{Y_k} \\
     S_{A_k} \\
-    S_{X_k} \\
-    S_{Y_k}
-    \end{array}\right)^n
-    =
-    \left(\begin{array}{c}
-    S_{{\rm ext},\rho} \\
+    S_{B_k}
+    \end{array}\right)^n  =  \left(\begin{array}{c}  S_{{\rm ext},\rho} \\
     \mathbf{g} + \frac{1}{\rho}\mathbf{S}_{{\rm ext},\rho\mathbf{u}} \\
     \frac{1}{\rho}\frac{\partial p}{\partial e}S_{{\rm ext},\rho E} + \frac{\partial p}{\partial\rho}S_{{\rm ext}\rho} \\
-    \nabla\cdot\kth\nabla T + S_{{\rm ext},\rho E} \\
+    \nabla\cdot k_{\rm th} \nabla T + S_{{\rm ext},\rho E} \\
+    \frac{1}{\rho}S_{{\rm ext},\rho Y_k} \\
     \frac{1}{\rho}S_{{\rm ext},\rho A_k} \\
-    \frac{1}{\rho}S_{{\rm ext},\rho X_k} \\
-    \frac{1}{\rho}S_{{\rm ext},\rho Y_k}
+    \frac{1}{\rho}S_{{\rm ext},\rho B_k}
     \end{array}\right)^n,
     \end{equation}
+
+.. math::
     \begin{equation}
-    \mathbf{S}_{\Ub}^n =
+    \mathbf{S}_{\mathbf{U}}^n =
     \left(\begin{array}{c}
-    \mathbf{S}_{\rho\mathbf{u}} \\
+    \mathbf{S}_{\rho\mathbf{u}}\\
     S_{\rho E} \\
+    S_{\rho Y_k} \\
     S_{\rho A_k} \\
-    S_{\rho X_k} \\
-    S_{\rho Y_k}
+    S_{\rho B_k}
     \end{array}\right)^n
     =
     \left(\begin{array}{c}
     \rho \mathbf{g} + \mathbf{S}_{{\rm ext},\rho\mathbf{u}} \\
-    \rho \mathbf{u} \cdot \mathbf{g} + \nabla\cdot\kth\nabla T + S_{{\rm ext},\rho E} \\
+    \rho \mathbf{u} \cdot \mathbf{g} + \nabla\cdot k_{\rm th} \nabla T + S_{{\rm ext},\rho E} \\
+    S_{{\rm ext},\rho Y_k} \\
     S_{{\rm ext},\rho A_k} \\
-    S_{{\rm ext},\rho X_k} \\
-    S_{{\rm ext},\rho Y_k}
+    S_{{\rm ext},\rho B_k}
     \end{array}\right)^n.
-  \end{equation}
-
-
+    \end{equation}
 
 PeleC Timestepping
 ------------------
