@@ -1,7 +1,11 @@
 
  .. role:: cpp(code)
     :language: c++
- 
+
+
+ .. role:: c(code)
+    :language: c
+
  .. role:: fortran(code)
     :language: fortran
 
@@ -12,7 +16,7 @@ Embedded Boundary Representation
 
 .. _eb_cell_fig1:
 
-.. figure:: EB_sample.pdf
+.. figure:: EB_sample.png
    :alt: EB Cell
    :width: 100
 
@@ -21,7 +25,7 @@ Embedded Boundary Representation
 
 Geometry is treated in PeleC using an embedded boundary (EB) formulation, based on datastructures and algorithmic components provided by AMReX.   In the EB formalism, geometry is represented by volume fractions (:math:`v_l`) 
 and apertures (:math:`A_l^k`) for each cell :math:`l` that have faces :math:`1,...,k,6`. See :ref:`EB_F` for an illustration where the grey area represents the region excluded from the solution domain and the arrows represent fluxes. The fluid volume in a given cell is given by  
-(:math:`V_l = v_l\,\,dx\,dy\,d `); it should be noted that the grid spacing along each direction is the same in PeleC.
+(:math:`V_l = v_l\,\,dx\,dy\,d`); it should be noted that the grid spacing along each direction is the same in PeleC.
 
 .. _EB_F:
 
@@ -53,41 +57,28 @@ Data Structures and utility functions
 
 Several structures exist to store geometry dependent information. These are populated on creation of a new AMRLevel (described below) and stored in the PeleC object so that they are available for computation. These facilitate accessing the EB data from the fortran layer and have equivalent C++ struct and fortran types definitions so that they can be passed between the languages. The C++ struct definitions are in the file EBStencilTypes.H and the fortran type definitions are in the file EBStencilTypes_mod.F90 within the pelec_eb_stencil_types_module module. The datatypes are:
 
-+----------------+----------------+
-| C++ struct     | fortran type   |
-+================+================+
-| EBBoundaryGeom | eb_bndry_geom  |
-+----------------+----------------+
-| EBBndrySten    | eb_bndry_sten  |
-+----------------+----------------+
-| FaceSten       | face_sten      |
-+----------------+----------------+
++----------------+----------------+--------------------------------------------------------------------------------------+
+| C++ struct     | fortran type   | Contents                                                                             |
++================+================+======================================================================================+
+| EBBoundaryGeom | eb_bndry_geom  |Cut face normal, centroid, area, index into FAB                                       |
++----------------+----------------+--------------------------------------------------------------------------------------+
+| EBBndrySten    | eb_bndry_sten  |:math:`3^3` matrix of weights to apply cell based stencil, BC value, index into FAB   |
++----------------+----------------+--------------------------------------------------------------------------------------+
+| FaceSten       | face_sten      |:math:`3^2` matrix of weights to apply face-based stencil                             |
++----------------+----------------+--------------------------------------------------------------------------------------+
 
-Routines to fill and apply these as necessary can be found in the dimension specific files in e.g. Source/Src_3d/PeleC_init_eb_3d.f90 within the `nbrsTest_nd_module` module.
-
-These structs are defined below:
+Routines to fill and apply these as necessary can be found in the dimension specific files in e.g. Source/Src_3d/PeleC_init_eb_3d.f90 within the `nbrsTest_nd_module` module. An array of structures is created on level creation by copying data from the AMReX dense datastrcutures on a per-FAB basis as indicated in Figure :ref:`eb_structs` .
 
 
-.. f:type:: pelec_eb_stencil_types_module/eb_bndry_geom
 
-.. doxygenstruct:: EBBndryGeom
-    :members:
-    :undoc-members:
+.. _eb_structs:
 
-Similarly, two structs are used to cache boundary/face stencils
+.. figure:: EB_Struct.png
+   :alt: EB Structure storage
+   :width: 500
 
+   Storage for sparse EB structures 
 
-.. doxygenstruct:: EBBndrySten
-    :members:
-    :undoc-members:
-
-.. f:type:: pelec_eb_stencil_types_module/eb_bndry_sten
-
-
-.. doxygenstruct:: FaceSten
-    :members:
-    :undoc-members:
-.. f:type:: pelec_eb_stencil_types_module/face_sten
 
 Applying boundary and face stencils
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -131,16 +122,16 @@ At present, the geometry must be static, so the above structures are valid for t
 The relevant functions are:
 
 
-.. doxygenfunction:: PeleC::init_eb
+.. cpp:function:: PeleC::init_eb ()
 
 
-.. doxygenfunction:: PeleC::initialize_eb_structs
+.. cpp:member:: PeleC::initialize_eb2_structs()
 
 
 
 
 Hybrid Divergence and Redistribution
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A straightforward implemention of the finite-volume advance of intensive conserved fields is numerically unstable (this is the well-known "small cell issue") due to presence of the fluid cell volume in the denominator of the time derivative:
 
