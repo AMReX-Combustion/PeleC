@@ -20,10 +20,11 @@ There are some pre-specified boundary conditions where user intervention is not 
   sign change (REFLECT_EVEN) while the normal component is reflected with a sign change (REFLECT_ODD)
 * *NoSlipWall* - REFLECT_EVEN is applied to all conserved quantities except for both tangential and normal momentum components which are updated 
   using REFLECT_ODD
-* *SlipWall*  - SlipWall is identical to Symmetry  
+* *SlipWall*  - SlipWall is identical to Symmetry
+* *FOExtrap* - First-order extrapolation: the value in the ghost-cells are a copy of the last interior cell.
 
 When `pc_hypfill` is called, the AMReX routine `filcc_nd` will be called to fill ghost-cells for the boundary conditions ``Interior``, ``Symmetry``,
-``NoSlipWall`` and ``SlipWall``.
+``NoSlipWall``, ``SlipWall`` or ``FOExtrap``.
 
 However more complex boundary conditions can be prescribed. This is enabled by setting the keyword ``UserBC`` in the input file. When ``UserBC`` is set, AMReX sees this boundary
 with the keyword ``EXT_DIR``, which means that `filcc_nd` will do nothing and the user has to prescribe `External Dirichlet` values. For that purpose,
@@ -99,8 +100,9 @@ The purpose of the routine `bcnormal` is to provide the target state, as well as
 When `bc_type`, `bc_params` and `bc_target` are present, this means that the routine is called from `impose_NSCBC_(dir)d.F90`. Thus, the flag `flag_nscbc` is turned on to
 fill the optional arrays. Because of the AMReX framework, `bcnormal` is also called from the ``FillPatch`` operation. In that case, in order to make the routine generic, only the target state is
 given back to `pc_hypfill` and the parameters associated to the GC-NSCBC method are not employed. Note that by default, the Ghost-Cells Navier-Stokes Boundary Conditions
-method is activated. It can be turned off by setting the flags ``nscbc_adv`` and ``nscbc_diff`` to zero. In that case, the ghost-cells will be filled with the target state.
-Keep in mind that this lead to an ill-posed mathematical problem.
+method is activated. It can be turned off by setting the flags ``nscbc_adv`` to zero. In that case, the ghost-cells will be filled with the target state.
+Note that GC-NSCBC can be specifically turned off at a boundary of the domain by setting the BC keyword to ``Hard``. In that case the GC-NSCBC treatment is still active everywhere, except for this
+physical boundary where values in ghost-cells are imposed in 'hard' via `bcnormal`. Keep in mind that this lead to an ill-posed mathematical problem.
 
 
 The use of `bc_type`, `bc_params` and `bc_target` will be described later, but let us focus on `bc_type`. The integer `bc_type` is actually the
