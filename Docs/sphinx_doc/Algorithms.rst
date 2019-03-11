@@ -216,7 +216,241 @@ Two hyperbolic treatments are available.
 PPM
 ~~~
 
-The unsplit piecewise parabolic method is used for regular geometries and is the same algorithm used in several other AMReX codes including CASTRO and MAUI. 
+The unsplit piecewise parabolic method is used for regular geometries. The algorithm is presented here in 1D
+for simplicity, but can be trivially extended to 2D and 3D. Note that the following description is taken from the paper
+`Motheau and Wakefield, Capturing shocks and turbulence spectra in compressible flows. Part 2: A new hybrid PPM/WENO method  [Submitted 2019]`.
+
+System of primitive variables
+#############################
+
+
+First, the system of primitive variables is recast in the following generic form:
+
+.. math::
+  \begin{equation}
+    \frac{\partial \mathbf{Q}}{\partial t} + \mathbf{A} \frac{\partial \mathbf{Q}}{\partial x} = \mathbf{S}_{\mathbf{Q}}. \label{eqn:prim_var_eq}
+  \end{equation}
+
+Here :math:`\mathbf{Q}` is the primitive state vector, :math:`\mathbf{A}=\partial \mathbf{F}/\partial \mathbf{Q}` and :math:`\mathbf{S}_{\mathbf{Q}}`
+are the viscous source terms reformulated in terms of the primitive variables.
+
+In one dimension, this comes:
+
+.. math::
+  \begin{equation}
+  \left(\begin{array}{c}
+  \rho \\
+  u \\
+  p \\
+  \rho e
+  \end{array}\right)_t 
+  +
+  \left(\begin{array}{cccc}
+  u & \rho &  0 & 0  \\
+  0 & u &  \frac{1}{\rho} & 0  \\
+  0 & \rho c^2 & u & 0 \\
+  0 & \rho e + p & 0 & u 
+  \end{array}\right)
+  \left(\begin{array}{c}
+  \rho \\
+  u \\
+  p \\
+  \rho e 
+  \end{array}\right)_x
+  =
+  \mathbf{S}_{\mathbf{Q}}
+  \end{equation}
+
+Note that here, the system of primitive variables has been extended to include an additional equation for the internal energy,
+denoted :math:`e`. This avoids several calls to the equation of state, especially in the Riemann solver step. 
+
+The eigenvalues of the matrix :math:`\mathbf{A}_x` are given by:
+
+.. math::
+  \begin{equation}
+  \mathbf{\Lambda}\left(\mathbf{A}_x\right) = \{u-c,u,u,u+c\}.
+  \end{equation}
+  
+The right column eigenvectors are:
+
+.. math::
+  \begin{equation}
+  \mathbf{r}_x =
+  \left(\begin{array}{ccccc}
+  1 & 1 &  0  & 1 \\
+  -\frac{c}{\rho} &  0 & 0 & \frac{c}{\rho} \\
+  c^2 & 0  & 0 & c^2 \\
+  h & 0 &  1  & h
+  \end{array}\right).
+  \end{equation}
+  :label: matrix_lx
+  
+The left row eigenvectors, normalized so that :math:`\mathbf{l}_x\cdot\mathbf{r}_x = \mathbf{I}` are:
+
+.. math::
+  \begin{equation}
+  \mathbf{l}_x =
+  \left(\begin{array}{ccccc}
+  0 & -\frac{\rho}{2c} &  \frac{1}{2c^2}  & 0 \\
+  1 & 0  & -\frac{1}{c^2}  & 0 \\
+  0 & 0 &  -\frac{h}{c^2}  & 0 \\
+  0 & \frac{\rho}{2c} & \frac{1}{2c^2}  & 0
+  \end{array}\right).
+  \end{equation}
+  :label: matrix_rx
+
+Note that here, :math:`c` and :math:`h` are the sound speed and the enthalpy, respectively.
+
+Edge state prediction
+#####################
+
+The fluxes are reconstructed from time-centered edge state values. Thus, the primitive variables are first interpolated in space with the PPM method,
+then a characteristic tracing operation is performed to extrapolate in time their values at :math:`n+1/2`.
+
+
+* Interpolation and slope limiting
+
+
+Basically the goal of the algorithm is to compute a left and a right state of the primitive variables at each edge in order to provide inputs for the Riemann problem to solve. 
+
+First, the average cross-cell difference is computed for each primitive variable with a quadratic interpolation as follows:
+
+.. math::
+  \begin{equation}
+  \delta q_i = \frac{1}{2} \left(q_{i+1} - q_{i-1}\right).
+  \end{equation} 
+
+In order to enforce monotonicity, :math:`\delta q_i` is limited with the van Leer [1979] method:
+
+.. math::
+  \begin{equation}
+  \delta q_i^* = \min \left(|\delta q_i|,2|q_{i+1}-q_i|,2|q_i - q_{i-1}|\right)\text{sgn}\left(\delta q_i\right),
+  \end{equation}
+
+and the interpolation of the primitive values to the cell face :math:`q_{i+\frac{1}{2}}` is estimated with:
+ 
+.. math::
+  \begin{equation}
+  q_{i+\frac{1}{2}} = q_i + \frac{1}{2}\left(q_{i+1}-q_i \right)-\frac{1}{6}\left(\delta q_{i+1}^* - \delta q_i^* \right).
+  \end{equation}
+
+In order to enforce that :math:`q_{i+\frac{1}{2}}` lies between the adjacent cell averages, the following constraint is imposed:
+
+.. math::
+  \begin{equation}
+  \min\left(q_i,q_{i+1} \right) \leqslant q_{i+\frac{1}{2}} \leqslant \max\left(q_i,q_{i+1} \right).
+  \end{equation}
+
+The next step is to set the values of :math:`q_{R,i-\frac{1}{2}}` and :math:`q_{L,i+\frac{1}{2}}`, which are the right and left state at the edges bounding a computational cell.
+Here, a quartic limiter is employed in order to enforce that the interpolated parabolic profile is monotone.
+The procedure proposed by Miller [2002] is adopted, which slightly differs from the original one proposed in Colella [1984]. In Miller [2002], this specific procedure is followed
+by the imposition of another limiter based on a flattening parameter to prevent artificial extrema in the reconstructed values. Here in PeleC, the order of imposition
+of the different limiting procedures is reversed.
+
+First, the edge state values are defined as:
+
+.. math::
+  \begin{align}
+  q_{L,i+\frac{1}{2}} = q_{i+\frac{1}{2}}, \\
+  q_{R,i-\frac{1}{2}} = q_{i-\frac{1}{2}}.
+  \end{align}
+
+Then the flattening limiter is imposed as follows:
+
+.. math::
+  \begin{align}
+  q_{L,i+\frac{1}{2}} \leftarrow \chi_i q_{L,i+\frac{1}{2}} + \left(1+\chi_i\right) q_i, \label{eqn:flattening_eq_1} \\
+  q_{R,i-\frac{1}{2}} \leftarrow \chi_i q_{R,i-\frac{1}{2}} + \left(1+\chi_i\right) q_i, \label{eqn:flattening_eq_2}
+  \end{align}
+
+where :math:`\chi_i` is a flattening coefficient computed from the local pressure, and its evaluation is presented below.
+
+Finally, the monotonization is performed with the following procedure:
+
+.. math::
+  \begin{align}
+  q_{L,i+\frac{1}{2}} = q_{R,i-\frac{1}{2}} = q_i \hspace{0.8cm} &\text{if}  \hspace{0.2cm}   \left(q_{L,i+\frac{1}{2}} - q_i \right)\left(q_i - q_{R,i-\frac{1}{2}}\right) > 0, \\
+  q_{L,i+\frac{1}{2}} = 3 q_i - 2 q_{R,i-\frac{1}{2}} \hspace{0.8cm} &\text{if}  \hspace{0.2cm} |q_{L,i+\frac{1}{2}}-q_i| \geqslant 2|q_{R,i-\frac{1}{2}}-q_i|, \\ 
+  q_{R,i-\frac{1}{2}} = 3 q_i - 2 q_{L,i+\frac{1}{2}} \hspace{0.8cm} &\text{if}  \hspace{0.2cm} |q_{R,i-\frac{1}{2}}-q_i| \geqslant 2|q_{L,i+\frac{1}{2}}-q_i|.
+  \end{align}
+
+
+
+* Piecewise Parabolic Reconstruction
+
+
+Once the limited values :math:`q_{R,i-\frac{1}{2}}` and :math:`q_{L,i+\frac{1}{2}}` are known, the limited piecewise parabolic reconstruction
+in each cell is done by computing the average value swept out by parabola profile across a face, assuming that it moves at the speed of a
+characteristic wave :math:`\lambda_k`. The average is defined by the following integrals:
+
+.. math::
+  \begin{align}
+  \mathcal{I}^{(k)}_{+} \left(q_i \right) &= \frac{1}{\sigma_k \Delta x}\int^{(i+1/2)\Delta x}_{((i+1/2)-\sigma_k)\Delta x} q_i^I\left(x\right){\rm d}x, \\
+  \mathcal{I}^{(k)}_{-} \left(q_i \right) &= \frac{1}{\sigma_k \Delta x}\int^{((i-1/2)+\sigma_k)\Delta x}_{(i-1/2)\Delta x} q_i^I\left(x\right){\rm d}x,
+  \end{align}
+  :label: int_parab_2
+
+with :math:`\sigma_k = |\lambda_k|\Delta t / \Delta x`, where :math:`\lambda_k=\{u-c,u,u,u+c\}`, while :math:`\Delta t` and :math:`\Delta x` are the discretization
+step in time and space, respectively, with the assumption that :math:`\Delta x` is constant in the computational domain.
+
+The parabolic profile is defined by
+
+.. math::
+  \begin{equation}
+  q_i^I \left(x\right) = q_{R,i-\frac{1}{2}} + \xi\left(x\right)\left[q_{L,i+\frac{1}{2}} - q_{R,i-\frac{1}{2}} + q_{i,6}\left(1-\xi\left(x\right)\right)\right]
+  \end{equation}
+
+with 
+
+.. math:: q_{i,6} = 6 q_i - 3\left(q_{R,i-\frac{1}{2}} + q_{L,i+\frac{1}{2}} \right).   
+   :label: parabolic_profile
+
+and
+
+.. math::
+  \begin{equation}
+  \xi \left(x\right) = \frac{x-x_{i-\frac{1}{2}}}{\Delta x}, \hspace{0.8cm} x_{i-\frac{1}{2}} \leqslant x \leqslant x_{i+\frac{1}{2}}
+  \end{equation}r
+
+Substituting :eq:`parabolic_profile` in :eq:`int_parab_2` leads to the following explicit formulations:
+
+.. math::
+  \begin{align}
+  \mathcal{I}^{(k)}_{+} \left(q_i \right) &= q_{L,i+\frac{1}{2}} - \frac{\sigma_k}{2}\left[q_{L,i+\frac{1}{2}} - q_{L,i+\frac{1}{2}} - \left(1-\frac{2}{3}\sigma_k \right) q_{i,6} \right], \\
+  \mathcal{I}^{(k)}_{-} \left(q_i \right) &= q_{R,i-\frac{1}{2}} + \frac{\sigma_k}{2}\left[q_{L,i+\frac{1}{2}} - q_{L,i+\frac{1}{2}} + \left(1-\frac{2}{3}\sigma_k \right) q_{i,6} \right].
+  \end{align}
+
+* Characteristic tracing and flux reconstruction
+
+The next step is to extrapolate in time the integrals :math:`\mathcal{I}^{(k)}_{\pm}` to get the left and right edge states at time :math:`n+1/2`.
+This procedure is complex, especially in multi-dimensions where transverse terms are taken into account; the complete detailed procedure can be found in Miller[2002].
+In 1D, the left and right edge states are computed as follows:
+
+.. math::
+  \begin{align}
+  q_{L,i+\frac{1}{2}}^{n+\frac{1}{2}} &= \mathcal{I}^{(k=u+c)}_{+} - \sum_{k:\lambda_k \geqslant 0} \beta_k \mathbf{l}_k \cdot \left[\mathcal{I}^{(k=u+c)}_{+}-\mathcal{I}^{(k)}_{+}  \right] \mathbf{r}_k + \frac{\Delta t}{2} S_i^n, \\
+  q_{R,i-\frac{1}{2}}^{n+\frac{1}{2}} &= \mathcal{I}^{(k=u-c)}_{-} - \sum_{k:\lambda_k \leqslant 0} \beta_k \mathbf{l}_k \cdot \left[\mathcal{I}^{(k=u-c)}_{-}-\mathcal{I}^{(k)}_{-}  \right] \mathbf{r}_k + \frac{\Delta t}{2} S_i^n. \\
+  \end{align}
+
+where 
+
+.. math::
+
+  \begin{equation}
+    \beta_k = \begin{cases}
+        \frac{1}{2}, & \text{if}\;\lambda_k = 0,  \\
+        1, & \text{otherwise},
+    \end{cases}
+  \end{equation}
+
+and :math:`\mathbf{l}_k` and :math:`\mathbf{r}_k` are the left row and right column of the matrices defined at :eq:`matrix_lx` and :eq:`matrix_rx` for each eigenvalue :math:`k`.
+Note that here, :math:`S_i^n` represents any source terms at time :math:`n` to include in the characteristic tracing operation.
+
+ 
+Finally, the time-centered fluxes are computed using an approximate Riemann problem solver. At the end of this procedure the primitive variables are centered in time at :math:`n+1/2`,
+and in space at the edges of a cell. This is the so-called `Godunov state` and the convective fluxes can be computed to create the advective source term. 
+ 
+ 
 
 
 Method of Lines with Characteristic Extrapolation
