@@ -12,14 +12,17 @@ Contents:
    :maxdepth: 2
 
    Introduction.rst
-   GettingStarted.rst
-   BoundaryConditions.rst
-   InputFiles.rst
    Algorithms.rst
+   BoundaryConditions.rst
+   PelePhysics.rst
+   EB.rst
+   LES.rst
+   GettingStarted.rst
+   InputFiles.rst
+   ./verification/verification.rst
+   ./validation/validation.rst
    ./geometry/geometry.rst
    writing_documentation.rst
-   ./validation/validation.rst
-   ./verification/verification.rst
    ./miscellaneous/miscellaneous.rst
 
 
