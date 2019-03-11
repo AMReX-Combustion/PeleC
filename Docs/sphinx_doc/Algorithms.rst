@@ -190,6 +190,42 @@ where:
 
 The formulation of the y- and z-directions is analogous to the x-direction. 
 
+Comparison of PPM and MOL for the decay of homogeneous isotropic turbulence
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Comparison of PPM and MOL were performed using the decay of
+homogeneous isotropic turbulence. Initial conditions for the velocity
+fields were provided by an incompressible spectral simulation. The
+comparisons were performed at :math:`N=128^3` and :math:`512^3`. While
+generally exhibiting similar results, the MOL is more dissipative that
+the PPM, as shown in the figure below. For the MOL at :math:`N =
+512^3`, the maximum relative error in kinetic energy is :math:`0.9\%`
+and :math:`k_{90}= 3 k_{\lambda_0}` at :math:`t=5\tau`, for the PPM,
+these numbers are :math:`0.5\%` and :math:`4 k_{\lambda_0}`. The
+dissipation rate is under-predicted for the MOL. The energy spectra at
+high wavenumbers for the MOL are lower than those for the
+PPM. Finally, the MOL has a more restrictive CFL condition (CFL=0.3),
+and, therefore, MOL simulations were approximately three times slower
+than PPM simulations.
+
+.. figure:: ./KE_mol_ppm.png
+   :align: center
+   :figwidth: 40%
+
+   Kinetic energy as a function of time. Solid red: PPM at :math:`N=128^3`; dashed green: MOL at :math:`N=128^3`; dot-dashed  blue: PPM at :math:`N=512^3`; dotted orange: MOL at :math:`N=128^3`; dashed black: spectral code.
+
+.. figure:: ./dissipation_mol_ppm.png
+   :align: center
+   :figwidth: 40%
+
+   Dissipation as a function of time. Solid red: PPM at :math:`N=128^3`; dashed green: MOL at :math:`N=128^3`; dot-dashed  blue: PPM at :math:`N=512^3`; dotted orange: MOL at :math:`N=128^3`; dashed black: spectral code.
+
+.. figure:: ./E3D_mol_ppm.png
+   :align: center
+   :figwidth: 40%
+
+   Three dimensional energy spectrum at :math:`t = 5\tau`. Solid red: PPM at :math:`N=128^3`; dashed green: MOL at :math:`N=128^3`; dot-dashed  blue: PPM at :math:`N=512^3`; dotted orange: MOL at :math:`N=128^3`; dashed black: spectral code.
+
 
 
 Diffusion
