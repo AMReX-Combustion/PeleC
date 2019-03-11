@@ -41,7 +41,7 @@ evolution equation, but by default are treated as advected quantities.
 In the code we also carry around :math:`T` and :math:`\rho e` in the conservative
 state vector even though they are derived from the other conserved
 quantities.  The ordering of the elements within :math:`\mathbf{U}` is defined
-by integer variables in the routine ``set_method_params`` in ``PeleC_nd.F90``.
+by integer variables in the routine ``set_method_params`` in ``Src_nd/PeleC_nd.F90``.
 
 Some notes:
 
@@ -59,152 +59,117 @@ Some notes:
   of state routines along with the species.
 
 
-Source Terms
-~~~~~~~~~~~~
 
-We now compute explicit source terms for each variable in $\Qb$ and
-$\Ub$.  The primitive variable source terms will be used to construct
-time-centered fluxes.  The conserved variable source will be used to
-advance the solution.  We neglect reaction source terms since they are
-accounted for in {\bf Steps 1} and {\bf 6}.  The source terms are:
-\begin{equation}
-\Sb_{\Qb}^n =
-\left(\begin{array}{c}
-S_\rho \\
-\Sb_{\ub} \\
-S_p \\
-S_{\rho e} \\
-S_{A_k} \\
-S_{X_k} \\
-S_{Y_k}
-\end{array}\right)^n
-=
-\left(\begin{array}{c}
-S_{{\rm ext},\rho} \\
-\gb + \frac{1}{\rho}\Sb_{{\rm ext},\rho\ub} \\
-\frac{1}{\rho}\frac{\partial p}{\partial e}S_{{\rm ext},\rho E} + \frac{\partial p}{\partial\rho}S_{{\rm ext}\rho} \\
-\nabla\cdot\kth\nabla T + S_{{\rm ext},\rho E} \\
-\frac{1}{\rho}S_{{\rm ext},\rho A_k} \\
-\frac{1}{\rho}S_{{\rm ext},\rho X_k} \\
-\frac{1}{\rho}S_{{\rm ext},\rho Y_k}
-\end{array}\right)^n,
-\end{equation}
-\begin{equation}
-\Sb_{\Ub}^n =
-\left(\begin{array}{c}
-\Sb_{\rho\ub} \\
-S_{\rho E} \\
-S_{\rho A_k} \\
-S_{\rho X_k} \\
-S_{\rho Y_k}
-\end{array}\right)^n
-=
-\left(\begin{array}{c}
-\rho \gb + \Sb_{{\rm ext},\rho\ub} \\
-\rho \ub \cdot \gb + \nabla\cdot\kth\nabla T + S_{{\rm ext},\rho E} \\
-S_{{\rm ext},\rho A_k} \\
-S_{{\rm ext},\rho X_k} \\
-S_{{\rm ext},\rho Y_k}
-\end{array}\right)^n.
-\end{equation}
+Primitive Forms
+~~~~~~~~~~~~~~~
 
-
-\section{Primitive Forms}
-\castro\ uses the primitive form of the fluid equations, defined in terms of
+PeleC uses the primitive form of the fluid equations, defined in terms of
 the state $\Qb = (\rho, \ub, p, \rho e, A_k, X_k, Y_k)$, to construct the
-interface states that are input to the Riemann problem.
+interface states that are input to the Riemann problem. All of the primitive variables are derived from the conservative state
+vector. This task is performed in the routine ``ctoprim`` located in ``Src_nd/advection_util_nd.F90``.
 
 The primitive variable equations for density, velocity, and pressure are:
-\begin{eqnarray}
-  \frac{\partial\rho}{\partial t} &=& -\ub\cdot\nabla\rho - \rho\nabla\cdot\ub + S_{{\rm ext},\rho} \\
-%
-  \frac{\partial\ub}{\partial t} &=& -\ub\cdot\nabla\ub - \frac{1}{\rho}\nabla p + \gb + 
-\frac{1}{\rho} (\Sb_{{\rm ext},\rho\ub} - \ub \; S_{{\rm ext},\rho}) \\
-\frac{\partial p}{\partial t} &=& -\ub\cdot\nabla p - \rho c^2\nabla\cdot\ub +
-\left(\frac{\partial p}{\partial \rho}\right)_{e,X}S_{{\rm ext},\rho}\nonumber\\
-&&+\  \frac{1}{\rho}\sum_k\left(\frac{\partial p}{\partial X_k}\right)_{\rho,e,X_j,j\neq k}\left(\rho\dot\omega_k + S_{{\rm ext},\rho X_k} - X_kS_{{\rm ext},\rho}\right)\nonumber\\
-&& +\  \frac{1}{\rho}\left(\frac{\partial p}{\partial e}\right)_{\rho,X}\left[-eS_{{\rm ext},\rho} - \sum_k\rho q_k\dot\omega_k + \nabla\cdot\kth\nabla T \right.\nonumber\\
-&& \quad\qquad\qquad\qquad+\ S_{{\rm ext},\rho E} - \ub\cdot\left(\Sb_{{\rm ext},\rho\ub} - \frac{\ub}{2}S_{{\rm ext},\rho}\right)\Biggr] 
-\end{eqnarray}
+
+.. math::
+  \begin{eqnarray}
+  \frac{\partial\rho}{\partial t} &=& -\mathbf{u}\cdot\nabla\rho - \rho\nabla\cdot\mathbf{u} + S_{{\rm ext},\rho} \\
+  \frac{\partial\mathbf{u}}{\partial t} &=& -\mathbf{u}\cdot\nabla\mathbf{u} - \frac{1}{\rho}\nabla p + \mathbf{g} + 
+  \frac{1}{\rho} (\mathbf{S}_{{\rm ext},\rho\mathbf{u}} - \mathbf{u} \; S_{{\rm ext},\rho}) \\
+  \frac{\partial p}{\partial t} &=& -\mathbf{u}\cdot\nabla p - \rho c^2\nabla\cdot\mathbf{u} +
+  \left(\frac{\partial p}{\partial \rho}\right)_{e,X}S_{{\rm ext},\rho}\nonumber\\
+  &&+\  \frac{1}{\rho}\sum_k\left(\frac{\partial p}{\partial X_k}\right)_{\rho,e,X_j,j\neq k}\left(\rho\dot\omega_k + S_{{\rm ext},\rho X_k} - X_kS_{{\rm ext},\rho}\right)\nonumber\\
+  && +\  \frac{1}{\rho}\left(\frac{\partial p}{\partial e}\right)_{\rho,X}\left[-eS_{{\rm ext},\rho} - \sum_k\rho q_k\dot\omega_k + \nabla\cdot k_{\rm th}\nabla T \right.\nonumber\\
+  && \quad\qquad\qquad\qquad+\ S_{{\rm ext},\rho E} - \mathbf{u}\cdot\left(\mathbf{S}_{{\rm ext},\rho\mathbf{u}} - \frac{\mathbf{u}}{2}S_{{\rm ext},\rho}\right)\Biggr] 
+  \end{eqnarray}
 
 The advected quantities appear as:
-\begin{eqnarray}
-\frac{\partial A_k}{\partial t} &=& -\ub\cdot\nabla A_k + \frac{1}{\rho}
+
+.. math::
+  \begin{eqnarray}
+  \frac{\partial A_k}{\partial t} &=& -\mathbf{u}\cdot\nabla A_k + \frac{1}{\rho}
                                      ( S_{{\rm ext},\rho A_k} - A_k S_{{\rm ext},\rho} ), \\
-\frac{\partial X_k}{\partial t} &=& -\ub\cdot\nabla X_k + \dot\omega_k + \frac{1}{\rho}
+  \frac{\partial X_k}{\partial t} &=& -\mathbf{u}\cdot\nabla X_k + \dot\omega_k + \frac{1}{\rho}
                                      ( S_{{\rm ext},\rho X_k}  - X_k S_{{\rm ext},\rho} ), \\
-\frac{\partial Y_k}{\partial t} &=& -\ub\cdot\nabla Y_k + \frac{1}{\rho} 
+  \frac{\partial Y_k}{\partial t} &=& -\mathbf{u}\cdot\nabla Y_k + \frac{1}{\rho} 
                                      ( S_{{\rm ext},\rho Y_k}  - Y_k S_{{\rm ext},\rho} ).
-\end{eqnarray}
+  \end{eqnarray}
 
-All of the primitive variables are derived from the conservative state
-vector, as described in Section \ref{Sec:Compute Primitive Variables}.
+
 When accessing the primitive variable state vector, the integer variable
-keys for the different quantities are listed in Table~\ref{table:primlist}.
+keys for the different quantities are listed in the routine ``set_method_params`` in ``Src_nd/PeleC_nd.F90``.
 
-\subsection{Internal energy and temperature}
+Note that the above system is augmented with an internal energy equation:
 
-We augment the above system with an internal energy equation:
-\begin{eqnarray}
-\frac{\partial(\rho e)}{\partial t} &=& - \ub\cdot\nabla(\rho e) - (\rho e+p)\nabla\cdot\ub - \sum_k \rho q_k\dot\omega_k 
-                                        + \nabla\cdot\kth\nabla T + S_{{\rm ext},\rho E} \nonumber\\
-&& -\  \ub\cdot\left(\Sb_{{\rm ext},\rho\ub}-\frac{1}{2}S_{{\rm ext},\rho}\ub\right), 
-\end{eqnarray}\MarginPar{Since $(rho e)$ is in the conserved state, I don't think we derive the internal energy source from total and momentum sources anymore}
+.. math::
+  \begin{eqnarray}
+  \frac{\partial(\rho e)}{\partial t} &=& - \mathbf{u}\cdot\nabla(\rho e) - (\rho e+p)\nabla\cdot\mathbf{u} - \sum_k \rho q_k\dot\omega_k 
+                                        + \nabla\cdot k_{\rm th} \nabla T + S_{{\rm ext},\rho E} \nonumber\\
+  && -\  \mathbf{u}\cdot\left(\mathbf{S}_{{\rm ext},\rho\mathbf{u}}-\frac{1}{2}S_{{\rm ext},\rho}\mathbf{u}\right), 
+  \end{eqnarray}
+
 This has two benefits. First, for a general equation of state,
 carrying around an additional thermodynamic quantity allows us to
-avoid equation of state calls (in particular, in the Riemann solver,
-see e.g.~\cite{colglaz}). Second, it is sometimes the case that the
-internal energy calculated as 
-\begin{equation}
-e_T \equiv E - \frac{1}{2} \mathbf{v}^2
-\end{equation}
- is
+avoid equation of state calls (in particular, in the Riemann solver). Second, it is sometimes the case that the
+internal energy calculated as :math:`e_T \equiv E - \frac{1}{2} \mathbf{v}^2` is
 unreliable.  This has two usual causes: one, for high Mach number
 flows, the kinetic energy can dominate the total gas energy, making
 the subtraction numerically unreliable; two, if you use gravity or
 other source terms, these can indirectly alter the value of the
 internal energy if obtained from the total energy. 
 
-To provide a more reasonable internal energy for defining the
-thermodynamic state, we have implemented the dual energy formalism
-from ENZO \cite{bryan:1995,bryan:2014}, where we switch between $(\rho
-e)$ and $(\rho e_T)$ depending on the local state of the fluid. To do
-so, we define parameters $\eta_1$, $\eta_2$, and $\eta_3$,
-corresponding to the code parameters
-\runparam{castro.dual\_energy\_eta1},
-\runparam{castro.dual\_energy\_eta2}, and
-\runparam{castro.dual\_energy\_eta3}. We then consider the ratio $e_T
-/ E$, the ratio of the internal energy (derived from the total energy)
-to the total energy.  These parameters are used as follows:
-\begin{itemize}
-\item $\eta_1$: If $e_T > \eta_1 E$, then we use $e_T$ for the purpose
-  of calculating the pressure in the hydrodynamics update. Otherwise,
-  we use the $e$ from the internal energy equation in our EOS call to
-  get the pressure. 
+Also, in the code we carry around :math:`T` in the primitive state vector.
 
-\item $\eta_2$: At the end of each hydro advance, we examine whether
-  $e_T > \eta_2 E$. If so, we reset $e$ to be equal to $e_T$,
-  discarding the results of the internal energy equation. Otherwise,
-  we keep $e$ as it is. 
+Source Terms
+~~~~~~~~~~~~
 
-  Optionally we can also update $E$ so that it gains the difference of
-  the old and and new $e$, by setting
-  \runparam{castro.dual\_energy\_update\_E\_from\_e} to 1.
+We now compute explicit source terms for each variable in :math:`\mathbf{Q}` and
+:math:`\mathbf{U}`.  The primitive variable source terms will be used to construct
+time-centered fluxes.  The conserved variable source will be used to
+advance the solution. This task is performed in the routine ``srctoprim`` located in ``Src_nd/advection_util_nd.F90``. We neglect reaction source terms since they are
+accounted for in the characteristic integration in the PPM algorithm.  The source terms are:
 
-\item $\eta_3$: Similar to $\eta_1$, if $e_T > \eta_3 E$, we use
-  $e_T$ for the purposes of our nuclear reactions, otherwise, we use
-  $e$.
+.. math::
+  \begin{equation}
+    \Sb_{\Qb}^n =
+    \left(\begin{array}{c}
+    S_\rho \\
+    \Sb_{\mathbf{u}} \\
+    S_p \\
+    S_{\rho e} \\
+    S_{A_k} \\
+    S_{X_k} \\
+    S_{Y_k}
+    \end{array}\right)^n
+    =
+    \left(\begin{array}{c}
+    S_{{\rm ext},\rho} \\
+    \mathbf{g} + \frac{1}{\rho}\mathbf{S}_{{\rm ext},\rho\mathbf{u}} \\
+    \frac{1}{\rho}\frac{\partial p}{\partial e}S_{{\rm ext},\rho E} + \frac{\partial p}{\partial\rho}S_{{\rm ext}\rho} \\
+    \nabla\cdot\kth\nabla T + S_{{\rm ext},\rho E} \\
+    \frac{1}{\rho}S_{{\rm ext},\rho A_k} \\
+    \frac{1}{\rho}S_{{\rm ext},\rho X_k} \\
+    \frac{1}{\rho}S_{{\rm ext},\rho Y_k}
+    \end{array}\right)^n,
+    \end{equation}
+    \begin{equation}
+    \mathbf{S}_{\Ub}^n =
+    \left(\begin{array}{c}
+    \mathbf{S}_{\rho\mathbf{u}} \\
+    S_{\rho E} \\
+    S_{\rho A_k} \\
+    S_{\rho X_k} \\
+    S_{\rho Y_k}
+    \end{array}\right)^n
+    =
+    \left(\begin{array}{c}
+    \rho \mathbf{g} + \mathbf{S}_{{\rm ext},\rho\mathbf{u}} \\
+    \rho \mathbf{u} \cdot \mathbf{g} + \nabla\cdot\kth\nabla T + S_{{\rm ext},\rho E} \\
+    S_{{\rm ext},\rho A_k} \\
+    S_{{\rm ext},\rho X_k} \\
+    S_{{\rm ext},\rho Y_k}
+    \end{array}\right)^n.
+  \end{equation}
 
-\end{itemize}
-
-Note that our version of the internal energy equation does not require
-an artificial viscosity, as used in some other hydrodynamics
-codes. The update for $(\rho e)$ uses information from the Riemann
-solve to calculate the fluxes, which contains the information
-intrinsic to the shock-capturing part of the scheme.
-
-
-In the code we also carry around $T$ in the primitive state vector.
 
 
 PeleC Timestepping
