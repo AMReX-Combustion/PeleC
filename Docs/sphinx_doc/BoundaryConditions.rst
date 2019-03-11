@@ -10,44 +10,34 @@
 Boundary Conditions
 -------------------
 
-PeleC manages boundary conditions in a form consistent with many AMReX codes. Ghost cell data are updated at each AMR level during a ``FillPatch`` operation and
-fluxes are computed the same way as it is done for interior cells without any particular treatment at the boundaries. For
-that purpose, the Fortran routine `pc_hypfill` in `bc_fill_nd.F90` is called. 
-There are some pre-specified boundary conditions where user intervention is not required. These are:
+PeleC manages boundary conditions in a form consistent with many AMReX codes. Ghost cell data are updated over an AMR level during a ``FillPatch`` operation and fluxes are then computed over the entire box without specifically recognizing boundary cells. The Fortran routine ``pc_hypfill`` in ``bc_fill_nd.F90`` is called to set state data at physical boundaries for this purpose.  A generic boundary filler function, ``filcc_nd``, is supplied to fill standard boundary condition types that do not require user input, including:
 
-* *Interior* - same as periodic boundary conditions. One has to make sure the is_periodic flag is also set correctly in the inputs file
-* *Symmetry* - All conserved quantities and the tangential momentum component is reflected from interior cells without 
+* *Interior* - Copy-in-intersect in index space (same as periodic boundary conditions). Periodic boundaries are set in the PeleC inputs file
+* *Symmetry* - All conserved quantities and the tangential momentum component are reflected from interior cells without 
   sign change (REFLECT_EVEN) while the normal component is reflected with a sign change (REFLECT_ODD)
 * *NoSlipWall* - REFLECT_EVEN is applied to all conserved quantities except for both tangential and normal momentum components which are updated 
   using REFLECT_ODD
 * *SlipWall*  - SlipWall is identical to Symmetry  
 
-When `pc_hypfill` is called, the AMReX routine `filcc_nd` will be called to fill ghost-cells for the boundary conditions ``Interior``, ``Symmetry``,
-``NoSlipWall`` and ``SlipWall``.
+More complex boundary conditions require user input that prescribed explicitly.  In the code, all types are formally handled in ``pc_hypfill``; ``filcc_nd`` is called first to handle all the above types.  Boundaries identified as ``UserBC`` in the inputs will be tagged as ``EXT_DIR`` in ``pc_hypfill`` and will be ignored by ``filcc_nd``.  Users will then fill the Dirichlet boundary values, typically by calling the helper function, ``bcnormal``. The indirection here is not required, but is recommended for reasons discussed below.
 
-However more complex boundary conditions can be prescribed. This is enabled by setting the keyword ``UserBC`` in the input file. When ``UserBC`` is set, AMReX sees this boundary
-with the keyword ``EXT_DIR``, which means that `filcc_nd` will do nothing and the user has to prescribe `External Dirichlet` values. For that purpose,
-inside `pc_hypfill` a test is made on each face to look for the flag ``EXT_DIR``. If ``EXT_DIR`` is found, a user defined `bcnormal` routine will be called.
-
-If a user wants to set an `Inflow` or an `Outflow` boundary condition, it could be tempting to directly impose target values in the ghost-cells (for an `Inflow`) or to perform
-an extrapolation procedure to fill the ghost-cells (for an `Outflow`). Mathematically, this idea leads to an ill-posed problem and will provide wrong unphysical solutions. In order
-to overcome this issue, a possibility is to prescribe the boundary conditions in terms of characteristic waves. A well-known method is the Navier-Stokes Characteristic Boundary Conditions
+If a user wants to set an ``Inflow`` or an ``Outflow`` boundary condition for a subsonic problem, it might be tempting to directly impose target values in the boundary filler function (for ``Inflow``), or to perform a simple extrapolation (for ``Outflow``).  However, this approach would fail to correctly respect the flow of information along solution characteristics - the system would be ill-posed and would lead to unphysical behavior.  In this situation, the solution at the boundary should properly account for the flow of information from both inside and outside the computational domain. There are a number of approaches to do this numerically, each with its own set of assumptions about how the sytem couples to the external environment, and each having an impact on the resulting solution.
+A well-known approach to this problem is the Navier-Stokes Characteristic Boundary Conditions
 (NSCBC) strategy, and is described in the paper `Poinsot and Lele (1992) JCP
-<https://www.sciencedirect.com/science/article/pii/0021999192900462>`_. The issue with this method is that it is formulated to impose directly boundary fluxes. Because the Godunov method
-implemented in PeleC uses ghost-cells to reconstruct fluxes at faces, the NSCBC strategy has been adapted and reformulated in a way to provide the missing data for the ghost-cells. This strategy
-has been called the Ghost-Cells Navier-Stokes Boundary Conditions (GC-NSCBC) method, and is described in `Motheau et al. (2017) AIAA Journal
+<https://www.sciencedirect.com/science/article/pii/0021999192900462>`_.  In the method, the hyperbolic structure is
+decomposed to identify incoming and outgoing waves, given a statement of the "external" state outside the domain, and
+then to construct a model that gives "desired" behavior at the interface.  One issue with direct application of
+the NSCBC treament in PeleC is that it is formulated to impose boundary fluxes directly. In PeleC however, the 
+Godunov approach that is implemented makes use of boundary data specified via grow cell values, and reconstructs fluxes at faces when required. Thus, the NSCBC strategy has been reformulated to provide the grow cell data required in PeleC. The strategy,
+the Ghost-Cells Navier-Stokes Boundary Conditions (GC-NSCBC) method, is described in `Motheau et al. (2017) AIAA Journal
 <https://ccse.lbl.gov/people/motheau/Manuscripts_website/2017_AIAA_CFD_Motheau.pdf>`_.
 
-Basically, the purpose of the NSCBC theory is to construct well-posed boundary conditions. At a boundary face, the solution is rewritten in terms of one-dimensional characteristic waves.
-The waves leaving the domain are computed numerically, while the waves entering into the domain are provided by a model, based on a `Target State`. With the help of numerical
-`relax` parameters, the contribution of entering waves can be controled so as to let some freedom at the boundary to impose a target state while letting acoustic waves to leave the domain. Thus,
-unphysical waves reflections can be controlled and significantly reduced. The description of the theory is beyond the scope of this documentation, it can be found in the paper `Motheau et al. (2017) AIAA Journal
-<https://ccse.lbl.gov/people/motheau/Manuscripts_website/2017_AIAA_CFD_Motheau.pdf>`_. This paper also contains examples demonstrating why imposing directly target values in ghost-cells
-do not work, and why the NSCBC theory helps to get a physical solution.
+For the characteristics-based boundary condition implementation, the solution is rewritten in terms of one-dimensional hyperbolic wave propagation. The waves leaving the domain are computed numerically, while the waves entering into the domain are provided by a model that is based on a "target state". With the help of numerical relaxation parameters, the contribution of entering waves can be controlled to afford some freedom at the boundary to "push" toward a target state while also allowing acoustic waves to leave the domain.  The approach allows some control to minimize the effects of reflected waves, which would otherwise result from the "hard" imposition of the external conditions. Description of the relevant theory is beyond the scope of this documentation (see the paper `Motheau et al. (2017) AIAA Journal
+<https://ccse.lbl.gov/people/motheau/Manuscripts_website/2017_AIAA_CFD_Motheau.pdf>`_, which also contains examples demonstrating why imposing directly target values in ghost-cells
+does not work as expected, and why the NSCBC theory helps to get a more "desirable" solution).
 
-Below is an example of the impact of the GC-NSCBC treatment over the wrong procedures to impose inflow with hard values in the ghost-cells, and outflow with first-order extrapolation.
-A 1D profile of a flame is interpolated as an initial solution of PeleC. Because the solution has to adapt to the new grid and to the numerical solver, it creates an unphysical acoustic bump traveling through the domain.
-With the incorrect way to impose boundary conditions, the unphysical acoustic wave is reflected back into the domain, perturbing the establishement of the flame. With GC-NSCBC, the acoustic wave simply leaves the computational domain and the flame is untouched.
+In order to understand the impact of the GC-NSCBC treatment, we give an example that imposes "hard" values in the ghost-cells to represent external conditions, and uses first-order extrapolation at the outflow boundary.
+A precomputed 1D flame profile is interpolated onto a uniform PeleC grid. Because the solution has to adapt to the new grid and to the peleC numerical discretization, it creates an unphysical acoustic bump that moves through the domain as an acoustic disturbance.  With "hard" boundary conditions, this disturbance is reflected from the outflow boundary back into the domain, and interacts with the flame upstream.  A steady solution to this system would require the propagation of this wave back and forth until numerical diffusion eventually reduces its magnitude below some threshold. With the GC-NSCBC boundary treatment, the acoustic wave simply leaves the computational domain.  Often times, the latter is the desired behavior of the code.
 
 .. figure:: ./1D_PMF_NO_NSCBC.gif
    :align: center
@@ -61,7 +51,7 @@ With the incorrect way to impose boundary conditions, the unphysical acoustic wa
    
    With the GC-NSCBC, the spurious acoustic wave simply leaves the domain with no unphysical reflection.
 
-The purpose of the routine `bcnormal` is to provide the target state, as well as the numerical parameters used by the GC-NSCBC method. Note the signature and the content of the `bcnormal` routine:
+In PeleC, the subroutine ``bcnormal`` is used to provide the target state for the GC-NSCBC treatment as well as the numerical parameters used by the GC-NSCBC method to efficiently "damp" the reflected waves. Note the signature and the content of the ``bcnormal`` routine:
 
 ::
 
@@ -96,38 +86,30 @@ The purpose of the routine `bcnormal` is to provide the target state, as well as
     endif
 
 
-When `bc_type`, `bc_params` and `bc_target` are present, this means that the routine is called from `impose_NSCBC_(dir)d.F90`. Thus, the flag `flag_nscbc` is turned on to
-fill the optional arrays. Because of the AMReX framework, `bcnormal` is also called from the ``FillPatch`` operation. In that case, in order to make the routine generic, only the target state is
-given back to `pc_hypfill` and the parameters associated to the GC-NSCBC method are not employed. Note that by default, the Ghost-Cells Navier-Stokes Boundary Conditions
-method is activated. It can be turned off by setting the flags ``nscbc_adv`` and ``nscbc_diff`` to zero. In that case, the ghost-cells will be filled with the target state.
-Keep in mind that this lead to an ill-posed mathematical problem.
+When ``bc_type``, ``bc_params`` and ``bc_target`` parameters are present, the routine is likely being called from ``impose_NSCBC_(dir)d.F90``. In this case the flag ``flag_nscbc`` is activated to fill optional arrays with the requisite data. Note however that the ``FillPatch`` operation called in the AMReX framework also calls ``pc_hypfill``, which then also calls ``bcnormal``.  In this case, the GC-NSCBC parameters are not directly relevant. In order to make ``bc_normal`` sufficiently generic for both purposes, only the target state is returned to ``pc_hypfill`` and the parameters associated to the GC-NSCBC method are ignored. By default, the GC-NSCBC method is activated for all subsonic flow boundaries. It can be turned off by setting the flags ``nscbc_adv`` and ``nscbc_diff`` to zero. In that case, the ghost-cells will be filled directly with the target state (although, as mentioned, this will likely lead to undesired behavior in the solution!).
 
 
-The use of `bc_type`, `bc_params` and `bc_target` will be described later, but let us focus on `bc_type`. The integer `bc_type` is actually the
-physical boundary condition that we want to impose, and this is done pointwise. This means that along a face of the domain, different physical boundary conditions
-can be combined. For example, one may want to impose an inflow in the middle of a wall, that may end to an open boundary. Four physical boundary conditions are implemented
-in the GC-NSCBC framework: `Inflow`, `Outflow`, `SlipWall`, `NoSlipWall`.
+The use of ``bc_type``, ``bc_params`` and ``bc_target`` will be described in detail in other sections of this documentation, but let us focus here on the parameter, ``bc_type``. The ``bc_type`` (an integer) is a coded form of the physical boundary condition that we want to impose, and this is done pointwise. This means that along a face of the domain, different physical boundary conditions
+can be combined. For example, one may wish to impose an inflow in the middle of a wall in order to represent a localized inlet jet or an open boundary. Four physical boundary conditions are implemented in the GC-NSCBC framework: ``Inflow``, ``Outflow``, ``SlipWall``, ``NoSlipWall``.
 
+``Inflow`` and ``Outflow`` conditions rely on different models for the waves entering into the domain, and are computed in the routine ``compute_waves`` in ``impose_NSCBC_(dir)d.F90``.
+For example in 2D, ``Inflow`` requires models for three incoming waves. Thus, three relaxation parameters are needed: ``relax_U``, ``relax_V`` and ``relax_T``. Also, three state target
+values are needed: ``TARGET_VX``, ``TARGET_VY`` and ``TARGET_TEMPERATURE``. For an ``Outflow``, only one wave is leaving the domain, so only ``TARGET_PRESSURE`` is needed, and
+the relaxation parameter is controlled with ``sigma_out``. Note that transverse terms can be included in the computation of the waves, and the amount of contribution is controlled
+by the parameter ``beta``, with values between 0 (full contribution) and 1 (no contribution). A negative input value of ``beta`` indicates that ``beta`` will be adjusted dynamically with the Mach number of the local flow (see `Motheau et al. (2017) AIAA Journal
+<https://ccse.lbl.gov/people/motheau/Manuscripts_website/2017_AIAA_CFD_Motheau.pdf>`_ and other references therein for details).
 
-`Inflow` and `Outflow` conditions rely on different models for the waves entering into the domain. This is computed in the routine `compute_waves` in `impose_NSCBC_(dir)d.F90`.
-For example in 2D, `Inflow` requires models for three incoming waves. Thus, three relax parameters are needed: `relax_U`, `relax_V` and `relax_T`. Also, three state target
-values are needed: `TARGET_VX`, `TARGET_VY` and `TARGET_TEMPERATURE`. For an `Outflow`, only one wave is leaving the domain, so only `TARGET_PRESSURE` is needed, and
-the relax parameter is controlled with `sigma_out`. Note that transverse terms can be included in the computation of the waves, and the amount of contribution is controlled
-by the parameter `beta`, comprise between 0 (full contribution) and 1 (no contribution). Note that a negative value means that `beta` will be adjusted dynamically as the local Mach
-number. Once again, the user is oriented to the paper `Motheau et al. (2017) AIAA Journal
-<https://ccse.lbl.gov/people/motheau/Manuscripts_website/2017_AIAA_CFD_Motheau.pdf>`_ and other reference papers for the description of the theory.
-
-The `impose_NSCBC_(dir)d.F90` routine is organized as follows:
+The ``impose_NSCBC_(dir)d.F90`` routine is organized as follows:
 
 * First, data in ghost-cells along the direction at corners are treated. This is because we have to use a one-sided derivative to compute transverse terms at corners.
 * For each cell, we compute derivatives in the normal and tengential directions of the face.
-* We call bcnormal to get: the physical boundary (`bc_type`), the target state values (`bc_target`), and the associated numerical parameters (`bc_params`).
+* We call bcnormal to get: the physical boundary (``bc_type``), the target state values (``bc_target``), and the associated numerical parameters (``bc_params``).
 * Then we compute the NSCBC waves.
 * The last step is GC-NSCBC procedure to recompute the values in ghost-cells according to the characteristic waves that have been computed in the previous step.
 
 This procedure is done for each face of the domain.
 
-Below is an example to achieve an inflow/outflow along the x-axis of a channel, periodic in y. Note how the `bc_params` and `bc_target` arrays are constructed at the end of the routine.
+Below is an example to achieve an inflow/outflow along the x-axis of a channel, periodic in y. Note how the ``bc_params`` and ``bc_target`` arrays are constructed at the end of the routine.
 
 ::
 
@@ -263,13 +245,9 @@ Below is an example to achieve an inflow/outflow along the x-axis of a channel, 
 
   end subroutine bcnormal
 
-The choice of the relax parameters in  `bc_params` is case dependent and some trial and error process have to be done to find the best values. Some recommandations can
-be given according to the litterature and practical experience:
+The choice of the relaxation parameters in  ``bc_params`` is case-dependent, unfortunately. Some trial-and-error is often required to find the best values. However, we suggest the the following based on literature and practical experience:
 
-* `relax_U`, `relax_V` and `relax_W` should be around the value of 0.2. Higher values will impose the velocity more "strongly", but it will lead to more unphysical waves reflection.
-* `relax_T` must be a negative value, also around the value of 0.2.
-* For outflows, a value of 0.25 if often reported to be a good choice for `sigma_out`.
-* The `beta` is comprised between 0 and 1 and control the amount of the contribution of transverse terms.
-The choice for this parameter is more complicated. For outflows, it should be close to the Mach number. For some cases, an averaged Mach number will provide good results,
-while for other cases, the pointwise local Mach number is better. `beta` will be set to the local Mach number if it is set to a negative value. For inflows, it has been found
-that a value of 0.5 provides good results but it may lead to instabilities, and for some case turning off the transverse terms (beta=1) will be better.
+* ``relax_U``, ``relax_V`` and ``relax_W`` should have values near 0.2. Higher values will impose the velocity more "strongly", but will likely lead to more unphysical waves reflection.
+* ``relax_T`` must be a negative value, typically near -0.2.
+* For outflow boundaries, ``sigma_out`` = 0.25 is often reported to be a good choice.
+* The ``beta`` must be between 0 and 1; it controls the contribution of transverse terms. The choice for this parameter is more complicated. For outflows, it should be close to the Mach number. For some cases, a spatially averaged Mach number will provide good results, while for other cases, the pointwise local Mach number is better. ``beta`` will be set to the local Mach number if it is set to a negative value in the inputs. For inflows, it has been found that a value of 0.5 provides good results, but it may lead to instabilities, and for some case turning off the transverse terms (beta=1) will be better.
