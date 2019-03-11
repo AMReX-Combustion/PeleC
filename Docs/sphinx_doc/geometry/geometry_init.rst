@@ -21,11 +21,6 @@ EB aware update could use many possible sources for geometric description. The n
 
 Additionally, the algorithms ultimately require surface normals, but these can be trivially recomputed from the aperture. 
 
-.. In the following subsections, we will first describe using geometry creation tools based on EB infrastructure in AMReX with origins 
-.. in a fork of Chombo's (see Chombo_ web page) infrastructure. 
-.. _Chombo: https://commons.lbl.gov/display/chombo/Chombo+-+Software+for+Adaptive+Solutions+of+Partial+Differential+Equations 
-
-.. include:: geometry_creation.rst
 
 GeometryShop and Implicit Functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -49,7 +44,7 @@ representative of the Pele motivating problem space.
 
    S(\mathbf{x}) = x^2 + y^2 + z^2 - R^2,
 
-the solution domain would be the interior of a sphere of radius :math:`R`. Reverse the sign of :math:`S` and the solution domain would be the exterior of the sphere.   
+the solution domain would be the interior of a sphere of radius :math:`R`. Reverse the sign of :math:`S` and the solution domain would be the exterior of the sphere. More details are available `here <https://amrex-codes.github.io/amrex/docs_html/EB.html?highlight=geometryshop#initializing-the-geometric-database>`_.
 
 Specifying basic geometries in input files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -83,7 +78,7 @@ To specify an external flow sphere geometry, add the following lines to the inpu
 
 
 Adding complicated geometries
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Geometries beyond the set described above can be built using a combination of basic geometries and EB transformation functions in AMReX.
 It should be noted that building a generic geometry from a user-defined discretized surface (like STL files)  is currently being developed, nonetheless 

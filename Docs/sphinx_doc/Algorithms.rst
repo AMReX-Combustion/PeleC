@@ -1,8 +1,14 @@
 
-.. _GettingStarted:
+ .. role:: cpp(code)
+    :language: c++
+
+ .. role:: f(code)
+    :language: fortran
+
+ 
+.. _Algorithms:
 
 
-.. Warning:: This documentation is a placeholder, and contents should currently be considered a work in progress, out of context, or just plain wrong until this note is removed!
 
 Algorithms
 ==========
@@ -462,9 +468,11 @@ An alternative formulation well suited to Embedded Boundary geometry treatment a
 Advective Flux Calculation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+.. Warning:: This documentation is a placeholder, and contents should currently be considered a work in progress, out of context, or just plain wrong until this note is removed!
+
 The advective (hyperbolic) fluxes computation is driven by the routine pc_hyp_mol_flux found in the file Hyp_pele_MOL_3d.F90, with call signature:
 
-.. f:function:: hyp_advection_module/pc_hyp_mol_flux
+.. function:: hyp_advection_module/pc_hyp_mol_flux
 
     :p q: Input state
     :p qaux: Augmented state
