@@ -5,7 +5,9 @@
 Geometry treatment in PeleC
 ===========================
 
-Geometry is treated in PeleC using an embedded boundary (EB) formulation, based on datastructures and algorithmic components provided by AMReX.   In the EB formalism, geometry is represented by volumes (:math:`v_l`) and apertures (:math:`A_l^k`). See :ref:`eb_cell_fig` for an illustration where the grey area represents the region excluded from the solution domain and the arrows represent fluxes.
+Geometry is treated in PeleC using an embedded boundary (EB) formulation, based on datastructures and algorithmic components provided by AMReX.   In the EB formalism, geometry is represented by volume fractions (:math:`v_l`) 
+and apertures (:math:`A_l^k`) for each cell :math:`l` that have faces :math:`1,..k,6`. See :ref:`eb_cell_fig` for an illustration where the grey area represents the region excluded from the solution domain and the arrows represent fluxes. The fluid volume in a given cell is given by  
+(:math:`V_l = v_l\,\,dx\,dy\,dz = v_l\,\,dx^3`); it should be noted that the grid spacing along each direction is the same in PeleC.
 
 .. _eb_cell_fig:
 
@@ -197,22 +199,22 @@ The formulation of the y- and z-directions is analogous to the x-direction.
 Hybrid Divergence and Redistribution
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A straightforward implemention of the finite-volume advance of intensive conserved fields is numerically unstable (this is the well-known "small cell issue") due to presence of the cell volume in the denominator of the time derivative:
+A straightforward implemention of the finite-volume advance of intensive conserved fields is numerically unstable (this is the well-known "small cell issue") due to presence of the fluid cell volume in the denominator of the time derivative:
 
 .. math::
-  (DC)_l = \frac{1}{v_l} \sum_{k_l} \left( F_k \cdot n_k A_k \right),
+  (DC)_l = \frac{1}{V_l} \sum_{k_l} \left( F_k \cdot n_k A_k \right),
 
 where :math:`k_l` is the number of regular and cut faces surrounding cell :math:`l` and :math:`F_k` is the intensive flux at the centroid of face :math:`k`.  An alternative update takes the so-called "non-conservative" form, constructed using a weighted average of the conservative updates of neighboring cells:
 
 .. math::
-  (DNC)_l = \frac{1}{\sum_{n_l}N_n v_l} \sum_{n_l}N_n v_n (DC)_n,
+  (DNC)_l = \frac{1}{\sum_{n_l}N_n V_l} \sum_{n_l}N_n V_n (DC)_n,
 
 where :math:`n_l` is the number of cells in the `neighborhood` of cut cell :math:`l`. :math:`N_n` takes the value of 0 or 1 depending if cell :math:`n` is connected to cell :math:`l`. While this update is numerically stable, it does not discretely conserve the field quantities.  In PeleC, we use a hybrid update strategy, a weighted average of the two that is numerically stable and "maximally conservative" locally, without violating CFL constraints based on the regular cells:
 
 .. math::
   (HD)_l = v_l(DC)_l + (1-v_l)(DNC)_l.
 
-In order to maintain global conservation, the difference between the hybrid divergence and conservative divergence is a correction that is distributed to neighboring cells:
+In order to maintain global conservation, the mass difference (we call the product of each conserved variable and cell volume as "mass") between the hybrid divergence and conservative divergence is a correction that is distributed to neighboring cells at each timestep:
 
 .. math::
   \Delta_l^n = \frac{v_l(1-v_l)\left[(DC)_l - (DNC)_l\right]N_l^n W_l^n v_n^l}{\sum_{n_l}N_l^nW_l^nv_l^n}
@@ -299,7 +301,7 @@ Similarly, two structs are used to cache boundary/face stencils
 Initialization
 --------------
 
-Creating an EB geometry also requires knowledge of the finest level that will be used so that geometries that 'telescope', i.e., coarser volume fractions are consistent with applying the coarsening operator to the finer volumes, can be created. To that end there is a global geometry creation step, facilitated by the `initialize_EBIS` function, as well as a step that happens when a new AMRLevel is created. The latter happens by a call to  `PeleC::initialize_eb_structs`  through `PeleC::init_eb` called from the PeleC constructor. Following construction of the geometry, the geometric information is copied into the structures described in the previous section and the various interpolation stencils are populated. 
+Creating an EB geometry also requires knowledge of the finest level that will be used so that geometries that 'telescope', i.e., coarser volume fractions are consistent with applying the coarsening operator to the finer volumes, can be created. To that end there is a global geometry creation step, facilitated by the `initialize_EB2` function, as well as a step that happens when a new AMRLevel is created. The latter happens by a call to  `PeleC::initialize_eb2_structs`  through `PeleC::init_eb` called from the PeleC constructor. Following construction of the geometry, the geometric information is copied into the structures described in the previous section and the various interpolation stencils are populated. 
 
 Cartesian grid, embedded boundary (EB) methods are methods where the geometric description is formed by cutting a Cartesian mesh with surface of the geometry.  AMReX's methods to handle EB geometry information, and PeleC's treatment of the EB aware update could use many possible sources for geometric description. The necessary information is, on a per-cell basis:
 
