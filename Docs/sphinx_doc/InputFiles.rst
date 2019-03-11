@@ -84,7 +84,6 @@ These parameters, once read, are available in the `PeleC` object for use from c+
     # WHICH PHYSICS
     #------------------------
     
-    
     pelec.do_hydro = 1               # enable hyperbolic term
     pelec.do_mol_AD = 1              # use method of lines (MOL)
     pelec.do_react = 0               # enable chemical reactions
