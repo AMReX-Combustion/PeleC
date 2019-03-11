@@ -10,35 +10,39 @@ Algorithms
 PeleC Timestepping
 ------------------
 
-PeleC uses two method of timestepping: a second order explicit method, and a spectral defferred correction (SDC) approach. These approaches share several code modules to perform the update; both used an iteration to couple the various physics together.
+PeleC supports two options for timestepping: a second-order explicit method-of-lines approach (MOL), and an iterative scheme base on a spectral deferred correction approach (SDC). Both time-steppers share considerable code in order to actually perform the update.
 
 
 Standard Time Advance
 ~~~~~~~~~~~~~~~~~~~~~
-The standard time advance is a second order predictor-corrector approach with (optional) fixed point iteration to tightly couple the reaction and transport. The Advection and diffusio (:math:`AD`) terms are computed explicitly using a finite-volume formulation; reaction trerms are integrated with VODE (SUNDIALS) with a forcing term that includes advection and diffusion (:math:`F_{AD}`). For cold start the reaction term (:math:`I_R`) is evaluated from the instantaneous state without a forcing term.
+The MOL time stepper is a standard second order predictor-corrector approach with (optional) fixed point iteration to tightly couple the reaction and transport. The advection (:math:`A`) and diffusion (:math:`D`) terms are computed explicitly using a time-explicit finite-volume formulation; reaction trerms are integrated with VODE (DVODE or CVODE via SUNDIALS), with a forcing term that incorporates the (pointwise) influence of advection and diffusion (:math:`F_{AD}`). For cold start the reaction term (:math:`I_R`) is evaluated with (:math:`F_{AD} = 0`)
 
 .. math::
-   S^n = AD(\overbrace{u^n}^\text{FillPatch at $t^n$})
+   S^n &= AD(\overbrace{u^n}^\text{FillPatch at $t^n$})
 
-   u^* = u^n + dt(S^n +I_R)
+   u^* &= u^n + dt(S^n +I_R)
 
-   S^{n+1}= AD(\overbrace{u^*}^\text{FillPatch at $t^{n+1}$})
+   S^{n+1} &= AD(\overbrace{u^*}^\text{FillPatch at $t^{n+1}$})
 
-   u^{**} = \frac{1}{2}(u^n+u^*) + \frac{1}{2}\left(S^{n+1}+I_R\right){dt}
+   u^{**} &= \frac{1}{2}(u^n+u^*) + \frac{1}{2}\left(S^{n+1}+I_R\right){dt}
 
-   F_{AD} = \frac{1}{dt} (u^{**} -u^n) - I_R
+   F_{AD} &= \frac{1}{dt} (u^{**} -u^n) - I_R
 
-   \text{update } I_R(u^n, F_{AD}) \text{ and }  u^{n+1} = u^n + dt(F_{AD} +I_R)\text{.}
+   I_R &= I_R(u^n, F_{AD})
+
+   u^{n+1} &= u^n + dt(F_{AD} +I_R)\text{.}
 
 
-Without reaction this would be the end of the timestep; with reaction, we iterate :math:`mol\_iters` times:
+With time-implicit reactions, we iterate the final update `mol\_iters` times:
 
 .. math::
-   S^{n+1}= AD(\overbrace{u^{n+1}}^\text{FillPatch at $t^{n+1}$})
+   S^{n+1} &= AD(\overbrace{u^{n+1}}^\text{FillPatch at $t^{n+1}$})
 
-   F_{AD} = \frac{1}{2}(S^n+S^{n+1})
+   F_{AD} &= \frac{1}{2}(S^n+S^{n+1})
 
-   \text{update } I_R(u^n, F_{AD}) \text{ and }  u^{n+1} = u^n + dt(F_{AD} +I_R)\text{.}
+   I_R &= I_R(u^n, F_{AD})
+
+   u^{n+1} &= u^n + dt(F_{AD} +I_R)\text{.}
 
 
 Hyperbolics
