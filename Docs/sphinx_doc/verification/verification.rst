@@ -6,7 +6,8 @@ Verification of PeleC
 Verification of PeleC uses `MASA
 <https://github.com/manufactured-solutions/MASA>`_ and
 auto-differention tools to implement the Method of Manufactured
-Solutions into PeleC.
+Solutions into PeleC. Verification results are posted `here
+<https://github.com/jrood-nrel/PeleVerificationResults-Peregrine>`_.
 
 There :math:`L_2` error norm for a quantity :math:`s` is defined as
 
@@ -18,11 +19,86 @@ solution, and :math:`N_e` is the number of elements. :math:`N`, used
 below, is the number of element on a side of the cube (:math:`N_e =
 N^3`).
 
-Using MASA
----------------
+Building and running MMS
+-------------------------
 
-The user must first build and install MASA. The MASA install location
-must be specified in the `GNUMakefile` of the `MMS` problem setup.
+The user must first build and install `MASA
+<https://github.com/manufactured-solutions/MASA>`_. This can be done
+from source or using `Spack <https://spack.io>`_.
+
+Building MASA from source
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The user must build both `Metaphysicl
+<https://github.com/roystgnr/MetaPhysicL>`_ and MASA. After defining
+``METAPHYSICL_ROOT_DIR`` and ``MASA_ROOT_DIR``:
+
+.. code-block:: bash
+
+   $ git clone https://github.com/roystgnr/MetaPhysicL
+   $ ./bootstrap
+   $ ./configure --prefix=$METAPHYSICL_ROOT_DIR
+   $ make
+   $ make install
+
+.. code-block:: bash
+
+   $ git clone https://github.com/manufactured-solutions/MASA
+   $ ./bootstrap
+   $ ./configure --enable-fortran-interfaces METAPHYSICL_DIR=$METAPHYSICL_ROOT_DIR --prefix=$MASA_ROOT_DIR --enable-python-interfaces
+   $ make
+   $ make check
+   $ make install
+
+
+
+Building MASA using Spack
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Assuming the user has Spack configured for their system, building and
+installing MASA is as easy as:
+
+.. code-block:: bash
+
+   $ spack install masa
+
+
+Linking MASA to PeleC and running
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For the MMS problem setup, one must specify the install location for
+MASA in the ``MASA_HOME`` variable. This can be done on the command
+line either as:
+
+.. code-block:: bash
+
+   $ export MASA_HOME=$MASA_ROOT_DIR
+
+or, when compiling PeleC,
+
+.. code-block:: bash
+
+   $ make -j 16 DIM=3 USE_MPI=TRUE MASA_HOME=$MASA_ROOT_DIR
+
+where ``MASA_ROOT_DIR`` is the MASA install location. If using Spack
+and after loading the MASA module, the ``MASA_ROOT_DIR`` will be
+automatically populated.
+
+After building the PeleC MMS executable, one can perform an MMS
+convergence study to demonstrate formal accuracy of the numerical
+implementation. Results of several MMS tests are detailed below.
+
+Running the full MMS suite
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The full MMS suite can be executed through the `PeleCRegressionTesting
+<https://github.com/AMReX-Combustion/PeleRegressionTesting>`_ test
+suite:
+
+.. code-block:: bash
+
+   $ ./verify-pelec.sh
+
 
 
 Testing the Euler equations
