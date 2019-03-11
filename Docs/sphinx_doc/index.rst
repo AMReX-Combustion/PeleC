@@ -23,6 +23,7 @@ Contents:
    ./validation/validation.rst
    writing_documentation.rst
    ./miscellaneous/miscellaneous.rst
+   boxlib_bits.rst
 
 
 README

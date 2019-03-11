@@ -50,17 +50,23 @@ Below is an example of the impact of the GC-NSCBC treatment over the wrong proce
 A 1D profile of a flame is interpolated as an initial solution of PeleC. Because the solution has to adapt to the new grid and to the numerical solver, it creates an unphysical acoustic bump traveling through the domain.
 With the incorrect way to impose boundary conditions, the unphysical acoustic wave is reflected back into the domain, perturbing the establishement of the flame. With GC-NSCBC, the acoustic wave simply leaves the computational domain and the flame is untouched.
 
-.. figure:: ./1D_PMF_NO_NSCBC.gif
-   :align: center
-   :figwidth: 40%
-   
+.. only:: html
+
+    .. figure:: ./1D_PMF_NO_NSCBC.gif
+       :align: center
+       :figwidth: 40%
+
+  
    No GC-NSCBC treatment, hard values set at the left boundary for the inflow, and first order extrapolation in the right boundary to mimic an outflow. The unphysical reflections of the acoustic wave at boundary can be clearly seen.
 
-.. figure:: ./1D_PMF_WITH_NSCBC.gif
-   :align: center
-   :figwidth: 40%
-   
-   With the GC-NSCBC, the spurious acoustic wave simply leaves the domain with no unphysical reflection.
+.. only:: html
+
+    .. figure:: ./1D_PMF_WITH_NSCBC.gif
+       :align: center
+       :figwidth: 40%
+
+
+With the GC-NSCBC, the spurious acoustic wave simply leaves the domain with no unphysical reflection.
 
 The purpose of the routine `bcnormal` is to provide the target state, as well as the numerical parameters used by the GC-NSCBC method. Note the signature and the content of the `bcnormal` routine:
 
@@ -272,6 +278,12 @@ be given according to the litterature and practical experience:
 * `relax_T` must be a negative value, also around the value of 0.2.
 * For outflows, a value of 0.25 if often reported to be a good choice for `sigma_out`.
 * The `beta` is comprised between 0 and 1 and control the amount of the contribution of transverse terms.
+
+
 The choice for this parameter is more complicated. For outflows, it should be close to the Mach number. For some cases, an averaged Mach number will provide good results,
 while for other cases, the pointwise local Mach number is better. `beta` will be set to the local Mach number if it is set to a negative value. For inflows, it has been found
 that a value of 0.5 provides good results but it may lead to instabilities, and for some case turning off the transverse terms (beta=1) will be better.
+
+
+
+

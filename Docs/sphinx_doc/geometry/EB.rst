@@ -10,6 +10,8 @@
     :language: fortran
 
  .. _EB:
+
+
 Geometry treatment in PeleC
 ===========================
 
@@ -103,28 +105,41 @@ and the hybrid divergence is integrated using RK2.
 
 The weights for redistribution :math:`W_l^n` can be set to any field in PeleC. We have found that setting the weights to the cell volumes is effective, while pure density weighting sometimes leads to stability issues when several very small cells share a neighborhood such as in a geometry corner.
 
-This procedure is implemented in the `pc_fix_div_and_redistribute` routine:
+This procedure is implemented in the `pc_fix_div_and_redistribute` routine that performs four steps:
+
+ #. Recompute conservative divergence, DC, on cut cells...need DC in 2 grow cells for    final result
+ #. Compute non-conservative and hybrid divergence, DNC and HD, and redistribution mass  dM in cut cells. We will need this in 1 grow cells (see below), so it depends on     having a conservative div in 2 grow cells
+ #. Now that we finished computing HD and dM everywhere, it is safe to increment DC to   hold HD
+ #.  Redistribute dM - THIS REQUIRES THAT DC BE GOOD IN 1 GROW CELL
 
 
-.. f:function:: nbrsTest_nd_module/pc_fix_div_and_redistribute
 
-    This performs four steps
-        1. Recompute conservative divergence, DC, on cut cells...need DC in 2 grow cells for    final result
-        2. Compute non-conservative and hybrid divergence, DNC and HD, and redistribution mass  dM in cut cells. We will need this in 1 grow cells (see below), so it depends on     having a conservative div in 2 grow cells
-        3. Now that we finished computing HD and dM everywhere, it is safe to increment DC to   hold HD
-        4. Redistribute dM - THIS REQUIRES THAT DC BE GOOD IN 1 GROW CELL
+    
 
-    This interpolates fluxes from face centers to the centroid of the uncovered part of the face 
+.. highlight:: c++
 
-    :p f0: Edge centered flux in x direction on x faces
-    :p f1: Edge centered flux in y direction on y faces
-    :p f2: Edge centered flux in z direction on z faces
-    :p sv_ebg: Geometry information for cut cells
-    :p ebflux: Flux through cut face
-    :p DC: Divergence
+::
 
-.. f:function:: nbrsTest_nd_module/pc_apply_face_stencil
-    This is used to apply a pre-filled stencil operation to face data.
+   pc_fix_div_and_redistribute(BL_TO_FORTRAN_BOX(vbox),
+                               sv_eb_bndry_geom[local_i].data(), &Ncut,
+                               BL_TO_FORTRAN_ANYD(flag_fab),
+                               D_DECL(BL_TO_FORTRAN_ANYD(flux_ec[0]),
+                                      BL_TO_FORTRAN_ANYD(flux_ec[1]),
+                                      BL_TO_FORTRAN_ANYD(flux_ec[2])),
+                               sv_eb_flux[local_i].dataPtr(), &Nflux,
+                               BL_TO_FORTRAN_ANYD(Dterm),
+                               BL_TO_FORTRAN_N_ANYD(W, wComp),
+                               BL_TO_FORTRAN_ANYD(vfrac[mfi]),
+                               &VOL, &NUM_STATE,
+                               &as_crse,
+                               BL_TO_FORTRAN_ANYD(*p_drho_as_crse),
+                               BL_TO_FORTRAN_ANYD(*p_rrflag_as_crse),
+                               &as_fine,
+                               BL_TO_FORTRAN_ANYD(dm_as_fine),
+
+
+
+The arguments are the edge centered flux in the [x,y,z]-directions on the [x,y,z] faces, the array of geometry information for the cut cells for this FAB, the flux through the cut faces, and the hybrid divergence. 
 
 
 
@@ -152,9 +167,13 @@ Routines to fill and apply these as necessary can be found in the dimension spec
    :alt: EB Structure storage
    :width: 500
 
-    Storage for sparse EB structures 
 
+   Storage for sparse EB structures 
+
+           
 On creation of a new AMRLevel, data is cached from the *dense* AMReX structures in the *sparse* PeleC structures. For example, in *PeleC_init_eb.cpp* within the function initialize_eb2_structs():
+
+.. highlight:: c++
 
 ::
 
@@ -169,9 +188,11 @@ On creation of a new AMRLevel, data is cached from the *dense* AMReX structures 
 
 Where the argument FABS AMReX datastructures, e.g.:
 
+.. highlight:: c++
+
 ::
 
- const amrex::MultiFab* volfrac;
+  const amrex::MultiFab* volfrac;
   const amrex::MultiCutFab* bndrycent;
   std::array<const amrex::MultiCutFab*, AMREX_SPACEDIM> eb2areafrac;
   std::array<const amrex::MultiCutFab*, AMREX_SPACEDIM> facecent;
@@ -192,6 +213,8 @@ Applying boundary and face stencils
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When processing geometry cells, the cached datastructures can be applied efficiently, for example, to interpolate fluxes from face centers to face centroids in cut cells:
+
+.. highlight:: c++
 
 ::
 
@@ -250,8 +273,7 @@ First fillpatch
 
 
 
-
-Then iterate over `MultiFab`s:
+Then iterate over MultiFabs
 
 
 .. code-block:: c
