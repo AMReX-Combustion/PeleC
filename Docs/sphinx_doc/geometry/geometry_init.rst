@@ -52,7 +52,7 @@ representative of the Pele motivating problem space.
 the solution domain would be the interior of a sphere of radius :math:`R`. Reverse the sign of :math:`S` and the solution domain would be the exterior of the sphere.   
 
 Specifying basic geometries in input files
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 There are several basic geometries that are available in AMReX that can be easily specified in the input file, some of which are shown below:
 
@@ -61,8 +61,6 @@ There are several basic geometries that are available in AMReX that can be easil
 * *Sphere* - needs center (sphere_center), radius (sphere_radius) and fluid inside/outside flag (sphere_has_fluid_inside)
 * *Cylinder* - needs center (cylinder_center), radius (cylinder_radius), height (cylinder_height), direction (cylinder_direction) and fluid inside/outside flag (cylinder_has_fluid_inside)
 * *Box*     - needs the lower corner (box_lo), upper corner (box_hi) and fluid inside/outside flag (box_has_fluid_inside). The box is aligned along coordinate directions.
-
-For example, to specify a box geometry with fluid outside, add the following lines to the inputs file.
 
 .. code::
 
@@ -83,3 +81,19 @@ To specify an external flow sphere geometry, add the following lines to the inpu
     eb2.sphere_center = 2.0 2.0  2.0
     eb2.sphere_has_fluid_inside = 0
 
+
+Adding complicated geometries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Geometries beyond the set described above can be built using a combination of basic geometries and EB transformation functions in AMReX.
+It should be noted that building a generic geometry from a user-defined discretized surface (like STL files)  is currently being developed, nonetheless 
+engineering relevant geometries can be achieved with the fundamental geometries and transformations.
+
+Some of the relevant transformation handles in AMReX are:
+
+* *Intersection* - find the common region between implicit functions (see AMReX_EB2_IF_Intersection.cpp)
+* *Union*        - find the union of implicit functions (see AMReX_EB2_IF_Union.cpp)
+* *Complement*   - invert an implicit function, i.e. make fluid that is inside to outside. (see AMReX_EB2_IF_Complement.cpp)
+* *Translation* - translate an implicit function (see AMReX_EB2_IF_Translation.cpp)
+* *Lathe*       - creates a 3D implicit function from a 2D function by revolving about the z axis (see AMReX_EB2_IF_Lathe.cpp)
+* *Extrusion*   - creates a 3D implicit function from a 2D function by translating along the z axis (see AMReX_EB2_IF_Extrusion.cpp)
