@@ -78,7 +78,7 @@ To specify an external flow sphere geometry, add the following lines to the inpu
 
 
 Adding complicated geometries
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Geometries beyond the set described above can be built using a combination of basic geometries and EB transformation functions in AMReX.
 It should be noted that building a generic geometry from a user-defined discretized surface (like STL files)  is currently being developed, nonetheless 

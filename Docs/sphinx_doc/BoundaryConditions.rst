@@ -279,3 +279,5 @@ be given according to the litterature and practical experience:
 The choice for this parameter is more complicated. For outflows, it should be close to the Mach number. For some cases, an averaged Mach number will provide good results,
 while for other cases, the pointwise local Mach number is better. `beta` will be set to the local Mach number if it is set to a negative value. For inflows, it has been found
 that a value of 0.5 provides good results but it may lead to instabilities, and for some case turning off the transverse terms (beta=1) will be better.
+
+
