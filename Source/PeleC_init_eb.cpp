@@ -60,6 +60,9 @@ PeleC::initialize_eb2_structs() {
   BL_PROFILE("PeleC::initialize_eb2_structs()");
   amrex::Print() << "Initializing EB2 structs" << std::endl;
 
+  
+  // NOTE: THIS NEEDS TO BE REPLACED WITH A FLAGFAB 
+  
   // n.b., could set this to 1 if geometry is all_regular as an optimization
   no_eb_in_domain = 0;
 

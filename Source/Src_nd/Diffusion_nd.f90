@@ -250,8 +250,8 @@ contains
        efab,e_lo,e_hi, dir, nc, do_harmonic) &
        bind(C, name="pc_move_transport_coeffs_to_ec")
 
-    use prob_params_module, only : physbc_lo, physbc_hi, Inflow
-    use bl_constants_module
+    use prob_params_module, only : physbc_lo, physbc_hi
+    use amrex_constants_module
 
     implicit none
 
@@ -260,8 +260,8 @@ contains
     integer         , intent(in   ) :: c_lo(3), c_hi(3)
     integer         , intent(in   ) :: e_lo(3), e_hi(3)
     integer         , intent(in   ) :: dir, nc, do_harmonic
-    real (kind=dp_t), intent(in   ) :: cfab(c_lo(1):c_hi(1),c_lo(2):c_hi(2),c_lo(3):c_hi(3),nc)
-    real (kind=dp_t), intent(inout) :: efab(e_lo(1):e_hi(1),e_lo(2):e_hi(2),e_lo(3):e_hi(3),nc)
+    real (amrex_real), intent(in   ) :: cfab(c_lo(1):c_hi(1),c_lo(2):c_hi(2),c_lo(3):c_hi(3),nc)
+    real (amrex_real), intent(inout) :: efab(e_lo(1):e_hi(1),e_lo(2):e_hi(2),e_lo(3):e_hi(3),nc)
 
     ! local variables
     integer          :: i, j, k, n
@@ -344,62 +344,6 @@ contains
                          efab(i,j,k,n) = zero
                       endif
                    end do
-                end do
-             end do
-          end do
-       end if
-    end if
-
-    ! Fix up for boundaries
-    if (lo(dir+1).lt.dlo(dir+1) .and. physbc_lo(dir+1).eq.Inflow) then
-       if (dir .EQ. 0) then
-          do n = 1,nc
-             do k = lo(3), hi(3)
-                do j = lo(2), hi(2)
-                   efab(lo(1),j,k,n) = cfab(lo(1)-1,j,k,n)
-                end do
-             end do
-          end do
-       else if (dir .EQ. 1) then
-          do n = 1,nc
-             do k = lo(3), hi(3)
-                do i = lo(1), hi(1)
-                   efab(i,lo(2),k,n) = cfab(i,lo(2)-1,k,n)
-                end do
-             end do
-          end do
-       else if (dir .EQ. 2) then
-          do n = 1,nc
-             do j = lo(2), hi(2)
-                do i = lo(1), hi(1)
-                   efab(i,j,lo(3),n) = cfab(i,j,lo(3)-1,n)
-                end do
-             end do
-          end do
-       end if
-    end if
-    if (hi(dir+1).gt.dlo(dir+1) .and. physbc_hi(dir+1).eq.Inflow) then
-       if (dir .EQ. 0) then
-          do n = 1,nc
-             do k = lo(3), hi(3)
-                do j = lo(2), hi(2)
-                   efab(hi(1)+1,j,k,n) = cfab(hi(1)+1,j,k,n)
-                end do
-             end do
-          end do
-       else if (dir .EQ. 1) then
-          do n = 1,nc
-             do k = lo(3), hi(3)
-                do i = lo(1), hi(1)
-                   efab(i,hi(2)+1,k,n) = cfab(i,hi(2)+1,k,n)
-                end do
-             end do
-          end do
-       else if (dir .EQ. 2) then
-          do n = 1,nc
-             do j = lo(2), hi(2)
-                do i = lo(1), hi(1)
-                   efab(i,j,hi(3)+1,n) = cfab(i,j,hi(3)+1,n)
                 end do
              end do
           end do

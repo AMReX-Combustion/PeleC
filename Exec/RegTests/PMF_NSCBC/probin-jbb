@@ -1,0 +1,11 @@
+&fortin
+  pamb = 101325000.d0  
+  phi_in = -.5d0
+  pertmag = .02d0
+  pertmag = .0002d0
+/
+
+&tagging
+  max_ftracerr_lev = 4
+  ftracerr = 150.d-6
+/

@@ -21,7 +21,7 @@ contains
     use network, only : nspec
     use eos_type_module
     use eos_module
-    use bl_constants_module
+    use amrex_constants_module
     use meth_params_module, only : QVAR, QRHO, QU, QV, QREINT, QPRES, &
          QTEMP, QFS, QFX, QGAME, &
          small_dens, small_pres, &

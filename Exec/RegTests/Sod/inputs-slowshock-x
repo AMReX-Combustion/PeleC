@@ -14,8 +14,8 @@ amr.n_cell           = 128   16   16   32     4     4
 # 1 = Inflow             4 = SlipWall
 # 2 = Outflow            5 = NoSlipWall
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
-pelec.lo_bc       =  2   4   4
-pelec.hi_bc       =  2   4   4
+pelec.lo_bc       =     "UserBC"   "SlipWall"   "SlipWall" 
+pelec.hi_bc       =     "UserBC"   "SlipWall"   "SlipWall" 
 
 # WHICH PHYSICS
 pelec.do_hydro = 1

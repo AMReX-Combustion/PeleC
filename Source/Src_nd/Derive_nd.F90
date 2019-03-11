@@ -9,6 +9,73 @@ contains
 ! All subroutines in this file must be threadsafe because they are called
 ! inside OpenMP parallel regions.
 
+  subroutine pc_derspectrac(spectrac,v_lo,v_hi,nv, &
+                       dat,d_lo,d_hi,nc,lo,hi,domlo, &
+                       domhi,delta,xlo,time,dt,bc,level,grid_no,idx) &
+                       bind(C, name="pc_derspectrac")
+    !
+    ! This routine will derive the velocity from the momentum.
+    !
+    use meth_params_module, only : URHO, UFS
+    implicit none
+
+    integer          :: lo(3), hi(3)
+    integer          :: v_lo(3), v_hi(3), nv
+    integer          :: d_lo(3), d_hi(3), nc
+    integer          :: domlo(3), domhi(3)
+    integer          :: bc(3,2,nc)
+    double precision :: delta(3), xlo(3), time, dt
+    double precision :: spectrac(v_lo(1):v_hi(1),v_lo(2):v_hi(2),v_lo(3):v_hi(3),nv)
+    double precision :: dat(d_lo(1):d_hi(1),d_lo(2):d_hi(2),d_lo(3):d_hi(3),nc)
+    integer          :: level, grid_no
+    integer          :: idx
+
+    integer          :: i, j, k
+
+    do k = lo(3), hi(3)
+       do j = lo(2), hi(2)
+          do i = lo(1), hi(1)
+             spectrac(i,j,k,1) = dat(i,j,k,UFS+idx) / dat(i,j,k,URHO)
+          end do
+       end do
+    end do
+
+  end subroutine pc_derspectrac
+
+  subroutine pc_dertemp(temp,m_lo,m_hi,nv, &
+                        dat,d_lo,d_hi,nc,lo,hi,domlo, &
+                        domhi,delta,xlo,time,dt,bc,level,grid_no) &
+                        bind(C, name="pc_dertemp")
+    !
+    ! This routine will derive the temperature.
+    !
+
+    use meth_params_module, only : UTEMP
+
+    implicit none
+
+    integer          :: lo(3), hi(3)
+    integer          :: m_lo(3), m_hi(3), nv
+    integer          :: d_lo(3), d_hi(3), nc
+    integer          :: domlo(3), domhi(3)
+    integer          :: bc(3,2,nc)
+    double precision :: delta(3), xlo(3), time, dt
+    double precision :: temp(m_lo(1):m_hi(1),m_lo(2):m_hi(2),m_lo(3):m_hi(3),nv)
+    double precision ::    dat(d_lo(1):d_hi(1),d_lo(2):d_hi(2),d_lo(3):d_hi(3),nc)
+    integer          :: level, grid_no
+
+    integer          :: i, j, k
+
+    do k = lo(3), hi(3)
+       do j = lo(2), hi(2)
+          do i = lo(1), hi(1)
+             temp(i,j,k,1) = dat(i,j,k,UTEMP)
+          end do
+       end do
+    end do
+
+  end subroutine pc_dertemp
+
   subroutine pc_dervelx(vel,v_lo,v_hi,nv, &
                        dat,d_lo,d_hi,nc,lo,hi,domlo, &
                        domhi,delta,xlo,time,dt,bc,level,grid_no) &
@@ -71,6 +138,8 @@ contains
        end do
     end do
 
+
+    
   end subroutine pc_dervely
 
   subroutine pc_dervelz(vel,v_lo,v_hi,nv, &
@@ -113,7 +182,7 @@ contains
     use network, only : nspec, naux
     use eos_module
     use meth_params_module, only : URHO, UEINT, UTEMP, UFS, UFX
-    use bl_constants_module
+    use amrex_constants_module
 
     implicit none
 
@@ -167,7 +236,7 @@ contains
     use network, only : nspec, naux
     use eos_module
     use meth_params_module, only : URHO, UEINT, UTEMP, UFS, UFX
-    use bl_constants_module
+    use amrex_constants_module
 
     implicit none
 
@@ -216,6 +285,9 @@ contains
                           dat,d_lo,d_hi,nc,lo,hi,domlo, &
                           domhi,delta,xlo,time,dt,bc,level,grid_no) &
                           bind(C, name="pc_dermagvel")
+
+    use meth_params_module, only : URHO, UMX, UMY, UMZ
+
     !
     ! This routine will derive magnitude of velocity.
     !
@@ -237,10 +309,10 @@ contains
     do k = lo(3), hi(3)
        do j = lo(2), hi(2)
           do i = lo(1), hi(1)
-             dat1inv = 1.d0/dat(i,j,k,1)
-             magvel(i,j,k,1) = sqrt( (dat(i,j,k,2) * dat1inv)**2 + &
-                  (dat(i,j,k,3) * dat1inv)**2 + &
-                  (dat(i,j,k,4) * dat1inv)**2 )
+             dat1inv = 1.d0/dat(i,j,k,URHO)
+             magvel(i,j,k,1) = sqrt( (dat(i,j,k,UMX) * dat1inv)**2 + &
+                  (dat(i,j,k,UMY) * dat1inv)**2 + &
+                  (dat(i,j,k,UMZ) * dat1inv)**2 )
           end do
        end do
     end do
@@ -256,7 +328,8 @@ contains
     !
     ! This routine will derive the radial velocity.
     !
-    use bl_constants_module
+    use meth_params_module, only : URHO, UMX, UMY, UMZ
+    use amrex_constants_module
     use prob_params_module, only: center
 
     implicit none
@@ -281,9 +354,9 @@ contains
           do i = lo(1), hi(1)
              x = xlo(1) + (dble(i-lo(1))+HALF) * delta(1) - center(1)
              r = sqrt(x*x+y*y+z*z)
-             radvel(i,j,k,1) = ( dat(i,j,k,2)*x + &
-                  dat(i,j,k,3)*y + &
-                  dat(i,j,k,4)*z ) / ( dat(i,j,k,1)*r )
+             radvel(i,j,k,1) = ( dat(i,j,k,UMX)*x + &
+                  dat(i,j,k,UMY)*y + &
+                  dat(i,j,k,UMZ)*z ) / ( dat(i,j,k,URHO)*r )
           end do
        end do
     end do
@@ -299,6 +372,9 @@ contains
     !
     ! This routine will derive magnitude of momentum.
     !
+
+    use meth_params_module, only : UMX, UMY, UMZ
+
     implicit none
 
     integer          :: lo(3), hi(3)
@@ -316,7 +392,7 @@ contains
     do k = lo(3), hi(3)
        do j = lo(2), hi(2)
           do i = lo(1), hi(1)
-             magmom(i,j,k,1) = sqrt( dat(i,j,k,1)**2 + dat(i,j,k,2)**2 + dat(i,j,k,3)**2 )
+             magmom(i,j,k,1) = sqrt( dat(i,j,k,UMX)**2 + dat(i,j,k,UMY)**2 + dat(i,j,k,UMZ)**2 )
           end do
        end do
     end do
@@ -333,7 +409,7 @@ contains
     use network, only: nspec, naux
     use eos_module
     use meth_params_module, only: URHO, UEINT, UTEMP, UFS, UFX
-    use bl_constants_module
+    use amrex_constants_module
 
     implicit none
 
@@ -382,7 +458,7 @@ contains
                          domhi,dx,xlo,time,dt,bc,level,grid_no) &
                          bind(C, name="pc_dereint1")
 
-    use bl_constants_module
+    use amrex_constants_module
     use meth_params_module, only: URHO, UMX, UMY, UMZ, UEDEN 
 
     implicit none
@@ -459,7 +535,7 @@ contains
     use network, only: nspec, naux
     use eos_module
     use meth_params_module, only: URHO, UEINT, UTEMP, UFS, UFX
-    use bl_constants_module
+    use amrex_constants_module
 
     implicit none
 
@@ -511,7 +587,7 @@ contains
     use network, only: nspec, naux
     use eos_module
     use meth_params_module, only: URHO, UMX, UMZ, UEINT, UTEMP, UFS, UFX
-    use bl_constants_module
+    use amrex_constants_module
 
     implicit none
 
@@ -563,7 +639,7 @@ contains
     use network, only: nspec, naux
     use eos_module
     use meth_params_module, only: URHO, UEINT, UTEMP, UFS, UFX
-    use bl_constants_module
+    use amrex_constants_module
 
     implicit none
 
@@ -612,7 +688,7 @@ contains
                                  domhi,dx,xlo,time,dt,bc,level,grid_no) &
                                  bind(C, name="pc_derenuctimescale")
 
-    use bl_constants_module, only: ZERO, ONE
+    use amrex_constants_module, only: ZERO, ONE
     use meth_params_module, only: URHO, UEINT, UTEMP, UFS, UFX
     use network, only: nspec, naux
     use prob_params_module, only: dim
@@ -684,6 +760,9 @@ contains
                         dat,d_lo,d_hi,nc,lo,hi,domlo, &
                         domhi,delta,xlo,time,dt,bc,level,grid_no) &
                         bind(C, name="pc_derspec")
+
+    use meth_params_module, only: URHO, UEINT, UTEMP, UFS, UFX
+    use network, only: nspec
     !
     ! This routine derives the mass fractions of the species.
     !
@@ -704,7 +783,7 @@ contains
     do k = lo(3), hi(3)
        do j = lo(2), hi(2)
           do i = lo(1), hi(1)
-             spec(i,j,k,1) = dat(i,j,k,2) / dat(i,j,k,1)
+             spec(i,j,k,:) = dat(i,j,k,UFS:UFS+nspec-1) / dat(i,j,k,URHO)
           end do
        end do
     end do
@@ -721,7 +800,7 @@ contains
     use meth_params_module, only: URHO, UEINT, UTEMP, UFS, UFX
     use network, only: nspec, naux
     use eos_module
-    use bl_constants_module
+    use amrex_constants_module
     
     implicit none
 
@@ -806,7 +885,7 @@ contains
     ! This routine will calculate vorticity
     !     
 
-    use bl_constants_module
+    use amrex_constants_module
     use prob_params_module, only: dg
     use meth_params_module, only : URHO, UMX, UMY, UMZ
 
@@ -888,8 +967,9 @@ contains
     ! This routine will calculate the divergence of velocity.
     !
 
-    use bl_constants_module
+    use amrex_constants_module
     use prob_params_module, only: dg
+    use meth_params_module, only : URHO, UMX, UMY, UMZ
 
     implicit none
 
@@ -909,12 +989,12 @@ contains
     do k = lo(3), hi(3)
        do j = lo(2), hi(2)
           do i = lo(1), hi(1)
-             uhi = dat(i+1*dg(1),j,k,2) / dat(i+1*dg(1),j,k,1)
-             ulo = dat(i-1*dg(1),j,k,2) / dat(i-1*dg(1),j,k,1)
-             vhi = dat(i,j+1*dg(2),k,3) / dat(i,j+1*dg(2),k,1)
-             vlo = dat(i,j-1*dg(2),k,3) / dat(i,j-1*dg(2),k,1)
-             whi = dat(i,j,k+1*dg(3),4) / dat(i,j,k+1*dg(3),1)
-             wlo = dat(i,j,k-1*dg(3),4) / dat(i,j,k-1*dg(3),1)
+             uhi = dat(i+1*dg(1),j,k,UMX) / dat(i+1*dg(1),j,k,URHO)
+             ulo = dat(i-1*dg(1),j,k,UMX) / dat(i-1*dg(1),j,k,URHO)
+             vhi = dat(i,j+1*dg(2),k,UMY) / dat(i,j+1*dg(2),k,URHO)
+             vlo = dat(i,j-1*dg(2),k,UMY) / dat(i,j-1*dg(2),k,URHO)
+             whi = dat(i,j,k+1*dg(3),UMZ) / dat(i,j,k+1*dg(3),URHO)
+             wlo = dat(i,j,k-1*dg(3),UMZ) / dat(i,j,k-1*dg(3),URHO)
              divu(i,j,k,1) = HALF * (uhi-ulo) / delta(1)
              if (delta(2) > ZERO) then
                 divu(i,j,k,1) = divu(i,j,k,1) + HALF * (vhi-vlo) / delta(2)
@@ -940,8 +1020,8 @@ contains
 !     Requires velocity field, time, and the right parameters
 !     for the forcing term, i.e. probin, *somehow*
 !
-
-    use bl_constants_module, only: ZERO, HALF, M_PI, TWO
+    use meth_params_module, only : URHO, UMX, UMY, UMZ
+    use amrex_constants_module, only: ZERO, HALF, M_PI, TWO
     use probdata_module
 
     implicit none
@@ -1106,9 +1186,9 @@ contains
                 enddo
              enddo
 
-             u   = dat(i,j,k,2)
-             v   = dat(i,j,k,3)
-             w   = dat(i,j,k,4)
+             u   = dat(i,j,k,UMX)
+             v   = dat(i,j,k,UMY)
+             w   = dat(i,j,k,UMZ)
                   
              forcing(i,j,k,1) = dat(i,j,k,1) * ( u*f1 + v*f2 + w*f3 )
                   
@@ -1131,7 +1211,7 @@ contains
 !     for the forcing term, i.e. probin, *somehow*
 !
 
-    use bl_constants_module, only: ZERO, HALF, M_PI, TWO
+    use amrex_constants_module, only: ZERO, HALF, M_PI, TWO
     use probdata_module
 
     implicit none
@@ -1275,8 +1355,8 @@ contains
                    enddo
                 enddo
              enddo
-                   !write(*,*) 'DEBUG TOTO',i,j,k,x,y,z,f1
-             forcing(i,j,k,1) = dat(i,j,k,1) * f1
+
+             forcing(i,j,k,1) = dat(i,j,k,URHO) * f1
                   
           end do
        end do
@@ -1297,7 +1377,7 @@ contains
 !     for the forcing term, i.e. probin, *somehow*
 !
 
-    use bl_constants_module, only: ZERO, HALF, M_PI, TWO
+    use amrex_constants_module, only: ZERO, HALF, M_PI, TWO
     use probdata_module
 
     implicit none
@@ -1414,7 +1494,7 @@ contains
                 enddo
              enddo
                 
-             forcing(i,j,k,1) = dat(i,j,k,1) * f2
+             forcing(i,j,k,1) = dat(i,j,k,URHO) * f2
                   
           end do
        end do
@@ -1435,7 +1515,7 @@ contains
 !     for the forcing term, i.e. probin, *somehow*
 !
 
-    use bl_constants_module, only: ZERO, HALF, M_PI, TWO
+    use amrex_constants_module, only: ZERO, HALF, M_PI, TWO
     use probdata_module
 
     implicit none
@@ -1552,7 +1632,7 @@ contains
                 enddo
              enddo
                  
-             forcing(i,j,k,1) = dat(i,j,k,1) * f3
+             forcing(i,j,k,1) = dat(i,j,k,URHO) * f3
                   
           end do
        end do
@@ -1572,7 +1652,8 @@ contains
     ! This routine will derive kinetic energy = 1/2 rho (u^2 + v^2 + w^2)
     !
 
-    use bl_constants_module
+    use amrex_constants_module
+    use meth_params_module, only: URHO, UMX, UMY, UMZ
 
     implicit none
 
@@ -1591,9 +1672,9 @@ contains
     do k = lo(3), hi(3)
        do j = lo(2), hi(2)
           do i = lo(1), hi(1)
-             kineng(i,j,k,1) = HALF / dat(i,j,k,1) * ( dat(i,j,k,2)**2 + &
-                  dat(i,j,k,3)**2 + &
-                  dat(i,j,k,4)**2 )
+             kineng(i,j,k,1) = HALF / dat(i,j,k,URHO) * ( dat(i,j,k,UMX)**2 + &
+                  dat(i,j,k,UMY)**2 + &
+                  dat(i,j,k,UMZ)**2 )
           end do
        end do
     end do
@@ -1611,7 +1692,7 @@ contains
     ! This routine will derive enstrophy  = 1/2 rho (x_vorticity^2 + y_vorticity^2 + z_vorticity^2)
     !
 
-    use bl_constants_module
+    use amrex_constants_module
     use prob_params_module, only: dg
     use meth_params_module, only: URHO, UMX, UMY, UMZ
 

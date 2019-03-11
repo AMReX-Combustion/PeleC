@@ -9,7 +9,7 @@ module prob_params_module
   ! boundary condition information
   integer, save :: physbc_lo(3)
   integer, save :: physbc_hi(3)
-  integer, save :: Interior, Inflow, Outflow, Symmetry, SlipWall, NoSlipWall
+  integer, save :: Interior, Inflow, Outflow, Symmetry, SlipWall, NoSlipWall, UserBC
 
   ! geometry information
   integer         , save :: coord_type

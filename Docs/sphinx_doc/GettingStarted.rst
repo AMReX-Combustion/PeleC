@@ -44,15 +44,10 @@ The PeleC directory structure is as shown below:
     * Sod   - Sod shock tube test
     * TG    - Taylor-Green vortex test
 
-  * *Production*
+  * *UnitTests*
 
-    * EBDemo3D - Cold flow into a 3D dimensional geometry inspired by a gas turbine combustor.    
-    * FlameBall  
-    * HIT_forced
-    * Jet2d
-    * Oblqshock - Supersonic flow at an angle in a box domain resulting in a steady oblique shock solution
-    * VIF - transport of vortices with a turbulent vortical inflow boundary
-    * VT - Inviscid vortex transport by uniform flow
+    * NSCBC_test_cases - This directory contains many 1D, 2D and 3D cases to test the implementation of the Ghost-Cells Navier-Stokes Boundary Conditions (GC-NSCBC) on various different configurations.
+    * HIT_forced - This test case is similar to the homogeneous isotropic turbulence present in the RegTests directory, at the exception that we are not starting from a turbulent initial solution, but from a flow at rest where we superimpose forcing sources to generate turbulence.
   
   * *Tutorials*
 
@@ -86,4 +81,4 @@ fortran and c++ layers should not be stored in here, but rather added to the Par
 **GNUMakefile** --- in addition to setting options to build profiling, debugging, MPI, OpenMP, Compiler toolchain options, the chemical mechanism, transport model, equation of state model, 
 and use of EB are set here for compile time selection. The GNUMakefile includes the ``Make.PeleC`` file from the `Exec` directory that contains build configuration common across the examples. 
 
-**bc_fill_nd.f90** --- used to set values for boundary conditions on inflow and outflow. 
+**bc_fill_nd.f90** --- used to set values for user defined boundary conditions that use GC-NSCBC. 

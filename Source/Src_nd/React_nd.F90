@@ -20,7 +20,7 @@ contains
                                    UFS
     use react_type_module
     use reactor_module, only : react
-    use bl_constants_module, only : HALF
+    use amrex_constants_module, only : HALF
     use react_type_module
 
     implicit none

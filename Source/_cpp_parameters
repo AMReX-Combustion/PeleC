@@ -70,8 +70,10 @@ do_hydro                     int          -1                  y
 # uses MOL aapproach to timestep advection and diffusion
 do_mol_AD                 int          0                   y
 
-# permits Ghost-Cells Navier-Stokes Boundary Conditions to be turned on and off 
-i_nscbc                     int          0                  y
+# permits Ghost-Cells Navier-Stokes Boundary Conditions to be turned on and off
+# for advective terms (adv) and for diffusion terms (diff)
+nscbc_adv                      int          1                  y
+nscbc_diff                     int          0                  y 
 
 # if true, define an additional source term
 add_ext_src                  int           0
@@ -88,7 +90,13 @@ hybrid_hydro                 int           0                  y
 # 0: piecewise linear;
 # 1: classic Colella \& Woodward ppm;
 # 2: extrema-preserving ppm
+# 3: Hybrid WENO-PPM
 ppm_type                     int           1                  y
+
+# For Hybrid WENO-PPM (ppm_type=3), which kind of WENO reconstruction method?
+# 0 : Classical JS method (dissipative)
+# 1 : WENO-Z (more robust than JS)
+weno_variant                 int           1                  y
 
 # to we reconstruct and trace under the parabolas of the source
 # terms to the velocity

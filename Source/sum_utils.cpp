@@ -64,8 +64,6 @@ PeleC::volWgtSum (const std::string& name,
   }
 
 #ifdef PELE_USE_EB
-  MultiFab::Multiply(*mf,vfrac,0,0,1,0);
-
   auto const& fact = dynamic_cast<EBFArrayBoxFactory const&>(mf->Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
 #endif
@@ -78,12 +76,15 @@ PeleC::volWgtSum (const std::string& name,
     Real s = 0.0;
     const Box& box  = mfi.tilebox();
 
+    FArrayBox vol(box);
+    vol.setVal(1.0);
 #ifdef PELE_USE_EB
     const auto& flag_fab = flags[mfi];
     FabType typ = flag_fab.getType(box);
     if (typ == FabType::covered) {
       continue;
     }
+    vol.copy(vfrac[mfi], box, 0, box, 0, 1);
 #endif
 
     auto& fab = (*mf)[mfi];
@@ -91,14 +92,14 @@ PeleC::volWgtSum (const std::string& name,
     const int* lo   = box.loVect();
     const int* hi   = box.hiVect();
 
+    vol.mult(volume[mfi]);
+
     //
     // Note that this routine will do a volume weighted sum of
     // whatever quantity is passed in, not strictly the "mass".
     //
-    const auto& vfab = volume[mfi];
-
     pc_summass(ARLIM_3D(lo),ARLIM_3D(hi),BL_TO_FORTRAN_3D(fab),
-               ZFILL(dx),BL_TO_FORTRAN_3D(vfab),&s);
+               ZFILL(dx),BL_TO_FORTRAN_3D(vol),&s);
 
     sum += s;
   }
@@ -108,60 +109,6 @@ PeleC::volWgtSum (const std::string& name,
     ParallelDescriptor::ReduceRealSum(sum);
 
   return sum;
-}
-
-Real
-PeleC::volWgtSumMF (MultiFab* mf, int comp, bool local) 
-{
-    BL_PROFILE("PeleC::volWgtSumMF()");
-
-    Real        sum     = 0.0;
-    const Real* dx      = geom.CellSize();
-
-    BL_ASSERT(mf != 0);
-
-#ifdef PELE_USE_EB
-    MultiFab::Multiply(*mf,vfrac,0,0,1,0);
-
-    auto const& fact = dynamic_cast<EBFArrayBoxFactory const&>(mf->Factory());
-    auto const& flags = fact.getMultiEBCellFlagFab();
-#endif
-
-#ifdef _OPENMP
-#pragma omp parallel reduction(+:sum)
-#endif    
-    for (MFIter mfi(*mf,true); mfi.isValid(); ++mfi)
-    {
-        FArrayBox& fab = (*mf)[mfi];
-
-        Real s = 0.0;
-        const Box& box  = mfi.tilebox();
-        const int* lo   = box.loVect();
-        const int* hi   = box.hiVect();
-
-#ifdef PELE_USE_EB
-        const auto& flag_fab = flags[mfi];
-        FabType typ = flag_fab.getType(box);
-        if (typ == FabType::covered) {
-          continue;
-        }
-#endif
-
-        //
-        // Note that this routine will do a volume weighted sum of
-        // whatever quantity is passed in, not strictly the "mass".
-        //
-
-	pc_summass(ARLIM_3D(lo),ARLIM_3D(hi),BL_TO_FORTRAN_N_3D(fab,comp),
-		   ZFILL(dx),BL_TO_FORTRAN_3D(volume[mfi]),&s);
-
-        sum += s;
-    }
-
-    if (!local)
-	ParallelDescriptor::ReduceRealSum(sum);
-
-    return sum;
 }
 
 Real
@@ -192,15 +139,75 @@ PeleC::volWgtSquaredSum (const std::string& name,
 
 #ifdef _OPENMP
 #pragma omp parallel reduction(+:sum)
-#endif    
+#endif
     for (MFIter mfi(*mf,true); mfi.isValid(); ++mfi)
     {
         FArrayBox& fab = (*mf)[mfi];
-    
+
         Real s = 0.0;
         const Box& box  = mfi.tilebox();
         const int* lo   = box.loVect();
         const int* hi   = box.hiVect();
+
+        FArrayBox vol(box);
+        vol.setVal(1.0);
+#ifdef PELE_USE_EB
+        const auto& flag_fab = flags[mfi];
+        FabType typ = flag_fab.getType(box);
+        if (typ == FabType::covered) {
+          continue;
+        }
+        vol.copy(vfrac[mfi], box, 0, box, 0, 1);
+#endif
+        vol.mult(volume[mfi]);
+        //
+        // Note that this routine will do a volume weighted sum of
+        // whatever quantity is passed in, not strictly the "mass".
+        //
+
+	pc_sumsquared(ARLIM_3D(lo),ARLIM_3D(hi),BL_TO_FORTRAN_3D(fab),
+		      ZFILL(dx),BL_TO_FORTRAN_3D(vol),&s);
+
+        sum += s;
+    }
+
+
+    if (!local)
+	ParallelDescriptor::ReduceRealSum(sum);
+
+    return sum;
+}
+
+Real
+PeleC::volWgtSumMF (MultiFab* mf, int comp, bool local, bool finemask) {
+    BL_PROFILE("PeleC::volWgtSumMF()");
+
+    Real        sum     = 0.0;
+    const Real* dx      = geom.CellSize();
+
+    BL_ASSERT(mf != 0);
+    MultiFab* mask;
+    if (level < parent->finestLevel() && finemask) {
+        mask = &(getLevel(level+1).build_fine_mask());
+    }
+#ifdef PELE_USE_EB
+    auto const& fact = dynamic_cast<EBFArrayBoxFactory const&>(mf->Factory());
+    auto const& flags = fact.getMultiEBCellFlagFab();
+#endif
+
+#ifdef _OPENMP
+#pragma omp parallel reduction(+:sum)
+#endif
+    for (MFIter mfi(*mf,true); mfi.isValid(); ++mfi)
+    {
+        FArrayBox& fab = (*mf)[mfi];
+
+        Real s = 0.0;
+        const Box& box  = mfi.tilebox();
+        const int* lo   = box.loVect();
+        const int* hi   = box.hiVect();
+        FArrayBox vol(box);
+        vol.setVal(1.0);
 
 #ifdef PELE_USE_EB
         const auto& flag_fab = flags[mfi];
@@ -208,19 +215,23 @@ PeleC::volWgtSquaredSum (const std::string& name,
         if (typ == FabType::covered) {
           continue;
         }
+        vol.copy(vfrac[mfi], box, 0, box, 0, 1);
 #endif
+        vol.mult(volume[mfi]);
+        if (level < parent->finestLevel() && finemask) {
+            vol.mult((*mask)[mfi]);
+        }
 
         //
         // Note that this routine will do a volume weighted sum of
         // whatever quantity is passed in, not strictly the "mass".
         //
 
-	pc_sumsquared(ARLIM_3D(lo),ARLIM_3D(hi),BL_TO_FORTRAN_3D(fab),
-		      ZFILL(dx),BL_TO_FORTRAN_3D(volume[mfi]),&s);
+	pc_summass(ARLIM_3D(lo),ARLIM_3D(hi),BL_TO_FORTRAN_N_3D(fab,comp),
+		   ZFILL(dx),BL_TO_FORTRAN_3D(volume[mfi]),&s);
 
         sum += s;
     }
-
 
     if (!local)
 	ParallelDescriptor::ReduceRealSum(sum);

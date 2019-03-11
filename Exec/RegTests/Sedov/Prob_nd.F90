@@ -12,7 +12,7 @@ contains
     
     use probdata_module
     use prob_params_module, only : center, dim
-    use bl_error_module
+    use amrex_fort_module
 
     implicit none
     integer :: init, namlen
@@ -86,7 +86,7 @@ contains
     use probdata_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP, UFS
     use prob_params_module, only : center, dim
-    use bl_constants_module, only: ZERO, M_PI, FOUR3RD, ONE, HALF
+    use amrex_constants_module, only: ZERO, M_PI, FOUR3RD, ONE, HALF
     use eos_type_module
     use eos_module
     implicit none

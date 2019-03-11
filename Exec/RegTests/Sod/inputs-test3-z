@@ -9,13 +9,11 @@ geometry.prob_lo     =  0     0     0
 geometry.prob_hi     =  0.125 0.125 1
 amr.n_cell           =  4     4     32
 
-# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
-# 0 = Interior           3 = Symmetry
-# 1 = Inflow             4 = SlipWall
-# 2 = Outflow            5 = NoSlipWall
-# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
-pelec.lo_bc       =  4   4   2
-pelec.hi_bc       =  4   4   2
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+# Interior, UserBC, Symmetry, SlipWall, NoSlipWall
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+pelec.lo_bc       =  "SlipWall"   "SlipWall"  "UserBC"
+pelec.hi_bc       =  "SlipWall"   "SlipWall"  "UserBC"
 
 # WHICH PHYSICS
 pelec.do_hydro = 1

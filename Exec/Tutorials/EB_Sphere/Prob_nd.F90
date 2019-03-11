@@ -12,7 +12,7 @@ contains
 
     use eos_module
     use eos_type_module
-    use bl_error_module 
+    use amrex_fort_module 
     use network
     use probdata_module
 

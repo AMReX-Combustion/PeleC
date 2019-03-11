@@ -15,8 +15,9 @@ contains
                      Ip,Im, &
                      ilo1,ilo2,ihi1,ihi2,dx,dy,dt)
 
-        use meth_params_module, only : ppm_type
-        use bl_constants_module
+        use meth_params_module, only : ppm_type, weno_variant
+        use amrex_constants_module
+        use weno_module
 
         implicit none
 
@@ -40,6 +41,7 @@ contains
         double precision sgn, sigma, s6, amax, delam, delap
         double precision dafacem, dafacep, dabarm, dabarp, dafacemin, dabarmin
         double precision dachkm, dachkp
+        double precision vl, vr
 
         ! s_{\ib,+}, s_{\ib,-}
         double precision, allocatable :: sp(:,:)
@@ -50,6 +52,9 @@ contains
 
         ! s_{i+\half}^{H.O.}
         double precision, allocatable :: sedge(:,:)
+        
+        double precision, allocatable :: sedge_weno_p(:,:)
+        double precision, allocatable :: sedge_weno_m(:,:)
 
         ! cell-centered indexing
         allocate(sp(ilo1-1:ihi1+1,ilo2-1:ihi2+1))
@@ -71,6 +76,12 @@ contains
         else
            allocate(sedge(ilo1-2:ihi1+3,ilo2-1:ihi2+1))
         end if
+        
+        if (ppm_type .eq. 3) then
+          allocate(sedge_weno_p(ilo1-2:ihi1+2,ilo2-2:ihi2+2))
+          allocate(sedge_weno_m(ilo1-2:ihi1+2,ilo2-2:ihi2+2))
+        end if
+        
         
         ! compute s at x-edges
         if (ppm_type .eq. 1) then
@@ -241,6 +252,29 @@ contains
               enddo
            enddo
 
+        else if (ppm_type .eq. 3) then
+    
+          do j=ilo2-2,ihi2+2
+            do i=ilo1-2,ihi1+2
+
+              select case (weno_variant)
+              case (0)
+                call weno5js_face(s(i-3:i+2,j), vl, vr)
+              case (1)
+                call weno5z_face(s(i-3:i+2,j), vl, vr)
+              end select     
+              sedge_weno_p(i,j) = vr
+              sedge_weno_m(i,j) = vl
+            enddo
+          enddo
+       
+          do j=ilo2-1,ihi2+1
+            do i=ilo1-1,ihi1+1
+              sm(i,j) = sedge_weno_p(i,j)
+              sp(i,j) = sedge_weno_m(i+1,j) 
+            enddo
+          enddo
+                  
         end if
 
        ! compute x-component of Ip and Im
@@ -483,6 +517,29 @@ contains
               enddo
            enddo
 
+        else if (ppm_type .eq. 3) then
+    
+          do j=ilo2-2,ihi2+2
+            do i=ilo1-2,ihi1+2
+
+              select case (weno_variant)
+              case (0)
+                call weno5js_face(s(i,j-3:j+2), vl, vr)
+              case (1)
+                call weno5z_face(s(i,j-3:j+2), vl, vr)
+              end select     
+              sedge_weno_p(i,j) = vr
+              sedge_weno_m(i,j) = vl
+            enddo
+          enddo
+       
+          do j=ilo2-1,ihi2+1
+            do i=ilo1-1,ihi1+1
+              sm(i,j) = sedge_weno_p(i,j)
+              sp(i,j) = sedge_weno_m(i,j+1) 
+            enddo
+          enddo
+        
         end if
 
         ! compute y-component of Ip and Im
@@ -546,6 +603,11 @@ contains
         end do
 
         deallocate(sp,sm,dsvl,sedge)
+        if (ppm_type .eq. 3) then
+         deallocate(sedge_weno_m)
+         deallocate(sedge_weno_p)
+       end if
+       
         
       end subroutine ppm
 
