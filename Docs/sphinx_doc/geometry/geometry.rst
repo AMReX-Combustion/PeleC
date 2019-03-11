@@ -2,6 +2,7 @@
 
 
 
+
 Geometry treatment in PeleC
 ===========================
 
@@ -13,40 +14,12 @@ Here, we are concerned with how to compute the right-hand-side of this expressio
 3. Communication of the subsets of this large data set to the local cores tasked with building the PeleC operators.
 4. Actual construction of the diffusion and advection components of the PeleC time advance.
 
-AMReX provides for the first 3 steps.  For step 4, PeleC constructs a number of helper classes to pre-compute and organize key components of numerical operators. These objects and functions are implemented in the following files:
+AMReX provides for the first 3 steps.  For step 4, P
 
-* Source/PeleC.cpp
-* Source/PeleC.H
-* Source/PeleC_init_eb.cpp
-* Source/EbStencilTypes.H
-* Source/EBStencilTypes_mod.F90
-* Source/Src_3d/PeleC_init_eb_3d.f90
-* Source/Src_3d/Hyp_pele_MOL_3d.F90
-* Source/Src_3d/slope_mol_3d_EB.f90
-* Source/PeleC_diffusion.cpp
+
 
 In the remainder of this chapter, the mathematical algorithms for computing the fluxes are described, and are followed by an overview of the data structures used to facilitate their calculation in the presence of an EB.
 
-Computation of state time derivative
-------------------------------------
-
-Ultimately, the time derivative that is integrated (with RK2 presently) is the "hybrid divergence" (discussed below), which computed using diffusive and advective fluxes. These fluxes are computed in the routine PeleC_diffusion.cpp. 
-
-Diffusive Flux Calculation
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. note:: Placeholder for section to be written.
-
-.. f:function:: nbrsTest_nd_module/pc_compute_tangential_vel_derivs_eb
-
-
-The diffusion operator is implemented with the aid of the following functions(currently in PeleC_init_eb_3d.f90 and counterparts in _2d.f90)
-
-.. f:function:: nbrsTest_nd_module/pc_fill_bndry_grad_stencil
-
-.. f:function:: nbrsTest_nd_module/pc_apply_eb_boundry_flux_stencil
-
-.. f:function:: nbrsTest_nd_module/pc_fill_bndry_grad_stencil
 
 
 

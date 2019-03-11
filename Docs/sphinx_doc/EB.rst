@@ -89,6 +89,32 @@ Similarly, two structs are used to cache boundary/face stencils
     :undoc-members:
 .. f:type:: pelec_eb_stencil_types_module/face_sten
 
+Applying boundary and face stencils
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+PeleC constructs a number of helper classes to pre-compute and organize key components of numerical operators. These objects and functions are implemented in the following files:
+
+* Source/PeleC_init_eb.cpp
+* Source/Src_3d/PeleC_init_eb_3d.f90
+* Source/Src_3d/Hyp_pele_MOL_3d.F90
+* Source/Src_3d/slope_mol_3d_EB.f90
+* Source/PeleC_diffusion.cpp
+
+
+.. f:function:: nbrsTest_nd_module/pc_compute_tangential_vel_derivs_eb
+
+
+The diffusion operator is implemented with the aid of the following functions(currently in PeleC_init_eb_3d.f90 and counterparts in _2d.f90)
+
+.. f:function:: nbrsTest_nd_module/pc_fill_bndry_grad_stencil
+
+.. f:function:: nbrsTest_nd_module/pc_apply_eb_boundry_flux_stencil
+
+.. f:function:: nbrsTest_nd_module/pc_fill_bndry_grad_stencil
+
+
+
+
 Populating PeleC specific geometric description
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
