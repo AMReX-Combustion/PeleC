@@ -18,9 +18,9 @@ Embedded Boundary Representation
 
 .. figure:: EB_sample.png
    :alt: EB Cell
-   :width: 100
+   :width: 400
 
-   Embedded boundary represenatation of geometry
+   Embedded boundary representation of geometry
 
 
 Geometry is treated in PeleC using an embedded boundary (EB) formulation, based on datastructures and algorithmic components provided by AMReX.   In the EB formalism, geometry is represented by volume fractions (:math:`v_l`) 
@@ -31,17 +31,17 @@ and apertures (:math:`A_l^k`) for each cell :math:`l` that have faces :math:`1,.
 
 .. figure:: EB_F.png
    :alt: EB Cell
-   :width: 100
+   :width: 200
 
-   Embedded boundary represenatation of geometry
+   Embedded boundary representation of geometry
 
 .. _EB_A:
 
 .. figure:: EB_AVfrac.png
    :alt: EB Cell
-   :width: 100
+   :width: 200
 
-   Embedded boundary represenatation of geometry
+   Embedded boundary representation of geometry
 
 
 The geometry components in AMReX are used in PeleC to implement a time-explicit integrator based on the method-of-lines.  For the advection and diffusion components of the PeleC time integrator, the time rate of change of the conserved fields, S, in cell :math:`l` can be written as 
@@ -55,7 +55,7 @@ where :math:`F` is the intensive flux of :math:`S` through the faces that bound 
 Data Structures and utility functions
 -------------------------------------
 
-Several structures exist to store geometry dependent information. These are populated on creation of a new AMRLevel (described below) and stored in the PeleC object so that they are available for computation. These facilitate accessing the EB data from the fortran layer and have equivalent C++ struct and fortran types definitions so that they can be passed between the languages. The C++ struct definitions are in the file EBStencilTypes.H and the fortran type definitions are in the file EBStencilTypes_mod.F90 within the pelec_eb_stencil_types_module module. The datatypes are:
+Several structures exist to store geometry dependent information. These are populated on creation of a new AMRLevel and stored in the PeleC object so that they are available for computation. These facilitate accessing the EB data from the fortran layer and have equivalent C++ struct and fortran types definitions so that they can be passed between the languages. The C++ struct definitions are in the file EBStencilTypes.H and the fortran type definitions are in the file EBStencilTypes_mod.F90 within the pelec_eb_stencil_types_module module. The datatypes are:
 
 +----------------+----------------+--------------------------------------------------------------------------------------+
 | C++ struct     | fortran type   | Contents                                                                             |
@@ -70,7 +70,6 @@ Several structures exist to store geometry dependent information. These are popu
 Routines to fill and apply these as necessary can be found in the dimension specific files in e.g. Source/Src_3d/PeleC_init_eb_3d.f90 within the `nbrsTest_nd_module` module. An array of structures is created on level creation by copying data from the AMReX dense datastrcutures on a per-FAB basis as indicated in Figure :ref:`eb_structs` .
 
 
-
 .. _eb_structs:
 
 .. figure:: EB_Struct.png
@@ -79,53 +78,70 @@ Routines to fill and apply these as necessary can be found in the dimension spec
 
    Storage for sparse EB structures 
 
+On creation of a new AMRLevel, data is cached from the *dense* AMReX structures in the *sparse* PeleC structures. For example, in *PeleC_init_eb.cpp* within the function initialize_eb2_structs():
+
+::
+
+   pc_fill_sv_ebg(BL_TO_FORTRAN_BOX(tbox),
+   sv_eb_bndry_geom[iLocal].data(), &Ncut,
+   BL_TO_FORTRAN_ANYD((*volfrac)[mfi]),
+   BL_TO_FORTRAN_ANYD((*bndrycent)[mfi]),
+   D_DECL(BL_TO_FORTRAN_ANYD((*eb2areafrac[0])[mfi]),
+          BL_TO_FORTRAN_ANYD((*eb2areafrac[1])[mfi]),
+          BL_TO_FORTRAN_ANYD((*eb2areafrac[2])[mfi])));
+
+
+Where the argument FABS AMReX datastructures, e.g.:
+
+::
+
+ const amrex::MultiFab* volfrac;
+  const amrex::MultiCutFab* bndrycent;
+  std::array<const amrex::MultiCutFab*, AMREX_SPACEDIM> eb2areafrac;
+  std::array<const amrex::MultiCutFab*, AMREX_SPACEDIM> facecent;
+
+  const auto& ebfactory = dynamic_cast<EBFArrayBoxFactory const&>(Factory());
+
+  // These are the data sources
+  volfrac = &(ebfactory.getVolFrac());
+  bndrycent = &(ebfactory.getBndryCent());
+  eb2areafrac = ebfactory.getAreaFrac();
+  facecent = ebfactory.getFaceCent();
+
+
+
+
 
 Applying boundary and face stencils
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-PeleC constructs a number of helper classes to pre-compute and organize key components of numerical operators. These objects and functions are implemented in the following files:
+When processing geometry cells, the cached datastructures can be applied efficiently, for example, to interpolate fluxes from face centers to face centroids in cut cells:
 
-* Source/PeleC_init_eb.cpp
-* Source/Src_3d/PeleC_init_eb_3d.f90
-* Source/Src_3d/Hyp_pele_MOL_3d.F90
-* Source/Src_3d/slope_mol_3d_EB.f90
-* Source/PeleC_diffusion.cpp
+::
 
+          for (int idir=0; idir < BL_SPACEDIM; ++idir) {
+              int Nsten = flux_interp_stencil[idir][local_i].size();
+              int in_place = 1;
+              const Box valid_interped_flux_box =
+              Box(amrex::grow(vbox, 2)).surroundingNodes(idir);
+              {
+                BL_PROFILE("PeleC::pc_apply_face_stencil call");
+                pc_apply_face_stencil(BL_TO_FORTRAN_BOX(valid_interped_flux_box),
+                                      BL_TO_FORTRAN_BOX(stencil_volume_box),
+                                      flux_interp_stencil[idir][local_i].data(),
+                                      &Nsten, &idir,
+                                      BL_TO_FORTRAN_ANYD(flux_ec[idir]),
+                                      BL_TO_FORTRAN_ANYD(flux_ec[idir]),
+                                      &NUM_STATE, &in_place);
+             }
+        }
 
-.. f:function:: nbrsTest_nd_module/pc_compute_tangential_vel_derivs_eb
+Other similar routines incldue:
 
-
-The diffusion operator is implemented with the aid of the following functions(currently in PeleC_init_eb_3d.f90 and counterparts in _2d.f90)
-
-.. f:function:: nbrsTest_nd_module/pc_fill_bndry_grad_stencil
-
-.. f:function:: nbrsTest_nd_module/pc_apply_eb_boundry_flux_stencil
-
-.. f:function:: nbrsTest_nd_module/pc_fill_bndry_grad_stencil
-
-
-
-
-Populating PeleC specific geometric description
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-After the geometry is created, the following are populated in the Pelc::init_eb routine:
-
-* sv_eb_bndry_geom
-* sv_eb_bndry_grad_stencil
-* sv_eb_flux 
-* sv_eb_bcval 
-* flux_interp_stencil
-
-At present, the geometry must be static, so the above structures are valid for the life of the PeleC AMRLevel object. 
-
-The relevant functions are:
-
-
-.. cpp:function:: PeleC::init_eb ()
-
-
-.. cpp:member:: PeleC::initialize_eb2_structs()
+* pc_apply_face_stencil
+* pc_apply_eb_boundry_flux_stencil
+* pc_apply_eb_boundry_visc_flux_stencil
+* pc_fix_div_and_redistribute
 
 
 
@@ -133,7 +149,7 @@ The relevant functions are:
 Hybrid Divergence and Redistribution
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A straightforward implemention of the finite-volume advance of intensive conserved fields is numerically unstable (this is the well-known "small cell issue") due to presence of the fluid cell volume in the denominator of the time derivative:
+A straightforward implementation of the finite-volume advance of intensive conserved fields is numerically unstable (this is the well-known "small cell issue") due to presence of the fluid cell volume in the denominator of the time derivative:
 
 .. math::
   (DC)_l = \frac{1}{V_l} \sum_{k_l} \left( F_k \cdot n_k A_k \right),
