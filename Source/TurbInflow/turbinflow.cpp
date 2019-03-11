@@ -5,28 +5,23 @@
 #include <fstream>
 #include <string>
 
-#include <REAL.H>
-#include <Utility.H>
-#include <FArrayBox.H>
-#include <ParallelDescriptor.H>
-#include <PArray.H>
+#include <AMReX_REAL.H>
+#include <AMReX_Utility.H>
+#include <AMReX_EBFArrayBox.H>
+#include <AMReX_ParallelDescriptor.H>
 
 #ifdef _OPENM
 #include <omp.h>
 #endif
 
-#  if defined(BL_FORT_USE_UPPERCASE)
-#    define FORT_GETPLANE    GETPLANE
-#  elif defined(BL_FORT_USE_LOWERCASE)
-#    define FORT_GETPLANE    getplane
-#  elif defined(BL_FORT_USE_UNDERSCORE)
-#    define FORT_GETPLANE    getplane_
-#  endif
+using namespace std;
+using namespace amrex;
 
-extern "C" void FORT_GETPLANE(int* filename, int* len, Real* data, int* plane, int* ncomp, int* isswirltype);
+
+extern "C" void getplane(int* filename, int* len, Real* data, int* plane, int* ncomp, int* isswirltype);
 
 void
-FORT_GETPLANE (int* filename, int* len, Real* data, int* plane, int* ncomp, int* isswirltype)
+getplane (int* filename, int* len, Real* data, int* plane, int* ncomp, int* isswirltype)
 {
 #ifdef _OPENMP
     int nthreads = omp_get_max_threads();
@@ -38,7 +33,7 @@ FORT_GETPLANE (int* filename, int* len, Real* data, int* plane, int* ncomp, int*
 
     static int         kmax;
     static bool        first = true;
-    static PArray< Array<long> > offset(nthreads, PArrayManage);
+    static Vector< Vector<long> > offset(nthreads);
     std::string        flctfile;
 
 #ifdef _OPENMP
@@ -67,7 +62,7 @@ FORT_GETPLANE (int* filename, int* len, Real* data, int* plane, int* ncomp, int*
         ifs.open(hdr.c_str(), std::ios::in);
 
         if (!ifs.good())
-            BoxLib::FileOpenFailed(hdr);
+            amrex::FileOpenFailed(hdr);
 
         int  idummy;
         Real rdummy;
@@ -89,8 +84,8 @@ FORT_GETPLANE (int* filename, int* len, Real* data, int* plane, int* ncomp, int*
                 ifs >> rdummy;
         }
 
-	offset.set(tid, new Array<long>(kmax*BL_SPACEDIM, 0));
-
+        offset[tid].resize(kmax*AMREX_SPACEDIM,0);
+           
         for (int i = 0; i < offset[tid].size(); i++)
             ifs >> offset[tid][i];
     }
@@ -102,7 +97,7 @@ FORT_GETPLANE (int* filename, int* len, Real* data, int* plane, int* ncomp, int*
     ifs.open(dat.c_str(), std::ios::in);
 
     if (!ifs.good())
-        BoxLib::FileOpenFailed(dat);
+        amrex::FileOpenFailed(dat);
     //
     // There are BL_SPACEDIM * kmax planes of FABs.
     // The first component are in the first kmax planes,
@@ -115,7 +110,7 @@ FORT_GETPLANE (int* filename, int* len, Real* data, int* plane, int* ncomp, int*
     ifs.seekg(start, std::ios::beg);
 
     if (!ifs.good())
-        BoxLib::Abort("getplane(): seekg() failed");
+        amrex::Abort("getplane(): seekg() failed");
 
     FArrayBox fab;
 
