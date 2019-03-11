@@ -5,7 +5,7 @@
  .. role:: fortran(code)
     :language: fortran
 
- .. _BCs:
+ .. _PelePhysics:
 
 PelePhysics
 -----------

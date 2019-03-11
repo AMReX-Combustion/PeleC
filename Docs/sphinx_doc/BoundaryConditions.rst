@@ -278,8 +278,12 @@ be given according to the litterature and practical experience:
 * `relax_T` must be a negative value, also around the value of 0.2.
 * For outflows, a value of 0.25 if often reported to be a good choice for `sigma_out`.
 * The `beta` is comprised between 0 and 1 and control the amount of the contribution of transverse terms.
+
+
 The choice for this parameter is more complicated. For outflows, it should be close to the Mach number. For some cases, an averaged Mach number will provide good results,
 while for other cases, the pointwise local Mach number is better. `beta` will be set to the local Mach number if it is set to a negative value. For inflows, it has been found
 that a value of 0.5 provides good results but it may lead to instabilities, and for some case turning off the transverse terms (beta=1) will be better.
+
+
 
 

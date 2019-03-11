@@ -1,9 +1,12 @@
 
  .. role:: cpp(code)
     :language: c++
+
+ .. role:: f(code)
+    :language: fortran
+
  
- 
-.. _GettingStarted:
+.. _Algorithms:
 
 
 
@@ -469,7 +472,7 @@ Advective Flux Calculation
 
 The advective (hyperbolic) fluxes computation is driven by the routine pc_hyp_mol_flux found in the file Hyp_pele_MOL_3d.F90, with call signature:
 
-.. f:function:: hyp_advection_module/pc_hyp_mol_flux
+.. function:: hyp_advection_module/pc_hyp_mol_flux
 
     :p q: Input state
     :p qaux: Augmented state
