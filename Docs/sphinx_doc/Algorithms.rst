@@ -10,12 +10,12 @@ Algorithms
 PeleC Timestepping
 ------------------
 
-PeleC uses two method of timestepping: a second order explicit method, and a spectral defferred correction (SDC) approach. These approaches share several code modules to perform the update; both used an iteration to couple the various physics together.
+PeleC uses two method of timestepping: a second order explicit method, and a spectral deferred correction (SDC) approach. These approaches share several code modules to perform the update; both used an iteration to couple the various physics together.
 
 
 Standard Time Advance
 ~~~~~~~~~~~~~~~~~~~~~
-The standard time advance is a second order predictor-corrector approach with (optional) fixed point iteration to tightly couple the reaction and transport. The Advection and diffusio (:math:`AD`) terms are computed explicitly using a finite-volume formulation; reaction trerms are integrated with VODE (SUNDIALS) with a forcing term that includes advection and diffusion (:math:`F_{AD}`). For cold start the reaction term (:math:`I_R`) is evaluated from the instantaneous state without a forcing term.
+The standard time advance is a second order predictor-corrector approach with (optional) fixed point iteration to tightly couple the reaction and transport. The Advection and diffusion (:math:`AD`) terms are computed explicitly using a finite-volume formulation; reaction terms are integrated with VODE (SUNDIALS) with a forcing term that includes advection and diffusion (:math:`F_{AD}`). For cold start the reaction term (:math:`I_R`) is evaluated from the instantaneous state without a forcing term.
 
 .. math::
    S^n = AD(\overbrace{u^n}^\text{FillPatch at $t^n$})
@@ -55,7 +55,7 @@ The unsplit piecewise parabolic method is used for regular geometries and is the
 Method of Lines with Characteristic Extrapolation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-An alternative formulation well suited to Embedded Boundary geometry treatment and also avaialble for regular grids is available and based on a method of lines approach. 
+An alternative formulation well suited to Embedded Boundary geometry treatment and also available for regular grids is available and based on a method of lines approach. 
 
 
 Diffusion
