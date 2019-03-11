@@ -25,7 +25,6 @@ Additionally, the algorithms ultimately require surface normals, but these can b
 .. in a fork of Chombo's (see Chombo_ web page) infrastructure. 
 .. _Chombo: https://commons.lbl.gov/display/chombo/Chombo+-+Software+for+Adaptive+Solutions+of+Partial+Differential+Equations 
 
-.. include:: geometry_creation.rst
 
 GeometryShop and Implicit Functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -101,7 +100,8 @@ Some of the relevant transformation handles in AMReX are:
 * *Extrusion*   - creates a 3D implicit function from a 2D function by translating along the z axis (see AMReX_EB2_IF_Extrusion.cpp)
 
 The user can copy the file "PeleC_init_eb.cpp" from the Source and add it to his/her test case after which a new geometry can be added in initialize_EB2 
-function. An example of adding a piston-cylinder geometry that uses splines, cylinder, lathe and union transform, is shown below.
+function. An example of adding a piston-bowl geometry (see :ref:`EB_pistonbowl`) 
+that uses splines, cylinder, lathe and union transform, is shown below.
 
 
 .. code-block:: c
@@ -151,3 +151,12 @@ function. An example of adding a piston-cylinder geometry that uses splines, cyl
     //make a union
     auto PistonCylinder = EB2::makeUnion(revolvePiston, cylinder);
     auto gshop = EB2::makeShop(PistonCylinder);
+
+    
+.. _EB_pistonbowl:
+
+.. figure:: EB_PistonBowl.png
+   :alt: EB Cell
+   :width: 400
+
+   An example geometry of piston-bowl created using basic geometries.
