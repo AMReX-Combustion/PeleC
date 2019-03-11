@@ -10,35 +10,41 @@ Algorithms
 PeleC Timestepping
 ------------------
 
-PeleC uses two method of timestepping: a second order explicit method, and a spectral deferred correction (SDC) approach. These approaches share several code modules to perform the update; both used an iteration to couple the various physics together.
+PeleC supports two options for timestepping: a second-order explicit method-of-lines approach (MOL), and an iterative scheme base on a spectral deferred correction approach (SDC). Both time-steppers share a considerable amount of code.
 
 
 Standard Time Advance
 ~~~~~~~~~~~~~~~~~~~~~
-The standard time advance is a second order predictor-corrector approach with (optional) fixed point iteration to tightly couple the reaction and transport. The Advection and diffusion (:math:`AD`) terms are computed explicitly using a finite-volume formulation; reaction terms are integrated with VODE (SUNDIALS) with a forcing term that includes advection and diffusion (:math:`F_{AD}`). For cold start the reaction term (:math:`I_R`) is evaluated from the instantaneous state without a forcing term.
+The MOL time stepper is a standard second order predictor-corrector approach with (optional) fixed point iteration to tightly couple the reaction and transport. The advection :math:`(A)` and diffusion :math:`(D)` terms are computed explicitly using a time-explicit finite-volume formulation; reaction trerms are integrated with VODE (DVODE or CVODE via SUNDIALS), with a forcing term that incorporates the (pointwise) influence of advection and diffusion (:math:`F_{AD}`). For cold start the reaction term (:math:`I_R`) is evaluated with (:math:`F_{AD} = 0`)
 
 .. math::
-   S^n = AD(\overbrace{u^n}^\text{FillPatch at $t^n$})
+   S^n &= AD(u^n) \hspace{2em} {\small \text{(stencils require grow-cell data at }t^{n}\text{)}}
 
-   u^* = u^n + dt(S^n +I_R)
+   u^* &= u^n + \Delta t(S^n +I_R)
 
-   S^{n+1}= AD(\overbrace{u^*}^\text{FillPatch at $t^{n+1}$})
+   S^{n+1} &= AD(u^*) \hspace{2em} {\small \text{(stencils require grow-cell data at }t^{n+1}\text{)}}
 
-   u^{**} = \frac{1}{2}(u^n+u^*) + \frac{1}{2}\left(S^{n+1}+I_R\right){dt}
+   u^{**} &= \frac{1}{2}(u^n+u^*) + \frac{1}{2}\left(S^{n+1}+I_R\right){\Delta t}
 
-   F_{AD} = \frac{1}{dt} (u^{**} -u^n) - I_R
+   F_{AD} &= \frac{1}{\Delta t} (u^{**} -u^n) - I_R
 
-   \text{update } I_R(u^n, F_{AD}) \text{ and }  u^{n+1} = u^n + dt(F_{AD} +I_R)\text{.}
+   I_R &= I_R(u^n, F_{AD})
+
+   u^{n+1} &= u^n + \Delta t(F_{AD} +I_R)\text{.}
 
 
-Without reaction this would be the end of the timestep; with reaction, we iterate :math:`mol\_iters` times:
+Note that the advection and diffusion terms (evaluated above at old and new time) require grow cells to be filled at the appropriate solution time.  The filling operation is orchestrated by the AMReX software framework via the `FillPatch` operation.  Grow cells from neighboring mesh patches (and through periodic/re-entrant boundaries) are copied on intersection.  User-specified functions provide data at the physical boundaries.  Cells along the coarse-fine boundary are interpolated in space and time from available coarse data (note that this requires that the fine data be "properly nested" in the coarser levels).  Also, because :math:`(A)` and :math:`(D)` are both time-explicit, they are computed together using grow cells filled by the same `FillPatch` operation.
+
+With time-implicit reactions, the final update is iterated:
 
 .. math::
-   S^{n+1}= AD(\overbrace{u^{n+1}}^\text{FillPatch at $t^{n+1}$})
+   S^{n+1,k} &= AD(u^{n+1,k})
 
-   F_{AD} = \frac{1}{2}(S^n+S^{n+1})
+   F_{AD}^{k} &= \frac{1}{2}(S^n+S^{n+1,k})
 
-   \text{update } I_R(u^n, F_{AD}) \text{ and }  u^{n+1} = u^n + dt(F_{AD} +I_R)\text{.}
+   I_R^{k} &= I_R(u^n, F_{AD}^{k})
+
+   u^{n+1,k+1} &= u^n + \Delta t(F_{AD}^{k} +I_R^{k})\text{.}
 
 
 Hyperbolics
