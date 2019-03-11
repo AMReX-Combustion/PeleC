@@ -11,11 +11,11 @@ PelePhysics
 -----------
 
 Equation of State
------------------
+^^^^^^^^^^^^^^^^^
 PeleC allows the user to use different equation of state (eos) as the constitutive equation and close the compressible Navier-Stokes system of equations. All the routines needed to fully define an eos are implemented through PelePhysics module. Examples of eos implementation can be seen in `PelePhysics/Eos`. The following sections will fully describe the implementation of Soave-Redlich-Kwong, a non-ideal cubic eos, for a general mixture of species. Integration with the Fuego, for a chemical mechanism described in a chemkin format, will also be highlighted. For an advanced user interested in implementing a new eos this chapter should provide a good starting point.
 
 Soave-Redlich-Kwong (SRK)
-------------------------- 
+^^^^^^^^^^^^^^^^^^^^^^^^^
 SRK EOS as a function of Pressure (p), Temperature(T), and :math:`\tau` (specific volume) is given by
 
 .. math::
@@ -25,7 +25,7 @@ where :math:`Y_k` are species mass fractions, :math:`R` is the universal gas con
 :math:`b_m` and :math:`a_m` are mixture repulsion and attraction terms, respectively.
 
 Mixing rules
-------------
+""""""""""""
 For a mixture of species, the following mixing rules are used to compute :math:`b_m` and :math:`a_m`.
 
 .. math::
@@ -77,15 +77,15 @@ In terms of implementation, a routine called `MixingRuleAmBm` can be found in th
    end do
 
 Derivatives of EOS
-------------------
+""""""""""""""""""
 
 
 
 Thermodynamic Properties
-------------------------
+""""""""""""""""""""""""
 
 Specific heat 
-^^^^^^^^^^^^^
+"""""""""""""
 For computing mixture specific heat at constant volume and pressure, the ideal gas contribution and the departure from the ideal gas are computed. Specific heat at constant volume can be computed using the following
 
 .. math::
