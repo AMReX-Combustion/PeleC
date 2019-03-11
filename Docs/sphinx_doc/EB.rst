@@ -6,6 +6,24 @@
     :language: fortran
 
  .. _EB:
+Geometry treatment in PeleC
+===========================
+
+The treatment of geometric features that do not align along cartesian coordinate directions effectively reduces to 
+determining the correct flux terms at cut-cell interfaces and subsequent update of divergence term in each cell.
+This involves the initialization and query of the necessary AMReX-provided data structures containing the 
+geometry information, and computation of PeleC-specific advection and diffusion operators. The various steps in the 
+process are:
+
+1. Creation of a functional specification of the irregular geometry to embed in the uniform grid. This is done via exact 
+   function representations of the geometry or implicit functions.
+2. Construction of map of the (continuous) implicit representation of geometry onto the discrete mesh on all AMR levels.  
+   This will be a large, complex, distributed data structure.
+3. Communication of the subsets of this large data set to the local cores tasked with building the PeleC operators.
+4. Actual construction of the diffusion and advection components of the PeleC time advance.
+
+AMReX data structures and functions provide for the first 3 steps.  
+Step 4 is implemented using a "method-of-lines" update within PeleC. 
 
 Embedded Boundary Representation
 --------------------------------
@@ -21,7 +39,7 @@ Embedded Boundary Representation
 
 Geometry is treated in PeleC using an embedded boundary (EB) formulation, based on datastructures and algorithmic components provided by AMReX.   In the EB formalism, geometry is represented by volume fractions (:math:`v_l`) 
 and apertures (:math:`A_l^k`) for each cell :math:`l` that have faces :math:`1,...,k,6`. See :ref:`EB_F` for an illustration where the grey area represents the region excluded from the solution domain and the arrows represent fluxes. The fluid volume in a given cell is given by  
-(:math:`V_l = v_l\,\,dx\,dy\,d `); it should be noted that the grid spacing along each direction is the same in PeleC.
+(:math:`V_l = v_l\,\,dx\,dy\,dz`=v_l\,dx^3`); it should be noted that the grid spacing along each direction is the same in PeleC.
 
 .. _EB_F:
 
@@ -46,6 +64,65 @@ The geometry components in AMReX are used in PeleC to implement a time-explicit 
   \frac{dS_l}{dt} = \nabla \cdot F
 
 where :math:`F` is the intensive flux of :math:`S` through the faces that bound the cell.
+
+Hybrid Divergence and Redistribution
+-------------------------------------
+
+A straightforward implemention of the finite-volume advance of intensive conserved fields is numerically unstable (this is the well-known "small cell issue") due to presence of 
+the fluid cell volume in the denominator of the conservative divergence (:math:`(DC)_l`):
+
+.. math::
+  (DC)_l = \frac{1}{V_l} \sum_{k_l} \left( F_k \cdot n_k A_k \right),
+
+where :math:`k_l` is the number of regular and cut faces surrounding cell :math:`l` and :math:`F_k` is the intensive flux at the centroid of face :math:`k`.  An alternative update takes the so-called "non-conservative" form, constructed using a weighted average of the conservative updates of neighboring cells:
+
+.. math::
+  (DNC)_l = \frac{1}{\sum_{n_l}N_n V_l} \sum_{n_l}N_n V_n (DC)_n,
+
+where :math:`n_l` is the number of cells in the `neighborhood` of cut cell :math:`l`. :math:`N_n` takes the value of 0 or 1 depending if cell :math:`n` is connected to cell :math:`l`. While this update is numerically stable, it does not discretely conserve the field quantities.  In PeleC, we use a hybrid update strategy, a weighted average of the two that is numerically stable and "maximally conservative" locally, without violating CFL constraints based on the regular cells:
+
+.. math::
+  (HD)_l = v_l(DC)_l + (1-v_l)(DNC)_l.
+
+In order to maintain global conservation, the mass difference (we call the product of each conserved variable and cell volume as "mass") between the hybrid divergence and conservative divergence is a correction that is distributed to neighboring cells at each timestep:
+
+.. math::
+  \Delta_l^n = \frac{v_l(1-v_l)\left[(DC)_l - (DNC)_l\right]N_l^n W_l^n v_n^l}{\sum_{n_l}N_l^nW_l^nv_l^n}
+
+In PeleC, this neighborhood is obtained by the AMReX function `get_neighbors`, which identifies all cells within a single step in each coordinate direction that is connected to cell :math:`l`. Two adjacent cells may be not connected if there is an embedded boundary section between them.
+
+The redistribution is applied as:
+
+.. math::
+  (HD)_n^l = (HD)_n^l +  \frac{\Delta_l^n}{v_n^l},
+
+and the hybrid divergence is integrated using RK2. 
+
+The weights for redistribution :math:`W_l^n` can be set to any field in PeleC. We have found that setting the weights to the cell volumes is effective, while pure density weighting sometimes leads to stability issues when several very small cells share a neighborhood such as in a geometry corner.
+
+This procedure is implemented in the `pc_fix_div_and_redistribute` routine:
+
+
+.. f:function:: nbrsTest_nd_module/pc_fix_div_and_redistribute
+
+    This performs four steps
+        1. Recompute conservative divergence, DC, on cut cells...need DC in 2 grow cells for    final result
+        2. Compute non-conservative and hybrid divergence, DNC and HD, and redistribution mass  dM in cut cells. We will need this in 1 grow cells (see below), so it depends on     having a conservative div in 2 grow cells
+        3. Now that we finished computing HD and dM everywhere, it is safe to increment DC to   hold HD
+        4. Redistribute dM - THIS REQUIRES THAT DC BE GOOD IN 1 GROW CELL
+
+    This interpolates fluxes from face centers to the centroid of the uncovered part of the face 
+
+    :p f0: Edge centered flux in x direction on x faces
+    :p f1: Edge centered flux in y direction on y faces
+    :p f2: Edge centered flux in z direction on z faces
+    :p sv_ebg: Geometry information for cut cells
+    :p ebflux: Flux through cut face
+    :p DC: Divergence
+
+.. f:function:: nbrsTest_nd_module/pc_apply_face_stencil
+    This is used to apply a pre-filled stencil operation to face data.
+
 
 
 Data Structures and utility functions
@@ -138,61 +215,4 @@ The relevant functions are:
 
 
 
-
-Hybrid Divergence and Redistribution
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-A straightforward implemention of the finite-volume advance of intensive conserved fields is numerically unstable (this is the well-known "small cell issue") due to presence of the fluid cell volume in the denominator of the time derivative:
-
-.. math::
-  (DC)_l = \frac{1}{V_l} \sum_{k_l} \left( F_k \cdot n_k A_k \right),
-
-where :math:`k_l` is the number of regular and cut faces surrounding cell :math:`l` and :math:`F_k` is the intensive flux at the centroid of face :math:`k`.  An alternative update takes the so-called "non-conservative" form, constructed using a weighted average of the conservative updates of neighboring cells:
-
-.. math::
-  (DNC)_l = \frac{1}{\sum_{n_l}N_n V_l} \sum_{n_l}N_n V_n (DC)_n,
-
-where :math:`n_l` is the number of cells in the `neighborhood` of cut cell :math:`l`. :math:`N_n` takes the value of 0 or 1 depending if cell :math:`n` is connected to cell :math:`l`. While this update is numerically stable, it does not discretely conserve the field quantities.  In PeleC, we use a hybrid update strategy, a weighted average of the two that is numerically stable and "maximally conservative" locally, without violating CFL constraints based on the regular cells:
-
-.. math::
-  (HD)_l = v_l(DC)_l + (1-v_l)(DNC)_l.
-
-In order to maintain global conservation, the mass difference (we call the product of each conserved variable and cell volume as "mass") between the hybrid divergence and conservative divergence is a correction that is distributed to neighboring cells at each timestep:
-
-.. math::
-  \Delta_l^n = \frac{v_l(1-v_l)\left[(DC)_l - (DNC)_l\right]N_l^n W_l^n v_n^l}{\sum_{n_l}N_l^nW_l^nv_l^n}
-
-In PeleC, this neighborhood is obtained by the AMReX function `get_neighbors`, which identifies all cells within a single step in each coordinate direction that is connected to cell :math:`l`. Two adjacent cells may be not connected if there is an embedded boundary section between them.
-
-The redistribution is applied as:
-
-.. math::
-  (HD)_n^l = (HD)_n^l +  \frac{\Delta_l^n}{v_n^l},
-
-and the hybrid divergence is integrated using RK2. 
-
-The weights for redistribution :math:`W_l^n` can be set to any field in PeleC. We have found that setting the weights to the cell volumes is effective, while pure density weighting sometimes leads to stability issues when several very small cells share a neighborhood such as in a geometry corner.
-
-This procedure is implemented in the `pc_fix_div_and_redistribute` routine:
-
-
-.. f:function:: nbrsTest_nd_module/pc_fix_div_and_redistribute
-
-    This performs four steps
-        1. Recompute conservative divergence, DC, on cut cells...need DC in 2 grow cells for    final result
-        2. Compute non-conservative and hybrid divergence, DNC and HD, and redistribution mass  dM in cut cells. We will need this in 1 grow cells (see below), so it depends on     having a conservative div in 2 grow cells
-        3. Now that we finished computing HD and dM everywhere, it is safe to increment DC to   hold HD
-        4. Redistribute dM - THIS REQUIRES THAT DC BE GOOD IN 1 GROW CELL
-
-    This interpolates fluxes from face centers to the centroid of the uncovered part of the face 
-
-    :p f0: Edge centered flux in x direction on x faces
-    :p f1: Edge centered flux in y direction on y faces
-    :p f2: Edge centered flux in z direction on z faces
-    :p sv_ebg: Geometry information for cut cells
-    :p ebflux: Flux through cut face
-    :p DC: Divergence
-
-.. f:function:: nbrsTest_nd_module/pc_apply_face_stencil
-    This is used to apply a pre-filled stencil operation to face data.
 

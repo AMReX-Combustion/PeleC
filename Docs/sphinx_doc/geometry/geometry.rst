@@ -1,38 +1,18 @@
 .. highlight:: rst
 
+Geometry initialization
+=======================
 
+Creating an EB geometry also requires knowledge of the finest level that will be used so that geometries that 'telescope', 
+i.e., coarser volume fractions are consistent with applying the coarsening operator to the finer volumes, can be created. 
+To that end there is a global geometry creation step, facilitated by the `initialize_EB2` function, as well as a step that 
+happens when a new AMRLevel is created. The latter happens by a call to  `PeleC::initialize_eb2_structs`  through `PeleC::init_eb` 
+called from the PeleC constructor. Following construction of the geometry, the geometric information is 
+copied into the structures described in the previous section and the various interpolation stencils are populated. 
 
-
-Geometry treatment in PeleC
-===========================
-
-
-Here, we are concerned with how to compute the right-hand-side of this expression in the presence of an EB. This includes how to initialize and query the necessary AMReX-provided data structures containing the geometry information, and how to compute the PeleC-specific advection and diffusion operators.  The AMReX-EB calculation requires
-
-1. Creation of a functional specification of the irregular geometry to embed in the uniform grid.
-2. Construction of map of the (continuous) implicit representation of geometry onto the discrete mesh on all AMR levels.  This will be a large, complex, distributed data structure.
-3. Communication of the subsets of this large data set to the local cores tasked with building the PeleC operators.
-4. Actual construction of the diffusion and advection components of the PeleC time advance.
-
-AMReX provides for the first 3 steps.  For step 4, P
-
-
-
-In the remainder of this chapter, the mathematical algorithms for computing the fluxes are described, and are followed by an overview of the data structures used to facilitate their calculation in the presence of an EB.
-
-
-
-
-
-
-
-
-Initialization
---------------
-
-Creating an EB geometry also requires knowledge of the finest level that will be used so that geometries that 'telescope', i.e., coarser volume fractions are consistent with applying the coarsening operator to the finer volumes, can be created. To that end there is a global geometry creation step, facilitated by the `initialize_EB2` function, as well as a step that happens when a new AMRLevel is created. The latter happens by a call to  `PeleC::initialize_eb2_structs`  through `PeleC::init_eb` called from the PeleC constructor. Following construction of the geometry, the geometric information is copied into the structures described in the previous section and the various interpolation stencils are populated. 
-
-Cartesian grid, embedded boundary (EB) methods are methods where the geometric description is formed by cutting a Cartesian mesh with surface of the geometry.  AMReX's methods to handle EB geometry information, and PeleC's treatment of the EB aware update could use many possible sources for geometric description. The necessary information is, on a per-cell basis:
+Cartesian grid, embedded boundary (EB) methods are methods where the geometric description is formed by cutting a Cartesian 
+mesh with surface of the geometry.  AMReX's methods to handle EB geometry information, and PeleC's treatment of the
+EB aware update could use many possible sources for geometric description. The necessary information is, on a per-cell basis:
 
 * Apertures for faces intersected by cut cells,
 * cut cell volumes that 'telescope', that is, volumes at a coarser level are consistent with averaging the volumes from finer levels,
@@ -41,7 +21,8 @@ Cartesian grid, embedded boundary (EB) methods are methods where the geometric d
 
 Additionally, the algorithms ultimately require surface normals, but these can be trivially recomputed from the aperture. 
 
-In the following subsections, we will first describe using geometry creation tools based on EB infrastructure in AMReX with origins in a fork off Chombo's \cite{Chombo} infrastructure for setting up EB calculations and then how that information is used to populate the datastructures used to compute the fluxes discussed above. 
+In the following subsections, we will first describe using geometry creation tools based on EB infrastructure in AMReX with origins in a fork off Chombo's \cite{Chombo} infrastructure 
+for setting up EB calculations and then how that information is used to populate the datastructures used to compute the fluxes discussed above. 
 
 .. include:: geometry_creation.rst
 
