@@ -141,6 +141,17 @@ This procedure is implemented in the `pc_fix_div_and_redistribute` routine that 
 
 The arguments are the edge centered flux in the [x,y,z]-directions on the [x,y,z] faces, the array of geometry information for the cut cells for this FAB, the flux through the cut faces, and the hybrid divergence. 
 
+Re-redistribution
+-----------------
+
+.. _eb_re_redist:
+
+.. figure:: EB_re_redist.png
+   :alt: EB Cell
+   :width: 600
+
+   \(a) an example situation with an EB spanning a coarse-fine boundary, (b) same situation as seen by the coarse level and (c) same situation as seen by the fine level. The cells with the dotted lines are ghost cells.
+
 
 
 Data Structures and utility functions
