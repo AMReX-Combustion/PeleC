@@ -116,10 +116,10 @@ INCLUDE_LOCATIONS += $(TOP)/Util/plot1d
 VPATH_LOCATIONS   += $(TOP)/Util/plot1d
 endif
 
-Bdirs   := Source Source/param_includes Source/Src_nd Source/Src_$(DIM)d
+Bdirs   := Source Source/param_includes Source/Src_nd Source/Src_$(DIM)d Source/TurbInflow
 
 ifeq ($(USE_EB), TRUE)
-  Pdirs := Base EB Amr Boundary AmrCore
+  Pdirs := Base EB Amr Boundary AmrCore F_Interfaces F_Interfaces/Base
 else 
   Pdirs := Base Amr Boundary AmrCore
 endif
@@ -127,7 +127,6 @@ endif
 ifeq ($(USE_PARTICLES), TRUE)
   DEFINES+=-DAMREX_PARTICLES
   Pdirs += Particle
-  Bdirs += Source/Spray
 endif
 
 Bpack	+= $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir)/Make.package)
@@ -135,6 +134,14 @@ Blocs	+= $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir))
 
 Bpack	+= $(foreach dir, $(Bdirs), $(TOP)/$(dir)/Make.package)
 Blocs	+= $(foreach dir, $(Bdirs), $(TOP)/$(dir))
+
+ifeq ($(USE_PARTICLES), TRUE)
+  Bpack   += $(PELEC_MP_HOME)/Source/PP_Spray/Make.package
+  Blocs   += $(PELEC_MP_HOME)/Source/PP_Spray
+  INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/Particle
+  VPATH_LOCATIONS   += $(AMREX_HOME)/Src/Particle
+  $(info $${Blocs} is [${Blocs}])
+endif
 
 include $(Bpack)
 
@@ -146,6 +153,7 @@ EXTERN_CORE += $(TOP)/constants
 INCLUDE_LOCATIONS += $(TOP)/constants
 VPATH_LOCATIONS   += $(TOP)/constants
 
+INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/EB
 include $(AMREX_HOME)/Src/F_BaseLib/FParallelMG.mak
 INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/F_BaseLib
 VPATH_LOCATIONS   += $(AMREX_HOME)/Src/F_BaseLib
