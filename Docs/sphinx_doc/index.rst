@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    Introduction.rst
+   Equations.rst
    Algorithms.rst
    GettingStarted.rst
    BoundaryConditions.rst
