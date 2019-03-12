@@ -10,41 +10,6 @@
 
 
 
-Model
-=====
-
-
-`PeleC` solves the reacting Navier-Stokes flow equations, including terms for advection, transport and reactions:
-
-.. math::
-
-    &\frac{\partial (\rho \boldsymbol{u})}{\partial t} + 
-    \nabla \cdot \left(\rho  \boldsymbol{u} \boldsymbol{u} + p {\cal I} + \Pi \right)
-    = \rho \boldsymbol{F},\\
-    &\frac{\partial (\rho Y_m)}{\partial t} +
-    \nabla \cdot \left( \rho Y_m \boldsymbol{u}
-    + \boldsymbol{\mathcal{F}}_{m} \right)
-    = \rho \dot{\omega}_m,\\
-    &\frac{ \partial (\rho e)}{ \partial t} +
-    \nabla \cdot \left( \rho e \boldsymbol{u}
-    + \boldsymbol{\mathcal{Q}} \right) + p \nabla \cdot \boldsymbol{u} + \Pi : \nabla \boldsymbol{u} = 0 ,
-
-where :math:`\rho` is the density, :math:`\boldsymbol{u}` is the velocity, :math:`e` is the mass-weighted internal energy, :math:`T` is temperature and :math:`Y_m` is the mass fraction of species :math:`m`. :math:`\dot{\omega}_m` is the molar production rate for species :math:`m`. :math:`\Pi` is the stress tensor, :math:`\boldsymbol{\mathcal{Q}}` is the heat flux and :math:`\boldsymbol{\mathcal{F}}_m` are the species diffusion fluxes.
-
-Neither species diffusion nor reactions redistribute the total mass, hence we have :math:`\sum_m \boldsymbol{\mathcal{F}}_m = 0` and :math:`\sum_m \dot{\omega}_m = 0`. Thus, summing the species equations and using the definition :math:`\sum_m Y_m = 1` we obtain the continuity equation:
-
-.. math::
-
-    \frac{\partial \rho}{\partial t} + \nabla \cdot \rho \boldsymbol{u} = 0
-
-
-These equations are discretized in space and time, using a time-explicit Godunov-based approach for advection, a time-explicit centered difference scheme for diffusion, and several options to incorporate the reaction terms (depending on the numerical stiffness of the overall system).  Details of the discretizations are given in the following sections.
-
-Discretization and Update Algorithms
-====================================
-
-This section outlines the algorithms used in PeleC to discretize the above compressible reacting flow model, including options for time-stepping, and the discretization approaches for each of the spatial operators.
-
 Equations
 ---------
 
@@ -57,27 +22,30 @@ PeleC advances the following set of fully compressible equations for the conserv
  
   \begin{eqnarray}
   \frac{\partial \rho}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u}) + S_{{\rm ext},\rho}, \\
-  \frac{\partial (\rho \mathbf{u})}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} \mathbf{u}) - \nabla p +\rho \mathbf{g} + \mathbf{S}_{{\rm ext},\rho\mathbf{u}}, \\
-  \frac{\partial (\rho E)}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} E + p \mathbf{u}) + \rho \mathbf{u} \cdot \mathbf{g} - \sum_k {\rho q_k \dot\omega_k} + \nabla\cdot k_{\rm th} \nabla T + S_{{\rm ext},\rho E}, \\
-  \frac{\partial (\rho Y_k)}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} Y_k) + \rho \dot\omega_k + S_{{\rm ext},\rho Y_k}, \\
+  \frac{\partial (\rho \mathbf{u})}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} \mathbf{u} -p{\mathcal I} + \Pi) - \nabla p +\rho \mathbf{g} + \mathbf{S}_{{\rm ext},\rho\mathbf{u}}, \\
+  \frac{\partial (\rho E)}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} E + p \mathbf{u}) + \rho \mathbf{u} \cdot \mathbf{g} - \sum_k {\rho q_k \dot\omega_k} + \nabla\cdot \boldsymbol{\mathcal{Q}}+ S_{{\rm ext},\rho E}, \\
+  \frac{\partial (\rho Y_k)}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} Y_k)
+  - \nabla \cdot \boldsymbol{\mathcal{F}}_{k} + \rho \dot\omega_k + S_{{\rm ext},\rho Y_k}, \\
   \frac{\partial (\rho A_k)}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} A_k) + S_{{\rm ext},\rho A_k}, \\
   \frac{\partial (\rho B_k)}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} B_k) + S_{{\rm ext},\rho B_k}.
   \end{eqnarray}
 
 
-Here :math:`\rho, \mathbf{u}, T, p`, and :math:`k_{\rm th}` are the density, velocity,
-temperature, pressure, and thermal conductivity, respectively, and :math:`E
+Here :math:`\rho, \mathbf{u}, T`, and :math:`p` are the density, velocity,
+temperature and pressure, respectively, and :math:`E
 = e + \mathbf{u} \cdot \mathbf{u} / 2` is the total energy with :math:`e` representing the
-internal energy.  In addition, :math:`Y_k` is the mass fraction of the :math:`k^{\rm th}` species,
-with associated production rate, :math:`\dot\omega_k`, and
-energy release, :math:`q_k`.  Here :math:`\mathbf{g}` is the gravitational vector, and
+internal energy.  :math:`Y_k` is the mass fraction of the :math:`k^{\rm th}` species,
+with associated production rate, :math:`\dot\omega_k`.  Here :math:`\mathbf{g}` is the gravitational vector, and
 :math:`S_{{\rm ext},\rho}, \mathbf{S}_{{\rm ext},\rho\mathbf{u}}`, etc., are user-specified
-source terms.  :math:`A_k` is an advected quantity, i.e., a tracer.  We also
-carry around auxiliary variables, :math:`B_k`, which have a user-defined
+source terms.  :math:`A_k` is an advected quantity, i.e., a tracer.  Also
+:math:`\boldsymbol{\mathcal{F}}_{m}, \Pi`, and :math:`\boldsymbol{\mathcal{Q}}` are
+the diffusive transport fluxes for species, momentum and heat.  Note that the internal
+energy for species :math:`k` includes its heat of formation (and can therefore take on negative and
+positive values).  The auxiliary fields, :math:`B_k`, have a user-defined
 evolution equation, but by default are treated as advected quantities.
 
-In the code we also carry around :math:`T` and :math:`\rho e` in the conservative
-state vector even though they are derived from the other conserved
+In the code we carry around :math:`T` and :math:`\rho e` in the
+state vector even though they are redundant with the state since they may be derived from the other conserved
 quantities.  The ordering of the elements within :math:`\mathbf{U}` is defined
 by integer variables in the routine ``set_method_params`` in ``Src_nd/PeleC_nd.F90``.
 
@@ -102,7 +70,7 @@ Primitive Forms
 ~~~~~~~~~~~~~~~
 
 PeleC uses the primitive form of the fluid equations, defined in terms of
-the state :math:`\Qb = (\rho, \ub, p, \rho e, Y_k, A_k, B_k)`, to construct the
+the state :math:`\mathbf{Q} = (\rho, \mathbf{u}, p, \rho e, Y_k, A_k, B_k)`, to construct the
 interface states that are input to the Riemann problem. All of the primitive variables are derived from the conservative state
 vector. This task is performed in the routine ``ctoprim`` located in ``Src_nd/advection_util_nd.F90``.
 
@@ -136,26 +104,6 @@ The advected quantities appear as:
 When accessing the primitive variable state vector, the integer variable
 keys for the different quantities are listed in the routine ``set_method_params`` in ``Src_nd/PeleC_nd.F90``.
 
-Note that the above system is augmented with an internal energy equation:
-
-.. math::
-  \begin{eqnarray}
-  \frac{\partial(\rho e)}{\partial t} &=& - \mathbf{u}\cdot\nabla(\rho e) - (\rho e+p)\nabla\cdot\mathbf{u} - \sum_k \rho q_k\dot\omega_k 
-                                        + \nabla\cdot k_{\rm th} \nabla T + S_{{\rm ext},\rho E} \nonumber\\
-  && -\  \mathbf{u}\cdot\left(\mathbf{S}_{{\rm ext},\rho\mathbf{u}}-\frac{1}{2}S_{{\rm ext},\rho}\mathbf{u}\right), 
-  \end{eqnarray}
-
-This has two benefits. First, for a general equation of state,
-carrying around an additional thermodynamic quantity allows us to
-avoid equation of state calls (in particular, in the Riemann solver). Second, it is sometimes the case that the
-internal energy calculated as :math:`e_T \equiv E - \frac{1}{2} \mathbf{v}^2` is
-unreliable.  This has two usual causes: one, for high Mach number
-flows, the kinetic energy can dominate the total gas energy, making
-the subtraction numerically unreliable; two, if you use gravity or
-other source terms, these can indirectly alter the value of the
-internal energy if obtained from the total energy. 
-
-Also, in the code we carry around :math:`T` in the primitive state vector.
 
 Source Terms
 ~~~~~~~~~~~~
@@ -684,7 +632,7 @@ where :math:`e_m` is the species :math:`m` internal energy, as specified in the 
 .. math::
 
     &&\boldsymbol{\mathcal{F}}_{m} = \rho Y_m \boldsymbol{V_m} = - \rho D_{m,mix} \nabla X_m \\
-    &&\tau_{i,j} = \frac{2}{3} \mu \delta_{i,j} \frac{\partial {u_k}}{\partial x_k} - \mu \Big(
+    &&\Pi_{i,j} = \frac{2}{3} \mu \delta_{i,j} \frac{\partial {u_k}}{\partial x_k} - \mu \Big(
     \frac{\partial  u_i}{\partial x_j} + \frac{\partial  u_j}{\partial x_i}\Big) \\
     &&\boldsymbol{\mathcal{Q}} =  \sum_m h_m \boldsymbol{\mathcal{F}}_{m}  - \lambda \nabla T
 
