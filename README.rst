@@ -1,12 +1,12 @@
 PeleC 
-==========================================
+-----
 *A compressible AMR combustion code*
 
 `PeleC` is an adaptive-mesh compressible hydrodynamics code for reacting
 flows.
 
 Getting Started
----------------
+~~~~~~~~~~~~~~~
 
 * To compile and run the `Pele` suite of codes, one needs a C++ compiler that supports the C++11 standard and a Fortran compiler that supports the 2003 standard.  A hierarchical strategy for parallelism is supported, based MPI + OpenMP.  The codes work with all major MPI and OpenMP implementations.  The codes should build and run with no modifications to the `make` system if using a Linux system with the GNU compilers, version 4.8.4 and above.
 
@@ -47,13 +47,13 @@ To build `PeleC` and run a sample 2D flame problem:
 
 
 Dependencies
-------------
+~~~~~~~~~~~~
 
 `PeleC` was created as a renamed, stripped down version of `Maui`, and is built on the `AMReX` library.  In the process, the Microphysics folder was extracted, and reorganized into a separate repository, `PelePhysics`.  
 
 
 Development model
------------------
+~~~~~~~~~~~~~~~~~
 
 To add a new feature to PeleC, the procedure is:
 
@@ -78,9 +78,15 @@ To add a new feature to PeleC, the procedure is:
 4.  Submit a merge request through git@github.com:AMReX-Combustion/PeleC.git - be sure you are requesting to merge your branch to the development branch.
 
 Documentation
--------------
+~~~~~~~~~~~~~
+
 The full documentation for Pele exists in the Docs directory; at present this is maintained inline using Doxygen
-and Sphinx. To build the documentation, run Doxygen in the Docs directory then build the sphinx ::
+and Sphinx  `Sphinx <http://www.sphinx-doc.org>`_. With 
+Sphinx, documentation is written in *Restructured Text*. reST is a markup language
+similar to Markdown, but with somewhat greater capabilities (and idiosyncrasies). There
+are several `primers <http://thomas-cokelaer.info/tutorials/sphinx/rest_syntax.html>`_
+available to get started. One gotcha is that indentation matters.
+To build the documentation, run Doxygen in the Docs directory then build the sphinx ::
 
     doxygen Doxyfile
     cd sphinx_doc
@@ -88,7 +94,8 @@ and Sphinx. To build the documentation, run Doxygen in the Docs directory then b
 
 
 Acknowledgment
---------------
+~~~~~~~~~~~~~~
+
 This research was supported by the Exascale Computing Project (ECP), Project
 Number: 17-SC-20-SC, a collaborative effort of two DOE organizations -- the
 Office of Science and the National Nuclear Security Administration --

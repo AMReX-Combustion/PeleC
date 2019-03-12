@@ -13,15 +13,12 @@ Contents:
 
    Introduction.rst
    Algorithms.rst
+   GettingStarted.rst
    BoundaryConditions.rst
-   PelePhysics.rst
    ./geometry/EB.rst
    LES.rst
-   GettingStarted.rst
-   InputFiles.rst
-   ./verification/verification.rst
-   ./validation/validation.rst
-   writing_documentation.rst
+   VandV.rst
+   PelePhysics.rst
    ./miscellaneous/miscellaneous.rst
    boxlib_bits.rst
 

@@ -1,6 +1,5 @@
 Input Files and Controls
-========================
-
+------------------------
 
 The input file specified on the command line is a free-format text file, one entry per row, that specifies input data processed by the AMReX ``ParmParse`` module.
 

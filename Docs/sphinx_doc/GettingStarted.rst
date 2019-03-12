@@ -9,6 +9,9 @@
 Getting Started
 ===============
 
+Navigation
+----------
+
 The PeleC directory structure is as shown below:
 
 * **Source** - C++ and fortran source code
@@ -82,3 +85,8 @@ fortran and c++ layers should not be stored in here, but rather added to the Par
 and use of EB are set here for compile time selection. The GNUMakefile includes the ``Make.PeleC`` file from the `Exec` directory that contains build configuration common across the examples. 
 
 **bc_fill_nd.f90** --- used to set values for user defined boundary conditions that use GC-NSCBC. 
+
+.. include:: InputFiles.rst
+
+
+.. include:: tutorials.rst
