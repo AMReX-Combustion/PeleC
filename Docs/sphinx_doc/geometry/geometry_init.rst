@@ -21,7 +21,6 @@ EB aware update could use many possible sources for geometric description. The n
 
 Additionally, the algorithms ultimately require surface normals, but these can be trivially recomputed from the aperture. 
 
-
 GeometryShop and Implicit Functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -52,10 +51,12 @@ Specifying basic geometries in input files
 There are several basic geometries that are available in AMReX that can be easily specified in the input file, some of which are shown below:
 
 
-* *Plane*  - needs a point (plane_point) and normal (plane_normal)
-* *Sphere* - needs center (sphere_center), radius (sphere_radius) and fluid inside/outside flag (sphere_has_fluid_inside)
-* *Cylinder* - needs center (cylinder_center), radius (cylinder_radius), height (cylinder_height), direction (cylinder_direction) and fluid inside/outside flag (cylinder_has_fluid_inside)
-* *Box*     - needs the lower corner (box_lo), upper corner (box_hi) and fluid inside/outside flag (box_has_fluid_inside). The box is aligned along coordinate directions.
+* *Plane*    - needs a point (plane_point) and normal (plane_normal).
+* *Sphere*   - needs center (sphere_center), radius (sphere_radius) and fluid inside/outside flag (sphere_has_fluid_inside).
+* *Cylinder* - needs center (cylinder_center), radius (cylinder_radius), height (cylinder_height), direction (cylinder_direction) and fluid inside/outside flag (cylinder_has_fluid_inside).
+* *Box*      - needs the lower corner (box_lo), upper corner (box_hi) and fluid inside/outside flag (box_has_fluid_inside). The box is aligned along coordinate directions.
+* *Spline*   - needs a vector of points to create a 2D function that is a combination of spline and line elements. Currently, this geometry does not have a user interface
+  from the inputs file, but can be used within Pelec_init_eb.cpp with hard coded points. see example in section :ref:`Complicated geometries`<complexGeom>`/ 
 
 .. code::
 
@@ -78,7 +79,8 @@ To specify an external flow sphere geometry, add the following lines to the inpu
 
 
 Adding complicated geometries
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. _complexGeom:
 
 Geometries beyond the set described above can be built using a combination of basic geometries and EB transformation functions in AMReX.
 It should be noted that building a generic geometry from a user-defined discretized surface (like STL files)  is currently being developed, nonetheless 
@@ -92,3 +94,65 @@ Some of the relevant transformation handles in AMReX are:
 * *Translation* - translate an implicit function (see AMReX_EB2_IF_Translation.cpp)
 * *Lathe*       - creates a 3D implicit function from a 2D function by revolving about the z axis (see AMReX_EB2_IF_Lathe.cpp)
 * *Extrusion*   - creates a 3D implicit function from a 2D function by translating along the z axis (see AMReX_EB2_IF_Extrusion.cpp)
+
+The user can copy the file "PeleC_init_eb.cpp" from the Source and add it to his/her test case after which a new geometry can be added in initialize_EB2 
+function. An example of adding a piston-bowl geometry (see :ref:`EB_pistonbowl`) 
+that uses splines, cylinder, lathe and union transform, is shown below.
+
+
+.. code-block:: c
+
+    else if (geom_type == "Piston-Cylinder") {
+
+    //spline IF object
+    EB2::SplineIF Piston;
+
+    // array of points 
+    std::vector<amrex::RealVect> splpts;
+
+    amrex::RealVect p;
+    // fill array of points 
+    p = amrex::RealVect(D_DECL(36.193*0.1, 7.8583*0.1, 0.0));
+    spltpts.push_back(p);
+    p = amrex::RealVect(D_DECL(35.924*0.1, 7.7881*0.1, 0.0));
+    splpts.push_back(p);
+    .
+    .
+    .
+    .
+
+    //add to spline elements in splineIF
+    Piston.addSplineElement(splpts);
+
+    std::vector<amrex::RealVect> lnpts;
+
+    p = amrex::RealVect(D_DECL(22.358*0.1, -7.6902*0.1, 0.0));
+    lnpts.push_back(p);
+    p = amrex::RealVect(D_DECL(1.9934*0.1, 3.464*0.1, 0.0));
+    lnpts.push_back(p);
+    .
+    .
+    .
+    .
+    
+    //add to straight line elements in splineIF
+    Piston.addLineElement(lnpts);
+
+    //create a cylinder 
+    EB2::CylinderIF cylinder(48.0*0.1, 70.0*0.1, 2, {0.0, 0.0, -10.0*0.1}, true);
+
+    //revolve the spline IF
+    auto revolvePiston  = EB2::lathe(Piston);
+
+    //make a union
+    auto PistonCylinder = EB2::makeUnion(revolvePiston, cylinder);
+    auto gshop = EB2::makeShop(PistonCylinder);
+
+    
+.. _EB_pistonbowl:
+
+.. figure:: EB_PistonBowl.png
+   :alt: EB Cell
+   :width: 400
+
+   An example geometry of piston-bowl created using basic geometries.
