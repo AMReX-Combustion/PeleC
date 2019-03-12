@@ -20,23 +20,29 @@ static Box grow_box_by_one (const Box& b) { return amrex::grow(b,1); }
 
 typedef StateDescriptor::BndryFunc BndryFunc;
 
+
 //
 // Components are:
-//  Interior, Inflow, Outflow,  Symmetry,     SlipWall,     NoSlipWall
+//  Interior, Inflow, Outflow,  Symmetry,     SlipWall,     NoSlipWall, UserBC
 //
 static int scalar_bc[] =
 {
-    INT_DIR, EXT_DIR, FOEXTRAP, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN
+    INT_DIR, EXT_DIR, FOEXTRAP, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN, EXT_DIR
 };
 
 static int norm_vel_bc[] =
 {
-    INT_DIR, EXT_DIR, FOEXTRAP, REFLECT_ODD,  REFLECT_ODD,  REFLECT_ODD
+    INT_DIR, EXT_DIR, FOEXTRAP, REFLECT_ODD,  REFLECT_ODD,  REFLECT_ODD, EXT_DIR
 };
 
 static int tang_vel_bc[] =
 {
-    INT_DIR, EXT_DIR, FOEXTRAP, REFLECT_EVEN, REFLECT_EVEN, REFLECT_ODD
+    INT_DIR, EXT_DIR, FOEXTRAP, REFLECT_EVEN, REFLECT_EVEN, REFLECT_ODD, EXT_DIR
+};
+
+static int react_src_bc[] =
+{
+    INT_DIR, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN
 };
 
 static
@@ -86,6 +92,19 @@ set_y_vel_bc(BCRec& bc, const BCRec& phys_bc)
     bc.setLo(2,tang_vel_bc[lo_bc[2]]);
     bc.setHi(2,tang_vel_bc[hi_bc[2]]);
 #endif
+}
+
+static
+void
+set_react_src_bc (BCRec& bc, const BCRec& phys_bc)
+{
+    const int* lo_bc = phys_bc.lo();
+    const int* hi_bc = phys_bc.hi();
+    for (int i = 0; i < BL_SPACEDIM; i++)
+    {
+	bc.setLo(i,react_src_bc[lo_bc[i]]);
+	bc.setHi(i,react_src_bc[hi_bc[i]]);
+    }
 }
 
 static
@@ -236,8 +255,7 @@ PeleC::variableSetUp ()
     pfld_spc = pfld_p + 1;
     n_pfld = pfld_spc + NumSpec; // increase this for multi-component droplets
 
-    std::cout << "n_pstate = " << n_pstate << std::endl << "declared components: " << SPRAY_COMPONENTS << std::endl;
-    BL_ASSERT(n_pstate == SPRAY_COMPONENTS);
+//  std::cout << "n_pstate = " << n_pstate << std::endl << "declared components: " << SPRAY_COMPONENTS << std::endl;
 
 #endif
     
@@ -266,9 +284,13 @@ PeleC::variableSetUp ()
     if (ParallelDescriptor::IOProcessor())
 	std::cout << "\nTime in set_method_params: " << run_stop << '\n' ;
   
-    if (i_nscbc == 1 && ParallelDescriptor::IOProcessor())
-	std::cout << "Using Ghost-Cells Navier-Stokes Characteristic BCs: i_nscbc = " << i_nscbc << '\n' << '\n' ;
+    if (nscbc_adv == 1 && ParallelDescriptor::IOProcessor())
+	std::cout << '\n' << "Using Ghost-Cells Navier-Stokes Characteristic BCs for advection: nscbc_adv = " << nscbc_adv << '\n' << '\n' ;
 
+    if (nscbc_diff == 1 && ParallelDescriptor::IOProcessor())
+	std::cout << "Using Ghost-Cells Navier-Stokes Characteristic BCs for diffusion: nscbc_diff = " << nscbc_diff << '\n' << '\n' ;
+
+  
     int coord_type = Geometry::Coord();
 
     // Get the center variable from the inputs and pass it directly to Fortran.
@@ -277,7 +299,7 @@ PeleC::variableSetUp ()
     ppc.queryarr("center",center,0,BL_SPACEDIM);
   
     set_problem_params(dm,phys_bc.lo(),phys_bc.hi(),
-		       Interior,Inflow,Outflow,Symmetry,SlipWall,NoSlipWall,coord_type,
+		       Interior,UserBC,Inflow,Outflow,Symmetry,SlipWall,NoSlipWall,coord_type,
 		       Geometry::ProbLo(),Geometry::ProbHi(),center.dataPtr());
   
     // Read in the parameters for the tagging criteria
@@ -287,7 +309,7 @@ PeleC::variableSetUp ()
     Vector<int> probin_file_name(probin_file_length);
   
     for (int i = 0; i < probin_file_length; i++)
-	probin_file_name[i] = probin_file[i];
+	    probin_file_name[i] = probin_file[i];
   
     get_tagging_params(probin_file_name.dataPtr(),&probin_file_length);
   
@@ -345,16 +367,10 @@ PeleC::variableSetUp ()
 			   &cell_cons_interp,state_data_extrap,store_in_checkpoint);
 #endif
 
-    // We also want to store the reactions source.
-#ifdef REACTIONS
-    store_in_checkpoint = true;
-    desc_lst.addDescriptor(SDC_React_Type, IndexType::TheCellType(),
-			   StateDescriptor::Point,NUM_GROW,QVAR,
-			   &cell_cons_interp,state_data_extrap,store_in_checkpoint);
-#endif
-
     Vector<BCRec>       bcs(NUM_STATE);
     Vector<std::string> name(NUM_STATE);
+    Vector<BCRec>       react_bcs(NumSpec+1);
+    Vector<std::string> react_name(NumSpec+1);
 
     BCRec bc;
     cnt = 0;
@@ -432,30 +448,27 @@ PeleC::variableSetUp ()
 	name[cnt] = "rho_" + aux_names[i];
     }
 
-    desc_lst.setComponent(State_Type,
-			  Density,
-			  name,
-			  bcs,
-			  BndryFunc(pc_denfill,pc_hypfill));
+  desc_lst.setComponent(State_Type,
+                        Density,
+                        name,
+                        bcs,
+                        StateDescriptor::BndryFunc(pc_bcfill_hyp));
 
 #ifdef REACTIONS
-    std::string name_react;
-    for (int i=0; i<NumSpec; ++i)
-    {
-	set_scalar_bc(bc,phys_bc);
-	name_react = "rho_omega_" + spec_names[i];
-	desc_lst.setComponent(Reactions_Type, i, name_react, bc,BndryFunc(pc_reactfill));
+    for (int i=0; i<NumSpec; ++i) {
+      set_react_src_bc(bc, phys_bc);
+      react_bcs[i] = bc;
+      react_name[i] = "rho_omega_" + spec_names[i];
     }
-    desc_lst.setComponent(Reactions_Type, NumSpec  , "rhoe_dot", bc, BndryFunc(pc_reactfill));
-#endif
+   set_react_src_bc(bc, phys_bc);
+   react_bcs[NumSpec] = bc;
+   react_name[NumSpec] = "rhoe_dot";
 
-#ifdef REACTIONS
-    for (int i = 0; i < QVAR; ++i) {
-	char buf[64];
-	sprintf(buf, "sdc_react_source_%d", i);
-	set_scalar_bc(bc,phys_bc);
-	desc_lst.setComponent(SDC_React_Type,i,std::string(buf),bc,BndryFunc(pc_denfill));
-    }
+   desc_lst.setComponent(Reactions_Type,
+                         0,
+                         react_name,
+                         react_bcs,
+                         StateDescriptor::BndryFunc(pc_reactfill_hyp));
 #endif
 
 
@@ -481,8 +494,7 @@ PeleC::variableSetUp ()
     // Kinetic energy
     //
     derive_lst.add("kineng",IndexType::TheCellType(),1,pc_derkineng,the_same_box);
-    derive_lst.addComponent("kineng",desc_lst,State_Type,Density,1);
-    derive_lst.addComponent("kineng",desc_lst,State_Type,Xmom,3);
+    derive_lst.addComponent("kineng",desc_lst,State_Type,Density,NUM_STATE);
 
     //
     // Enstrophy
@@ -526,18 +538,13 @@ PeleC::variableSetUp ()
     // Vorticity
     //
     derive_lst.add("magvort",IndexType::TheCellType(),1,pc_dermagvort,grow_box_by_one);
-    // Here we exploit the fact that Xmom = Density + 1
-    //   in order to use the correct interpolation.
-    if (Xmom != Density+1)
-	amrex::Error("We are assuming Xmom = Density + 1 in PeleC_setup.cpp");
     derive_lst.addComponent("magvort",desc_lst,State_Type,Density,NUM_STATE);
 
     //
     // Div(u)
     //
     derive_lst.add("divu",IndexType::TheCellType(),1,pc_derdivu,grow_box_by_one);
-    derive_lst.addComponent("divu",desc_lst,State_Type,Density,1);
-    derive_lst.addComponent("divu",desc_lst,State_Type,Xmom,3);
+    derive_lst.addComponent("divu",desc_lst,State_Type,Density,NUM_STATE);
 
     //
     // Internal energy as derived from rho*E, part of the state
@@ -561,50 +568,50 @@ PeleC::variableSetUp ()
     //
     // forcing - used to calculate the rate of injection of energy in probtype 14 (HIT)
     //
+
     derive_lst.add("forcing",IndexType::TheCellType(),1,pc_derforcing,the_same_box);
-    derive_lst.addComponent("forcing",desc_lst,State_Type,Density,1);
-    derive_lst.addComponent("forcing",desc_lst,State_Type,Xmom,BL_SPACEDIM);
+    derive_lst.addComponent("forcing",desc_lst,State_Type,Density,NUM_STATE);
     //
     // forcex - used to put the forcing term in the plot file
     //
     derive_lst.add("forcex",IndexType::TheCellType(),1,pc_derforcex,the_same_box);
-    derive_lst.addComponent("forcex",desc_lst,State_Type,Density,1);
+    derive_lst.addComponent("forcex",desc_lst,State_Type,Density,NUM_STATE);
     //
     // forcey - used to put the forcing term in the plot file
     //
     derive_lst.add("forcey",IndexType::TheCellType(),1,pc_derforcey,the_same_box);
-    derive_lst.addComponent("forcey",desc_lst,State_Type,Density,1);
+    derive_lst.addComponent("forcey",desc_lst,State_Type,Density,NUM_STATE);
     //
     // forcez - used to put the forcing term in the plot file
     //
     derive_lst.add("forcez",IndexType::TheCellType(),1,pc_derforcez,the_same_box);
-    derive_lst.addComponent("forcez",desc_lst,State_Type,Density,1);
+    derive_lst.addComponent("forcez",desc_lst,State_Type,Density,NUM_STATE);
 #endif
 
     //
     // Y from rhoY
     //
+    Vector<std::string> var_names_massfrac(NumSpec);
     for (int i = 0; i < NumSpec; i++){
-        std::string spec_string = "Y("+spec_names[i]+")";
-        derive_lst.add(spec_string,IndexType::TheCellType(),1,pc_derspec,the_same_box);
-        derive_lst.addComponent(spec_string,desc_lst,State_Type,Density,1);
-        derive_lst.addComponent(spec_string,desc_lst,State_Type,FirstSpec+i,1);
+      var_names_massfrac[i] = "Y("+spec_names[i]+")";
     }
+
+    derive_lst.add("massfrac",IndexType::TheCellType(),NumSpec,var_names_massfrac,
+                   pc_derspec,the_same_box);
+    derive_lst.addComponent("massfrac",desc_lst,State_Type,Density,NUM_STATE);
+
     //
     // Species mole fractions
     //
     
     Vector<std::string> var_names_molefrac(NumSpec);
-    for (int i = 0; i < NumSpec; i++)
+    for (int i = 0; i < NumSpec; i++){
       var_names_molefrac[i] = "X("+spec_names[i]+")";
-      
-    //for (int i = 0; i < NumSpec; i++)
-    //std::cout << var_names_molefrac[i] << endl ;
+    }  
      
     derive_lst.add("molefrac",IndexType::TheCellType(),NumSpec,var_names_molefrac,
                    pc_dermolefrac,the_same_box);
     derive_lst.addComponent("molefrac",desc_lst,State_Type,Density,NUM_STATE);
-    //derive_lst.addComponent("molefrac",desc_lst,State_Type,FirstSpec,NumSpec);
 
     //
     // Velocities
@@ -618,26 +625,14 @@ PeleC::variableSetUp ()
     derive_lst.add("z_velocity",IndexType::TheCellType(),1,pc_dervelz,the_same_box);
     derive_lst.addComponent("z_velocity",desc_lst,State_Type,Density,NUM_STATE);
 
-    // FIXME: Do we need a combustion-specific version of this function?
-//     //
-//     // Nuclear energy generation timescale t_e == e / edot
-//     // Sound-crossing time t_s == dx / c_s
-//     // Ratio of these is t_s_t_e == t_s / t_e
-//     //
-//     derive_lst.add("t_sound_t_enuc",IndexType::TheCellType(),1,pc_derenuctimescale,the_same_box);
-//     derive_lst.addComponent("t_sound_t_enuc",desc_lst,State_Type,Density,NUM_STATE);
-//     derive_lst.addComponent("t_sound_t_enuc",desc_lst,Reactions_Type,NumSpec,1);
-
     derive_lst.add("magvel",IndexType::TheCellType(),1,pc_dermagvel,the_same_box);
-    derive_lst.addComponent("magvel",desc_lst,State_Type,Density,1);
-    derive_lst.addComponent("magvel",desc_lst,State_Type,Xmom,3);
+    derive_lst.addComponent("magvel",desc_lst,State_Type,Density,NUM_STATE);
 
     derive_lst.add("radvel",IndexType::TheCellType(),1,pc_derradialvel,the_same_box);
-    derive_lst.addComponent("radvel",desc_lst,State_Type,Density,1);
-    derive_lst.addComponent("radvel",desc_lst,State_Type,Xmom,3);
+    derive_lst.addComponent("radvel",desc_lst,State_Type,Density,NUM_STATE);
 
     derive_lst.add("magmom",IndexType::TheCellType(),1,pc_dermagmom,the_same_box);
-    derive_lst.addComponent("magmom",desc_lst,State_Type,Xmom,3);
+    derive_lst.addComponent("magmom",desc_lst,State_Type,Density,NUM_STATE);
 
 #ifdef AMREX_USE_EB
     derive_lst.add("vfrac",IndexType::TheCellType(),1,pc_dermagvel,the_same_box); // A dummy
@@ -660,18 +655,6 @@ PeleC::variableSetUp ()
     derive_lst.addComponent("particle_density",desc_lst,State_Type,Density,1);
 #endif
 
-    for (int i = 0; i < NumSpec; i++)  {
-	derive_lst.add(spec_names[i],IndexType::TheCellType(),1,pc_derspec,the_same_box);
-	derive_lst.addComponent(spec_names[i],desc_lst,State_Type,Density,1);
-	derive_lst.addComponent(spec_names[i],desc_lst,State_Type,FirstSpec+i,1);
-    }
-
-    for (int i = 0; i < NumAux; i++)  {
-	derive_lst.add(aux_names[i],IndexType::TheCellType(),1,pc_derspec,the_same_box);
-	derive_lst.addComponent(aux_names[i],desc_lst,State_Type,Density,1);
-	derive_lst.addComponent(aux_names[i],desc_lst,State_Type,FirstAux+i,1);
-    }
-
 #if 0
     //
     // A derived quantity equal to all the state variables.
@@ -685,11 +668,6 @@ PeleC::variableSetUp ()
     // 
     // Problem-specific adds
 #include <Problem_Derives.H>
-
-    //
-    // DEFINE ERROR ESTIMATION QUANTITIES
-    //
-    ErrorSetUp();
 
     // Set list of active sources
     set_active_sources();

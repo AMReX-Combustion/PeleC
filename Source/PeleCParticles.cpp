@@ -8,7 +8,7 @@
 
 using namespace amrex;
 
-#ifdef PARTICLES
+#ifdef AMREX_PARTICLES
 
 #define MAX_NUM_FUELS 1
 
@@ -19,7 +19,7 @@ namespace
     std::string ascii_particle_file;
     std::string binary_particle_file;
 
-    const std::string chk_particle_file("PC");
+    const std::string chk_particle_file("Spray");
 
     //
     // We want to call this routine when on exit to clean up particles.
@@ -28,7 +28,7 @@ namespace
     //
     // Containers for the real "active" Particles
     //
-    SprayParticleContainer* PC = 0;
+    SprayParticleContainer* SprayPC = 0;
     //
     // Container for temporary, virtual Particles
     //
@@ -40,32 +40,40 @@ namespace
 
     void RemoveParticlesOnExit ()
     {
-        delete PC;
+        delete SprayPC;
         delete GhostPC;
         delete VirtPC;
     }
 }
 
 int PeleC::do_spray_particles          =  0;
-int PeleC::particle_verbose            =  1;
-Real PeleC::particle_cfl               = 0.5;
+int PeleC::particle_verbose            =  0;
+Real PeleC::particle_cfl               = 0.05;
 
 namespace {
     std::string       particle_init_file;
-    std::string       particle_restart_file;
-    int               restart_from_nonparticle_chkfile = 0;
     int               particle_init_uniform = 0;
+    int               is_mass_tran = 0;
+    int               is_heat_tran = 0;
+    int               is_mom_tran = 0;
+    int               nfuel_species = 1;
+    Vector<Real>      fuel_mass_frac(MAX_NUM_FUELS);
+    Vector<Real>      fuel_density(MAX_NUM_FUELS);
+    Vector<Real>      fuel_crit_temp(MAX_NUM_FUELS);
+    Vector<Real>      fuel_boil_temp(MAX_NUM_FUELS);
+    Vector<Real>      fuel_latent(MAX_NUM_FUELS);
+    Vector<Real>      fuel_cp(MAX_NUM_FUELS);
+    Vector<Real>      fuel_molwt(MAX_NUM_FUELS);
+    Vector<int>       fuel_indx(MAX_NUM_FUELS);
     std::string       particle_output_file;
     std::string       timestamp_dir;
     std::vector<int>  timestamp_indices;
-    //
-    const std::string chk_spray_particle_file("Spray");
 }
 
 SprayParticleContainer*
 PeleC::theSprayPC()
 {
-    return PC;
+    return SprayPC;
 }
 
 SprayParticleContainer*
@@ -116,6 +124,22 @@ PeleC::read_particle_params ()
     // Control the verbosity of the Particle class
     ppp.query("v",particle_verbose);
     //
+    ppp.get("mass_transfer",is_mass_tran);
+    ppp.get("heat_transfer",is_heat_tran);
+    ppp.get("mom_transfer",is_mom_tran);
+    //
+    // Used in import_fuel_properties()
+    //
+    ppp.get("fuel_species", nfuel_species);
+    ppp.getarr("fuel_mass_frac", fuel_mass_frac, 0, nfuel_species);
+    ppp.getarr("fuel_density", fuel_density, 0, nfuel_species);
+    ppp.getarr("fuel_crit_temp", fuel_crit_temp, 0, nfuel_species);
+    ppp.getarr("fuel_boil_temp", fuel_boil_temp, 0, nfuel_species);
+    ppp.getarr("fuel_latent", fuel_latent, 0, nfuel_species);
+    ppp.getarr("fuel_cp", fuel_cp, 0, nfuel_species);
+    ppp.getarr("fuel_molwt", fuel_molwt, 0, nfuel_species);
+    ppp.getarr("fuel_indx", fuel_indx, 0, nfuel_species);
+    //
     // Used in initData() on startup to read in a file of particles.
     //
     ppp.query("particle_init_file", particle_init_file);
@@ -126,14 +150,12 @@ PeleC::read_particle_params ()
     //
     // Used in post_restart() to read in a file of particles.
     //
-    ppp.query("particle_restart_file", particle_init_file);
-    //
     // This must be true the first time you try to restart from a checkpoint
     // that was written with USE_PARTICLES=FALSE; i.e. one that doesn't have
     // the particle checkpoint stuff (even if there are no active particles).
     // Otherwise the code will fail when trying to read the checkpointed particles.
     //
-    ppp.query("restart_from_nonparticle_chkfile", restart_from_nonparticle_chkfile);
+    // ppp.query("restart_from_nonparticle_chkfile", restart_from_nonparticle_chkfile);
     //
     // Used in post_restart() to write out the file of particles.
     //
@@ -224,9 +246,9 @@ PeleC::init_particles ()
 
     if (do_spray_particles)
     {
-  	BL_ASSERT(SprayPC == 0);
+  	BL_ASSERT(theSprayPC() == 0);
 	
-	PC = new SprayParticleContainer(parent,&phys_bc);
+	SprayPC = new SprayParticleContainer(parent,&phys_bc);
 	theSprayPC()->SetVerbose(particle_verbose);
 
         if (parent->subCycle())
@@ -235,51 +257,35 @@ PeleC::init_particles ()
             GhostPC = new SprayParticleContainer(parent,&phys_bc);
         }
 	
+        // fuel properties from user input file
+        import_fuel_properties(&nfuel_species, fuel_mass_frac.data(),fuel_density.data(),
+                               fuel_crit_temp.data(), fuel_latent.data(), fuel_boil_temp.data(), 
+                               fuel_cp.data(),fuel_molwt.data(),fuel_indx.data());
+
+        import_control_parameters(&is_heat_tran, &is_mass_tran, &is_mom_tran);
+
 	if (! particle_init_file.empty())
 	{
-	    theSprayPC()->InitFromAsciiFile(particle_init_file,0);
+	    theSprayPC()->InitFromAsciiFile(particle_init_file,NSR_SPR);
 	} 
         else if (particle_init_uniform > 0) 
         {
-#if 0
             // Initialize uniform particle distribution
-            MultiFab temp_mf(grids,dmap,1,0);
-            theSprayPC()->InitOnePerCell(Real(0.2),Real(0.1),Real(0.7),Real(1.0),temp_mf);
+            //  {vel(DIM), temperature, diameter, density}
+            ParticleInitType<5, 0, 0, 0> pdata = {{0., 0., 300, 1e-2, 1.}, {}, {}, {}}; //2D
+            //ParticleInitType<6, 0, 0, 0> pdata = {{0., 0., 0., 298, 0.016, 0.68141}, {}, {}, {}}; //3D
+            //theSprayPC()->InitOnePerCell(Real(0.5),Real(0.5),Real(0.5),pdata);
           
             if (!particle_output_file.empty())
             {
-                long cnt = SprayPC->TotalNumberOfParticles();// (bool only_valid=true, bool only_local=false) const;
-                std::cout << "Writing " << cnt << "to " << particle_output_file.c_str() << std::endl;
+     //         long cnt = SprayPC->TotalNumberOfParticles();// (bool only_valid=true, bool only_local=false) const;
+     //         std::cout << "Writing " << cnt << "to " << particle_output_file.c_str() << std::endl;
+     //         theSprayPC()->WriteAsciiFile(particle_output_file,time);
             }
-#endif
         }
-        else
-        {
-            // Set initial particle state - diameter, rho, T, velocity
-            // SetAll (pstate_comp, lev, val)
-            // TODO: create SetFromField(pstate_comp, lev, component in *this to interpolate)
-            D_TERM( theSprayPC()->SetAll(0.0, pstate_vel, 0);,
-                    theSprayPC()->SetAll(0.0, pstate_vel+1, 0);,
-                    theSprayPC()->SetAll(0.0, pstate_vel+2, 0););
-            theSprayPC()->SetAll(300.0, pstate_T, 0);
-            theSprayPC()->SetAll(1.0, pstate_dia, 0);
-            theSprayPC()->SetAll(1.0, pstate_rho, 0);
-        }
-
     }
 }
 
-void
-PeleC::ParticleCheckPoint(const std::string& dir)
-{
-    if (level == 0)
-    {
-      if (theSprayPC() && do_spray_particles==1) {
-        theSprayPC()->Checkpoint(dir, chk_spray_particle_file);
-        theSprayPC()->WriteAsciiFile(fname);
-      }
-    }
-}
 
 void
 PeleC::particle_post_restart (const std::string& restart_file, bool is_checkpoint)
@@ -287,38 +293,34 @@ PeleC::particle_post_restart (const std::string& restart_file, bool is_checkpoin
     if (level > 0)
        return;
 
+    if (do_spray_particles)
     {
-        if (do_spray_particles)
+        BL_ASSERT(SprayPC == 0);
+
+        SprayPC = new SprayParticleContainer(parent,&phys_bc);
+        theSprayPC()->SetVerbose(particle_verbose);
+
+        if (parent->subCycle())
         {
-            BL_ASSERT(PC == 0);
-
-            PC = new SprayParticleContainer(parent,&phys_bc);
-
-            //
-            // Make sure to call RemoveParticlesOnExit() on exit.
-            //
-            amrex::ExecOnFinalize(RemoveParticlesOnExit);
-
-            theSprayPC()->SetVerbose(particle_verbose);
-	    //
-	    // We want to be able to add new particles on a restart.
-	    // As well as the ability to write the particles out to an ascii file.
-	    //
-	    if (!restart_from_nonparticle_chkfile)
-	    {
-		theSprayPC()->Restart(parent->theRestartFile(), chk_spray_particle_file, is_checkpoint);
-	    }
-
-	    if (!particle_restart_file.empty())
-	    {
-		theSprayPC()->InitFromAsciiFile(particle_restart_file,0);
-	    }
-	    
-	    if (!particle_output_file.empty())
-	    {
-		theSprayPC()->WriteAsciiFile(particle_output_file);
-	    }
+            VirtPC = new SprayParticleContainer(parent,&phys_bc);
+            GhostPC = new SprayParticleContainer(parent,&phys_bc);
         }
+
+        // fuel properties from user input file
+        import_fuel_properties(&nfuel_species, fuel_mass_frac.data(),fuel_density.data(),
+                               fuel_crit_temp.data(), fuel_latent.data(), fuel_boil_temp.data(), 
+                               fuel_cp.data(),fuel_molwt.data(),fuel_indx.data());
+
+        import_control_parameters(&is_heat_tran, &is_mass_tran, &is_mom_tran);
+
+        // Make sure to call RemoveParticlesOnExit() on exit.
+        //
+        amrex::ExecOnFinalize(RemoveParticlesOnExit);
+
+        theSprayPC()->Restart(parent->theRestartFile(), chk_particle_file, is_checkpoint);
+
+        if (!particle_output_file.empty())
+           theSprayPC()->WriteAsciiFile(particle_output_file);
     }
 }
 
@@ -349,44 +351,43 @@ PeleC::particle_derive(const std::string& name,
 
 	for (int lev = level+1; lev <= parent->finestLevel(); lev++)
 	{
-	    BoxArray ba = parent->boxArray(lev);
+            auto ba = parent->boxArray(lev);
+            const auto& dm = parent->DistributionMap(lev);
+            MultiFab temp_dat(ba, dm, 1, 0);
 
-	    MultiFab temp_dat(ba,dmap,1,0);
+            trr *= parent->refRatio(lev - 1);
 
-	    trr *= parent->refRatio(lev-1);
+            ba.coarsen(trr);
+            MultiFab ctemp_dat(ba, dm, 1, 0);
 
-	    ba.coarsen(trr);
+            temp_dat.setVal(0);
+            ctemp_dat.setVal(0);
 
-	    MultiFab ctemp_dat(ba,dmap,1,0);
+            theSprayPC()->Increment(temp_dat, lev);
 
-	    temp_dat.setVal(0);
-	    ctemp_dat.setVal(0);
+            for (MFIter mfi(temp_dat); mfi.isValid(); ++mfi)
+            {
+                const FArrayBox& ffab = temp_dat[mfi];
+                FArrayBox& cfab = ctemp_dat[mfi];
+                const Box& fbx = ffab.box();
 
-	    theSprayPC()->Increment(temp_dat,lev);
+                BL_ASSERT(cfab.box() == amrex::coarsen(fbx, trr));
 
-	    for (MFIter mfi(temp_dat); mfi.isValid(); ++mfi)
-	    {
-		const FArrayBox& ffab =  temp_dat[mfi];
-		FArrayBox&       cfab = ctemp_dat[mfi];
-		const Box&       fbx  = ffab.box();
+                for (IntVect p = fbx.smallEnd(); p <= fbx.bigEnd(); fbx.next(p))
+                {
+                    const Real val = ffab(p);
+                    if (val > 0)
+                        cfab(amrex::coarsen(p, trr)) += val;
+                }
+            }
 
-		BL_ASSERT(cfab.box() == amrex::coarsen(fbx,trr));
+            temp_dat.clear();
 
-		for (IntVect p = fbx.smallEnd(); p <= fbx.bigEnd(); fbx.next(p))
-		{
-		    const Real val = ffab(p);
-		    if (val > 0)
-			cfab(amrex::coarsen(p,trr)) += val;
-		}
-	    }
+            MultiFab dat(grids, dmap, 1, 0);
+            dat.setVal(0);
+            dat.copy(ctemp_dat);
 
-	    temp_dat.clear();
-
-	    MultiFab dat(grids,dmap,1,0);
-	    dat.setVal(0);
-	    dat.copy(ctemp_dat);
-
-	    MultiFab::Add(*derive_dat,dat,0,0,1,0);
+            MultiFab::Add(*derive_dat, dat, 0, 0, 1, 0);
 	}
 
 	return derive_dat;
@@ -416,8 +417,8 @@ PeleC::particle_redistribute (int lbase, bool init_part)
         //
         // These are usually the BoxArray and DMap from the last regridding.
         //
-        static Array<BoxArray>            ba;
-        static Array<DistributionMapping> dm;
+        static Vector<BoxArray>            ba;
+        static Vector<DistributionMapping> dm;
 
         bool changed = false;
 
@@ -482,6 +483,7 @@ PeleC::particle_redistribute (int lbase, bool init_part)
         }
     }
 }
+
 
 void
 PeleC::TimestampParticles (int ngrow)
