@@ -4,8 +4,40 @@
 
 .. Warning:: This documentation is a placeholder, and contents should currently be considered a work in progress, out of context, or just plain wrong until this note is removed!
 
-Algorithms
-==========
+Model
+=====
+
+
+`PeleC` solves the reacting Navier-Stokes flow equations, including terms for advection, transport and reactions:
+
+.. math::
+
+    &\frac{\partial (\rho \boldsymbol{u})}{\partial t} + 
+    \nabla \cdot \left(\rho  \boldsymbol{u} \boldsymbol{u} + p {\cal I} + \Pi \right)
+    = \rho \boldsymbol{F},\\
+    &\frac{\partial (\rho Y_m)}{\partial t} +
+    \nabla \cdot \left( \rho Y_m \boldsymbol{u}
+    + \boldsymbol{\mathcal{F}}_{m} \right)
+    = \rho \dot{\omega}_m,\\
+    &\frac{ \partial (\rho e)}{ \partial t} +
+    \nabla \cdot \left( \rho e \boldsymbol{u}
+    + \boldsymbol{\mathcal{Q}} \right) + p \nabla \cdot \boldsymbol{u} + \Pi : \nabla \boldsymbol{u} = 0 ,
+
+where :math:`\rho` is the density, :math:`\boldsymbol{u}` is the velocity, :math:`e` is the mass-weighted internal energy, :math:`T` is temperature and :math:`Y_m` is the mass fraction of species :math:`m`. :math:`\dot{\omega}_m` is the molar production rate for species :math:`m`. :math:`\Pi` is the stress tensor, :math:`\boldsymbol{\mathcal{Q}}` is the heat flux and :math:`\boldsymbol{\mathcal{F}}_m` are the species diffusion fluxes.
+
+Neither species diffusion nor reactions redistribute the total mass, hence we have :math:`\sum_m \boldsymbol{\mathcal{F}}_m = 0` and :math:`\sum_m \dot{\omega}_m = 0`. Thus, summing the species equations and using the definition :math:`\sum_m Y_m = 1` we obtain the continuity equation:
+
+.. math::
+
+    \frac{\partial \rho}{\partial t} + \nabla \cdot \rho \boldsymbol{u} = 0
+
+
+These equations are discretized in space and time, using a time-explicit Godunov-based approach for advection, a time-explicit centered difference scheme for diffusion, and several options to incorporate the reaction terms (depending on the numerical stiffness of the overall system).  Details of the discretizations are given in the following sections.
+
+Discretization and Update Algorithms
+====================================
+
+This section outlines the algorithms used in PeleC to discretize the above compressible reacting flow model, including options for time-stepping, and the discretization approaches for each of the spatial operators.
 
 PeleC Timestepping
 ------------------
@@ -231,7 +263,62 @@ than PPM simulations.
 Diffusion
 ---------
 
-Diffusion is modeled with a mixture average formulation.
+One of two diffusion models is selected during the compilation of PeleC, based on the choice of the equation-of-state: a simple model for ideal gases, and a more involved model when real gases are employed.  In both cases, the associated derivatives are discretized in space with a straightforward centered finite-volume approach.  Transport coefficients (discussed below) are computed at cell centers from the evolving state data, and are arithmetically averaged to cell faces where they are needed to evaluate the transport fluxes.  The time discretization for the transport terms is fully explicit and second-order.  Although formally this approach leads to a maximum :math:`\Delta t` restriction for time evolution that scales as :math:`\Delta x^2`, it is well known that for resolved flows the CFL constraint will provide the most restrictive time step limitation (ignoring chemical times). Note that when subgrid models are employed for advection, or stiff reactions are incorporated with an explicit treatment of chemistry, the maximum achievable :math:`\Delta t` may be considerably smaller than the CFL limit, and other integration approaches might perform significantly better.
+
+Ideal Gas Diffusion
+~~~~~~~~~~~~~~~~~~~
+
+To close the system for a mixture of ideal gases, we adopt the definition for internal energy used in the CHEMKIN standard,
+
+.. math::
+
+    e=\sum_m Y_m e_m(T)
+
+where :math:`e_m` is the species :math:`m` internal energy, as specified in the thermodynamics database for the mixture. For ideal gases, the transport fluxes can be written as:
+
+.. math::
+
+    &&\boldsymbol{\mathcal{F}}_{m} = \rho Y_m \boldsymbol{V_m} = - \rho D_{m,mix} \nabla X_m \\
+    &&\tau_{i,j} = \frac{2}{3} \mu \delta_{i,j} \frac{\partial {u_k}}{\partial x_k} - \mu \Big(
+    \frac{\partial  u_i}{\partial x_j} + \frac{\partial  u_j}{\partial x_i}\Big) \\
+    &&\boldsymbol{\mathcal{Q}} =  \sum_m h_m \boldsymbol{\mathcal{F}}_{m}  - \lambda \nabla T
+
+The mixture-averaged transport coefficients discussed above (:math:`\mu`, :math:`\lambda` and :math:`D_{m,mix}`) can be evaluated from transport properties of the pure species. We follow the treatment used in the EGLib library, based on the theory/approximations developed by Ern and Givangigli (however, `PeleC` uses a recoded version of these routines that are thread safe and vectorize well on suitable processors).
+
+
+The following choices are currently implemented in `PeleC`
+
+* The viscosity, :math:`\mu`, is estimated based <something>
+
+* The conductivity, :math:`\lambda`, is based on an empirical mixture formula (with :math:`\alpha = 1/4`):
+
+.. math::
+
+    \lambda = \Big( \sum_m X_m (\lambda_m)^{\alpha} \Big)^{1/\alpha}
+
+* The diffusion flux is approximated using the diagonal matrix :math:`diag(\widetilde{ \Upsilon})`, where:
+
+.. math::
+
+    \widetilde{ \Upsilon}_m =  D_{m,mix}, \;\;\;\mbox{where} \;\;\;
+    D_{m,mix} = \frac{1-Y_m}{ \sum_{j \neq m} X_j / \mathcal{D}_{m,j}}
+
+This leads to a mixture-averaged approximation that is similar to that of Hirschfelder-Curtiss:
+
+.. math::
+
+    \rho Y_m \boldsymbol{V_m} = - \rho D_{m,mix} \nabla X_m 
+
+Note that with these definitions, there is no guarantee that :math:`\sum \boldsymbol{\mathcal{F}}_{m} = 0`, as required for mass conservation. An arbitrary *correction flux,* consistent with the mixture-averaged diffusion approximation, is added in `PeleLM` to enforce conservation.
+
+The pure species and mixture transport properties are evaluated with (thread-safe, vectorized) EGLib functions, which require as input polynomial fits of the logarithm of each quantity versus the logarithm of the temperature.
+
+.. math::
+
+    ln(q_m) = \sum_{n=1}^4 a_{q,m,n} ln(T)^{(n-1)} 
+
+:math:`q_m` represents :math:`\eta_m`, :math:`\lambda_m` or :math:`D_{m,j}`. These fits are generated as part of a preprocessing step managed by the tool `FUEGO` based on the formula (and input data) discussed above. The role of `FUEGO` to preprocess the model parameters for transport as well as chemical kinetics and thermodynamics, is discussed in some detail in <Section FuegoDescr>.
+
 
 Reaction
 --------
