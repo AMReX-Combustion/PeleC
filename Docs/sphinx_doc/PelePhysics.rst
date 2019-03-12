@@ -76,13 +76,10 @@ In terms of implementation, a routine called `MixingRuleAmBm` can be found in th
       end do
    end do
 
-Derivatives of EOS
-""""""""""""""""""
-
-
-
 Thermodynamic Properties
 """"""""""""""""""""""""
+
+Most of the thermodynamic properties can be calculated from the equation of state and involve derivatives of various thermodynamic quantities and of EOS parameters. In the following, some of these thermodynamic properties for SRK and the corresponding routines are presented. 
 
 Specific heat 
 """""""""""""
@@ -96,7 +93,183 @@ For SRK EOS, the formula for :math:`c_v` reduces to
 .. math::
    c_v = c_v^{id} - T \frac{\partial^2 a_m}{\partial T^2} \frac{1}{b_m} ln ( 1 + \frac{b_m}{\tau})
 
-where :math:`c_v^{id}` is the specific heat at constant volume. 
+where :math:`c_v^{id}` is the specific heat at constant volume. Mixture specific heat at constant volume is implemented through the routine `SRK_EOS_GetMixtureCv`
+
+.. code-block:: fortran
+
+   subroutine SRK_EOS_GetMixtureCv(state)
+   implicit none
+   type (eos_t), intent(inout) :: state
+   real(amrex_real) :: tau, K1
+
+   state % wbar = 1.d0 / sum(state % massfrac(:) * inv_mwt(:))
+
+   call MixingRuleAmBm(state%T,state%massFrac,state%am,state%bm)
+
+   tau = 1.0d0/state%rho
+
+   ! Derivative of the EOS AM w.r.t Temperature - needed for calculating enthalpy, Cp, Cv and internal energy
+   call Calc_dAmdT(state%T,state%massFrac,state%am,state%dAmdT)
+  
+   ! Second Derivative of the EOS AM w.r.t Temperature - needed for calculating enthalpy, Cp, Cv and internal energy
+   call Calc_d2AmdT2(state%T,state%massFrac,state%d2AmdT2)
+
+   ! Ideal gas specific heat at constant volume
+   call ckcvbs(state%T, state % massfrac, iwrk, rwrk, state % cv)
+
+   ! Real gas specific heat at constant volume
+   state%cv = state%cv + state%T*state%d2AmdT2* (1.0d0/state%bm)*log(1.0d0+state%bm/tau)
+  
+   end subroutine SRK_EOS_GetMixtureCv
+		
+Specific heat at constant pressure is given by
+
+.. math::
    
-	
+   c_p = \left( \frac{\partial h_m}{\partial T}\right)_{p,Y}   \;\; \\
+   c_p =  \frac{\partial h_m}{\partial T} - \frac {\frac{\partial h}{\partial \tau}} {\frac{\partial p}{\partial \tau}} \frac{\partial p}{\partial T}
+
+where all the derivatives in the above expression for SRK EOS are given by
+
+.. math::
+
+   \frac{\partial p}{\partial T} = \sum Y_k / W_k  \frac{R}{\tau-b_m} - \frac{\partial a_m}{\partial T} \frac{1}{\tau(\tau +b_m)} \\
+   \frac{\partial p}{\partial \tau} = -\sum Y_k / W_k  \frac{R T}{(\tau-b_m)^2} + \frac{a_m (2 \tau + b_m)}{[\tau(\tau +b_m)]^2} \\
+   \frac{\partial h_m}{\partial \tau} = -\left(T \frac{\partial a_m}{\partial T}  - a_m \right) \frac{1}{\tau(\tau+b_m)} + \frac{a_m}{(\tau+b_m)^2} -\sum Y_k / W_k  \frac{R T b_m}{(\tau-b_m)^2}  \\
+   \frac{\partial h_m}{\partial T} = c_p^{id} +T \frac{\partial^2 a_m}{\partial T^2} \frac{1}{b_m} ln ( 1 + \frac{b_m}{\tau}) - \frac{\partial a_m}{\partial T} \frac{1}{\tau+b_m} +\sum Y_k / W_k  \frac{R b_m}{\tau-b_m} 
+
+.. code-block:: fortran
+
+    subroutine SRK_EOS_GetMixtureCp(state)
+    implicit none
+    type (eos_t), intent(inout) :: state
+    real(amrex_real) :: tau, K1
+    real(amrex_real) :var: : Cpig
+    real(amrex_real) :: eosT1Denom, eosT2Denom, eosT3Denom 
+    real(amrex_real) :: InvEosT1Denom,InvEosT2Denom,InvEosT3Denom
+    real(amrex_real) :: dhmdT,dhmdtau
+    real(amrex_real) :: Rm
+
+    state % wbar = 1.d0 / sum(state % massfrac(:) * inv_mwt(:))
+
+    call MixingRuleAmBm(state%T,state%massFrac,state%am,state%bm)
+
+    tau = 1.0d0/state%rho
+  
+    ! Derivative of the EOS AM w.r.t Temperature - needed for calculating enthalpy, Cp, Cv and internal energy
+    call Calc_dAmdT(state%T,state%massFrac,state%dAmdT)
+  
+    ! Second Derivative of the EOS AM w.r.t Temperature - needed for calculating enthalpy, Cp, Cv and internal energy
+    call Calc_d2AmdT2(state%T,state%massFrac,state%d2AmdT2)
+  
+    K1 = (1.0d0/state%bm)*log(1.0d0+state%bm/tau)
+    
+    eosT1Denom = tau-state%bm
+    eosT2Denom = tau*(tau+state%bm)
+    eosT3Denom = tau+state%bm
+
+    InvEosT1Denom = 1.0d0/eosT1Denom
+    InvEosT2Denom = 1.0d0/eosT2Denom
+    InvEosT3Denom = 1.0d0/eosT3Denom
+
+    Rm = (Ru/state%wbar)
+  
+    ! Derivative of Pressure w.r.t to Temperature
+    state%dPdT = Rm*InvEosT1Denom - state%dAmdT*InvEosT2Denom
+
+    ! Derivative of Pressure w.r.t to tau (specific volume)
+    state%dpdtau = -Rm*state%T*InvEosT1Denom*InvEosT1Denom + state%am*(2.0*tau+state%bm)*InvEosT2Denom*InvEosT2Denom
+
+    ! Ideal gas specific heat at constant pressure
+    call ckcpbs(state % T, state % massfrac, iwrk, rwrk,Cpig)
+  
+    ! Derivative of enthalpy w.r.t to Temperature
+    dhmdT = Cpig + state%T*state%d2AmdT2*K1 - state%dAmdT*InvEosT3Denom + Rm*state%bm*InvEosT1Denom
+  
+    ! Derivative of enthalpy w.r.t to tau (specific volume)
+    dhmdtau = -(state%T*state%dAmdT - state%am)*InvEosT2Denom + state%am*InvEosT3Denom*InvEosT3Denom - &
+       Rm*state%T*state%bm*InvEosT1Denom*InvEosT1Denom
+
+    ! Real gas specific heat at constant pressure
+    state%cp = dhmdT - (dhmdtau/state%dpdtau)*state%dPdT
+  
+    end subroutine SRK_EOS_GetMixtureCp
+
+Internal energy and Enthalpy 
+""""""""""""""""""""""""""""
+
+Similarly mixture internal energy for SRK EOS is given by
+
+.. math::
+   e_m = \sum_k Y_k e_k^{id} + \left( T  \frac{\partial a_m}{\partial T}  - a_m \right)\frac{1}{b_m} ln \left( 1 + \frac{b_m}{\tau}\right)
+
+and mixture enthalpy :math:`h_m = e + p \tau`
+
+.. math::
+   h_m = \sum_k Y_k h_k^{id} + \left ( T \frac{\partial a_m}{\partial T} - a_m \right) \frac{1}{b_m} \ln \left( 1 + \frac{b_m}{\tau}\right) + R T \sum \frac{Y_k}{W_k} \frac{b_m}{\tau -b_m} - \frac{a_m}{\tau + b_m}
+
+and the implementation can be found in the routine `SRK_EOS_GetMixture_H`.
+
+Speed of Sound
+""""""""""""""
+
+The sound speed for SRK EOS is given by
+.. math::
+   
+   a^2 = -\frac{c_p}{c_v} \tau^2  \frac{\partial p}{\partial \tau}
+
+Species enthalpy
+""""""""""""""""
+
+For computation of kinetics and transport fluxes we will also need the species partial enthalpies and the chemical potential.  The species enthalpies for SRK EOS are given by
+.. math::
+   
+   h_k = \frac{\partial h_m}{\partial Y_k } - \frac {\frac{\partial h}{\partial \tau}} {\frac{\partial p}{\partial \tau}} \frac{\partial p}{\partial Y_k}
+
+where
+
+.. math::
+   \frac{\partial h_m}{\partial Y_k } &=  h_k^{id} + (T \frac{\partial^2 a_m}{\partial T \partial Y_k}  - \frac{\partial a_m }{\partial Y_k}) \frac{1}{b_m} \ln\left(1+ \frac{b_m}{\tau}\right) -\left(T \frac{\partial a_m}{\partial T}  - a_m \right) \left[ \frac{1}{b_m^2} \ln\left(1+ \frac{b_m}{\tau}\right) - \frac{1}{b_m(\tau+b_m)} \right ] \frac{\partial b_m}{\partial Y_k} \nonumber \\&+ \frac{a_m}{(\tau+b_m)^2}  \frac{\partial b_m}{\partial Y_k} - \frac{1}{\tau+b_m}  \frac{\partial a_m}{\partial Y_k} + 1 / W_k  \frac{R T b_m}{\tau-b_m}+\sum_i \frac{Y_i}{W_i} R T \left( \frac{1}{\tau -b_m} + \frac{b_m}{(\tau-b_m)^2} \right) \frac{ \partial b_m}{\partial Y_k} 
+
+.. math::
+   
+   \frac{\partial p}{\partial Y_k} = R T \frac{1}{W_k} \frac{1}{\tau - b_m} - \frac{\partial a_m}{\partial Y_k} \frac{1}{\tau(\tau + b_m)} +\left(R T \sum \frac{Y_i}{W_i} \frac{1}{(\tau - b_m)^2} + \frac{a_m}{\tau(\tau + b_m)^2} \right ) \frac{\partial b_m}{\partial Y_k}
+
+Chemical potential 
+""""""""""""""""""
+The chemical potentials are the derivative of the free energy with respect to composition.  Here the free energy `f`` is given by
+
+.. math::
+   f &= \sum_i Y_i (e_i^{id} - T s_i^{id,*}) +  \sum_i \frac{Y_i R T}{W_i} ln (\frac{Y_i R T}{W_i \tau p^{st}})  \nonumber \\ &+ \sum_i \frac{Y_i R T}{W_i} ln (\frac{\tau}{\tau-b_m}) -  a_m \frac{1}{b_m}ln (1+ \frac{b_m}{\tau})  \nonumber \\ &= \sum_i Y_i (e_i^{id} - T s_i^{id,*}) +  \sum_i \frac{Y_i R T}{W_i} ln (\frac{Y_i R T}{W_i (\tau-b_m) p^{st}} )- a_m \frac{1}{b_m} ln (1+ \frac{b_m}{\tau})  \nonumber 
+
+Then
+
+.. math::
+   
+   \mu_k &= \frac{\partial f}{\partial Y_k} = e_k^{id} - T s_k^{id,*}  + \frac{RT}{W_k} ln (\frac{Y_k R T}{W_k (\tau-b_m) p^{st}}) + \frac{RT}{W_k} +  \frac{RT}{\bar{W}} \frac{1}{\tau-b_m} \frac {\partial b_m}{\partial Y_k} \nonumber \\
+   &- \frac{1}{b_m} ln(1 + \frac{b_m}{\tau}) \frac{\partial a_m}{\partial Y_k}+ \frac{a_m}{b_m^2} ln(1 + \frac{b_m}{\tau}) \frac{\partial b_m}{\partial Y_k}- \frac{a_m}{b_m} \frac{1}{\tau+b_m} \frac{\partial b_m}{\partial Y_k}
+
+Other primitive variable derivatives
+""""""""""""""""""""""""""""""""""""
+
+The Godunov (FV) algorithm also needs some derivatives to express source terms in terms of primitive variables. In particular one needs
+
+.. math::
+
+   \left . \frac{\partial p}{\partial \rho} \right|_{e,Y} =-\tau^2 \left( \frac{\partial p}{\partial \tau}- \frac {\frac{\partial e}{\partial \tau}} {\frac{\partial e}{\partial T}} \frac{\partial p}{\partial T} \right )
+
+and
+
+.. math::
+
+   \left . \frac{\partial p}{\partial e} \right|_{\rho,Y} = \frac{1}{c_v} \frac{\partial p}{\partial T}
+
+All of the terms needed to evaluate this quantity are known except for
+
+.. math::
+
+   \frac{\partial e}{\partial \tau} = \frac{1}{\tau ( \tau + b_m)} \left( a_m - T  \frac{\partial a_m}{\partial T}  \right) \;\; .
+
+
+
 
