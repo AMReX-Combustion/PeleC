@@ -79,7 +79,7 @@ To specify an external flow sphere geometry, add the following lines to the inpu
 
 
 Adding complicated geometries
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. _complexGeom:
 
 Geometries beyond the set described above can be built using a combination of basic geometries and EB transformation functions in AMReX.

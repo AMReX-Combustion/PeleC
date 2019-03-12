@@ -72,6 +72,7 @@ where :math:`F` is the intensive flux of :math:`S` through the faces that bound 
 
 Hybrid Divergence and Redistribution
 -------------------------------------
+.. _HybDiv:
 
 A straightforward implemention of the finite-volume advance of intensive conserved fields is numerically unstable (this is the well-known "small cell issue") due to presence of 
 the fluid cell volume in the denominator of the conservative divergence (:math:`(DC)_l`):
@@ -141,9 +142,37 @@ This procedure is implemented in the `pc_fix_div_and_redistribute` routine that 
 
 The arguments are the edge centered flux in the [x,y,z]-directions on the [x,y,z] faces, the array of geometry information for the cut cells for this FAB, the flux through the cut faces, and the hybrid divergence. 
 
+Re-redistribution
+-----------------
+
+.. _eb_re_redist:
+
+.. figure:: EB_re_redist.png
+   :alt: EB Cell
+   :width: 600
+
+   \(a) an example situation with an EB spanning a coarse-fine boundary, (b) same situation as seen by the coarse level and (c) same situation as seen by the fine level. The cells with the dotted lines are ghost cells.
+
+The redistribution of mass with the use of hybrid divergence method (see section :ref:`Hybrid divergence<HybDiv>`) leads 
+to an accounting problem at coarse-fine interfaces that have an EB passing through them, as shown in :ref:`re-redistribution figure<eb_re_redist>` (a). 
+The correct strategy will be to redistribute mass from the coarse mesh on the left side to the fine mesh on the right and vice-versa, when divergence is evaluated on the fly. 
+This strategy is difficult to implement directly into the current algorithmic framework, because flux/residual calculation and time advance are done separately at 
+each level with a ghost-cell treatment at coarse-fine boundaries. Therefore the mass distributed to and from ghost-cells need to be accounted and adjusted after each level has 
+advanced a single time step, which we refer to as re-redistribution. Specifically, four different mass terms need to be accounted for:
+
+*   In :ref:`re-redistribution figure<eb_re_redist>` (b) the left-coarse-real-cell distributes mass to the right-coarse-ghost-cell. This needs to be captured and given to the right-fine-real-cells.
+*   In :ref:`re-redistribution figure<eb_re_redist>` (b) the right-coarse-ghost-cell distributes mass to the left-coarse-real-cell. This needs to be captured and removed from the left-coarse-real-cell update 
+    because the correct distributed mass has to come from the right-fine-real-cells.
+*   In :ref:`re-redistribution figure<eb_re_redist>` (c) the right-fine-real-cells distribute mass to the left-fine-ghost-cells. This needs to be captured and given to the left-coarse-real-cell.
+*   In :ref:`re-redistribution figure<eb_re_redist>` (c) the left-fine-ghost-cells distribute mass to the right-fine-real-cells. This needs to be captured and removed from the right-fine-real-cells update 
+    because the correct distributed mass has to come from the left-coarse-real-cell.
+
+The re-redistribution is implemented as a book-keeping step where the mass distributed are stored during MOL divergence calculation and given to the coarse and fine flux registers to reflux at 
+the end of each time step. The re-redistribution is performed everytime the reflux function is called in post_timestep. More details regarding re-redistribuion are 
+presented in `Pember et al. <https://www.sciencedirect.com/science/article/pii/S0021999185711655>`_. 
 
 
-Data Structures and utility functions
+Date Structures and utility functions
 -------------------------------------
 
 Several structures exist to store geometry dependent information. These are populated on creation of a new AMRLevel and stored in the PeleC object so that they are available for computation. These facilitate accessing the EB data from the fortran layer and have equivalent C++ struct and fortran types definitions so that they can be passed between the languages. The C++ struct definitions are in the file EBStencilTypes.H and the fortran type definitions are in the file EBStencilTypes_mod.F90 within the pelec_eb_stencil_types_module module. The datatypes are:
