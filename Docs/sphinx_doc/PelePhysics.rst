@@ -10,12 +10,15 @@
 PelePhysics
 -----------
 
+There are several instances of shared physics between PeleC and PeleLM that are stored in PelePhysics. Specifically, equations of state and thermodynamic property evaluation, transport coefficients evaluation, and chemistry rate computation.
+
 Equation of State
 ^^^^^^^^^^^^^^^^^
 PeleC allows the user to use different equation of state (eos) as the constitutive equation and close the compressible Navier-Stokes system of equations. All the routines needed to fully define an eos are implemented through PelePhysics module. Examples of eos implementation can be seen in `PelePhysics/Eos`. The following sections will fully describe the implementation of Soave-Redlich-Kwong, a non-ideal cubic eos, for a general mixture of species. Integration with the Fuego, for a chemical mechanism described in a chemkin format, will also be highlighted. For an advanced user interested in implementing a new eos this chapter should provide a good starting point.
 
 Soave-Redlich-Kwong (SRK)
-^^^^^^^^^^^^^^^^^^^^^^^^^
+#########################
+
 SRK EOS as a function of Pressure (p), Temperature(T), and :math:`\tau` (specific volume) is given by
 
 .. math::
@@ -48,7 +51,7 @@ where :math:`\omega_i` are the accentric factors and
    f\left( \omega_i \right) = 0.48508 + 1.5517 \omega_i - 0.151613 \omega_{i}^2
 
 For chemically unstable species such as radicals, critical temperatures and pressures are not available.  
-For species where critical properties are not available, we use the Lennard-Jones potential for that species to construct attractive and replusive coefficients.
+For species where critical properties are not available, we use the Lennard-Jones potential for that species to construct attractive and repulsive coefficients.
 
 .. math::
    T_{c,i} = 1.316 \frac{\epsilon_i}{k_b} \;\;\;  a_i(T_{c,i}) = 5.55 \frac{\epsilon_i \sigma_i^3}{m_i^2} \;\;\;

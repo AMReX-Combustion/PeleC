@@ -1,17 +1,17 @@
 .. highlight:: rst
 
-.. Warning:: This documentation is a placeholder, and contents should currently be considered a work in progress, out of context, or just plain wrong until this note is removed!
+.. Warning:: This documentation is a work in progress. It is reasonably complete and hopefully useful but is likely error prone and in places misleading.
 
 
 Introduction
 ============
 
-Pele solves the reacting compressible Navier-Stokes on a structured grid with, optionally, embedded boundary geometry treatment and non-ideal gas equations of state. A variety of time advance schemes are implemented, notably an operator-split (Strang) approach and an SDC based approach. A variety of examples are included to provide a model setup for the various options. These are discussed futher in the :ref:`Getting Started<GettingStarted>` section.
+Pele solves the reacting compressible Navier-Stokes on a structured grid with, optionally, embedded boundary geometry treatment and non-ideal gas equations of state. A variety of time advance schemes are implemented, notably an operator-split (Strang) approach and an SDC based approach. A variety of examples are included to provide a model setup for the various options. These are discussed further in the :ref:`Getting Started<GettingStarted>` section.
 
 The Pele Project
 ----------------
 
-The origin of PeleC is in the context of *The Pele Project*, with the goal of providing a platform for combustion research in the ExaScale computing era. Specifically, to enable reserach grade simulation (DNS, or near DNS hybrid LES/DNS) of turbulence-chemistry interaction under conditions movitivated by internal combustion engine research as well as establish a path for devlopment of scalable design codes suitable for exascale hardware.
+The origin of PeleC is in the context of *The Pele Project*, with the goal of providing a platform for combustion research in the ExaScale computing era. Specifically, to enable research grade simulation (DNS, or near DNS hybrid LES/DNS) of turbulence-chemistry interaction under conditions motivated by internal combustion engine research as well as establish a path for development of scalable design codes suitable for exascale hardware.
 
 .. csv-table:: Design approach for Pele
    :header: "Characteristic / Need", "Approach"

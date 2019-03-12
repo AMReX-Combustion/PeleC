@@ -3,14 +3,14 @@ Input Files and Controls
 
 The input file specified on the command line is a free-format text file, one entry per row, that specifies input data processed by the AMReX ``ParmParse`` module.
 
-This file needs to specified along with the execuatable as an `argv` option, for example:
+This file needs to specified along with the executable as an `argv` option, for example:
 
 
 ::
 
 	mpirun -np 64 ./Pele2d.xxx,yyy.ex inputs
 
-Also, any entry that can be specified in the inputs file can also be specified on the command line; values specified on the command line override values in the inpute file, e.g.:
+Also, any entry that can be specified in the inputs file can also be specified on the command line; values specified on the command line override values in the inputs file, e.g.:
 
 ::
 
@@ -44,7 +44,7 @@ These parameters, once read, are available in the `PeleC` object for use from c+
     #coordinates of domain's lower corner
     geometry.prob_lo     =   -0.3     0.0   0.0     
 
-    #coordiates of domain's upper corner
+    #coordinates of domain's upper corner
     geometry.prob_hi     =    0.3     0.3   0.15  
 
     #number of cells along each direction at base level (note: dx=dy=dz)

@@ -12,10 +12,10 @@
 Numerical Treatment and Algorithms
 ==================================
 
-PeleC Timestepping
+PeleC Time-stepping
 ------------------
 
-PeleC supports two options for timestepping: a second-order explicit method-of-lines approach (MOL), and an iterative scheme base on a spectral deferred correction approach (SDC). Both time-steppers share a considerable amount of code.
+PeleC supports two options for time-stepping: a second-order explicit method-of-lines approach (MOL), and an iterative scheme base on a spectral deferred correction approach (SDC). Both time-steppers share a considerable amount of code.
 
 
 Standard Time Advance
@@ -418,7 +418,7 @@ the PPM, as shown in the figure below. For the MOL at :math:`N =
 and :math:`k_{90}= 3 k_{\lambda_0}` at :math:`t=5\tau`, for the PPM,
 these numbers are :math:`0.5\%` and :math:`4 k_{\lambda_0}`. The
 dissipation rate is under-predicted for the MOL. The energy spectra at
-high wavenumbers for the MOL are lower than those for the
+high wave-numbers for the MOL are lower than those for the
 PPM. Finally, the MOL has a more restrictive CFL condition (CFL=0.3),
 and, therefore, MOL simulations were approximately three times slower
 than PPM simulations.
