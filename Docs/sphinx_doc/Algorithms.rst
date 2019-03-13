@@ -63,27 +63,27 @@ Piecewise Parabolic Method (PPM)
 The unsplit piecewise parabolic method is used for regular geometries. Currently in PeleC, there are 4 variants that 
 can be chosen through the ''ppm_type'' flag:
 
-* ''ppm_type = 0'' uses a piecewise linear interpolation to reconstruct values at face.
-* ''ppm_type = 1'' is the original PPM method presented in Colella and Woodward [JCP 1984].
-* ''ppm_type = 2'' is the "extrema preserving" variant of the PPM method.
-* ''ppm_type = 3'' is a new hybrid PPM/WENO method, that replace the interpolation and slope limiting procedures by a WENO reconstruction.
+* ``ppm_type = 0`` uses a piecewise linear interpolation to reconstruct values at face.
+* ``ppm_type = 1`` is the original PPM method presented in Colella and Woodward [JCP 1984].
+* ``ppm_type = 2`` is the "extrema preserving" variant of the PPM method.
+* ``ppm_type = 3`` is a new hybrid PPM/WENO method, that replace the interpolation and slope limiting procedures by a WENO reconstruction.
 
-In the remainder of this section, the extrema preserving PPM method, i.e ''ppm_type = 2'', is presented. Note that the implementation
+In the remainder of this section, the extrema preserving PPM method, i.e ``ppm_type = 2``, is presented. Note that the implementation
 in PeleC is a recollection of different extension of the PPM method published in Miller and Colella [JCP 2002] and Colella and Sekora [JCP 2008].
 The actual implementation in PeleC is described in the upcoming paper `Motheau and Wakefield, Capturing shocks and turbulence spectra in compressible flows. Part 2: A new hybrid PPM/WENO method  [Submitted 2019]`, 
 and the following description is taken from that paper. Note that the algorithm is presented here in 1D
 for simplicity, but can be trivially extended to 2D and 3D. 
 
 Note also that the hybrid PPM/WENO method is described in the aforementioned paper. This hybrid strategy presents far better 
-results in terms of capture of turbulent spectra rather than the other PPM methods. When ''ppm_type = 3'' is chosen, the WENO reconstruction
-method can be selected with ''weno_variant'':
+results in terms of capture of turbulent spectra rather than the other PPM methods. When ``ppm_type = 3`` is chosen, the WENO reconstruction
+method can be selected with ``weno_variant``:
 
-* ''weno_variant = 0'' is the classical 5th order WENO-JS of Jiang and Shu [JCP 1996].
-* ''weno_variant = 1'' is the 5th order WENO-Z method of Borges et al. [JCP 2008].
-* ''weno_variant = 2'' is the 3rd order WENO-Z.
-* ''weno_variant = 3'' is the 7th order WENO-Z.
+* ``weno_variant = 0`` is the classical 5th order WENO-JS of Jiang and Shu [JCP 1996].
+* ``weno_variant = 1`` is the 5th order WENO-Z method of Borges et al. [JCP 2008].
+* ``weno_variant = 2`` is the 3rd order WENO-Z.
+* ``weno_variant = 3`` is the 7th order WENO-Z.
 
-By default, ''weno_variant = 1'' is selected.
+By default, ``weno_variant = 1`` is selected.
 
 
 
