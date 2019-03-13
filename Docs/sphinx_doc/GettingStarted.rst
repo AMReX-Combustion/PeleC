@@ -9,6 +9,9 @@
 Getting Started
 ===============
 
+Navigation
+----------
+
 The PeleC directory structure is as shown below:
 
 * **Source** - C++ and fortran source code
@@ -65,7 +68,7 @@ The source files contained in the case directory are treated preferentially and 
 A few key files that need to be supplied for (most) cases are:
 
 **inputs** --- a text file containing parameters that are ready by the ParmParse capability in AMReX. These include things like number of time steps, grid size, output file frequency, which physics to include, etc. 
-A list of available data in the pele group can be found in PeleC/Source/param_includes/pelec_params.H
+A list of available data in the Pele group can be found in PeleC/Source/param_includes/pelec_params.H
 
 **probin** --- a text file used to include namelists to be read at problem initialization to set values of parameters only used in fortran routines
 
@@ -82,3 +85,8 @@ fortran and c++ layers should not be stored in here, but rather added to the Par
 and use of EB are set here for compile time selection. The GNUMakefile includes the ``Make.PeleC`` file from the `Exec` directory that contains build configuration common across the examples. 
 
 **bc_fill_nd.f90** --- used to set values for user defined boundary conditions that use GC-NSCBC. 
+
+.. include:: InputFiles.rst
+
+
+.. include:: tutorials.rst

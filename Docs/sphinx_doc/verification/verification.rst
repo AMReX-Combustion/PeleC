@@ -1,7 +1,19 @@
+
+ .. role:: cpp(code)
+    :language: c++
+
+ .. role:: f(code)
+    :language: fortran
+
+ 
+.. _Verification:
+
+
+
 .. highlight:: rst
 
 Verification of PeleC
-=====================
+---------------------
 
 Verification of PeleC uses `MASA
 <https://github.com/manufactured-solutions/MASA>`_ and
@@ -20,14 +32,14 @@ below, is the number of element on a side of the cube (:math:`N_e =
 N^3`).
 
 Building and running MMS
--------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 The user must first build and install `MASA
 <https://github.com/manufactured-solutions/MASA>`_. This can be done
 from source or using `Spack <https://spack.io>`_.
 
 Building MASA from source
-~~~~~~~~~~~~~~~~~~~~~~~~~
+#########################
 
 The user must build both `Metaphysicl
 <https://github.com/roystgnr/MetaPhysicL>`_ and MASA. After defining
@@ -53,7 +65,7 @@ The user must build both `Metaphysicl
 
 
 Building MASA using Spack
-~~~~~~~~~~~~~~~~~~~~~~~~~
+#########################
 
 Assuming the user has Spack configured for their system, building and
 installing MASA is as easy as:
@@ -64,7 +76,7 @@ installing MASA is as easy as:
 
 
 Linking MASA to PeleC and running
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#################################
 
 For the MMS problem setup, one must specify the install location for
 MASA in the ``MASA_HOME`` variable. This can be done on the command
@@ -89,7 +101,7 @@ convergence study to demonstrate formal accuracy of the numerical
 implementation. Results of several MMS tests are detailed below.
 
 Running the full MMS suite
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+##########################
 
 The full MMS suite can be executed through the `PeleCRegressionTesting
 <https://github.com/AMReX-Combustion/PeleRegressionTesting>`_ test
@@ -102,7 +114,7 @@ suite:
 
 
 Testing the Euler equations
----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We can turn off diffusion in Pele and set the coefficients for those
 terms to zero in MASA to test the hydrodynamic update. A convergence
@@ -113,26 +125,26 @@ are imposed everywhere.
 
 - Density :math:`L_2` error norm:
 
-.. image:: ./hydro/rho_error.png
+.. image:: ./verification/hydro/rho_error.png
    :width: 300pt
 
 - Velocity (u, v, w) :math:`L_2` error norm:
 
-.. image:: ./hydro/u_error.png
+.. image:: ./verification/hydro/u_error.png
    :width: 300pt
-.. image:: ./hydro/v_error.png
+.. image:: ./verification/hydro/v_error.png
    :width: 300pt
-.. image:: ./hydro/w_error.png
+.. image:: ./verification/hydro/w_error.png
    :width: 300pt
 
 - Pressure :math:`L_2` error norm:
 
-.. image:: ./hydro/p_error.png
+.. image:: ./verification/hydro/p_error.png
    :width: 300pt
 
 
 Testing the compressible Navier-Stokes equations
-------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For these cases, the Reynolds, Mach, and Prandtl numbers were set to 1
 to ensure that the different physics were equally important
@@ -166,25 +178,25 @@ state solver would fail to test the temporal discretization scheme.
 
 - Density :math:`L_2` error norm:
 
-.. image:: ./pelec/rho_error.png
+.. image:: ./verification/pelec/rho_error.png
    :width: 300pt
 
 - Velocity (u, v, w) :math:`L_2` error norm:
 
-.. image:: ./pelec/u_error.png
+.. image:: ./verification/pelec/u_error.png
    :width: 300pt
-.. image:: ./pelec/v_error.png
+.. image:: ./verification/pelec/v_error.png
    :width: 300pt
-.. image:: ./pelec/w_error.png
+.. image:: ./verification/pelec/w_error.png
    :width: 300pt
 
 - Pressure :math:`L_2` error norm:
 
-.. image:: ./pelec/p_error.png
+.. image:: ./verification/pelec/p_error.png
    :width: 300pt
 
 Testing the adaptive mesh refinement algorithm
-----------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This setup is similar to the previous one except for the fact that
 this test uses the AMR framework. There are two grid refinement
@@ -197,10 +209,10 @@ preserve the second order accuracy of the code.
 
 - Magnitude of velocity and mesh:
 
-.. image:: ./amr/umag_amr.png
+.. image:: ./verification/amr/umag_amr.png
    :width: 200pt
 
 - Velocity :math:`L_2` error norm:
 
-.. image:: ./amr/u_error_amr.png
+.. image:: ./verification/amr/u_error_amr.png
    :width: 300pt

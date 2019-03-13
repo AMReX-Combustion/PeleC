@@ -1,11 +1,21 @@
+
+ .. role:: cpp(code)
+    :language: c++
+
+ .. role:: f(code)
+    :language: fortran
+
+ 
+.. _Validation:
+
+
 .. highlight:: rst
 
 Validation of PeleC
-===================
-
+-------------------
 
 Decay of homogeneous isotropic turbulence
------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Simulations were performed for turbulent Mach number = 0.1, Taylor
 scale based Reynolds number = 100, Prandtl number = 0.71, and k0 = 4
@@ -24,7 +34,7 @@ was used to post-process some quantities using `visit_pp_aux_vars.py`
    $ visit -nowin -cli -s Exect/RegTests/visit_pp_aux_vars.py
 
 Generating the initial conditions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#################################
 
 The initial conditions for this validation problem are derived from
 the following energy spectrum:
@@ -39,7 +49,7 @@ and can be generated with the Python script in the HIT directory:
    $ python3 gen_hit_ic.py
 
 Building and running
-~~~~~~~~~~~~~~~~~~~~
+####################
 
 The decay of homogeneous isotropic turbulence case can be found in ``Exec/RegTests/HIT``:
 
@@ -53,30 +63,30 @@ for higher resolutions and varying ``amr.ncell``.
 
 
 Results
-~~~~~~~
+#######
 
 As the resolution increases, there is good agreement between the Pele
 data and reference data.
 
-.. figure:: ./hit/reynolds.png
+.. figure:: ./validation/hit/reynolds.png
    :align: center
    :figwidth: 40%
 
    Reynolds number as a function of time. Solid red: :math:`32^3`, dashed green :math:`64^3`, dash-dotted blue: :math:`128^3`, dotted orange: :math:`256^3`, black squares: Johnsen et al. (2009) JCP.
 
-.. figure:: ./hit/mach.png
+.. figure:: ./validation/hit/mach.png
    :align: center
    :figwidth: 40%
 
    Mach number as a function of time. Solid red: :math:`32^3`, dashed green :math:`64^3`, dash-dotted blue: :math:`128^3`, dotted orange: :math:`256^3`, black squares: Johnsen et al. (2009) JCP.
 
-.. figure:: ./hit/enstrophy.png
+.. figure:: ./validation/hit/enstrophy.png
    :align: center
    :figwidth: 40%
 
    Enstrophy as a function of time. Solid red: :math:`32^3`, dashed green :math:`64^3`, dash-dotted blue: :math:`128^3`, dotted orange: :math:`256^3`, black squares: Johnsen et al. (2009) JCP.
 
-.. figure:: ./hit/KE.png
+.. figure:: ./validation/hit/KE.png
    :align: center
    :figwidth: 40%
 
@@ -84,7 +94,7 @@ data and reference data.
 
 
 Taylor-Green vortex breakdown
------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This setup is one of the test problems outlined by `the High-Order CFD
 workshop <https://www.grc.nasa.gov/hiocfd>`_. A complete description
@@ -98,7 +108,7 @@ Mechanics Conference (doi: 10.2514/6.2014-3210)` and `DeBonis (2013)
 51st AIAA Aerospace Sciences Meeting (doi:10.2514/6.2013-382)`.
 
 Building and running
-~~~~~~~~~~~~~~~~~~~~
+####################
 
 The Taylor-Green vortex breakdown case can be found in ``Exec/RegTests/TG``:
 
@@ -111,30 +121,30 @@ The user can run a convergence study by varying ``amr.ncell``.
 
 
 Results
-~~~~~~~
+#######
 
 As the resolution increases, there is good agreement between the Pele
 data and reference data.
 
-.. figure:: ./tg/dissipation.png
+.. figure:: ./validation/tg/dissipation.png
    :align: center
    :figwidth: 40%
 
    Dissipation as a function of time. Solid red: :math:`32^3`, dashed green :math:`64^3`, dash-dotted blue: :math:`128^3`, dotted orange: :math:`256^3`, black squares: HOCFDW.
 
-.. figure:: ./tg/enstrophy.png
+.. figure:: ./validation/tg/enstrophy.png
    :align: center
    :figwidth: 40%
 
    Enstrophy as a function of time. Solid red: :math:`32^3`, dashed green :math:`64^3`, dash-dotted blue: :math:`128^3`, dotted orange: :math:`256^3`, black squares: HOCFDW.
 
-.. figure:: ./tg/KE.png
+.. figure:: ./validation/tg/KE.png
    :align: center
    :figwidth: 40%
 
    Kinetic energy as a function of time. Solid red: :math:`32^3`, dashed green :math:`64^3`, dash-dotted blue: :math:`128^3`, dotted orange: :math:`256^3`, black: HOCFDW.
 
-.. figure:: ./tg/spectrum.png
+.. figure:: ./validation/tg/spectrum.png
    :align: center
    :figwidth: 40%
 
