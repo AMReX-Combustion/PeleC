@@ -61,7 +61,7 @@ Piecewise Parabolic Method (PPM)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The unsplit piecewise parabolic method is used for regular geometries. Currently in PeleC, there are 4 variants that 
-can be chosen through the ''ppm_type'' flag:
+can be chosen through the ``ppm_type`` flag:
 
 * ``ppm_type = 0`` uses a piecewise linear interpolation to reconstruct values at face.
 * ``ppm_type = 1`` is the original PPM method presented in Colella and Woodward [JCP 1984].
