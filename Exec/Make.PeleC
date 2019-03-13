@@ -119,9 +119,10 @@ endif
 Bdirs   := Source Source/param_includes Source/Src_nd Source/Src_$(DIM)d Source/TurbInflow
 
 ifeq ($(USE_EB), TRUE)
-  Pdirs := Base EB Amr Boundary AmrCore F_Interfaces F_Interfaces/Base
+  Pdirs := Base EB Amr Boundary AmrCore F_Interfaces/Base
 else 
-  Pdirs := Base Amr Boundary AmrCore
+  Pdirs := Base Amr Boundary AmrCore F_Interfaces/Base
+
 endif
 
 ifeq ($(USE_PARTICLES), TRUE)
@@ -154,10 +155,7 @@ EXTERN_CORE += $(TOP)/constants
 INCLUDE_LOCATIONS += $(TOP)/constants
 VPATH_LOCATIONS   += $(TOP)/constants
 
-include $(AMREX_HOME)/Src/F_Interfaces/Base/Make.package
-INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/F_Interfaces/Base
 INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/EB
-VPATH_LOCATIONS   += $(AMREX_HOME)/Src/F_Interfaces/Base
 
 # runtime parameter support for extern/ routines
 f90EXE_sources += extern.f90
