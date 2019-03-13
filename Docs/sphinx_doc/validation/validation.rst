@@ -17,6 +17,8 @@ Validation of PeleC
 Decay of homogeneous isotropic turbulence
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+.. _HIT:
+
 Simulations were performed for turbulent Mach number = 0.1, Taylor
 scale based Reynolds number = 100, Prandtl number = 0.71, and k0 = 4
 at several different resolutions (uniform discretization, no AMR)

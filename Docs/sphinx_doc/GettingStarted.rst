@@ -38,21 +38,21 @@ The PeleC directory structure is as shown below:
 
 * **Exec** - regression tests and various capability demonstrations
   
-  * *RegTests* (Regression tests)
+  * :ref:`Regression Tests<VandV>`
 
-    * HIT   - Box of homogeneous isotropic turbulence
+    * HIT  - Box of homogeneous isotropic turbulence 
     * MMS   - Method of manufactured solutions
     * PMF   - 2D Premixed H2-air flame calculation 
     * Sedov - Sedov blast wave test
     * Sod   - Sod shock tube test
     * TG    - Taylor-Green vortex test
 
-  * *UnitTests*
+  * UnitTests
 
     * NSCBC_test_cases - This directory contains many 1D, 2D and 3D cases to test the implementation of the Ghost-Cells Navier-Stokes Boundary Conditions (GC-NSCBC) on various different configurations.
     * HIT_forced - This test case is similar to the homogeneous isotropic turbulence present in the RegTests directory, at the exception that we are not starting from a turbulent initial solution, but from a flow at rest where we superimpose forcing sources to generate turbulence.
   
-  * *Tutorials*
+  * :ref:`Tutorials<Tutorials>`
 
     * EB_Sphere - Reacting flow around a sphere
     * EB_OblqShock - Supersonic flow over a wedge resulting in a steady attached oblique shock
