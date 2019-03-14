@@ -288,3 +288,17 @@ Chemistry
 ~~~~~~~~~
 
 .. note:: Placeholder, to be written
+
+Usage
+"""""
+
+This section contains an evolving set of usage notes for PelePhysics.
+
+
+1. In the FUEGO version of the chemistry ODE solver (`Fuego/actual_reactor.F90`)  the algorithm will attempt to reuse the Jacobian from the previous cell; this can improve performance significantly for many problems. However, this can cause slight differences in the solution when the cells are visited in a different order. While not physically significant these differences can make it difficult to debug potential problems when trying to verify correct operation of code changes that impact the order in which cells are visited such as loop reordering or using tiling. To assist in this process the re-use can be switched off by setting the following flag as part of the extern namelist in the relevant probin file: ::
+
+     &extern
+       new_Jacobian_each_cell = 1
+     /
+     
+  When this namelist variable is set PelePhysics will treat each cell as a brand new problem and therefore be independent of the order cells are visited.
