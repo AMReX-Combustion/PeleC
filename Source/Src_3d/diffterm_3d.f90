@@ -119,8 +119,8 @@ contains
     double precision, parameter :: twoThirds = 2.d0/3.d0
     double precision :: dxinv(3)
 
-    !$acc routine(eos_ytx_vec) gang
-    !$acc routine(eos_hi_vec) gang
+    !$acc routine(eos_ytx_vec_gpu) gang
+    !$acc routine(eos_hi_vec_gpu) gang
 
     dxinv = 1.d0/deltax
 
@@ -131,8 +131,8 @@ contains
     !$acc enter data copyin(dlnpi,dlnpj,dlnpk,hi,lo,ax,ay,az,tx,ty,tz,dx,dy,dz,lamx,lamy,lamz,gfaci,gfacj,gfack,mux,muy,muz,xix,xiy,xiz,dxinv,v,hii,x,nspec,qfs,qvar,qfs,dmnlo,dmnhi,physbc_lo,physbc_hi,fx,fy,fz) create(vc,d)
 
     !$acc parallel present(q,x,lo,hi,hii)
-    call eos_ytx_vec(q,x,lo,hi,nspec,qfs,qvar)
-    call eos_hi_vec(q,hii,lo,hi,nspec,qtemp,qvar,qfs)
+    call eos_ytx_vec_gpu(q,x,lo,hi,nspec,qfs,qvar)
+    call eos_hi_vec_gpu(q,hii,lo,hi,nspec,qtemp,qvar,qfs)
     !$acc end parallel
 
     !$acc kernels present(dlnpi,dlnpj,dlnpk,hi,lo,ax,ay,az,tx,ty,tz,dx,dy,dz,lamx,lamy,lamz,gfaci,gfacj,gfack,mux,muy,muz,xix,xiy,xiz,dxinv,v,hii,x,q,nspec,qfs,qvar,qfs,dmnlo,dmnhi,physbc_lo,physbc_hi,vc,fx,fy,fz,d)
