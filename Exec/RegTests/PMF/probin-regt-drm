@@ -1,0 +1,11 @@
+&fortin
+  pamb = 1013250.d0  
+  phi_in = -.5d0
+  pertmag = .00d0
+  pmf_datafile = "DRM19_T298_Phi1.0_X_LM.dat"
+/
+
+&tagging
+  max_ftracerr_lev = 4
+  ftracerr = 150.d-6
+/
