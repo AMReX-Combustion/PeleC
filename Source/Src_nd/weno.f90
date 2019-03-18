@@ -14,7 +14,7 @@ module weno_module
   real(amrex_real), dimension(0:3), parameter :: weno7_face_wghts_1 = &
       (/ 1.0d0/35.0d0, 12.0d0/35.0d0, 18.0d0/35.0d0, 4.0d0/35.0d0 /)
 
-  integer         , save :: wenop = 1
+  integer         , save :: wenop = 2
   real(amrex_real), save :: eps = 1.d-40
   
 contains
@@ -28,6 +28,8 @@ contains
   ! WENO Variants
   !     0: WENO-JS 5th order
   !     1: WENO-Z  5th order
+  !     2: WENO-Z  3th order
+  !     3: WENO-Z  7th order
         
  subroutine weno5z_face(v, vl, vr)
     real(amrex_real), intent(in)  :: v(-2:3)
