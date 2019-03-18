@@ -194,6 +194,11 @@ public:
     void particle_est_time_step(amrex::Real& est_dt);
 
     //
+    //
+    // Derived quantities associated with particles
+    //
+    std::unique_ptr<amrex::MultiFab> particle_derive (const std::string& name, amrex::Real time, int ngrow);
+
     // Default cfl of particles in Particle class
     //
     static amrex::Real particle_cfl;

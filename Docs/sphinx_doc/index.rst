@@ -12,15 +12,16 @@ Contents:
    :maxdepth: 2
 
    Introduction.rst
+   Equations.rst
+   Algorithms.rst
    GettingStarted.rst
    BoundaryConditions.rst
-   InputFiles.rst
-   Algorithms.rst
-   ./geometry/geometry.rst
-   writing_documentation.rst
-   ./validation/validation.rst
-   ./verification/verification.rst
+   ./geometry/EB.rst
+   LES.rst
+   VandV.rst
+   PelePhysics.rst
    ./miscellaneous/miscellaneous.rst
+   boxlib_bits.rst
 
 
 README
