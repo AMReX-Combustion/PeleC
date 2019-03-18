@@ -9,3 +9,7 @@
   max_ftracerr_lev = 4
   ftracerr = 150.d-6
 /
+
+&extern
+ new_Jacobian_each_cell = 0
+/
