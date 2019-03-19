@@ -601,7 +601,6 @@ contains
     use eos_module
     use meth_params_module, only : small_dens, small_pres
 
-
     implicit none
 
     ! Inputs
@@ -831,7 +830,6 @@ contains
     !$acc routine(riemann_md_vec) seq
 
     USE eos_module, ONLY: eos_rp1
-    USE meth_params_module, ONLY: small_dens, small_pres
 
     implicit none
 
@@ -858,6 +856,8 @@ contains
     double precision, parameter:: small = 1.d-8
     double precision, parameter :: smallu = 1.e-12
     double precision, parameter :: Hsmallu = 0.5e-12
+    double precision, parameter :: small_dens = 1d-200
+    double precision, parameter :: small_pres = 1d-200
 
     rsmall = small_dens
     wsmall = small_dens*csmall

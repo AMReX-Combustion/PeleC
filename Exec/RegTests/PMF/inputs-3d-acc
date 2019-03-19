@@ -20,9 +20,10 @@ pelec.hi_bc       =  0   0   2
 
 # TIME STEP CONTROL
 pelec.cfl            = 0.1     # cfl number for hyperbolic system
-pelec.init_shrink    = 0.1     # scale back initial timestep
+pelec.init_shrink    = 1.0     # scale back initial timestep
 pelec.change_max     = 1.1     # scale back initial timestep
 pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
+pelec.fixed_dt       = 1.e-9
 
 # DIAGNOSTICS & VERBOSITY
 pelec.sum_interval = 1       # coarse time steps between computing mass on domain

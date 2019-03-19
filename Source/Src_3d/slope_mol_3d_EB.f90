@@ -27,10 +27,10 @@ contains
 
       USE amrex_ebcellflag_module, ONLY: get_neighbor_cells_int, is_covered_cell
       USE meth_params_module, ONLY: qpres, qc, qrho, qu, qv, qw, qfs
-      USE actual_network, ONLY: nspec
 
       implicit none
 
+      integer, parameter  :: nspec=9
       integer, intent(in) :: qd_lo(3), qd_hi(3)
       integer, intent(in) :: qt_lo(3), qt_hi(3)
       integer, intent(in) :: qa_lo(3), qa_hi(3)
@@ -49,7 +49,8 @@ contains
       integer :: nbr(-1:1,-1:1,-1:1)
       logical :: flagArrayL, flagArrayR
 
-      !$acc parallel loop gang vector collapse(3) private(nbr,dlft,drgt,flagarrayl,flagarrayr,n,dcen,dlim) present(dqx,q,qd_lo,qd_hi,qt_lo,qt_hi,ilo1,ilo2,ihi1,ihi2,ilo3,ihi3,qvar,nqaux,domlo,domhi,qaux,qa_lo,qa_hi,flag,fglo,fghi)
+      !$acc kernels present(dqx,q,qd_lo,qd_hi,qt_lo,qt_hi,domlo,domhi,qaux,qa_lo,qa_hi,flag,fglo,fghi)
+      !$acc loop gang vector collapse(3) private(nbr,dlft,drgt,flagarrayl,flagarrayr,n,dcen,dlim)
       do k = ilo3, ihi3
          do j = ilo2, ihi2
             do i = ilo1, ihi1
@@ -82,7 +83,7 @@ contains
             enddo
          enddo
       enddo
-      !$acc end parallel
+      !$acc end kernels
 
     end subroutine slopex
 
@@ -105,10 +106,10 @@ contains
 
       USE amrex_ebcellflag_module, ONLY: get_neighbor_cells_int, is_covered_cell
       USE meth_params_module, ONLY: qpres, qc, qrho, qu, qv, qw, qfs
-      USE actual_network, ONLY: nspec
 
       implicit none
 
+      integer, parameter  :: nspec=9
       integer, intent(in) :: qd_lo(3), qd_hi(3)
       integer, intent(in) :: qt_lo(3), qt_hi(3)
       integer, intent(in) :: qa_lo(3), qa_hi(3)
@@ -127,7 +128,8 @@ contains
       integer :: nbr(-1:1,-1:1,-1:1)
       logical :: flagArrayL, flagArrayR
 
-      !$acc parallel loop gang vector collapse(3) private(nbr,dlft,drgt,flagarrayl,flagarrayr,n,dcen,dlim) present(dqy,q,qd_lo,qd_hi,qt_lo,qt_hi,ilo1,ilo2,ihi1,ihi2,ilo3,ihi3,qvar,nqaux,domlo,domhi,qaux,qa_lo,qa_hi,flag,fglo,fghi)
+      !$acc kernels present(dqy,q,qd_lo,qd_hi,qt_lo,qt_hi,domlo,domhi,qaux,qa_lo,qa_hi,flag,fglo,fghi)
+      !$acc loop gang vector collapse(3) private(nbr,dlft,drgt,flagarrayl,flagarrayr,n,dcen,dlim)
       do k = ilo3, ihi3
          do j = ilo2, ihi2
             do i = ilo1, ihi1
@@ -160,7 +162,7 @@ contains
             enddo
          enddo
       enddo
-      !$acc end parallel
+      !$acc end kernels
 
     end subroutine slopey
 
@@ -183,10 +185,10 @@ contains
 
       USE amrex_ebcellflag_module, ONLY: get_neighbor_cells_int, is_covered_cell
       USE meth_params_module, ONLY: qpres, qc, qrho, qu, qv, qw, qfs
-      USE actual_network, ONLY: nspec
 
       implicit none
 
+      integer, parameter  :: nspec=9
       integer, intent(in) :: qd_lo(3), qd_hi(3)
       integer, intent(in) :: qt_lo(3), qt_hi(3)
       integer, intent(in) :: qa_lo(3), qa_hi(3)
@@ -205,7 +207,8 @@ contains
       integer :: nbr(-1:1,-1:1,-1:1)
       logical :: flagArrayL, flagArrayR
 
-      !$acc parallel loop gang vector collapse(3) private(nbr,dlft,drgt,flagarrayl,flagarrayr,n,dcen,dlim) present(dqz,q,qd_lo,qd_hi,qt_lo,qt_hi,ilo1,ilo2,ihi1,ihi2,ilo3,ihi3,qvar,nqaux,domlo,domhi,qaux,qa_lo,qa_hi,flag,fglo,fghi)
+      !$acc kernels present(dqz,q,qd_lo,qd_hi,qt_lo,qt_hi,domlo,domhi,qaux,qa_lo,qa_hi,flag,fglo,fghi)
+      !$acc loop gang vector collapse(3) private(nbr,dlft,drgt,flagarrayl,flagarrayr,n,dcen,dlim)
       do k = ilo3, ihi3
          do j = ilo2, ihi2
             do i = ilo1, ihi1
@@ -238,7 +241,7 @@ contains
             enddo
          enddo
       enddo
-      !$acc end parallel
+      !$acc end kernels
 
     end subroutine slopez
 

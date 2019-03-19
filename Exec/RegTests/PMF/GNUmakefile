@@ -1,5 +1,3 @@
-USE_EB = FALSE
-
 PRECISION  = DOUBLE
 
 PROFILE    = FALSE
@@ -12,7 +10,7 @@ COMP	   = pgi
 
 USE_MPI    = FALSE
 
-USE_ACC    = FALSE
+USE_ACC    = TRUE
 
 USE_REACT  = TRUE
 

@@ -48,25 +48,18 @@ module hyp_advection_module
                      h) &
                      bind(C,name="pc_hyp_mol_flux")
 
-
-
-    use amrex_mempool_module, only : bl_allocate, bl_deallocate
     use meth_params_module, only : plm_iorder, QVAR, NVAR, QPRES, QRHO, QU, QV, QW, &
-                                   QFS,  &
-                                   QC, QCSML, NQAUX, nadv, &
+                                   QFS, QC, QCSML, NQAUX, nadv, &
                                    URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, UTEMP, UFX, UFA, &
-                                   eb_small_vfrac
+                                   small_dens, small_pres
     use slope_module, only : slopex, slopey, slopez
-    use actual_network, only : nspec, naux
-    use eos_type_module
+    use actual_network, only : naux
     use eos_module, only : eos_rp1
-    use riemann_module, only: cmpflx, shock
-    use amrex_constants_module
-    use amrex_fort_module, only : amrex_real
-    use chemistry_module, only: Ru, inv_mwt
+    use chemistry_module, only: Ru
 
     implicit none
 
+    integer, parameter  :: nspec_2=9
     integer :: vis, vie, vic ! Loop bounds for vector blocking
     integer :: vi, vii ! Loop indicies for unrolled loops over 
 
@@ -92,11 +85,10 @@ module hyp_advection_module
     real(amrex_real), intent(in) :: vfrac(vflo(1):vfhi(1),vflo(2):vfhi(2),vflo(3):vfhi(3))
 
     integer, intent(in) :: nebflux
-    real(amrex_real), intent(inout) ::   ebflux(0:nebflux-1,1:NVAR)
+    double precision, intent(inout) ::   ebflux(0:nebflux-1,1:NVAR)
     integer,            intent(in   ) :: Nebg
     type(eb_bndry_geom),intent(in   ) :: ebg(0:Nebg-1)    
-    real(amrex_real) :: eb_norm(3), full_area
-    real(amrex_real) :: sum_kappa, sum_nbrs
+    double precision :: eb_norm(3), full_area
 #endif
     double precision, intent(in) ::     q(  qd_lo(1):  qd_hi(1),  qd_lo(2):  qd_hi(2),  qd_lo(3):  qd_hi(3),QVAR)  !> State
     double precision, intent(in) ::  qaux(  qa_lo(1):  qa_hi(1),  qa_lo(2):  qa_hi(2),  qa_lo(3):  qa_hi(3),NQAUX) !> Auxiliary state
@@ -119,8 +111,8 @@ module hyp_advection_module
     double precision, pointer :: dqx(:,:,:,:), dqy(:,:,:,:), dqz(:,:,:,:)
 
     ! Other left and right state arrays
-    double precision :: qtempl(1:5+nspec)
-    double precision :: qtempr(1:5+nspec)
+    double precision :: qtempl(1:5+nspec_2)
+    double precision :: qtempr(1:5+nspec_2)
     double precision :: rhoe_l
     double precision :: rhoe_r
     double precision :: cspeed
@@ -142,12 +134,12 @@ module hyp_advection_module
     integer, parameter :: coord_type = 0
     integer, parameter :: bc_test_val = 1
     
-    real(amrex_real) :: eos_state_rho
-    real(amrex_real) :: eos_state_p
-    real(amrex_real) :: eos_state_massfrac(nspec)
-    real(amrex_real) :: eos_state_gam1
-    real(amrex_real) :: eos_state_e
-    real(amrex_real) :: eos_state_cs
+    double precision :: eos_state_rho
+    double precision :: eos_state_p
+    double precision :: eos_state_massfrac(nspec_2)
+    double precision :: eos_state_gam1
+    double precision :: eos_state_e
+    double precision :: eos_state_cs
 
     integer, parameter :: R_RHO = 1
     integer, parameter :: R_UN  = 2
@@ -177,18 +169,19 @@ module hyp_advection_module
     do L=1,3
        qt_lo(L) = lo(L) - nextra
        qt_hi(L) = hi(L) + nextra
-       if (qt_lo(L)-1 .lt. qd_lo(L) .or. qt_hi(L)+1 .gt. qd_hi(L)) then
-          stop 1
-       endif
+       !if (qt_lo(L)-1 .lt. qd_lo(L) .or. qt_hi(L)+1 .gt. qd_hi(L)) then
+       !   stop 1
+       !endif
     enddo
 
     allocate(dqx(qt_lo(1):qt_hi(1), qt_lo(2):qt_hi(2), qt_lo(3):qt_hi(3), 1:QVAR))
     allocate(dqy(qt_lo(1):qt_hi(1), qt_lo(2):qt_hi(2), qt_lo(3):qt_hi(3), 1:QVAR))
     allocate(dqz(qt_lo(1):qt_hi(1), qt_lo(2):qt_hi(2), qt_lo(3):qt_hi(3), 1:QVAR))
 
-    !$acc enter data create(dqx,dqy,dqz) copyin(flux1,flux2,flux3,d) copyin(v,ru,inv_mwt,ax,ay,az,q,flatn,qd_lo,qd_hi,qt_lo,qt_hi,ilo1,ilo2,ilo3,ihi1,ihi2,ihi3,qvar,nqaux,domlo,domhi,qaux,qa_lo,qa_hi,flag,fglo,fghi,lo,hi)
+    !$acc update device(ru,naux,plm_iorder,qvar,nvar,qpres,qrho,qu,qv,qw,qfs,qc,qcsml,nqaux,nadv,urho,umx,umy,umz,ueden,ueint,ufs,utemp,ufx,ufa)
+    !$acc enter data create(dqx,dqy,dqz) copyin(flux1,flux2,flux3,d) copyin(v,ax,ay,az,q,flatn,qd_lo,qd_hi,qt_lo,qt_hi,domlo,domhi,qaux,qa_lo,qa_hi,flag,fglo,fghi,lo,hi)
 
-    !$acc parallel loop gang vector collapse(4) present(qt_lo,dqx)
+    !$acc parallel loop gang vector collapse(4) present(qt_lo,qt_hi,dqx)
     do n = 1, qvar
        do k = qt_lo(3), qt_hi(3)
           do j = qt_lo(2), qt_hi(2)
@@ -209,7 +202,8 @@ module hyp_advection_module
                   flag,fglo,fghi)
     end if
 
-    !$acc parallel loop gang vector collapse(3) private(qtempl,qtempr,gamc_l,rhoe_l,rhoe_r,gamc_r,u_gd,v_gd,w_gd,p_gd,game_gd,re_gd,r_gd,ustar,eos_state_rho,eos_state_p,eos_state_massfrac,eos_state_e,eos_state_gam1,eos_state_cs,flux_tmp,csmall,cavg,vic,ivar) present(q,qaux,dqx,ax,flux1)
+    !$acc kernels present(q,qaux,dqx,ax,flux1)
+    !$acc loop gang vector collapse(3) private(n,qtempl,qtempr,gamc_l,rhoe_l,rhoe_r,gamc_r,u_gd, v_gd, w_gd, p_gd, game_gd, re_gd, r_gd, ustar, eos_state_rho, eos_state_p, eos_state_massfrac, eos_state_e, eos_state_gam1, eos_state_cs, flux_tmp, csmall, cavg, vic, ivar) 
     do k = ilo3, ihi3
        do j = ilo2, ihi2
           do i = ilo1+1, ihi1
@@ -218,13 +212,13 @@ module hyp_advection_module
              qtempl(R_UT1) = q(i-1,j,k,QV) + 0.5d0 * dqx(i-1,j,k,3)
              qtempl(R_UT2) = q(i-1,j,k,QW) + 0.5d0 * dqx(i-1,j,k,4)
              qtempl(R_RHO) = 0.d0
-             do n = 1,nspec
+             do n = 1,nspec_2
                 qtempl(R_Y-1+n) = q(i-1,j,k,QFS-1+n) * q(i-1,j,k,QRHO) + 0.5d0 * (dqx(i-1,j,k,4+n) &
                                   + q(i-1,j,k,QFS-1+n) * (dqx(i-1,j,k,1) + dqx(i-1,j,k,2)) / qaux(i-1,j,k,QC))
                 qtempl(R_RHO) = qtempl(R_RHO) + qtempl(R_Y-1+n)
              enddo
 
-             do n = 1,nspec
+             do n = 1,nspec_2
                qtempl(R_Y-1+n) = qtempl(R_Y-1+n) / qtempl(R_RHO)
              enddo
 
@@ -234,14 +228,14 @@ module hyp_advection_module
              qtempr(R_UT2) = q(i,j,k,QW) - 0.5d0 * dqx(i,j,k,4)
              qtempr(R_RHO) = 0.d0
 
-             do n = 1,nspec
+             do n = 1,nspec_2
                 qtempr(R_Y-1+n) = q(i,j,k,QFS-1+n) * q(i,j,k,QRHO) - 0.5d0 * &
                                     (dqx(i,j,k,4+n) + q(i,j,k,QFS-1+n) * &
                                     (dqx(i,j,k,1) + dqx(i,j,k,2)) / qaux(i,j,k,QC))
                 qtempr(R_RHO) = qtempr(R_RHO) + qtempr(R_Y-1+n)
              enddo
 
-             do n = 1,nspec
+             do n = 1,nspec_2
                 qtempr(R_Y-1+n) = qtempr(R_Y-1+n)/qtempr(R_RHO)
              enddo
 
@@ -250,29 +244,29 @@ module hyp_advection_module
 
              eos_state_rho = qtempl(R_RHO)
              eos_state_p = qtempl(R_P)
-             eos_state_massfrac = qtempl(R_Y:R_Y-1+nspec)
-             call eos_rp1(eos_state_rho, eos_state_p, eos_state_massfrac, eos_state_e, eos_state_gam1, eos_state_cs, nspec)
+             eos_state_massfrac = qtempl(R_Y:R_Y-1+nspec_2)
+             call eos_rp1(eos_state_rho, eos_state_p, eos_state_massfrac, eos_state_e, eos_state_gam1, eos_state_cs, nspec_2)
              rhoe_l = eos_state_rho * eos_state_e
              gamc_l = eos_state_gam1
 
              eos_state_rho = qtempr(R_RHO)
              eos_state_p = qtempr(R_P)
-             eos_state_massfrac = qtempr(R_Y:R_Y-1+nspec)
-             call eos_rp1(eos_state_rho, eos_state_p, eos_state_massfrac, eos_state_e, eos_state_gam1, eos_state_cs, nspec)
+             eos_state_massfrac = qtempr(R_Y:R_Y-1+nspec_2)
+             call eos_rp1(eos_state_rho, eos_state_p, eos_state_massfrac, eos_state_e, eos_state_gam1, eos_state_cs, nspec_2)
              rhoe_r = eos_state_rho * eos_state_e
              gamc_r = eos_state_gam1
 
              call riemann_md_vec(qtempl(R_RHO), qtempl(R_UN), qtempl(R_UT1), qtempl(R_UT2), &
-                                 qtempl(R_P), rhoe_l, qtempl(R_Y:R_Y-1+nspec), gamc_l, &
+                                 qtempl(R_P), rhoe_l, qtempl(R_Y:R_Y-1+nspec_2), gamc_l, &
                                  qtempr(R_RHO), qtempr(R_UN), qtempr(R_UT1), qtempr(R_UT2), &
-                                 qtempr(R_P), rhoe_r, qtempr(R_Y:R_Y-1+nspec), gamc_r,&
+                                 qtempr(R_P), rhoe_r, qtempr(R_Y:R_Y-1+nspec_2), gamc_r,&
                                  u_gd, v_gd, w_gd, p_gd, game_gd, re_gd, r_gd, ustar, &
                                  eos_state_rho, eos_state_p, eos_state_massfrac, &
-                                 eos_state_e, eos_state_gam1, eos_state_cs, nspec, &
+                                 eos_state_e, eos_state_gam1, eos_state_cs, nspec_2, &
                                  flux_tmp(URHO), flux_tmp(UMX), flux_tmp(UMY), flux_tmp(UMZ), &
                                  flux_tmp(UEDEN), flux_tmp(UEINT), bc_test_val, csmall, cavg, vic)
 
-             do n = 0, nspec-1
+             do n = 0, nspec_2-1
                 flux_tmp(UFS+n) = merge(flux_tmp(URHO)*qtempl(R_Y+n), flux_tmp(URHO)*qtempr(R_Y+n), ustar .ge. 0.d0)
                 flux_tmp(UFS+n) = merge(flux_tmp(URHO)*0.5d0*(qtempl(R_Y+n) + qtempr(R_Y+n)), flux_tmp(UFS+n), ustar .eq. 0.d0)
              enddo
@@ -291,9 +285,9 @@ module hyp_advection_module
           enddo
        enddo
     enddo
-    !$acc end parallel
+    !$acc end kernels
 
-    !$acc parallel loop gang vector collapse(4) present(qt_lo,dqy)
+    !$acc parallel loop gang vector collapse(4) present(qt_lo,qt_hi,dqy)
     do n = 1, qvar
        do k = qt_lo(3), qt_hi(3)
           do j = qt_lo(2), qt_hi(2)
@@ -314,7 +308,8 @@ module hyp_advection_module
                   flag,fglo,fghi)
     end if
 
-    !$acc parallel loop gang vector collapse(3) private(qtempl,qtempr,gamc_l,rhoe_l,rhoe_r,gamc_r,u_gd,v_gd,w_gd,p_gd,game_gd,re_gd,r_gd,ustar,eos_state_rho,eos_state_p,eos_state_massfrac,eos_state_e,eos_state_gam1,eos_state_cs,flux_tmp,csmall,cavg,vic,ivar) present(dqy,qaux,q,ay,flux2)
+    !$acc kernels present(dqy,qaux,q,ay,flux2)
+    !$acc loop gang vector collapse(3) private(n,qtempl,qtempr,gamc_l,rhoe_l,rhoe_r,gamc_r,u_gd, v_gd, w_gd, p_gd, game_gd, re_gd, r_gd, ustar, eos_state_rho, eos_state_p, eos_state_massfrac, eos_state_e, eos_state_gam1, eos_state_cs, flux_tmp, csmall, cavg, vic, ivar) 
     do k = ilo3, ihi3
        do j = ilo2+1, ihi2
           do i = ilo1, ihi1
@@ -323,13 +318,13 @@ module hyp_advection_module
              qtempl(R_UT1) = q(i,j-1,k,QU) + 0.5d0 * dqy(i,j-1,k,3)
              qtempl(R_UT2) = q(i,j-1,k,QW) + 0.5d0 * dqy(i,j-1,k,4)
              qtempl(R_RHO) = 0.d0
-             do n = 1,nspec
+             do n = 1,nspec_2
                qtempl(R_Y-1+n) = q(i,j-1,k,QFS-1+n) * q(i,j-1,k,QRHO) + 0.5d0 * (dqy(i,j-1,k,4+n) &
                                  + q(i,j-1,k,QFS-1+n) * (dqy(i,j-1,k,1) + dqy(i,j-1,k,2)) / qaux(i,j-1,k,QC))
                qtempl(R_RHO) = qtempl(R_RHO) + qtempl(R_Y-1+n)
              enddo
 
-             do n = 1,nspec
+             do n = 1,nspec_2
                qtempl(R_Y-1+n) = qtempl(R_Y-1+n)/qtempl(R_RHO)
              enddo
 
@@ -339,7 +334,7 @@ module hyp_advection_module
              qtempr(R_UT2) = q(i,j,k,QW) - 0.5d0 * dqy(i,j,k,4)
              qtempr(R_RHO) = 0.d0
 
-             do n = 1,nspec
+             do n = 1,nspec_2
                qtempr(R_Y-1+n) = q(i,j,k,QFS-1+n) &
                                    * q(i,j,k,QRHO) - 0.5d0*(dqy(i,j,k,4+n) &
                                    + q(i,j,k,QFS-1+n) &
@@ -348,7 +343,7 @@ module hyp_advection_module
                qtempr(R_RHO) = qtempr(R_RHO) + qtempr(R_Y-1+n)
              enddo
 
-             do n = 1,nspec
+             do n = 1,nspec_2
                qtempr(R_Y-1+n) = qtempr(R_Y-1+n)/qtempr(R_RHO)
              enddo
 
@@ -357,28 +352,28 @@ module hyp_advection_module
 
              eos_state_rho = qtempl(R_RHO)
              eos_state_p = qtempl(R_P)
-             eos_state_massfrac = qtempl(R_Y:R_Y-1+nspec)
-             call eos_rp1(eos_state_rho, eos_state_p, eos_state_massfrac, eos_state_e, eos_state_gam1, eos_state_cs, nspec)
+             eos_state_massfrac = qtempl(R_Y:R_Y-1+nspec_2)
+             call eos_rp1(eos_state_rho, eos_state_p, eos_state_massfrac, eos_state_e, eos_state_gam1, eos_state_cs, nspec_2)
              rhoe_l = eos_state_rho * eos_state_e
              gamc_l = eos_state_gam1
 
              eos_state_rho = qtempr(R_RHO)
              eos_state_p = qtempr(R_P)
-             eos_state_massfrac = qtempr(R_Y:R_Y-1+nspec)
-             call eos_rp1(eos_state_rho, eos_state_p, eos_state_massfrac, eos_state_e, eos_state_gam1, eos_state_cs, nspec)
+             eos_state_massfrac = qtempr(R_Y:R_Y-1+nspec_2)
+             call eos_rp1(eos_state_rho, eos_state_p, eos_state_massfrac, eos_state_e, eos_state_gam1, eos_state_cs, nspec_2)
              rhoe_r = eos_state_rho * eos_state_e
              gamc_r = eos_state_gam1
 
              call riemann_md_vec( &
-                  qtempl(R_RHO), qtempl(R_UN), qtempl(R_UT1), qtempl(R_UT2), qtempl(R_P), rhoe_l, qtempl(R_Y:R_Y-1+nspec), gamc_l,&
-                  qtempr(R_RHO), qtempr(R_UN), qtempr(R_UT1), qtempr(R_UT2), qtempr(R_P), rhoe_r, qtempr(R_Y:R_Y-1+nspec), gamc_r,&
+                  qtempl(R_RHO), qtempl(R_UN), qtempl(R_UT1), qtempl(R_UT2), qtempl(R_P), rhoe_l, qtempl(R_Y:R_Y-1+nspec_2), gamc_l,&
+                  qtempr(R_RHO), qtempr(R_UN), qtempr(R_UT1), qtempr(R_UT2), qtempr(R_P), rhoe_r, qtempr(R_Y:R_Y-1+nspec_2), gamc_r,&
                   v_gd, u_gd, w_gd, p_gd, game_gd, re_gd, r_gd, ustar,&
                   eos_state_rho, eos_state_p, eos_state_massfrac, &
-                  eos_state_e, eos_state_gam1, eos_state_cs, nspec,&
+                  eos_state_e, eos_state_gam1, eos_state_cs, nspec_2,&
                   flux_tmp(URHO), flux_tmp(UMY), flux_tmp(UMX), flux_tmp(UMZ), flux_tmp(UEDEN), flux_tmp(UEINT), &
                   bc_test_val, csmall, cavg, vic)
 
-             do n = 0, nspec-1
+             do n = 0, nspec_2-1
                 flux_tmp(UFS+n) = merge(flux_tmp(URHO)*qtempl(R_Y+n), flux_tmp(URHO)*qtempr(R_Y+n), ustar .ge. 0.d0)
                 flux_tmp(UFS+n) = merge(flux_tmp(URHO)*0.5d0*(qtempl(R_Y+n) + qtempr(R_Y+n)), flux_tmp(UFS+n), ustar .eq. 0.d0)
              enddo
@@ -397,9 +392,9 @@ module hyp_advection_module
           enddo
        enddo
     enddo
-    !$acc end parallel
+    !$acc end kernels
 
-    !$acc parallel loop gang vector collapse(4) present(qt_lo,dqz)
+    !$acc parallel loop gang vector collapse(4) present(qt_lo,qt_hi,dqz)
     do n = 1, qvar
        do k = qt_lo(3), qt_hi(3)
           do j = qt_lo(2), qt_hi(2)
@@ -420,7 +415,8 @@ module hyp_advection_module
                   flag,fglo,fghi)
     end if
 
-    !$acc parallel loop gang vector collapse(3) private(qtempl,qtempr,gamc_l,rhoe_l,rhoe_r,gamc_r,u_gd,v_gd,w_gd,p_gd,game_gd,re_gd,r_gd,ustar,eos_state_rho,eos_state_p,eos_state_massfrac,eos_state_e,eos_state_gam1,eos_state_cs,flux_tmp,csmall,cavg,vic,ivar) present(q,qaux,dqz,az,flux3)
+    !$acc kernels present(q,qaux,dqz,az,flux3)
+    !$acc loop gang vector collapse(3) private(n,qtempl,qtempr,gamc_l,rhoe_l,rhoe_r,gamc_r,u_gd, v_gd, w_gd, p_gd, game_gd, re_gd, r_gd, ustar, eos_state_rho, eos_state_p, eos_state_massfrac, eos_state_e, eos_state_gam1, eos_state_cs, flux_tmp, csmall, cavg, vic, ivar)
     do k = ilo3+1, ihi3
        do j = ilo2, ihi2
           do i = ilo1, ihi1
@@ -429,7 +425,7 @@ module hyp_advection_module
              qtempl(R_UT1) = q(i,j,k-1,QU) + 0.5d0 * dqz(i,j,k-1,3)
              qtempl(R_UT2) = q(i,j,k-1,QV) + 0.5d0 * dqz(i,j,k-1,4)
              qtempl(R_RHO) = 0.d0
-             do n = 1,nspec
+             do n = 1,nspec_2
                qtempl(R_Y-1+n) = q(i,j,k-1,QFS-1+n) &
                                  * q(i,j,k-1,QRHO) + 0.5d0*(dqz(i,j,k-1,4+n) &
                                  + q(i,j,k-1,QFS-1+n) &
@@ -438,7 +434,7 @@ module hyp_advection_module
                qtempl(R_RHO) = qtempl(R_RHO) + qtempl(R_Y-1+n)
              enddo
 
-             do n = 1,nspec
+             do n = 1,nspec_2
                qtempl(R_Y-1+n) = qtempl(R_Y-1+n)/qtempl(R_RHO)
              enddo
 
@@ -448,7 +444,7 @@ module hyp_advection_module
              qtempr(R_UT2) = q(i,j,k,QV) - 0.5d0 * dqz(i,j,k,4)
              qtempr(R_RHO) = 0.d0
 
-             do n = 1,nspec
+             do n = 1,nspec_2
                 qtempr(R_Y-1+n) = q(i,j,k,QFS-1+n) &
                                   * q(i,j,k,QRHO) - 0.5d0*(dqz(i,j,k,4+n) &
                                   + q(i,j,k,QFS-1+n) &
@@ -457,7 +453,7 @@ module hyp_advection_module
                 qtempr(R_RHO) = qtempr(R_RHO) + qtempr(R_Y-1+n)
              enddo
 
-             do n = 1,nspec
+             do n = 1,nspec_2
                qtempr(R_Y-1+n) = qtempr(R_Y-1+n)/qtempr(R_RHO)
              enddo
 
@@ -466,28 +462,28 @@ module hyp_advection_module
 
              eos_state_rho = qtempl(R_RHO)
              eos_state_p = qtempl(R_P)
-             eos_state_massfrac = qtempl(R_Y:R_Y-1+nspec)
-             call eos_rp1(eos_state_rho, eos_state_p, eos_state_massfrac, eos_state_e, eos_state_gam1, eos_state_cs, nspec)
+             eos_state_massfrac = qtempl(R_Y:R_Y-1+nspec_2)
+             call eos_rp1(eos_state_rho, eos_state_p, eos_state_massfrac, eos_state_e, eos_state_gam1, eos_state_cs, nspec_2)
              rhoe_l = eos_state_rho * eos_state_e
              gamc_l = eos_state_gam1
 
              eos_state_rho = qtempr(R_RHO)
              eos_state_p = qtempr(R_P)
-             eos_state_massfrac = qtempr(R_Y:R_Y-1+nspec)
-             call eos_rp1(eos_state_rho, eos_state_p, eos_state_massfrac, eos_state_e, eos_state_gam1, eos_state_cs, nspec)
+             eos_state_massfrac = qtempr(R_Y:R_Y-1+nspec_2)
+             call eos_rp1(eos_state_rho, eos_state_p, eos_state_massfrac, eos_state_e, eos_state_gam1, eos_state_cs, nspec_2)
              rhoe_r = eos_state_rho * eos_state_e
              gamc_r = eos_state_gam1
 
              call riemann_md_vec( &
-                  qtempl(R_RHO), qtempl(R_UN), qtempl(R_UT1), qtempl(R_UT2), qtempl(R_P), rhoe_l, qtempl(R_Y:R_Y-1+nspec), gamc_l,&
-                  qtempr(R_RHO), qtempr(R_UN), qtempr(R_UT1), qtempr(R_UT2), qtempr(R_P), rhoe_r, qtempr(R_Y:R_Y-1+nspec), gamc_r,&
+                  qtempl(R_RHO), qtempl(R_UN), qtempl(R_UT1), qtempl(R_UT2), qtempl(R_P), rhoe_l, qtempl(R_Y:R_Y-1+nspec_2), gamc_l,&
+                  qtempr(R_RHO), qtempr(R_UN), qtempr(R_UT1), qtempr(R_UT2), qtempr(R_P), rhoe_r, qtempr(R_Y:R_Y-1+nspec_2), gamc_r,&
                   w_gd, u_gd, v_gd, p_gd, game_gd, re_gd, r_gd, ustar,&
                   eos_state_rho, eos_state_p, eos_state_massfrac, &
-                  eos_state_e, eos_state_gam1, eos_state_cs, nspec,&
+                  eos_state_e, eos_state_gam1, eos_state_cs, nspec_2,&
                   flux_tmp(URHO), flux_tmp(UMZ), flux_tmp(UMX), flux_tmp(UMY), flux_tmp(UEDEN), flux_tmp(UEINT), &
                   bc_test_val, csmall, cavg, vic)
 
-             do n = 0, nspec-1
+             do n = 0, nspec_2-1
                 flux_tmp(UFS+n) = merge(flux_tmp(URHO)*qtempl(R_Y+n), flux_tmp(URHO)*qtempr(R_Y+n), ustar .ge. 0.d0)
                 flux_tmp(UFS+n) = merge(flux_tmp(URHO)*0.5d0*(qtempl(R_Y+n) + qtempr(R_Y+n)), flux_tmp(UFS+n), ustar .eq. 0.d0)
              enddo
@@ -506,9 +502,9 @@ module hyp_advection_module
           enddo
        enddo
     enddo
-    !$acc end parallel
+    !$acc end kernels
 
-    !$acc parallel loop gang vector collapse(4) present(d,flux1,flux2,flux3,v)
+    !$acc parallel loop gang vector collapse(4) present(lo,hi,d,flux1,flux2,flux3,v)
     do ivar=1,NVAR
        do k = lo(3)-nextra+1, hi(3)+nextra-1
           do j = lo(2)-nextra+1, hi(2)+nextra-1
@@ -521,11 +517,21 @@ module hyp_advection_module
        enddo
     enddo
     !$acc end parallel
-    !$acc exit data delete(dqx,dqy,dqz) copyout(flux1,flux2,flux3,d) delete(v,ru,inv_mwt,ax,ay,az,q,flatn,qd_lo,qd_hi,qt_lo,qt_hi,ilo1,ilo2,ilo3,ihi1,ihi2,ihi3,qvar,nqaux,domlo,domhi,qaux,qa_lo,qa_hi,flag,fglo,fghi,lo,hi)
+    !$acc exit data delete(dqx,dqy,dqz) copyout(flux1,flux2,flux3,d) copyout(v,ax,ay,az,q,flatn,qd_lo,qd_hi,qt_lo,qt_hi,domlo,domhi,qaux,qa_lo,qa_hi,flag,fglo,fghi,lo,hi)
 
     deallocate(dqx)
     deallocate(dqy)
     deallocate(dqz)
+
+    !do ivar=1,NVAR
+    !   do k = lo(3)-nextra+1, hi(3)+nextra-1
+    !      do j = lo(2)-nextra+1, hi(2)+nextra-1
+    !         do i = lo(1)-nextra+1, hi(1)+nextra-1
+    !            print *, "FLUX3: ", flux3(i,j,k,ivar)
+    !         enddo
+    !      enddo
+    !   enddo
+    !enddo
 
   end subroutine pc_hyp_mol_flux
 end module hyp_advection_module 

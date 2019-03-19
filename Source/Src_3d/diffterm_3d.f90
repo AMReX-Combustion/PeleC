@@ -39,15 +39,14 @@ contains
                          D,   Dlo,   Dhi,&
                          deltax) bind(C, name = "pc_diffterm")
 
-    use actual_network, only     : nspec
     use meth_params_module, only : NVAR, UMX, UMY, UMZ, UEDEN, UFS, QVAR, QU, QV, QW, QPRES, QTEMP, QFS, QRHO
-    use amrex_constants_module
-    use eos_type_module
-    use eos_module
-    use prob_params_module, only : physbc_lo, physbc_hi
+    use eos_module !this pulls in nspec, so we need to use a unique nspec to
+                   !define as a parameter for the gpu
+    use prob_params_module, only : physbc_lo, physbc_hi, Inflow
 
     implicit none
 
+    integer, parameter  :: nspec_2=9
     integer, intent(in) ::     lo(3),    hi(3)
     integer, intent(in) ::  dmnlo(3), dmnhi(3)
     integer, intent(in) ::    Qlo(3),   Qhi(3)
@@ -80,21 +79,21 @@ contains
     integer, intent(in) ::    Vlo(3),   Vhi(3)
 
     double precision, intent(in   ) ::    Q(   Qlo(1):   Qhi(1),   Qlo(2):   Qhi(2),   Qlo(3):   Qhi(3), QVAR)
-    double precision, intent(in   ) ::   Dx(  Dxlo(1):  Dxhi(1),  Dxlo(2):  Dxhi(2),  Dxlo(3):  Dxhi(3), nspec)
+    double precision, intent(in   ) ::   Dx(  Dxlo(1):  Dxhi(1),  Dxlo(2):  Dxhi(2),  Dxlo(3):  Dxhi(3), nspec_2)
     double precision, intent(in   ) ::  mux( muxlo(1): muxhi(1), muxlo(2): muxhi(2), muxlo(3): muxhi(3)  )
     double precision, intent(in   ) ::  xix( xixlo(1): xixhi(1), xixlo(2): xixhi(2), xixlo(3): xixhi(3)  )
     double precision, intent(in   ) :: lamx(lamxlo(1):lamxhi(1),lamxlo(2):lamxhi(2),lamxlo(3):lamxhi(3)  )
     double precision, intent(in   ) ::   tx(  txlo(1):  txhi(1),  txlo(2):  txhi(2),  txlo(3):  txhi(3), 6)
     double precision, intent(in   ) ::   Ax(  Axlo(1):  Axhi(1),  Axlo(2):  Axhi(2),  Axlo(3):  Axhi(3)  )
     double precision, intent(inout) ::   fx(  fxlo(1):  fxhi(1),  fxlo(2):  fxhi(2),  fxlo(3):  fxhi(3), NVAR)
-    double precision, intent(in   ) ::   Dy(  Dylo(1):  Dyhi(1),  Dylo(2):  Dyhi(2),  Dylo(3):  Dyhi(3), nspec)
+    double precision, intent(in   ) ::   Dy(  Dylo(1):  Dyhi(1),  Dylo(2):  Dyhi(2),  Dylo(3):  Dyhi(3), nspec_2)
     double precision, intent(in   ) ::  muy( muylo(1): muyhi(1), muylo(2): muyhi(2), muylo(3): muyhi(3)  )
     double precision, intent(in   ) ::  xiy( xiylo(1): xiyhi(1), xiylo(2): xiyhi(2), xiylo(3): xiyhi(3)  )
     double precision, intent(in   ) :: lamy(lamylo(1):lamyhi(1),lamylo(2):lamyhi(2),lamylo(3):lamyhi(3)  )
     double precision, intent(in   ) ::   ty(  tylo(1):  tyhi(1),  tylo(2):  tyhi(2),  tylo(3):  tyhi(3), 6)
     double precision, intent(in   ) ::   Ay(  Aylo(1):  Ayhi(1),  Aylo(2):  Ayhi(2),  Aylo(3):  Ayhi(3)  )
     double precision, intent(inout) ::   fy(  fylo(1):  fyhi(1),  fylo(2):  fyhi(2),  fylo(3):  fyhi(3), NVAR)
-    double precision, intent(in   ) ::   Dz(  Dzlo(1):  Dzhi(1),  Dzlo(2):  Dzhi(2),  Dzlo(3):  Dzhi(3), nspec)
+    double precision, intent(in   ) ::   Dz(  Dzlo(1):  Dzhi(1),  Dzlo(2):  Dzhi(2),  Dzlo(3):  Dzhi(3), nspec_2)
     double precision, intent(in   ) ::  muz( muzlo(1): muzhi(1), muzlo(2): muzhi(2), muzlo(3): muzhi(3)  )
     double precision, intent(in   ) ::  xiz( xizlo(1): xizhi(1), xizlo(2): xizhi(2), xizlo(3): xizhi(3)  )
     double precision, intent(in   ) :: lamz(lamzlo(1):lamzhi(1),lamzlo(2):lamzhi(2),lamzlo(3):lamzhi(3)  )
@@ -114,8 +113,8 @@ contains
     double precision :: dlnpi, gfaci(lo(1):hi(1)+1)
     double precision :: dlnpj, gfacj(lo(2):hi(2)+1)
     double precision :: dlnpk, gfack(lo(3):hi(3)+1)
-    double precision :: X(lo(1)-1:hi(1)+1,lo(2)-1:hi(2)+1,lo(3)-1:hi(3)+1,1:nspec)
-    double precision :: hii(lo(1)-1:hi(1)+1,lo(2)-1:hi(2)+1,lo(3)-1:hi(3)+1,1:nspec)
+    double precision :: X(lo(1)-1:hi(1)+1,lo(2)-1:hi(2)+1,lo(3)-1:hi(3)+1,1:nspec_2)
+    double precision :: hii(lo(1)-1:hi(1)+1,lo(2)-1:hi(2)+1,lo(3)-1:hi(3)+1,1:nspec_2)
     double precision, parameter :: twoThirds = 2.d0/3.d0
     double precision :: dxinv(3)
 
@@ -128,14 +127,15 @@ contains
     gfacj = dxinv(2)
     gfack = dxinv(3)
 
-    !$acc enter data copyin(dlnpi,dlnpj,dlnpk,hi,lo,ax,ay,az,tx,ty,tz,dx,dy,dz,lamx,lamy,lamz,gfaci,gfacj,gfack,mux,muy,muz,xix,xiy,xiz,dxinv,v,hii,x,nspec,qfs,qvar,qfs,dmnlo,dmnhi,physbc_lo,physbc_hi,fx,fy,fz) create(vc,d)
+    !$acc update device(nvar,umx,umy,umz,ueden,ufs,qvar,qu,qv,qw,qpres,qtemp,qfs,qrho)
+    !$acc enter data copyin(q,hi,lo,ax,ay,az,tx,ty,tz,dx,dy,dz,lamx,lamy,lamz,gfaci,gfacj,gfack,mux,muy,muz,xix,xiy,xiz,dxinv,v,hii,x,dmnlo,dmnhi,physbc_lo,physbc_hi,fx,fy,fz) create(vc,d)
 
     !$acc parallel present(q,x,lo,hi,hii)
-    call eos_ytx_vec_gpu(q,x,lo,hi,nspec,qfs,qvar)
-    call eos_hi_vec_gpu(q,hii,lo,hi,nspec,qtemp,qvar,qfs)
+    call eos_ytx_vec_gpu(q,x,lo,hi,nspec_2,qfs,qvar)
+    call eos_hi_vec_gpu(q,hii,lo,hi,nspec_2,qtemp,qvar,qfs)
     !$acc end parallel
 
-    !$acc kernels present(dlnpi,dlnpj,dlnpk,hi,lo,ax,ay,az,tx,ty,tz,dx,dy,dz,lamx,lamy,lamz,gfaci,gfacj,gfack,mux,muy,muz,xix,xiy,xiz,dxinv,v,hii,x,q,nspec,qfs,qvar,qfs,dmnlo,dmnhi,physbc_lo,physbc_hi,vc,fx,fy,fz,d)
+    !$acc kernels present(hi,lo,ax,ay,az,tx,ty,tz,dx,dy,dz,lamx,lamy,lamz,gfaci,gfacj,gfack,mux,muy,muz,xix,xiy,xiz,dxinv,v,hii,x,q,dmnlo,dmnhi,physbc_lo,physbc_hi,vc,fx,fy,fz,d)
     !$acc loop collapse(3) private(dtdx,dudx,dvdx,dwdx,dudy,dvdy,dudz,dwdz,tauxx,tauxy,tauxz,uface1,uface2,uface3)
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
@@ -152,9 +152,9 @@ contains
              tauxx = mux(i,j,k)*(2.d0*dudx-twoThirds*divu) + xix(i,j,k)*divu
              tauxy = mux(i,j,k)*(dudy+dvdx)
              tauxz = mux(i,j,k)*(dudz+dwdx)
-             Uface1 = HALF*(Q(i,j,k,QU) + Q(i-1,j,k,QU))
-             Uface2 = HALF*(Q(i,j,k,QV) + Q(i-1,j,k,QV))
-             Uface3 = HALF*(Q(i,j,k,QW) + Q(i-1,j,k,QW))
+             Uface1 = 0.5d0*(Q(i,j,k,QU) + Q(i-1,j,k,QU))
+             Uface2 = 0.5d0*(Q(i,j,k,QV) + Q(i-1,j,k,QV))
+             Uface3 = 0.5d0*(Q(i,j,k,QW) + Q(i-1,j,k,QW))
              fx(i,j,k,UMX)   = - tauxx
              fx(i,j,k,UMY)   = - tauxy
              fx(i,j,k,UMZ)   = - tauxz
@@ -171,16 +171,16 @@ contains
        enddo
     enddo
     !$acc loop seq
-    do n=1,nspec
+    do n=1,nspec_2
        !$acc loop collapse(3)
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)+1
-                pface = HALF*(Q(i,j,k,QPRES) + Q(i-1,j,k,QPRES))
+                pface = 0.5d0*(Q(i,j,k,QPRES) + Q(i-1,j,k,QPRES))
                 dlnpi = gfaci(i) * (Q(i,j,k,QPRES) - Q(i-1,j,k,QPRES)) / pface
-                Xface = HALF*(X(i,j,k,n) + X(i-1,j,k,n))
-                Yface = HALF*(Q(i,j,k,QFS+n-1) + Q(i-1,j,k,QFS+n-1))
-                hface = HALF*(hii(i,j,k,n) + hii(i-1,j,k,n))
+                Xface = 0.5d0*(X(i,j,k,n) + X(i-1,j,k,n))
+                Yface = 0.5d0*(Q(i,j,k,QFS+n-1) + Q(i-1,j,k,QFS+n-1))
+                hface = 0.5d0*(hii(i,j,k,n) + hii(i-1,j,k,n))
                 dXdx = gfaci(i) * (X(i,j,k,n) - X(i-1,j,k,n))
                 Vd = -Dx(i,j,k,n)*(dXdx + (Xface - Yface) * dlnpi)
                 Vc(i,j,k) = Vc(i,j,k) + Vd
@@ -191,13 +191,13 @@ contains
        enddo
     enddo
     !$acc loop seq
-    do n=1,nspec
+    do n=1,nspec_2
        !$acc loop collapse(3)
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)+1
-                Yface = HALF*(Q(i,j,k,QFS+n-1) + Q(i-1,j,k,QFS+n-1))
-                hface = HALF*(hii(i,j,k,n) + hii(i-1,j,k,n))
+                Yface = 0.5d0*(Q(i,j,k,QFS+n-1) + Q(i-1,j,k,QFS+n-1))
+                hface = 0.5d0*(hii(i,j,k,n) + hii(i-1,j,k,n))
                 fx(i,j,k,UFS+n-1) = fx(i,j,k,UFS+n-1) - Yface*Vc(i,j,k)
                 fx(i,j,k,UEDEN)   = fx(i,j,k,UEDEN)   - Yface*Vc(i,j,k)*hface
              end do
@@ -216,7 +216,7 @@ contains
        enddo
     enddo
     !$acc loop collapse(4)
-    do n=UFS,UFS+nspec-1
+    do n=UFS,UFS+nspec_2-1
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)+1
@@ -242,9 +242,9 @@ contains
              tauyx = muy(i,j,k)*(dudy+dvdx)
              tauyy = muy(i,j,k)*(2.d0*dvdy-twoThirds*divu) + xiy(i,j,k)*divu
              tauyz = muy(i,j,k)*(dwdy+dvdz)
-             Uface1 = HALF*(Q(i,j,k,QU) + Q(i,j-1,k,QU))
-             Uface2 = HALF*(Q(i,j,k,QV) + Q(i,j-1,k,QV))
-             Uface3 = HALF*(Q(i,j,k,QW) + Q(i,j-1,k,QW))
+             Uface1 = 0.5d0*(Q(i,j,k,QU) + Q(i,j-1,k,QU))
+             Uface2 = 0.5d0*(Q(i,j,k,QV) + Q(i,j-1,k,QV))
+             Uface3 = 0.5d0*(Q(i,j,k,QW) + Q(i,j-1,k,QW))
              fy(i,j,k,UMX)   = - tauyx
              fy(i,j,k,UMY)   = - tauyy
              fy(i,j,k,UMZ)   = - tauyz
@@ -261,16 +261,16 @@ contains
        enddo
     enddo
     !$acc loop seq
-    do n=1,nspec
+    do n=1,nspec_2
        !$acc loop collapse(3)
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)+1
              do i=lo(1),hi(1)
-                pface = HALF*(Q(i,j,k,QPRES) + Q(i,j-1,k,QPRES))
+                pface = 0.5d0*(Q(i,j,k,QPRES) + Q(i,j-1,k,QPRES))
                 dlnpj = gfacj(j) * (Q(i,j,k,QPRES) - Q(i,j-1,k,QPRES)) / pface
-                Xface = HALF*(X(i,j,k,n) + X(i,j-1,k,n))
-                Yface = HALF*(Q(i,j,k,QFS+n-1) + Q(i,j-1,k,QFS+n-1))
-                hface = HALF*(hii(i,j,k,n)   + hii(i,j-1,k,n))
+                Xface = 0.5d0*(X(i,j,k,n) + X(i,j-1,k,n))
+                Yface = 0.5d0*(Q(i,j,k,QFS+n-1) + Q(i,j-1,k,QFS+n-1))
+                hface = 0.5d0*(hii(i,j,k,n)   + hii(i,j-1,k,n))
                 dXdy = gfacj(j) * (X(i,j,k,n) - X(i,j-1,k,n))
                 Vd = -Dy(i,j,k,n)*(dXdy + (Xface - Yface) * dlnpj)
                 Vc(i,j,k) = Vc(i,j,k) + Vd
@@ -281,13 +281,13 @@ contains
        enddo
     enddo
     !$acc loop seq
-    do n=1,nspec
+    do n=1,nspec_2
        !$acc loop collapse(3)
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)+1
              do i=lo(1),hi(1)
-                Yface = HALF*(Q(i,j,k,QFS+n-1) + Q(i,j-1,k,QFS+n-1))
-                hface = HALF*(hii(i,j,k,n) + hii(i,j-1,k,n))
+                Yface = 0.5d0*(Q(i,j,k,QFS+n-1) + Q(i,j-1,k,QFS+n-1))
+                hface = 0.5d0*(hii(i,j,k,n) + hii(i,j-1,k,n))
                 fy(i,j,k,UFS+n-1) = fy(i,j,k,UFS+n-1) - Yface*Vc(i,j,k)
                 fy(i,j,k,UEDEN)   = fy(i,j,k,UEDEN)   - Yface*Vc(i,j,k)*hface
              end do
@@ -306,7 +306,7 @@ contains
        enddo
     enddo
     !$acc loop collapse(4)
-    do n=UFS,UFS+nspec-1
+    do n=UFS,UFS+nspec_2-1
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)+1
              do i=lo(1),hi(1)
@@ -332,9 +332,9 @@ contains
              tauzx = muz(i,j,k)*(dudz+dwdx)
              tauzy = muz(i,j,k)*(dvdz+dwdy)
              tauzz = muz(i,j,k)*(2.d0*dwdz-twoThirds*divu) + xiz(i,j,k)*divu
-             Uface1 = HALF*(Q(i,j,k,QU) + Q(i,j,k-1,QU))
-             Uface2 = HALF*(Q(i,j,k,QV) + Q(i,j,k-1,QV))
-             Uface3 = HALF*(Q(i,j,k,QW) + Q(i,j,k-1,QW))
+             Uface1 = 0.5d0*(Q(i,j,k,QU) + Q(i,j,k-1,QU))
+             Uface2 = 0.5d0*(Q(i,j,k,QV) + Q(i,j,k-1,QV))
+             Uface3 = 0.5d0*(Q(i,j,k,QW) + Q(i,j,k-1,QW))
              fz(i,j,k,UMX)   = - tauzx
              fz(i,j,k,UMY)   = - tauzy
              fz(i,j,k,UMZ)   = - tauzz
@@ -351,16 +351,16 @@ contains
        enddo
     enddo
     !$acc loop seq
-    do n=1,nspec
+    do n=1,nspec_2
        !$acc loop collapse(3)
        do k=lo(3),hi(3)+1
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)
-                pface = HALF*(Q(i,j,k,QPRES) + Q(i,j,k-1,QPRES))
+                pface = 0.5d0*(Q(i,j,k,QPRES) + Q(i,j,k-1,QPRES))
                 dlnpk = gfack(k) * (Q(i,j,k,QPRES) - Q(i,j,k-1,QPRES)) / pface
-                Xface = HALF*(X(i,j,k,n) + X(i,j,k-1,n))
-                Yface = HALF*(Q(i,j,k,QFS+n-1) + Q(i,j,k-1,QFS+n-1))
-                hface = HALF*(hii(i,j,k,n) + hii(i,j,k-1,n))
+                Xface = 0.5d0*(X(i,j,k,n) + X(i,j,k-1,n))
+                Yface = 0.5d0*(Q(i,j,k,QFS+n-1) + Q(i,j,k-1,QFS+n-1))
+                hface = 0.5d0*(hii(i,j,k,n) + hii(i,j,k-1,n))
                 dXdz = dxinv(3) * (X(i,j,k,n) - X(i,j,k-1,n))
                 Vd = -Dz(i,j,k,n)*(dXdz + (Xface - Yface) * dlnpk)
                 Vc(i,j,k) = Vc(i,j,k) + Vd
@@ -371,13 +371,13 @@ contains
        enddo
     enddo
     !$acc loop seq
-    do n=1,nspec
+    do n=1,nspec_2
        !$acc loop collapse(3)
        do k=lo(3),hi(3)+1
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)
-                Yface = HALF*(Q(i,j,k,QFS+n-1) + Q(i,j,k-1,QFS+n-1))
-                hface = HALF*(hii(i,j,k,n) + hii(i,j,k-1,n))
+                Yface = 0.5d0*(Q(i,j,k,QFS+n-1) + Q(i,j,k-1,QFS+n-1))
+                hface = 0.5d0*(hii(i,j,k,n) + hii(i,j,k-1,n))
                 fz(i,j,k,UFS+n-1) = fz(i,j,k,UFS+n-1) - Yface*Vc(i,j,k)
                 fz(i,j,k,UEDEN)   = fz(i,j,k,UEDEN)   - Yface*Vc(i,j,k)*hface
              end do
@@ -396,7 +396,7 @@ contains
        enddo
     enddo
     !$acc loop collapse(4)
-    do n=UFS,UFS+nspec-1
+    do n=UFS,UFS+nspec_2-1
        do k=lo(3),hi(3)+1
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)
@@ -419,7 +419,7 @@ contains
        end do
     end do
     !$acc end kernels
-    !$acc exit data delete(dlnpi,dlnpj,dlnpk,hi,lo,ax,ay,az,tx,ty,tz,dx,dy,dz,lamx,lamy,lamz,gfaci,gfacj,gfack,mux,muy,muz,xix,xiy,xiz,dxinv,v,hii,x,q,nspec,qfs,qvar,qfs,dmnlo,dmnhi,physbc_lo,physbc_hi,vc) copyout(fx,fy,fz,d)
+    !$acc exit data copyout(hi,lo,ax,ay,az,tx,ty,tz,dx,dy,dz,lamx,lamy,lamz,gfaci,gfacj,gfack,mux,muy,muz,xix,xiy,xiz,dxinv,v,hii,x,q,dmnlo,dmnhi,physbc_lo,physbc_hi,vc) copyout(fx,fy,fz,d)
 
   end subroutine pc_diffterm
 
