@@ -419,7 +419,7 @@ contains
        end do
     end do
     !$acc end kernels
-    !$acc exit data copyout(hi,lo,ax,ay,az,tx,ty,tz,dx,dy,dz,lamx,lamy,lamz,gfaci,gfacj,gfack,mux,muy,muz,xix,xiy,xiz,dxinv,v,hii,x,q,dmnlo,dmnhi,physbc_lo,physbc_hi,vc) copyout(fx,fy,fz,d)
+    !$acc exit data delete(hi,lo,ax,ay,az,tx,ty,tz,dx,dy,dz,lamx,lamy,lamz,gfaci,gfacj,gfack,mux,muy,muz,xix,xiy,xiz,dxinv,v,hii,x,q,dmnlo,dmnhi,physbc_lo,physbc_hi,vc) copyout(fx,fy,fz,d)
 
   end subroutine pc_diffterm
 

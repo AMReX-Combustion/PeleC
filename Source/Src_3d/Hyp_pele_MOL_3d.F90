@@ -517,7 +517,7 @@ module hyp_advection_module
        enddo
     enddo
     !$acc end parallel
-    !$acc exit data delete(dqx,dqy,dqz) copyout(flux1,flux2,flux3,d) copyout(v,ax,ay,az,q,flatn,qd_lo,qd_hi,qt_lo,qt_hi,domlo,domhi,qaux,qa_lo,qa_hi,flag,fglo,fghi,lo,hi)
+    !$acc exit data delete(dqx,dqy,dqz) copyout(flux1,flux2,flux3,d) delete(v,ax,ay,az,q,flatn,qd_lo,qd_hi,qt_lo,qt_hi,domlo,domhi,qaux,qa_lo,qa_hi,flag,fglo,fghi,lo,hi)
 
     deallocate(dqx)
     deallocate(dqy)
