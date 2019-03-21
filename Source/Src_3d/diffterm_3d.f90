@@ -130,13 +130,13 @@ contains
     !$acc update device(nvar,umx,umy,umz,ueden,ufs,qvar,qu,qv,qw,qpres,qtemp,qfs,qrho)
     !$acc enter data copyin(q,hi,lo,ax,ay,az,tx,ty,tz,dx,dy,dz,lamx,lamy,lamz,gfaci,gfacj,gfack,mux,muy,muz,xix,xiy,xiz,dxinv,v,hii,x,dmnlo,dmnhi,physbc_lo,physbc_hi,fx,fy,fz) create(vc,d)
 
-    !$acc parallel present(q,x,lo,hi,hii)
+    !$acc parallel default(present)
     call eos_ytx_vec_gpu(q,x,lo,hi,nspec_2,qfs,qvar)
     call eos_hi_vec_gpu(q,hii,lo,hi,nspec_2,qtemp,qvar,qfs)
     !$acc end parallel
 
-    !$acc kernels present(hi,lo,ax,ay,az,tx,ty,tz,dx,dy,dz,lamx,lamy,lamz,gfaci,gfacj,gfack,mux,muy,muz,xix,xiy,xiz,dxinv,v,hii,x,q,dmnlo,dmnhi,physbc_lo,physbc_hi,vc,fx,fy,fz,d)
-    !$acc loop collapse(3) private(dtdx,dudx,dvdx,dwdx,dudy,dvdy,dudz,dwdz,tauxx,tauxy,tauxz,uface1,uface2,uface3)
+    !$acc kernels default(present)
+    !$acc loop collapse(3)
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)+1

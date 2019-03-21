@@ -363,7 +363,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
       //  Set extensive flux at embedded boundary, potentially
       //  non-zero only for heat flux on isothermal boundaries,
       //  and momentum fluxes at no-slip walls
-      if (typ == FabType::singlevalued && Ncut > 0) {
+/*      if (typ == FabType::singlevalued && Ncut > 0) {
         sv_eb_flux[local_i].setVal(0);  // Default to Neumann for all fields
 
         int Nvals = sv_eb_bcval[local_i].numPts();
@@ -411,6 +411,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
           }
         }
       }
+*/
 #endif
 
       BL_PROFILE_VAR_STOP(diff);

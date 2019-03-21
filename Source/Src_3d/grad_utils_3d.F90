@@ -44,9 +44,9 @@ contains
     dxinv = 1.d0/deltax
 
     !$acc update device(qvar,qu,qv,qw)
-    !$acc enter data copyin(q,dxinv,lo,hi,dlo,dhi) copyin(td)
+    !$acc enter data copyin(q,dxinv,lo,hi,dlo,dhi) create(td)
     if (idir .eq. 0) then
-       !$acc parallel loop gang vector collapse(3) present(q,td,lo,hi,dxinv)
+       !$acc parallel loop gang vector collapse(3) default(present)
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)+1
@@ -63,7 +63,7 @@ contains
 
        ! Fix boundaries (since Dirichlet values passed in cell containers actually specified on face)
        if (lo(idir+1).lt.dlo(idir+1) .and. physbc_lo(idir+1).eq.Inflow) then
-          !$acc parallel loop gang vector collapse(3) present(q,td,lo,hi,dlo,dxinv)
+          !$acc parallel loop gang vector collapse(3) default(present)
           do k=lo(3),hi(3)
              do j=lo(2),hi(2)
                 do i=lo(1),dlo(1)
@@ -79,7 +79,7 @@ contains
           !$acc end parallel
        endif
        if (hi(idir+1).gt.dhi(idir+1) .and. physbc_hi(idir+1).eq.Inflow) then
-          !$acc parallel loop gang vector collapse(3) present(q,td,lo,hi,dhi,dxinv)
+          !$acc parallel loop gang vector collapse(3) default(present)
           do k=lo(3),hi(3)
              do j=lo(2),hi(2)
                 do i=dhi(1)+1,hi(1)+1
@@ -96,7 +96,7 @@ contains
        endif
 
     else if (idir .eq. 1) then
-       !$acc parallel loop gang vector collapse(3) present(q,td,lo,hi,dxinv)
+       !$acc parallel loop gang vector collapse(3) default(present)
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)+1
              do i=lo(1),hi(1)
@@ -113,7 +113,7 @@ contains
 
        ! Fix boundaries (since Dirichlet values passed in cell containers actually specified on face)
        if (lo(idir+1).lt.dlo(idir+1) .and. physbc_lo(idir+1).eq.Inflow) then
-          !$acc parallel loop gang vector collapse(3) present(q,td,lo,hi,dlo,dxinv)
+          !$acc parallel loop gang vector collapse(3) default(present)
           do k=lo(3),hi(3)
              do j=lo(2),dlo(2)
                 do i=lo(1),hi(1)
@@ -129,7 +129,7 @@ contains
           !$acc end parallel
        endif
        if (hi(idir+1).gt.dhi(idir+1) .and. physbc_hi(idir+1).eq.Inflow) then
-          !$acc parallel loop gang vector collapse(3) present(q,td,lo,hi,dhi,dxinv)
+          !$acc parallel loop gang vector collapse(3) default(present)
           do k=lo(3),hi(3)
              do j=dhi(2)+1,hi(2)+1
                 do i=lo(1),hi(1)
@@ -146,7 +146,7 @@ contains
        endif
 
     else
-       !$acc parallel loop gang vector collapse(3) present(q,td,lo,hi,dxinv)
+       !$acc parallel loop gang vector collapse(3) default(present)
        do k=lo(3),hi(3)+1
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)
@@ -163,7 +163,7 @@ contains
 
        ! Fix boundaries (since Dirichlet values passed in cell containers actually specified on face)
        if (lo(idir+1).lt.dlo(idir+1) .and. physbc_lo(idir+1).eq.Inflow) then
-          !$acc parallel loop gang vector collapse(3) present(q,td,lo,hi,dlo,dxinv)
+          !$acc parallel loop gang vector collapse(3) default(present)
           do k=lo(3),dlo(3)
              do j=lo(2),hi(2)
                 do i=lo(1),hi(1)
@@ -179,7 +179,7 @@ contains
           !$acc end parallel
        endif
        if (hi(idir+1).gt.dhi(idir+1) .and. physbc_hi(idir+1).eq.Inflow) then
-          !$acc parallel loop gang vector collapse(3) present(q,td,lo,hi,dhi,dxinv)
+          !$acc parallel loop gang vector collapse(3) default(present)
           do k=dhi(3)+1,hi(3)+1
              do j=lo(2),hi(2)
                 do i=lo(1),hi(1)
