@@ -33,7 +33,7 @@ Model Generation Procedures
 #. Set up some fuego variables by doing:
 
    .. code-block:: c++
-      
+
       . ${PELE_PHYSICS_HOME}/Support/Fuego/Pythia/setup.sh # for bash
       source ${PELE_PHYSICS_HOME}/Support/Fuego/Pythia/setup.csh # for csh
 
@@ -84,6 +84,7 @@ Equation of State
 -----------------
 
 PeleC allows the user to use different equation of state (eos) as the constitutive equation and close the compressible Navier-Stokes system of equations. All the routines needed to fully define an eos are implemented through PelePhysics module. Available models include:
+
 * An ideal gas mixture model (similar ot the CHEMKIN-II approach)
 * A simple `GammaLaw` model
 * Cubic models such as `Soave-Redlich-Kwong`; `Peng-Robinson` support was started but is currently stalled.
