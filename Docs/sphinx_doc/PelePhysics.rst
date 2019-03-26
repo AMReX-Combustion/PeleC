@@ -8,16 +8,93 @@
  .. _PelePhysics:
 
 PelePhysics
------------
+===========
+`PelePhysics` is a respository of physics databases and implementation code for use with the `Pele` suite of of codes. There are several instances of shared physics between PeleC and PeleLM that are stored in PelePhysics. Specifically, equations of state and thermodynamic property evaluation, transport coefficients evaluation, and chemistry rate computation.
 
-There are several instances of shared physics between PeleC and PeleLM that are stored in PelePhysics. Specifically, equations of state and thermodynamic property evaluation, transport coefficients evaluation, and chemistry rate computation.
+FUEGO
+-----
+The `PelePhysics` repository contains the FUEGO source code generation tool in order to support the inclusion
+of chemical models specified in the CHEMKIN-II format.  Typically, such models include ASCII files specifying :
+
+
+* chemistry (elements, chemical species, Arrhenius reaction parameters) in CHEMKIN-II format
+* thermodynamics (NASA polynomial expressions)
+* transport (input data for the CHEMKIN function `tranfit` to compute transport coefficients)
+* ...optionally, there may be multiple source files to evaluate the species production rates using various reduced/QSS approximations
+
+Note that the CHEMKIN-II specification assumes a mixture of ideal gases.  If the `Pele` codes are built with `Eos_dir = Fuego`, the variable `Chemistry_Model` must be set to one of the models existing in the `${PELE_PHYSICS_HOME}/Support/Fuego/Mechanism/Models` folder (named after the folder containing the model files there).
+
+The repository provides models for inert air, and reacting hydrogen, methane, ethane, dodecane and di-methyl ether, and more can be added, using the procedure below.  Note that although all provided models can be regenerated following these procedures, we include the resulting source files for convenience.  As a result, if the generation procedure is modified, the complete set of models will need to be updated manually.  There is currently no procedure in place to keep the models up to date with the input files in the `PelePhysics` repository.
+
+Model Generation Procedures
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#. Ensure that the environment variable `PELE_PHYSICS_HOME` is set to the root folder of your local `PelePhysics` clone containing this file.
+#. Set up some fuego variables by doing:
+
+   .. code-block:: c++
+      
+      . ${PELE_PHYSICS_HOME}/Support/Fuego/Pythia/setup.sh # for bash
+      source ${PELE_PHYSICS_HOME}/Support/Fuego/Pythia/setup.csh # for csh
+
+
+#. Check that all is setup correctly by reproducing one of the existing .c files, for example for the LiDryer mechanism:
+
+   .. code-block:: c++
+
+      cd ${PELE_PHYSICS_HOME}/Support/Fuego/Mechanism/Models/LiDryer  
+      ./make-LiDryer.sh
+
+      
+   This script uses the CHEMKIN-II thermodynamics database files expected by the usual CHEMKIN programs as well as a chemistry input file modified to include a transport section (see below) and generates a c source file.  If this file "almost" matches the one in git, you're all set... By "almost" we mean minus reordering in the egtransetEPS, egtransetSIG, egtransetDIP, egtransetPOL, egtransetZROT and egtransetNLIN functions. If not, and there are no error messages, it might be that the git version needs to be updated.  Contact `MSDay@lbl.gov` to verify the correct actions to take.
+
+#. To build and use a new CHEMKIN-II based model, make a new model folder in `${PELE_PHYSICS_HOME}/Support/Fuego/Mechanism/Models`,  say `XXX`, and copy your CHEMKIN input files there.  Additionally copy `make-LiDryer.sh` from the `LiDryer` model folder there as a template, rename it to `make-XXX.sh`, and edit the filenames at the top; this file contains the following:
+
+   .. code-block:: c++
+
+      CHEMINP=LiDryer.mec
+      THERMINP=LiDryer.therm
+      FINALFILE=LiDryer.cpp
+
+      FMC=${PELE_PHYSICS_HOME}/Support/Fuego/Pythia/products/bin/fmc.py
+      HEADERDIR=${PELE_PHYSICS_HOME}/Support/Fuego/Mechanism/Models/header
+
+      CHEMLK=chem.asc
+      LOG=chem.log
+      CHEMC=chem.c
+
+      ${FUEGO_PYTHON} ${FMC} -mechanism=${CHEMINP} -thermo=${THERMINP}  -name=${CHEMC}
+      echo Compiling ${FINALFILE}...
+      cat ${CHEMC} \
+      ${HEADERDIR}/header.start\
+      ${HEADERDIR}/header.mec   ${CHEMINP}\
+      ${HEADERDIR}/header.therm ${THERMINP}\
+      ${HEADERDIR}/header.end > ${FINALFILE}
+      rm -f ${CHEMC} ${CHEMLK} ${LOG}
+
+
+   In addition, you must modify the chemistry input file to include a transport section. To do so, call the script located under `${PELE_PHYSICS_HOME}/Support/Fuego/Mechanism/Models` labelled `script_trans.py` with your chem.inp and trans.dat as arguments (in that order). The script should return a text file labelled `TRANFILE_APPEND.txt`. Open this file, copy all the lines and paste them in your chemistry input file, say right above the REACTION section. Next, run the `make-XXX.sh` script file, and if all goes well, the software will generate a `chem.c` file that gets concatenated with a few others, puts everything into a result file, `YYY.c`, and cleans up its mess.
+
+#. Add a `Make.package` text file in that model folder that will be included by the AMReX make system.  In most case, this file will contain a single line, `cEXE_sources+=YYY.c` (see the other models for examples if there are auxiliary files in languages other than c to include in the build of this model).
+
+#. Finally, edit the `GNUmakefile` where you want to use this (in, e.g., `PeleC/Exec`) so that `Chemistry_Model` is `XXX`.  In `PeleC/Exec/Make.PeleC`, the model is expected to be in the folder `${PELE_PHYSICS_HOME}/Support/Fuego/Mechanism/Models/$(Chemistry_Model)`, and it is expected that the folder contains a `Make.package` file to include, so make sure things are where they need to be.
+
 
 Equation of State
-^^^^^^^^^^^^^^^^^
-PeleC allows the user to use different equation of state (eos) as the constitutive equation and close the compressible Navier-Stokes system of equations. All the routines needed to fully define an eos are implemented through PelePhysics module. Examples of eos implementation can be seen in `PelePhysics/Eos`. The following sections will fully describe the implementation of Soave-Redlich-Kwong, a non-ideal cubic eos, for a general mixture of species. Integration with the Fuego, for a chemical mechanism described in a chemkin format, will also be highlighted. For an advanced user interested in implementing a new eos this chapter should provide a good starting point.
+-----------------
+
+PeleC allows the user to use different equation of state (eos) as the constitutive equation and close the compressible Navier-Stokes system of equations. All the routines needed to fully define an eos are implemented through PelePhysics module. Available models include:
+* An ideal gas mixture model (similar ot the CHEMKIN-II approach)
+* A simple `GammaLaw` model
+* Cubic models such as `Soave-Redlich-Kwong`; `Peng-Robinson` support was started but is currently stalled.
+
+Examples of eos implementation can be seen in `PelePhysics/Eos`. The following sections will fully describe the implementation of Soave-Redlich-Kwong, a non-ideal cubic eos, for a general mixture of species. Integration with the FUEGO, for a chemical mechanism described in a chemkin format, will also be highlighted. For an advanced user interested in implementing a new eos this chapter should provide a good starting point.
 
 Soave-Redlich-Kwong (SRK)
-#########################
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The cubic model is built on top of the ideal gas models, and is selected by specifying its name as the `Eos_dir` during the build (the `Chemistry_Model` must also be specified).  Any additional parameters (e.g., attractions, repulsions, critical states) are either included in the underlying FUEGO database used to generate the source file model implementation, or else are inferred from the input model data.
+
 
 SRK EOS as a function of Pressure (p), Temperature(T), and :math:`\tau` (specific volume) is given by
 
@@ -28,7 +105,8 @@ where :math:`Y_k` are species mass fractions, :math:`R` is the universal gas con
 :math:`b_m` and :math:`a_m` are mixture repulsion and attraction terms, respectively.
 
 Mixing rules
-""""""""""""
+############
+
 For a mixture of species, the following mixing rules are used to compute :math:`b_m` and :math:`a_m`.
 
 .. math::
@@ -80,7 +158,7 @@ In terms of implementation, a routine called `MixingRuleAmBm` can be found in th
    end do
 
 Thermodynamic Properties
-""""""""""""""""""""""""
+########################
 
 Most of the thermodynamic properties can be calculated from the equation of state and involve derivatives of various thermodynamic quantities and of EOS parameters. In the following, some of these thermodynamic properties for SRK and the corresponding routines are presented. 
 
@@ -279,18 +357,18 @@ All of the terms needed to evaluate this quantity are known except for
 
 
 Transport
-~~~~~~~~~
-
+---------
 .. note:: Placeholder, to be written
 
 
 Chemistry
-~~~~~~~~~
+---------
 
 .. note:: Placeholder, to be written
 
+
 Usage
-"""""
+-----
 
 This section contains an evolving set of usage notes for PelePhysics.
 
