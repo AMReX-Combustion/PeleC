@@ -9,7 +9,7 @@
 
 PelePhysics
 ===========
-`PelePhysics` is a respository of physics databases and implementation code for use with the `Pele` suite of of codes. There are several instances of shared physics between PeleC and PeleLM that are stored in PelePhysics. Specifically, equations of state and thermodynamic property evaluation, transport coefficients evaluation, and chemistry rate computation.
+`PelePhysics` is a repository of physics databases and implementation code for use with the `Pele` suite of of codes. There are several instances of shared physics between PeleC and PeleLM that are stored in PelePhysics. Specifically, equations of state and thermodynamic property evaluation, transport coefficients evaluation, and chemistry rate computation.
 
 FUEGO
 -----
@@ -30,9 +30,9 @@ Model Generation Procedures
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #. Ensure that the environment variable `PELE_PHYSICS_HOME` is set to the root folder of your local `PelePhysics` clone containing this file.
-#. Set up some fuego variables by doing:
+#. Set up some FUEGO variables by doing:
 
-   .. code-block:: c++
+   .. code-block:: bash
 
       . ${PELE_PHYSICS_HOME}/Support/Fuego/Pythia/setup.sh # for bash
       source ${PELE_PHYSICS_HOME}/Support/Fuego/Pythia/setup.csh # for csh
@@ -40,7 +40,7 @@ Model Generation Procedures
 
 #. Check that all is setup correctly by reproducing one of the existing .c files, for example for the LiDryer mechanism:
 
-   .. code-block:: c++
+   .. code-block:: bash
 
       cd ${PELE_PHYSICS_HOME}/Support/Fuego/Mechanism/Models/LiDryer  
       ./make-LiDryer.sh
@@ -48,9 +48,13 @@ Model Generation Procedures
       
    This script uses the CHEMKIN-II thermodynamics database files expected by the usual CHEMKIN programs as well as a chemistry input file modified to include a transport section (see below) and generates a c source file.  If this file "almost" matches the one in git, you're all set... By "almost" we mean minus reordering in the egtransetEPS, egtransetSIG, egtransetDIP, egtransetPOL, egtransetZROT and egtransetNLIN functions. If not, and there are no error messages, it might be that the git version needs to be updated.  Contact `MSDay@lbl.gov` to verify the correct actions to take.
 
+   .. note::
+
+      The parser requires that the line endings be 'unix-style', i.e., LF only; if you have input files with 'dos-style' (CR LF) endings you may need to run a utility such as dos2unix or something like :code:`sed -i 's/^M$//' chem.inp` to clean them up. 
+
 #. To build and use a new CHEMKIN-II based model, make a new model folder in `${PELE_PHYSICS_HOME}/Support/Fuego/Mechanism/Models`,  say `XXX`, and copy your CHEMKIN input files there.  Additionally copy `make-LiDryer.sh` from the `LiDryer` model folder there as a template, rename it to `make-XXX.sh`, and edit the filenames at the top; this file contains the following:
 
-   .. code-block:: c++
+   .. code-block:: bash
 
       CHEMINP=LiDryer.mec
       THERMINP=LiDryer.therm
@@ -73,7 +77,7 @@ Model Generation Procedures
       rm -f ${CHEMC} ${CHEMLK} ${LOG}
 
 
-   In addition, you must modify the chemistry input file to include a transport section. To do so, call the script located under `${PELE_PHYSICS_HOME}/Support/Fuego/Mechanism/Models` labelled `script_trans.py` with your chem.inp and trans.dat as arguments (in that order). The script should return a text file labelled `TRANFILE_APPEND.txt`. Open this file, copy all the lines and paste them in your chemistry input file, say right above the REACTION section. Next, run the `make-XXX.sh` script file, and if all goes well, the software will generate a `chem.c` file that gets concatenated with a few others, puts everything into a result file, `YYY.c`, and cleans up its mess.
+   In addition, you must modify the chemistry input file to include a transport section. To do so, call the script located under `${PELE_PHYSICS_HOME}/Support/Fuego/Mechanism/Models` labeled `script_trans.py` with your chem.inp and trans.dat as arguments (in that order). The script should return a text file labeled `TRANFILE_APPEND.txt`. Open this file, copy all the lines and paste them in your chemistry input file, say right above the REACTION section. Next, run the `make-XXX.sh` script file, and if all goes well, the software will generate a `chem.c` file that gets concatenated with a few others, puts everything into a result file, `YYY.c`, and cleans up its mess.
 
 #. Add a `Make.package` text file in that model folder that will be included by the AMReX make system.  In most case, this file will contain a single line, `cEXE_sources+=YYY.c` (see the other models for examples if there are auxiliary files in languages other than c to include in the build of this model).
 
@@ -85,7 +89,7 @@ Equation of State
 
 PeleC allows the user to use different equation of state (eos) as the constitutive equation and close the compressible Navier-Stokes system of equations. All the routines needed to fully define an eos are implemented through PelePhysics module. Available models include:
 
-* An ideal gas mixture model (similar ot the CHEMKIN-II approach)
+* An ideal gas mixture model (similar to the CHEMKIN-II approach)
 * A simple `GammaLaw` model
 * Cubic models such as `Soave-Redlich-Kwong`; `Peng-Robinson` support was started but is currently stalled.
 
