@@ -31,3 +31,6 @@
   eos_gamma = 1.4
 /
 
+&extern
+ new_Jacobian_each_cell = 0
+/

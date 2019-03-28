@@ -70,7 +70,7 @@ subroutine pc_reactor_init() bind(C, name="pc_reactor_init")
 
   use reactor_module, only: reactor_init
 
-  call reactor_init()
+  call reactor_init(1)
 
 end subroutine pc_reactor_init
 
