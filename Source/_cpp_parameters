@@ -93,9 +93,11 @@ hybrid_hydro                 int           0                  y
 # 3: Hybrid WENO-PPM
 ppm_type                     int           1                  y
 
-# For Hybrid WENO-PPM (ppm_type=3), which kind of WENO reconstruction method?
-# 0 : Classical JS method (dissipative)
-# 1 : WENO-Z (more robust than JS)
+# For Hybrid WENO-PPM (ppm_type=3), which kind of WENO reconstruction method at faces?
+# 0 : Classical 5th-order JS method (quite dissipative)
+# 1 : WENO-Z 5th-order (more robust than JS)
+# 2 : WENO-Z 3rd-order (dissipative)
+# 3 : WENO-Z 7th-order (good spectral properties but may be unstable with strong shocks)
 weno_variant                 int           1                  y
 
 # to we reconstruct and trace under the parabolas of the source
