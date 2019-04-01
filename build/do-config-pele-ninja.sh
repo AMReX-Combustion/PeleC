@@ -15,3 +15,7 @@ cmake -G Ninja -DCMAKE_INSTALL_PREFIX:PATH=./install \
                -DMPI_C_COMPILER:STRING=mpicc \
                -DMPI_Fortran_COMPILER:STRING=mpifort \
                .. && ninja -j8
+
+# Extra options
+#      -DPELEC_ENABLE_MASA:BOOL=ON \
+#      -DMASA_DIR:STRING=$(spack location -i masa) \

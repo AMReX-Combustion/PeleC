@@ -15,3 +15,7 @@ cmake -DCMAKE_INSTALL_PREFIX:PATH=./install \
       -DMPI_Fortran_COMPILER:STRING=mpifort \
       -DMPIEXEC_PREFLAGS:STRING=--oversubscribe \
       ..
+
+# Extra options
+#      -DPELEC_ENABLE_MASA:BOOL=ON \
+#      -DMASA_DIR:STRING=$(spack location -i masa) \
