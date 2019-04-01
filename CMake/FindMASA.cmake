@@ -2,8 +2,9 @@
 #
 # Set MASA_DIR to the base directory where the package is installed
 #
-# Sets two variables
+# Sets three variables
 #   - MASA_INCLUDE_DIRS
+#   - MASA_MOD_DIRS
 #   - MASA_LIBRARIES
 #
 
@@ -24,5 +25,5 @@ find_library(MASA_LIBRARIES
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
-  MASA DEFAULT_MSG MASA_INCLUDE_DIRS MASA_LIBRARIES)
-mark_as_advanced(MASA_INCLUDE_DIRS MASA_LIBRARIES)
+  MASA DEFAULT_MSG MASA_INCLUDE_DIRS MASA_MOD_DIRS MASA_LIBRARIES)
+mark_as_advanced(MASA_INCLUDE_DIRS MASA_MOD_DIRS MASA_LIBRARIES)

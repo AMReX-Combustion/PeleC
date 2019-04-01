@@ -30,6 +30,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ########################### MASA #####################################
+
+if(ENABLE_TESTS)
+  set(PELEC_ENABLE_MASA ON)
+endif()
+
 if(PELEC_ENABLE_MASA)
   set(CMAKE_PREFIX_PATH ${MASA_DIR} ${CMAKE_PREFIX_PATH})
   find_package(MASA QUIET REQUIRED)
