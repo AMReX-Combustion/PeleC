@@ -47,6 +47,7 @@ endif()
 
 message("-- CMAKE_SYSTEM_NAME = ${CMAKE_SYSTEM_NAME}")
 message("-- CMAKE_CXX_COMPILER_ID = ${CMAKE_CXX_COMPILER_ID}")
+message("-- CMAKE_CXX_COMPILER_VERSION = ${CMAKE_CXX_COMPILER_VERSION}")
 message("-- CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
 
 include(${CMAKE_SOURCE_DIR}/CMake/set_compile_flags.cmake)
