@@ -1,3 +1,6 @@
+#!/bin/bash
+
+# Example CMake config script for and OSX laptop with OpenMPI
 #export PATH=$PATH:$(spack location -i ninja)/bin # or whatever to git the kitware version of ninja with fortran in your path
 cmake -G Ninja -DCMAKE_INSTALL_PREFIX:PATH=./install \
                -DCMAKE_BUILD_TYPE:STRING=Release \
