@@ -150,6 +150,14 @@ function(build_pelec pelec_exe_name pelec_exe_options_file)
     target_compile_definitions(${pelec_exe_name} PRIVATE AMREX_USE_MPI)
   endif()
 
+  #Link our executable to the MASA libraries, etc
+  if(PELEC_ENABLE_MASA)
+    target_link_libraries(${pelec_exe_name} PRIVATE ${MASA_LIBRARIES})
+    target_compile_definitions(${pelec_exe_name} PRIVATE USE_MASA DO_PROBLEM_POST_TIMESTEP DO_PROBLEM_POST_INIT)
+    target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${MASA_INCLUDE_DIRS})
+    target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${MASA_MOD_DIRS})
+  endif()
+
   #if(PELEC_ENABLE_OPENMP)
   #  string(APPEND CMAKE_CXX_FLAGS " ${OpenMP_CXX_FLAGS}")
   #  string(APPEND CMAKE_C_FLAGS " ${OpenMP_C_FLAGS}")

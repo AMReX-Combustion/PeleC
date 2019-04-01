@@ -91,7 +91,7 @@ function(get_fcompare_sources)
    add_sources(GlobalFcompareSourceList
      ${AMREX_SOURCE_DIR}/WritePlotFile.cpp
    )
-   set(AMREX_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Submodules/AMReX/Tools/Postprocessing/C_src")
+   set(AMREX_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Submodules/AMReX/Tools/Postprocessing/C_Src")
    add_sources(GlobalFcompareSourceList
      ${AMREX_SOURCE_DIR}/fcompare.cpp
    )

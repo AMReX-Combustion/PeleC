@@ -22,11 +22,21 @@ option(ENABLE_FCOMPARE "Enable building fcompare when not testing" OFF)
 #Options for the executable in a single build dir
 option(PELEC_ENABLE_MPI "Enable MPI" OFF)
 #option(PELEC_ENABLE_OPENMP "Enable OpenMP" OFF)
+option(PELEC_ENABLE_MASA "Enable MASA for MMS" OFF)
 
 #Options for C++
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+########################### MASA #####################################
+if(PELEC_ENABLE_MASA)
+  set(CMAKE_PREFIX_PATH ${MASA_DIR} ${CMAKE_PREFIX_PATH})
+  find_package(MASA QUIET REQUIRED)
+  if(MASA_FOUND)
+    message("-- Found MASA = ${MASA_DIR}")
+  endif()
+endif()
 
 ########################### PeleC #####################################
 
