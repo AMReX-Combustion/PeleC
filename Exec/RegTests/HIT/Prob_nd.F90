@@ -10,10 +10,10 @@ contains
 
   subroutine amrex_probinit (init,name,namlen,problo,probhi) bind(C, name = "amrex_probinit")
 
-    use parallel
+    use amrex_parallel_module
     use probdata_module
-    use bl_error_module
-    use bl_constants_module, only: HALF
+    use amrex_fort_module
+    use amrex_constants_module, only: HALF
     use network, only: nspec, naux, molec_wt
     use extern_probin_module, only: const_viscosity, const_bulk_viscosity, const_conductivity, const_diffusivity
     use prob_params_module, only: dim
@@ -52,12 +52,12 @@ contains
     iname = ""
     binfmt = .false.
     restart = .false.
-    lambda0 = 0.5_dp_t
-    reynolds_lambda0 = 100.0_dp_t
-    mach_t0 = 0.1_dp_t
-    prandtl = 0.71_dp_t
+    lambda0 = 0.5_amrex_real
+    reynolds_lambda0 = 100.0_amrex_real
+    mach_t0 = 0.1_amrex_real
+    prandtl = 0.71_amrex_real
     inres = 0
-    uin_norm = 1.0_dp_t
+    uin_norm = 1.0_amrex_real
     u0 = 0.d0
     v0 = 0.d0
     w0 = 0.d0
@@ -103,7 +103,7 @@ contains
     const_conductivity = const_viscosity * eos_state % cp / prandtl
 
     ! Write this out to file (might be useful for postprocessing)
-    if ( parallel_ioprocessor() ) then
+    if ( amrex_parallel_ioprocessor() ) then
        open(unit=out_unit,file="ic.txt",action="write",status="replace")
        write(out_unit,*)"lambda0, k0, rho0, urms0, tau, p0, T0, gamma, mu, k, c_s0, Reynolds, Mach, Prandtl, u0, v0, w0, forcing"
        write(out_unit,*) lambda0, "," , k0, "," , eos_state % rho, "," , urms0, "," , tau, "," , &
@@ -123,7 +123,7 @@ contains
     ! domain (hence the mod operations in the interpolation).
 
     if (restart) then
-       if ( parallel_ioprocessor() ) then
+       if ( amrex_parallel_ioprocessor() ) then
           write(*,*)"Skipping input file reading and assuming restart."
        endif
     else
@@ -203,7 +203,7 @@ contains
     use eos_type_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, &
          UEDEN, UEINT, UFS, UTEMP
-    use bl_constants_module, only: ZERO, HALF, M_PI
+    use amrex_constants_module, only: ZERO, HALF, M_PI
     use prob_params_module, only: dim
     use eos_module
     use forcing_src_module, only: u0, v0, w0, forcing

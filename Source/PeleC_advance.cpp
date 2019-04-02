@@ -102,7 +102,7 @@ PeleC::do_mol_advance(Real time,
   if (verbose) { amrex::Print() << "... Computing MOL source term at t^{n} " << std::endl; }
   FillPatch(*this, Sborder, nGrowTr, time, State_Type, 0, NUM_STATE);
   Real flux_factor = 0;
-  getMOLSrcTerm(Sborder, S, dt, flux_factor);
+  getMOLSrcTerm(Sborder, S, time, dt, flux_factor);
 
   // Add in MMS source
 #ifdef USE_MASA
@@ -132,7 +132,7 @@ PeleC::do_mol_advance(Real time,
   if (verbose) { amrex::Print() << "... Computing MOL source term at t^{n+1} " << std::endl; }
   FillPatch(*this, Sborder, nGrowTr, time+dt, State_Type, 0, NUM_STATE);
   flux_factor = mol_iters > 1 ?  0 : 1;
-  getMOLSrcTerm(Sborder, S, dt, flux_factor);
+  getMOLSrcTerm(Sborder, S, time, dt, flux_factor);
 
   // Add in MMS source
 #ifdef USE_MASA
@@ -173,7 +173,7 @@ PeleC::do_mol_advance(Real time,
       if (verbose) { amrex::Print() << "... Re-computing MOL source term at t^{n+1} (iter = " << mol_iter << " of " << mol_iters << ")" << std::endl; }
       FillPatch(*this, Sborder, nGrowTr, time + dt, State_Type, 0, NUM_STATE);
       flux_factor = mol_iter==mol_iters  ?  1  : 0;
-      getMOLSrcTerm(Sborder, S_new, dt, flux_factor);
+      getMOLSrcTerm(Sborder, S_new, time, dt, flux_factor);
 
       // F_{AD} = (1/2)(S_old + S_new)
       MultiFab::LinComb(S, 0.5, S_old, 0, 0.5, S_new, 0, 0, NUM_STATE, 0);
@@ -236,7 +236,10 @@ PeleC::set_spray_grid_info(int amr_iteration,
   //   *) to determine how many ghost cells we need to fill in the MultiFab from
   //      which the particle interpolates its acceleration
 
-  spray_n_grow = ghost_width + (1-amr_iteration) + stencil_interpolation_width;
+  //spray_n_grow = ghost_width + (1-amr_iteration) + stencil_interpolation_width;
+  spray_n_grow = ghost_width + (1-amr_iteration) + (amr_iteration-1) +
+                     stencil_interpolation_width ;
+
 
   // *** tmp_src_width ***  is used
   //   *) to set how many ghost cells are needed in the tmp_src_ptr MultiFab that we
@@ -245,6 +248,11 @@ PeleC::set_spray_grid_info(int amr_iteration,
   //      we don't have to test on whether the particles are trying to write out of bounds
 
   tmp_src_width = ghost_width + stencil_deposition_width;
+
+  std::cout << "src_width="<<tmp_src_width<< "spray_n_grow="<<spray_n_grow 
+            << "where_width="<<where_width<< "ghost_width="<<ghost_width
+            << "stencil_deposition_width="<<stencil_deposition_width
+            << "stencil_interpolation_width="<<stencil_interpolation_width; 
 }
 #endif
 
@@ -306,8 +314,6 @@ PeleC::do_sdc_iteration (Real time,
   initialize_sdc_iteration(time, dt, amr_iteration, amr_ncycle, 
                            sub_iteration, sub_ncycle);
 
-
-
   // Create Sborder if hydro or diffuse, with the appropriate number of grow cells
   int nGrow_Sborder = 0;
   bool fill_Sborder = false;
@@ -323,6 +329,7 @@ PeleC::do_sdc_iteration (Real time,
     nGrow_Sborder = NUM_GROW;
   }
 #ifdef AMREX_PARTICLES
+  fill_Sborder = true;
   int ghost_width = 0;
   int where_width = 0;
   int spray_n_grow = 0;
@@ -333,6 +340,14 @@ PeleC::do_sdc_iteration (Real time,
   {
     nGrow_Sborder = std::max(nGrow_Sborder, spray_n_grow);
   }
+    Print() << "PeleC::do_sdc_iteration thinks Sborder needs " << nGrow_Sborder
+            << " grow cells, but Sborder defined with only " << Sborder.nGrow() << std::endl;
+  if (fill_Sborder &&  Sborder.nGrow() < nGrow_Sborder) {
+    Print() << "PeleC::do_sdc_iteration thinks Sborder needs " << nGrow_Sborder
+            << " grow cells, but Sborder defined with only " << Sborder.nGrow() << std::endl;
+    Abort();
+  }
+
 #endif
 
   if (fill_Sborder)
@@ -361,6 +376,20 @@ PeleC::do_sdc_iteration (Real time,
       // particles being set here are only used by finer levels.
       //
       int finest_level = parent->finestLevel();
+
+      //  
+      // Check if I need to insert new particles
+      //
+        Real cur_time = state[State_Type].curTime();
+        int nstep = parent->levelSteps(0);
+
+//      if (level == finest_level) 
+//        theSprayPC()->injectParticles(cur_time,nstep,level);
+        if (level == finest_level) 
+          theSprayPC()->insertParticles(cur_time,nstep,level);
+
+      particle_redistribute(level,false);
+
       if (level < finest_level)
         setup_ghost_particles(ghost_width);
 
@@ -371,6 +400,7 @@ PeleC::do_sdc_iteration (Real time,
       // We will make a temporary copy of the source term array inside moveKickDrift
       //    and we are only going to use the spray force out to one ghost cell
       //    so we need only define spray_force_old with one ghost cell
+
       BL_ASSERT(old_sources[spray_src]->nGrow() >= 1);
       old_sources[spray_src]->setVal(0.);
 
@@ -382,7 +412,8 @@ PeleC::do_sdc_iteration (Real time,
         theVirtPC()->moveKickDrift(Sborder,*old_sources[spray_src], level, dt, tmp_src_width, where_width);
 
       // Miiiight need all Ghosts
-      theGhostPC()->moveKickDrift(Sborder,*old_sources[spray_src], level, dt, tmp_src_width, where_width);
+      if (theGhostPC() != 0)
+         theGhostPC()->moveKickDrift(Sborder,*old_sources[spray_src], level, dt, tmp_src_width, where_width);
     }
 #endif
 
@@ -409,7 +440,7 @@ PeleC::do_sdc_iteration (Real time,
       }
       BL_ASSERT(!do_mol_AD); // Currently this combo only managed through MOL integrator
       Real flux_factor_old = 0.5;
-      getMOLSrcTerm(Sborder,*old_sources[diff_src],dt,flux_factor_old);
+      getMOLSrcTerm(Sborder,*old_sources[diff_src],time,dt,flux_factor_old);
     }
 
     // Initialize sources at t_new by copying from t_old
@@ -440,7 +471,7 @@ PeleC::do_sdc_iteration (Real time,
     }
     FillPatch(*this, Sborder, nGrowTr, time + dt, State_Type, 0, NUM_STATE);
     Real flux_factor_new = sub_iteration==sub_ncycle-1 ? 0.5 : 0;
-    getMOLSrcTerm(Sborder,*new_sources[diff_src],dt,flux_factor_new);
+    getMOLSrcTerm(Sborder,*new_sources[diff_src],time,dt,flux_factor_new);
   }
 
   // Build other (neither spray nor diffusion) sources at t_new
@@ -464,6 +495,9 @@ PeleC::do_sdc_iteration (Real time,
       amrex::Print() << "moveKick ... updating velocity only\n";
 
     if (! fill_Sborder) {
+      Print() << "Sborder already defined, has nGrow = " << Sborder.nGrow()
+              << ", needs "<< nGrow_Sborder << std::endl;
+      Abort("Sborder should already be defined, why are we defining here again?");
       Sborder.define(grids, dmap, NUM_STATE, nGrow_Sborder);
     }
 
@@ -579,19 +613,6 @@ PeleC::initialize_sdc_advance(Real time,
 
   for (int i = 0; i < num_state_type; ++i)
   {
-    // The following is a hack to make sure that we only
-    // ever have new data for a few state types that only
-    // ever need new time data; by doing a swap now, we'll
-    // guarantee that allocOldData() does nothing. We do
-    // this because we never need the old data, so we
-    // don't want to allocate memory for it.
-#ifdef REACTIONS
-    if (i == SDC_React_Type)
-    {
-      state[i].swapTimeLevels(0.0);
-    }
-#endif
-
     state[i].allocOldData();
     state[i].swapTimeLevels(dt);
   }

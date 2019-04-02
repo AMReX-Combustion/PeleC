@@ -16,13 +16,11 @@ amr.n_cell           =   16	    128
 amr.n_cell           =   32	    128
 
 #pelec.Riemann    = 0     # 0: HLL,  1: JBB,  2: HLLC
-# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
-# 0 = Interior           3 = Symmetry
-# 1 = Inflow             4 = SlipWall
-# 2 = Outflow            5 = NoSlipWall
-# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
-pelec.lo_bc       =  0   1
-pelec.hi_bc       =  0   2
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+# Interior, UserBC, Symmetry, SlipWall, NoSlipWall
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+pelec.lo_bc       =  "Interior" "Hard"
+pelec.hi_bc       =  "Interior" "Hard"
 
 # TIME STEP CONTROL
 pelec.cfl            = 0.5     # cfl number for hyperbolic system

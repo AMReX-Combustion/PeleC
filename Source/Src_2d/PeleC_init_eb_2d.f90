@@ -3,7 +3,7 @@ module nbrsTest_nd_module
   use amrex_fort_module, only : amrex_real, dim=>bl_spacedim
   use amrex_ebcellflag_module, only : get_neighbor_cells
   use pelec_eb_stencil_types_module, only : eb_bndry_geom, eb_bndry_sten, face_sten
-  use bl_constants_module, only: ONE, HALF, TWO, M_PI, FOUR3RD
+  use amrex_constants_module, only: ONE, HALF, TWO, M_PI, FOUR3RD
 
   implicit none
 

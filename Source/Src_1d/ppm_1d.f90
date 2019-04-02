@@ -10,8 +10,9 @@ contains
                  flatn, &
                  Ip,Im,ilo,ihi,dx,dt)
        
-    use meth_params_module, only : ppm_type
-    use bl_constants_module
+    use meth_params_module, only : ppm_type, weno_variant
+    use amrex_constants_module
+    use weno_module
 
     implicit none
        
@@ -32,6 +33,7 @@ contains
     double precision dsl, dsr, dsc, D2, D2C, D2L, D2R, D2LIM, C, alphap, alpham
     double precision sgn, sigma, s6, amax, delam, delap
     double precision dafacem, dafacep, dabarm, dabarp, dafacemin, dabarmin, dachkm, dachkp
+    double precision vl, vr
 
     ! s_{\ib,+}, s_{\ib,-}
     double precision, allocatable :: sp(:)
@@ -42,6 +44,9 @@ contains
     
     ! s_{i+\half}^{H.O.}
     double precision, allocatable :: sedge(:)
+    
+    double precision, allocatable :: sedge_weno_p(:)
+    double precision, allocatable :: sedge_weno_m(:)
 
     ! cell-centered indexing
     allocate(sp(ilo-1:ihi+1))
@@ -60,6 +65,11 @@ contains
        allocate(sedge(ilo-2:ihi+3))
     end if
     
+    if (ppm_type .eq. 3) then
+      allocate(sedge_weno_p(ilo-2:ihi+2))
+      allocate(sedge_weno_m(ilo-2:ihi+2))
+    end if
+ 
     ! compute s at x-edges
     if (ppm_type .eq. 1) then
 
@@ -213,6 +223,29 @@ contains
              sp(i) = flatn(i)*sp(i) + (ONE-flatn(i))*s(i)
        enddo
 
+     else if (ppm_type .eq. 3) then
+
+       do i=ilo-2,ihi+2
+
+         select case (weno_variant)
+         case (0)
+           call weno5js_face(s(i-3:i+2), vl, vr)
+         case (1) 
+           call weno5z_face(s(i-3:i+2), vl, vr)
+         case (2) 
+           call weno3z_face(s(i-3:i+2), vl, vr)
+         case (3) 
+           call weno7z_face(s(i-4:i+3), vl, vr)
+         end select     
+         sedge_weno_p(i) = vr
+         sedge_weno_m(i) = vl
+       enddo
+       
+       do i=ilo-1,ihi+1
+             sm(i) = sedge_weno_p(i)
+             sp(i) = sedge_weno_m(i+1) 
+       enddo      
+       
     end if
 
         ! compute x-component of Ip and Im
@@ -279,7 +312,12 @@ contains
        end do
        
        deallocate(sedge,dsvl,sp,sm)
-
+       
+       if (ppm_type .eq. 3) then
+         deallocate(sedge_weno_m)
+         deallocate(sedge_weno_p)
+       end if
+       
      end subroutine ppm
 
 end module ppm_module

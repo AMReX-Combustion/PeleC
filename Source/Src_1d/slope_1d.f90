@@ -10,7 +10,7 @@ contains
       subroutine uslope(q,flatn,qd_l1,qd_h1,dq,qpd_l1,qpd_h1,ilo,ihi,nv)
 
 !      use meth_params_module, only : QPRES
-      use bl_constants_module
+      use amrex_constants_module
 
       implicit none
 
@@ -69,7 +69,7 @@ contains
       subroutine pslope(p,rho,flatn,qd_l1,qd_h1,dp,qpd_l1,qpd_h1, &
                         src,src_l1,src_h1,ilo,ihi,dx)
 
-      use bl_constants_module
+      use amrex_constants_module
       use meth_params_module, only: QU, QVAR
       
       implicit none

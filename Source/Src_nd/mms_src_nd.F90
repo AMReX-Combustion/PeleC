@@ -19,7 +19,7 @@ contains
 
 #ifdef USE_MASA
     use network, only : nspec
-    use bl_constants_module, only: HALF
+    use amrex_constants_module, only: HALF
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS
     use prob_params_module, only: dim
     use masa

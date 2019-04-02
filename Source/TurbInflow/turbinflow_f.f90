@@ -1,5 +1,8 @@
 module turbinflow_module
 
+  use amrex_fort_module, only : amrex_real
+
+
   implicit none
 
   logical, save :: turbinflow_initialized = .false.
@@ -8,18 +11,27 @@ module turbinflow_module
   integer, save :: iturbfile(128)
 
   integer, save :: npboxcells(3)
-  double precision, save :: pboxlo(3), dx(3), dxinv(3)
+  real(amrex_real), save :: pboxlo(3), dx(3), dxinv(3)
 
   integer, parameter :: nplane = 32
-  double precision, allocatable, save :: sdata(:,:,:,:)
-  double precision, save :: szlo=0.d0, szhi=0.d0
+  real(amrex_real), allocatable, save :: sdata(:,:,:,:)
+  real(amrex_real), save :: szlo=0.d0, szhi=0.d0
 
   integer, parameter :: isswirltype = 0  ! periodic
-  double precision, save :: units_conversion = 100.d0  ! m --> cm & m/s --> cm/s
+  real(amrex_real), save :: units_conversion = 100.d0  ! m --> cm & m/s --> cm/s
 
   private
 
   public :: turbinflow_initialized, init_turbinflow, get_turbvelocity
+
+  interface
+     subroutine getplane (filename, len, data, plane, ncomp, isswirltype) bind(c)
+       use amrex_fort_module, only : amrex_real
+       integer, intent(in) :: len, ncomp, isswirltype, plane
+       integer, intent(in) :: filename(len)
+       real(amrex_real), intent(inout) :: data(*)
+     end subroutine getplane
+  end interface
 
 !$omp threadprivate(turbinflow_initialized,lenfname,iturbfile,npboxcells,pboxlo,dx,dxinv)
 !$omp threadprivate(sdata,szlo,szhi,units_conversion)
@@ -32,7 +44,7 @@ contains
 
     integer, parameter :: iunit = 20
     integer :: ierr, n, npts(3)
-    double precision :: probsize(3), pboxsize(3)
+    real(amrex_real) :: probsize(3), pboxsize(3)
 
     if (present(is_cgs)) then
        if (is_cgs) then
@@ -86,13 +98,13 @@ contains
 
   subroutine get_turbvelocity(lo1,lo2,hi1,hi2,x,y,z,v)
     integer, intent(in) :: lo1,lo2,hi1,hi2
-    double precision, intent(in) :: x(lo1:hi1), y(lo2:hi2)
-    double precision, intent(in) :: z
-    double precision, intent(out) :: v(lo1:hi1,lo2:hi2,3)
+    real(amrex_real), intent(in) :: x(lo1:hi1), y(lo2:hi2)
+    real(amrex_real), intent(in) :: z
+    real(amrex_real), intent(out) :: v(lo1:hi1,lo2:hi2,3)
 
     integer :: i, j, k, n, i0, j0, k0, ii, jj
-    double precision :: xx, yy, zz, zdata(0:2,0:2), ydata(0:2)
-    double precision :: cx(0:2), cy(0:2), cz(0:2) 
+    real(amrex_real) :: xx, yy, zz, zdata(0:2,0:2), ydata(0:2)
+    real(amrex_real) :: cx(0:2), cy(0:2), cz(0:2) 
 
     if (.not. turbinflow_initialized) call bl_error("turbinflow module uninitialized")
 
@@ -148,7 +160,7 @@ contains
   end subroutine get_turbvelocity
 
   subroutine store_planes(z)
-    double precision, intent(in) :: z
+    real(amrex_real), intent(in) :: z
     integer :: izlo, iplane, k, n
     izlo = nint(z*dxinv(3)) - 1
     szlo = izlo*dx(3)

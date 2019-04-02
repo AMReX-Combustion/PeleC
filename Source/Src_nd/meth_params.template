@@ -7,15 +7,12 @@
 
 module meth_params_module
 
-  use bl_error_module
+  use amrex_fort_module
 
   implicit none
 
   ! number of ghost cells for the hyperbolic solver
   integer, parameter     :: NHYP    = 4
-
-  ! Number of parameters for GC-NSCBC
-  integer, parameter     :: nb_nscbc_params = 4
 
   ! NTHERM: number of thermodynamic variables
   integer, save :: NTHERM, NVAR

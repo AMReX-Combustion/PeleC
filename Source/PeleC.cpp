@@ -55,7 +55,6 @@ bool         PeleC::signalStopJob = false;
 bool         PeleC::dump_old      = false;
 
 int          PeleC::verbose       = 0;
-ErrorList    PeleC::err_list;
 int          PeleC::radius_grow   = 1;
 BCRec        PeleC::phys_bc;
 int          PeleC::NUM_STATE     = -1;
@@ -226,15 +225,57 @@ PeleC::read_params ()
   pp.query("dump_old",dump_old);
 
   // Get boundary conditions
+  Vector<string> lo_bc_char(BL_SPACEDIM);
+  Vector<string> hi_bc_char(BL_SPACEDIM);
+  pp.getarr("lo_bc",lo_bc_char,0,BL_SPACEDIM);
+  pp.getarr("hi_bc",hi_bc_char,0,BL_SPACEDIM); 
+  
   Vector<int> lo_bc(BL_SPACEDIM), hi_bc(BL_SPACEDIM);
-  pp.getarr("lo_bc",lo_bc,0,BL_SPACEDIM);
-  pp.getarr("hi_bc",hi_bc,0,BL_SPACEDIM);
+  for (int dir = 0; dir<BL_SPACEDIM; dir++){
+    if (!lo_bc_char[dir].compare("Interior")){
+      lo_bc[dir] = 0;
+    } else if (!lo_bc_char[dir].compare("Hard")){
+      lo_bc[dir] = 1;
+    } else if (!lo_bc_char[dir].compare("FOExtrap")){
+      lo_bc[dir] = 2;
+    } else if (!lo_bc_char[dir].compare("Symmetry")){
+      lo_bc[dir] = 3;
+    } else if (!lo_bc_char[dir].compare("SlipWall")){
+      lo_bc[dir] = 4;
+    } else if (!lo_bc_char[dir].compare("NoSlipWall")){
+      lo_bc[dir] = 5;
+    } else if (!lo_bc_char[dir].compare("UserBC")){
+      lo_bc[dir] = 6;
+    } else {
+      amrex::Abort("Wrong boundary condition word in lo_bc, please use: Interior, UserBC, Symmetry, SlipWall, NoSlipWall");
+    }
+    
+    if (!hi_bc_char[dir].compare("Interior")){
+      hi_bc[dir] = 0;
+    } else if (!hi_bc_char[dir].compare("Hard")){
+      hi_bc[dir] = 1;
+    } else if (!hi_bc_char[dir].compare("FOExtrap")){
+      hi_bc[dir] = 2;
+    } else if (!hi_bc_char[dir].compare("Symmetry")){
+      hi_bc[dir] = 3;
+    } else if (!hi_bc_char[dir].compare("SlipWall")){
+      hi_bc[dir] = 4;
+    } else if (!hi_bc_char[dir].compare("NoSlipWall")){
+      hi_bc[dir] = 5;
+    } else if (!hi_bc_char[dir].compare("UserBC")){
+      hi_bc[dir] = 6;
+    } else {
+      amrex::Abort("Wrong boundary condition word in hi_bc, please use: Interior, UserBC, Symmetry, SlipWall, NoSlipWall");
+    }
+  }
+
+  
   for (int i = 0; i < BL_SPACEDIM; i++)
   {
     phys_bc.setLo(i,lo_bc[i]);
     phys_bc.setHi(i,hi_bc[i]);
   }
-
+    
   //
   // Check phys_bc against possible periodic geometry
   // if periodic, must have internal BC marked.
@@ -445,6 +486,10 @@ PeleC::PeleC (Amr&            papa,
                                                                       MFInfo(), Factory()));
   }
 
+#ifdef AMREX_PARTICLES
+    Sborder.define(grids,dmap,NUM_STATE,NUM_GROW,MFInfo(),Factory());
+#endif
+
   if (do_hydro)
   {
     Sborder.define(grids,dmap,NUM_STATE,NUM_GROW,MFInfo(),Factory());
@@ -495,7 +540,6 @@ PeleC::PeleC (Amr&            papa,
   
 #ifdef REACTIONS
   get_new_data(Reactions_Type).setVal(0.0);
-  get_new_data(SDC_React_Type).setVal(0.0);
 #endif
 
   // initialize the Godunov state array used in hydro -- we wait
@@ -692,7 +736,6 @@ PeleC::initData ()
 
 #ifdef REACTIONS
   get_new_data(Reactions_Type).setVal(0.);
-  get_new_data(SDC_React_Type).setVal(0.0);
 #endif
 
   if (do_mol_load_balance || do_react_load_balance)
@@ -764,17 +807,14 @@ PeleC::init (AmrLevel &old)
 
 #ifdef REACTIONS
   MultiFab& React_new = get_new_data(Reactions_Type);
-  MultiFab& react_src_new = get_new_data(SDC_React_Type);
 
   if (do_react)
   {
     FillPatch(old,React_new,0,cur_time,Reactions_Type,0,React_new.nComp());
-    FillPatch(old,react_src_new,0,cur_time,SDC_React_Type,0,react_src_new.nComp());
   }
   else
   {
     React_new.setVal(0);
-    react_src_new.setVal(0);
   }
 #endif
 
@@ -1392,9 +1432,6 @@ PeleC::avgDown ()
   avgDown(Reactions_Type);
 #endif
 
-#ifdef REACTIONS
-  avgDown(SDC_React_Type);
-#endif
 }
 
 void
@@ -1566,62 +1603,19 @@ PeleC::errorEst (TagBoxArray& tags,
 {
   BL_PROFILE("PeleC::errorEst()");
 
-  set_amr_info(level, -1, -1, -1.0, -1.0);
-
-  const int*  domain_lo = geom.Domain().loVect();
-  const int*  domain_hi = geom.Domain().hiVect();
+  const Real cur_time = state[State_Type].curTime();
+  MultiFab S_data(get_new_data(State_Type).boxArray(), get_new_data(State_Type).DistributionMap(), NUM_STATE, 1);
+  FillPatch(*this, S_data, S_data.nGrow(), cur_time, State_Type, Density, NUM_STATE, 0);
+ 
+  const int*  domlo = geom.Domain().loVect();
+  const int*  domhi = geom.Domain().hiVect();
   const Real* dx        = geom.CellSize();
+  Real dt = parent->dtLevel(level);
   const Real* prob_lo   = geom.ProbLo();
 
-  for (int j = 0; j < err_list.size(); j++)
-  {
-    auto mf = derive(err_list[j].name(), time, err_list[j].nGrow());
-
-    BL_ASSERT(!(mf == 0));
-
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
-    {
-      Vector<int>  itags;
-
-      for (MFIter mfi(*mf,true); mfi.isValid(); ++mfi)
-      {
-        auto&       datfab  = (*mf)[mfi];
-        auto&       tagfab  = tags[mfi];
-        const Box&  tilebx  = mfi.tilebox();
-
-        const RealBox& pbx  = RealBox(tilebx,geom.CellSize(),geom.ProbLo());
-        const Box&  datbox  = datfab.box();
-
-        // We cannot pass tagfab to Fortran becuase it is BaseFab<char>.
-        // So we are going to get a temporary integer array.
-        tagfab.get_itags(itags, tilebx);
-
-        int*        tptr    = itags.dataPtr();
-        const int*  tlo     = tilebx.loVect();
-        const int*  thi     = tilebx.hiVect();
-        const int*  lo      = tlo;
-        const int*  hi      = thi;
-        const Real* xlo     = pbx.lo();
-        Real*       dat     = datfab.dataPtr();
-        const int*  dlo     = datbox.loVect();
-        const int*  dhi     = datbox.hiVect();
-        const int   ncomp   = datfab.nComp();
-
-        err_list[j].errFunc()(tptr, tlo, thi, &tagval,
-                              &clearval, dat, dlo, dhi,
-                              lo,hi, &ncomp, domain_lo, domain_hi,
-                              dx, xlo, prob_lo, &time, &level);
-
-        // Now update the tags in the TagBox.
-        tagfab.tags_and_untags(itags, tilebx);
-      }
-    }  
-  }
-
-  // Now we'll tag any user-specified zones using the full state array.
-  MultiFab& S_new = get_new_data(State_Type);
+  Vector<BCRec>       bcs(NUM_STATE);
+  
+  FArrayBox S_derData;
 
 #ifdef _OPENMP
 #pragma omp parallel
@@ -1629,10 +1623,15 @@ PeleC::errorEst (TagBoxArray& tags,
   {
     Vector<int>  itags;
 
-    for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
+    for (MFIter mfi(S_data,false); mfi.isValid(); ++mfi)
     {
+      FArrayBox   &datfab = S_data[mfi];
+      auto&       tagfab  = tags[mfi];
       const Box&  tilebx  = mfi.tilebox();
-      TagBox&     tagfab  = tags[mfi];
+      const int&  grid_no  = mfi.index();
+      
+      const RealBox& pbx  = RealBox(tilebx,geom.CellSize(),geom.ProbLo());
+      const Box&  datbox  = datfab.box();
 
       // We cannot pass tagfab to Fortran becuase it is BaseFab<char>.
       // So we are going to get a temporary integer array.
@@ -1641,17 +1640,178 @@ PeleC::errorEst (TagBoxArray& tags,
       int*        tptr    = itags.dataPtr();
       const int*  tlo     = tilebx.loVect();
       const int*  thi     = tilebx.hiVect();
+      const int*  lo      = tlo;
+      const int*  hi      = thi;
+      const Real* xlo     = pbx.lo();
+      const int*  dlo     = datbox.loVect();
+      const int*  dhi     = datbox.hiVect();
+      const int   ncomp   = datfab.nComp();
 
-      set_problem_tags(tptr,  ARLIM_3D(tlo), ARLIM_3D(thi),
-                       BL_TO_FORTRAN_3D(S_new[mfi]),
-                       &tagval, &clearval,
-                       ARLIM_3D(tilebx.loVect()), ARLIM_3D(tilebx.hiVect()),
-                       ZFILL(dx), ZFILL(prob_lo), &time, &level);
+#ifdef PELEC_USE_EB
+      FArrayBox   &vfracfab = vfrac[mfi];
+#endif
+
+      S_derData.resize(datbox, 1);
+      const int   ncp   = S_derData.nComp();
+      const int* bc =  bcs[0].data();
+      
+      // Tagging Density
+      pc_denerror(tptr,ARLIM_3D(tlo), ARLIM_3D(thi),
+                  &tagval, &clearval,
+                  BL_TO_FORTRAN_3D(S_data[mfi]),
+                  ARLIM_3D(lo),ARLIM_3D(hi), &ncomp, domlo,domhi, 
+                  ZFILL(dx), ZFILL(xlo), ZFILL(prob_lo), &time, &level);
+
+      //----------------------
+      // Recasting pressure
+      // Warning: bcs are dummy values, and level is passed as grid_no in the fortran routine
+      //          they are not used, but one may want the correct values 
+      S_derData.setVal(0.0);
+      pc_derpres(S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),&ncp,
+                 BL_TO_FORTRAN_3D(S_data[mfi]),&ncomp,
+                 ARLIM_3D(dlo),ARLIM_3D(dhi),domlo,domhi,
+                 ZFILL(dx), ZFILL(xlo),&time,&dt,bc,&level,&grid_no);
+      
+      // Tagging Pressure
+      pc_presserror(tptr,ARLIM_3D(tlo), ARLIM_3D(thi),
+                  &tagval, &clearval,
+                  S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),
+                  ARLIM_3D(lo),ARLIM_3D(hi), &ncomp, domlo,domhi, 
+                  ZFILL(dx), ZFILL(xlo), ZFILL(prob_lo), &time, &level);
+
+      //----------------------
+      // Recasting vel_x
+      S_derData.setVal(0.0);
+      pc_dervelx(S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),&ncp,
+                 BL_TO_FORTRAN_3D(S_data[mfi]),&ncomp,
+                 ARLIM_3D(dlo),ARLIM_3D(dhi),domlo,domhi,
+                 ZFILL(dx), ZFILL(xlo),&time,&dt,bc,&level,&grid_no);
+
+      // Tagging vel_x
+      pc_velerror(tptr,ARLIM_3D(tlo), ARLIM_3D(thi),
+                  &tagval, &clearval,
+                  S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),
+                  ARLIM_3D(lo),ARLIM_3D(hi), &ncomp, domlo,domhi, 
+                  ZFILL(dx), ZFILL(xlo), ZFILL(prob_lo), &time, &level);
+      
+#if (BL_SPACEDIM >= 2) 
+      //----------------------
+      // Recasting vel_y
+      S_derData.setVal(0.0);
+      pc_dervely(S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),&ncp,
+                 BL_TO_FORTRAN_3D(S_data[mfi]),&ncomp,
+                 ARLIM_3D(dlo),ARLIM_3D(dhi),domlo,domhi,
+                 ZFILL(dx), ZFILL(xlo),&time,&dt,bc,&level,&grid_no);
+
+      // Tagging vel_y
+      pc_velerror(tptr,ARLIM_3D(tlo), ARLIM_3D(thi),
+                  &tagval, &clearval,
+                  S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),
+                  ARLIM_3D(lo),ARLIM_3D(hi), &ncomp, domlo,domhi, 
+                  ZFILL(dx), ZFILL(xlo), ZFILL(prob_lo), &time, &level);
+#endif
+
+#if (BL_SPACEDIM == 3)
+      //----------------------
+      // Recasting vel_z
+      S_derData.setVal(0.0);
+      pc_dervelz(S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),&ncp,
+                 BL_TO_FORTRAN_3D(S_data[mfi]),&ncomp,
+                 ARLIM_3D(dlo),ARLIM_3D(dhi),domlo,domhi,
+                 ZFILL(dx), ZFILL(xlo),&time,&dt,bc,&level,&grid_no);
+
+      // Tagging vel_z
+      pc_velerror(tptr,ARLIM_3D(tlo), ARLIM_3D(thi),
+                  &tagval, &clearval,
+                  S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),
+                  ARLIM_3D(lo),ARLIM_3D(hi), &ncomp, domlo,domhi, 
+                  ZFILL(dx), ZFILL(xlo), ZFILL(prob_lo), &time, &level);
+#endif
+
+      //----------------------
+      // Recasting magVort
+      S_derData.setVal(0.0);
+      pc_dermagvort(S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),&ncp,
+                 BL_TO_FORTRAN_3D(S_data[mfi]),&ncomp,
+                 ARLIM_3D(lo),ARLIM_3D(hi),domlo,domhi,
+                 ZFILL(dx), ZFILL(xlo),&time,&dt,bc,&level,&grid_no);
+      
+      // Tagging magVorticity
+      pc_vorterror(tptr,ARLIM_3D(tlo), ARLIM_3D(thi),
+                  &tagval, &clearval,
+                  S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),
+                  ARLIM_3D(lo),ARLIM_3D(hi), &ncomp, domlo,domhi, 
+                  ZFILL(dx), ZFILL(xlo), ZFILL(prob_lo), &time, &level);
+      
+      //----------------------
+      // Recasting Temperature
+      S_derData.setVal(0.0);
+      pc_dertemp(S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),&ncp,
+                 BL_TO_FORTRAN_3D(S_data[mfi]),&ncomp,
+                 ARLIM_3D(dlo),ARLIM_3D(dhi),domlo,domhi,
+                 ZFILL(dx), ZFILL(xlo),&time,&dt,bc,&level,&grid_no);
+      
+      // Tagging Temperature
+      pc_temperror(tptr,ARLIM_3D(tlo), ARLIM_3D(thi),
+                  &tagval, &clearval,
+                  S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),
+                  ARLIM_3D(lo),ARLIM_3D(hi), &ncomp, domlo,domhi, 
+                  ZFILL(dx), ZFILL(xlo), ZFILL(prob_lo), &time, &level);
+      
+      //----------------------
+      // Recasting Flame Tracer
+      if (!flame_trac_name.empty())
+      {
+        int idx = -1;
+        for (int i=0; i<spec_names.size(); ++i)
+        {
+          if (flame_trac_name == spec_names[i])
+          {
+            idx = i;
+          }
+        }
+    
+        if (idx >= 0)
+        {
+          //const std::string name = "Y("+flame_trac_name+")";
+          //if (ParallelDescriptor::IOProcessor())
+          //  std::cout << " Flame tracer will be " << name << '\n';
+        
+        S_derData.setVal(0.0);
+        pc_derspectrac(S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),&ncp,
+                 BL_TO_FORTRAN_3D(S_data[mfi]),&ncomp,
+                 ARLIM_3D(dlo),ARLIM_3D(dhi),domlo,domhi,
+                 ZFILL(dx), ZFILL(xlo),&time,&dt,bc,&level,&grid_no,&idx);
+        
+        // Tagging Flame Tracer
+        pc_ftracerror(tptr,ARLIM_3D(tlo), ARLIM_3D(thi),
+                  &tagval, &clearval,
+                  S_derData.dataPtr(), ARLIM_3D(S_derData.loVect()), ARLIM_3D(S_derData.hiVect()),
+                  ARLIM_3D(lo),ARLIM_3D(hi), &ncomp, domlo,domhi, 
+                  ZFILL(dx), ZFILL(xlo), ZFILL(prob_lo), &time, &level);
+      
+        }
+        else
+        {
+          amrex::Abort("Unknown species identified as flame_trac_name");
+        }
+      } 
+          
+      //----------------------
+
+#ifdef PELEC_USE_EB
+      pc_vfracerror(tptr,ARLIM_3D(tlo), ARLIM_3D(thi),
+                  &tagval, &clearval,
+                  vfracfab.dataPtr(), ARLIM_3D(vfracfab.loVect()), ARLIM_3D(vfracfab.hiVect()),
+                  ARLIM_3D(lo),ARLIM_3D(hi), &ncomp, domlo,domhi, 
+                  ZFILL(dx), ZFILL(xlo), ZFILL(prob_lo), &time, &level);
+#endif
 
       // Now update the tags in the TagBox.
-      tagfab.tags_and_untags(itags, tilebx);
+      tagfab.tags(itags, tilebx);
+      
     }
-  }
+  } 
 }
 
 std::unique_ptr<MultiFab>
@@ -1963,8 +2123,6 @@ PeleC::clean_state(MultiFab& S)
 
   //normalize_species(S);
 
-  //reset_internal_energy(S,S.nGrow());
-
   return frac_change;
 }
 
@@ -1977,8 +2135,6 @@ PeleC::clean_state(MultiFab& S,
   Real frac_change = enforce_min_density(S_old, S);
 
   //normalize_species(S);
-
-  //reset_internal_energy(S,S.nGrow());
 
   return frac_change;
 }

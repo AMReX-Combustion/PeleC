@@ -4,7 +4,6 @@
 #include <AMReX_BC_TYPES.H>
 #include <AMReX_AmrLevel.H>
 #include <AMReX_iMultiFab.H>
-#include <AMReX_ErrorList.H>
 #ifdef PELE_USE_EB
 #include <AMReX_EBFArrayBox.H>
 #include <EBStencilTypes.H>
@@ -30,11 +29,12 @@
 using std::istream;
 using std::ostream;
 
+#define UserBC 6
+
 
 enum StateType { State_Type = 0
 #ifdef REACTIONS
-                 ,Reactions_Type,
-                 SDC_React_Type
+                 ,Reactions_Type
 #endif
                  , Work_Estimate_Type
 };
@@ -120,10 +120,6 @@ public:
     //
     static void variableSetUp ();
     //
-    // Define tagging functions.
-    //
-    static void ErrorSetUp ();
-    //
     // Cleanup data descriptors at end of run.
     //
     static void variableCleanUp ();
@@ -198,6 +194,11 @@ public:
     void particle_est_time_step(amrex::Real& est_dt);
 
     //
+    //
+    // Derived quantities associated with particles
+    //
+    std::unique_ptr<amrex::MultiFab> particle_derive (const std::string& name, amrex::Real time, int ngrow);
+
     // Default cfl of particles in Particle class
     //
     static amrex::Real particle_cfl;
@@ -439,14 +440,14 @@ public:
 
     void getMOLSrcTerm (const amrex::MultiFab& S,
                         amrex::MultiFab&       MOLSrcTerm,
+                        amrex::Real time,
                         amrex::Real                   dt,
                         amrex::Real                   flux_factor);
 
     amrex::Real volWgtSum (const std::string& name, amrex::Real time, bool local=false, bool finemask=true);
-
-    amrex::Real volWgtSumMF (amrex::MultiFab* mf, int comp, bool local=false);
-
     amrex::Real volWgtSquaredSum (const std::string& name, amrex::Real time, bool local=false);
+    amrex::Real volWgtSumMF (amrex::MultiFab* mf, int comp, bool local=false, bool finemask=false);
+
 
 #ifdef USE_MASA
     amrex::Real mms_volWgtSquaredSumDiff (int comp, amrex::Real time, bool local=false);
@@ -606,7 +607,6 @@ protected:
     static bool      dump_old;
     static int       radius_grow;
     static int       verbose;
-    static amrex::ErrorList err_list;
     static amrex::BCRec     phys_bc;
     static int       NUM_GROW, QTHERM, QVAR, cQRHO, cQU, cQV, cQW, cQGAME, cQPRES, cQREINT, cQTEMP, cQFA, cQFS, cQFX, NQAUX, cQGAMC, cQC, cQCSML, cQDPDR, cQDPDE, cQRSPEC;
 
@@ -692,6 +692,19 @@ protected:
   static bool do_mol_load_balance;
 
 };
+
+    void pc_bcfill_hyp (amrex::Box const& bx, amrex::FArrayBox& data,
+                 const int dcomp, const int numcomp,
+                 amrex::Geometry const& geom, const amrex::Real time,
+                 const amrex::Vector<amrex::BCRec>& bcr, const int bcomp,
+                 const int scomp);
+    
+    void pc_reactfill_hyp (amrex::Box const& bx, amrex::FArrayBox& data,
+                 const int dcomp, const int numcomp,
+                 amrex::Geometry const& geom, const amrex::Real time,
+                 const amrex::Vector<amrex::BCRec>& bcr, const int bcomp,
+                 const int scomp);
+
 
 //
 // Inlines.

@@ -9,13 +9,14 @@ geometry.prob_lo     =  0    0    0
 geometry.prob_hi     =  1    1    1
 amr.n_cell           = 32   32   32
 
-# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
-# 0 = Interior           3 = Symmetry
-# 1 = Inflow             4 = SlipWall
-# 2 = Outflow            5 = NoSlipWall
-# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
-pelec.lo_bc       =  2   2   4
-pelec.hi_bc       =  2   2   4
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+# Interior, UserBC, Symmetry, SlipWall, NoSlipWall
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+pelec.lo_bc       =  "UserBC" "UserBC" "SlipWall"
+pelec.hi_bc       =  "UserBC" "UserBC" "SlipWall"
+
+#pelec.lo_bc       =  "Interior" "Interior" "Interior"
+#pelec.hi_bc       =  "Interior" "Interior" "Interior"
 
 # WHICH PHYSICS
 pelec.do_hydro = 1
@@ -38,7 +39,7 @@ amr.v                = 1       # verbosity in Amr.cpp
 amr.max_level       = 3       # maximum level number allowed
 amr.ref_ratio       = 2 2 2 2 # refinement ratio
 amr.regrid_int      = 2       # how often to regrid
-amr.blocking_factor = 4       # block factor in grid generation
+amr.blocking_factor = 8       # block factor in grid generation
 amr.max_grid_size   = 512
 
 # CHECKPOINT FILES
@@ -47,7 +48,7 @@ amr.check_int       = 1000     # number of timesteps between checkpoints
 
 # PLOTFILES
 amr.plot_file       = plt
-amr.plot_int        = 1000
+amr.plot_int        = 1
 amr.derive_plot_vars=ALL
 
 # PROBIN FILENAME

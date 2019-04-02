@@ -14,7 +14,7 @@ contains
     use eos_module
     use meth_params_module, only: NVAR, URHO, UMX, UMY, UMZ, UEINT, UTEMP, UFS, UFX
     use prob_params_module, only: dim
-    use bl_constants_module
+    use amrex_constants_module
     implicit none
 
     integer          :: lo(3), hi(3)
@@ -85,7 +85,7 @@ contains
     use eos_type_module
     use meth_params_module, only: NVAR, URHO, UTEMP, UFS
     use prob_params_module, only: dim
-    use bl_constants_module
+    use amrex_constants_module
     use transport_module
 
     implicit none
@@ -158,7 +158,7 @@ contains
     use eos_type_module
     use meth_params_module, only: NVAR, URHO, UTEMP, UFS
     use prob_params_module, only: dim
-    use bl_constants_module
+    use amrex_constants_module
     use transport_module
 
     implicit none
@@ -242,7 +242,7 @@ contains
     use meth_params_module, only: NVAR, URHO, UEINT, UTEMP, UFS, UFX, &
          diffuse_cutoff_density
     use prob_params_module, only: dim
-    use bl_constants_module
+    use amrex_constants_module
     use transport_module
 
     implicit none
@@ -332,7 +332,7 @@ contains
                                dx, dt_old, dt_new) &
                                bind(C, name="pc_check_timestep")
 
-    use bl_constants_module, only: HALF, ONE
+    use amrex_constants_module, only: HALF, ONE
     use meth_params_module, only: NVAR, URHO, UTEMP, UEINT, UFS, UFX, UMX, UMZ, &
                                   cfl, do_hydro
     use prob_params_module, only: dim

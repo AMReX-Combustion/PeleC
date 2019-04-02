@@ -60,6 +60,14 @@ contains
                        Ip,Im,I_lo,I_hi, &
                        ilo1,ilo2,ihi1,ihi2,dx,dt,k3d,kc)
 
+    else if (ppm_type_to_use == 3) then
+
+        call ppm_type3(s,s_lo,s_hi, &
+                       u,cspd,qd_lo,qd_hi, &
+                       flatn,f_lo,f_hi, &
+                       Ip,Im,I_lo,I_hi, &
+                       ilo1,ilo2,ihi1,ihi2,dx,dt,k3d,kc) 
+    
     end if
 
   end subroutine ppm
@@ -76,7 +84,7 @@ contains
 
     use amrex_mempool_module, only : bl_allocate, bl_deallocate
     use meth_params_module, only : ppm_type
-    use bl_constants_module
+    use amrex_constants_module
 
     implicit none
 
@@ -535,7 +543,7 @@ contains
 
     use amrex_mempool_module, only : bl_allocate, bl_deallocate
     use meth_params_module, only : ppm_type
-    use bl_constants_module
+    use amrex_constants_module
 
     implicit none
 
@@ -1107,4 +1115,365 @@ contains
 
   end subroutine ppm_type2
 
+  ! :::
+  ! ::: ----------------------------------------------------------------
+  ! :::
+
+  subroutine ppm_type3(s,s_lo,s_hi, &
+                       u,cspd,qd_lo,qd_hi, &
+                       flatn,f_lo,f_hi, &
+                       Ip,Im,I_lo,I_hi, &
+                       ilo1,ilo2,ihi1,ihi2,dx,dt,k3d,kc)
+
+    use amrex_mempool_module, only : bl_allocate, bl_deallocate
+    use meth_params_module, only : ppm_type, weno_variant
+    use amrex_constants_module
+    use weno_module
+
+    implicit none
+
+    integer, intent(in) ::  s_lo(3),  s_hi(3)
+    integer, intent(in) :: qd_lo(3), qd_hi(3)
+    integer, intent(in) ::  f_lo(3),  f_hi(3)
+    integer, intent(in) ::  I_lo(3),  I_hi(3)
+    integer, intent(in) :: ilo1, ilo2, ihi1, ihi2
+    integer, intent(in) :: k3d, kc
+
+    double precision, intent(in) ::     s( s_lo(1): s_hi(1), s_lo(2): s_hi(2), s_lo(3): s_hi(3))
+    double precision, intent(in) ::     u(qd_lo(1):qd_hi(1),qd_lo(2):qd_hi(2),qd_lo(3):qd_hi(3),3)
+    double precision, intent(in) ::  cspd(qd_lo(1):qd_hi(1),qd_lo(2):qd_hi(2),qd_lo(3):qd_hi(3))
+    double precision, intent(in) :: flatn( f_lo(1): f_hi(1), f_lo(2): f_hi(2), f_lo(3): f_hi(3))
+
+    double precision, intent(inout) :: Ip(I_lo(1):I_hi(1),I_lo(2):I_hi(2),I_lo(3):I_hi(3),1:3,1:3)
+    double precision, intent(inout) :: Im(I_lo(1):I_hi(1),I_lo(2):I_hi(2),I_lo(3):I_hi(3),1:3,1:3)
+
+    double precision, intent(in) :: dx(3), dt
+
+    ! local
+    integer i,j,k
+
+    double precision dtdx, dtdy, dtdz
+
+    double precision dsl, dsr, dsc
+    double precision sigma, s6
+
+    ! s_{\ib,+}, s_{\ib,-}
+    double precision :: sm, sp, vl, vr
+
+    ! \delta s_{\ib}^{vL}
+    double precision, pointer :: dsvl(:,:)
+    double precision :: dsvlm, dsvl0, dsvlp
+
+    ! s_{i+\half}^{H.O.}
+    double precision, pointer :: sedge(:,:)
+    
+    double precision, pointer :: sedge_weno_p(:,:)
+    double precision, pointer :: sedge_weno_m(:,:)
+
+    dtdx = dt/dx(1)
+    dtdy = dt/dx(2)
+    dtdz = dt/dx(3)
+
+    if (ppm_type .ne. 3) &
+         call bl_error("Should have ppm_type = 3 in ppm_type3")
+
+    if (s_lo(1) .gt. ilo1-3 .or. s_lo(2) .gt. ilo2-3) then
+         print *,'Low bounds of array: ',s_lo(1), s_lo(2)
+         print *,'Low bounds of  loop: ',ilo1 , ilo2
+         call bl_error("Need more ghost cells on array in ppm_type3")
+    end if
+
+    if (s_hi(1) .lt. ihi1+3 .or. s_hi(2) .lt. ihi2+3) then
+         print *,'Hi  bounds of array: ',s_hi(1), s_hi(2)
+         print *,'Hi  bounds of  loop: ',ihi1 , ihi2
+         call bl_error("Need more ghost cells on array in ppm_type3")
+    end if
+
+    ! cell-centered indexing w/extra ghost cell
+    call bl_allocate(dsvl,ilo1-2,ihi1+2,ilo2-2,ihi2+2)
+
+    ! edge-centered indexing
+    call bl_allocate(sedge,ilo1-1,ihi1+2,ilo2-1,ihi2+2)
+    
+    call bl_allocate(sedge_weno_p,ilo1-2,ihi1+2,ilo2-2,ihi2+2)
+    call bl_allocate(sedge_weno_m,ilo1-2,ihi1+2,ilo2-2,ihi2+2)
+
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    ! x-direction
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    ! compute s at x-edges
+    
+    do j=ilo2-2,ihi2+2
+       do i=ilo1-2,ihi1+2
+         select case (weno_variant)
+         case (0)
+           call weno5js_face(s(i-3:i+2,j,k3d), vl, vr)
+         case (1) 
+           call weno5z_face(s(i-3:i+2,j,k3d), vl, vr)
+         case (2) 
+           call weno3z_face(s(i-3:i+2,j,k3d), vl, vr)
+         case (3) 
+           call weno7z_face(s(i-4:i+3,j,k3d), vl, vr)
+         end select
+         sedge_weno_p(i,j) = vr
+         sedge_weno_m(i,j) = vl
+       enddo
+    enddo
+    
+    do j=ilo2-1,ihi2+1
+       do i=ilo1-1,ihi1+1
+          
+          ! copy sedge into sp and sm
+          sm = sedge_weno_p(i,j) 
+          sp = sedge_weno_m(i+1,j) 
+
+          ! compute x-component of Ip and Im
+          s6 = SIX*s(i,j,k3d) - THREE*(sm+sp)
+
+          ! Ip/m is the integral under the parabola for the extent
+          ! that a wave can travel over a timestep
+          !
+          ! Ip integrates to the right edge of a cell
+          ! Im integrates to the left edge of a cell
+
+          ! u-c wave
+          sigma = abs(u(i,j,k3d,1)-cspd(i,j,k3d))*dtdx
+
+          if (u(i,j,k3d,1)-cspd(i,j,k3d) <= ZERO) then
+             Ip(i,j,kc,1,1) = sp
+          else
+             Ip(i,j,kc,1,1) = sp - &
+               HALF*sigma*(sp-sm-(ONE-TWO3RD*sigma)*s6)
+          endif
+
+          if (u(i,j,k3d,1)-cspd(i,j,k3d) >= ZERO) then
+             Im(i,j,kc,1,1) = sm
+          else
+             Im(i,j,kc,1,1) = sm + &
+               HALF*sigma*(sp-sm+(ONE-TWO3RD*sigma)*s6)
+          endif
+
+          ! u wave
+          sigma = abs(u(i,j,k3d,1))*dtdx
+
+          if (u(i,j,k3d,1) <= ZERO) then
+             Ip(i,j,kc,1,2) = sp
+          else
+             Ip(i,j,kc,1,2) = sp - &
+               HALF*sigma*(sp-sm-(ONE-TWO3RD*sigma)*s6)
+          endif
+
+          if (u(i,j,k3d,1) >= ZERO) then
+             Im(i,j,kc,1,2) = sm
+          else
+             Im(i,j,kc,1,2) = sm + &
+               HALF*sigma*(sp-sm+(ONE-TWO3RD*sigma)*s6)
+          endif
+
+          ! u+c wave
+          sigma = abs(u(i,j,k3d,1)+cspd(i,j,k3d))*dtdx
+
+          if (u(i,j,k3d,1)+cspd(i,j,k3d) <= ZERO) then
+             Ip(i,j,kc,1,3) = sp
+          else
+             Ip(i,j,kc,1,3) = sp - &
+               HALF*sigma*(sp-sm-(ONE-TWO3RD*sigma)*s6)
+          endif
+
+          if (u(i,j,k3d,1)+cspd(i,j,k3d) >= ZERO) then
+             Im(i,j,kc,1,3) = sm
+          else
+             Im(i,j,kc,1,3) = sm + &
+               HALF*sigma*(sp-sm+(ONE-TWO3RD*sigma)*s6)
+          endif
+
+       end do
+    end do
+
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    ! y-direction
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    ! compute s at y-edges      
+    
+    do j=ilo2-2,ihi2+2
+       do i=ilo1-2,ihi1+2
+         select case (weno_variant)
+         case (0)
+           call weno5js_face(s(i,j-3:j+2,k3d), vl, vr) 
+         case (1) 
+           call weno5z_face(s(i,j-3:j+2,k3d), vl, vr)
+         case (2) 
+           call weno3z_face(s(i,j-3:j+2,k3d), vl, vr)
+         case (3) 
+           call weno7z_face(s(i,j-4:j+3,k3d), vl, vr)
+         end select
+         sedge_weno_p(i,j) = vr
+         sedge_weno_m(i,j) = vl
+       enddo
+    enddo
+
+    do j=ilo2-1,ihi2+1
+       do i=ilo1-1,ihi1+1
+       
+          sm = sedge_weno_p(i,j) 
+          sp = sedge_weno_m(i,j+1) 
+
+          ! compute y-component of Ip and Im
+          s6 = SIX*s(i,j,k3d) - THREE*(sm+sp)
+
+          ! v-c wave
+          sigma = abs(u(i,j,k3d,2)-cspd(i,j,k3d))*dtdy
+
+          if (u(i,j,k3d,2)-cspd(i,j,k3d) <= ZERO) then
+             Ip(i,j,kc,2,1) = sp
+          else
+             Ip(i,j,kc,2,1) = sp - &
+               HALF*sigma*(sp-sm-(ONE-TWO3RD*sigma)*s6)
+          endif
+
+          if (u(i,j,k3d,2)-cspd(i,j,k3d) >= ZERO) then
+             Im(i,j,kc,2,1) = sm
+          else
+             Im(i,j,kc,2,1) = sm + &
+               HALF*sigma*(sp-sm+(ONE-TWO3RD*sigma)*s6)
+          endif
+
+          ! v wave
+          sigma = abs(u(i,j,k3d,2))*dtdy
+
+          if (u(i,j,k3d,2) <= ZERO) then
+             Ip(i,j,kc,2,2) = sp
+          else
+             Ip(i,j,kc,2,2) = sp - &
+               HALF*sigma*(sp-sm-(ONE-TWO3RD*sigma)*s6)
+          endif
+
+          if (u(i,j,k3d,2) >= ZERO) then
+             Im(i,j,kc,2,2) = sm
+          else
+             Im(i,j,kc,2,2) = sm + &
+               HALF*sigma*(sp-sm+(ONE-TWO3RD*sigma)*s6)
+          endif
+
+          ! v+c wave
+          sigma = abs(u(i,j,k3d,2)+cspd(i,j,k3d))*dtdy
+
+          if (u(i,j,k3d,2)+cspd(i,j,k3d) <= ZERO) then
+             Ip(i,j,kc,2,3) = sp
+          else
+             Ip(i,j,kc,2,3) = sp - &
+               HALF*sigma*(sp-sm-(ONE-TWO3RD*sigma)*s6)
+          endif
+
+          if (u(i,j,k3d,2)+cspd(i,j,k3d) >= ZERO) then
+             Im(i,j,kc,2,3) = sm
+          else
+             Im(i,j,kc,2,3) = sm + &
+               HALF*sigma*(sp-sm+(ONE-TWO3RD*sigma)*s6)
+          endif
+
+       end do
+    end do
+
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    ! z-direction
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    ! compute s at z-edges
+
+    ! compute van Leer slopes in z-direction
+   
+     do j=ilo2-1,ihi2+1
+       do i=ilo1-1,ihi1+1
+
+          select case (weno_variant)
+          case (0)
+            call weno5js_face(s(i,j,k3d-2:k3d+3), vl, vr)
+            sp = vl
+            call weno5js_face(s(i,j,k3d-3:k3d+2), vl, vr)
+            sm = vr
+          case (1)
+            call weno5z_face(s(i,j,k3d-2:k3d+3), vl, vr)
+            sp = vl
+            call weno5z_face(s(i,j,k3d-3:k3d+2), vl, vr)
+            sm = vr
+          case (2)
+            call weno3z_face(s(i,j,k3d-2:k3d+3), vl, vr)
+            sp = vl
+            call weno3z_face(s(i,j,k3d-3:k3d+2), vl, vr)
+            sm = vr
+          case (3)
+            call weno7z_face(s(i,j,k3d-3:k3d+4), vl, vr)
+            sp = vl
+            call weno7z_face(s(i,j,k3d-4:k3d+3), vl, vr)
+            sm = vr
+          end select
+
+          ! compute z-component of Ip and Im
+          s6 = SIX*s(i,j,k3d) - THREE*(sm+sp)
+
+          ! w-c wave
+          sigma = abs(u(i,j,k3d,3)-cspd(i,j,k3d))*dtdz
+
+          if (u(i,j,k3d,3)-cspd(i,j,k3d) <= ZERO) then
+             Ip(i,j,kc,3,1) = sp
+          else
+             Ip(i,j,kc,3,1) = sp - &
+               HALF*sigma*(sp-sm-(ONE-TWO3RD*sigma)*s6)
+          endif
+
+          if (u(i,j,k3d,3)-cspd(i,j,k3d) >= ZERO) then
+             Im(i,j,kc,3,1) = sm
+          else
+             Im(i,j,kc,3,1) = sm + &
+               HALF*sigma*(sp-sm+(ONE-TWO3RD*sigma)*s6)
+          endif
+
+          ! w wave
+          sigma = abs(u(i,j,k3d,3))*dtdz
+
+          if (u(i,j,k3d,3) <= ZERO) then
+             Ip(i,j,kc,3,2) = sp
+          else
+             Ip(i,j,kc,3,2) = sp - &
+               HALF*sigma*(sp-sm-(ONE-TWO3RD*sigma)*s6)
+          endif
+
+          if (u(i,j,k3d,3) >= ZERO) then
+             Im(i,j,kc,3,2) = sm
+          else
+             Im(i,j,kc,3,2) = sm + &
+               HALF*sigma*(sp-sm+(ONE-TWO3RD*sigma)*s6)
+          endif
+
+          ! w+c wave
+          sigma = abs(u(i,j,k3d,3)+cspd(i,j,k3d))*dtdz
+
+          if (u(i,j,k3d,3)+cspd(i,j,k3d) <= ZERO) then
+             Ip(i,j,kc,3,3) = sp
+          else
+             Ip(i,j,kc,3,3) = sp - &
+               HALF*sigma*(sp-sm-(ONE-TWO3RD*sigma)*s6)
+          endif
+
+          if (u(i,j,k3d,3)+cspd(i,j,k3d) >= ZERO) then
+             Im(i,j,kc,3,3) = sm
+          else
+             Im(i,j,kc,3,3) = sm + &
+               HALF*sigma*(sp-sm+(ONE-TWO3RD*sigma)*s6)
+          endif
+
+       end do
+    end do
+
+    call bl_deallocate(dsvl)
+    call bl_deallocate(sedge)
+    
+    call bl_deallocate(sedge_weno_m)
+    call bl_deallocate(sedge_weno_p)
+
+  end subroutine ppm_type3
+  
 end module ppm_module

@@ -11,7 +11,7 @@ contains
   subroutine amrex_probinit (init,name,namlen,problo,probhi) bind(C, name = "amrex_probinit")
 
     use probdata_module
-    use bl_error_module
+    use amrex_fort_module
     implicit none
 
     integer :: init, namlen
@@ -35,13 +35,13 @@ contains
     end do
 
     ! set namelist defaults here
-    reynolds = 1600.0_dp_t
-    mach = 0.1_dp_t
-    prandtl = 0.71_dp_t
+    reynolds = 1600.0_amrex_real
+    mach = 0.1_amrex_real
+    prandtl = 0.71_amrex_real
     convecting = .false.
-    omega_x = 1.0_dp_t
-    omega_y = 1.0_dp_t
-    omega_z = 1.0_dp_t
+    omega_x = 1.0_amrex_real
+    omega_y = 1.0_amrex_real
+    omega_z = 1.0_amrex_real
 
     ! Read namelists
     untin = 9
@@ -82,13 +82,13 @@ contains
        state,state_lo,state_hi, &
        delta,xlo,xhi) bind(C, name="pc_initdata")
 
-    use parallel
+     use amrex_parallel_module
     use probdata_module
     use network, only: nspec, naux, molec_wt
     use eos_type_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, &
          UEDEN, UEINT, UFS, UTEMP, small_temp
-    use bl_constants_module, only: ZERO, HALF, M_PI
+    use amrex_constants_module, only: ZERO, HALF, M_PI
     use extern_probin_module, only: const_viscosity, const_bulk_viscosity, const_conductivity, const_diffusivity
     use eos_module
 
@@ -138,7 +138,7 @@ contains
     state(:,:,:,UTEMP) = T0
 
     ! Write this out to file (might be useful for postprocessing)
-    if ( parallel_ioprocessor() ) then
+    if ( amrex_parallel_ioprocessor() ) then
        open(unit=out_unit,file="ic.txt",action="write",status="replace")
        write(out_unit,*)"L, rho0, v0, p0, T0, gamma, mu, k, c_s0, Reynolds, Mach, Prandtl, omega_x, omega_y, omega_z"
        write(out_unit,*) L, "," , eos_state % rho, "," , v0, "," , eos_state % p, "," , &
