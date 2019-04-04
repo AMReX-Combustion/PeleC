@@ -1,5 +1,5 @@
 function(set_compile_flags)
-  # Clear variables for flags
+  # Clear our local compiler flag variables
   set(CXX_FLAGS "")
   set(C_FLAGS "")
   set(Fortran_FLAGS "")
@@ -60,13 +60,13 @@ function(set_compile_flags)
   string(REPLACE ";" " " CXX_FLAGS "${CXX_FLAGS}")
   string(REPLACE ";" " " C_FLAGS "${C_FLAGS}")
   string(REPLACE ";" " " Fortran_FLAGS "${Fortran_FLAGS}")
- 
-  message("-- CMAKE_CXX_FLAGS = ${CXX_FLAGS}")
-  message("-- CMAKE_C_FLAGS = ${C_FLAGS}")
-  message("-- CMAKE_Fortran_FLAGS = ${Fortran_FLAGS}")
 
-  set(CMAKE_CXX_FLAGS "${CXX_FLAGS}" PARENT_SCOPE)
-  set(CMAKE_C_FLAGS "${C_FLAGS}" PARENT_SCOPE)
-  set(CMAKE_Fortran_FLAGS "${Fortran_FLAGS}" PARENT_SCOPE)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_FLAGS}" PARENT_SCOPE)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${C_FLAGS}" PARENT_SCOPE)
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${Fortran_FLAGS}" PARENT_SCOPE)
+
+  message("-- CMAKE_CXX_FLAGS = ${CMAKE_CXX_FLAGS}")
+  message("-- CMAKE_C_FLAGS = ${CMAKE_C_FLAGS}")
+  message("-- CMAKE_Fortran_FLAGS = ${CMAKE_Fortran_FLAGS}")
 
 endfunction(set_compile_flags)
