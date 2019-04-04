@@ -18,8 +18,8 @@ function(add_test_r TEST_NAME NP)
     # Get test options (mainly we just want to know PELEC_DIM)
     set(EXE_OPTIONS_FILE ${CURRENT_TEST_SOURCE_DIR}/exe_options.cmake)
     include(${EXE_OPTIONS_FILE})
-    # Find fcompare with dimension we need
-    set(FCOMPARE ${CMAKE_BINARY_DIR}/fcompare${PELEC_DIM}D)
+    # Find fcompare
+    set(FCOMPARE ${CMAKE_BINARY_DIR}/fcompare)
     # Make working directory for test
     file(MAKE_DIRECTORY ${CURRENT_TEST_BINARY_DIR})
     # Gather all files in source directory for test
