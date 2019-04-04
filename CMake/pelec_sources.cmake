@@ -44,8 +44,8 @@ function(get_pelec_sources pelec_exe_name)
 
   set(PELEC_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Source/Src_${PELEC_DIM}d")
   add_sources(GlobalSourceList
-     ${PELEC_SOURCE_DIR}/advection_util_${PELEC_DIM}d.F90
-     ${PELEC_SOURCE_DIR}/impose_NSCBC_${PELEC_DIM}d.F90
+     ${PELEC_SOURCE_DIR}/advection_util_${PELEC_DIM}d.f90
+     ${PELEC_SOURCE_DIR}/impose_NSCBC_${PELEC_DIM}d.f90
      ${PELEC_SOURCE_DIR}/riemann_${PELEC_DIM}d.F90
      ${PELEC_SOURCE_DIR}/set_bc_mask_${PELEC_DIM}d.f90
      #${PELEC_SOURCE_DIR}/slope_mol_${PELEC_DIM}d.f90
