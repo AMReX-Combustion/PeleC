@@ -1,7 +1,7 @@
 # Minimal Doxygen configuration to interface with Sphinx Breathe
 
 DOXYFILE_ENCODING      = UTF-8
-PROJECT_NAME           = "Nalu-Wind"
+PROJECT_NAME           = "PeleC"
 JAVADOC_AUTOBRIEF      = YES
 QT_AUTOBRIEF           = YES
 MARKDOWN_SUPPORT       = YES
