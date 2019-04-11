@@ -175,7 +175,13 @@ contains
                urk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),UFS:UFS+nspec-1)/urk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),URHO), wdot)
 
            !need to implement this
-           call VCKEMS(npts,urk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),UTEMP),eint(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),:))
+           !call VCKEMS(npts,urk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),UTEMP),eint(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),:))
+
+           do lo(3),hi(3)
+                do lo(2),hi(2)
+                   do lo(1),hi(1)
+                        
+                        
 
            wdot(:,:,:,UFS:UFS+nspec-1) = wdot(:,:,:,UFS:UFS+nspec-1)*molecular_weight(1:nspec) 
 
