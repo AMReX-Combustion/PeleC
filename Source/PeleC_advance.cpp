@@ -112,6 +112,13 @@ PeleC::do_mol_advance(Real time,
   }
 #endif
 
+  // Add external source
+  if(add_ext_src == 1)
+  {
+       construct_new_ext_source(time,dt); 
+       MultiFab::Saxpy(S, 1.0, *new_sources[ext_src], 0, 0, NUM_STATE, 0);
+  }
+
   if (mol_iters > 1) MultiFab::Copy(S_old,S,0,0,NUM_STATE,0);
 
   // U^* = U^n + dt*S^n
@@ -141,6 +148,12 @@ PeleC::do_mol_advance(Real time,
     MultiFab::Saxpy(S, 1.0, mms_source, 0, 0, NUM_STATE, 0);
   }
 #endif
+  // Add external source
+  if(add_ext_src == 1)
+  {
+       construct_new_ext_source(time,dt); 
+       MultiFab::Saxpy(S, 1.0, *new_sources[ext_src], 0, 0, NUM_STATE, 0);
+  }
 
   // U^{n+1.**} = 0.5*(U^n + U^{n+1,*}) + 0.5*dt*S^{n+1} = U^n + 0.5*dt*S^n + 0.5*dt*S^{n+1} + 0.5*dt*I_R
   MultiFab::LinComb(U_new, 0.5, Sborder, 0, 0.5, U_old, 0, 0, NUM_STATE, 0);
