@@ -542,16 +542,19 @@ initialize_EB2 (const Geometry& geom, const int required_level, const int max_le
           norm2[2] =  0.0;
 
           //normalize so that magnitude is 1
-          norm0[0] = norm0[0]/sqrt(norm0[0]*norm0[0]+norm0[1]*norm0[1]);
-          norm0[1] = norm0[1]/sqrt(norm0[0]*norm0[0]+norm0[1]*norm0[1]);
+          Real norm = sqrt(norm0[0]*norm0[0]+norm0[1]*norm0[1]);
+          norm0[0] = norm0[0]/norm;
+          norm0[1] = norm0[1]/norm;
           
           //normalize so that magnitude is 1
-          norm1[0] = norm1[0]/sqrt(norm1[0]*norm1[0]+norm1[1]*norm1[1]);
-          norm1[1] = norm1[1]/sqrt(norm1[0]*norm1[0]+norm1[1]*norm1[1]);
+          norm = sqrt(norm1[0]*norm1[0]+norm1[1]*norm1[1]);
+          norm1[0] = norm1[0]/norm;
+          norm1[1] = norm1[1]/norm;
           
           //normalize so that magnitude is 1
-          norm2[0] = norm2[0]/sqrt(norm2[0]*norm2[0]+norm2[1]*norm2[1]);
-          norm2[1] = norm2[1]/sqrt(norm2[0]*norm2[0]+norm2[1]*norm2[1]);
+          norm = sqrt(norm2[0]*norm2[0]+norm2[1]*norm2[1]);
+          norm2[0] = norm2[0]/norm;
+          norm2[1] = norm2[1]/norm;
 
           EB2::PlaneIF plane0(point0,norm0);
           EB2::PlaneIF plane1(point1,norm1);
