@@ -1,6 +1,7 @@
 module nbrsTest_nd_module
 
   use amrex_fort_module, only : amrex_real, dim=>bl_spacedim
+  use amrex_error_module, only amrex_abort
   use amrex_ebcellflag_module, only : get_neighbor_cells
   use pelec_eb_stencil_types_module, only : eb_bndry_geom, eb_bndry_sten, face_sten
   use amrex_constants_module, only: ONE, HALF, TWO, FOUR3RD
@@ -158,7 +159,7 @@ contains
           kk = sten(L)%iv_base(2)
 
           do n=1,nc
-             bcflux(L,1:nc) = D(i,j,k,n) * (bcval(L,n) * sten(L)%bcval + &
+             bcflux(L,n) = D(i,j,k,n) * (bcval(L,n) * sten(L)%bcval + &
                   sum(sten(L)%val(-1:1,-1:1,-1:1) * s(ii:ii+2,jj:jj+2,kk:kk+2,n)) )
           enddo
 
@@ -722,6 +723,7 @@ contains
        apx, axlo, axhi, apy, aylo, ayhi, apz, azlo, azhi) &
        bind(C,name="pc_fill_sv_ebg")
 
+
     integer,          intent(in   ) ::  lo(0:2),  hi(0:2)
     integer, dimension(3), intent(in) :: vflo, vfhi, blo, bhi, axlo, axhi, aylo, ayhi, azlo, azhi
     integer,          intent(in   ) :: Nebg
@@ -752,6 +754,9 @@ contains
           azp = apz(i,j,k+1)
 
           apnorm = sqrt((axm-axp)**2 + (aym-ayp)**2 + (azm-azp)**2)
+          if (apnorm .eq. 0.d0 ) then
+             call amrex_abort("pc_fill_sv_ebg: zero apnorm")
+          end if
           apnorminv = -1.d0 / apnorm
           ebg(L) % eb_normal(1) = (axm-axp) * apnorminv  ! pointing to the wall
           ebg(L) % eb_normal(2) = (aym-ayp) * apnorminv
