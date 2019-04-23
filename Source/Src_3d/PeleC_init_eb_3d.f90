@@ -30,6 +30,89 @@ contains
     enddo
   end subroutine mysort
 
+    subroutine pc_fill_bndry_grad_stencil_ls(lo, hi, ebg, Nebg, grad_stencil, Nsten, dx) &
+       bind(C,name="pc_fill_bndry_grad_stencil")
+
+
+    integer,            intent(in   ) :: lo(0:2),hi(0:2)
+    integer,            intent(in   ) :: Nebg, Nsten
+    type(eb_bndry_geom),intent(in   ) :: ebg(0:Nebg-1)
+    type(eb_bndry_sten),intent(inout) :: grad_stencil(0:Nsten-1)
+    real(amrex_real),   intent(in   ) :: dx
+    integer :: i, j, k, m, c(dim), s(dim), iv(dim), ivs(dim), sh(dim), L, baseiv(dim)
+    real(amrex_real) :: n(dim), b(dim), x(2), y(2), z(2), d(2), fac, sten(0:2,0:2,0:2,0:2), AREA,
+    real(amrex_real) :: cy(-1:1),cz(-1:1), bcs, tsten(-1:1,-1:1,-1:1)
+    real(amrex_real), dimension(0:2,0:2,0:2,0:2) :: psten, rsten
+    real(amrex_real) :: r11sq, r11, r12, r22, r22sq, r13, r23, r33, r33sq
+
+
+
+    integer :: ii,jj,kk
+    integer :: nls
+    integer :: inls
+
+
+    do L = 0, Nsten-1
+       i = ebg(L) % iv(0)
+       j = ebg(L) % iv(1)
+       k = ebg(L) % iv(2)
+       if (i.ge.lo(0) .and. i.le.hi(0) &
+            .and. j.ge.lo(1) .and. j.le.hi(1) &
+            .and. k.ge.lo(2) .and. k.le.hi(2) ) then
+
+          n = ebg(L)%eb_normal
+
+          do sk = 0, 2
+             do sj = 0, 2
+                do si = 0, 2
+                   rsten(si,sj,sk,0) = si*sign(1,n(1)) - ebg(L)%eb_centroid(1)
+                   rsten(si,sj,sk,1) = sj*sign(1,n(2)) - ebg(L)%eb_centroid(2)
+                   rsten(si,sj,sk,2) = sk*sign(1,n(3)) - ebg(L)%eb_centroid(3)
+                enddo
+             enddo
+          enddo
+
+          r11sq = (sum(rsten(0:2,0:2,0:2,0)*rsten(0:2,0:2,0:2,0)))
+          r11 = sqrt(r11)
+          r12 = (sum(rsten(0:2,0:2,0:2,0)*rsten(0:2,0:2,0:2,1)))/r11
+          r22 = (sum(rsten(0:2,0:2,0:2,1)*rsten(0:2,0:2,0:2,1))) - r12*r12
+          r22sq = r22*r22
+          r13 = (sum(rsten(0:2,0:2,0:2,0)*rsten(0:2,0:2,0:2,2)))/r11
+          r23 = (sum(rsten(0:2,0:2,0:2,1)*rsten(0:2,0:2,0:2,2))  - &
+               sum(rsten(0:2,0:2,0:2,0)*rsten(0:2,0:2,0:2,2))*r12/r11 )/r22
+          r33 = sqrt(sum(rsten(0:2,0:2,0:2,2)*rsten(0:2,0:2,0:2,2)) - (r13*r12 + r23*r23))
+          r33sq = r33*r33
+          beta = (r12*r23 - r13*r22)/(r11*r22)
+
+
+          do sk = 0, 2
+             do sj = 0, 2
+                do si = 0, 2
+                   alpha(0) = rsten(si,sj,sk,0) / r11sq
+                   alpha(1) = (rsten(si,sj,sk,1) - r12/r11*rsten(si,sj,sk,0))/r22sq
+                   alpha(2) = (rsten(si,sj,sk,3) - r23/r22*rsten(si,sj,sk,1) + beta*rsten(si,sj,sk,0))/r33sq
+
+                   sten(si,sj,sk,0) = alpha(0) - r12/r11*alpha(1) + beta*alpha(2)
+                   sten(si,sj,sk,1) = alpha(1) - r23/r22*alpha(2)
+                   sten(si,sj,sk,2) = alpha(2)
+                enddo
+             enddo
+          enddo
+
+
+          ! Now, grad phi = sum(sten*phi-phi_bc). We want the component normal to the cut face
+          sten(:,:,:) = sten(:,:,:,0)*n(0) + sten(:,:,:,1)*n(1) + sten(:,:,:,2)*n(2)
+
+          grad_stencil(L)%iv = ebg(L)%iv
+          grad_stencil(L)%iv_base = iv_base + sign(1.d0,n) - 1 ! move to center of stencil, then move to lower left of that
+          grad_stencil(L)%bcval = -1.0*sum(sten)
+          grad_stencil(L)%val = sten
+
+       endif ! inside box to work on
+    enddo ! Loop over stencils
+  end subroutine pc_fill_bndry_grad_stencil_ls
+
+
   subroutine pc_fill_bndry_grad_stencil(lo, hi, ebg, Nebg, grad_stencil, Nsten, dx) &
        bind(C,name="pc_fill_bndry_grad_stencil")
 
