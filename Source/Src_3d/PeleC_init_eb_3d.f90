@@ -30,6 +30,125 @@ contains
     enddo
   end subroutine mysort
 
+  subroutine pc_fill_bndry_grad_stencil_amrex(lo, hi, ebg, Nebg, grad_stencil, Nsten, dx) &
+       bind(C,name="pc_fill_bndry_grad_stencil")
+
+    ! This one fills the stencil using the strategy in amrex_mlebabeclap_grad routine
+    ! compute_dphidn_3d
+
+    ! Notes from WZ 4/24/19 follow:
+
+    ! What it does is
+    !(1) find a point in the boundary normal direction that is `dx_eb` away from the boundary centroid.
+    !(2) find out 8 neighboring cell centers and use them to do linear interpolation.
+    !(3) compute `dphidn = (phi_interp - phi_b)/dx_eb`.
+    ! Here `dx_eb =  max(0.3d0, (kappa*kappa-0.25d0)/(2.d0*kappa))`, where kappa is volume fraction.
+
+    !For 1d case with `kappa > 0.9*` ( cannot remember the exact number), it is equivalent to use
+    ! `phi_b` and two cell centers to construct a polynomial fit and obtain dphidn on the boundary.
+    ! For kappa = 1, this is exactly same as what we do at domain wall in non-EB solver (with max_order = 3).
+    ! The problem of the stencil in PeleC and EB/CNS seems to be that in the case of kappa close to 1,
+    !    the cut cell itself is excluded.
+    ! That seems to cause problems for flows with steep gradient.
+    ! This is probably the reason in one of the ANAG paper the approach based on least square fit was
+    ! developed and it was mentioned the original stencil was not stable for low Reynolds flows.
+    ! End notes from WZ
+
+    use module amrex_mlebabeclap_3d_module, only: amrex_get_dx_eb
+
+    ! Array bounds
+    integer,            intent(in   ) :: lo(0:2),hi(0:2)
+    integer,            intent(in   ) :: Nebg, Nsten
+
+    ! EB Data
+    type(eb_bndry_geom),intent(in   ) :: ebg(0:Nebg-1)
+
+    ! Stencil data to fill
+    type(eb_bndry_sten),intent(inout) :: grad_stencil(0:Nsten-1)
+
+    ! Grid spacing
+    real(amrex_real),   intent(in   ) :: dx
+
+    ! Local variables
+    !integer :: m, c(dim), s(dim), iv(dim), ivs(dim), sh(dim), L, baseiv(dim)
+    !real(amrex_real) :: n(dim), b(dim), x(2), y(2), z(2), d(2), fac, sten(0:2,0:2,0:2,0:2), AREA,
+    !real(amrex_real) :: cy(-1:1),cz(-1:1), bcs, tsten(-1:1,-1:1,-1:1)
+    !real(amrex_real), dimension(0:2,0:2,0:2,0:2) :: psten, rsten
+    ! real(amrex_real) :: r11sq, r11, r12, r22, r22sq, r13, r23, r33, r33sq
+
+    real(amrex_real) :: dx_eb, vf
+    real(amrex_real) :: bctx, bcty, bctz ! Boundary centroids
+    real(amrex_real) :: anrmx, anrmy, anrmz ! Normals
+    real(amrex_real) :: sten(-1:1, -1:1, -1:1) ! Raw stencil
+
+    ! Cell indices
+    integer :: i, j, k
+
+
+
+
+
+    do L = 0, Nsten-1
+       i = ebg(L) % iv(0)
+       j = ebg(L) % iv(1)
+       k = ebg(L) % iv(2)
+
+
+       if (i.ge.lo(0) .and. i.le.hi(0) &
+            .and. j.ge.lo(1) .and. j.le.hi(1) &
+            .and. k.ge.lo(2) .and. k.le.hi(2) ) then
+
+
+          dx_eb = amrex_get_dx_eb(ebg(L)%eb_vfrac)
+
+          bctx = ebg(L) % eb_centroid(1)
+          bcty = ebg(L) % eb_centroid(2)
+          bctz = ebg(L) % eb_centroid(3)
+
+          anrmx = ebg(L) % eb_normal(1)
+          anrmy = ebg(L) % eb_normal(2)
+          anrmz = ebg(L) % eb_normal(3)
+
+          dg = dx_eb / max(abs(anrmx),abs(anrmy),abs(anrmz))
+          gx = bctx - dg*anrmx
+          gy = bcty - dg*anrmy
+          gz = bctz - dg*anrmz
+          sx =  sign(one,anrmx)
+          sy =  sign(one,anrmy)
+          sz =  sign(one,anrmz)
+          ii =  - int(sx)
+          jj =  - int(sy)
+          kk =  - int(sz)
+
+          gx = sx*gx
+          gy = sy*gy
+          gz = sz*gz
+          gxy = gx*gy
+          gxz = gx*gz
+          gyz = gy*gz
+          gxyz = gx*gy*gz
+
+          sten(0,0,0) = (one+gx+gy+gz+gxy+gxz+gyz+gxyz)
+
+          sten(0,0,kk) = (-gz - gxz - gyz - gxyz)
+          sten(0,jj,0) = (-gy - gxy - gyz - gxyz)
+          sten(0,jj,kk) = (gyz + gxyz)
+          sten(ii,j,k) = (-gx - gxy - gxz - gxyz)
+          sten(ii,0,kk) = (gxz + gxyz)
+          sten(ii,jj,0) = (gxy + gxyz)
+          sten(ii,jj,kk) = (-gxyz)
+
+          grad_stencil(L) % iv = ebg(L) % iv
+          grad_stencil(L) % iv_base = iv - 1
+          grad_stencil(L) % bcval = one/dg
+          grad_stencil(L) % val = -one/dg*sten
+
+
+       endif ! Restrict to box
+    end do ! Loop over cut cells
+
+  end subroutine pc_fill_bndry_grad_stencil_amrex
+
     subroutine pc_fill_bndry_grad_stencil_ls(lo, hi, ebg, Nebg, grad_stencil, Nsten, dx) &
        bind(C,name="pc_fill_bndry_grad_stencil")
 
@@ -850,6 +969,8 @@ contains
           ebg(L) % eb_centroid(1) = bcent(i,j,k,1)
           ebg(L) % eb_centroid(2) = bcent(i,j,k,2)
           ebg(L) % eb_centroid(3) = bcent(i,j,k,3)
+
+          ebg(L) % eb_vfrac = vfrac(i,j,k)
        endif
     enddo
 
