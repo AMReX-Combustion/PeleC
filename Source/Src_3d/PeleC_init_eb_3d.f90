@@ -31,7 +31,7 @@ contains
   end subroutine mysort
 
   subroutine pc_fill_bndry_grad_stencil_amrex(lo, hi, ebg, Nebg, grad_stencil, Nsten, dx) &
-       bind(C,name="pc_fill_bndry_grad_stencil")
+       bind(C,name="pc_fill_bndry_grad_stencil_amrex")
 
     ! This one fills the stencil using the strategy in amrex_mlebabeclap_grad routine
     ! compute_dphidn_3d
@@ -54,10 +54,10 @@ contains
     ! developed and it was mentioned the original stencil was not stable for low Reynolds flows.
     ! End notes from WZ
 
-    use module amrex_mlebabeclap_3d_module, only: amrex_get_dx_eb
+    use amrex_mlebabeclap_3d_module, only : amrex_get_dx_eb
 
     ! Array bounds
-    integer,            intent(in   ) :: lo(0:2),hi(0:2)
+    integer,            intent(in   ) :: lo(0:2), hi(0:2)
     integer,            intent(in   ) :: Nebg, Nsten
 
     ! EB Data
@@ -76,17 +76,17 @@ contains
     !real(amrex_real), dimension(0:2,0:2,0:2,0:2) :: psten, rsten
     ! real(amrex_real) :: r11sq, r11, r12, r22, r22sq, r13, r23, r33, r33sq
 
-    real(amrex_real) :: dx_eb, vf
+    real(amrex_real) :: dx_eb, vf, dg
     real(amrex_real) :: bctx, bcty, bctz ! Boundary centroids
     real(amrex_real) :: anrmx, anrmy, anrmz ! Normals
     real(amrex_real) :: sten(-1:1, -1:1, -1:1) ! Raw stencil
+    real(amrex_real) :: gx, gy, gz, sx, sy, sz
+    real(amrex_real) :: gxy, gxz, gyz, gxyz
+    integer :: ii, jj, kk ! Offsets for stencil
+
 
     ! Cell indices
-    integer :: i, j, k
-
-
-
-
+    integer :: i, j, k, L
 
     do L = 0, Nsten-1
        i = ebg(L) % iv(0)
@@ -139,7 +139,7 @@ contains
           sten(ii,jj,kk) = (-gxyz)
 
           grad_stencil(L) % iv = ebg(L) % iv
-          grad_stencil(L) % iv_base = iv - 1
+          grad_stencil(L) % iv_base = grad_stencil(L) % iv - 1
           grad_stencil(L) % bcval = one/dg
           grad_stencil(L) % val = -one/dg*sten
 
@@ -150,7 +150,7 @@ contains
   end subroutine pc_fill_bndry_grad_stencil_amrex
 
     subroutine pc_fill_bndry_grad_stencil_ls(lo, hi, ebg, Nebg, grad_stencil, Nsten, dx) &
-       bind(C,name="pc_fill_bndry_grad_stencil")
+       bind(C,name="pc_fill_bndry_grad_stencil_ls")
 
 
     integer,            intent(in   ) :: lo(0:2),hi(0:2)
@@ -158,17 +158,22 @@ contains
     type(eb_bndry_geom),intent(in   ) :: ebg(0:Nebg-1)
     type(eb_bndry_sten),intent(inout) :: grad_stencil(0:Nsten-1)
     real(amrex_real),   intent(in   ) :: dx
-    integer :: i, j, k, m, c(dim), s(dim), iv(dim), ivs(dim), sh(dim), L, baseiv(dim)
-    real(amrex_real) :: n(dim), b(dim), x(2), y(2), z(2), d(2), fac, sten(0:2,0:2,0:2,0:2), AREA,
+    integer :: i, j, k, m, c(dim), s(dim), iv(dim), ivs(dim), sh(dim),  baseiv(dim)
+    !real(amrex_real) :: n(dim), b(dim), x(2), y(2), z(2), d(2), fac,  AREA
+
+
     real(amrex_real) :: cy(-1:1),cz(-1:1), bcs, tsten(-1:1,-1:1,-1:1)
-    real(amrex_real), dimension(0:2,0:2,0:2,0:2) :: psten, rsten
-    real(amrex_real) :: r11sq, r11, r12, r22, r22sq, r13, r23, r33, r33sq
+    real(amrex_real), dimension(0:2,0:2,0:2,0:2) :: psten, rsten, sten
 
+    ! Local variables
+    real(amrex_real) :: r11, r11sq, r12, r22, r22sq, r13, r23, r33, r33sq, beta, alph(0:2)
 
-
+    real(amrex_real) :: anrmx, anrmy, anrmz ! Normals
     integer :: ii,jj,kk
+    integer :: L
     integer :: nls
     integer :: inls
+    integer :: si, sj, sk ! Stencil offsets
 
 
     do L = 0, Nsten-1
@@ -179,14 +184,16 @@ contains
             .and. j.ge.lo(1) .and. j.le.hi(1) &
             .and. k.ge.lo(2) .and. k.le.hi(2) ) then
 
-          n = ebg(L)%eb_normal
+          anrmx = ebg(L)%eb_normal(1)
+          anrmy = ebg(L)%eb_normal(2)
+          anrmz = ebg(L)%eb_normal(3)
 
           do sk = 0, 2
              do sj = 0, 2
                 do si = 0, 2
-                   rsten(si,sj,sk,0) = si*sign(1,n(1)) - ebg(L)%eb_centroid(1)
-                   rsten(si,sj,sk,1) = sj*sign(1,n(2)) - ebg(L)%eb_centroid(2)
-                   rsten(si,sj,sk,2) = sk*sign(1,n(3)) - ebg(L)%eb_centroid(3)
+                   rsten(si,sj,sk,0) = si*sign(1.d0,anrmx) - ebg(L)%eb_centroid(1)
+                   rsten(si,sj,sk,1) = sj*sign(1.d0,anrmy) - ebg(L)%eb_centroid(2)
+                   rsten(si,sj,sk,2) = sk*sign(1.d0,anrmz) - ebg(L)%eb_centroid(3)
                 enddo
              enddo
           enddo
@@ -207,25 +214,27 @@ contains
           do sk = 0, 2
              do sj = 0, 2
                 do si = 0, 2
-                   alpha(0) = rsten(si,sj,sk,0) / r11sq
-                   alpha(1) = (rsten(si,sj,sk,1) - r12/r11*rsten(si,sj,sk,0))/r22sq
-                   alpha(2) = (rsten(si,sj,sk,3) - r23/r22*rsten(si,sj,sk,1) + beta*rsten(si,sj,sk,0))/r33sq
+                   alph(0) = rsten(si,sj,sk,0) / r11sq
+                   alph(1) = (rsten(si,sj,sk,1) - r12/r11*rsten(si,sj,sk,0))/r22sq
+                   alph(2) = (rsten(si,sj,sk,2) - r23/r22*rsten(si,sj,sk,1) + beta*rsten(si,sj,sk,0))/r33sq
 
-                   sten(si,sj,sk,0) = alpha(0) - r12/r11*alpha(1) + beta*alpha(2)
-                   sten(si,sj,sk,1) = alpha(1) - r23/r22*alpha(2)
-                   sten(si,sj,sk,2) = alpha(2)
+                   sten(si,sj,sk,0) = alph(0) - r12/r11*alph(1) + beta*alph(2)
+                   sten(si,sj,sk,1) = alph(1) - r23/r22*alph(2)
+                   sten(si,sj,sk,2) = alph(2)
                 enddo
              enddo
           enddo
 
 
           ! Now, grad phi = sum(sten*phi-phi_bc). We want the component normal to the cut face
-          sten(:,:,:) = sten(:,:,:,0)*n(0) + sten(:,:,:,1)*n(1) + sten(:,:,:,2)*n(2)
+          sten(:,:,:,0) = sten(:,:,:,0)*anrmx + sten(:,:,:,1)*anrmy + sten(:,:,:,2)*anrmz
 
           grad_stencil(L)%iv = ebg(L)%iv
-          grad_stencil(L)%iv_base = iv_base + sign(1.d0,n) - 1 ! move to center of stencil, then move to lower left of that
-          grad_stencil(L)%bcval = -1.0*sum(sten)
-          grad_stencil(L)%val = sten
+          grad_stencil(L)%iv_base(0) =ebg(L)% iv(0) + sign(1.d0,anrmx) - 1 ! move to center of stencil, then move to lower left of that
+          grad_stencil(L)%iv_base(1) =ebg(L)% iv(1) + sign(1.d0,anrmy) - 1 ! move to center of stencil, then move to lower left of that
+          grad_stencil(L)%iv_base(2) =ebg(L)% iv(2) + sign(1.d0,anrmz) - 1 ! move to center of stencil, then move to lower left of that
+          grad_stencil(L)%bcval = -1.0*sum(sten(:,:,:,0))
+          grad_stencil(L)%val = sten(:,:,:,0) ! TODO: check this doesn't need to be normalized by sum(sten(:,:,:,0))
 
        endif ! inside box to work on
     enddo ! Loop over stencils
