@@ -158,9 +158,27 @@ contains
     double precision :: wdot(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),NVAR)
     double precision :: eint(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),nspec)
     double precision :: mom_new(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),3)
-
+    type (eos_t) :: eos_state
 
     urk(:,:,:,:)=unew(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),NVAR)
+    call build(eos_state)
+
+    do k=lo(3),hi(3)
+        do j=lo(2),hi(2)
+            do i=lo(1),hi(1)
+                eos_state % rho               = sum(y(1:nspec))
+                rhoInv                        = 1.d0 / eos_state % rho
+                eos_state % massfrac(1:nspec) = y(1:nspec) * rhoInv
+                eos_state % T                 = y(neq) ! guess
+                eos_state % e = (rhoe_init + (time - time_init) * rhoedot_ext) * rhoInv
+                call eos_re(eos_state)
+                !call eos_get_activity(eos_state)
+                do ns=1,nspec
+                    eint(i,j,k,ns)=eos_state%ei(ns)
+                enddo
+            enddo
+        enddo
+
 
 
     nsubsteps=100
@@ -170,19 +188,14 @@ contains
     do steps=1,nsubsteps
         do stage=1,nrkstages
 
+           !Returns the molar production rate of species
+           !Given rho, T, and mass fractions
            call VCKWYR(npts, urk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),URHO), &
                urk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),UTEMP), &
-               urk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),UFS:UFS+nspec-1)/urk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),URHO), wdot)
+               urk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),UFS:UFS+nspec-1)/urk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),URHO), &
+               wdot)
 
-           !need to implement this
-           !call VCKEMS(npts,urk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),UTEMP),eint(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),:))
-
-           do lo(3),hi(3)
-                do lo(2),hi(2)
-                   do lo(1),hi(1)
-                        
-                        
-
+           !convert wdot to gms/s
            wdot(:,:,:,UFS:UFS+nspec-1) = wdot(:,:,:,UFS:UFS+nspec-1)*molecular_weight(1:nspec) 
 
            urk(:,:,:,UFS:UFS+nspec-1)  = uold(:,:,:,UFS:UFS+nspec-1) + rkcoeffs(stage)*dt_rk*wdot*mask(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))
