@@ -154,6 +154,7 @@ contains
     double precision,parameter,dimension(nrkstages)  :: rkcoeffs=(/0.5d0,1.d0/)
     integer :: npts,nsubsteps,dt_rk,steps,stage,ierr,updt_time
 
+    double precision :: saneval(NVAR)
     double precision :: urk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),NVAR)
     double precision :: urk_old(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),NVAR)
     double precision :: wdot(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),nspec)
@@ -161,57 +162,95 @@ contains
     double precision :: cv(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))
     double precision :: mom_new(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),3)
     double precision :: rhoedot_ext(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))
+    double precision :: rhoydot_ext(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),nspec)
     double precision :: re_old(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))
+    double precision :: tempsrc(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))
     type (eos_t) :: eos_state
 
     double precision :: rhoE_old,rho_e_K_old,rho,energy,rho_e_K_new
+    
+    call build(eos_state)
 
     !initialize all local arrays
-    urk    =unew(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),NVAR)
-    urk_old=unew(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),NVAR)
-    wdot=0.d0
-    eint=0.d0
-    cv=0.d0
-    mom_new=0.d0
-    rhoedot_ext=0.d0
-    re_old=0.d0
+    urk_old     = uold(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),NVAR)
+    wdot        = 0.d0
+    eint        = 0.d0
+    cv          = 0.d0
+    mom_new     = 0.d0
+    rhoedot_ext = 0.d0
+    rhoydot_ext = 0.d0
+    re_old      = 0.d0
+    tempsrc     = 0.d0
 
-    call build(eos_state)
+    !==============================================================
+    !sanitize urk_old so that masked values are sane and not NaN
+    !May be removed if we are confident this is not the case
+    !with uninitialized fortran arrays I am not sure!
+    !==============================================================
+    do k=lo(3),hi(3)
+        do j=lo(2),hi(2)
+            do i=lo(1),hi(1)
+                if(mask(i,j,k) .eq. 1) then
+                    sanval=urk_old(i,j,k,:)
+                    exit
+                endif
+            enddo
+        enddo
+    enddo
     
+    do k=lo(3),hi(3)
+        do j=lo(2),hi(2)
+            do i=lo(1),hi(1)
+                if(mask(i,j,k) .ne. 1) then
+                    urk_old(i,j,k,:)=saneval
+                endif
+            enddo
+        enddo
+    enddo
+    !===============================================================
+
+    !setting urk
+    urk         = urk_old
     
-    
-    !compute rhoe_ext
+    !compute rhoe_ext/rhoy_ext - one time operation, keeping original 
+    !pc_react_state code ===========================================
     do k=lo(3),hi(3)
         do j=lo(2),hi(2)
             do i=lo(1),hi(1)
                 if(mask(i,j,k) .eq. 1) then
 
-                    rhoE_old     = uold(i,j,k,UEDEN)
-                    rho_e_K_old  = HALF * sum(uold(i,j,k,UMX:UMZ)**2) / uold(i,j,k,URHO)
-                    rho          = sum(uold(i,j,k,UFS:UFS+nspec-1))
+                    rhoE_old      = uold(i,j,k,UEDEN)
+                    rho_e_K_old   = HALF * sum(uold(i,j,k,UMX:UMZ)**2) / uold(i,j,k,URHO)
+                    rho           = sum(uold(i,j,k,UFS:UFS+nspec-1))
 
-                    energy       = (rhoE_old - rho_e_K_old) / uold(i,j,k,URHO)
+                    energy        = (rhoE_old - rho_e_K_old) / uold(i,j,k,URHO)
                     re_old(i,j,k) = energy*uold(i,j,k,URHO)
 
-                    ! rho.e source term computed using (rho.E,rho.u,rho)_new rather than pulling from UEINT comp of asrc
-                    rho_e_K_new  = HALF * sum(unew(i,j,k,UMX:UMZ)**2)/unew(i,j,k,URHO)
+                    ! rho.e source term computed using 
+                    !(rho.E,rho.u,rho)_new rather than pulling from UEINT comp of asrc
+                    rho_e_K_new   = HALF * sum(unew(i,j,k,UMX:UMZ)**2)/unew(i,j,k,URHO)
                     rhoedot_ext(i,j,k)  = ( (unew(i,j,k,UEDEN) - rho_e_K_new) &
                                         -   (rho  *  energy) ) / dt_react
+                    rhoydot_ext(i,j,k,1:nspec)  = asrc(i,j,k,UFS:UFS+nspec-1)
                 endif
             enddo
         enddo
     enddo
+    !===============================================================
 
-    
+    !now hardcoded - but we can be clever on this===================
     nsubsteps=100
     dt_rk=dt_react/nsubsteps
+    !===============================================================
+
     npts=(lo(3)-hi(3)+1)*(lo(2)-hi(2)+1)*(lo(1)-hi(1)+1)
     updt_time=0.0
 
     do steps=1,nsubsteps
 
-        updt_time=updt_time+(steps-1)*dt_rk
-        urk_old=urk
+        updt_time = updt_time+(steps-1)*dt_rk
+        urk_old   = urk
+
         do stage=1,nrkstages
 
            !Returns the molar production rate of species
@@ -222,6 +261,7 @@ contains
                wdot)
 
             !Ideally this has to come from a vector call to fuego
+            !will replace after pelephysics has this facility
             do k=lo(3),hi(3)
                 do j=lo(2),hi(2)
                     do i=lo(1),hi(1)
@@ -243,50 +283,58 @@ contains
                 enddo
             enddo
 
-           !convert wdot to gms/s
-           wdot(:,:,:,1:nspec) = wdot(:,:,:,1:nspec)*molecular_weight(1:nspec) 
-
-           !update species
-           urk(:,:,:,UFS:UFS+nspec-1)  = urk_old(:,:,:,UFS:UFS+nspec-1) + rkcoeffs(stage)*dt_rk*wdot*mask(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))
-
-            !update temperature
-            do k=lo(3),hi(3)
+           !convert wdot to gms/s and add external source
+           wdot(:,:,:,1:nspec) = wdot(:,:,:,1:nspec)*molecular_weight(1:nspec) + rhoydot_ext(:,:,:,1:nspec) 
+           
+           !update temperature src
+           !hope compiler can optimize this better
+           do k=lo(3),hi(3)
                 do j=lo(2),hi(2)
                     do i=lo(1),hi(1)
-                        if(mask(i,j,k) .eq. 1) then
-                            tempsrc=0.0
-                            do ns=1,nspec
-                                tempsrc=tempsrc+wdot(i,j,k,ns)*eint(i,j,k,ns)
-                            enddo
-                            tempsrc=-tempsrc/sum(urk(i,j,k,UFS:UFS+nspec-1))/cv(i,j,k)
-                            urk(i,j,k,UTEMP) = urk(i,j,k,UTEMP) - rkcoeffs(stage)*tempsrc*mask(i,j,k)
-                        endif
+                        tempsrc(i,j,k)=0.d0
+                        do ns=1,nspec
+                            tempsrc(i,j,k)=tempsrc(i,j,k)+wdot(i,j,k,ns)*eint(i,j,k,ns)
+                        enddo
+                        tempsrc(i,j,k)=-tempsrc(i,j,k)/sum(urk(i,j,k,UFS:UFS+nspec-1))/cv(i,j,k)*mask(i,j,k)
                     enddo
                 enddo
             enddo
-
+           
+           !update species
+           urk(:,:,:,UFS:UFS+nspec-1)  = urk_old(:,:,:,UFS:UFS+nspec-1) + &
+               rkcoeffs(stage)*dt_rk*wdot(:,:,:,1:nspec)*mask(:,:,:)
+           
+           !update temperature 
+           urk(:,:,:,UTEMP) = urk_old(:,:,:,UTEMP) + rkcoeffs(stage)*tempsrc(:,:,:)
         enddo
+
     enddo
    
+    !this is a one time operation, so keeping original pc_react_state code
     do k=lo(3),hi(3)
         do j=lo(2),hi(2)
             do i=lo(1),hi(1)
+
                 if(mask(i,j,k) .eq. 1) then
-                    mom_new = uold(i,j,k,UMX:UMZ) + dt_react*asrc(i,j,k,UMX:UMZ)
-                    rho_new = sum(urk(i,j,k,UFS:UFS+nspec-1))
+
+                    rho_new  = sum(urk(i,j,k,UFS:UFS+nspec-1))
+                    mom_new  = uold(i,j,k,UMX:UMZ) + dt_react*asrc(i,j,k,UMX:UMZ)
                     rhoe_new = re_old(i,j,k)+dt_react*rhoedot_ext(i,j,k)
                     rho_e_K_new = HALF * sum(mom_new**2) / rho_new
                     rhoE_new    = rhoe_new + rho_e_K_new
 
     
                     if (do_update .eq. 1) then
+
                         unew(i,j,k,URHO)            = rho_new
                         unew(i,j,k,UMX:UMZ)         = mom_new
                         unew(i,j,k,UEINT)           = rhoe_new
                         unew(i,j,k,UEDEN)           = rhoE_new
                         unew(i,j,k,UTEMP)           = urk(i,j,k,UTEMP)
                         unew(i,j,k,UFS:UFS+nspec-1) = urk(i,j,k,UFS:UFS+nspec-1)
+
                     endif
+
                     ! Add drhoY/dt to reactions MultiFab, but be
                     ! careful because the reactions and state MFs may
                     ! not have the same number of ghost cells.
@@ -297,7 +345,7 @@ contains
 
                         IR(i,j,k,1:nspec) = (urk(i,j,k,UFS:UFS+nspec-1) - uold(i,j,k,UFS:UFS+nspec-1)) / dt_react -&
                             asrc(i,j,k,UFS:UFS+nspec-1)
-                        IR(i,j,k,nspec+1) =(rhoE_new-rhoE_old) / dt_react - asrc(i,j,k,UEDEN)
+                        IR(i,j,k,nspec+1) =(rhoE_new - uold(i,j,k,EDEN)) / dt_react - asrc(i,j,k,UEDEN)
 
                     endif
 
