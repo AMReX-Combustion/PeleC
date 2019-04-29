@@ -243,12 +243,12 @@ contains
     !===============================================================
 
     !now hardcoded - but we can be clever on this===================
-    nsubsteps=100
     dt_rk=dt_react/nsubsteps
     !===============================================================
 
     npts=(lo(3)-hi(3)+1)*(lo(2)-hi(2)+1)*(lo(1)-hi(1)+1)
     updt_time=0.0
+    cost(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))=nsubsteps
 
     do steps=1,nsubsteps
 
@@ -326,7 +326,7 @@ contains
                 rkcoeffs(stage)*dt_rk*wdot(i,j,k,1:nspec)*mask(i,j,k)
 
                 !update temperature 
-                urk(i,j,k,UTEMP) = urk_old(i,j,k,UTEMP) + rkcoeffs(stage)*tempsrc(i,j,k)*mask(i,j,k)
+                urk(i,j,k,UTEMP) = urk_old(i,j,k,UTEMP) + rkcoeffs(stage)*dt_rk*tempsrc(i,j,k)*mask(i,j,k)
             enddo
            enddo
           enddo
