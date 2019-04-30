@@ -146,7 +146,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
 	    const int* hi = vbox.hiVect();
 
 #ifdef PELE_USE_EB
-      const EBFArrayBox& Sfab = static_cast<const EBFArrayBox&>(S[mfi]);
+        const EBFArrayBox& Sfab = static_cast<const EBFArrayBox&>(S[mfi]);
 
       const auto& flag_fab = Sfab.getEBCellFlagFab();
       FabType typ = flag_fab.getType(cbox);

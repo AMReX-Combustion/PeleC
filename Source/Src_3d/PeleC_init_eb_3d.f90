@@ -87,6 +87,7 @@ contains
 
     ! Cell indices
     integer :: i, j, k, L
+    real(amrex_real) :: anrm
 
     do L = 0, Nsten-1
        i = ebg(L) % iv(0)
@@ -105,11 +106,24 @@ contains
           bcty = ebg(L) % eb_centroid(2)
           bctz = ebg(L) % eb_centroid(3)
 
+
           anrmx = ebg(L) % eb_normal(1)
           anrmy = ebg(L) % eb_normal(2)
           anrmz = ebg(L) % eb_normal(3)
+          !anrm = sqrt( anrmx*anrmx + anrmy*anrmy + anrmz*anrmz)
+          !anrmx = anrmx/anrm
+          !anrmy = anrmy/anrm
+          !anrmz = anrmz/anrm
 
           dg = dx_eb / max(abs(anrmx),abs(anrmy),abs(anrmz))
+
+          if( L .eq. 232) then
+             write(*,*) 'L =', L, ' normals = ', anrmx, anrmy, anrmz
+             write(*,*) 'L =', L, ' centroid = ', bctx, bcty, bctz
+             write(*,*) 'L =', L, ' dg = ', dg
+          endif
+
+
           gx = bctx - dg*anrmx
           gy = bcty - dg*anrmy
           gz = bctz - dg*anrmz
@@ -129,19 +143,21 @@ contains
           gxyz = gx*gy*gz
 
           sten(0,0,0) = (one+gx+gy+gz+gxy+gxz+gyz+gxyz)
+          !write(*,*) 'Filling stencil positions: ', ii, jj, kk
 
-          sten(0,0,kk) = (-gz - gxz - gyz - gxyz)
-          sten(0,jj,0) = (-gy - gxy - gyz - gxyz)
-          sten(0,jj,kk) = (gyz + gxyz)
-          sten(ii,j,k) = (-gx - gxy - gxz - gxyz)
-          sten(ii,0,kk) = (gxz + gxyz)
-          sten(ii,jj,0) = (gxy + gxyz)
-          sten(ii,jj,kk) = (-gxyz)
+           sten(0,0,kk) = (-gz - gxz - gyz - gxyz)
+           sten(0,jj,0) = (-gy - gxy - gyz - gxyz)
+           sten(0,jj,kk) = (gyz + gxyz)
+           sten(ii,0,0) = (-gx - gxy - gxz - gxyz)
+           sten(ii,0,kk) = (gxz + gxyz)
+           sten(ii,jj,0) = (gxy + gxyz)
+           sten(ii,jj,kk) = (-gxyz)
 
           grad_stencil(L) % iv = ebg(L) % iv
           grad_stencil(L) % iv_base = grad_stencil(L) % iv - 1
           grad_stencil(L) % bcval = one/dg
-          grad_stencil(L) % val = -one/dg*sten
+
+          grad_stencil(L) % val(-1:1,-1:1,-1:1) = -one/dg*sten(-1:1,-1:1,-1:1)
 
 
        endif ! Restrict to box
@@ -369,7 +385,13 @@ contains
           jj = sten(L)%iv_base(1)
           kk = sten(L)%iv_base(2)
 
+
           do n=1,nc
+             if( L.eq.232) then
+             write(*,*)'(1)', L, '; ', i,j,k,n,'; ', D(i,j,k,n), ' ', bcval(L,n), ' ', sten(L)%bcval
+             write(*,'(A, I3,A,4I4,A,27(E10.4,2x))')' (2)', L, '; ', i,j,k,n,'; ', sten(L)%val(-1:1,-1:1,-1:1)
+             write(*,'(A, I3,A,4I4,A,27(E10.4,2x))')' (3)', L, '; ', i,j,k,n,'; ', s(ii:ii+2,jj:jj+2,kk:kk+2,n)
+             endif
              bcflux(L,n) = D(i,j,k,n) * (bcval(L,n) * sten(L)%bcval + &
                   sum(sten(L)%val(-1:1,-1:1,-1:1) * s(ii:ii+2,jj:jj+2,kk:kk+2,n)) )
           enddo
@@ -966,6 +988,11 @@ contains
 
           apnorm = sqrt((axm-axp)**2 + (aym-ayp)**2 + (azm-azp)**2)
           if (apnorm .eq. 0.d0 ) then
+             write(0,*) 'Cell id: ', i, ',',j,',',k
+             write(0,*) ' box: ', lo(0), ',', lo(1), ',', lo(2), '; ', hi(0), ',', hi(1), ',', hi(2)
+             write(0,*) 'Volume fraction: ', vfrac(i,j,k)
+             write(0,*) axm, axp, aym, ayp, azm, azp
+             write(0,*) 'L = ', L, ' out of ', Nebg-1
              call amrex_abort("pc_fill_sv_ebg: zero apnorm")
           end if
           apnorminv = -1.d0 / apnorm
