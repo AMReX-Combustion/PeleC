@@ -76,6 +76,7 @@ contains
     !real(amrex_real), dimension(0:2,0:2,0:2,0:2) :: psten, rsten
     ! real(amrex_real) :: r11sq, r11, r12, r22, r22sq, r13, r23, r33, r33sq
 
+    real(amrex_real) :: fac, AREA
     real(amrex_real) :: dx_eb, vf, dg
     real(amrex_real) :: bctx, bcty, bctz ! Boundary centroids
     real(amrex_real) :: anrmx, anrmy, anrmz ! Normals
@@ -89,6 +90,8 @@ contains
 
     ! Cell indices
     integer :: i, j, k, L
+    AREA = dx**(dim-1)
+    fac = AREA / dx
 
 
     do L = 0, Nsten-1
@@ -154,9 +157,9 @@ contains
 
           grad_stencil(L) % iv = ebg(L) % iv
           grad_stencil(L) % iv_base = grad_stencil(L) % iv - 1
-          grad_stencil(L) % bcval = one/dg
+          grad_stencil(L) % bcval = one/dg *fac *ebg(L)%eb_area
 
-          grad_stencil(L) % val(-1:1,-1:1,-1:1) = -one/dg*sten(-1:1,-1:1,-1:1)
+          grad_stencil(L) % val(-1:1,-1:1,-1:1) = -one/dg*sten(-1:1,-1:1,-1:1) * fac *ebg(L)%eb_area
 
           sten_sum = sum(sten)
           if (abs(sten_sum - one) .gt. 1.0e-10) then
@@ -354,7 +357,7 @@ contains
                 enddo
              enddo
           enddo
-          
+
           grad_stencil(L)%iv = ebg(L)%iv
           grad_stencil(L)%iv_base = baseiv + sh ! Shift base down, if required
           grad_stencil(L)%bcval = fac * ebg(L)%eb_area * bcs
@@ -399,7 +402,7 @@ contains
              !write(*,*)'(1)', L, '; ', i,j,k,n,'; ', D(i,j,k,n), ' ', bcval(L,n), ' ', sten(L)%bcval
              !write(*,'(A, I3,A,4I4,A,27(E10.4,2x))')' (2)', L, '; ', i,j,k,n,'; ', sten(L)%val(-1:1,-1:1,-1:1)
              !write(*,'(A, I3,A,4I4,A,27(E10.4,2x))')' (3)', L, '; ', i,j,k,n,'; ', s(ii:ii+2,jj:jj+2,kk:kk+2,n)
-             !endif
+             !rendif
              bcflux(L,n) = D(i,j,k,n) * (bcval(L,n) * sten(L)%bcval + &
                   sum(sten(L)%val(-1:1,-1:1,-1:1) * s(ii:ii+2,jj:jj+2,kk:kk+2,n)) )
           enddo
