@@ -105,7 +105,6 @@ PeleC::initialize_eb2_structs() {
 
     FabType typ = flagfab.getType(tbox);
     int iLocal = mfi.LocalIndex();
-    std::cerr << "Working tbox: " << tbox << " type sv = " << (typ == FabType::singlevalued) << " idx " << iLocal <<  std::flush;
     if (typ == FabType::regular) {
       mfab.setVal(1);
     } else if (typ == FabType::covered) {
@@ -115,17 +114,7 @@ PeleC::initialize_eb2_structs() {
       for (BoxIterator bit(tbox); bit.ok(); ++bit) {
         const EBCellFlag& flag = flagfab(bit(), 0);
 
-        /* if( bit()[1] == 0 ) {
-          std::cerr << " bit: " << bit() << "Vfrac = " << vfab(bit()) << "; isCovered : " << flag.isCovered() << "; isRegular: " << flag.isRegular() << std::endl << std::flush;
-          }*/
-
-
         if (!(flag.isRegular() || flag.isCovered())) {
-          if (vfab(bit()) == 0.0) {
-            std::cerr <<  "Vfrac issue: v =" << vfab(bit()) << " flag.isCovered() = " << flag.isCovered() << std::flush;
-
-          }
-
           Ncut++;
         }
       }
@@ -137,14 +126,8 @@ PeleC::initialize_eb2_structs() {
 
         if (!(flag.isRegular() || flag.isCovered())) {
           EBBndryGeom& sv_ebg = sv_eb_bndry_geom[iLocal][ivec];
-          if(ivec == 0){
-            std::cerr << "ivec = " << ivec << "; bit = " << bit() << std::endl;
-          }
           ivec++;
           sv_ebg.iv = bit();
-          if( sv_ebg.iv[0] == -4 && sv_ebg.iv[1] == 0 && sv_ebg.iv[2] ==0) {
-            std::cerr << " Set iv for ebg : " << sv_ebg.iv << std::endl << std::flush;
-          }
 
           if (mfab.box().contains(bit())) mfab(bit()) = 0;
         } else {
@@ -159,8 +142,6 @@ PeleC::initialize_eb2_structs() {
       }
 
       int Nebg = sv_eb_bndry_geom[iLocal].size();
-      std::cerr << "Read back of ebg[0] " << sv_eb_bndry_geom[iLocal][0].iv << std::endl << std::flush;
-      std::cerr << " Filled " << ivec << " sv ebg points, and Nebg = " << Nebg << std::endl << std::flush;
 
       // Now call fortran to fill the ebg
       pc_fill_sv_ebg(BL_TO_FORTRAN_BOX(tbox),

@@ -160,12 +160,12 @@ contains
 
           sten_sum = sum(sten)
           if (abs(sten_sum - one) .gt. 1.0e-10) then
+             write(*,*) 'Trouble: stencil does not add up to unity!'
              write(*,*) 'L =', L, ' normals = ', anrmx, anrmy, anrmz
              write(*,*) 'L =', L, ' centroid = ', bctx, bcty, bctz
              write(*,*) 'L =', L, ' dg = ', dg, ' sten_sum:', sten_sum
-
              write(*,'(27(E10.4,2x))') sten
-
+             call amrex_abort("pc_fill_bndry_grad_stencil_amrex trouble with stencil")
           endif
 
        endif ! Restrict to box
@@ -395,11 +395,11 @@ contains
 
 
           do n=1,nc
-             if( L.eq.232) then
-             write(*,*)'(1)', L, '; ', i,j,k,n,'; ', D(i,j,k,n), ' ', bcval(L,n), ' ', sten(L)%bcval
-             write(*,'(A, I3,A,4I4,A,27(E10.4,2x))')' (2)', L, '; ', i,j,k,n,'; ', sten(L)%val(-1:1,-1:1,-1:1)
-             write(*,'(A, I3,A,4I4,A,27(E10.4,2x))')' (3)', L, '; ', i,j,k,n,'; ', s(ii:ii+2,jj:jj+2,kk:kk+2,n)
-             endif
+             !if( L.eq.232) then
+             !write(*,*)'(1)', L, '; ', i,j,k,n,'; ', D(i,j,k,n), ' ', bcval(L,n), ' ', sten(L)%bcval
+             !write(*,'(A, I3,A,4I4,A,27(E10.4,2x))')' (2)', L, '; ', i,j,k,n,'; ', sten(L)%val(-1:1,-1:1,-1:1)
+             !write(*,'(A, I3,A,4I4,A,27(E10.4,2x))')' (3)', L, '; ', i,j,k,n,'; ', s(ii:ii+2,jj:jj+2,kk:kk+2,n)
+             !endif
              bcflux(L,n) = D(i,j,k,n) * (bcval(L,n) * sten(L)%bcval + &
                   sum(sten(L)%val(-1:1,-1:1,-1:1) * s(ii:ii+2,jj:jj+2,kk:kk+2,n)) )
           enddo

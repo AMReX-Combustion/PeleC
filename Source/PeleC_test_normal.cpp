@@ -33,7 +33,6 @@ PeleC::test_dn() {
 
     const Box  vbox = mfi.tilebox();
     int ng = S.nGrow();
-    amrex::Print() << "Growing gbox as: " << ng << std::endl;
     const Box  gbox = amrex::grow(vbox,ng);
     const Box  cbox = amrex::grow(vbox,ng-1);
     const Box& dbox = geom.Domain();
