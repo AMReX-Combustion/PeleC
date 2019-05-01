@@ -82,12 +82,14 @@ contains
     real(amrex_real) :: sten(-1:1, -1:1, -1:1) ! Raw stencil
     real(amrex_real) :: gx, gy, gz, sx, sy, sz
     real(amrex_real) :: gxy, gxz, gyz, gxyz
+    real(amrex_real) :: anrm
+    real(amrex_real) :: sten_sum
     integer :: ii, jj, kk ! Offsets for stencil
 
 
     ! Cell indices
     integer :: i, j, k, L
-    real(amrex_real) :: anrm
+
 
     do L = 0, Nsten-1
        i = ebg(L) % iv(0)
@@ -110,18 +112,16 @@ contains
           anrmx = ebg(L) % eb_normal(1)
           anrmy = ebg(L) % eb_normal(2)
           anrmz = ebg(L) % eb_normal(3)
-          !anrm = sqrt( anrmx*anrmx + anrmy*anrmy + anrmz*anrmz)
-          !anrmx = anrmx/anrm
-          !anrmy = anrmy/anrm
-          !anrmz = anrmz/anrm
+
+          anrm = sqrt( anrmx*anrmx + anrmy*anrmy + anrmz*anrmz)
+          anrmx = anrmx/anrm
+          anrmy = anrmy/anrm
+          anrmz = anrmz/anrm
 
           dg = dx_eb / max(abs(anrmx),abs(anrmy),abs(anrmz))
 
-          if( L .eq. 232) then
-             write(*,*) 'L =', L, ' normals = ', anrmx, anrmy, anrmz
-             write(*,*) 'L =', L, ' centroid = ', bctx, bcty, bctz
-             write(*,*) 'L =', L, ' dg = ', dg
-          endif
+          ! Renormalize normal
+
 
 
           gx = bctx - dg*anrmx
@@ -142,16 +142,15 @@ contains
           gyz = gy*gz
           gxyz = gx*gy*gz
 
+          sten = 0.0d0
           sten(0,0,0) = (one+gx+gy+gz+gxy+gxz+gyz+gxyz)
-          !write(*,*) 'Filling stencil positions: ', ii, jj, kk
-
-           sten(0,0,kk) = (-gz - gxz - gyz - gxyz)
-           sten(0,jj,0) = (-gy - gxy - gyz - gxyz)
-           sten(0,jj,kk) = (gyz + gxyz)
-           sten(ii,0,0) = (-gx - gxy - gxz - gxyz)
-           sten(ii,0,kk) = (gxz + gxyz)
-           sten(ii,jj,0) = (gxy + gxyz)
-           sten(ii,jj,kk) = (-gxyz)
+          sten(0,0,kk) = (-gz - gxz - gyz - gxyz)
+          sten(0,jj,0) = (-gy - gxy - gyz - gxyz)
+          sten(0,jj,kk) = (gyz + gxyz)
+          sten(ii,0,0) = (-gx - gxy - gxz - gxyz)
+          sten(ii,0,kk) = (gxz + gxyz)
+          sten(ii,jj,0) = (gxy + gxyz)
+          sten(ii,jj,kk) = (-gxyz)
 
           grad_stencil(L) % iv = ebg(L) % iv
           grad_stencil(L) % iv_base = grad_stencil(L) % iv - 1
@@ -159,6 +158,15 @@ contains
 
           grad_stencil(L) % val(-1:1,-1:1,-1:1) = -one/dg*sten(-1:1,-1:1,-1:1)
 
+          sten_sum = sum(sten)
+          if (abs(sten_sum - one) .gt. 1.0e-10) then
+             write(*,*) 'L =', L, ' normals = ', anrmx, anrmy, anrmz
+             write(*,*) 'L =', L, ' centroid = ', bctx, bcty, bctz
+             write(*,*) 'L =', L, ' dg = ', dg, ' sten_sum:', sten_sum
+
+             write(*,'(27(E10.4,2x))') sten
+
+          endif
 
        endif ! Restrict to box
     end do ! Loop over cut cells
@@ -207,9 +215,9 @@ contains
           do sk = 0, 2
              do sj = 0, 2
                 do si = 0, 2
-                   rsten(si,sj,sk,0) = si*sign(1.d0,anrmx) - ebg(L)%eb_centroid(1)
-                   rsten(si,sj,sk,1) = sj*sign(1.d0,anrmy) - ebg(L)%eb_centroid(2)
-                   rsten(si,sj,sk,2) = sk*sign(1.d0,anrmz) - ebg(L)%eb_centroid(3)
+                   rsten(si,sj,sk,0) = -si*sign(1.d0,anrmx) - ebg(L)%eb_centroid(1)
+                   rsten(si,sj,sk,1) = -sj*sign(1.d0,anrmy) - ebg(L)%eb_centroid(2)
+                   rsten(si,sj,sk,2) = -sk*sign(1.d0,anrmz) - ebg(L)%eb_centroid(3)
                 enddo
              enddo
           enddo
@@ -246,9 +254,9 @@ contains
           sten(:,:,:,0) = sten(:,:,:,0)*anrmx + sten(:,:,:,1)*anrmy + sten(:,:,:,2)*anrmz
 
           grad_stencil(L)%iv = ebg(L)%iv
-          grad_stencil(L)%iv_base(0) =ebg(L)% iv(0) + sign(1.d0,anrmx) - 1 ! move to center of stencil, then move to lower left of that
-          grad_stencil(L)%iv_base(1) =ebg(L)% iv(1) + sign(1.d0,anrmy) - 1 ! move to center of stencil, then move to lower left of that
-          grad_stencil(L)%iv_base(2) =ebg(L)% iv(2) + sign(1.d0,anrmz) - 1 ! move to center of stencil, then move to lower left of that
+          grad_stencil(L)%iv_base(0) =ebg(L)% iv(0) - sign(1.d0,anrmx) - 1 ! move to center of stencil, then move to lower left of that
+          grad_stencil(L)%iv_base(1) =ebg(L)% iv(1) - sign(1.d0,anrmy) - 1 ! move to center of stencil, then move to lower left of that
+          grad_stencil(L)%iv_base(2) =ebg(L)% iv(2) - sign(1.d0,anrmz) - 1 ! move to center of stencil, then move to lower left of that
           grad_stencil(L)%bcval = -1.0*sum(sten(:,:,:,0))
           grad_stencil(L)%val = sten(:,:,:,0) ! TODO: check this doesn't need to be normalized by sum(sten(:,:,:,0))
 
