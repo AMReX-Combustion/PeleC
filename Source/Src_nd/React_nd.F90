@@ -46,6 +46,7 @@ contains
     real(amrex_real) ::    rY(nspec+1), rY_src(nspec)
     real(amrex_real) ::    energy, energy_src, pressure, rho
 
+    !$kgen begin_callsite diffterm
 
     do k = lo(3), hi(3)
        do j = lo(2), hi(2)
@@ -87,7 +88,7 @@ contains
 
                    unew(i,j,k,URHO)            = rho_new
                    unew(i,j,k,UMX:UMZ)         = mom_new
-                   unew(i,j,k,UEINT)           = rhoe_new
+                   unew(i,j,k,UEINT)           = rho_new*energy
                    unew(i,j,k,UEDEN)           = rhoE_new
                    unew(i,j,k,UTEMP)           = rY(nspec+1)
                    unew(i,j,k,UFS:UFS+nspec-1) = rY(1:nspec)
@@ -112,6 +113,8 @@ contains
        enddo
     enddo
 
+    !$kgen end_callsite
+
   end subroutine pc_react_state
 
   subroutine pc_react_state_expl(lo,hi, &
@@ -124,7 +127,7 @@ contains
                             time,dt_react,do_update,nsubsteps) bind(C, name="pc_react_state_expl")
 
     use eos_type_module
-    use eos_module, only : eos_t,eos_re
+    use eos_module, only : eos_t,eos_rt
     use network           , only : nspec
     use chemistry_module  , only : molecular_weight
     use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UTEMP, &
@@ -154,6 +157,8 @@ contains
     integer          :: i, j, k
     integer,parameter :: nrkstages=2
     double precision,parameter,dimension(nrkstages)  :: rkcoeffs=(/0.5d0,1.d0/)
+    !integer,parameter :: nrkstages=1
+    !double precision,parameter,dimension(nrkstages)  :: rkcoeffs=(/1.d0/)
     integer :: npts,dt_rk,steps,stage,ierr,updt_time,ns
 
     double precision :: saneval(NVAR)
@@ -170,11 +175,12 @@ contains
     type (eos_t) :: eos_state
 
     double precision :: rhoE_old,rho_e_K_old,rho,energy,rho_e_K_new,rho_new
-    double precision :: rhoe_new,rhoInv,mom_new(3)
+    double precision :: rhoe_new,rhoet_new,rhoInv,mom_new(3)
     
     call build(eos_state)
 
     !initialize all local arrays
+    yrk         = 0.d0
     urk_old     = uold(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),:)
     wdot        = 0.d0
     eint        = 0.d0
@@ -183,8 +189,10 @@ contains
     rhoydot_ext = 0.d0
     re_old      = 0.d0
     tempsrc     = 0.d0
-    yrk         = 0.d0
     mom_new     = 0.d0
+
+    write(6,*) molecular_weight(1:nspec)
+    flush(6)
 
     !==============================================================
     !sanitize urk_old so that masked values are sane and not NaN
@@ -195,7 +203,7 @@ contains
         do j=lo(2),hi(2)
             do i=lo(1),hi(1)
                 if(mask(i,j,k) .eq. 1) then
-                    saneval=urk_old(i,j,k,:)
+                    saneval(:)=urk_old(i,j,k,:)
                     exit
                 endif
             enddo
@@ -206,7 +214,7 @@ contains
         do j=lo(2),hi(2)
             do i=lo(1),hi(1)
                 if(mask(i,j,k) .ne. 1) then
-                    urk_old(i,j,k,:)=saneval
+                    urk_old(i,j,k,:)=saneval(:)
                 endif
             enddo
         enddo
@@ -264,6 +272,7 @@ contains
                 enddo
               enddo
            enddo
+
            !Returns the molar production rate of species
            !Given rho, T, and mass fractions
            call VCKWYR(npts, urk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),URHO), &
@@ -278,12 +287,11 @@ contains
                     do i=lo(1),hi(1)
 
                         if(mask(i,j,k) .eq. 1) then
-                            eos_state % rho               = sum(urk(i,j,k,UFS:UFS+nspec-1))
+                            eos_state % rho               = urk(i,j,k,URHO)
                             rhoInv                        = 1.d0 / eos_state % rho
                             eos_state % massfrac(1:nspec) = urk(i,j,k,UFS:UFS+nspec-1) * rhoInv
-                            eos_state % T                 = urk(i,j,k,UTEMP) !guess
-                            eos_state % e = (re_old(i,j,k) + updt_time * rhoedot_ext(i,j,k)) * rhoInv
-                            call eos_re(eos_state)
+                            eos_state % T                 = urk(i,j,k,UTEMP)
+                            call eos_rt(eos_state)
                             do ns=1,nspec
                                 eint(i,j,k,ns)=eos_state%ei(ns)
                             enddo
@@ -312,7 +320,7 @@ contains
                         do ns=1,nspec
                             tempsrc(i,j,k)=tempsrc(i,j,k)-wdot(i,j,k,ns)*eint(i,j,k,ns)
                         enddo
-                        tempsrc(i,j,k)=tempsrc(i,j,k)/sum(urk(i,j,k,UFS:UFS+nspec-1))/cv(i,j,k)
+                        tempsrc(i,j,k)=tempsrc(i,j,k)/urk(i,j,k,URHO)/cv(i,j,k)
                     enddo
                 enddo
             enddo
@@ -327,9 +335,20 @@ contains
 
                 !update temperature 
                 urk(i,j,k,UTEMP) = urk_old(i,j,k,UTEMP) + rkcoeffs(stage)*dt_rk*tempsrc(i,j,k)*mask(i,j,k)
+
             enddo
            enddo
           enddo
+        
+          !update density
+            do k=lo(3),hi(3)
+                do j=lo(2),hi(2)
+                    do i=lo(1),hi(1)
+                    !update density
+                    urk(i,j,k,URHO)  = sum(urk(i,j,k,UFS:UFS+nspec-1))
+                    enddo
+                enddo
+            enddo
 
         enddo !stage loop
  
@@ -342,11 +361,11 @@ contains
 
                 if(mask(i,j,k) .eq. 1) then
 
-                    rho_new  = sum(urk(i,j,k,UFS:UFS+nspec-1))
+                    rho_new  = urk(i,j,k,URHO)
                     mom_new  = uold(i,j,k,UMX:UMZ) + dt_react*asrc(i,j,k,UMX:UMZ)
-                    rhoe_new = re_old(i,j,k)+dt_react*rhoedot_ext(i,j,k)
+                    rhoe_new = re_old(i,j,k) + dt_react*rhoedot_ext(i,j,k)
                     rho_e_K_new = HALF * sum(mom_new**2) / rho_new
-                    rhoE_new    = rhoe_new + rho_e_K_new
+                    rhoet_new    = rhoe_new + rho_e_K_new
 
     
                     if (do_update .eq. 1) then
@@ -354,7 +373,7 @@ contains
                         unew(i,j,k,URHO)            = rho_new
                         unew(i,j,k,UMX:UMZ)         = mom_new
                         unew(i,j,k,UEINT)           = rhoe_new
-                        unew(i,j,k,UEDEN)           = rhoE_new
+                        unew(i,j,k,UEDEN)           = rhoet_new
                         unew(i,j,k,UTEMP)           = urk(i,j,k,UTEMP)
                         unew(i,j,k,UFS:UFS+nspec-1) = urk(i,j,k,UFS:UFS+nspec-1)
 
@@ -370,7 +389,7 @@ contains
 
                         IR(i,j,k,1:nspec) = (urk(i,j,k,UFS:UFS+nspec-1) - uold(i,j,k,UFS:UFS+nspec-1)) / dt_react -&
                             asrc(i,j,k,UFS:UFS+nspec-1)
-                        IR(i,j,k,nspec+1) =(rhoE_new - uold(i,j,k,UEDEN)) / dt_react - asrc(i,j,k,UEDEN)
+                        IR(i,j,k,nspec+1) =(rhoet_new - uold(i,j,k,UEDEN)) / dt_react - asrc(i,j,k,UEDEN)
 
                     endif
 
