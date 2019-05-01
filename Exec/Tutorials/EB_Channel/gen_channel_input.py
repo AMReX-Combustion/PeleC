@@ -102,6 +102,9 @@ if __name__ == "__main__":
         type=float,
         default=0.0,
     )
+    parser.add_argument(
+        "--factor", help="Multiplier for the laminar length", type=float, default=2.0
+    )
     mach = 0.1
     prandtl = 0.71
     args = parser.parse_args()
@@ -109,7 +112,7 @@ if __name__ == "__main__":
     # Laminar channel flow development
     channel_half_height = 1.0
     laminar_length = 0.05 * args.reynolds * 2 * channel_half_height
-    domain_length = 2 * laminar_length
+    domain_length = args.factor * laminar_length
 
     # Determine triangle coordinates
     m = math.tan(math.radians(args.angle))
