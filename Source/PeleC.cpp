@@ -475,7 +475,7 @@ PeleC::PeleC (Amr&            papa,
 #ifdef PELE_USE_EB
   init_eb(level_geom, bl, dm);
 
-#define PELE_UNIT_TEST_DN
+  //#define PELE_UNIT_TEST_DN
 #ifdef PELE_UNIT_TEST_DN
   test_dn();
 #endif
