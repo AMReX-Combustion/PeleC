@@ -115,6 +115,7 @@ contains
 
   end subroutine pc_react_state
 
+#ifdef REACTIONS
   subroutine pc_react_state_expl(lo,hi, &
                             uold,uo_lo,uo_hi, &
                             unew,un_lo,un_hi, &
@@ -403,5 +404,6 @@ contains
     
 
   end subroutine pc_react_state_expl
+#endif
 
 end module reactions_module
