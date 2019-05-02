@@ -10,10 +10,6 @@ using namespace amrex;
 void
 PeleC::react_state(Real time, Real dt, bool react_init, MultiFab* A_aux)
 {
-  //right now hard-coding number of substeps when doing explicit 
-  //reaction update. This will be changed later to an adaptive RK
-  //approach and will no longer be used.
-  int nsubsteps=500;
   /*
     Update I_R, and recompute S_new
    */
@@ -92,38 +88,50 @@ PeleC::react_state(Real time, Real dt, bool react_init, MultiFab* A_aux)
         for (MFIter mfi(S_new, true); mfi.isValid(); ++mfi)
         {
 
-          const Box& bx = mfi.growntilebox(ng);
+            const Box& bx = mfi.growntilebox(ng);
 
-          const FArrayBox& uold = react_init ? S_new[mfi] : get_old_data(State_Type)[mfi];
-          FArrayBox& unew       = S_new[mfi];
-          FArrayBox& a          = (*Ap)[mfi];
-          const IArrayBox& m    = (*interior_mask)[mfi];
-          w.resize(bx,1);
-          FArrayBox& I_R        = reactions[mfi];
-          int do_update         = react_init ? 0 : 1;  // TODO: Update here? Or just get reaction source?
+            const FArrayBox& uold = react_init ? S_new[mfi] : get_old_data(State_Type)[mfi];
+            FArrayBox& unew       = S_new[mfi];
+            FArrayBox& a          = (*Ap)[mfi];
+            const IArrayBox& m    = (*interior_mask)[mfi];
+            w.resize(bx,1);
+            FArrayBox& I_R        = reactions[mfi];
+            int do_update         = react_init ? 0 : 1;  // TODO: Update here? Or just get reaction source?
 
-          /*pc_react_state_expl(ARLIM_3D(bx.loVect()), ARLIM_3D(bx.hiVect()),
-                         uold.dataPtr(),  ARLIM_3D(uold.loVect()),  ARLIM_3D(uold.hiVect()),
-                         unew.dataPtr(),  ARLIM_3D(unew.loVect()),  ARLIM_3D(unew.hiVect()),
-                         a.dataPtr(),     ARLIM_3D(a.loVect()),     ARLIM_3D(a.hiVect()),
-                         m.dataPtr(),     ARLIM_3D(m.loVect()),     ARLIM_3D(m.hiVect()),
-                         w.dataPtr(),     ARLIM_3D(w.loVect()),     ARLIM_3D(w.hiVect()),
-                         I_R.dataPtr(),   ARLIM_3D(I_R.loVect()),   ARLIM_3D(I_R.hiVect()),
-                         time, dt, do_update,nsubsteps);*/
 
-          pc_react_state(ARLIM_3D(bx.loVect()), ARLIM_3D(bx.hiVect()),
-                         uold.dataPtr(),  ARLIM_3D(uold.loVect()),  ARLIM_3D(uold.hiVect()),
-                         unew.dataPtr(),  ARLIM_3D(unew.loVect()),  ARLIM_3D(unew.hiVect()),
-                         a.dataPtr(),     ARLIM_3D(a.loVect()),     ARLIM_3D(a.hiVect()),
-                         m.dataPtr(),     ARLIM_3D(m.loVect()),     ARLIM_3D(m.hiVect()),
-                         w.dataPtr(),     ARLIM_3D(w.loVect()),     ARLIM_3D(w.hiVect()),
-                         I_R.dataPtr(),   ARLIM_3D(I_R.loVect()),   ARLIM_3D(I_R.hiVect()),
-                         time, dt, do_update);
 
-          if (do_react_load_balance || do_mol_load_balance)
-          {
-            get_new_data(Work_Estimate_Type)[mfi].plus(w);
-          }
+            if(chem_integrator==1)
+            {
+                pc_react_state(ARLIM_3D(bx.loVect()), ARLIM_3D(bx.hiVect()),
+                        uold.dataPtr(),  ARLIM_3D(uold.loVect()),  ARLIM_3D(uold.hiVect()),
+                        unew.dataPtr(),  ARLIM_3D(unew.loVect()),  ARLIM_3D(unew.hiVect()),
+                        a.dataPtr(),     ARLIM_3D(a.loVect()),     ARLIM_3D(a.hiVect()),
+                        m.dataPtr(),     ARLIM_3D(m.loVect()),     ARLIM_3D(m.hiVect()),
+                        w.dataPtr(),     ARLIM_3D(w.loVect()),     ARLIM_3D(w.hiVect()),
+                        I_R.dataPtr(),   ARLIM_3D(I_R.loVect()),   ARLIM_3D(I_R.hiVect()),
+                        time, dt, do_update);
+            }
+            else
+            {
+                //right now hard-coding number of substeps when doing explicit 
+                //reaction update. This will be changed later to an adaptive RK
+                //approach and will no longer be used.
+                int nsubsteps=500;
+
+                pc_react_state_expl(ARLIM_3D(bx.loVect()), ARLIM_3D(bx.hiVect()),
+                        uold.dataPtr(),  ARLIM_3D(uold.loVect()),  ARLIM_3D(uold.hiVect()),
+                        unew.dataPtr(),  ARLIM_3D(unew.loVect()),  ARLIM_3D(unew.hiVect()),
+                        a.dataPtr(),     ARLIM_3D(a.loVect()),     ARLIM_3D(a.hiVect()),
+                        m.dataPtr(),     ARLIM_3D(m.loVect()),     ARLIM_3D(m.hiVect()),
+                        w.dataPtr(),     ARLIM_3D(w.loVect()),     ARLIM_3D(w.hiVect()),
+                        I_R.dataPtr(),   ARLIM_3D(I_R.loVect()),   ARLIM_3D(I_R.hiVect()),
+                        time, dt, do_update,nsubsteps);
+            }
+
+            if (do_react_load_balance || do_mol_load_balance)
+            {
+                get_new_data(Work_Estimate_Type)[mfi].plus(w);
+            }
         }
     }
 
@@ -136,14 +144,14 @@ PeleC::react_state(Real time, Real dt, bool react_init, MultiFab* A_aux)
         Real      run_time = ParallelDescriptor::second() - strt_time;
 
 #ifdef BL_LAZY
-	Lazy::QueueReduction( [=] () mutable {
+        Lazy::QueueReduction( [=] () mutable {
 #endif
-        ParallelDescriptor::ReduceRealMax(run_time, IOProc);
+                ParallelDescriptor::ReduceRealMax(run_time, IOProc);
 
-	if (ParallelDescriptor::IOProcessor())
-	  std::cout << "PeleC::react_state() time = " << run_time << "\n";
+                if (ParallelDescriptor::IOProcessor())
+                std::cout << "PeleC::react_state() time = " << run_time << "\n";
 #ifdef BL_LAZY
-	});
+                });
 #endif
 
     }
