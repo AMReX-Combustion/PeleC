@@ -10,7 +10,7 @@ using namespace amrex;
 void
 PeleC::react_state(Real time, Real dt, bool react_init, MultiFab* A_aux)
 {
-  int nsubsteps=50;
+  int nsubsteps=100;
   /*
     Update I_R, and recompute S_new
    */

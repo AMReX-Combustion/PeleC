@@ -46,8 +46,6 @@ contains
     real(amrex_real) ::    rY(nspec+1), rY_src(nspec)
     real(amrex_real) ::    energy, energy_src, pressure, rho
 
-    !$kgen begin_callsite diffterm
-
     do k = lo(3), hi(3)
        do j = lo(2), hi(2)
           do i = lo(1), hi(1)
@@ -73,16 +71,17 @@ contains
                 !react_state_in % k = k
 
                 pressure         = 1013250.d0
-
+                
                 cost(i,j,k) = react(rY, rY_src,&
                                     energy, energy_src,&
                                     pressure,dt_react,time,0)
 
+
                 rho_new = sum(rY(1:nspec))
                 mom_new = uold(i,j,k,UMX:UMZ) + dt_react*asrc(i,j,k,UMX:UMZ)
-                rhoe_new = rho_new  *  energy
+                rhoE_new = rho_new  *  energy
                 rho_e_K_new = HALF * sum(mom_new**2) / rho_new
-                rhoE_new    = rhoe_new + rho_e_K_new
+                rhoE_new    = rhoE_new + rho_e_K_new
                 
                 if (do_update .eq. 1) then
 
@@ -104,7 +103,7 @@ contains
                      k .ge. IR_lo(3) .and. k .le. IR_hi(3) ) then
 
                    IR(i,j,k,1:nspec) = (rY(1:nspec) - uold(i,j,k,UFS:UFS+nspec-1)) / dt_react - asrc(i,j,k,UFS:UFS+nspec-1)
-                   IR(i,j,k,nspec+1) = (        rhoE_new          -         rhoE_old        ) / dt_react - asrc(i,j,k,UEDEN          )
+                   IR(i,j,k,nspec+1) = (rhoE_new          -         rhoE_old     ) / dt_react - asrc(i,j,k,UEDEN          )
 
                 endif
 
@@ -113,7 +112,6 @@ contains
        enddo
     enddo
 
-    !$kgen end_callsite
 
   end subroutine pc_react_state
 
@@ -155,11 +153,11 @@ contains
     integer          :: do_update,nsubsteps
 
     integer          :: i, j, k
-    integer,parameter :: nrkstages=2
-    double precision,parameter,dimension(nrkstages)  :: rkcoeffs=(/0.5d0,1.d0/)
-    !integer,parameter :: nrkstages=1
-    !double precision,parameter,dimension(nrkstages)  :: rkcoeffs=(/1.d0/)
-    integer :: npts,dt_rk,steps,stage,ierr,updt_time,ns
+    !integer,parameter :: nrkstages=2
+    !double precision,parameter,dimension(nrkstages)  :: rkcoeffs=(/0.5d0,1.d0/)
+    integer,parameter :: nrkstages=1
+    double precision,parameter,dimension(nrkstages)  :: rkcoeffs=(/1.d0/)
+    integer :: npts,steps,stage,updt_time,ns
 
     double precision :: saneval(NVAR)
     double precision :: urk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),NVAR)
@@ -175,7 +173,7 @@ contains
     type (eos_t) :: eos_state
 
     double precision :: rhoE_old,rho_e_K_old,rho,energy,rho_e_K_new,rho_new
-    double precision :: rhoe_new,rhoet_new,rhoInv,mom_new(3)
+    double precision :: rhoe_new,rhoet_new,rhoInv,mom_new(3),dt_rk
     
     call build(eos_state)
 
@@ -190,9 +188,6 @@ contains
     re_old      = 0.d0
     tempsrc     = 0.d0
     mom_new     = 0.d0
-
-    write(6,*) molecular_weight(1:nspec)
-    flush(6)
 
     !==============================================================
     !sanitize urk_old so that masked values are sane and not NaN
@@ -254,7 +249,7 @@ contains
     dt_rk=dt_react/nsubsteps
     !===============================================================
 
-    npts=(lo(3)-hi(3)+1)*(lo(2)-hi(2)+1)*(lo(1)-hi(1)+1)
+    npts=(hi(3)-lo(3)+1)*(hi(2)-lo(2)+1)*(hi(1)-lo(1)+1)
     updt_time=0.0
     cost(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))=nsubsteps
 
@@ -353,7 +348,7 @@ contains
         enddo !stage loop
  
     enddo !substep loop
-   
+    
     !this is a one time operation, so keeping original pc_react_state code
     do k=lo(3),hi(3)
         do j=lo(2),hi(2)
