@@ -10,7 +10,10 @@ using namespace amrex;
 void
 PeleC::react_state(Real time, Real dt, bool react_init, MultiFab* A_aux)
 {
-  int nsubsteps=100;
+  //right now hard-coding number of substeps when doing explicit 
+  //reaction update. This will be changed later to an adaptive RK
+  //approach and will no longer be used.
+  int nsubsteps=500;
   /*
     Update I_R, and recompute S_new
    */
@@ -99,22 +102,23 @@ PeleC::react_state(Real time, Real dt, bool react_init, MultiFab* A_aux)
           FArrayBox& I_R        = reactions[mfi];
           int do_update         = react_init ? 0 : 1;  // TODO: Update here? Or just get reaction source?
 
-          pc_react_state_expl(ARLIM_3D(bx.loVect()), ARLIM_3D(bx.hiVect()),
+          /*pc_react_state_expl(ARLIM_3D(bx.loVect()), ARLIM_3D(bx.hiVect()),
                          uold.dataPtr(),  ARLIM_3D(uold.loVect()),  ARLIM_3D(uold.hiVect()),
                          unew.dataPtr(),  ARLIM_3D(unew.loVect()),  ARLIM_3D(unew.hiVect()),
                          a.dataPtr(),     ARLIM_3D(a.loVect()),     ARLIM_3D(a.hiVect()),
                          m.dataPtr(),     ARLIM_3D(m.loVect()),     ARLIM_3D(m.hiVect()),
                          w.dataPtr(),     ARLIM_3D(w.loVect()),     ARLIM_3D(w.hiVect()),
                          I_R.dataPtr(),   ARLIM_3D(I_R.loVect()),   ARLIM_3D(I_R.hiVect()),
-                         time, dt, do_update,nsubsteps);
-          /*pc_react_state(ARLIM_3D(bx.loVect()), ARLIM_3D(bx.hiVect()),
+                         time, dt, do_update,nsubsteps);*/
+
+          pc_react_state(ARLIM_3D(bx.loVect()), ARLIM_3D(bx.hiVect()),
                          uold.dataPtr(),  ARLIM_3D(uold.loVect()),  ARLIM_3D(uold.hiVect()),
                          unew.dataPtr(),  ARLIM_3D(unew.loVect()),  ARLIM_3D(unew.hiVect()),
                          a.dataPtr(),     ARLIM_3D(a.loVect()),     ARLIM_3D(a.hiVect()),
                          m.dataPtr(),     ARLIM_3D(m.loVect()),     ARLIM_3D(m.hiVect()),
                          w.dataPtr(),     ARLIM_3D(w.loVect()),     ARLIM_3D(w.hiVect()),
                          I_R.dataPtr(),   ARLIM_3D(I_R.loVect()),   ARLIM_3D(I_R.hiVect()),
-                         time, dt, do_update);*/
+                         time, dt, do_update);
 
           if (do_react_load_balance || do_mol_load_balance)
           {

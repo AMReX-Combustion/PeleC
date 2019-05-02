@@ -153,10 +153,15 @@ contains
     integer          :: do_update,nsubsteps
 
     integer          :: i, j, k
-    !integer,parameter :: nrkstages=2
-    !double precision,parameter,dimension(nrkstages)  :: rkcoeffs=(/0.5d0,1.d0/)
-    integer,parameter :: nrkstages=1
-    double precision,parameter,dimension(nrkstages)  :: rkcoeffs=(/1.d0/)
+
+    !low storage RK23
+    integer,parameter :: nrkstages=2
+    double precision,parameter,dimension(nrkstages)  :: rkcoeffs=(/0.5d0,1.d0/)
+
+    !Euler explicit for testing
+    !integer,parameter :: nrkstages=1
+    !double precision,parameter,dimension(nrkstages)  :: rkcoeffs=(/1.d0/)
+
     integer :: npts,steps,stage,updt_time,ns
 
     double precision :: saneval(NVAR)
@@ -260,6 +265,8 @@ contains
 
         do stage=1,nrkstages
 
+           !computing mass fractions
+           !hope the compiler can optimize this better
            do k=lo(3),hi(3)
               do j=lo(2),hi(2)
                 do i=lo(1),hi(1)
@@ -281,7 +288,6 @@ contains
                 do j=lo(2),hi(2)
                     do i=lo(1),hi(1)
 
-                        if(mask(i,j,k) .eq. 1) then
                             eos_state % rho               = urk(i,j,k,URHO)
                             rhoInv                        = 1.d0 / eos_state % rho
                             eos_state % massfrac(1:nspec) = urk(i,j,k,UFS:UFS+nspec-1) * rhoInv
@@ -291,13 +297,13 @@ contains
                                 eint(i,j,k,ns)=eos_state%ei(ns)
                             enddo
                             cv(i,j,k)=eos_state%cv
-                        endif
 
                     enddo
                 enddo
             enddo
 
            !convert wdot to gms/s and add external source
+           !hope the compiler can optimize this better
            do k=lo(3),hi(3)
             do j=lo(2),hi(2)
               do i=lo(1),hi(1)
@@ -320,6 +326,8 @@ contains
                 enddo
             enddo
            
+           !update species and temperature
+           !hope the compiler can optimize this better
            do k=lo(3),hi(3)
             do j=lo(2),hi(2)
              do i=lo(1),hi(1)
