@@ -454,6 +454,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
                           BL_TO_FORTRAN_ANYD(volume[mfi]),
                           BL_TO_FORTRAN_3D(Dterm),
 #ifdef PELEC_USE_EB
+                          BL_TO_FORTRAN_ANYD(vfrac[mfi]),
                           BL_TO_FORTRAN_ANYD(flag_fab),
                           sv_ebbg_ptr, &Ncut,
                           sv_eb_flux_ptr, &nFlux,

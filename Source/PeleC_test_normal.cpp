@@ -70,6 +70,11 @@ PeleC::test_dn() {
       Qfab.setVal(1.0);
       coeff_cc.setVal(1.0);
 
+      const Real* dx = geom.CellSize();
+      const Real* prob_lo = geom.ProbLo();
+
+      pc_set_synthetic_data(BL_TO_FORTRAN_BOX(box_to_apply), BL_TO_FORTRAN_N_ANYD(Qfab,0),prob_lo, dx);
+
       pc_apply_eb_boundry_flux_stencil(BL_TO_FORTRAN_BOX(box_to_apply),
                                        sv_eb_bndry_grad_stencil[local_i].data(),
                                        &Ncut,
