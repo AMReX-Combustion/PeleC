@@ -832,8 +832,14 @@ contains
              sum_kappa = sum(nbr(-1:1,-1:1,-1:1) * vf(i-1:i+1,j-1:j+1,k-1:k+1))
              sum_div =   sum(nbr(-1:1,-1:1,-1:1) * vf(i-1:i+1,j-1:j+1,k-1:k+1) * DC(i-1:i+1,j-1:j+1,k-1:k+1,n))
              DNC = sum_div / sum_kappa
-             dM(L) = vf(i,j,k)*(1.d0 - vf(i,j,k))*(DC(i,j,k,n) - DNC)
-             HD(L) = vf(i,j,k)*DC(i,j,k,n) + (1.d0 - vf(i,j,k))*DNC
+             if (sv_ebg(L) % eb_vfrac < 1.0e-2) then ! TODO(rgrout) make this a parameter - until then make sure it is consistent with logic in Hyp_pele_MOL_3d.F90
+                 dM(L) = vf(i,j,k)*(DC(i,j,k,n))
+                 HD(L) = 0.0d0
+             else
+                 dM(L) = vf(i,j,k)*(1.d0 - vf(i,j,k))*(DC(i,j,k,n) - DNC)
+                 HD(L) = vf(i,j,k)*DC(i,j,k,n) + (1.d0 - vf(i,j,k))*DNC
+             endif
+
           endif
        enddo
 
@@ -1022,6 +1028,36 @@ contains
     enddo
 
   end subroutine pc_fill_sv_ebg
+
+  subroutine pc_set_synthetic_data(lo,hi,M,m_lo,m_hi,prob_lo,dx) &
+       bind(C, name="pc_set_synthetic_data")
+
+    use amrex_constants_module
+
+    implicit none
+
+    integer         , intent(in   ) :: lo(3),hi(3)
+    integer         , intent(in   ) :: m_lo(3),m_hi(3)
+    double precision, intent(inout) :: M(m_lo(1):m_hi(1),m_lo(2):m_hi(2),m_lo(3):m_hi(3))
+    double precision, intent(in) :: prob_lo(3), dx
+
+    integer          :: i,j,k
+
+
+    double precision:: x, y
+
+    do k = lo(3),hi(3)
+       do j = lo(2),hi(2)
+          do i = lo(1),hi(1)
+             x = (i-prob_lo(0))*dx
+             y = (j-prob_lo(1))*dx
+             M(i,j,k) = 4.0*(x*x + y*y)
+          enddo
+       enddo
+    enddo
+
+
+  end subroutine pc_set_synthetic_data
 
 
 end module nbrsTest_nd_module
