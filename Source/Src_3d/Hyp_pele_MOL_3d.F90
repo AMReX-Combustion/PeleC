@@ -737,13 +737,13 @@ module hyp_advection_module
 
                 qtempl(vii,R_UN) = 0.0d0
                 sum_nbrs =   sum(nbr(-1:1,-1:1,-1:1) * vfrac(i-1:i+1,j-1:j+1,k-1:k+1) * q(i-1:i+1,j-1:j+1,k-1:k+1,QU))
-                qtempl(vi,R_UN) = qtempl(vi,R_UN) -sum_nbrs/sum_kappa*eb_norm(1)
+                qtempl(vii,R_UN) = qtempl(vii,R_UN) -sum_nbrs/sum_kappa*eb_norm(1)
 
                 sum_nbrs =   sum(nbr(-1:1,-1:1,-1:1) * vfrac(i-1:i+1,j-1:j+1,k-1:k+1) * q(i-1:i+1,j-1:j+1,k-1:k+1,QV))
-                qtempl(vi,R_UN) = qtempl(vi,R_UN) -sum_nbrs/sum_kappa*eb_norm(2)
+                qtempl(vii,R_UN) = qtempl(vii,R_UN) -sum_nbrs/sum_kappa*eb_norm(2)
 
                 sum_nbrs =   sum(nbr(-1:1,-1:1,-1:1) * vfrac(i-1:i+1,j-1:j+1,k-1:k+1) * q(i-1:i+1,j-1:j+1,k-1:k+1,QW))
-                qtempl(vi,R_UN) = qtempl(vi,R_UN) -sum_nbrs/sum_kappa*eb_norm(3)
+                qtempl(vii,R_UN) = qtempl(vii,R_UN) -sum_nbrs/sum_kappa*eb_norm(3)
 
                 qtempl(vii,R_UT1) = 0.0
                 qtempl(vii,R_UT2) = 0.0
