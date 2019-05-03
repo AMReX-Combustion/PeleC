@@ -149,7 +149,7 @@ if __name__ == "__main__":
     nbym = int(blocking_factor * 2)
     total_ncelly = int(2 * args.ncell + nbyp + nbym)
     total_ncellx = int(domain_length / dx)
-    total_ncellz = int(1.0 / dx)
+    total_ncellz = blocking_factor
 
     lo = [0.0, -(nbym + args.ncell) * dx, 0.0]
     hi = [total_ncellx * dx, (nbyp + args.ncell) * dx, total_ncellz * dx]

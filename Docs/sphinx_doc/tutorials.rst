@@ -23,3 +23,7 @@ Supersonic flow over a wedge resulting in a steady attached oblique shock
 EB_BluffBody
 ~~~~~~~~~~~~
 Non-reacting flow around a diamond-shaped body
+
+EB_Channel
+~~~~~~~~~~
+Laminar non-reacting flow in a pressure-driven channel (oriented at an angle with respect to the grid)
