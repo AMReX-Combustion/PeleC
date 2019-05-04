@@ -19,14 +19,15 @@ def round_up_to_multiple(num, divisor):
 
 
 # ========================================================================
-def write_probin(pname, reynolds, mach, prandtl, angle):
+def write_probin(pname, state, angle):
     with open(pname, "w") as f:
 
         f.write("&fortin\n")
         f.write("\n")
-        f.write(f"  reynolds = {reynolds}\n")
-        f.write(f"  mach = {mach}\n")
-        f.write(f"  prandtl = {prandtl}\n")
+        f.write(f"  pl = {state[0]}\n")
+        f.write(f"  rhol = {state[1]}\n")
+        f.write(f"  pr = {state[2]}\n")
+        f.write(f"  rhor = {state[3]}\n")
         f.write(f"  angle = {angle}\n")
         f.write("\n")
         f.write("/\n")
@@ -77,20 +78,23 @@ if __name__ == "__main__":
 
     # Parse arguments
     parser = argparse.ArgumentParser(
-        description="A simple tool to the channel flow setup"
+        description="A simple tool to the shocktube flow setup"
     )
     parser.add_argument(
         "-a", "--angle", help="Flow angle (degrees)", type=float, required=True
     )
     parser.add_argument(
-        "-r", "--reynolds", help="Reynolds number", type=float, required=True
+        "-s",
+        "--state",
+        nargs="+",
+        help="Left-right state [pl, rhol, pr, rhor]",
+        type=float,
+        default=[1.0, 1.0, 0.1, 0.125],
     )
-    parser.add_argument("--mach", help="Mach number", type=float, default=0.1)
-    parser.add_argument("--prandtl", help="Prandtl number", type=float, default=0.71)
     parser.add_argument(
         "-n",
         "--ncell",
-        help="Number of cells per channel half height",
+        help="Number of cells per tube half height",
         type=float,
         required=True,
         choices=[8 * i for i in range(1, 1001)],
@@ -98,24 +102,22 @@ if __name__ == "__main__":
     parser.add_argument(
         "-t",
         "--translation",
-        help="Translation of channel in y-direction",
+        help="Translation of tube in y-direction",
         type=float,
         default=0.0,
     )
-    parser.add_argument(
-        "--factor", help="Multiplier for the laminar length", type=float, default=2.0
-    )
+    parser.add_argument("--length", help="Domain length", type=float, default=2.0)
     args = parser.parse_args()
 
-    # Laminar channel flow development
-    channel_half_height = 1.0
-    laminar_length = 0.05 * args.reynolds * 2 * channel_half_height
-    domain_length = args.factor * laminar_length
+    # Tube description
+    args.length = args.length
+    factor = 0.05
+    tube_half_height = factor * args.length
 
     # Determine triangle coordinates
     m = math.tan(math.radians(args.angle))
-    p = channel_half_height / math.cos(math.radians(args.angle)) + args.translation
-    buf = 10 * domain_length
+    p = tube_half_height / math.cos(math.radians(args.angle)) + args.translation
+    buf = 10 * args.length
 
     def bot(x):
         return m * x - p
@@ -124,11 +126,11 @@ if __name__ == "__main__":
         return m * x + p
 
     p0b = [-buf, bot(-buf)]
-    p1b = [domain_length + buf, -buf]
-    p2b = [domain_length + buf, bot(domain_length + buf)]
+    p1b = [args.length + buf, -buf]
+    p2b = [args.length + buf, bot(args.length + buf)]
 
     p0t = [-buf, top(-buf)]
-    p1t = [domain_length + buf, top(domain_length + buf)]
+    p1t = [args.length + buf, top(args.length + buf)]
     p2t = [-buf, buf]
 
     tri_line = (
@@ -141,12 +143,12 @@ if __name__ == "__main__":
     )
 
     # Problem geometry
-    dx = channel_half_height / args.ncell
+    dx = tube_half_height / args.ncell
     blocking_factor = 8
-    nbyp = int(round_up_to_multiple(1.05 * top(domain_length) / dx, blocking_factor))
+    nbyp = int(round_up_to_multiple(1.05 * top(args.length) / dx, blocking_factor))
     nbym = int(blocking_factor * 2)
     total_ncelly = int(2 * args.ncell + nbyp + nbym)
-    total_ncellx = int(domain_length / dx)
+    total_ncellx = int(args.length / dx)
     total_ncellz = blocking_factor
 
     lo = [0.0, -(nbym + args.ncell) * dx, 0.0]
@@ -159,8 +161,8 @@ if __name__ == "__main__":
     )
 
     # Generate probin file
-    pname = "probin.channel"
-    write_probin(pname, args.reynolds, args.mach, args.prandtl, args.angle)
+    pname = "probin.stube"
+    write_probin(pname, args.state, args.angle)
     probin_line = f"amr.probin_file={pname}"
 
     # Construct the input line
