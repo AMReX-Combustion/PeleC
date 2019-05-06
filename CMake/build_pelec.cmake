@@ -64,8 +64,9 @@ function(build_pelec pelec_exe_name pelec_exe_options_file)
   get_property(PELE_SOURCES GLOBAL PROPERTY GlobalSourceList)
 
   #Create the full path to the extra case-specific source files
+  #Each PELEC_EXTRA_SOURCE must be an explicit path to each source file at the moment
   foreach(PELEC_EXTRA_SOURCE ${PELEC_EXTRA_SOURCES})
-    list(APPEND MY_EXTRA_SOURCES ${exe_directory}/${PELEC_EXTRA_SOURCE})
+    list(APPEND MY_EXTRA_SOURCES ${PELEC_EXTRA_SOURCE})
   endforeach()
  
   #Create an executable based on all the source files we aggregated

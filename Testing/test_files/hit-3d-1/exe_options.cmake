@@ -1,7 +1,7 @@
 #User-specific source files
-list(APPEND PELEC_EXTRA_SOURCES probdata.f90)
-list(APPEND PELEC_EXTRA_SOURCES Prob_nd.F90)
-list(APPEND PELEC_EXTRA_SOURCES bc_fill_nd.F90)
+list(APPEND PELEC_EXTRA_SOURCES ${CMAKE_SOURCE_DIR}/Exec/RegTests/HIT/probdata.f90)
+list(APPEND PELEC_EXTRA_SOURCES ${CMAKE_SOURCE_DIR}/Exec/RegTests/HIT/Prob_nd.F90)
+list(APPEND PELEC_EXTRA_SOURCES ${CMAKE_SOURCE_DIR}/Source/Src_nd/bc_fill_nd.F90)
 
 #Compile-time options for executable
 set(PELEC_DIM 3)

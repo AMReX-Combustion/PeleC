@@ -15,8 +15,9 @@ function(add_test_r TEST_NAME NP)
     set(PLOT_GOLD ${CMAKE_CURRENT_SOURCE_DIR}/PeleCGoldFiles/${CMAKE_SYSTEM_NAME}/${CMAKE_CXX_COMPILER_ID}/${CMAKE_CXX_COMPILER_VERSION}/${TEST_NAME}/plt00010)
     # Test plot is currently expected to be after 10 steps
     set(PLOT_TEST ${CURRENT_TEST_BINARY_DIR}/plt00010)
-    # Get test options (mainly we just want to know PELEC_DIM)
+    # Get test options
     set(EXE_OPTIONS_FILE ${CURRENT_TEST_SOURCE_DIR}/exe_options.cmake)
+    # Define our test options
     include(${EXE_OPTIONS_FILE})
     # Find fcompare
     set(FCOMPARE ${CMAKE_BINARY_DIR}/fcompare)

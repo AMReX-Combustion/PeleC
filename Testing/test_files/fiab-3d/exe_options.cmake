@@ -1,8 +1,8 @@
 #User-specific source files
-list(APPEND PELEC_EXTRA_SOURCES probdata.f90)
-list(APPEND PELEC_EXTRA_SOURCES pmf_generic.f90)
-list(APPEND PELEC_EXTRA_SOURCES Prob_nd.F90)
-list(APPEND PELEC_EXTRA_SOURCES bc_fill_nd.F90)
+list(APPEND PELEC_EXTRA_SOURCES ${CMAKE_SOURCE_DIR}/Exec/RegTests/PMF/probdata.f90)
+list(APPEND PELEC_EXTRA_SOURCES ${CMAKE_SOURCE_DIR}/Exec/RegTests/PMF/pmf_generic.f90)
+list(APPEND PELEC_EXTRA_SOURCES ${CMAKE_SOURCE_DIR}/Exec/RegTests/PMF/Prob_nd.F90)
+list(APPEND PELEC_EXTRA_SOURCES ${CMAKE_SOURCE_DIR}/Exec/RegTests/PMF/bc_fill_nd.F90)
 
 #Compile-time options for executable
 set(PELEC_DIM 3)
