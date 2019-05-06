@@ -6,6 +6,8 @@ include(${CMAKE_SOURCE_DIR}/CMake/build_pelec.cmake)
 # Functions for adding tests / Categories of tests
 #=============================================================================
 
+message("-- Test golds directory: ${CMAKE_CURRENT_SOURCE_DIR}/PeleCGoldFiles/${CMAKE_SYSTEM_NAME}/${CMAKE_CXX_COMPILER_ID}/${CMAKE_CXX_COMPILER_VERSION}")
+
 # Standard regression test
 function(add_test_r TEST_NAME NP)
     # Set variables for respective binary and source directories for the test
