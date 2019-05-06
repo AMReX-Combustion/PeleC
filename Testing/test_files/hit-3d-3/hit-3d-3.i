@@ -1,21 +1,19 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
-max_step = 200
-stop_time = 0.0018336339443081453
+max_step = 100000000
+stop_time = 0.00026398069024412264
 
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic = 1 1 1
 geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
-geometry.prob_lo     =  -1.0 -1.0 -1.0
-geometry.prob_hi     =   1.0  1.0  1.0
-
-# use with 1 level of refinement
-amr.n_cell           =  32    32    32
+geometry.prob_lo     =   0.0  0.0  0.0
+geometry.prob_hi     =   6.283185307179586232  6.283185307179586232  6.283185307179586232
+amr.n_cell           =  32 32 32
 
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
-pelec.lo_bc       =  "Interior"  "Interior"  "Interior"
-pelec.hi_bc       =  "Interior"  "Interior"  "Interior"
+pelec.lo_bc       =  "Interior"  "Interior"  "Interior" 
+pelec.hi_bc       =  "Interior"  "Interior"  "Interior" 
 
 # WHICH PHYSICS
 pelec.do_hydro = 1
@@ -24,6 +22,7 @@ pelec.diffuse_temp = 1
 pelec.do_react = 0
 pelec.do_grav = 0
 pelec.allow_negative_energy = 0
+pelec.add_forcing_src = 1
 
 # TIME STEP CONTROL
 pelec.cfl            = 0.9     # cfl number for hyperbolic system
@@ -39,11 +38,11 @@ amr.data_log         = datlog
 #amr.grid_log        = grdlog  # name of grid logging file
 
 # REFINEMENT / REGRIDDING 
-amr.max_level       = 1       # maximum level number allowed
+amr.max_level       = 0       # maximum level number allowed
 amr.ref_ratio       = 2 2 2 2 # refinement ratio
 amr.regrid_int      = 2 2 2 2 # how often to regrid
 amr.blocking_factor = 4       # block factor in grid generation
-amr.max_grid_size   = 32
+amr.max_grid_size   = 64
 amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
 
 # CHECKPOINT FILES
@@ -54,9 +53,9 @@ amr.check_int       = 100        # number of timesteps between checkpoints
 # PLOTFILES
 amr.plot_files_output = 1
 amr.plot_file       = plt        # root name of plotfile
-amr.plot_int        = 100        # number of timesteps between plotfiles
+amr.plot_per        = 0.00006599517256103066       # time between plotfiles
 amr.plot_vars  =  density Temp
 amr.derive_plot_vars = x_velocity y_velocity z_velocity magvel magvort pressure
 
 #PROBIN FILENAME
-amr.probin_file = tg-3d-2.probin
+amr.probin_file = hit-3d-3.probin

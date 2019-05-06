@@ -1,6 +1,6 @@
 &fortin
 
- iname = 'hit-3d-2.ic'
+ iname = 'hit-3d-3.ic'
  binfmt = true
  lambda0 = 0.2645751311064591
  reynolds_lambda0 = 133.6306209562122262
@@ -8,6 +8,7 @@
  prandtl = 0.71
  inres = 32
  uin_norm = 1.4142135623730950
+ forcing = 240945.78770686506
 
 /
 

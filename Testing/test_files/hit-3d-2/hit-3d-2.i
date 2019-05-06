@@ -1,6 +1,6 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
-max_step = 100000000
-stop_time = 0.00026398069024412264
+#stop_time = 0.00026398069024412264
+max_step = 10
 
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic = 1 1 1
@@ -45,10 +45,12 @@ amr.max_grid_size   = 64
 amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
 
 # CHECKPOINT FILES
+amr.checkpoint_files_output = 0
 amr.check_file      = chk        # root name of checkpoint file
 amr.check_int       = 100        # number of timesteps between checkpoints
 
 # PLOTFILES
+amr.plot_files_output = 1
 amr.plot_file       = plt        # root name of plotfile
 amr.plot_per        = 0.00006599517256103066       # time between plotfiles
 amr.plot_vars  =  density Temp

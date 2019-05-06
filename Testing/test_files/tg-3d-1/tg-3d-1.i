@@ -50,10 +50,12 @@ amr.max_grid_size   = 64
 amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
 
 # CHECKPOINT FILES
+amr.checkpoint_files_output = 0
 amr.check_file      = chk        # root name of checkpoint file
 amr.check_int       = 100        # number of timesteps between checkpoints
 
 # PLOTFILES
+amr.plot_files_output = 1
 amr.plot_file       = plt        # root name of plotfile
 amr.plot_int        = 100        # number of timesteps between plotfiles
 amr.plot_vars  =  density Temp
