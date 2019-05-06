@@ -399,7 +399,8 @@ extern "C"
      const int*   mask, const int*  m_lo, const int*  m_hi,
      amrex::Real*        cost, const int*  c_lo, const int*  c_hi,
      amrex::Real*       rYdot, const int* rY_lo, const int* rY_hi,
-     const amrex::Real& time,  const amrex::Real& dt_react, const int& do_react,const int& nsubsteps);
+     const amrex::Real& time,  const amrex::Real& dt_react, const int& do_react,
+     const int& nsubsteps_min,const int &nsubsteps_max,const int &nsubsteps_guess);
 #endif
 
   void pc_diffextrap

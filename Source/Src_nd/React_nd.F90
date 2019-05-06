@@ -123,7 +123,8 @@ contains
                             mask,m_lo,m_hi, &
                             cost,c_lo,c_hi, &
                             IR,IR_lo,IR_hi, &
-                            time,dt_react,do_update,nsubsteps) bind(C, name="pc_react_state_expl")
+                            time,dt_react,do_update,&
+                            nsubsteps_min,nsubsteps_max,nsubsteps_guess) bind(C, name="pc_react_state_expl")
 
     use eos_type_module
     use eos_module, only : eos_t,eos_rt
@@ -134,41 +135,40 @@ contains
     use reactor_module, only : react
     use amrex_fort_module, only : amrex_real
     use amrex_constants_module, only : HALF
+    use rk_params_module
 
     implicit none
 
-    integer          ::    lo(3),    hi(3)
-    integer          :: uo_lo(3), uo_hi(3)
-    integer          :: un_lo(3), un_hi(3)
-    integer          :: as_lo(3), as_hi(3)
-    integer          ::  m_lo(3),  m_hi(3)
-    integer          ::  c_lo(3),  c_hi(3)
-    integer          :: IR_lo(3), IR_hi(3)
-    double precision :: uold(uo_lo(1):uo_hi(1),uo_lo(2):uo_hi(2),uo_lo(3):uo_hi(3),NVAR)
-    double precision :: unew(un_lo(1):un_hi(1),un_lo(2):un_hi(2),un_lo(3):un_hi(3),NVAR)
-    double precision :: asrc(as_lo(1):as_hi(1),as_lo(2):as_hi(2),as_lo(3):as_hi(3),NVAR)
-    integer          :: mask(m_lo(1):m_hi(1),m_lo(2):m_hi(2),m_lo(3):m_hi(3))
-    double precision :: cost(c_lo(1):c_hi(1),c_lo(2):c_hi(2),c_lo(3):c_hi(3))
-    double precision :: IR(IR_lo(1):IR_hi(1),IR_lo(2):IR_hi(2),IR_lo(3):IR_hi(3),nspec+1)
-    double precision :: time, dt_react
-    integer          :: do_update,nsubsteps
+    integer           ::    lo(3),    hi(3)
+    integer           :: uo_lo(3), uo_hi(3)
+    integer           :: un_lo(3), un_hi(3)
+    integer           :: as_lo(3), as_hi(3)
+    integer           ::  m_lo(3),  m_hi(3)
+    integer           ::  c_lo(3),  c_hi(3)
+    integer           :: IR_lo(3), IR_hi(3)
+    double precision  :: uold(uo_lo(1):uo_hi(1),uo_lo(2):uo_hi(2),uo_lo(3):uo_hi(3),NVAR)
+    double precision  :: unew(un_lo(1):un_hi(1),un_lo(2):un_hi(2),un_lo(3):un_hi(3),NVAR)
+    double precision  :: asrc(as_lo(1):as_hi(1),as_lo(2):as_hi(2),as_lo(3):as_hi(3),NVAR)
+    integer           :: mask(m_lo(1):m_hi(1),m_lo(2):m_hi(2),m_lo(3):m_hi(3))
+    double precision  :: cost(c_lo(1):c_hi(1),c_lo(2):c_hi(2),c_lo(3):c_hi(3))
+    double precision  :: IR(IR_lo(1):IR_hi(1),IR_lo(2):IR_hi(2),IR_lo(3):IR_hi(3),nspec+1)
+    double precision  :: time, dt_react
+    integer           :: do_update
+    integer           :: nsubsteps_min,nsubsteps_max,nsubsteps_guess
 
-    integer          :: i, j, k
-
-    !low storage RK23
-    integer,parameter :: nrkstages=2
-    double precision,parameter,dimension(nrkstages)  :: rkcoeffs=(/0.5d0,1.d0/)
+    integer           :: i, j, k
 
     !Euler explicit for testing
     !integer,parameter :: nrkstages=1
     !double precision,parameter,dimension(nrkstages)  :: rkcoeffs=(/1.d0/)
 
-    integer :: npts,steps,stage,updt_time,ns
+    integer :: npts,steps,stage,ns
 
     double precision :: saneval(NVAR)
     double precision :: urk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),NVAR)
     double precision :: yrk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),nspec)
     double precision :: urk_old(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),NVAR)
+    double precision :: urk_err(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),NVAR)
     double precision :: wdot(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),nspec)
     double precision :: eint(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),nspec)
     double precision :: cv(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))
@@ -179,13 +179,15 @@ contains
     type (eos_t) :: eos_state
 
     double precision :: rhoE_old,rho_e_K_old,rho,energy,rho_e_K_new,rho_new
-    double precision :: rhoe_new,rhoet_new,rhoInv,mom_new(3),dt_rk
+    double precision :: rhoe_new,rhoet_new,rhoInv,mom_new(3)
+    double precision :: dt_rk,dt_rk_max,dt_rk_min,updt_time,tol
     
     call build(eos_state)
 
     !initialize all local arrays
     yrk         = 0.d0
     urk_old     = uold(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),:)
+    urk_err     = 0.d0
     wdot        = 0.d0
     eint        = 0.d0
     cv          = 0.d0
@@ -194,6 +196,7 @@ contains
     re_old      = 0.d0
     tempsrc     = 0.d0
     mom_new     = 0.d0
+    tol         = 1.d-20
 
     !==============================================================
     !sanitize urk_old so that masked values are sane and not NaN
@@ -250,21 +253,27 @@ contains
         enddo
     enddo
     !===============================================================
-
-    !now hardcoded - but we can be clever on this===================
-    dt_rk=dt_react/nsubsteps
+    dt_rk     = dt_react/nsubsteps_guess
+    dt_rk_min = dt_react/nsubsteps_max
+    dt_rk_max = dt_react/nsubsteps_min
     !===============================================================
 
     npts=(hi(3)-lo(3)+1)*(hi(2)-lo(2)+1)*(hi(1)-lo(1)+1)
-    updt_time=0.0
-    cost(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))=nsubsteps
+    updt_time=0.d0
+    steps=0
+    cost(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))=nsubsteps_guess
 
-    do steps=1,nsubsteps
+    do while(updt_time .lt. dt_react)
+    !do steps=1,nsubsteps
 
-        updt_time = updt_time+(steps-1)*dt_rk
         urk_old   = urk
+        updt_time = updt_time+dt_rk
+        steps     = steps+1
 
-        do stage=1,nrkstages
+        write(6,*) "updt_time,dt_rk:",updt_time,dt_rk,dt_rk_min,dt_rk_max,dt_react
+        flush(6)
+
+        do stage=1,rk64_stages
 
            !computing mass fractions
            !hope the compiler can optimize this better
@@ -333,12 +342,41 @@ contains
             do j=lo(2),hi(2)
              do i=lo(1),hi(1)
 
+                !=====================
+                !update urk_err
+                !=====================
+
                 !update species
-                urk(i,j,k,UFS:UFS+nspec-1)  = urk_old(i,j,k,UFS:UFS+nspec-1) + &
-                rkcoeffs(stage)*dt_rk*wdot(i,j,k,1:nspec)*mask(i,j,k)
+                urk_err(i,j,k,UFS:UFS+nspec-1)  = urk_err(i,j,k,UFS:UFS+nspec-1) + &
+                err_rk64(stage)*dt_rk*wdot(i,j,k,1:nspec)*mask(i,j,k)
 
                 !update temperature 
-                urk(i,j,k,UTEMP) = urk_old(i,j,k,UTEMP) + rkcoeffs(stage)*dt_rk*tempsrc(i,j,k)*mask(i,j,k)
+                urk_err(i,j,k,UTEMP) = urk_err(i,j,k,UTEMP) + err_rk64(stage)*dt_rk*tempsrc(i,j,k)*mask(i,j,k)
+                !===============================================================================================
+
+                !=====================
+                !update stage solution
+                !=====================
+
+                !update species
+                urk(i,j,k,UFS:UFS+nspec-1)  = urk_old(i,j,k,UFS:UFS+nspec-1) + &
+                alpha_rk64(stage)*dt_rk*wdot(i,j,k,1:nspec)*mask(i,j,k)
+
+                !update temperature 
+                urk(i,j,k,UTEMP) = urk_old(i,j,k,UTEMP) + alpha_rk64(stage)*dt_rk*tempsrc(i,j,k)*mask(i,j,k)
+                !===============================================================================================
+
+                !=====================
+                !update urk_old
+                !=====================
+                
+                !update species
+                urk_old(i,j,k,UFS:UFS+nspec-1)  = urk(i,j,k,UFS:UFS+nspec-1) + &
+                beta_rk64(stage)*dt_rk*wdot(i,j,k,1:nspec)*mask(i,j,k)
+
+                !update temperature 
+                urk_old(i,j,k,UTEMP) = urk(i,j,k,UTEMP) + beta_rk64(stage)*dt_rk*tempsrc(i,j,k)*mask(i,j,k)
+                !===============================================================================================
 
             enddo
            enddo
@@ -355,6 +393,8 @@ contains
             enddo
 
         enddo !stage loop
+
+        call adapt_timestep(lo,hi,urk_err,dt_rk,dt_rk_max,dt_rk_min,1.d-15)
  
     enddo !substep loop
     
@@ -404,6 +444,52 @@ contains
     
 
   end subroutine pc_react_state_expl
+
+  subroutine adapt_timestep(lo,hi,urk_err,dt_rk4,dt_rk4_max,dt_rk4_min,tol)
+
+      use meth_params_module, only : NVAR, UTEMP, UFS
+      use network           , only : nspec
+      implicit none
+    
+      integer           ::    lo(3), hi(3)
+      double precision  :: urk_err(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),NVAR)
+      double precision  :: dt_rk4, dt_rk4_max, dt_rk4_min, tol
+
+      integer :: i,j,k
+      double precision :: max_err,change_factor
+      double precision,parameter :: safety_fac=1e4
+      double precision,parameter :: exp1=0.25
+      double precision,parameter :: exp2=0.2
+
+
+      max_err=tiny(max_err)
+
+      do k=lo(3),hi(3)
+        do j=lo(2),hi(2)
+            do i=lo(1),hi(1)
+                
+                if(maxval(urk_err(i,j,k,:)) .gt. max_err) then
+                    max_err=maxval(urk_err(i,j,k,:))
+                endif
+            enddo
+        enddo
+    enddo
+
+    !chance to increase time step
+    if(max_err .lt. tol) then
+
+        !limit max_err,can't be 0
+        max_err=max(max_err,tol/safety_fac)
+        change_factor=(tol/max_err)**(exp1)
+        dt_rk4=min(dt_rk4_max,dt_rk4*change_factor)
+
+    !reduce time step (error is high!)
+    else
+        change_factor=(tol/max_err)**(exp2)
+        dt_rk4=max(dt_rk4_min,dt_rk4*change_factor)
+    endif
+
+  end subroutine adapt_timestep
 #endif
 
 end module reactions_module
