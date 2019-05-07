@@ -33,10 +33,14 @@ function(add_test_r TEST_NAME NP)
     set(RUNTIME_OPTIONS "max_step=10 amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.probin_file=${TEST_NAME}.probin")
     # Build the exe for the test
     build_pelec(PeleC-${TEST_NAME} ${EXE_OPTIONS_FILE})
+    # Either just run the tests, or also use fcompare to test diffs in plots against gold files
+    if(TEST_WITH_FCOMPARE)
+      set(FCOMPARE_COMMAND "&& ${FCOMPARE} ${PLOT_GOLD} ${PLOT_TEST}")
+    endif()
     # Place the exe in the correct working directory
     set_target_properties(PeleC-${TEST_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/")
     # Add test and actual test commands to CTest database
-    add_test(${TEST_NAME} sh -c "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${MPIEXEC_PREFLAGS} ${CURRENT_TEST_BINARY_DIR}/PeleC-${TEST_NAME} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i ${RUNTIME_OPTIONS} && ${FCOMPARE} ${PLOT_GOLD} ${PLOT_TEST}")
+    add_test(${TEST_NAME} sh -c "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${MPIEXEC_PREFLAGS} ${CURRENT_TEST_BINARY_DIR}/PeleC-${TEST_NAME} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i ${RUNTIME_OPTIONS} ${FCOMPARE_COMMAND}")
     # Set properties for test
     set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 500 PROCESSORS ${NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "regression")
 endfunction(add_test_r)
@@ -61,22 +65,22 @@ endfunction(add_test_u)
 #=============================================================================
 # Regression tests
 #=============================================================================
-add_test_r(fiab-2d 4)
-add_test_r(fiab-3d 4)
-add_test_r(hit-3d-1 4)
-add_test_r(hit-3d-2 4)
-add_test_r(hit-3d-3 4)
-# add_test_r(mms-1d-1 4)
+#add_test_r(fiab-2d 4)
+#add_test_r(fiab-3d 4)
+#add_test_r(hit-3d-1 4)
+#add_test_r(hit-3d-2 4)
+#add_test_r(hit-3d-3 4)
+add_test_r(mms-1d-1 4)
 # add_test_r(mms-2d-1 4)
 # add_test_r(mms-2d-2 4)
 # add_test_r(mms-3d-1 4)
 # add_test_r(mms-3d-2 4)
 # add_test_r(mms-3d-3 4)
 # add_test_r(mms-3d-4 1)
-add_test_r(sod-3d-1 4)
-add_test_r(tg-2d-1 4)
-add_test_r(tg-3d-1 4)
-add_test_r(tg-3d-2 4)
+#add_test_r(sod-3d-1 4)
+#add_test_r(tg-2d-1 4)
+#add_test_r(tg-3d-1 4)
+#add_test_r(tg-3d-2 4)
 
 #=============================================================================
 # Verification tests

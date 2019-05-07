@@ -18,6 +18,7 @@ option(ENABLE_ALL_WARNINGS "Show most warnings for most compilers" OFF)
 #Enabling tests overrides the executable options
 option(ENABLE_TESTS "Enable testing suite" OFF)
 option(ENABLE_FCOMPARE "Enable building fcompare when not testing" OFF)
+option(TEST_WITH_FCOMPARE "Check test plots against gold files" OFF)
 
 #Options for the executable in a single build dir
 option(PELEC_ENABLE_MPI "Enable MPI" OFF)

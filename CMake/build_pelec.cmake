@@ -153,7 +153,7 @@ function(build_pelec pelec_exe_name pelec_exe_options_file)
 
   #Link our executable to the MASA libraries, etc
   if(PELEC_ENABLE_MASA)
-    target_link_libraries(${pelec_exe_name} PRIVATE ${MASA_LIBRARIES})
+    target_link_libraries(${pelec_exe_name} PRIVATE ${MASA_LIBRARY} ${MASA_FORTRAN_LIBRARY})
     target_compile_definitions(${pelec_exe_name} PRIVATE USE_MASA DO_PROBLEM_POST_TIMESTEP DO_PROBLEM_POST_INIT)
     target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${MASA_INCLUDE_DIRS})
     target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${MASA_MOD_DIRS})

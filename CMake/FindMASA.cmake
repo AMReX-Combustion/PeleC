@@ -2,10 +2,11 @@
 #
 # Set MASA_DIR to the base directory where the package is installed
 #
-# Sets three variables
+# Sets 4 variables
 #   - MASA_INCLUDE_DIRS
 #   - MASA_MOD_DIRS
-#   - MASA_LIBRARIES
+#   - MASA_LIBRARY
+#   - MASA_FORTRAN_LIBRARY
 #
 
 find_path(MASA_INCLUDE_DIRS
@@ -18,12 +19,17 @@ find_path(MASA_MOD_DIRS
   HINTS ${MASA_DIR} ${CMAKE_INSTALL_PREFIX}
   PATH_SUFFIXES lib)
 
-find_library(MASA_LIBRARIES
-  NAMES masa fmasa
+find_library(MASA_LIBRARY
+  NAMES masa
+  HINTS ${MASA_DIR} ${CMAKE_INSTALL_PREFIX}
+  PATH_SUFFIXES lib)
+
+find_library(MASA_FORTRAN_LIBRARY
+  NAMES fmasa
   HINTS ${MASA_DIR} ${CMAKE_INSTALL_PREFIX}
   PATH_SUFFIXES lib)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
-  MASA DEFAULT_MSG MASA_INCLUDE_DIRS MASA_MOD_DIRS MASA_LIBRARIES)
-mark_as_advanced(MASA_INCLUDE_DIRS MASA_MOD_DIRS MASA_LIBRARIES)
+  MASA DEFAULT_MSG MASA_INCLUDE_DIRS MASA_MOD_DIRS MASA_LIBRARY MASA_FORTRAN_LIBRARY)
+mark_as_advanced(MASA_INCLUDE_DIRS MASA_MOD_DIRS MASA_LIBRARY MASA_FORTRAN_LIBRARY)
