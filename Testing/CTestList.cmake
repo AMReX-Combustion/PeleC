@@ -63,6 +63,10 @@ function(add_test_v1 TEST_NAME TEST_DEPENDENCY NP)
     file(GLOB TEST_FILES "${CURRENT_TEST_SOURCE_DIR}/*")
     # Copy files to test working directory
     file(COPY ${TEST_FILES} DESTINATION "${CURRENT_TEST_BINARY_DIR}/")
+    # Get test options
+    set(EXE_OPTIONS_FILE ${TEST_DEPENDENCY_SOURCE_DIR}/exe_options.cmake)
+    # Define our test options
+    include(${EXE_OPTIONS_FILE})
     # Set some default runtime options for all tests in this category
     set(RUNTIME_OPTIONS "amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.probin_file=${TEST_NAME}.probin")
     # Add test and actual test commands to CTest database
@@ -86,8 +90,20 @@ function(add_test_v2 TEST_NAME TEST_DEPENDENCY)
       file(GLOB TEST_FILES "${CURRENT_TEST_SOURCE_DIR}/*")
       # Copy files to test working directory
       file(COPY ${TEST_FILES} DESTINATION "${CURRENT_TEST_BINARY_DIR}/")
+      # Get test options
+      set(EXE_OPTIONS_FILE ${TEST_DEPENDENCY_SOURCE_DIR}/exe_options.cmake)
+      # Define our test options
+      include(${EXE_OPTIONS_FILE})
+      # Set number of cells at runtime according to dimension
+      if(${PELEC_DIM} EQUAL 3)
+        set(NCELLS "${RESOLUTION} ${RESOLUTION} ${RESOLUTION}")
+      elseif(${PELEC_DIM} EQUAL 2)
+        set(NCELLS "${RESOLUTION} ${RESOLUTION}")
+      elseif(${PELEC_DIM} EQUAL 1)
+        set(NCELLS "${RESOLUTION}")
+      endif()
       # Set some default runtime options for all tests in this category
-      set(RUNTIME_OPTIONS "amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.probin_file=${TEST_NAME}.probin amr.n_cell=${RESOLUTION}")
+      set(RUNTIME_OPTIONS "amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.probin_file=${TEST_NAME}.probin amr.n_cell=${NCELLS}")
       # Add test and actual test commands to CTest database
       add_test(${TEST_NAME}_${RESOLUTION} sh -c "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${PROCESSES} ${MPIEXEC_PREFLAGS} ${TEST_DEPENDENCY_BINARY_DIR}/PeleC-${TEST_DEPENDENCY} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i ${RUNTIME_OPTIONS}")
       # Set properties for test
@@ -138,6 +154,12 @@ add_test_r(tg-3d-2 4)
 if(ENABLE_VERIFICATION)
   add_test_v1(symmetry_3d mms-3d-1 4)
   add_test_v2(cns_no_amr_1d mms-1d-1)
+  add_test_v2(cns_no_amr_2d mms-2d-1)
+  add_test_v2(cns_no_amr_3d mms-3d-1)
+  add_test_v2(cns_no_amr_mol_2d mms-2d-2)
+  add_test_v2(cns_no_amr_mol_3d mms-3d-3)
+  #add_test_v2(cns_les_noamr_3d mms-3d-3) # What MMS does this depend on?
+  #add_test_v2(cns_amr_3d mms-3d-1) # This one takes a while
 endif()
 
 #=============================================================================
