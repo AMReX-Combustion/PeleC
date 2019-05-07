@@ -1,0 +1,34 @@
+&fortin
+
+  v_0_fact = 0.d0
+  v_x_fact = 0.d0
+  w_0_fact = 0.d0
+  w_x_fact = 0.d0
+  a_rhoy = 0.d0
+  a_rhoz = 0.d0
+  a_uy = 0.d0
+  a_uz = 0.d0
+  a_vy = 0.d0
+  a_vz = 0.d0
+  a_py = 0.d0
+  a_pz = 0.d0
+
+/
+
+&tagging
+
+  denerr = 1.d20
+  dengrad = 0.01
+  max_denerr_lev = 5
+  max_dengrad_lev = 5
+
+  presserr = 1.d20
+  pressgrad = 1.d20
+  max_presserr_lev = 5
+  max_pressgrad_lev = 5
+
+/
+
+&extern
+  eos_gamma = 1.4
+/

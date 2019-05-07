@@ -2,13 +2,16 @@
 include(${CMAKE_SOURCE_DIR}/CMake/build_unit_test.cmake)
 include(${CMAKE_SOURCE_DIR}/CMake/build_pelec.cmake)
 
-#=============================================================================
-# Functions for adding tests / Categories of tests
-#=============================================================================
-
 if(TEST_WITH_FCOMPARE)
   message("-- Test golds directory: ${CMAKE_CURRENT_SOURCE_DIR}/PeleCGoldFiles/${CMAKE_SYSTEM_NAME}/${CMAKE_CXX_COMPILER_ID}/${CMAKE_CXX_COMPILER_VERSION}")
 endif()
+
+include(ProcessorCount)
+ProcessorCount(PROCESSES)
+
+#=============================================================================
+# Functions for adding tests / Categories of tests
+#=============================================================================
 
 # Standard regression test
 function(add_test_r TEST_NAME NP)
@@ -47,8 +50,8 @@ function(add_test_r TEST_NAME NP)
     set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 500 PROCESSORS ${NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "regression")
 endfunction(add_test_r)
 
-# Standard verification test
-function(add_test_v TEST_NAME TEST_DEPENDENCY NP)
+# Verification test with 1 resolution
+function(add_test_v1 TEST_NAME TEST_DEPENDENCY NP)
     # Set variables for respective binary and source directories for the test
     set(CURRENT_TEST_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test_files/${TEST_NAME})
     set(CURRENT_TEST_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/test_files/${TEST_NAME})
@@ -61,12 +64,36 @@ function(add_test_v TEST_NAME TEST_DEPENDENCY NP)
     # Copy files to test working directory
     file(COPY ${TEST_FILES} DESTINATION "${CURRENT_TEST_BINARY_DIR}/")
     # Set some default runtime options for all tests in this category
-    set(RUNTIME_OPTIONS "max_step=10 amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.probin_file=${TEST_NAME}.probin")
+    set(RUNTIME_OPTIONS "amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.probin_file=${TEST_NAME}.probin")
     # Add test and actual test commands to CTest database
-    add_test(${TEST_NAME} sh -c "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${MPIEXEC_PREFLAGS} ${TEST_DEPENDENCY_BINARY_DIR}/PeleC-${TEST_DEPENDENCY} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i ${RUNTIME_OPTIONS} ${FCOMPARE_COMMAND}")
+    add_test(${TEST_NAME} sh -c "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${MPIEXEC_PREFLAGS} ${TEST_DEPENDENCY_BINARY_DIR}/PeleC-${TEST_DEPENDENCY} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i ${RUNTIME_OPTIONS}")
     # Set properties for test
     set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 500 PROCESSORS ${NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "verification" FIXTURES_REQUIRED ${TEST_DEPENDENCY})
-endfunction(add_test_v)
+endfunction(add_test_v1)
+
+# Verification test with resolutions of 8, 16, 32 (each test runs on maximum number of processes on node)
+function(add_test_v2 TEST_NAME TEST_DEPENDENCY)
+    foreach(RESOLUTION IN ITEMS 8 16 32)
+      #message(STATUS "RESOLUTION=${RESOLUTION}")
+      # Set variables for respective binary and source directories for the test
+      set(CURRENT_TEST_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test_files/${TEST_NAME})
+      set(CURRENT_TEST_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/test_files/${TEST_NAME}/${RESOLUTION})
+      set(TEST_DEPENDENCY_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test_files/${TEST_DEPENDENCY})
+      set(TEST_DEPENDENCY_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/test_files/${TEST_DEPENDENCY})
+      # Make working directory for test
+      file(MAKE_DIRECTORY ${CURRENT_TEST_BINARY_DIR})
+      # Gather all files in source directory for test
+      file(GLOB TEST_FILES "${CURRENT_TEST_SOURCE_DIR}/*")
+      # Copy files to test working directory
+      file(COPY ${TEST_FILES} DESTINATION "${CURRENT_TEST_BINARY_DIR}/")
+      # Set some default runtime options for all tests in this category
+      set(RUNTIME_OPTIONS "amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.probin_file=${TEST_NAME}.probin amr.n_cell=${RESOLUTION}")
+      # Add test and actual test commands to CTest database
+      add_test(${TEST_NAME}_${RESOLUTION} sh -c "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${PROCESSES} ${MPIEXEC_PREFLAGS} ${TEST_DEPENDENCY_BINARY_DIR}/PeleC-${TEST_DEPENDENCY} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i ${RUNTIME_OPTIONS}")
+      # Set properties for test
+      set_tests_properties(${TEST_NAME}_${RESOLUTION} PROPERTIES TIMEOUT 500 PROCESSORS ${PROCESSES} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "verification" FIXTURES_REQUIRED ${TEST_DEPENDENCY})
+    endforeach()
+endfunction(add_test_v2)
 
 # Standard unit test
 function(add_test_u TEST_NAME NP)
@@ -88,28 +115,29 @@ endfunction(add_test_u)
 #=============================================================================
 # Regression tests
 #=============================================================================
-#add_test_r(fiab-2d 4)
-#add_test_r(fiab-3d 4)
-#add_test_r(hit-3d-1 4)
-#add_test_r(hit-3d-2 4)
-#add_test_r(hit-3d-3 4)
-#add_test_r(mms-1d-1 4)
-#add_test_r(mms-2d-1 4)
-#add_test_r(mms-2d-2 4)
+add_test_r(fiab-2d 4)
+add_test_r(fiab-3d 4)
+add_test_r(hit-3d-1 4)
+add_test_r(hit-3d-2 4)
+add_test_r(hit-3d-3 4)
+add_test_r(mms-1d-1 4)
+add_test_r(mms-2d-1 4)
+add_test_r(mms-2d-2 4)
 add_test_r(mms-3d-1 4)
-#add_test_r(mms-3d-2 4)
-#add_test_r(mms-3d-3 4)
-#add_test_r(mms-3d-4 1)
-#add_test_r(sod-3d-1 4)
-#add_test_r(tg-2d-1 4)
-#add_test_r(tg-3d-1 4)
-#add_test_r(tg-3d-2 4)
+add_test_r(mms-3d-2 4)
+add_test_r(mms-3d-3 4)
+add_test_r(mms-3d-4 1)
+add_test_r(sod-3d-1 4)
+add_test_r(tg-2d-1 4)
+add_test_r(tg-3d-1 4)
+add_test_r(tg-3d-2 4)
 
 #=============================================================================
 # Verification tests
 #=============================================================================
 if(ENABLE_VERIFICATION)
-  add_test_v(symmetry_3d mms-3d-1 4)
+  add_test_v1(symmetry_3d mms-3d-1 4)
+  add_test_v2(cns_no_amr_1d mms-1d-1)
 endif()
 
 #=============================================================================
