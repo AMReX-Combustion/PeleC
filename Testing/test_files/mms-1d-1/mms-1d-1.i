@@ -3,18 +3,18 @@ max_step = 100
 stop_time = 0.000005
 
 # PROBLEM SIZE & GEOMETRY
-geometry.is_periodic = 1 1 1
+geometry.is_periodic = 1
 geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
-geometry.prob_lo     =  -1.0 -1.0 -1.0
-geometry.prob_hi     =   1.0  1.0  1.0
+geometry.prob_lo     =  -1.0
+geometry.prob_hi     =   1.0
 # use with single level
-amr.n_cell           =  8    8    8
+amr.n_cell           =  8
 
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
-pelec.lo_bc       =  "Interior" "Interior"  "Interior"
-pelec.hi_bc       =  "Interior" "Interior"  "Interior"
+pelec.lo_bc       =  "Interior" 
+pelec.hi_bc       =  "Interior" 
 
 # WHICH PHYSICS
 pelec.do_hydro = 1
@@ -47,14 +47,16 @@ amr.max_grid_size   = 64
 amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
 
 # CHECKPOINT FILES
+amr.checkpoint_files_output = 0
 amr.check_file      = chk        # root name of checkpoint file
 amr.check_int       = 1000        # number of timesteps between checkpoints
 
 # PLOTFILES
+amr.plot_files_output = 1
 amr.plot_file       = plt        # root name of plotfile
 amr.plot_int        = 1000        # number of timesteps between plotfiles
 amr.plot_vars  =  density Temp
-amr.derive_plot_vars = x_velocity y_velocity z_velocity magvel magvort pressure rhommserror ummserror vmmserror wmmserror pmmserror
+amr.derive_plot_vars = x_velocity magvel magvort pressure rhommserror ummserror pmmserror
 
 #PROBIN FILENAME
-amr.probin_file = probin-rt1
+amr.probin_file = mms-1d-1.probin

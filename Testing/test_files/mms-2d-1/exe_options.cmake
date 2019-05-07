@@ -5,7 +5,7 @@ list(APPEND PELEC_EXTRA_SOURCES ${CMAKE_SOURCE_DIR}/Exec/RegTests/MMS/bc_fill_nd
 list(APPEND PELEC_EXTRA_SOURCES ${CMAKE_SOURCE_DIR}/Exec/RegTests/MMS/Prob.cpp)
 
 #Compile-time options for executable
-set(PELEC_DIM 3)
+set(PELEC_DIM 2)
 set(PELEC_ENABLE_EB OFF)
 set(PELEC_ENABLE_MASA ON)
 set(PELEC_ENABLE_REACTIONS OFF)
