@@ -6,7 +6,9 @@ include(${CMAKE_SOURCE_DIR}/CMake/build_pelec.cmake)
 # Functions for adding tests / Categories of tests
 #=============================================================================
 
-message("-- Test golds directory: ${CMAKE_CURRENT_SOURCE_DIR}/PeleCGoldFiles/${CMAKE_SYSTEM_NAME}/${CMAKE_CXX_COMPILER_ID}/${CMAKE_CXX_COMPILER_VERSION}")
+if(TEST_WITH_FCOMPARE)
+  message("-- Test golds directory: ${CMAKE_CURRENT_SOURCE_DIR}/PeleCGoldFiles/${CMAKE_SYSTEM_NAME}/${CMAKE_CXX_COMPILER_ID}/${CMAKE_CXX_COMPILER_VERSION}")
+endif()
 
 # Standard regression test
 function(add_test_r TEST_NAME NP)
@@ -65,22 +67,22 @@ endfunction(add_test_u)
 #=============================================================================
 # Regression tests
 #=============================================================================
-#add_test_r(fiab-2d 4)
-#add_test_r(fiab-3d 4)
-#add_test_r(hit-3d-1 4)
-#add_test_r(hit-3d-2 4)
-#add_test_r(hit-3d-3 4)
+add_test_r(fiab-2d 4)
+add_test_r(fiab-3d 4)
+add_test_r(hit-3d-1 4)
+add_test_r(hit-3d-2 4)
+add_test_r(hit-3d-3 4)
 add_test_r(mms-1d-1 4)
-# add_test_r(mms-2d-1 4)
-# add_test_r(mms-2d-2 4)
-# add_test_r(mms-3d-1 4)
-# add_test_r(mms-3d-2 4)
-# add_test_r(mms-3d-3 4)
-# add_test_r(mms-3d-4 1)
-#add_test_r(sod-3d-1 4)
-#add_test_r(tg-2d-1 4)
-#add_test_r(tg-3d-1 4)
-#add_test_r(tg-3d-2 4)
+add_test_r(mms-2d-1 4)
+add_test_r(mms-2d-2 4)
+add_test_r(mms-3d-1 4)
+add_test_r(mms-3d-2 4)
+add_test_r(mms-3d-3 4)
+add_test_r(mms-3d-4 1)
+add_test_r(sod-3d-1 4)
+add_test_r(tg-2d-1 4)
+add_test_r(tg-3d-1 4)
+add_test_r(tg-3d-2 4)
 
 #=============================================================================
 # Verification tests
