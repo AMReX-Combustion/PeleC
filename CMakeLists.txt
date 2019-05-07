@@ -17,6 +17,7 @@ option(ENABLE_ALL_WARNINGS "Show most warnings for most compilers" OFF)
 
 #Enabling tests overrides the executable options
 option(ENABLE_TESTS "Enable testing suite" OFF)
+option(ENABLE_VERIFICATION "Enable verification suite" OFF)
 option(ENABLE_FCOMPARE "Enable building fcompare when not testing" OFF)
 option(TEST_WITH_FCOMPARE "Check test plots against gold files" OFF)
 
@@ -45,6 +46,10 @@ if(PELEC_ENABLE_MASA)
 endif()
 
 ########################### PeleC #####################################
+
+if(ENABLE_VERIFICATION AND NOT ENABLE_TESTS)
+  message(FATAL_ERROR "-- Testing must be on to enable verification suite")
+endif()
 
 message("-- CMAKE_SYSTEM_NAME = ${CMAKE_SYSTEM_NAME}")
 message("-- CMAKE_CXX_COMPILER_ID = ${CMAKE_CXX_COMPILER_ID}")
