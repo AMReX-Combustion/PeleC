@@ -2,8 +2,11 @@
 include(${CMAKE_SOURCE_DIR}/CMake/build_unit_test.cmake)
 include(${CMAKE_SOURCE_DIR}/CMake/build_pelec.cmake)
 
+# Set location of gold files according to system/compiler/compiler_version
+set(GOLD_FILES_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PeleCGoldFiles/${CMAKE_SYSTEM_NAME}/${CMAKE_CXX_COMPILER_ID}/${CMAKE_CXX_COMPILER_VERSION})
+
 if(TEST_WITH_FCOMPARE)
-  message("-- Test golds directory: ${CMAKE_CURRENT_SOURCE_DIR}/PeleCGoldFiles/${CMAKE_SYSTEM_NAME}/${CMAKE_CXX_COMPILER_ID}/${CMAKE_CXX_COMPILER_VERSION}")
+  message("-- Test golds directory: ${GOLD_FILES_DIRECTORY}")
 endif()
 
 # Have CMake discover the number of cores on the node
@@ -20,7 +23,7 @@ function(add_test_r TEST_NAME NP)
     set(CURRENT_TEST_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test_files/${TEST_NAME})
     set(CURRENT_TEST_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/test_files/${TEST_NAME})
     # Gold files should be submodule organized by machine and compiler (these are output during configure)
-    set(PLOT_GOLD ${CMAKE_CURRENT_SOURCE_DIR}/PeleCGoldFiles/${CMAKE_SYSTEM_NAME}/${CMAKE_CXX_COMPILER_ID}/${CMAKE_CXX_COMPILER_VERSION}/${TEST_NAME}/plt00010)
+    set(PLOT_GOLD ${GOLD_FILES_DIRECTORY}/${TEST_NAME}/plt00010)
     # Test plot is currently expected to be after 10 steps
     set(PLOT_TEST ${CURRENT_TEST_BINARY_DIR}/plt00010)
     # Get test options
