@@ -6,6 +6,7 @@ if(TEST_WITH_FCOMPARE)
   message("-- Test golds directory: ${CMAKE_CURRENT_SOURCE_DIR}/PeleCGoldFiles/${CMAKE_SYSTEM_NAME}/${CMAKE_CXX_COMPILER_ID}/${CMAKE_CXX_COMPILER_VERSION}")
 endif()
 
+# Have CMake discover the number of cores on the node
 include(ProcessorCount)
 ProcessorCount(PROCESSES)
 
@@ -107,7 +108,7 @@ function(add_test_v2 TEST_NAME TEST_DEPENDENCY)
       # Add test and actual test commands to CTest database
       add_test(${TEST_NAME}_${RESOLUTION} sh -c "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${PROCESSES} ${MPIEXEC_PREFLAGS} ${TEST_DEPENDENCY_BINARY_DIR}/PeleC-${TEST_DEPENDENCY} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i ${RUNTIME_OPTIONS}")
       # Set properties for test
-      set_tests_properties(${TEST_NAME}_${RESOLUTION} PROPERTIES TIMEOUT 500 PROCESSORS ${PROCESSES} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "verification" FIXTURES_REQUIRED ${TEST_DEPENDENCY})
+      set_tests_properties(${TEST_NAME}_${RESOLUTION} PROPERTIES TIMEOUT 1500 PROCESSORS ${PROCESSES} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "verification" FIXTURES_REQUIRED ${TEST_DEPENDENCY})
     endforeach()
 endfunction(add_test_v2)
 
