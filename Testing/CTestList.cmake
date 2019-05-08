@@ -155,11 +155,11 @@ endfunction(add_test_u)
 #=============================================================================
 # Regression tests
 #=============================================================================
-#add_test_r(fiab-2d 4)
-#add_test_r(fiab-3d 4)
-#add_test_r(hit-3d-1 4)
-#add_test_r(hit-3d-2 4)
-#add_test_r(hit-3d-3 4)
+add_test_r(fiab-2d 4)
+add_test_r(fiab-3d 4)
+add_test_r(hit-3d-1 4)
+add_test_r(hit-3d-2 4)
+add_test_r(hit-3d-3 4)
 add_test_r(mms-1d-1 4)
 add_test_r(mms-2d-1 4)
 add_test_r(mms-2d-2 4)
@@ -167,10 +167,10 @@ add_test_r(mms-3d-1 4)
 add_test_r(mms-3d-2 4)
 add_test_r(mms-3d-3 4)
 add_test_r(mms-3d-4 1)
-#add_test_r(sod-3d-1 4)
-#add_test_r(tg-2d-1 4)
-#add_test_r(tg-3d-1 4)
-#add_test_r(tg-3d-2 4)
+add_test_r(sod-3d-1 4)
+add_test_r(tg-2d-1 4)
+add_test_r(tg-3d-1 4)
+add_test_r(tg-3d-2 4)
 
 #=============================================================================
 # Verification tests
