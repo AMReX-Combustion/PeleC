@@ -81,23 +81,23 @@ endfunction(add_test_v1)
 
 # Verification test with resolutions of 8, 16, 32 (each test runs on maximum number of processes on node)
 function(add_test_v2 TEST_NAME TEST_DEPENDENCY)
+    # Set variables for respective binary and source directories for the test
+    set(CURRENT_TEST_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test_files/${TEST_NAME})
+    set(CURRENT_TEST_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/test_files/${TEST_NAME})
+    set(TEST_DEPENDENCY_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test_files/${TEST_DEPENDENCY})
+    set(TEST_DEPENDENCY_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/test_files/${TEST_DEPENDENCY})
+    # Get test dependency options (mainly just need the dimension value)
+    set(EXE_OPTIONS_FILE ${TEST_DEPENDENCY_SOURCE_DIR}/exe_options.cmake)
+    # Define our test options
+    include(${EXE_OPTIONS_FILE})
+    # Create the commands to run for each resolution
     foreach(RESOLUTION IN ITEMS 8 16 32)
-      #message(STATUS "RESOLUTION=${RESOLUTION}")
-      # Set variables for respective binary and source directories for the test
-      set(CURRENT_TEST_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test_files/${TEST_NAME})
-      set(CURRENT_TEST_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/test_files/${TEST_NAME}/${RESOLUTION})
-      set(TEST_DEPENDENCY_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test_files/${TEST_DEPENDENCY})
-      set(TEST_DEPENDENCY_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/test_files/${TEST_DEPENDENCY})
       # Make working directory for test
-      file(MAKE_DIRECTORY ${CURRENT_TEST_BINARY_DIR})
+      file(MAKE_DIRECTORY ${CURRENT_TEST_BINARY_DIR}/${RESOLUTION})
       # Gather all files in source directory for test
-      file(GLOB TEST_FILES "${CURRENT_TEST_SOURCE_DIR}/*")
+      file(GLOB TEST_FILES "${CURRENT_TEST_SOURCE_DIR}/${RESOLUTION}/*")
       # Copy files to test working directory
-      file(COPY ${TEST_FILES} DESTINATION "${CURRENT_TEST_BINARY_DIR}/")
-      # Get test options
-      set(EXE_OPTIONS_FILE ${TEST_DEPENDENCY_SOURCE_DIR}/exe_options.cmake)
-      # Define our test options
-      include(${EXE_OPTIONS_FILE})
+      file(COPY ${TEST_FILES} DESTINATION "${CURRENT_TEST_BINARY_DIR}/${RESOLUTION}/")
       # Set number of cells at runtime according to dimension
       if(${PELEC_DIM} EQUAL 3)
         set(NCELLS "${RESOLUTION} ${RESOLUTION} ${RESOLUTION}")
@@ -106,13 +106,15 @@ function(add_test_v2 TEST_NAME TEST_DEPENDENCY)
       elseif(${PELEC_DIM} EQUAL 1)
         set(NCELLS "${RESOLUTION}")
       endif()
-      # Set some default runtime options for all tests in this category
-      set(RUNTIME_OPTIONS "amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.probin_file=${TEST_NAME}.probin amr.n_cell=${NCELLS}")
-      # Add test and actual test commands to CTest database
-      add_test(${TEST_NAME}_${RESOLUTION} sh -c "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${PROCESSES} ${MPIEXEC_PREFLAGS} ${TEST_DEPENDENCY_BINARY_DIR}/PeleC-${TEST_DEPENDENCY} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i ${RUNTIME_OPTIONS}")
-      # Set properties for test
-      set_tests_properties(${TEST_NAME}_${RESOLUTION} PROPERTIES TIMEOUT 1500 PROCESSORS ${PROCESSES} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "verification" FIXTURES_REQUIRED ${TEST_DEPENDENCY})
+      # Set the run command for this resolution
+      set(RUN_COMMAND_${RESOLUTION} "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${PROCESSES} ${MPIEXEC_PREFLAGS} ${TEST_DEPENDENCY_BINARY_DIR}/PeleC-${TEST_DEPENDENCY} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${RESOLUTION}/${TEST_NAME}.i")
+      # Set some runtime options for each resolution
+      set(RUNTIME_OPTIONS_${RESOLUTION} "amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.probin_file=${TEST_NAME}.probin amr.n_cell=${NCELLS}")
     endforeach()
+    # Add test and actual test commands to CTest database (need to convert this to arrays for resolutions)
+    add_test(${TEST_NAME} sh -c "cd ${CURRENT_TEST_BINARY_DIR}/8 && ${RUN_COMMAND_8} ${RUNTIME_OPTIONS_8} && cd ${CURRENT_TEST_BINARY_DIR}/16 && ${RUN_COMMAND_16} ${RUNTIME_OPTIONS_16} && cd ${CURRENT_TEST_BINARY_DIR}/32 && ${RUN_COMMAND_32} ${RUNTIME_OPTIONS_32}")
+    # Set properties for test
+    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 1500 PROCESSORS ${PROCESSES} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS "verification" FIXTURES_REQUIRED ${TEST_DEPENDENCY})
 endfunction(add_test_v2)
 
 # Standard unit test
