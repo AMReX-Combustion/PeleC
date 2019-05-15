@@ -256,8 +256,6 @@ public:
 
     void initialize_eb2_structs();
 
-    void test_dn();
-
     void define_body_state();
 
     void set_body_state(amrex::MultiFab& S);

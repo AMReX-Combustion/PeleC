@@ -474,10 +474,6 @@ PeleC::PeleC (Amr&            papa,
     
 #ifdef PELE_USE_EB
   init_eb(level_geom, bl, dm);
-  // #define PELE_UNIT_TEST_DN
-#ifdef PELE_UNIT_TEST_DN
-  test_dn();
-#endif
 #endif
 
   MultiFab& S_new = get_new_data(State_Type);
