@@ -370,6 +370,7 @@ subroutine set_method_params(dm,Density,Xmom,Eden,Eint,Temp, &
 
   use meth_params_module
   use network, only : nspec, naux
+  use amrex_parallel_module, only : amrex_parallel_init
   use eos_module, only : eos_init, eos_get_small_dens, eos_get_small_temp
   use transport_module, only : transport_init
   use amrex_constants_module, only : ZERO, ONE
@@ -389,6 +390,8 @@ subroutine set_method_params(dm,Density,Xmom,Eden,Eint,Temp, &
   integer :: QLAST
 
   integer :: ioproc
+
+  call amrex_parallel_init()
 
   !---------------------------------------------------------------------
   ! conserved state components
