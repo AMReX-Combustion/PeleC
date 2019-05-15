@@ -31,7 +31,7 @@ While performing a ``cmake -LAH ..`` command will give descriptions of every opt
 
 **TEST_WITH_FCOMPARE** -- enables an additional step in the regression tests where the ``fcompare`` program from AMReX will also test for differences in the plots generated from the tests against "gold" files which contain previously verified results to machine precision
 
-**ENABLE_VERIFICATION** -- enables the verification suite which checks that PeleC is second order accurate using several tests, but note that the verification tests can take a significant amount of time to run and certain Python modules are expected to exist on the user's system to generate PNG plot files
+**ENABLE_VERIFICATION** -- enables the verification suite which checks that PeleC is second order accurate using several additional tests, but note that the verification tests can take a significant amount of time to run and certain Python modules are expected to exist on the user's system to generate PNG plot files
 
 **PELEC_ENABLE_MASA** and **MASA_DIR** -- are required when the verification suite is enabled to perform the method of manufactured solutions
 
