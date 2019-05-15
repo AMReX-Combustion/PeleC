@@ -171,12 +171,16 @@ PeleC::initialize_eb2_structs() {
                                    sv_eb_bndry_grad_stencil[iLocal].data(),
                                    &Ncut, &dx);
       } else if (bgs == 1) {
+        amrex::Print() << "This gradient stencil type WIP and not functional!" << bgs << std::endl;
+        amrex::Abort();Unknown or unspecified boundary gradient stencil type
         pc_fill_bndry_grad_stencil_amrex(BL_TO_FORTRAN_BOX(tbox),
                                          sv_eb_bndry_geom[iLocal].data(), &Ncut,
                                          sv_eb_bndry_grad_stencil[iLocal].data(),
                                          &Ncut, &dx);
 
       } else if (bgs == 2) {
+        amrex::Print() << "This gradient stencil type WIP and not functional!" << bgs << std::endl;
+        amrex::Abort();Unknown or unspecified boundary gradient stencil type
         pc_fill_bndry_grad_stencil_ls(BL_TO_FORTRAN_BOX(tbox),
                                       sv_eb_bndry_geom[iLocal].data(), &Ncut,
                                       sv_eb_bndry_grad_stencil[iLocal].data(),
