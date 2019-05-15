@@ -111,7 +111,7 @@ contains
        state,state_lo,state_hi, &
        delta,xlo,xhi) bind(C, name="pc_initdata")
 
-    use amrex_parallel_module
+    use amrex_paralleldescriptor_module, only: amrex_pd_ioprocessor
     use probdata_module
     use network, only: nspec, naux, molec_wt
     use fundamental_constants_module, only: k_B, n_A
@@ -220,7 +220,7 @@ contains
     call masa_set_param("deltabar",delta(1))
 
     ! Display and check
-    if ( amrex_parallel_ioprocessor() ) then
+    if ( amrex_pd_ioprocessor() ) then
        call masa_display_param()
     endif
     call masa_sanity_check()

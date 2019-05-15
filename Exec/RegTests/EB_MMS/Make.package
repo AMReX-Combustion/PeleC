@@ -1,0 +1,5 @@
+f90EXE_sources += probdata.f90
+CEXE_sources += Prob.cpp
+
+BOXLIB_BASE=EXE
+

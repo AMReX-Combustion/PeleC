@@ -10,7 +10,7 @@ contains
 
   subroutine amrex_probinit (init,name,namlen,problo,probhi) bind(C, name = "amrex_probinit")
 
-    use amrex_parallel_module
+    use amrex_paralleldescriptor_module, only: amrex_pd_ioprocessor
     use probdata_module
     use amrex_fort_module
     use amrex_constants_module, only: HALF
@@ -103,7 +103,7 @@ contains
     const_conductivity = const_viscosity * eos_state % cp / prandtl
 
     ! Write this out to file (might be useful for postprocessing)
-    if ( amrex_parallel_ioprocessor() ) then
+    if ( amrex_pd_ioprocessor() ) then
        open(unit=out_unit,file="ic.txt",action="write",status="replace")
        write(out_unit,*)"lambda0, k0, rho0, urms0, tau, p0, T0, gamma, mu, k, c_s0, Reynolds, Mach, Prandtl, u0, v0, w0, forcing"
        write(out_unit,*) lambda0, "," , k0, "," , eos_state % rho, "," , urms0, "," , tau, "," , &
@@ -123,7 +123,7 @@ contains
     ! domain (hence the mod operations in the interpolation).
 
     if (restart) then
-       if ( amrex_parallel_ioprocessor() ) then
+       if ( amrex_pd_ioprocessor() ) then
           write(*,*)"Skipping input file reading and assuming restart."
        endif
     else
