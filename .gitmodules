@@ -1,0 +1,9 @@
+[submodule "Submodules/AMReX"]
+	path = Submodules/AMReX
+	url = https://github.com/AMReX-Codes/amrex.git
+[submodule "Submodules/PelePhysics"]
+	path = Submodules/PelePhysics
+	url = https://github.com/AMReX-Combustion/PelePhysics.git
+[submodule "Submodules/GoogleTest"]
+	path = Testing/GoogleTest
+	url = https://github.com/google/googletest.git
