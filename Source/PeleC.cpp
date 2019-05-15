@@ -546,7 +546,7 @@ PeleC::PeleC (Amr&            papa,
   get_new_data(Reactions_Type).setVal(0.0);
 #endif
 
-  // iniotialize the Godunov state array used in hydro -- we wait
+  // initialize the Godunov state array used in hydro -- we wait
   // until here so that ngroups is defined (if needed) in
   // rad_params_module
   if (do_hydro)
