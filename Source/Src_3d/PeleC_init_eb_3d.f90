@@ -808,7 +808,7 @@ contains
              sum_kappa = sum(nbr(-1:1,-1:1,-1:1) * vf(i-1:i+1,j-1:j+1,k-1:k+1))
              sum_div =   sum(nbr(-1:1,-1:1,-1:1) * vf(i-1:i+1,j-1:j+1,k-1:k+1) * DC(i-1:i+1,j-1:j+1,k-1:k+1,n))
              DNC = sum_div / sum_kappa
-             if (sv_ebg(L) % eb_vfrac < eb_small_vfrac) then ! TODO(rgrout) make this a parameter - until then make sure it is consistent with logic in Hyp_pele_MOL_3d.F90
+             if (sv_ebg(L) % eb_vfrac < eb_small_vfrac) then
                  dM(L) = vf(i,j,k)*(DC(i,j,k,n))
                  HD(L) = 0.0d0
              else
@@ -841,7 +841,15 @@ contains
                .and. k.ge.lo(2)-1 .and. k.le.hi(2)+1 ) then
 
              call get_neighbor_cells(flag(i,j,k),nbr)
-             nbr(0,0,0) = 0.d0 ! redistribute to all neighbors but me
+             nbr(0,0,0) = 0.d0 ! redistribute to all neighbors but me and those that are really small (for which we've elsewhere adjusted HD)
+             do kk=-1,1
+                do jj=-1,1
+                   do ii=-1,1
+                      if(vf(ii+i,jj+j,kk+k) .lt. eb_small_vfrac) nbr(ii,jj,kk) = 0.0d0
+                   enddo
+                enddo
+             enddo
+
              sum_kappa = sum(nbr(-1:1,-1:1,-1:1) * vf(i-1:i+1,j-1:j+1,k-1:k+1) * W(i-1:i+1,j-1:j+1,k-1:k+1))
              sum_kappa_inv = 1.d0 / sum_kappa
              DC(i-1:i+1,j-1:j+1,k-1:k+1,n) = DC(i-1:i+1,j-1:j+1,k-1:k+1,n) &
