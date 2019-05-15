@@ -760,30 +760,4 @@ contains
 
   end function linear_to_angular_momentum
 
-  subroutine set_synthetic_data(lo,hi,M,m_lo,m_hi) &
-       bind(C, name="set_synthetic_data")
-
-    use amrex_constants_module
-
-    implicit none
-
-    integer         , intent(in   ) :: lo(3),hi(3)
-    integer         , intent(in   ) :: m_lo(3),m_hi(3)
-    double precision, intent(inout) :: M(m_lo(1):m_hi(1),m_lo(2):m_hi(2),m_lo(3):m_hi(3))
-
-    integer          :: i,j,k
-
-
-    do k = lo(3),hi(3)
-       do j = lo(2),hi(2)
-          do i = lo(1),hi(1)
-
-          enddo
-       enddo
-    enddo
-
-
-  end subroutine set_synthetic_data
-
-
 end module pelec_util_module

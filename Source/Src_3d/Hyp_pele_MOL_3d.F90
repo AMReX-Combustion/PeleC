@@ -54,9 +54,8 @@ module hyp_advection_module
     use meth_params_module, only : QVAR, NVAR, QPRES, QRHO, QU, QV, QW, &
                                    QFS,  &
                                    QC, QCSML, NQAUX, nadv, &
-                                   URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, UTEMP, UFX, UFA
-
-
+                                   URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, UTEMP, UFX, UFA, &
+                                   eb_small_vfrac
     use slope_module, only : slopex, slopey, slopez
     use actual_network, only : nspec, naux
     use eos_type_module
@@ -141,7 +140,7 @@ module hyp_advection_module
     integer :: nextra
     integer, parameter :: coord_type = 0
     integer, parameter :: bc_test_val = 1
-    
+
     type (eos_t) :: eos_state, gdnv_state
 
     integer, parameter :: R_RHO = 1
@@ -727,7 +726,8 @@ module hyp_advection_module
 
              ! Replace q for cut cell with average of neighborhood so that ebflux is consistent with cell merging
              call get_neighbor_cells(flag(i,j,k),nbr)
-             if( vfrac(i,j,k) < 1.0e-2 ) then ! TODO(rgrout) make this a parameter
+
+             if( vfrac(i,j,k) < eb_small_vfrac ) then
                 nbr(0,0,0) = 0
                 sum_kappa = sum(nbr(-1:1,-1:1,-1:1) * vfrac(i-1:i+1,j-1:j+1,k-1:k+1))
 

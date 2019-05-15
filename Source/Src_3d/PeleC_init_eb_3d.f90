@@ -35,6 +35,7 @@ contains
 
     ! This one fills the stencil using the strategy in amrex_mlebabeclap_grad routine
     ! compute_dphidn_3d
+    ! Currently work in progress (doesn't work)
 
     ! Notes from WZ 4/24/19 follow:
 
@@ -70,12 +71,6 @@ contains
     real(amrex_real),   intent(in   ) :: dx
 
     ! Local variables
-    !integer :: m, c(dim), s(dim), iv(dim), ivs(dim), sh(dim), L, baseiv(dim)
-    !real(amrex_real) :: n(dim), b(dim), x(2), y(2), z(2), d(2), fac, sten(0:2,0:2,0:2,0:2), AREA,
-    !real(amrex_real) :: cy(-1:1),cz(-1:1), bcs, tsten(-1:1,-1:1,-1:1)
-    !real(amrex_real), dimension(0:2,0:2,0:2,0:2) :: psten, rsten
-    ! real(amrex_real) :: r11sq, r11, r12, r22, r22sq, r13, r23, r33, r33sq
-
     real(amrex_real) :: fac, AREA
     real(amrex_real) :: dx_eb, vf, dg
     real(amrex_real) :: bctx, bcty, bctz ! Boundary centroids
@@ -86,7 +81,6 @@ contains
     real(amrex_real) :: anrm
     real(amrex_real) :: sten_sum
     integer :: ii, jj, kk ! Offsets for stencil
-
 
     ! Cell indices
     integer :: i, j, k, L
@@ -99,18 +93,15 @@ contains
        j = ebg(L) % iv(1)
        k = ebg(L) % iv(2)
 
-
        if (i.ge.lo(0) .and. i.le.hi(0) &
             .and. j.ge.lo(1) .and. j.le.hi(1) &
             .and. k.ge.lo(2) .and. k.le.hi(2) ) then
-
 
           dx_eb = amrex_get_dx_eb(ebg(L)%eb_vfrac)
 
           bctx = ebg(L) % eb_centroid(1)
           bcty = ebg(L) % eb_centroid(2)
           bctz = ebg(L) % eb_centroid(3)
-
 
           anrmx = ebg(L) % eb_normal(1)
           anrmy = ebg(L) % eb_normal(2)
@@ -124,9 +115,6 @@ contains
           dg = dx_eb / max(abs(anrmx),abs(anrmy),abs(anrmz))
 
           ! Renormalize normal
-
-
-
           gx = bctx - dg*anrmx
           gy = bcty - dg*anrmy
           gz = bctz - dg*anrmz
@@ -173,12 +161,12 @@ contains
 
        endif ! Restrict to box
     end do ! Loop over cut cells
-
   end subroutine pc_fill_bndry_grad_stencil_amrex
 
     subroutine pc_fill_bndry_grad_stencil_ls(lo, hi, ebg, Nebg, grad_stencil, Nsten, dx) &
        bind(C,name="pc_fill_bndry_grad_stencil_ls")
 
+      ! Work in process - least squares boundary stencil capability. Currently doesn't work.
 
     integer,            intent(in   ) :: lo(0:2),hi(0:2)
     integer,            intent(in   ) :: Nebg, Nsten
@@ -186,9 +174,6 @@ contains
     type(eb_bndry_sten),intent(inout) :: grad_stencil(0:Nsten-1)
     real(amrex_real),   intent(in   ) :: dx
     integer :: i, j, k, m, c(dim), s(dim), iv(dim), ivs(dim), sh(dim),  baseiv(dim)
-    !real(amrex_real) :: n(dim), b(dim), x(2), y(2), z(2), d(2), fac,  AREA
-
-
     real(amrex_real) :: cy(-1:1),cz(-1:1), bcs, tsten(-1:1,-1:1,-1:1)
     real(amrex_real), dimension(0:2,0:2,0:2,0:2) :: psten, rsten, sten
 
@@ -201,7 +186,6 @@ contains
     integer :: nls
     integer :: inls
     integer :: si, sj, sk ! Stencil offsets
-
 
     do L = 0, Nsten-1
        i = ebg(L) % iv(0)
@@ -232,11 +216,10 @@ contains
           r22sq = r22*r22
           r13 = (sum(rsten(0:2,0:2,0:2,0)*rsten(0:2,0:2,0:2,2)))/r11
           r23 = (sum(rsten(0:2,0:2,0:2,1)*rsten(0:2,0:2,0:2,2))  - &
-               sum(rsten(0:2,0:2,0:2,0)*rsten(0:2,0:2,0:2,2))*r12/r11 )/r22
+                 sum(rsten(0:2,0:2,0:2,0)*rsten(0:2,0:2,0:2,2))*r12/r11 )/r22
           r33 = sqrt(sum(rsten(0:2,0:2,0:2,2)*rsten(0:2,0:2,0:2,2)) - (r13*r12 + r23*r23))
           r33sq = r33*r33
           beta = (r12*r23 - r13*r22)/(r11*r22)
-
 
           do sk = 0, 2
              do sj = 0, 2
@@ -244,14 +227,12 @@ contains
                    alph(0) = rsten(si,sj,sk,0) / r11sq
                    alph(1) = (rsten(si,sj,sk,1) - r12/r11*rsten(si,sj,sk,0))/r22sq
                    alph(2) = (rsten(si,sj,sk,2) - r23/r22*rsten(si,sj,sk,1) + beta*rsten(si,sj,sk,0))/r33sq
-
                    sten(si,sj,sk,0) = alph(0) - r12/r11*alph(1) + beta*alph(2)
                    sten(si,sj,sk,1) = alph(1) - r23/r22*alph(2)
                    sten(si,sj,sk,2) = alph(2)
                 enddo
              enddo
           enddo
-
 
           ! Now, grad phi = sum(sten*phi-phi_bc). We want the component normal to the cut face
           sten(:,:,:,0) = sten(:,:,:,0)*anrmx + sten(:,:,:,1)*anrmy + sten(:,:,:,2)*anrmz
@@ -398,11 +379,6 @@ contains
 
 
           do n=1,nc
-             !if( L.eq.232) then
-             !write(*,*)'(1)', L, '; ', i,j,k,n,'; ', D(i,j,k,n), ' ', bcval(L,n), ' ', sten(L)%bcval
-             !write(*,'(A, I3,A,4I4,A,27(E10.4,2x))')' (2)', L, '; ', i,j,k,n,'; ', sten(L)%val(-1:1,-1:1,-1:1)
-             !write(*,'(A, I3,A,4I4,A,27(E10.4,2x))')' (3)', L, '; ', i,j,k,n,'; ', s(ii:ii+2,jj:jj+2,kk:kk+2,n)
-             !rendif
              bcflux(L,n) = D(i,j,k,n) * (bcval(L,n) * sten(L)%bcval + &
                   sum(sten(L)%val(-1:1,-1:1,-1:1) * s(ii:ii+2,jj:jj+2,kk:kk+2,n)) )
           enddo
@@ -761,7 +737,7 @@ contains
     use amrex_eb_flux_reg_nd_module, only : crse_cell, crse_fine_boundary_cell, &
          covered_by_fine=>fine_cell, reredistribution_threshold
 
-    use meth_params_module, only: levmsk_notcovered 
+    use meth_params_module, only: levmsk_notcovered, eb_small_vfrac
 
     integer,          intent(in   ) ::  lo(0:2),  hi(0:2)
     integer,          intent(in   ) :: nc, Ncut, nebflux
@@ -832,7 +808,7 @@ contains
              sum_kappa = sum(nbr(-1:1,-1:1,-1:1) * vf(i-1:i+1,j-1:j+1,k-1:k+1))
              sum_div =   sum(nbr(-1:1,-1:1,-1:1) * vf(i-1:i+1,j-1:j+1,k-1:k+1) * DC(i-1:i+1,j-1:j+1,k-1:k+1,n))
              DNC = sum_div / sum_kappa
-             if (sv_ebg(L) % eb_vfrac < 1.0e-2) then ! TODO(rgrout) make this a parameter - until then make sure it is consistent with logic in Hyp_pele_MOL_3d.F90
+             if (sv_ebg(L) % eb_vfrac < eb_small_vfrac) then ! TODO(rgrout) make this a parameter - until then make sure it is consistent with logic in Hyp_pele_MOL_3d.F90
                  dM(L) = vf(i,j,k)*(DC(i,j,k,n))
                  HD(L) = 0.0d0
              else
@@ -1040,10 +1016,7 @@ contains
     integer         , intent(in   ) :: m_lo(3),m_hi(3)
     double precision, intent(inout) :: M(m_lo(1):m_hi(1),m_lo(2):m_hi(2),m_lo(3):m_hi(3))
     double precision, intent(in) :: prob_lo(3), dx
-
     integer          :: i,j,k
-
-
     double precision:: x, y
 
     do k = lo(3),hi(3)
@@ -1056,8 +1029,6 @@ contains
        enddo
     enddo
 
-
   end subroutine pc_set_synthetic_data
-
 
 end module nbrsTest_nd_module
