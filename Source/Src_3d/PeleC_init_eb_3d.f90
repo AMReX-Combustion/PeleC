@@ -1022,8 +1022,8 @@ contains
     do k = lo(3),hi(3)
        do j = lo(2),hi(2)
           do i = lo(1),hi(1)
-             x = (i-prob_lo(0))*dx
-             y = (j-prob_lo(1))*dx
+             x = (i-prob_lo(1))*dx
+             y = (j-prob_lo(2))*dx
              M(i,j,k) = 4.0*(x*x + y*y)
           enddo
        enddo
