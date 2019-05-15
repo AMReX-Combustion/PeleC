@@ -87,7 +87,6 @@ PeleC::initialize_eb2_structs() {
 
   vfrac.copy(*volfrac);
 
-
   // First pass over fabs to fill sparse per cut-cell ebg structures
   sv_eb_bndry_geom.resize(vfrac.local_size());
   sv_eb_bndry_grad_stencil.resize(vfrac.local_size());
@@ -102,9 +101,9 @@ PeleC::initialize_eb2_structs() {
     const FArrayBox& vfab = vfrac[mfi];
     const EBCellFlagFab& flagfab = flags[mfi];
 
-
     FabType typ = flagfab.getType(tbox);
     int iLocal = mfi.LocalIndex();
+
     if (typ == FabType::regular) {
       mfab.setVal(1);
     } else if (typ == FabType::covered) {
