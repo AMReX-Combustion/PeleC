@@ -66,6 +66,7 @@ pp.query("zr_ext_bc_type", zr_ext_bc_type);
 pp.query("eb_boundary_T", eb_boundary_T);
 pp.query("eb_isothermal", eb_isothermal);
 pp.query("eb_noslip", eb_noslip);
+pp.query("eb_small_vfrac", eb_small_vfrac);
 pp.query("do_mms", do_mms);
 pp.query("masa_solution_name", masa_solution_name);
 pp.query("fixed_dt", fixed_dt);

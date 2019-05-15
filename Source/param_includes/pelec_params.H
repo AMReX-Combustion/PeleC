@@ -66,6 +66,7 @@ static std::string zr_ext_bc_type;
 static amrex::Real eb_boundary_T;
 static int eb_isothermal;
 static int eb_noslip;
+static amrex::Real eb_small_vfrac;
 static int do_mms;
 static std::string masa_solution_name;
 static amrex::Real fixed_dt;

@@ -95,8 +95,8 @@ PeleC::fill_mms_source (Real time, const MultiFab& S, MultiFab& mms_src, int ng)
 #ifdef PELE_USE_EB
           const auto& flag_fab = flags[mfi];
           FabType typ = flag_fab.getType(bx);
-          if (typ != FabType::regular){
-            amrex::Abort("Error: MMS not implemented for EB cells.");
+          if (typ == FabType::covered) {
+            continue;
           }
 #endif
 

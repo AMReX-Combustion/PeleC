@@ -1,6 +1,7 @@
 module nbrsTest_nd_module
 
   use amrex_fort_module, only : amrex_real, dim=>bl_spacedim
+  use amrex_error_module, only : amrex_abort
   use amrex_ebcellflag_module, only : get_neighbor_cells
   use pelec_eb_stencil_types_module, only : eb_bndry_geom, eb_bndry_sten, face_sten
   use amrex_constants_module, only: ONE, HALF, TWO, FOUR3RD
@@ -28,6 +29,225 @@ contains
        mask(imax(1)) = .false.
     enddo
   end subroutine mysort
+
+  subroutine pc_fill_bndry_grad_stencil_amrex(lo, hi, ebg, Nebg, grad_stencil, Nsten, dx) &
+       bind(C,name="pc_fill_bndry_grad_stencil_amrex")
+
+    ! This one fills the stencil using the strategy in amrex_mlebabeclap_grad routine
+    ! compute_dphidn_3d
+    ! Currently work in progress (doesn't work)
+
+    ! Notes from WZ 4/24/19 follow:
+
+    ! What it does is
+    !(1) find a point in the boundary normal direction that is `dx_eb` away from the boundary centroid.
+    !(2) find out 8 neighboring cell centers and use them to do linear interpolation.
+    !(3) compute `dphidn = (phi_interp - phi_b)/dx_eb`.
+    ! Here `dx_eb =  max(0.3d0, (kappa*kappa-0.25d0)/(2.d0*kappa))`, where kappa is volume fraction.
+
+    !For 1d case with `kappa > 0.9*` ( cannot remember the exact number), it is equivalent to use
+    ! `phi_b` and two cell centers to construct a polynomial fit and obtain dphidn on the boundary.
+    ! For kappa = 1, this is exactly same as what we do at domain wall in non-EB solver (with max_order = 3).
+    ! The problem of the stencil in PeleC and EB/CNS seems to be that in the case of kappa close to 1,
+    !    the cut cell itself is excluded.
+    ! That seems to cause problems for flows with steep gradient.
+    ! This is probably the reason in one of the ANAG paper the approach based on least square fit was
+    ! developed and it was mentioned the original stencil was not stable for low Reynolds flows.
+    ! End notes from WZ
+
+    use amrex_mlebabeclap_3d_module, only : amrex_get_dx_eb
+
+    ! Array bounds
+    integer,            intent(in   ) :: lo(0:2), hi(0:2)
+    integer,            intent(in   ) :: Nebg, Nsten
+
+    ! EB Data
+    type(eb_bndry_geom),intent(in   ) :: ebg(0:Nebg-1)
+
+    ! Stencil data to fill
+    type(eb_bndry_sten),intent(inout) :: grad_stencil(0:Nsten-1)
+
+    ! Grid spacing
+    real(amrex_real),   intent(in   ) :: dx
+
+    ! Local variables
+    real(amrex_real) :: fac, AREA
+    real(amrex_real) :: dx_eb, vf, dg
+    real(amrex_real) :: bctx, bcty, bctz ! Boundary centroids
+    real(amrex_real) :: anrmx, anrmy, anrmz ! Normals
+    real(amrex_real) :: sten(-1:1, -1:1, -1:1) ! Raw stencil
+    real(amrex_real) :: gx, gy, gz, sx, sy, sz
+    real(amrex_real) :: gxy, gxz, gyz, gxyz
+    real(amrex_real) :: anrm
+    real(amrex_real) :: sten_sum
+    integer :: ii, jj, kk ! Offsets for stencil
+
+    ! Cell indices
+    integer :: i, j, k, L
+    AREA = dx**(dim-1)
+    fac = AREA / dx
+
+
+    do L = 0, Nsten-1
+       i = ebg(L) % iv(0)
+       j = ebg(L) % iv(1)
+       k = ebg(L) % iv(2)
+
+       if (i.ge.lo(0) .and. i.le.hi(0) &
+            .and. j.ge.lo(1) .and. j.le.hi(1) &
+            .and. k.ge.lo(2) .and. k.le.hi(2) ) then
+
+          dx_eb = amrex_get_dx_eb(ebg(L)%eb_vfrac)
+
+          bctx = ebg(L) % eb_centroid(1)
+          bcty = ebg(L) % eb_centroid(2)
+          bctz = ebg(L) % eb_centroid(3)
+
+          anrmx = ebg(L) % eb_normal(1)
+          anrmy = ebg(L) % eb_normal(2)
+          anrmz = ebg(L) % eb_normal(3)
+
+          anrm = sqrt( anrmx*anrmx + anrmy*anrmy + anrmz*anrmz)
+          anrmx = anrmx/anrm
+          anrmy = anrmy/anrm
+          anrmz = anrmz/anrm
+
+          dg = dx_eb / max(abs(anrmx),abs(anrmy),abs(anrmz))
+
+          ! Renormalize normal
+          gx = bctx - dg*anrmx
+          gy = bcty - dg*anrmy
+          gz = bctz - dg*anrmz
+          sx =  sign(one,anrmx)
+          sy =  sign(one,anrmy)
+          sz =  sign(one,anrmz)
+          ii =  - int(sx)
+          jj =  - int(sy)
+          kk =  - int(sz)
+
+          gx = sx*gx
+          gy = sy*gy
+          gz = sz*gz
+          gxy = gx*gy
+          gxz = gx*gz
+          gyz = gy*gz
+          gxyz = gx*gy*gz
+
+          sten = 0.0d0
+          sten(0,0,0) = (one+gx+gy+gz+gxy+gxz+gyz+gxyz)
+          sten(0,0,kk) = (-gz - gxz - gyz - gxyz)
+          sten(0,jj,0) = (-gy - gxy - gyz - gxyz)
+          sten(0,jj,kk) = (gyz + gxyz)
+          sten(ii,0,0) = (-gx - gxy - gxz - gxyz)
+          sten(ii,0,kk) = (gxz + gxyz)
+          sten(ii,jj,0) = (gxy + gxyz)
+          sten(ii,jj,kk) = (-gxyz)
+
+          grad_stencil(L) % iv = ebg(L) % iv
+          grad_stencil(L) % iv_base = grad_stencil(L) % iv - 1
+          grad_stencil(L) % bcval = one/dg *fac *ebg(L)%eb_area
+
+          grad_stencil(L) % val(-1:1,-1:1,-1:1) = -one/dg*sten(-1:1,-1:1,-1:1) * fac *ebg(L)%eb_area
+
+          sten_sum = sum(sten)
+          if (abs(sten_sum - one) .gt. 1.0e-10) then
+             write(*,*) 'Trouble: stencil does not add up to unity!'
+             write(*,*) 'L =', L, ' normals = ', anrmx, anrmy, anrmz
+             write(*,*) 'L =', L, ' centroid = ', bctx, bcty, bctz
+             write(*,*) 'L =', L, ' dg = ', dg, ' sten_sum:', sten_sum
+             write(*,'(27(E10.4,2x))') sten
+             call amrex_abort("pc_fill_bndry_grad_stencil_amrex trouble with stencil")
+          endif
+
+       endif ! Restrict to box
+    end do ! Loop over cut cells
+  end subroutine pc_fill_bndry_grad_stencil_amrex
+
+    subroutine pc_fill_bndry_grad_stencil_ls(lo, hi, ebg, Nebg, grad_stencil, Nsten, dx) &
+       bind(C,name="pc_fill_bndry_grad_stencil_ls")
+
+      ! Work in process - least squares boundary stencil capability. Currently doesn't work.
+
+    integer,            intent(in   ) :: lo(0:2),hi(0:2)
+    integer,            intent(in   ) :: Nebg, Nsten
+    type(eb_bndry_geom),intent(in   ) :: ebg(0:Nebg-1)
+    type(eb_bndry_sten),intent(inout) :: grad_stencil(0:Nsten-1)
+    real(amrex_real),   intent(in   ) :: dx
+    integer :: i, j, k, m, c(dim), s(dim), iv(dim), ivs(dim), sh(dim),  baseiv(dim)
+    real(amrex_real) :: cy(-1:1),cz(-1:1), bcs, tsten(-1:1,-1:1,-1:1)
+    real(amrex_real), dimension(0:2,0:2,0:2,0:2) :: psten, rsten, sten
+
+    ! Local variables
+    real(amrex_real) :: r11, r11sq, r12, r22, r22sq, r13, r23, r33, r33sq, beta, alph(0:2)
+
+    real(amrex_real) :: anrmx, anrmy, anrmz ! Normals
+    integer :: ii,jj,kk
+    integer :: L
+    integer :: nls
+    integer :: inls
+    integer :: si, sj, sk ! Stencil offsets
+
+    do L = 0, Nsten-1
+       i = ebg(L) % iv(0)
+       j = ebg(L) % iv(1)
+       k = ebg(L) % iv(2)
+       if (i.ge.lo(0) .and. i.le.hi(0) &
+            .and. j.ge.lo(1) .and. j.le.hi(1) &
+            .and. k.ge.lo(2) .and. k.le.hi(2) ) then
+
+          anrmx = ebg(L)%eb_normal(1)
+          anrmy = ebg(L)%eb_normal(2)
+          anrmz = ebg(L)%eb_normal(3)
+
+          do sk = 0, 2
+             do sj = 0, 2
+                do si = 0, 2
+                   rsten(si,sj,sk,0) = -si*sign(1.d0,anrmx) - ebg(L)%eb_centroid(1)
+                   rsten(si,sj,sk,1) = -sj*sign(1.d0,anrmy) - ebg(L)%eb_centroid(2)
+                   rsten(si,sj,sk,2) = -sk*sign(1.d0,anrmz) - ebg(L)%eb_centroid(3)
+                enddo
+             enddo
+          enddo
+
+          r11sq = (sum(rsten(0:2,0:2,0:2,0)*rsten(0:2,0:2,0:2,0)))
+          r11 = sqrt(r11)
+          r12 = (sum(rsten(0:2,0:2,0:2,0)*rsten(0:2,0:2,0:2,1)))/r11
+          r22 = (sum(rsten(0:2,0:2,0:2,1)*rsten(0:2,0:2,0:2,1))) - r12*r12
+          r22sq = r22*r22
+          r13 = (sum(rsten(0:2,0:2,0:2,0)*rsten(0:2,0:2,0:2,2)))/r11
+          r23 = (sum(rsten(0:2,0:2,0:2,1)*rsten(0:2,0:2,0:2,2))  - &
+                 sum(rsten(0:2,0:2,0:2,0)*rsten(0:2,0:2,0:2,2))*r12/r11 )/r22
+          r33 = sqrt(sum(rsten(0:2,0:2,0:2,2)*rsten(0:2,0:2,0:2,2)) - (r13*r12 + r23*r23))
+          r33sq = r33*r33
+          beta = (r12*r23 - r13*r22)/(r11*r22)
+
+          do sk = 0, 2
+             do sj = 0, 2
+                do si = 0, 2
+                   alph(0) = rsten(si,sj,sk,0) / r11sq
+                   alph(1) = (rsten(si,sj,sk,1) - r12/r11*rsten(si,sj,sk,0))/r22sq
+                   alph(2) = (rsten(si,sj,sk,2) - r23/r22*rsten(si,sj,sk,1) + beta*rsten(si,sj,sk,0))/r33sq
+                   sten(si,sj,sk,0) = alph(0) - r12/r11*alph(1) + beta*alph(2)
+                   sten(si,sj,sk,1) = alph(1) - r23/r22*alph(2)
+                   sten(si,sj,sk,2) = alph(2)
+                enddo
+             enddo
+          enddo
+
+          ! Now, grad phi = sum(sten*phi-phi_bc). We want the component normal to the cut face
+          sten(:,:,:,0) = sten(:,:,:,0)*anrmx + sten(:,:,:,1)*anrmy + sten(:,:,:,2)*anrmz
+
+          grad_stencil(L)%iv = ebg(L)%iv
+          grad_stencil(L)%iv_base(0) =ebg(L)% iv(0) - sign(1.d0,anrmx) - 1 ! move to center of stencil, then move to lower left of that
+          grad_stencil(L)%iv_base(1) =ebg(L)% iv(1) - sign(1.d0,anrmy) - 1 ! move to center of stencil, then move to lower left of that
+          grad_stencil(L)%iv_base(2) =ebg(L)% iv(2) - sign(1.d0,anrmz) - 1 ! move to center of stencil, then move to lower left of that
+          grad_stencil(L)%bcval = -1.0*sum(sten(:,:,:,0))
+          grad_stencil(L)%val = sten(:,:,:,0) ! TODO: check this doesn't need to be normalized by sum(sten(:,:,:,0))
+
+       endif ! inside box to work on
+    enddo ! Loop over stencils
+  end subroutine pc_fill_bndry_grad_stencil_ls
+
 
   subroutine pc_fill_bndry_grad_stencil(lo, hi, ebg, Nebg, grad_stencil, Nsten, dx) &
        bind(C,name="pc_fill_bndry_grad_stencil")
@@ -118,7 +338,7 @@ contains
                 enddo
              enddo
           enddo
-          
+
           grad_stencil(L)%iv = ebg(L)%iv
           grad_stencil(L)%iv_base = baseiv + sh ! Shift base down, if required
           grad_stencil(L)%bcval = fac * ebg(L)%eb_area * bcs
@@ -157,8 +377,9 @@ contains
           jj = sten(L)%iv_base(1)
           kk = sten(L)%iv_base(2)
 
+
           do n=1,nc
-             bcflux(L,1:nc) = D(i,j,k,n) * (bcval(L,n) * sten(L)%bcval + &
+             bcflux(L,n) = D(i,j,k,n) * (bcval(L,n) * sten(L)%bcval + &
                   sum(sten(L)%val(-1:1,-1:1,-1:1) * s(ii:ii+2,jj:jj+2,kk:kk+2,n)) )
           enddo
 
@@ -516,7 +737,7 @@ contains
     use amrex_eb_flux_reg_nd_module, only : crse_cell, crse_fine_boundary_cell, &
          covered_by_fine=>fine_cell, reredistribution_threshold
 
-    use meth_params_module, only: levmsk_notcovered 
+    use meth_params_module, only: levmsk_notcovered, eb_small_vfrac
 
     integer,          intent(in   ) ::  lo(0:2),  hi(0:2)
     integer,          intent(in   ) :: nc, Ncut, nebflux
@@ -587,8 +808,14 @@ contains
              sum_kappa = sum(nbr(-1:1,-1:1,-1:1) * vf(i-1:i+1,j-1:j+1,k-1:k+1))
              sum_div =   sum(nbr(-1:1,-1:1,-1:1) * vf(i-1:i+1,j-1:j+1,k-1:k+1) * DC(i-1:i+1,j-1:j+1,k-1:k+1,n))
              DNC = sum_div / sum_kappa
-             dM(L) = vf(i,j,k)*(1.d0 - vf(i,j,k))*(DC(i,j,k,n) - DNC)
-             HD(L) = vf(i,j,k)*DC(i,j,k,n) + (1.d0 - vf(i,j,k))*DNC
+             if (sv_ebg(L) % eb_vfrac < eb_small_vfrac) then
+                 dM(L) = vf(i,j,k)*(DC(i,j,k,n))
+                 HD(L) = 0.0d0
+             else
+                 dM(L) = vf(i,j,k)*(1.d0 - vf(i,j,k))*(DC(i,j,k,n) - DNC)
+                 HD(L) = vf(i,j,k)*DC(i,j,k,n) + (1.d0 - vf(i,j,k))*DNC
+             endif
+
           endif
        enddo
 
@@ -614,7 +841,15 @@ contains
                .and. k.ge.lo(2)-1 .and. k.le.hi(2)+1 ) then
 
              call get_neighbor_cells(flag(i,j,k),nbr)
-             nbr(0,0,0) = 0.d0 ! redistribute to all neighbors but me
+             nbr(0,0,0) = 0.d0 ! redistribute to all neighbors but me and those that are really small (for which we've elsewhere adjusted HD)
+             do kk=-1,1
+                do jj=-1,1
+                   do ii=-1,1
+                      if(vf(ii+i,jj+j,kk+k) .lt. eb_small_vfrac) nbr(ii,jj,kk) = 0.0d0
+                   enddo
+                enddo
+             enddo
+
              sum_kappa = sum(nbr(-1:1,-1:1,-1:1) * vf(i-1:i+1,j-1:j+1,k-1:k+1) * W(i-1:i+1,j-1:j+1,k-1:k+1))
              sum_kappa_inv = 1.d0 / sum_kappa
              DC(i-1:i+1,j-1:j+1,k-1:k+1,n) = DC(i-1:i+1,j-1:j+1,k-1:k+1,n) &
@@ -722,6 +957,7 @@ contains
        apx, axlo, axhi, apy, aylo, ayhi, apz, azlo, azhi) &
        bind(C,name="pc_fill_sv_ebg")
 
+
     integer,          intent(in   ) ::  lo(0:2),  hi(0:2)
     integer, dimension(3), intent(in) :: vflo, vfhi, blo, bhi, axlo, axhi, aylo, ayhi, azlo, azhi
     integer,          intent(in   ) :: Nebg
@@ -752,6 +988,14 @@ contains
           azp = apz(i,j,k+1)
 
           apnorm = sqrt((axm-axp)**2 + (aym-ayp)**2 + (azm-azp)**2)
+          if (apnorm .eq. 0.d0 ) then
+             write(0,*) 'Cell id: ', i, ',',j,',',k
+             write(0,*) ' box: ', lo(0), ',', lo(1), ',', lo(2), '; ', hi(0), ',', hi(1), ',', hi(2)
+             write(0,*) 'Volume fraction: ', vfrac(i,j,k)
+             write(0,*) axm, axp, aym, ayp, azm, azp
+             write(0,*) 'L = ', L, ' out of ', Nebg-1
+             call amrex_abort("pc_fill_sv_ebg: zero apnorm")
+          end if
           apnorminv = -1.d0 / apnorm
           ebg(L) % eb_normal(1) = (axm-axp) * apnorminv  ! pointing to the wall
           ebg(L) % eb_normal(2) = (aym-ayp) * apnorminv
@@ -762,10 +1006,37 @@ contains
           ebg(L) % eb_centroid(1) = bcent(i,j,k,1)
           ebg(L) % eb_centroid(2) = bcent(i,j,k,2)
           ebg(L) % eb_centroid(3) = bcent(i,j,k,3)
+
+          ebg(L) % eb_vfrac = vfrac(i,j,k)
        endif
     enddo
 
   end subroutine pc_fill_sv_ebg
 
+  subroutine pc_set_synthetic_data(lo,hi,M,m_lo,m_hi,prob_lo,dx) &
+       bind(C, name="pc_set_synthetic_data")
+
+    use amrex_constants_module
+
+    implicit none
+
+    integer         , intent(in   ) :: lo(3),hi(3)
+    integer         , intent(in   ) :: m_lo(3),m_hi(3)
+    double precision, intent(inout) :: M(m_lo(1):m_hi(1),m_lo(2):m_hi(2),m_lo(3):m_hi(3))
+    double precision, intent(in) :: prob_lo(3), dx
+    integer          :: i,j,k
+    double precision:: x, y
+
+    do k = lo(3),hi(3)
+       do j = lo(2),hi(2)
+          do i = lo(1),hi(1)
+             x = (i-prob_lo(1))*dx
+             y = (j-prob_lo(2))*dx
+             M(i,j,k) = 4.0*(x*x + y*y)
+          enddo
+       enddo
+    enddo
+
+  end subroutine pc_set_synthetic_data
 
 end module nbrsTest_nd_module
