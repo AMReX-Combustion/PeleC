@@ -112,6 +112,7 @@ PeleC::initialize_eb2_structs() {
       int Ncut = 0;
       for (BoxIterator bit(tbox); bit.ok(); ++bit) {
         const EBCellFlag& flag = flagfab(bit(), 0);
+
         if (!(flag.isRegular() || flag.isCovered())) {
           Ncut++;
         }
@@ -121,10 +122,12 @@ PeleC::initialize_eb2_structs() {
       int ivec = 0;
       for (BoxIterator bit(tbox); bit.ok(); ++bit) {
         const EBCellFlag& flag = flagfab(bit(), 0);
+
         if (!(flag.isRegular() || flag.isCovered())) {
           EBBndryGeom& sv_ebg = sv_eb_bndry_geom[iLocal][ivec];
           ivec++;
           sv_ebg.iv = bit();
+
           if (mfab.box().contains(bit())) mfab(bit()) = 0;
         } else {
           if (flag.isRegular()) {
@@ -154,10 +157,38 @@ PeleC::initialize_eb2_structs() {
       const Real dx = geom.CellSize()[0];
       auto& vec = sv_eb_bndry_geom[iLocal];
       std::sort(vec.begin(), vec.end());
-      pc_fill_bndry_grad_stencil(BL_TO_FORTRAN_BOX(tbox),
-                                 sv_eb_bndry_geom[iLocal].data(), &Ncut,
-                                 sv_eb_bndry_grad_stencil[iLocal].data(),
-                                 &Ncut, &dx);
+
+      // Boundary stencil option: 0 = original, 1 = amrex way, 2 = least squares
+      ParmParse pp("ebd");
+
+      int bgs;
+      bgs = -1;
+      pp.get("boundary_grad_stencil_type", bgs);
+
+      if (bgs == 0) {
+        pc_fill_bndry_grad_stencil(BL_TO_FORTRAN_BOX(tbox),
+                                   sv_eb_bndry_geom[iLocal].data(), &Ncut,
+                                   sv_eb_bndry_grad_stencil[iLocal].data(),
+                                   &Ncut, &dx);
+      } else if (bgs == 1) {
+        amrex::Print() << "This gradient stencil type WIP and not functional!" << bgs << std::endl;
+        amrex::Abort();
+        pc_fill_bndry_grad_stencil_amrex(BL_TO_FORTRAN_BOX(tbox),
+                                         sv_eb_bndry_geom[iLocal].data(), &Ncut,
+                                         sv_eb_bndry_grad_stencil[iLocal].data(),
+                                         &Ncut, &dx);
+
+      } else if (bgs == 2) {
+        amrex::Print() << "This gradient stencil type WIP and not functional!" << bgs << std::endl;
+        amrex::Abort();
+        pc_fill_bndry_grad_stencil_ls(BL_TO_FORTRAN_BOX(tbox),
+                                      sv_eb_bndry_geom[iLocal].data(), &Ncut,
+                                      sv_eb_bndry_grad_stencil[iLocal].data(),
+                                      &Ncut, &dx);
+      } else {
+        amrex::Print() << "Unknown or unspecified boundary gradient stencil type:" << bgs << std::endl;
+        amrex::Abort();
+      }
 
       sv_eb_flux[iLocal].define(sv_eb_bndry_grad_stencil[iLocal], NUM_STATE);
       sv_eb_bcval[iLocal].define(sv_eb_bndry_grad_stencil[iLocal], QVAR);

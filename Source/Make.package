@@ -43,4 +43,5 @@ ifeq ($(USE_EB), TRUE)
   CEXE_headers += EBStencilTypes.H
   CEXE_headers += SparseData.H
   F90EXE_sources += EBStencilTypes_mod.F90
+  CEXE_sources += PeleC_test_normal.cpp
 endif

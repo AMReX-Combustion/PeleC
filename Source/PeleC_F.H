@@ -337,6 +337,7 @@ extern "C"
         const BL_FORT_FAB_ARG_3D(volume),
         const BL_FORT_FAB_ARG_3D(D),
 #ifdef PELEC_USE_EB
+        const BL_FORT_FAB_ARG_3D(vfrac),
         const void* flag, const int* fglo, const int* fghi,
         const void* ebg, const int* nebg,
         const void* ebflux, const int* nebf,
@@ -440,6 +441,9 @@ extern "C"
                       const amrex::Real* xlo, const amrex::Real* xhi,
                       const amrex::Real* time, const amrex::Real* dt);
 
+  void pc_set_synthetic_data(const int* lo, const int*hi,
+                             BL_FORT_FAB_ARG_3D(M),
+                             const amrex::Real* prob_lo, const amrex::Real* dx);
 #ifdef __cplusplus
 }
 #endif

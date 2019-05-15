@@ -119,7 +119,7 @@ endif
 Bdirs   := Source Source/param_includes Source/Src_nd Source/Src_$(DIM)d Source/TurbInflow
 
 ifeq ($(USE_EB), TRUE)
-  Pdirs := Base EB Amr Boundary AmrCore
+  Pdirs := Base EB Amr Boundary AmrCore LinearSolvers/MLMG LinearSolvers/C_CellMG/
 else 
   Pdirs := Base Amr Boundary AmrCore
 endif
