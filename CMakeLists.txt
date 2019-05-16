@@ -55,11 +55,6 @@ if(ENABLE_VERIFICATION)
   message(STATUS "Warning: Verification tests expect a specific Python environment and take a long time to run")
 endif()
 
-message(STATUS "CMAKE_SYSTEM_NAME = ${CMAKE_SYSTEM_NAME}")
-message(STATUS "CMAKE_CXX_COMPILER_ID = ${CMAKE_CXX_COMPILER_ID}")
-message(STATUS "CMAKE_CXX_COMPILER_VERSION = ${CMAKE_CXX_COMPILER_VERSION}")
-message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
-
 include(${CMAKE_SOURCE_DIR}/CMake/set_compile_flags.cmake)
 set_compile_flags()
 
@@ -67,6 +62,23 @@ find_package(PythonInterp REQUIRED)
 
 include(${CMAKE_SOURCE_DIR}/CMake/build_fcompare.cmake)
 include(${CMAKE_SOURCE_DIR}/CMake/build_pelec.cmake)
+
+# General information about machine, compiler, and build type
+message(STATUS "CMAKE_SYSTEM_NAME = ${CMAKE_SYSTEM_NAME}")
+message(STATUS "CMAKE_CXX_COMPILER_ID = ${CMAKE_CXX_COMPILER_ID}")
+message(STATUS "CMAKE_CXX_COMPILER_VERSION = ${CMAKE_CXX_COMPILER_VERSION}")
+message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
+
+# Regular flags we have added
+message(STATUS "CMAKE_CXX_FLAGS = ${CMAKE_CXX_FLAGS}")
+message(STATUS "CMAKE_C_FLAGS = ${CMAKE_C_FLAGS}")
+message(STATUS "CMAKE_Fortran_FLAGS = ${CMAKE_Fortran_FLAGS}")
+
+# Build type flags in which CMake adds for us
+string(TOUPPER "${CMAKE_BUILD_TYPE}" BUILD_TYPE)
+message(STATUS "CMAKE_CXX_FLAGS_${BUILD_TYPE} = ${CMAKE_CXX_FLAGS_${BUILD_TYPE}}")
+message(STATUS "CMAKE_C_FLAGS_${BUILD_TYPE} = ${CMAKE_C_FLAGS_${BUILD_TYPE}}")
+message(STATUS "CMAKE_Fortran_FLAGS_${BUILD_TYPE} = ${CMAKE_Fortran_FLAGS_${BUILD_TYPE}}")
 
 if(ENABLE_TESTS)
   set(PELEC_ENABLE_MPI ON)

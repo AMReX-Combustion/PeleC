@@ -60,7 +60,4 @@ pelec.diffuse_vel=1
 pelec.sdc_iters = 2
 pelec.flame_trac_name = HO2
 
-pelec.do_mol_AD=1
-eb2.geom_type=all_regular
-
 amrex.signal_handling=0
