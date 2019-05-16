@@ -32,6 +32,7 @@ pelec.diffuse_temp = 1
 pelec.diffuse_vel  = 1
 pelec.diffuse_spec = 0
 pelec.diffuse_enth = 0
+ebd.boundary_grad_stencil_type = 0
 
 # TIME STEP CONTROL
 pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt

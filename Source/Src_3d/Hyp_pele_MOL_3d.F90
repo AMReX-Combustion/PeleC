@@ -27,7 +27,7 @@ module hyp_advection_module
   !> @param[inout] flux1    (modify) flux in X direction on X edges
   !> @param[inout] flux2    (modify) flux in Y direction on Y edges
   !> @param[inout] flux3    (modify) flux in Z direction on Z edges
-  subroutine pc_hyp_mol_flux(lo, hi, &
+    subroutine pc_hyp_mol_flux(lo, hi, &
                      domlo, domhi, &
                      q, qd_lo, qd_hi, &
                      qaux, qa_lo, qa_hi, &
@@ -41,6 +41,7 @@ module hyp_advection_module
                      V, Vlo, Vhi, &
                      D, Dlo, Dhi,&
 #ifdef PELEC_USE_EB
+                     vfrac, vflo, vfhi, &
                      flag, fglo, fghi, &
                      ebg, Nebg, ebflux, nebflux, &
 #endif
@@ -53,9 +54,8 @@ module hyp_advection_module
     use meth_params_module, only : QVAR, NVAR, QPRES, QRHO, QU, QV, QW, &
                                    QFS,  &
                                    QC, QCSML, NQAUX, nadv, &
-                                   URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, UTEMP, UFX, UFA
-
-
+                                   URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, UTEMP, UFX, UFA, &
+                                   eb_small_vfrac
     use slope_module, only : slopex, slopey, slopez
     use actual_network, only : nspec, naux
     use eos_type_module
@@ -87,13 +87,16 @@ module hyp_advection_module
 
 #ifdef PELEC_USE_EB
     integer, intent(in) ::  fglo(3),    fghi(3)
+    integer, intent(in) ::  vflo(3),    vfhi(3)
     integer, intent(in) :: flag(fglo(1):fghi(1),fglo(2):fghi(2),fglo(3):fghi(3))
+    real(amrex_real), intent(in) :: vfrac(vflo(1):vfhi(1),vflo(2):vfhi(2),vflo(3):vfhi(3))
 
     integer, intent(in) :: nebflux
     real(amrex_real), intent(inout) ::   ebflux(0:nebflux-1,1:NVAR)
     integer,            intent(in   ) :: Nebg
     type(eb_bndry_geom),intent(in   ) :: ebg(0:Nebg-1)    
     real(amrex_real) :: eb_norm(3), full_area
+    real(amrex_real) :: sum_kappa, sum_nbrs
 #endif
     double precision, intent(in) ::     q(  qd_lo(1):  qd_hi(1),  qd_lo(2):  qd_hi(2),  qd_lo(3):  qd_hi(3),QVAR)  !> State
     double precision, intent(in) ::  qaux(  qa_lo(1):  qa_hi(1),  qa_lo(2):  qa_hi(2),  qa_lo(3):  qa_hi(3),NQAUX) !> Auxiliary state
@@ -125,6 +128,9 @@ module hyp_advection_module
     double precision :: cavg(VECLEN)
     double precision :: csmall(VECLEN)
 
+    ! Scratch for neighborhood of cut cells
+    integer :: nbr(-1:1,-1:1,-1:1)
+
     ! Riemann solve work arrays
     double precision, dimension(VECLEN) :: u_gd, v_gd, w_gd, &
                                            p_gd, game_gd, re_gd, &
@@ -134,7 +140,7 @@ module hyp_advection_module
     integer :: nextra
     integer, parameter :: coord_type = 0
     integer, parameter :: bc_test_val = 1
-    
+
     type (eos_t) :: eos_state, gdnv_state
 
     integer, parameter :: R_RHO = 1
@@ -718,29 +724,83 @@ module hyp_advection_module
              eb_norm = eb_norm / sqrt(eb_norm(1)**2 + eb_norm(2)**2 + eb_norm(3)**2)
 
 
-             ! Assume left state is the cell centered state - normal veclocity
-             cspeed(vii) = qaux(i,j,k,QC)
+             ! Replace q for cut cell with average of neighborhood so that ebflux is consistent with cell merging
+             call get_neighbor_cells(flag(i,j,k),nbr)
 
-             qtempl(vii,R_UN ) = - q(i,j,k,QU)*eb_norm(1) &
-                  -                q(i,j,k,QV)*eb_norm(2) &
-                  -                q(i,j,k,QW)*eb_norm(3)
- 
-             qtempl(vii,R_UT1) = 0.0
-             qtempl(vii,R_UT2) = 0.0
-             qtempl(vii,R_P  ) = q(i,j,k,QPRES)
-             qtempl(vii,R_RHO) = q(i,j,k,QRHO)
- 
-             do nsp = 1,nspec
-               qtempl(vii,R_Y-1+nsp) = q(i,j,k,QFS-1+nsp) 
-             enddo
- 
-             ! Flip the velocity about the normal for the right state - will use left
-             ! state for remainder of right state
-             qtempr(vii,R_UN  ) = -1.0*qtempl(vii,R_UN)
+             if( vfrac(i,j,k) < eb_small_vfrac ) then
+                nbr(0,0,0) = 0
+                sum_kappa = sum(nbr(-1:1,-1:1,-1:1) * vfrac(i-1:i+1,j-1:j+1,k-1:k+1))
 
-             ! Small and avg c
-             cavg(vii)  =  qaux(i,j,k,QC) 
-             csmall(vii) = qaux(i,j,k,QCSML)
+                ! Construct left state from volume weighted average of neighbourhood
+                sum_nbrs =   sum(nbr(-1:1,-1:1,-1:1) * vfrac(i-1:i+1,j-1:j+1,k-1:k+1) * qaux(i-1:i+1,j-1:j+1,k-1:k+1,QC))
+                cspeed(vii) = sum_nbrs/sum_kappa
+
+                qtempl(vii,R_UN) = 0.0d0
+                sum_nbrs =   sum(nbr(-1:1,-1:1,-1:1) * vfrac(i-1:i+1,j-1:j+1,k-1:k+1) * q(i-1:i+1,j-1:j+1,k-1:k+1,QU))
+                qtempl(vii,R_UN) = qtempl(vii,R_UN) -sum_nbrs/sum_kappa*eb_norm(1)
+
+                sum_nbrs =   sum(nbr(-1:1,-1:1,-1:1) * vfrac(i-1:i+1,j-1:j+1,k-1:k+1) * q(i-1:i+1,j-1:j+1,k-1:k+1,QV))
+                qtempl(vii,R_UN) = qtempl(vii,R_UN) -sum_nbrs/sum_kappa*eb_norm(2)
+
+                sum_nbrs =   sum(nbr(-1:1,-1:1,-1:1) * vfrac(i-1:i+1,j-1:j+1,k-1:k+1) * q(i-1:i+1,j-1:j+1,k-1:k+1,QW))
+                qtempl(vii,R_UN) = qtempl(vii,R_UN) -sum_nbrs/sum_kappa*eb_norm(3)
+
+                qtempl(vii,R_UT1) = 0.0
+                qtempl(vii,R_UT2) = 0.0
+
+                sum_nbrs =   sum(nbr(-1:1,-1:1,-1:1) * vfrac(i-1:i+1,j-1:j+1,k-1:k+1) * q(i-1:i+1,j-1:j+1,k-1:k+1,QPRES))
+                qtempl(vii,R_P  ) = sum_nbrs/sum_kappa
+
+                sum_nbrs =   sum(nbr(-1:1,-1:1,-1:1) * vfrac(i-1:i+1,j-1:j+1,k-1:k+1) * q(i-1:i+1,j-1:j+1,k-1:k+1,QRHO))
+
+                qtempl(vii,R_RHO) = sum_nbrs/sum_kappa
+
+                do nsp = 1,nspec
+                   sum_nbrs =   sum(nbr(-1:1,-1:1,-1:1) * vfrac(i-1:i+1,j-1:j+1,k-1:k+1) * q(i-1:i+1,j-1:j+1,k-1:k+1,QFS-1+nsp))
+                   qtempl(vii,R_Y-1+nsp) = sum_nbrs/sum_kappa
+                enddo
+
+                ! Flip the velocity about the normal for the right state - will use left
+                ! state for remainder of right state
+                qtempr(vii,R_UN  ) = -1.0*qtempl(vii,R_UN)
+
+                ! Small and avg c
+                sum_nbrs =   sum(nbr(-1:1,-1:1,-1:1) * vfrac(i-1:i+1,j-1:j+1,k-1:k+1) * qaux(i-1:i+1,j-1:j+1,k-1:k+1,QC))
+                cavg(vii)  = sum_nbrs/sum_kappa
+
+                sum_nbrs =   sum(nbr(-1:1,-1:1,-1:1) * vfrac(i-1:i+1,j-1:j+1,k-1:k+1) * qaux(i-1:i+1,j-1:j+1,k-1:k+1,QCSML))
+                csmall(vii) = sum_nbrs/sum_kappa
+
+
+             else
+                ! Assume left state is the cell centered state - normal veclocity
+                cspeed(vii) = qaux(i,j,k,QC)
+
+                qtempl(vii,R_UN ) = - q(i,j,k,QU)*eb_norm(1) &
+                     -                q(i,j,k,QV)*eb_norm(2) &
+                     -                q(i,j,k,QW)*eb_norm(3)
+
+                qtempl(vii,R_UT1) = 0.0
+                qtempl(vii,R_UT2) = 0.0
+                qtempl(vii,R_P  ) = q(i,j,k,QPRES)
+                qtempl(vii,R_RHO) = q(i,j,k,QRHO)
+
+                do nsp = 1,nspec
+                   qtempl(vii,R_Y-1+nsp) = q(i,j,k,QFS-1+nsp)
+                enddo
+
+                ! Flip the velocity about the normal for the right state - will use left
+                ! state for remainder of right state
+                qtempr(vii,R_UN  ) = -1.0*qtempl(vii,R_UN)
+
+                ! Small and avg c
+                cavg(vii)  =  qaux(i,j,k,QC)
+                csmall(vii) = qaux(i,j,k,QCSML)
+
+             endif
+
+
+
 
           endif
        enddo
