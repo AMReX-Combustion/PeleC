@@ -63,4 +63,4 @@ amr.plot_vars  =  density Temp
 amr.derive_plot_vars = x_velocity y_velocity z_velocity magvel magvort pressure rhommserror ummserror vmmserror wmmserror pmmserror
 
 #PROBIN FILENAME
-amr.probin_file = mms-3d-4
+amr.probin_file = mms-3d-4.probin

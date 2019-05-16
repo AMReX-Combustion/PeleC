@@ -61,14 +61,14 @@ amr.plot_vars  =  density Temp
 amr.derive_plot_vars = x_velocity y_velocity z_velocity magvel magvort pressure rhommserror ummserror vmmserror wmmserror pmmserror vfrac
 
 #PROBIN FILENAME
-amr.probin_file = probin-rt1
+amr.probin_file = cns_no_amr_eb_3d.probin
 
 # EB
 eb2.geom_type = sphere
 eb2.sphere_radius = 0.25
 eb2.sphere_center = 0.0 0.0  0.0
 eb2.sphere_has_fluid_inside = 0
-pelec.eb_boundary_T = 300.
-pelec.eb_isothermal = 1
+pelec.eb_isothermal = 0
 eb_verbosity = 1
 eos_gamma = 1.4
+ebd.boundary_grad_stencil_type=0
