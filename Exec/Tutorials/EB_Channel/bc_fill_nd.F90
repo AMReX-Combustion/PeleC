@@ -135,25 +135,28 @@ contains
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, UTEMP
     use amrex_constants_module, only: HALF, M_PI
     use prob_params_module, only : Interior, Inflow, Outflow, SlipWall, NoSlipWall, &
-                                   problo, probhi, dim
+                                   problo, probhi, dim, dx_level, domlo_level, domhi_level
+    use amrinfo_module, only: amr_level
     use eos_type_module
     use eos_module
 
     implicit none
 
-    double precision :: x(3),time
+    double precision :: x(3),time,delta(3)
     double precision :: u_int(*),u_ext(*)
-   
+
     integer, optional, intent(out) :: bc_type
     double precision, optional, intent(out) :: bc_params(6)
     double precision, optional, intent(out) :: bc_target(5)
 
     integer :: dir,sgn
     type (eos_t) :: eos_state, eos_state_int
-    double precision :: u, v, w
+    double precision :: u, v, w, rhob, pb, ub, vb, wb
     double precision :: cost, sint, umag_int
     double precision :: relax_U, relax_V, relax_W, relax_T, beta, sigma_out
     integer :: flag_nscbc, which_bc_type
+    double precision :: dx(3), xb(3), xd(3)
+    integer :: domlo(3), domhi(3)
 
     ! flag_nscbc = 0
 
@@ -177,14 +180,14 @@ contains
     !       relax_V = 10.0d0
     !       relax_T = - relax_V
     !       beta = 0.5d0
-          
+
     !       which_bc_type = Inflow
 
     !       u = u0
     !       v = v0
     !       w = w0
     !       eos_state % rho = u_int(URHO)
-    !       eos_state % T = u_int(UTEMP) 
+    !       eos_state % T = u_int(UTEMP)
     !       eos_state % massfrac = 0.d0
     !       eos_state % massfrac(nspec) = 1.d0
     !       call eos_rt(eos_state)
@@ -192,7 +195,7 @@ contains
     !       ! eos_state % p = p0
     !       ! eos_state % T = T0
     !       ! call eos_tp(eos_state)
-          
+
     !    else if (sgn == -1) then
 
     !       which_bc_type = Outflow
@@ -201,12 +204,12 @@ contains
 
     !       u = 0.d0
     !       v = 0.d0
-    !       w = 0.d0          
+    !       w = 0.d0
     !       eos_state % massfrac(1) = 1.d0
     !       eos_state % rho = rho0
     !       eos_state % T = T0
     !       call eos_rt(eos_state)
-          
+
     !    end if
     ! end if
 
@@ -235,12 +238,61 @@ contains
     !    bc_target(5) = eos_state%p             ! Target for Outflow
     ! end if
 
+    ! ! ==================================================================
+    ! call build(eos_state)
+
+    ! cost = cos(M_PI/180.d0 * angle)
+    ! sint = sin(M_PI/180.d0 * angle)
+
+    ! if (dir == 1) then
+    !    if (sgn == 1) then
+    !       eos_state % p = dpdx * (x(1) * cost + x(2) * sint) + p0
+    !       eos_state % T = T0
+    !       eos_state % massfrac    = 0.d0
+    !       eos_state % massfrac(1) = 1.d0
+    !       call eos_tp(eos_state)
+
+    !       u = u_int(UMX) / u_int(URHO)
+    !       v = u_int(UMY) / u_int(URHO)
+    !       w = u_int(UMZ) / u_int(URHO)
+    !       umag_int = sqrt(u**2 + v**2 + w**2)
+    !       u = umag_int * cost
+    !       v = umag_int * sint
+    !       w = 0.d0
+
+    !    else if (sgn == -1) then
+    !       eos_state % p = dpdx * (x(1) * cost + x(2) * sint) + p0
+    !       eos_state % T = T0
+    !       eos_state % massfrac    = 0.d0
+    !       eos_state % massfrac(1) = 1.d0
+    !       call eos_tp(eos_state)
+
+    !       u = u_int(UMX) / u_int(URHO)
+    !       v = u_int(UMY) / u_int(URHO)
+    !       w = u_int(UMZ) / u_int(URHO)
+    !    end if
+    ! end if
+
+    ! u_ext(URHO)            = eos_state % rho
+    ! u_ext(UFS:UFS+nspec-1) = eos_state % massfrac * eos_state % rho
+    ! u_ext(UMX)             = eos_state % rho * u
+    ! u_ext(UMY)             = eos_state % rho * v
+    ! u_ext(UMZ)             = eos_state % rho * w
+    ! u_ext(UTEMP)           = eos_state % T
+    ! u_ext(UEINT)           = eos_state % rho *  eos_state % e
+    ! u_ext(UEDEN)           = eos_state % rho * (eos_state % e + 0.5d0 * (u**2 + v**2 + w**2))
+
     ! ==================================================================
     call build(eos_state)
+    call build(eos_state_int)
+
+    dx(:) = dx_level(:,amr_level)
+    domlo(:) = domlo_level(:,amr_level)
+    domhi(:) = domhi_level(:,amr_level)
 
     cost = cos(M_PI/180.d0 * angle)
     sint = sin(M_PI/180.d0 * angle)
-    
+
     if (dir == 1) then
        if (sgn == 1) then
           eos_state % p = dpdx * (x(1) * cost + x(2) * sint) + p0
@@ -258,15 +310,35 @@ contains
           w = 0.d0
 
        else if (sgn == -1) then
-          eos_state % p = dpdx * (x(1) * cost + x(2) * sint) + p0
-          eos_state % T = T0
+
+          ! Following Blazek p 279, eq. 8.23
+
+          ! Interior state (point d)
+          xd = (domhi(:) + 1) * dx - HALF * dx
+          eos_state_int % rho = u_int(URHO)
+          eos_state_int % T = u_int(UTEMP)
+          eos_state_int % massfrac    = 0.d0
+          eos_state_int % massfrac(1) = 1.d0
+          call eos_rt(eos_state_int)
+
+          ! Boundary state (point b)
+          xb = (domhi(:) + 1) * dx
+          pb = dpdx * (xb(1) * cost + xb(2) * sint) + p0
+          rhob = u_int(URHO) + (pb - eos_state_int % p) / (eos_state_int % cs ** 2)
+          ub = u_int(UMX) / u_int(URHO) + cost * (eos_state_int % p - pb) / (eos_state_int % rho * eos_state_int % cs)
+          vb = u_int(UMY) / u_int(URHO) + sint * (eos_state_int % p - pb) / (eos_state_int % rho * eos_state_int % cs)
+          wb = u_int(UMZ) / u_int(URHO)
+
+          ! Ghost state (point a). Linear extrapolation from d and b
+          eos_state % rho = (rhob - eos_state_int % rho) / (xb(1) - xd(1)) * (x(1) - xd(1)) + eos_state_int % rho
+          eos_state % p = (pb - eos_state_int % p) / (xb(1) - xd(1)) * (x(1) - xd(1)) + eos_state_int % p
           eos_state % massfrac    = 0.d0
           eos_state % massfrac(1) = 1.d0
-          call eos_tp(eos_state)
+          call eos_rp(eos_state)
 
-          u = u_int(UMX) / u_int(URHO)
-          v = u_int(UMY) / u_int(URHO)
-          w = u_int(UMZ) / u_int(URHO)
+          u = (ub - u_int(UMX) / u_int(URHO)) / (xb(1) - xd(1)) * (x(1) - xd(1)) + u_int(UMX) / u_int(URHO)
+          v = (vb - u_int(UMY) / u_int(URHO)) / (xb(1) - xd(1)) * (x(1) - xd(1)) + u_int(UMY) / u_int(URHO)
+          w = (wb - u_int(UMZ) / u_int(URHO)) / (xb(1) - xd(1)) * (x(1) - xd(1)) + u_int(UMZ) / u_int(URHO)
        end if
     end if
 
@@ -294,7 +366,7 @@ contains
     ! u_ext(UEINT)           = rho0 * eint0
     ! u_ext(UEDEN)           = rho0 * (eint0 + HALF * (u0**2 + v0**2 + w0**2))
     ! u_ext(UTEMP)           = T0
-    
+
     call destroy(eos_state)
 
   end subroutine bcnormal
