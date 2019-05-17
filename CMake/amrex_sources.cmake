@@ -9,7 +9,7 @@ function(get_amrex_sources)
      ${AMREX_SOURCE_DIR}/AMReX_Extrapolater.cpp
      ${AMREX_SOURCE_DIR}/AMReX_StateData.cpp
      ${AMREX_SOURCE_DIR}/AMReX_StateDescriptor.cpp
-     ${AMREX_SOURCE_DIR}/AMReX_extrapolater_${PELEC_DIM}d.f90
+     ${AMREX_SOURCE_DIR}/AMReX_extrapolater_${AMREX_DIM}d.f90
    )
    set(AMREX_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Submodules/AMReX/Src/AmrCore")
    add_sources(GlobalSourceList
@@ -19,9 +19,9 @@ function(get_amrex_sources)
      ${AMREX_SOURCE_DIR}/AMReX_ErrorList.cpp
      ${AMREX_SOURCE_DIR}/AMReX_FLUXREG_nd.F90
      ${AMREX_SOURCE_DIR}/AMReX_FillPatchUtil.cpp
-     ${AMREX_SOURCE_DIR}/AMReX_FillPatchUtil_${PELEC_DIM}d.F90
+     ${AMREX_SOURCE_DIR}/AMReX_FillPatchUtil_${AMREX_DIM}d.F90
      ${AMREX_SOURCE_DIR}/AMReX_FluxRegister.cpp
-     ${AMREX_SOURCE_DIR}/AMReX_INTERP_${PELEC_DIM}D.F90
+     ${AMREX_SOURCE_DIR}/AMReX_INTERP_${AMREX_DIM}D.F90
      ${AMREX_SOURCE_DIR}/AMReX_Interpolater.cpp
      ${AMREX_SOURCE_DIR}/AMReX_TagBox.cpp
    )
@@ -56,7 +56,7 @@ function(get_amrex_sources)
      ${AMREX_SOURCE_DIR}/AMReX_DArena.cpp
      ${AMREX_SOURCE_DIR}/AMReX_DistributionMapping.cpp
      ${AMREX_SOURCE_DIR}/AMReX_FArrayBox.cpp
-     ${AMREX_SOURCE_DIR}/AMReX_FILCC_${PELEC_DIM}D.F90
+     ${AMREX_SOURCE_DIR}/AMReX_FILCC_${AMREX_DIM}D.F90
      ${AMREX_SOURCE_DIR}/AMReX_FPC.cpp
      ${AMREX_SOURCE_DIR}/AMReX_FabAllocator.cpp
      ${AMREX_SOURCE_DIR}/AMReX_FabArrayBase.cpp
@@ -149,7 +149,7 @@ function(get_amrex_sources)
       ${AMREX_SOURCE_DIR}/AMReX_plotfile_mod.F90
       ${AMREX_SOURCE_DIR}/AMReX_vismf_fi.cpp
    )
-   if(PELEC_ENABLE_EB)
+   if(AMREX_ENABLE_EB)
      set(AMREX_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Submodules/AMReX/Src/EB")
      add_sources(GlobalSourceList
         ${AMREX_SOURCE_DIR}/AMReX_EB2.cpp
@@ -162,11 +162,11 @@ function(get_amrex_sources)
         ${AMREX_SOURCE_DIR}/AMReX_EBFArrayBox.cpp
         ${AMREX_SOURCE_DIR}/AMReX_EBFabFactory.cpp
         ${AMREX_SOURCE_DIR}/AMReX_EBFluxRegister.cpp
-        ${AMREX_SOURCE_DIR}/AMReX_EBFluxRegister_${PELEC_DIM}d.F90
+        ${AMREX_SOURCE_DIR}/AMReX_EBFluxRegister_${AMREX_DIM}d.F90
         ${AMREX_SOURCE_DIR}/AMReX_EBFluxRegister_nd.F90
         ${AMREX_SOURCE_DIR}/AMReX_EBInterpolater.cpp
         ${AMREX_SOURCE_DIR}/AMReX_EBMultiFabUtil.cpp
-        ${AMREX_SOURCE_DIR}/AMReX_EBMultiFabUtil_${PELEC_DIM}d.F90
+        ${AMREX_SOURCE_DIR}/AMReX_EBMultiFabUtil_${AMREX_DIM}d.F90
         ${AMREX_SOURCE_DIR}/AMReX_EBMultiFabUtil_nd.F90
         ${AMREX_SOURCE_DIR}/AMReX_EB_LSCoreBase.cpp
         ${AMREX_SOURCE_DIR}/AMReX_EB_Tagging.F90
@@ -178,9 +178,9 @@ function(get_amrex_sources)
         ${AMREX_SOURCE_DIR}/AMReX_MultiCutFab.cpp
         ${AMREX_SOURCE_DIR}/AMReX_compute_normals.F90
         ${AMREX_SOURCE_DIR}/AMReX_distFcnElement.cpp
-        ${AMREX_SOURCE_DIR}/AMReX_eb2_${PELEC_DIM}d.F90
+        ${AMREX_SOURCE_DIR}/AMReX_eb2_${AMREX_DIM}d.F90
         ${AMREX_SOURCE_DIR}/AMReX_ebcellflag_mod.F90
-        ${AMREX_SOURCE_DIR}/AMReX_ebinterp_${PELEC_DIM}d.F90
+        ${AMREX_SOURCE_DIR}/AMReX_ebinterp_${AMREX_DIM}d.F90
      )
      set(AMREX_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Submodules/AMReX/Src/LinearSolvers/MLMG")
      add_sources(GlobalSourceList
