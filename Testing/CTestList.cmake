@@ -83,8 +83,6 @@ endfunction(add_test_v1)
 
 # Verification test with multiple resolutions (each test runs on maximum number of processes on node)
 function(add_test_v2 TEST_NAME TEST_DEPENDENCY)
-    # Create list of resolutions we want to test with
-    set(RESOLUTION_LIST 8 12 16 20)
     # Make sure run command is cleared before we construct it
     unset(MASTER_RUN_COMMAND)
     # Set variables for respective binary and source directories for the test
@@ -98,6 +96,11 @@ function(add_test_v2 TEST_NAME TEST_DEPENDENCY)
     set(EXE_OPTIONS_FILE ${TEST_DEPENDENCY_SOURCE_DIR}/exe_options.cmake)
     # Define our test options
     include(${EXE_OPTIONS_FILE})
+    # Create list of resolutions we want to test with
+    set(RESOLUTION_LIST 8 12 16 20)
+    if(${PELEC_DIM} EQUAL 1)
+      set(RESOLUTION_LIST 8 16 32 64)
+    endif()
     # Get last item in resolution list so we can find out when we are on the last item in our loop
     list(GET RESOLUTION_LIST -1 LAST_RESOLUTION_IN_LIST)
     # Create the commands to run for each resolution
