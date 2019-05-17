@@ -1,4 +1,4 @@
-function(build_amrex_library)
+function(build_amrex_library AMREX_DIM AMREX_ENABLE_EB)
   # Set library suffixes for EB enabled
   if(AMREX_ENABLE_EB)
     set(EB "eb")
@@ -77,23 +77,23 @@ function(build_amrex_library)
           RUNTIME DESTINATION bin
           ARCHIVE DESTINATION lib
           LIBRARY DESTINATION lib)
-endfunction(build_amrex_library)
+endfunction(build_amrex_library AMREX_DIM AMREX_ENABLE_EB)
 
 function(build_amrex)
-  if(ENABLE_TESTING)
+  if(ENABLE_TESTS)
     # Build all libraries if testing is enabled
     foreach(AMREX_ENABLE_EB IN ITEMS TRUE FALSE)
       foreach(AMREX_DIM IN ITEMS 1 2 3)
         if(${AMREX_DIM} EQUAL 1 AND AMREX_ENABLE_EB)
           continue()
         endif()
-        build_amrex_library()
+        build_amrex_library(${AMREX_DIM} ${AMREX_ENABLE_EB})
       endforeach()
     endforeach()
   else()
     # Otherwise only build the necessary library for the exe
     set(AMREX_ENABLE_EB ${PELEC_ENABLE_EB})
     set(AMREX_DIM ${PELEC_DIM})
-    build_amrex_library()
+    build_amrex_library(${AMREX_DIM} ${AMREX_ENABLE_EB})
   endif()
 endfunction(build_amrex)
