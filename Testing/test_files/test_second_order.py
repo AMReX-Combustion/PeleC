@@ -1,4 +1,3 @@
-
 # ========================================================================
 #
 # Imports
@@ -88,7 +87,7 @@ def load_pelec_error(fdir, theory_order):
         lst.append(
             [
                 res,
-                1. / res,
+                1.0 / res,
                 df["rho_mms_err"].iloc[idx],
                 df["u_mms_err"].iloc[idx],
                 df["v_mms_err"].iloc[idx],
@@ -197,6 +196,7 @@ def plot_errors(fdir, edf):
         plt.tight_layout()
         plt.savefig(os.path.join(fdir, field + "_error.png"), format="png")
 
+
 # ========================================================================
 #
 # Test definitions
@@ -208,6 +208,7 @@ class MMSTestCase(unittest.TestCase):
     def setUp(self):
 
         self.theory_order = 2.0
+        self.tol = 2e-1
 
     def test_second_order(self):
         """Is this test second order accurate?"""
@@ -221,7 +222,8 @@ class MMSTestCase(unittest.TestCase):
         plot_errors(fdir, edf)
 
         # Test against theoretical OOA
-        npt.assert_allclose(np.array(ooa.iloc[-1]), self.theory_order, rtol=2e-1)
+        npt.assert_allclose(np.array(ooa.iloc[-1]) > self.theory_order - self.tol, True)
+
 
 # ========================================================================
 #
