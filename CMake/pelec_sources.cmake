@@ -1,6 +1,9 @@
 #Aggregate PeleC source files
 function(get_pelec_sources pelec_exe_name)
 
+  if(${PELEC_DIM} EQUAL 1)
+    set(PELEC_ENABLE_EB OFF)
+  endif()
   set(PELEC_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Source")
   add_sources(GlobalSourceList
      ${PELEC_SOURCE_DIR}/PeleC.cpp

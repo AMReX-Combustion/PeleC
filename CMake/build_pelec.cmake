@@ -17,9 +17,14 @@ function(build_pelec pelec_exe_name pelec_exe_options_file)
 
   #message("-- PELEC_DIM = ${PELEC_DIM}D")
 
+  if(PELEC_ENABLE_EB)
+    set(EB "eb")
+  else()
+    unset(EB)
+  endif()
+
   #Expose functions we want to be able to call
   include(${CMAKE_SOURCE_DIR}/CMake/add_source_function.cmake)
-  include(${CMAKE_SOURCE_DIR}/CMake/amrex_sources.cmake)
   include(${CMAKE_SOURCE_DIR}/CMake/pelephysics_sources.cmake)
   include(${CMAKE_SOURCE_DIR}/CMake/pelec_sources.cmake)
 
@@ -56,7 +61,6 @@ function(build_pelec pelec_exe_name pelec_exe_options_file)
   endif()
 
   #Aggregate amrex and pelephysics source files
-  get_amrex_sources()
   get_pelephysics_sources()
   get_pelec_sources(${pelec_exe_name})
   
@@ -68,9 +72,10 @@ function(build_pelec pelec_exe_name pelec_exe_options_file)
   foreach(PELEC_EXTRA_SOURCE ${PELEC_EXTRA_SOURCES})
     list(APPEND MY_EXTRA_SOURCES ${PELEC_EXTRA_SOURCE})
   endforeach()
- 
+
   #Create an executable based on all the source files we aggregated
   add_executable(${pelec_exe_name} ${PELE_SOURCES} ${MY_EXTRA_SOURCES})
+  target_link_libraries(${pelec_exe_name} PRIVATE amrex${PELEC_DIM}d${EB})
 
   #AMReX definitions
   target_compile_definitions(${pelec_exe_name} PRIVATE BL_SPACEDIM=${PELEC_DIM})
@@ -82,9 +87,10 @@ function(build_pelec pelec_exe_name pelec_exe_options_file)
   target_compile_definitions(${pelec_exe_name} PRIVATE $<$<COMPILE_LANGUAGE:Fortran>:BL_LANG_FORT>)
   target_compile_definitions(${pelec_exe_name} PRIVATE $<$<COMPILE_LANGUAGE:Fortran>:AMREX_LANG_FORT>)
 
-  if(${CMAKE_BUILD_TYPE} MATCHES "Release")
-    target_compile_definitions(${pelec_exe_name} PRIVATE NDEBUG)
-  endif()
+  # CMake BUILD_TYPE should already define this
+  #if(${CMAKE_BUILD_TYPE} MATCHES "Release")
+  #  target_compile_definitions(${pelec_exe_name} PRIVATE NDEBUG)
+  #endif()
 
   if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     target_compile_definitions(${pelec_exe_name} PRIVATE BL_Darwin)
@@ -92,7 +98,7 @@ function(build_pelec pelec_exe_name pelec_exe_options_file)
   endif()
 
   #PeleC definitions
-  if(${PELEC_ENABLE_EB})
+  if(PELEC_ENABLE_EB)
     target_compile_definitions(${pelec_exe_name} PRIVATE PELE_USE_EB)
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_EB)
     target_compile_definitions(${pelec_exe_name} PRIVATE AMREX_USE_EB)
@@ -127,7 +133,8 @@ function(build_pelec pelec_exe_name pelec_exe_options_file)
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/Submodules/AMReX/Src/Boundary)
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/Submodules/AMReX/Tools/C_scripts)
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/Submodules/AMReX/Src/F_Interfaces/Base)
-  if(${PELEC_ENABLE_EB})
+  target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${CMAKE_BINARY_DIR}/amrex${PELEC_DIM}d${EB}_fortran_modules)
+  if(PELEC_ENABLE_EB)
     target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/Submodules/AMReX/Src/EB)
   endif()
 
