@@ -39,6 +39,7 @@ module hyp_advection_module
                      V, Vlo, Vhi, &
                      D, Dlo, Dhi,&
 #ifdef PELEC_USE_EB
+                     vfrac, vflo, vfhi, &
                      flag, fglo, fghi, &
                      ebg, Nebg, ebflux, nebflux, &
 #endif
@@ -76,8 +77,10 @@ module hyp_advection_module
     double precision, intent(in) :: h(2)
 
 #ifdef PELEC_USE_EB
+    integer, intent(in) ::  vflo(2),    vfhi(2)
     integer, intent(in) ::  fglo(2),    fghi(2)
     integer, intent(in) :: flag(fglo(1):fghi(1),fglo(2):fghi(2))
+    real(amrex_real), intent(in) :: vfrac(vflo(1):vfhi(1),vflo(2):vfhi(2))
 
     integer, intent(in) :: nebflux
     real(amrex_real), intent(inout) ::   ebflux(0:nebflux-1,1:NVAR)
