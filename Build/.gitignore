@@ -13,3 +13,4 @@ rules.ninja
 cmake_install.cmake
 fcompare
 fcompare_fortran_modules
+*amrex*.a

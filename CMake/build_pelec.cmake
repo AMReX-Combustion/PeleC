@@ -87,9 +87,10 @@ function(build_pelec pelec_exe_name pelec_exe_options_file)
   target_compile_definitions(${pelec_exe_name} PRIVATE $<$<COMPILE_LANGUAGE:Fortran>:BL_LANG_FORT>)
   target_compile_definitions(${pelec_exe_name} PRIVATE $<$<COMPILE_LANGUAGE:Fortran>:AMREX_LANG_FORT>)
 
-  if(${CMAKE_BUILD_TYPE} MATCHES "Release")
-    target_compile_definitions(${pelec_exe_name} PRIVATE NDEBUG)
-  endif()
+  # CMake BUILD_TYPE should already define this
+  #if(${CMAKE_BUILD_TYPE} MATCHES "Release")
+  #  target_compile_definitions(${pelec_exe_name} PRIVATE NDEBUG)
+  #endif()
 
   if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     target_compile_definitions(${pelec_exe_name} PRIVATE BL_Darwin)
