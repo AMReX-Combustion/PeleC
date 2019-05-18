@@ -70,9 +70,11 @@ INCLUDE_LOCATIONS += $(REACTIONS_HOME) $(REACTIONS_PATH)
 VPATH_LOCATIONS   += $(REACTIONS_HOME) $(REACTIONS_PATH)
 ifdef Chemistry_Model
   CHEM_HOME = $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism/Models/$(Chemistry_Model)
-  VPATH_LOCATIONS += $(CHEM_HOME)
-  Bpack += $(CHEM_HOME)/Make.package
-  Blocs += $(CHEM_HOME)
+  CHEM_ALL  = $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism/Models
+  VPATH_LOCATIONS += $(CHEM_HOME) $(CHEM_ALL)
+  Bpack += $(CHEM_HOME)/Make.package \
+           $(CHEM_ALL)/Make.package
+  Blocs += $(CHEM_HOME) $(CHEM_ALL)
 
   CHEM_HOME1 = $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism
   VPATH_LOCATIONS += $(CHEM_HOME1)
