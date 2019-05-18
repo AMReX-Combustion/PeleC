@@ -133,7 +133,7 @@ function(build_pelec pelec_exe_name pelec_exe_options_file)
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/Submodules/AMReX/Src/Boundary)
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/Submodules/AMReX/Tools/C_scripts)
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/Submodules/AMReX/Src/F_Interfaces/Base)
-  target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${CMAKE_BINARY_DIR}/amrex${PELEC_DIM}d${EB}_fortran_modules)
+  target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${CMAKE_BINARY_DIR}/fortran_modules/amrex${PELEC_DIM}d${EB}_fortran_modules)
   if(PELEC_ENABLE_EB)
     target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/Submodules/AMReX/Src/EB)
   endif()
@@ -174,10 +174,11 @@ function(build_pelec pelec_exe_name pelec_exe_options_file)
 
   #Keep our Fortran module files confined to a unique directory for each executable 
   set_target_properties(${pelec_exe_name} PROPERTIES Fortran_MODULE_DIRECTORY
-                       "${CMAKE_BINARY_DIR}/${pelec_exe_name}_fortran_modules")
+                       "${CMAKE_BINARY_DIR}/fortran_modules/${pelec_exe_name}_fortran_modules")
 
-  #Create directory unique to executable to store generated files  
-  file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${pelec_exe_name}_generated_files)
+  #Create directory unique to executable to store generated files
+  set(GENERATED_FILES_DIR ${CMAKE_BINARY_DIR}/generated_files/${pelec_exe_name}_generated_files)
+  file(MAKE_DIRECTORY ${GENERATED_FILES_DIR})
 
   set(PARAMETER_DIRS "")
   string(APPEND PARAMETER_DIRS " ${CMAKE_SOURCE_DIR}/Submodules/PelePhysics/Eos/_parameters")
@@ -195,8 +196,7 @@ function(build_pelec pelec_exe_name pelec_exe_options_file)
         COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/Submodules/AMReX/Tools/F_scripts/write_probin.py
         -t ${CMAKE_SOURCE_DIR}/Source/extern_probin.template
         -o extern.f90 -n extern --pa "${PARAMETER_DIRS}"
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${pelec_exe_name}_generated_files
-        BYPRODUCTS ${CMAKE_BINARY_DIR}/${pelec_exe_name}_generated_files/extern.f90
+        WORKING_DIRECTORY ${GENERATED_FILES_DIR} BYPRODUCTS ${GENERATED_FILES_DIR}/extern.f90
         COMMENT "Generating extern.f90"
      )
 
@@ -207,8 +207,7 @@ function(build_pelec pelec_exe_name pelec_exe_options_file)
         --COMP ${CMAKE_C_COMPILER_ID} --COMP_VERSION ${CMAKE_C_COMPILER_VERSION}
         --FCOMP ${CMAKE_Fortran_COMPILER_ID} --FCOMP_VERSION ${CMAKE_Fortran_COMPILER_VERSION}
         --GIT "${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/Submodules/AMReX ${CMAKE_SOURCE_DIR}/Submodules/PelePhysics"
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${pelec_exe_name}_generated_files
-        BYPRODUCTS ${CMAKE_BINARY_DIR}/${pelec_exe_name}_generated_files/AMReX_buildInfo.cpp
+        WORKING_DIRECTORY ${GENERATED_FILES_DIR} BYPRODUCTS ${GENERATED_FILES_DIR}/AMReX_buildInfo.cpp
         COMMENT "Generating AMReX_buildInfo.cpp"
      )                  
   endif()

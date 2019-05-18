@@ -144,7 +144,7 @@ function(get_pelec_sources pelec_exe_name)
 
   #Add generated source files
   add_sources(GlobalSourceList
-     ${CMAKE_BINARY_DIR}/${pelec_exe_name}_generated_files/extern.f90
-     ${CMAKE_BINARY_DIR}/${pelec_exe_name}_generated_files/AMReX_buildInfo.cpp
+     ${CMAKE_BINARY_DIR}/generated_files/${pelec_exe_name}_generated_files/extern.f90
+     ${CMAKE_BINARY_DIR}/generated_files/${pelec_exe_name}_generated_files/AMReX_buildInfo.cpp
   )
 endfunction(get_pelec_sources pelec_exe_name)

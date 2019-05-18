@@ -45,7 +45,7 @@ function(build_fcompare)
  
   #Keep our Fortran module files confined to a unique directory for each executable 
   set_target_properties(fcompare PROPERTIES Fortran_MODULE_DIRECTORY
-                       "${CMAKE_BINARY_DIR}/fcompare_fortran_modules")
+                       "${CMAKE_BINARY_DIR}/fortran_modules/fcompare_fortran_modules")
 
   #Define what we want to be installed during a make install 
   install(TARGETS fcompare

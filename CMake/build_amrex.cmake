@@ -56,7 +56,7 @@ function(build_amrex_library AMREX_DIM AMREX_ENABLE_EB)
   target_include_directories(amrex${AMREX_DIM}d${EB} SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/Submodules/AMReX/Src/Boundary)
   target_include_directories(amrex${AMREX_DIM}d${EB} SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/Submodules/AMReX/Tools/C_scripts)
   target_include_directories(amrex${AMREX_DIM}d${EB} SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/Submodules/AMReX/Src/F_Interfaces/Base)
-  target_include_directories(amrex${AMREX_DIM}d${EB} SYSTEM PRIVATE ${CMAKE_BINARY_DIR}/amrex${AMREX_DIM}d${EB}_fortran_modules)
+  target_include_directories(amrex${AMREX_DIM}d${EB} SYSTEM PRIVATE ${CMAKE_BINARY_DIR}/fortran_modules/amrex${AMREX_DIM}d${EB}_fortran_modules)
   if(AMREX_ENABLE_EB)
     target_include_directories(amrex${AMREX_DIM}d${EB} SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/Submodules/AMReX/Src/EB)
   endif()
@@ -70,7 +70,7 @@ function(build_amrex_library AMREX_DIM AMREX_ENABLE_EB)
 
   #Keep our Fortran module files confined to a unique directory for each executable 
   set_target_properties(amrex${AMREX_DIM}d${EB} PROPERTIES Fortran_MODULE_DIRECTORY
-                       "${CMAKE_BINARY_DIR}/amrex${AMREX_DIM}d${EB}_fortran_modules")
+                       "${CMAKE_BINARY_DIR}/fortran_modules/amrex${AMREX_DIM}d${EB}_fortran_modules")
 
   #Define what we want to be installed during a make install 
   install(TARGETS amrex${AMREX_DIM}d${EB}
