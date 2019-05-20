@@ -119,12 +119,16 @@ function(add_test_v2 TEST_NAME TEST_DEPENDENCY)
       elseif(${PELEC_DIM} EQUAL 1)
         set(NCELLS "${RESOLUTION}")
       endif()
+      # Set the command to delete files from previous test runs in each resolution
+      set(DELETE_PREVIOUS_FILES_COMMAND "rm mmslog datlog || true")
       # Set the run command for this resolution
       set(RUN_COMMAND_${RESOLUTION} "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${PROCESSES} ${MPIEXEC_PREFLAGS} ${TEST_DEPENDENCY_BINARY_DIR}/PeleC-${TEST_DEPENDENCY} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${RESOLUTION}/${TEST_NAME}.i")
       # Set some runtime options for each resolution
       set(RUNTIME_OPTIONS_${RESOLUTION} "amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.probin_file=${TEST_NAME}.probin amr.n_cell=${NCELLS}")
       # Construct our large run command with everything &&'d together
       string(APPEND MASTER_RUN_COMMAND "cd ${CURRENT_TEST_BINARY_DIR}/${RESOLUTION}")
+      string(APPEND MASTER_RUN_COMMAND " && ")
+      string(APPEND MASTER_RUN_COMMAND "${DELETE_PREVIOUS_FILES_COMMAND}")
       string(APPEND MASTER_RUN_COMMAND " && ")
       string(APPEND MASTER_RUN_COMMAND "${RUN_COMMAND_${RESOLUTION}} ${RUNTIME_OPTIONS_${RESOLUTION}}")
       # Add another " && " unless we are on the last resolution in the list
