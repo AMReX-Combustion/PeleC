@@ -72,7 +72,7 @@ function(add_test_v1 TEST_NAME TEST_DEPENDENCY NP)
     # Define our test options
     include(${EXE_OPTIONS_FILE})
     # Define our main run command
-    set(RUN_COMMAND "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${MPIEXEC_PREFLAGS} ${TEST_DEPENDENCY_BINARY_DIR}/PeleC-${TEST_DEPENDENCY} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i")
+    set(RUN_COMMAND "rm mmslog datlog || true && ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${MPIEXEC_PREFLAGS} ${TEST_DEPENDENCY_BINARY_DIR}/PeleC-${TEST_DEPENDENCY} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i")
     # Set some default runtime options for all tests in this category
     set(RUNTIME_OPTIONS "amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.probin_file=${TEST_NAME}.probin")
     # Add test and actual test commands to CTest database
