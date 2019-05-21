@@ -85,7 +85,8 @@ function(set_compile_flags)
       list(APPEND CMAKE_CXX_FLAGS "-faligned-new")
     endif()
   else()
-    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang" OR
+       "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" )
       # Avoid warning about explicit vectorization not happening in AMReX
       list(APPEND CMAKE_CXX_FLAGS "-Wno-pass-failed")
       list(APPEND CMAKE_C_FLAGS "-Wno-pass-failed")
