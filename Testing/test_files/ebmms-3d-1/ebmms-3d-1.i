@@ -1,5 +1,5 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
-max_step = 1000000
+max_step = 100
 stop_time = 0.000005
 
 # PROBLEM SIZE & GEOMETRY
@@ -61,7 +61,7 @@ amr.plot_vars  =  density Temp
 amr.derive_plot_vars = x_velocity y_velocity z_velocity magvel magvort pressure rhommserror ummserror vmmserror wmmserror pmmserror vfrac
 
 #PROBIN FILENAME
-amr.probin_file = probin
+amr.probin_file = ebmms-3d-1.probin
 
 # EB
 eb2.geom_type = sphere

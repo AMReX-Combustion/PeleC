@@ -3,7 +3,6 @@
 # Imports
 #
 # ========================================================================
-import sys
 import os
 import re
 import numpy as np
@@ -13,7 +12,6 @@ import matplotlib as mpl
 mpl.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
-import glob
 import unittest
 
 # ========================================================================

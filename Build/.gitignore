@@ -5,8 +5,8 @@ CMakeFiles
 CTestCustom.cmake
 CTestTestfile.cmake
 DartConfiguration.tcl
-*_generated_files
-*_fortran_modules/
+generated_files/
+fortran_modules/
 Testing
 build.ninja
 rules.ninja
