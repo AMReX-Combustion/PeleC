@@ -27,3 +27,7 @@ Non-reacting flow around a diamond-shaped body
 EB_Channel
 ~~~~~~~~~~
 Laminar non-reacting flow in a pressure-driven channel (oriented at an angle with respect to the grid)
+
+EB_stube
+~~~~~~~~~~
+Shock tube problem in a rotating tube (using similar infrastructure as EB_Channel)
