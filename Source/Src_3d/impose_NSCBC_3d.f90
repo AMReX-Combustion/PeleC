@@ -1184,7 +1184,7 @@ end subroutine impose_NSCBC
       uin(hop,j,k,UMZ  ) =  q(hop,j,k,QW ) * eos_state % rho
       uin(hop,j,k,UEINT) = eos_state % rho   *  eos_state % e
       uin(hop,j,k,UEDEN) = eos_state % rho  &
-         * (eos_state % e + 0.5d0 * (uin(hop,j,k,UMX)**2 + uin(hop,j,k,UMY)**2 + uin(hop,j,k,UMZ)**2))
+         * (eos_state % e + 0.5d0 * (q(hop,j,k,QU)**2 + q(hop,j,k,QV)**2 + q(hop,j,k,QW)**2))
       uin(hop,j,k,UTEMP) = eos_state % T
       do n=1, nspec
          uin(hop,j,k,UFS+n-1) = eos_state % rho  *  eos_state % massfrac(n)
@@ -1293,7 +1293,7 @@ end subroutine impose_NSCBC
       uin(i,hop,k,UMZ  )  = q(i,hop,k,QW ) * eos_state % rho 
       uin(i,hop,k,UEINT) = eos_state % rho   *  eos_state % e
       uin(i,hop,k,UEDEN) = eos_state % rho  &
-          * (eos_state % e + 0.5d0 * (uin(i,hop,k,UMX)**2 + uin(i,hop,k,UMY)**2 + uin(i,hop,k,UMZ)**2))
+          * (eos_state % e + 0.5d0 * (q(i,hop,k,QU)**2 + q(i,hop,k,QV)**2 + q(i,hop,k,QW)**2))
       uin(i,hop,k,UTEMP) = eos_state % T
       do n=1, nspec
          uin(i,hop,k,UFS+n-1) = eos_state % rho  *  eos_state % massfrac(n)
@@ -1402,7 +1402,7 @@ end subroutine impose_NSCBC
       uin(i,j,hop,UMZ  )  = q(i,j,hop,QW ) * eos_state % rho 
       uin(i,j,hop,UEINT) = eos_state % rho   *  eos_state % e
       uin(i,j,hop,UEDEN) = eos_state % rho  &
-          * (eos_state % e + 0.5d0 * (uin(i,j,hop,UMX)**2 + uin(i,j,hop,UMY)**2 + uin(i,j,hop,UMZ)**2))
+          * (eos_state % e + 0.5d0 * (q(i,j,hop,QU)**2 + q(i,j,hop,QV)**2 + q(i,j,hop,QW)**2))
       uin(i,j,hop,UTEMP) = eos_state % T
       do n=1, nspec
          uin(i,j,hop,UFS+n-1) = eos_state % rho  *  eos_state % massfrac(n)
