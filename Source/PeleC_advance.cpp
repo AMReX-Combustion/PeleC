@@ -114,7 +114,7 @@ PeleC::do_mol_advance(Real time,
         )
       {
 	construct_old_source(src_list[n], time, dt, amr_iteration, amr_ncycle, 0, 0);
-        MultiFab::Saxpy(S, 1.0, *old_sources[n], 0, 0, NUM_STATE, 0);
+        MultiFab::Saxpy(S, 1.0, *old_sources[src_list[n]], 0, 0, NUM_STATE, 0);
       }
     }
 
@@ -150,7 +150,7 @@ PeleC::do_mol_advance(Real time,
       )
     {
       construct_new_source(src_list[n], time + dt, dt, amr_iteration, amr_ncycle, 0, 0);
-      MultiFab::Saxpy(S, 1.0, *new_sources[n], 0, 0, NUM_STATE, 0);
+      MultiFab::Saxpy(S, 1.0, *new_sources[src_list[n]], 0, 0, NUM_STATE, 0);
     }
   }
 
