@@ -787,7 +787,7 @@ end subroutine impose_NSCBC
        uin(hop,j,UMZ  ) = 0.0d0
        uin(hop,j,UEINT) = eos_state % rho   *  eos_state % e
        uin(hop,j,UEDEN) = eos_state % rho  &
-          * (eos_state % e + 0.5d0 * (uin(hop,j,UMX)**2 + uin(hop,j,UMY)**2))
+          * (eos_state % e + 0.5d0 * (q(hop,j,QU)**2 + q(hop,j,QV)**2))
        uin(hop,j,UTEMP) = eos_state % T
        do n=1, nspec
           uin(hop,j,UFS+n-1) = eos_state % rho  *  eos_state % massfrac(n)
@@ -881,7 +881,7 @@ end subroutine impose_NSCBC
        uin(i,hop,UMZ  ) = 0.0d0
        uin(i,hop,UEINT) = eos_state % rho   *  eos_state % e
        uin(i,hop,UEDEN) = eos_state % rho  &
-          * (eos_state % e + 0.5d0 * (uin(i,hop,UMX)**2 + uin(i,hop,UMY)**2))
+          * (eos_state % e + 0.5d0 * (q(i,hop,QU)**2 + q(i,hop,QV)**2))
        uin(i,hop,UTEMP) = eos_state % T
        do n=1, nspec
           uin(i,hop,UFS+n-1) = eos_state % rho  *  eos_state % massfrac(n)
