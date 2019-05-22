@@ -115,6 +115,7 @@ PeleC::do_mol_advance(Real time,
   // Add external source
   if(add_ext_src == 1)
   {
+       //using construct old source
        construct_old_ext_source(time,dt); 
        MultiFab::Saxpy(S, 1.0, *old_sources[ext_src], 0, 0, NUM_STATE, 0);
   }
@@ -151,6 +152,7 @@ PeleC::do_mol_advance(Real time,
   // Add external source
   if(add_ext_src == 1)
   {
+       //using construct new source
        construct_new_ext_source(time,dt); 
        MultiFab::Saxpy(S, 1.0, *new_sources[ext_src], 0, 0, NUM_STATE, 0);
   }
