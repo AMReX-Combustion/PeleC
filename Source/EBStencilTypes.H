@@ -60,6 +60,7 @@ struct EBBndryGeom
   amrex::Real eb_normal[BL_SPACEDIM];
   amrex::Real eb_centroid[BL_SPACEDIM];
   amrex::Real eb_area;
+  amrex::Real eb_vfrac;
   amrex::IntVect iv;
 
   bool operator<(const EBBndryGeom& rhs) const {

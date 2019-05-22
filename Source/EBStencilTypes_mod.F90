@@ -47,6 +47,7 @@ module pelec_eb_stencil_types_module
      real(amrex_real) :: eb_normal(BL_SPACEDIM)
      real(amrex_real) :: eb_centroid(BL_SPACEDIM)
      real(amrex_real) :: eb_area
+     real(amrex_real) :: eb_vfrac
 !    real(amrex_real) :: eb_apertureX(2)
 !    real(amrex_real) :: eb_apertureY(2)
 !    real(amrex_real) :: eb_apertureZ(2)

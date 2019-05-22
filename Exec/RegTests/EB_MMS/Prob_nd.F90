@@ -123,7 +123,7 @@ contains
 
     integer :: i,j,k
     double precision :: x,y,z,rho,u,v,w,p,eint
-    double precision :: rho0, u0, v0, w0, p0, T0
+    double precision :: rho0, u0, p0, T0
     type(eos_t) :: eos_state
 
 #ifdef USE_MASA
@@ -168,8 +168,8 @@ contains
     call masa_set_param("rho_y",rho_y_fact)
     call masa_set_param("rho_z",rho_z_fact)
     call masa_set_param("u_0",u_0_fact*u0)
-    call masa_set_param("v_0",v_0_fact*v0)
-    call masa_set_param("w_0",w_0_fact*w0)
+    call masa_set_param("v_0",v_0_fact*u0)
+    call masa_set_param("w_0",w_0_fact*u0)
     call masa_set_param("u_r",u_r_fact*u0)
     call masa_set_param("v_r",v_r_fact*u0)
     call masa_set_param("w_r",w_r_fact*u0)

@@ -72,3 +72,4 @@ pelec.eb_boundary_T = 300.
 pelec.eb_isothermal = 1
 eb_verbosity = 1
 eos_gamma = 1.4
+ebd.boundary_grad_stencil_type=0

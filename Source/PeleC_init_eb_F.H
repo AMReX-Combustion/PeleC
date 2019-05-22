@@ -30,6 +30,16 @@ extern "C"
                                     EBBndrySten* bndry_grad_stencil, const int* Ngrad,
                                     const Real* dx);
 
+  void pc_fill_bndry_grad_stencil_amrex(const int*  lo, const int*  hi,
+                                        EBBndryGeom* ebg, const int* Ngeom,
+                                        EBBndrySten* bndry_grad_stencil, const int* Ngrad,
+                                        const Real* dx);
+
+  void pc_fill_bndry_grad_stencil_ls(const int*  lo, const int*  hi,
+                                     EBBndryGeom* ebg, const int* Ngeom,
+                                     EBBndrySten* bndry_grad_stencil, const int* Ngrad,
+                                     const Real* dx);
+
     void pc_apply_eb_boundry_flux_stencil(const int*  lo, const int*  hi,
                                           EBBndrySten* sten, const int* Nsten,
                                           const amrex_real* s,  const int* slo, const int* shi,

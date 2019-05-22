@@ -1,0 +1,11 @@
+# Function for aggregating source files from source subdirectories into a global scope property
+function(add_sources target_list)
+   foreach(_source IN ITEMS ${ARGN})
+       if (IS_ABSOLUTE "${_source}")
+           set(_source_abs "${_source}")
+       else()
+           get_filename_component(_source_abs "${_source}" ABSOLUTE)
+       endif()
+       set_property(GLOBAL APPEND PROPERTY "${target_list}" "${_source_abs}")
+   endforeach()
+endfunction(add_sources)
