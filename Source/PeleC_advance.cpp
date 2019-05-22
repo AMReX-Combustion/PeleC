@@ -104,21 +104,19 @@ PeleC::do_mol_advance(Real time,
   Real flux_factor = 0;
   getMOLSrcTerm(Sborder, S, time, dt, flux_factor);
 
-  // Add in MMS source
-#ifdef USE_MASA
-  if (do_mms == 1){
-    fill_mms_source (time, Sborder, mms_source, 0);
-    MultiFab::Saxpy(S, 1.0, mms_source, 0, 0, NUM_STATE, 0);
-  }
+    // Build other (neither spray nor diffusion) sources at t_old
+    for (int n = 0; n < src_list.size(); ++n)
+    {
+      if (src_list[n] != diff_src
+#ifdef AMREX_PARTICLES
+          && src_list[n] != spray_src
 #endif
-
-  // Add external source
-  if(add_ext_src == 1)
-  {
-       //using construct old source
-       construct_old_ext_source(time,dt); 
-       MultiFab::Saxpy(S, 1.0, *old_sources[ext_src], 0, 0, NUM_STATE, 0);
-  }
+        )
+      {
+	construct_old_source(src_list[n], time, dt, amr_iteration, amr_ncycle, 0, 0);
+        MultiFab::Saxpy(S, 1.0, *old_sources[n], 0, 0, NUM_STATE, 0);
+      }
+    }
 
   if (mol_iters > 1) MultiFab::Copy(S_old,S,0,0,NUM_STATE,0);
 
@@ -142,19 +140,18 @@ PeleC::do_mol_advance(Real time,
   flux_factor = mol_iters > 1 ?  0 : 1;
   getMOLSrcTerm(Sborder, S, time, dt, flux_factor);
 
-  // Add in MMS source
-#ifdef USE_MASA
-  if (do_mms == 1){
-    fill_mms_source (time, Sborder, mms_source, 0);
-    MultiFab::Saxpy(S, 1.0, mms_source, 0, 0, NUM_STATE, 0);
-  }
-#endif
-  // Add external source
-  if(add_ext_src == 1)
+  // Build other (neither spray nor diffusion) sources at t_new
+  for (int n = 0; n < src_list.size(); ++n)
   {
-       //using construct new source
-       construct_new_ext_source(time,dt); 
-       MultiFab::Saxpy(S, 1.0, *new_sources[ext_src], 0, 0, NUM_STATE, 0);
+    if (src_list[n] != diff_src
+#ifdef AMREX_PARTICLES
+      && src_list[n] != spray_src
+#endif
+      )
+    {
+      construct_new_source(src_list[n], time + dt, dt, amr_iteration, amr_ncycle, 0, 0);
+      MultiFab::Saxpy(S, 1.0, *new_sources[n], 0, 0, NUM_STATE, 0);
+    }
   }
 
   // U^{n+1.**} = 0.5*(U^n + U^{n+1,*}) + 0.5*dt*S^{n+1} = U^n + 0.5*dt*S^n + 0.5*dt*S^{n+1} + 0.5*dt*I_R
