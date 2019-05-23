@@ -1,6 +1,6 @@
-function(get_fcompare_sources)
+function(get_plot_tool_sources PLOT_TOOL_NAME)
    set(AMREX_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Submodules/AMReX/Src/Base")
-   add_sources(GlobalFcompareSourceList
+   add_sources(GlobalPlotToolSourceList
      ${AMREX_SOURCE_DIR}/AMReX.cpp
      ${AMREX_SOURCE_DIR}/AMReX_error_fi.cpp
      ${AMREX_SOURCE_DIR}/AMReX_ParmParse.cpp
@@ -81,8 +81,8 @@ function(get_fcompare_sources)
      ${AMREX_SOURCE_DIR}/AMReX_mempool_mod.F90
    )
    set(AMREX_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Submodules/AMReX/Tools/Plotfile")
-   add_sources(GlobalFcompareSourceList
+   add_sources(GlobalPlotToolSourceList
      ${AMREX_SOURCE_DIR}/AMReX_PPMUtil.cpp
-     ${AMREX_SOURCE_DIR}/fcompare.cpp
+     ${AMREX_SOURCE_DIR}/${PLOT_TOOL_NAME}.cpp
    )
-endfunction(get_fcompare_sources)
+endfunction(get_plot_tool_sources)
