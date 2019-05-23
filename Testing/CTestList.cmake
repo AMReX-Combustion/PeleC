@@ -39,7 +39,7 @@ function(add_test_r TEST_NAME NP)
     # Copy files to test working directory
     file(COPY ${TEST_FILES} DESTINATION "${CURRENT_TEST_BINARY_DIR}/")
     # Set some default runtime options for all tests in this category
-    set(RUNTIME_OPTIONS "max_step=10 amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.probin_file=${TEST_NAME}.probin")
+    set(RUNTIME_OPTIONS "max_step=10 amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.probin_file=${TEST_NAME}.probin")
     # Build the exe for the test
     build_pelec(PeleC-${TEST_NAME} ${EXE_OPTIONS_FILE})
     # Either just run the tests, or also use fcompare to test diffs in plots against gold files
@@ -74,7 +74,7 @@ function(add_test_v1 TEST_NAME TEST_DEPENDENCY NP)
     # Define our main run command
     set(RUN_COMMAND "rm mmslog datlog || true && ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${MPIEXEC_PREFLAGS} ${TEST_DEPENDENCY_BINARY_DIR}/PeleC-${TEST_DEPENDENCY} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i")
     # Set some default runtime options for all tests in this category
-    set(RUNTIME_OPTIONS "amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.probin_file=${TEST_NAME}.probin")
+    set(RUNTIME_OPTIONS "amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.probin_file=${TEST_NAME}.probin")
     # Add test and actual test commands to CTest database
     add_test(${TEST_NAME} sh -c "${RUN_COMMAND} ${RUNTIME_OPTIONS} && nosetests ${TEST_NAME}.py")
     # Set properties for test
@@ -124,7 +124,7 @@ function(add_test_v2 TEST_NAME TEST_DEPENDENCY)
       # Set the run command for this resolution
       set(RUN_COMMAND_${RESOLUTION} "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${PROCESSES} ${MPIEXEC_PREFLAGS} ${TEST_DEPENDENCY_BINARY_DIR}/PeleC-${TEST_DEPENDENCY} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${RESOLUTION}/${TEST_NAME}.i")
       # Set some runtime options for each resolution
-      set(RUNTIME_OPTIONS_${RESOLUTION} "amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.probin_file=${TEST_NAME}.probin amr.n_cell=${NCELLS}")
+      set(RUNTIME_OPTIONS_${RESOLUTION} "amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.probin_file=${TEST_NAME}.probin amr.n_cell=${NCELLS}")
       # Construct our large run command with everything &&'d together
       string(APPEND MASTER_RUN_COMMAND "cd ${CURRENT_TEST_BINARY_DIR}/${RESOLUTION}")
       string(APPEND MASTER_RUN_COMMAND " && ")
