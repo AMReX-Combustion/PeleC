@@ -1,0 +1,12 @@
+ plotfile = /home/jrood/combustion/PeleC/Build/Testing/test_files/hit-3d-2/plt00010
+ time = 1.97568344001247e-05
+              variables          minimum value          maximum value
+ density                       0.0011532570601        0.0011938622735
+ Temp                             297.67101857           301.86780066
+ pressure                         985254.32727           1034324.2206
+ magvort                          171.89707361           39875.873712
+ x_velocity                      -5554.0773967           7476.4019451
+ y_velocity                      -5825.0986612           6113.2464663
+ z_velocity                      -6928.3664627           5611.7017601
+ magvel                           65.868359667           7602.8043577
+

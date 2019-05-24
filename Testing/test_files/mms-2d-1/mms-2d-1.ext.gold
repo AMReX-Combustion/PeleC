@@ -1,0 +1,15 @@
+ plotfile = /home/jrood/combustion/PeleC/Build/Testing/test_files/mms-2d-1/plt00010
+ time = 7.1827884991555498e-08
+              variables          minimum value          maximum value
+ density                       0.0010975818376        0.0012564733381
+ Temp                             224.56358164           373.71523977
+ pressure                         777942.79375           1227549.7364
+ magvort                          28.167560568           181446.11387
+ x_velocity                       10070.646395            59094.67873
+ y_velocity                       10104.638959           59222.932525
+ magvel                           15312.777004           82402.482903
+ rhommserror                 -7.1671348201e-06       4.2652066334e-06
+ ummserror                       -1967.0812982           1694.3632638
+ vmmserror                       -1933.0887341           1822.6170581
+ pmmserror                       -72246.158777           56783.655644
+
