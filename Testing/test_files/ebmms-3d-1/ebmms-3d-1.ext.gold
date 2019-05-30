@@ -1,0 +1,18 @@
+ plotfile = /home/jrood/combustion/PeleC/Build/Testing/test_files/ebmms-3d-1/plt00010
+ time = 1.1599657026331699e-08
+              variables          minimum value          maximum value
+ density                       0.0010654580073        0.0012875487632
+ Temp                             274.10673873           331.30398958
+ pressure                         1012852.9228           1025842.8047
+ magvort                                     0            35837.69725
+ x_velocity                      -3482.9498999           3485.2667009
+ y_velocity                      -3482.9498999           3485.2667009
+ z_velocity                      -3482.9498999           3485.2667009
+ magvel                           171.04208917            6027.851612
+ vfrac                                       0                      1
+ rhommserror                 -2.9657870653e-07       2.7886425857e-07
+ ummserror                       -4319.9767578           165.50843473
+ vmmserror                       -4319.9767578           165.50843473
+ wmmserror                       -4319.9767578           165.50843473
+ pmmserror                       -147.07724711           12842.804651
+

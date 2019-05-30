@@ -3,15 +3,44 @@ include(${CMAKE_SOURCE_DIR}/CMake/build_unit_test.cmake)
 include(${CMAKE_SOURCE_DIR}/CMake/build_pelec.cmake)
 
 # Set location of gold files according to system/compiler/compiler_version
-set(GOLD_FILES_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PeleCGoldFiles/${CMAKE_SYSTEM_NAME}/${CMAKE_CXX_COMPILER_ID}/${CMAKE_CXX_COMPILER_VERSION})
+set(FCOMPARE_GOLD_FILES_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PeleCGoldFiles/${CMAKE_SYSTEM_NAME}/${CMAKE_CXX_COMPILER_ID}/${CMAKE_CXX_COMPILER_VERSION})
 
 if(TEST_WITH_FCOMPARE)
-  message("-- Test golds directory: ${GOLD_FILES_DIRECTORY}")
+  message(STATUS "Test golds directory for fcompare: ${FCOMPARE_GOLD_FILES_DIRECTORY}")
 endif()
 
 # Have CMake discover the number of cores on the node
 include(ProcessorCount)
 ProcessorCount(PROCESSES)
+
+# Set TOLERANCE for testing
+if(NOT ${TEST_TOLERANCE} STREQUAL "")
+  set(TOLERANCE ${TEST_TOLERANCE}) # User defined
+else(NOT ${TEST_TOLERANCE} STREQUAL "")
+  if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang"
+        OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+      set(TOLERANCE "1e-3")
+    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+      set(TOLERANCE "1e-3")
+    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+      set(TOLERANCE "1e-2")
+    else()
+      set(TOLERANCE "1e-8") # Mac default
+    endif()
+  elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+      set(TOLERANCE "1e-5")
+    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+      set(TOLERANCE "1e-15")
+    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+      set(TOLERANCE "1e-2")
+    else()
+      set(TOLERANCE "1e-8") # Linux default
+    endif()
+  endif()
+endif()
+message(STATUS "Using test tolerance of ${TOLERANCE}")
 
 #=============================================================================
 # Functions for adding tests / Categories of tests
@@ -23,7 +52,7 @@ function(add_test_r TEST_NAME NP)
     set(CURRENT_TEST_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test_files/${TEST_NAME})
     set(CURRENT_TEST_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/test_files/${TEST_NAME})
     # Gold files should be submodule organized by machine and compiler (these are output during configure)
-    set(PLOT_GOLD ${GOLD_FILES_DIRECTORY}/${TEST_NAME}/plt00010)
+    set(PLOT_GOLD ${FCOMPARE_GOLD_FILES_DIRECTORY}/${TEST_NAME}/plt00010)
     # Test plot is currently expected to be after 10 steps
     set(PLOT_TEST ${CURRENT_TEST_BINARY_DIR}/plt00010)
     # Get test options
@@ -31,7 +60,13 @@ function(add_test_r TEST_NAME NP)
     # Define our test options
     include(${EXE_OPTIONS_FILE})
     # Find fcompare
-    set(FCOMPARE ${CMAKE_BINARY_DIR}/fcompare)
+    if(TEST_WITH_FCOMPARE)
+      set(FCOMPARE ${CMAKE_BINARY_DIR}/fcompare)
+    endif()
+    # Find fextrema
+    if(TEST_WITH_FEXTREMA)
+      set(FEXTREMA ${CMAKE_BINARY_DIR}/fextrema)
+    endif()
     # Make working directory for test
     file(MAKE_DIRECTORY ${CURRENT_TEST_BINARY_DIR})
     # Gather all files in source directory for test
@@ -39,17 +74,21 @@ function(add_test_r TEST_NAME NP)
     # Copy files to test working directory
     file(COPY ${TEST_FILES} DESTINATION "${CURRENT_TEST_BINARY_DIR}/")
     # Set some default runtime options for all tests in this category
-    set(RUNTIME_OPTIONS "max_step=10 amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.probin_file=${TEST_NAME}.probin")
+    set(RUNTIME_OPTIONS "max_step=10 amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.probin_file=${TEST_NAME}.probin")
     # Build the exe for the test
     build_pelec(PeleC-${TEST_NAME} ${EXE_OPTIONS_FILE})
-    # Either just run the tests, or also use fcompare to test diffs in plots against gold files
+    # Use fcompare to test diffs in plots against gold files
     if(TEST_WITH_FCOMPARE)
       set(FCOMPARE_COMMAND "&& ${FCOMPARE} ${PLOT_GOLD} ${PLOT_TEST}")
+    endif()
+    # Use fextrema to test diffs in plots against gold files
+    if(TEST_WITH_FEXTREMA)
+      set(FEXTREMA_COMMAND "&& ${FEXTREMA} ${PLOT_TEST} > ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.ext && ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_files/fextrema_compare.py -f ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.ext -g ${CURRENT_TEST_SOURCE_DIR}/${TEST_NAME}.ext.gold -t ${TOLERANCE}")
     endif()
     # Place the exe in the correct working directory
     set_target_properties(PeleC-${TEST_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/")
     # Add test and actual test commands to CTest database
-    add_test(${TEST_NAME} sh -c "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${MPIEXEC_PREFLAGS} ${CURRENT_TEST_BINARY_DIR}/PeleC-${TEST_NAME} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i ${RUNTIME_OPTIONS} ${FCOMPARE_COMMAND}")
+    add_test(${TEST_NAME} sh -c "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${MPIEXEC_PREFLAGS} ${CURRENT_TEST_BINARY_DIR}/PeleC-${TEST_NAME} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i ${RUNTIME_OPTIONS} ${FEXTREMA_COMMAND} ${FCOMPARE_COMMAND}")
     # Set properties for test
     set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 500 PROCESSORS ${NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "regression")
 endfunction(add_test_r)
@@ -74,7 +113,7 @@ function(add_test_v1 TEST_NAME TEST_DEPENDENCY NP)
     # Define our main run command
     set(RUN_COMMAND "rm mmslog datlog || true && ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${MPIEXEC_PREFLAGS} ${TEST_DEPENDENCY_BINARY_DIR}/PeleC-${TEST_DEPENDENCY} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i")
     # Set some default runtime options for all tests in this category
-    set(RUNTIME_OPTIONS "amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.probin_file=${TEST_NAME}.probin")
+    set(RUNTIME_OPTIONS "amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.probin_file=${TEST_NAME}.probin")
     # Add test and actual test commands to CTest database
     add_test(${TEST_NAME} sh -c "${RUN_COMMAND} ${RUNTIME_OPTIONS} && nosetests ${TEST_NAME}.py")
     # Set properties for test
@@ -124,7 +163,7 @@ function(add_test_v2 TEST_NAME TEST_DEPENDENCY)
       # Set the run command for this resolution
       set(RUN_COMMAND_${RESOLUTION} "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${PROCESSES} ${MPIEXEC_PREFLAGS} ${TEST_DEPENDENCY_BINARY_DIR}/PeleC-${TEST_DEPENDENCY} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${RESOLUTION}/${TEST_NAME}.i")
       # Set some runtime options for each resolution
-      set(RUNTIME_OPTIONS_${RESOLUTION} "amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.probin_file=${TEST_NAME}.probin amr.n_cell=${NCELLS}")
+      set(RUNTIME_OPTIONS_${RESOLUTION} "amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.probin_file=${TEST_NAME}.probin amr.n_cell=${NCELLS}")
       # Construct our large run command with everything &&'d together
       string(APPEND MASTER_RUN_COMMAND "cd ${CURRENT_TEST_BINARY_DIR}/${RESOLUTION}")
       string(APPEND MASTER_RUN_COMMAND " && ")

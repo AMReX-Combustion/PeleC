@@ -43,13 +43,13 @@ amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
 
 # CHECKPOINT FILES
 amr.checkpoint_files_output = 0
-amr.check_file      = sod_x_chk  # root name of checkpoint file
+amr.check_file      = chk        # root name of checkpoint file
 amr.check_int       = 10         # number of timesteps between checkpoints
 
 # PLOTFILES
 amr.plot_files_output = 1
-amr.plot_file         = sod_x_plt  # root name of plotfile
-amr.plot_int          = 10          # number of timesteps between plotfiles
+amr.plot_file         = plt      # root name of plotfile
+amr.plot_int          = 10       # number of timesteps between plotfiles
 amr.derive_plot_vars  = ALL # density xmom ymom zmom eden Temp pressure  # these variables appear in the plotfile
 
 #PROBIN FILENAME
