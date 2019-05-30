@@ -1,0 +1,16 @@
+.ninja_deps
+.ninja_log
+CMakeCache.txt
+CMakeFiles
+CTestCustom.cmake
+CTestTestfile.cmake
+DartConfiguration.tcl
+generated_files/
+fortran_modules/
+Testing
+build.ninja
+rules.ninja
+cmake_install.cmake
+fcompare
+fcompare_fortran_modules
+*amrex*.a

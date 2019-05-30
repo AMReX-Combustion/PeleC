@@ -1,0 +1,13 @@
+ plotfile = /home/jrood/combustion/PeleC/Build/Testing/test_files/tg-2d-1/plt00010
+ time = 1.76061964897236e-06
+              variables          minimum value          maximum value
+ density                       0.0011702543703        0.0011828078978
+ xmom                            -4.0831045272           4.0831045272
+ ymom                            -4.0831045272           4.0831045272
+ zmom                                        0                      0
+ rho_E                            2518912.5077           2546120.1736
+ rho_e                            2518904.0199           2546111.5947
+ Temp                              299.9892303           300.01124608
+ rho_X                         0.0011702543703        0.0011828078978
+ pressure                          1007561.608           1018444.6379
+

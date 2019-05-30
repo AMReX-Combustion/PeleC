@@ -66,6 +66,7 @@ std::string PeleC::zr_ext_bc_type = "";
 amrex::Real PeleC::eb_boundary_T = 1.0;
 int         PeleC::eb_isothermal = 1;
 int         PeleC::eb_noslip = 1;
+amrex::Real PeleC::eb_small_vfrac = 1.0e-2;
 int         PeleC::do_mms = 0;
 std::string PeleC::masa_solution_name = "ad_cns_3d_les";
 amrex::Real PeleC::fixed_dt = -1.0;

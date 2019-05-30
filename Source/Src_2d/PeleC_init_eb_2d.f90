@@ -14,6 +14,41 @@ contains
          .and.  j.ge.lo(2) .and. j.le.hi(2)
   end function is_inside
 
+  subroutine pc_fill_bndry_grad_stencil_amrex(lo, hi, ebg, Nebg, grad_stencil, Nsten, dx) &
+       bind(C,name="pc_fill_bndry_grad_stencil_amrex")
+
+      ! Work in process - least squares boundary stencil capability. Currently doesn't work.
+      integer,            intent(in   ) :: lo(0:2),hi(0:2)
+      integer,            intent(in   ) :: Nebg, Nsten
+      type(eb_bndry_geom),intent(in   ) :: ebg(0:Nebg-1)
+      type(eb_bndry_sten),intent(inout) :: grad_stencil(0:Nsten-1)
+      real(amrex_real),   intent(in   ) :: dx
+      integer :: i, j, k, m, c(dim), s(dim), iv(dim), ivs(dim), sh(dim),  baseiv(dim)
+      real(amrex_real) :: cy(-1:1),cz(-1:1), bcs, tsten(-1:1,-1:1,-1:1)
+      real(amrex_real), dimension(0:2,0:2,0:2,0:2) :: psten, rsten, sten
+
+      call bl_error('pc_fill_bndry_grad_stencil_amrex has not been implemented in 2D')
+
+    end subroutine pc_fill_bndry_grad_stencil_amrex
+
+    subroutine pc_fill_bndry_grad_stencil_ls(lo, hi, ebg, Nebg, grad_stencil, Nsten, dx) &
+       bind(C,name="pc_fill_bndry_grad_stencil_ls")
+
+      ! Work in process - least squares boundary stencil capability. Currently doesn't work.
+      integer,            intent(in   ) :: lo(0:2),hi(0:2)
+      integer,            intent(in   ) :: Nebg, Nsten
+      type(eb_bndry_geom),intent(in   ) :: ebg(0:Nebg-1)
+      type(eb_bndry_sten),intent(inout) :: grad_stencil(0:Nsten-1)
+      real(amrex_real),   intent(in   ) :: dx
+      integer :: i, j, k, m, c(dim), s(dim), iv(dim), ivs(dim), sh(dim),  baseiv(dim)
+      real(amrex_real) :: cy(-1:1),cz(-1:1), bcs, tsten(-1:1,-1:1,-1:1)
+      real(amrex_real), dimension(0:2,0:2,0:2,0:2) :: psten, rsten, sten
+
+      call bl_error('pc_fill_bndry_grad_stencil_ls has not been implemented in 2D')
+
+  end subroutine pc_fill_bndry_grad_stencil_ls
+
+
   subroutine pc_fill_bndry_grad_stencil(lo, hi, ebg, Nebg, grad_stencil, Nsten, dx) &
        bind(C,name="pc_fill_bndry_grad_stencil")
 

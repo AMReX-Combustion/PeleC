@@ -1,22 +1,85 @@
-language: generic
+language: cpp
+sudo: false
 
-python:
-  - "3.6"
+# Use Linux unless specified otherwise
+os: linux
+dist: xenial
 
-before_install:
-  - sudo add-apt-repository -y ppa:deadsnakes/ppa
-  - sudo apt-get update
-  - sudo apt-get install -y mpich2 gfortran python3.6 python3.6-venv 
+# All environments to test
+matrix:
+  include:
+    - env:
+        - CXX_COMPILER=g++-7
+        - C_COMPILER=gcc-7
+        - Fortran_COMPILER=gfortran
+        - MPI_CXX_COMPILER=mpicxx
+        - MPI_C_COMPILER=mpicc
+        - MPI_Fortran_COMPILER=mpifort
+        - BUILD_TYPE=Release
+      addons: &mpich
+        apt:
+          packages:
+            - g++-7
+            - gcc-7
+            - gfortran
+            - mpich
+            - libmpich-dev
+            - python3.6
+            - python3.6-venv
+          sources:
+            - ubuntu-toolchain-r-test
+            - deadsnakes
 
 install:
+  # Set the ${CXX} variable properly
+  - export CXX=${CXX_COMPILER}
+  - export CC=${C_COMPILER}
+  - ${CXX} --version
+  - ${CC} --version
 
-script: bash ./build.sh
+  # Travis machines have 2 cores
+  - export JOBS=2
 
-env:
-  global:
-  - COMMIT_AUTHOR_EMAIL: "ray.grout@nrel.gov"
+  # Dependencies required by the CI are installed in ${TRAVIS_BUILD_DIR}/deps/
+  - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
+  - mkdir -p "${DEPS_DIR}"
+  - cd "${DEPS_DIR}"
 
-addons:
-  apt:
-    packages:
-      - doxygen
+  # Install python dependencies in virtual environment
+  - python3.6 -m venv env
+  - source env/bin/activate
+  - pip3 install matplotlib numpy nose pandas
+
+  # Install a recent CMake (unless already installed on OS X)
+  - CMAKE_VERSION=3.14.3
+  - |
+    if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
+      CMAKE_URL="https://cmake.org/files/v${CMAKE_VERSION%.[0-9]}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz"
+      mkdir cmake && travis_retry wget --no-check-certificate -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
+      export PATH=${DEPS_DIR}/cmake/bin:${PATH}
+    else
+      brew install cmake || brew upgrade cmake
+    fi
+  - cmake --version
+
+  # Install MASA
+  - git clone https://github.com/roystgnr/MetaPhysicL.git
+  - cd MetaPhysicL && ./bootstrap && ./configure --prefix="${DEPS_DIR}/install/MetaPhysicL" && make -j${JOBS} && make install && cd ..
+  - git clone https://github.com/manufactured-solutions/MASA.git
+  - cd MASA && ./bootstrap && ./configure --enable-fortran-interfaces METAPHYSICL_DIR="${DEPS_DIR}/install/MetaPhysicL" --prefix="${DEPS_DIR}/install/MASA" && make -j${JOBS} && make install && cd ..
+  - export MASA_ROOT_DIR="${DEPS_DIR}/install/MASA"
+
+before_script:
+  # have CMake to generate build files
+  - cd "${TRAVIS_BUILD_DIR}"
+  - mkdir build && cd build
+  - cmake -DCMAKE_INSTALL_PREFIX:PATH=./install -DCMAKE_BUILD_TYPE:STRING=$BUILD_TYPE -DPELEC_ENABLE_MPI:BOOL=ON -DCMAKE_CXX_COMPILER:STRING=$MPI_CXX_COMPILER -DCMAKE_C_COMPILER:STRING=$MPI_C_COMPILER -DCMAKE_Fortran_COMPILER:STRING=$MPI_Fortran_COMPILER -DENABLE_TESTS:BOOL=ON -DTEST_WITH_FEXTREMA:BOOL=ON -DPELEC_ENABLE_MASA:BOOL=ON -DMASA_DIR:STRING=${MASA_ROOT_DIR} -DENABLE_VERIFICATION:BOOL=ON ..
+
+script:
+  # build the tests
+  - cmake --build . -- -j${JOBS}
+  # Ideally run all the tests:
+  # - ctest --output-on-failure -j${JOBS}
+  # But really we only get 50 min on Travis CI and building the tests
+  # takes 28 min so we exclude some longer running tests
+  - ctest --output-on-failure -j${JOBS} -E "(fiab-3d|cns_no_amr_mol_3d|cns_no_amr_3d)"

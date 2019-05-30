@@ -238,7 +238,7 @@ contains
        uin(hop,UMZ  ) = 0.0d0
        uin(hop,UEINT) = eos_state % rho   *  eos_state % e
        uin(hop,UEDEN) = eos_state % rho  &
-          * (eos_state % e + 0.5d0 * (uin(hop,UMX)**2 + uin(hop,UMY)**2))
+          * (eos_state % e + 0.5d0 * (q(hop,QU)**2))
        uin(hop,UTEMP) = eos_state % T
        do n=1, nspec
           uin(hop,UFS+n-1) = eos_state % rho  *  eos_state % massfrac(n)

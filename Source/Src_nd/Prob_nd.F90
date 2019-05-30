@@ -32,7 +32,8 @@ end subroutine amrex_probinit
 
 subroutine pc_initdata(level,time,lo,hi,nvar, &
                        state,state_lo,state_hi, &
-                       dx,xlo,xhi)
+                       dx,xlo,xhi) &
+                       bind(C, name="pc_initdata")
 
   use amrex_fort_module
 
