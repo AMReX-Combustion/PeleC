@@ -8,7 +8,6 @@ cmake -DCMAKE_INSTALL_PREFIX:PATH=./install \
       -DCMAKE_CXX_COMPILER:STRING=mpicxx \
       -DCMAKE_C_COMPILER:STRING=mpicc \
       -DCMAKE_Fortran_COMPILER:STRING=mpifort \
-      -DENABLE_DOCUMENTATION:BOOL=ON \
       ..
 
 # Extra options
@@ -21,3 +20,4 @@ cmake -DCMAKE_INSTALL_PREFIX:PATH=./install \
       #-DPELEC_ENABLE_MASA:BOOL=ON \
       #-DMASA_DIR:STRING=$(spack location -i masa) \
       #-DMPIEXEC_PREFLAGS:STRING=--oversubscribe \
+      #-DENABLE_DOCUMENTATION:BOOL=ON \
