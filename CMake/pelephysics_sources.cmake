@@ -36,7 +36,10 @@ function(get_pelephysics_sources)
      add_sources(GlobalSourceList
         ${PELEPHYSICS_SOURCE_DIR}/chemistry_module.f90
      )
-
+     set(PELEPHYSICS_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Submodules/PelePhysics/Support/Fuego/Mechanism/Models")
+     add_sources(GlobalSourceList
+        ${PELEPHYSICS_SOURCE_DIR}/mod_fuego.f90
+     )
      set(PELEPHYSICS_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Submodules/PelePhysics/Support/Fuego/Mechanism/Models/${PELEC_CHEMISTRY_MODEL}")
      add_sources(GlobalSourceList
         ${PELEPHYSICS_SOURCE_DIR}/${PELEC_CHEMISTRY_MODEL}.cpp
