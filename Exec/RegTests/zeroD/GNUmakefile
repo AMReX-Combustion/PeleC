@@ -39,4 +39,4 @@ Transport_dir := EGLib
 Bpack   := ./Make.package
 Blocs   := .
 
-include ../../Make.PeleC
+include ${PELEC_HOME}/Exec/Make.PeleC
