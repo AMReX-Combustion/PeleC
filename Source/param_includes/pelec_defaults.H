@@ -89,6 +89,7 @@ amrex::Real PeleC::react_T_max = 1.e200;
 amrex::Real PeleC::react_rho_min = 0.0;
 amrex::Real PeleC::react_rho_max = 1.e200;
 int         PeleC::disable_shock_burning = 0;
+int         PeleC::chem_integrator = 1;
 int         PeleC::do_acc = -1;
 int         PeleC::bndry_func_thread_safe = 1;
 int         PeleC::do_special_tagging = 0;

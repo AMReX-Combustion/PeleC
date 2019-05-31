@@ -89,6 +89,7 @@ pp.query("react_T_max", react_T_max);
 pp.query("react_rho_min", react_rho_min);
 pp.query("react_rho_max", react_rho_max);
 pp.query("disable_shock_burning", disable_shock_burning);
+pp.query("chem_integrator", chem_integrator);
 pp.query("do_acc", do_acc);
 pp.query("bndry_func_thread_safe", bndry_func_thread_safe);
 pp.query("do_special_tagging", do_special_tagging);

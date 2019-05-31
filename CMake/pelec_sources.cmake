@@ -118,6 +118,7 @@ function(get_pelec_sources pelec_exe_name)
      ${PELEC_SOURCE_DIR}/prob_params.f90
      ${PELEC_SOURCE_DIR}/problem_derive_nd.F90
      ${PELEC_SOURCE_DIR}/problem_tagging_nd.F90
+     ${PELEC_SOURCE_DIR}/rk_params.f90
      ${PELEC_SOURCE_DIR}/riemann_util.f90
      ${PELEC_SOURCE_DIR}/string_mod.f90
      ${PELEC_SOURCE_DIR}/sums_nd.f90

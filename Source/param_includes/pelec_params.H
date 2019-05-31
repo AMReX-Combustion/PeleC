@@ -89,6 +89,7 @@ static amrex::Real react_T_max;
 static amrex::Real react_rho_min;
 static amrex::Real react_rho_max;
 static int disable_shock_burning;
+static int chem_integrator;
 static int do_acc;
 static int bndry_func_thread_safe;
 static int do_special_tagging;

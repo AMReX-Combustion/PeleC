@@ -5,14 +5,14 @@ PRECISION  = DOUBLE
 PROFILE    = FALSE
 
 DEBUG      = FALSE
+#DEBUG      = TRUE
 
 #DIM        = 1
 DIM        = 2
-DIM        = 3
 
 COMP	   = gcc
 
-USE_MPI    = FALSE
+#USE_MPI    = TRUE
 
 USE_REACT  = TRUE
 

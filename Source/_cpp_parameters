@@ -342,6 +342,9 @@ react_rho_max                Real          1.e200             y
 # disable burning inside hydrodynamic shock regions
 disable_shock_burning        int           0                  y
 
+# chemistry integrator 1 for vode, 2 for explicit RK
+chem_integrator              int           1                  n
+
 #-----------------------------------------------------------------------------
 # category: parallelization
 #-----------------------------------------------------------------------------
