@@ -190,7 +190,7 @@ function(build_pelec pelec_exe_name pelec_exe_options_file)
     string(APPEND PARAMETER_DIRS " ${CMAKE_SOURCE_DIR}/Submodules/PelePhysics/Reactions/${PELEC_REACTIONS_MODEL}/_parameters")
   endif()
 
-  if((NOT (PYTHON_VERSION_STRING VERSION_LESS "2.7")) AND PYTHONINTERP_FOUND)
+  if(PYTHON_FOUND)
      #Generate the extern.f90 file with Python
      add_custom_target(generate_extern_${pelec_exe_name} ALL
         COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/Submodules/AMReX/Tools/F_scripts/write_probin.py

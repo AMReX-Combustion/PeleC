@@ -63,7 +63,7 @@ endif()
 include(${CMAKE_SOURCE_DIR}/CMake/set_compile_flags.cmake)
 set_compile_flags()
 
-find_package(PythonInterp REQUIRED)
+find_package(Python REQUIRED)
 
 include(${CMAKE_SOURCE_DIR}/CMake/build_amrex.cmake)
 include(${CMAKE_SOURCE_DIR}/CMake/build_pelec.cmake)
