@@ -12,26 +12,33 @@ Getting Started
 
 To build `PeleC` and run a sample 2D flame problem:
 
-1. Set the environment variable, AMREX_HOME, and clone a copy of `AMReX` there ::
+1. One can have PeleC use the default submodules for AMReX and PelePhysics in its own repo by simply performing: ::
+
+    git clone --recursive git@github.com:AMReX-Combustion/PeleC.git
+    cd PeleC/Exec/RegTests/PMF
+    make
+    ./Pele2d.xxx,yyy.ex inputs-2d-regt
+
+Alternatively, one can set environment variables to use AMReX and PelePhysics repos from external locations: ::
+
+1. Set the environment variable, AMREX_HOME, and clone a copy of `AMReX` there: ::
 
     export AMREX_HOME=<location for AMReX>    
     git clone git@github.com:AMReX-Codes/amrex.git ${AMREX_HOME}
 
-1a. This version of PeleC has been tested against AMReX git hash 413193591ee6bef00b4f72ac2d5e39722ead7708 (9/26/2017)
-
-2. Set the environment variable, PELE_PHYSICS_HOME, and clone a copy of `PelePhysics` there. You should be placed in the `development` branch ::
+2. Set the environment variable, PELE_PHYSICS_HOME, and clone a copy of `PelePhysics` there. You should be placed in the `development` branch: ::
 
     export PELE_PHYSICS_HOME=<location for PelePhysics>
     git clone git@github.com:AMReX-Combustion/PelePhysics.git ${PELE_PHYSICS_HOME}
 
-3. Set the environment variable, PELEC_HOME, and clone a copy of `PeleC` there. You should be placed in the `development` branch ::
+3. Set the environment variable, PELEC_HOME, and clone a copy of `PeleC` there. You should be placed in the `development` branch: ::
 
     export PELEC_HOME=<location for PeleC>
     git clone git@github.com:AMReX-Combustion/PeleC.git ${PELEC_HOME}
 
-4. Move to an example build folder, build an executable, run a test case ::
+4. Move to an example build folder, build an executable, run a test case: ::
 
-    cd ${PELEC_HOME}/Exec/PMF
+    cd ${PELEC_HOME}/Exec/RegTests/PMF
     make
     ./Pele2d.xxx,yyy.ex inputs-2d-regt
 
@@ -57,25 +64,44 @@ Development model
 
 To add a new feature to PeleC, the procedure is:
 
-1. Create a branch for the new feature (locally) ::
+1. Create a branch for the new feature (locally): ::
 
     git checkout -b AmazingNewFeature
 
-2. Develop the feature, merging changes often from the development branch into your AmazingNewFeature branch ::
+2. Develop against the submodules for AMReX and PelePhysics tracked in PeleC by updating them to the latest commits: ::
+
+    cd PeleC/Submodules/AMReX && git checkout development && git pull
+    cd PeleC/Submodules/PelePhysics && git checkout development && git pull
+
+3. Develop the feature, merging changes often from the development branch into your AmazingNewFeature branch and commit the updated submodules as well: ::
    
+    git add Submodules/AMReX && git add Submodules/PelePhysics
     git commit -m "Developed AmazingNewFeature"
     git checkout development
     git pull                     [fix any identified conflicts between local and remote branches of "development"]
     git checkout AmazingNewFeature
     git merge development        [fix any identified conflicts between "development" and "AmazingNewFeature"]
 
-3. Push feature branch to PeleC repository ::
+4. Push feature branch to PeleC repository: ::
 
     git push -u origin AmazingNewFeature [Note: -u option required only for the first push of new branch]
 
-3a. Check the pipeline status and make sure the regression tests passed
+5. Submit a merge request through git@github.com:AMReX-Combustion/PeleC.git, and make sure you are requesting a merge against the development branch
 
-4.  Submit a merge request through git@github.com:AMReX-Combustion/PeleC.git - be sure you are requesting to merge your branch to the development branch.
+6. Check the Travis CI status and make sure the tests passed for merge request
+
+.. note::
+
+   Travis CI uses the CMake build system and CTest to test the core source files of PeleC. If you are adding source files, you will need to add them to the list of source files in the ``CMake`` directory for the tests to pass. Make sure to add them to the GNU make makefiles as well.
+
+
+Test Status
+~~~~~~~~~~~
+
+Nightly test results for PeleC against multiple compilers and machines can be seen on its CDash page `here <https://my.cdash.org/index.php?project=PeleC>`_. Static analysis results for PeleC can be seen in the notes of the newest GCC compiler on CDash. PeleC is also tested using the Clang address sanitizer to detect memory leaks.
+
+Test results for the GNU Make implementation of PeleC can be seen `here <https://amrex-combustion.github.io/PeleCRegressionTestResults>`_.
+
 
 Documentation
 ~~~~~~~~~~~~~

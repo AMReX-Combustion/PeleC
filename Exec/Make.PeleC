@@ -1,5 +1,7 @@
-PELE_PHYSICS_HOME ?= $(PELE_HOME)/PelePhysics
-PELEC_HOME        ?= $(PELE_HOME)/PeleC
+PELE_HOME         ?= ../
+PELEC_HOME        ?= $(PELE_HOME)
+PELE_PHYSICS_HOME ?= $(PELE_HOME)/Submodules/PelePhysics
+AMREX_HOME        ?= $(PELE_HOME)/Submodules/AMReX
 
 TOP := $(PELEC_HOME)
 

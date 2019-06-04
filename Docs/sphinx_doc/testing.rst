@@ -18,6 +18,7 @@ An example ``cmake`` configure command performed in the ``Build`` directory in P
         -DENABLE_FCOMPARE:BOOL=ON \
         -DENABLE_TESTS:BOOL=ON \
         -DTEST_WITH_FCOMPARE:BOOL=OFF \
+        -DTEST_WITH_FEXTREMA:BOOL=OFF \
         -DENABLE_VERIFICATION:BOOL=ON \
         -DPELEC_ENABLE_MASA:BOOL=ON \
         -DMASA_DIR:STRING=/path/to/masa/dir \
@@ -27,9 +28,13 @@ While performing a ``cmake -LAH ..`` command will give descriptions of every opt
 
 **ENABLE_FCOMPARE** -- builds the ``fcompare`` utility from AMReX as well as the executable(s), to allow for testing differences between plot files
 
+**ENABLE_FEXTREMA** -- builds the ``fextrema`` utility from AMReX as well as the executable(s), to allow for testing differences between plot files
+
 **ENABLE_TESTS** -- enables the base level regression test suite that will check whether each test will run its executable to completion successfully
 
 **TEST_WITH_FCOMPARE** -- enables an additional step in the regression tests where the ``fcompare`` program from AMReX will also test for differences in the plots generated from the tests against "gold" files which contain previously verified results to machine precision
+
+**TEST_WITH_FEXTREMA** -- enables an additional step in the regression tests where the ``fextrema`` program from AMReX will also test for differences in the maxima and minima of the plots generated from the tests against "gold" files which contain previously verified results to machine precision (this is the default method in which Travis CI detects diffs in results because it's more portable than storing plot files)
 
 **ENABLE_VERIFICATION** -- enables the verification suite which checks that PeleC is second order accurate using several additional tests, but note that the verification tests can take a significant amount of time to run and certain Python modules are expected to exist on the user's system to generate PNG plot files
 
