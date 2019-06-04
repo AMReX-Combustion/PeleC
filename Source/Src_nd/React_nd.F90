@@ -136,6 +136,7 @@ contains
     use amrex_fort_module, only : amrex_real
     use amrex_constants_module, only : HALF
     use rk_params_module
+    use fuego_chemistry, only : VCKWYR
 
     implicit none
 
