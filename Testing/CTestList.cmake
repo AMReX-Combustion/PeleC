@@ -176,16 +176,16 @@ function(add_test_v2 TEST_NAME TEST_DEPENDENCY)
       endif()
     endforeach()
     # Set list of images to be uploaded for verification
-    set(IMAGES_TO_UPLOAD ${CURRENT_TEST_BINARY_DIR}/p_error.png ${CURRENT_TEST_BINARY_DIR}/rho_error.png ${CURRENT_TEST_BINARY_DIR}/u_error.png)
+    set(IMAGES_TO_UPLOAD p_error.png rho_error.png u_error.png)
     if(${PELEC_DIM} EQUAL 3)
-      list(APPEND IMAGES_TO_UPLOAD ${CURRENT_TEST_BINARY_DIR}/v_error.png ${CURRENT_TEST_BINARY_DIR}/w_error.png)
+      list(APPEND IMAGES_TO_UPLOAD v_error.png w_error.png)
     elseif(${PELEC_DIM} EQUAL 2)
-      list(APPEND IMAGES_TO_UPLOAD ${CURRENT_TEST_BINARY_DIR}/v_error.png)
+      list(APPEND IMAGES_TO_UPLOAD v_error.png)
     endif()
     # Add test and actual test commands to CTest database (need to convert this to arrays for resolutions)
     add_test(${TEST_NAME} sh -c "${MASTER_RUN_COMMAND} && cd ${CURRENT_TEST_BINARY_DIR} && nosetests test_second_order.py")
     # Set properties for test and make sure test dependencies have run before this test will run
-    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 7200 PROCESSORS ${PROCESSES} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS "verification" ATTACHED_FILES ${IMAGES_TO_UPLOAD} FIXTURES_REQUIRED ${TEST_DEPENDENCY})
+    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 7200 PROCESSORS ${PROCESSES} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS "verification" ATTACHED_FILES "${IMAGES_TO_UPLOAD}" FIXTURES_REQUIRED ${TEST_DEPENDENCY})
 endfunction(add_test_v2)
 
 # Standard unit test
