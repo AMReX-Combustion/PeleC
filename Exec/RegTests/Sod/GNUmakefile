@@ -17,7 +17,7 @@ USE_OMP    = FALSE
 #HYP_TYPE = MOL
 
 # define the location of the PELE top directory
-PELE_HOME    := ../../../..
+PELE_HOME    := ../../..
 
 # This sets the EOS directory in $(PELE_PHYSICS_HOME)/Eos
 Eos_dir     := GammaLaw
