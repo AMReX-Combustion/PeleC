@@ -32,7 +32,7 @@ PeleC::advance (Real time,
   {
     getFluxReg(level+1).reset();
 
-    if (!Geometry::IsCartesian()) {
+    if (!DefaultGeometry().IsCartesian()) {
       amrex::Abort("Flux registers not r-z compatible yet");
       getPresReg(level+1).reset();
     }

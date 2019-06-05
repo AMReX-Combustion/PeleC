@@ -100,7 +100,7 @@ PeleC::construct_hydro_source(const MultiFab& S, Real time, Real dt, int amr_ite
   int flag_nscbc_isAnyPerio = (geom.isAnyPeriodic()) ? 1 : 0; 
   int flag_nscbc_perio[BL_SPACEDIM]; // For 3D, we will know which corners have a periodicity
   for (int d=0; d<BL_SPACEDIM; ++d) {
-        flag_nscbc_perio[d] = (Geometry::isPeriodic(d)) ? 1 : 0;
+        flag_nscbc_perio[d] = (DefaultGeometry().isPeriodic(d)) ? 1 : 0;
     }
 	const int*  domain_lo = geom.Domain().loVect();
 	const int*  domain_hi = geom.Domain().hiVect();
@@ -179,7 +179,7 @@ PeleC::construct_hydro_source(const MultiFab& S, Real time, Real dt, int amr_ite
 		    flux[i].resize(bxtmp,NUM_STATE);
 	    }
 
-	    if (!Geometry::IsCartesian()) {
+	    if (!DefaultGeometry().IsCartesian()) {
 		pradial.resize(amrex::surroundingNodes(bx,0),1);
 	    }
 
@@ -224,9 +224,9 @@ PeleC::construct_hydro_source(const MultiFab& S, Real time, Real dt, int amr_ite
             {
               if (level < finest_level)
               {
-                getFluxReg(level+1).CrseAdd(mfi,{D_DECL(&flux[0],&flux[1],&flux[2])}, dxDp,dt);
+                getFluxReg(level+1).CrseAdd(mfi,{D_DECL(&flux[0],&flux[1],&flux[2])}, dxDp,dt,RunOn::Cpu);
 
-                if (!Geometry::IsCartesian()) {
+                if (!DefaultGeometry().IsCartesian()) {
                     amrex::Abort("Flux registers not r-z compatible yet");
                     //getPresReg(level+1).CrseAdd(mfi,pradial, dx,dt);
                 }
@@ -234,9 +234,9 @@ PeleC::construct_hydro_source(const MultiFab& S, Real time, Real dt, int amr_ite
 
               if (level > 0)
               {
-                getFluxReg(level).FineAdd(mfi, {D_DECL(&flux[0],&flux[1],&flux[2])}, dxDp,dt);
+                getFluxReg(level).FineAdd(mfi, {D_DECL(&flux[0],&flux[1],&flux[2])}, dxDp,dt, RunOn::Cpu);
 
-                if (!Geometry::IsCartesian()) {
+                if (!DefaultGeometry().IsCartesian()) {
                     amrex::Abort("Flux registers not r-z compatible yet");
                     //getPresReg(level).FineAdd(mfi,pradial, dx,dt);
                 }
