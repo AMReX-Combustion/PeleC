@@ -291,7 +291,7 @@ PeleC::variableSetUp ()
 	std::cout << "Using Ghost-Cells Navier-Stokes Characteristic BCs for diffusion: nscbc_diff = " << nscbc_diff << '\n' << '\n' ;
 
   
-    int coord_type = Geometry::Coord();
+    int coord_type = DefaultGeometry().Coord();
 
     // Get the center variable from the inputs and pass it directly to Fortran.
     Vector<Real> center(BL_SPACEDIM, 0.0);
@@ -300,7 +300,7 @@ PeleC::variableSetUp ()
   
     set_problem_params(dm,phys_bc.lo(),phys_bc.hi(),
 		       Interior,UserBC,Inflow,Outflow,Symmetry,SlipWall,NoSlipWall,coord_type,
-		       Geometry::ProbLo(),Geometry::ProbHi(),center.dataPtr());
+		       DefaultGeometry().ProbLo(),DefaultGeometry().ProbHi(),center.dataPtr());
   
     // Read in the parameters for the tagging criteria
     // and store them in the Fortran module.

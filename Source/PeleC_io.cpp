@@ -204,7 +204,7 @@ PeleC::restart (Amr&     papa,
                         geom, papa.Geom(level-1),
                         papa.refRatio(level-1), level, NUM_STATE);
 
-	if (!Geometry::IsCartesian()) {
+	if (!DefaultGeometry().IsCartesian()) {
             pres_reg.define(grids, papa.boxArray(level-1),
                             dmap, papa.DistributionMap(level-1),
                             geom, papa.Geom(level-1),
@@ -747,10 +747,10 @@ PeleC::writePlotFile (const std::string& dir,
         int f_lev = parent->finestLevel();
         os << f_lev << '\n';
         for (i = 0; i < BL_SPACEDIM; i++)
-            os << Geometry::ProbLo(i) << ' ';
+            os << DefaultGeometry().ProbLo(i) << ' ';
         os << '\n';
         for (i = 0; i < BL_SPACEDIM; i++)
-            os << Geometry::ProbHi(i) << ' ';
+            os << DefaultGeometry().ProbHi(i) << ' ';
         os << '\n';
         for (i = 0; i < f_lev; i++)
             os << parent->refRatio(i)[0] << ' ';
@@ -767,7 +767,7 @@ PeleC::writePlotFile (const std::string& dir,
                 os << parent->Geom(i).CellSize()[k] << ' ';
             os << '\n';
         }
-        os << (int) Geometry::Coord() << '\n';
+        os << (int) DefaultGeometry().Coord() << '\n';
         os << "0\n"; // Write bndry data.
 
 	writeJobInfo(dir);
@@ -949,10 +949,10 @@ PeleC::writeSmallPlotFile (const std::string& dir,
         int f_lev = parent->finestLevel();
         os << f_lev << '\n';
         for (i = 0; i < BL_SPACEDIM; i++)
-            os << Geometry::ProbLo(i) << ' ';
+            os << DefaultGeometry().ProbLo(i) << ' ';
         os << '\n';
         for (i = 0; i < BL_SPACEDIM; i++)
-            os << Geometry::ProbHi(i) << ' ';
+            os << DefaultGeometry().ProbHi(i) << ' ';
         os << '\n';
         for (i = 0; i < f_lev; i++)
             os << parent->refRatio(i)[0] << ' ';
@@ -969,7 +969,7 @@ PeleC::writeSmallPlotFile (const std::string& dir,
                 os << parent->Geom(i).CellSize()[k] << ' ';
             os << '\n';
         }
-        os << (int) Geometry::Coord() << '\n';
+        os << (int) DefaultGeometry().Coord() << '\n';
         os << "0\n"; // Write bndry data.
 
         // job_info file with details about the run
