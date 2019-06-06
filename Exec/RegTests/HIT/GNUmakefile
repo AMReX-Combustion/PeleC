@@ -10,9 +10,6 @@ COMP	   = gcc
 USE_MPI    = FALSE
 USE_OMP    = FALSE
 
-# define the location of the PELE top directory
-PELE_HOME    := ../../..
-
 # This sets the EOS directory in $(PELE_PHYSICS_HOME)/Eos
 Eos_dir     := GammaLaw
 
@@ -24,7 +21,9 @@ Transport_dir := Constant
 
 Bpack   := ./Make.package
 
-include ../../Make.PeleC
+# define the location of the PELE top directory
+PELEC_HOME    := ../../..
+include $(PELEC_HOME)/Exec/Make.PeleC
 
 ifeq ($(DEBUG), TRUE)
 DEFINES += -DDEBUG

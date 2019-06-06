@@ -28,9 +28,6 @@ DEBUG = FALSE
 
 HYP_TYPE = MOL
 
-# define the location of the PELE top directory
-PELE_HOME    := ../../..
-
 # This sets the EOS directory in $(PELE_PHYSICS_HOME)/Eos
 Eos_dir     := GammaLaw
 
@@ -43,5 +40,6 @@ Transport_dir := Constant
 Bpack   := ./Make.package
 Blocs   := .
 
-
-include ../Make.PeleC
+# define the location of the PELE top directory
+PELEC_HOME := ../../..
+include $(PELEC_HOME)/Exec/Make.PeleC
