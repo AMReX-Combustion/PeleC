@@ -125,7 +125,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
     int flag_nscbc_isAnyPerio = (geom.isAnyPeriodic()) ? 1 : 0; 
     int flag_nscbc_perio[BL_SPACEDIM]; // For 3D, we will know which corners have a periodicity
     for (int d=0; d<BL_SPACEDIM; ++d) {
-        flag_nscbc_perio[d] = (Geometry::isPeriodic(d)) ? 1 : 0;
+        flag_nscbc_perio[d] = (DefaultGeometry().isPeriodic(d)) ? 1 : 0;
     }
 	  const int*  domain_lo = geom.Domain().loVect();
 	  const int*  domain_hi = geom.Domain().hiVect();
@@ -552,7 +552,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
                                 dxDp, dt, vfrac[mfi],
                                 {&((*areafrac[0])[mfi]),
                                     &((*areafrac[1])[mfi]),
-                                    &((*areafrac[2])[mfi])});
+                                    &((*areafrac[2])[mfi])},RunOn::Cpu);
 #else
             // TODO: EBfluxregisters are designed only for 3D, need for 2D
             Print() << "WARNING:Re redistribution crseadd for EB not implemented\n";
@@ -568,7 +568,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
                                 {&((*areafrac[0])[mfi]),
                                     &((*areafrac[1])[mfi]),
                                     &((*areafrac[2])[mfi])},
-                                dm_as_fine);
+                                dm_as_fine,RunOn::Cpu);
 #else
             // TODO: EBfluxregisters are designed only for 3D, need for 2D
             Print() << "WARNING:Re redistribution fineadd for EB not implemented in 2D\n";
@@ -597,13 +597,13 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
           if (level < parent->finestLevel()) {
             getFluxReg(level+1).CrseAdd(mfi,
                                         {D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])},
-                                        dxDp, dt);
+                                        dxDp, dt, RunOn::Cpu);
           }
 
           if (level > 0) {
             getFluxReg(level).FineAdd(mfi,
                                       {D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])},
-                                      dxDp, dt);
+                                      dxDp, dt, RunOn::Cpu);
           }
         }
 

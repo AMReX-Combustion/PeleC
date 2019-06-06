@@ -280,14 +280,14 @@ PeleC::read_params ()
   // Check phys_bc against possible periodic geometry
   // if periodic, must have internal BC marked.
   //
-  if (Geometry::isAnyPeriodic())
+  if (DefaultGeometry().isAnyPeriodic())
   {
     //
     // Do idiot check.  Periodic means interior in those directions.
     //
     for (int dir = 0; dir<BL_SPACEDIM; dir++)
     {
-      if (Geometry::isPeriodic(dir))
+      if (DefaultGeometry().isPeriodic(dir))
       {
         if (lo_bc[dir] != Interior)
         {
@@ -330,32 +330,32 @@ PeleC::read_params ()
     }
   }
 
-  if ( Geometry::IsRZ() && (lo_bc[0] != Symmetry) ) {
+  if ( DefaultGeometry().IsRZ() && (lo_bc[0] != Symmetry) ) {
     std::cerr << "ERROR:PeleC::read_params: must set r=0 boundary condition to Symmetry for r-z\n";
     amrex::Error();
   }
 
   // TODO: Any reason to support spherical in PeleC?
 #if (BL_SPACEDIM == 1)
-  if ( Geometry::IsSPHERICAL() )
+  if ( DefaultGeometry().IsSPHERICAL() )
   {
-    if ( (lo_bc[0] != Symmetry) && (Geometry::ProbLo(0) == 0.0) )
+    if ( (lo_bc[0] != Symmetry) && (DefaultGeometry().ProbLo(0) == 0.0) )
     {
       std::cerr << "ERROR:PeleC::read_params: must set r=0 boundary condition to Symmetry for spherical\n";
       amrex::Error();
     }
   }
 #elif (BL_SPACEDIM == 2)
-  if ( Geometry::IsSPHERICAL() )
+  if ( DefaultGeometry().IsSPHERICAL() )
   {
     amrex::Abort("We don't support spherical coordinate systems in 2D");
   }
 #elif (BL_SPACEDIM == 3)
-  if ( Geometry::IsRZ() )
+  if ( DefaultGeometry().IsRZ() )
   {
     amrex::Abort("We don't support cylindrical coordinate systems in 3D");
   }
-  else if ( Geometry::IsSPHERICAL() )
+  else if ( DefaultGeometry().IsSPHERICAL() )
   {
     amrex::Abort("We don't support spherical coordinate systems in 3D");
   }
@@ -408,7 +408,7 @@ PeleC::read_params ()
     amrex::Error();
   }
 
-  if (hybrid_riemann == 1 && (Geometry::IsSPHERICAL() || Geometry::IsRZ() ))
+  if (hybrid_riemann == 1 && (DefaultGeometry().IsSPHERICAL() || DefaultGeometry().IsRZ() ))
   {
     std::cerr << "hybrid_riemann should only be used for Cartesian coordinates\n";
     amrex::Error();
@@ -533,7 +533,7 @@ PeleC::PeleC (Amr&            papa,
 		    level_geom, papa.Geom(level-1),
 		    papa.refRatio(level-1), level, NUM_STATE);
     
-    if (!Geometry::IsCartesian())
+    if (!DefaultGeometry().IsCartesian())
     {
       pres_reg.define(bl, papa.boxArray(level-1),
 		      dm, papa.DistributionMap(level-1),
@@ -580,7 +580,7 @@ PeleC::buildMetrics ()
 
     Real* rad = radius[i].dataPtr();
 
-    if (Geometry::IsCartesian())
+    if (DefaultGeometry().IsCartesian())
     {
       for (int j = 0; j < len; j++)
       {
@@ -1387,7 +1387,7 @@ PeleC::reflux ()
 
   fine_level.flux_reg.Reflux(S_crse, vfrac, S_fine, fine_level.vfrac);
 
-  if (!Geometry::IsCartesian())
+  if (!DefaultGeometry().IsCartesian())
   {
     amrex::Abort("rz not yet compatible with EB");
   }
@@ -1396,7 +1396,7 @@ PeleC::reflux ()
 
   fine_level.flux_reg.Reflux(S_crse);
 
-  if (!Geometry::IsCartesian())
+  if (!DefaultGeometry().IsCartesian())
   {
     MultiFab dr(volume.boxArray(),volume.DistributionMap(),1,volume.nGrow(),
                 MFInfo(),FArrayBoxFactory());
