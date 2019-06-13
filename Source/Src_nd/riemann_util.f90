@@ -1054,7 +1054,7 @@ contains
     double precision, intent(in) :: csmall, cav
 
     ! Work values sent back to compute passive scalar flux
-    double precision, intent(in) :: regd !currently not used
+    double precision, intent(in) :: regd !currently not used, and only set to intent(in) to avoid warning
     double precision, intent(out) :: rgd, ustar
     double precision, intent(out) :: ugd, v1gd, v2gd, pgd, gamegd
 
