@@ -270,7 +270,6 @@ module hyp_advection_module
                      idir, coord_type, bc_test_val, csmall(vii), cav(vii) )
              else
                 write(*,*) "Aborting, no valid Riemann sovler", riemann_solver
-                call flush()
                 call abort()
              endif
 
