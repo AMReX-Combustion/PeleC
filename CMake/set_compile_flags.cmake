@@ -52,11 +52,12 @@ function(set_compile_flags)
       # Add extra optimization flags
       list(APPEND CMAKE_CXX_FLAGS     "-ip"
                                       "-qopt-report=5"
-                                      "-qopt-report-phase=vec")
+                                      "-qopt-report-phase=vec"
+                                      "-diag-disable:10397") # Hundreds of remarks about .optrpt generated in the "output" location
       list(APPEND CMAKE_C_FLAGS       "-ip"
                                       "-qopt-report=5"
                                       "-qopt-report-phase=vec")
-      list(APPEND CMAKE_Fortran_FLAGS "")
+      list(APPEND CMAKE_Fortran_FLAGS "-diag-disable:8291") # Remark about high precision in an stdout write statement that a mainframe can't handle
     else()
       # Add extra debug flags
       list(APPEND CMAKE_CXX_FLAGS     "-traceback"

@@ -1054,14 +1054,12 @@ contains
     double precision, intent(in) :: csmall, cav
 
     ! Work values sent back to compute passive scalar flux
-    double precision, intent(out) :: rgd, regd, ustar 
+    double precision, intent(in) :: regd !currently not used, and only set to intent(in) to avoid warning
+    double precision, intent(out) :: rgd, ustar
     double precision, intent(out) :: ugd, v1gd, v2gd, pgd, gamegd
 
-
     ! Outputs
-
     double precision, intent(inout):: uflx_rho, uflx_u, uflx_v, uflx_w, uflx_eden, uflx_eint
-
 
     double precision, parameter:: small = 1.d-8
     double precision, parameter :: small_u = 1.d-10
