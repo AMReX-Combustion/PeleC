@@ -124,7 +124,7 @@ contains
                             cost,c_lo,c_hi, &
                             IR,IR_lo,IR_hi, &
                             time,dt_react,do_update,&
-                            nsubsteps_min,nsubsteps_max,nsubsteps_guess) bind(C, name="pc_react_state_expl")
+                            nsubsteps_min,nsubsteps_max,nsubsteps_guess,errtol) bind(C, name="pc_react_state_expl")
 
     use eos_type_module
     use eos_module, only : eos_t,eos_rt
@@ -156,6 +156,7 @@ contains
     double precision  :: time, dt_react
     integer           :: do_update
     integer           :: nsubsteps_min,nsubsteps_max,nsubsteps_guess
+    double precision  :: errtol
 
     integer           :: i, j, k
 
@@ -181,7 +182,7 @@ contains
 
     double precision :: rhoE_old,rho_e_K_old,rho,energy,rho_e_K_new,rho_new
     double precision :: rhoe_new,rhoet_new,rhoInv,mom_new(3)
-    double precision :: dt_rk,dt_rk_max,dt_rk_min,updt_time,tol
+    double precision :: dt_rk,dt_rk_max,dt_rk_min,updt_time
     
     call build(eos_state)
 
@@ -197,7 +198,6 @@ contains
     re_old      = 0.d0
     tempsrc     = 0.d0
     mom_new     = 0.d0
-    tol         = 1.d-20
 
     !==============================================================
     !sanitize urk_old so that masked values are sane and not NaN
@@ -271,8 +271,8 @@ contains
         updt_time = updt_time+dt_rk
         steps     = steps+1
 
-        write(6,*) "updt_time,dt_rk:",updt_time,dt_rk,dt_rk_min,dt_rk_max,dt_react
-        flush(6)
+        !write(6,*) "updt_time,dt_rk:",updt_time,dt_rk,dt_rk_min,dt_rk_max,dt_react
+        !flush(6)
 
         do stage=1,rk64_stages
 
@@ -395,9 +395,13 @@ contains
 
         enddo !stage loop
 
-        call adapt_timestep(lo,hi,urk_err,dt_rk,dt_rk_max,dt_rk_min,1.d-15)
+        call adapt_timestep(lo,hi,urk_err,dt_rk,dt_rk_max,dt_rk_min,errtol)
  
     enddo !substep loop
+
+    !write(6,*)"No: of chemistry substeps:",steps
+    !write(6,*)"================================"
+    !flush(6)
     
     !this is a one time operation, so keeping original pc_react_state code
     do k=lo(3),hi(3)
@@ -469,7 +473,7 @@ contains
         do j=lo(2),hi(2)
             do i=lo(1),hi(1)
                 
-                if(maxval(urk_err(i,j,k,:)) .gt. max_err) then
+                if(maxval(abs(urk_err(i,j,k,:))) .gt. max_err) then
                     max_err=maxval(urk_err(i,j,k,:))
                 endif
             enddo

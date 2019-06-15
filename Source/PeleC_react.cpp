@@ -127,7 +127,7 @@ PeleC::react_state(Real time, Real dt, bool react_init, MultiFab* A_aux)
                         m.dataPtr(),     ARLIM_3D(m.loVect()),     ARLIM_3D(m.hiVect()),
                         w.dataPtr(),     ARLIM_3D(w.loVect()),     ARLIM_3D(w.hiVect()),
                         I_R.dataPtr(),   ARLIM_3D(I_R.loVect()),   ARLIM_3D(I_R.hiVect()),
-                        time, dt, do_update,nsubsteps_min,nsubsteps_max,nsubsteps_guess);
+                        time, dt, do_update,adaptrk_nsubsteps_min,adaptrk_nsubsteps_max,adaptrk_nsubsteps_guess,adaptrk_errtol);
             }
 
             if (do_react_load_balance || do_mol_load_balance)
