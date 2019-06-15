@@ -1619,12 +1619,11 @@ PeleC::errorEst (TagBoxArray& tags,
 
   Vector<BCRec>       bcs(NUM_STATE);
   
-  FArrayBox S_derData;
-
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
   {
+    FArrayBox S_derData;
     Vector<int>  itags;
 
     for (MFIter mfi(S_data,false); mfi.isValid(); ++mfi)
