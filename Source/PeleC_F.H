@@ -401,7 +401,7 @@ extern "C"
      amrex::Real*        cost, const int*  c_lo, const int*  c_hi,
      amrex::Real*       rYdot, const int* rY_lo, const int* rY_hi,
      const amrex::Real& time,  const amrex::Real& dt_react, const int& do_react,
-     const int& nsubsteps_min,const int &nsubsteps_max,const int &nsubsteps_guess);
+     const int& nsubsteps_min,const int &nsubsteps_max,const int &nsubsteps_guess,const amrex::Real& errtol);
 #endif
 
   void pc_diffextrap
