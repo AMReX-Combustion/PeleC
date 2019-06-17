@@ -452,8 +452,8 @@ contains
 
   subroutine adapt_timestep(lo,hi,urk_err,dt_rk4,dt_rk4_max,dt_rk4_min,tol)
 
-      use meth_params_module, only : NVAR, UTEMP, UFS
-      use network           , only : nspec
+      use meth_params_module, only : NVAR
+
       implicit none
     
       integer           ::    lo(3), hi(3)

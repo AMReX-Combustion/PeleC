@@ -70,7 +70,13 @@ subroutine pc_reactor_init() bind(C, name="pc_reactor_init")
 
   use reactor_module, only: reactor_init
 
+#ifdef _OPENMP
+!$omp parallel
+#endif
   call reactor_init(1)
+#ifdef _OPENMP
+!$omp end parallel
+#endif
 
 end subroutine pc_reactor_init
 
@@ -82,7 +88,13 @@ subroutine pc_reactor_close() bind(C, name="pc_reactor_close")
 
   use reactor_module, only: reactor_close
 
+#ifdef _OPENMP
+!$omp parallel
+#endif
   call reactor_close()
+#ifdef _OPENMP
+!$omp end parallel
+#endif
 
 end subroutine pc_reactor_close
 #endif

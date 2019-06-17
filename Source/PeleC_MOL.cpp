@@ -624,7 +624,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
     for (MFIter mfi(MOLSrcTerm, hydro_tile_size); mfi.isValid(); ++mfi) {
       BL_PROFILE("PeleC::diffextrap calls");
 
-      const Box& bx = mfi.validbox();
+      const Box& bx = mfi.tilebox();
       pc_diffextrap(ARLIM_3D(bx.loVect()), ARLIM_3D(bx.hiVect()),
                     BL_TO_FORTRAN_N_3D(MOLSrcTerm[mfi], Xmom), &amrex::SpaceDim);
 
