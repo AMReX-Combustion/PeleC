@@ -618,13 +618,10 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
 
   // Extrapolate to ghost cells
   if (MOLSrcTerm.nGrow() > 0) {
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
     for (MFIter mfi(MOLSrcTerm, hydro_tile_size); mfi.isValid(); ++mfi) {
       BL_PROFILE("PeleC::diffextrap calls");
 
-      const Box& bx = mfi.tilebox();
+      const Box& bx = mfi.validbox();
       pc_diffextrap(ARLIM_3D(bx.loVect()), ARLIM_3D(bx.hiVect()),
                     BL_TO_FORTRAN_N_3D(MOLSrcTerm[mfi], Xmom), &amrex::SpaceDim);
 
