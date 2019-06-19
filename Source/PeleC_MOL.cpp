@@ -618,6 +618,9 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
 
   // Extrapolate to ghost cells
   if (MOLSrcTerm.nGrow() > 0) {
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
     for (MFIter mfi(MOLSrcTerm, hydro_tile_size); mfi.isValid(); ++mfi) {
       BL_PROFILE("PeleC::diffextrap calls");
 
