@@ -169,7 +169,7 @@ contains
     double precision :: saneval(NVAR)
     double precision :: urk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),NVAR)
     double precision :: yrk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),nspec)
-    double precision :: urk_old(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),NVAR)
+    double precision :: urk_carryover(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),NVAR)
     double precision :: urk_err(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),NVAR)
     double precision :: wdot(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),nspec)
     double precision :: eint(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),nspec)
@@ -188,7 +188,7 @@ contains
 
     !initialize all local arrays
     yrk         = 0.d0
-    urk_old     = uold(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),:)
+    urk_carryover     = uold(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),:)
     urk_err     = 0.d0
     wdot        = 0.d0
     eint        = 0.d0
@@ -200,7 +200,7 @@ contains
     mom_new     = 0.d0
 
     !==============================================================
-    !sanitize urk_old so that masked values are sane and not NaN
+    !sanitize urk_carryover so that masked values are sane and not NaN
     !May be removed if we are confident this is not the case
     !with uninitialized fortran arrays I am not sure!
     !==============================================================
@@ -208,7 +208,7 @@ contains
         do j=lo(2),hi(2)
             do i=lo(1),hi(1)
                 if(mask(i,j,k) .eq. 1) then
-                    saneval(:)=urk_old(i,j,k,:)
+                    saneval(:)=urk_carryover(i,j,k,:)
                     exit
                 endif
             enddo
@@ -219,7 +219,7 @@ contains
         do j=lo(2),hi(2)
             do i=lo(1),hi(1)
                 if(mask(i,j,k) .ne. 1) then
-                    urk_old(i,j,k,:)=saneval(:)
+                    urk_carryover(i,j,k,:)=saneval(:)
                 endif
             enddo
         enddo
@@ -227,7 +227,7 @@ contains
     !===============================================================
 
     !setting urk
-    urk         = urk_old
+    urk         = urk_carryover
     
     !compute rhoe_ext/rhoy_ext - one time operation, keeping original 
     !pc_react_state code ===========================================
@@ -267,7 +267,7 @@ contains
     do while(updt_time .lt. dt_react)
     !do steps=1,nsubsteps
 
-        urk_old   = urk
+        urk_carryover   = urk
         updt_time = updt_time+dt_rk
         steps     = steps+1
 
@@ -360,23 +360,23 @@ contains
                 !=====================
 
                 !update species
-                urk(i,j,k,UFS:UFS+nspec-1)  = urk_old(i,j,k,UFS:UFS+nspec-1) + &
+                urk(i,j,k,UFS:UFS+nspec-1)  = urk_carryover(i,j,k,UFS:UFS+nspec-1) + &
                 alpha_rk64(stage)*dt_rk*wdot(i,j,k,1:nspec)*mask(i,j,k)
 
                 !update temperature 
-                urk(i,j,k,UTEMP) = urk_old(i,j,k,UTEMP) + alpha_rk64(stage)*dt_rk*tempsrc(i,j,k)*mask(i,j,k)
+                urk(i,j,k,UTEMP) = urk_carryover(i,j,k,UTEMP) + alpha_rk64(stage)*dt_rk*tempsrc(i,j,k)*mask(i,j,k)
                 !===============================================================================================
 
                 !=====================
-                !update urk_old
+                !update urk_carryover
                 !=====================
                 
                 !update species
-                urk_old(i,j,k,UFS:UFS+nspec-1)  = urk(i,j,k,UFS:UFS+nspec-1) + &
+                urk_carryover(i,j,k,UFS:UFS+nspec-1)  = urk(i,j,k,UFS:UFS+nspec-1) + &
                 beta_rk64(stage)*dt_rk*wdot(i,j,k,1:nspec)*mask(i,j,k)
 
                 !update temperature 
-                urk_old(i,j,k,UTEMP) = urk(i,j,k,UTEMP) + beta_rk64(stage)*dt_rk*tempsrc(i,j,k)*mask(i,j,k)
+                urk_carryover(i,j,k,UTEMP) = urk(i,j,k,UTEMP) + beta_rk64(stage)*dt_rk*tempsrc(i,j,k)*mask(i,j,k)
                 !===============================================================================================
 
             enddo
@@ -474,7 +474,7 @@ contains
             do i=lo(1),hi(1)
                 
                 if(maxval(abs(urk_err(i,j,k,:))) .gt. max_err) then
-                    max_err=maxval(urk_err(i,j,k,:))
+                    max_err=maxval(abs(urk_err(i,j,k,:)))
                 endif
             enddo
         enddo
