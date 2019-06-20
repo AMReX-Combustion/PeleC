@@ -27,7 +27,6 @@ function(get_amrex_sources)
    )
    set(AMREX_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Submodules/AMReX/Src/Base")
    add_sources(GlobalSourceList
-     # Utility classes ---------------------------------------------------------
      ${AMREX_SOURCE_DIR}/AMReX_ccse-mpi.H
      ${AMREX_SOURCE_DIR}/AMReX_Array.H
      ${AMREX_SOURCE_DIR}/AMReX_Vector.H
@@ -80,7 +79,6 @@ function(get_amrex_sources)
      ${AMREX_SOURCE_DIR}/AMReX_NFiles.cpp  
      ${AMREX_SOURCE_DIR}/AMReX_parstream.H
      ${AMREX_SOURCE_DIR}/AMReX_parstream.cpp
-     # I/O stuff  --------------------------------------------------------------
      ${AMREX_SOURCE_DIR}/AMReX_FabConv.H  
      ${AMREX_SOURCE_DIR}/AMReX_FabConv.cpp  
      ${AMREX_SOURCE_DIR}/AMReX_FPC.H
@@ -90,11 +88,11 @@ function(get_amrex_sources)
      ${AMREX_SOURCE_DIR}/AMReX_Print.H
      ${AMREX_SOURCE_DIR}/AMReX_IntConv.H
      ${AMREX_SOURCE_DIR}/AMReX_IntConv.cpp
-     # Index space -------------------------------------------------------------
      ${AMREX_SOURCE_DIR}/AMReX_Box.H
      ${AMREX_SOURCE_DIR}/AMReX_Box.cpp
      ${AMREX_SOURCE_DIR}/AMReX_BoxIterator.H 
      ${AMREX_SOURCE_DIR}/AMReX_BoxIterator.cpp
+     ${AMREX_SOURCE_DIR}/AMReX_Dim3.H
      ${AMREX_SOURCE_DIR}/AMReX_IntVect.H
      ${AMREX_SOURCE_DIR}/AMReX_IntVect.cpp
      ${AMREX_SOURCE_DIR}/AMReX_IndexType.H
@@ -103,30 +101,27 @@ function(get_amrex_sources)
      ${AMREX_SOURCE_DIR}/AMReX_Orientation.cpp
      ${AMREX_SOURCE_DIR}/AMReX_Periodicity.H 
      ${AMREX_SOURCE_DIR}/AMReX_Periodicity.cpp
-     # Real space --------------------------------------------------------------
      ${AMREX_SOURCE_DIR}/AMReX_RealBox.H
      ${AMREX_SOURCE_DIR}/AMReX_RealBox.cpp
      ${AMREX_SOURCE_DIR}/AMReX_RealVect.H
      ${AMREX_SOURCE_DIR}/AMReX_RealVect.cpp
-     # Unions of rectangle -----------------------------------------------------
      ${AMREX_SOURCE_DIR}/AMReX_BoxList.H
      ${AMREX_SOURCE_DIR}/AMReX_BoxList.cpp 
      ${AMREX_SOURCE_DIR}/AMReX_BoxArray.H 
      ${AMREX_SOURCE_DIR}/AMReX_BoxArray.cpp
      ${AMREX_SOURCE_DIR}/AMReX_BoxDomain.H
      ${AMREX_SOURCE_DIR}/AMReX_BoxDomain.cpp
-     # Fortran array data ------------------------------------------------------
      ${AMREX_SOURCE_DIR}/AMReX_FArrayBox.H
      ${AMREX_SOURCE_DIR}/AMReX_FArrayBox.cpp
      ${AMREX_SOURCE_DIR}/AMReX_IArrayBox.H
      ${AMREX_SOURCE_DIR}/AMReX_IArrayBox.cpp 
      ${AMREX_SOURCE_DIR}/AMReX_BaseFab.H
      ${AMREX_SOURCE_DIR}/AMReX_BaseFab.cpp
+     ${AMREX_SOURCE_DIR}/AMReX_Array4.H
      ${AMREX_SOURCE_DIR}/AMReX_MakeType.H
      ${AMREX_SOURCE_DIR}/AMReX_TypeTraits.H
      ${AMREX_SOURCE_DIR}/AMReX_FabFactory.H
      ${AMREX_SOURCE_DIR}/AMReX_BaseFabUtility.H
-     # Fortran data defined on unions of rectangles ----------------------------
      ${AMREX_SOURCE_DIR}/AMReX_MultiFab.cpp 
      ${AMREX_SOURCE_DIR}/AMReX_MultiFab.H
      ${AMREX_SOURCE_DIR}/AMReX_MFCopyDescriptor.cpp
@@ -142,14 +137,12 @@ function(get_amrex_sources)
      ${AMREX_SOURCE_DIR}/AMReX_FabArrayCommI.H
      ${AMREX_SOURCE_DIR}/AMReX_FabArrayUtility.H
      ${AMREX_SOURCE_DIR}/AMReX_LayoutData.H
-     # Geometry / Coordinate system routines -----------------------------------
      ${AMREX_SOURCE_DIR}/AMReX_CoordSys.cpp 
      ${AMREX_SOURCE_DIR}/AMReX_CoordSys.H
      ${AMREX_SOURCE_DIR}/AMReX_Geometry.cpp 
      ${AMREX_SOURCE_DIR}/AMReX_Geometry.H
      ${AMREX_SOURCE_DIR}/AMReX_MultiFabUtil.cpp
      ${AMREX_SOURCE_DIR}/AMReX_MultiFabUtil.H
-     # Boundary-related --------------------------------------------------------
      ${AMREX_SOURCE_DIR}/AMReX_BCRec.cpp
      ${AMREX_SOURCE_DIR}/AMReX_BCRec.H 
      ${AMREX_SOURCE_DIR}/AMReX_PhysBCFunct.cpp
@@ -157,13 +150,10 @@ function(get_amrex_sources)
      ${AMREX_SOURCE_DIR}/AMReX_BCUtil.cpp
      ${AMREX_SOURCE_DIR}/AMReX_BCUtil.H
      ${AMREX_SOURCE_DIR}/AMReX_BC_TYPES.H 
-     # Plotfile ----------------------------------------------------------------
      ${AMREX_SOURCE_DIR}/AMReX_PlotFileUtil.cpp
      ${AMREX_SOURCE_DIR}/AMReX_PlotFileUtil.H
      ${AMREX_SOURCE_DIR}/AMReX_PlotFileDataImpl.H
      ${AMREX_SOURCE_DIR}/AMReX_PlotFileDataImpl.cpp
-     # Fortran interface routines.
-     # In GNUMake system, this is included only if BL_NO_FORT=FALSE ------------
      ${AMREX_SOURCE_DIR}/AMReX_COORDSYS_${AMREX_DIM}D_C.H
      ${AMREX_SOURCE_DIR}/AMReX_COORDSYS_C.H
      ${AMREX_SOURCE_DIR}/AMReX_filcc_f.H
@@ -186,23 +176,17 @@ function(get_amrex_sources)
      ${AMREX_SOURCE_DIR}/AMReX_bc_types_mod.F90
      ${AMREX_SOURCE_DIR}/AMReX_ParallelDescriptor_F.F90
      ${AMREX_SOURCE_DIR}/AMReX_io_mod.F90
-     # GPU --------------------------------------------------------------------
      ${AMREX_SOURCE_DIR}/AMReX_Gpu.H
      ${AMREX_SOURCE_DIR}/AMReX_GpuQualifiers.H
      ${AMREX_SOURCE_DIR}/AMReX_GpuControl.H
      ${AMREX_SOURCE_DIR}/AMReX_GpuControl.cpp
      ${AMREX_SOURCE_DIR}/AMReX_GpuLaunch.H
+     ${AMREX_SOURCE_DIR}/AMReX_GpuLaunch.cpp
+     ${AMREX_SOURCE_DIR}/AMReX_GpuLaunchMacrosG.H
+     ${AMREX_SOURCE_DIR}/AMReX_GpuLaunchMacrosC.H
+     ${AMREX_SOURCE_DIR}/AMReX_GpuLaunchFunctsG.H
+     ${AMREX_SOURCE_DIR}/AMReX_GpuLaunchFunctsC.H
      ${AMREX_SOURCE_DIR}/AMReX_GpuError.H
-     # CUDA --------------------------------------------------------------------
-     ${AMREX_SOURCE_DIR}/AMReX_CudaAllocators.H
-     ${AMREX_SOURCE_DIR}/AMReX_CudaAllocators.cpp
-     ${AMREX_SOURCE_DIR}/AMReX_CudaRange.H
-     ${AMREX_SOURCE_DIR}/AMReX_CudaMemory.H
-     ${AMREX_SOURCE_DIR}/AMReX_CudaAllocators.H
-     ${AMREX_SOURCE_DIR}/AMReX_CudaLaunch.H
-     ${AMREX_SOURCE_DIR}/AMReX_CudaLaunch.cpp 
-     ${AMREX_SOURCE_DIR}/AMReX_CudaContainers.H
-     ${AMREX_SOURCE_DIR}/AMReX_CudaReduce.H
      ${AMREX_SOURCE_DIR}/AMReX_GpuDevice.H
      ${AMREX_SOURCE_DIR}/AMReX_GpuDevice.cpp
      ${AMREX_SOURCE_DIR}/AMReX_GpuUtility.H
@@ -213,19 +197,23 @@ function(get_amrex_sources)
      ${AMREX_SOURCE_DIR}/AMReX_GpuAsyncFabImpl.cpp
      ${AMREX_SOURCE_DIR}/AMReX_GpuAsyncArray.H
      ${AMREX_SOURCE_DIR}/AMReX_GpuAsyncArray.cpp
-     ${AMREX_SOURCE_DIR}/AMReX_CudaElixir.H
-     ${AMREX_SOURCE_DIR}/AMReX_CudaElixir.cpp
+     ${AMREX_SOURCE_DIR}/AMReX_GpuElixir.H
+     ${AMREX_SOURCE_DIR}/AMReX_GpuElixir.cpp
+     ${AMREX_SOURCE_DIR}/AMReX_GpuMemory.H
+     ${AMREX_SOURCE_DIR}/AMReX_GpuRange.H
+     ${AMREX_SOURCE_DIR}/AMReX_GpuReduce.H
+     ${AMREX_SOURCE_DIR}/AMReX_CudaAllocators.H
+     ${AMREX_SOURCE_DIR}/AMReX_CudaAllocators.cpp
+     ${AMREX_SOURCE_DIR}/AMReX_CudaAllocators.H
+     ${AMREX_SOURCE_DIR}/AMReX_CudaContainers.H
      ${AMREX_SOURCE_DIR}/AMReX_CudaGraph.H
-     # Machine model -----------------------------------------------------------
      ${AMREX_SOURCE_DIR}/AMReX_Machine.H
      ${AMREX_SOURCE_DIR}/AMReX_Machine.cpp
-     # Memory pool -------------------------------------------------------------
      ${AMREX_SOURCE_DIR}/AMReX_MemPool.cpp
      ${AMREX_SOURCE_DIR}/AMReX_MemPool.H
      ${AMREX_SOURCE_DIR}/AMReX_mempool_mod.F90 # if BL_NO_FORT = FALSE
-     # Profiling ---------------------------------------------------------------
      ${AMREX_SOURCE_DIR}/AMReX_BLProfiler.cpp
-     ${AMREX_SOURCE_DIR}/AMReX_BLBackTrace.cpp 
+     ${AMREX_SOURCE_DIR}/AMReX_BLBackTrace.cpp   
    )
    set(AMREX_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Submodules/AMReX/Src/F_Interfaces/AmrCore")
    add_sources(GlobalSourceList
