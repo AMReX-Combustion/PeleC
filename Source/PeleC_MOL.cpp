@@ -624,15 +624,19 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
     for (MFIter mfi(MOLSrcTerm, hydro_tile_size); mfi.isValid(); ++mfi) {
       BL_PROFILE("PeleC::diffextrap calls");
 
-      const Box& bx = mfi.tilebox();
-      pc_diffextrap(ARLIM_3D(bx.loVect()), ARLIM_3D(bx.hiVect()),
+      const Box& vbx = mfi.validbox();
+      const Box& tbx = mfi.tilebox();
+      pc_diffextrap(BL_TO_FORTRAN_BOX(tbx),
+                    BL_TO_FORTRAN_BOX(vbx),
                     BL_TO_FORTRAN_N_3D(MOLSrcTerm[mfi], Xmom), &amrex::SpaceDim);
 
-      pc_diffextrap(ARLIM_3D(bx.loVect()), ARLIM_3D(bx.hiVect()),
+      pc_diffextrap(BL_TO_FORTRAN_BOX(tbx),
+                    BL_TO_FORTRAN_BOX(vbx),
                     BL_TO_FORTRAN_N_3D(MOLSrcTerm[mfi], FirstSpec), &NumSpec);
 
       const int one = 1;
-      pc_diffextrap(ARLIM_3D(bx.loVect()), ARLIM_3D(bx.hiVect()),
+      pc_diffextrap(BL_TO_FORTRAN_BOX(tbx),
+                    BL_TO_FORTRAN_BOX(vbx),
                     BL_TO_FORTRAN_N_3D(MOLSrcTerm[mfi], Eden), &one);
     }
   }
