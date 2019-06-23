@@ -189,9 +189,6 @@ function(get_amrex_sources)
      ${AMREX_SOURCE_DIR}/AMReX_GpuDevice.cpp
      ${AMREX_SOURCE_DIR}/AMReX_GpuUtility.H
      ${AMREX_SOURCE_DIR}/AMReX_GpuUtility.cpp
-     ${AMREX_SOURCE_DIR}/AMReX_GpuAsyncFab.H
-     ${AMREX_SOURCE_DIR}/AMReX_GpuAsyncFab.cpp
-     ${AMREX_SOURCE_DIR}/AMReX_GpuAsyncFabImpl.H
      ${AMREX_SOURCE_DIR}/AMReX_GpuAsyncArray.H
      ${AMREX_SOURCE_DIR}/AMReX_GpuAsyncArray.cpp
      ${AMREX_SOURCE_DIR}/AMReX_GpuElixir.H
