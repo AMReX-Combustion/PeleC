@@ -6,17 +6,16 @@ module diffusion_module
 
 contains
 
-  subroutine pc_diffextrap(lo, hi, dif, d_lo, d_hi, nc) &
+  subroutine pc_diffextrap(lo, hi, vlo, vhi, dif, d_lo, d_hi, nc) &
        bind(C, name="pc_diffextrap")
 
     ! this routine extrapolates the diffusion term into the
     ! ghostcells
 
-    use prob_params_module, only: dg
-
     implicit none
 
     integer :: lo(3), hi(3)
+    integer :: vlo(3), vhi(3)
     integer :: d_lo(3), d_hi(3)
     integer :: nc
     double precision :: dif(d_lo(1):d_hi(1),d_lo(2):d_hi(2),d_lo(3):d_hi(3),nc)
@@ -27,220 +26,275 @@ contains
 
     do n=1,nc
        ! left side
-       if (d_lo(1) .lt. lo(1)) then
-          i = lo(1)-1*dg(1)
-          do k = lo(3), hi(3)
-             do j = lo(2), hi(2)
-                dif(i,j,k,n) = dif(i+1*dg(1),j,k,n)
+       if (lo(1) .eq. vlo(1)) then
+          do i = d_lo(1), lo(1)-1
+             do k = lo(3), hi(3)
+                do j = lo(2), hi(2)
+                   dif(i,j,k,n) = dif(lo(1),j,k,n)
+                end do
              end do
           end do
        endif
 
        ! right side
-       if (d_hi(1) .gt. hi(1)) then
-          i = hi(1)+1*dg(1)
-          do k = lo(3), hi(3)
-             do j = lo(2), hi(2)
-                dif(i,j,k,n) = dif(i-1*dg(1),j,k,n)
+       if (hi(1) .eq. vhi(1)) then
+          do i = hi(1)+1, d_hi(1)
+             do k = lo(3), hi(3)
+                do j = lo(2), hi(2)
+                   dif(i,j,k,n) = dif(hi(1),j,k,n)
+                end do
              end do
           end do
        endif
 
        ! bottom side
-       if (d_lo(2) .lt. lo(2)) then
-          j = lo(2)-1*dg(2)
-          do k = lo(3), hi(3)
-             do i = lo(1), hi(1)
-                dif(i,j,k,n) = dif(i,j+1*dg(2),k,n)
+       if (lo(2) .eq. vlo(2)) then
+          do j = d_lo(2), lo(2)-1
+             do k = lo(3), hi(3)
+                do i = lo(1), hi(1)
+                   dif(i,j,k,n) = dif(i,lo(2),k,n)
+                end do
              end do
           end do
        endif
 
        ! top side
-       if (d_hi(2) .gt. hi(2)) then
-          j = hi(2)+1*dg(2)
-          do k = lo(3), hi(3)
-             do i = lo(1), hi(1)
-                dif(i,j,k,n) = dif(i,j-1*dg(2),k,n)
+       if (hi(2) .eq. vhi(2)) then
+          do j = hi(2)+1, d_hi(2)
+             do k = lo(3), hi(3)
+                do i = lo(1), hi(1)
+                   dif(i,j,k,n) = dif(i,hi(2),k,n)
+                end do
              end do
           end do
        endif
 
        ! down side
-       if (d_lo(3) .lt. lo(3)) then
-          k = lo(3)-1*dg(3)
-          do j = lo(2), hi(2)
-             do i = lo(1), hi(1)
-                dif(i,j,k,n) = dif(i,j,k+1*dg(3),n)
+       if (lo(3) .eq. vlo(3)) then
+          do k = d_lo(3), lo(3)-1
+             do j = lo(2), hi(2)
+                do i = lo(1), hi(1)
+                   dif(i,j,k,n) = dif(i,j,lo(3),n)
+                end do
              end do
           end do
        endif
 
        ! up side
-       if (d_hi(3) .gt. hi(3)) then
-          k = hi(3)+1*dg(3)
-          do j = lo(2), hi(2)
-             do i = lo(1), hi(1)
-                dif(i,j,k,n) = dif(i,j,k-1*dg(3),n)
+       if (hi(3) .eq. vhi(3)) then
+          do k = hi(3)+1, d_hi(3)
+             do j = lo(2), hi(2)
+                do i = lo(1), hi(1)
+                   dif(i,j,k,n) = dif(i,j,hi(3),n)
+                end do
              end do
           end do
        endif
 
        ! k-edges
-       if (d_lo(1) .lt. lo(1) .and. d_lo(2) .lt. lo(2)) then
-          i = lo(1)-1*dg(1)
-          j = lo(2)-1*dg(2)
-          do k = lo(3), hi(3)
-             dif(i,j,k,n) = dif(i+1*dg(1),j+1*dg(2),k,n)
+       if (lo(1) .eq. vlo(1) .and. lo(2) .eq. vlo(2)) then
+          do j = d_lo(2), lo(2)-1
+             do i = d_lo(1), lo(1)-1
+                do k = lo(3), hi(3)
+                   dif(i,j,k,n) = dif(lo(1),lo(2),k,n)
+                end do
+             end do
           end do
        endif
 
-       if (d_lo(1) .lt. lo(1) .and. d_hi(2) .gt. hi(2)) then
-          i = lo(1)-1*dg(1)
-          j = hi(2)+1*dg(2)
-          do k = lo(3), hi(3)
-             dif(i,j,k,n) = dif(i+1*dg(1),j-1*dg(2),k,n)
+       if (lo(1) .eq. vlo(1) .and. hi(2) .eq. vhi(2)) then
+          do j = hi(2)+1, d_hi(2)
+             do i = d_lo(1), d_lo(1)-1
+                do k = lo(3), hi(3)
+                   dif(i,j,k,n) = dif(lo(1),hi(2),k,n)
+                end do
+             end do
           end do
        endif
 
-       if (d_hi(1) .gt. hi(1) .and. d_lo(2) .lt. lo(2)) then
-          i = hi(1)+1*dg(1)
-          j = lo(2)-1*dg(2)
-          do k = lo(3), hi(3)
-             dif(i,j,k,n) = dif(i-1*dg(1),j+1*dg(2),k,n)
+       if (hi(1) .eq. vhi(1) .and. lo(2) .eq. vlo(2)) then
+          do j = d_lo(2), lo(2)-1
+             do i = hi(1)+1, d_hi(1)
+                do k = lo(3), hi(3)
+                   dif(i,j,k,n) = dif(hi(1),lo(2),k,n)
+                end do
+             end do
           end do
        endif
 
-       if (d_hi(1) .gt. hi(1) .and. d_hi(2) .gt. hi(2)) then
-          i = hi(1)+1*dg(1)
-          j = hi(2)+1*dg(2)
-          do k = lo(3), hi(3)
-             dif(i,j,k,n) = dif(i-1*dg(1),j-1*dg(2),k,n)
+       if (hi(1) .eq. vhi(1) .and. hi(2) .eq. vhi(2)) then
+          do j = hi(2)+1, d_hi(2)
+             do i = hi(1)+1, d_hi(1)
+                do k = lo(3), hi(3)
+                   dif(i,j,k,n) = dif(hi(1),hi(2),k,n)
+                end do
+             end do
           end do
        endif
 
        ! j-edges
-       if (d_lo(1) .lt. lo(1) .and. d_lo(3) .lt. lo(3)) then
-          i = lo(1)-1*dg(1)
-          k = lo(3)-1*dg(3)
-          do j = lo(2), hi(2)
-             dif(i,j,k,n) = dif(i+1*dg(1),j,k+1*dg(3),n)
+       if (lo(1) .eq. vlo(1) .and. lo(3) .eq. vlo(3)) then
+          do k = d_lo(3), lo(3)-1
+             do i = d_lo(1), lo(1)-1
+                do j = lo(2), hi(2)
+                   dif(i,j,k,n) = dif(lo(1),j,lo(3),n)
+                end do
+             end do
           end do
        endif
 
-       if (d_lo(1) .lt. lo(1) .and. d_hi(3) .gt. hi(3)) then
-          i = lo(1)-1*dg(1)
-          k = hi(3)+1*dg(3)
-          do j = lo(2), hi(2)
-             dif(i,j,k,n) = dif(i+1*dg(1),j,k-1*dg(3),n)
+       if (lo(1) .eq. vlo(1) .and. hi(3) .eq. vhi(3)) then
+          do k = hi(3)+1, d_hi(3)
+             do i = d_lo(1), lo(1)-1
+                do j = lo(2), hi(2)
+                   dif(i,j,k,n) = dif(lo(1),j,hi(3),n)
+                end do
+             end do
           end do
        endif
 
-       if (d_hi(1) .gt. hi(1) .and. d_lo(3) .lt. lo(3)) then
-          i = hi(1)+1*dg(1)
-          k = lo(3)-1*dg(3)
-          do j = lo(2), hi(2)
-             dif(i,j,k,n) = dif(i-1*dg(1),j,k+1*dg(3),n)
+       if (hi(1) .eq. vhi(1) .and. lo(3) .eq. vlo(3)) then
+          do k = d_lo(3), lo(3)-1
+             do i = hi(1)+1, d_hi(1)
+                do j = lo(2), hi(2)
+                   dif(i,j,k,n) = dif(hi(1),j,lo(3),n)
+                end do
+             end do
           end do
        endif
 
-       if (d_hi(1) .gt. lo(1) .and. d_hi(3) .gt. lo(3)) then
-          i = hi(1)+1*dg(1)
-          k = hi(3)+1*dg(3)
-          do j = lo(2), hi(2)
-             dif(i,j,k,n) = dif(i-1*dg(1),j,k-1*dg(3),n)
+       if (hi(1) .eq. vhi(1) .and. hi(3) .eq. vhi(3)) then
+          do k = hi(3)+1, d_hi(3)
+             do i = hi(1)+1, d_hi(1)
+                do j = lo(2), hi(2)
+                   dif(i,j,k,n) = dif(hi(1),j,hi(3),n)
+                end do
+             end do
           end do
        endif
 
        ! i-edges
-       if (d_lo(2) .lt. lo(2) .and. d_lo(3) .lt. lo(3)) then
-          j = lo(2)-1*dg(2)
-          k = lo(3)-1*dg(3)
-          do i = lo(1), hi(1)
-             dif(i,j,k,n) = dif(i,j+1*dg(2),k+1*dg(3),n)
+       if (lo(2) .eq. vlo(2) .and. lo(3) .eq. vlo(3)) then
+          do k = d_lo(3), lo(3)-1
+             do j = d_lo(2), lo(2)-1
+                do i = lo(1), hi(1)
+                   dif(i,j,k,n) = dif(i,lo(2),lo(3),n)
+                end do
+             end do
           end do
        endif
 
-       if (d_lo(2) .lt. lo(2) .and. d_hi(3) .gt. hi(3)) then
-          j = lo(2)-1*dg(2)
-          k = hi(3)+1*dg(3)
-          do i = lo(1), hi(1)
-             dif(i,j,k,n) = dif(i,j+1*dg(2),k-1*dg(3),n)
+       if (lo(2) .eq. vlo(2) .and. hi(3) .eq. vhi(3)) then
+          do k = hi(3)+1, d_hi(3)
+             do j = d_lo(2), lo(2)-1
+                do i = lo(1), hi(1)
+                   dif(i,j,k,n) = dif(i,lo(2),hi(3),n)
+                end do
+             end do
           end do
        endif
 
-       if (d_hi(2) .gt. hi(2) .and. d_lo(3) .lt. lo(3)) then
-          j = hi(2)+1*dg(2)
-          k = lo(3)-1*dg(3)
-          do i = lo(1), hi(1)
-             dif(i,j,k,n) = dif(i,j-1*dg(2),k+1*dg(3),n)
+       if (hi(2) .eq. vhi(2) .and. lo(3) .eq. vlo(3)) then
+          do k = d_lo(3), lo(3)-1
+             do j = hi(2)+1, d_hi(2)
+                do i = lo(1), hi(1)
+                   dif(i,j,k,n) = dif(i,hi(2),lo(3),n)
+                end do
+             end do
           end do
        endif
 
-       if (d_hi(2) .gt. hi(2) .and. d_hi(3) .gt. hi(3)) then
-          j = hi(2)+1*dg(2)
-          k = hi(3)+1*dg(3)
-          do i = lo(1), hi(1)
-             dif(i,j,k,n) = dif(i,j-1*dg(2),k-1*dg(3),n)
+       if (hi(2) .eq. vhi(2) .and. hi(3) .eq. vhi(3)) then
+          do k = hi(3)+1, d_hi(3)
+             do j = hi(2)+1, d_hi(2)
+                do i = lo(1), hi(1)
+                   dif(i,j,k,n) = dif(i,hi(2),hi(3),n)
+                end do
+             end do
           end do
        endif
 
        ! corners
-       if (d_lo(1) .lt. lo(1) .and. d_lo(2) .lt. lo(2) .and. d_lo(3) .lt. lo(3)) then
-          i = lo(1)-1*dg(1)
-          j = lo(2)-1*dg(2)
-          k = lo(3)-1*dg(3)
-          dif(i,j,k,n) = dif(i+1*dg(1),j+1*dg(2),k+1*dg(3),n)
+       if (lo(1) .eq. vlo(1) .and. lo(2) .eq. vlo(2) .and. lo(3) .eq. vlo(3)) then
+          do k = d_lo(3), lo(3)-1
+             do j = d_lo(2), lo(2)-1
+                do i = d_lo(1), lo(1)-1
+                   dif(i,j,k,n) = dif(lo(1),lo(2),lo(3),n)
+                end do
+             end do
+          end do
        endif
 
-       if (d_lo(1) .lt. lo(1) .and. d_hi(2) .gt. hi(2) .and. d_lo(3) .lt. lo(3)) then
-          i = lo(1)-1*dg(1)
-          j = hi(2)+1*dg(2)
-          k = lo(3)-1*dg(3)
-          dif(i,j,k,n) = dif(i+1*dg(1),j-1*dg(2),k+1*dg(3),n)
+       if (lo(1) .eq. vlo(1) .and. hi(2) .eq. vhi(2) .and. lo(3) .eq. vlo(3)) then
+          do k = d_lo(3), lo(3)-1
+             do j = hi(2)+1, d_hi(2)
+                do i = d_lo(1), lo(1)-1
+                   dif(i,j,k,n) = dif(lo(1),hi(2),lo(3),n)
+                end do
+             end do
+          end do
        endif
 
-       if (d_hi(1) .gt. hi(1) .and. d_lo(2) .lt. lo(2) .and. d_lo(3) .lt. lo(3)) then
-          i = hi(1)+1*dg(1)
-          j = hi(2)+1*dg(2)
-          k = lo(3)-1*dg(3)
-          dif(i,j,k,n) = dif(i-1*dg(1),j-1*dg(2),k+1*dg(3),n)
+       if (hi(1) .eq. vhi(1) .and. lo(2) .eq. vlo(2) .and. lo(3) .eq. vlo(3)) then
+          do k = d_lo(3), lo(3)-1
+             do j = d_lo(2), lo(2)-1
+                do i = hi(1)+1, d_hi(1)
+                   dif(i,j,k,n) = dif(hi(1),lo(2),lo(3),n)
+                end do
+             end do
+          end do
        endif
 
-       if (d_hi(1) .gt. hi(1) .and. d_hi(2) .gt. hi(2) .and. d_lo(3) .lt. lo(3)) then
-          i = hi(1)+1*dg(1)
-          j = lo(2)-1*dg(2)
-          k = lo(3)-1*dg(3)
-          dif(i,j,k,n) = dif(i-1*dg(1),j+1*dg(2),k+1*dg(3),n)
+       if (hi(1) .eq. vhi(1) .and. hi(2) .eq. vhi(2) .and. lo(3) .eq. vlo(3)) then
+          do k = d_lo(3), lo(3)-1
+             do j = hi(2)+1, d_hi(2)
+                do i = hi(1)+1, d_hi(1)
+                   dif(i,j,k,n) = dif(hi(1),hi(2),lo(3),n)
+                end do
+             end do
+          end do
+       endif
+       
+       if (lo(1) .eq. vlo(1) .and. lo(2) .eq. vlo(2) .and. hi(3) .eq. vhi(3)) then
+          do k = hi(3)+1, d_hi(3)
+             do j = d_lo(2), lo(2)-1
+                do i = d_lo(1), lo(1)-1
+                   dif(i,j,k,n) = dif(lo(1),lo(2),hi(3),n)
+                end do
+             end do
+          end do
        endif
 
-       if (d_lo(1) .lt. lo(1) .and. d_lo(2) .lt. lo(2) .and. d_hi(3) .gt. hi(3)) then
-          i = lo(1)-1*dg(1)
-          j = lo(2)-1*dg(2)
-          k = hi(3)+1*dg(3)
-          dif(i,j,k,n) = dif(i+1*dg(1),j+1*dg(2),k-1*dg(3),n)
+       if (lo(1) .eq. vlo(1) .and. hi(2) .eq. vhi(2) .and. hi(3) .eq. vhi(3)) then
+          do k = d_hi(3), hi(3)-1
+             do j = hi(2)+1, d_hi(2)
+                do i = d_lo(1), lo(1)-1
+                   dif(i,j,k,n) = dif(lo(1),hi(2),hi(3),n)
+                end do
+             end do
+          end do
        endif
 
-       if (d_lo(1) .lt. lo(1) .and. d_hi(2) .gt. hi(2) .and. d_hi(3) .gt. hi(3)) then
-          i = lo(1)-1*dg(1)
-          j = hi(2)+1*dg(2)
-          k = hi(3)+1*dg(3)
-          dif(i,j,k,n) = dif(i+1*dg(1),j-1*dg(2),k-1*dg(3),n)
+       if (hi(1) .eq. vhi(1) .and. lo(2) .eq. vlo(2) .and. hi(3) .eq. vhi(3)) then
+          do k = d_hi(3), hi(3)-1
+             do j = d_lo(2), lo(2)-1
+                do i = hi(1)+1, d_hi(1)
+                   dif(i,j,k,n) = dif(hi(1),lo(2),hi(3),n)
+                end do
+             end do
+          end do
        endif
 
-       if (d_hi(1) .gt. hi(1) .and. d_lo(2) .lt. lo(2) .and. d_hi(3) .gt. hi(3)) then
-          i = hi(1)+1*dg(1)
-          j = lo(2)-1*dg(2)
-          k = hi(3)+1*dg(3)
-          dif(i,j,k,n) = dif(i-1*dg(1),j+1*dg(2),k-1*dg(3),n)
+       if (hi(1) .eq. vhi(1) .and. hi(2) .eq. vhi(2) .and. hi(3) .eq. vhi(3)) then
+          do k = d_hi(3), hi(3)-1
+             do j = hi(2)+1, d_hi(2)
+                do i = hi(1)+1, d_hi(1)
+                   dif(i,j,k,n) = dif(hi(1),hi(2),hi(3),n)
+                end do
+             end do
+          end do
        endif
 
-       if (d_hi(1) .gt. hi(1) .and. d_hi(2) .gt. hi(2) .and. d_hi(3) .gt. hi(3)) then
-          i = hi(1)+1*dg(1)
-          j = hi(2)+1*dg(2)
-          k = hi(3)+1*dg(3)
-          dif(i,j,k,n) = dif(i-1*dg(1),j-1*dg(2),k-1*dg(3),n)
-       endif
     enddo
 
   end subroutine pc_diffextrap

@@ -406,6 +406,7 @@ extern "C"
 
   void pc_diffextrap
     (const int* lo, const int* hi,
+     const int* vlo, const int* vhi,
      BL_FORT_FAB_ARG_3D(TempDiffTerm),
      const int* nc);
 
