@@ -102,10 +102,8 @@ PeleC::react_state(Real time, Real dt, bool react_init, MultiFab* A_aux)
             FArrayBox& I_R        = reactions[mfi];
             int do_update         = react_init ? 0 : 1;  // TODO: Update here? Or just get reaction source?
 
-
-            FabType typ = flag_fab.getType(bx);
-
 #ifdef PELE_USE_EB
+            FabType typ = flag_fab.getType(bx);
             if (typ == FabType::singlevalued) {
 #else
             {
@@ -146,10 +144,9 @@ PeleC::react_state(Real time, Real dt, bool react_init, MultiFab* A_aux)
             {
                 get_new_data(Work_Estimate_Type)[mfi].plus(w);
             }
-
+            }
         }
     }
-
     if (ng > 0)
         S_new.FillBoundary(geom.periodicity());
 
