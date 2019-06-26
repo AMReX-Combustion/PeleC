@@ -4,6 +4,10 @@
 
 #include "AMReX_DistributionMapping.H"
 
+#ifdef PELE_USE_EB
+#include <AMReX_MultiCutFab.H>
+#endif
+
 using std::string;
 using namespace amrex;
 
@@ -101,7 +105,11 @@ PeleC::react_state(Real time, Real dt, bool react_init, MultiFab* A_aux)
 
             FabType typ = flag_fab.getType(bx);
 
+#ifdef PELE_USE_EB
             if (typ == FabType::singlevalued) {
+#else
+            {
+#endif
 
             if(chem_integrator==1)
             {
@@ -138,7 +146,7 @@ PeleC::react_state(Real time, Real dt, bool react_init, MultiFab* A_aux)
             {
                 get_new_data(Work_Estimate_Type)[mfi].plus(w);
             }
-            }
+
         }
     }
 
