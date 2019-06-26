@@ -10,7 +10,7 @@ using namespace amrex;
 #include <AMReX_MultiCutFab.H>
 #endif
 
-
+#ifdef PELE_UNIT_TEST_DN
 void
 PeleC::test_dn() {
 
@@ -96,3 +96,5 @@ PeleC::test_dn() {
 
   return;
 }
+
+#endif
