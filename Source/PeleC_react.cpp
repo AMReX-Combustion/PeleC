@@ -99,6 +99,9 @@ PeleC::react_state(Real time, Real dt, bool react_init, MultiFab* A_aux)
             int do_update         = react_init ? 0 : 1;  // TODO: Update here? Or just get reaction source?
 
 
+            FabType typ = flag_fab.getType(bx);
+
+            if (typ == FabType::singlevalued) {
 
             if(chem_integrator==1)
             {
@@ -130,9 +133,11 @@ PeleC::react_state(Real time, Real dt, bool react_init, MultiFab* A_aux)
                         time, dt, do_update,adaptrk_nsubsteps_min,adaptrk_nsubsteps_max,adaptrk_nsubsteps_guess,adaptrk_errtol);
             }
 
+
             if (do_react_load_balance || do_mol_load_balance)
             {
                 get_new_data(Work_Estimate_Type)[mfi].plus(w);
+            }
             }
         }
     }
