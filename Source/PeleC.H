@@ -256,7 +256,9 @@ public:
 
     void initialize_eb2_structs();
 
+#ifdef PELE_UNIT_TEST_DN
     void test_dn();
+#endif
 
     void define_body_state();
 
