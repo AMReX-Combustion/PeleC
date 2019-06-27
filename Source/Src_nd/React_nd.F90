@@ -267,7 +267,6 @@ contains
     npts=(hi(3)-lo(3)+1)*(hi(2)-lo(2)+1)*(hi(1)-lo(1)+1)
     updt_time=0.d0
     steps=0
-    cost(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))=nsubsteps_guess
 
     do while(updt_time .lt. dt_react)
     !do steps=1,nsubsteps
@@ -410,6 +409,7 @@ contains
         !flush(6)
  
     enddo !substep loop
+    cost(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))=steps
 
     !write(6,*)"No: of chemistry substeps:",steps
     !write(6,*)"================================"
