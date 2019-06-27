@@ -390,6 +390,9 @@ extern "C"
      const int*   mask, const int*  m_lo, const int*  m_hi,
      amrex::Real*        cost, const int*  c_lo, const int*  c_hi,
      amrex::Real*       rYdot, const int* rY_lo, const int* rY_hi,
+#ifdef PELEC_USE_EB
+     const void* flag, const int* fglo, const int* fghi,
+#endif
      const amrex::Real& time,  const amrex::Real& dt_react, const int& do_react);
   
   void pc_react_state_expl
