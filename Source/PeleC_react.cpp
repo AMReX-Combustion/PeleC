@@ -103,6 +103,9 @@ PeleC::react_state(Real time, Real dt, bool react_init, MultiFab* A_aux)
             int do_update         = react_init ? 0 : 1;  // TODO: Update here? Or just get reaction source?
 
 #ifdef PELE_USE_EB
+            const EBFArrayBox& ufab = static_cast<const EBFArrayBox&>(unew);
+            const auto& flag_fab = ufab.getEBCellFlagFab();
+
             FabType typ = flag_fab.getType(bx);
             if (typ == FabType::singlevalued) {
 #else
