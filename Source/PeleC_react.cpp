@@ -107,7 +107,7 @@ PeleC::react_state(Real time, Real dt, bool react_init, MultiFab* A_aux)
             const auto& flag_fab = ufab.getEBCellFlagFab();
 
             FabType typ = flag_fab.getType(bx);
-            if (typ == FabType::singlevalued) {
+            if (typ == FabType::singlevalued || typ == FabType::regular) {
 #else
             {
 #endif
