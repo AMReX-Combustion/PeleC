@@ -60,7 +60,11 @@ use amrex_ebcellflag_module, only : is_covered_cell
        do j = lo(2), hi(2)
           do i = lo(1), hi(1)
 
+#ifdef PELEC_USE_EB
              if (mask(i,j,k) .eq. 1 .and. .not. is_covered_cell(flag(i,j,k))) then
+#else
+             if (mask(i,j,k) .eq. 1) then
+#endif
 
                 rhoE_old                        = uold(i,j,k,UEDEN)
                 rho_e_K_old                     = HALF * sum(uold(i,j,k,UMX:UMZ)**2) / uold(i,j,k,URHO)
@@ -135,8 +139,6 @@ use amrex_ebcellflag_module, only : is_covered_cell
                             IR,IR_lo,IR_hi, &
                             time,dt_react,do_update,&
                             nsubsteps_min,nsubsteps_max,nsubsteps_guess,errtol) bind(C, name="pc_react_state_expl")
-
-    use amrex_ebcellflag_module, only : is_covered_cell
 
     use eos_type_module
     use eos_module, only : eos_t,eos_rt
