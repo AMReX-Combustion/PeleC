@@ -4,6 +4,10 @@
 
 #include "AMReX_DistributionMapping.H"
 
+#ifdef PELE_USE_EB
+#include <AMReX_MultiCutFab.H>
+#endif
+
 using std::string;
 using namespace amrex;
 
@@ -98,7 +102,14 @@ PeleC::react_state(Real time, Real dt, bool react_init, MultiFab* A_aux)
             FArrayBox& I_R        = reactions[mfi];
             int do_update         = react_init ? 0 : 1;  // TODO: Update here? Or just get reaction source?
 
-
+#ifdef PELE_USE_EB
+            const EBFArrayBox& ufab = static_cast<const EBFArrayBox&>(unew);
+            const auto& flag_fab = ufab.getEBCellFlagFab();
+            FabType typ = flag_fab.getType(bx);
+            if (typ == FabType::singlevalued || typ == FabType::regular) {
+#else
+            {
+#endif
 
             if(chem_integrator==1)
             {
@@ -109,6 +120,9 @@ PeleC::react_state(Real time, Real dt, bool react_init, MultiFab* A_aux)
                         m.dataPtr(),     ARLIM_3D(m.loVect()),     ARLIM_3D(m.hiVect()),
                         w.dataPtr(),     ARLIM_3D(w.loVect()),     ARLIM_3D(w.hiVect()),
                         I_R.dataPtr(),   ARLIM_3D(I_R.loVect()),   ARLIM_3D(I_R.hiVect()),
+#ifdef PELE_USE_EB
+                        BL_TO_FORTRAN_ANYD(flag_fab),
+#endif
                         time, dt, do_update);
             }
             else
@@ -130,13 +144,14 @@ PeleC::react_state(Real time, Real dt, bool react_init, MultiFab* A_aux)
                         time, dt, do_update,adaptrk_nsubsteps_min,adaptrk_nsubsteps_max,adaptrk_nsubsteps_guess,adaptrk_errtol);
             }
 
+
             if (do_react_load_balance || do_mol_load_balance)
             {
                 get_new_data(Work_Estimate_Type)[mfi].plus(w);
             }
+            }
         }
     }
-
     if (ng > 0)
         S_new.FillBoundary(geom.periodicity());
 

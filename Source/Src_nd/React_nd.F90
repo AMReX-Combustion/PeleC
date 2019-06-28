@@ -13,7 +13,14 @@ contains
                             mask,m_lo,m_hi, &
                             cost,c_lo,c_hi, &
                             IR,IR_lo,IR_hi, &
+#ifdef PELEC_USE_EB
+                            flag, fglo, fghi, &
+#endif
                             time,dt_react,do_update) bind(C, name="pc_react_state")
+
+#ifdef PELEC_USE_EB
+use amrex_ebcellflag_module, only : is_covered_cell
+#endif
 
     use network           , only : nspec
     use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UTEMP, &
@@ -39,7 +46,10 @@ contains
     double precision :: IR(IR_lo(1):IR_hi(1),IR_lo(2):IR_hi(2),IR_lo(3):IR_hi(3),nspec+1)
     double precision :: time, dt_react
     integer          :: do_update
-
+#ifdef PELEC_USE_EB
+    integer, intent(in) :: fglo(3),fghi(3)
+    integer, intent(in) :: flag(fglo(1):fghi(1),fglo(2):fghi(2),fglo(3):fghi(3))
+#endif
     integer          :: i, j, k
     double precision :: rho_e_K_old,rho_e_K_new, rhoE_old, rhoE_new, rho_new, mom_new(3)
 
@@ -50,7 +60,11 @@ contains
        do j = lo(2), hi(2)
           do i = lo(1), hi(1)
 
+#ifdef PELEC_USE_EB
+             if (mask(i,j,k) .eq. 1 .and. .not. is_covered_cell(flag(i,j,k))) then
+#else
              if (mask(i,j,k) .eq. 1) then
+#endif
 
                 rhoE_old                        = uold(i,j,k,UEDEN)
                 rho_e_K_old                     = HALF * sum(uold(i,j,k,UMX:UMZ)**2) / uold(i,j,k,URHO)
