@@ -374,7 +374,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
           // Compute heat flux at EB wall
           int nComp = 1;
           sv_eb_bcval[local_i].setVal(eb_boundary_T, cQTEMP);
-              
+
           Box box_to_apply = mfi.growntilebox(2);
           {
             BL_PROFILE("PeleC::pc_apply_eb_boundry_flux_stencil call");
@@ -546,33 +546,30 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
           }
 
           if (fr_as_crse) {
-#if (BL_SPACEDIM > 2)
             fr_as_crse->CrseAdd(mfi,
                                 {D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])},
                                 dxDp, dt, vfrac[mfi],
-                                {&((*areafrac[0])[mfi]),
-                                    &((*areafrac[1])[mfi]),
-                                    &((*areafrac[2])[mfi])}, RunOn::Cpu);
-#else
-            // TODO: EBfluxregisters are designed only for 3D, need for 2D
-            Print() << "WARNING:Re redistribution crseadd for EB not implemented\n";
-#endif
+                                {D_DECL(&((*areafrac[0])[mfi]),
+                                        &((*areafrac[1])[mfi]),
+                                        &((*areafrac[2])[mfi]))}, RunOn::Cpu);
+            if (BL_SPACEDIM <= 2) {
+              Print() << "WARNING:Re redistribution crseadd for EB not tested in 2D\n";
+            }
           }
 
           if (fr_as_fine) {
-#if (BL_SPACEDIM > 2)
             fr_as_fine->FineAdd(mfi,
                                 {D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])},
                                 dxDp, dt,
                                 vfrac[mfi],
-                                {&((*areafrac[0])[mfi]),
-                                    &((*areafrac[1])[mfi]),
-                                    &((*areafrac[2])[mfi])},
+                                {D_DECL(&((*areafrac[0])[mfi]),
+                                        &((*areafrac[1])[mfi]),
+                                        &((*areafrac[2])[mfi]))},
                                 dm_as_fine, RunOn::Cpu);
-#else
-            // TODO: EBfluxregisters are designed only for 3D, need for 2D
-            Print() << "WARNING:Re redistribution fineadd for EB not implemented in 2D\n";
-#endif
+
+            if (BL_SPACEDIM <= 2) {
+              Print() << "WARNING:Re redistribution fineadd for EB not tested in 2D\n";
+            }
           }
         }
       } else if (typ != FabType::regular) {  // Single valued if loop
