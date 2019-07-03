@@ -82,7 +82,7 @@ module hyp_advection_module
     integer, intent(in) ::  fglo(3),    fghi(3)
     integer, intent(in) ::  vflo(3),    vfhi(3)
     integer, intent(in) :: flag(fglo(1):fghi(1),fglo(2):fghi(2),fglo(3):fghi(3))
-    real(amrex_real), intent(in) :: vfrac(vflo(1):vfhi(1),vflo(2):vfhi(2),vflo(3):vfhi(3))
+    double precision, intent(in) :: vfrac(vflo(1):vfhi(1),vflo(2):vfhi(2),vflo(3):vfhi(3))
 
     integer, intent(in) :: nebflux
     double precision, intent(inout) ::   ebflux(0:nebflux-1,1:NVAR)

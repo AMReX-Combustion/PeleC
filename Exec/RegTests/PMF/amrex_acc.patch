@@ -1,0 +1,101 @@
+diff --git a/Src/EB/AMReX_ebcellflag_mod.F90 b/Src/EB/AMReX_ebcellflag_mod.F90
+index 476800599..e79d36b74 100644
+--- a/Src/EB/AMReX_ebcellflag_mod.F90
++++ b/Src/EB/AMReX_ebcellflag_mod.F90
+@@ -7,7 +7,7 @@ module amrex_ebcellflag_module
+        is_covered_cell, get_cell_type, get_neighbor_cells, num_neighbor_cells, pos_ngbr, &
+        set_regular_cell, set_covered_cell, set_single_valued_cell, set_neighbor, clear_neighbor, &
+        clear_allneighbors, is_neighbor, amrex_ebcellflag_count, get_neighbor_cells_int_single, &
+-       regular, single_valued, multi_valued, covered
++       regular, single_valued, multi_valued, covered, get_neighbor_cells_int, get_neighbor_cells_real
+   
+   integer, parameter :: w_type      = 2
+   integer, parameter :: w_numvofs   = 3
+@@ -21,10 +21,10 @@ module amrex_ebcellflag_module
+   integer, parameter :: multi_valued  = 2
+   integer, parameter :: covered       = 3
+ 
+-  interface get_neighbor_cells
+-     module procedure get_neighbor_cells_int
+-     module procedure get_neighbor_cells_real
+-  end interface get_neighbor_cells
++   interface get_neighbor_cells
++      module procedure get_neighbor_cells_int
++      module procedure get_neighbor_cells_real
++   end interface get_neighbor_cells
+ 
+ contains
+ 
+@@ -56,6 +56,7 @@ contains
+   end function is_multi_valued_cell
+ 
+   elemental logical function is_covered_cell (flag)
++    !$acc routine(is_covered_cell) seq
+     integer, intent(in) :: flag
+     is_covered_cell = ibits(flag,0,w_type) .eq. covered
+   end function is_covered_cell
+@@ -134,34 +135,28 @@ contains
+ #else
+ 
+   pure subroutine get_neighbor_cells_int (flag, ngbr)
++    !$acc routine(get_neighbor_cells_int) seq
+     integer, intent(in) :: flag
+     integer, intent(out) :: ngbr(-1:1,-1:1,-1:1)
+     integer :: i, j, k
+     do k = -1,1
+        do j = -1,1
+           do i = -1,1
+-             if (btest(flag,pos_ngbr(i,j,k))) then
+-                ngbr(i,j,k) = 1
+-             else
+-                ngbr(i,j,k) = 0
+-             end if
++             ngbr(i,j,k) = merge(1, 0, btest(flag,pos_ngbr(i,j,k)))
+           end do
+        end do
+     end do
+   end subroutine get_neighbor_cells_int
+ 
+   pure subroutine get_neighbor_cells_real (flag, ngbr)
++    !$acc routine(get_neighbor_cells_real) seq
+     integer, intent(in) :: flag
+     real(amrex_real), intent(out) :: ngbr(-1:1,-1:1,-1:1)
+     integer :: i, j, k
+     do k = -1,1
+        do j = -1,1
+           do i = -1,1
+-             if (btest(flag,pos_ngbr(i,j,k))) then
+-                ngbr(i,j,k) = 1._amrex_real
+-             else
+-                ngbr(i,j,k) = 0._amrex_real
+-             end if
++             ngbr(i,j,k) = merge(1._amrex_real, 0._amrex_real, btest(flag,pos_ngbr(i,j,k)))
+           end do
+        end do
+     end do
+diff --git a/Tools/GNUMake/Make.defs b/Tools/GNUMake/Make.defs
+index a8682c61e..f90b9db51 100644
+--- a/Tools/GNUMake/Make.defs
++++ b/Tools/GNUMake/Make.defs
+@@ -434,7 +434,7 @@ USE_GPU := FALSE
+ 
+ ifeq ($(USE_ACC),TRUE)
+ 
+-  USE_GPU := TRUE
++  #USE_GPU := TRUE
+   ACCSuffix := .ACC
+   DEFINES += -DAMREX_USE_ACC
+ 
+diff --git a/Tools/GNUMake/comps/pgi.mak b/Tools/GNUMake/comps/pgi.mak
+index 65054a52f..5d345197f 100644
+--- a/Tools/GNUMake/comps/pgi.mak
++++ b/Tools/GNUMake/comps/pgi.mak
+@@ -28,7 +28,7 @@ ifeq ($(USE_OMP),TRUE)
+ endif
+ 
+ ifeq ($(USE_ACC),TRUE)
+-  GENERIC_PGI_FLAGS += -acc -ta=tesla:cc$(CUDA_ARCH) -Minfo=accel -mcmodel=medium
++  GENERIC_PGI_FLAGS += -acc -ta=tesla:cc70 -Minfo=accel -mcmodel=medium
+ else
+   GENERIC_PGI_FLAGS += -noacc
+ endif

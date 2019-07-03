@@ -150,7 +150,7 @@ use amrex_ebcellflag_module, only : is_covered_cell
     use amrex_fort_module, only : amrex_real
     use amrex_constants_module, only : HALF
     use rk_params_module
-    use fuego_chemistry, only : VCKWYR
+    !use fuego_chemistry, only : VCKWYR
 
     implicit none
 
@@ -302,10 +302,10 @@ use amrex_ebcellflag_module, only : is_covered_cell
 
            !Returns the molar production rate of species
            !Given rho, T, and mass fractions
-           call VCKWYR(npts, urk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),URHO), &
-               urk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),UTEMP), &
-               yrk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),1:nspec), &
-               wdot)
+           !call VCKWYR(npts, urk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),URHO), &
+           !    urk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),UTEMP), &
+           !    yrk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),1:nspec), &
+           !    wdot)
 
             !Ideally this has to come from a vector call to fuego
             !will replace after pelephysics has this facility
