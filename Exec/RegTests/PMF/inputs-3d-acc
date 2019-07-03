@@ -15,8 +15,8 @@ amr.n_cell           =   64         64        64
 # 1 = Inflow             4 = SlipWall
 # 2 = Outflow            5 = NoSlipWall
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
-pelec.lo_bc       =  0   0   1
-pelec.hi_bc       =  0   0   2
+pelec.lo_bc       =  "Interior"  "Interior"  "Hard"
+pelec.hi_bc       =  "Interior"  "Interior"  "Hard"
 
 # TIME STEP CONTROL
 pelec.cfl            = 0.1     # cfl number for hyperbolic system
