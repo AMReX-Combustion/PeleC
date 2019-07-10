@@ -1810,6 +1810,14 @@ PeleC::errorEst (TagBoxArray& tags,
                   ZFILL(dx), ZFILL(xlo), ZFILL(prob_lo), &time, &level);
 #endif
 
+      //----------------------
+      // Problem specific tagging
+      set_problem_tags(tptr,ARLIM_3D(tlo), ARLIM_3D(thi),
+                       BL_TO_FORTRAN_3D(S_data[mfi]),
+                       &tagval, &clearval,
+                       ARLIM_3D(lo),ARLIM_3D(hi),
+                       ZFILL(dx), ZFILL(prob_lo), &time, &level);
+
       // Now update the tags in the TagBox.
       tagfab.tags(itags, tilebx);
       
