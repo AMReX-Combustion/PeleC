@@ -26,4 +26,5 @@ module rk_params_module
                    +    167623581683.d0/ 3930932046784.d0/) 
 
 
+  !$acc declare create(alpha_rk64,beta_rk64,err_rk64)
 end module rk_params_module
