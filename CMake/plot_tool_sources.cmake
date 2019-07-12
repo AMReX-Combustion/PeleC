@@ -40,15 +40,12 @@ function(get_plot_tool_sources PLOT_TOOL_NAME)
      ${AMREX_SOURCE_DIR}/AMReX_FabConv.cpp
      ${AMREX_SOURCE_DIR}/AMReX_GpuElixir.cpp
      ${AMREX_SOURCE_DIR}/AMReX_GpuAsyncArray.cpp
-     ${AMREX_SOURCE_DIR}/AMReX_GpuAsyncFabImpl.cpp
-     ${AMREX_SOURCE_DIR}/AMReX_GpuAsyncFab.cpp
      ${AMREX_SOURCE_DIR}/AMReX_CudaAllocators.cpp
      ${AMREX_SOURCE_DIR}/AMReX_GpuUtility.cpp
      ${AMREX_SOURCE_DIR}/AMReX_GpuDevice.cpp
      ${AMREX_SOURCE_DIR}/AMReX_GpuControl.cpp
      ${AMREX_SOURCE_DIR}/AMReX_parstream.cpp
      ${AMREX_SOURCE_DIR}/AMReX_NFiles.cpp
-     ${AMREX_SOURCE_DIR}/AMReX_FabAllocator.cpp
      ${AMREX_SOURCE_DIR}/AMReX_EArena.cpp
      ${AMREX_SOURCE_DIR}/AMReX_DArena.cpp
      ${AMREX_SOURCE_DIR}/AMReX_CArena.cpp

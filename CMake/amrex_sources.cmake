@@ -70,8 +70,6 @@ function(get_amrex_sources)
      ${AMREX_SOURCE_DIR}/AMReX_DArena.cpp
      ${AMREX_SOURCE_DIR}/AMReX_EArena.H
      ${AMREX_SOURCE_DIR}/AMReX_EArena.cpp
-     ${AMREX_SOURCE_DIR}/AMReX_FabAllocator.H
-     ${AMREX_SOURCE_DIR}/AMReX_FabAllocator.cpp
      ${AMREX_SOURCE_DIR}/AMReX_BLProfiler.H
      ${AMREX_SOURCE_DIR}/AMReX_BLBackTrace.H
      ${AMREX_SOURCE_DIR}/AMReX_BLFort.H
@@ -191,10 +189,6 @@ function(get_amrex_sources)
      ${AMREX_SOURCE_DIR}/AMReX_GpuDevice.cpp
      ${AMREX_SOURCE_DIR}/AMReX_GpuUtility.H
      ${AMREX_SOURCE_DIR}/AMReX_GpuUtility.cpp
-     ${AMREX_SOURCE_DIR}/AMReX_GpuAsyncFab.H
-     ${AMREX_SOURCE_DIR}/AMReX_GpuAsyncFab.cpp
-     ${AMREX_SOURCE_DIR}/AMReX_GpuAsyncFabImpl.H
-     ${AMREX_SOURCE_DIR}/AMReX_GpuAsyncFabImpl.cpp
      ${AMREX_SOURCE_DIR}/AMReX_GpuAsyncArray.H
      ${AMREX_SOURCE_DIR}/AMReX_GpuAsyncArray.cpp
      ${AMREX_SOURCE_DIR}/AMReX_GpuElixir.H
