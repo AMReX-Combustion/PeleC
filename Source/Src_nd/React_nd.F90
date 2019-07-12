@@ -183,7 +183,7 @@ use amrex_ebcellflag_module, only : is_covered_cell
     double precision :: saneval(NVAR)
     double precision :: urk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),NVAR)
     double precision :: yrk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),nspec)
-    double precision :: urk_old(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),NVAR)
+    double precision :: urk_carryover(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),NVAR)
     double precision :: urk_err(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),NVAR)
     double precision :: wdot(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),nspec)
     double precision :: eint(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),nspec)
@@ -202,7 +202,7 @@ use amrex_ebcellflag_module, only : is_covered_cell
 
     !initialize all local arrays
     yrk         = 0.d0
-    urk_old     = uold(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),:)
+    urk         = uold(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),:)
     urk_err     = 0.d0
     wdot        = 0.d0
     eint        = 0.d0
@@ -214,7 +214,7 @@ use amrex_ebcellflag_module, only : is_covered_cell
     mom_new     = 0.d0
 
     !==============================================================
-    !sanitize urk_old so that masked values are sane and not NaN
+    !sanitize urk so that masked values are sane and not NaN
     !May be removed if we are confident this is not the case
     !with uninitialized fortran arrays I am not sure!
     !==============================================================
@@ -222,7 +222,7 @@ use amrex_ebcellflag_module, only : is_covered_cell
         do j=lo(2),hi(2)
             do i=lo(1),hi(1)
                 if(mask(i,j,k) .eq. 1) then
-                    saneval(:)=urk_old(i,j,k,:)
+                    saneval(:)=urk(i,j,k,:)
                     exit
                 endif
             enddo
@@ -233,15 +233,15 @@ use amrex_ebcellflag_module, only : is_covered_cell
         do j=lo(2),hi(2)
             do i=lo(1),hi(1)
                 if(mask(i,j,k) .ne. 1) then
-                    urk_old(i,j,k,:)=saneval(:)
+                    urk(i,j,k,:)=saneval(:)
                 endif
             enddo
         enddo
     enddo
     !===============================================================
 
-    !setting urk
-    urk         = urk_old
+    !setting urk_carryover
+    urk_carryover = urk
     
     !compute rhoe_ext/rhoy_ext - one time operation, keeping original 
     !pc_react_state code ===========================================
@@ -273,15 +273,22 @@ use amrex_ebcellflag_module, only : is_covered_cell
     dt_rk_max = dt_react/nsubsteps_min
     !===============================================================
 
+    !write(6,*) "dt_rk_guess:",dt_rk
+    !write(6,*) "============================"
+    !write(6,*) "============================"
+    !flush(6)
+
     npts=(hi(3)-lo(3)+1)*(hi(2)-lo(2)+1)*(hi(1)-lo(1)+1)
     updt_time=0.d0
     steps=0
-    cost(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))=nsubsteps_guess
 
     do while(updt_time .lt. dt_react)
     !do steps=1,nsubsteps
 
-        urk_old   = urk
+        urk_carryover   = urk
+        urk_err     = 0.d0
+        wdot        = 0.d0
+        tempsrc     = 0.d0
         updt_time = updt_time+dt_rk
         steps     = steps+1
 
@@ -374,23 +381,23 @@ use amrex_ebcellflag_module, only : is_covered_cell
                 !=====================
 
                 !update species
-                urk(i,j,k,UFS:UFS+nspec-1)  = urk_old(i,j,k,UFS:UFS+nspec-1) + &
+                urk(i,j,k,UFS:UFS+nspec-1)  = urk_carryover(i,j,k,UFS:UFS+nspec-1) + &
                 alpha_rk64(stage)*dt_rk*wdot(i,j,k,1:nspec)*mask(i,j,k)
 
                 !update temperature 
-                urk(i,j,k,UTEMP) = urk_old(i,j,k,UTEMP) + alpha_rk64(stage)*dt_rk*tempsrc(i,j,k)*mask(i,j,k)
+                urk(i,j,k,UTEMP) = urk_carryover(i,j,k,UTEMP) + alpha_rk64(stage)*dt_rk*tempsrc(i,j,k)*mask(i,j,k)
                 !===============================================================================================
 
                 !=====================
-                !update urk_old
+                !update urk_carryover
                 !=====================
                 
                 !update species
-                urk_old(i,j,k,UFS:UFS+nspec-1)  = urk(i,j,k,UFS:UFS+nspec-1) + &
+                urk_carryover(i,j,k,UFS:UFS+nspec-1)  = urk(i,j,k,UFS:UFS+nspec-1) + &
                 beta_rk64(stage)*dt_rk*wdot(i,j,k,1:nspec)*mask(i,j,k)
 
                 !update temperature 
-                urk_old(i,j,k,UTEMP) = urk(i,j,k,UTEMP) + beta_rk64(stage)*dt_rk*tempsrc(i,j,k)*mask(i,j,k)
+                urk_carryover(i,j,k,UTEMP) = urk(i,j,k,UTEMP) + beta_rk64(stage)*dt_rk*tempsrc(i,j,k)*mask(i,j,k)
                 !===============================================================================================
 
             enddo
@@ -410,8 +417,13 @@ use amrex_ebcellflag_module, only : is_covered_cell
         enddo !stage loop
 
         call adapt_timestep(lo,hi,urk_err,dt_rk,dt_rk_max,dt_rk_min,errtol)
+    
+        !write(6,*)"dt_rk:",dt_rk,dt_rk_min,dt_rk_max
+        !write(6,*)"================================"
+        !flush(6)
  
     enddo !substep loop
+    cost(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))=steps
 
     !write(6,*)"No: of chemistry substeps:",steps
     !write(6,*)"================================"
@@ -479,6 +491,7 @@ use amrex_ebcellflag_module, only : is_covered_cell
       double precision,parameter :: safety_fac=1e4
       double precision,parameter :: exp1=0.25
       double precision,parameter :: exp2=0.2
+      double precision,parameter :: beta=1.d0
 
 
       max_err=tiny(max_err)
@@ -488,23 +501,26 @@ use amrex_ebcellflag_module, only : is_covered_cell
             do i=lo(1),hi(1)
                 
                 if(maxval(abs(urk_err(i,j,k,:))) .gt. max_err) then
-                    max_err=maxval(urk_err(i,j,k,:))
+                    max_err=maxval(abs(urk_err(i,j,k,:)))
                 endif
             enddo
         enddo
     enddo
+    
+    !write(6,*)"max_err:",max_err
+    !flush(6)
 
     !chance to increase time step
     if(max_err .lt. tol) then
 
         !limit max_err,can't be 0
         max_err=max(max_err,tol/safety_fac)
-        change_factor=(tol/max_err)**(exp1)
+        change_factor=beta*(tol/max_err)**(exp1)
         dt_rk4=min(dt_rk4_max,dt_rk4*change_factor)
 
     !reduce time step (error is high!)
     else
-        change_factor=(tol/max_err)**(exp2)
+        change_factor=beta*(tol/max_err)**(exp2)
         dt_rk4=max(dt_rk4_min,dt_rk4*change_factor)
     endif
 

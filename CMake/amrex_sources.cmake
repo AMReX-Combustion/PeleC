@@ -3,27 +3,26 @@ function(get_amrex_sources)
    add_sources(GlobalSourceList
      ${AMREX_SOURCE_DIR}/AMReX_Amr.cpp
      ${AMREX_SOURCE_DIR}/AMReX_AmrLevel.cpp
-     ${AMREX_SOURCE_DIR}/AMReX_AsyncFillPatch.cpp
-     ${AMREX_SOURCE_DIR}/AMReX_AuxBoundaryData.cpp
      ${AMREX_SOURCE_DIR}/AMReX_Derive.cpp
-     ${AMREX_SOURCE_DIR}/AMReX_Extrapolater.cpp
      ${AMREX_SOURCE_DIR}/AMReX_StateData.cpp
      ${AMREX_SOURCE_DIR}/AMReX_StateDescriptor.cpp
+     ${AMREX_SOURCE_DIR}/AMReX_AuxBoundaryData.cpp
+     ${AMREX_SOURCE_DIR}/AMReX_Extrapolater.cpp
      ${AMREX_SOURCE_DIR}/AMReX_extrapolater_${AMREX_DIM}d.f90
    )
    set(AMREX_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Submodules/AMReX/Src/AmrCore")
    add_sources(GlobalSourceList
      ${AMREX_SOURCE_DIR}/AMReX_AmrCore.cpp
-     ${AMREX_SOURCE_DIR}/AMReX_AmrMesh.cpp
      ${AMREX_SOURCE_DIR}/AMReX_Cluster.cpp
-     ${AMREX_SOURCE_DIR}/AMReX_ErrorList.cpp
-     ${AMREX_SOURCE_DIR}/AMReX_FLUXREG_nd.F90
+     ${AMREX_SOURCE_DIR}/AMReX_ErrorList.cpp 
      ${AMREX_SOURCE_DIR}/AMReX_FillPatchUtil.cpp
-     ${AMREX_SOURCE_DIR}/AMReX_FillPatchUtil_${AMREX_DIM}d.F90
      ${AMREX_SOURCE_DIR}/AMReX_FluxRegister.cpp
-     ${AMREX_SOURCE_DIR}/AMReX_INTERP_${AMREX_DIM}D.F90
      ${AMREX_SOURCE_DIR}/AMReX_Interpolater.cpp
      ${AMREX_SOURCE_DIR}/AMReX_TagBox.cpp
+     ${AMREX_SOURCE_DIR}/AMReX_AmrMesh.cpp
+     ${AMREX_SOURCE_DIR}/AMReX_FLUXREG_nd.F90
+     ${AMREX_SOURCE_DIR}/AMReX_INTERP_${AMREX_DIM}D.F90
+     ${AMREX_SOURCE_DIR}/AMReX_FillPatchUtil_${AMREX_DIM}d.F90
    )
    set(AMREX_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Submodules/AMReX/Src/Base")
    add_sources(GlobalSourceList
@@ -70,8 +69,6 @@ function(get_amrex_sources)
      ${AMREX_SOURCE_DIR}/AMReX_DArena.cpp
      ${AMREX_SOURCE_DIR}/AMReX_EArena.H
      ${AMREX_SOURCE_DIR}/AMReX_EArena.cpp
-     ${AMREX_SOURCE_DIR}/AMReX_FabAllocator.H
-     ${AMREX_SOURCE_DIR}/AMReX_FabAllocator.cpp
      ${AMREX_SOURCE_DIR}/AMReX_BLProfiler.H
      ${AMREX_SOURCE_DIR}/AMReX_BLBackTrace.H
      ${AMREX_SOURCE_DIR}/AMReX_BLFort.H
@@ -191,10 +188,6 @@ function(get_amrex_sources)
      ${AMREX_SOURCE_DIR}/AMReX_GpuDevice.cpp
      ${AMREX_SOURCE_DIR}/AMReX_GpuUtility.H
      ${AMREX_SOURCE_DIR}/AMReX_GpuUtility.cpp
-     ${AMREX_SOURCE_DIR}/AMReX_GpuAsyncFab.H
-     ${AMREX_SOURCE_DIR}/AMReX_GpuAsyncFab.cpp
-     ${AMREX_SOURCE_DIR}/AMReX_GpuAsyncFabImpl.H
-     ${AMREX_SOURCE_DIR}/AMReX_GpuAsyncFabImpl.cpp
      ${AMREX_SOURCE_DIR}/AMReX_GpuAsyncArray.H
      ${AMREX_SOURCE_DIR}/AMReX_GpuAsyncArray.cpp
      ${AMREX_SOURCE_DIR}/AMReX_GpuElixir.H
@@ -258,35 +251,34 @@ function(get_amrex_sources)
    if(AMREX_ENABLE_EB)
      set(AMREX_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Submodules/AMReX/Src/EB")
      add_sources(GlobalSourceList
-        ${AMREX_SOURCE_DIR}/AMReX_EB2.cpp
-        ${AMREX_SOURCE_DIR}/AMReX_EB2_Level.cpp
-        ${AMREX_SOURCE_DIR}/AMReX_EB2_MultiGFab.cpp
-        ${AMREX_SOURCE_DIR}/AMReX_EBAmrUtil.cpp
-        ${AMREX_SOURCE_DIR}/AMReX_EBAmrUtil_nd.F90
-        ${AMREX_SOURCE_DIR}/AMReX_EBCellFlag.cpp
-        ${AMREX_SOURCE_DIR}/AMReX_EBDataCollection.cpp
-        ${AMREX_SOURCE_DIR}/AMReX_EBFArrayBox.cpp
-        ${AMREX_SOURCE_DIR}/AMReX_EBFabFactory.cpp
-        ${AMREX_SOURCE_DIR}/AMReX_EBFluxRegister.cpp
-        ${AMREX_SOURCE_DIR}/AMReX_EBFluxRegister_${AMREX_DIM}d.F90
-        ${AMREX_SOURCE_DIR}/AMReX_EBFluxRegister_nd.F90
-        ${AMREX_SOURCE_DIR}/AMReX_EBInterpolater.cpp
-        ${AMREX_SOURCE_DIR}/AMReX_EBMultiFabUtil.cpp
-        ${AMREX_SOURCE_DIR}/AMReX_EBMultiFabUtil_${AMREX_DIM}d.F90
-        ${AMREX_SOURCE_DIR}/AMReX_EBMultiFabUtil_nd.F90
-        ${AMREX_SOURCE_DIR}/AMReX_EB_LSCoreBase.cpp
-        ${AMREX_SOURCE_DIR}/AMReX_EB_Tagging.F90
-        ${AMREX_SOURCE_DIR}/AMReX_EB_bc_fill_nd.F90
-        ${AMREX_SOURCE_DIR}/AMReX_EB_geometry.F90
-        ${AMREX_SOURCE_DIR}/AMReX_EB_levelset.cpp
-        ${AMREX_SOURCE_DIR}/AMReX_EB_levelset_F.F90
-        ${AMREX_SOURCE_DIR}/AMReX_EB_utils.cpp
-        ${AMREX_SOURCE_DIR}/AMReX_MultiCutFab.cpp
-        ${AMREX_SOURCE_DIR}/AMReX_compute_normals.F90
-        ${AMREX_SOURCE_DIR}/AMReX_distFcnElement.cpp
-        ${AMREX_SOURCE_DIR}/AMReX_eb2_${AMREX_DIM}d.F90
-        ${AMREX_SOURCE_DIR}/AMReX_ebcellflag_mod.F90
-        ${AMREX_SOURCE_DIR}/AMReX_ebinterp_${AMREX_DIM}d.F90
+       ${AMREX_SOURCE_DIR}/AMReX_EBAmrUtil.cpp
+       ${AMREX_SOURCE_DIR}/AMReX_EBDataCollection.cpp
+       ${AMREX_SOURCE_DIR}/AMReX_EBFArrayBox.cpp
+       ${AMREX_SOURCE_DIR}/AMReX_EBInterpolater.cpp
+       ${AMREX_SOURCE_DIR}/AMReX_EBCellFlag.cpp
+       ${AMREX_SOURCE_DIR}/AMReX_EBFabFactory.cpp
+       ${AMREX_SOURCE_DIR}/AMReX_EBFluxRegister.cpp  
+       ${AMREX_SOURCE_DIR}/AMReX_EBMultiFabUtil.cpp
+       ${AMREX_SOURCE_DIR}/AMReX_MultiCutFab.cpp
+       ${AMREX_SOURCE_DIR}/AMReX_EB_levelset.cpp
+       ${AMREX_SOURCE_DIR}/AMReX_EB_utils.cpp
+       ${AMREX_SOURCE_DIR}/AMReX_EB_LSCoreBase.cpp 
+       ${AMREX_SOURCE_DIR}/AMReX_EBFluxRegister_${AMREX_DIM}d.F90
+       ${AMREX_SOURCE_DIR}/AMReX_EBFluxRegister_nd.F90
+       ${AMREX_SOURCE_DIR}/AMReX_EBMultiFabUtil_${AMREX_DIM}d.F90
+       ${AMREX_SOURCE_DIR}/AMReX_ebinterp_${AMREX_DIM}d.F90  
+       ${AMREX_SOURCE_DIR}/AMReX_ebcellflag_mod.F90   
+       ${AMREX_SOURCE_DIR}/AMReX_compute_normals.F90
+       ${AMREX_SOURCE_DIR}/AMReX_EB_geometry.F90
+       ${AMREX_SOURCE_DIR}/AMReX_EB_levelset_F.F90
+       ${AMREX_SOURCE_DIR}/AMReX_EB_Tagging.F90
+       ${AMREX_SOURCE_DIR}/AMReX_EB_bc_fill_nd.F90
+       ${AMREX_SOURCE_DIR}/AMReX_distFcnElement.cpp
+       ${AMREX_SOURCE_DIR}/AMReX_EB2.cpp
+       ${AMREX_SOURCE_DIR}/AMReX_EB2_Level.cpp
+       ${AMREX_SOURCE_DIR}/AMReX_EB2_MultiGFab.cpp
+       ${AMREX_SOURCE_DIR}/AMReX_eb2_${AMREX_DIM}d.F90
+       ${AMREX_SOURCE_DIR}/AMReX_algoim.cpp
      )
      set(AMREX_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Submodules/AMReX/Src/LinearSolvers/MLMG")
      add_sources(GlobalSourceList

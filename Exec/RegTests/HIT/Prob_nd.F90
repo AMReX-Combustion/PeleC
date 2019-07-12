@@ -223,7 +223,7 @@ contains
     double precision :: x, y, z, u, v, w
     double precision :: xmod, ymod, zmod
     integer :: m, mp1, n, np1, p, pp1
-    double precision :: r, s, t, uinterp, vinterp, winterp
+    double precision :: rr, s, t, uinterp, vinterp, winterp
     double precision :: f0, f1, f2, f3, f4, f5, f6, f7
 
     ! Set the equation of state variables
@@ -262,21 +262,21 @@ contains
              xmod = mod(x,Linput)
              call locate(xarray, inres, xmod, m)
              mp1 = mod(m+1,inres)
-             r = (xmod - xarray(m)) / xdiff(m)
+             rr = (xmod - xarray(m)) / xdiff(m)
 
              if (dim .eq. 1) then
-                f0 = (1-r)
-                f1 = r
+                f0 = (1-rr)
+                f1 = rr
                 uinterp = uinput(m,0,0) * f0 + &
                      uinput(mp1,0,0) * f1
                 vinterp = ZERO
                 winterp = ZERO
              elseif (dim .eq. 2) then
                 ! Factors for bilinear interpolation
-                f0 = (1-r) * (1-s)
-                f1 = r * (1-s)
-                f2 = (1-r) * s
-                f3 = r * s
+                f0 = (1-rr) * (1-s)
+                f1 = rr * (1-s)
+                f2 = (1-rr) * s
+                f3 = rr * s
                 uinterp = uinput(m,n,0) * f0 + &
                      uinput(mp1,n,0) * f1 + &
                      uinput(m,np1,0) * f2 + &
@@ -288,14 +288,14 @@ contains
                 winterp = ZERO
              elseif (dim .eq. 3) then
                 ! Factors for trilinear interpolation
-                f0 = (1-r) * (1-s) * (1-t)
-                f1 = r * (1-s) * (1-t)
-                f2 = (1-r) * s * (1-t)
-                f3 = (1-r) * (1-s) * t
-                f4 = r * (1-s) * t
-                f5 = (1-r) * s * t
-                f6 = r * s * (1-t)
-                f7 = r * s * t
+                f0 = (1-rr) * (1-s) * (1-t)
+                f1 = rr * (1-s) * (1-t)
+                f2 = (1-rr) * s * (1-t)
+                f3 = (1-rr) * (1-s) * t
+                f4 = rr * (1-s) * t
+                f5 = (1-rr) * s * t
+                f6 = rr * s * (1-t)
+                f7 = rr * s * t
                 uinterp = uinput(m,n,p) * f0 + &
                      uinput(mp1,n,p) * f1 + &
                      uinput(m,np1,p) * f2 + &
