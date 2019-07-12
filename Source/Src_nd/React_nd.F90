@@ -146,8 +146,6 @@ use amrex_ebcellflag_module, only : is_covered_cell
     use chemistry_module  , only : molecular_weight
     use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UTEMP, &
                                    UFS
-    use reactor_module, only : react
-    use amrex_fort_module, only : amrex_real
     use amrex_constants_module, only : HALF
     use rk_params_module
     !use fuego_chemistry, only : VCKWYR
@@ -212,6 +210,18 @@ use amrex_ebcellflag_module, only : is_covered_cell
     re_old      = 0.d0
     tempsrc     = 0.d0
     mom_new     = 0.d0
+    
+    npts=(hi(3)-lo(3)+1)*(hi(2)-lo(2)+1)*(hi(1)-lo(1)+1)
+    updt_time=0.d0
+    steps=0
+    cost(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))=nsubsteps_guess
+    
+    !$acc update device(nspec,molecular_weight,nvar,urho,umx,umy,umz,ueden,ueint,utemp,ufs,ufx,ufa,half,alpha_rk64,beta_rk64,err_rk64,time,dt_react)
+    !$acc update device(do_update,nsubsteps,nsubsteps_max,nsubsteps_guess,errtol,npts,steps,stage)
+    !$acc update device(rhoE_old,rho_e_K_old,rho,energy,rho_e_K_new,rho_new,rhoe_new,rhoet_new,rhoInv,dt_rk,dr_rk_max,dt_rk_min,updt_time)
+    !$acc enter data copyin(lo,hi,uo_lo,uo_hi,un_lo,un_hi,as_lo,as_hi,m_lo,m_hi,c_lo,c_hi,IR_lo,IR_hi,u_old,u_new,asrc,mask,cost,IR)
+    !$acc enter data copyin(saneval,urk,yrk,urk_old,wdot,eint,cv,rhoedot_ext,rhoydot_ext,re_old,tempsrc,mom_new)
+    
 
     !==============================================================
     !sanitize urk_old so that masked values are sane and not NaN
@@ -239,6 +249,7 @@ use amrex_ebcellflag_module, only : is_covered_cell
         enddo
     enddo
     !===============================================================
+    
 
     !setting urk
     urk         = urk_old
@@ -273,11 +284,8 @@ use amrex_ebcellflag_module, only : is_covered_cell
     dt_rk_max = dt_react/nsubsteps_min
     !===============================================================
 
-    npts=(hi(3)-lo(3)+1)*(hi(2)-lo(2)+1)*(hi(1)-lo(1)+1)
-    updt_time=0.d0
-    steps=0
-    cost(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))=nsubsteps_guess
 
+    !$acc kernels default(present)
     do while(updt_time .lt. dt_react)
     !do steps=1,nsubsteps
 
@@ -292,6 +300,8 @@ use amrex_ebcellflag_module, only : is_covered_cell
 
            !computing mass fractions
            !hope the compiler can optimize this better
+
+           !$acc loop gang vector collapse(3) default(present)
            do k=lo(3),hi(3)
               do j=lo(2),hi(2)
                 do i=lo(1),hi(1)
@@ -299,6 +309,7 @@ use amrex_ebcellflag_module, only : is_covered_cell
                 enddo
               enddo
            enddo
+           !$acc end parallel
 
            !Returns the molar production rate of species
            !Given rho, T, and mass fractions
@@ -309,6 +320,10 @@ use amrex_ebcellflag_module, only : is_covered_cell
 
             !Ideally this has to come from a vector call to fuego
             !will replace after pelephysics has this facility
+
+            !ACCQ: this loop is inside a kernels construct
+            !does that mean this loop will run on gpu, but my
+            !eos_state still lives on cpu?
             do k=lo(3),hi(3)
                 do j=lo(2),hi(2)
                     do i=lo(1),hi(1)
@@ -329,6 +344,8 @@ use amrex_ebcellflag_module, only : is_covered_cell
 
            !convert wdot to gms/s and add external source
            !hope the compiler can optimize this better
+
+           !$acc loop gang vector collapse(3) default(present)
            do k=lo(3),hi(3)
             do j=lo(2),hi(2)
               do i=lo(1),hi(1)
@@ -339,6 +356,8 @@ use amrex_ebcellflag_module, only : is_covered_cell
            
            !update temperature src
            !hope the compiler can optimize this better
+
+           !$acc loop gang vector collapse(3) default(present) private(ns)
            do k=lo(3),hi(3)
                 do j=lo(2),hi(2)
                     do i=lo(1),hi(1)
@@ -353,6 +372,8 @@ use amrex_ebcellflag_module, only : is_covered_cell
            
            !update species and temperature
            !hope the compiler can optimize this better
+           
+           !$acc loop gang vector collapse(3) default(present)
            do k=lo(3),hi(3)
             do j=lo(2),hi(2)
              do i=lo(1),hi(1)
@@ -397,7 +418,8 @@ use amrex_ebcellflag_module, only : is_covered_cell
            enddo
           enddo
         
-          !update density
+           !update density
+           !$acc loop gang vector collapse(3) default(present)
             do k=lo(3),hi(3)
                 do j=lo(2),hi(2)
                     do i=lo(1),hi(1)
@@ -409,15 +431,18 @@ use amrex_ebcellflag_module, only : is_covered_cell
 
         enddo !stage loop
 
+        !ACCQ: here there is a reduction 
         call adapt_timestep(lo,hi,urk_err,dt_rk,dt_rk_max,dt_rk_min,errtol)
  
     enddo !substep loop
+    !$acc end kernels
 
     !write(6,*)"No: of chemistry substeps:",steps
     !write(6,*)"================================"
     !flush(6)
     
     !this is a one time operation, so keeping original pc_react_state code
+    !$acc kernels default(present)
     do k=lo(3),hi(3)
         do j=lo(2),hi(2)
             do i=lo(1),hi(1)
@@ -460,6 +485,11 @@ use amrex_ebcellflag_module, only : is_covered_cell
             enddo
         enddo
     enddo
+    !$acc end kernels
+    
+    !$acc exit data delete(u_old,asrc,mask,urk,urk_old) copyout(u_new,IR,cost) 
+    !$acc enter data delete(lo,hi,uo_lo,uo_hi,un_lo,un_hi,as_lo,as_hi,m_lo,m_hi,c_lo,c_hi,IR_lo,IR_hi)
+    !$acc enter data delete(saneval,urk,yrk,urk_old,wdot,eint,cv,rhoedot_ext,rh`oydot_ext,re_old,tempsrc,mom_new)
     
 
   end subroutine pc_react_state_expl
