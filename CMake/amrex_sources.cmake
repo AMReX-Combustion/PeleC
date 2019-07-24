@@ -278,6 +278,7 @@ function(get_amrex_sources)
        ${AMREX_SOURCE_DIR}/AMReX_EB2_Level.cpp
        ${AMREX_SOURCE_DIR}/AMReX_EB2_MultiGFab.cpp
        ${AMREX_SOURCE_DIR}/AMReX_eb2_${AMREX_DIM}d.F90
+       ${AMREX_SOURCE_DIR}/AMReX_EB2_${AMREX_DIM}D_C.cpp
        ${AMREX_SOURCE_DIR}/AMReX_algoim.cpp
      )
      set(AMREX_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Submodules/AMReX/Src/LinearSolvers/MLMG")
