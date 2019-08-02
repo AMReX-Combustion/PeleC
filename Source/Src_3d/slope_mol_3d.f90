@@ -21,7 +21,7 @@ contains
       use amrex_mempool_module, only : bl_allocate, bl_deallocate
       use meth_params_module
       use amrex_constants_module
-      use actual_network, only : nspecies
+      use network, only : nspecies
 
       implicit none
 
@@ -144,7 +144,7 @@ contains
       use amrex_mempool_module, only : bl_allocate, bl_deallocate
       use meth_params_module
       use amrex_constants_module
-      use actual_network, only : nspecies
+      use network, only : nspecies
 
       implicit none
 
@@ -270,7 +270,7 @@ contains
       use amrex_mempool_module, only : bl_allocate, bl_deallocate
       use meth_params_module
       use amrex_constants_module
-      use actual_network, only : nspecies
+      use network, only : nspecies
 
       implicit none
 

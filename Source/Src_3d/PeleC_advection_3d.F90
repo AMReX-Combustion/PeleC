@@ -58,7 +58,7 @@ contains
                                   transxy, transxz, transyz
     use ppm_module, only : ppm
     use slope_module, only : uslope, pslope
-    use actual_network, only : nspecies, naux
+    use network, only : nspecies, naux
     use eos_type_module
     use eos_module, only : eos_t, eos_rt
     use riemann_module, only: cmpflx, shock

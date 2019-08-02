@@ -405,7 +405,7 @@ contains
   subroutine pc_check_initial_species(lo,hi,state,state_lo,state_hi) &
                                       bind(C, name="pc_check_initial_species")
 
-    use network           , only : nspecies
+    use network, only : nspecies
     use meth_params_module, only : NVAR, URHO, UFS
     use amrex_constants_module
 

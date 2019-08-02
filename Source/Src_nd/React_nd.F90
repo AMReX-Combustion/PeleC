@@ -22,7 +22,7 @@ contains
 use amrex_ebcellflag_module, only : is_covered_cell
 #endif
 
-    use network           , only : nspecies
+    use network, only : nspecies
     use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UTEMP, &
                                    UFS
     use reactor_module, only : react
@@ -142,7 +142,7 @@ use amrex_ebcellflag_module, only : is_covered_cell
 
     use eos_type_module
     use eos_module, only : eos_t,eos_rt
-    use network           , only : nspecies
+    use network, only : nspecies
     use chemistry_module  , only : molecular_weight
     use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UTEMP, &
                                    UFS

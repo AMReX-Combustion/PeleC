@@ -393,7 +393,7 @@ contains
                      qaux, qa_lo,  qa_hi) bind(C, name = "ctoprim")
 
     use fundamental_constants_module, only: k_B, n_A
-    use actual_network, only : nspecies, naux
+    use network, only : nspecies, naux
     use eos_module, only : eos_re
     use eos_type_module
     use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UTEMP, &
