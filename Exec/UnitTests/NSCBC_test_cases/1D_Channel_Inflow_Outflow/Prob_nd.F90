@@ -77,7 +77,7 @@ contains
        dx,xlo,xhi) bind(C, name="pc_initdata")
     use eos_type_module
     use probdata_module
-    use network, only: nspec, naux, molec_wt
+    use network, only: nspecies, naux, molec_wt
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEINT, UEDEN, UTEMP, UFS
     use prob_params_module, only : problo, probhi
     use eos_module
@@ -140,7 +140,7 @@ contains
              state(i,j,k,UEINT) = eos_state % rho  *  eos_state % e
              state(i,j,k,UEDEN) = eos_state % rho * (eos_state % e + 0.5d0 * (state(i,j,k,UMX)**2 + state(i,j,k,UMY)**2))
              state(i,j,k,UTEMP) = eos_state % T
-             do n=1, nspec
+             do n=1, nspecies
                 state(i,j,k,UFS+n-1) = eos_state % rho  *  eos_state % massfrac(n)
              end do
 

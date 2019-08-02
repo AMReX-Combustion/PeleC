@@ -82,7 +82,7 @@ contains
     use probdata_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEINT, UEDEN, UTEMP, UFS
     use eos_module
-    use network, only: nspec
+    use network, only: nspecies
     use chemistry_module, only : get_species_index
     use amrex_constants_module, only: M_PI, HALF
 
@@ -109,7 +109,7 @@ contains
 
     eos_state % p = p_init
     eos_state % T = T_init
-    eos_state % massfrac(1:nspec) = 0.d0
+    eos_state % massfrac(1:nspecies) = 0.d0
     eos_state % massfrac(iH2)     = Y_init_H2
     eos_state % massfrac(iO2)     = Y_init_O2
     eos_state % massfrac(iN2)     = Y_init_N2
@@ -126,7 +126,7 @@ contains
                 state(i,j,k,UEINT) = eos_state % rho  *  eos_state % e
                 state(i,j,k,UEDEN) = eos_state % rho  *  eos_state % e
                 state(i,j,k,UTEMP) = eos_state % T
-                state(i,j,k,UFS:UFS+nspec-1) = eos_state % rho  *  eos_state % massfrac(1:nspec)
+                state(i,j,k,UFS:UFS+nspecies-1) = eos_state % rho  *  eos_state % massfrac(1:nspecies)
 
            enddo
         enddo

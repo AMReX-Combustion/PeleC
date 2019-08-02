@@ -73,7 +73,7 @@ contains
   subroutine pc_initdata(level,time,lo,hi,nvar, &
        state,state_lo,state_hi, &
        delta,xlo,xhi) bind(C, name="pc_initdata")
-    use network, only: nspec
+    use network, only: nspecies
     use probdata_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP, UFS
     use amrex_constants_module, only: M_PI, FOUR3RD, ONE, HALF, ZERO
@@ -106,7 +106,7 @@ contains
     eos_state % p   = p_domain
     eos_state % T   = 100000.0
     eos_state % massfrac = ZERO
-    eos_state % massfrac(nspec) = ONE
+    eos_state % massfrac(nspecies) = ONE
     call eos_rp(eos_state)
 
     print *,"rhoe:",eos_state%rho * eos_state%e
@@ -127,7 +127,7 @@ contains
                 state(i,j,k,UEINT) = eos_state % rho * eos_state % e
                 state(i,j,k,UEDEN) = state(i,j,k,UEINT) +  &
                      0.5d0*dens_domain*(vx_in**2 + vy_in**2)
-                state(i,j,k,UFS:UFS+nspec-1) = eos_state % massfrac(:) * state(i,j,k,URHO)
+                state(i,j,k,UFS:UFS+nspecies-1) = eos_state % massfrac(:) * state(i,j,k,URHO)
                 state(i,j,k,UTEMP) = eos_state % T
 
              enddo

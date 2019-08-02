@@ -5,7 +5,7 @@ Building
 
 PeleC uses executables which are customized to the case in which the user intends to run. As listed earlier, specific source code files are considered input to the program and compiled into the executable itself. Therefore, PeleC has both compile-time and run-time inputs that the user must set for their case.
 
-PeleC has the ability to use two build systems. First is the GNU Make build system. This build system is best for use on large computing facility machines and production runs. With the GNU Make implementation, the build system will inspect the machine and use known compiler optimizations explicit to that machine if possible. These explicit settings are kept up-to-date by the AMReX project. The second build system implemented is CMake. This is best used for developers of PeleC and more generalized. CMake allows for building as well as easy testing and verification of PeleC through the use of CTest which is included in CMake.
+PeleC has the ability to use two build systems. First is the GNU Make build system. This build system is best for use on large computing facility machines and production runs. With the GNU Make implementation, the build system will inspeciest the machine and use known compiler optimizations explicit to that machine if possible. These explicit settings are kept up-to-date by the AMReX project. The second build system implemented is CMake. This is best used for developers of PeleC and more generalized. CMake allows for building as well as easy testing and verification of PeleC through the use of CTest which is included in CMake.
 
 GNU Make
 ~~~~~~~~

@@ -25,7 +25,7 @@ extern "C"
 
   void pc_prob_close();
 
-  void get_num_spec(int* nspec);
+  void get_num_spec(int* nspecies);
 
   void get_num_aux(int* naux);
 

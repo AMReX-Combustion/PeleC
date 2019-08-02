@@ -91,7 +91,7 @@ contains
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEINT, UEDEN, UTEMP, UFS
     use prob_params_module, only : problo, dim
     use eos_module
-    use network, only: nspec
+    use network, only: nspecies
     use amrex_constants_module, only: M_PI, HALF
 
     implicit none
@@ -116,7 +116,7 @@ contains
     endif
 
     call build(eos_state)
-    allocate(pmf_vals(nspec+4))
+    allocate(pmf_vals(nspecies+4))
 
     do k = lo(3), hi(3)
        z = problo(3) + dx(3)*(dble(k) + HALF)
@@ -158,7 +158,7 @@ contains
 
                 endif
 
-                eos_state % molefrac(1:nspec) = pmf_vals(4:3+nspec)
+                eos_state % molefrac(1:nspecies) = pmf_vals(4:3+nspecies)
                 eos_state % T = pmf_vals(1)
 
                 eos_state % p = pamb
@@ -175,7 +175,7 @@ contains
                 state(i,j,k,UEINT) = eos_state % rho  *  eos_state % e
                 state(i,j,k,UEDEN) = eos_state % rho  * (eos_state % e + 0.5d0 * (u(1)**2 + u(2)**2 + u(3)**2))
                 state(i,j,k,UTEMP) = eos_state % T
-                state(i,j,k,UFS:UFS+nspec-1) = eos_state % rho  *  eos_state % massfrac(1:nspec)
+                state(i,j,k,UFS:UFS+nspecies-1) = eos_state % rho  *  eos_state % massfrac(1:nspecies)
              else
                 state(i,j,k,:) = fuel_state(:)
              endif

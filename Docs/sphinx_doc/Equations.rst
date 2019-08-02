@@ -63,7 +63,7 @@ Some notes:
   UFA: UFA+nadv-1}`.  The advected quantities have no effect at all on
   the rest of the solution but can be useful as tracer quantities.
 
-* There are ``NSPEC`` species defined in the chemistry model, which range from :math:`{\tt UFS: UFS+nspec-1}`.
+* There are ``NSPECIES`` species defined in the chemistry model, which range from :math:`{\tt UFS: UFS+nspecies-1}`.
 
 * There are ``NAUX`` auxiliary variables, from :math:`{\tt UFX:UFX+naux-1}`. The auxiliary variables are passed into the equation
   of state routines along with the species.

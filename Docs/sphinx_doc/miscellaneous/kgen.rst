@@ -50,7 +50,7 @@ We then perform the following steps:
     +
          dxinv = 1.d0/deltax
      
-         call eos_ytx_vec(Q(lo(1)-1:hi(1)+1,lo(2)-1:hi(2)+1,lo(3)-1:hi(3)+1,QFS:QFS+nspec-1),lo,hi,X,lo,hi,lo,hi,nspec)
+         call eos_ytx_vec(Q(lo(1)-1:hi(1)+1,lo(2)-1:hi(2)+1,lo(3)-1:hi(3)+1,QFS:QFS+nspecies-1),lo,hi,X,lo,hi,lo,hi,nspecies)
     @@ -392,6 +394,7 @@ contains
                end do
             end do

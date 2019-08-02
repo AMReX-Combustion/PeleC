@@ -13,7 +13,7 @@ contains
                     flux2,flux2_l1,flux2_l2,flux2_h1,flux2_h2, &
                     lo,hi)
 
-    use network, only : nspec
+    use network, only : nspecies
     use meth_params_module, only : NVAR, URHO, UFS
     use amrex_constants_module
     
@@ -32,7 +32,7 @@ contains
     do j = lo(2),hi(2)
        do i = lo(1),hi(1)+1
           sum = ZERO
-          do n = UFS, UFS+nspec-1
+          do n = UFS, UFS+nspecies-1
              sum = sum + flux1(i,j,n)
           end do
           if (sum .ne. ZERO) then
@@ -40,7 +40,7 @@ contains
           else
              fac = ONE
           end if
-          do n = UFS, UFS+nspec-1
+          do n = UFS, UFS+nspecies-1
              flux1(i,j,n) = flux1(i,j,n) * fac
           end do
        end do
@@ -48,7 +48,7 @@ contains
     do j = lo(2),hi(2)+1
        do i = lo(1),hi(1)
           sum = ZERO
-          do n = UFS, UFS+nspec-1
+          do n = UFS, UFS+nspecies-1
              sum = sum + flux2(i,j,n)
           end do
           if (sum .ne. ZERO) then
@@ -56,7 +56,7 @@ contains
           else
              fac = ONE
           end if
-          do n = UFS, UFS+nspec-1
+          do n = UFS, UFS+nspecies-1
              flux2(i,j,n) = flux2(i,j,n) * fac
           end do
        end do
@@ -70,7 +70,7 @@ contains
 
   subroutine normalize_new_species(u,u_l1,u_l2,u_h1,u_h2,lo,hi)
 
-    use network, only : nspec
+    use network, only : nspecies
     use meth_params_module, only : NVAR, URHO, UFS
     use amrex_constants_module
     
@@ -87,7 +87,7 @@ contains
     do j = lo(2),hi(2)
        do i = lo(1),hi(1)
           sum = ZERO
-          do n = UFS, UFS+nspec-1
+          do n = UFS, UFS+nspecies-1
              sum = sum + u(i,j,n)
           end do
           if (sum .ne. ZERO) then
@@ -95,7 +95,7 @@ contains
           else
              fac = ONE
           end if
-          do n = UFS, UFS+nspec-1
+          do n = UFS, UFS+nspecies-1
              u(i,j,n) = u(i,j,n) * fac
           end do
        end do
