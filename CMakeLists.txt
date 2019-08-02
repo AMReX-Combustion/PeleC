@@ -71,11 +71,9 @@ include(${CMAKE_SOURCE_DIR}/CMake/set_compile_flags.cmake)
 set_compile_flags()
 
 find_package(Python REQUIRED)
+find_package(Threads REQUIRED) # Needed this for the Travis CI system
 if(PELEC_ENABLE_MPI)
   find_package(MPI REQUIRED)
-endif()
-if(ENABLE_FEXTREMA OR ENABLE_FCOMPARE)
-  find_package(Threads REQUIRED) # Needed this for the Travis CI system
 endif()
 
 include(${CMAKE_SOURCE_DIR}/CMake/build_amrex.cmake)
