@@ -102,6 +102,15 @@ contains
   y_bcMask(:,:,:) = 0
   z_bcMask(:,:,:) = 0
 
+  bc_params(:) = 0
+  bc_target(:) = 0
+  x_bc_params(:) = 0
+  x_bc_target(:) = 0
+  y_bc_params(:) = 0
+  y_bc_target(:) = 0
+  z_bc_params(:) = 0
+  z_bc_target(:) = 0
+
   if ( flag_nscbc_isAnyPerio == 0) then
 
  !--------------------------------------------------------------------------   
