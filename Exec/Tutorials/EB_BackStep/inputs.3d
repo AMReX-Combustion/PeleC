@@ -72,3 +72,4 @@ eb2.geom_type = box
 eb2.box_lo =  -2.0  -2.0 -2.0
 eb2.box_hi =   2.0   2.0  2.0 
 eb2.box_has_fluid_inside = 0
+ebd.boundary_grad_stencil_type = 0

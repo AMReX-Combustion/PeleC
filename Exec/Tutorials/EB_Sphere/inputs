@@ -80,7 +80,7 @@ eb2.geom_type = sphere
 eb2.sphere_radius = 0.5
 eb2.sphere_center = 2.0 2.0  2.0
 eb2.sphere_has_fluid_inside = 0
-
+ebd.boundary_grad_stencil_type = 0
 
 #this is for the JBB combustor
 #  #geom_type = "polygon_revolution"

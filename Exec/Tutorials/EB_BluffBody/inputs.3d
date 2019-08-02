@@ -78,3 +78,4 @@ extruded_triangles.tri_0_point_2 = 5.25    4.01  0.0
 extruded_triangles.tri_1_point_0 = 5.25   2.01  0.0
 extruded_triangles.tri_1_point_1 = 6.25   3.01  0.0
 extruded_triangles.tri_1_point_2 = 5.25   4.01   0.0
+ebd.boundary_grad_stencil_type = 0
