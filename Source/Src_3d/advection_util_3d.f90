@@ -17,7 +17,7 @@ contains
     ! they sum to 0.  This is essentially the CMA procedure that is
     ! defined in Plewa & Muller, 1999, A&A, 342, 179
 
-    use network, only : nspec
+    use network, only : nspecies
     use meth_params_module, only : NVAR, URHO, UFS
     use amrex_constants_module
 
@@ -39,7 +39,7 @@ contains
        do j = lo(2),hi(2)
           do i = lo(1),hi(1)+1
              sum = ZERO
-             do n = UFS, UFS+nspec-1
+             do n = UFS, UFS+nspecies-1
                 sum = sum + flux1(i,j,k,n)
              end do
              if (sum .ne. ZERO) then
@@ -47,7 +47,7 @@ contains
              else
                 fac = ONE
              end if
-             do n = UFS, UFS+nspec-1
+             do n = UFS, UFS+nspecies-1
                 flux1(i,j,k,n) = flux1(i,j,k,n) * fac
              end do
           end do
@@ -58,7 +58,7 @@ contains
        do j = lo(2),hi(2)+1
           do i = lo(1),hi(1)
              sum = ZERO
-             do n = UFS, UFS+nspec-1
+             do n = UFS, UFS+nspecies-1
                 sum = sum + flux2(i,j,k,n)
              end do
              if (sum .ne. ZERO) then
@@ -66,7 +66,7 @@ contains
              else
                 fac = ONE
              end if
-             do n = UFS, UFS+nspec-1
+             do n = UFS, UFS+nspecies-1
                 flux2(i,j,k,n) = flux2(i,j,k,n) * fac
              end do
           end do
@@ -77,7 +77,7 @@ contains
        do j = lo(2),hi(2)
           do i = lo(1),hi(1)
              sum = ZERO
-             do n = UFS, UFS+nspec-1
+             do n = UFS, UFS+nspecies-1
                 sum = sum + flux3(i,j,k,n)
              end do
              if (sum .ne. ZERO) then
@@ -85,7 +85,7 @@ contains
              else
                 fac = ONE
              end if
-             do n = UFS, UFS+nspec-1
+             do n = UFS, UFS+nspecies-1
                 flux3(i,j,k,n) = flux3(i,j,k,n) * fac
              end do
           end do

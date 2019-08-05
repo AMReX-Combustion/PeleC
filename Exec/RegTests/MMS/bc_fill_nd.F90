@@ -126,7 +126,7 @@ contains
     use eos_type_module
     use eos_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UTEMP, UEDEN, UEINT, UFS, NVAR
-    use network, only: nspec, naux
+    use network, only: nspecies, naux
     use prob_params_module, only : problo, probhi, dim
     use prob_params_module, only : Interior, Inflow, Outflow, SlipWall, NoSlipWall, &
                                    problo, probhi, dim
@@ -194,7 +194,7 @@ contains
     eint = eos_state % e
 
     u_ext(URHO)            = rho
-    u_ext(UFS:UFS+nspec-1) = rho * eos_state % massfrac(1:nspec)
+    u_ext(UFS:UFS+nspecies-1) = rho * eos_state % massfrac(1:nspecies)
     u_ext(UMX)             = rho * u
     u_ext(UMY)             = rho * v
     u_ext(UMZ)             = rho * w

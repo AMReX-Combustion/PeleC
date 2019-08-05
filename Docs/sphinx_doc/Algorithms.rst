@@ -398,7 +398,7 @@ Which computes the slope routines compute (limited) slopes as:
 
   \Delta_4^- = w - w^-
 
-  \Delta^-_{k=5..nspec} = \rho Y_k - \rho^- Y_k^- - \frac{1}{c^2}Y_k \left(p-p^-\right)
+  \Delta^-_{k=5..nspecies} = \rho Y_k - \rho^- Y_k^- - \frac{1}{c^2}Y_k \left(p-p^-\right)
 
 If cell is irregular, or neighbor to left is irregular, :math:`\Delta^- = 0.0`.
 

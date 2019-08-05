@@ -136,7 +136,7 @@ contains
     use eos_type_module
     use eos_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UTEMP, UEDEN, UEINT, UFS, NVAR
-    use network, only: nspec, naux
+    use network, only: nspecies, naux
     use prob_params_module, only : problo, probhi, dim, Interior, Inflow, Outflow, SlipWall, NoSlipWall
         
     use amrex_constants_module, only: M_PI
@@ -218,7 +218,7 @@ contains
             + sin(2*M_pi*x(1)/rmax + 3*M_pi*x(2)/rmax+4.8d0)*cos(.33d0*time/1.d-6) &
             + sin(5*M_pi*x(1)/rmax - 3*M_pi*x(2)/rmax-.17d0)*cos(time/1.d-6+2.d0)
 
-       eos_state % massfrac(1:nspec) = 0.0
+       eos_state % massfrac(1:nspecies) = 0.0
        eos_state % massfrac(1) = 1.0
        eos_state % p = pamb
 
@@ -240,7 +240,7 @@ contains
           u_ext(UEINT) = eos_state % rho  *  eos_state % e
           u_ext(UEDEN) = eos_state % rho  * (eos_state % e + 0.5d0 * (u(1)**2 + u(2)**2 + u(3)**2))
           u_ext(UTEMP) = eos_state % T
-          u_ext(UFS:UFS+nspec-1) = eos_state % rho  *  eos_state % massfrac(1:nspec)
+          u_ext(UFS:UFS+nspecies-1) = eos_state % rho  *  eos_state % massfrac(1:nspecies)
 
        
 

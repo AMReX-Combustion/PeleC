@@ -68,6 +68,8 @@ function(build_amrex_library AMREX_DIM AMREX_ENABLE_EB)
     target_compile_definitions(amrex${AMREX_DIM}d${EB} PRIVATE AMREX_USE_MPI)
   endif()
 
+  target_link_libraries(amrex${AMREX_DIM}d${EB} PRIVATE Threads::Threads)
+
   #Keep our Fortran module files confined to a unique directory for each executable 
   set_target_properties(amrex${AMREX_DIM}d${EB} PROPERTIES Fortran_MODULE_DIRECTORY
                        "${CMAKE_BINARY_DIR}/fortran_modules/amrex${AMREX_DIM}d${EB}_fortran_modules")

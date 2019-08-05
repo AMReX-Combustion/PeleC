@@ -51,7 +51,7 @@ module hyp_advection_module
                                    riemann_solver
 
     use slope_module, only : slopex, slopey
-    use actual_network, only : nspec, naux
+    use network, only : nspecies, naux
     use eos_type_module
     use eos_module, only : eos_t, eos_rp
     use riemann_module, only: cmpflx, shock
@@ -106,8 +106,8 @@ module hyp_advection_module
     double precision, pointer :: dqx(:,:,:), dqy(:,:,:)
 
     ! Other left and right state arrays
-    double precision :: qtempl(VECLEN,1:5+nspec)
-    double precision :: qtempr(VECLEN,1:5+nspec)
+    double precision :: qtempl(VECLEN,1:5+nspecies)
+    double precision :: qtempr(VECLEN,1:5+nspecies)
     double precision :: rhoe_l(VECLEN)
     double precision :: rhoe_r(VECLEN)
     double precision :: cspeed(VECLEN)
@@ -189,13 +189,13 @@ module hyp_advection_module
           qtempl(1:ic,R_UT2) = 0.d0
 
           qtempl(1:ic,R_RHO) = 0.d0
-          do nsp = 1,nspec
+          do nsp = 1,nspecies
             qtempl(1:ic,R_Y-1+nsp) = q(is-1:ie-1,j,QFS-1+nsp)*q(is-1:ie-1,j,QRHO) + 0.5d0*(dqx(is-1:ie-1,j,4+nsp) &
                  + q(is-1:ie-1,j,QFS-1+nsp)*(dqx(is-1:ie-1,j,1)+dqx(is-1:ie-1,j,2))/cspeed(1:ic) )
             qtempl(1:ic,R_RHO) = qtempl(1:ic,R_RHO) + qtempl(1:ic,R_Y-1+nsp)
           enddo
 
-          do nsp = 1,nspec
+          do nsp = 1,nspecies
             qtempl(1:ic,R_Y-1+nsp) = qtempl(1:ic,R_Y-1+nsp)/qtempl(1:ic,R_RHO)
           enddo
 
@@ -206,13 +206,13 @@ module hyp_advection_module
           qtempr(1:ic,R_UT2) = 0.d0
 
           qtempr(1:ic,R_RHO) = 0.d0
-          do nsp = 1,nspec
+          do nsp = 1,nspecies
             qtempr(1:ic,R_Y-1+nsp) = q(is  :ie  ,j,QFS-1+nsp)*q(is  :ie  ,j,QRHO) - 0.5d0*(dqx(is  :ie  ,j,4+nsp) &
                  + q(is  :ie  ,j,QFS-1+nsp)*(dqx(is  :ie  ,j,1)+dqx(is  :ie  ,j,2))/cspeed(1:ic) )
             qtempr(1:ic,R_RHO) = qtempr(1:ic,R_RHO) + qtempr(1:ic,R_Y-1+nsp)
           enddo
 
-          do nsp = 1,nspec
+          do nsp = 1,nspecies
             qtempr(1:ic,5+nsp) = qtempr(1:ic,5+nsp)/qtempr(1:ic,1)
           enddo
  
@@ -225,14 +225,14 @@ module hyp_advection_module
             ! Given rho, p, Y, evaluate T, e
             eos_state%rho      = qtempl(vii,R_RHO)
             eos_state%p        = qtempl(vii,R_P)
-            eos_state%massfrac = qtempl(vii,R_Y:R_Y-1+nspec)
+            eos_state%massfrac = qtempl(vii,R_Y:R_Y-1+nspecies)
             call eos_rp(eos_state)
             rhoe_l(vii) = eos_state%rho * eos_state%e
             gamc_l(vii) = eos_state%gam1
     
             eos_state%rho      = qtempr(vii,R_RHO)
             eos_state%p        = qtempr(vii,R_P)
-            eos_state%massfrac = qtempr(vii,R_Y:R_Y-1+nspec)
+            eos_state%massfrac = qtempr(vii,R_Y:R_Y-1+nspecies)
             call eos_rp(eos_state)
             rhoe_r(vii) = eos_state%rho * eos_state%e
             gamc_r(vii) = eos_state%gam1
@@ -240,11 +240,11 @@ module hyp_advection_module
  
           ! Single point version of multi-component Riemann solve
           ! Argument order:
-          ! Input Left state: rho, vel, trans vel 1, trans vel 2, pressure, reint, 1:nspec species, gamc
-          ! Input Right states: rho, vel, trans vel 1, trans vel 2, pressure, reint, 1:nspec species, gamc,
+          ! Input Left state: rho, vel, trans vel 1, trans vel 2, pressure, reint, 1:nspecies species, gamc
+          ! Input Right states: rho, vel, trans vel 1, trans vel 2, pressure, reint, 1:nspecies species, gamc,
           ! Output Godunov states: iu, trans vel 1, trans vel 2, pressure, game, regd, rgd, ustar
           ! Work arrays: eos_state, gdnv_state
-          ! Array sizes: nspec
+          ! Array sizes: nspecies
           ! Fluxes: rho, umx, umy, ueden, ueint
           ! Tests: idir=1, coord_type=0, bc_test = 1.0, 
           ! smallc = max( csml(i), csml(i-1)
@@ -256,16 +256,16 @@ module hyp_advection_module
 
              if (riemann_solver .eq. 3) then
                 call riemann_md_singlepoint( &
-                     qtempl(vii,R_RHO), qtempl(vii,R_UN), qtempl(vii,R_UT1), qtempl(vii,R_UT2), qtempl(vii,R_P), rhoe_l(vii), qtempl(vii,R_Y:R_Y-1+nspec), gamc_l(vii),&
-                     qtempr(vii,R_RHO), qtempr(vii,R_UN), qtempr(vii,R_UT1), qtempr(vii,R_UT2), qtempr(vii,R_P), rhoe_r(vii), qtempr(vii,R_Y:R_Y-1+nspec), gamc_r(vii),&
-                     u_gd(vii), v_gd(vii), w_gd(vii), p_gd(vii), game_gd(vii), re_gd(vii), r_gd(vii), ustar(vii), eos_state, gdnv_state, nspec,&
+                     qtempl(vii,R_RHO), qtempl(vii,R_UN), qtempl(vii,R_UT1), qtempl(vii,R_UT2), qtempl(vii,R_P), rhoe_l(vii), qtempl(vii,R_Y:R_Y-1+nspecies), gamc_l(vii),&
+                     qtempr(vii,R_RHO), qtempr(vii,R_UN), qtempr(vii,R_UT1), qtempr(vii,R_UT2), qtempr(vii,R_P), rhoe_r(vii), qtempr(vii,R_Y:R_Y-1+nspecies), gamc_r(vii),&
+                     u_gd(vii), v_gd(vii), w_gd(vii), p_gd(vii), game_gd(vii), re_gd(vii), r_gd(vii), ustar(vii), eos_state, gdnv_state, nspecies,&
                      flux_tmp(vii,URHO), flux_tmp(vii,UMX), flux_tmp(vii,UMY), flux_tmp(vii,UMZ), flux_tmp(vii,UEDEN), flux_tmp(vii,UEINT), &
                      idir, coord_type, bc_test_val, csmall(vii), cav(vii) )
              else if (riemann_solver .eq. 1) then
                 call riemann_cg_singlepoint( &
-                     qtempl(vii,R_RHO), qtempl(vii,R_UN), qtempl(vii,R_UT1), qtempl(vii,R_UT2), qtempl(vii,R_P), rhoe_l(vii), qtempl(vii,R_Y:R_Y-1+nspec), gamc_l(vii),&
-                     qtempr(vii,R_RHO), qtempr(vii,R_UN), qtempr(vii,R_UT1), qtempr(vii,R_UT2), qtempr(vii,R_P), rhoe_r(vii), qtempr(vii,R_Y:R_Y-1+nspec), gamc_r(vii),&
-                     u_gd(vii), v_gd(vii), w_gd(vii), p_gd(vii), game_gd(vii), re_gd(vii), r_gd(vii), ustar(vii),nspec,&
+                     qtempl(vii,R_RHO), qtempl(vii,R_UN), qtempl(vii,R_UT1), qtempl(vii,R_UT2), qtempl(vii,R_P), rhoe_l(vii), qtempl(vii,R_Y:R_Y-1+nspecies), gamc_l(vii),&
+                     qtempr(vii,R_RHO), qtempr(vii,R_UN), qtempr(vii,R_UT1), qtempr(vii,R_UT2), qtempr(vii,R_P), rhoe_r(vii), qtempr(vii,R_Y:R_Y-1+nspecies), gamc_r(vii),&
+                     u_gd(vii), v_gd(vii), w_gd(vii), p_gd(vii), game_gd(vii), re_gd(vii), r_gd(vii), ustar(vii),nspecies,&
                      flux_tmp(vii,URHO), flux_tmp(vii,UMX), flux_tmp(vii,UMY), flux_tmp(vii,UMZ), flux_tmp(vii,UEDEN), flux_tmp(vii,UEINT), &
                      idir, coord_type, bc_test_val, csmall(vii), cav(vii) )
              else
@@ -275,11 +275,11 @@ module hyp_advection_module
 
              ! Get upwinded massfractions
              if (ustar(vii) .gt. ZERO) then
-                eos_state%massfrac = qtempl(vii,R_Y:R_Y+nspec-1)
+                eos_state%massfrac = qtempl(vii,R_Y:R_Y+nspecies-1)
              else if (ustar(vii) .lt. ZERO) then
-                eos_state%massfrac = qtempr(vii,R_Y:R_Y+nspec-1)
+                eos_state%massfrac = qtempr(vii,R_Y:R_Y+nspecies-1)
              else
-                eos_state%massfrac = HALF*(qtempl(vii,R_Y:R_Y+nspec-1) + qtempr(vii,R_Y:R_Y+nspec-1))
+                eos_state%massfrac = HALF*(qtempl(vii,R_Y:R_Y+nspecies-1) + qtempr(vii,R_Y:R_Y+nspecies-1))
              endif
              eos_state%rho = r_gd(vii)
              eos_state%p   = p_gd(vii)
@@ -287,7 +287,7 @@ module hyp_advection_module
              re_gd(vii) = r_gd(vii) * eos_state%e
 
              flux_tmp(vii,URHO)            = r_gd(vii) * u_gd(vii)
-             flux_tmp(vii,UFS:UFS+nspec-1) = flux_tmp(vii,URHO) * eos_state%massfrac
+             flux_tmp(vii,UFS:UFS+nspecies-1) = flux_tmp(vii,URHO) * eos_state%massfrac
              flux_tmp(vii,UMX)             = flux_tmp(vii,URHO) * u_gd(vii) + p_gd(vii)
              flux_tmp(vii,UMY)             = flux_tmp(vii,URHO) * v_gd(vii)
              flux_tmp(vii,UMZ)             = ZERO
@@ -339,13 +339,13 @@ module hyp_advection_module
           qtempl(1:ic,R_UT2) = 0.d0
 
           qtempl(1:ic,R_RHO) = 0.d0
-          do nsp = 1,nspec
+          do nsp = 1,nspecies
              qtempl(1:ic,R_Y-1+nsp) = q(is:ie,j-1,QFS-1+nsp)*q(is:ie,j-1,QRHO) + 0.5d0*(dqy(is:ie,j-1,4+nsp) &
                   + q(is:ie,j-1,QFS-1+nsp)*(dqy(is:ie,j-1,1)+dqy(is:ie,j-1,2))/cspeed(1:ic) )
              qtempl(1:ic,R_RHO) = qtempl(1:ic,R_RHO) + qtempl(1:ic,R_Y-1+nsp)
           enddo
 
-          do nsp = 1,nspec
+          do nsp = 1,nspecies
              qtempl(1:ic,R_Y-1+nsp) = qtempl(1:ic,R_Y-1+nsp)/qtempl(1:ic,R_RHO)
           enddo
 
@@ -356,13 +356,13 @@ module hyp_advection_module
           qtempr(1:ic,R_UT2) = 0.d0
 
           qtempr(1:ic,R_RHO) = 0.d0
-          do nsp = 1,nspec
+          do nsp = 1,nspecies
              qtempr(1:ic,R_Y-1+nsp) = q(is:ie,j  ,QFS-1+nsp)*q(is:ie,j  ,QRHO) - 0.5d0*(dqy(is:ie,j  ,4+nsp) &
                   + q(is:ie,j  ,QFS-1+nsp)*(dqy(is:ie,j  ,1)+dqy(is:ie,j  ,2))/cspeed(1:ic) )
              qtempr(1:ic,R_RHO) = qtempr(1:ic,R_RHO) + qtempr(1:ic,R_Y-1+nsp)
           enddo
               
-          do nsp = 1,nspec
+          do nsp = 1,nspecies
              qtempr(1:ic,R_Y-1+nsp) = qtempr(1:ic,R_Y-1+nsp)/qtempr(1:ic,R_RHO)
           enddo
 
@@ -375,14 +375,14 @@ module hyp_advection_module
              ! Given rho, p, Y, evaluate T, e
              eos_state%rho      = qtempl(vii,R_RHO)
              eos_state%p        = qtempl(vii,R_P)
-             eos_state%massfrac = qtempl(vii,R_Y:R_Y-1+nspec)
+             eos_state%massfrac = qtempl(vii,R_Y:R_Y-1+nspecies)
              call eos_rp(eos_state)
              rhoe_l(vii) = eos_state%rho * eos_state%e
              gamc_l(vii) = eos_state%gam1
         
              eos_state%rho      = qtempr(vii,R_RHO)
              eos_state%p        = qtempr(vii,R_P)
-             eos_state%massfrac = qtempr(vii,R_Y:R_Y-1+nspec)
+             eos_state%massfrac = qtempr(vii,R_Y:R_Y-1+nspecies)
              call eos_rp(eos_state)
              rhoe_r(vii) = eos_state%rho * eos_state%e
              gamc_r(vii) = eos_state%gam1
@@ -390,11 +390,11 @@ module hyp_advection_module
 
           ! Single point version of multi-component Riemann solve
           ! Argument order:
-          ! Input Left state: rho, vel, trans vel 1, trans vel 2, pressure, reint, 1:nspec species, gamc
-          ! Input Right states: rho, vel, trans vel 1, trans vel 2, pressure, reint, 1:nspec species, gamc,
+          ! Input Left state: rho, vel, trans vel 1, trans vel 2, pressure, reint, 1:nspecies species, gamc
+          ! Input Right states: rho, vel, trans vel 1, trans vel 2, pressure, reint, 1:nspecies species, gamc,
           ! Output Godunov states: iu, trans vel 1, trans vel 2, pressure, game, regd, rgd, ustar
           ! Work arrays: eos_state, gdnv_state
-          ! Array sizes: nspec
+          ! Array sizes: nspecies
           ! Fluxes: rho, umx, umy, ueden, ueint
           ! Tests: idir=1, coord_type=0, bc_test = 1.0, 
           ! smallc = max( csml(i), csml(i-1)
@@ -407,16 +407,16 @@ module hyp_advection_module
 
              if (riemann_solver .eq. 3) then
                 call riemann_md_singlepoint( &
-                     qtempl(vii,R_RHO), qtempl(vii,R_UN), qtempl(vii,R_UT1), qtempl(vii,R_UT2), qtempl(vii,R_P), rhoe_l(vii), qtempl(vii,R_Y:R_Y-1+nspec), gamc_l(vii),&
-                     qtempr(vii,R_RHO), qtempr(vii,R_UN), qtempr(vii,R_UT1), qtempr(vii,R_UT2), qtempr(vii,R_P), rhoe_r(vii), qtempr(vii,R_Y:R_Y-1+nspec), gamc_r(vii),&
-                     v_gd(vii), u_gd(vii), w_gd(vii), p_gd(vii), game_gd(vii), re_gd(vii), r_gd(vii), ustar(vii), eos_state, gdnv_state, nspec,&
+                     qtempl(vii,R_RHO), qtempl(vii,R_UN), qtempl(vii,R_UT1), qtempl(vii,R_UT2), qtempl(vii,R_P), rhoe_l(vii), qtempl(vii,R_Y:R_Y-1+nspecies), gamc_l(vii),&
+                     qtempr(vii,R_RHO), qtempr(vii,R_UN), qtempr(vii,R_UT1), qtempr(vii,R_UT2), qtempr(vii,R_P), rhoe_r(vii), qtempr(vii,R_Y:R_Y-1+nspecies), gamc_r(vii),&
+                     v_gd(vii), u_gd(vii), w_gd(vii), p_gd(vii), game_gd(vii), re_gd(vii), r_gd(vii), ustar(vii), eos_state, gdnv_state, nspecies,&
                      flux_tmp(vii,URHO), flux_tmp(vii,UMY), flux_tmp(vii,UMX), flux_tmp(vii,UMZ), flux_tmp(vii,UEDEN), flux_tmp(vii,UEINT), &
                      idir, coord_type, bc_test_val, csmall(vii), cav(vii) )
              else if (riemann_solver .eq. 1) then
                 call riemann_cg_singlepoint( &
-                     qtempl(vii,R_RHO), qtempl(vii,R_UN), qtempl(vii,R_UT1), qtempl(vii,R_UT2), qtempl(vii,R_P), rhoe_l(vii), qtempl(vii,R_Y:R_Y-1+nspec), gamc_l(vii),&
-                     qtempr(vii,R_RHO), qtempr(vii,R_UN), qtempr(vii,R_UT1), qtempr(vii,R_UT2), qtempr(vii,R_P), rhoe_r(vii), qtempr(vii,R_Y:R_Y-1+nspec), gamc_r(vii),&
-                     v_gd(vii), u_gd(vii), w_gd(vii), p_gd(vii), game_gd(vii), re_gd(vii), r_gd(vii), ustar(vii), nspec,&
+                     qtempl(vii,R_RHO), qtempl(vii,R_UN), qtempl(vii,R_UT1), qtempl(vii,R_UT2), qtempl(vii,R_P), rhoe_l(vii), qtempl(vii,R_Y:R_Y-1+nspecies), gamc_l(vii),&
+                     qtempr(vii,R_RHO), qtempr(vii,R_UN), qtempr(vii,R_UT1), qtempr(vii,R_UT2), qtempr(vii,R_P), rhoe_r(vii), qtempr(vii,R_Y:R_Y-1+nspecies), gamc_r(vii),&
+                     v_gd(vii), u_gd(vii), w_gd(vii), p_gd(vii), game_gd(vii), re_gd(vii), r_gd(vii), ustar(vii), nspecies,&
                      flux_tmp(vii,URHO), flux_tmp(vii,UMY), flux_tmp(vii,UMX), flux_tmp(vii,UMZ), flux_tmp(vii,UEDEN), flux_tmp(vii,UEINT), &
                      idir, coord_type, bc_test_val, csmall(vii), cav(vii) )
              else
@@ -425,11 +425,11 @@ module hyp_advection_module
 
              ! Get upwinded massfractions
              if (ustar(vii) .gt. ZERO) then
-                eos_state%massfrac = qtempl(vii,R_Y:R_Y+nspec-1)
+                eos_state%massfrac = qtempl(vii,R_Y:R_Y+nspecies-1)
              else if (ustar(vii) .lt. ZERO) then
-                eos_state%massfrac = qtempr(vii,R_Y:R_Y+nspec-1)
+                eos_state%massfrac = qtempr(vii,R_Y:R_Y+nspecies-1)
              else
-                eos_state%massfrac = HALF*(qtempl(vii,R_Y:R_Y+nspec-1) + qtempr(vii,R_Y:R_Y+nspec-1))
+                eos_state%massfrac = HALF*(qtempl(vii,R_Y:R_Y+nspecies-1) + qtempr(vii,R_Y:R_Y+nspecies-1))
              endif
              eos_state%rho = r_gd(vii)
              eos_state%p   = p_gd(vii)
@@ -437,7 +437,7 @@ module hyp_advection_module
              re_gd(vii) = r_gd(vii) * eos_state%e
 
              flux_tmp(vii,URHO)            = r_gd(vii) * v_gd(vii)
-             flux_tmp(vii,UFS:UFS+nspec-1) = flux_tmp(vii,URHO) * eos_state%massfrac
+             flux_tmp(vii,UFS:UFS+nspecies-1) = flux_tmp(vii,URHO) * eos_state%massfrac
              flux_tmp(vii,UMX)             = flux_tmp(vii,URHO) * u_gd(vii)
              flux_tmp(vii,UMY)             = flux_tmp(vii,URHO) * v_gd(vii) + p_gd(vii)
              flux_tmp(vii,UMZ)             = ZERO
@@ -495,7 +495,7 @@ module hyp_advection_module
 
              qtempl(vii,R_RHO) = q(i,j,QRHO)
 
-             do nsp = 1,nspec
+             do nsp = 1,nspecies
                 qtempl(vii,R_Y-1+nsp) = q(i,j,QFS-1+nsp)
              enddo
 
@@ -519,7 +519,7 @@ module hyp_advection_module
                .and. j.ge.lo(2)-nextra .and. j.le.hi(2)+nextra ) then
                 eos_state%rho      = qtempl(vii,R_RHO)
                 eos_state%p        = qtempl(vii,R_P)
-                eos_state%massfrac = qtempl(vii,R_Y:R_Y-1+nspec)
+                eos_state%massfrac = qtempl(vii,R_Y:R_Y-1+nspecies)
                 call eos_rp(eos_state)
                 rhoe_l(vii) = eos_state%rho * eos_state%e
                 gamc_l(vii) = eos_state%gam1
@@ -541,16 +541,16 @@ module hyp_advection_module
 
              if (riemann_solver .eq. 3) then
                 call riemann_md_singlepoint( &
-                     qtempl(vii,R_RHO), qtempl(vii,R_UN), qtempl(vii,R_UT1), qtempl(vii,R_UT2), qtempl(vii,R_P), rhoe_l(vii), qtempl(vii,R_Y:R_Y-1+nspec), gamc_l(vii),&
-                     qtempl(vii,R_RHO), qtempr(vii,R_UN), qtempl(vii,R_UT1), qtempl(vii,R_UT2), qtempl(vii,R_P), rhoe_l(vii), qtempl(vii,R_Y:R_Y-1+nspec), gamc_l(vii),&
-                     u_gd(vii), v_gd(vii), w_gd(vii), p_gd(vii), game_gd(vii), re_gd(vii), r_gd(vii), ustar(vii), eos_state, gdnv_state, nspec,&
+                     qtempl(vii,R_RHO), qtempl(vii,R_UN), qtempl(vii,R_UT1), qtempl(vii,R_UT2), qtempl(vii,R_P), rhoe_l(vii), qtempl(vii,R_Y:R_Y-1+nspecies), gamc_l(vii),&
+                     qtempl(vii,R_RHO), qtempr(vii,R_UN), qtempl(vii,R_UT1), qtempl(vii,R_UT2), qtempl(vii,R_P), rhoe_l(vii), qtempl(vii,R_Y:R_Y-1+nspecies), gamc_l(vii),&
+                     u_gd(vii), v_gd(vii), w_gd(vii), p_gd(vii), game_gd(vii), re_gd(vii), r_gd(vii), ustar(vii), eos_state, gdnv_state, nspecies,&
                      flux_tmp(vii,URHO), tflux(1), tflux(2), tflux(3),  flux_tmp(vii,UEDEN), flux_tmp(vii,UEINT), &
                      idir, coord_type, bc_test_val, csmall(vii), cav(vii) )
              else if (riemann_solver .eq. 1) then
                 call riemann_cg_singlepoint( &
-                     qtempl(vii,R_RHO), qtempl(vii,R_UN), qtempl(vii,R_UT1), qtempl(vii,R_UT2), qtempl(vii,R_P), rhoe_l(vii), qtempl(vii,R_Y:R_Y-1+nspec), gamc_l(vii),&
-                     qtempl(vii,R_RHO), qtempr(vii,R_UN), qtempl(vii,R_UT1), qtempl(vii,R_UT2), qtempl(vii,R_P), rhoe_l(vii), qtempl(vii,R_Y:R_Y-1+nspec), gamc_l(vii),&
-                     u_gd(vii), v_gd(vii), w_gd(vii), p_gd(vii), game_gd(vii), re_gd(vii), r_gd(vii), ustar(vii), nspec,&
+                     qtempl(vii,R_RHO), qtempl(vii,R_UN), qtempl(vii,R_UT1), qtempl(vii,R_UT2), qtempl(vii,R_P), rhoe_l(vii), qtempl(vii,R_Y:R_Y-1+nspecies), gamc_l(vii),&
+                     qtempl(vii,R_RHO), qtempr(vii,R_UN), qtempl(vii,R_UT1), qtempl(vii,R_UT2), qtempl(vii,R_P), rhoe_l(vii), qtempl(vii,R_Y:R_Y-1+nspecies), gamc_l(vii),&
+                     u_gd(vii), v_gd(vii), w_gd(vii), p_gd(vii), game_gd(vii), re_gd(vii), r_gd(vii), ustar(vii), nspecies,&
                      flux_tmp(vii,URHO), tflux(1), tflux(2), tflux(3), flux_tmp(vii,UEDEN), flux_tmp(vii,UEINT), &
                      idir, coord_type, bc_test_val, csmall(vii), cav(vii) )
              else
@@ -558,14 +558,14 @@ module hyp_advection_module
              endif
 
              ! Get upwinded massfractions
-             eos_state%massfrac = qtempl(vii,R_Y:R_Y+nspec-1)
+             eos_state%massfrac = qtempl(vii,R_Y:R_Y+nspecies-1)
              eos_state%rho = r_gd(vii)
              eos_state%p   = p_gd(vii)
              call eos_rp(eos_state)
              re_gd(vii) = r_gd(vii) * eos_state%e
 
              flux_tmp(vii,URHO)            = r_gd(vii) * u_gd(vii)
-             flux_tmp(vii,UFS:UFS+nspec-1) = flux_tmp(vii,URHO) * eos_state%massfrac
+             flux_tmp(vii,UFS:UFS+nspecies-1) = flux_tmp(vii,URHO) * eos_state%massfrac
 
              eb_norm = ebg(is+vii-1)%eb_normal
              eb_norm = eb_norm / sqrt(eb_norm(1)**2 + eb_norm(2)**2)
@@ -577,7 +577,7 @@ module hyp_advection_module
                   +  HALF * r_gd(vii) * (u_gd(vii)**2 + v_gd(vii)**2 + w_gd(vii)**2) + p_gd(vii) )
 
              !   Compute species flux like passive scalar from intermediate state
-             do nsp = 0, nspec-1
+             do nsp = 0, nspecies-1
                 flux_tmp(vii,UFS+nsp) = flux_tmp(vii,URHO)*qtempl(vii,R_Y+nsp)
              enddo
           endif
@@ -613,7 +613,7 @@ module hyp_advection_module
     call destroy(gdnv_state)
 
     ! Flux1(i,j,N) has edge based flux of rho,u,v,w,eden,eint,species indexed by
-    ! URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS:UFS+nspec-1, and similar for flux2, flux3
+    ! URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS:UFS+nspecies-1, and similar for flux2, flux3
     ! EB face flux assuming wall BC is loaded into ebflux with same ordering
 
     ! After this, must call routine to multiply fluxes by aperatures and interpolate to face centers 

@@ -25,7 +25,7 @@ contains
       use amrex_mempool_module, only : bl_allocate, bl_deallocate
       use meth_params_module
       use amrex_constants_module
-      use actual_network, only : nspec
+      use network, only : nspecies
       use prob_params_module, only : physbc_lo, physbc_hi, Inflow
 
       implicit none
@@ -103,7 +103,7 @@ contains
                   endif
                enddo
 
-               do nsp = 1, nspec
+               do nsp = 1, nspecies
                   do i = ilo1, ihi1
                      if (flagArrayL(i)) then
                         dlft(i,4+nsp) = q(i  ,j,k,QRHO)*q(i,j,k,QFS+nsp-1)-q(i-1,j,k,QRHO)*q(i-1,j,k,QFS+nsp-1) &
@@ -146,7 +146,7 @@ contains
       use amrex_mempool_module, only : bl_allocate, bl_deallocate
       use meth_params_module
       use amrex_constants_module
-      use actual_network, only : nspec
+      use network, only : nspecies
       use prob_params_module, only : physbc_lo, physbc_hi, Inflow
 
       implicit none
@@ -225,7 +225,7 @@ contains
 
                enddo
 
-               do nsp = 1, nspec
+               do nsp = 1, nspecies
                   do i = ilo1, ihi1
                      if (flagArrayL(i)) then
                         dlft(i,4+nsp) = q(i,j  ,k,QRHO)*q(i,j  ,k,QFS+nsp-1)-q(i,j-1,k,QRHO)*q(i,j-1,k,QFS+nsp-1) &
@@ -268,7 +268,7 @@ contains
       use amrex_mempool_module, only : bl_allocate, bl_deallocate
       use meth_params_module
       use amrex_constants_module
-      use actual_network, only : nspec
+      use network, only : nspecies
       use prob_params_module, only : physbc_lo, physbc_hi, Inflow
 
       implicit none
@@ -347,7 +347,7 @@ contains
                   endif
                enddo
 
-               do nsp = 1, nspec
+               do nsp = 1, nspecies
                   do i = ilo1, ihi1
                      if (flagArrayL(i)) then
                         dlft(i,4+nsp) = q(i,j,k  ,QRHO)*q(i,j,k,  QFS+nsp-1)-q(i,j,k-1,QRHO)*q(i,j,k-1,QFS+nsp-1) &

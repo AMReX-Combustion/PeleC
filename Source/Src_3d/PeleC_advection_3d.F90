@@ -58,7 +58,7 @@ contains
                                   transxy, transxz, transyz
     use ppm_module, only : ppm
     use slope_module, only : uslope, pslope
-    use actual_network, only : nspec, naux
+    use network, only : nspecies, naux
     use eos_type_module
     use eos_module, only : eos_t, eos_rt
     use riemann_module, only: cmpflx, shock
@@ -340,7 +340,7 @@ contains
                          eos_state % rho      = Ip(i,j,kc,idim,iwave,QRHO)
                          eos_state % T        = Ip(i,j,kc,idim,iwave,QTEMP)
 
-                         eos_state % massfrac = Ip(i,j,kc,idim,iwave,QFS:QFS+nspec-1)
+                         eos_state % massfrac = Ip(i,j,kc,idim,iwave,QFS:QFS+nspecies-1)
                          eos_state % aux      = Ip(i,j,kc,idim,iwave,QFX:QFX+naux-1)
 
                          call eos_rt(eos_state)
@@ -356,7 +356,7 @@ contains
                          eos_state % rho      = Im(i,j,kc,idim,iwave,QRHO)
                          eos_state % T        = Im(i,j,kc,idim,iwave,QTEMP)
 
-                         eos_state % massfrac = Im(i,j,kc,idim,iwave,QFS:QFS+nspec-1)
+                         eos_state % massfrac = Im(i,j,kc,idim,iwave,QFS:QFS+nspecies-1)
                          eos_state % aux      = Im(i,j,kc,idim,iwave,QFX:QFX+naux-1)
 
                          call eos_rt(eos_state)
@@ -741,7 +741,7 @@ contains
                     eden_lost,xang_lost,yang_lost,zang_lost, &
                     verbose)
 
-    use network, only : nspec, naux
+    use network, only : nspecies, naux
     use meth_params_module, only : difmag, NVAR, URHO, UMX, UMY, UMZ, &
                                    UEDEN, UEINT, UTEMP, NGDNV, QVAR, track_grid_losses, limit_fluxes_on_small_dens
     use amrex_constants_module, only : ZERO, FOURTH, ONE

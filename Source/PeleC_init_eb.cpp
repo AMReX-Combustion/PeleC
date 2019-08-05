@@ -186,7 +186,7 @@ PeleC::initialize_eb2_structs() {
                                       sv_eb_bndry_grad_stencil[iLocal].data(),
                                       &Ncut, &dx);
       } else {
-        amrex::Print() << "Unknown or unspecified boundary gradient stencil type:" << bgs << std::endl;
+        amrex::Print() << "Unknown or unspeciesified boundary gradient stencil type:" << bgs << std::endl;
         amrex::Abort();
       }
 

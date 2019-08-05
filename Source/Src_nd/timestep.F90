@@ -10,7 +10,7 @@ contains
 
   subroutine pc_estdt(lo,hi,u,u_lo,u_hi,dx,dt) bind(C, name="pc_estdt")
 
-    use network, only: nspec, naux
+    use network, only: nspecies, naux
     use eos_module
     use meth_params_module, only: NVAR, URHO, UMX, UMY, UMZ, UEINT, UTEMP, UFS, UFX
     use prob_params_module, only: dim
@@ -39,7 +39,7 @@ contains
              eos_state % rho      = u(i,j,k,URHO )
              eos_state % T        = u(i,j,k,UTEMP)
              eos_state % e        = u(i,j,k,UEINT) * rhoInv
-             eos_state % massfrac = u(i,j,k,UFS:UFS+nspec-1) * rhoInv
+             eos_state % massfrac = u(i,j,k,UFS:UFS+nspecies-1) * rhoInv
              eos_state % aux      = u(i,j,k,UFX:UFX+naux-1) * rhoInv
 
              call eos_re(eos_state)
@@ -80,7 +80,7 @@ contains
   subroutine pc_estdt_vel_diffusion(lo,hi,state,s_lo,s_hi,dx,dt) &
        bind(C, name="pc_estdt_vel_diffusion")
 
-    use network, only: nspec, naux
+    use network, only: nspecies, naux
     use eos_module
     use eos_type_module
     use meth_params_module, only: NVAR, URHO, UTEMP, UFS
@@ -116,7 +116,7 @@ contains
        do j = lo(2), hi(2)
 
           rho_inv(:) = ONE / state(lo(1):hi(1),j,k,URHO)
-          do n=1,nspec
+          do n=1,nspecies
              do i=1,np
                 coeff%eos_state(i)%massfrac(n) = state(lo(1)+i-1,j,k,UFS+n-1) * rho_inv(i)
              end do
@@ -153,7 +153,7 @@ contains
   subroutine pc_estdt_temp_diffusion(lo,hi,state,s_lo,s_hi,dx,dt) &
        bind(C, name="pc_estdt_temp_diffusion")
 
-    use network, only: nspec, naux
+    use network, only: nspecies, naux
     use eos_module
     use eos_type_module
     use meth_params_module, only: NVAR, URHO, UTEMP, UFS
@@ -189,7 +189,7 @@ contains
        do j = lo(2), hi(2)
 
           rho_inv(:) = ONE / state(lo(1):hi(1),j,k,URHO)
-          do n=1,nspec
+          do n=1,nspecies
              do i=1,np
                 coeff%eos_state(i)%massfrac(n) = state(lo(1)+i-1,j,k,UFS+n-1) * rho_inv(i)
              end do
@@ -236,7 +236,7 @@ contains
   subroutine pc_estdt_enth_diffusion(lo,hi,state,s_lo,s_hi,dx,dt) &
        bind(C, name="pc_estdt_enth_diffusion")
 
-    use network, only: nspec, naux
+    use network, only: nspecies, naux
     use eos_module
     use eos_type_module
     use meth_params_module, only: NVAR, URHO, UEINT, UTEMP, UFS, UFX, &
@@ -279,7 +279,7 @@ contains
                 coeff % eos_state(1) % T        = state(i,j,k,UTEMP)
                 coeff % eos_state(1) % e        = state(i,j,k,UEINT) * rho_inv
 
-                coeff % eos_state(1) % massfrac = state(i,j,k,UFS:UFS+nspec-1) * rho_inv
+                coeff % eos_state(1) % massfrac = state(i,j,k,UFS:UFS+nspecies-1) * rho_inv
                 if (naux .gt. 0) then
                    coeff % eos_state(1) % aux   = state(i,j,k,UFX:UFX+naux-1)  * rho_inv
                 endif
@@ -336,7 +336,7 @@ contains
     use meth_params_module, only: NVAR, URHO, UTEMP, UEINT, UFS, UFX, UMX, UMZ, &
                                   cfl, do_hydro
     use prob_params_module, only: dim
-    use network, only: nspec, naux
+    use network, only: nspecies, naux
     use eos_module
 
     implicit none
@@ -367,7 +367,7 @@ contains
                 eos_state % rho      = s_new(i,j,k,URHO )
                 eos_state % T        = s_new(i,j,k,UTEMP)
                 eos_state % e        = s_new(i,j,k,UEINT) * rhoinv
-                eos_state % massfrac = s_new(i,j,k,UFS:UFS+nspec-1) * rhoinv
+                eos_state % massfrac = s_new(i,j,k,UFS:UFS+nspecies-1) * rhoinv
                 eos_state % aux      = s_new(i,j,k,UFX:UFX+naux-1) * rhoinv
 
                 call eos_re(eos_state)

@@ -202,7 +202,7 @@ contains
   subroutine reset_to_small_state(old_state, new_state, idx, lo, hi, verbose)
 
     use amrex_constants_module, only: ZERO
-    use network, only: nspec, naux
+    use network, only: nspecies, naux
     use meth_params_module, only: NVAR, URHO, UMX, UMY, UMZ, UTEMP, UEINT, UEDEN, UFS, small_temp, small_dens, npassive, upass_map
     use eos_type_module
     use eos_module, only: eos_rt
@@ -242,7 +242,7 @@ contains
 
     eos_state % rho      = small_dens
     eos_state % T        = small_temp
-    eos_state % massfrac = new_state(UFS:UFS+nspec-1) / small_dens
+    eos_state % massfrac = new_state(UFS:UFS+nspecies-1) / small_dens
     eos_state % aux      = new_state(UFS:UFS+naux-1) / small_dens
 
     call eos_rt(eos_state)
@@ -393,7 +393,7 @@ contains
                      qaux, qa_lo,  qa_hi) bind(C, name = "ctoprim")
 
     use fundamental_constants_module, only: k_B, n_A
-    use actual_network, only : nspec, naux
+    use network, only : nspecies, naux
     use eos_module, only : eos_re
     use eos_type_module
     use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UTEMP, &
@@ -467,7 +467,7 @@ contains
              eos_state % T        = q(i,j,k,QTEMP )
              eos_state % rho      = q(i,j,k,QRHO  )
              eos_state % e        = q(i,j,k,QREINT)
-             eos_state % massfrac = q(i,j,k,QFS:QFS+nspec-1)
+             eos_state % massfrac = q(i,j,k,QFS:QFS+nspecies-1)
              eos_state % aux      = q(i,j,k,QFX:QFX+naux-1)
 
              call eos_re(eos_state)
@@ -647,7 +647,7 @@ contains
                                   allow_small_energy, allow_negative_energy
     use prob_params_module, only: dim, coord_type, dg
     use amrex_mempool_module, only: bl_allocate, bl_deallocate
-    use network, only: nspec, naux
+    use network, only: nspecies, naux
     use eos_type_module
     use eos_module, only: eos_rt
 
@@ -725,7 +725,7 @@ contains
 
                 eos_state % rho      = small_dens
                 eos_state % T        = small_temp
-                eos_state % massfrac = u(i,j,k,UFS:UFS+nspec-1) / u(i,j,k,URHO)
+                eos_state % massfrac = u(i,j,k,UFS:UFS+nspecies-1) / u(i,j,k,URHO)
                 eos_state % aux      = u(i,j,k,UFX:UFX+naux-1) / u(i,j,k,URHO)
 
                 call eos_rt(eos_state)

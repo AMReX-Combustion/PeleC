@@ -17,7 +17,7 @@ contains
                          gamc,gc_lo,gc_hi, &
                          ilo1,ilo2,ihi1,ihi2,dt,kc,k3d)
 
-    use network, only : nspec, naux
+    use network, only : nspecies, naux
     use meth_params_module, only : QVAR, QRHO, QU, QV, QW, &
          QREINT, QPRES, QGAME, &
          small_dens, small_pres, &
@@ -964,7 +964,7 @@ contains
                         gamc,gc_lo,gc_hi, &
                         ilo1,ilo2,ihi1,ihi2,dt,km,kc,k3d)
 
-    use network, only : nspec, naux
+    use network, only : nspecies, naux
     use meth_params_module, only : QVAR, QRHO, QU, QV, QW, &
          QREINT, QPRES, QGAME, &
          small_dens, small_pres, &

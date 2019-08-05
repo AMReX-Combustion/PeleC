@@ -146,6 +146,9 @@ function(build_pelec pelec_exe_name pelec_exe_options_file)
     target_include_directories(${pelec_exe_name} PRIVATE ${CMAKE_SOURCE_DIR}/Submodules/PelePhysics/Support/Fuego/Evaluation)
     target_include_directories(${pelec_exe_name} PRIVATE ${CMAKE_SOURCE_DIR}/Submodules/PelePhysics/Support/Fuego/Mechanism)
   endif()
+  if(DEFINED PELEC_CHEMISTRY_MODEL)
+    target_include_directories(${pelec_exe_name} PRIVATE ${CMAKE_SOURCE_DIR}/Submodules/PelePhysics/Support/Fuego/Mechanism/Models/${PELEC_CHEMISTRY_MODEL})
+  endif()
 
   #PeleC include directories
   target_include_directories(${pelec_exe_name} PRIVATE ${CMAKE_SOURCE_DIR}/Source)

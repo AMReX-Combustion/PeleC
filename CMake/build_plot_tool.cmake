@@ -36,6 +36,8 @@ function(build_plot_tool PLOT_TOOL_NAME)
   target_include_directories(${PLOT_TOOL_NAME} SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/Submodules/AMReX/Src/Base)
   target_include_directories(${PLOT_TOOL_NAME} SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/Submodules/AMReX/Tools/Plotfile)
   
+  target_link_libraries(${PLOT_TOOL_NAME} Threads::Threads)
+
   #Link our executable to the MPI libraries, etc
   #if(PELEC_ENABLE_MPI)
   #  target_link_libraries(${PLOT_TOOL_NAME} PRIVATE MPI::MPI_CXX MPI::MPI_C MPI::MPI_Fortran)

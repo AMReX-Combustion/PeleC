@@ -26,7 +26,7 @@ contains
                          time,delta,dt,verbose) bind(C, name="impose_NSCBC")
     
   use amrex_fort_module
-  use network, only : nspec
+  use network, only : nspecies
   use eos_module
   use fundamental_constants_module, only: k_B, n_A
 
@@ -996,6 +996,7 @@ end subroutine impose_NSCBC
                                
   use eos_module
   use amrex_constants_module, only : ONE
+  use network, only : nspecies
   use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP,&
                                  UFS, NQAUX, QC, QGAMC, QRSPEC, &
                                  QC, QDPDE, QDPDR, QCSML, QGAMC, &
@@ -1162,7 +1163,7 @@ end subroutine impose_NSCBC
     
       eos_state % p        = q(hop,j,k,QPRES )
       eos_state % rho      = q(hop,j,k,QRHO  )
-      eos_state % massfrac = q(hop,j,k,QFS:QFS+nspec-1)
+      eos_state % massfrac = q(hop,j,k,QFS:QFS+nspecies-1)
       eos_state % aux      = q(hop,j,k,QFX:QFX+naux-1)
  
       call eos_rp(eos_state)
@@ -1186,7 +1187,7 @@ end subroutine impose_NSCBC
       uin(hop,j,k,UEDEN) = eos_state % rho  &
          * (eos_state % e + 0.5d0 * (q(hop,j,k,QU)**2 + q(hop,j,k,QV)**2 + q(hop,j,k,QW)**2))
       uin(hop,j,k,UTEMP) = eos_state % T
-      do n=1, nspec
+      do n=1, nspecies
          uin(hop,j,k,UFS+n-1) = eos_state % rho  *  eos_state % massfrac(n)
       end do   
       
@@ -1271,7 +1272,7 @@ end subroutine impose_NSCBC
      
       eos_state % p        = q(i,hop,k,QPRES )
       eos_state % rho      = q(i,hop,k,QRHO  )
-      eos_state % massfrac = q(i,hop,k,QFS:QFS+nspec-1)
+      eos_state % massfrac = q(i,hop,k,QFS:QFS+nspecies-1)
       eos_state % aux      = q(i,hop,k,QFX:QFX+naux-1)
   
       call eos_rp(eos_state)
@@ -1295,7 +1296,7 @@ end subroutine impose_NSCBC
       uin(i,hop,k,UEDEN) = eos_state % rho  &
           * (eos_state % e + 0.5d0 * (q(i,hop,k,QU)**2 + q(i,hop,k,QV)**2 + q(i,hop,k,QW)**2))
       uin(i,hop,k,UTEMP) = eos_state % T
-      do n=1, nspec
+      do n=1, nspecies
          uin(i,hop,k,UFS+n-1) = eos_state % rho  *  eos_state % massfrac(n)
       end do   
        
@@ -1380,7 +1381,7 @@ end subroutine impose_NSCBC
      
       eos_state % p        = q(i,j,hop,QPRES )
       eos_state % rho      = q(i,j,hop,QRHO  )
-      eos_state % massfrac = q(i,j,hop,QFS:QFS+nspec-1)
+      eos_state % massfrac = q(i,j,hop,QFS:QFS+nspecies-1)
       eos_state % aux      = q(i,j,hop,QFX:QFX+naux-1)
   
       call eos_rp(eos_state)
@@ -1404,7 +1405,7 @@ end subroutine impose_NSCBC
       uin(i,j,hop,UEDEN) = eos_state % rho  &
           * (eos_state % e + 0.5d0 * (q(i,j,hop,QU)**2 + q(i,j,hop,QV)**2 + q(i,j,hop,QW)**2))
       uin(i,j,hop,UTEMP) = eos_state % T
-      do n=1, nspec
+      do n=1, nspecies
          uin(i,j,hop,UFS+n-1) = eos_state % rho  *  eos_state % massfrac(n)
       end do   
        

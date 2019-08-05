@@ -172,7 +172,7 @@ contains
     use eos_type_module
     use eos_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UTEMP, UEDEN, UEINT, UFS
-    use network, only: nspec, naux
+    use network, only: nspecies, naux
     use prob_params_module, only : Interior, Inflow, Outflow, SlipWall, NoSlipWall, &
                                    problo, probhi
     use amrex_constants_module, only: M_PI
@@ -227,13 +227,13 @@ contains
     u(1) = u_int(UMX)
     u(2) = u_int(UMY)
     u(3) = u_int(UMZ) 
-    eos_state % massfrac = u_int(UFS:UFS+nspec-1)
+    eos_state % massfrac = u_int(UFS:UFS+nspecies-1)
     eos_state % p = 101325.d0    ! This is a target value
     eos_state % T = u_int(UTEMP)
     call eos_tp(eos_state)
     
 
-    u_ext(UFS:UFS+nspec-1) = eos_state % massfrac * eos_state % rho
+    u_ext(UFS:UFS+nspecies-1) = eos_state % massfrac * eos_state % rho
     u_ext(URHO)               = eos_state % rho
     u_ext(UMX)                = eos_state % rho  *  u(1)
     u_ext(UMY)                = eos_state % rho  *  u(2)

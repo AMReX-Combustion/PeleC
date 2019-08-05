@@ -24,7 +24,7 @@ contains
                          D,   Dlo,   Dhi,&
                          deltax) bind(C, name = "pc_diffterm")
 
-    use actual_network, only     : nspec
+    use network, only : nspecies
     use meth_params_module, only : NVAR, UMX, UMY, UMZ, UEDEN, UFS, QVAR, QU, QV, QPRES, QTEMP, QFS, QRHO
     use amrex_constants_module
     use eos_type_module
@@ -48,7 +48,7 @@ contains
     integer, intent(in) ::    Vlo(1),   Vhi(1)
 
     double precision, intent(in   ) ::    Q(   Qlo(1):   Qhi(1), QVAR)
-    double precision, intent(in   ) ::   Dx(  Dxlo(1):  Dxhi(1), nspec)
+    double precision, intent(in   ) ::   Dx(  Dxlo(1):  Dxhi(1), nspecies)
     double precision, intent(in   ) ::  mux( muxlo(1): muxhi(1) )
     double precision, intent(in   ) ::  xix( xixlo(1): xixhi(1) )
     double precision, intent(in   ) :: lamx(lamxlo(1):lamxhi(1) )
@@ -94,7 +94,7 @@ contains
     end do
 
     do i=lo(1)-1,hi(1)+1
-       eosi(i) % massfrac(:) = Q(i,QFS:QFS+nspec-1)
+       eosi(i) % massfrac(:) = Q(i,QFS:QFS+nspecies-1)
        eosi(i) % T           = Q(i,QTEMP)
        eosi(i) % rho         = Q(i,QRHO)
        eosi(i) % p           = Q(i,QPRES)
@@ -104,7 +104,7 @@ contains
 
     ! Get species/enthalpy diffusion, compute correction velocity
     Vci = 0.d0
-    do n=1,nspec
+    do n=1,nspecies
        do i = lo(1), hi(1)+1
           Xface = HALF*(eosi(i)%molefrac(n) + eosi(i-1)%molefrac(n))
           Yface = HALF*(eosi(i)%massfrac(n) + eosi(i-1)%massfrac(n))
@@ -120,7 +120,7 @@ contains
     end do
 
     ! Add correction velocity
-    do n=1,nspec
+    do n=1,nspecies
        do i = lo(1), hi(1)+1
           Yface = HALF*(eosi(i)%massfrac(n) + eosi(i-1)%massfrac(n))
           hface = HALF*(eosi(i)%hi(n)       + eosi(i-1)%hi(n))
@@ -134,7 +134,7 @@ contains
     do i=lo(1),hi(1)+1
        fx(i,UMX)   = fx(i,UMX)   * Ax(i)
        fx(i,UEDEN) = fx(i,UEDEN) * Ax(i)
-       fx(i,UFS:UFS+nspec-1) = fx(i,UFS:UFS+nspec-1) * Ax(i)
+       fx(i,UFS:UFS+nspecies-1) = fx(i,UFS:UFS+nspecies-1) * Ax(i)
     enddo
 
 

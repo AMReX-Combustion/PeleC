@@ -32,7 +32,7 @@ contains
                          D,   Dlo,   Dhi,&
                          deltax) bind(C, name = "pc_diffterm")
 
-    use actual_network, only     : nspec
+    use network, only : nspecies
     use meth_params_module, only : NVAR, UMX, UMY, UMZ, UEDEN, UFS, QVAR, QU, QV, QPRES, QTEMP, QFS, QRHO
     use amrex_constants_module
     use eos_type_module
@@ -65,14 +65,14 @@ contains
     integer, intent(in) ::    Vlo(2),   Vhi(2)
     
     double precision, intent(in   ) ::    Q(   Qlo(1):   Qhi(1),   Qlo(2):   Qhi(2), QVAR)
-    double precision, intent(in   ) ::   Dx(  Dxlo(1):  Dxhi(1),  Dxlo(2):  Dxhi(2), nspec)
+    double precision, intent(in   ) ::   Dx(  Dxlo(1):  Dxhi(1),  Dxlo(2):  Dxhi(2), nspecies)
     double precision, intent(in   ) ::  mux( muxlo(1): muxhi(1), muxlo(2): muxhi(2) )
     double precision, intent(in   ) ::  xix( xixlo(1): xixhi(1), xixlo(2): xixhi(2) )
     double precision, intent(in   ) :: lamx(lamxlo(1):lamxhi(1),lamxlo(2):lamxhi(2) )
     double precision, intent(in   ) ::   tx(  txlo(1):  txhi(1),  txlo(2):  txhi(2), 2)
     double precision, intent(in   ) ::   Ax(  Axlo(1):  Axhi(1),  Axlo(2):  Axhi(2) )
     double precision, intent(inout) ::   fx(  fxlo(1):  fxhi(1),  fxlo(2):  fxhi(2), NVAR)
-    double precision, intent(in   ) ::   Dy(  Dylo(1):  Dyhi(1),  Dylo(2):  Dyhi(2), nspec)
+    double precision, intent(in   ) ::   Dy(  Dylo(1):  Dyhi(1),  Dylo(2):  Dyhi(2), nspecies)
     double precision, intent(in   ) ::  muy( muylo(1): muyhi(1), muylo(2): muyhi(2) )
     double precision, intent(in   ) ::  xiy( xiylo(1): xiyhi(1), xiylo(2): xiyhi(2) )
     double precision, intent(in   ) :: lamy(lamylo(1):lamyhi(1),lamylo(2):lamyhi(2) )
@@ -128,7 +128,7 @@ contains
        end do
 
        do i=lo(1)-1,hi(1)+1
-          eosi(i) % massfrac(:) = Q(i,j,QFS:QFS+nspec-1)
+          eosi(i) % massfrac(:) = Q(i,j,QFS:QFS+nspecies-1)
           eosi(i) % T           = Q(i,j,QTEMP)
           eosi(i) % rho         = Q(i,j,QRHO)
           eosi(i) % p           = Q(i,j,QPRES)
@@ -138,7 +138,7 @@ contains
 
        ! Get species/enthalpy diffusion, compute correction velocity
        Vci = 0.d0
-       do n=1,nspec
+       do n=1,nspecies
           do i = lo(1), hi(1)+1
              Xface = HALF*(eosi(i)%molefrac(n) + eosi(i-1)%molefrac(n))
              Yface = HALF*(eosi(i)%massfrac(n) + eosi(i-1)%massfrac(n))
@@ -154,7 +154,7 @@ contains
        end do
 
        ! Add correction velocity
-       do n=1,nspec
+       do n=1,nspecies
           do i = lo(1), hi(1)+1
              Yface = HALF*(eosi(i)%massfrac(n) + eosi(i-1)%massfrac(n))
              hface = HALF*(eosi(i)%hi(n)       + eosi(i-1)%hi(n))
@@ -171,7 +171,7 @@ contains
           fx(i,j,UMX)   = fx(i,j,UMX)   * Ax(i,j)
           fx(i,j,UMY)   = fx(i,j,UMY)   * Ax(i,j)
           fx(i,j,UEDEN) = fx(i,j,UEDEN) * Ax(i,j)
-          fx(i,j,UFS:UFS+nspec-1) = fx(i,j,UFS:UFS+nspec-1) * Ax(i,j)
+          fx(i,j,UFS:UFS+nspecies-1) = fx(i,j,UFS:UFS+nspecies-1) * Ax(i,j)
        enddo
     enddo
 
@@ -211,7 +211,7 @@ contains
        end do
 
        do j=lo(2)-1,hi(2)+1
-          eosj(j) % massfrac(:) = Q(i,j,QFS:QFS+nspec-1)
+          eosj(j) % massfrac(:) = Q(i,j,QFS:QFS+nspecies-1)
           eosj(j) % T           = Q(i,j,QTEMP)
           eosj(j) % rho         = Q(i,j,QRHO)
           eosj(j) % p           = Q(i,j,QPRES)
@@ -221,7 +221,7 @@ contains
 
        ! Get species/enthalpy diffusion, compute correction velocity
        Vcj = 0.d0
-       do n=1,nspec
+       do n=1,nspecies
           do j = lo(2), hi(2)+1
              Xface = HALF*(eosj(j)%molefrac(n) + eosj(j-1)%molefrac(n))
              Yface = HALF*(eosj(j)%massfrac(n) + eosj(j-1)%massfrac(n))
@@ -237,7 +237,7 @@ contains
        end do
 
        ! Add correction velocity
-       do n=1,nspec
+       do n=1,nspecies
           do j = lo(2), hi(2)+1
              Yface = HALF*(eosj(j)%massfrac(n) + eosj(j-1)%massfrac(n))
              hface = HALF*(eosj(j)%hi(n)       + eosj(j-1)%hi(n))
@@ -254,7 +254,7 @@ contains
           fy(i,j,UMX)   = fy(i,j,UMX)   * Ay(i,j)
           fy(i,j,UMY)   = fy(i,j,UMY)   * Ay(i,j)
           fy(i,j,UEDEN) = fy(i,j,UEDEN) * Ay(i,j)
-          fy(i,j,UFS:UFS+nspec-1) = fy(i,j,UFS:UFS+nspec-1) * Ay(i,j)
+          fy(i,j,UFS:UFS+nspecies-1) = fy(i,j,UFS:UFS+nspecies-1) * Ay(i,j)
        enddo
     enddo
 

@@ -107,7 +107,7 @@ contains
     ! this implements the approximate Riemann solver of Colella & Glaz (1985)
 
     use amrex_fort_module
-    use network, only : nspec, naux
+    use network, only : nspecies, naux
     use eos_type_module
     use eos_module
     use riemann_util_module
@@ -201,7 +201,7 @@ contains
           print *, "WARNING: (rho e)_l < 0 or pl < small_pres in Riemann: ", rel, pl, small_pres
           eos_state % T        = small_temp
           eos_state % rho      = rl
-          eos_state % massfrac = ql(k,QFS:QFS-1+nspec)
+          eos_state % massfrac = ql(k,QFS:QFS-1+nspecies)
           eos_state % aux      = ql(k,QFX:QFX-1+naux)
 
           call eos_rt(eos_state)
@@ -226,7 +226,7 @@ contains
           print *, "WARNING: (rho e)_r < 0 or pr < small_pres in Riemann: ", rer, pr, small_pres
           eos_state % T        = small_temp
           eos_state % rho      = rr
-          eos_state % massfrac = qr(k,QFS:QFS-1+nspec)
+          eos_state % massfrac = qr(k,QFS:QFS-1+nspecies)
           eos_state % aux      = qr(k,QFX:QFX-1+naux)
 
           call eos_rt(eos_state)

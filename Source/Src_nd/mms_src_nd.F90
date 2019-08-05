@@ -18,7 +18,7 @@ contains
     use meth_params_module, only : NVAR
 
 #ifdef USE_MASA
-    use network, only : nspec
+    use network, only : nspecies
     use amrex_constants_module, only: HALF
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS
     use prob_params_module, only: dim
@@ -58,7 +58,7 @@ contains
                 endif
              endif
              src(i,j,k,UEDEN) = masa_eval_3d_source_rho_e(x,y,z)
-             src(i,j,k,UFS:UFS+nspec-1) = src(i,j,k,URHO) * S(i,j,k,UFS:UFS+nspec-1) / masa_eval_3d_exact_rho(x,y,z)
+             src(i,j,k,UFS:UFS+nspecies-1) = src(i,j,k,URHO) * S(i,j,k,UFS:UFS+nspecies-1) / masa_eval_3d_exact_rho(x,y,z)
 
           end do
        end do

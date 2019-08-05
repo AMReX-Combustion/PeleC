@@ -97,7 +97,7 @@ contains
 
     use amrex_paralleldescriptor_module, only: amrex_pd_ioprocessor
     use probdata_module
-    use network, only: nspec, naux, molec_wt
+    use network, only: nspecies, naux, molec_wt
     use fundamental_constants_module, only: k_B, n_A
     use eos_type_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, &
@@ -218,7 +218,7 @@ contains
 
              ! Fill the states
              state(i,j,k,URHO)            = rho
-             state(i,j,k,UFS:UFS+nspec-1) = rho * eos_state % massfrac(1:nspec)
+             state(i,j,k,UFS:UFS+nspecies-1) = rho * eos_state % massfrac(1:nspecies)
              state(i,j,k,UMX)             = rho * u
              if (dim .ge. 2) then
                 state(i,j,k,UMY)             = rho * v

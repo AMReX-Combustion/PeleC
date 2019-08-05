@@ -22,7 +22,7 @@ contains
 use amrex_ebcellflag_module, only : is_covered_cell
 #endif
 
-    use network           , only : nspec
+    use network, only : nspecies
     use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UTEMP, &
                                    UFS
     use reactor_module, only : react
@@ -43,7 +43,7 @@ use amrex_ebcellflag_module, only : is_covered_cell
     double precision :: asrc(as_lo(1):as_hi(1),as_lo(2):as_hi(2),as_lo(3):as_hi(3),NVAR)
     integer          :: mask(m_lo(1):m_hi(1),m_lo(2):m_hi(2),m_lo(3):m_hi(3))
     double precision :: cost(c_lo(1):c_hi(1),c_lo(2):c_hi(2),c_lo(3):c_hi(3))
-    double precision :: IR(IR_lo(1):IR_hi(1),IR_lo(2):IR_hi(2),IR_lo(3):IR_hi(3),nspec+1)
+    double precision :: IR(IR_lo(1):IR_hi(1),IR_lo(2):IR_hi(2),IR_lo(3):IR_hi(3),nspecies+1)
     double precision :: time, dt_react
     integer          :: do_update
 #ifdef PELEC_USE_EB
@@ -53,7 +53,7 @@ use amrex_ebcellflag_module, only : is_covered_cell
     integer          :: i, j, k
     double precision :: rho_e_K_old,rho_e_K_new, rhoE_old, rhoE_new, rho_new, mom_new(3)
 
-    real(amrex_real) ::    rY(nspec+1), rY_src(nspec)
+    real(amrex_real) ::    rY(nspecies+1), rY_src(nspecies)
     real(amrex_real) ::    energy, energy_src, pressure, rho
 
     do k = lo(3), hi(3)
@@ -68,18 +68,18 @@ use amrex_ebcellflag_module, only : is_covered_cell
 
                 rhoE_old                        = uold(i,j,k,UEDEN)
                 rho_e_K_old                     = HALF * sum(uold(i,j,k,UMX:UMZ)**2) / uold(i,j,k,URHO)
-                rho                             = sum(uold(i,j,k,UFS:UFS+nspec-1))
+                rho                             = sum(uold(i,j,k,UFS:UFS+nspecies-1))
 
                 energy           = (rhoE_old - rho_e_K_old) / uold(i,j,k,URHO)
-                rY(nspec+1)      = uold(i,j,k,UTEMP)
-                rY(1:nspec)      = uold(i,j,k,UFS:UFS+nspec-1)
+                rY(nspecies+1)      = uold(i,j,k,UTEMP)
+                rY(1:nspecies)      = uold(i,j,k,UFS:UFS+nspecies-1)
 
                 ! rho.e source term computed using (rho.E,rho.u,rho)_new rather than pulling from UEINT comp of asrc
                 rho_e_K_new = HALF * sum(unew(i,j,k,UMX:UMZ)**2) / unew(i,j,k,URHO)
                 energy_src       = ( (unew(i,j,k,UEDEN) - rho_e_K_new) &
                        -                (rho  *  energy) ) / dt_react
 
-                rY_src(1:nspec)  = asrc(i,j,k,UFS:UFS+nspec-1)
+                rY_src(1:nspecies)  = asrc(i,j,k,UFS:UFS+nspecies-1)
                 !react_state_in % i = i
                 !react_state_in % j = j
                 !react_state_in % k = k
@@ -91,7 +91,7 @@ use amrex_ebcellflag_module, only : is_covered_cell
                                     pressure,dt_react,time,0)
 
 
-                rho_new = sum(rY(1:nspec))
+                rho_new = sum(rY(1:nspecies))
                 mom_new = uold(i,j,k,UMX:UMZ) + dt_react*asrc(i,j,k,UMX:UMZ)
                 rhoE_new = rho_new  *  energy
                 rho_e_K_new = HALF * sum(mom_new**2) / rho_new
@@ -103,8 +103,8 @@ use amrex_ebcellflag_module, only : is_covered_cell
                    unew(i,j,k,UMX:UMZ)         = mom_new
                    unew(i,j,k,UEINT)           = rho_new*energy
                    unew(i,j,k,UEDEN)           = rhoE_new
-                   unew(i,j,k,UTEMP)           = rY(nspec+1)
-                   unew(i,j,k,UFS:UFS+nspec-1) = rY(1:nspec)
+                   unew(i,j,k,UTEMP)           = rY(nspecies+1)
+                   unew(i,j,k,UFS:UFS+nspecies-1) = rY(1:nspecies)
 
                 endif
 
@@ -116,8 +116,8 @@ use amrex_ebcellflag_module, only : is_covered_cell
                      j .ge. IR_lo(2) .and. j .le. IR_hi(2) .and. &
                      k .ge. IR_lo(3) .and. k .le. IR_hi(3) ) then
 
-                   IR(i,j,k,1:nspec) = (rY(1:nspec) - uold(i,j,k,UFS:UFS+nspec-1)) / dt_react - asrc(i,j,k,UFS:UFS+nspec-1)
-                   IR(i,j,k,nspec+1) = (rhoE_new          -         rhoE_old     ) / dt_react - asrc(i,j,k,UEDEN          )
+                   IR(i,j,k,1:nspecies) = (rY(1:nspecies) - uold(i,j,k,UFS:UFS+nspecies-1)) / dt_react - asrc(i,j,k,UFS:UFS+nspecies-1)
+                   IR(i,j,k,nspecies+1) = (rhoE_new          -         rhoE_old     ) / dt_react - asrc(i,j,k,UEDEN          )
 
                 endif
 
@@ -142,7 +142,7 @@ use amrex_ebcellflag_module, only : is_covered_cell
 
     use eos_type_module
     use eos_module, only : eos_t,eos_rt
-    use network           , only : nspec
+    use network, only : nspecies
     use chemistry_module  , only : molecular_weight
     use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UTEMP, &
                                    UFS
@@ -166,7 +166,7 @@ use amrex_ebcellflag_module, only : is_covered_cell
     double precision  :: asrc(as_lo(1):as_hi(1),as_lo(2):as_hi(2),as_lo(3):as_hi(3),NVAR)
     integer           :: mask(m_lo(1):m_hi(1),m_lo(2):m_hi(2),m_lo(3):m_hi(3))
     double precision  :: cost(c_lo(1):c_hi(1),c_lo(2):c_hi(2),c_lo(3):c_hi(3))
-    double precision  :: IR(IR_lo(1):IR_hi(1),IR_lo(2):IR_hi(2),IR_lo(3):IR_hi(3),nspec+1)
+    double precision  :: IR(IR_lo(1):IR_hi(1),IR_lo(2):IR_hi(2),IR_lo(3):IR_hi(3),nspecies+1)
     double precision  :: time, dt_react
     integer           :: do_update
     integer           :: nsubsteps_min,nsubsteps_max,nsubsteps_guess
@@ -182,14 +182,14 @@ use amrex_ebcellflag_module, only : is_covered_cell
 
     double precision :: saneval(NVAR)
     double precision :: urk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),NVAR)
-    double precision :: yrk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),nspec)
+    double precision :: yrk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),nspecies)
     double precision :: urk_carryover(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),NVAR)
     double precision :: urk_err(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),NVAR)
-    double precision :: wdot(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),nspec)
-    double precision :: eint(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),nspec)
+    double precision :: wdot(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),nspecies)
+    double precision :: eint(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),nspecies)
     double precision :: cv(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))
     double precision :: rhoedot_ext(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))
-    double precision :: rhoydot_ext(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),nspec)
+    double precision :: rhoydot_ext(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),nspecies)
     double precision :: re_old(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))
     double precision :: tempsrc(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))
     type (eos_t) :: eos_state
@@ -252,7 +252,7 @@ use amrex_ebcellflag_module, only : is_covered_cell
 
                     rhoE_old      = uold(i,j,k,UEDEN)
                     rho_e_K_old   = HALF * sum(uold(i,j,k,UMX:UMZ)**2) / uold(i,j,k,URHO)
-                    rho           = sum(uold(i,j,k,UFS:UFS+nspec-1))
+                    rho           = sum(uold(i,j,k,UFS:UFS+nspecies-1))
 
                     energy        = (rhoE_old - rho_e_K_old) / uold(i,j,k,URHO)
                     re_old(i,j,k) = energy*uold(i,j,k,URHO)
@@ -262,7 +262,7 @@ use amrex_ebcellflag_module, only : is_covered_cell
                     rho_e_K_new   = HALF * sum(unew(i,j,k,UMX:UMZ)**2)/unew(i,j,k,URHO)
                     rhoedot_ext(i,j,k)  = ( (unew(i,j,k,UEDEN) - rho_e_K_new) &
                                         -   (rho  *  energy) ) / dt_react
-                    rhoydot_ext(i,j,k,1:nspec)  = asrc(i,j,k,UFS:UFS+nspec-1)
+                    rhoydot_ext(i,j,k,1:nspecies)  = asrc(i,j,k,UFS:UFS+nspecies-1)
                 endif
             enddo
         enddo
@@ -302,7 +302,7 @@ use amrex_ebcellflag_module, only : is_covered_cell
            do k=lo(3),hi(3)
               do j=lo(2),hi(2)
                 do i=lo(1),hi(1)
-                    yrk(i,j,k,1:nspec)=urk(i,j,k,UFS:UFS+nspec-1)/urk(i,j,k,URHO)
+                    yrk(i,j,k,1:nspecies)=urk(i,j,k,UFS:UFS+nspecies-1)/urk(i,j,k,URHO)
                 enddo
               enddo
            enddo
@@ -311,7 +311,7 @@ use amrex_ebcellflag_module, only : is_covered_cell
            !Given rho, T, and mass fractions
            call VCKWYR(npts, urk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),URHO), &
                urk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),UTEMP), &
-               yrk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),1:nspec), &
+               yrk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),1:nspecies), &
                wdot)
 
             !Ideally this has to come from a vector call to fuego
@@ -322,10 +322,10 @@ use amrex_ebcellflag_module, only : is_covered_cell
 
                             eos_state % rho               = urk(i,j,k,URHO)
                             rhoInv                        = 1.d0 / eos_state % rho
-                            eos_state % massfrac(1:nspec) = urk(i,j,k,UFS:UFS+nspec-1) * rhoInv
+                            eos_state % massfrac(1:nspecies) = urk(i,j,k,UFS:UFS+nspecies-1) * rhoInv
                             eos_state % T                 = urk(i,j,k,UTEMP)
                             call eos_rt(eos_state)
-                            do ns=1,nspec
+                            do ns=1,nspecies
                                 eint(i,j,k,ns)=eos_state%ei(ns)
                             enddo
                             cv(i,j,k)=eos_state%cv
@@ -339,7 +339,7 @@ use amrex_ebcellflag_module, only : is_covered_cell
            do k=lo(3),hi(3)
             do j=lo(2),hi(2)
               do i=lo(1),hi(1)
-                wdot(i,j,k,1:nspec) = wdot(i,j,k,1:nspec)*molecular_weight(1:nspec) + rhoydot_ext(i,j,k,1:nspec)
+                wdot(i,j,k,1:nspecies) = wdot(i,j,k,1:nspecies)*molecular_weight(1:nspecies) + rhoydot_ext(i,j,k,1:nspecies)
               enddo
             enddo
            enddo
@@ -350,7 +350,7 @@ use amrex_ebcellflag_module, only : is_covered_cell
                 do j=lo(2),hi(2)
                     do i=lo(1),hi(1)
                         tempsrc(i,j,k)=rhoedot_ext(i,j,k)
-                        do ns=1,nspec
+                        do ns=1,nspecies
                             tempsrc(i,j,k)=tempsrc(i,j,k)-wdot(i,j,k,ns)*eint(i,j,k,ns)
                         enddo
                         tempsrc(i,j,k)=tempsrc(i,j,k)/urk(i,j,k,URHO)/cv(i,j,k)
@@ -369,8 +369,8 @@ use amrex_ebcellflag_module, only : is_covered_cell
                 !=====================
 
                 !update species
-                urk_err(i,j,k,UFS:UFS+nspec-1)  = urk_err(i,j,k,UFS:UFS+nspec-1) + &
-                err_rk64(stage)*dt_rk*wdot(i,j,k,1:nspec)*mask(i,j,k)
+                urk_err(i,j,k,UFS:UFS+nspecies-1)  = urk_err(i,j,k,UFS:UFS+nspecies-1) + &
+                err_rk64(stage)*dt_rk*wdot(i,j,k,1:nspecies)*mask(i,j,k)
 
                 !update temperature 
                 urk_err(i,j,k,UTEMP) = urk_err(i,j,k,UTEMP) + err_rk64(stage)*dt_rk*tempsrc(i,j,k)*mask(i,j,k)
@@ -381,8 +381,8 @@ use amrex_ebcellflag_module, only : is_covered_cell
                 !=====================
 
                 !update species
-                urk(i,j,k,UFS:UFS+nspec-1)  = urk_carryover(i,j,k,UFS:UFS+nspec-1) + &
-                alpha_rk64(stage)*dt_rk*wdot(i,j,k,1:nspec)*mask(i,j,k)
+                urk(i,j,k,UFS:UFS+nspecies-1)  = urk_carryover(i,j,k,UFS:UFS+nspecies-1) + &
+                alpha_rk64(stage)*dt_rk*wdot(i,j,k,1:nspecies)*mask(i,j,k)
 
                 !update temperature 
                 urk(i,j,k,UTEMP) = urk_carryover(i,j,k,UTEMP) + alpha_rk64(stage)*dt_rk*tempsrc(i,j,k)*mask(i,j,k)
@@ -393,8 +393,8 @@ use amrex_ebcellflag_module, only : is_covered_cell
                 !=====================
                 
                 !update species
-                urk_carryover(i,j,k,UFS:UFS+nspec-1)  = urk(i,j,k,UFS:UFS+nspec-1) + &
-                beta_rk64(stage)*dt_rk*wdot(i,j,k,1:nspec)*mask(i,j,k)
+                urk_carryover(i,j,k,UFS:UFS+nspecies-1)  = urk(i,j,k,UFS:UFS+nspecies-1) + &
+                beta_rk64(stage)*dt_rk*wdot(i,j,k,1:nspecies)*mask(i,j,k)
 
                 !update temperature 
                 urk_carryover(i,j,k,UTEMP) = urk(i,j,k,UTEMP) + beta_rk64(stage)*dt_rk*tempsrc(i,j,k)*mask(i,j,k)
@@ -409,7 +409,7 @@ use amrex_ebcellflag_module, only : is_covered_cell
                 do j=lo(2),hi(2)
                     do i=lo(1),hi(1)
                     !update density
-                    urk(i,j,k,URHO)  = sum(urk(i,j,k,UFS:UFS+nspec-1))
+                    urk(i,j,k,URHO)  = sum(urk(i,j,k,UFS:UFS+nspecies-1))
                     enddo
                 enddo
             enddo
@@ -450,7 +450,7 @@ use amrex_ebcellflag_module, only : is_covered_cell
                         unew(i,j,k,UEINT)           = rhoe_new
                         unew(i,j,k,UEDEN)           = rhoet_new
                         unew(i,j,k,UTEMP)           = urk(i,j,k,UTEMP)
-                        unew(i,j,k,UFS:UFS+nspec-1) = urk(i,j,k,UFS:UFS+nspec-1)
+                        unew(i,j,k,UFS:UFS+nspecies-1) = urk(i,j,k,UFS:UFS+nspecies-1)
 
                     endif
 
@@ -462,9 +462,9 @@ use amrex_ebcellflag_module, only : is_covered_cell
                         j .ge. IR_lo(2) .and. j .le. IR_hi(2) .and. &
                         k .ge. IR_lo(3) .and. k .le. IR_hi(3) ) then
 
-                        IR(i,j,k,1:nspec) = (urk(i,j,k,UFS:UFS+nspec-1) - uold(i,j,k,UFS:UFS+nspec-1)) / dt_react -&
-                            asrc(i,j,k,UFS:UFS+nspec-1)
-                        IR(i,j,k,nspec+1) =(rhoet_new - uold(i,j,k,UEDEN)) / dt_react - asrc(i,j,k,UEDEN)
+                        IR(i,j,k,1:nspecies) = (urk(i,j,k,UFS:UFS+nspecies-1) - uold(i,j,k,UFS:UFS+nspecies-1)) / dt_react -&
+                            asrc(i,j,k,UFS:UFS+nspecies-1)
+                        IR(i,j,k,nspecies+1) =(rhoet_new - uold(i,j,k,UEDEN)) / dt_react - asrc(i,j,k,UEDEN)
 
                     endif
 
