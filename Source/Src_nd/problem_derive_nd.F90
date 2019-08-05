@@ -271,7 +271,7 @@ contains
              eos_state % e        = dat(i,j,k,UEINT) * rhoinv
              eos_state % T        = dat(i,j,k,UTEMP)
              eos_state % rho      = dat(i,j,k,URHO)
-             eos_state % massfrac = dat(i,j,k,UFS:UFS+nspec-1) * rhoinv
+             eos_state % massfrac = dat(i,j,k,UFS:UFS+nspecies-1) * rhoinv
              eos_state % aux      = dat(i,j,k,UFX:UFX+naux-1) * rhoinv
              call eos_re(eos_state)
              p = masa_eval_3d_exact_p(x,y,z)

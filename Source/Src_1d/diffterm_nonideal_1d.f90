@@ -24,7 +24,7 @@ contains
                          D,   Dlo,   Dhi,&
                          deltax) bind(C, name = "pc_diffterm")
 
-    use actual_network, only     : nspec
+    use network, only : nspecies
     use meth_params_module, only : NVAR, UMX, UEDEN, UFS, QVAR, QU, QPRES, QTEMP, QFS, QRHO
     use amrex_constants_module
     use eos_type_module
@@ -46,7 +46,7 @@ contains
     integer, intent(in) ::    Dlo(1),   Dhi(1)
 
     double precision, intent(in   ) ::    Q(   Qlo(1):   Qhi(1), QVAR)
-    double precision, intent(in   ) ::   Dx(  Dxlo(1):  Dxhi(1), nspec)
+    double precision, intent(in   ) ::   Dx(  Dxlo(1):  Dxhi(1), nspecies)
     double precision, intent(in   ) ::  mux( muxlo(1): muxhi(1)  )
     double precision, intent(in   ) ::  xix( xixlo(1): xixhi(1)  )
     double precision, intent(in   ) :: lamx(lamxlo(1):lamxhi(1)  )
@@ -61,7 +61,7 @@ contains
     double precision :: uface, pface, hface, Yface
     double precision :: dTdx, Vd
     double precision :: Vc(lo(1):hi(1)+1)
-    double precision :: ddrive(lo(1):hi(1)+1,nspec), gradY(lo(1):hi(1)+1,nspec)
+    double precision :: ddrive(lo(1):hi(1)+1,nspecies), gradY(lo(1):hi(1)+1,nspecies)
     double precision :: gradP(lo(1):hi(1)+1), dsum(lo(1):hi(1)+1)
     double precision, parameter :: twoThirds = 2.d0/3.d0
     double precision :: dxinv(1)
@@ -94,7 +94,7 @@ contains
     end do
 
     do i=lo(1)-1,hi(1)+1
-       eos_state(i) % massfrac(:) = Q(i,QFS:QFS+nspec-1)
+       eos_state(i) % massfrac(:) = Q(i,QFS:QFS+nspecies-1)
        eos_state(i) % T           = Q(i,QTEMP)
        eos_state(i) % rho         = Q(i,QRHO)
        call eos_ytx(eos_state(i))
@@ -102,7 +102,7 @@ contains
        call eos_get_transport(eos_state(i))
     end do
 
-      do n=1,nspec
+      do n=1,nspecies
           do i = lo(1), hi(1)+1
 
              gradY(i,n) = dxinv(1) * (eos_state(i)%massfrac(n) - eos_state(i-1)%massfrac(n))
@@ -113,8 +113,8 @@ contains
           enddo
        enddo
 
-       do n=1,nspec
-       do nn=1,nspec
+       do n=1,nspecies
+       do nn=1,nspecies
           do i = lo(1), hi(1)+1
 
             ddrive(i,n) = ddrive(i,n)+ 0.5d0* (eos_state(i) % dijY(n,nn) &
@@ -125,14 +125,14 @@ contains
        enddo
 
        dsum = 0.d0
-       do n=1,nspec
+       do n=1,nspecies
           do i = lo(1), hi(1)+1
 
             dsum(i) = dsum(i) + ddrive(i,n)
 
           enddo
        enddo
-       do n=1,nspec
+       do n=1,nspecies
           do i = lo(1), hi(1)+1
 
             ddrive(i,n) =  ddrive(i,n) - eos_state(i)%massfrac(n) * dsum(i)
@@ -142,7 +142,7 @@ contains
 
 
     ! Get species/enthalpy diffusion, compute correction velocity
-    do n=1,nspec
+    do n=1,nspecies
        do i = lo(1), hi(1)+1
           hface = HALF*(eos_state(i)%hi(n)       + eos_state(i-1)%hi(n))
 
@@ -155,7 +155,7 @@ contains
     end do
 
     ! Add correction velocity
-    do n=1,nspec
+    do n=1,nspecies
        do i = lo(1), hi(1)+1
           Yface = HALF*(eos_state(i)%massfrac(n) + eos_state(i-1)%massfrac(n))
           hface = HALF*(eos_state(i)%hi(n)       + eos_state(i-1)%hi(n))
@@ -169,7 +169,7 @@ contains
     do i=lo(1),hi(1)+1
        fx(i,UMX)   = fx(i,UMX)   * Ax(i)
        fx(i,UEDEN) = fx(i,UEDEN) * Ax(i)
-       fx(i,UFS:UFS+nspec-1) = fx(i,UFS:UFS+nspec-1) * Ax(i)
+       fx(i,UFS:UFS+nspecies-1) = fx(i,UFS:UFS+nspecies-1) * Ax(i)
     enddo
 
     do i=lo(1)+1,hi(1)-1

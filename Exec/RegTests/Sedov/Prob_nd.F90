@@ -82,7 +82,7 @@ contains
   subroutine pc_initdata(level,time,lo,hi,nvar, &
        state,state_lo,state_hi, &
        delta,xlo,xhi) bind(C, name="pc_initdata")
-    use network, only: nspec
+    use network, only: nspecies
     use probdata_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP, UFS
     use prob_params_module, only : center, dim
@@ -115,7 +115,7 @@ contains
     eos_state % rho = dens_ambient
     eos_state % e = exp_energy / eos_state % rho
     eos_state % massfrac = ZERO
-    eos_state % massfrac(nspec) = ONE
+    eos_state % massfrac(nspecies) = ONE
     call eos_re(eos_state)
 
     if ( (dim.eq.3 .and. probtype.eq.32) &
@@ -198,7 +198,7 @@ contains
                      state(i,j,k,UMY)**2/state(i,j,k,URHO) + &
                      state(i,j,k,UMZ)**2/state(i,j,k,URHO))
 
-                state(i,j,k,UFS:UFS+nspec-1) = eos_state % massfrac(:) * state(i,j,k,URHO)
+                state(i,j,k,UFS:UFS+nspecies-1) = eos_state % massfrac(:) * state(i,j,k,URHO)
 
              enddo
           enddo
@@ -330,7 +330,7 @@ contains
                      state(i,j,k,UMY)**2/state(i,j,k,URHO) + &
                      state(i,j,k,UMZ)**2/state(i,j,k,URHO))
 
-                state(i,j,k,UFS:UFS+nspec-1) = eos_state % massfrac(:) * state(i,j,k,URHO)
+                state(i,j,k,UFS:UFS+nspecies-1) = eos_state % massfrac(:) * state(i,j,k,URHO)
 
              enddo
           enddo
@@ -382,7 +382,7 @@ contains
                state(i,j,k,UMY)**2/state(i,j,k,URHO) + &
                state(i,j,k,UMZ)**2/state(i,j,k,URHO))
 
-          state(i,j,k,UFS:UFS+nspec-1) = eos_state % massfrac(:) * state(i,j,k,URHO)
+          state(i,j,k,UFS:UFS+nspecies-1) = eos_state % massfrac(:) * state(i,j,k,URHO)
 
        enddo
 
@@ -395,7 +395,7 @@ contains
                 state(i,j,k,UMZ  ) = state(i,lo(2),lo(3),UMZ)
                 state(i,j,k,UEDEN) = state(i,lo(2),lo(3),UEDEN)
                 state(i,j,k,UEINT) = state(i,lo(2),lo(3),UEINT)
-                state(i,j,k,UFS:UFS+nspec-1) = state(i,lo(2),lo(3),UFS:UFS+nspec-1)
+                state(i,j,k,UFS:UFS+nspecies-1) = state(i,lo(2),lo(3),UFS:UFS+nspecies-1)
              end do
           end do
        enddo

@@ -132,7 +132,7 @@ contains
   subroutine bcnormal(x,u_int,u_ext,dir,sgn,time,bc_type,bc_params,bc_target)
 
     use probdata_module
-    use network, only: nspec
+    use network, only: nspecies
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS
     use eos_type_module
     use eos_module
@@ -155,7 +155,7 @@ contains
        eos_state % rho = dens_domain
        eos_state % p = p_domain
        eos_state % massfrac = 0.d0
-       eos_state % massfrac(nspec) = 1.d0
+       eos_state % massfrac(nspecies) = 1.d0
 
        call eos_rp(eos_state)
 
@@ -165,7 +165,7 @@ contains
        u_ext(UMZ)    = 0.d0
        u_ext(UEINT)  = eos_state % rho * eos_state % e
        u_ext(UEDEN)  = u_ext(UEINT)+0.5d0*dens_domain*(vx_in**2+vy_in**2)
-       u_ext(UFS:UFS+nspec-1)  = eos_state % rho * eos_state % massfrac(:)
+       u_ext(UFS:UFS+nspecies-1)  = eos_state % rho * eos_state % massfrac(:)
 
        call destroy(eos_state)
 

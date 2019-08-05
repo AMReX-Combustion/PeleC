@@ -21,7 +21,7 @@ contains
       use amrex_mempool_module, only : bl_allocate, bl_deallocate
       use meth_params_module
       use amrex_constants_module
-      use actual_network, only : nspec
+      use network, only : nspecies
 
       implicit none
 
@@ -86,7 +86,7 @@ contains
                   drgt(i,3) = q(i+1,j,k,QV) - q(i,j,k,QV) 
                   drgt(i,4) = q(i+1,j,k,QW) - q(i,j,k,QW) 
 
-                  do nsp = 1, nspec
+                  do nsp = 1, nspecies
                       dlft(i,4+nsp) = q(i,j,k,QRHO)*q(i,j,k,QFS+nsp-1)-  q(i-1,j,k,QRHO)*q(i-1,j,k,QFS+nsp-1) -  &
                                 q(i ,j,k,QFS+nsp-1)* (q(i,j,k,QPRES) - q(i-1,j,k,QPRES))/qaux(i,j,k,QC)**2
                       drgt(i,4+nsp) = q(i+1,j,k,QRHO)*q(i+1,j,k,QFS+nsp-1)-  q(i,j,k,QRHO)*q(i,j,k,QFS+nsp-1) -  &
@@ -97,7 +97,7 @@ contains
 
 
 
-               do n=1,4+nspec
+               do n=1,4+nspecies
 
                ! First compute Fromm slopes
 !                 do i = ilo1-2, ihi1+2
@@ -144,7 +144,7 @@ contains
       use amrex_mempool_module, only : bl_allocate, bl_deallocate
       use meth_params_module
       use amrex_constants_module
-      use actual_network, only : nspec
+      use network, only : nspecies
 
       implicit none
 
@@ -201,7 +201,7 @@ contains
                      dlft(i,3) = q(i,j,k,QU) - q(i,j-1,k,QU) 
                      dlft(i,4) = q(i,j,k,QW) - q(i,j-1,k,QW) 
                     
-                     do nsp = 1, nspec
+                     do nsp = 1, nspecies
                         dlft(i,4+nsp) = q(i,j,k,QRHO)*q(i,j,k,QFS+nsp-1)-  q(i-1,j,k,QRHO)*q(i,j-1,k,QFS+nsp-1) -  &
                                 q(i ,j,k,QFS+nsp-1)* (q(i,j,k,QPRES) - q(i,j-1,k,QPRES))/qaux(i,j,k,QC)**2
                      enddo
@@ -211,12 +211,12 @@ contains
                      drgt(i,3) = q(i,j+1,k,QU) - q(i,j,k,QU) 
                      drgt(i,4) = q(i,j+1,k,QW) - q(i,j,k,QW) 
 
-                     do nsp = 1, nspec
+                     do nsp = 1, nspecies
                         drgt(i,4+nsp) = q(i,j+1,k,QRHO)*q(i,j+1,k,QFS+nsp-1) - q(i,j,k,QRHO)*q(i,j,k,QFS+nsp-1) -  &
                            q(i ,j,k,QFS+nsp-1)* (q(i,j+1,k,QPRES) - q(i,j,k,QPRES))/qaux(i,j,k,QC)**2
                      enddo
 
-               do n=1,4+nspec
+               do n=1,4+nspecies
 
                   ! First compute Fromm slopes
                   do i = ilo1-1, ihi1+1
@@ -270,7 +270,7 @@ contains
       use amrex_mempool_module, only : bl_allocate, bl_deallocate
       use meth_params_module
       use amrex_constants_module
-      use actual_network, only : nspec
+      use network, only : nspecies
 
       implicit none
 
@@ -326,7 +326,7 @@ contains
                   dlft(i,3) = q(i,j,k,QU) - q(i,j,k-1,QU) 
                   dlft(i,4) = q(i,j,k,QV) - q(i,j,k-1,QV) 
 
-                  do nsp = 1, nspec
+                  do nsp = 1, nspecies
                      dlft(i,4+nsp) = q(i,j,k,QRHO)*q(i,j,k,QFS+nsp-1)-  q(i,j,k-1,QRHO)*q(i,j,k-1,QFS+nsp-1) -  &
                              q(i ,j,k,QFS+nsp-1)* (q(i,j,k,QPRES) - q(i,j,k-1,QPRES))/qaux(i,j,k,QC)**2
                   enddo
@@ -336,14 +336,14 @@ contains
                   drgt(i,3) = q(i,j,k+1,QU) - q(i,j,k,QU) 
                   drgt(i,3) = q(i,j,k+1,QV) - q(i,j,k,QV)
 
-                  do nsp = 1, nspec
+                  do nsp = 1, nspecies
                      drgt(i,4+nsp) = q(i,j,k+1,QRHO)*q(i,j,k+1,QFS+nsp-1) - q(i,j,k,QRHO)*q(i,j,k,QFS+nsp-1) -  &
                         q(i ,j,k,QFS+nsp-1)* (q(i,j,k+1,QPRES) - q(i,j,k,QPRES))/qaux(i,j,k,QC)**2
                   enddo
 
                enddo
 
-               do n=1,4+nspec
+               do n=1,4+nspecies
 
                   ! First compute Fromm slopes
                   do i = ilo1-1, ihi1+1

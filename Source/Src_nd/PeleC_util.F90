@@ -121,7 +121,7 @@ contains
 
     use eos_module
     use eos_type_module
-    use network, only : nspec, naux
+    use network, only : nspecies, naux
     use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, UFX, &
          UTEMP, small_temp, allow_negative_energy, allow_small_energy, &
          dual_energy_eta2, dual_energy_update_E_from_e
@@ -168,7 +168,7 @@ contains
 
                 eos_state % rho      = u(i,j,k,URHO)
                 eos_state % T        = small_temp
-                eos_state % massfrac = u(i,j,k,UFS:UFS+nspec-1) * rhoInv
+                eos_state % massfrac = u(i,j,k,UFS:UFS+nspecies-1) * rhoInv
                 eos_state % aux      = u(i,j,k,UFX:UFX+naux-1) * rhoInv
 
                 call eos_rt(eos_state)
@@ -242,7 +242,7 @@ contains
 
                       eos_state % rho         = u(i,j,k,URHO)
                       eos_state % T           = small_temp
-                      eos_state % massfrac(:) = u(i,j,k,UFS:UFS+nspec-1) * rhoInv
+                      eos_state % massfrac(:) = u(i,j,k,UFS:UFS+nspecies-1) * rhoInv
                       eos_state % aux(1:naux) = u(i,j,k,UFX:UFX+naux-1) * rhoInv
 
                       call eos_rt(eos_state)
@@ -273,7 +273,7 @@ contains
 
                       eos_state % rho         = u(i,j,k,URHO)
                       eos_state % T           = small_temp
-                      eos_state % massfrac(:) = u(i,j,k,UFS:UFS+nspec-1) * rhoInv
+                      eos_state % massfrac(:) = u(i,j,k,UFS:UFS+nspecies-1) * rhoInv
                       eos_state % aux(1:naux) = u(i,j,k,UFX:UFX+naux-1) * rhoInv
 
                       call eos_rt(eos_state)
@@ -331,7 +331,7 @@ contains
   subroutine compute_temp(lo,hi,state,s_lo,s_hi) &
        bind(C, name="compute_temp")
 
-    use network, only : nspec, naux
+    use network, only : nspecies, naux
     use eos_type_module
     use eos_module
     use meth_params_module, only : NVAR, URHO, UEDEN, UEINT, UTEMP, &
@@ -386,7 +386,7 @@ contains
              eos_state % rho      = state(i,j,k,URHO)
              eos_state % T        = state(i,j,k,UTEMP) ! Initial guess for the EOS
              eos_state % e        = state(i,j,k,UEINT) * rhoInv
-             eos_state % massfrac = state(i,j,k,UFS:UFS+nspec-1) * rhoInv
+             eos_state % massfrac = state(i,j,k,UFS:UFS+nspecies-1) * rhoInv
              eos_state % aux      = state(i,j,k,UFX:UFX+naux-1) * rhoInv
 
              call eos_re(eos_state)
@@ -405,7 +405,7 @@ contains
   subroutine pc_check_initial_species(lo,hi,state,state_lo,state_hi) &
                                       bind(C, name="pc_check_initial_species")
 
-    use network           , only : nspec
+    use network, only : nspecies
     use meth_params_module, only : NVAR, URHO, UFS
     use amrex_constants_module
 
@@ -423,7 +423,7 @@ contains
        do j = lo(2), hi(2)
           do i = lo(1), hi(1)
 
-             spec_sum = sum(state(i,j,k,UFS:UFS+nspec-1))
+             spec_sum = sum(state(i,j,k,UFS:UFS+nspecies-1))
 
              if (abs(state(i,j,k,URHO)-spec_sum) .gt. 1.d-8 * state(i,j,k,URHO)) then
 

@@ -132,7 +132,7 @@ contains
   subroutine bcnormal(x,u_int,u_ext,dir,sgn,time,bc_type,bc_params,bc_target)
 
     use probdata_module
-    use network, only: nspec
+    use network, only: nspecies
     use eos_type_module
     use eos_module
     use prob_params_module, only : Interior, Inflow, Outflow, SlipWall, NoSlipWall, &
@@ -193,7 +193,7 @@ contains
     u_ext(UEINT) = eos_state % rho  *  eos_state % e
     u_ext(UEDEN) = eos_state % rho  * (eos_state % e + 0.5d0 * (u(1)**2 + u(2)**2 + u(3)**2))
     u_ext(UTEMP) = eos_state % T
-    u_ext(UFS:UFS+nspec-1)  = eos_state % rho * eos_state % massfrac(:)
+    u_ext(UFS:UFS+nspecies-1)  = eos_state % rho * eos_state % massfrac(:)
 
 ! Here the optional parameters are filled by the local variables if they were present
     if (flag_nscbc == 1) then

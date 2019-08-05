@@ -57,7 +57,7 @@ module hyp_advection_module
                                    URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, UTEMP, UFX, UFA, &
                                    eb_small_vfrac
     use slope_module, only : slopex, slopey, slopez
-    use actual_network, only : nspec, naux
+    use network, only : nspecies, naux
     use eos_type_module
     use eos_module, only : eos_t, eos_rp
     use riemann_module, only: cmpflx, shock
@@ -118,8 +118,8 @@ module hyp_advection_module
     double precision, pointer :: dqx(:,:,:,:), dqy(:,:,:,:), dqz(:,:,:,:)
 
     ! Other left and right state arrays
-    double precision :: qtempl(VECLEN,1:5+nspec)
-    double precision :: qtempr(VECLEN,1:5+nspec)
+    double precision :: qtempl(VECLEN,1:5+nspecies)
+    double precision :: qtempr(VECLEN,1:5+nspecies)
     double precision :: rhoe_l(VECLEN)
     double precision :: rhoe_r(VECLEN)
     double precision :: cspeed(VECLEN)
@@ -232,7 +232,7 @@ module hyp_advection_module
 
              ! Left rho - computed as sum(rhoY_k) below after species
              qtempl(1:vic,R_RHO) = 0.d0
-             do nsp = 1,nspec
+             do nsp = 1,nspecies
 
                 qtempl(1:vic,R_Y - 1 +nsp) = q(vis-1:vie-1,j,k,QFS-1+nsp) * q(vis-1:vie-1,j,k,QRHO) + 0.5d0*(dqx(vis-1:vie-1,j,k,4+nsp) &
                      + q(vis-1:vie-1,j,k,QFS-1+nsp) * (dqx(vis-1:vie-1,j,k,1) + dqx(vis-1:vie-1,j,k,2))/cspeed(1:vic) )
@@ -240,7 +240,7 @@ module hyp_advection_module
 
              enddo
 
-             do nsp = 1,nspec
+             do nsp = 1,nspecies
                qtempl(1:vic,R_Y -1 +nsp) = qtempl(1:vic,R_Y - 1 +nsp)/qtempl(1:vic,R_RHO)
              enddo
 
@@ -261,7 +261,7 @@ module hyp_advection_module
              ! Right rho - computed as sum(rhoY_k) below after species
              qtempr(1:vic,R_RHO) = 0.d0
 
-             do nsp = 1,nspec
+             do nsp = 1,nspecies
 
                 qtempr(1:vic,R_Y - 1 +nsp) = q(vis:vie,j,k,QFS-1+nsp)*q(vis:vie,j,k,QRHO) - 0.5d0*(dqx(vis:vie,j,k,4+nsp) &
                      + q(vis:vie,j,k,QFS-1+nsp)*(dqx(vis:vie,j,k,1)+dqx(vis:vie,j,k,2))/cspeed(1:vic) )
@@ -269,7 +269,7 @@ module hyp_advection_module
 
              enddo
 
-             do nsp = 1,nspec
+             do nsp = 1,nspecies
                 qtempr(1:vic,R_Y - 1 +nsp) = qtempr(1:vic,R_Y - 1 +nsp)/qtempr(1:vic,R_RHO)
              enddo
 
@@ -283,7 +283,7 @@ module hyp_advection_module
                 !  - evaluate T, use that to evaluate internal energy
                 eos_state%rho = qtempl(vii,R_RHO)
                 eos_state%p = qtempl(vii,R_P)
-                eos_state%massfrac = qtempl(vii,R_Y:R_Y-1+nspec)
+                eos_state%massfrac = qtempl(vii,R_Y:R_Y-1+nspecies)
                 !dir$ inline recursive
                 call eos_rp(eos_state)
                 rhoe_l(vii) = eos_state%rho * eos_state%e
@@ -291,7 +291,7 @@ module hyp_advection_module
 
                 eos_state%rho = qtempr(vii,R_RHO)
                 eos_state%p = qtempr(vii,R_P)
-                eos_state%massfrac = qtempr(vii,R_Y:R_Y-1+nspec)
+                eos_state%massfrac = qtempr(vii,R_Y:R_Y-1+nspecies)
                 !dir$ inline recursive
                 call eos_rp(eos_state)
                 rhoe_r(vii) = eos_state%rho * eos_state%e
@@ -300,20 +300,20 @@ module hyp_advection_module
 
              ! Single point version of multi-component Riemann solve
              ! Argument order:
-             ! Input Left state: rho, vel, trans vel 1, trans vel 2, pressure, reint, 1:nspec species, gamc
-             ! Input Right states: rho, vel, trans vel 1, trans vel 2, pressure, reint, 1:nspec species, gamc,
+             ! Input Left state: rho, vel, trans vel 1, trans vel 2, pressure, reint, 1:nspecies species, gamc
+             ! Input Right states: rho, vel, trans vel 1, trans vel 2, pressure, reint, 1:nspecies species, gamc,
              ! Output Godunov states: iu, trans vel 1, trans vel 2, pressure, game, regd, rgd, ustar
              ! Work arrays: eos_state, gdnv_state
-             ! Array sizes: nspec
+             ! Array sizes: nspecies
              ! Fluxes: rho, umx, umy, ueden, ueint
              ! Tests: idir=1, coord_type=0, bc_test = 1.0, 
              ! smallc = max( csml(i), csml(i-1)
              ! cav = HALF*( c(i,j), c(i-1,j))
              call riemann_md_vec( &
-                  qtempl(1:vic,R_RHO), qtempl(1:vic,R_UN), qtempl(1:vic,R_UT1), qtempl(1:vic,R_UT2), qtempl(1:vic,R_P), rhoe_l(1:vic), qtempl(1:vic,R_Y:R_Y-1+nspec), gamc_l(1:vic),&
-                  qtempr(1:vic,R_RHO), qtempr(1:vic,R_UN), qtempr(1:vic,R_UT1), qtempr(1:vic,R_UT2), qtempr(1:vic,R_P), rhoe_r(1:vic), qtempr(1:vic,R_Y:R_Y-1+nspec), gamc_r(1:vic),&
+                  qtempl(1:vic,R_RHO), qtempl(1:vic,R_UN), qtempl(1:vic,R_UT1), qtempl(1:vic,R_UT2), qtempl(1:vic,R_P), rhoe_l(1:vic), qtempl(1:vic,R_Y:R_Y-1+nspecies), gamc_l(1:vic),&
+                  qtempr(1:vic,R_RHO), qtempr(1:vic,R_UN), qtempr(1:vic,R_UT1), qtempr(1:vic,R_UT2), qtempr(1:vic,R_P), rhoe_r(1:vic), qtempr(1:vic,R_Y:R_Y-1+nspecies), gamc_r(1:vic),&
                   u_gd(1:vic), v_gd(1:vic), w_gd(1:vic), p_gd(1:vic), game_gd(1:vic), re_gd(1:vic), r_gd(1:vic), ustar(1:vic),&
-                  eos_state, nspec,&
+                  eos_state, nspecies,&
                   flux_tmp(1:vic,URHO), flux_tmp(1:vic,UMX), flux_tmp(1:vic,UMY), flux_tmp(1:vic,UMZ), flux_tmp(1:vic,UEDEN), flux_tmp(1:vic,UEINT), &
                   bc_test_val, csmall(1:vic), cavg(1:vic), vic )
 
@@ -322,7 +322,7 @@ module hyp_advection_module
                 vii = vii + 1 ! work array index
 
                 ! Compute species flux like passive scalar from intermediate state
-                do nsp = 0, nspec-1
+                do nsp = 0, nspecies-1
                    if (ustar(vii) .gt. ZERO) then
                       flux_tmp(vii,UFS+nsp) = flux_tmp(vii,URHO)*qtempl(vii,R_Y+nsp)
                    else if (ustar(vii) .lt. ZERO) then
@@ -400,7 +400,7 @@ module hyp_advection_module
 
               ! Left rho - computed as sum(rhoY_k) below after species
               qtempl(1:vic,R_RHO) = 0.d0
-              do nsp = 1,nspec
+              do nsp = 1,nspecies
 
                 qtempl(1:vic,R_Y-1+nsp) = q(vis:vie,j-1,k,QFS-1+nsp) * q(vis:vie,j-1,k,QRHO) + 0.5d0*(dqy(vis:vie,j-1,k,4+nsp) &
                                           + q(vis:vie,j-1,k,QFS-1+nsp) * (dqy(vis:vie,j-1,k,1) + dqy(vis:vie,j-1,k,2))/cspeed(1:vic) )
@@ -408,7 +408,7 @@ module hyp_advection_module
 
                enddo
 
-              do nsp = 1,nspec
+              do nsp = 1,nspecies
                 qtempl(1:vic,R_Y-1+nsp) = qtempl(1:vic,R_Y-1+nsp)/qtempl(1:vic,R_RHO)
               enddo
 
@@ -428,7 +428,7 @@ module hyp_advection_module
 
               ! Right rho - computed as sum(rhoY_k) below after species
               qtempr(1:vic,R_RHO) = 0.d0
-              do nsp = 1,nspec
+              do nsp = 1,nspecies
 
                 qtempr(1:vic,R_Y-1+nsp) = q(vis:vie,j,k,QFS-1+nsp) &
                                           * q(vis:vie,j,k,QRHO) - 0.5d0*(dqy(vis:vie,j,k,4+nsp) &
@@ -438,7 +438,7 @@ module hyp_advection_module
                 qtempr(1:vic,R_RHO) = qtempr(1:vic,R_RHO) + qtempr(1:vic,R_Y-1+nsp)
 
                enddo
-              do nsp = 1,nspec
+              do nsp = 1,nspecies
                 qtempr(1:vic,R_Y-1+nsp) = qtempr(1:vic,R_Y-1+nsp)/qtempr(1:vic,R_RHO)
               enddo
 
@@ -453,7 +453,7 @@ module hyp_advection_module
 
                eos_state%rho = qtempl(vii,R_RHO)
                eos_state%p = qtempl(vii,R_P)
-               eos_state%massfrac = qtempl(vii,R_Y:R_Y-1+nspec)
+               eos_state%massfrac = qtempl(vii,R_Y:R_Y-1+nspecies)
                !dir$ inline recursive
                call eos_rp(eos_state)
                rhoe_l(vii) = eos_state%rho * eos_state%e
@@ -461,7 +461,7 @@ module hyp_advection_module
 
                eos_state%rho = qtempr(vii,R_RHO)
                eos_state%p = qtempr(vii,R_P)
-               eos_state%massfrac = qtempr(vii,R_Y:R_Y-1+nspec)
+               eos_state%massfrac = qtempr(vii,R_Y:R_Y-1+nspecies)
                !dir$ inline recursive
                call eos_rp(eos_state)
                rhoe_r(vii) = eos_state%rho * eos_state%e
@@ -470,20 +470,20 @@ module hyp_advection_module
 
         ! Single point version of multi-component Riemann solve
         ! Argument order:
-        ! Input Left state: rho, vel, trans vel 1, trans vel 2, pressure, reint, 1:nspec species, gamc
-        ! Input Right states: rho, vel, trans vel 1, trans vel 2, pressure, reint, 1:nspec species, gamc,
+        ! Input Left state: rho, vel, trans vel 1, trans vel 2, pressure, reint, 1:nspecies species, gamc
+        ! Input Right states: rho, vel, trans vel 1, trans vel 2, pressure, reint, 1:nspecies species, gamc,
         ! Output Godunov states: iu, trans vel 1, trans vel 2, pressure, game, regd, rgd, ustar
         ! Work arrays: eos_state, gdnv_state
-        ! Array sizes: nspec
+        ! Array sizes: nspecies
         ! Fluxes: rho, umx, umy, ueden, ueint
         ! Tests: idir=1, coord_type=0, bc_test = 1.0, 
         ! smallc = max( csml(i), csml(i-1)
         ! cav = HALF*( c(i,j), c(i-1,j))
         call riemann_md_vec( &
-             qtempl(1:vic,R_RHO), qtempl(1:vic,R_UN), qtempl(1:vic,R_UT1), qtempl(1:vic,R_UT2), qtempl(1:vic,R_P), rhoe_l(1:vic), qtempl(1:vic,R_Y:R_Y-1+nspec), gamc_l(1:vic),&
-             qtempr(1:vic,R_RHO), qtempr(1:vic,R_UN), qtempr(1:vic,R_UT1), qtempr(1:vic,R_UT2), qtempr(1:vic,R_P), rhoe_r(1:vic), qtempr(1:vic,R_Y:R_Y-1+nspec), gamc_r(1:vic),&
+             qtempl(1:vic,R_RHO), qtempl(1:vic,R_UN), qtempl(1:vic,R_UT1), qtempl(1:vic,R_UT2), qtempl(1:vic,R_P), rhoe_l(1:vic), qtempl(1:vic,R_Y:R_Y-1+nspecies), gamc_l(1:vic),&
+             qtempr(1:vic,R_RHO), qtempr(1:vic,R_UN), qtempr(1:vic,R_UT1), qtempr(1:vic,R_UT2), qtempr(1:vic,R_P), rhoe_r(1:vic), qtempr(1:vic,R_Y:R_Y-1+nspecies), gamc_r(1:vic),&
              v_gd(1:vic), u_gd(1:vic), w_gd(1:vic), p_gd(1:vic), game_gd(1:vic), re_gd(1:vic), r_gd(1:vic), ustar(1:vic),&
-             eos_state, nspec,&
+             eos_state, nspecies,&
              flux_tmp(1:vic,URHO), flux_tmp(1:vic,UMY), flux_tmp(1:vic,UMX), flux_tmp(1:vic,UMZ), flux_tmp(1:vic,UEDEN), flux_tmp(1:vic,UEINT), &
              bc_test_val, csmall(1:vic), cavg(1:vic), vic )
 
@@ -493,7 +493,7 @@ module hyp_advection_module
 
 
                 ! Compute species flux like passive scalar from intermediate state
-                do nsp = 0, nspec-1
+                do nsp = 0, nspecies-1
                    if (ustar(vii) .gt. ZERO) then
                       flux_tmp(vii,UFS+nsp) = flux_tmp(vii,URHO)*qtempl(vii,R_Y+nsp)
                    else if (ustar(vii) .lt. ZERO) then
@@ -569,7 +569,7 @@ module hyp_advection_module
 
              ! Left rho - computed as sum(rhoY_k) below after species
              qtempl(1:vic,R_RHO) = 0.d0
-             do nsp = 1,nspec
+             do nsp = 1,nspecies
 
                qtempl(1:vic,R_Y-1+nsp) = q(vis:vie,j,k-1,QFS-1+nsp) &
                                          * q(vis:vie,j,k-1,QRHO) + 0.5d0*(dqz(vis:vie,j,k-1,4+nsp) &
@@ -579,7 +579,7 @@ module hyp_advection_module
                qtempl(1:vic,R_RHO) = qtempl(1:vic,R_RHO) + qtempl(1:vic,R_Y-1+nsp)
               enddo
 
-             do nsp = 1,nspec
+             do nsp = 1,nspecies
                qtempl(1:vic,R_Y-1+nsp) = qtempl(1:vic,R_Y-1+nsp)/qtempl(1:vic,R_RHO)
              enddo
 
@@ -599,7 +599,7 @@ module hyp_advection_module
 
              ! Right rho - computed as sum(rhoY_k) below after species
              qtempr(1:vic,R_RHO) = 0.d0
-             do nsp = 1,nspec
+             do nsp = 1,nspecies
 
                 qtempr(1:vic,R_Y-1+nsp) = q(vis:vie,j,k,QFS-1+nsp) &
                                           * q(vis:vie,j,k,QRHO) - 0.5d0*(dqz(vis:vie,j,k,4+nsp) &
@@ -610,7 +610,7 @@ module hyp_advection_module
 
 
              enddo
-             do nsp = 1,nspec
+             do nsp = 1,nspecies
                qtempr(1:vic,R_Y-1+nsp) = qtempr(1:vic,R_Y-1+nsp)/qtempr(1:vic,R_RHO)
              enddo
 
@@ -623,7 +623,7 @@ module hyp_advection_module
                 !  - evaluate T, use that to evaluate internal energy
                 eos_state%rho = qtempl(vii,R_RHO)
                 eos_state%p = qtempl(vii,R_P)
-                eos_state%massfrac = qtempl(vii,R_Y:R_Y-1+nspec)
+                eos_state%massfrac = qtempl(vii,R_Y:R_Y-1+nspecies)
                 !dir$ inline recursive
                 call eos_rp(eos_state)
                 rhoe_l(vii) = eos_state%rho * eos_state%e
@@ -631,7 +631,7 @@ module hyp_advection_module
 
                 eos_state%rho = qtempr(vii,R_RHO)
                 eos_state%p = qtempr(vii,R_P)
-                eos_state%massfrac = qtempr(vii,R_Y:R_Y-1+nspec)
+                eos_state%massfrac = qtempr(vii,R_Y:R_Y-1+nspecies)
                 !dir$ inline recursive
                 call eos_rp(eos_state)
                 rhoe_r(vii) = eos_state%rho * eos_state%e
@@ -640,20 +640,20 @@ module hyp_advection_module
 
              ! Single point version of multi-component Riemann solve
              ! Argument order:
-             ! Input Left state: rho, vel, trans vel 1, trans vel 2, pressure, reint, 1:nspec species, gamc
-             ! Input Right states: rho, vel, trans vel 1, trans vel 2, pressure, reint, 1:nspec species, gamc,
+             ! Input Left state: rho, vel, trans vel 1, trans vel 2, pressure, reint, 1:nspecies species, gamc
+             ! Input Right states: rho, vel, trans vel 1, trans vel 2, pressure, reint, 1:nspecies species, gamc,
              ! Output Godunov states: iu, trans vel 1, trans vel 2, pressure, game, regd, rgd, ustar
              ! Work arrays: eos_state, gdnv_state
-             ! Array sizes: nspec
+             ! Array sizes: nspecies
              ! Fluxes: rho, umx, umy, ueden, ueint
              ! Tests: idir=1, coord_type=0, bc_test = 1.0, 
              ! smallc = max( csml(i), csml(i-1)
              ! cav = HALF*( c(i,j), c(i-1,j))
              call riemann_md_vec( &
-                  qtempl(1:vic,R_RHO), qtempl(1:vic,R_UN), qtempl(1:vic,R_UT1), qtempl(1:vic,R_UT2), qtempl(1:vic,R_P), rhoe_l(1:vic), qtempl(1:vic,R_Y:R_Y-1+nspec), gamc_l(1:vic),&
-                  qtempr(1:vic,R_RHO), qtempr(1:vic,R_UN), qtempr(1:vic,R_UT1), qtempr(1:vic,R_UT2), qtempr(1:vic,R_P), rhoe_r(1:vic), qtempr(1:vic,R_Y:R_Y-1+nspec), gamc_r(1:vic),&
+                  qtempl(1:vic,R_RHO), qtempl(1:vic,R_UN), qtempl(1:vic,R_UT1), qtempl(1:vic,R_UT2), qtempl(1:vic,R_P), rhoe_l(1:vic), qtempl(1:vic,R_Y:R_Y-1+nspecies), gamc_l(1:vic),&
+                  qtempr(1:vic,R_RHO), qtempr(1:vic,R_UN), qtempr(1:vic,R_UT1), qtempr(1:vic,R_UT2), qtempr(1:vic,R_P), rhoe_r(1:vic), qtempr(1:vic,R_Y:R_Y-1+nspecies), gamc_r(1:vic),&
                   w_gd(1:vic), u_gd(1:vic), v_gd(1:vic), p_gd(1:vic), game_gd(1:vic), re_gd(1:vic), r_gd(1:vic), ustar(1:vic),&
-                  eos_state, nspec,&
+                  eos_state, nspecies,&
                   flux_tmp(1:vic,URHO), flux_tmp(1:vic,UMZ), flux_tmp(1:vic,UMX), flux_tmp(1:vic,UMY), flux_tmp(1:vic,UEDEN), flux_tmp(1:vic,UEINT), &
                   bc_test_val, csmall(1:vic), cavg(1:vic), vic )
 
@@ -662,7 +662,7 @@ module hyp_advection_module
                 vii = vii + 1 ! work array index
 
 
-                do nsp = 0, nspec-1
+                do nsp = 0, nspecies-1
                    if (ustar(vii) .gt. ZERO) then
                       flux_tmp(vii,UFS+nsp) = flux_tmp(vii,URHO)*qtempl(vii,R_Y+nsp)
                    else if (ustar(vii) .lt. ZERO) then
@@ -755,7 +755,7 @@ module hyp_advection_module
 
                 qtempl(vii,R_RHO) = sum_nbrs/sum_kappa
 
-                do nsp = 1,nspec
+                do nsp = 1,nspecies
                    sum_nbrs =   sum(nbr(-1:1,-1:1,-1:1) * vfrac(i-1:i+1,j-1:j+1,k-1:k+1) * q(i-1:i+1,j-1:j+1,k-1:k+1,QFS-1+nsp))
                    qtempl(vii,R_Y-1+nsp) = sum_nbrs/sum_kappa
                 enddo
@@ -785,7 +785,7 @@ module hyp_advection_module
                 qtempl(vii,R_P  ) = q(i,j,k,QPRES)
                 qtempl(vii,R_RHO) = q(i,j,k,QRHO)
 
-                do nsp = 1,nspec
+                do nsp = 1,nspecies
                    qtempl(vii,R_Y-1+nsp) = q(i,j,k,QFS-1+nsp)
                 enddo
 
@@ -820,7 +820,7 @@ module hyp_advection_module
         
                 eos_state%rho =      qtempl(vii,R_RHO)
                 eos_state%p   =      qtempl(vii,R_P)
-                eos_state%massfrac = qtempl(vii,R_Y:R_Y-1+nspec)
+                eos_state%massfrac = qtempl(vii,R_Y:R_Y-1+nspecies)
                 !dir$ inline recursive
                 call eos_rp(eos_state)
                 rhoe_l(vii) = eos_state%rho * eos_state%e
@@ -844,10 +844,10 @@ module hyp_advection_module
                .and. k.ge.lo(3)-nextra+1 .and. k.le.hi(3)+nextra-1 ) then
 
              call riemann_md_singlepoint( &
-                  qtempl(vii,R_RHO), qtempl(vii,R_UN), qtempl(vii,R_UT1), qtempl(vii,R_UT2), qtempl(vii,R_P), rhoe_l(vii), qtempl(vii,R_Y:R_Y-1+nspec), gamc_l(vii),&
-                  qtempl(vii,R_RHO), qtempr(vii,R_UN), qtempl(vii,R_UT1), qtempl(vii,R_UT2), qtempl(vii,R_P), rhoe_l(vii), qtempl(vii,R_Y:R_Y-1+nspec), gamc_l(vii),&
+                  qtempl(vii,R_RHO), qtempl(vii,R_UN), qtempl(vii,R_UT1), qtempl(vii,R_UT2), qtempl(vii,R_P), rhoe_l(vii), qtempl(vii,R_Y:R_Y-1+nspecies), gamc_l(vii),&
+                  qtempl(vii,R_RHO), qtempr(vii,R_UN), qtempl(vii,R_UT1), qtempl(vii,R_UT2), qtempl(vii,R_P), rhoe_l(vii), qtempl(vii,R_Y:R_Y-1+nspecies), gamc_l(vii),&
                   u_gd(vii), v_gd(vii), w_gd(vii), p_gd(vii), game_gd(vii), re_gd(vii), r_gd(vii), ustar(vii),&
-                  eos_state, gdnv_state, nspec,&
+                  eos_state, gdnv_state, nspecies,&
                   flux_tmp(vii,URHO), flux_tmp(vii,UMX), flux_tmp(vii,UMY), flux_tmp(vii,UMZ), flux_tmp(vii,UEDEN), flux_tmp(vii,UEINT), &
                   idir, coord_type, bc_test_val, csmall(vii), cavg(vii) )
           
@@ -860,7 +860,7 @@ module hyp_advection_module
              flux_tmp(vii,UMZ) = -flux_tmp(vii,UMX) * eb_norm(3)
              flux_tmp(vii,UMX) = -flux_tmp(vii,UMX) * eb_norm(1)
              !   Compute species flux like passive scalar from intermediate state
-             do nsp = 0, nspec-1
+             do nsp = 0, nspecies-1
                 flux_tmp(vii,UFS+nsp) = flux_tmp(vii,URHO)*qtempl(vii,R_Y+nsp)
              enddo
           endif
@@ -903,7 +903,7 @@ module hyp_advection_module
     ! Now, all faces flux done - now ready for Marc's magic; flux in x-direction 
     ! is loaded into flux1
     ! where flux1(i,j,k,N) has edge based flux of rho,u,v,w,eden,eint,species indexed by
-    ! URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS:UFS+nspec-1, and similar for flux2, flux3
+    ! URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS:UFS+nspecies-1, and similar for flux2, flux3
     ! EB face flux assuming wall BC is loaded into ebflux with same ordering
 
     ! Call Marc's routine to multiply fluxes by aperatures and interpolate to face centers 

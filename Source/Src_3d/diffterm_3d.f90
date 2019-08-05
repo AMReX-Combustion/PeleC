@@ -39,7 +39,7 @@ contains
                          D,   Dlo,   Dhi,&
                          deltax) bind(C, name = "pc_diffterm")
 
-    use actual_network, only     : nspec
+    use network, only : nspecies
     use meth_params_module, only : NVAR, UMX, UMY, UMZ, UEDEN, UFS, QVAR, QU, QV, QW, QPRES, QTEMP, QFS, QRHO
     use amrex_constants_module
     use eos_type_module
@@ -80,21 +80,21 @@ contains
     integer, intent(in) ::    Vlo(3),   Vhi(3)
 
     double precision, intent(in   ) ::    Q(   Qlo(1):   Qhi(1),   Qlo(2):   Qhi(2),   Qlo(3):   Qhi(3), QVAR)
-    double precision, intent(in   ) ::   Dx(  Dxlo(1):  Dxhi(1),  Dxlo(2):  Dxhi(2),  Dxlo(3):  Dxhi(3), nspec)
+    double precision, intent(in   ) ::   Dx(  Dxlo(1):  Dxhi(1),  Dxlo(2):  Dxhi(2),  Dxlo(3):  Dxhi(3), nspecies)
     double precision, intent(in   ) ::  mux( muxlo(1): muxhi(1), muxlo(2): muxhi(2), muxlo(3): muxhi(3)  )
     double precision, intent(in   ) ::  xix( xixlo(1): xixhi(1), xixlo(2): xixhi(2), xixlo(3): xixhi(3)  )
     double precision, intent(in   ) :: lamx(lamxlo(1):lamxhi(1),lamxlo(2):lamxhi(2),lamxlo(3):lamxhi(3)  )
     double precision, intent(in   ) ::   tx(  txlo(1):  txhi(1),  txlo(2):  txhi(2),  txlo(3):  txhi(3), 6)
     double precision, intent(in   ) ::   Ax(  Axlo(1):  Axhi(1),  Axlo(2):  Axhi(2),  Axlo(3):  Axhi(3)  )
     double precision, intent(inout) ::   fx(  fxlo(1):  fxhi(1),  fxlo(2):  fxhi(2),  fxlo(3):  fxhi(3), NVAR)
-    double precision, intent(in   ) ::   Dy(  Dylo(1):  Dyhi(1),  Dylo(2):  Dyhi(2),  Dylo(3):  Dyhi(3), nspec)
+    double precision, intent(in   ) ::   Dy(  Dylo(1):  Dyhi(1),  Dylo(2):  Dyhi(2),  Dylo(3):  Dyhi(3), nspecies)
     double precision, intent(in   ) ::  muy( muylo(1): muyhi(1), muylo(2): muyhi(2), muylo(3): muyhi(3)  )
     double precision, intent(in   ) ::  xiy( xiylo(1): xiyhi(1), xiylo(2): xiyhi(2), xiylo(3): xiyhi(3)  )
     double precision, intent(in   ) :: lamy(lamylo(1):lamyhi(1),lamylo(2):lamyhi(2),lamylo(3):lamyhi(3)  )
     double precision, intent(in   ) ::   ty(  tylo(1):  tyhi(1),  tylo(2):  tyhi(2),  tylo(3):  tyhi(3), 6)
     double precision, intent(in   ) ::   Ay(  Aylo(1):  Ayhi(1),  Aylo(2):  Ayhi(2),  Aylo(3):  Ayhi(3)  )
     double precision, intent(inout) ::   fy(  fylo(1):  fyhi(1),  fylo(2):  fyhi(2),  fylo(3):  fyhi(3), NVAR)
-    double precision, intent(in   ) ::   Dz(  Dzlo(1):  Dzhi(1),  Dzlo(2):  Dzhi(2),  Dzlo(3):  Dzhi(3), nspec)
+    double precision, intent(in   ) ::   Dz(  Dzlo(1):  Dzhi(1),  Dzlo(2):  Dzhi(2),  Dzlo(3):  Dzhi(3), nspecies)
     double precision, intent(in   ) ::  muz( muzlo(1): muzhi(1), muzlo(2): muzhi(2), muzlo(3): muzhi(3)  )
     double precision, intent(in   ) ::  xiz( xizlo(1): xizhi(1), xizlo(2): xizhi(2), xizlo(3): xizhi(3)  )
     double precision, intent(in   ) :: lamz(lamzlo(1):lamzhi(1),lamzlo(2):lamzhi(2),lamzlo(3):lamzhi(3)  )
@@ -114,16 +114,16 @@ contains
     double precision :: dlnpi, gfaci(lo(1):hi(1)+1)
     double precision :: dlnpj, gfacj(lo(2):hi(2)+1)
     double precision :: dlnpk, gfack(lo(3):hi(3)+1)
-    double precision :: X(lo(1)-1:hi(1)+1,lo(2)-1:hi(2)+1,lo(3)-1:hi(3)+1,1:nspec)
-    double precision :: hii(lo(1)-1:hi(1)+1,lo(2)-1:hi(2)+1,lo(3)-1:hi(3)+1,1:nspec)
+    double precision :: X(lo(1)-1:hi(1)+1,lo(2)-1:hi(2)+1,lo(3)-1:hi(3)+1,1:nspecies)
+    double precision :: hii(lo(1)-1:hi(1)+1,lo(2)-1:hi(2)+1,lo(3)-1:hi(3)+1,1:nspecies)
 
     double precision, parameter :: twoThirds = 2.d0/3.d0
     double precision :: dxinv(3)
 
     dxinv = 1.d0/deltax
 
-    call eos_ytx_vec(Q(lo(1)-1:hi(1)+1,lo(2)-1:hi(2)+1,lo(3)-1:hi(3)+1,QFS:QFS+nspec-1),lo,hi,X,lo,hi,lo,hi,nspec)
-    call eos_hi_vec(Q(lo(1)-1:hi(1)+1,lo(2)-1:hi(2)+1,lo(3)-1:hi(3)+1,QFS:QFS+nspec-1),lo,hi,Q(lo(1)-1:hi(1)+1,lo(2)-1:hi(2)+1,lo(3)-1:hi(3)+1,QTEMP),lo,hi,hii,lo,hi,lo,hi,nspec)
+    call eos_ytx_vec(Q(lo(1)-1:hi(1)+1,lo(2)-1:hi(2)+1,lo(3)-1:hi(3)+1,QFS:QFS+nspecies-1),lo,hi,X,lo,hi,lo,hi,nspecies)
+    call eos_hi_vec(Q(lo(1)-1:hi(1)+1,lo(2)-1:hi(2)+1,lo(3)-1:hi(3)+1,QFS:QFS+nspecies-1),lo,hi,Q(lo(1)-1:hi(1)+1,lo(2)-1:hi(2)+1,lo(3)-1:hi(3)+1,QTEMP),lo,hi,hii,lo,hi,lo,hi,nspecies)
 
     gfaci = dxinv(1)
     gfacj = dxinv(2)
@@ -161,7 +161,7 @@ contains
           enddo
        enddo
     enddo
-    do n=1,nspec
+    do n=1,nspecies
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)+1
@@ -179,7 +179,7 @@ contains
           enddo
        enddo
     enddo
-    do n=1,nspec
+    do n=1,nspecies
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)+1
@@ -201,7 +201,7 @@ contains
           enddo
        enddo
     enddo
-    do n=UFS,UFS+nspec-1
+    do n=UFS,UFS+nspecies-1
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)+1
@@ -243,7 +243,7 @@ contains
           enddo
        enddo
     enddo
-    do n=1,nspec
+    do n=1,nspecies
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)+1
              do i=lo(1),hi(1)
@@ -261,7 +261,7 @@ contains
           enddo
        enddo
     enddo
-    do n=1,nspec
+    do n=1,nspecies
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)+1
              do i=lo(1),hi(1)
@@ -283,7 +283,7 @@ contains
           enddo
        enddo
     enddo
-    do n=UFS,UFS+nspec-1
+    do n=UFS,UFS+nspecies-1
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)+1
              do i=lo(1),hi(1)
@@ -325,7 +325,7 @@ contains
           enddo
        enddo
     enddo
-    do n=1,nspec
+    do n=1,nspecies
        do k=lo(3),hi(3)+1
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)
@@ -343,7 +343,7 @@ contains
           enddo
        enddo
     enddo
-    do n=1,nspec
+    do n=1,nspecies
        do k=lo(3),hi(3)+1
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)
@@ -365,7 +365,7 @@ contains
           enddo
        enddo
     enddo
-    do n=UFS,UFS+nspec-1
+    do n=UFS,UFS+nspecies-1
        do k=lo(3),hi(3)+1
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)

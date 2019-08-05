@@ -39,7 +39,7 @@ contains
                          D,   Dlo,   Dhi,&
                          deltax) bind(C, name = "pc_diffterm")
 
-    use actual_network, only     : nspec
+    use network, only : nspecies
     use meth_params_module, only : NVAR, UMX, UMY, UMZ, UEDEN, UFS, QVAR, QU, QV, QW, QPRES, QTEMP, QFS, QRHO
     use amrex_constants_module
     use eos_type_module
@@ -80,21 +80,21 @@ contains
     integer, intent(in) ::    Vlo(3),   Vhi(3)
 
     double precision, intent(in   ) ::    Q(   Qlo(1):   Qhi(1),   Qlo(2):   Qhi(2),   Qlo(3):   Qhi(3), QVAR)
-    double precision, intent(in   ) ::   Dx(  Dxlo(1):  Dxhi(1),  Dxlo(2):  Dxhi(2),  Dxlo(3):  Dxhi(3), nspec)
+    double precision, intent(in   ) ::   Dx(  Dxlo(1):  Dxhi(1),  Dxlo(2):  Dxhi(2),  Dxlo(3):  Dxhi(3), nspecies)
     double precision, intent(in   ) ::  mux( muxlo(1): muxhi(1), muxlo(2): muxhi(2), muxlo(3): muxhi(3)  )
     double precision, intent(in   ) ::  xix( xixlo(1): xixhi(1), xixlo(2): xixhi(2), xixlo(3): xixhi(3)  )
     double precision, intent(in   ) :: lamx(lamxlo(1):lamxhi(1),lamxlo(2):lamxhi(2),lamxlo(3):lamxhi(3)  )
     double precision, intent(in   ) ::   tx(  txlo(1):  txhi(1),  txlo(2):  txhi(2),  txlo(3):  txhi(3), 4)
     double precision, intent(in   ) ::   Ax(  Axlo(1):  Axhi(1),  Axlo(2):  Axhi(2),  Axlo(3):  Axhi(3)  )
     double precision, intent(inout) ::   fx(  fxlo(1):  fxhi(1),  fxlo(2):  fxhi(2),  fxlo(3):  fxhi(3), NVAR)
-    double precision, intent(in   ) ::   Dy(  Dylo(1):  Dyhi(1),  Dylo(2):  Dyhi(2),  Dylo(3):  Dyhi(3), nspec)
+    double precision, intent(in   ) ::   Dy(  Dylo(1):  Dyhi(1),  Dylo(2):  Dyhi(2),  Dylo(3):  Dyhi(3), nspecies)
     double precision, intent(in   ) ::  muy( muylo(1): muyhi(1), muylo(2): muyhi(2), muylo(3): muyhi(3)  )
     double precision, intent(in   ) ::  xiy( xiylo(1): xiyhi(1), xiylo(2): xiyhi(2), xiylo(3): xiyhi(3)  )
     double precision, intent(in   ) :: lamy(lamylo(1):lamyhi(1),lamylo(2):lamyhi(2),lamylo(3):lamyhi(3)  )
     double precision, intent(in   ) ::   ty(  tylo(1):  tyhi(1),  tylo(2):  tyhi(2),  tylo(3):  tyhi(3), 4)
     double precision, intent(in   ) ::   Ay(  Aylo(1):  Ayhi(1),  Aylo(2):  Ayhi(2),  Aylo(3):  Ayhi(3)  )
     double precision, intent(inout) ::   fy(  fylo(1):  fyhi(1),  fylo(2):  fyhi(2),  fylo(3):  fyhi(3), NVAR)
-    double precision, intent(in   ) ::   Dz(  Dzlo(1):  Dzhi(1),  Dzlo(2):  Dzhi(2),  Dzlo(3):  Dzhi(3), nspec)
+    double precision, intent(in   ) ::   Dz(  Dzlo(1):  Dzhi(1),  Dzlo(2):  Dzhi(2),  Dzlo(3):  Dzhi(3), nspecies)
     double precision, intent(in   ) ::  muz( muzlo(1): muzhi(1), muzlo(2): muzhi(2), muzlo(3): muzhi(3)  )
     double precision, intent(in   ) ::  xiz( xizlo(1): xizhi(1), xizlo(2): xizhi(2), xizlo(3): xizhi(3)  )
     double precision, intent(in   ) :: lamz(lamzlo(1):lamzhi(1),lamzlo(2):lamzhi(2),lamzlo(3):lamzhi(3)  )
@@ -113,14 +113,14 @@ contains
 
     double precision :: gradPi(lo(1):hi(1)+1), dsumi(lo(1):hi(1)+1)
     double precision :: Vci(lo(1):hi(1)+1), gfaci(lo(1):hi(1)+1)
-    double precision :: ddrivei(lo(1):hi(1)+1,nspec), gradYi(lo(1):hi(1)+1,nspec)
+    double precision :: ddrivei(lo(1):hi(1)+1,nspecies), gradYi(lo(1):hi(1)+1,nspecies)
 
     double precision :: Vcj(lo(2):hi(2)+1), gfacj(lo(2):hi(2)+1)
-    double precision :: ddrivej(lo(2):hi(2)+1,nspec), gradYj(lo(2):hi(2)+1,nspec)
+    double precision :: ddrivej(lo(2):hi(2)+1,nspecies), gradYj(lo(2):hi(2)+1,nspecies)
     double precision :: gradPj(lo(2):hi(2)+1), dsumj(lo(2):hi(2)+1)
 
     double precision :: Vck(lo(3):hi(3)+1), gfack(lo(3):hi(3)+1)
-    double precision :: ddrivek(lo(3):hi(3)+1,nspec), gradYk(lo(3):hi(3)+1,nspec)
+    double precision :: ddrivek(lo(3):hi(3)+1,nspecies), gradYk(lo(3):hi(3)+1,nspecies)
     double precision :: gradPk(lo(3):hi(3)+1), dsumk(lo(3):hi(3)+1)
 
     double precision, parameter :: twoThirds = 2.d0/3.d0
@@ -170,22 +170,22 @@ contains
              Vci(i) = 0.d0
           end do
           do i=lo(1)-1,hi(1)+1
-             eosi(i) % massfrac(:) = Q(i,j,k,QFS:QFS+nspec-1)
+             eosi(i) % massfrac(:) = Q(i,j,k,QFS:QFS+nspecies-1)
              eosi(i) % T           = Q(i,j,k,QTEMP)
              eosi(i) % rho         = Q(i,j,k,QRHO)
              call eos_ytx(eosi(i))
              call eos_hi(eosi(i))
              call eos_get_transport(eosi(i))
           end do
-          do n=1,nspec
+          do n=1,nspecies
              do i = lo(1), hi(1)+1
                 gradYi(i,n) = gfaci(i) * (eosi(i)%massfrac(n) - eosi(i-1)%massfrac(n))
 !    put in P term
                 ddrivei(i,n) = 0.5d0*(eosi(i)% diP(n) + eosi(i-1)% diP(n)) * gradPi(i)
              enddo
           enddo
-          do n=1,nspec
-            do nn=1,nspec
+          do n=1,nspecies
+            do nn=1,nspecies
               do i = lo(1), hi(1)+1
                 ddrivei(i,n) = ddrivei(i,n)+ 0.5d0* (eosi(i) % dijY(n,nn) &
                              + eosi(i-1) % dijY(n,nn)) * gradYi(i,nn)
@@ -193,18 +193,18 @@ contains
             enddo
           enddo
           dsumi = 0.d0
-          do n=1,nspec
+          do n=1,nspecies
              do i = lo(1), hi(1)+1
                dsumi(i) = dsumi(i) + ddrivei(i,n)
              enddo
           enddo
-          do n=1,nspec
+          do n=1,nspecies
              do i = lo(1), hi(1)+1
                ddrivei(i,n) =  ddrivei(i,n) - eosi(i)%massfrac(n) * dsumi(i)
              enddo
           enddo
           ! Get species/enthalpy diffusion, compute correction velocity
-          do n=1,nspec
+          do n=1,nspecies
              do i = lo(1), hi(1)+1
                 hface = HALF*(eosi(i)%hi(n) + eosi(i-1)%hi(n))
                 Vd = -Dx(i,j,k,n)*ddrivei(i,n)
@@ -214,7 +214,7 @@ contains
              end do
           end do
           ! Add correction velocity
-          do n=1,nspec
+          do n=1,nspecies
              do i = lo(1), hi(1)+1
                 Yface = HALF*(eosi(i)%massfrac(n) + eosi(i-1)%massfrac(n))
                 hface = HALF*(eosi(i)%hi(n)       + eosi(i-1)%hi(n))
@@ -234,7 +234,7 @@ contains
              fx(i,j,k,UMY)   = fx(i,j,k,UMY)   * Ax(i,j,k)
              fx(i,j,k,UMZ)   = fx(i,j,k,UMZ)   * Ax(i,j,k)
              fx(i,j,k,UEDEN) = fx(i,j,k,UEDEN) * Ax(i,j,k)
-             fx(i,j,k,UFS:UFS+nspec-1) = fx(i,j,k,UFS:UFS+nspec-1) * Ax(i,j,k)
+             fx(i,j,k,UFS:UFS+nspecies-1) = fx(i,j,k,UFS:UFS+nspecies-1) * Ax(i,j,k)
           enddo
        enddo
     enddo
@@ -277,14 +277,14 @@ contains
              Vcj(j) = 0.d0
           end do
           do j=lo(2)-1,hi(2)+1
-             eosj(j) % massfrac(:) = Q(i,j,k,QFS:QFS+nspec-1)
+             eosj(j) % massfrac(:) = Q(i,j,k,QFS:QFS+nspecies-1)
              eosj(j) % T           = Q(i,j,k,QTEMP)
              eosj(j) % rho         = Q(i,j,k,QRHO)
              call eos_ytx(eosj(j))
              call eos_hi(eosj(j))
              call eos_get_transport(eosj(j))
           end do
-          do n=1,nspec
+          do n=1,nspecies
             do j = lo(2), hi(2)+1
              gradYj(j,n) = gfacj(j) * (eosj(j)%massfrac(n) - eosj(j-1)%massfrac(n))
 !    put in P term
@@ -296,20 +296,20 @@ contains
 !                        + eosj(j-1)%massfrac(n)* eosj(j-1)%wbar/(Ru*eosj(j-1) % T * eosj(j-1) % rho )) * gradP(j)
             enddo
           enddo
-          do n=1,nspec
-            do nn=1,nspec
+          do n=1,nspecies
+            do nn=1,nspecies
               do j = lo(2), hi(2)+1
                 ddrivej(j,n) = ddrivej(j,n)+ 0.5d0* (eosj(j) % dijY(n,nn) + eosj(j-1) % dijY(n,nn)) * gradYj(j,nn)
               enddo
             enddo
           enddo
           dsumj = 0.d0
-          do n=1,nspec
+          do n=1,nspecies
              do j = lo(2), hi(2)+1
                dsumj(j) = dsumj(j) + ddrivej(j,n)
              enddo
           enddo
-          do n=1,nspec
+          do n=1,nspecies
              do j = lo(2), hi(2)+1
                ddrivej(j,n) =  ddrivej(j,n) - eosj(j)%massfrac(n) * dsumj(j)
 !               if(i.eq.1 .and. j.eq.207)then
@@ -318,7 +318,7 @@ contains
              enddo
           enddo
           ! Get species/enthalpy diffusion, compute correction velocity
-          do n=1,nspec
+          do n=1,nspecies
              do j = lo(2), hi(2)+1
                 hface = HALF*(eosj(j)%hi(n)       + eosj(j-1)%hi(n))
                 Vd = -Dy(i,j,k,n)*ddrivej(j,n)
@@ -328,7 +328,7 @@ contains
              end do
           end do
           ! Add correction velocity
-          do n=1,nspec
+          do n=1,nspecies
              do j = lo(2), hi(2)+1
                 Yface = HALF*(eosj(j)%massfrac(n) + eosj(j-1)%massfrac(n))
                 hface = HALF*(eosj(j)%hi(n)       + eosj(j-1)%hi(n))
@@ -347,7 +347,7 @@ contains
              fy(i,j,k,UMY)   = fy(i,j,k,UMY)   * Ay(i,j,k)
              fy(i,j,k,UMZ)   = fy(i,j,k,UMZ)   * Ay(i,j,k)
              fy(i,j,k,UEDEN) = fy(i,j,k,UEDEN) * Ay(i,j,k)
-             fy(i,j,k,UFS:UFS+nspec-1) = fy(i,j,k,UFS:UFS+nspec-1) * Ay(i,j,k)
+             fy(i,j,k,UFS:UFS+nspecies-1) = fy(i,j,k,UFS:UFS+nspecies-1) * Ay(i,j,k)
           enddo
        enddo
     enddo
@@ -390,40 +390,40 @@ contains
              Vck(k) = 0.d0
           end do
           do k=lo(3)-1,hi(3)+1
-             eosk(k) % massfrac(:) = Q(i,j,k,QFS:QFS+nspec-1)
+             eosk(k) % massfrac(:) = Q(i,j,k,QFS:QFS+nspecies-1)
              eosk(k) % T           = Q(i,j,k,QTEMP)
              eosk(k) % rho         = Q(i,j,k,QRHO)
              call eos_ytx(eosk(k))
              call eos_hi(eosk(k))
              call eos_get_transport(eosk(k))
           end do
-          do n=1,nspec
+          do n=1,nspecies
             do k = lo(3), hi(3)+1
               gradYk(k,n) = gfack(k) * (eosk(k)%massfrac(n) - eosk(k-1)%massfrac(n))
 !    put in P term
               ddrivek(k,n) = 0.5d0*(eosk(k)% diP(n) + eosk(k-1)% diP(n)) * gradPk(k)
             enddo
           enddo
-          do n=1,nspec
-            do nn=1,nspec
+          do n=1,nspecies
+            do nn=1,nspecies
               do k = lo(3), hi(3)+1
                 ddrivek(k,n) = ddrivek(k,n)+ 0.5d0* (eosk(k) % dijY(n,nn) + eosk(k-1) % dijY(n,nn)) * gradYk(k,nn)
               enddo
             enddo
           enddo
           dsumk = 0.d0
-          do n=1,nspec
+          do n=1,nspecies
              do k = lo(3), hi(3)+1
                dsumk(k) = dsumk(k) + ddrivek(k,n)
              enddo
           enddo
-          do n=1,nspec
+          do n=1,nspecies
              do k = lo(3), hi(3)+1
                ddrivek(k,n) =  ddrivek(k,n) - eosk(k)%massfrac(n) * dsumk(k)
              enddo
           enddo
           ! Get species/enthalpy diffusion, compute correction velocity
-          do n=1,nspec
+          do n=1,nspecies
              do k = lo(3), hi(3)+1
                 hface = HALF*(eosk(k)%hi(n)       + eosk(k-1)%hi(n))
                 Vd = -Dz(i,j,k,n)*ddrivek(k,n)
@@ -433,7 +433,7 @@ contains
              end do
           end do
           ! Add correction velocity
-          do n=1,nspec
+          do n=1,nspecies
              do k = lo(3), hi(3)+1
                 Yface = HALF*(eosk(k)%massfrac(n) + eosk(k-1)%massfrac(n))
                 hface = HALF*(eosk(k)%hi(n)       + eosk(k-1)%hi(n))
@@ -452,7 +452,7 @@ contains
              fz(i,j,k,UMY)   = fz(i,j,k,UMY)   * Az(i,j,k)
              fz(i,j,k,UMZ)   = fz(i,j,k,UMZ)   * Az(i,j,k)
              fz(i,j,k,UEDEN) = fz(i,j,k,UEDEN) * Az(i,j,k)
-             fz(i,j,k,UFS:UFS+nspec-1) = fz(i,j,k,UFS:UFS+nspec-1) * Az(i,j,k)
+             fz(i,j,k,UFS:UFS+nspecies-1) = fz(i,j,k,UFS:UFS+nspecies-1) * Az(i,j,k)
           enddo
        enddo
     enddo

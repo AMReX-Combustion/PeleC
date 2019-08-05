@@ -16,7 +16,7 @@ contains
     use probdata_module
     use bl_error_module
     use bl_constants_module, only: HALF
-    use network, only: nspec, naux, molec_wt
+    use network, only: nspecies, naux, molec_wt
     use extern_probin_module, only: const_viscosity, const_bulk_viscosity, const_conductivity, const_diffusivity
     use eos_module
 
@@ -500,7 +500,7 @@ contains
        delta,xlo,xhi) bind(C, name = "pc_initdata")
 
     use probdata_module
-    use network, only: nspec, naux, molec_wt
+    use network, only: nspecies, naux, molec_wt
     use eos_type_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, &
          UEDEN, UEINT, UFS, UTEMP
@@ -536,7 +536,7 @@ contains
 
     ! Uniform density, temperature, pressure (internal energy)
     state(:,:,:,URHO)            = rho0
-    do i = 1,nspec
+    do i = 1,nspecies
        state(:,:,:,UFS+i-1)      = rho0 * eos_state % massfrac(i)
     enddo
     state(:,:,:,UTEMP)           = T0

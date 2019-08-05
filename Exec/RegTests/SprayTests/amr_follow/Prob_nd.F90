@@ -69,7 +69,7 @@ subroutine pc_initdata(level,time,lo,hi,nvar, &
                        delta,xlo,xhi) bind(C, name="pc_initdata")
 
   use probdata_module
-  use network, only: nspec, naux
+  use network, only: nspecies, naux
   use chemistry_module, only : nspecies, get_species_index
   use eos_type_module
   use meth_params_module, only : URHO, UMX, UMY, UMZ, &
@@ -97,9 +97,9 @@ subroutine pc_initdata(level,time,lo,hi,nvar, &
   
   integer :: iN2
 
-  if ( nspec .ne. nspecies ) then
+  if ( nspecies .ne. nspecies ) then
       write(*,*) 'Something very wrong'
-      write(*,*) ' nspec =', nspec
+      write(*,*) ' nspecies =', nspecies
       write(*,*) ' nspecies =', nspecies
       stop
   endif
@@ -168,7 +168,7 @@ subroutine pc_initdata(level,time,lo,hi,nvar, &
 
            ! Fill the states
            state(i,j,k,URHO)            = rho
-           state(i,j,k,UFS:UFS+nspec-1) = rho * eos_state % massfrac(1:nspec)
+           state(i,j,k,UFS:UFS+nspecies-1) = rho * eos_state % massfrac(1:nspecies)
            state(i,j,k,UMX)             = rho * u
            state(i,j,k,UMY)             = rho * v
            state(i,j,k,UMZ)             = rho * w

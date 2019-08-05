@@ -25,7 +25,7 @@ contains
       use amrex_mempool_module, only : bl_allocate, bl_deallocate
       use meth_params_module
       use amrex_constants_module
-      use actual_network, only : nspec
+      use network, only : nspecies
 
       implicit none
 
@@ -74,12 +74,12 @@ contains
                   dlft(i,3) = q(i,j,QV) - q(i-1,j,QV)
                   dlft(i,4) = 0.d0
 
-                  do nsp = 1, nspec
+                  do nsp = 1, nspecies
                      dlft(i,4+nsp) = q(i  ,j,QRHO)*q(i,j,QFS+nsp-1)-q(i-1,j,QRHO)*q(i-1,j,QFS+nsp-1) &
                           -    q(i,j,QFS+nsp-1)*(q(i  ,j,QPRES) - q(i-1,j,QPRES))/qaux(i,j,QC)**2
                   enddo
 
-                  dlft(i,4+nspec+1:nv) = 0.0
+                  dlft(i,4+nspecies+1:nv) = 0.0
                else
                   dlft(i,:) = 0.d0
                endif
@@ -90,12 +90,12 @@ contains
                   drgt(i,3) = q(i+1,j,QV) - q(i,j,QV)
                   drgt(i,4) = 0.d0
 
-                  do nsp = 1, nspec
+                  do nsp = 1, nspecies
                      drgt(i,4+nsp) = q(i+1,j,QRHO)*q(i+1,j,QFS+nsp-1)-q(i,j,QRHO)*q(i  ,j,QFS+nsp-1) &
                           -    q(i,j,QFS+nsp-1)*(q(i+1,j,QPRES) - q(i  ,j,QPRES))/qaux(i,j,QC)**2
                   enddo
 
-                  drgt(i,4+nspec+1:nv) = 0.0
+                  drgt(i,4+nspecies+1:nv) = 0.0
                else
                   drgt(i,:) = 0.d0
                endif
@@ -134,7 +134,7 @@ contains
       use amrex_mempool_module, only : bl_allocate, bl_deallocate
       use meth_params_module
       use amrex_constants_module
-      use actual_network, only : nspec
+      use network, only : nspecies
 
       implicit none
 
@@ -183,12 +183,12 @@ contains
                   dlft(i,3) = q(i,j,QU) - q(i,j-1,QU)
                   dlft(i,4) = 0.d0
 
-                  do nsp = 1, nspec
+                  do nsp = 1, nspecies
                      dlft(i,4+nsp) = q(i,j  ,QRHO)*q(i,j  ,QFS+nsp-1)-q(i,j-1,QRHO)*q(i,j-1,QFS+nsp-1) &
                           -    q(i,j,QFS+nsp-1)*(q(i,j  ,QPRES) - q(i,j-1,QPRES))/qaux(i,j,QC)**2
                   enddo
 
-                  dlft(i,4+nspec+1:nv) = 0.0
+                  dlft(i,4+nspecies+1:nv) = 0.0
                else
                   dlft(i,:) = 0.d0
                endif
@@ -199,12 +199,12 @@ contains
                   drgt(i,3) = q(i,j+1,QU) - q(i,j,QU)
                   drgt(i,4) = 0.d0
 
-                  do nsp = 1, nspec
+                  do nsp = 1, nspecies
                      drgt(i,4+nsp) = q(i,j+1,QRHO)*q(i,j+1,QFS+nsp-1)-q(i,j,QRHO)*q(i,j,QFS+nsp-1) &
                           -    q(i,j,QFS+nsp-1)*(q(i,j+1,QPRES) - q(i,j  ,QPRES))/qaux(i,j,QC)**2
                   enddo
 
-                  drgt(i,4+nspec+1:nv) = 0.0
+                  drgt(i,4+nspecies+1:nv) = 0.0
                else
                   drgt(i,:) = 0.d0
                endif

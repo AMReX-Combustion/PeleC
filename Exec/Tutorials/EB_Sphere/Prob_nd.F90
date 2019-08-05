@@ -21,7 +21,7 @@ contains
     integer init, namlen
     integer name(namlen)
     double precision problo(3), probhi(3)
-    double precision massfrac(nspec)
+    double precision massfrac(nspecies)
 
     integer untin,i
 
@@ -73,7 +73,7 @@ contains
     massfrac(:) = 0.0d0
     massfrac(1) = 1.0d0
 
-    eos_state % molefrac(1:nspec) = 0.0
+    eos_state % molefrac(1:nspecies) = 0.0
     eos_state % molefrac(1) = 1.0
     eos_state % T = Tinit
 
@@ -115,7 +115,7 @@ contains
   subroutine pc_initdata(level,time,lo,hi,nvar, &
        state,state_lo,state_hi, &
        delta,xlo,xhi) bind(C, name = "pc_initdata")
-    use network, only: nspec
+    use network, only: nspecies
     use probdata_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP, UFS
     implicit none
@@ -151,7 +151,7 @@ contains
              state(i,j,k,UTEMP) = Tinit
 
 
-             state(i,j,k,UFS:UFS-1+nspec) = 0.0d0
+             state(i,j,k,UFS:UFS-1+nspecies) = 0.0d0
              state(i,j,k,UFS  ) = state(i,j,k,URHO)
 
 

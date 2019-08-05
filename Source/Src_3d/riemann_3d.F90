@@ -36,6 +36,7 @@ contains
                     idir,ilo,ihi,jlo,jhi,kc,kflux,k3d,domlo,domhi)
 
     use amrex_mempool_module, only : bl_allocate, bl_deallocate
+    use network, only : nspecies
     use eos_module
 
     integer, intent(in) :: qpd_lo(3), qpd_hi(3)
@@ -141,7 +142,7 @@ contains
              eos_state % rho      = qm(i,j,kc,QRHO)
              eos_state % p        = qm(i,j,kc,QPRES)
              eos_state % e        = qm(i,j,kc,QREINT)/qm(i,j,kc,QRHO)
-             eos_state % massfrac = qm(i,j,kc,QFS:QFS+nspec-1)
+             eos_state % massfrac = qm(i,j,kc,QFS:QFS+nspecies-1)
              eos_state % aux      = qm(i,j,kc,QFX:QFX+naux-1)
 
              call eos_re(eos_state)
@@ -161,7 +162,7 @@ contains
              eos_state % rho      = qp(i,j,kc,QRHO)
              eos_state % p        = qp(i,j,kc,QPRES)
              eos_state % e        = qp(i,j,kc,QREINT)/qp(i,j,kc,QRHO)
-             eos_state % massfrac = qp(i,j,kc,QFS:QFS+nspec-1) * rhoInv
+             eos_state % massfrac = qp(i,j,kc,QFS:QFS+nspecies-1) * rhoInv
              eos_state % aux      = qp(i,j,kc,QFX:QFX+naux-1) * rhoInv
 
              call eos_re(eos_state)
@@ -378,7 +379,7 @@ contains
 
     use amrex_mempool_module, only : bl_allocate, bl_deallocate
     use prob_params_module, only : physbc_lo, physbc_hi, Symmetry, SlipWall, NoSlipWall
-    use network, only : nspec, naux
+    use network, only : nspecies, naux
     use eos_type_module
     use eos_module
     double precision, parameter:: small = 1.d-8
@@ -513,7 +514,7 @@ contains
 
              eos_state % T        = small_temp
              eos_state % rho      = rl
-             eos_state % massfrac = ql(i,j,kc,QFS:QFS-1+nspec)
+             eos_state % massfrac = ql(i,j,kc,QFS:QFS-1+nspecies)
              eos_state % aux      = ql(i,j,kc,QFX:QFX-1+naux)
 
              call eos_rt(eos_state)
@@ -540,7 +541,7 @@ contains
 
              eos_state % T        = small_temp
              eos_state % rho      = rr
-             eos_state % massfrac = qr(i,j,kc,QFS:QFS-1+nspec)
+             eos_state % massfrac = qr(i,j,kc,QFS:QFS-1+nspecies)
              eos_state % aux      = qr(i,j,kc,QFX:QFX-1+naux)
 
              call eos_rt(eos_state)

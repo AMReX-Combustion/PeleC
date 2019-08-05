@@ -81,7 +81,7 @@ contains
        state,state_lo,state_hi, &
        delta,xlo,xhi) bind(C, name="pc_initdata")
     use amrex_paralleldescriptor_module, only: amrex_pd_ioprocessor
-    use network, only: nspec, molec_wt
+    use network, only: nspecies, molec_wt
     use probdata_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP, UFS
     use amrex_constants_module, only: M_PI, HALF
@@ -166,7 +166,7 @@ contains
              w = w0
              
              state(i,j,k,URHO)            = eos_state % rho
-             state(i,j,k,UFS:UFS+nspec-1) = eos_state % rho * eos_state % massfrac(:)
+             state(i,j,k,UFS:UFS+nspecies-1) = eos_state % rho * eos_state % massfrac(:)
              state(i,j,k,UMX)             = eos_state % rho * u
              state(i,j,k,UMY)             = eos_state % rho * v
              state(i,j,k,UMZ)             = eos_state % rho * w

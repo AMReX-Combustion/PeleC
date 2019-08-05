@@ -131,7 +131,7 @@ contains
   subroutine bcnormal(x,u_int,u_ext,dir,sgn,time,bc_type,bc_params,bc_target)
 
     use probdata_module
-    use network, only: nspec
+    use network, only: nspecies
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, UTEMP
     use amrex_constants_module, only: HALF, M_PI
     use prob_params_module, only : Interior, Inflow, Outflow, SlipWall, NoSlipWall, &
@@ -189,7 +189,7 @@ contains
     !       eos_state % rho = u_int(URHO)
     !       eos_state % T = u_int(UTEMP)
     !       eos_state % massfrac = 0.d0
-    !       eos_state % massfrac(nspec) = 1.d0
+    !       eos_state % massfrac(nspecies) = 1.d0
     !       call eos_rt(eos_state)
     !       ! eos_state % massfrac(1) = 1.d0
     !       ! eos_state % p = p0
@@ -214,7 +214,7 @@ contains
     ! end if
 
     ! u_ext(URHO)            = eos_state % rho
-    ! u_ext(UFS:UFS+nspec-1) = eos_state % massfrac * eos_state % rho
+    ! u_ext(UFS:UFS+nspecies-1) = eos_state % massfrac * eos_state % rho
     ! u_ext(UMX)             = eos_state % rho * u
     ! u_ext(UMY)             = eos_state % rho * v
     ! u_ext(UMZ)             = eos_state % rho * w
@@ -274,7 +274,7 @@ contains
     ! end if
 
     ! u_ext(URHO)            = eos_state % rho
-    ! u_ext(UFS:UFS+nspec-1) = eos_state % massfrac * eos_state % rho
+    ! u_ext(UFS:UFS+nspecies-1) = eos_state % massfrac * eos_state % rho
     ! u_ext(UMX)             = eos_state % rho * u
     ! u_ext(UMY)             = eos_state % rho * v
     ! u_ext(UMZ)             = eos_state % rho * w
@@ -343,7 +343,7 @@ contains
     end if
 
     u_ext(URHO)            = eos_state % rho
-    u_ext(UFS:UFS+nspec-1) = eos_state % massfrac * eos_state % rho
+    u_ext(UFS:UFS+nspecies-1) = eos_state % massfrac * eos_state % rho
     u_ext(UMX)             = eos_state % rho * u
     u_ext(UMY)             = eos_state % rho * v
     u_ext(UMZ)             = eos_state % rho * w
@@ -359,7 +359,7 @@ contains
     ! call eos_tp(eos_state)
 
     ! u_ext(URHO)            = rho0
-    ! u_ext(UFS:UFS+nspec-1) = rho0 * eos_state % massfrac(1:nspec)
+    ! u_ext(UFS:UFS+nspecies-1) = rho0 * eos_state % massfrac(1:nspecies)
     ! u_ext(UMX)             = rho0 * u0
     ! u_ext(UMY)             = rho0 * v0
     ! u_ext(UMZ)             = rho0 * w0

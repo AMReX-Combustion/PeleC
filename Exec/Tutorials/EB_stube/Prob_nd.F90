@@ -86,7 +86,7 @@ contains
   subroutine pc_initdata(level,time,lo,hi,nvar, &
        state,state_lo,state_hi, &
        delta,xlo,xhi) bind(C, name="pc_initdata")
-    use network, only: nspec, molec_wt
+    use network, only: nspecies, molec_wt
     use probdata_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP, UFS
     use amrex_constants_module, only: M_PI, HALF
@@ -141,7 +141,7 @@ contains
 
              if(xp .lt. midx) then 
                 state(i,j,k,URHO)            = eos_state_l % rho
-                state(i,j,k,UFS:UFS+nspec-1) = eos_state_l % rho * eos_state_l % massfrac(:)
+                state(i,j,k,UFS:UFS+nspecies-1) = eos_state_l % rho * eos_state_l % massfrac(:)
                 state(i,j,k,UMX)             = 0.d0
                 state(i,j,k,UMY)             = 0.d0
                 state(i,j,k,UMZ)             = 0.d0
@@ -150,7 +150,7 @@ contains
                 state(i,j,k,UTEMP)           = eos_state_l % T
              else
                 state(i,j,k,URHO)            = eos_state_r % rho
-                state(i,j,k,UFS:UFS+nspec-1) = eos_state_r % rho * eos_state_r % massfrac(:)
+                state(i,j,k,UFS:UFS+nspecies-1) = eos_state_r % rho * eos_state_r % massfrac(:)
                 state(i,j,k,UMX)             = 0.d0
                 state(i,j,k,UMY)             = 0.d0
                 state(i,j,k,UMZ)             = 0.d0
