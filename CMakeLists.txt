@@ -123,14 +123,14 @@ if(ENABLE_FEXTREMA)
   build_plot_tool(fextrema)
 endif()
 
-build_amrex()
-
 if(ENABLE_TESTS)
   enable_testing()
   include(CTest)
+  build_amrex()
   add_subdirectory(Testing)
 else()
   include(${CMAKE_BINARY_DIR}/exe_options.cmake)
+  build_amrex()
   build_pelec(PeleC-${PELEC_DIM}D ${CMAKE_BINARY_DIR}/exe_options.cmake)
 endif()
 
