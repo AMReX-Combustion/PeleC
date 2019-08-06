@@ -287,7 +287,8 @@ end module pmf_module
 
 subroutine initialize_pmf(filename)
   use pmf_module
-  use chemistry_module, only : nspecies, get_species_index
+  use network, only : nspecies
+  use chemistry_module, only : get_species_index
   character (len=*) :: filename
   integer :: n
   pmf_filename = filename
