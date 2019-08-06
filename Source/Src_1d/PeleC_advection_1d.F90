@@ -129,6 +129,7 @@ contains
     use pelec_util_module, only : position, linear_to_angular_momentum
     use amrinfo_module, only : amr_level
 
+    implicit none
     integer lo(1), hi(1)
     integer   uin_l1,  uin_h1
     integer  uout_l1, uout_h1

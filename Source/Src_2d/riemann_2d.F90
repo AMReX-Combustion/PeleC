@@ -39,6 +39,7 @@ contains
     use eos_type_module
     use eos_module, only: eos_re, eos_rt, mine
 
+    implicit none
     integer, intent(in) :: qpd_l1,qpd_l2,qpd_h1,qpd_h2
     integer, intent(in) :: flx_l1,flx_l2,flx_h1,flx_h2
     integer, intent(in) :: qg_l1,qg_l2,qg_h1,qg_h2
@@ -268,6 +269,7 @@ contains
 
     use prob_params_module, only : coord_type
 
+    implicit none
     integer, intent(in) :: qd_l1, qd_l2, qd_h1, qd_h2
     integer, intent(in) :: s_l1, s_l2, s_h1, s_h2
     integer, intent(in) :: ilo1, ilo2, ihi1, ihi2
@@ -381,6 +383,7 @@ contains
     use eos_module
     use prob_params_module, only : coord_type
 
+    implicit none
     double precision, parameter:: small = 1.d-8
     double precision, parameter :: small_u = 1.d-10
 
@@ -923,8 +926,8 @@ contains
 
     use prob_params_module, only : coord_type
 
+    implicit none
     double precision, parameter:: small = 1.d-8
-
     integer :: qpd_l1, qpd_l2, qpd_h1, qpd_h2
     integer :: gd_l1, gd_l2, gd_h1, gd_h2
     integer :: uflx_l1, uflx_l2, uflx_h1, uflx_h2
@@ -1186,6 +1189,7 @@ contains
 
     use eos_module
 
+    implicit none
     integer :: qpd_l1, qpd_l2, qpd_h1, qpd_h2
     integer :: gd_l1, gd_l2, gd_h1, gd_h2
     integer :: uflx_l1, uflx_l2, uflx_h1, uflx_h2
@@ -1328,8 +1332,9 @@ contains
     ! to know the pressure and velocity on the interface for the grad p
     ! term in momentum and for an internal energy update
 
-    double precision, parameter:: small = 1.d-8
+    implicit none
 
+    double precision, parameter:: small = 1.d-8
     integer :: qpd_l1, qpd_l2, qpd_h1, qpd_h2
     integer :: gd_l1, gd_l2, gd_h1, gd_h2
     integer :: uflx_l1, uflx_l2, uflx_h1, uflx_h2

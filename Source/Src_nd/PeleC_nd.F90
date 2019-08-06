@@ -1,6 +1,7 @@
 subroutine pc_network_init() bind(C, name="pc_network_init")
 
   use network, only: network_init
+  implicit none
 
   call network_init()
 
@@ -14,6 +15,7 @@ end subroutine pc_network_init
 subroutine pc_network_close() bind(C, name="pc_network_close")
 
   use network, only: network_close
+  implicit none
 
   call network_close()
 
@@ -27,6 +29,7 @@ end subroutine pc_network_close
 subroutine pc_transport_init() bind(C, name="pc_transport_init")
 
   use transport_module, only: transport_init
+  implicit none
 
   call transport_init()
 
@@ -40,6 +43,7 @@ end subroutine pc_transport_init
 subroutine pc_transport_close() bind(C, name="pc_transport_close")
 
   use transport_module, only: transport_close
+  implicit none
 
   call transport_close()
 
@@ -55,6 +59,7 @@ subroutine pc_extern_init(name,namlen) bind(C, name="pc_extern_init")
   ! initialize the external runtime parameters in
   ! extern_probin_module
 
+  implicit none
   integer :: namlen
   integer :: name(namlen)
 
@@ -69,6 +74,8 @@ end subroutine pc_extern_init
 subroutine pc_reactor_init() bind(C, name="pc_reactor_init")
 
   use reactor_module, only: reactor_init
+
+  implicit none
 
 #ifdef _OPENMP
 !$omp parallel
@@ -87,6 +94,7 @@ end subroutine pc_reactor_init
 subroutine pc_reactor_close() bind(C, name="pc_reactor_close")
 
   use reactor_module, only: reactor_close
+  implicit none
 
 #ifdef _OPENMP
 !$omp parallel
@@ -590,6 +598,7 @@ subroutine clear_method_params() &
      bind(C, name="clear_method_params")
 
   use meth_params_module
+  implicit none
 
   ! call to match parallel_initialize()?
   deallocate(qpass_map)
@@ -751,6 +760,7 @@ end subroutine clear_grid_info
 
 subroutine pc_set_special_tagging_flag(dummy,flag) &
      bind(C, name="pc_set_special_tagging_flag")
+  implicit none
   double precision :: dummy
   integer          :: flag
 end subroutine pc_set_special_tagging_flag
@@ -764,6 +774,7 @@ subroutine get_tagging_params(name, namlen) &
 
   use tagging_module
 
+  implicit none
   ! Initialize the tagging parameters
 
   integer :: namlen

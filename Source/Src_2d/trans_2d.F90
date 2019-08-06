@@ -33,6 +33,7 @@ contains
                     vol, vol_l1, vol_l2, vol_h1, vol_h2, &
                     ilo, ihi, jlo, jhi)
 
+    implicit none
     integer qd_l1, qd_l2, qd_h1, qd_h2
     integer gc_l1, gc_l2, gc_h1, gc_h2
     integer fx_l1, fx_l2, fx_h1, fx_h2
@@ -395,6 +396,7 @@ contains
                     srcQ, src_l1, src_l2, src_h1, src_h2, &
                     hdt, cdtdy, ilo, ihi, jlo, jhi)
 
+    implicit none
     integer qd_l1, qd_l2, qd_h1, qd_h2
     integer gc_l1, gc_l2, gc_h1, gc_h2
     integer fy_l1, fy_l2, fy_h1, fy_h2

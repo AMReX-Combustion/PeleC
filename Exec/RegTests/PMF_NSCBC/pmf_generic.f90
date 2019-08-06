@@ -9,6 +9,7 @@ module pmf_module
 contains
 
   subroutine read_pmf()
+    implicit none
     character (len=20) :: ctmp1, ctmp2, fmt
     character (len=1) :: ctmp
     integer index, found, ist, reason, i, j, lsize, pos1, pos2, n
@@ -124,16 +125,19 @@ contains
   end subroutine read_pmf
 
   function pmf_ncomp() result(ncomp)
+    implicit none
     integer :: ncomp
     ncomp = pmf_M
   end function pmf_ncomp
 
   function pmf_npts() result(npts)
+    implicit none
     integer :: npts
     npts = pmf_N
   end function pmf_npts
 
   subroutine interp_pmf(xlo,xhi,y_vector,M_ret)
+    implicit none
     double precision xlo,xhi,y_vector(*)
     double precision sum,xmid
     integer i,j,k,lo_loside,lo_hiside       
@@ -288,6 +292,7 @@ end module pmf_module
 subroutine initialize_pmf(filename)
   use pmf_module
   use chemistry_module, only : nspecies, get_species_index
+  implicit none
   character (len=*) :: filename
   integer :: n
   pmf_filename = filename
@@ -310,6 +315,7 @@ end subroutine initialize_pmf
 
 subroutine pmf(xlo,xhi,y_vector,M)
   use pmf_module
+  implicit none
   double precision :: xlo,xhi,y_vector(*)
   integer :: M
   call interp_pmf(xlo,xhi,y_vector,M)

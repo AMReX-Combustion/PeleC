@@ -36,7 +36,6 @@ contains
  
   implicit none
    
-
   integer, intent(in) :: lo(1), hi(1)
   integer, intent(in) :: domlo(1), domhi(1)
   integer, intent(in) :: q_l1, q_h1

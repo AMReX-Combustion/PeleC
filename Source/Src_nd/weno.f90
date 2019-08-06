@@ -32,6 +32,7 @@ contains
   !     3: WENO-Z  7th order
         
  subroutine weno5z_face(v, vl, vr)
+    implicit none
     real(amrex_real), intent(in)  :: v(-2:3)
     real(amrex_real), intent(out) :: vl , vr   ! left and right at i+1/2
 
@@ -94,6 +95,7 @@ contains
   ! :::
   
   subroutine weno7z_face(v, vl, vr)
+    implicit none
     real(amrex_real), intent(in)  :: v(-3:4)
     real(amrex_real), intent(out) :: vl , vr   ! left and right at i+1/2
 
@@ -186,7 +188,7 @@ contains
   ! :::
   
   subroutine weno5js_face(v, vl, vr)
-    
+    implicit none
     real(amrex_real), intent(in)  :: v(-2:3)
     real(amrex_real), intent(out) :: vl , vr   ! left and right at i+1/2
 
@@ -245,6 +247,7 @@ contains
    
   
     subroutine weno3z_face(v, vl, vr)
+      implicit none
       real(amrex_real), intent(in)  :: v(-2:3)
       real(amrex_real), intent(out) :: vl, vr  ! left and right at i + 1/2
 
@@ -298,6 +301,7 @@ contains
   
   ! Normalizes ``alphas'' into weights.
   subroutine getWghts(alpha, len)
+      implicit none
       integer         , intent(in)    :: len
       real(amrex_real), intent(inout) :: alpha(1:len)
 

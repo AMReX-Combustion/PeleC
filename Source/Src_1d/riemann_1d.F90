@@ -34,6 +34,7 @@ contains
                     gamc,csml,c,qd_l1,qd_h1,ilo,ihi, &
                     bcMask)
 
+    implicit none
     integer lo(1),hi(1)
     integer domlo(1),domhi(1)
     integer ilo,ihi
@@ -111,6 +112,8 @@ contains
     use eos_type_module
     use eos_module
     use riemann_util_module
+
+    implicit none
 
     double precision, parameter :: small = 1.d-8
 
@@ -633,6 +636,9 @@ contains
                        ilo,ihi,domlo,domhi)
 
     use prob_params_module, only : physbc_lo, physbc_hi, Symmetry
+
+    implicit none
+
     double precision, parameter:: small = 1.d-8
 
     integer ilo,ihi

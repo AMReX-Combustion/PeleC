@@ -11,6 +11,7 @@ module nbrsTest_nd_module
 contains
 
   pure logical function is_inside (i,j,k,lo,hi)
+    implicit none
     integer, intent(in) :: i,j,k,lo(3),hi(3)
     is_inside = i.ge.lo(1) .and. i.le.hi(1) &
          .and.  j.ge.lo(2) .and. j.le.hi(2) &
@@ -18,6 +19,7 @@ contains
   end function is_inside
 
   pure subroutine mysort(c, n)
+    implicit none
     real(amrex_real), intent(in) :: n(dim)
     integer, intent(out) :: c(dim)
     logical          :: mask(dim)
@@ -57,6 +59,8 @@ contains
 
     use amrex_mlebabeclap_3d_module, only : amrex_get_dx_eb
 
+    implicit none
+
     ! Array bounds
     integer,            intent(in   ) :: lo(0:2), hi(0:2)
     integer,            intent(in   ) :: Nebg, Nsten
@@ -86,7 +90,6 @@ contains
     integer :: i, j, k, L
     AREA = dx**(dim-1)
     fac = AREA / dx
-
 
     do L = 0, Nsten-1
        i = ebg(L) % iv(0)
@@ -167,7 +170,7 @@ contains
        bind(C,name="pc_fill_bndry_grad_stencil_ls")
 
       ! Work in process - least squares boundary stencil capability. Currently doesn't work.
-
+    implicit none
     integer,            intent(in   ) :: lo(0:2),hi(0:2)
     integer,            intent(in   ) :: Nebg, Nsten
     type(eb_bndry_geom),intent(in   ) :: ebg(0:Nebg-1)
@@ -252,6 +255,7 @@ contains
   subroutine pc_fill_bndry_grad_stencil(lo, hi, ebg, Nebg, grad_stencil, Nsten, dx) &
        bind(C,name="pc_fill_bndry_grad_stencil")
 
+    implicit none
     integer,            intent(in   ) :: lo(0:2),hi(0:2)
     integer,            intent(in   ) :: Nebg, Nsten
     type(eb_bndry_geom),intent(in   ) :: ebg(0:Nebg-1)
@@ -353,6 +357,7 @@ contains
        bcval, Nvals, bcflux, Nflux, nc) &
        bind(C,name="pc_apply_eb_boundry_flux_stencil")
 
+    implicit none
     integer,          intent(in   ) ::  lo(0:2),  hi(0:2)
     integer,          intent(in   ) :: Nsten, Nvals, Nflux, nc
     type(eb_bndry_sten), intent(in) :: sten(0:Nsten-1)
@@ -398,6 +403,7 @@ contains
        bcval, Nvals, bcflux, Nflux, nc) &
        bind(C,name="pc_apply_eb_boundry_visc_flux_stencil")
 
+    implicit none
     integer,          intent(in   ) ::  lo(0:2),  hi(0:2)
     integer,          intent(in   ) :: Nsten, Nebg, Nvals, Nflux, nc
     type(eb_bndry_sten), intent(in) :: sten(0:Nsten-1)
@@ -498,6 +504,7 @@ contains
   subroutine pc_fill_flux_interp_stencil(lo, hi, slo, shi, sten, Nsten, idir, &
        fc, fclo, fchi, fa, falo, fahi) bind(C,name="pc_fill_flux_interp_stencil")
 
+    implicit none
     integer,          intent(in)  ::  lo(0:2),  hi(0:2)
     integer,          intent(in)  :: slo(0:2), shi(0:2)
     integer,          intent(in)  :: Nsten, idir
@@ -578,6 +585,7 @@ contains
   subroutine pc_apply_face_stencil(lo, hi, slo, shi, sten, Nsten, idir, vin, vin_lo, vin_hi, &
     vout, vout_lo, vout_hi, nc, in_place) bind(C,name="pc_apply_face_stencil")
 
+    implicit none
     integer,          intent(in   ) ::  lo(0:2),  hi(0:2)
     integer,          intent(in   ) :: slo(0:2), shi(0:2)
     integer,          intent(in   ) :: Nsten, idir, nc, in_place
@@ -739,6 +747,7 @@ contains
 
     use meth_params_module, only: levmsk_notcovered, eb_small_vfrac
 
+    implicit none
     integer,          intent(in   ) ::  lo(0:2),  hi(0:2)
     integer,          intent(in   ) :: nc, Ncut, nebflux
     type(eb_bndry_geom), intent(in   ) :: sv_ebg(0:Ncut-1)
@@ -932,6 +941,7 @@ contains
   subroutine pc_set_body_state(lo, hi, S, Slo, Shi, mask, mlo, mhi, b, nc, bval) &
        bind(C,name="pc_set_body_state")
 
+    implicit none
     integer,          intent(in   ) :: nc, bval
     integer,          intent(in   ) :: lo(1:3),hi(1:3)
     integer,          intent(in   ) :: Slo(1:3),Shi(1:3)
@@ -957,7 +967,7 @@ contains
        apx, axlo, axhi, apy, aylo, ayhi, apz, azlo, azhi) &
        bind(C,name="pc_fill_sv_ebg")
 
-
+    implicit none
     integer,          intent(in   ) ::  lo(0:2),  hi(0:2)
     integer, dimension(3), intent(in) :: vflo, vfhi, blo, bhi, axlo, axhi, aylo, ayhi, azlo, azhi
     integer,          intent(in   ) :: Nebg

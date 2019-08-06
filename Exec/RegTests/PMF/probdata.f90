@@ -36,6 +36,7 @@ contains
     use chemistry_module, only : nspecies, get_species_index
     use eos_type_module
 
+    implicit none
     integer :: iN2, iO2, iH2, nPMF
     double precision :: vt, ek, a, yl, yr, sumY
     double precision, allocatable :: pmf_vals(:)
@@ -98,6 +99,7 @@ contains
 
   subroutine clear_bc()
 
+    implicit none
     deallocate(fuel_state)
 
   end subroutine clear_bc
