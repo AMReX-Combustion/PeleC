@@ -94,6 +94,13 @@ contains
   x_bcMask(:,:) = 0
   y_bcMask(:,:) = 0
 
+  bc_params(:) = 0
+  bc_target(:) = 0
+  x_bc_params(:) = 0
+  x_bc_target(:) = 0
+  y_bc_params(:) = 0
+  y_bc_target(:) = 0
+
   if ( flag_nscbc_isAnyPerio == 0) then
 
     if       (((q_hi(1) > domhi(1)) .or. (q_lo(1) < domlo(1))) &
@@ -620,6 +627,7 @@ end subroutine impose_NSCBC
                                 qaux, qa_l1, qa_l2, qa_h1, qa_h2)
                                
   use eos_module
+  use network, only : nspecies
   use amrex_constants_module, only : ONE
   use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP,&
                                  UFS, NQAUX, QC, QGAMC, QRSPEC, &
