@@ -63,6 +63,7 @@ static std::string yl_ext_bc_type;
 static std::string yr_ext_bc_type;
 static std::string zl_ext_bc_type;
 static std::string zr_ext_bc_type;
+static int use_explicit_filter;
 static amrex::Real eb_boundary_T;
 static int eb_isothermal;
 static int eb_noslip;

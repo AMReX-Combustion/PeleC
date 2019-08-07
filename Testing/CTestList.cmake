@@ -225,6 +225,8 @@ add_test_r(sod-3d-1 4)
 add_test_r(tg-2d-1 4)
 add_test_r(tg-3d-1 4)
 add_test_r(tg-3d-2 4)
+add_test_r(tg-3d-3 4)
+add_test_r(tg-3d-4 4)
 
 #=============================================================================
 # Verification tests

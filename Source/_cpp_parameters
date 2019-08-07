@@ -236,6 +236,12 @@ zl_ext_bc_type               string        ""                 y
 # if we are doing an external +z boundary condition, who do we interpret it?
 zr_ext_bc_type               string        ""                 y
 
+#-----------------------------------------------------------------------------
+# category: large eddy simulation
+#-----------------------------------------------------------------------------
+
+# LES filtering
+use_explicit_filter          int           0                  y
 
 #-----------------------------------------------------------------------------
 # category: EB diffusion
