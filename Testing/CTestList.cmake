@@ -121,7 +121,7 @@ function(add_test_v1 TEST_NAME TEST_DEPENDENCY NP)
 endfunction(add_test_v1)
 
 # Verification test with multiple resolutions (each test runs on maximum number of processes on node)
-function(add_test_v2 TEST_NAME TEST_DEPENDENCY)
+function(add_test_v2 TEST_NAME TEST_DEPENDENCY LIST_OF_GRID_SIZES)
     # Make sure run command is cleared before we construct it
     unset(MASTER_RUN_COMMAND)
     # Set variables for respective binary and source directories for the test
@@ -135,43 +135,38 @@ function(add_test_v2 TEST_NAME TEST_DEPENDENCY)
     set(EXE_OPTIONS_FILE ${TEST_DEPENDENCY_SOURCE_DIR}/exe_options.cmake)
     # Define our test options
     include(${EXE_OPTIONS_FILE})
-    # Create list of resolutions we want to test with
-    set(RESOLUTION_LIST 8 12 16 20)
-    if(${PELEC_DIM} EQUAL 1)
-      set(RESOLUTION_LIST 8 16 32 64)
-    endif()
     # Get last item in resolution list so we can find out when we are on the last item in our loop
-    list(GET RESOLUTION_LIST -1 LAST_RESOLUTION_IN_LIST)
+    list(GET LIST_OF_GRID_SIZES -1 LAST_GRID_SIZE_IN_LIST)
     # Create the commands to run for each resolution
-    foreach(RESOLUTION IN LISTS RESOLUTION_LIST)
+    foreach(GRID_SIZE IN LISTS LIST_OF_GRID_SIZES)
       # Make working directory for test
-      file(MAKE_DIRECTORY ${CURRENT_TEST_BINARY_DIR}/${RESOLUTION})
+      file(MAKE_DIRECTORY ${CURRENT_TEST_BINARY_DIR}/${GRID_SIZE})
       # Gather all files in source directory for test
       file(GLOB TEST_FILES "${CURRENT_TEST_SOURCE_DIR}/*")
       # Copy files to test working directory
-      file(COPY ${TEST_FILES} DESTINATION "${CURRENT_TEST_BINARY_DIR}/${RESOLUTION}/")
+      file(COPY ${TEST_FILES} DESTINATION "${CURRENT_TEST_BINARY_DIR}/${GRID_SIZE}/")
       # Set number of cells at runtime according to dimension
       if(${PELEC_DIM} EQUAL 3)
-        set(NCELLS "${RESOLUTION} ${RESOLUTION} ${RESOLUTION}")
+        set(NCELLS "${GRID_SIZE} ${GRID_SIZE} ${GRID_SIZE}")
       elseif(${PELEC_DIM} EQUAL 2)
-        set(NCELLS "${RESOLUTION} ${RESOLUTION}")
+        set(NCELLS "${GRID_SIZE} ${GRID_SIZE}")
       elseif(${PELEC_DIM} EQUAL 1)
-        set(NCELLS "${RESOLUTION}")
+        set(NCELLS "${GRID_SIZE}")
       endif()
       # Set the command to delete files from previous test runs in each resolution
       set(DELETE_PREVIOUS_FILES_COMMAND "rm mmslog datlog || true")
       # Set the run command for this resolution
-      set(RUN_COMMAND_${RESOLUTION} "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${PROCESSES} ${MPIEXEC_PREFLAGS} ${TEST_DEPENDENCY_BINARY_DIR}/PeleC-${TEST_DEPENDENCY} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${RESOLUTION}/${TEST_NAME}.i")
+      set(RUN_COMMAND_${GRID_SIZE} "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${PROCESSES} ${MPIEXEC_PREFLAGS} ${TEST_DEPENDENCY_BINARY_DIR}/PeleC-${TEST_DEPENDENCY} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${GRID_SIZE}/${TEST_NAME}.i")
       # Set some runtime options for each resolution
-      set(RUNTIME_OPTIONS_${RESOLUTION} "amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.probin_file=${TEST_NAME}.probin amr.n_cell=${NCELLS}")
+      set(RUNTIME_OPTIONS_${GRID_SIZE} "amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.probin_file=${TEST_NAME}.probin amr.n_cell=${NCELLS}")
       # Construct our large run command with everything &&'d together
-      string(APPEND MASTER_RUN_COMMAND "cd ${CURRENT_TEST_BINARY_DIR}/${RESOLUTION}")
+      string(APPEND MASTER_RUN_COMMAND "cd ${CURRENT_TEST_BINARY_DIR}/${GRID_SIZE}")
       string(APPEND MASTER_RUN_COMMAND " && ")
       string(APPEND MASTER_RUN_COMMAND "${DELETE_PREVIOUS_FILES_COMMAND}")
       string(APPEND MASTER_RUN_COMMAND " && ")
-      string(APPEND MASTER_RUN_COMMAND "${RUN_COMMAND_${RESOLUTION}} ${RUNTIME_OPTIONS_${RESOLUTION}}")
+      string(APPEND MASTER_RUN_COMMAND "${RUN_COMMAND_${GRID_SIZE}} ${RUNTIME_OPTIONS_${GRID_SIZE}}")
       # Add another " && " unless we are on the last resolution in the list
-      if(NOT ${RESOLUTION} EQUAL ${LAST_RESOLUTION_IN_LIST})
+      if(NOT ${GRID_SIZE} EQUAL ${LAST_GRID_SIZE_IN_LIST})
         string(APPEND MASTER_RUN_COMMAND " && ")
       endif()
     endforeach()
@@ -234,13 +229,20 @@ add_test_r(tg-3d-4 4)
 if(ENABLE_VERIFICATION)
   add_test_v1(symmetry_3d mms-3d-1 4)
   add_test_v1(eb_symmetry_3d ebmms-3d-1 4)
-  add_test_v2(cns_no_amr_1d mms-1d-1)
-  add_test_v2(cns_no_amr_2d mms-2d-1)
-  add_test_v2(cns_no_amr_3d mms-3d-1)
-  add_test_v2(cns_no_amr_mol_2d mms-2d-2)
-  add_test_v2(cns_no_amr_mol_3d mms-3d-3)
-  #add_test_v2(cns_les_noamr_3d mms-3d-3) # What MMS does this depend on?
-  #add_test_v3(cns_amr_3d mms-3d-1) # This one takes a while with AMR
+
+  # Create list of resolutions we want to test with; make sure to pass it as a string in quotes
+  set(LIST_OF_GRID_SIZES 8 12 16 20)
+  add_test_v2(cns_no_amr_2d mms-2d-1 "${LIST_OF_GRID_SIZES}")
+  add_test_v2(cns_no_amr_3d mms-3d-1 "${LIST_OF_GRID_SIZES}")
+  add_test_v2(cns_no_amr_mol_2d mms-2d-2 "${LIST_OF_GRID_SIZES}")
+  add_test_v2(cns_no_amr_mol_3d mms-3d-3 "${LIST_OF_GRID_SIZES}")
+  #add_test_v3(cns_amr_3d mms-3d-1 "${LIST_OF_GRID_SIZES}") # This one takes a while with AMR
+
+  set(LIST_OF_GRID_SIZES 8 12 16 24)
+  #add_test_v2(cns_les_noamr_3d mms-3d-3 "${LIST_OF_GRID_SIZES}") # What MMS does this depend on?
+
+  set(LIST_OF_GRID_SIZES 8 16 32 64)
+  add_test_v2(cns_no_amr_1d mms-1d-1 "${LIST_OF_GRID_SIZES}")
 endif()
 
 #=============================================================================
