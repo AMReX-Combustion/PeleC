@@ -10,7 +10,7 @@ be.
 
 ### MetaPhysicl
 1. Get [Metaphysicl](https://github.com/roystgnr/MetaPhysicL)
-2. `./bootstrap` (on Peregrine, do  `spack load autoconf` first)
+2. `./bootstrap` (on Eagle, do  `spack load autoconf` first)
 3. `./configure --prefix=${HOME}/combustion/install/MetaPhysicL`
 4. `make`
 5. `make install`
@@ -18,7 +18,7 @@ be.
 ### MASA
 
 1. Get [MASA](https://github.com/manufactured-solutions/MASA)
-2. `./bootstrap` (on Peregrine, do  `spack load autoconf` first)
+2. `./bootstrap` (on Eagle, do  `spack load autoconf` first)
 3. `./configure --enable-fortran-interfaces METAPHYSICL_DIR=${HOME}/combustion/install/MetaPhysicL --prefix=${HOME}/combustion/install/MASA --enable-python-interfaces`
 4. `make`
 5. `make check`

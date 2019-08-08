@@ -18,8 +18,7 @@ Verification of PeleC
 Verification of PeleC uses `MASA
 <https://github.com/manufactured-solutions/MASA>`_ and
 auto-differention tools to implement the Method of Manufactured
-Solutions into PeleC. Verification results are posted `here
-<https://github.com/jrood-nrel/PeleVerificationResults-Peregrine>`_.
+Solutions into PeleC.
 
 There :math:`L_2` error norm for a quantity :math:`s` is defined as
 
