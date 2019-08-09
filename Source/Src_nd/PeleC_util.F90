@@ -15,6 +15,7 @@ contains
     use amrex_constants_module, only: ZERO, HALF
 
     ! Input arguments
+    implicit none
     integer :: i, j, k
     logical, optional :: ccx, ccy, ccz
 
@@ -448,6 +449,7 @@ contains
     use amrinfo_module, only: amr_level
     use prob_params_module, only: dx_level, dim
     
+    implicit none
     double precision :: loc(3)
 
     integer :: index(3)

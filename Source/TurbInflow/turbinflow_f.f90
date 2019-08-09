@@ -2,7 +2,6 @@ module turbinflow_module
 
   use amrex_fort_module, only : amrex_real
 
-
   implicit none
 
   logical, save :: turbinflow_initialized = .false.
@@ -27,6 +26,7 @@ module turbinflow_module
   interface
      subroutine getplane (filename, len, data, plane, ncomp, isswirltype) bind(c)
        use amrex_fort_module, only : amrex_real
+       implicit none
        integer, intent(in) :: len, ncomp, isswirltype, plane
        integer, intent(in) :: filename(len)
        real(amrex_real), intent(inout) :: data(*)
@@ -39,6 +39,7 @@ module turbinflow_module
 contains
 
   subroutine init_turbinflow(turbfile, is_cgs)
+    implicit none
     character (len=*), intent(in) :: turbfile
     logical, intent(in), optional :: is_cgs
 
@@ -97,6 +98,7 @@ contains
 
 
   subroutine get_turbvelocity(lo1,lo2,hi1,hi2,x,y,z,v)
+    implicit none
     integer, intent(in) :: lo1,lo2,hi1,hi2
     real(amrex_real), intent(in) :: x(lo1:hi1), y(lo2:hi2)
     real(amrex_real), intent(in) :: z
@@ -160,6 +162,7 @@ contains
   end subroutine get_turbvelocity
 
   subroutine store_planes(z)
+    implicit none
     real(amrex_real), intent(in) :: z
     integer :: izlo, iplane, k, n
     izlo = nint(z*dxinv(3)) - 1

@@ -13,6 +13,7 @@ contains
 
     use prob_params_module, only : physbc_lo, physbc_hi, Symmetry, SlipWall, NoSlipWall
     
+    implicit none
     integer, intent(in) :: idir, i, j, domlo(*), domhi(*)
     integer, intent(in) :: bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2
     integer, intent(in) :: bcMask(bcMask_l1:bcMask_h1,bcMask_l2:bcMask_h2)
@@ -63,6 +64,7 @@ contains
 
     use prob_params_module, only : physbc_lo, physbc_hi, Symmetry, SlipWall, NoSlipWall
     
+    implicit none
     integer, intent(in) :: idir, i, j, k, domlo(*), domhi(*)
     integer, intent(in) :: bcMask_l1, bcMask_l2, bcMask_l3, bcMask_h1, bcMask_h2, bcMask_h3
     integer, intent(in) :: bcMask(bcMask_l1:bcMask_h1,bcMask_l2:bcMask_h2,bcMask_l3:bcMask_h3)
@@ -130,6 +132,7 @@ contains
 
     use prob_params_module, only : physbc_lo, physbc_hi, Outflow
 
+    implicit none
     double precision, intent(inout) :: ul,ur,vl,vr,v2l,v2r,rel,rer
     integer, intent(in) :: idir, i, j, domlo(*), domhi(*)
     integer, intent(in) :: bcMask_l1, bcMask_l2, bcMask_h1, bcMask_h2
@@ -162,6 +165,7 @@ contains
 
     ! compute the lagrangian wave speeds.
 
+    implicit none
     double precision, intent(in) :: p,v,gam,gdot,pstar,csq,gmin,gmax
     double precision, intent(out) :: wsq, gstar
 
@@ -208,6 +212,7 @@ contains
 
     use meth_params_module, only : cg_maxiter, cg_tol
 
+    implicit none
     double precision, intent(inout) :: pstar_lo, pstar_hi
     double precision, intent(in) :: ul, pl, taul, gamel, clsql
     double precision, intent(in) :: ur, pr, taur, gamer, clsqr
@@ -302,6 +307,7 @@ contains
          npassive, upass_map, qpass_map
     use prob_params_module, only : coord_type
 
+    implicit none
     double precision, intent(in) :: ql(QVAR), qr(QVAR), cl, cr
     double precision, intent(inout) :: f(NVAR)
     integer, intent(in) :: idir, ndim
@@ -457,6 +463,7 @@ contains
          NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP, &
          npassive, upass_map, qpass_map
 
+    implicit none
     real (amrex_real), intent(in)  :: q(QVAR)
     real (amrex_real), intent(out) :: U(NVAR)
 
@@ -492,6 +499,7 @@ contains
          NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP, &
          npassive, upass_map, qpass_map
 
+    implicit none
     integer, intent(in) :: idir
     real (amrex_real), intent(in)  :: S_k, S_c
     real (amrex_real), intent(in)  :: q(QVAR)
@@ -546,6 +554,7 @@ contains
          npassive, upass_map
     use prob_params_module, only : coord_type
 
+    implicit none
     integer, intent(in) :: idir, ndim, bnd_fac
     real (amrex_real), intent(in) :: U(NVAR)
     real (amrex_real), intent(in) :: p
@@ -600,7 +609,6 @@ contains
 
     use eos_module
     use meth_params_module, only : small_dens, small_pres
-
 
     implicit none
 
@@ -827,7 +835,6 @@ contains
 
     use eos_module
     use meth_params_module, only : small_dens, small_pres
-
 
     implicit none
 

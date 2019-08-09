@@ -39,6 +39,7 @@ contains
     use network, only : nspecies
     use eos_module
 
+    implicit none
     integer, intent(in) :: qpd_lo(3), qpd_hi(3)
     integer, intent(in) :: flx_lo(3), flx_hi(3)
     integer, intent(in) :: q_lo(3), q_hi(3)
@@ -261,6 +262,7 @@ contains
     use prob_params_module, only : coord_type
     use amrex_constants_module
 
+    implicit none
     integer, intent(in) :: qd_lo(3), qd_hi(3)
     integer, intent(in) :: s_lo(3), s_hi(3)
     integer, intent(in) :: lo(3), hi(3)
@@ -382,8 +384,10 @@ contains
     use network, only : nspecies, naux
     use eos_type_module
     use eos_module
-    double precision, parameter:: small = 1.d-8
 
+    implicit none
+
+    double precision, parameter:: small = 1.d-8
     integer :: qpd_lo(3),qpd_hi(3)
     integer :: gd_lo(2),gd_hi(2)
     integer :: uflx_lo(3),uflx_hi(3)
@@ -966,8 +970,10 @@ contains
 
     use amrex_mempool_module, only : bl_allocate, bl_deallocate
     use prob_params_module, only : physbc_lo, physbc_hi, Symmetry, SlipWall, NoSlipWall
-    double precision, parameter:: small = 1.d-8
 
+    implicit none
+
+    double precision, parameter:: small = 1.d-8
     integer :: qpd_lo(3),qpd_hi(3)
     integer :: gd_lo(2),gd_hi(2)
     integer :: uflx_lo(3),uflx_hi(3)
@@ -1240,8 +1246,9 @@ contains
     use amrex_mempool_module, only : bl_allocate, bl_deallocate
     use prob_params_module, only : physbc_lo, physbc_hi, Symmetry, SlipWall, NoSlipWall
 
-    double precision, parameter:: small = 1.d-8
+    implicit none
 
+    double precision, parameter:: small = 1.d-8
     integer :: qpd_lo(3),qpd_hi(3)
     integer :: gd_lo(2),gd_hi(2)
     integer :: uflx_lo(3),uflx_hi(3)

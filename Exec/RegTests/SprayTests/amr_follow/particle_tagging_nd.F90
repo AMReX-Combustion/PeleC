@@ -38,6 +38,7 @@ contains
                           dx,xlo,problo,time,level) &
                           bind(C, name="pc_particle_tag")
 
+    implicit none
     integer          :: set, clear, nd, level
     integer          :: taglo(3), taghi(3)
     integer          :: varlo(3), varhi(3)

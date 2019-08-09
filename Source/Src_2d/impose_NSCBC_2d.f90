@@ -25,7 +25,6 @@ contains
                          time,delta,dt,verbose) bind(C, name="impose_NSCBC")
     
   use amrex_fort_module
-  use network, only : nspecies
   use eos_module
   use fundamental_constants_module, only: k_B, n_A
 
@@ -477,6 +476,8 @@ end subroutine impose_NSCBC
                                
                                
   use meth_params_module, only : QVAR, QPRES, QU, QV, QRHO
+
+  implicit none
   
   integer, intent(in) :: i,j,idir,isign
   integer, intent(in) :: q_l1, q_l2, q_h1, q_h2
@@ -543,6 +544,8 @@ end subroutine impose_NSCBC
                                
                                
   use meth_params_module, only : QVAR, QPRES, QU, QV, QRHO
+
+  implicit none
   
   integer, intent(in) :: i,j,idir
   integer, intent(in) :: q_l1, q_l2, q_h1, q_h2
@@ -584,6 +587,8 @@ end subroutine impose_NSCBC
                                
                                
   use meth_params_module, only : QVAR, QPRES, QU, QV, QRHO, NQAUX, QC, QGAMC
+
+  implicit none
   
   integer, intent(in) :: i,j,idir
   integer, intent(in) :: q_l1, q_l2, q_h1, q_h2
@@ -635,7 +640,8 @@ end subroutine impose_NSCBC
                                  QVAR, QRHO, QU, QV, QREINT, QPRES, QTEMP, &
                                  QFS, QFX, QGAME, NHYP
   use prob_params_module, only : SlipWall, NoSlipWall
-  
+
+  implicit none
   
   integer, intent(in) :: i,j,idir,isign,bc_type
   integer, intent(in) :: domlo(2), domhi(2)
@@ -915,7 +921,9 @@ end subroutine impose_NSCBC
                                                     
   use meth_params_module, only : QVAR, QPRES, QU, QV, QRHO, NQAUX, QC, QGAMC, QTEMP, QRSPEC
   use prob_params_module, only : probhi, UserBC, Inflow, Outflow, SlipWall, NoSlipWall
-  
+
+  implicit none
+
   integer, intent(in) :: i,j,idir,isign
   integer, intent(in) :: q_l1, q_l2, q_h1, q_h2
   integer, intent(in) :: qa_l1, qa_l2, qa_h1, qa_h2

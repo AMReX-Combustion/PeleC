@@ -110,12 +110,14 @@ module parmparse_module
 contains
 
   subroutine parmparse_build (pp, name)
+    implicit none
     type(ParmParse) :: pp
     character(*), intent(in) :: name
     call fi_new_parmparse(pp%p, string_f_to_c(name))
   end subroutine parmparse_build
 
   subroutine parmparse_destroy (this)
+    implicit none
     type(ParmParse) :: this
     if (c_associated(this%p)) then
        call fi_delete_parmparse(this%p)
@@ -124,6 +126,7 @@ contains
   end subroutine parmparse_destroy
 
   subroutine get_int (this, name, v)
+    implicit none
     class(ParmParse), intent(in) :: this
     character(len=*), intent(in) :: name
     integer :: v
@@ -131,6 +134,7 @@ contains
   end subroutine get_int
 
   subroutine get_double (this, name, v)
+    implicit none
     class(ParmParse), intent(in) :: this
     character(*), intent(in) :: name
     double precision :: v
@@ -138,6 +142,7 @@ contains
   end subroutine get_double
 
   subroutine get_logical (this, name, v)
+    implicit none
     class(ParmParse), intent(in) :: this
     character(*), intent(in) :: name
     logical :: v
@@ -147,6 +152,7 @@ contains
   end subroutine get_logical
 
   subroutine get_string (this, name, v)
+    implicit none
     class(ParmParse), intent(in) :: this
     character(*), intent(in) :: name
     character(*), intent(inout) :: v
@@ -161,6 +167,7 @@ contains
   end subroutine get_string
 
   subroutine query_int (this, name, v)
+    implicit none
     class(ParmParse), intent(in) :: this
     character(len=*), intent(in) :: name
     integer :: v
@@ -168,6 +175,7 @@ contains
   end subroutine query_int
 
   subroutine query_double (this, name, v)
+    implicit none
     class(ParmParse), intent(in) :: this
     character(*), intent(in) :: name
     double precision :: v
@@ -175,6 +183,7 @@ contains
   end subroutine query_double
 
   subroutine query_logical (this, name, v)
+    implicit none
     class(ParmParse), intent(in) :: this
     character(*), intent(in) :: name
     logical :: v
@@ -184,6 +193,7 @@ contains
   end subroutine query_logical
 
   subroutine query_string (this, name, v)
+    implicit none
     class(ParmParse), intent(in) :: this
     character(*), intent(in) :: name
     character(*), intent(inout) :: v

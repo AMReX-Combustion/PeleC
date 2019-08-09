@@ -10,6 +10,7 @@ module interpolate_module
 !     find the value of model_var at point r using linear interpolation.
 !     Eventually, we can do something fancier here.
       
+      implicit none
       double precision, intent(in   ) :: r
       integer         , intent(in   ) :: npts_model
       double precision, intent(in   ) :: model_r(npts_model), model_var(npts_model)
@@ -88,6 +89,7 @@ module interpolate_module
       ! tri-linear interpolation; useful for EOS tables
       ! this is stricly interpolation, so if the point (x,y,z) is outside
       ! the bounds of model_x,model_y,model_z, then we abort
+      implicit none
       double precision, intent(in   ) :: x,y,z
       integer,          intent(in   ) :: npts_x, npts_y, npts_z
       double precision, intent(in   ) :: model_x(npts_x), &
@@ -157,6 +159,7 @@ module interpolate_module
 
 
     function locate(x, n, xs)
+      implicit none
       integer, intent(in) :: n
       double precision, intent(in) :: x, xs(n)
       integer :: locate      
