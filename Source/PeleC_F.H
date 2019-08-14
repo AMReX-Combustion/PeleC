@@ -153,6 +153,95 @@ extern "C"
 		   BL_FORT_FAB_ARG_3D(D),
 		   const amrex::Real* dx);
 
+  void pc_smagorinsky_sfs_term(const int* lo,  const int* hi,
+                               const int* dmnlo,  const int* dmnhi,
+			       const BL_FORT_FAB_ARG_3D(Q),
+#if (BL_SPACEDIM > 1)
+                               const BL_FORT_FAB_ARG_3D(tdx),
+#endif
+			       const BL_FORT_FAB_ARG_3D(Ax),
+			       BL_FORT_FAB_ARG_3D(fx),
+#if (BL_SPACEDIM > 1)
+                               const BL_FORT_FAB_ARG_3D(tdy),
+			       const BL_FORT_FAB_ARG_3D(Ay),
+			       BL_FORT_FAB_ARG_3D(fy),
+#if (BL_SPACEDIM > 2)
+                               const BL_FORT_FAB_ARG_3D(tdz),
+			       const BL_FORT_FAB_ARG_3D(Az),
+			       BL_FORT_FAB_ARG_3D(fz),
+#endif
+#endif
+			       BL_FORT_FAB_ARG_3D(Vol),
+			       BL_FORT_FAB_ARG_3D(L),
+			       const amrex::Real* dx);
+
+  void pc_dynamic_smagorinsky_sfs_term(const int* lo,  const int* hi,
+				       const BL_FORT_FAB_ARG_3D(Q),
+				       const BL_FORT_FAB_ARG_3D(alphaij),
+				       const BL_FORT_FAB_ARG_3D(alpha),
+				       const BL_FORT_FAB_ARG_3D(flux_T),
+				       const BL_FORT_FAB_ARG_3D(Csx),
+				       const BL_FORT_FAB_ARG_3D(CIx),
+				       const BL_FORT_FAB_ARG_3D(PrTx),
+				       BL_FORT_FAB_ARG_3D(Ax),
+				       BL_FORT_FAB_ARG_3D(fx),
+#if (BL_SPACEDIM > 1)
+				       const BL_FORT_FAB_ARG_3D(Csy),
+				       const BL_FORT_FAB_ARG_3D(CIy),
+				       const BL_FORT_FAB_ARG_3D(PrTy),
+				       BL_FORT_FAB_ARG_3D(Ay),
+				       BL_FORT_FAB_ARG_3D(fy),
+#if (BL_SPACEDIM > 2)
+				       const BL_FORT_FAB_ARG_3D(Csz),
+				       const BL_FORT_FAB_ARG_3D(CIz),
+				       const BL_FORT_FAB_ARG_3D(PrTz),
+				       BL_FORT_FAB_ARG_3D(Az),
+				       BL_FORT_FAB_ARG_3D(fz),
+#endif
+#endif
+				       BL_FORT_FAB_ARG_3D(Vol),
+				       BL_FORT_FAB_ARG_3D(L),
+				       const amrex::Real* dx);
+
+  void pc_dynamic_smagorinsky_quantities(const int* lo, const int* hi,
+                                         const int* dmnlo,  const int* dmnhi,
+					 const BL_FORT_FAB_ARG_3D(Q),
+#if (BL_SPACEDIM > 1)
+                                         const BL_FORT_FAB_ARG_3D(tdx),
+                                         const BL_FORT_FAB_ARG_3D(tdy),
+#endif
+#if (BL_SPACEDIM > 2)
+                                         const BL_FORT_FAB_ARG_3D(tdz),
+#endif
+					 BL_FORT_FAB_ARG_3D(K),
+					 BL_FORT_FAB_ARG_3D(RUT),
+					 BL_FORT_FAB_ARG_3D(alphaij),
+					 BL_FORT_FAB_ARG_3D(alpha),
+					 BL_FORT_FAB_ARG_3D(flux_T),
+					 const int* fgr,
+					 const amrex::Real* dx);
+
+  void pc_dynamic_smagorinsky_coeffs(const int* lo, const int* hi,
+                                     const int* dmnlo,  const int* dmnhi,
+				     const BL_FORT_FAB_ARG_3D(Q),
+#if (BL_SPACEDIM > 1)
+                                     const BL_FORT_FAB_ARG_3D(tdx),
+                                     const BL_FORT_FAB_ARG_3D(tdy),
+#endif
+#if (BL_SPACEDIM > 2)
+                                     const BL_FORT_FAB_ARG_3D(tdz),
+#endif
+				     const BL_FORT_FAB_ARG_3D(K),
+				     const BL_FORT_FAB_ARG_3D(RUT),
+				     const BL_FORT_FAB_ARG_3D(alphaij),
+				     const BL_FORT_FAB_ARG_3D(alpha),
+				     const BL_FORT_FAB_ARG_3D(flux_T),
+				     BL_FORT_FAB_ARG_3D(Cs),
+				     BL_FORT_FAB_ARG_3D(CI),
+				     BL_FORT_FAB_ARG_3D(PrT),
+				     const int* TFGR,
+				     const amrex::Real* dx);
+
   void pc_check_initial_species
     (const int* lo, const int* hi, BL_FORT_FAB_ARG_3D(state));
 

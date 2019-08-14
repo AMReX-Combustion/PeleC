@@ -49,6 +49,7 @@ enum sources { ext_src = 0,
                spray_src,
 #endif
                diff_src,
+               les_src,
 #ifdef USE_MASA
                mms_src,
 #endif
@@ -343,6 +344,16 @@ public:
     void fill_mms_source (amrex::Real time, const amrex::MultiFab& S, amrex::MultiFab& mms_src, int ng);
 #endif
 
+    void getLESTerm (amrex::Real time, amrex::Real dt, amrex::MultiFab& LESTerm, amrex::Real flux_factor);
+
+    void getSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::MultiFab& LESTerm, amrex::Real flux_factor);
+
+    void getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::MultiFab& LESTerm, amrex::Real flux_factor);
+
+    void construct_old_les_source(amrex::Real time, amrex::Real dt, int sub_iteration, int sub_ncycle);
+
+    void construct_new_les_source(amrex::Real time, amrex::Real dt, int sub_iteration, int sub_ncycle);
+
     static void set_active_sources();
 
     //
@@ -560,7 +571,8 @@ protected:
 
     static void init_transport ();
     static void close_transport ();
-
+  
+    void init_les ();
     void init_filters ();
 
 #ifdef USE_MASA
@@ -641,10 +653,19 @@ protected:
     static amrex::Real      diffuse_cutoff_density;
     static bool      do_diffuse;
 
+    static int       les_model;
     static int       les_filter_type;
     static int       les_filter_fgr;
     Filter           les_filter;
-    int       nGrowF;
+    int              nGrowF;
+    static int       les_test_filter_type;
+    static int       les_test_filter_fgr;
+    amrex::MultiFab  LES_Coeffs;
+    static int       comp_Cs2;
+    static int       comp_CI;
+    static int       comp_PrT;
+    static int       nCompC;
+    amrex::MultiFab  filtered_les_source;
 
 #ifdef USE_MASA
     static bool      mms_initialized;

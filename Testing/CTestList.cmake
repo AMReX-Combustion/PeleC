@@ -215,6 +215,7 @@ add_test_r(mms-3d-1 4)
 add_test_r(mms-3d-2 4)
 add_test_r(mms-3d-3 4)
 add_test_r(mms-3d-4 1)
+add_test_r(mms-3d-5 1)
 add_test_r(ebmms-3d-1 4)
 add_test_r(sod-3d-1 4)
 add_test_r(tg-2d-1 4)
@@ -239,7 +240,7 @@ if(ENABLE_VERIFICATION)
   #add_test_v3(cns_amr_3d mms-3d-1 "${LIST_OF_GRID_SIZES}") # This one takes a while with AMR
 
   set(LIST_OF_GRID_SIZES 8 12 16 24)
-  #add_test_v2(cns_les_noamr_3d mms-3d-3 "${LIST_OF_GRID_SIZES}") # What MMS does this depend on?
+  add_test_v2(cns_les_no_amr_3d mms-3d-5 "${LIST_OF_GRID_SIZES}")
 
   set(LIST_OF_GRID_SIZES 8 16 32 64)
   add_test_v2(cns_no_amr_1d mms-1d-1 "${LIST_OF_GRID_SIZES}")

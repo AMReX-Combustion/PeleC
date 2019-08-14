@@ -14,6 +14,10 @@ PeleC::construct_old_source(int src, Real time, Real dt, int amr_iteration, int 
         construct_old_ext_source(time, dt);
         break;
 
+    case les_src:
+        construct_old_les_source(time, dt, sub_iteration, sub_ncycle);
+	break;
+
     case forcing_src:
         construct_old_forcing_source(time, dt);
         break;
@@ -37,6 +41,10 @@ PeleC::construct_new_source(int src, Real time, Real dt, int amr_iteration, int 
     case ext_src:
         construct_new_ext_source(time, dt);
         break;
+
+    case les_src:
+        construct_new_les_source(time, dt, sub_iteration, sub_ncycle);
+	break;
 
     case forcing_src:
         construct_new_forcing_source(time, dt);

@@ -18,8 +18,7 @@ Verification of PeleC
 Verification of PeleC uses `MASA
 <https://github.com/manufactured-solutions/MASA>`_ and
 auto-differention tools to implement the Method of Manufactured
-Solutions into PeleC. Verification results are posted `here
-<https://github.com/jrood-nrel/PeleVerificationResults-Peregrine>`_.
+Solutions into PeleC.
 
 There :math:`L_2` error norm for a quantity :math:`s` is defined as
 
@@ -215,4 +214,39 @@ preserve the second order accuracy of the code.
 - Velocity :math:`L_2` error norm:
 
 .. image:: ./verification/amr/u_error_amr.png
+   :width: 300pt
+
+Testing the constant Smagorinsky Large Eddy Simulation model
+------------------------------------------------------------
+
+This setup is identical to the MMS study for the compressible
+Navier-Stokes equations. The Large Eddy Simulation (LES) constants,
+:math:`C_s` and :math:`C_I`, were chosen such that the turbulent eddy
+viscosity was comparable to the viscosity,
+i.e. :math:`\frac{\mu_t}{\mu} = \mathcal{O}(1)`. Since the model
+scales with the mesh spacing, :math:`C_s` and :math:`C_I` were scaled
+inversely with the mesh spacing for the mesh refinement studies. For
+example, :math:`C_s` is set to 2 for the :math:`8^3` mesh and set to 4
+for the :math:`16^3` mesh (for :math:`C_I`, it is 1 and 4,
+respectively). A convergence study shows second order for Pele's
+treatment of the compressible Navier-Stokes equations with the
+constant Smagorinsky Large Eddy Simulation model.
+
+- Density :math:`L_2` error norm:
+
+.. image:: ./verification/les/rho_error.png
+   :width: 300pt
+
+- Velocity (u, v, w) :math:`L_2` error norm:
+
+.. image:: ./verification/les/u_error.png
+   :width: 300pt
+.. image:: ./verification/les/v_error.png
+   :width: 300pt
+.. image:: ./verification/les/w_error.png
+   :width: 300pt
+
+- Pressure :math:`L_2` error norm:
+
+.. image:: ./verification/les/p_error.png
    :width: 300pt

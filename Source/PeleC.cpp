@@ -126,8 +126,15 @@ bool         PeleC::do_diffuse   = false;
 bool         PeleC::mms_initialized = false;
 #endif
 
+int           PeleC::les_model = 0;
 int           PeleC::les_filter_type = no_filter;
 int           PeleC::les_filter_fgr = 1;
+int           PeleC::les_test_filter_type = box_3pt_optimized_approx;
+int           PeleC::les_test_filter_fgr = 2;
+int           PeleC::comp_Cs2 = 0;
+int           PeleC::comp_CI = PeleC::comp_Cs2 + 1;
+int           PeleC::comp_PrT = PeleC::comp_CI + 1;
+int           PeleC::nCompC = PeleC::comp_PrT + 1;
 
 #ifdef PELE_USE_EB
 bool         PeleC::eb_initialized      = false;
@@ -389,6 +396,12 @@ PeleC::read_params ()
   }
 #endif
 
+  if (do_les){
+    pp.query("les_model",les_model);
+    pp.query("les_test_filter_type",les_test_filter_type);
+    pp.query("les_test_filter_fgr",les_test_filter_fgr);
+  }
+
   if (use_explicit_filter){
     pp.query("les_filter_type",les_filter_type);
     pp.query("les_filter_fgr",les_filter_fgr);
@@ -562,6 +575,11 @@ PeleC::PeleC (Amr&            papa,
     init_godunov_indices();
   }
 
+  // initialize LES variables
+  if (do_les){
+    init_les();
+  }
+  
   // initialize filters and variables
   nGrowF = 0;
   if (use_explicit_filter){
@@ -1260,6 +1278,11 @@ PeleC::post_restart ()
     init_godunov_indices();
   }
 
+  // initialize LES variables
+  if (do_les){
+    init_les();
+  }
+
   // initialize filters and variables
   nGrowF = 0;
   if (use_explicit_filter){
@@ -1852,6 +1875,22 @@ PeleC::derive (const std::string& name,
 	       int            ngrow)
 {
 
+  if ((do_les) && (name == "C_s2")) {
+    std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
+    MultiFab::Copy(*derive_dat,LES_Coeffs,comp_Cs2,0,1,0);
+    return derive_dat;
+  }
+  else if ((do_les) && (name == "C_I")) {
+    std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
+    MultiFab::Copy(*derive_dat,LES_Coeffs,comp_CI,0,1,0);
+    return derive_dat;
+  }
+  else if ((do_les) && (name == "Pr_T")) {
+    std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
+    MultiFab::Copy(*derive_dat,LES_Coeffs,comp_PrT,0,1,0);
+    return derive_dat;
+  }
+
 #ifdef PELE_USE_EB
   if (name == "vfrac") {
     std::unique_ptr<MultiFab> mf(new MultiFab(grids, dmap, 1, ngrow, MFInfo()));
@@ -1947,6 +1986,17 @@ void
 PeleC::close_transport ()
 {
   pc_transport_close();
+}
+
+void
+PeleC::init_les ()
+{
+    // Fill with default coefficient values
+    LES_Coeffs.define(grids, dmap, nCompC, 1);
+    LES_Coeffs.setVal(0.0);
+    LES_Coeffs.setVal(Cs*Cs,comp_Cs2,1,LES_Coeffs.nGrow());
+    LES_Coeffs.setVal(CI,comp_CI,1,LES_Coeffs.nGrow());
+    LES_Coeffs.setVal(PrT,comp_PrT,1,LES_Coeffs.nGrow());
 }
 
 void

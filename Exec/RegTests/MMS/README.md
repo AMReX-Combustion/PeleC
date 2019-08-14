@@ -10,7 +10,7 @@ be.
 
 ### MetaPhysicl
 1. Get [Metaphysicl](https://github.com/roystgnr/MetaPhysicL)
-2. `./bootstrap` (on Peregrine, do  `spack load autoconf` first)
+2. `./bootstrap` (on Eagle, do  `spack load autoconf` first)
 3. `./configure --prefix=${HOME}/combustion/install/MetaPhysicL`
 4. `make`
 5. `make install`
@@ -18,7 +18,7 @@ be.
 ### MASA
 
 1. Get [MASA](https://github.com/manufactured-solutions/MASA)
-2. `./boostrap` (on Peregrine, do  `spack load autoconf` first`)
+2. `./bootstrap` (on Eagle, do  `spack load autoconf` first)
 3. `./configure --enable-fortran-interfaces METAPHYSICL_DIR=${HOME}/combustion/install/MetaPhysicL --prefix=${HOME}/combustion/install/MASA --enable-python-interfaces`
 4. `make`
 5. `make check`
@@ -27,6 +27,6 @@ be.
 ## Using
 
 MASA must be linked to when building Pele. We will be using
-`ad_cns_3d_les_smag` to manufacture a source and initial condition for
+`ad_cns_3d_les` to manufacture a source and initial condition for
 Pele. The user must have defined the `MASA_HOME` variable to point to
 the install location of MASA.

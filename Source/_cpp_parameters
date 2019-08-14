@@ -240,8 +240,20 @@ zr_ext_bc_type               string        ""                 y
 # category: large eddy simulation
 #-----------------------------------------------------------------------------
 
-# LES filtering
+# permits LES to be turned on and off
+do_les                       int           0                  y
+
+# permits explicit LES to be turned on and off
 use_explicit_filter          int           0                  y
+
+# Constant Smagorinsky Cs coefficient
+Cs                           Real          0.0                y
+
+# Constant Smagorinsky CI coefficient
+CI                           Real          0.0                y
+
+# Constant Smagorinsky PrT coefficient
+PrT                          Real          1.0                y
 
 #-----------------------------------------------------------------------------
 # category: EB diffusion

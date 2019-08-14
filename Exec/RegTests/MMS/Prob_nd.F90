@@ -117,7 +117,7 @@ contains
     use fundamental_constants_module, only: k_B, n_A
     use eos_type_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, &
-         UEDEN, UEINT, UFS, UTEMP, small_temp
+         UEDEN, UEINT, UFS, UTEMP, small_temp, Cs, CI, PrT
     use prob_params_module, only: dim
     use amrex_constants_module, only: ZERO, HALF, ONE, M_PI
     use extern_probin_module, only: const_viscosity, const_bulk_viscosity, const_conductivity, const_diffusivity
@@ -214,9 +214,9 @@ contains
     call masa_set_param("a_px",a_px)
     call masa_set_param("a_py",a_py)
     call masa_set_param("a_pz",a_pz)
-    call masa_set_param("Cs",ZERO)
-    call masa_set_param("CI",ZERO)
-    call masa_set_param("PrT",ONE)
+    call masa_set_param("Cs",Cs)
+    call masa_set_param("CI",CI)
+    call masa_set_param("PrT",PrT)
     call masa_set_param("deltabar",delta(1))
 
     ! Display and check

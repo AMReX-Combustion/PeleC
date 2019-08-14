@@ -27,6 +27,11 @@ import time
 from datetime import timedelta
 import numpy as np
 import scipy.interpolate as spi
+import matplotlib as mpl
+
+mpl.use("Agg")
+import matplotlib.pyplot as plt
+
 
 # ========================================================================
 #
@@ -48,6 +53,43 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
+# ===============================================================================
+#
+# Some defaults variables
+#
+# ===============================================================================
+plt.rc("text", usetex=True)
+plt.rc("font", family="serif", serif="Times")
+cmap_med = [
+    "#F15A60",
+    "#7AC36A",
+    "#5A9BD4",
+    "#FAA75B",
+    "#9E67AB",
+    "#CE7058",
+    "#D77FB4",
+    "#737373",
+]
+cmap = [
+    "#EE2E2F",
+    "#008C48",
+    "#185AA9",
+    "#F47D23",
+    "#662C91",
+    "#A21D21",
+    "#B43894",
+    "#010202",
+]
+dashseq = [
+    (None, None),
+    [10, 5],
+    [10, 4, 3, 4],
+    [3, 3],
+    [10, 4, 3, 4, 3, 4],
+    [3, 3],
+    [3, 3],
+]
+markertype = ["s", "d", "o", "p", "h"]
 
 # ========================================================================
 #
@@ -195,6 +237,33 @@ wf = wf * N ** 3
 # if plotting, save the original field (before filtering)
 if args.plot:
     uo = np.fft.irfftn(uf)
+    Eko = (
+        16.0
+        * np.sqrt(2.0 / np.pi)
+        * (khalf ** 4)
+        / (args.k0 ** 5)
+        * np.exp(-2.0 * (khalf ** 2) / (args.k0 ** 2))
+    )
+
+    # Get the spectrum from 3D velocity field
+    kbins = np.arange(1, halfN + 1)
+    Nbins = len(kbins)
+    whichbin = np.digitize(kmag.flat, kbins)
+    ncount = np.bincount(whichbin)
+
+    KI = (abs2(uf) + abs2(vf) + abs2(wf)) * 0.5 / N ** 6
+    KI[:, :, 1:-1] += (
+        (abs2(uf[:, :, 1:-1]) + abs2(vf[:, :, 1:-1]) + abs2(wf[:, :, 1:-1]))
+        * 0.5
+        / N ** 6
+    )
+
+    Eku = np.zeros(len(ncount) - 1)
+    for n in range(1, len(ncount)):
+        Eku[n - 1] = np.sum(KI.flat[whichbin == n])
+
+    ku = 0.5 * (kbins[0 : Nbins - 1] + kbins[1:Nbins]) + 1
+    Eku = Eku[1:Nbins]
 
 
 # ========================================================================
@@ -227,7 +296,9 @@ print(
 # wy = dudz-dwdx
 # wz = dvdx-dudy
 # lambda0 = 2.0/args.k0
-# print('Enstrophy = 0.5/V * int (wx**2 + wy**2 + wz**2) dx dy dz= {0:.10f} ~= '.format(np.sum(wx**2+wy**2+wz**2) * 0.5 * (dx/L)**3 * lambda0**2))
+# print('Enstrophy = 0.5/V * int (wx**2 + wy**2 + wz**2) dx dy dz=
+# {0:.10f} ~= '.format(np.sum(wx**2+wy**2+wz**2) * 0.5 * (dx/L)**3 *
+# lambda0**2))
 
 # ========================================================================
 # 4. velocity fluctuations re-sampled on the desired grid (N^3)
@@ -371,7 +442,21 @@ if args.plot:
     ax[1, 2].set_title("Imag Fourier coefficients (y,z)")
     plt.savefig("hit_ic_uf_{0:d}_{1:d}.png".format(int(args.k0), args.N), format="png")
 
-    # plt.show()
+    # Spectrum
+    plt.figure(20)
+    ax = plt.gca()
+    p = plt.loglog(khalf, Eko, color=cmap[-1], lw=2)
+    p[0].set_dashes(dashseq[0])
+    p = plt.loglog(ku, Eku, color=cmap[0], lw=2)
+    p[0].set_dashes(dashseq[1])
+    plt.ylim([1e-16, 10])
+    plt.xlabel(r"$k$", fontsize=22, fontweight="bold")
+    plt.ylabel(r"$E(k)$", fontsize=22, fontweight="bold")
+    plt.setp(ax.get_xmajorticklabels(), fontsize=18, fontweight="bold")
+    plt.setp(ax.get_ymajorticklabels(), fontsize=18, fontweight="bold")
+    plt.savefig(
+        "hit_ic_spectrum_{0:d}_{1:d}.png".format(int(args.k0), args.N), format="png"
+    )
 
 # output timer
 end = time.time() - start
