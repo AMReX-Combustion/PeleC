@@ -461,9 +461,9 @@ PeleC::getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::Mu
       }
 
       // FIXME: REMOVE THIS LATER
-      coeff_cc.setVal(0.16*0.16,g3box,comp_Cs2,1);
-      coeff_cc.setVal(0.09,g3box,comp_CI,1);
-      coeff_cc.setVal(0.7,g3box,comp_PrT,1);
+      // coeff_cc.setVal(0.16*0.16,g3box,comp_Cs2,1);
+      // coeff_cc.setVal(0.09,g3box,comp_CI,1);
+      // coeff_cc.setVal(0.7,g3box,comp_PrT,1);
 
       // 5. Filter to smooth the dynamic coefficients
       coeff_filter.apply_filter(g4box, coeff_cc, LES_Coeffs[mfi]);
