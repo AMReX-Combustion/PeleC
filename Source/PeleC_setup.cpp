@@ -614,6 +614,19 @@ PeleC::variableSetUp ()
     derive_lst.addComponent("molefrac",desc_lst,State_Type,Density,NUM_STATE);
 
     //
+    // Auxiliary Variables
+    //
+
+    Vector<std::string> var_names_aux(NumAux);
+    for (int i = 0; i < NumAux; i++){
+      var_names_aux[i] = aux_names[i];
+    }  
+     
+    derive_lst.add("auxiliary",IndexType::TheCellType(),NumAux,var_names_aux,
+                   pc_derauxiliary,the_same_box);
+    derive_lst.addComponent("auxiliary",desc_lst,State_Type,Density,NUM_STATE);
+
+    //
     // Velocities
     //
     derive_lst.add("x_velocity",IndexType::TheCellType(),1,pc_dervelx,the_same_box);

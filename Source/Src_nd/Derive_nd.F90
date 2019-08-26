@@ -845,6 +845,47 @@ contains
 
   end subroutine pc_dermolefrac
 
+  subroutine pc_derauxiliary(auxi,a_lo,a_hi,nv, &
+                        dat,d_lo,d_hi,nc,lo,hi,domlo, &
+                        domhi,delta,xlo,time,dt,bc,level,grid_no) &
+                        bind(C, name="pc_derauxiliary")
+    !
+    ! This routine derives the mole fractions of the species.
+    !
+    use meth_params_module, only: URHO, UFX
+    use network, only: naux
+    use eos_module
+    use amrex_constants_module
+    
+    implicit none
+
+    integer          :: lo(3), hi(3)
+    integer          :: a_lo(3), a_hi(3), nv
+    integer          :: d_lo(3), d_hi(3), nc
+    integer          :: domlo(3), domhi(3)
+    integer          :: bc(3,2,nc)
+    double precision :: delta(3), xlo(3), time, dt
+    double precision :: auxi(a_lo(1):a_hi(1),a_lo(2):a_hi(2),a_lo(3):a_hi(3),nv)
+    double precision ::  dat(d_lo(1):d_hi(1),d_lo(2):d_hi(2),d_lo(3):d_hi(3),nc)
+    integer          :: level, grid_no
+
+    double precision :: rhoInv
+    integer          :: i, j, k
+
+    do k = lo(3), hi(3)
+       do j = lo(2), hi(2)
+          do i = lo(1), hi(1)
+          
+             rhoInv = ONE / dat(i,j,k,URHO)
+             auxi(i,j,k,:) = dat(i,j,k,UFX:UFX+naux-1) * rhoInv
+
+          end do
+       end do
+    end do
+
+  end subroutine pc_derauxiliary
+
+
   subroutine pc_derlogden(logden,l_lo,l_hi,nd, &
                           dat,d_lo,d_hi,nc, &
                           lo,hi,domlo,domhi,delta, &
