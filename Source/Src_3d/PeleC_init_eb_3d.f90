@@ -778,7 +778,7 @@ contains
     real(amrex_real), intent(out) :: dm_as_fine(dflo(1):dfhi(1),dflo(2):dfhi(2),dflo(3):dfhi(3),nc)
     integer,  intent(in) ::  levmsk (lmlo(1):lmhi(1),lmlo(2):lmhi(2),lmlo(3):lmhi(3))
     integer,  intent(in) ::  rr_flag_crse(rfclo(1):rfchi(1),rfclo(2):rfchi(2),rfclo(3):rfchi(3))
-    real(amrex_real) :: drho, tmp1, tmp2
+    real(amrex_real) :: drho, tmp
 
     integer :: ii,jj,kk,iii,jjj,kkk
     logical :: valid_dst_cell
@@ -798,13 +798,12 @@ contains
                .and. j.ge.lo(1)-2 .and. j.le.hi(1)+2 &
                .and. k.ge.lo(2)-2 .and. k.le.hi(2)+2 ) then
              kappa_inv = 1.d0 / MAX(vf(i,j,k),1.d-12)
-             tmp1 = - VOLINV * kappa_inv * ( f0(i+1,j,k,n) - f0(i,j,k,n) &
-                                           + f1(i,j+1,k,n) - f1(i,j,k,n) &
-                                           + f2(i,j,k+1,n) - f2(i,j,k,n) )
              !$omp atomic read
-             tmp2 = ebflux(L,n)
+             tmp = ebflux(L,n)
              !$omp end atomic
-             DC(i,j,k,n) = tmp1 - VOLINV * kappa_inv * tmp2
+             DC(i,j,k,n) = - ( f0(i+1,j,k,n) - f0(i,j,k,n) &
+                  +            f1(i,j+1,k,n) - f1(i,j,k,n) &
+                  +            f2(i,j,k+1,n) - f2(i,j,k,n) + tmp) * VOLINV * kappa_inv
           endif
        enddo
 
