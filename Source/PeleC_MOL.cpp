@@ -140,6 +140,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
          mfi.isValid(); ++mfi) {
 #ifdef PELE_USE_EB
       Real wt = ParallelDescriptor::second();
+
 #endif
 
       const Box  vbox = mfi.tilebox();
@@ -169,6 +170,8 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
 
       int local_i = mfi.LocalIndex();
       int Ncut = no_eb_in_domain ? 0 : sv_eb_bndry_grad_stencil[local_i].size();
+      SparseData<amrex::Real,EBBndrySten> eb_flux_thdlocal;
+      eb_flux_thdlocal.define(sv_eb_bndry_grad_stencil[local_i], NUM_STATE);
 #else
       const FArrayBox& Sfab = S[mfi];
 #endif
@@ -369,10 +372,11 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
       //  non-zero only for heat flux on isothermal boundaries,
       //  and momentum fluxes at no-slip walls
       if (typ == FabType::singlevalued && Ncut > 0) {
-        sv_eb_flux[local_i].setVal(0);  // Default to Neumann for all fields
+        eb_flux_thdlocal.setVal(0);  // Default to Neumann for all fields
 
         int Nvals = sv_eb_bcval[local_i].numPts();
         int Nflux = sv_eb_flux[local_i].numPts();
+
         BL_ASSERT(Nvals == Ncut);
         BL_ASSERT(Nflux == Ncut);
 
@@ -391,7 +395,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
                                              BL_TO_FORTRAN_N_ANYD(coeff_cc, dComp_lambda),
                                              sv_eb_bcval[local_i].dataPtr(cQTEMP),
                                              &Nvals,
-                                             sv_eb_flux[local_i].dataPtr(Eden),
+                                             eb_flux_thdlocal.dataPtr(Eden),
                                              &Nflux, &nComp);
           }
         }
@@ -411,7 +415,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
                                                   BL_TO_FORTRAN_N_ANYD(coeff_cc, dComp_mu),
                                                   BL_TO_FORTRAN_N_ANYD(coeff_cc, dComp_xi),
                                                   sv_eb_bcval[local_i].dataPtr(cQU), &Nvals,
-                                                  sv_eb_flux[local_i].dataPtr(Xmom), &Nflux,
+                                                  eb_flux_thdlocal.dataPtr(Xmom), &Nflux,
                                                   &nComp);
           }
         }
@@ -423,20 +427,20 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
 #ifdef PELEC_USE_MOL
       /* At this point flux_ec contains the diffusive fluxes in each direction
          at face centers for the (potentially partially covered) grid-aligned 
-         faces and sv_eb_flux contains the flux for the cut faces. Before 
+         faces and eb_flux_thdlocal contains the flux for the cut faces. Before
          computing hybrid divergence, comptue and add in the hydro fluxes. 
          Also, Dterm currently contains the divergence of the face-centered
-         diffusion fluxes.  Increment this with the divergence of the 
+         diffusion fluxes.  Increment this with the divergence of the
          face-centered hyperbloic fluxes.
       */
-      if (do_hydro && do_mol_AD) 
+      if (do_hydro && do_mol_AD)
       {
         flatn.resize(cbox,1);
         flatn.setVal(1.0);  // Set flattening to 1.0
 #ifdef PELEC_USE_EB
         int nFlux = sv_eb_flux.size()==0 ? 0 : sv_eb_flux[local_i].numPts();
         const EBBndryGeom* sv_ebbg_ptr = (Ncut>0 ? sv_eb_bndry_geom[local_i].data() : 0);
-        Real* sv_eb_flux_ptr = (nFlux>0 ? sv_eb_flux[local_i].dataPtr() : 0);
+        Real* sv_eb_flux_ptr = (nFlux>0 ? eb_flux_thdlocal.dataPtr() : 0);
 #endif
 
         // save off the diffusion source term and fluxes (don't want to filter these)
@@ -514,7 +518,18 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
       }
 #endif
 
-
+      std::vector<int> eb_tile_mask;
+      eb_tile_mask.resize(Ncut);
+      for (int icut = 0; icut < Ncut; ++icut){
+          if (gbox.contains(sv_eb_bndry_geom[local_i][icut].iv)) {
+              eb_tile_mask[icut] = 1;
+          } else {
+              eb_tile_mask[icut] = 0;
+          }
+      }
+      if (typ == FabType::singlevalued) {
+          sv_eb_flux[local_i].merge(eb_flux_thdlocal,0, nCompTr, eb_tile_mask);
+      }
 
 #ifdef PELEC_USE_EB
       if (typ == FabType::singlevalued) {
