@@ -522,6 +522,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
       }
 #endif
 
+#ifdef PELEC_USE_EB
       std::vector<int> eb_tile_mask;
       eb_tile_mask.resize(Ncut);
       for (int icut = 0; icut < Ncut; ++icut){
@@ -535,7 +536,6 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
           sv_eb_flux[local_i].merge(eb_flux_thdlocal,0, NUM_STATE, eb_tile_mask);
       }
 
-#ifdef PELEC_USE_EB
       if (typ == FabType::singlevalued) {
         /* Interpolate fluxes from face centers to face centroids
          * Note that hybrid divergence and redistribution algorithms require that we
