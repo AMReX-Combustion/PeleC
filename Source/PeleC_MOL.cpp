@@ -145,9 +145,15 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
 
       const Box  vbox = mfi.tilebox();
       int ng = S.nGrow();
+
       const Box  gbox = amrex::grow(vbox,ng);
       const Box  cbox = amrex::grow(vbox,ng-1);
       const Box& dbox = geom.Domain();
+
+      // TODO: Add check that this is nextra-1
+      //       (better: fix bounds on ebflux computation in hyperbolic routine
+      //                to be a constant, and make sure this matches it)
+      const Box ebfluxbox = amrex::grow(vbox,2);
       
       const int* lo = vbox.loVect();
 	  const int* hi = vbox.hiVect();
@@ -383,7 +389,6 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
         if (eb_isothermal && (diffuse_temp != 0 || diffuse_enth != 0)) {
           // Compute heat flux at EB wall
           int nComp = 1;
-          sv_eb_bcval[local_i].setVal(eb_boundary_T, cQTEMP);
 
           Box box_to_apply = mfi.growntilebox(2);
           {
@@ -402,7 +407,6 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
         // Compute momentum transfer at no-slip EB wall
         if (eb_noslip && diffuse_vel == 1) {
           int nComp = BL_SPACEDIM;
-          sv_eb_bcval[local_i].setVal(0, cQU, BL_SPACEDIM);
 
           Box box_to_apply = mfi.growntilebox(2);
           {
@@ -521,14 +525,14 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
       std::vector<int> eb_tile_mask;
       eb_tile_mask.resize(Ncut);
       for (int icut = 0; icut < Ncut; ++icut){
-          if (gbox.contains(sv_eb_bndry_geom[local_i][icut].iv)) {
+          if (ebfluxbox.contains(sv_eb_bndry_geom[local_i][icut].iv)) {
               eb_tile_mask[icut] = 1;
           } else {
               eb_tile_mask[icut] = 0;
           }
       }
       if (typ == FabType::singlevalued) {
-          sv_eb_flux[local_i].merge(eb_flux_thdlocal,0, nCompTr, eb_tile_mask);
+          sv_eb_flux[local_i].merge(eb_flux_thdlocal,0, NUM_STATE, eb_tile_mask);
       }
 
 #ifdef PELEC_USE_EB
