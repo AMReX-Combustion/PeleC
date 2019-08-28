@@ -193,6 +193,13 @@ PeleC::initialize_eb2_structs() {
       sv_eb_flux[iLocal].define(sv_eb_bndry_grad_stencil[iLocal], NUM_STATE);
       sv_eb_bcval[iLocal].define(sv_eb_bndry_grad_stencil[iLocal], QVAR);
 
+      if (eb_isothermal && (diffuse_temp != 0 || diffuse_enth != 0)) {
+          sv_eb_bcval[iLocal].setVal(eb_boundary_T, cQTEMP);
+      }
+      if (eb_noslip && diffuse_vel == 1) {
+          sv_eb_bcval[iLocal].setVal(0, cQU, BL_SPACEDIM);
+      }
+
     } else {
       amrex::Print() << "unknown (or multivalued) fab type" << std::endl;
       amrex::Abort();
