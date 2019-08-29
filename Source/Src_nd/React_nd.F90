@@ -88,7 +88,7 @@ use amrex_ebcellflag_module, only : is_covered_cell
                 
                 cost(i,j,k) = react(rY, rY_src,&
                                     energy, energy_src,&
-                                    pressure,dt_react,time,0)
+                                    pressure,dt_react,time)
 
 
                 rho_new = sum(rY(1:nspecies))
