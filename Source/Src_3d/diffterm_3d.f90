@@ -15,6 +15,7 @@ contains
                          dmnlo, dmnhi,&
                          Q,   Qlo,   Qhi,&
                          Dx,  Dxlo,  Dxhi,&
+                         Daux,Dauxlo,Dauxhi,&
                          mux, muxlo, muxhi,&
                          xix, xixlo, xixhi,&
                          lamx,lamxlo,lamxhi,&
@@ -22,13 +23,15 @@ contains
                          Ax,  Axlo,  Axhi,&
                          fx,  fxlo,  fxhi,&
                          Dy,  Dylo,  Dyhi,&  
+                         Dauy,Dauylo,Dauyhi,&
                          muy, muylo, muyhi,& 
                          xiy, xiylo, xiyhi,& 
                          lamy,lamylo,lamyhi,&
                          ty,  tylo,  tyhi,&
                          Ay,  Aylo,  Ayhi,&
                          fy,  fylo,  fyhi,&
-                         Dz,  Dzlo,  Dzhi,&  
+                         Dz,  Dzlo,  Dzhi,&
+                         Dauz,Dauzlo,Dauzhi,&  
                          muz, muzlo, muzhi,& 
                          xiz, xizlo, xizhi,& 
                          lamz,lamzlo,lamzhi,&
@@ -39,8 +42,8 @@ contains
                          D,   Dlo,   Dhi,&
                          deltax) bind(C, name = "pc_diffterm")
 
-    use network, only : nspecies
-    use meth_params_module, only : NVAR, UMX, UMY, UMZ, UEDEN, UFS, QVAR, QU, QV, QW, QPRES, QTEMP, QFS, QRHO
+    use network, only : nspecies, naux
+    use meth_params_module, only : NVAR, UMX, UMY, UMZ, UEDEN, UFS, UFX, QVAR, QU, QV, QW, QPRES, QTEMP, QFS, QRHO
     use amrex_constants_module
     use eos_type_module
     use eos_module
@@ -53,6 +56,7 @@ contains
     integer, intent(in) ::    Qlo(3),   Qhi(3)
 
     integer, intent(in) ::   Dxlo(3),  Dxhi(3)
+    integer, intent(in) :: Dauxlo(3),Dauxhi(3)
     integer, intent(in) ::  muxlo(3), muxhi(3)
     integer, intent(in) ::  xixlo(3), xixhi(3)
     integer, intent(in) :: lamxlo(3),lamxhi(3)
@@ -61,6 +65,7 @@ contains
     integer, intent(in) ::   fxlo(3),  fxhi(3)
 
     integer, intent(in) ::   Dylo(3),  Dyhi(3)
+    integer, intent(in) :: Dauylo(3),Dauyhi(3)
     integer, intent(in) ::  muylo(3), muyhi(3)
     integer, intent(in) ::  xiylo(3), xiyhi(3)
     integer, intent(in) :: lamylo(3),lamyhi(3)
@@ -69,6 +74,7 @@ contains
     integer, intent(in) ::   fylo(3),  fyhi(3)
 
     integer, intent(in) ::   Dzlo(3),  Dzhi(3)
+    integer, intent(in) :: Dauzlo(3),Dauzhi(3)
     integer, intent(in) ::  muzlo(3), muzhi(3)
     integer, intent(in) ::  xizlo(3), xizhi(3)
     integer, intent(in) :: lamzlo(3),lamzhi(3)
@@ -81,6 +87,7 @@ contains
 
     double precision, intent(in   ) ::    Q(   Qlo(1):   Qhi(1),   Qlo(2):   Qhi(2),   Qlo(3):   Qhi(3), QVAR)
     double precision, intent(in   ) ::   Dx(  Dxlo(1):  Dxhi(1),  Dxlo(2):  Dxhi(2),  Dxlo(3):  Dxhi(3), nspecies)
+    double precision, intent(in   ) :: Daux(Dauxlo(1):Dauxhi(1),Dauxlo(2):Dauxhi(2),Dauxlo(3):Dauxhi(3), naux)
     double precision, intent(in   ) ::  mux( muxlo(1): muxhi(1), muxlo(2): muxhi(2), muxlo(3): muxhi(3)  )
     double precision, intent(in   ) ::  xix( xixlo(1): xixhi(1), xixlo(2): xixhi(2), xixlo(3): xixhi(3)  )
     double precision, intent(in   ) :: lamx(lamxlo(1):lamxhi(1),lamxlo(2):lamxhi(2),lamxlo(3):lamxhi(3)  )
@@ -88,6 +95,7 @@ contains
     double precision, intent(in   ) ::   Ax(  Axlo(1):  Axhi(1),  Axlo(2):  Axhi(2),  Axlo(3):  Axhi(3)  )
     double precision, intent(inout) ::   fx(  fxlo(1):  fxhi(1),  fxlo(2):  fxhi(2),  fxlo(3):  fxhi(3), NVAR)
     double precision, intent(in   ) ::   Dy(  Dylo(1):  Dyhi(1),  Dylo(2):  Dyhi(2),  Dylo(3):  Dyhi(3), nspecies)
+    double precision, intent(in   ) :: Dauy(Dauylo(1):Dauyhi(1),Dauylo(2):Dauyhi(2),Dauylo(3):Dauyhi(3), naux)
     double precision, intent(in   ) ::  muy( muylo(1): muyhi(1), muylo(2): muyhi(2), muylo(3): muyhi(3)  )
     double precision, intent(in   ) ::  xiy( xiylo(1): xiyhi(1), xiylo(2): xiyhi(2), xiylo(3): xiyhi(3)  )
     double precision, intent(in   ) :: lamy(lamylo(1):lamyhi(1),lamylo(2):lamyhi(2),lamylo(3):lamyhi(3)  )
@@ -95,6 +103,7 @@ contains
     double precision, intent(in   ) ::   Ay(  Aylo(1):  Ayhi(1),  Aylo(2):  Ayhi(2),  Aylo(3):  Ayhi(3)  )
     double precision, intent(inout) ::   fy(  fylo(1):  fyhi(1),  fylo(2):  fyhi(2),  fylo(3):  fyhi(3), NVAR)
     double precision, intent(in   ) ::   Dz(  Dzlo(1):  Dzhi(1),  Dzlo(2):  Dzhi(2),  Dzlo(3):  Dzhi(3), nspecies)
+    double precision, intent(in   ) :: Dauz(Dauzlo(1):Dauzhi(1),Dauzlo(2):Dauzhi(2),Dauzlo(3):Dauzhi(3), naux)
     double precision, intent(in   ) ::  muz( muzlo(1): muzhi(1), muzlo(2): muzhi(2), muzlo(3): muzhi(3)  )
     double precision, intent(in   ) ::  xiz( xizlo(1): xizhi(1), xizlo(2): xizhi(2), xizlo(3): xizhi(3)  )
     double precision, intent(in   ) :: lamz(lamzlo(1):lamzhi(1),lamzlo(2):lamzhi(2),lamzlo(3):lamzhi(3)  )
@@ -110,6 +119,7 @@ contains
     double precision :: Uface(3), dudx, dvdx, dwdx, dudy, dvdy, dwdy, dudz, dvdz, dwdz
     double precision :: pface, hface, Xface, Yface
     double precision :: dTdx, dTdy, dTdz, dXdx, dXdy, dXdz, Vd
+    double precision :: dAdx, dAdy, dAdz 
     double precision :: Vc(lo(1)-1:hi(1)+1,lo(2)-1:hi(2)+1,lo(3)-1:hi(3)+1)
     double precision :: dlnpi, gfaci(lo(1):hi(1)+1)
     double precision :: dlnpj, gfacj(lo(2):hi(2)+1)
@@ -129,6 +139,7 @@ contains
     gfacj = dxinv(2)
     gfack = dxinv(3)
 
+    ! x direction - Momentum and Energy
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)+1
@@ -154,6 +165,8 @@ contains
           enddo
        enddo
     enddo
+
+    ! x direction - Species
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)+1
@@ -191,6 +204,19 @@ contains
           enddo
        enddo
     enddo
+    ! x direction - Aux
+    do n=1,naux
+       do k=lo(3),hi(3)
+          do j=lo(2),hi(2)
+             do i=lo(1),hi(1)+1
+                dAdx = gfaci(i) * (Q(i,j,k,QFX+n-1) - Q(i-1,j,k,QFX+n-1))
+                fx(i,j,k,UFX+n-1) = - dAdx * Daux(i,j,k,n)
+             end do
+          enddo
+       enddo
+    enddo
+    
+    ! x direction - Finalize
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)+1
@@ -210,7 +236,17 @@ contains
           enddo
        enddo
     enddo
-
+    do n=UFX,UFX+naux-1
+       do k=lo(3),hi(3)
+          do j=lo(2),hi(2)
+             do i=lo(1),hi(1)+1
+                fx(i,j,k,n) = fx(i,j,k,n) * Ax(i,j,k)
+             enddo
+          enddo
+       enddo
+    enddo
+    
+    ! y direction - Momentum and Energy
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)+1
           do i=lo(1),hi(1)
@@ -236,6 +272,7 @@ contains
           enddo
        enddo
     enddo
+    ! y direction - Species
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)+1
           do i=lo(1),hi(1)
@@ -273,6 +310,18 @@ contains
           enddo
        enddo
     enddo
+    ! y direction - Aux
+    do n=1,naux
+       do k=lo(3),hi(3)
+          do j=lo(2),hi(2)+1
+             do i=lo(1),hi(1)
+                dAdy = gfacj(j) * (Q(i,j,k,QFX+n-1) - Q(i,j-1,k,QFX+n-1))
+                fy(i,j,k,UFX+n-1) = - dAdy * Dauy(i,j,k,n)
+             end do
+          enddo
+       enddo
+    enddo
+    ! y direction - Finalize
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)+1
           do i=lo(1),hi(1)
@@ -292,7 +341,17 @@ contains
           enddo
        enddo
     enddo
+    do n=UFX,UFX+naux-1
+       do k=lo(3),hi(3)
+          do j=lo(2),hi(2)+1
+             do i=lo(1),hi(1)
+                fy(i,j,k,n) = fy(i,j,k,n) * Ay(i,j,k)
+             enddo
+          enddo
+       enddo
+    enddo
 
+    ! z direction - Momentum and Energy
     do k=lo(3),hi(3)+1
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -318,6 +377,7 @@ contains
           enddo
        enddo
     enddo
+    ! z direction - Species
     do k=lo(3),hi(3)+1
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -355,6 +415,18 @@ contains
           enddo
        enddo
     enddo
+    ! z direction - Aux
+    do n=1,naux
+       do k=lo(3),hi(3)+1
+          do j=lo(2),hi(2)
+             do i=lo(1),hi(1)
+                dAdz = gfack(k) * (Q(i,j,k,QFX+n-1) - Q(i,j,k-1,QFX+n-1))
+                fz(i,j,k,UFX+n-1) = - dAdz * Dauz(i,j,k,n)
+             end do
+          enddo
+       enddo
+    enddo
+    ! z direction - Finalize
     do k=lo(3),hi(3)+1
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -374,7 +446,17 @@ contains
           enddo
        enddo
     enddo
+    do n=UFX,UFX+naux-1
+       do k=lo(3),hi(3)+1
+          do j=lo(2),hi(2)
+             do i=lo(1),hi(1)
+                fz(i,j,k,n) = fz(i,j,k,n) * Az(i,j,k)
+             enddo
+          enddo
+       enddo
+    enddo
 
+    ! Calculate net flux
     do n=1,NVAR
        do k = lo(3), hi(3)
           do j = lo(2), hi(2)

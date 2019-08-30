@@ -30,7 +30,6 @@ using std::string;
 #include <AMReX_ParmParse.H>
 
 #include <PeleC_error_F.H>
-
 #ifdef AMREX_USE_EB
 #include <AMReX_EBMultiFabUtil.H>
 #endif
@@ -118,6 +117,7 @@ int          PeleC::nGrowTr      = 4;
 int          PeleC::diffuse_temp = 0;
 int          PeleC::diffuse_enth = 0;
 int          PeleC::diffuse_spec = 0;
+int          PeleC::diffuse_aux  = 0;
 int          PeleC::diffuse_vel  = 0;
 Real         PeleC::diffuse_cutoff_density = -1.e200;
 bool         PeleC::do_diffuse   = false;
@@ -374,10 +374,11 @@ PeleC::read_params ()
   pp.query("diffuse_temp",diffuse_temp);
   pp.query("diffuse_enth",diffuse_enth);
   pp.query("diffuse_spec",diffuse_spec);
+  pp.query("diffuse_spec",diffuse_aux);
   pp.query("diffuse_vel",diffuse_vel);
   pp.query("diffuse_cutoff_density",diffuse_cutoff_density);
 
-  do_diffuse = diffuse_temp || diffuse_enth || diffuse_spec || diffuse_vel;
+  do_diffuse = diffuse_temp || diffuse_enth || diffuse_spec || diffuse_vel || diffuse_aux;
   
   // sanity checks
   if (cfl <= 0.0 || cfl > 1.0) {

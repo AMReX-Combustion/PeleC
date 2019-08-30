@@ -25,6 +25,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
   if (diffuse_temp == 0
       && diffuse_enth == 0
       && diffuse_spec == 0
+      && diffuse_aux  == 0
       && diffuse_vel  == 0
       && do_hydro == 0)
   {
@@ -76,7 +77,8 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
      inconsistent.  Note sure what are the consequences of that.
   */
   int dComp_rhoD = 0;
-  int dComp_mu = dComp_rhoD + NumSpec;
+  int dComp_rhoDaux = dComp_rhoD + NumSpec;
+  int dComp_mu = dComp_rhoDaux + NumAux;
   int dComp_xi = dComp_mu + 1;
   int dComp_lambda = dComp_xi + 1;
   int nCompTr = dComp_lambda + 1;
@@ -233,6 +235,14 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
                              BL_TO_FORTRAN_N_3D(coeff_cc, dComp_mu),
                              BL_TO_FORTRAN_N_3D(coeff_cc, dComp_xi),
                              BL_TO_FORTRAN_N_3D(coeff_cc, dComp_lambda));
+	if (naux > 0) {
+        get_transport_coeffs_aux(ARLIM_3D(gbox.loVect()),
+                             ARLIM_3D(gbox.hiVect()),
+                             BL_TO_FORTRAN_N_3D(Qfab, cQFS),
+                             BL_TO_FORTRAN_N_3D(Qfab, cQTEMP),
+                             BL_TO_FORTRAN_N_3D(Qfab, cQRHO),
+                             BL_TO_FORTRAN_N_3D(coeff_cc, dComp_rhoDaux));
+	}
       }
 
       // Container on grown region, for hybrid divergence & redistribution
@@ -304,6 +314,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
                     dbox.hiVect(),
                     BL_TO_FORTRAN_ANYD(Qfab),
                     BL_TO_FORTRAN_N_ANYD(coeff_ec[0], dComp_rhoD),
+                    BL_TO_FORTRAN_N_ANYD(coeff_ec[0], dComp_rhoDaux),
                     BL_TO_FORTRAN_N_ANYD(coeff_ec[0], dComp_mu),
                     BL_TO_FORTRAN_N_ANYD(coeff_ec[0], dComp_xi),
                     BL_TO_FORTRAN_N_ANYD(coeff_ec[0], dComp_lambda),
@@ -314,6 +325,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
                     BL_TO_FORTRAN_ANYD(flux_ec[0]),
 #if (BL_SPACEDIM > 1)
                     BL_TO_FORTRAN_N_ANYD(coeff_ec[1], dComp_rhoD),
+                    BL_TO_FORTRAN_N_ANYD(coeff_ec[1], dComp_rhoDaux),
                     BL_TO_FORTRAN_N_ANYD(coeff_ec[1], dComp_mu),
                     BL_TO_FORTRAN_N_ANYD(coeff_ec[1], dComp_xi),
                     BL_TO_FORTRAN_N_ANYD(coeff_ec[1], dComp_lambda),
@@ -322,6 +334,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
                     BL_TO_FORTRAN_ANYD(flux_ec[1]),
 #if (BL_SPACEDIM > 2)
                     BL_TO_FORTRAN_N_ANYD(coeff_ec[2], dComp_rhoD),
+                    BL_TO_FORTRAN_N_ANYD(coeff_ec[2], dComp_rhoDaux),
                     BL_TO_FORTRAN_N_ANYD(coeff_ec[2], dComp_mu),
                     BL_TO_FORTRAN_N_ANYD(coeff_ec[2], dComp_xi),
                     BL_TO_FORTRAN_N_ANYD(coeff_ec[2], dComp_lambda),
@@ -334,6 +347,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
                     BL_TO_FORTRAN_ANYD(Dterm),
                     geom.CellSize());
       }
+     
 
       // Shut off unwanted diffusion after the fact
       //    ick! Under normal conditions, you either have diffusion on all or
@@ -356,8 +370,13 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
           flux_ec[d].setVal(0, flux_ec[d].box(), FirstSpec, NumSpec);
         }
       }
-
       if (diffuse_vel  == 0) {
+        Dterm.setVal(0, Dterm.box(), Xmom, 3);
+        for (int d = 0; d < BL_SPACEDIM; d++) {
+          flux_ec[d].setVal(0, flux_ec[d].box(), Xmom, 3);
+        }
+      }
+      if (diffuse_aux == 0) {
         Dterm.setVal(0, Dterm.box(), Xmom, 3);
         for (int d = 0; d < BL_SPACEDIM; d++) {
           flux_ec[d].setVal(0, flux_ec[d].box(), Xmom, 3);
