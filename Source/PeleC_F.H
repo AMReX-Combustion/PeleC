@@ -153,6 +153,36 @@ extern "C"
 		   BL_FORT_FAB_ARG_3D(D),
 		   const amrex::Real* dx);
 
+  void pc_diffterm_aux_x(const int* lo,  const int* hi,
+		   const int* dmnlo,  const int* dmnhi,
+		   const BL_FORT_FAB_ARG_3D(Q),
+		   const BL_FORT_FAB_ARG_3D(Daux),
+		   BL_FORT_FAB_ARG_3D(A),
+		   BL_FORT_FAB_ARG_3D(f),
+		   BL_FORT_FAB_ARG_3D(Vol),
+		   BL_FORT_FAB_ARG_3D(D),
+		   const amrex::Real* dx);
+ 
+  void pc_diffterm_aux_y(const int* lo,  const int* hi,
+		   const int* dmnlo,  const int* dmnhi,
+		   const BL_FORT_FAB_ARG_3D(Q),
+		   const BL_FORT_FAB_ARG_3D(Daux),
+		   BL_FORT_FAB_ARG_3D(A),
+		   BL_FORT_FAB_ARG_3D(f),
+		   BL_FORT_FAB_ARG_3D(Vol),
+		   BL_FORT_FAB_ARG_3D(D),
+		   const amrex::Real* dx);
+
+  void pc_diffterm_aux_z(const int* lo,  const int* hi,
+		   const int* dmnlo,  const int* dmnhi,
+		   const BL_FORT_FAB_ARG_3D(Q),
+		   const BL_FORT_FAB_ARG_3D(Daux),
+		   BL_FORT_FAB_ARG_3D(A),
+		   BL_FORT_FAB_ARG_3D(f),
+		   BL_FORT_FAB_ARG_3D(Vol),
+		   BL_FORT_FAB_ARG_3D(D),
+		   const amrex::Real* dx);
+  
   void pc_smagorinsky_sfs_term(const int* lo,  const int* hi,
                                const int* dmnlo,  const int* dmnhi,
 			       const BL_FORT_FAB_ARG_3D(Q),

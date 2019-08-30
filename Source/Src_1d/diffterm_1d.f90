@@ -15,7 +15,6 @@ contains
                          dmnlo, dmnhi,&
                          Q,   Qlo,   Qhi,&
                          Dx,  Dxlo,  Dxhi,&
-                         Daux,Dauxlo,Dauxhi,&
                          mux, muxlo, muxhi,&
                          xix, xixlo, xixhi,&
                          lamx,lamxlo,lamxhi,&
@@ -39,7 +38,6 @@ contains
     integer, intent(in) ::    Qlo(1),   Qhi(1)
 
     integer, intent(in) ::   Dxlo(1),  Dxhi(1)
-    integer, intent(in) :: Dauxlo(1),Dauxhi(1)
     integer, intent(in) ::  muxlo(1), muxhi(1)
     integer, intent(in) ::  xixlo(1), xixhi(1)
     integer, intent(in) :: lamxlo(1),lamxhi(1)
@@ -51,7 +49,6 @@ contains
 
     double precision, intent(in   ) ::    Q(   Qlo(1):   Qhi(1), QVAR)
     double precision, intent(in   ) ::   Dx(  Dxlo(1):  Dxhi(1), nspecies)
-    double precision, intent(in   ) :: Daux(Dauxlo(1):Dauxhi(1), naux)
     double precision, intent(in   ) ::  mux( muxlo(1): muxhi(1) )
     double precision, intent(in   ) ::  xix( xixlo(1): xixhi(1) )
     double precision, intent(in   ) :: lamx(lamxlo(1):lamxhi(1) )

@@ -15,7 +15,6 @@ contains
                          dmnlo, dmnhi,&
                          Q,   Qlo,   Qhi,&
                          Dx,  Dxlo,  Dxhi,&
-                         Daux,Dauxlo,Dauxhi,&
                          mux, muxlo, muxhi,&
                          xix, xixlo, xixhi,&
                          lamx,lamxlo,lamxhi,&
@@ -23,7 +22,6 @@ contains
                          Ax,  Axlo,  Axhi,&
                          fx,  fxlo,  fxhi,&
                          Dy,  Dylo,  Dyhi,&  
-                         Dauy,Dauylo,Dauyhi,&
                          muy, muylo, muyhi,& 
                          xiy, xiylo, xiyhi,& 
                          lamy,lamylo,lamyhi,&
@@ -34,8 +32,8 @@ contains
                          D,   Dlo,   Dhi,&
                          deltax) bind(C, name = "pc_diffterm")
 
-    use network, only : nspecies, naux
-    use meth_params_module, only : NVAR, UMX, UMY, UMZ, UEDEN, UFS, QVAR, QU, QV, QPRES, QTEMP, QFS, QRHO, QFX
+    use network, only : nspecies
+    use meth_params_module, only : NVAR, UMX, UMY, UMZ, UEDEN, UFS, QVAR, QU, QV, QPRES, QTEMP, QFS, QRHO
     use amrex_constants_module
     use eos_type_module
     use eos_module
@@ -48,7 +46,6 @@ contains
     integer, intent(in) ::    Qlo(2),   Qhi(2)
 
     integer, intent(in) ::   Dxlo(2),  Dxhi(2)
-    integer, intent(in) :: Dauxlo(2),Dauxhi(2)
     integer, intent(in) ::  muxlo(2), muxhi(2)
     integer, intent(in) ::  xixlo(2), xixhi(2)
     integer, intent(in) :: lamxlo(2),lamxhi(2)
@@ -57,7 +54,6 @@ contains
     integer, intent(in) ::   fxlo(2),  fxhi(2)
 
     integer, intent(in) ::   Dylo(2),  Dyhi(2)
-    integer, intent(in) :: Dauylo(2),Dauyhi(2)
     integer, intent(in) ::  muylo(2), muyhi(2)
     integer, intent(in) ::  xiylo(2), xiyhi(2)
     integer, intent(in) :: lamylo(2),lamyhi(2)
@@ -70,7 +66,6 @@ contains
     
     double precision, intent(in   ) ::    Q(   Qlo(1):   Qhi(1),   Qlo(2):   Qhi(2), QVAR)
     double precision, intent(in   ) ::   Dx(  Dxlo(1):  Dxhi(1),  Dxlo(2):  Dxhi(2), nspecies)
-    double precision, intent(in   ) :: Daux(Dauxlo(1):Dauxhi(1),Dauxlo(2):Dauxhi(2), naux)
     double precision, intent(in   ) ::  mux( muxlo(1): muxhi(1), muxlo(2): muxhi(2) )
     double precision, intent(in   ) ::  xix( xixlo(1): xixhi(1), xixlo(2): xixhi(2) )
     double precision, intent(in   ) :: lamx(lamxlo(1):lamxhi(1),lamxlo(2):lamxhi(2) )
@@ -78,7 +73,6 @@ contains
     double precision, intent(in   ) ::   Ax(  Axlo(1):  Axhi(1),  Axlo(2):  Axhi(2) )
     double precision, intent(inout) ::   fx(  fxlo(1):  fxhi(1),  fxlo(2):  fxhi(2), NVAR)
     double precision, intent(in   ) ::   Dy(  Dylo(1):  Dyhi(1),  Dylo(2):  Dyhi(2), nspecies)
-    double precision, intent(in   ) :: Dauy(Dauylo(1):Dauyhi(1),Dauylo(2):Dauyhi(2), naux)
     double precision, intent(in   ) ::  muy( muylo(1): muyhi(1), muylo(2): muyhi(2) )
     double precision, intent(in   ) ::  xiy( xiylo(1): xiyhi(1), xiylo(2): xiyhi(2) )
     double precision, intent(in   ) :: lamy(lamylo(1):lamyhi(1),lamylo(2):lamyhi(2) )
