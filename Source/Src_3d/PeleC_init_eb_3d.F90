@@ -798,9 +798,13 @@ contains
                .and. j.ge.lo(1)-2 .and. j.le.hi(1)+2 &
                .and. k.ge.lo(2)-2 .and. k.le.hi(2)+2 ) then
              kappa_inv = 1.d0 / MAX(vf(i,j,k),1.d-12)
-             !$omp atomic read
+#ifdef _OPENMP
+!$omp atomic read
+#endif
              tmp = ebflux(L,n)
-             !$omp end atomic
+#ifdef _OPENMP
+!$omp end atomic
+#endif
              DC(i,j,k,n) = - ( f0(i+1,j,k,n) - f0(i,j,k,n) &
                   +            f1(i,j+1,k,n) - f1(i,j,k,n) &
                   +            f2(i,j,k+1,n) - f2(i,j,k,n) + tmp) * VOLINV * kappa_inv
@@ -959,9 +963,13 @@ contains
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)
                 if (mask(i,j,k).eq.bval) then
-                   !$omp atomic write
+#ifdef _OPENMP
+!$omp atomic write
+#endif
                    S(i,j,k,n)=b(n)
-                   !$omp end atomic
+#ifdef _OPENMP
+!$omp end atomic
+#endif
                 endif
              enddo
           enddo

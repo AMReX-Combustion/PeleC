@@ -65,7 +65,7 @@ function(get_pelec_sources pelec_exe_name)
   endif()
   if(${PELEC_DIM} GREATER 1 AND PELEC_ENABLE_EB)
      add_sources(GlobalSourceList
-       ${PELEC_SOURCE_DIR}/PeleC_init_eb_${PELEC_DIM}d.f90
+       ${PELEC_SOURCE_DIR}/PeleC_init_eb_${PELEC_DIM}d.F90
      )
   endif()
   if("${PELEC_TRANSPORT_TYPE}" STREQUAL "IDEAL_GAS")
