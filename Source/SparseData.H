@@ -129,13 +129,14 @@ SparseData<T,Cell>::merge(const SparseData& thdlocal, int comp, int ncomp, const
 {
     BL_ASSERT(comp+ncomp <= m_ncomp);
 
-#pragma omp critical
     for (int n=0; n<ncomp; ++n)
     {
         for (int i=0; i<m_region.size(); ++i)
         {
             if (mask[i]) {
-
+#ifdef _OPENMP
+#pragma omp atomic write
+#endif                
                 m_data[getIndex(i,comp+n)] = thdlocal.m_data[getIndex(i,comp+n)];
             }
         }
