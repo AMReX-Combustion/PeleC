@@ -441,7 +441,7 @@ contains
     real(amrex_real), intent(out) :: dm_as_fine(dflo(1):dfhi(1),dflo(2):dfhi(2),nc)
     integer,  intent(in) ::  levmsk (lmlo(1):lmhi(1),lmlo(2):lmhi(2))
     integer,  intent(in) ::  rr_flag_crse(rfclo(1):rfchi(1),rfclo(2):rfchi(2))
-    real(amrex_real) :: drho
+    real(amrex_real) :: drho, tmp
 
     integer :: ii,jj,iii,jjj
     logical :: valid_dst_cell
@@ -464,7 +464,16 @@ contains
           if (i.ge.lo(0)-2 .and. i.le.hi(0)+2 &
                .and. j.ge.lo(1)-2 .and. j.le.hi(1)+2 ) then
              kappa_inv = 1.d0 / MAX(vf(i,j),1.d-12)
-             DC(i,j,n) = - (f0(i+1,j,n) - f0(i,j,n) + f1(i,j+1,n) - f1(i,j,n) + ebflux(L,n)) * VOLINV * kappa_inv
+#ifdef _OPENMP
+!$omp atomic read
+#endif
+             tmp = ebflux(L,n)
+#ifdef _OPENMP
+!$omp end atomic
+#endif
+             DC(i,j,n) = - (f0(i+1,j,n) - f0(i,j,n) &
+                          + f1(i,j+1,n) - f1(i,j,n) &
+                          + tmp) * VOLINV * kappa_inv
           endif
        enddo
 
@@ -595,7 +604,16 @@ contains
     do n=1,nc
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
-             if (mask(i,j).eq.bval) S(i,j,n)=b(n)
+             if (mask(i,j).eq.bval) then
+
+#ifdef _OPENMP
+!$omp atomic write
+#endif
+                S(i,j,n)=b(n)
+#ifdef _OPENMP
+!$omp end atomic
+#endif
+             endif
           enddo
        enddo
     enddo
