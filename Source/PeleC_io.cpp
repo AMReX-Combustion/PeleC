@@ -23,6 +23,9 @@
 #endif
 
 #include "AMReX_buildInfo.H"
+#ifdef REACTIONS
+#include "chemistry_file.H"
+#endif
 
 using std::string;
 using namespace amrex;
@@ -655,10 +658,199 @@ PeleC::writeJobInfo (const std::string& dir)
     jobInfoFile << PrettyLine;
 
     ParmParse::dumpTable(jobInfoFile, true);
-
     jobInfoFile.close();
 
 }
+
+/*
+ * PeleC::writeBuildInfo
+ * Similar to writeJobInfo, but the subset of information that makes sense without
+ * an input file to enable --describe in format similar to CASTRO
+ *
+ */
+
+void
+PeleC::writeBuildInfo (std::ostream& os)
+
+{
+    std::string PrettyLine = std::string(78, '=') + "\n";
+    std::string OtherLine = std::string(78, '-') + "\n";
+    std::string SkipSpace = std::string(8, ' ');
+
+ // build information
+    os << PrettyLine;
+    os << " PeleC Build Information\n";
+    os << PrettyLine;
+
+    os << "build date:    " << buildInfoGetBuildDate() << "\n";
+    os << "build machine: " << buildInfoGetBuildMachine() << "\n";
+    os << "build dir:     " << buildInfoGetBuildDir() << "\n";
+    os << "AMReX dir:     " << buildInfoGetAMReXDir() << "\n";
+
+    os << "\n";
+
+    os << "COMP:          " << buildInfoGetComp() << "\n";
+    os << "COMP version:  " << buildInfoGetCompVersion() << "\n";
+
+
+    std::cout << "C++ compiler:  " << buildInfoGetCXXName() << "\n";
+    std::cout << "C++ flags:     " << buildInfoGetCXXFlags() << "\n";
+
+    os << "\n";
+
+    os << "FCOMP:         " << buildInfoGetFcomp() << "\n";
+    os << "FCOMP version: " << buildInfoGetFcompVersion() << "\n";
+
+    os << "\n";
+
+
+    std::cout << "Link flags:    " << buildInfoGetLinkFlags() << "\n";
+    std::cout << "Libraries:     " << buildInfoGetLibraries() << "\n";
+
+    os << "\n";
+
+    for (int n = 1; n <= buildInfoGetNumModules(); n++) {
+	os << buildInfoGetModuleName(n) << ": " << buildInfoGetModuleVal(n) << "\n";
+    }
+
+    os << "\n";
+    const char* githash1 = buildInfoGetGitHash(1);
+    const char* githash2 = buildInfoGetGitHash(2);
+    const char* githash3 = buildInfoGetGitHash(3);
+    if (strlen(githash1) > 0) {
+	os << "PeleC       git hash: " << githash1 << "\n";
+    }
+    if (strlen(githash2) > 0) {
+	os << "AMReX       git hash: " << githash2 << "\n";
+    }
+    if (strlen(githash3) > 0) {
+	os << "PelePhysics git hash: " << githash3 << "\n";
+    }
+
+    const char* buildgithash = buildInfoGetBuildGitHash();
+    const char* buildgitname = buildInfoGetBuildGitName();
+    if (strlen(buildgithash) > 0){
+	os << buildgitname << " git hash: " << buildgithash << "\n";
+    }
+
+    os << "\n";
+    os << " PeleC Compile time variables: \n";
+
+#ifdef REACTIONS
+    int mm, kk, ii, nfit;
+    CKINDX(&mm, &kk, &ii, &nfit);
+    os << std::setw(40) << std::left << "Number elements from chem cpp : " << mm << std::endl;
+    os << std::setw(40) << std::left << "Number species from chem cpp : " << kk << std::endl;
+    os << std::setw(40) << std::left << "Number reactions from chem cpp : " << ii << std::endl;
+#endif
+
+
+
+    os << "\n";
+    os << " PeleC Defines: \n";
+#ifdef _OPENMP
+    os << std::setw(35) << std::left << "_OPENMP " << std::setw(6) << "ON" << std::endl;
+#else
+    os << std::setw(35) << std::left << "_OPENMP " << std::setw(6) << "OFF" << std::endl;
+#endif
+
+#ifdef MPI_VERSION
+    os << std::setw(35) << std::left << "MPI_VERSION " << std::setw(6) << MPI_VERSION << std::endl;
+#else
+    os << std::setw(35) << std::left << "MPI_VERSION " << std::setw(6) << "UNDEFINED" << std::endl;
+#endif
+
+#ifdef MPI_SUBVERSION
+    os << std::setw(35) << std::left << "MPI_SUBVERSION " << std::setw(6) << MPI_SUBVERSION << std::endl;
+#else
+    os << std::setw(35) << std::left << "MPI_SUBVERSION " << std::setw(6) << "UNDEFINED" << std::endl;
+#endif
+
+#ifdef REACTIONS
+    os << std::setw(35) << std::left << "REACTIONS " << std::setw(6) << "ON" << std::endl;
+#else
+    os << std::setw(35) << std::left << "REACTIONS " << std::setw(6) << "OFF" << std::endl;
+#endif
+#ifdef NUM_ADV
+    os << std::setw(35) << std::left << "NUM_ADV=" << NUM_ADV << std::endl;
+#else
+    os << std::setw(35) << std::left << "NUM_ADV" << "is undefined (0)" << std::endl;
+#endif
+
+
+#ifdef DO_HIT_FORCE
+    os << std::setw(35) << std::left << "DO_HIT_FORCE " << std::setw(6) << "ON" << std::endl;
+#else
+    os << std::setw(35) << std::left << "DO_HIT_FORCE " << std::setw(6) << "OFF" << std::endl;
+#endif
+
+#ifdef PELEC_USE_EB
+    os << std::setw(35) << std::left << "PELEC_USE_EB " << std::setw(6) << "ON" << std::endl;
+#else
+    os << std::setw(35) << std::left << "PELEC_USE_EB " << std::setw(6) << "OFF" << std::endl;
+#endif
+
+
+#ifdef USE_MASA
+    os << std::setw(35) << std::left << "USE_MASA " << std::setw(6) << "ON" << std::endl;
+#else
+    os << std::setw(35) << std::left << "USE_MASA " << std::setw(6) << "OFF" << std::endl;
+#endif
+
+#ifdef PELE_USE_EB
+    os << std::setw(35) << std::left << "PELE_USE_EB " << std::setw(6) << "ON" << std::endl;
+#else
+    os << std::setw(35) << std::left << "PELE_USE_EB " << std::setw(6) << "OFF" << std::endl;
+#endif
+
+#ifdef AMREX_USE_EB
+    os << std::setw(35) << std::left << "AMREX_USE_EB " << std::setw(6) << "ON" << std::endl;
+#else
+    os << std::setw(35) << std::left << "AMREX_USE_EB " << std::setw(6) << "OFF" << std::endl;
+#endif
+
+#ifdef AMREX_PARTICLES
+    os << std::setw(35) << std::left << "AMREX_PARTICLES " << std::setw(6) << "ON" << std::endl;
+#else
+    os << std::setw(35) << std::left << "AMREX_PARTICLES " << std::setw(6) << "OFF" << std::endl;
+#endif
+
+#ifdef PELE_UNIT_TEST_DN
+    os << std::setw(35) << std::left << "PELE_UNIT_TEST_DN " << std::setw(6) << "ON" << std::endl;
+#else
+    os << std::setw(35) << std::left << "PELE_UNIT_TEST_DN " << std::setw(6) << "OFF" << std::endl;
+#endif
+
+#ifdef PELEC_USE_MOL
+    os << std::setw(35) << std::left << "PELEC_USE_MOL " << std::setw(6) << "ON" << std::endl;
+#else
+    os << std::setw(35) << std::left << "PELEC_USE_MOL " << std::setw(6) << "OFF" << std::endl;
+#endif
+
+#ifdef DO_PROBLEM_POST_TIMESTEP
+    os << std::setw(35) << std::left << "DO_PROBLEM_POST_TIMESTEP " << std::setw(6) << "ON" << std::endl;
+#else
+    os << std::setw(35) << std::left << "DO_PROBLEM_POST_TIMESTEP " << std::setw(6) << "OFF" << std::endl;
+#endif
+
+#ifdef DO_PROBLEM_POST_RESTART
+    os << std::setw(35) << std::left << "DO_PROBLEM_POST_RESTART " << std::setw(6) << "ON" << std::endl;
+#else
+    os << std::setw(35) << std::left << "DO_PROBLEM_POST_RESTART " << std::setw(6) << "OFF" << std::endl;
+#endif
+
+#ifdef DO_PROBLEM_POST_INIT
+    os << std::setw(35) << std::left << "DO_PROBLEM_POST_INIT " << std::setw(6) << "ON" << std::endl;
+#else
+    os << std::setw(35) << std::left << "DO_PROBLEM_POST_INIT " << std::setw(6) << "OFF" << std::endl;
+#endif
+
+
+    os << "\n\n";
+
+
+}
+
 
 void
 PeleC::writePlotFile (const std::string& dir,

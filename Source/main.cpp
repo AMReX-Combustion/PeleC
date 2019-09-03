@@ -44,16 +44,28 @@ main (int   argc,
 {
 
 
-    //
-    // Make sure to catch new failures.
-    //
-    amrex::Initialize(argc,argv);
 
     // Refuse to continue if we did not provide an inputs file.
 
     if (argc <= 1) {
 	amrex::Abort("Error: no inputs file provided on command line.");
     }
+
+    // check to see if it contains --describe
+    if (argc >= 2) {
+        for (auto i = 1; i < argc; i++) {
+            if (std::string(argv[i]) == "--describe") {
+                PeleC::writeBuildInfo(std::cout);
+                return 0;
+            }
+        }
+    }
+
+    //
+    // Make sure to catch new failures.
+    //
+    amrex::Initialize(argc,argv);
+
 
     // Save the inputs file name for later.
 
