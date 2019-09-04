@@ -679,17 +679,17 @@ contains
              KE(:) = RUT(i,j,k,:) - Q(i,j,k,QRHO) * Q(i,j,k,QU:QW) * Q(i,j,k,QTEMP)
 
              ! Contractions
-             LM = sum(L(:) * M(:)) + small_num
-             MM = sum(M(:) * M(:)) + small_num
-             Lkk = (L(i11) + L(i22) + L(i33)) + small_num
-             bma = THIRD*sum(beta(:) - alpha(i,j,k,:)) + small_num
-             TT = sum(T(:)*T(:)) + small_num
-             KT = sum(KE(:)*T(:)) + small_num
+             LM = sum(L(:) * M(:))
+             MM = sum(M(:) * M(:))
+             Lkk = (L(i11) + L(i22) + L(i33))
+             bma = THIRD*sum(beta(:) - alpha(i,j,k,:))
+             TT = sum(T(:)*T(:))
+             KT = sum(KE(:)*T(:))
 
              ! Coefficients
-             Cs2(i,j,k) = max(LM / MM, small_num)
-             CI(i,j,k) = max(Lkk / bma, small_num)
-             PrT(i,j,k) = max(TT / KT, small_num)
+             Cs2(i,j,k) = max(LM / (MM + small_num), small_num)
+             CI(i,j,k) = max(Lkk / (bma + small_num), small_num)
+             PrT(i,j,k) = max(TT / (KT + small_num), small_num)
           end do
        end do
     end do

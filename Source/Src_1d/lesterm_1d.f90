@@ -337,17 +337,17 @@ contains
        KE(:) = RUT(i,:) - Q(i,QRHO) * Q(i,QU) * Q(i,QTEMP)
 
        ! Contractions
-       LM = sum(L(:) * M(:)) + small_num
-       MM = sum(M(:) * M(:)) + small_num
+       LM = sum(L(:) * M(:))
+       MM = sum(M(:) * M(:))
        Lkk = L(i11) + small_num
-       bma = sum(beta(:) - alpha(i,:)) + small_num
-       TT = sum(T(:)*T(:)) + small_num
-       KT = sum(KE(:)*T(:)) + small_num
+       bma = sum(beta(:) - alpha(i,:))
+       TT = sum(T(:)*T(:))
+       KT = sum(KE(:)*T(:))
 
        ! Coefficients
-       Cs2(i) =  max(LM / MM, small_num)
-       CI(i) = max(Lkk / bma , small_num)
-       PrT(i) = max(TT / KT , small_num)
+       Cs2(i) =  max(LM / (MM + small_num), small_num)
+       CI(i) = max(Lkk / (bma + small_num), small_num)
+       PrT(i) = max(TT / (KT + small_num), small_num)
     end do
 
     ! scale Prandtl with Cs2
