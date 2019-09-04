@@ -686,16 +686,16 @@ contains
              TT = sum(T(:)*T(:))
              KT = sum(KE(:)*T(:))
 
-             ! Coefficients
+             ! Coefficients (here PrT holds KT/TT)
              Cs2(i,j,k) = max(LM / (MM + small_num), small_num)
              CI(i,j,k) = max(Lkk / (bma + small_num), small_num)
-             PrT(i,j,k) = max(TT / (KT + small_num), small_num)
+             PrT(i,j,k) = max(KT / (TT + small_num), small_num)
           end do
        end do
     end do
 
-    ! scale Prandtl with Cs2
-    PrT(:,:,:) = Cs2(:,:,:) * PrT(:,:,:)
+    ! Calculate Pr according to Martin Piomelli Candler 2000, Eq. 24
+    PrT(:,:,:) = Cs2(:,:,:) / PrT(:,:,:)
 
   end subroutine pc_dynamic_smagorinsky_coeffs
 

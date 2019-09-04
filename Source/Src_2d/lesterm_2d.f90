@@ -501,14 +501,14 @@ contains
           TT = sum(T(:)*T(:))
           KT = sum(KE(:)*T(:))
 
-          ! Coefficients
+          ! Coefficients (here PrT holds KT/TT)
           Cs2(i,j) =  max(LM / (MM + small_num), small_num)
           CI(i,j) =  max(Lkk / (bma + small_num), small_num)
           PrT(i,j) =  max(KT / (TT + small_num), small_num)
        end do
     end do
-
-    ! scale Prandtl with Cs2
+    
+    ! Calculate Pr according to Martin Piomelli Candler 2000, Eq. 24
     PrT(:,:) = Cs2(:,:) / PrT(:,:)
 
   end subroutine pc_dynamic_smagorinsky_coeffs
