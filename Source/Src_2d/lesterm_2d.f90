@@ -504,12 +504,12 @@ contains
           ! Coefficients
           Cs2(i,j) =  max(LM / (MM + small_num), small_num)
           CI(i,j) =  max(Lkk / (bma + small_num), small_num)
-          PrT(i,j) =  max(TT / (KT + small_num), small_num)
+          PrT(i,j) =  max(KT / (TT + small_num), small_num)
        end do
     end do
 
     ! scale Prandtl with Cs2
-    PrT(:,:) = Cs2(:,:) * PrT(:,:)
+    PrT(:,:) = Cs2(:,:) / PrT(:,:)
 
   end subroutine pc_dynamic_smagorinsky_coeffs
 
