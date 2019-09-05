@@ -1,4 +1,5 @@
 #C++ files
+CEXE_sources += Filter.cpp
 CEXE_sources += PeleC.cpp
 CEXE_sources += PeleC_advance.cpp
 CEXE_sources += PeleCBld.cpp
@@ -28,7 +29,6 @@ FEXE_headers += Problem_F.H
 FEXE_headers += PeleC_error_F.H
 FEXE_headers += Filter_F.H
 CEXE_headers += Filter.H
-CEXE_sources += Filter.cpp
 
 #Source file logic
 ifeq ($(USE_REACT), TRUE)
