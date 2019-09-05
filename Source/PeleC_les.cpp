@@ -410,7 +410,8 @@ PeleC::getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::Mu
 
       // 3. Filter the state variables and the derived quantities at the
       // test filter level
-      FArrayBox filtered_S, filtered_Q, filtered_Qaux, filtered_K, filtered_RUT, filtered_alphaij, filtered_alpha, filtered_flux_T, filtered_tander_ec;
+      FArrayBox filtered_S, filtered_Q, filtered_Qaux, filtered_K, filtered_RUT, filtered_alphaij, filtered_alpha, filtered_flux_T;
+      FArrayBox filtered_tander_ec[BL_SPACEDIM];
       filtered_S.resize(g2box,NUM_STATE);
       filtered_Q.resize(g2box,QVAR);
       filtered_Qaux.resize(g2box,NQAUX>0?NQAUX:1);
