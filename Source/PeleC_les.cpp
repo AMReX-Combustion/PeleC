@@ -273,9 +273,9 @@ PeleC::getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::Mu
     N                                 (cbox) |----->         LESTerm
     N                                 (cbox) |----->         coeff_ec
     N + 1                            (g4box) |------>        filtered_coeff_cc
-    N + 1 + nGrowC                   (g3box) |-------->      coeff_cc, filtered(K, RUT, alphaij, alpha, flux_T)
+    N + 1 + nGrowC                   (g3box) |-------->      coeff_cc, filtered(K, RUT, alphaij, alpha, flux_T, tander_ec)
     N + 1 + nGrowC + nGrowD          (g2box) |---------->    filtered(S, Q, Qaux)
-    N + 1 + nGrowC + nGrowT          (g1box) |----------->   K, RUT, alphaij, alpha, flux_T
+    N + 1 + nGrowC + nGrowT          (g1box) |----------->   K, RUT, alphaij, alpha, flux_T, tander_ec
     N + 1 + nGrowC + nGrowT + nGrowD (g0box) |-------------> S, Q, Qaux
 
     where
@@ -410,7 +410,7 @@ PeleC::getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::Mu
 
       // 3. Filter the state variables and the derived quantities at the
       // test filter level
-      FArrayBox filtered_S, filtered_Q, filtered_Qaux, filtered_K, filtered_RUT, filtered_alphaij, filtered_alpha, filtered_flux_T;
+      FArrayBox filtered_S, filtered_Q, filtered_Qaux, filtered_K, filtered_RUT, filtered_alphaij, filtered_alpha, filtered_flux_T, filtered_tander_ec;
       filtered_S.resize(g2box,NUM_STATE);
       filtered_Q.resize(g2box,QVAR);
       filtered_Qaux.resize(g2box,NQAUX>0?NQAUX:1);
@@ -431,6 +431,28 @@ PeleC::getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::Mu
       test_filter.apply_filter(g3box, alpha, filtered_alpha);
       test_filter.apply_filter(g3box, flux_T, filtered_flux_T);
 
+      // Get the *filtered* tangential derivatives
+      // Calculate as derivatives of filtered velocity field, which is equivalent and
+      // matches how the other derivatives are calculated later in the dynamic procedure calls.
+      for (int d=0; d<BL_SPACEDIM; ++d)
+      {
+        Box ebox = amrex::surroundingNodes(g3box,d);
+
+#if (BL_SPACEDIM > 1)
+        int nCompTan = AMREX_D_PICK(1, 2, 6);
+        filtered_tander_ec[d].resize(ebox,nCompTan); tander_ec[d].setVal(0);
+        {
+          BL_PROFILE("PeleC::pc_compute_tangential_vel_derivs call");
+          pc_compute_tangential_vel_derivs(g3box.loVect(), g3box.hiVect(),
+                                           dbox.loVect(), dbox.hiVect(),
+                                           BL_TO_FORTRAN_ANYD(filtered_Q),
+                                           BL_TO_FORTRAN_ANYD(filtered_tander_ec[d]),
+                                           geom.CellSize(),&d);
+        }
+#endif
+      } // loop over dimension
+      
+
       // 4. Calculate the dynamic Smagorinsky coefficients
       int do_harmonic = 1;
       FArrayBox coeff_cc;
@@ -442,11 +464,11 @@ PeleC::getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::Mu
                                       dbox.loVect(), dbox.hiVect(),
                                       BL_TO_FORTRAN_ANYD(filtered_Q),
 #if (BL_SPACEDIM > 1)
-                                      BL_TO_FORTRAN_ANYD(tander_ec[0]),
-                                      BL_TO_FORTRAN_ANYD(tander_ec[1]),
+                                      BL_TO_FORTRAN_ANYD(filtered_tander_ec[0]),
+                                      BL_TO_FORTRAN_ANYD(filtered_tander_ec[1]),
 #endif
 #if (BL_SPACEDIM > 2)
-                                      BL_TO_FORTRAN_ANYD(tander_ec[2]),
+                                      BL_TO_FORTRAN_ANYD(filtered_tander_ec[2]),
 #endif
                                       BL_TO_FORTRAN_ANYD(filtered_K),
                                       BL_TO_FORTRAN_ANYD(filtered_RUT),
