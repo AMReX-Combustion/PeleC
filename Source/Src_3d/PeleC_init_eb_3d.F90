@@ -762,7 +762,7 @@ contains
     real(amrex_real), intent(in   ) ::   f0(f0lo(0):f0hi(0),f0lo(1):f0hi(1),f0lo(2):f0hi(2),1:nc)
     real(amrex_real), intent(in   ) ::   f1(f1lo(0):f1hi(0),f1lo(1):f1hi(1),f1lo(2):f1hi(2),1:nc)
     real(amrex_real), intent(in   ) ::   f2(f2lo(0):f2hi(0),f2lo(1):f2hi(1),f2lo(2):f2hi(2),1:nc)
-    real(amrex_real), intent(inout) ::   ebflux(0:nebflux-1,1:nc)
+    real(amrex_real), intent(in   ) ::   ebflux(0:nebflux-1,1:nc)
     real(amrex_real), intent(inout) ::   DC(DClo(0):DChi(0),DClo(1):DChi(1),DClo(2):DChi(2),1:nc)
     real(amrex_real), intent(in   ) ::   vf(vflo(0):vfhi(0),vflo(1):vfhi(1),vflo(2):vfhi(2))
     real(amrex_real), intent(in   ) ::    W( Wlo(0):Whi(0) , Wlo(1):Whi(1) , Wlo(2):Whi(2))
@@ -778,7 +778,7 @@ contains
     real(amrex_real), intent(out) :: dm_as_fine(dflo(1):dfhi(1),dflo(2):dfhi(2),dflo(3):dfhi(3),nc)
     integer,  intent(in) ::  levmsk (lmlo(1):lmhi(1),lmlo(2):lmhi(2),lmlo(3):lmhi(3))
     integer,  intent(in) ::  rr_flag_crse(rfclo(1):rfchi(1),rfclo(2):rfchi(2),rfclo(3):rfchi(3))
-    real(amrex_real) :: drho
+    real(amrex_real) :: drho, tmp
 
     integer :: ii,jj,kk,iii,jjj,kkk
     logical :: valid_dst_cell
@@ -798,9 +798,16 @@ contains
                .and. j.ge.lo(1)-2 .and. j.le.hi(1)+2 &
                .and. k.ge.lo(2)-2 .and. k.le.hi(2)+2 ) then
              kappa_inv = 1.d0 / MAX(vf(i,j,k),1.d-12)
+#ifdef _OPENMP
+!$omp atomic read
+#endif
+             tmp = ebflux(L,n)
+#ifdef _OPENMP
+!$omp end atomic
+#endif
              DC(i,j,k,n) = - ( f0(i+1,j,k,n) - f0(i,j,k,n) &
                   +            f1(i,j+1,k,n) - f1(i,j,k,n) &
-                  +            f2(i,j,k+1,n) - f2(i,j,k,n) + ebflux(L,n)) * VOLINV * kappa_inv
+                  +            f2(i,j,k+1,n) - f2(i,j,k,n) + tmp) * VOLINV * kappa_inv
           endif
        enddo
 
@@ -955,7 +962,15 @@ contains
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)
-                if (mask(i,j,k).eq.bval) S(i,j,k,n)=b(n)
+                if (mask(i,j,k).eq.bval) then
+#ifdef _OPENMP
+!$omp atomic write
+#endif
+                   S(i,j,k,n)=b(n)
+#ifdef _OPENMP
+!$omp end atomic
+#endif
+                endif
              enddo
           enddo
        enddo

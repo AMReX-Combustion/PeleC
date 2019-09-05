@@ -3,7 +3,7 @@
 Testing and Verification
 ------------------------
 
-Testing and verfication of PeleC can be performed using CTest, which is included in the CMake build system. If one builds PeleC with CMake, the testing suite, and the verification suite, can be enabled during the CMake configure step.
+Testing and verfication of PeleC can be performed using CTest, which is included in the CMake build system. If one builds PeleC with CMake, the testing suite, and the verification suite, can be enabled during the CMake configure step. A nightly test is reflected on the dashboard `here <https://my.cdash.org/index.php?project=PeleC>`_ .
 
 An example ``cmake`` configure command performed in the ``Build`` directory in PeleC is shown below with options relevant to the testing suite:
 

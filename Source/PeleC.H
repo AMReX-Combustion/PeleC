@@ -117,6 +117,7 @@ public:
 				     ostream&       os,
 				     amrex::VisMF::How     how) override;
     void writeJobInfo (const std::string& dir);
+    static void writeBuildInfo (std::ostream& os);
 
     //
     // Define data descriptors.

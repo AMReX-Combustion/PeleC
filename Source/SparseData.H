@@ -50,6 +50,7 @@
         void setVal(const T& val);
 
         void setVal(const T& val, int comp, int ncomp=1);
+        void merge(const SparseData& thdlocal, int comp, int ncomp, const std::vector<int> mask);
 
         ///
         T& operator() (int i, int comp) {return m_data[getIndex(i,comp)];}
@@ -76,6 +77,7 @@ SparseData<T,Cell>::SparseData(const std::vector<Cell>& _region,
                                int                      _nComp)
 {
     define(_region,_nComp);
+    amrex::Print() << "Init SparseData with ncomp = " << _nComp <<std::endl;
 }
 
 template <class T, class Cell> inline
@@ -118,6 +120,26 @@ SparseData<T,Cell>::setVal(const T& val, int comp, int ncomp)
       {
         m_data[getIndex(i,comp+n)] = val;
       }
+    }
+}
+
+template <class T, class Cell> inline
+void
+SparseData<T,Cell>::merge(const SparseData& thdlocal, int comp, int ncomp, const std::vector<int> mask)
+{
+    BL_ASSERT(comp+ncomp <= m_ncomp);
+
+    for (int n=0; n<ncomp; ++n)
+    {
+        for (int i=0; i<m_region.size(); ++i)
+        {
+            if (mask[i]) {
+#ifdef _OPENMP
+#pragma omp atomic write
+#endif                
+                m_data[getIndex(i,comp+n)] = thdlocal.m_data[getIndex(i,comp+n)];
+            }
+        }
     }
 }
 

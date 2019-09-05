@@ -263,12 +263,10 @@ function(get_amrex_sources)
        ${AMREX_SOURCE_DIR}/AMReX_EB_levelset.cpp
        ${AMREX_SOURCE_DIR}/AMReX_EB_utils.cpp
        ${AMREX_SOURCE_DIR}/AMReX_EB_LSCoreBase.cpp 
-       ${AMREX_SOURCE_DIR}/AMReX_EBFluxRegister_${AMREX_DIM}d.F90
        ${AMREX_SOURCE_DIR}/AMReX_EBFluxRegister_nd.F90
-       ${AMREX_SOURCE_DIR}/AMReX_EBMultiFabUtil_${AMREX_DIM}d.F90
-       ${AMREX_SOURCE_DIR}/AMReX_ebinterp_${AMREX_DIM}d.F90  
        ${AMREX_SOURCE_DIR}/AMReX_ebcellflag_mod.F90   
        ${AMREX_SOURCE_DIR}/AMReX_compute_normals.F90
+       ${AMREX_SOURCE_DIR}/AMReX_eb_to_pvd.F90
        ${AMREX_SOURCE_DIR}/AMReX_EB_geometry.F90
        ${AMREX_SOURCE_DIR}/AMReX_EB_levelset_F.F90
        ${AMREX_SOURCE_DIR}/AMReX_EB_Tagging.F90
@@ -277,9 +275,9 @@ function(get_amrex_sources)
        ${AMREX_SOURCE_DIR}/AMReX_EB2.cpp
        ${AMREX_SOURCE_DIR}/AMReX_EB2_Level.cpp
        ${AMREX_SOURCE_DIR}/AMReX_EB2_MultiGFab.cpp
-       ${AMREX_SOURCE_DIR}/AMReX_eb2_${AMREX_DIM}d.F90
        ${AMREX_SOURCE_DIR}/AMReX_EB2_${AMREX_DIM}D_C.cpp
        ${AMREX_SOURCE_DIR}/AMReX_algoim.cpp
+       ${AMREX_SOURCE_DIR}/AMReX_WriteEBSurface.cpp
      )
      set(AMREX_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Submodules/AMReX/Src/LinearSolvers/MLMG")
      add_sources(GlobalSourceList

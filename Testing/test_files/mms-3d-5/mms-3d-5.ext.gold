@@ -1,17 +1,20 @@
- plotfile = /home/jrood/combustion/PeleC/Build/Testing/test_files/mms-3d-1/plt00010
+ plotfile = /home/jrood/combustion/PeleC/Build/Testing/test_files/mms-3d-5/plt00010
  time = 4.8140024410465099e-08
               variables          minimum value          maximum value
- density                       0.0011034753865         0.001248847291
- Temp                              200.6173422           368.41985496
- pressure                         693170.89191           1215408.5016
- magvort                          10690.992794           193744.80808
- x_velocity                       9157.5284575           59742.575631
- y_velocity                       10262.087507           59141.452461
- z_velocity                       8498.4102387           60935.987715
- magvel                           36132.385132           88291.857654
- rhommserror                 -5.6257686027e-06       5.0115824467e-06
- ummserror                       -4606.7099299           4068.7708582
- vmmserror                       -3502.1508805           3467.6476885
- wmmserror                       -5265.8281486           5262.1829421
- pmmserror                       -269179.10809           92712.686452
+ density                       0.0011031533219        0.0012487632234
+ Temp                             66.985354732            376.2254895
+ pressure                         231745.17067           1241505.8338
+ magvort                          8615.7345631           215179.58814
+ x_velocity                       7388.6653149                  62178
+ y_velocity                       7807.6685567           61703.564923
+ z_velocity                       4804.2220576           64851.958333
+ magvel                            31154.17855           91306.454301
+ C_s2                                        4                      4
+ C_I                                         1                      1
+ Pr_T                                        1                      1
+ rhommserror                 -6.5209092777e-06       5.3165582425e-06
+ ummserror                       -6936.5303244           6504.1952275
+ vmmserror                       -8155.4296421           8158.0559731
+ wmmserror                        -9198.683844           9178.1535607
+ pmmserror                       -730604.82933           135210.46025
 
