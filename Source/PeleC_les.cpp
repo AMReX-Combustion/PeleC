@@ -364,7 +364,7 @@ PeleC::getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::Mu
         tander_ec[d].resize(ebox,nCompTan); tander_ec[d].setVal(0);
         {
           BL_PROFILE("PeleC::pc_compute_tangential_vel_derivs call");
-          pc_compute_tangential_vel_derivs(cbox.loVect(), cbox.hiVect(),
+          pc_compute_tangential_vel_derivs(g1box.loVect(), g1box.hiVect(),
                                            dbox.loVect(), dbox.hiVect(),
                                            BL_TO_FORTRAN_ANYD(Qfab),
                                            BL_TO_FORTRAN_ANYD(tander_ec[d]),
