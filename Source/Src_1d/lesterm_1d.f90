@@ -381,7 +381,8 @@ contains
     S = dudx
     Skk = dudx
     Sijmag = sqrt(TWO * S**2)
-    mut = Q(i,QRHO) * deltabar**2 * Sijmag
+    ! S is located at faces, need to get rho at the face for consistency when calculating mut
+    mut = HALF*(Q(i,QRHO)+ Q(i-1,QRHO)) * deltabar**2 * Sijmag
 
     alphaij_xx = TWO * mut * ( S - THIRD * Skk )
     alpha      = TWO * mut * Sijmag

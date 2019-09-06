@@ -736,7 +736,8 @@ contains
     S(:,:) = HALF * (dUdx(:,:) + transpose(dUdx(:,:)))
     Skk = S(1,1) + S(2,2) + S(3,3)
     Sijmag = sqrt(TWO * sum(S(:,:)**2))
-    mut = Q(i,j,k,QRHO) * deltabar**2 * Sijmag
+    ! S is located at faces, need to get rho at the face for consistency when calculating mut
+    mut = HALF*(Q(i,j,k,QRHO) + Q(i-1,j,k,QRHO)) * deltabar**2 * Sijmag
 
     alphaij_xx = TWO * mut * ( S(1,1) - THIRD * Skk )
     alphaij_xy = TWO * mut * S(1,2)
@@ -785,7 +786,8 @@ contains
     S(:,:) = HALF * (dUdx(:,:) + transpose(dUdx(:,:)))
     Skk = S(1,1) + S(2,2) + S(3,3)
     Sijmag = sqrt(TWO * sum(S(:,:)**2))
-    mut = Q(i,j,k,QRHO) * deltabar**2 * Sijmag
+    ! S is located at faces, need to get rho at the face for consistency when calculating mut
+    mut = HALF*(Q(i,j,k,QRHO) + Q(i,j-1,k,QRHO)) * deltabar**2 * Sijmag
 
     alphaij_yx = TWO * mut * S(2,1)
     alphaij_yy = TWO * mut * ( S(2,2) - THIRD * Skk)
@@ -834,7 +836,8 @@ contains
     S(:,:) = HALF * (dUdx(:,:) + transpose(dUdx(:,:)))
     Skk = S(1,1) + S(2,2) + S(3,3)
     Sijmag = sqrt(TWO * sum(S(:,:)**2))
-    mut = Q(i,j,k,QRHO) * deltabar**2 * Sijmag
+    ! S is located at faces, need to get rho at the face for consistency when calculating mut
+    mut = HALF*(Q(i,j,k,QRHO) + Q(i,j,k-1,QRHO)) * deltabar**2 * Sijmag
 
     alphaij_zx = TWO * mut * S(3,1)
     alphaij_zy = TWO * mut * S(3,2)
