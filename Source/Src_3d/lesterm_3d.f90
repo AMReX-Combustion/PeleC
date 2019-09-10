@@ -626,7 +626,6 @@ contains
     double precision :: gfaci(lo(1):hi(1)+1)
     double precision :: gfacj(lo(2):hi(2)+1)
     double precision :: gfack(lo(3):hi(3)+1)
-    double precision :: gfacijk(3)
     integer :: i11, i12, i13, i21, i22, i23, i31, i32, i33
     i11 = (1-1) * 3 + 1 ! index for entry (1,1)
     i12 = (2-1) * 3 + 1 ! index for entry (1,2)
@@ -650,22 +649,22 @@ contains
     if (lo(3).le.dmnlo(3) .and. physbc_lo(3).eq.Inflow) gfack(dmnlo(3)) = gfack(dmnlo(3)) * TWO
     if (hi(3).gt.dmnhi(3) .and. physbc_hi(3).eq.Inflow) gfack(dmnhi(3)+1) = gfack(dmnhi(3)+1) * TWO
 
-    ! Calculate terms based on fluxes (located at edges), and move the values to cell centers
     do k=lo(3),hi(3)
-       gfacijk(3) = gfack(k)
        do j=lo(2),hi(2)
-          gfacick(2) = gfacj(j)
           do i=lo(1),hi(1)
-             ! Maybe revisit how to determine deltahat in the case where dx1 != dx2 != dx3 (irrelevant for now as this is presently not allowed)
-             deltahat = THIRD*fgr*(deltax(1)+deltax(2)+deltax(3))
-             gfacijk(1) = gfaci(i)
-             call get_sfs_stresses_cc(i, j, k, Q, Qlo, Qhi, betaij(i11), betaij(i12), betaij(i13), betaij(i22), betaij(i23), betaij(i33), beta, T(:), gfacijk, deltahat)
-             betaij(i21) = betaij(i12)
-             betaij(i31) = betaij(i13)
-             betaij(i32) = betaij(i23)
-             
-             T(:) = flux_T(i,j,k,:) - T(:)
-             
+             ! Make betaij and beta
+             deltahat = fgr*deltax(1)
+             call get_sfs_stresses_xdir(i, j, k, Q, Qlo, Qhi, tx, txlo, txhi, betaij(i11), betaij(i12), betaij(i13), beta(1), T(1), gfaci(i), deltahat)
+             T(1) = flux_T(i,j,k,1) - T(1)
+
+             deltahat = fgr*deltax(2)
+             call get_sfs_stresses_ydir(i, j, k, Q, Qlo, Qhi, ty, tylo, tyhi, betaij(i21), betaij(i22), betaij(i23), beta(2), T(2), gfacj(j), deltahat)
+             T(2) = flux_T(i,j,k,2) - T(2)
+
+             deltahat = fgr*deltax(3)
+             call get_sfs_stresses_zdir(i, j, k, Q, Qlo, Qhi, tz, tzlo, tzhi, betaij(i31), betaij(i32), betaij(i33), beta(3), T(3), gfack(k), deltahat)
+             T(3) = flux_T(i,j,k,3) - T(3)
+
              ! "resolved turbulent stresses" and others
              M(:) = betaij(:) - alphaij(i,j,k,:)
              L(i11) = Kij(i,j,k, 1) - Q(i,j,k,QRHO) * Q(i,j,k,QU) * Q(i,j,k,QU)
@@ -850,61 +849,48 @@ contains
 
   end subroutine get_sfs_stresses_zdir
 
-  ! Above subroutines get edge values (required for calculating actual momentum fluxes)
-  ! Below subroutine gets node values (required for dynamic procedure to determine coeffs)
-  
-  subroutine get_sfs_stresses_cc(i, j, k, Q, Qlo, Qhi, alpha11, alpha12, alpha13, alpha22, alpha23, alpha33, alpha, flux_T, gfac, deltabar)
-    
-    use meth_params_module, only : QVAR, QRHO, QU, QV, QW, QTEMP
+  ! subroutine takes in coefficients at ec (need edges all three directions) and moves them to cc
+  subroutine pc_move_smagorinsky_coeffs_to_cc(lo,hi,dlo,dhi, &
+       cfab,c_lo,c_hi, &
+       exfab,ex_lo,ex_hi, &
+       eyfab,ey_lo,ey_hi, &
+       ezfab,ez_lo,ez_hi, &
+       nc, do_harmonic) &
+       bind(C, name="pc_move_transport_coeffs_to_ec")
+
+    use prob_params_module, only : physbc_lo, physbc_hi
     use amrex_constants_module
 
     implicit none
 
-    integer, intent(in) :: i, j, k
-    integer, intent(in) :: Qlo(3), Qhi(3)
-    integer, intent(in) :: txlo(3), txhi(3)
-    double precision, intent(in   ) :: Q( Qlo(1):Qhi(1),  Qlo(2): Qhi(2),  Qlo(3):Qhi(3), QVAR)
-    double precision, intent(inout) :: alpha11, alpha12, alpha13, alpha22, alpha23, alpha33
-    double precision, intent(inout) :: alpha
-    double precision, intent(inout) :: flux_T(3)
-    double precision, intent(in   ) :: gfac(3)
-    double precision, intent(in   ) :: deltabar
+        integer         , intent(in   ) :: lo(3), hi(3)
+    integer         , intent(in   ) :: dlo(3), dhi(3)
+    integer         , intent(in   ) :: c_lo(3), c_hi(3)
+    integer         , intent(in   ) :: ex_lo(3), ex_hi(3)
+    integer         , intent(in   ) :: ey_lo(3), ey_hi(3)
+    integer         , intent(in   ) :: ez_lo(3), ez_hi(3)
+    integer         , intent(in   ) :: dir, nc, do_harmonic
+    real (amrex_real), intent(in   ) :: cfab(c_lo(1):c_hi(1),c_lo(2):c_hi(2),c_lo(3):c_hi(3),nc)
+    real (amrex_real), intent(inout) :: exfab(ex_lo(1):ex_hi(1),ex_lo(2):ex_hi(2),ex_lo(3):ex_hi(3),nc)
+    real (amrex_real), intent(inout) :: eyfab(ey_lo(1):ey_hi(1),ey_lo(2):ey_hi(2),ey_lo(3):ey_hi(3),nc)
+    real (amrex_real), intent(inout) :: ezfab(ez_lo(1):ez_hi(1),ez_lo(2):ez_hi(2),ez_lo(3):ez_hi(3),nc)
 
-    ! local
-    double precision :: Sijmag, Skk, mut
-    double precision :: dUdx(3,3), S(3,3)
-    double precision :: dTdx(3)
-
-    ! Calculate derivatives at cell centers, second order central difference
-    dUdx(1,1) = gfac(1) * (Q(i+1,j,k,QU)    - Q(i-1,j,k,QU))
-    dUdx(1,2) = gfac(2) * (Q(i,j+1,k,QU)    - Q(i,j-1,k,QU))
-    dUdx(1,3) = gfac(3) * (Q(i,j,k+1,QU)    - Q(i,j,k-1,QU))
-    dUdx(2,1) = gfac(1) * (Q(i+1,j,k,QV)    - Q(i-1,j,k,QV))
-    dUdx(2,2) = gfac(2) * (Q(i,j+1,k,QV)    - Q(i,j-1,k,QV))
-    dUdx(2,3) = gfac(3) * (Q(i,j,k+1,QV)    - Q(i,j,k-1,QV))
-    dUdx(3,1) = gfac(1) * (Q(i+1,j,k,QW)    - Q(i-1,j,k,QW))
-    dUdx(3,2) = gfac(2) * (Q(i,j+1,k,QW)    - Q(i,j-1,k,QW))
-    dUdx(3,3) = gfac(3) * (Q(i,j,k+1,QW)    - Q(i,j,k-1,QW))
-    dUdx = HALF * dUdx
-
-    S(:,:) = HALF * (dUdx(:,:) + transpose(dUdx(:,:)))
-    Skk = S(1,1) + S(2,2) + S(3,3)
-    Sijmag = sqrt(TWO * sum(S(:,:)**2))
-    mut = Q(i,j,k,QRHO) * deltabar**2 * Sijmag
-
-    alpha11    = TWO * mut * (S(1,1) - THIRD * Skk)
-    alpha12    = TWO * mut * (S(1,2))
-    alpha13    = TWO * mut * (S(1,3))
-    alpha22    = TWO * mut * (S(2,2) - THIRD * Skk)
-    alpha23    = TWO * mut * (S(2,3))
-    alpha33    = TWO * mut * (S(3,3) - THIRD * Skk)
-
-    dTdx(1) = gfac(1) * (Q(i+1,j,k,QTEMP) - Q(i-1,j,k,QTEMP))
-    dTdx(2) = gfac(2) * (Q(i,j+1,k,QTEMP) - Q(i,j-1,k,QTEMP))
-    dTdx(3) = gfac(3) * (Q(i,j,k+1,QTEMP) - Q(i,j,k-1,QTEMP))
-    dTdx = HALF * dTdx
-    flux_T(1) = mut * dTdx
-  end subroutine get_sfs_stresses_cc
-
+    ! local variables
+    integer          :: i, j, k, n
+    
+    do n = 1,nc
+       do k = lo(3), hi(3)
+          do j = lo(2), hi(2)
+             do i = lo(1), hi(1)
+                cfab(i,j,k,n) = THIRD*HALF* &
+                     (exfab(i,j,k,n) + exfab(i+1,j,k,n) &
+                     +eyfab(i,j,k,n) + eyfab(i,j+1,k,n) &
+                     +ezfab(i,j,k,n) + ezfab(i,j,k+1,n) )
+             end do
+          end do
+       end do
+    end do
+    
+  end subroutine pc_move_smagorinsky_coeffs_to_cc
   
 end module lesterm_module

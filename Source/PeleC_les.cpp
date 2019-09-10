@@ -282,6 +282,17 @@ PeleC::getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::Mu
     nGrowD = number of grow cells necessary for the diffusion operator
     nGrowC = number of grow cells necessary for filtering the Smagorinsky coefficients
     nGrowT = number of grow cells necessary for filtering the derived quantities (test level)
+
+    Rethought grow cells:
+    0                                 (cbox) cc |----->         LESTerm  (net change of state variables, located at centers)
+    0                                 (cbox) cc |----->         coeff_cc (for plotting)
+    0                                 (cbox) ec |----->         filtered_coeff_ec (need for computing fluxes at faces)
+    0 + nGrowC                        (cbox) ec |----->         coeff_ec
+    0 + nGrowC                        (cbox) ec |----->         filtered(K, RUT, alphaij, alpha, flux_T, tander_ec)
+    0 + nGrowC + nGrowD              (g2box) cc |---------->    filtered(S, Q, Qaux)
+    0 + nGrowC + nGrowT              (g1box) ec |----------->   K, RUT, alphaij, alpha, flux_T, tander_ec
+    0 + nGrowC + nGrowT + nGrowD     (g0box) cc |-------------> S, Q, Qaux
+
   */
   Filter test_filter = Filter(les_test_filter_type, les_test_filter_fgr);
   Filter coeff_filter = Filter(box,6);
