@@ -374,7 +374,7 @@ PeleC::read_params ()
   pp.query("diffuse_temp",diffuse_temp);
   pp.query("diffuse_enth",diffuse_enth);
   pp.query("diffuse_spec",diffuse_spec);
-  pp.query("diffuse_spec",diffuse_aux);
+  pp.query("diffuse_aux",diffuse_aux);
   pp.query("diffuse_vel",diffuse_vel);
   pp.query("diffuse_cutoff_density",diffuse_cutoff_density);
 

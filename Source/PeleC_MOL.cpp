@@ -244,7 +244,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
                              BL_TO_FORTRAN_N_3D(coeff_cc, dComp_mu),
                              BL_TO_FORTRAN_N_3D(coeff_cc, dComp_xi),
                              BL_TO_FORTRAN_N_3D(coeff_cc, dComp_lambda));
-	if (NumAux > 0) {
+	if (NumAux > 0 && !(diffuse_aux == 0)) {
         get_transport_coeffs_aux(ARLIM_3D(gbox.loVect()),
                              ARLIM_3D(gbox.hiVect()),
                              BL_TO_FORTRAN_N_3D(Qfab, cQFS),
