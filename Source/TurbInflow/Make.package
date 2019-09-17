@@ -1,4 +1,5 @@
-CEXE_sources += turbinflow.cpp
-
+#Non-preprocessed Fortran files
 f90EXE_sources += turbinflow_f.f90
 
+#C++ files
+CEXE_sources += turbinflow.cpp

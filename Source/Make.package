@@ -1,52 +1,51 @@
-
+#C++ files
+CEXE_sources += Filter.cpp
 CEXE_sources += PeleC.cpp
 CEXE_sources += PeleC_advance.cpp
-CEXE_sources += PeleC_hydro.cpp
-CEXE_sources += PeleC_sources.cpp
-CEXE_sources += PeleC_setup.cpp
+CEXE_sources += PeleCBld.cpp
 CEXE_sources += PeleC_bcfill.cpp
+CEXE_sources += PeleC_external.cpp
+CEXE_sources += PeleC_forcing.cpp
+CEXE_sources += PeleC_hydro.cpp
 CEXE_sources += PeleC_init_eb.cpp
 CEXE_sources += PeleC_io.cpp 
-CEXE_sources += PeleCBld.cpp
+CEXE_sources += PeleC_les.cpp
+CEXE_sources += PeleC_MOL.cpp
+CEXE_sources += PeleC_sources.cpp
+CEXE_sources += PeleC_setup.cpp
+CEXE_sources += Prob.cpp
 CEXE_sources += main.cpp
+CEXE_sources += sum_integrated_quantities.cpp
+CEXE_sources += sum_utils.cpp
 
+#C++ headers
 CEXE_headers += PeleC.H
 CEXE_headers += PeleC_io.H
 CEXE_headers += Problem.H
 CEXE_headers += Problem_Derives.H
 FEXE_headers += Problem_Derive_F.H
-
-CEXE_sources += PeleC_external.cpp
-CEXE_sources += PeleC_forcing.cpp
-CEXE_sources += sum_utils.cpp
-CEXE_sources += sum_integrated_quantities.cpp
-CEXE_sources += Prob.cpp
-
 FEXE_headers += PeleC_F.H
 FEXE_headers += Problem_F.H
 FEXE_headers += PeleC_error_F.H
+FEXE_headers += Filter_F.H
+CEXE_headers += Filter.H
+
+#Source file logic
 ifeq ($(USE_REACT), TRUE)
-CEXE_sources += PeleC_react.cpp
+  CEXE_sources += PeleC_react.cpp
 endif
 
 ifeq ($(USE_PARTICLES), TRUE)
-CEXE_sources += PeleCParticles.cpp
+  CEXE_sources += PeleCParticles.cpp
 endif
 
-CEXE_sources += PeleC_MOL.cpp
-
-CEXE_sources += PeleC_les.cpp
-FEXE_headers += Filter_F.H
-CEXE_headers += Filter.H
-CEXE_sources += Filter.cpp
-
 ifeq ($(USE_MASA), TRUE)
-CEXE_sources += PeleC_mms.cpp
+  CEXE_sources += PeleC_mms.cpp
 endif
 
 ifeq ($(USE_EB), TRUE)
-  CEXE_headers += EBStencilTypes.H
-  CEXE_headers += SparseData.H
   F90EXE_sources += EBStencilTypes_mod.F90
   CEXE_sources += PeleC_test_normal.cpp
+  CEXE_headers += EBStencilTypes.H
+  CEXE_headers += SparseData.H
 endif
