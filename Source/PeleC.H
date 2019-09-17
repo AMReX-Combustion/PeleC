@@ -20,7 +20,7 @@
 #endif
 
 #ifdef AMREX_PARTICLES
-#include <AMReX_Particles_F.H>
+#include <AMReX_Particles.H>
 #include <SprayParticles.H>
 #endif
 

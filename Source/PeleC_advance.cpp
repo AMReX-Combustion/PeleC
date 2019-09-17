@@ -261,10 +261,10 @@ PeleC::set_spray_grid_info(int amr_iteration,
 
   tmp_src_width = ghost_width + stencil_deposition_width;
 
-  std::cout << "src_width="<<tmp_src_width<< "spray_n_grow="<<spray_n_grow 
-            << "where_width="<<where_width<< "ghost_width="<<ghost_width
-            << "stencil_deposition_width="<<stencil_deposition_width
-            << "stencil_interpolation_width="<<stencil_interpolation_width; 
+//   std::cout << "src_width="<<tmp_src_width<< "spray_n_grow="<<spray_n_grow 
+//             << "where_width="<<where_width<< "ghost_width="<<ghost_width
+//             << "stencil_deposition_width="<<stencil_deposition_width
+//             << "stencil_interpolation_width="<<stencil_interpolation_width; 
 }
 #endif
 
@@ -352,8 +352,6 @@ PeleC::do_sdc_iteration (Real time,
   {
     nGrow_Sborder = std::max(nGrow_Sborder, spray_n_grow);
   }
-    Print() << "PeleC::do_sdc_iteration thinks Sborder needs " << nGrow_Sborder
-            << " grow cells, but Sborder defined with only " << Sborder.nGrow() << std::endl;
   if (fill_Sborder &&  Sborder.nGrow() < nGrow_Sborder) {
     Print() << "PeleC::do_sdc_iteration thinks Sborder needs " << nGrow_Sborder
             << " grow cells, but Sborder defined with only " << Sborder.nGrow() << std::endl;
