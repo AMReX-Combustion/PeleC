@@ -203,25 +203,34 @@ extern "C"
 #endif
 			       BL_FORT_FAB_ARG_3D(Vol),
 			       BL_FORT_FAB_ARG_3D(L),
+			       BL_FORT_FAB_ARG_3D(alphaij_save),
 			       const amrex::Real* dx);
-
+  
+  void pc_les_init();
+  
   void pc_dynamic_smagorinsky_sfs_term(const int* lo,  const int* hi,
 				       const BL_FORT_FAB_ARG_3D(Q),
-				       const BL_FORT_FAB_ARG_3D(alphaij),
-				       const BL_FORT_FAB_ARG_3D(alpha),
-				       const BL_FORT_FAB_ARG_3D(flux_T),
+				       const BL_FORT_FAB_ARG_3D(alphaijx),
+				       const BL_FORT_FAB_ARG_3D(alphax),
+				       const BL_FORT_FAB_ARG_3D(flux_Tx),
 				       const BL_FORT_FAB_ARG_3D(Csx),
 				       const BL_FORT_FAB_ARG_3D(CIx),
 				       const BL_FORT_FAB_ARG_3D(PrTx),
 				       BL_FORT_FAB_ARG_3D(Ax),
 				       BL_FORT_FAB_ARG_3D(fx),
 #if (BL_SPACEDIM > 1)
+				       const BL_FORT_FAB_ARG_3D(alphaijy),
+				       const BL_FORT_FAB_ARG_3D(alphay),
+				       const BL_FORT_FAB_ARG_3D(flux_Ty),
 				       const BL_FORT_FAB_ARG_3D(Csy),
 				       const BL_FORT_FAB_ARG_3D(CIy),
 				       const BL_FORT_FAB_ARG_3D(PrTy),
 				       BL_FORT_FAB_ARG_3D(Ay),
 				       BL_FORT_FAB_ARG_3D(fy),
 #if (BL_SPACEDIM > 2)
+				       const BL_FORT_FAB_ARG_3D(alphaijz),
+				       const BL_FORT_FAB_ARG_3D(alphaz),
+				       const BL_FORT_FAB_ARG_3D(flux_Tz),
 				       const BL_FORT_FAB_ARG_3D(Csz),
 				       const BL_FORT_FAB_ARG_3D(CIz),
 				       const BL_FORT_FAB_ARG_3D(PrTz),
@@ -236,13 +245,6 @@ extern "C"
   void pc_dynamic_smagorinsky_quantities(const int* lo, const int* hi,
                                          const int* dmnlo,  const int* dmnhi,
 					 const BL_FORT_FAB_ARG_3D(Q),
-#if (BL_SPACEDIM > 1)
-                                         const BL_FORT_FAB_ARG_3D(tdx),
-                                         const BL_FORT_FAB_ARG_3D(tdy),
-#endif
-#if (BL_SPACEDIM > 2)
-                                         const BL_FORT_FAB_ARG_3D(tdz),
-#endif
 					 BL_FORT_FAB_ARG_3D(K),
 					 BL_FORT_FAB_ARG_3D(RUT),
 					 BL_FORT_FAB_ARG_3D(alphaij),
@@ -254,13 +256,6 @@ extern "C"
   void pc_dynamic_smagorinsky_coeffs(const int* lo, const int* hi,
                                      const int* dmnlo,  const int* dmnhi,
 				     const BL_FORT_FAB_ARG_3D(Q),
-#if (BL_SPACEDIM > 1)
-                                     const BL_FORT_FAB_ARG_3D(tdx),
-                                     const BL_FORT_FAB_ARG_3D(tdy),
-#endif
-#if (BL_SPACEDIM > 2)
-                                     const BL_FORT_FAB_ARG_3D(tdz),
-#endif
 				     const BL_FORT_FAB_ARG_3D(K),
 				     const BL_FORT_FAB_ARG_3D(RUT),
 				     const BL_FORT_FAB_ARG_3D(alphaij),

@@ -1891,6 +1891,88 @@ PeleC::derive (const std::string& name,
     MultiFab::Copy(*derive_dat,LES_Coeffs,comp_PrT,0,1,0);
     return derive_dat;
   }
+  // FIXME DELETE
+  else if ((do_les) && (name == "alpha11")) {
+    std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
+    MultiFab::Copy(*derive_dat,alphaij_save,0,0,1,0);
+    return derive_dat;
+  }
+  else if ((do_les) && (name == "alpha21")) {
+    std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
+    MultiFab::Copy(*derive_dat,alphaij_save,1,0,1,0);
+    return derive_dat;
+  }
+  else if ((do_les) && (name == "alpha31")) {
+    std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
+    MultiFab::Copy(*derive_dat,alphaij_save,2,0,1,0);
+    return derive_dat;
+  }
+  else if ((do_les) && (name == "alpha12")) {
+    std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
+    MultiFab::Copy(*derive_dat,alphaij_save,3,0,1,0);
+    return derive_dat;
+  }
+  else if ((do_les) && (name == "alpha22")) {
+    std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
+    MultiFab::Copy(*derive_dat,alphaij_save,4,0,1,0);
+    return derive_dat;
+  }
+  else if ((do_les) && (name == "alpha32")) {
+    std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
+    MultiFab::Copy(*derive_dat,alphaij_save,5,0,1,0);
+    return derive_dat;
+  }
+  else if ((do_les) && (name == "alpha13")) {
+    std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
+    MultiFab::Copy(*derive_dat,alphaij_save,6,0,1,0);
+    return derive_dat;
+  }
+  else if ((do_les) && (name == "alpha23")) {
+    std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
+    MultiFab::Copy(*derive_dat,alphaij_save,7,0,1,0);
+    return derive_dat;
+  }
+  else if ((do_les) && (name == "alpha33")) {
+    std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
+    MultiFab::Copy(*derive_dat,alphaij_save,8,0,1,0);
+    return derive_dat;
+  }
+  else if ((do_les) && (name == "LESTerm1")) {
+    std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
+    //MultiFab::Copy(*derive_dat,*old_sources[les_src],0,0,NUM_STATE,0);
+    MultiFab::Copy(*derive_dat,LESTerm_save,0,0,1,0);
+    return derive_dat;
+  }
+  else if ((do_les) && (name == "LESTerm2")) {
+    std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
+    //MultiFab::Copy(*derive_dat,*old_sources[les_src],0,0,NUM_STATE,0);
+    MultiFab::Copy(*derive_dat,LESTerm_save,1,0,1,0);
+    return derive_dat;
+  }
+  else if ((do_les) && (name == "LESTerm3")) {
+    std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
+    //MultiFab::Copy(*derive_dat,*old_sources[les_src],0,0,NUM_STATE,0);
+    MultiFab::Copy(*derive_dat,LESTerm_save,2,0,1,0);
+    return derive_dat;
+  }
+  else if ((do_les) && (name == "LESTerm4")) {
+    std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
+    //MultiFab::Copy(*derive_dat,*old_sources[les_src],0,0,NUM_STATE,0);
+    MultiFab::Copy(*derive_dat,LESTerm_save,3,0,1,0);
+    return derive_dat;
+  }
+  else if ((do_les) && (name == "LESTerm5")) {
+    std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
+    //MultiFab::Copy(*derive_dat,*old_sources[les_src],0,0,NUM_STATE,0);
+    MultiFab::Copy(*derive_dat,LESTerm_save,4,0,1,0);
+    return derive_dat;
+  }
+  else if ((do_les) && (name == "LESTerm6")) {
+    std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
+    //MultiFab::Copy(*derive_dat,*old_sources[les_src],0,0,NUM_STATE,0);
+    MultiFab::Copy(*derive_dat,LESTerm_save,5,0,1,0);
+    return derive_dat;
+  }
 
 #ifdef PELE_USE_EB
   if (name == "vfrac") {
@@ -1993,11 +2075,18 @@ void
 PeleC::init_les ()
 {
     // Fill with default coefficient values
-    LES_Coeffs.define(grids, dmap, nCompC, 1);
+    LES_Coeffs.define(grids, dmap, nCompC, 1); 
     LES_Coeffs.setVal(0.0);
     LES_Coeffs.setVal(Cs*Cs,comp_Cs2,1,LES_Coeffs.nGrow());
     LES_Coeffs.setVal(CI,comp_CI,1,LES_Coeffs.nGrow());
     LES_Coeffs.setVal(PrT,comp_PrT,1,LES_Coeffs.nGrow());
+    pc_les_init();
+
+    // FIXME DELETE
+    alphaij_save.define(grids, dmap, 9, 1); 
+    alphaij_save.setVal(0.0);
+    LESTerm_save.define(grids, dmap, NUM_STATE, 1); 
+    LESTerm_save.setVal(0.0);
 }
 
 void
