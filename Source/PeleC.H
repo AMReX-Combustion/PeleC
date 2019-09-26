@@ -663,8 +663,6 @@ protected:
     static int       les_test_filter_type;
     static int       les_test_filter_fgr;
     amrex::MultiFab  LES_Coeffs;
-    amrex::MultiFab  alphaij_save; // FIXME DELETE
-    amrex::MultiFab  LESTerm_save; // FIXME DELETE
     static int       comp_Cs2;
     static int       comp_CI;
     static int       comp_PrT;

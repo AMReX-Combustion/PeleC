@@ -87,7 +87,6 @@ contains
        fz,  fzlo,  fzhi,&
        V,   Vlo,   Vhi,&
        L,   Llo,   Lhi,&
-       alphaij_save,   aalo,  aahi,&
        deltax) bind(C, name = "pc_smagorinsky_sfs_term")
 
     use network, only   : nspecies
@@ -113,7 +112,6 @@ contains
     integer, intent(in) ::   fzlo(3),  fzhi(3)
     integer, intent(in) ::    Vlo(3),   Vhi(3)
     integer, intent(in) ::    Llo(3),   Lhi(3)
-    integer, intent(in) ::    aalo(3),   aahi(3) !!! FIXME DELETE
 
     double precision, intent(in   ) ::    Q(   Qlo(1):   Qhi(1),   Qlo(2):   Qhi(2),   Qlo(3):   Qhi(3), QVAR)
     double precision, intent(in   ) ::   tx(  txlo(1):  txhi(1),  txlo(2):  txhi(2),  txlo(3):  txhi(3), 6)
@@ -128,7 +126,6 @@ contains
     double precision, intent(inout) ::    L(   Llo(1):   Lhi(1),   Llo(2):   Lhi(2),   Llo(3):   Lhi(3), NVAR)
     double precision, intent(in   ) ::    V(   Vlo(1):   Vhi(1),   Vlo(2):   Vhi(2),   Vlo(3):   Vhi(3))
     double precision, intent(in   ) :: deltax(3)
-    double precision, intent(inout) ::    alphaij_save(   aalo(1):  aahi(1),   aalo(2):   aahi(2),   aalo(3):   aahi(3),9) !!! FIXME DELETE
 
     integer :: i, j, k, n
     double precision :: sigmaxx, sigmaxy, sigmaxz, sigmayx, sigmayy, sigmayz, sigmazx, sigmazy, sigmazz
@@ -285,21 +282,6 @@ contains
                                +fy(i,j+1,k,n)-fy(i,j,k,n) &
                                +fz(i,j,k+1,n)-fz(i,j,k,n) ) / V(i,j,k)
              end do
-          end do
-       end do
-    end do
-    
-!!!! FIXME DELETE all below
-    do k=lo(3),hi(3)
-       do j=lo(2),hi(2)
-          do i=lo(1),hi(1)
-             ! SFS stress
-             deltabar = deltax(1)
-             call get_sfs_stresses_xdir(i, j, k, Q, Qlo, Qhi, tx, txlo, txhi, alphaij_save(i,j,k,1), alphaij_save(i,j,k,2), alphaij_save(i,j,k,3), alpha(1), flux_T(1), gfaci(i), deltabar)
-             deltabar = deltax(2)
-             call get_sfs_stresses_ydir(i, j, k, Q, Qlo, Qhi, ty, tylo, tyhi, alphaij_save(i,j,k,4), alphaij_save(i,j,k,5), alphaij_save(i,j,k,6), alpha(2), flux_T(2), gfacj(j), deltabar)
-             deltabar = deltax(3)
-             call get_sfs_stresses_zdir(i, j, k, Q, Qlo, Qhi, tz, tzlo, tzhi, alphaij_save(i,j,k,7), alphaij_save(i,j,k,8), alphaij_save(i,j,k,9), alpha(3), flux_T(3), gfack(k), deltabar)
           end do
        end do
     end do

@@ -203,7 +203,6 @@ extern "C"
 #endif
 			       BL_FORT_FAB_ARG_3D(Vol),
 			       BL_FORT_FAB_ARG_3D(L),
-			       BL_FORT_FAB_ARG_3D(alphaij_save),
 			       const amrex::Real* dx);
   
   void pc_les_init();

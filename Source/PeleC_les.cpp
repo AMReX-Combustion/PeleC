@@ -146,7 +146,6 @@ PeleC::getSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::MultiFab&
 
   MultiFab S(grids, dmap, NUM_STATE, ngrow);
   FillPatch(*this, S, ngrow, time, State_Type, 0, NUM_STATE); // FIXME: time+dt?
-  alphaij_save.setVal(0.0); // FIXME DELETE
 
 #ifdef _OPENMP
 #pragma omp parallel
@@ -233,13 +232,11 @@ PeleC::getSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::MultiFab&
 #endif
                                 BL_TO_FORTRAN_ANYD(volume[mfi]),
                                 BL_TO_FORTRAN_ANYD(Lterm),
-                                BL_TO_FORTRAN_ANYD(alphaij_save[mfi]), // FIXME DELETE
                                 geom.CellSize());
       }
 
       LESTerm[mfi].setVal(0,vbox,0, NUM_STATE);
       LESTerm[mfi].copy(Lterm,vbox,0,vbox,0,NUM_STATE);
-      LESTerm_save[mfi].copy(Lterm,vbox,0,vbox,0,NUM_STATE); // FIXME DELETE
       
       if (do_reflux && flux_factor != 0)
       {
@@ -318,7 +315,6 @@ PeleC::getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::Mu
   MultiFab S(grids, dmap, NUM_STATE, nGrowD+nGrowC+nGrowT+1);
   FillPatch(*this, S, nGrowD+nGrowC+nGrowT+1, time, State_Type, 0, NUM_STATE); // FIXME: time+dt?
   LES_Coeffs.setVal(0.0);
-  alphaij_save.setVal(0.0); // FIXME DELETE
 
 #ifdef _OPENMP
 #pragma omp parallel
@@ -451,9 +447,6 @@ PeleC::getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::Mu
       // 5. Filter to smooth the dynamic coefficients - still at cell centers
       coeff_filter.apply_filter(g4box, coeff_cc, LES_Coeffs[mfi]);
 
-      // FIXME DELETE
-      alphaij_save[mfi].copy(alphaij,vbox,0,vbox,0,9);
-      
       // 6. Get the SFS term
       
       //    First step: move everything needed to compute fluxes to ec (faces)
@@ -530,7 +523,6 @@ PeleC::getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::Mu
 
       LESTerm[mfi].setVal(0,vbox,0, NUM_STATE);
       LESTerm[mfi].copy(Lterm,vbox,0,vbox,0,NUM_STATE);
-      LESTerm_save[mfi].copy(Lterm,vbox,0,vbox,0,NUM_STATE); //FIXME DELETE
 
       if (do_reflux && flux_factor != 0)
       {

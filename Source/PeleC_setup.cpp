@@ -690,41 +690,6 @@ PeleC::variableSetUp ()
 
       derive_lst.add("Pr_T",IndexType::TheCellType(),1,pc_dernull,the_same_box);
       derive_lst.addComponent("Pr_T",desc_lst,State_Type,Density,1);
-
-      // FIXME DELETE
-      derive_lst.add("alpha11",IndexType::TheCellType(),1,pc_dernull,the_same_box);
-      derive_lst.addComponent("alpha11",desc_lst,State_Type,Density,1);
-      derive_lst.add("alpha21",IndexType::TheCellType(),1,pc_dernull,the_same_box);
-      derive_lst.addComponent("alpha21",desc_lst,State_Type,Density,1);
-      derive_lst.add("alpha31",IndexType::TheCellType(),1,pc_dernull,the_same_box);
-      derive_lst.addComponent("alpha31",desc_lst,State_Type,Density,1);
-
-      derive_lst.add("alpha12",IndexType::TheCellType(),1,pc_dernull,the_same_box);
-      derive_lst.addComponent("alpha12",desc_lst,State_Type,Density,1);
-      derive_lst.add("alpha22",IndexType::TheCellType(),1,pc_dernull,the_same_box);
-      derive_lst.addComponent("alpha22",desc_lst,State_Type,Density,1);
-      derive_lst.add("alpha32",IndexType::TheCellType(),1,pc_dernull,the_same_box);
-      derive_lst.addComponent("alpha32",desc_lst,State_Type,Density,1);
-      
-      derive_lst.add("alpha13",IndexType::TheCellType(),1,pc_dernull,the_same_box);
-      derive_lst.addComponent("alpha13",desc_lst,State_Type,Density,1);
-      derive_lst.add("alpha23",IndexType::TheCellType(),1,pc_dernull,the_same_box);
-      derive_lst.addComponent("alpha23",desc_lst,State_Type,Density,1);
-      derive_lst.add("alpha33",IndexType::TheCellType(),1,pc_dernull,the_same_box);
-      derive_lst.addComponent("alpha33",desc_lst,State_Type,Density,1);
-      
-      derive_lst.add("LESTerm1",IndexType::TheCellType(),1,pc_dernull,the_same_box);
-      derive_lst.addComponent("LESTerm1",desc_lst,State_Type,Density,1);
-      derive_lst.add("LESTerm2",IndexType::TheCellType(),1,pc_dernull,the_same_box);
-      derive_lst.addComponent("LESTerm2",desc_lst,State_Type,Density,1);
-      derive_lst.add("LESTerm3",IndexType::TheCellType(),1,pc_dernull,the_same_box);
-      derive_lst.addComponent("LESTerm3",desc_lst,State_Type,Density,1);
-      derive_lst.add("LESTerm4",IndexType::TheCellType(),1,pc_dernull,the_same_box);
-      derive_lst.addComponent("LESTerm4",desc_lst,State_Type,Density,1);
-      derive_lst.add("LESTerm5",IndexType::TheCellType(),1,pc_dernull,the_same_box);
-      derive_lst.addComponent("LESTerm5",desc_lst,State_Type,Density,1);
-      derive_lst.add("LESTerm6",IndexType::TheCellType(),1,pc_dernull,the_same_box);
-      derive_lst.addComponent("LESTerm6",desc_lst,State_Type,Density,1);
     }
 
     // 
