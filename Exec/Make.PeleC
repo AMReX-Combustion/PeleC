@@ -42,9 +42,6 @@ all: $(executable)
 # Hyperbolic integrator
 ifeq ($(HYP_TYPE), MOL)
     DEFINES+=-DPELEC_USE_MOL
-    ifneq ($(DIM), 3)
-        $(error MOL integrator currently requires DIM=3)
-    endif
     ifeq ($(USE_EB), FALSE)
         $(error MOL integrator currently requires USE_EB=TRUE)
     endif

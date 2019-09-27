@@ -44,10 +44,6 @@ function(build_pelec pelec_exe_name pelec_exe_options_file)
     message(FATAL_ERROR "PELEC_ENABLE_MOL does not work with PELEC_DIM=1")
   endif()
 
-  if(${PELEC_DIM} EQUAL 2 AND PELEC_ENABLE_MOL)
-    message(FATAL_ERROR "PELEC_ENABLE_MOL does not work with PELEC_DIM=2")
-  endif()
-
   if(${PELEC_DIM} EQUAL 1 AND PELEC_ENABLE_EB)
     message(FATAL_ERROR "PELEC_ENABLE_EB does not work with PELEC_DIM=1")
   endif()
