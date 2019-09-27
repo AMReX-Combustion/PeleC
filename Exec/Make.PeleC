@@ -14,7 +14,6 @@ EBASE = PeleC
 # this list will be searched for runtime parameters
 EXTERN_CORE ?=
 
-#USE_EB = TRUE
 ifeq ($(DIM), 1)
   USE_EB = FALSE
 endif
@@ -43,6 +42,12 @@ all: $(executable)
 # Hyperbolic integrator
 ifeq ($(HYP_TYPE), MOL)
     DEFINES+=-DPELEC_USE_MOL
+    ifneq ($(DIM), 3)
+        $(error MOL integrator currently requires DIM=3)
+    endif
+    ifeq ($(USE_EB), FALSE)
+        $(error MOL integrator currently requires USE_EB=TRUE)
+    endif
 endif
 
 # EOS
