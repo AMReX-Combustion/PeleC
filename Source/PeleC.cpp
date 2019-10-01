@@ -401,6 +401,9 @@ PeleC::read_params ()
     pp.query("les_model",les_model);
     pp.query("les_test_filter_type",les_test_filter_type);
     pp.query("les_test_filter_fgr",les_test_filter_fgr);
+    if (les_model == 1 && BL_SPACEDIM < 3) {
+      amrex::Error("Cannot use Dynamic Smagorinsky model (les_model=1) with less than 3 dimensions.");
+    }
   }
 
   if (use_explicit_filter){

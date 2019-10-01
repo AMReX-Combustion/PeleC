@@ -11,8 +11,8 @@
 !     energy + pressure term to the turbulent temperature transport and thus the temperature gradient:
 !
 !     with <> = filter, {} = density weighted filter, state = [rho, rho*E, rho*u_j]
-!     <rho>{u_j h} - <rho>{u_j}{h}  = Smagorinsky Model = <rho> nu_T/Pr_T * d{h}/dx
-!                                     -> modeled as ->  <rho> nu_T/Pr_T * Cp(<state>) * dT(<state>)/dx
+!     <rho>{u_j h} - <rho>{u_j}{h}  = Smagorinsky Model = <rho> nu_T/Pr_T * d{h}/dx_j
+!                                     -> modeled as ->  <rho> nu_T/Pr_T * Cp(<state>) * dT(<state>)/dx_j
 !
 !     For non-perfect gasses there are two issues with the formulation: h =/= Cp*T, and T is a nonlinear
 !     function of the state variables so T(<state>) =/= {T}. For ideal gases where
@@ -49,29 +49,9 @@ module lesterm_module
   public :: pc_smagorinsky_sfs_term,&
        pc_dynamic_smagorinsky_sfs_term,&
        pc_dynamic_smagorinsky_quantities,&
-       pc_dynamic_smagorinsky_coeffs, &
-       pc_les_init
+       pc_dynamic_smagorinsky_coeffs
 
 contains
-  
-  subroutine pc_les_init() bind(C, name = "pc_les_init")
-    use network, only   : nspecies
-    use eos_module, only : eos_name
-    implicit none
-    
-    ! Do some error checking: see note on LES limitations at top of file.
-    if (trim(eos_name) .eq. "fuego") then
-       call bl_warning("WARNING: LES with Fuego assumes Cp is a weak function of T")
-    else if  (trim(eos_name) .ne. "GammaLaw") then
-       call bl_error("ERROR: LES is only supported with Fuego and GammaLaw EoS")
-    end if
-    if (nspecies .gt. 2) then
-       call bl_error("ERROR: LES is not supported for multi-component systems")
-    else if (nspecies .eq. 2) then
-       call bl_warning ("WARNING: LES is not supported for multi-component systems")
-    end if
-
-  end subroutine pc_les_init
     
   subroutine pc_smagorinsky_sfs_term(lo,  hi,&
        dmnlo, dmnhi,&
