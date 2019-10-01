@@ -244,6 +244,9 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
                              BL_TO_FORTRAN_N_3D(coeff_cc, dComp_mu),
                              BL_TO_FORTRAN_N_3D(coeff_cc, dComp_xi),
                              BL_TO_FORTRAN_N_3D(coeff_cc, dComp_lambda));
+      }
+      {
+        BL_PROFILE("PeleC::get_transport_coeffs_aux call");
 	if (NumAux > 0 && !(diffuse_aux == 0)) {
         get_transport_coeffs_aux(ARLIM_3D(gbox.loVect()),
                              ARLIM_3D(gbox.hiVect()),
@@ -354,49 +357,26 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
                     geom.CellSize());
       }
       
+         
       // Diffusion fluxes for auxiliary variables
-        {
+       {
 	  if ((NumAux > 0) && !(diffuse_aux == 0)) {
-        BL_PROFILE("PeleC::pc_diffterm_aux()");
-        pc_diffterm_aux_x(cbox.loVect(),
-                    cbox.hiVect(),
-                    dbox.loVect(),
-                    dbox.hiVect(),
-                    BL_TO_FORTRAN_ANYD(Qfab),
-                    BL_TO_FORTRAN_N_ANYD(coeff_ec[0], dComp_rhoDaux),
-                    BL_TO_FORTRAN_ANYD(area[0][mfi]),
-                    BL_TO_FORTRAN_ANYD(flux_ec[0]),
-                    BL_TO_FORTRAN_ANYD(volume[mfi]),
-                    BL_TO_FORTRAN_ANYD(Dterm),
-                    geom.CellSize());
-#if (BL_SPACEDIM > 1)
-        pc_diffterm_aux_y(cbox.loVect(),
-                    cbox.hiVect(),
-                    dbox.loVect(),
-                    dbox.hiVect(),
-                    BL_TO_FORTRAN_ANYD(Qfab),
-                    BL_TO_FORTRAN_N_ANYD(coeff_ec[1], dComp_rhoDaux),
-                    BL_TO_FORTRAN_ANYD(area[1][mfi]),
-                    BL_TO_FORTRAN_ANYD(flux_ec[1]),
-                    BL_TO_FORTRAN_ANYD(volume[mfi]),
-                    BL_TO_FORTRAN_ANYD(Dterm),
-                    geom.CellSize());
-#if (BL_SPACEDIM > 2)
-        pc_diffterm_aux_z(cbox.loVect(),
-                    cbox.hiVect(),
-                    dbox.loVect(),
-                    dbox.hiVect(),
-                    BL_TO_FORTRAN_ANYD(Qfab),
-                    BL_TO_FORTRAN_N_ANYD(coeff_ec[2], dComp_rhoDaux),
-                    BL_TO_FORTRAN_ANYD(area[2][mfi]),
-                    BL_TO_FORTRAN_ANYD(flux_ec[2]),
-                    BL_TO_FORTRAN_ANYD(volume[mfi]),
-                    BL_TO_FORTRAN_ANYD(Dterm),
-                    geom.CellSize());
-#endif
-#endif
-      }
-      }   
+	    BL_PROFILE("PeleC::pc_diffterm_aux()");
+	    for (int d=0; d<BL_SPACEDIM; ++d) {
+	      pc_diffterm_aux(cbox.loVect(),
+			      cbox.hiVect(),
+			      dbox.loVect(),
+			      dbox.hiVect(),
+			      BL_TO_FORTRAN_ANYD(Qfab),
+			      BL_TO_FORTRAN_N_ANYD(coeff_ec[0], dComp_rhoDaux),
+			      BL_TO_FORTRAN_ANYD(area[0][mfi]),
+			      BL_TO_FORTRAN_ANYD(flux_ec[0]),
+			      BL_TO_FORTRAN_ANYD(volume[mfi]),
+			      BL_TO_FORTRAN_ANYD(Dterm),
+			      geom.CellSize(), &d);
+	    }
+	  }
+       }   
 
       // Shut off unwanted diffusion after the fact
       //    ick! Under normal conditions, you either have diffusion on all or
