@@ -80,10 +80,10 @@ contains
        fx(i,UEDEN) = - sigmaxx*uface
 
        ! SFS heat flux
-       sfs_eos_state % massfrac(:) = Q(i,QFS:QFS+nspecies-1)
-       sfs_eos_state % T           = Q(i,QTEMP)
-       call eos_cv(sfs_eos_state)
-       fx(i,UEDEN) = fx(i,UEDEN) - sfs_eos_state%gam1 * sfs_eos_state%cv * Cs2 / PrT * flux_T
+       sfs_eos_state % massfrac(:) = HALF*(Q(i,QFS:QFS+nspecies-1) + Q(i-1,QFS:QFS+nspecies-1))
+       sfs_eos_state % T           = HALF*(Q(i,QTEMP) + Q(i-1,QTEMP))
+       call eos_cp(sfs_eos_state)
+       fx(i,UEDEN) = fx(i,UEDEN) - sfs_eos_state%cp * Cs2 / PrT * flux_T
     end do
 
     ! Scale fluxes by area
@@ -173,10 +173,10 @@ contains
        fx(i,UEDEN) = - sigmaxx*uface
 
        ! SFS heat flux
-       sfs_eos_state % massfrac(:) = Q(i,QFS:QFS+nspecies-1)
-       sfs_eos_state % T           = Q(i,QTEMP)
-       call eos_cv(sfs_eos_state)
-       fx(i,UEDEN) = fx(i,UEDEN) - sfs_eos_state%gam1 * sfs_eos_state%cv * Cs2x(i) / PrTx(i) * flux_T(i,1)
+       sfs_eos_state % massfrac(:) = HALF*(Q(i,QFS:QFS+nspecies-1) + Q(i-1,QFS:QFS+nspecies-1) )
+       sfs_eos_state % T           = HALF*(Q(i,QTEMP) + Q(i-1,QTEMP))
+       call eos_cp(sfs_eos_state)
+       fx(i,UEDEN) = fx(i,UEDEN) - sfs_eos_state%cp * Cs2x(i) / PrTx(i) * flux_T(i,1)
     end do
 
     ! Scale fluxes by area

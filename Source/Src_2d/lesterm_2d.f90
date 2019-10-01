@@ -100,10 +100,10 @@ contains
           fx(i,j,UEDEN) = - sigmaxx*Uface(1) - sigmaxy*Uface(2)
 
           ! SFS heat flux
-          sfs_eos_state % massfrac(:) = Q(i,j,QFS:QFS+nspecies-1)
-          sfs_eos_state % T           = Q(i,j,QTEMP)
-          call eos_cv(sfs_eos_state)
-          fx(i,j,UEDEN) = fx(i,j,UEDEN) - sfs_eos_state%gam1 * sfs_eos_state%cv * Cs2 / PrT * flux_T(1)
+          sfs_eos_state % massfrac(:) = HALF*(Q(i,j,QFS:QFS+nspecies-1) + Q(i-1,j,QFS:QFS+nspecies-1) )
+          sfs_eos_state % T           = HALF*(Q(i,j,QTEMP) + Q(i-1,j,QTEMP))
+          call eos_cp(sfs_eos_state)
+          fx(i,j,UEDEN) = fx(i,j,UEDEN) - sfs_eos_state%cp * Cs2 / PrT * flux_T(1)
        end do
     end do
 
@@ -131,10 +131,10 @@ contains
           fy(i,j,UEDEN) = - sigmayx*Uface(1) - sigmayy*Uface(2)
 
           ! SFS heat flux
-          sfs_eos_state % massfrac(:) = Q(i,j,QFS:QFS+nspecies-1)
-          sfs_eos_state % T           = Q(i,j,QTEMP)
-          call eos_cv(sfs_eos_state)
-          fy(i,j,UEDEN) = fy(i,j,UEDEN) - sfs_eos_state%gam1 * sfs_eos_state%cv * Cs2 / PrT * flux_T(2)
+          sfs_eos_state % massfrac(:) = HALF*(Q(i,j,QFS:QFS+nspecies-1) + Q(i,j-1,QFS:QFS+nspecies-1))
+          sfs_eos_state % T           = HALF*(Q(i,j,QTEMP) + Q(i,j-1,QTEMP))
+          call eos_cp(sfs_eos_state)
+          fy(i,j,UEDEN) = fy(i,j,UEDEN) - sfs_eos_state%cp * Cs2 / PrT * flux_T(2)
        end do
     end do
 
@@ -253,10 +253,10 @@ contains
           fx(i,j,UEDEN) = - sigmaxx*Uface(1) - sigmaxy*Uface(2)
 
           ! SFS heat flux
-          sfs_eos_state % massfrac(:) = Q(i,j,QFS:QFS+nspecies-1)
-          sfs_eos_state % T           = Q(i,j,QTEMP)
-          call eos_cv(sfs_eos_state)
-          fx(i,j,UEDEN) = fx(i,j,UEDEN) - sfs_eos_state%gam1 * sfs_eos_state%cv * Cs2x(i,j) / PrTx(i,j) * flux_T(i,j,1)
+          sfs_eos_state % massfrac(:) = HALF*(Q(i,j,QFS:QFS+nspecies-1) + Q(i-1,j,QFS:QFS+nspecies-1))
+          sfs_eos_state % T           = HALF*(Q(i,j,QTEMP) + Q(i-1,j,QTEMP) )
+          call eos_cp(sfs_eos_state)
+          fx(i,j,UEDEN) = fx(i,j,UEDEN) - sfs_eos_state%cp * Cs2x(i,j) / PrTx(i,j) * flux_T(i,j,1)
        end do
     end do
 
@@ -282,10 +282,10 @@ contains
           fy(i,j,UEDEN) = - sigmayx*Uface(1) - sigmayy*Uface(2)
 
           ! SFS heat flux
-          sfs_eos_state % massfrac(:) = Q(i,j,QFS:QFS+nspecies-1)
-          sfs_eos_state % T           = Q(i,j,QTEMP)
-          call eos_cv(sfs_eos_state)
-          fy(i,j,UEDEN) = fy(i,j,UEDEN) - sfs_eos_state%gam1 * sfs_eos_state%cv * Cs2y(i,j) / PrTy(i,j) * flux_T(i,j,2)
+          sfs_eos_state % massfrac(:) = HALF*(Q(i,j,QFS:QFS+nspecies-1) + Q(i,j-1,QFS:QFS+nspecies-1))
+          sfs_eos_state % T           = HALF*(Q(i,j,QTEMP) + Q(i,j-1,QTEMP) )
+          call eos_cp(sfs_eos_state)
+          fy(i,j,UEDEN) = fy(i,j,UEDEN) - sfs_eos_state%cp * Cs2y(i,j) / PrTy(i,j) * flux_T(i,j,2)
        end do
     end do
 
