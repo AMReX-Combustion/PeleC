@@ -65,8 +65,6 @@ contains
     call build(sfs_eos_state)
 
     gfaci = dxinv(1)
-    if (lo(1).le.dmnlo(1) .and. physbc_lo(1).eq.Inflow) gfaci(dmnlo(1)) = gfaci(dmnlo(1)) * TWO
-    if (hi(1).gt.dmnhi(1) .and. physbc_hi(1).eq.Inflow) gfaci(dmnhi(1)+1) = gfaci(dmnhi(1)+1) * TWO
 
     do i=lo(1),hi(1)+1
        ! SFS stress
@@ -242,8 +240,6 @@ contains
     dxinv = 1.d0/deltax
 
     gfaci = dxinv(1)
-    if (lo(1).le.dmnlo(1) .and. physbc_lo(1).eq.Inflow) gfaci(dmnlo(1)) = gfaci(dmnlo(1)) * TWO
-    if (hi(1).gt.dmnhi(1) .and. physbc_hi(1).eq.Inflow) gfaci(dmnhi(1)+1) = gfaci(dmnhi(1)+1) * TWO
 
     do i=lo(1),hi(1)
 
@@ -321,8 +317,6 @@ contains
     dxinv = 1.d0/deltax
 
     gfaci = dxinv(1)
-    if (lo(1).le.dmnlo(1) .and. physbc_lo(1).eq.Inflow) gfaci(dmnlo(1)) = gfaci(dmnlo(1)) * TWO
-    if (hi(1).gt.dmnhi(1) .and. physbc_hi(1).eq.Inflow) gfaci(dmnhi(1)+1) = gfaci(dmnhi(1)+1) * TWO
 
     do i=lo(1),hi(1)
 
