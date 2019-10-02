@@ -666,6 +666,7 @@ protected:
     static int       comp_Cs2;
     static int       comp_CI;
     static int       comp_PrT;
+    static int       comp_Cs2ovPrT;
     static int       nCompC;
     amrex::MultiFab  filtered_les_source;
 

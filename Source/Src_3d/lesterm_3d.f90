@@ -270,7 +270,7 @@ contains
                                              flux_Tx, flux_Txlo, flux_Txhi,&
                                              Cs2x, Cs2xlo, Cs2xhi, &
                                              CIx, CIxlo, CIxhi, &
-                                             PrTx, PrTxlo, PrTxhi, &
+                                             Cs2ovPrTx, Cs2ovPrTxlo, Cs2ovPrTxhi, &
                                              Ax,  Axlo,  Axhi,&
                                              fx,  fxlo,  fxhi,&
                                              alphaijy, alphaijylo, alphaijyhi,&
@@ -278,7 +278,7 @@ contains
                                              flux_Ty, flux_Tylo, flux_Tyhi,&
                                              Cs2y, Cs2ylo, Cs2yhi, &
                                              CIy, CIylo, CIyhi, &
-                                             PrTy, PrTylo, PrTyhi, &
+                                             Cs2ovPrTy, Cs2ovPrTylo, Cs2ovPrTyhi, &
                                              Ay,  Aylo,  Ayhi,&
                                              fy,  fylo,  fyhi,&
                                              alphaijz, alphaijzlo, alphaijzhi,&
@@ -286,7 +286,7 @@ contains
                                              flux_Tz, flux_Tzlo, flux_Tzhi,&
                                              Cs2z, Cs2zlo, Cs2zhi, &
                                              CIz, CIzlo, CIzhi, &
-                                             PrTz, PrTzlo, PrTzhi, &
+                                             Cs2ovPrTz, Cs2ovPrTzlo, Cs2ovPrTzhi, &
                                              Az,  Azlo,  Azhi,&
                                              fz,  fzlo,  fzhi,&
                                              V,   Vlo,   Vhi,&
@@ -301,62 +301,62 @@ contains
 
     implicit none
 
-    integer, intent(in) ::        lo(3),         hi(3)
-    integer, intent(in) ::       Qlo(3),        Qhi(3)
-    integer, intent(in) ::alphaijxlo(3), alphaijxhi(3)
-    integer, intent(in) ::  alphaxlo(3),   alphaxhi(3)
-    integer, intent(in) :: flux_Txlo(3),  flux_Txhi(3)
-    integer, intent(in) ::    Cs2xlo(3),     Cs2xhi(3)
-    integer, intent(in) ::     CIxlo(3),      CIxhi(3)
-    integer, intent(in) ::    PrTxlo(3),     PrTxhi(3)
-    integer, intent(in) ::      Axlo(3),       Axhi(3)
-    integer, intent(in) ::      fxlo(3),       fxhi(3)
-    integer, intent(in) ::alphaijylo(3), alphaijyhi(3)
-    integer, intent(in) ::  alphaylo(3),   alphayhi(3)
-    integer, intent(in) :: flux_Tylo(3),  flux_Tyhi(3)
-    integer, intent(in) ::    Cs2ylo(3),     Cs2yhi(3)
-    integer, intent(in) ::     CIylo(3),      CIyhi(3)
-    integer, intent(in) ::    PrTylo(3),     PrTyhi(3)
-    integer, intent(in) ::      Aylo(3),       Ayhi(3)
-    integer, intent(in) ::      fylo(3),       fyhi(3)
-    integer, intent(in) ::alphaijzlo(3), alphaijzhi(3)
-    integer, intent(in) ::  alphazlo(3),   alphazhi(3)
-    integer, intent(in) :: flux_Tzlo(3),  flux_Tzhi(3)
-    integer, intent(in) ::    Cs2zlo(3),     Cs2zhi(3)
-    integer, intent(in) ::     CIzlo(3),      CIzhi(3)
-    integer, intent(in) ::    PrTzlo(3),     PrTzhi(3)
-    integer, intent(in) ::      Azlo(3),       Azhi(3)
-    integer, intent(in) ::      fzlo(3),       fzhi(3)
-    integer, intent(in) ::       Vlo(3),        Vhi(3)
-    integer, intent(in) ::       Llo(3),        Lhi(3)
+    integer, intent(in) ::         lo(3),         hi(3)
+    integer, intent(in) ::        Qlo(3),        Qhi(3)
+    integer, intent(in) :: alphaijxlo(3), alphaijxhi(3)
+    integer, intent(in) ::   alphaxlo(3),   alphaxhi(3)
+    integer, intent(in) ::  flux_Txlo(3),  flux_Txhi(3)
+    integer, intent(in) ::     Cs2xlo(3),     Cs2xhi(3)
+    integer, intent(in) ::      CIxlo(3),      CIxhi(3)
+    integer, intent(in) ::Cs2ovPrTxlo(3),Cs2ovPrTxhi(3)
+    integer, intent(in) ::       Axlo(3),       Axhi(3)
+    integer, intent(in) ::       fxlo(3),       fxhi(3)
+    integer, intent(in) :: alphaijylo(3), alphaijyhi(3)
+    integer, intent(in) ::   alphaylo(3),   alphayhi(3)
+    integer, intent(in) ::  flux_Tylo(3),  flux_Tyhi(3)
+    integer, intent(in) ::     Cs2ylo(3),     Cs2yhi(3)
+    integer, intent(in) ::      CIylo(3),      CIyhi(3)
+    integer, intent(in) ::Cs2ovPrTylo(3),Cs2ovPrTyhi(3)
+    integer, intent(in) ::       Aylo(3),       Ayhi(3)
+    integer, intent(in) ::       fylo(3),       fyhi(3)
+    integer, intent(in) :: alphaijzlo(3), alphaijzhi(3)
+    integer, intent(in) ::   alphazlo(3),   alphazhi(3)
+    integer, intent(in) ::  flux_Tzlo(3),  flux_Tzhi(3)
+    integer, intent(in) ::     Cs2zlo(3),     Cs2zhi(3)
+    integer, intent(in) ::      CIzlo(3),      CIzhi(3)
+    integer, intent(in) ::Cs2ovPrTzlo(3),Cs2ovPrTzhi(3)
+    integer, intent(in) ::       Azlo(3),       Azhi(3)
+    integer, intent(in) ::       fzlo(3),       fzhi(3)
+    integer, intent(in) ::        Vlo(3),        Vhi(3)
+    integer, intent(in) ::        Llo(3),        Lhi(3)
 
-    double precision, intent(in   ) :: Q       (  Qlo       (1):Qhi       (1),  Qlo       (2):Qhi       (2),  Qlo       (3):Qhi       (3), QVAR)
-    double precision, intent(in   ) :: alphaijx(  alphaijxlo(1):alphaijxhi(1),  alphaijxlo(2):alphaijxhi(2),  alphaijxlo(3):alphaijxhi(3), 3)
-    double precision, intent(in   ) :: alphax  (  alphaxlo  (1):alphaxhi  (1),  alphaxlo  (2):alphaxhi  (2),  alphaxlo  (3):alphaxhi  (3))
-    double precision, intent(in   ) :: flux_Tx (  flux_Txlo (1):flux_Txhi (1),  flux_Txlo (2):flux_Txhi (2),  flux_Txlo (3):flux_Txhi (3))
-    double precision, intent(in   ) :: Cs2x    (  Cs2xlo    (1):Cs2xhi    (1),  Cs2xlo    (2):Cs2xhi    (2),  Cs2xlo    (3):Cs2xhi    (3))
-    double precision, intent(in   ) :: CIx     (  CIxlo     (1):CIxhi     (1),  CIxlo     (2):CIxhi     (2),  CIxlo     (3):CIxhi     (3))
-    double precision, intent(in   ) :: PrTx    (  PrTxlo    (1):PrTxhi    (1),  PrTxlo    (2):PrTxhi    (2),  PrTxlo    (3):PrTxhi    (3))
-    double precision, intent(in   ) :: Ax      (  Axlo      (1):Axhi      (1),  Axlo      (2):Axhi      (2),  Axlo      (3):Axhi      (3))
-    double precision, intent(inout) :: fx      (  fxlo      (1):fxhi      (1),  fxlo      (2):fxhi      (2),  fxlo      (3):fxhi      (3), NVAR)
-    double precision, intent(in   ) :: alphaijy(  alphaijylo(1):alphaijyhi(1),  alphaijylo(2):alphaijyhi(2),  alphaijylo(3):alphaijyhi(3), 3)
-    double precision, intent(in   ) :: alphay  (  alphaylo  (1):alphayhi  (1),  alphaylo  (2):alphayhi  (2),  alphaylo  (3):alphayhi  (3))
-    double precision, intent(in   ) :: flux_Ty (  flux_Tylo (1):flux_Tyhi (1),  flux_Tylo (2):flux_Tyhi (2),  flux_Tylo (3):flux_Tyhi (3))
-    double precision, intent(in   ) :: Cs2y    (  Cs2ylo    (1):Cs2yhi    (1),  Cs2ylo    (2):Cs2yhi    (2),  Cs2ylo    (3):Cs2yhi    (3))
-    double precision, intent(in   ) :: CIy     (  CIylo     (1):CIyhi     (1),  CIylo     (2):CIyhi     (2),  CIylo     (3):CIyhi     (3))
-    double precision, intent(in   ) :: PrTy    (  PrTylo    (1):PrTyhi    (1),  PrTylo    (2):PrTyhi    (2),  PrTylo    (3):PrTyhi    (3))
-    double precision, intent(in   ) :: Ay      (  Aylo      (1):Ayhi      (1),  Aylo      (2):Ayhi      (2),  Aylo      (3):Ayhi      (3))
-    double precision, intent(inout) :: fy      (  fylo      (1):fyhi      (1),  fylo      (2):fyhi      (2),  fylo      (3):fyhi      (3), NVAR)
-    double precision, intent(in   ) :: alphaijz(  alphaijzlo(1):alphaijzhi(1),  alphaijzlo(2):alphaijzhi(2),  alphaijzlo(3):alphaijzhi(3), 3)
-    double precision, intent(in   ) :: alphaz  (  alphazlo  (1):alphazhi  (1),  alphazlo  (2):alphazhi  (2),  alphazlo  (3):alphazhi  (3))
-    double precision, intent(in   ) :: flux_Tz (  flux_Tzlo (1):flux_Tzhi (1),  flux_Tzlo (2):flux_Tzhi (2),  flux_Tzlo (3):flux_Tzhi (3))
-    double precision, intent(in   ) :: Cs2z    (  Cs2zlo    (1):Cs2zhi    (1),  Cs2zlo    (2):Cs2zhi    (2),  Cs2zlo    (3):Cs2zhi    (3))
-    double precision, intent(in   ) :: CIz     (  CIzlo     (1):CIzhi     (1),  CIzlo     (2):CIzhi     (2),  CIzlo     (3):CIzhi     (3))
-    double precision, intent(in   ) :: PrTz    (  PrTzlo    (1):PrTzhi    (1),  PrTzlo    (2):PrTzhi    (2),  PrTzlo    (3):PrTzhi    (3))
-    double precision, intent(in   ) :: Az      (  Azlo      (1):Azhi      (1),  Azlo      (2):Azhi      (2),  Azlo      (3):Azhi      (3))
-    double precision, intent(inout) :: fz      (  fzlo      (1):fzhi      (1),  fzlo      (2):fzhi      (2),  fzlo      (3):fzhi      (3), NVAR)
-    double precision, intent(inout) :: L       (  Llo       (1):Lhi       (1),  Llo       (2):Lhi       (2),  Llo       (3):Lhi       (3), NVAR)
-    double precision, intent(in   ) :: V       (  Vlo       (1):Vhi       (1),  Vlo       (2):Vhi       (2),  Vlo       (3):Vhi       (3))
+    double precision, intent(in   ) :: Q        (  Qlo       (1):Qhi        (1),  Qlo       (2):Qhi        (2),  Qlo       (3):Qhi        (3), QVAR)
+    double precision, intent(in   ) :: alphaijx (  alphaijxlo(1):alphaijxhi (1),  alphaijxlo(2):alphaijxhi (2),  alphaijxlo(3):alphaijxhi (3), 3)
+    double precision, intent(in   ) :: alphax   (  alphaxlo  (1):alphaxhi   (1),  alphaxlo  (2):alphaxhi   (2),  alphaxlo  (3):alphaxhi   (3))
+    double precision, intent(in   ) :: flux_Tx  (  flux_Txlo (1):flux_Txhi  (1),  flux_Txlo (2):flux_Txhi  (2),  flux_Txlo (3):flux_Txhi  (3))
+    double precision, intent(in   ) :: Cs2x     (  Cs2xlo    (1):Cs2xhi     (1),  Cs2xlo    (2):Cs2xhi     (2),  Cs2xlo    (3):Cs2xhi     (3))
+    double precision, intent(in   ) :: CIx      (  CIxlo     (1):CIxhi      (1),  CIxlo     (2):CIxhi      (2),  CIxlo     (3):CIxhi      (3))
+    double precision, intent(in   ) :: Cs2ovPrTx( Cs2ovPrTxlo(1):Cs2ovPrTxhi(1), Cs2ovPrTxlo(2):Cs2ovPrTxhi(2), Cs2ovPrTxlo(3):Cs2ovPrTxhi(3))
+    double precision, intent(in   ) :: Ax       (  Axlo      (1):Axhi       (1),  Axlo      (2):Axhi       (2),  Axlo      (3):Axhi       (3))
+    double precision, intent(inout) :: fx       (  fxlo      (1):fxhi       (1),  fxlo      (2):fxhi       (2),  fxlo      (3):fxhi       (3), NVAR)
+    double precision, intent(in   ) :: alphaijy (  alphaijylo(1):alphaijyhi (1),  alphaijylo(2):alphaijyhi (2),  alphaijylo(3):alphaijyhi (3), 3)
+    double precision, intent(in   ) :: alphay   (  alphaylo  (1):alphayhi   (1),  alphaylo  (2):alphayhi   (2),  alphaylo  (3):alphayhi   (3))
+    double precision, intent(in   ) :: flux_Ty  (  flux_Tylo (1):flux_Tyhi  (1),  flux_Tylo (2):flux_Tyhi  (2),  flux_Tylo (3):flux_Tyhi  (3))
+    double precision, intent(in   ) :: Cs2y     (  Cs2ylo    (1):Cs2yhi     (1),  Cs2ylo    (2):Cs2yhi     (2),  Cs2ylo    (3):Cs2yhi     (3))
+    double precision, intent(in   ) :: CIy      (  CIylo     (1):CIyhi      (1),  CIylo     (2):CIyhi      (2),  CIylo     (3):CIyhi      (3))
+    double precision, intent(in   ) :: Cs2ovPrTy( Cs2ovPrTylo(1):Cs2ovPrTyhi(1), Cs2ovPrTylo(2):Cs2ovPrTyhi(2), Cs2ovPrTylo(3):Cs2ovPrTyhi(3))
+    double precision, intent(in   ) :: Ay       (  Aylo      (1):Ayhi       (1),  Aylo      (2):Ayhi       (2),  Aylo      (3):Ayhi       (3))
+    double precision, intent(inout) :: fy       (  fylo      (1):fyhi       (1),  fylo      (2):fyhi       (2),  fylo      (3):fyhi       (3), NVAR)
+    double precision, intent(in   ) :: alphaijz (  alphaijzlo(1):alphaijzhi (1),  alphaijzlo(2):alphaijzhi (2),  alphaijzlo(3):alphaijzhi (3), 3)
+    double precision, intent(in   ) :: alphaz   (  alphazlo  (1):alphazhi   (1),  alphazlo  (2):alphazhi   (2),  alphazlo  (3):alphazhi   (3))
+    double precision, intent(in   ) :: flux_Tz  (  flux_Tzlo (1):flux_Tzhi  (1),  flux_Tzlo (2):flux_Tzhi  (2),  flux_Tzlo (3):flux_Tzhi  (3))
+    double precision, intent(in   ) :: Cs2z     (  Cs2zlo    (1):Cs2zhi     (1),  Cs2zlo    (2):Cs2zhi     (2),  Cs2zlo    (3):Cs2zhi     (3))
+    double precision, intent(in   ) :: CIz      (  CIzlo     (1):CIzhi      (1),  CIzlo     (2):CIzhi      (2),  CIzlo     (3):CIzhi      (3))
+    double precision, intent(in   ) :: Cs2ovPrTz( Cs2ovPrTzlo(1):Cs2ovPrTzhi(1), Cs2ovPrTzlo(2):Cs2ovPrTzhi(2), Cs2ovPrTzlo(3):Cs2ovPrTzhi(3))
+    double precision, intent(in   ) :: Az       (  Azlo      (1):Azhi       (1),  Azlo      (2):Azhi       (2),  Azlo      (3):Azhi       (3))
+    double precision, intent(inout) :: fz       (  fzlo      (1):fzhi       (1),  fzlo      (2):fzhi       (2),  fzlo      (3):fzhi       (3), NVAR)
+    double precision, intent(inout) :: L        (  Llo       (1):Lhi        (1),  Llo       (2):Lhi        (2),  Llo       (3):Lhi        (3), NVAR)
+    double precision, intent(in   ) :: V        (  Vlo       (1):Vhi        (1),  Vlo       (2):Vhi        (2),  Vlo       (3):Vhi        (3))
     double precision, intent(in   ) :: deltax(3)
 
 
@@ -400,8 +400,7 @@ contains
              sfs_eos_state % massfrac(:) = HALF*( Q(i,j,k,QFS:QFS+nspecies-1) + Q(i-1,j,k,QFS:QFS+nspecies-1) )
              sfs_eos_state % T           = HALF*( Q(i,j,k,QTEMP) + Q(i-1,j,k,QTEMP) )
              call eos_cp(sfs_eos_state)
-             ! PrT contains Cs2/PrT
-             fx(i,j,k,UEDEN) = fx(i,j,k,UEDEN) - sfs_eos_state%cp * PrTx(i,j,k) * flux_Tx(i,j,k)
+             fx(i,j,k,UEDEN) = fx(i,j,k,UEDEN) - sfs_eos_state%cp * Cs2ovPrTx(i,j,k) * flux_Tx(i,j,k)
           end do
        end do
     end do
@@ -438,8 +437,7 @@ contains
              sfs_eos_state % massfrac(:) = HALF*( Q(i,j,k,QFS:QFS+nspecies-1) + Q(i,j-1,k,QFS:QFS+nspecies-1) )
              sfs_eos_state % T           = HALF*( Q(i,j,k,QTEMP) + Q(i,j-1,k,QTEMP) )
              call eos_cp(sfs_eos_state)
-             ! PrT contains Cs2/PrT
-             fy(i,j,k,UEDEN) = fy(i,j,k,UEDEN) -  sfs_eos_state%cp * PrTy(i,j,k) * flux_Ty(i,j,k)
+             fy(i,j,k,UEDEN) = fy(i,j,k,UEDEN) -  sfs_eos_state%cp * Cs2ovPrTy(i,j,k) * flux_Ty(i,j,k)
           end do
        end do
     end do
@@ -476,8 +474,7 @@ contains
              sfs_eos_state % massfrac(:) = HALF* ( Q(i,j,k,QFS:QFS+nspecies-1) + Q(i,j,k-1,QFS:QFS+nspecies-1) )
              sfs_eos_state % T           = HALF* ( Q(i,j,k,QTEMP) + Q(i,j,k-1,QTEMP))
              call eos_cp(sfs_eos_state)
-             ! PrT contains Cs2/PrT
-             fz(i,j,k,UEDEN) = fz(i,j,k,UEDEN) - sfs_eos_state%cp * PrTz(i,j,k) * flux_Tz(i,j,k)
+             fz(i,j,k,UEDEN) = fz(i,j,k,UEDEN) - sfs_eos_state%cp * Cs2ovPrTz(i,j,k) * flux_Tz(i,j,k)
           end do
        end do
     end do
@@ -613,7 +610,7 @@ contains
                                            flux_T, flux_Tlo, flux_Thi,&
                                            Cs2, Cs2lo, Cs2hi, &
                                            CI, CIlo, CIhi, &
-                                           PrT, PrTlo, PrThi, &
+                                           Cs2ovPrT, Cs2ovPrTlo, Cs2ovPrThi, &
                                            fgr,&
                                            deltax) bind(C, name = "pc_dynamic_smagorinsky_coeffs")
 
@@ -623,28 +620,28 @@ contains
 
     implicit none
 
-    integer, intent(in) :: lo       (3), hi       (3)
-    integer, intent(in) :: dmnlo    (3), dmnhi    (3)
-    integer, intent(in) :: Qlo      (3), Qhi      (3)
-    integer, intent(in) :: Kijlo    (3), Kijhi    (3)
-    integer, intent(in) :: RUTlo    (3), RUThi    (3)
-    integer, intent(in) :: alphaijlo(3), alphaijhi(3)
-    integer, intent(in) :: alphalo  (3), alphahi  (3)
-    integer, intent(in) :: flux_Tlo (3), flux_Thi (3)
-    integer, intent(in) :: Cs2lo    (3), Cs2hi    (3)
-    integer, intent(in) :: CIlo     (3), CIhi     (3)
-    integer, intent(in) :: PrTlo    (3), PrThi    (3)
+    integer, intent(in) :: lo        (3), hi        (3)
+    integer, intent(in) :: dmnlo     (3), dmnhi     (3)
+    integer, intent(in) :: Qlo       (3), Qhi       (3)
+    integer, intent(in) :: Kijlo     (3), Kijhi     (3)
+    integer, intent(in) :: RUTlo     (3), RUThi     (3)
+    integer, intent(in) :: alphaijlo (3), alphaijhi (3)
+    integer, intent(in) :: alphalo   (3), alphahi   (3)
+    integer, intent(in) :: flux_Tlo  (3), flux_Thi  (3)
+    integer, intent(in) :: Cs2lo     (3), Cs2hi     (3)
+    integer, intent(in) :: CIlo      (3), CIhi      (3)
+    integer, intent(in) :: Cs2ovPrTlo(3), Cs2ovPrThi(3)
     integer, intent(in) :: fgr
 
-    double precision, intent(in   ) :: Q      (  Qlo      (1):Qhi      (1),   Qlo     (2): Qhi     (2),   Qlo     (3): Qhi     (3), QVAR)
-    double precision, intent(in   ) :: Kij    (  Kijlo    (1):Kijhi    (1),  Kijlo    (2):Kijhi    (2),  Kijlo    (3):Kijhi    (3), 6)
-    double precision, intent(in   ) :: RUT    (  RUTlo    (1):RUThi    (1),  RUTlo    (2):RUThi    (2),  RUTlo    (3):RUThi    (3), 3)
-    double precision, intent(in   ) :: alphaij(  alphaijlo(1):alphaijhi(1),  alphaijlo(2):alphaijhi(2),  alphaijlo(3):alphaijhi(3), 3*3)
-    double precision, intent(in   ) :: alpha  (  alphalo  (1):alphahi  (1),  alphalo  (2):alphahi  (2),  alphalo  (3):alphahi  (3))
-    double precision, intent(in   ) :: flux_T (  flux_Tlo (1):flux_Thi (1),  flux_Tlo (2):flux_Thi (2),  flux_Tlo (3):flux_Thi (3), 3)
-    double precision, intent(inout) :: Cs2    (  Cs2lo    (1):Cs2hi    (1),  Cs2lo    (2):Cs2hi    (2),  Cs2lo    (3):Cs2hi    (3))
-    double precision, intent(inout) :: CI     (  CIlo     (1):CIhi     (1),  CIlo     (2):CIhi     (2),  CIlo     (3):CIhi     (3))
-    double precision, intent(inout) :: PrT    (  PrTlo    (1):PrThi    (1),  PrTlo    (2):PrThi    (2),  PrTlo    (3):PrThi    (3))
+    double precision, intent(in   ) :: Q       (  Qlo      (1):Qhi       (1),   Qlo     (2): Qhi      (2),   Qlo     (3): Qhi      (3), QVAR)
+    double precision, intent(in   ) :: Kij     (  Kijlo    (1):Kijhi     (1),  Kijlo    (2):Kijhi     (2),  Kijlo    (3):Kijhi     (3), 6)
+    double precision, intent(in   ) :: RUT     (  RUTlo    (1):RUThi     (1),  RUTlo    (2):RUThi     (2),  RUTlo    (3):RUThi     (3), 3)
+    double precision, intent(in   ) :: alphaij (  alphaijlo(1):alphaijhi (1),  alphaijlo(2):alphaijhi (2),  alphaijlo(3):alphaijhi (3), 3*3)
+    double precision, intent(in   ) :: alpha   (  alphalo  (1):alphahi   (1),  alphalo  (2):alphahi   (2),  alphalo  (3):alphahi   (3))
+    double precision, intent(in   ) :: flux_T  (  flux_Tlo (1):flux_Thi  (1),  flux_Tlo (2):flux_Thi  (2),  flux_Tlo (3):flux_Thi  (3), 3)
+    double precision, intent(inout) :: Cs2     (  Cs2lo    (1):Cs2hi     (1),  Cs2lo    (2):Cs2hi     (2),  Cs2lo    (3):Cs2hi     (3))
+    double precision, intent(inout) :: CI      (  CIlo     (1):CIhi      (1),  CIlo     (2):CIhi      (2),  CIlo     (3):CIhi      (3))
+    double precision, intent(inout) :: Cs2ovPrT( Cs2ovPrTlo(1):Cs2ovPrThi(1), Cs2ovPrTlo(2):Cs2ovPrThi(2), Cs2ovPrTlo(3):Cs2ovPrThi(3))
     double precision, intent(in   ) :: deltax(3)
 
     double precision :: L(3*3), M(3*3), betaij(3*3), beta, T(3), KE(3)
@@ -717,11 +714,11 @@ contains
              bma = (beta - alpha(i,j,k))
              TT = sum(T(:)*T(:))
              KT = sum(KE(:)*T(:))
-             
-             ! Coefficients (here PrT holds KT/TT = Cs2/PrT)
-             Cs2(i,j,k) = max(LM  / (MM  + small_num), small_num)
-             CI (i,j,k) = max(Lkk / (bma + small_num), small_num)
-             PrT(i,j,k) = max(KT  / (TT  + small_num), small_num)
+
+             ! Coefficients
+             Cs2(i,j,k)      = max(LM  / (MM  + small_num), small_num)
+             CI (i,j,k)      = max(Lkk / (bma + small_num), small_num)
+             Cs2ovPrT(i,j,k) = max(KT  / (TT  + small_num), small_num)
 
              ! Limit CI to reasonable bounds
              CI(i,j,k) = min(CI(i,j,k), 1.0d+0)

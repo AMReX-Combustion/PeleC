@@ -433,7 +433,7 @@ PeleC::getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::Mu
                                       BL_TO_FORTRAN_ANYD(filtered_flux_T),
                                       BL_TO_FORTRAN_N_ANYD(coeff_cc,comp_Cs2),
                                       BL_TO_FORTRAN_N_ANYD(coeff_cc,comp_CI),
-                                      BL_TO_FORTRAN_N_ANYD(coeff_cc,comp_PrT),
+                                      BL_TO_FORTRAN_N_ANYD(coeff_cc,comp_Cs2ovPrT),
                                       &les_test_filter_fgr,
                                       geom.CellSize());
       }
@@ -493,7 +493,7 @@ PeleC::getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::Mu
                                         BL_TO_FORTRAN_ANYD(flux_T_ec[0]),
                                         BL_TO_FORTRAN_N_ANYD(coeff_ec[0],comp_Cs2),
                                         BL_TO_FORTRAN_N_ANYD(coeff_ec[0],comp_CI),
-                                        BL_TO_FORTRAN_N_ANYD(coeff_ec[0],comp_PrT),
+                                        BL_TO_FORTRAN_N_ANYD(coeff_ec[0],comp_Cs2ovPrT),
                                         BL_TO_FORTRAN_ANYD(area[0][mfi]),
                                         BL_TO_FORTRAN_ANYD(flux_ec[0]),
 #if (BL_SPACEDIM > 1)
@@ -502,7 +502,7 @@ PeleC::getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::Mu
                                         BL_TO_FORTRAN_ANYD(flux_T_ec[1]),
                                         BL_TO_FORTRAN_N_ANYD(coeff_ec[1],comp_Cs2),
                                         BL_TO_FORTRAN_N_ANYD(coeff_ec[1],comp_CI),
-                                        BL_TO_FORTRAN_N_ANYD(coeff_ec[1],comp_PrT),
+                                        BL_TO_FORTRAN_N_ANYD(coeff_ec[1],comp_Cs2ovPrT),
                                         BL_TO_FORTRAN_ANYD(area[1][mfi]),
                                         BL_TO_FORTRAN_ANYD(flux_ec[1]),
 #if (BL_SPACEDIM > 2)
@@ -511,7 +511,7 @@ PeleC::getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::Mu
                                         BL_TO_FORTRAN_ANYD(flux_T_ec[2]),
                                         BL_TO_FORTRAN_N_ANYD(coeff_ec[2],comp_Cs2),
                                         BL_TO_FORTRAN_N_ANYD(coeff_ec[2],comp_CI),
-                                        BL_TO_FORTRAN_N_ANYD(coeff_ec[2],comp_PrT),
+                                        BL_TO_FORTRAN_N_ANYD(coeff_ec[2],comp_Cs2ovPrT),
                                         BL_TO_FORTRAN_ANYD(area[2][mfi]),
                                         BL_TO_FORTRAN_ANYD(flux_ec[2]),
 #endif

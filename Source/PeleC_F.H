@@ -194,7 +194,7 @@ extern "C"
 				       const BL_FORT_FAB_ARG_3D(flux_Tx),
 				       const BL_FORT_FAB_ARG_3D(Csx),
 				       const BL_FORT_FAB_ARG_3D(CIx),
-				       const BL_FORT_FAB_ARG_3D(PrTx),
+				       const BL_FORT_FAB_ARG_3D(Cs2ovPrTx),
 				       BL_FORT_FAB_ARG_3D(Ax),
 				       BL_FORT_FAB_ARG_3D(fx),
 #if (BL_SPACEDIM > 1)
@@ -203,7 +203,7 @@ extern "C"
 				       const BL_FORT_FAB_ARG_3D(flux_Ty),
 				       const BL_FORT_FAB_ARG_3D(Csy),
 				       const BL_FORT_FAB_ARG_3D(CIy),
-				       const BL_FORT_FAB_ARG_3D(PrTy),
+				       const BL_FORT_FAB_ARG_3D(Cs2ovPrTy),
 				       BL_FORT_FAB_ARG_3D(Ay),
 				       BL_FORT_FAB_ARG_3D(fy),
 #if (BL_SPACEDIM > 2)
@@ -212,7 +212,7 @@ extern "C"
 				       const BL_FORT_FAB_ARG_3D(flux_Tz),
 				       const BL_FORT_FAB_ARG_3D(Csz),
 				       const BL_FORT_FAB_ARG_3D(CIz),
-				       const BL_FORT_FAB_ARG_3D(PrTz),
+				       const BL_FORT_FAB_ARG_3D(Cs2ovPrTz),
 				       BL_FORT_FAB_ARG_3D(Az),
 				       BL_FORT_FAB_ARG_3D(fz),
 #endif
@@ -242,7 +242,7 @@ extern "C"
 				     const BL_FORT_FAB_ARG_3D(flux_T),
 				     BL_FORT_FAB_ARG_3D(Cs),
 				     BL_FORT_FAB_ARG_3D(CI),
-				     BL_FORT_FAB_ARG_3D(PrT),
+				     BL_FORT_FAB_ARG_3D(Cs2ovPrT),
 				     const int* TFGR,
 				     const amrex::Real* dx);
 

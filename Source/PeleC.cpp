@@ -134,6 +134,7 @@ int           PeleC::les_test_filter_fgr = 2;
 int           PeleC::comp_Cs2 = 0;
 int           PeleC::comp_CI = PeleC::comp_Cs2 + 1;
 int           PeleC::comp_PrT = PeleC::comp_CI + 1;
+int           PeleC::comp_Cs2ovPrT = PeleC::comp_PrT;
 int           PeleC::nCompC = PeleC::comp_PrT + 1;
 
 #ifdef PELE_USE_EB
@@ -1889,12 +1890,18 @@ PeleC::derive (const std::string& name,
     MultiFab::Copy(*derive_dat,LES_Coeffs,comp_CI,0,1,0);
     return derive_dat;
   }
-  else if ((do_les) && (name == "Pr_T")) {
+  else if ((do_les) && (les_model!=1) && (name == "Pr_T")) {
     std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
     MultiFab::Copy(*derive_dat,LES_Coeffs,comp_PrT,0,1,0);
     return derive_dat;
   }
-
+  else if ((do_les) && (les_model==1) && (name == "Pr_T")) {
+    std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
+    MultiFab::Copy(*derive_dat,LES_Coeffs,comp_Cs2ovPrT,0,1,0);
+    MultiFab::Divide(*derive_dat,LES_Coeffs,comp_Cs2,0,1,0);
+    return derive_dat;
+  }
+  
 #ifdef PELE_USE_EB
   if (name == "vfrac") {
     std::unique_ptr<MultiFab> mf(new MultiFab(grids, dmap, 1, ngrow, MFInfo()));
@@ -2000,7 +2007,12 @@ PeleC::init_les ()
     LES_Coeffs.setVal(0.0);
     LES_Coeffs.setVal(Cs*Cs,comp_Cs2,1,LES_Coeffs.nGrow());
     LES_Coeffs.setVal(CI,comp_CI,1,LES_Coeffs.nGrow());
+    if (les_model == 1) {
+    LES_Coeffs.setVal(Cs*Cs*PrT,comp_Cs2ovPrT,1,LES_Coeffs.nGrow());
+    }
+    else {
     LES_Coeffs.setVal(PrT,comp_PrT,1,LES_Coeffs.nGrow());
+    }      
     pc_les_init();
 }
 
