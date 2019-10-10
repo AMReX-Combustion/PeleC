@@ -40,7 +40,7 @@ extern "C"
 
   void get_method_params(int* NUM_GROW,int* QTHERM,int* QVAR,int* cQRHO,int* cQU,
                          int* cQV,int* cQW,int* cQGAME,int* cQPRES,int* cQREINT,
-                         int* cQTEMP,int* cQFA,int* cQFS,int* cQFX,int* NQAUX,
+                         int* cQTEMP,int* cQFA,int* cQFS,int* cQFX,int* cQFSOOT, int* NQAUX,
                          int* cQGAMC,int* cQC,int* cQCSML,int* cQDPDR,int* cQDPDE,int* cQRSPEC);
 
   void clear_method_params();
@@ -52,13 +52,13 @@ extern "C"
      const int& Temp     , const int& FirstAdv,
      const int& FirstSpec, const int& FirstAux,
      const int& NumAdv,
+     const int& FirstSootVar, const int& NumSootVars,
      const amrex::Real& diffuse_cutoff_density,
-     const int& pstate_loc, const int& pstate_vel,
-     const int& pstate_T, const int& pstate_dia,
-     const int& pstate_rho, const int& pstate_spc,
-     const int& pfld_vel, const int& pfld_rho,
-     const int& pfld_T, const int& pfld_p,
-     const int& pfld_spc
+     const int& pstate_vel, const int& pstate_T,
+     const int& pstate_dia, const int& pstate_rho,
+     const int& pstate_spc, const int& pfld_vel,
+     const int& pfld_rho, const int& pfld_T,
+     const int& pfld_p, const int& pfld_spc
      );
 
   void set_pelec_method_params();

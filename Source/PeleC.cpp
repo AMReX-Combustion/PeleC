@@ -72,6 +72,7 @@ int          PeleC::cQTEMP        = -1;
 int          PeleC::cQFA          = -1;
 int          PeleC::cQFS          = -1;
 int          PeleC::cQFX          = -1;
+int          PeleC::cQFSOOT       = -1;
 int          PeleC::NQAUX         = -1;
 int          PeleC::cQGAMC        = -1;
 int          PeleC::cQC           = -1;
@@ -98,7 +99,9 @@ int          PeleC::FirstAux      = -1;
 int          PeleC::NumAdv        = 0;
 int          PeleC::FirstAdv      = -1;
 
-int          PeleC::pstate_loc = -1;
+int          PeleC::NumSootVars   = 0;
+int          PeleC::FirstSootVar  = -1;
+
 int          PeleC::pstate_vel = -1;
 int          PeleC::pstate_T   = -1;
 int          PeleC::pstate_dia = -1;
@@ -150,6 +153,10 @@ bool         PeleC::do_mol_load_balance = false;
 SprayParticleContainer* PeleC::SprayPC = nullptr;
 #endif
 
+#ifdef SOOT_MODEL
+SootModel* PeleC::soot_model = nullptr;
+#endif
+
 std::string  PeleC::probin_file = "probin";
 std::vector<std::string> PeleC::spec_names;
 
@@ -191,6 +198,11 @@ PeleC::variableCleanUp ()
 #ifdef AMREX_PARTICLES
   delete SprayPC;
   SprayPC = nullptr;;
+#endif
+
+#ifdef SOOT_MODEL
+  delete soot_model;
+  soot_model = nullptr;
 #endif
 
   desc_lst.clear();
@@ -476,6 +488,9 @@ PeleC::PeleC ()
   ,mms_src_evaluated(false)
 #endif
 {
+#ifdef SOOT_MODEL
+  soot_model = new SootModel();
+#endif
 }
 
 PeleC::PeleC (Amr&            papa,
@@ -501,6 +516,9 @@ PeleC::PeleC (Amr&            papa,
 #endif
 #endif
 
+#ifdef SOOT_MODEL
+  soot_model = new SootModel();
+#endif
   MultiFab& S_new = get_new_data(State_Type);
 
   for (int n = 0; n < src_list.size(); ++n)
@@ -814,6 +832,10 @@ PeleC::initData ()
   } else {
     particle_redistribute(level-1, true);
   }
+#endif
+
+#ifdef SOOT_MODEL
+  soot_model->define();
 #endif
 
   if (verbose)

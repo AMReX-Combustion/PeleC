@@ -234,14 +234,24 @@ PeleC::variableSetUp ()
 	cnt += NumAux;
     }
 
+#ifdef SOOT_MODEL
+    // Set number of soot variables to be equal to the number of moments
+    // plus a variable for the weight of the delta function
+    NumSootVars = NUM_SOOT_MOMENTS + 1;
+    FirstSootVar = cnt;
+    cnt += NumSootVars;
+#else
+    NumSootVars = 0;
+    FirstSootVar = -1;
+#endif
+
     NUM_STATE = cnt;
 
 
 #ifdef AMREX_PARTICLES
     // Set index locations for particle state vector and storage of field variables that 
     // get computed first and then interpolated to particle position
-    pstate_loc = 0;
-    pstate_vel = pstate_loc + BL_SPACEDIM;
+    pstate_vel = 0;
     pstate_T = pstate_vel + BL_SPACEDIM;
     pstate_dia = pstate_T + 1;
     pstate_rho = pstate_dia + 1;
@@ -267,15 +277,15 @@ PeleC::variableSetUp ()
     set_pelec_method_params();
 
     set_method_params(dm, Density, Xmom, Eden, Eint, Temp, FirstAdv, FirstSpec, FirstAux, 
-		      NumAdv,
+		      NumAdv, FirstSootVar, NumSootVars,
 		      diffuse_cutoff_density,
-              pstate_loc, pstate_vel, pstate_T, pstate_dia, pstate_rho, pstate_spc,
-              pfld_vel, pfld_rho, pfld_T, pfld_p, pfld_spc);
+		      pstate_vel, pstate_T, pstate_dia, pstate_rho, pstate_spc,
+		      pfld_vel, pfld_rho, pfld_T, pfld_p, pfld_spc);
 
     // Get various values from Fortran
     get_method_params(&NUM_GROW,&QTHERM,&QVAR,&cQRHO,&cQU,&cQV,&cQW,&cQGAME,&cQPRES,
-                      &cQREINT,&cQTEMP,&cQFA,&cQFS,&cQFX,&NQAUX,&cQGAMC,&cQC,&cQCSML,
-                      &cQDPDR,&cQDPDE,&cQRSPEC);
+                      &cQREINT,&cQTEMP,&cQFA,&cQFS,&cQFX,&cQFSOOT,&NQAUX,&cQGAMC,&cQC,
+		      &cQCSML,&cQDPDR,&cQDPDE,&cQRSPEC);
 
     Real run_stop = ParallelDescriptor::second() - run_strt;
  

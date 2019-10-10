@@ -232,7 +232,7 @@ end subroutine set_amr_info
 ! :::
 
 subroutine get_method_params(nGrowHyp,cQTHERM,cQVAR,cQRHO,cQU,cQV,cQW,cQGAME,cQPRES,&
-     cQREINT,cQTEMP,cQFA,cQFS,cQFX,cNQAUX,cQGAMC,cQC,cQCSML,cQDPDR,cQDPDE,cQRSPEC) &
+     cQREINT,cQTEMP,cQFA,cQFS,cQFX,cQFSOOT,cNQAUX,cQGAMC,cQC,cQCSML,cQDPDR,cQDPDE,cQRSPEC) &
      bind(C, name="get_method_params")
 
   ! Passing data from f90 back to C++
@@ -243,7 +243,7 @@ subroutine get_method_params(nGrowHyp,cQTHERM,cQVAR,cQRHO,cQU,cQV,cQW,cQGAME,cQP
 
   integer, intent(out) :: ngrowHyp, cQTHERM, cQVAR, cQRHO, cQU, cQV, cQW, cQGAME, cQPRES,&
                           cQREINT, cQTEMP, cQFA, cQFS, cQFX, cNQAUX, cQGAMC, cQC, cQCSML,&
-                          cQDPDR, cQDPDE, cQRSPEC
+                          cQDPDR, cQDPDE, cQRSPEC, cQFSOOT
 
   nGrowHyp = NHYP
   cQTHERM = QTHERM
@@ -259,6 +259,7 @@ subroutine get_method_params(nGrowHyp,cQTHERM,cQVAR,cQRHO,cQU,cQV,cQW,cQGAME,cQP
   cQFA = QFA - 1
   cQFS = QFS - 1
   cQFX = QFX - 1
+  cQFSOOT = QFSOOT - 1
   cNQAUX = NQAUX
   cQGAMC = QGAMC - 1
   cQC = QC - 1
@@ -383,8 +384,9 @@ end subroutine swap_outflow_data
 
 subroutine set_method_params(dm,Density,Xmom,Eden,Eint,Temp, &
      FirstAdv,FirstSpec,FirstAux,numadv, &
+     FirstSootVar, numsoot, &
      diffuse_cutoff_density_in, &
-     pstate_loc, pstate_vel, pstate_T, pstate_dia, pstate_rho, pstate_ys, &
+     pstate_vel, pstate_T, pstate_dia, pstate_rho, pstate_ys, &
      pfld_vel, pfld_rho, pfld_T, pfld_p, pfld_ys) &
      bind(C, name="set_method_params")
 
@@ -398,13 +400,13 @@ subroutine set_method_params(dm,Density,Xmom,Eden,Eint,Temp, &
 
   integer, intent(in) :: dm
   integer, intent(in) :: Density, Xmom, Eden, Eint, Temp, &
-       FirstAdv, FirstSpec, FirstAux
-  integer, intent(in) :: pstate_loc, pstate_vel, pstate_T, pstate_dia, &
-                         pstate_rho, pstate_ys, pfld_vel, pfld_rho, pfld_T, &
-                         pfld_p, pfld_ys
-  integer, intent(in) :: numadv
+       FirstAdv, FirstSpec, FirstAux, FirstSootVar
+  integer, intent(in) :: pstate_vel, pstate_T, pstate_dia, &
+       pstate_rho, pstate_ys, pfld_vel, pfld_rho, pfld_T, &
+       pfld_p, pfld_ys
+  integer, intent(in) :: numadv, numsoot
   double precision, intent(in) :: diffuse_cutoff_density_in
-  integer :: iadv, ispec
+  integer :: iadv, ispec, isoot
 
   integer :: QLAST
 
@@ -418,9 +420,12 @@ subroutine set_method_params(dm,Density,Xmom,Eden,Eint,Temp, &
   ! NVAR  : number of total variables in initial system
   NTHERM = 7
 
-  NVAR = NTHERM + nspecies + naux + numadv
+  NVAR = NTHERM + nspecies + naux + numadv + numsoot
 
   nadv = numadv
+
+  ! Number of soot variables
+  nsoot = numsoot
 
   ! We use these to index into the state "U"
   URHO  = Density   + 1
@@ -445,6 +450,12 @@ subroutine set_method_params(dm,Density,Xmom,Eden,Eint,Temp, &
      UFX = 1
   end if
 
+  if (nsoot .ge. 1) then
+     UFSOOT = FirstSootVar + 1
+  else
+     UFSOOT = 1
+  end if
+
   USHK  = -1
   !---------------------------------------------------------------------
   ! primitive state components
@@ -455,7 +466,7 @@ subroutine set_method_params(dm,Density,Xmom,Eden,Eint,Temp, &
 
   QTHERM = NTHERM + 1 ! the + 1 is for QGAME which is always defined in primitive mode
 
-  QVAR = QTHERM + nspecies + naux + numadv
+  QVAR = QTHERM + nspecies + naux + numadv + numsoot
   
   ! NQ will be the number of hydro + radiation variables in the primitive
   ! state.  Initialize it just for hydro here
@@ -493,6 +504,13 @@ subroutine set_method_params(dm,Density,Xmom,Eden,Eint,Temp, &
   else
      QFX = 1
 
+  end if
+
+  ! Primitive soot variables
+  if (nsoot .ge. 1) then
+     QFSOOT = QFS + nspecies + naux
+  else
+     QFSOOT = 1
   end if
 
   ! The NQAUX here are auxiliary quantities (game, gamc, c, csml, dpdr, dpde, Rspecific)
@@ -546,10 +564,18 @@ subroutine set_method_params(dm,Density,Xmom,Eden,Eint,Temp, &
      npassive = npassive + nspecies + naux
   endif
 
+  ! Soot model variables
+
+  if (nsoot .ge. 1) then
+     do isoot = 1, nsoot
+        upass_map(npassive + isoot) = UFSOOT + isoot - 1
+        qpass_map(npassive + isoot) = QFSOOT + isoot - 1
+     enddo
+     npassive = npassive + nsoot
+  endif
   !---------------------------------------------------------------------
   ! Particle state indices
   !---------------------------------------------------------------------
-  PLOC  = 1 + pstate_loc
   PVEL  = 1 + pstate_vel
   PTEMP = 1 + pstate_T
   PDIA  = 1 + pstate_dia

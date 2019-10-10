@@ -21,7 +21,7 @@ module meth_params_module
 
   ! NTHERM: number of thermodynamic variables
   integer, save :: NTHERM, NVAR
-  integer, save :: URHO, UMX, UMY, UMZ, UMR, UML, UMP, UEDEN, UEINT, UTEMP, UFA, UFS, UFX
+  integer, save :: URHO, UMX, UMY, UMZ, UMR, UML, UMP, UEDEN, UEINT, UTEMP, UFA, UFS, UFX, UFSOOT
   integer, save :: USHK
 
   ! QTHERM: number of primitive variables
@@ -29,11 +29,11 @@ module meth_params_module
   integer, parameter :: QRHO=1, QU=2, QV=3, QW=4, QPRES=6, QREINT=7, QTEMP=8, QGAME=5
   integer, save :: QFS=9
   integer, save :: NQAUX, QGAMC, QC, QCSML, QDPDR, QDPDE, QRSPEC
-  integer, save :: QFA, QFX
+  integer, save :: QFA, QFX, QFSOOT
   !integer, save :: QRHO, QU, QV, QW, QPRES, QREINT, QTEMP, QGAME
   !integer, save :: QFA, QFS, QFX
 
-  integer, save :: nadv
+  integer, save :: nadv, nsoot
 
   ! NQ will be the total number of primitive variables, hydro + radiation
   integer, save :: NQ         
@@ -48,7 +48,7 @@ module meth_params_module
 
 
   ! This for keeping track of particles states, and 
-  integer, save :: PLOC, PVEL, PTEMP, PDIA, PRHO, PSPC
+  integer, save :: PVEL, PTEMP, PDIA, PRHO, PSPC
   integer, save :: PFVEL, PFRHO, PFTEMP, PFP, PFSPC
 
 
