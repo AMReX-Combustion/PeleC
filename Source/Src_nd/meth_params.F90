@@ -38,7 +38,9 @@ module meth_params_module
   ! NQ will be the total number of primitive variables, hydro + radiation
   integer, save :: NQ         
 
-  integer, save :: npassive
+  ! npassive is total number of passives that are per unit mass
+  ! npassnm is the number of passives that are not per unit mass
+  integer, save :: npassive, npassnm
   integer, save, allocatable :: qpass_map(:), upass_map(:)
 
   ! These are used for the Godunov state

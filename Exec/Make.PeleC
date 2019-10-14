@@ -150,7 +150,11 @@ endif
 ifeq ($(USE_SOOT), TRUE)
 # Ensure the number of soot moments is correct
     ifeq (,$(filter $(NUM_SOOT_MOMENTS),3 6))
-    $(error NUM_SOOT_MOMENTS must be 3 or 6)
+        $(error NUM_SOOT_MOMENTS must be 3 or 6)
+    endif
+# Ensure MOL integrator is used
+    ifneq ($(HYP_TYPE), MOL)
+        $(error Soot modeling currently requires HYP_TYPE = MOL)
     endif
   DEFINES += -DSOOT_MODEL
   Bpack   += $(PELEC_MP_HOME)/Source/Soot_Models/Make.package

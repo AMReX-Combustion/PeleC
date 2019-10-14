@@ -564,14 +564,18 @@ subroutine set_method_params(dm,Density,Xmom,Eden,Eint,Temp, &
      npassive = npassive + nspecies + naux
   endif
 
+  ! Passive variable indices past this point are assumed to not be per unit mass
+  ! meaning the U_var = Q_var, instead of U_var = rho*Q_var
+  npassnm = 0
+
   ! Soot model variables
 
   if (nsoot .ge. 1) then
      do isoot = 1, nsoot
-        upass_map(npassive + isoot) = UFSOOT + isoot - 1
-        qpass_map(npassive + isoot) = QFSOOT + isoot - 1
+        upass_map(npassive + npassnm + isoot) = UFSOOT + isoot - 1
+        qpass_map(npassive + npassnm + isoot) = QFSOOT + isoot - 1
      enddo
-     npassive = npassive + nsoot
+     npassnm = npassnm + nsoot
   endif
   !---------------------------------------------------------------------
   ! Particle state indices

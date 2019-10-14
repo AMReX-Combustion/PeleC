@@ -269,7 +269,7 @@ module hyp_advection_module
                      flux_tmp(vii,URHO), flux_tmp(vii,UMX), flux_tmp(vii,UMY), flux_tmp(vii,UMZ), flux_tmp(vii,UEDEN), flux_tmp(vii,UEINT), &
                      idir, coord_type, bc_test_val, csmall(vii), cav(vii) )
              else
-                write(*,*) "Aborting, no valid Riemann sovler", riemann_solver
+                write(*,*) "Aborting, no valid Riemann solver", riemann_solver
                 call abort()
              endif
 

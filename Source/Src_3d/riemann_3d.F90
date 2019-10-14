@@ -10,7 +10,7 @@ module riemann_module
                                  NGDNV, GDRHO, GDPRES, GDGAME, &
                                  small_dens, small_pres, small_temp, &
                                  cg_maxiter, cg_tol, cg_blend, &
-                                 npassive, upass_map, qpass_map, &
+                                 npassive, npassnm, upass_map, qpass_map, &
                                  riemann_solver, ppm_temp_fix, hybrid_riemann, &
                                  allow_negative_energy
   implicit none
@@ -948,6 +948,22 @@ contains
           enddo
 
        enddo
+       do ipassive = npassive + 1, npassive + 1 + npassnm
+          n  = upass_map(ipassive)
+          nqp = qpass_map(ipassive)
+
+          do i = ilo, ihi
+             if (us1d(i) .gt. ZERO) then
+                uflx(i,j,kflux,n) = qint(i,j,kflux,iu)*ql(i,j,kc,nqp)
+             else if (us1d(i) .lt. ZERO) then
+                uflx(i,j,kflux,n) = qint(i,j,kflux,iu)*qr(i,j,kc,nqp)
+             else
+                qavg = HALF * (ql(i,j,kc,nqp) + qr(i,j,kc,nqp))
+                uflx(i,j,kflux,n) = qint(i,j,kflux,iu)*qavg
+             endif
+          enddo
+
+       enddo
     enddo
 
     call destroy(eos_state)
@@ -1213,6 +1229,25 @@ contains
              else
                 qavg = HALF * (ql(i,j,kc,nqp) + qr(i,j,kc,nqp))
                 uflx(i,j,kflux,n) = uflx(i,j,kflux,URHO)*qavg
+             endif
+          enddo
+
+       enddo
+       do ipassive = npassive + 1, npassive + 1 + npassnm
+          n  = upass_map(ipassive)
+          nqp = qpass_map(ipassive)
+
+          !dir$ ivdep
+          do i = ilo, ihi
+             if (us1d(i) > ZERO) then
+                uflx(i,j,kflux,n) = qint(i,j,kflux,iu)*ql(i,j,kc,nqp)
+
+             else if (us1d(i) < ZERO) then
+                uflx(i,j,kflux,n) = qint(i,j,kflux,iu)*qr(i,j,kc,nqp)
+
+             else
+                qavg = HALF * (ql(i,j,kc,nqp) + qr(i,j,kc,nqp))
+                uflx(i,j,kflux,n) = qint(i,j,kflux,iu)*qavg
              endif
           enddo
 

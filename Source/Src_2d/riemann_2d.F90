@@ -10,7 +10,7 @@ module riemann_module
                                  GDPRES, GDGAME, &
                                  NGDNV, small_dens, small_pres, small_temp, &
                                  cg_maxiter, cg_tol, cg_blend, &
-                                 npassive, upass_map, qpass_map, &
+                                 npassive, npassnm, upass_map, qpass_map, &
                                  riemann_solver, ppm_temp_fix, hybrid_riemann, &
                                  allow_negative_energy
 
@@ -903,6 +903,20 @@ contains
                 uflx(i,j,n) = uflx(i,j,URHO)*qavg
              endif
           enddo
+          ! advected quantities when Q = U
+          do ipassive = npassive + 1, npassive + 1 + npassnm
+             n  = upass_map(ipassive)
+             nqp = qpass_map(ipassive)
+
+             if (ustar .gt. ZERO) then
+                uflx(i,j,n) = qint(i,j,iu)*ql(i,j,nqp)
+             else if (ustar .lt. ZERO) then
+                uflx(i,j,n) = qint(i,j,iu)*qr(i,j,nqp)
+             else
+                qavg = HALF * (ql(i,j,nqp) + qr(i,j,nqp))
+                uflx(i,j,n) = qint(i,j,iu)*qavg
+             endif
+          enddo
 
        enddo
     enddo
@@ -1166,7 +1180,20 @@ contains
                 uflx(i,j,n) = uflx(i,j,URHO)*qavg
              endif
           enddo
+          ! passive quantities where Q = U
+          do ipassive = npassive + 1, npassive + 1 + npassnm
+             n  = upass_map(ipassive)
+             nqp = qpass_map(ipassive)
 
+             if (ustar .gt. ZERO) then
+                uflx(i,j,n) = qint(i,j,iu)*ql(i,j,nqp)
+             else if (ustar .lt. ZERO) then
+                uflx(i,j,n) = qint(i,j,iu)*qr(i,j,nqp)
+             else
+                qavg = HALF * (ql(i,j,nqp) + qr(i,j,nqp))
+                uflx(i,j,n) = qint(i,j,iu)*qavg
+             endif
+          enddo
        enddo
     enddo
   end subroutine riemannus
@@ -1304,7 +1331,19 @@ contains
                 uflx(i,j,n) = uflx(i,j,URHO)*qavg
              endif
           enddo
+          do ipassive = npassive + 1, npassive + 1 + npassnm
+             n  = upass_map(ipassive)
+             nqp = qpass_map(ipassive)
 
+             if (ustar .gt. ZERO) then
+                uflx(i,j,n) = qint(i,j,iu)*ql(i,j,nqp)
+             else if (ustar .lt. ZERO) then
+                uflx(i,j,n) = qint(i,j,iu)*qr(i,j,nqp)
+             else
+                qavg = HALF * (ql(i,j,nqp) + qr(i,j,nqp))
+                uflx(i,j,n) = qint(i,j,iu)*qavg
+             endif
+          enddo
        enddo
     enddo
 

@@ -203,7 +203,7 @@ contains
 
     use amrex_constants_module, only: ZERO
     use network, only: nspecies, naux
-    use meth_params_module, only: NVAR, URHO, UMX, UMY, UMZ, UTEMP, UEINT, UEDEN, UFS, small_temp, small_dens, npassive, upass_map
+    use meth_params_module, only: NVAR, URHO, UMX, UMY, UMZ, UTEMP, UEINT, UEDEN, UFS, small_temp, small_dens, npassive, npassnm, upass_map
     use eos_type_module
     use eos_module, only: eos_rt
     use pelec_util_module, only: position
@@ -238,6 +238,12 @@ contains
     do ipassive = 1, npassive
        n = upass_map(ipassive)
        new_state(n) = new_state(n) * (small_dens / new_state(URHO))
+    end do
+
+    ! Set variables that are not per unit mass
+    do ipassive = npassive + 1, npassive + 1 + npassnm
+       n = upass_map(ipassive)
+       new_state(n) = new_state(n)
     end do
 
     eos_state % rho      = small_dens
@@ -400,7 +406,7 @@ contains
                                    QVAR, QRHO, QU, QV, QW, &
                                    QREINT, QPRES, QTEMP, QGAME, QFS, QFX, &
                                    QC, QCSML, QGAMC, QDPDR, QDPDE, QRSPEC, NQAUX, &
-                                   npassive, upass_map, qpass_map
+                                   npassive, npassnm, upass_map, qpass_map
     use amrex_constants_module, only: ZERO, HALF, ONE
     use pelec_util_module, only: position
     implicit none
@@ -457,6 +463,19 @@ contains
        enddo
     enddo
 
+    ! Load passive quantities into q where q = u
+    do ipassive = npassive + 1, npassive + 1 + npassnm
+       n  = upass_map(ipassive)
+       nq = qpass_map(ipassive)
+       do k = lo(3),hi(3)
+          do j = lo(2),hi(2)
+             do i = lo(1),hi(1)
+                q(i,j,k,nq) = uin(i,j,k,n)
+             enddo
+          enddo
+       enddo
+    enddo
+
     call build(eos_state)
 
     ! get gamc, p, T, c, csml using q state
@@ -503,7 +522,7 @@ contains
     use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, &
                                    QVAR, QRHO, QU, QV, QW, &
                                    QREINT, QPRES, QDPDR, QDPDE, NQAUX, &
-                                   npassive, upass_map, qpass_map
+                                   npassive, npassnm, upass_map, qpass_map
     use amrex_constants_module, only: ZERO, HALF, ONE
     use pelec_util_module, only: position
 
@@ -564,6 +583,21 @@ contains
 
     enddo
 
+    ! Apply to variables that are not per unit mass, ie srcQ = src
+    do ipassive = npassive + 1, npassive + 1 + npassnm
+       n = upass_map(ipassive)
+       nq = qpass_map(ipassive)
+
+       do k = lo(3), hi(3)
+          do j = lo(2), hi(2)
+             do i = lo(1), hi(1)
+                srcQ(i,j,k,nq) = src(i,j,k,n)
+             enddo
+          enddo
+       enddo
+
+    enddo
+
   end subroutine srctoprim
 
 
@@ -576,7 +610,7 @@ contains
     use amrex_constants_module, only: ZERO
     use meth_params_module, only: NVAR, URHO, UMX, UMZ, UEDEN, UEINT, &
                                   QVAR, QU, QPRES, &
-                                  npassive, upass_map
+                                  npassive, npassnm, upass_map
     implicit none
 
     integer :: dir, idx(3)
@@ -619,6 +653,16 @@ contains
 
        n = upass_map(ipassive)
        flux(n) = u(n) * v_adv
+
+    enddo
+
+    ! Passively advected quantities that are not per unit mass
+    ! F = u*Q, not F = rho*u*Q
+
+    do ipassive = npassive + 1, npassive + 1 + npassnm
+
+       n = upass_map(ipassive)
+       flux(n) = u(n)*v_adv
 
     enddo
 

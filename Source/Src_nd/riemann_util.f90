@@ -304,7 +304,7 @@ contains
 
     use meth_params_module, only : QVAR, NVAR, QRHO, QU, QV, QW, QPRES, QREINT, &
          URHO, UMX, UMY, UMZ, UEDEN, UEINT, &
-         npassive, upass_map, qpass_map
+         npassive, npassnm, upass_map, qpass_map
     use prob_params_module, only : coord_type
 
     implicit none
@@ -454,6 +454,17 @@ contains
        f(n) = (bp*fl_tmp - bm*fr_tmp)*bd + bp*bm*bd*(qr(QRHO)*qr(nq) - ql(QRHO)*ql(nq))
     enddo
 
+    ! passively-advected scalar, not per unit mass
+    do ipassive = npassive + 1, npassive + 1 + npassnm
+       n  = upass_map(ipassive)
+       nq = qpass_map(ipassive)
+
+       fl_tmp = ql(nq)*ql(ivel)
+       fr_tmp = qr(nq)*qr(ivel)
+
+       f(n) = (bp*fl_tmp - bm*fr_tmp)*bd + bp*bm*bd*(qr(nq) - ql(nq))
+    enddo
+
   end subroutine HLL
 
 
@@ -461,7 +472,7 @@ contains
 
     use meth_params_module, only: QVAR, QRHO, QU, QV, QW, QREINT, &
          NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP, &
-         npassive, upass_map, qpass_map
+         npassive, npassnm, upass_map, qpass_map
 
     implicit none
     real (amrex_real), intent(in)  :: q(QVAR)
@@ -489,6 +500,12 @@ contains
        nq = qpass_map(ipassive)
        U(n) = q(QRHO)*q(nq)
     enddo
+    ! Passives where U = Q
+    do ipassive = npassive + 1, npassive + 1 + npassnm
+       n  = upass_map(ipassive)
+       nq = qpass_map(ipassive)
+       U(n) = q(nq)
+    enddo
 
   end subroutine cons_state
 
@@ -497,7 +514,7 @@ contains
 
     use meth_params_module, only: QVAR, QRHO, QU, QV, QW, QREINT, QPRES, &
          NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP, &
-         npassive, upass_map, qpass_map
+         npassive, npassnm, upass_map, qpass_map
 
     implicit none
     integer, intent(in) :: idir
@@ -545,13 +562,19 @@ contains
        U(n) = hllc_factor*q(nq)
     enddo
 
+    do ipassive = npassive + 1, npassive + 1 + npassnm
+       n  = upass_map(ipassive)
+       nq = qpass_map(ipassive)
+       U(n) = hllc_factor*q(nq)/q(QRHO)
+    enddo
+
   end subroutine HLLC_state
 
 
   pure subroutine compute_flux(idir, ndim, bnd_fac, U, p, F)
 
     use meth_params_module, only: NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP, &
-         npassive, upass_map
+         npassive, npassnm, upass_map
     use prob_params_module, only : coord_type
 
     implicit none
@@ -593,7 +616,7 @@ contains
 
     F(UTEMP) = ZERO
 
-    do ipassive = 1, npassive
+    do ipassive = 1, npassive + npassnm
        n = upass_map(ipassive)
        F(n) = U(n)*u_flx
     enddo
