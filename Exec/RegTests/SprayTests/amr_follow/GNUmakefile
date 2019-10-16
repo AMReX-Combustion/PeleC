@@ -6,7 +6,6 @@ DEBUG      = FALSE
 DIM        = 2
 
 COMP	   = gcc
-#COMP  = g++
 
 USE_MPI    = FALSE
 USE_OMP    = FALSE
