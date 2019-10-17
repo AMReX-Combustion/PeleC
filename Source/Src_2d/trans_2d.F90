@@ -7,7 +7,7 @@ module transverse_module
                                  GDU, GDV, GDPRES, GDGAME, &
                                  NGDNV, &
                                  small_pres, small_temp, &
-                                 npassive, qpass_map, upass_map, &
+                                 npassive, npassnm, qpass_map, upass_map, &
                                  transverse_use_eos, ppm_type, ppm_trace_sources, &
                                  transverse_reset_density, transverse_reset_rhoe, &
                                  ppm_predict_gammae
@@ -108,6 +108,28 @@ contains
                                   area1(i  ,j)*fx(i  ,j,URHO))/vol(i,j)
                 compo = rr*qm(i,j+1,nqp) - compn
                 qmo(i,j+1,nqp) = compo/rrnew + hdt*srcQ(i,j,nqp)
+             end if
+          enddo
+       enddo
+    enddo
+
+    ! Update passive quantities that are not per unit mass
+    do ipassive = npassive + 1, npassive + npassnm
+       n  = upass_map(ipassive)
+       nqp = qpass_map(ipassive)
+
+       do j = jlo, jhi
+          do i = ilo, ihi
+             compn = hdt*(area1(i+1,j)*fx(i+1,j,n) - &
+                          area1(i  ,j)*fx(i  ,j,n))/vol(i,j)
+             if (j >= jlo+1) then
+                compo = qp(i,j,nqp) - compn
+                qpo(i,j,nqp) = compo + hdt*srcQ(i,j,nqp)
+             end if
+
+             if (j <= jhi-1) then
+                compo = qm(i,j+1,nqp) - compn
+                qmo(i,j+1,nqp) = compo + hdt*srcQ(i,j,nqp)
              end if
           enddo
        enddo
@@ -461,6 +483,29 @@ contains
                 rrnew = rr - cdtdy*(fy(i,j+1,URHO)-fy(i,j,URHO))
                 compo = rr*qm(i+1,j,nqp) - compn
                 qmo(i+1,j,nqp) = compo/rrnew + hdt*srcQ(i,j,nqp)
+             end if
+          enddo
+       enddo
+    enddo
+
+    ! update passive quantities that are not per unit mass
+    do ipassive = npassive + 1, npassive + npassnm
+       n  = upass_map(ipassive)
+       nqp = qpass_map(ipassive)
+
+       do j = jlo, jhi
+          do i = ilo, ihi
+
+             compn = cdtdy*(fy(i,j+1,n)-fy(i,j,n))
+
+             if (i >= ilo+1) then
+                compo = qp(i,j,nqp) - compn
+                qpo(i,j,nqp) = compo + hdt*srcQ(i,j,nqp)
+             end if
+
+             if (i <= ihi-1) then
+                compo = qm(i+1,j,nqp) - compn
+                qmo(i+1,j,nqp) = compo + hdt*srcQ(i,j,nqp)
              end if
           enddo
        enddo

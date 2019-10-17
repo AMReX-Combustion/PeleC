@@ -241,7 +241,7 @@ contains
     end do
 
     ! Set variables that are not per unit mass
-    do ipassive = npassive + 1, npassive + 1 + npassnm
+    do ipassive = npassive + 1, npassive + npassnm
        n = upass_map(ipassive)
        new_state(n) = new_state(n)
     end do
@@ -464,7 +464,7 @@ contains
     enddo
 
     ! Load passive quantities into q where q = u
-    do ipassive = npassive + 1, npassive + 1 + npassnm
+    do ipassive = npassive + 1, npassive + npassnm
        n  = upass_map(ipassive)
        nq = qpass_map(ipassive)
        do k = lo(3),hi(3)
@@ -584,7 +584,7 @@ contains
     enddo
 
     ! Apply to variables that are not per unit mass, ie srcQ = src
-    do ipassive = npassive + 1, npassive + 1 + npassnm
+    do ipassive = npassive + 1, npassive + npassnm
        n = upass_map(ipassive)
        nq = qpass_map(ipassive)
 
@@ -649,7 +649,7 @@ contains
 
     ! Passively advected quantities.
 
-    do ipassive = 1, npassive
+    do ipassive = 1, npassive + npassnm
 
        n = upass_map(ipassive)
        flux(n) = u(n) * v_adv
@@ -658,13 +658,12 @@ contains
 
     ! Passively advected quantities that are not per unit mass
     ! F = u*Q, not F = rho*u*Q
+!     do ipassive = npassive + 1, npassive + npassnm
 
-    do ipassive = npassive + 1, npassive + 1 + npassnm
+!        n = upass_map(ipassive)
+!        flux(n) = u(n)*v_adv
 
-       n = upass_map(ipassive)
-       flux(n) = u(n)*v_adv
-
-    enddo
+!     enddo
 
   end function dflux
 

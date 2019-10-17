@@ -154,7 +154,7 @@ SprayParticleContainer* PeleC::SprayPC = nullptr;
 #endif
 
 #ifdef SOOT_MODEL
-SootModel* PeleC::soot_model = nullptr;
+SootModel* PeleC::soot_model = new SootModel();
 #endif
 
 std::string  PeleC::probin_file = "probin";
@@ -463,6 +463,10 @@ PeleC::read_params ()
   read_particle_params();
 #endif
 
+#ifdef SOOT_MODEL
+  soot_model->readSootParams();
+#endif
+
   // TODO: What is this?
   StateDescriptor::setBndryFuncThreadSafety(bndry_func_thread_safe);
 
@@ -488,9 +492,6 @@ PeleC::PeleC ()
   ,mms_src_evaluated(false)
 #endif
 {
-#ifdef SOOT_MODEL
-  soot_model = new SootModel();
-#endif
 }
 
 PeleC::PeleC (Amr&            papa,
@@ -516,9 +517,6 @@ PeleC::PeleC (Amr&            papa,
 #endif
 #endif
 
-#ifdef SOOT_MODEL
-  soot_model = new SootModel();
-#endif
   MultiFab& S_new = get_new_data(State_Type);
 
   for (int n = 0; n < src_list.size(); ++n)
@@ -603,7 +601,9 @@ PeleC::PeleC (Amr&            papa,
   if (use_explicit_filter){
     init_filters();
   }
-
+#ifdef SOOT_MODEL
+  soot_model->define();
+#endif
 }
 
 PeleC::~PeleC ()
@@ -832,10 +832,6 @@ PeleC::initData ()
   } else {
     particle_redistribute(level-1, true);
   }
-#endif
-
-#ifdef SOOT_MODEL
-  soot_model->define();
 #endif
 
   if (verbose)

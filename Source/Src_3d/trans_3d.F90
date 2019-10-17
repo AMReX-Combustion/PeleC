@@ -8,7 +8,7 @@ module transverse_module
                                  URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, &
                                  NGDNV, GDPRES, GDU, GDV, GDW, GDGAME, &
                                  small_pres, small_temp, &
-                                 npassive, upass_map, qpass_map, &
+                                 npassive, npassnm, upass_map, qpass_map, &
                                  ppm_predict_gammae, ppm_trace_sources, ppm_type, &
                                  transverse_use_eos, transverse_reset_density, transverse_reset_rhoe
   use eos_module
@@ -165,7 +165,28 @@ contains
           enddo
        enddo
     enddo
+    ! Update passive quantities that are not per unit mass
+    do ipassive = npassive + 1, npassive + npassnm
+       n  = upass_map(ipassive)
+       nqp = qpass_map(ipassive)
+       do j = jlo, jhi
+          do i = ilo, ihi
 
+             compn = cdtdx*(fx(i+1,j,kc,n) - fx(i,j,kc,n))
+
+             if (j >= jlo+1) then
+                compu = qyp(i,j,kc,nqp) - compn
+                qypo(i,j,kc,nqp) = compu
+             end if
+
+             if (j <= jhi-1) then
+                compu = qym(i,j+1,kc,nqp) - compn
+                qymo(i,j+1,kc,nqp) = compu
+             end if
+
+          enddo
+       enddo
+    enddo
     do j = jlo, jhi
        do i = ilo, ihi
 
@@ -432,7 +453,24 @@ contains
           enddo
        enddo
     enddo
+    ! Update passive quantities that are not per unit mass
+    do ipassive = npassive + 1, npassive + npassnm
+       n  = upass_map(ipassive)
+       nqp = qpass_map(ipassive)
+       do j = jlo, jhi
+          do i = ilo, ihi
 
+             compn = cdtdx*(fx(i+1,j,kc,n) - fx(i,j,kc,n))
+             compu = qzp(i,j,kc,nqp) - compn
+             qzpo(i,j,kc,nqp) = compu
+
+             compn = cdtdx*(fx(i+1,j,km,n) - fx(i,j,km,n))
+             compu = qzm(i,j,kc,nqp) - compn
+             qzmo(i,j,kc,nqp) = compu
+
+          enddo
+       enddo
+    enddo
     do j = jlo, jhi
        do i = ilo, ihi
 
@@ -707,6 +745,27 @@ contains
        enddo
     enddo
 
+    !
+    do ipassive = npassive + 1, npassive + npassnm
+       n  = upass_map(ipassive)
+       nqp = qpass_map(ipassive)
+       do j = jlo, jhi
+          do i = ilo, ihi
+             compn = cdtdy*(fy(i,j+1,kc,n) - fy(i,j,kc,n))
+
+             if (i >= ilo+1) then
+                compu = qxp(i,j,kc,nqp) - compn
+                qxpo(i,j,kc,nqp) = compu
+             end if
+
+             if (i <= ihi-1) then
+                compu = qxm(i+1,j,kc,nqp) - compn
+                qxmo(i+1,j,kc,nqp) = compu
+             end if
+
+          enddo
+       enddo
+    enddo
     do j = jlo, jhi
        do i = ilo, ihi
 
@@ -972,6 +1031,25 @@ contains
        enddo
     enddo
 
+    do ipassive = npassive + 1, npassive + npassnm
+       n  = upass_map(ipassive)
+       nqp = qpass_map(ipassive)
+       do j = jlo, jhi
+          do i = ilo, ihi
+
+             compn = cdtdy*(fy(i,j+1,kc,n) - fy(i,j,kc,n))
+
+             compu = qzp(i,j,kc,nqp) - compn
+             qzpo(i,j,kc,nqp) = compu
+
+             compn = cdtdy*(fy(i,j+1,km,n) - fy(i,j,km,n))
+
+             compu = qzm(i,j,kc,nqp) - compn
+             qzmo(i,j,kc,nqp) = compu
+
+          enddo
+       enddo
+    enddo
     do j = jlo, jhi
        do i = ilo, ihi
 
@@ -1265,6 +1343,37 @@ contains
        enddo
     enddo
 
+    do ipassive = npassive + 1, npassive + npassnm
+       n  = upass_map(ipassive)
+       nqp = qpass_map(ipassive)
+       do j = jlo, jhi
+          do i = ilo, ihi
+
+             compn = cdtdz*(fz(i,j,kc,n) - fz(i,j,km,n))
+
+             if (i >= ilo+1) then
+                compu = qxp(i,j,km,nqp) - compn
+                qxpo(i,j,km,nqp) = compu
+             end if
+
+             if (j >= jlo+1) then
+                compu = qyp(i,j,km,nqp) - compn
+                qypo(i,j,km,nqp) = compu
+             end if
+
+             if (i <= ihi-1) then
+                compu = qxm(i+1,j,km,nqp) - compn
+                qxmo(i+1,j,km,nqp) = compu
+             end if
+
+             if (j <= jhi-1) then
+                compu = qym(i,j+1,km,nqp) - compn
+                qymo(i,j+1,km,nqp) = compu
+             end if
+
+          enddo
+       enddo
+    enddo
     do j = jlo, jhi
        do i = ilo, ihi
 
@@ -1676,6 +1785,27 @@ contains
        enddo
     enddo
 
+    do ipassive = npassive + 1, npassive + npassnm
+       n  = upass_map(ipassive)
+       nqp = qpass_map(ipassive)
+       do j = jlo, jhi
+          do i = ilo, ihi
+
+             compr = qp(i,j,kc,nqp)
+             compl = qm(i,j,kc,nqp)
+
+             compnr = compr - cdtdx*(fxy(i+1,j,kc,n) - fxy(i,j,kc,n)) &
+                            - cdtdy*(fyx(i,j+1,kc,n) - fyx(i,j,kc,n))
+             compnl = compl - cdtdx*(fxy(i+1,j,km,n) - fxy(i,j,km,n)) &
+                            - cdtdy*(fyx(i,j+1,km,n) - fyx(i,j,km,n))
+
+             qpo(i,j,kc,nqp) = compnr + hdt*srcQ(i,j,k3d  ,nqp)
+             qmo(i,j,kc,nqp) = compnl + hdt*srcQ(i,j,k3d-1,nqp)
+
+          enddo
+       enddo
+    enddo
+
     do j = jlo, jhi
        do i = ilo, ihi
 
@@ -2017,6 +2147,31 @@ contains
        enddo
     enddo
 
+    do ipassive = npassive + 1, npassive + npassnm
+       n  = upass_map(ipassive)
+       nqp = qpass_map(ipassive)
+       do j = jlo, jhi
+          do i = ilo, ihi
+
+             dcompn = - cdtdx*(fxz(i+1,j,km,n   ) - fxz(i,j,km,n)) &
+                      - cdtdz*(fzx(i  ,j,kc,n   ) - fzx(i,j,km,n))
+
+             if (j >= jlo+1) then
+                compr = qp(i,j,km,nqp)
+
+                qpo(i,j  ,km,nqp) = compr + dcompn + hdt*srcQ(i,j,k3d,nqp)
+             end if
+
+             if (j <= jhi-1) then
+                compl = qm(i,j+1,km,nqp)
+
+                qmo(i,j+1,km,nqp) = compl + dcompn + hdt*srcQ(i,j,k3d,nqp)
+             end if
+
+          enddo
+       enddo
+    enddo
+
     do j = jlo, jhi
        do i = ilo, ihi
 
@@ -2320,6 +2475,28 @@ contains
                 compnl = compl +dcompn
 
                 qmo(i+1,j,km,nqp) = compnl/rrnewl + hdt*srcQ(i,j,k3d,nqp)
+             end if
+          enddo
+       enddo
+    enddo
+
+    do ipassive = npassive + 1, npassive + npassnm
+       n  = upass_map(ipassive)
+       nqp = qpass_map(ipassive)
+       do j = jlo, jhi
+          do i = ilo, ihi
+
+             dcompn = - cdtdy*(fyz(i,j+1,km,n   ) - fyz(i,j,km,n)) &
+                      - cdtdz*(fzy(i,j  ,kc,n   ) - fzy(i,j,km,n))
+
+             if (i >= ilo+1) then
+                compr = qp(i,j,km,nqp)
+                qpo(i  ,j,km,nqp) = compr + dcompn + hdt*srcQ(i,j,k3d,nqp)
+             end if
+
+             if (i <= ihi-1) then
+                compl = qm(i+1,j,km,nqp)
+                qmo(i+1,j,km,nqp) = compl + dcompn + hdt*srcQ(i,j,k3d,nqp)
              end if
           enddo
        enddo

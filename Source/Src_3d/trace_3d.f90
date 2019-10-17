@@ -16,7 +16,7 @@ contains
       use network, only : nspecies, naux
       use meth_params_module, only : QVAR, QRHO, QU, QV, QW, &
                                      QREINT, QPRES, &
-                                     npassive, qpass_map, small_dens, small_pres, ppm_type
+                                     npassive, npassnm, qpass_map, small_dens, small_pres, ppm_type
       use amrex_constants_module
 
       implicit none
@@ -213,7 +213,7 @@ contains
          enddo
       enddo
 
-      do ipassive = 1, npassive
+      do ipassive = 1, npassive + npassnm
          n = qpass_map(ipassive)
 
          do j = ilo2-1, ihi2+1
@@ -383,7 +383,7 @@ contains
          enddo
       enddo
 
-      do ipassive = 1, npassive
+      do ipassive = 1, npassive + npassnm
          n = qpass_map(ipassive)
 
          do i = ilo1-1, ihi1+1
@@ -429,7 +429,7 @@ contains
       use network, only : nspecies, naux
       use meth_params_module, only : QVAR, QRHO, QU, QV, QW, &
                                      QREINT, QPRES, &
-                                     npassive, qpass_map, small_dens, small_pres, ppm_type
+                                     npassive, npassnm, qpass_map, small_dens, small_pres, ppm_type
       use amrex_constants_module
 
       implicit none
@@ -635,7 +635,7 @@ contains
          enddo
       enddo
 
-      do ipassive = 1, npassive
+      do ipassive = 1, npassive + npassnm
          n = qpass_map(ipassive)
 
          do j = ilo2-1, ihi2+1

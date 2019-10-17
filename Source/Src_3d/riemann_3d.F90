@@ -948,7 +948,7 @@ contains
           enddo
 
        enddo
-       do ipassive = npassive + 1, npassive + 1 + npassnm
+       do ipassive = npassive + 1, npassive + npassnm
           n  = upass_map(ipassive)
           nqp = qpass_map(ipassive)
 
@@ -1233,7 +1233,7 @@ contains
           enddo
 
        enddo
-       do ipassive = npassive + 1, npassive + 1 + npassnm
+       do ipassive = npassive + 1, npassive + npassnm
           n  = upass_map(ipassive)
           nqp = qpass_map(ipassive)
 

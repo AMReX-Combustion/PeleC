@@ -92,12 +92,18 @@ contains
                       drgt(i,4+nsp) = q(i+1,j,k,QRHO)*q(i+1,j,k,QFS+nsp-1)-  q(i,j,k,QRHO)*q(i,j,k,QFS+nsp-1) -  &
                                 q(i ,j,k,QFS+nsp-1)* (q(i+1,j,k,QPRES) - q(i,j,k,QPRES))/qaux(i,j,k,QC)**2
                   enddo
+#ifdef SOOT_MODEL
+                  do nsp = 1, nsoot
+                     dlft(i,4+nspecies+nsp) = q(i,j,k,QFSOOT+nsp-1) - q(i-1,j,k,QFSOOT+nsp-1)
+                     drgt(i,4+nspecies+nsp) = q(i+1,j,k,QFSOOT+nsp-1) - q(i,j,k,QFSOOT+nsp-1)
+                  enddo
+#endif
                enddo
  
 
 
 
-               do n=1,4+nspecies
+               do n=1,4+nspecies+nsoot
 
                ! First compute Fromm slopes
 !                 do i = ilo1-2, ihi1+2
@@ -215,8 +221,13 @@ contains
                         drgt(i,4+nsp) = q(i,j+1,k,QRHO)*q(i,j+1,k,QFS+nsp-1) - q(i,j,k,QRHO)*q(i,j,k,QFS+nsp-1) -  &
                            q(i ,j,k,QFS+nsp-1)* (q(i,j+1,k,QPRES) - q(i,j,k,QPRES))/qaux(i,j,k,QC)**2
                      enddo
-
-               do n=1,4+nspecies
+#ifdef SOOT_MODEL
+                     do nsp = 1, nsoot
+                        dlft(i,4+nspecies+nsp) = q(i,j,k,QFSOOT+nsp-1) - q(i,j-1,k,QFSOOT+nsp-1)
+                        drgt(i,4+nspecies+nsp) = q(i,j+1,k,QFSOOT+nsp-1) - q(i,j,k,QFSOOT+nsp-1)
+                     enddo
+#endif
+               do n=1,4+nspecies+nsoot
 
                   ! First compute Fromm slopes
                   do i = ilo1-1, ihi1+1
@@ -340,10 +351,15 @@ contains
                      drgt(i,4+nsp) = q(i,j,k+1,QRHO)*q(i,j,k+1,QFS+nsp-1) - q(i,j,k,QRHO)*q(i,j,k,QFS+nsp-1) -  &
                         q(i ,j,k,QFS+nsp-1)* (q(i,j,k+1,QPRES) - q(i,j,k,QPRES))/qaux(i,j,k,QC)**2
                   enddo
-
+#ifdef SOOT_MODEL
+                  do nsp = 1, nsoot
+                     dlft(i,4+nspecies+nsp) = q(i,j,k,QFSOOT+nsp-1) - q(i,j,k-1,QFSOOT+nsp-1)
+                     drgt(i,4+nspecies+nsp) = q(i,j,k+1,QFSOOT+nsp-1) - q(i,j,k,QFSOOT+nsp-1)
+                  enddo
+#endif
                enddo
 
-               do n=1,4+nspecies
+               do n=1,4+nspecies+nsoot
 
                   ! First compute Fromm slopes
                   do i = ilo1-1, ihi1+1

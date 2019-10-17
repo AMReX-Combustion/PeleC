@@ -498,19 +498,19 @@ subroutine set_method_params(dm,Density,Xmom,Eden,Eint,Temp, &
 
   end if
 
+  ! Primitive soot variables
+  if (nsoot .ge. 1) then
+     QFSOOT = QFS + nspecies
+  else
+     QFSOOT = 1
+  end if
+
   if (naux >= 1) then
-     QFX = QFS + nspecies
+     QFX = QFS + nspecies + nsoot
 
   else
      QFX = 1
 
-  end if
-
-  ! Primitive soot variables
-  if (nsoot .ge. 1) then
-     QFSOOT = QFS + nspecies + naux
-  else
-     QFSOOT = 1
   end if
 
   ! The NQAUX here are auxiliary quantities (game, gamc, c, csml, dpdr, dpde, Rspecific)
@@ -577,6 +577,7 @@ subroutine set_method_params(dm,Density,Xmom,Eden,Eint,Temp, &
      enddo
      npassnm = npassnm + nsoot
   endif
+
   !---------------------------------------------------------------------
   ! Particle state indices
   !---------------------------------------------------------------------

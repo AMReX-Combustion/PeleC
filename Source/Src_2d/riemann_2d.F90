@@ -904,7 +904,7 @@ contains
              endif
           enddo
           ! advected quantities when Q = U
-          do ipassive = npassive + 1, npassive + 1 + npassnm
+          do ipassive = npassive + 1, npassive + npassnm
              n  = upass_map(ipassive)
              nqp = qpass_map(ipassive)
 
@@ -1181,7 +1181,7 @@ contains
              endif
           enddo
           ! passive quantities where Q = U
-          do ipassive = npassive + 1, npassive + 1 + npassnm
+          do ipassive = npassive + 1, npassive + npassnm
              n  = upass_map(ipassive)
              nqp = qpass_map(ipassive)
 
@@ -1331,7 +1331,7 @@ contains
                 uflx(i,j,n) = uflx(i,j,URHO)*qavg
              endif
           enddo
-          do ipassive = npassive + 1, npassive + 1 + npassnm
+          do ipassive = npassive + 1, npassive + npassnm
              n  = upass_map(ipassive)
              nqp = qpass_map(ipassive)
 

@@ -55,7 +55,7 @@ module hyp_advection_module
                                    QFS,  &
                                    QC, QCSML, NQAUX, nadv, &
                                    URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, UTEMP, UFX, UFA, &
-                                   eb_small_vfrac
+                                   UFSOOT, QFSOOT, nsoot, eb_small_vfrac
     use slope_module, only : slopex, slopey, slopez
     use network, only : nspecies, naux
     use eos_type_module
@@ -118,8 +118,8 @@ module hyp_advection_module
     double precision, pointer :: dqx(:,:,:,:), dqy(:,:,:,:), dqz(:,:,:,:)
 
     ! Other left and right state arrays
-    double precision :: qtempl(VECLEN,1:5+nspecies)
-    double precision :: qtempr(VECLEN,1:5+nspecies)
+    double precision :: qtempl(VECLEN,1:5+nspecies+nsoot)
+    double precision :: qtempr(VECLEN,1:5+nspecies+nsoot)
     double precision :: rhoe_l(VECLEN)
     double precision :: rhoe_r(VECLEN)
     double precision :: cspeed(VECLEN)
@@ -149,6 +149,7 @@ module hyp_advection_module
     integer, parameter :: R_UT2 = 4
     integer, parameter :: R_P   = 5
     integer, parameter :: R_Y   = 6
+    integer, parameter :: R_SOOT = R_Y + nspecies
 
     !   concept is to advance cells lo to hi
     !   need fluxes on the boundary
@@ -273,6 +274,12 @@ module hyp_advection_module
                 qtempr(1:vic,R_Y - 1 +nsp) = qtempr(1:vic,R_Y - 1 +nsp)/qtempr(1:vic,R_RHO)
              enddo
 
+#ifdef SOOT_MODEL
+             do nsp = 1, nsoot
+                qtempl(1:vic,R_SOOT-1+nsp) = q(vis-1:vie-1,j,k,QFSOOT-1+nsp) + 0.5d0 * dqx(vis-1:vie-1,j,k,4+nspecies+nsp)
+                qtempr(1:vic,R_SOOT-1+nsp) = q(vis:vie,j,k,QFSOOT-1+nsp) - 0.5d0 * dqx(vis:vie,j,k,4+nspecies+nsp)
+             enddo
+#endif
              ! Small and avg c
              cavg(1:vic) = HALF * ( qaux(vis:vie,j,k,QC) + qaux(vis-1:vie-1,j,k,QC) )
              csmall(1:vic) = min( qaux(vis:vie,j,k,QCSML), qaux(vis-1:vie-1,j,k,QCSML) )
@@ -335,6 +342,16 @@ module hyp_advection_module
 
                 ! Clear unused flux slots
                 flux_tmp(vii, UTEMP) = 0.0
+#ifdef SOOT_MODEL
+                if (ustar(vii) .gt. ZERO) then
+                   flux_tmp(vii, UFSOOT:UFSOOT+nsoot-1) = u_gd(vii) * qtempl(vii,R_SOOT:R_SOOT+nsoot-1)
+                else if (ustar(vii) .lt. ZERO) then
+                   flux_tmp(vii, UFSOOT:UFSOOT+nsoot-1) = u_gd(vii) * qtempr(vii,R_SOOT:R_SOOT+nsoot-1)
+                else
+                   flux_tmp(vii, UFSOOT:UFSOOT+nsoot-1) = u_gd(vii) * HALF*(qtempl(vii,R_SOOT:R_SOOT+nsoot-1) &
+                        + qtempr(vii,R_SOOT:R_SOOT+nsoot-1))
+                endif
+#endif
                 if (naux .gt. 0) then
                    flux_tmp(vii, UFX:UFX+naux) = 0.0
                 endif
@@ -441,7 +458,12 @@ module hyp_advection_module
               do nsp = 1,nspecies
                 qtempr(1:vic,R_Y-1+nsp) = qtempr(1:vic,R_Y-1+nsp)/qtempr(1:vic,R_RHO)
               enddo
-
+#ifdef SOOT_MODEL
+              do nsp = 1, nsoot
+                 qtempl(1:vic,R_SOOT-1+nsp) = q(vis:vie,j-1,k,QFSOOT-1+nsp) + 0.5d0 * dqy(vis:vie,j-1,k,4+nspecies+nsp)
+                 qtempr(1:vic,R_SOOT-1+nsp) = q(vis:vie,j,k,QFSOOT-1+nsp) - 0.5d0 * dqy(vis:vie,j,k,4+nspecies+nsp)
+              enddo
+#endif
               ! Small and avg c
              cavg(1:vic) = HALF * ( qaux(vis:vie,j,k,QC) + qaux(vis:vie,j-1,k,QC) )
              csmall(1:vic) = min( qaux(vis:vie,j,k,QCSML), qaux(vis:vie,j-1,k,QCSML) )
@@ -506,6 +528,16 @@ module hyp_advection_module
 
                 ! Clear unused flux slots
                 flux_tmp(vii, UTEMP) = 0.0
+#ifdef SOOT_MODEL
+                if (ustar(vii) .gt. ZERO) then
+                   flux_tmp(vii, UFSOOT:UFSOOT+nsoot-1) = v_gd(vii) * qtempl(vii,R_SOOT:R_SOOT+nsoot-1)
+                else if (ustar(vii) .lt. ZERO) then
+                   flux_tmp(vii, UFSOOT:UFSOOT+nsoot-1) = v_gd(vii) * qtempr(vii,R_SOOT:R_SOOT+nsoot-1)
+                else
+                   flux_tmp(vii, UFSOOT:UFSOOT+nsoot-1) = v_gd(vii) * HALF*(qtempl(vii,R_SOOT:R_SOOT+nsoot-1) &
+                        + qtempr(vii,R_SOOT:R_SOOT+nsoot-1))
+                endif
+#endif
                 if (naux .gt. 0) then
                    flux_tmp(vii, UFX:UFX+naux) = 0.0
                 endif
@@ -613,7 +645,12 @@ module hyp_advection_module
              do nsp = 1,nspecies
                qtempr(1:vic,R_Y-1+nsp) = qtempr(1:vic,R_Y-1+nsp)/qtempr(1:vic,R_RHO)
              enddo
-
+#ifdef SOOT_MODEL
+             do nsp = 1, nsoot
+                qtempl(1:vic,R_SOOT-1+nsp) = q(vis:vie,j,k-1,QFSOOT-1+nsp) + 0.5d0 * dqz(vis:vie,j,k-1,4+nspecies+nsp)
+                qtempr(1:vic,R_SOOT-1+nsp) = q(vis:vie,j,k,QFSOOT-1+nsp) - 0.5d0 * dqz(vis:vie,j,k,4+nspecies+nsp)
+             enddo
+#endif
              ! Small and avg c
              cavg(1:vic) = HALF * ( qaux(vis:vie,j,k,QC) + qaux(vis:vie,j,k-1,QC) )
              csmall(1:vic) = min( qaux(vis:vie,j,k,QCSML), qaux(vis:vie,j,k-1,QCSML) )
@@ -676,6 +713,16 @@ module hyp_advection_module
                 
                 ! Clear unused flux slots
                 flux_tmp(vii, UTEMP) = 0.0
+#ifdef SOOT_MODEL
+                if (ustar(vii) .gt. ZERO) then
+                   flux_tmp(vii, UFSOOT:UFSOOT+nsoot-1) = w_gd(vii) * qtempl(vii,R_SOOT:R_SOOT+nsoot-1)
+                else if (ustar(vii) .lt. ZERO) then
+                   flux_tmp(vii, UFSOOT:UFSOOT+nsoot-1) = w_gd(vii) * qtempr(vii,R_SOOT:R_SOOT+nsoot-1)
+                else
+                   flux_tmp(vii, UFSOOT:UFSOOT+nsoot-1) = w_gd(vii) * HALF*(qtempl(vii,R_SOOT:R_SOOT+nsoot-1) &
+                        + qtempr(vii,R_SOOT:R_SOOT+nsoot-1))
+                endif
+#endif
                 if (naux .gt. 0) then
                    flux_tmp(vii, UFX:UFX+naux) = 0.0
                 endif
@@ -759,7 +806,12 @@ module hyp_advection_module
                    sum_nbrs =   sum(nbr(-1:1,-1:1,-1:1) * vfrac(i-1:i+1,j-1:j+1,k-1:k+1) * q(i-1:i+1,j-1:j+1,k-1:k+1,QFS-1+nsp))
                    qtempl(vii,R_Y-1+nsp) = sum_nbrs/sum_kappa
                 enddo
-
+#ifdef SOOT_MODEL
+                do nsp = 1, nsoot
+                   sum_nbrs = sum(nbr(-1:1,-1:1,-1:1) * vfrac(i-1:i+1,j-1:j+1,k-1:k+1) * q(i-1:i+1,j-1:j+1,k-1:k+1, QFSOOT-1+nsp))
+                   qtempl(vii,R_SOOT-1+nsp) = sum_nbrs/sum_kappa
+                enddo
+#endif
                 ! Flip the velocity about the normal for the right state - will use left
                 ! state for remainder of right state
                 qtempr(vii,R_UN  ) = -1.0*qtempl(vii,R_UN)
@@ -788,7 +840,11 @@ module hyp_advection_module
                 do nsp = 1,nspecies
                    qtempl(vii,R_Y-1+nsp) = q(i,j,k,QFS-1+nsp)
                 enddo
-
+#ifdef SOOT_MODEL
+                do nsp = 1, nsoot
+                   qtempl(vii,R_SOOT-1+nsp) = q(i,j,k,QFSOOT-1+nsp)
+                enddo
+#endif
                 ! Flip the velocity about the normal for the right state - will use left
                 ! state for remainder of right state
                 qtempr(vii,R_UN  ) = -1.0*qtempl(vii,R_UN)
@@ -863,6 +919,11 @@ module hyp_advection_module
              do nsp = 0, nspecies-1
                 flux_tmp(vii,UFS+nsp) = flux_tmp(vii,URHO)*qtempl(vii,R_Y+nsp)
              enddo
+#ifdef SOOT_MODEL
+             do nsp = 0, nsoot-1
+                flux_tmp(vii,UFSOOT+nsp) = u_gd(vii)*qtempl(vii,R_SOOT+nsp)
+             enddo
+#endif
           endif
 
        enddo ! End future vector loop

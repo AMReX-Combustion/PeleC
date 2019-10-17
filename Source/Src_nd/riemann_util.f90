@@ -455,7 +455,7 @@ contains
     enddo
 
     ! passively-advected scalar, not per unit mass
-    do ipassive = npassive + 1, npassive + 1 + npassnm
+    do ipassive = npassive + 1, npassive + npassnm
        n  = upass_map(ipassive)
        nq = qpass_map(ipassive)
 
@@ -463,6 +463,7 @@ contains
        fr_tmp = qr(nq)*qr(ivel)
 
        f(n) = (bp*fl_tmp - bm*fr_tmp)*bd + bp*bm*bd*(qr(nq) - ql(nq))
+       !f(n) = zero
     enddo
 
   end subroutine HLL
@@ -501,7 +502,7 @@ contains
        U(n) = q(QRHO)*q(nq)
     enddo
     ! Passives where U = Q
-    do ipassive = npassive + 1, npassive + 1 + npassnm
+    do ipassive = npassive + 1, npassive + npassnm
        n  = upass_map(ipassive)
        nq = qpass_map(ipassive)
        U(n) = q(nq)
@@ -562,10 +563,11 @@ contains
        U(n) = hllc_factor*q(nq)
     enddo
 
-    do ipassive = npassive + 1, npassive + 1 + npassnm
+    do ipassive = npassive + 1, npassive + npassnm
        n  = upass_map(ipassive)
        nq = qpass_map(ipassive)
        U(n) = hllc_factor*q(nq)/q(QRHO)
+       !U(n) = zero
     enddo
 
   end subroutine HLLC_state

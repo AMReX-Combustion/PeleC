@@ -115,7 +115,18 @@ contains
                      endif
                   enddo
                enddo
-
+#ifdef SOOT_MODEL
+               do nsp = 1, nsoot
+                  do i = ilo1, ihi1
+                     if (flagArrayL(i)) then
+                        dlft(i,4+nspecies+nsp) = q(i,j,k,QFSOOT+nsp-1) - q(i-1,j,k,QFSOOT+nsp-1)
+                     endif
+                     if (flagArrayR(i)) then
+                        drgt(i,4+nspecies+nsp) = q(i+1,j,k,QFSOOT+nsp-1) - q(i,j,k,QFSOOT+nsp-1)
+                     endif
+                  enddo
+               enddo
+#endif
                do n=1, nv
                   do i = ilo1, ihi1
                      dcen = 0.5d0 * (dlft(i,n)+drgt(i,n))
@@ -237,7 +248,18 @@ contains
                      endif
                   enddo
                enddo
-
+#ifdef SOOT_MODEL
+               do nsp = 1, nsoot
+                  do i = ilo1, ihi1
+                     if (flagArrayL(i)) then
+                        dlft(i,4+nspecies+nsp) = q(i,j,k,QFSOOT+nsp-1) - q(i,j-1,k,QFSOOT+nsp-1)
+                     endif
+                     if (flagArrayR(i)) then
+                        drgt(i,4+nspecies+nsp) = q(i,j+1,k,QFSOOT+nsp-1) - q(i,j,k,QFSOOT+nsp-1)
+                     endif
+                  enddo
+               enddo
+#endif
                do n=1, nv
                   do i = ilo1, ihi1
                      dcen = 0.5d0 * (dlft(i,n)+drgt(i,n))
@@ -359,7 +381,18 @@ contains
                      endif
                   enddo
                enddo
-
+#ifdef SOOT_MODEL
+               do nsp = 1, nsoot
+                  do i = ilo1, ihi1
+                     if (flagArrayL(i)) then
+                        dlft(i,4+nspecies+nsp) = q(i,j,k,QFSOOT+nsp-1) - q(i,j,k-1,QFSOOT+nsp-1)
+                     endif
+                     if (flagArrayR(i)) then
+                        drgt(i,4+nspecies+nsp) = q(i,j,k+1,QFSOOT+nsp-1) - q(i,j,k,QFSOOT+nsp-1)
+                     endif
+                  enddo
+               enddo
+#endif
                do n=1, nv
                   do i = ilo1, ihi1
                      dcen = 0.5d0 * (dlft(i,n)+drgt(i,n))

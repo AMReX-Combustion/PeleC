@@ -23,7 +23,7 @@ contains
          small_dens, small_pres, &
          ppm_type, ppm_trace_sources, &
          ppm_reference_eigenvectors, ppm_predict_gammae, &
-         npassive, qpass_map
+         npassive, npassnm, qpass_map
     use amrex_constants_module
 
     implicit none
@@ -512,7 +512,7 @@ contains
     !-------------------------------------------------------------------------
 
     ! Do all of the passively advected quantities in one loop
-    do ipassive = 1, npassive
+    do ipassive = 1, npassive + npassnm
        n = qpass_map(ipassive)
        do j = ilo2-1, ihi2+1
 
@@ -919,7 +919,7 @@ contains
     !-------------------------------------------------------------------------
 
     ! Do all of the passively advected quantities in one loop
-    do ipassive = 1, npassive
+    do ipassive = 1, npassive + npassnm
        n = qpass_map(ipassive)
 
        ! Plus state on face j
@@ -970,7 +970,7 @@ contains
          small_dens, small_pres, &
          ppm_type, ppm_trace_sources, &
          ppm_reference_eigenvectors, ppm_predict_gammae, &
-         npassive, qpass_map
+         npassive, npassnm, qpass_map
     use amrex_constants_module
 
     implicit none
@@ -1436,7 +1436,7 @@ contains
     !-------------------------------------------------------------------------
 
     ! Do all of the passively advected quantities in one loop
-    do ipassive = 1, npassive
+    do ipassive = 1, npassive + npassnm
        n = qpass_map(ipassive)
        do j = ilo2-1, ihi2+1
           do i = ilo1-1, ihi1+1

@@ -225,15 +225,6 @@ PeleC::variableSetUp ()
 	cnt += NumSpec;
     }
 
-    // Get the number of auxiliary quantities from the network model.
-    get_num_aux(&NumAux);
-  
-    if (NumAux > 0)
-    {
-	FirstAux = cnt;
-	cnt += NumAux;
-    }
-
 #ifdef SOOT_MODEL
     // Set number of soot variables to be equal to the number of moments
     // plus a variable for the weight of the delta function
@@ -244,6 +235,15 @@ PeleC::variableSetUp ()
     NumSootVars = 0;
     FirstSootVar = -1;
 #endif
+
+    // Get the number of auxiliary quantities from the network model.
+    get_num_aux(&NumAux);
+
+    if (NumAux > 0)
+    {
+	FirstAux = cnt;
+	cnt += NumAux;
+    }
 
     NUM_STATE = cnt;
 
@@ -264,8 +264,6 @@ PeleC::variableSetUp ()
     pfld_p = pfld_T + 1;
     pfld_spc = pfld_p + 1;
     n_pfld = pfld_spc + NumSpec; // increase this for multi-component droplets
-
-//  std::cout << "n_pstate = " << n_pstate << std::endl << "declared components: " << SPRAY_COMPONENTS << std::endl;
 
 #endif
     
@@ -416,7 +414,13 @@ PeleC::variableSetUp ()
     {
 	std::cout << NumSpec << " Species: " << std::endl;
 	for (int i = 0; i < NumSpec; i++)  
+	  {
 	    std::cout << spec_names[i] << ' ' << ' ';
+	    if (!((i+1) % 10)) // Split into multiple lines if necessary
+	      {
+		std::cout << std::endl;
+	      }
+	  }
 	std::cout << std::endl;
     } 
 
@@ -427,6 +431,25 @@ PeleC::variableSetUp ()
 	bcs[cnt] = bc; 
 	name[cnt] = "rho_" + spec_names[i];
     }
+
+#ifdef SOOT_MODEL
+    // Set the soot model names
+    if ( ParallelDescriptor::IOProcessor())
+    {
+      std::cout << NumSootVars << " Soot Variables: " << std::endl;
+      for (int i = 0; i < NumSootVars; ++i)
+	std::cout << soot_model->sootVariableName(i) << ' ' << ' ';
+      std::cout << std::endl;
+    }
+
+    for (int i = 0; i < NumSootVars; ++i)
+    {
+        cnt++;
+        set_scalar_bc(bc,phys_bc);
+        bcs[cnt] = bc;
+        name[cnt] = soot_model->sootVariableName(i);
+    }
+#endif
 
     // Get the auxiliary names from the network model.
     std::vector<std::string> aux_names;
@@ -647,7 +670,12 @@ PeleC::variableSetUp ()
 #ifdef AMREX_USE_EB
     derive_lst.add("vfrac",IndexType::TheCellType(),1,pc_dermagvel,the_same_box); // A dummy
 #endif
-    
+
+#ifdef SOOT_MODEL
+    // SOOTTODO: Add outputs for large particles etc
+    //derive_lst.add("NL",IndexType::TheCellType(),1,pc_
+#endif
+
 #ifdef AMREX_PARTICLES
     //
     // We want a derived type that corresponds to the number of particles

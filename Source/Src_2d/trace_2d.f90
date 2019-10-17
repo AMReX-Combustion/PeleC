@@ -16,7 +16,7 @@ contains
 
     use meth_params_module, only : plm_iorder, QVAR, QRHO, QU, QV, &
                                    QREINT, QPRES, &
-                                   npassive, qpass_map, small_dens, small_pres, ppm_type, use_pslope
+                                   npassive, npassnm, qpass_map, small_dens, small_pres, ppm_type, use_pslope
     use slope_module, only : uslope, pslope, multid_slope
     use amrex_constants_module
 
@@ -235,7 +235,7 @@ contains
     enddo
 
     ! We do all passively advected quantities in one loop
-    do ipassive = 1, npassive
+    do ipassive = 1, npassive + npassnm
        n = qpass_map(ipassive)
        do j = ilo2-1, ihi2+1
 
@@ -265,8 +265,6 @@ contains
 
        enddo
     enddo
-
-
 
     !-------------------------------------------------------------------------
     ! y-direction
@@ -354,7 +352,7 @@ contains
        enddo
     enddo
 
-    do ipassive = 1, npassive
+    do ipassive = 1, npassive + npassnm
        n = qpass_map(ipassive)
        do i = ilo1-1, ihi1+1
           

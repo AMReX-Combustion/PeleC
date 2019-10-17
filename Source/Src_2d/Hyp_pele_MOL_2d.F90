@@ -48,7 +48,7 @@ module hyp_advection_module
     use amrex_mempool_module, only : bl_allocate, bl_deallocate
     use meth_params_module, only : QVAR, NVAR, QPRES, QRHO, QU, QV, QFS, QC, QCSML, NQAUX, &
                                    URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, UTEMP, UFA, UFX, nadv, &
-                                   riemann_solver
+                                   UFSOOT, QFSOOT, nsoot, riemann_solver
 
     use slope_module, only : slopex, slopey
     use network, only : nspecies, naux
@@ -106,8 +106,8 @@ module hyp_advection_module
     double precision, pointer :: dqx(:,:,:), dqy(:,:,:)
 
     ! Other left and right state arrays
-    double precision :: qtempl(VECLEN,1:5+nspecies)
-    double precision :: qtempr(VECLEN,1:5+nspecies)
+    double precision :: qtempl(VECLEN,1:5+nspecies+nsoot)
+    double precision :: qtempr(VECLEN,1:5+nspecies+nsoot)
     double precision :: rhoe_l(VECLEN)
     double precision :: rhoe_r(VECLEN)
     double precision :: cspeed(VECLEN)
@@ -134,6 +134,7 @@ module hyp_advection_module
     integer, parameter :: R_UT2 = 4
     integer, parameter :: R_P   = 5
     integer, parameter :: R_Y   = 6
+    integer, parameter :: R_SOOT = R_Y + nspecies
 
 !   concept is to advance cells lo to hi
 !   need fluxes on the boundary
@@ -215,7 +216,13 @@ module hyp_advection_module
           do nsp = 1,nspecies
             qtempr(1:ic,5+nsp) = qtempr(1:ic,5+nsp)/qtempr(1:ic,1)
           enddo
- 
+
+#ifdef SOOT_MODEL
+          do nsp = 1, nsoot
+             qtempl(1:ic,R_SOOT-1+nsp) = q(is-1:ie-1,j,QFSOOT-1+nsp) + 0.5d0 * dqx(is-1:ie-1,j,4+nspecies+nsp)
+             qtempr(1:ic,R_SOOT-1+nsp) = q(is:ie,j,QFSOOT-1+nsp) - 0.5d0 * dqx(is:ie,j,4+nspecies+nsp)
+          enddo
+#endif
           ! Small and avg c
           cav(1:ic) = HALF * ( qaux(is:ie,j,QC) + qaux(is-1:ie-1,j,QC) )
           csmall(1:ic) = min( qaux(is:ie,j,QCSML), qaux(is-1:ie-1,j,QCSML) )
@@ -297,6 +304,16 @@ module hyp_advection_module
              
              ! Clear unused flux slots
              flux_tmp(vii, UTEMP) = 0.0
+#ifdef SOOT_MODEL
+             if (ustar(vii) .gt. ZERO) then
+                flux_tmp(vii, UFSOOT:UFSOOT+nsoot-1) = u_gd(vii) * qtempl(vii,R_SOOT:R_SOOT+nsoot-1)
+             else if (ustar(vii) .lt. ZERO) then
+                flux_tmp(vii, UFSOOT:UFSOOT+nsoot-1) = u_gd(vii) * qtempr(vii,R_SOOT:R_SOOT+nsoot-1)
+             else
+                flux_tmp(vii, UFSOOT:UFSOOT+nsoot-1) = u_gd(vii) * HALF*(qtempl(vii,R_SOOT:R_SOOT+nsoot-1) &
+                     + qtempr(vii,R_SOOT:R_SOOT+nsoot-1))
+             endif
+#endif
              if (naux .gt. 0) then
                 flux_tmp(vii, UFX:UFX+naux) = 0.0
              endif
@@ -365,6 +382,13 @@ module hyp_advection_module
           do nsp = 1,nspecies
              qtempr(1:ic,R_Y-1+nsp) = qtempr(1:ic,R_Y-1+nsp)/qtempr(1:ic,R_RHO)
           enddo
+
+#ifdef SOOT_MODEL
+          do nsp = 1, nsoot
+             qtempl(1:ic,R_SOOT-1+nsp) = q(is:ie,j-1,QFSOOT-1+nsp) + 0.5d0 * dqy(is:ie,j-1,4+nspecies+nsp)
+             qtempr(1:ic,R_SOOT-1+nsp) = q(is:ie,j,QFSOOT-1+nsp) - 0.5d0 * dqy(is:ie,j,4+nspecies+nsp)
+          enddo
+#endif
 
           ! Small and avg c
           cav(1:ic) = HALF * ( qaux(is:ie,j,QC) + qaux(is:ie,j-1,QC) )
@@ -447,6 +471,17 @@ module hyp_advection_module
 
              ! Clear unused flux slots
              flux_tmp(vii, UTEMP) = 0.0
+#ifdef SOOT_MODEL
+             ! Get upwinded moment variables
+             if (ustar(vii) .gt. ZERO) then
+                flux_tmp(vii, UFSOOT:UFSOOT+nsoot-1) = v_gd(vii) * qtempl(vii,R_SOOT:R_SOOT+nsoot-1)
+             else if (ustar(vii) .lt. ZERO) then
+                flux_tmp(vii, UFSOOT:UFSOOT+nsoot-1) = v_gd(vii) * qtempr(vii,R_SOOT:R_SOOT+nsoot-1)
+             else
+                flux_tmp(vii, UFSOOT:UFSOOT+nsoot-1) = v_gd(vii) * HALF*(qtempl(vii,R_SOOT:R_SOOT+nsoot-1) &
+                     + qtempr(vii,R_SOOT:R_SOOT+nsoot-1))
+             endif
+#endif
              if (naux .gt. 0) then
                 flux_tmp(vii, UFX:UFX+naux) = 0.0
              endif
@@ -499,6 +534,11 @@ module hyp_advection_module
                 qtempl(vii,R_Y-1+nsp) = q(i,j,QFS-1+nsp)
              enddo
 
+#ifdef SOOT_MODEL
+             do nsp = 1,nsoot
+                qtempl(vii,R_SOOT-1+nsp) = q(i,j,QFSOOT-1+nsp)
+             enddo
+#endif
              ! Flip the velocity about the normal for the right state - will use left
              ! state for remainder of right state
              qtempr(vii,R_UN) = -1.0*qtempl(vii,R_UN)
@@ -580,6 +620,11 @@ module hyp_advection_module
              do nsp = 0, nspecies-1
                 flux_tmp(vii,UFS+nsp) = flux_tmp(vii,URHO)*qtempl(vii,R_Y+nsp)
              enddo
+#ifdef SOOT_MODEL
+             do nsp = 0, nsoot-1
+                flux_tmp(vii, UFSOOT+nsp) = u_gd(vii)*qtempl(vii,R_SOOT+nsp)
+             enddo
+#endif
           endif
 
        enddo ! End future vector loop

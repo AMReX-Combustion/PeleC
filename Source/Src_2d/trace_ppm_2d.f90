@@ -28,7 +28,7 @@ contains
          ppm_type, ppm_trace_sources, ppm_temp_fix, &
          ppm_reference_eigenvectors, &
          ppm_predict_gammae, &
-         npassive, qpass_map
+         npassive, npassnm, qpass_map
     use ppm_module, only : ppm
 
     implicit none
@@ -625,7 +625,7 @@ contains
     !-------------------------------------------------------------------------
 
     ! We do all passively advected quantities in one loop
-    do ipassive = 1, npassive
+    do ipassive = 1, npassive + npassnm
        n = qpass_map(ipassive)
        do j = ilo2-1, ihi2+1
 
@@ -1021,7 +1021,7 @@ contains
     !-------------------------------------------------------------------------
 
     ! do all of the passively advected quantities in one loop
-    do ipassive = 1, npassive
+    do ipassive = 1, npassive + npassnm
        n = qpass_map(ipassive)
        do i = ilo1-1, ihi1+1
 
