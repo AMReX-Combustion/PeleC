@@ -38,12 +38,13 @@ function(get_plot_tool_sources PLOT_TOOL_NAME)
      ${AMREX_SOURCE_DIR}/AMReX_IntConv.cpp
      ${AMREX_SOURCE_DIR}/AMReX_FPC.cpp
      ${AMREX_SOURCE_DIR}/AMReX_FabConv.cpp
+     ${AMREX_SOURCE_DIR}/AMReX_CudaAllocators.cpp
      ${AMREX_SOURCE_DIR}/AMReX_GpuElixir.cpp
      ${AMREX_SOURCE_DIR}/AMReX_GpuAsyncArray.cpp
-     ${AMREX_SOURCE_DIR}/AMReX_CudaAllocators.cpp
      ${AMREX_SOURCE_DIR}/AMReX_GpuUtility.cpp
      ${AMREX_SOURCE_DIR}/AMReX_GpuDevice.cpp
      ${AMREX_SOURCE_DIR}/AMReX_GpuControl.cpp
+     ${AMREX_SOURCE_DIR}/AMReX_GpuLaunch.cpp
      ${AMREX_SOURCE_DIR}/AMReX_parstream.cpp
      ${AMREX_SOURCE_DIR}/AMReX_NFiles.cpp
      ${AMREX_SOURCE_DIR}/AMReX_EArena.cpp
@@ -56,6 +57,7 @@ function(get_plot_tool_sources PLOT_TOOL_NAME)
      ${AMREX_SOURCE_DIR}/AMReX_ForkJoin.cpp
      ${AMREX_SOURCE_DIR}/AMReX_ParallelDescriptor.cpp
      ${AMREX_SOURCE_DIR}/AMReX_DistributionMapping.cpp
+     ${AMREX_SOURCE_DIR}/AMReX_Random.cpp
      ${AMREX_SOURCE_DIR}/AMReX_Utility.cpp
      ${AMREX_SOURCE_DIR}/AMReX_parmparse_fi.cpp
      ${AMREX_SOURCE_DIR}/AMReX_ParmParse.cpp
