@@ -672,8 +672,8 @@ PeleC::variableSetUp ()
 #endif
 
 #ifdef SOOT_MODEL
-    // SOOTTODO: Add outputs for large particles etc
-    //derive_lst.add("NL",IndexType::TheCellType(),1,pc_
+    // Add derived soot variables
+    soot_model->addSootDerivePlotVars(derive_lst, desc_lst);
 #endif
 
 #ifdef AMREX_PARTICLES
