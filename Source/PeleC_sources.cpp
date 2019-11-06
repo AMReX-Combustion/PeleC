@@ -22,6 +22,12 @@ PeleC::construct_old_source(int src, Real time, Real dt, int amr_iteration, int 
         construct_old_forcing_source(time, dt);
         break;
 
+#ifdef SOOT_MODEL
+    case soot_src:
+        construct_old_soot_source(time, dt);
+        break;
+#endif
+
 #ifdef USE_MASA
     case mms_src:
         construct_old_mms_source(time);
@@ -49,6 +55,12 @@ PeleC::construct_new_source(int src, Real time, Real dt, int amr_iteration, int 
     case forcing_src:
         construct_new_forcing_source(time, dt);
         break;
+
+#ifdef SOOT_MODEL
+    case soot_src:
+        construct_new_soot_source(time, dt);
+        break;
+#endif
 
 #ifdef USE_MASA
     case mms_src:

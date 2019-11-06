@@ -49,3 +49,7 @@ ifeq ($(USE_EB), TRUE)
   CEXE_headers += EBStencilTypes.H
   CEXE_headers += SparseData.H
 endif
+
+ifeq ($(USE_SOOT), TRUE)
+  CEXE_sources += PeleC_soot.cpp
+endif

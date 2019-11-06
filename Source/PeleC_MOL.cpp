@@ -648,10 +648,6 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
       }
 #endif  //  PELEC_USE_EB ifdef
 
-#ifdef SOOT_MODEL
-      soot_model->addSootSourceTerm(vbox, Qfab, coeff_cc, Dterm);
-#endif
-
       MOLSrcTerm[mfi].setVal(0, vbox, 0, NUM_STATE);
       MOLSrcTerm[mfi].copy(Dterm, vbox, 0, vbox, 0, NUM_STATE);
 

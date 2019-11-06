@@ -54,6 +54,9 @@ enum sources { ext_src = 0,
 #endif
                diff_src,
                les_src,
+#ifdef SOOT_MODEL
+	       soot_src,
+#endif
 #ifdef USE_MASA
                mms_src,
 #endif
@@ -340,6 +343,17 @@ public:
                              const amrex::MultiFab& S_old,
                              const amrex::MultiFab& S_new,
                              amrex::MultiFab& forcing_src, int ng);
+
+#ifdef SOOT_MODEL
+  void construct_old_soot_source (amrex::Real time, amrex::Real dt);
+
+  void construct_new_soot_source (amrex::Real time, amrex::Real dt);
+
+  void fill_soot_source (amrex::Real time, amrex::Real dt,
+			 const amrex::MultiFab& S_old,
+			 const amrex::MultiFab& S_new,
+			 amrex::MultiFab& soot_src, int ng);
+#endif
 
 #ifdef USE_MASA
     void construct_old_mms_source(amrex::Real time);

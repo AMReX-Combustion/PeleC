@@ -753,6 +753,11 @@ PeleC::set_active_sources()
       src_list.push_back(les_src);
     }
 
+#ifdef SOOT_MODEL
+    // Soot source term
+    src_list.push_back(soot_src);
+#endif
+
 #ifdef USE_MASA
     // optional MMS source
     if(do_mms){
