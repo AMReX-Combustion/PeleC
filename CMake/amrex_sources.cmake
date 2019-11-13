@@ -48,6 +48,7 @@ function(get_amrex_sources)
      ${AMREX_SOURCE_DIR}/AMReX_REAL.H
      ${AMREX_SOURCE_DIR}/AMReX_CONSTANTS.H
      ${AMREX_SOURCE_DIR}/AMReX_SPACE.H
+     ${AMREX_SOURCE_DIR}/AMReX_Random.cpp
      ${AMREX_SOURCE_DIR}/AMReX_DistributionMapping.H
      ${AMREX_SOURCE_DIR}/AMReX_DistributionMapping.cpp
      ${AMREX_SOURCE_DIR}/AMReX_ParallelDescriptor.H
