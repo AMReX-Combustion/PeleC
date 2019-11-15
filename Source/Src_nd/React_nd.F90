@@ -25,10 +25,10 @@ use amrex_ebcellflag_module, only : is_covered_cell
     use network, only : nspecies
     use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UTEMP, &
                                    UFS
-#ifndef USE_SUNDIALS_PP
-    use reactor_module, only : react
-#else
+#ifdef USE_SUNDIALS_PP
     use cvode_module, only : react
+#else
+    use reactor_module, only : react
 #endif
     use amrex_fort_module, only : amrex_real
     use amrex_constants_module, only : HALF
