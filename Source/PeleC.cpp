@@ -492,6 +492,9 @@ PeleC::PeleC ()
   ,mms_src_evaluated(false)
 #endif
 {
+#ifdef SOOT_MODEL
+  soot_model->define();
+#endif
 }
 
 PeleC::PeleC (Amr&            papa,
@@ -1039,6 +1042,13 @@ PeleC::estTimeStep (Real dt_old)
       limiter = "particles";
       estdt = estdt_particle;
     }
+  }
+#endif
+#ifdef SOOT_MODEL
+  Real estdt_soot = soot_model->estSootTimeStep();
+  if (estdt_soot < estdt) {
+    limiter = "soot";
+    estdt = estdt_soot;
   }
 #endif
 

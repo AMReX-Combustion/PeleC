@@ -98,6 +98,6 @@ PeleC::fill_soot_source (Real time, Real dt,
 			   BL_TO_FORTRAN_N_3D(coeff_cc, dComp_xi),
 			   BL_TO_FORTRAN_N_3D(coeff_cc, dComp_lambda));
     }
-    soot_model->addSootSourceTerm(bx, Qfab, coeff_cc, Ffab, dt);
+    soot_model->addSootSourceTerm(bx, Snfab, Qfab, coeff_cc, Ffab, dt);
   }
 }
