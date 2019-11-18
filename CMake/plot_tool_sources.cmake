@@ -60,6 +60,7 @@ function(get_plot_tool_sources PLOT_TOOL_NAME)
      ${AMREX_SOURCE_DIR}/AMReX_parmparse_fi.cpp
      ${AMREX_SOURCE_DIR}/AMReX_ParmParse.cpp
      ${AMREX_SOURCE_DIR}/AMReX_error_fi.cpp
+     ${AMREX_SOURCE_DIR}/AMReX_Random.cpp
      ${AMREX_SOURCE_DIR}/AMReX.cpp
      # Fortran
      ${AMREX_SOURCE_DIR}/AMReX_constants_mod.f90
