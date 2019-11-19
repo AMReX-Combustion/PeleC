@@ -1,4 +1,2 @@
 f90EXE_sources += probdata.f90
 
-BOXLIB_BASE=EXE
-
