@@ -16,6 +16,10 @@ USE_MPI    = FALSE
 
 USE_REACT  = TRUE
 
+###### CVODE
+USE_SUNDIALS_PP = FALSE
+USE_KLU_PP = FALSE
+
 #HYP_TYPE   = MOL
 
 # This sets the EOS directory in $(PELE_PHYSICS_HOME)/Eos

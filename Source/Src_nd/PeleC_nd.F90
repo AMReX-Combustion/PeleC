@@ -73,14 +73,22 @@ end subroutine pc_extern_init
 #ifdef REACTIONS
 subroutine pc_reactor_init() bind(C, name="pc_reactor_init")
 
+#ifdef USE_SUNDIALS_PP
+  use cvode_module, only : reactor_init 
+#else
   use reactor_module, only: reactor_init
+#endif
 
   implicit none
 
 #ifdef _OPENMP
 !$omp parallel
 #endif
+#ifdef USE_SUNDIALS_PP
+  call reactor_init(1,1)
+#else
   call reactor_init(1)
+#endif
 #ifdef _OPENMP
 !$omp end parallel
 #endif
@@ -93,7 +101,11 @@ end subroutine pc_reactor_init
 
 subroutine pc_reactor_close() bind(C, name="pc_reactor_close")
 
+#ifdef USE_SUNDIALS_PP
+  use cvode_module, only: reactor_close
+#else
   use reactor_module, only: reactor_close
+#endif
   implicit none
 
 #ifdef _OPENMP
