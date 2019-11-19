@@ -82,7 +82,7 @@ end subroutine pc_extern_init
     ! Do some error checking: see note on LES limitations at top of lesterm_3d.f90
     if (trim(eos_name) .eq. "fuego") then
        call bl_warning("WARNING: LES with Fuego assumes Cp is a weak function of T")
-    else if  (trim(eos_name) .ne. "GammaLaw") then
+    else if  (trim(eos_name) .ne. "gamma_law") then
        call bl_error("ERROR: LES is only supported with Fuego and GammaLaw EoS")
     end if
     if (nspecies .gt. 2) then
