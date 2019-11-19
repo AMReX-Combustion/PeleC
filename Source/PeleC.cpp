@@ -35,7 +35,7 @@ using std::string;
 #endif
 
 #ifdef AMREX_PARTICLES
-#include <AMReX_Particles_F.H>
+#include <AMReX_Particles.H>
 #endif
 
 #ifdef _OPENMP

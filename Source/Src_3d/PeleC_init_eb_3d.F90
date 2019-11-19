@@ -57,8 +57,6 @@ contains
     ! developed and it was mentioned the original stencil was not stable for low Reynolds flows.
     ! End notes from WZ
 
-    use amrex_mlebabeclap_3d_module, only : amrex_get_dx_eb
-
     implicit none
 
     ! Array bounds
@@ -100,7 +98,7 @@ contains
             .and. j.ge.lo(1) .and. j.le.hi(1) &
             .and. k.ge.lo(2) .and. k.le.hi(2) ) then
 
-          dx_eb = amrex_get_dx_eb(ebg(L)%eb_vfrac)
+          dx_eb = max(0.3d0, (ebg(L)%eb_vfrac*ebg(L)%eb_vfrac-0.25d0)/(2.d0*ebg(L)%eb_vfrac))
 
           bctx = ebg(L) % eb_centroid(1)
           bcty = ebg(L) % eb_centroid(2)

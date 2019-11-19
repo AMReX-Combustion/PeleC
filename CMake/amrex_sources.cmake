@@ -48,6 +48,7 @@ function(get_amrex_sources)
      ${AMREX_SOURCE_DIR}/AMReX_REAL.H
      ${AMREX_SOURCE_DIR}/AMReX_CONSTANTS.H
      ${AMREX_SOURCE_DIR}/AMReX_SPACE.H
+     ${AMREX_SOURCE_DIR}/AMReX_Random.cpp
      ${AMREX_SOURCE_DIR}/AMReX_DistributionMapping.H
      ${AMREX_SOURCE_DIR}/AMReX_DistributionMapping.cpp
      ${AMREX_SOURCE_DIR}/AMReX_ParallelDescriptor.H
@@ -278,10 +279,6 @@ function(get_amrex_sources)
        ${AMREX_SOURCE_DIR}/AMReX_EB2_${AMREX_DIM}D_C.cpp
        ${AMREX_SOURCE_DIR}/AMReX_algoim.cpp
        ${AMREX_SOURCE_DIR}/AMReX_WriteEBSurface.cpp
-     )
-     set(AMREX_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Submodules/AMReX/Src/LinearSolvers/MLMG")
-     add_sources(GlobalSourceList
-       ${AMREX_SOURCE_DIR}/AMReX_MLEBABecLap_3d.F90
      )
    endif()
    set(AMREX_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Submodules/AMReX/Src/Boundary")
