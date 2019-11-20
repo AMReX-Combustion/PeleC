@@ -20,6 +20,7 @@ Reactions_dir := Null
 Transport_dir := Constant
 
 Bpack   := ./Make.package
+Blocs   := .
 
 # define the location of the PELE top directory
 PELEC_HOME    := ../../../..

@@ -11,7 +11,7 @@ contains
   subroutine amrex_probinit (init,name,namlen,problo,probhi) bind(C, name = "amrex_probinit")
     
     use probdata_module
-    use bl_error_module
+    use amrex_error_module
     implicit none
 
     integer :: init, namlen
@@ -79,7 +79,7 @@ contains
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEINT, UEDEN, UTEMP, UFS
     use prob_params_module, only : problo, probhi
     use eos_module
-    use bl_constants_module, only: M_PI, HALF
+    use amrex_constants_module, only: M_PI, HALF
 
 
     implicit none
