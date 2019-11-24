@@ -25,7 +25,11 @@ use amrex_ebcellflag_module, only : is_covered_cell
     use network, only : nspecies
     use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UTEMP, &
                                    UFS
+#ifdef USE_SUNDIALS_PP
+    use cvode_module, only : react
+#else
     use reactor_module, only : react
+#endif
     use amrex_fort_module, only : amrex_real
     use amrex_constants_module, only : HALF
 
@@ -55,6 +59,9 @@ use amrex_ebcellflag_module, only : is_covered_cell
 
     real(amrex_real) ::    rY(nspecies+1), rY_src(nspecies)
     real(amrex_real) ::    energy, energy_src, pressure, rho
+#ifdef USE_SUNDIALS_PP
+    real(amrex_real) ::    nrg(1), nrg_src(1)
+#endif
 
     do k = lo(3), hi(3)
        do j = lo(2), hi(2)
@@ -79,6 +86,11 @@ use amrex_ebcellflag_module, only : is_covered_cell
                 energy_src       = ( (unew(i,j,k,UEDEN) - rho_e_K_new) &
                        -                (rho  *  energy) ) / dt_react
 
+#ifdef USE_SUNDIALS_PP
+                nrg(1)           = rho  *  energy
+                nrg_src(1)       = energy_src
+#endif
+
                 rY_src(1:nspecies)  = asrc(i,j,k,UFS:UFS+nspecies-1)
                 !react_state_in % i = i
                 !react_state_in % j = j
@@ -86,14 +98,22 @@ use amrex_ebcellflag_module, only : is_covered_cell
 
                 pressure         = 1013250.d0
                 
-                cost(i,j,k) = react(rY, rY_src,&
-                                    energy, energy_src,&
-                                    pressure,dt_react,time)
+#ifdef USE_SUNDIALS_PP
+                cost(i,j,k) = react(rY, rY_src, nrg, nrg_src,&
+#else
+                cost(i,j,k) = react(rY, rY_src, energy, energy_src,&
+                                    pressure,&
+#endif
+                                    dt_react,time)
 
 
                 rho_new = sum(rY(1:nspecies))
                 mom_new = uold(i,j,k,UMX:UMZ) + dt_react*asrc(i,j,k,UMX:UMZ)
+#ifdef USE_SUNDIALS_PP
+                rhoE_new = nrg(1)
+#else
                 rhoE_new = rho_new  *  energy
+#endif
                 rho_e_K_new = HALF * sum(mom_new**2) / rho_new
                 rhoE_new    = rhoE_new + rho_e_K_new
                 
@@ -101,7 +121,11 @@ use amrex_ebcellflag_module, only : is_covered_cell
 
                    unew(i,j,k,URHO)            = rho_new
                    unew(i,j,k,UMX:UMZ)         = mom_new
+#ifdef USE_SUNDIALS_PP
+                   unew(i,j,k,UEINT)           = nrg(1)
+#else
                    unew(i,j,k,UEINT)           = rho_new*energy
+#endif
                    unew(i,j,k,UEDEN)           = rhoE_new
                    unew(i,j,k,UTEMP)           = rY(nspecies+1)
                    unew(i,j,k,UFS:UFS+nspecies-1) = rY(1:nspecies)
@@ -146,7 +170,6 @@ use amrex_ebcellflag_module, only : is_covered_cell
     use chemistry_module  , only : molecular_weight
     use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UTEMP, &
                                    UFS
-    use reactor_module, only : react
     use amrex_fort_module, only : amrex_real
     use amrex_constants_module, only : HALF
     use rk_params_module

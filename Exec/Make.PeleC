@@ -66,6 +66,9 @@ else
 endif
 
 # Reactions
+ifeq ($(USE_SUNDIALS_PP),TRUE) 
+  include $(PELE_PHYSICS_HOME)/ThirdParty/Make.ThirdParty
+endif
 REACTIONS_PATH := $(REACTIONS_HOME)/$(strip $(Reactions_dir))
 include $(REACTIONS_HOME)/Make.package
 include $(REACTIONS_PATH)/Make.package
