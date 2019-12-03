@@ -30,7 +30,6 @@ using std::string;
 #include <AMReX_ParmParse.H>
 
 #include <PeleC_error_F.H>
-
 #ifdef AMREX_USE_EB
 #include <AMReX_EBMultiFabUtil.H>
 #endif
@@ -118,6 +117,7 @@ int          PeleC::nGrowTr      = 4;
 int          PeleC::diffuse_temp = 0;
 int          PeleC::diffuse_enth = 0;
 int          PeleC::diffuse_spec = 0;
+int          PeleC::diffuse_aux  = 0;
 int          PeleC::diffuse_vel  = 0;
 Real         PeleC::diffuse_cutoff_density = -1.e200;
 bool         PeleC::do_diffuse   = false;
@@ -131,9 +131,11 @@ int           PeleC::les_filter_type = no_filter;
 int           PeleC::les_filter_fgr = 1;
 int           PeleC::les_test_filter_type = box_3pt_optimized_approx;
 int           PeleC::les_test_filter_fgr = 2;
+// PrT is used for constant smagorinsky, Cs2overPrT is used for dynamic
 int           PeleC::comp_Cs2 = 0;
 int           PeleC::comp_CI = PeleC::comp_Cs2 + 1;
 int           PeleC::comp_PrT = PeleC::comp_CI + 1;
+int           PeleC::comp_Cs2ovPrT = PeleC::comp_PrT;
 int           PeleC::nCompC = PeleC::comp_PrT + 1;
 
 #ifdef PELE_USE_EB
@@ -374,10 +376,11 @@ PeleC::read_params ()
   pp.query("diffuse_temp",diffuse_temp);
   pp.query("diffuse_enth",diffuse_enth);
   pp.query("diffuse_spec",diffuse_spec);
+  pp.query("diffuse_aux",diffuse_aux);
   pp.query("diffuse_vel",diffuse_vel);
   pp.query("diffuse_cutoff_density",diffuse_cutoff_density);
 
-  do_diffuse = diffuse_temp || diffuse_enth || diffuse_spec || diffuse_vel;
+  do_diffuse = diffuse_temp || diffuse_enth || diffuse_spec || diffuse_vel || diffuse_aux;
   
   // sanity checks
   if (cfl <= 0.0 || cfl > 1.0) {
@@ -400,6 +403,9 @@ PeleC::read_params ()
     pp.query("les_model",les_model);
     pp.query("les_test_filter_type",les_test_filter_type);
     pp.query("les_test_filter_fgr",les_test_filter_fgr);
+    if (les_model == 1 && BL_SPACEDIM < 3) {
+      amrex::Error("Cannot use Dynamic Smagorinsky model (les_model=1) with less than 3 dimensions.");
+    }
   }
 
   if (use_explicit_filter){
@@ -1885,12 +1891,18 @@ PeleC::derive (const std::string& name,
     MultiFab::Copy(*derive_dat,LES_Coeffs,comp_CI,0,1,0);
     return derive_dat;
   }
-  else if ((do_les) && (name == "Pr_T")) {
+  else if ((do_les) && (les_model!=1) && (name == "Pr_T")) {
     std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
     MultiFab::Copy(*derive_dat,LES_Coeffs,comp_PrT,0,1,0);
     return derive_dat;
   }
-
+  else if ((do_les) && (les_model==1) && (name == "Pr_T")) {
+    std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
+    MultiFab::Copy(*derive_dat,LES_Coeffs,comp_Cs2ovPrT,0,1,0);
+    MultiFab::Divide(*derive_dat,LES_Coeffs,comp_Cs2,0,1,0);
+    return derive_dat;
+  }
+  
 #ifdef PELE_USE_EB
   if (name == "vfrac") {
     std::unique_ptr<MultiFab> mf(new MultiFab(grids, dmap, 1, ngrow, MFInfo()));
@@ -1996,7 +2008,13 @@ PeleC::init_les ()
     LES_Coeffs.setVal(0.0);
     LES_Coeffs.setVal(Cs*Cs,comp_Cs2,1,LES_Coeffs.nGrow());
     LES_Coeffs.setVal(CI,comp_CI,1,LES_Coeffs.nGrow());
+    if (les_model == 1) {
+    LES_Coeffs.setVal(Cs*Cs*PrT,comp_Cs2ovPrT,1,LES_Coeffs.nGrow());
+    }
+    else {
     LES_Coeffs.setVal(PrT,comp_PrT,1,LES_Coeffs.nGrow());
+    }      
+    pc_les_init();
 }
 
 void

@@ -79,11 +79,7 @@ contains
     call build(sfs_eos_state)
 
     gfaci = dxinv(1)
-    if (lo(1).le.dmnlo(1) .and. physbc_lo(1).eq.Inflow) gfaci(dmnlo(1)) = gfaci(dmnlo(1)) * TWO
-    if (hi(1).gt.dmnhi(1) .and. physbc_hi(1).eq.Inflow) gfaci(dmnhi(1)+1) = gfaci(dmnhi(1)+1) * TWO
     gfacj = dxinv(2)
-    if (lo(2).le.dmnlo(2) .and. physbc_lo(2).eq.Inflow) gfacj(dmnlo(2)) = gfacj(dmnlo(2)) * TWO
-    if (hi(2).gt.dmnhi(2) .and. physbc_hi(2).eq.Inflow) gfacj(dmnhi(2)+1) = gfacj(dmnhi(2)+1) * TWO
 
     do j=lo(2),hi(2)
        do i=lo(1),hi(1)+1
@@ -100,10 +96,10 @@ contains
           fx(i,j,UEDEN) = - sigmaxx*Uface(1) - sigmaxy*Uface(2)
 
           ! SFS heat flux
-          sfs_eos_state % massfrac(:) = Q(i,j,QFS:QFS+nspecies-1)
-          sfs_eos_state % T           = Q(i,j,QTEMP)
-          call eos_cv(sfs_eos_state)
-          fx(i,j,UEDEN) = fx(i,j,UEDEN) - sfs_eos_state%gam1 * sfs_eos_state%cv * Cs2 / PrT * flux_T(1)
+          sfs_eos_state % massfrac(:) = HALF*(Q(i,j,QFS:QFS+nspecies-1) + Q(i-1,j,QFS:QFS+nspecies-1) )
+          sfs_eos_state % T           = HALF*(Q(i,j,QTEMP) + Q(i-1,j,QTEMP))
+          call eos_cp(sfs_eos_state)
+          fx(i,j,UEDEN) = fx(i,j,UEDEN) - sfs_eos_state%cp * Cs2 / PrT * flux_T(1)
        end do
     end do
 
@@ -131,10 +127,10 @@ contains
           fy(i,j,UEDEN) = - sigmayx*Uface(1) - sigmayy*Uface(2)
 
           ! SFS heat flux
-          sfs_eos_state % massfrac(:) = Q(i,j,QFS:QFS+nspecies-1)
-          sfs_eos_state % T           = Q(i,j,QTEMP)
-          call eos_cv(sfs_eos_state)
-          fy(i,j,UEDEN) = fy(i,j,UEDEN) - sfs_eos_state%gam1 * sfs_eos_state%cv * Cs2 / PrT * flux_T(2)
+          sfs_eos_state % massfrac(:) = HALF*(Q(i,j,QFS:QFS+nspecies-1) + Q(i,j-1,QFS:QFS+nspecies-1))
+          sfs_eos_state % T           = HALF*(Q(i,j,QTEMP) + Q(i,j-1,QTEMP))
+          call eos_cp(sfs_eos_state)
+          fy(i,j,UEDEN) = fy(i,j,UEDEN) - sfs_eos_state%cp * Cs2 / PrT * flux_T(2)
        end do
     end do
 
@@ -253,10 +249,10 @@ contains
           fx(i,j,UEDEN) = - sigmaxx*Uface(1) - sigmaxy*Uface(2)
 
           ! SFS heat flux
-          sfs_eos_state % massfrac(:) = Q(i,j,QFS:QFS+nspecies-1)
-          sfs_eos_state % T           = Q(i,j,QTEMP)
-          call eos_cv(sfs_eos_state)
-          fx(i,j,UEDEN) = fx(i,j,UEDEN) - sfs_eos_state%gam1 * sfs_eos_state%cv * Cs2x(i,j) / PrTx(i,j) * flux_T(i,j,1)
+          sfs_eos_state % massfrac(:) = HALF*(Q(i,j,QFS:QFS+nspecies-1) + Q(i-1,j,QFS:QFS+nspecies-1))
+          sfs_eos_state % T           = HALF*(Q(i,j,QTEMP) + Q(i-1,j,QTEMP) )
+          call eos_cp(sfs_eos_state)
+          fx(i,j,UEDEN) = fx(i,j,UEDEN) - sfs_eos_state%cp * Cs2x(i,j) / PrTx(i,j) * flux_T(i,j,1)
        end do
     end do
 
@@ -282,10 +278,10 @@ contains
           fy(i,j,UEDEN) = - sigmayx*Uface(1) - sigmayy*Uface(2)
 
           ! SFS heat flux
-          sfs_eos_state % massfrac(:) = Q(i,j,QFS:QFS+nspecies-1)
-          sfs_eos_state % T           = Q(i,j,QTEMP)
-          call eos_cv(sfs_eos_state)
-          fy(i,j,UEDEN) = fy(i,j,UEDEN) - sfs_eos_state%gam1 * sfs_eos_state%cv * Cs2y(i,j) / PrTy(i,j) * flux_T(i,j,2)
+          sfs_eos_state % massfrac(:) = HALF*(Q(i,j,QFS:QFS+nspecies-1) + Q(i,j-1,QFS:QFS+nspecies-1))
+          sfs_eos_state % T           = HALF*(Q(i,j,QTEMP) + Q(i,j-1,QTEMP) )
+          call eos_cp(sfs_eos_state)
+          fy(i,j,UEDEN) = fy(i,j,UEDEN) - sfs_eos_state%cp * Cs2y(i,j) / PrTy(i,j) * flux_T(i,j,2)
        end do
     end do
 
@@ -368,11 +364,7 @@ contains
     dxinv = 1.d0/deltax
 
     gfaci = dxinv(1)
-    if (lo(1).le.dmnlo(1) .and. physbc_lo(1).eq.Inflow) gfaci(dmnlo(1)) = gfaci(dmnlo(1)) * TWO
-    if (hi(1).gt.dmnhi(1) .and. physbc_hi(1).eq.Inflow) gfaci(dmnhi(1)+1) = gfaci(dmnhi(1)+1) * TWO
     gfacj = dxinv(2)
-    if (lo(2).le.dmnlo(2) .and. physbc_lo(2).eq.Inflow) gfacj(dmnlo(2)) = gfacj(dmnlo(2)) * TWO
-    if (hi(2).gt.dmnhi(2) .and. physbc_hi(2).eq.Inflow) gfacj(dmnhi(2)+1) = gfacj(dmnhi(2)+1) * TWO
 
     do j=lo(2),hi(2)
        do i=lo(1),hi(1)
@@ -468,11 +460,7 @@ contains
     dxinv = 1.d0/deltax
 
     gfaci = dxinv(1)
-    if (lo(1).le.dmnlo(1) .and. physbc_lo(1).eq.Inflow) gfaci(dmnlo(1)) = gfaci(dmnlo(1)) * TWO
-    if (hi(1).gt.dmnhi(1) .and. physbc_hi(1).eq.Inflow) gfaci(dmnhi(1)+1) = gfaci(dmnhi(1)+1) * TWO
     gfacj = dxinv(2)
-    if (lo(2).le.dmnlo(2) .and. physbc_lo(2).eq.Inflow) gfacj(dmnlo(2)) = gfacj(dmnlo(2)) * TWO
-    if (hi(2).gt.dmnhi(2) .and. physbc_hi(2).eq.Inflow) gfacj(dmnhi(2)+1) = gfacj(dmnhi(2)+1) * TWO
 
     do j=lo(2),hi(2)
        do i=lo(1),hi(1)
@@ -494,22 +482,22 @@ contains
           KE(:) = RUT(i,j,:) - Q(i,j,QRHO) * Q(i,j,QU:QV) * Q(i,j,QTEMP)
 
           ! Contractions
-          LM = sum(L(:) * M(:)) + small_num
-          MM = sum(M(:) * M(:)) + small_num
-          Lkk = (L(i11) + L(i22)) + small_num
-          bma = HALF*sum(beta(:) - alpha(i,j,:)) + small_num
-          TT = sum(T(:)*T(:)) + small_num
-          KT = sum(KE(:)*T(:)) + small_num
+          LM = sum(L(:) * M(:))
+          MM = sum(M(:) * M(:))
+          Lkk = (L(i11) + L(i22))
+          bma = HALF*sum(beta(:) - alpha(i,j,:))
+          TT = sum(T(:)*T(:))
+          KT = sum(KE(:)*T(:))
 
-          ! Coefficients
-          Cs2(i,j) =  max(LM / MM, small_num)
-          CI(i,j) =  max(Lkk / bma, small_num)
-          PrT(i,j) =  max(TT / KT, small_num)
+          ! Coefficients (here PrT holds KT/TT)
+          Cs2(i,j) =  max(LM / (MM + small_num), small_num)
+          CI(i,j) =  max(Lkk / (bma + small_num), small_num)
+          PrT(i,j) =  max(KT / (TT + small_num), small_num)
        end do
     end do
-
-    ! scale Prandtl with Cs2
-    PrT(:,:) = Cs2(:,:) * PrT(:,:)
+    
+    ! Calculate Pr according to Martin Piomelli Candler 2000, Eq. 24
+    PrT(:,:) = Cs2(:,:) / PrT(:,:)
 
   end subroutine pc_dynamic_smagorinsky_coeffs
 
@@ -547,7 +535,8 @@ contains
     S(:,:) = HALF * (dUdx(:,:) + transpose(dUdx(:,:)))
     Skk = S(1,1) + S(2,2)
     Sijmag = sqrt(TWO * sum(S(:,:)**2))
-    mut = Q(i,j,QRHO) * deltabar**2 * Sijmag
+    ! S is located at faces, need to get rho at the face for consistency when calculating mut
+    mut = HALF * (Q(i,j,QRHO)+Q(i-1,j,QRHO)) * deltabar**2 * Sijmag
 
     alphaij_xx = TWO * mut * ( S(1,1) - THIRD * Skk )
     alphaij_xy = TWO * mut * S(1,2)
@@ -592,7 +581,8 @@ contains
     S(:,:) = HALF * (dUdx(:,:) + transpose(dUdx(:,:)))
     Skk = S(1,1) + S(2,2)
     Sijmag = sqrt(TWO * sum(S(:,:)**2))
-    mut = Q(i,j,QRHO) * deltabar**2 * Sijmag
+    ! S is located at faces, need to get rho at the face for consistency when calculating mut
+    mut = HALF*(Q(i,j,QRHO)+Q(i,j-1,QRHO)) * deltabar**2 * Sijmag
 
     alphaij_yx = TWO * mut * S(2,1)
     alphaij_yy = TWO * mut * ( S(2,2) - THIRD * Skk)

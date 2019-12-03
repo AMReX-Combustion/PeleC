@@ -406,4 +406,90 @@ contains
 
   end subroutine pc_move_transport_coeffs_to_ec
 
+
+    ! One function for all directions
+    subroutine pc_diffterm_aux(lo,  hi,&
+                         dmnlo, dmnhi,&
+                         Q,   Qlo,   Qhi,&
+                         Daux,Dauxlo,Dauxhi,&
+                         A,  Alo,  Ahi,&
+                         f,  flo,  fhi,&
+                         V,   Vlo,   Vhi,&
+                         D,   Dlo,   Dhi,&
+                         deltax, dir) bind(C, name = "pc_diffterm_aux")
+
+    use network, only : naux
+    use meth_params_module, only : NVAR, UFX, QVAR, QFX
+    use amrex_constants_module
+    use prob_params_module, only : physbc_lo, physbc_hi
+
+    implicit none
+
+    integer, intent(in) ::     lo(3),    hi(3)
+    integer, intent(in) ::  dmnlo(3), dmnhi(3)
+    integer, intent(in) ::    Qlo(3),   Qhi(3)
+    integer, intent(in) :: Dauxlo(3),Dauxhi(3)
+    integer, intent(in) ::   Alo(3),  Ahi(3)
+    integer, intent(in) ::   flo(3),  fhi(3)
+    integer, intent(in) ::    Dlo(3),   Dhi(3)
+    integer, intent(in) ::    Vlo(3),   Vhi(3)
+    integer, intent(in) ::   dir
+    
+    double precision, intent(in   ) ::    Q(   Qlo(1):   Qhi(1),   Qlo(2):   Qhi(2),   Qlo(3):   Qhi(3), QVAR)
+    double precision, intent(in   ) :: Daux(Dauxlo(1):Dauxhi(1),Dauxlo(2):Dauxhi(2),Dauxlo(3):Dauxhi(3), naux)
+    double precision, intent(in   ) ::   A(  Alo(1):  Ahi(1),  Alo(2):  Ahi(2),  Alo(3):  Ahi(3)  )
+    double precision, intent(inout) ::   f(  flo(1):  fhi(1),  flo(2):  fhi(2),  flo(3):  fhi(3), NVAR)
+    double precision, intent(inout) ::    D(   Dlo(1):   Dhi(1),   Dlo(2):   Dhi(2),   Dlo(3):   Dhi(3), NVAR)
+    double precision, intent(in   ) ::    V(   Vlo(1):   Vhi(1),   Vlo(2):   Vhi(2),   Vlo(3):   Vhi(3)  )
+    double precision, intent(in   ) :: deltax(3)
+
+    integer :: i, j, k, n, direction
+    integer, dimension(3) :: isdir
+    double precision :: dAddir
+    double precision :: gfac(3)
+    double precision :: dxinv(3)
+
+    direction = dir + 1 ! Convert to x=1, y=2, z=3
+    isdir = 0
+    isdir(direction) = 1
+    
+    dxinv = 1.d0/deltax
+    gfac = dxinv 
+    
+    ! calculate flux
+    do n=1,naux
+       do k=lo(3),hi(3)+isdir(3)
+          do j=lo(2),hi(2)+isdir(2)
+             do i=lo(1),hi(1)+isdir(1)
+                dAddir = gfac(direction) * (Q(i,j,k,QFX+n-1) - Q(i-isdir(1),j-isdir(2),k-isdir(3),QFX+n-1))
+                f(i,j,k,UFX+n-1) = - dAddir * Daux(i,j,k,n)
+             end do
+          enddo
+       enddo
+    enddo
+    
+    ! calculate mass flow rate across surface
+    do n=UFX,UFX+naux-1
+       do k=lo(3),hi(3)+isdir(3)
+          do j=lo(2),hi(2)+isdir(2)
+             do i=lo(1),hi(1)+isdir(1)
+                f(i,j,k,n) = f(i,j,k,n) * A(i,j,k)
+             enddo
+          enddo
+       enddo
+    enddo
+
+    ! Calculate net flow
+    do n=UFX,UFX+naux-1
+       do k = lo(3), hi(3)
+          do j = lo(2), hi(2)
+             do i = lo(1), hi(1)
+                D(i,j,k,n) = D(i,j,k,n) - (f(i+isdir(1),j+isdir(2),k+isdir(3),n)-f(i,j,k,n) )/V(i,j,k)
+             end do
+          end do
+       end do
+    end do
+
+  end subroutine pc_diffterm_aux
+
 end module diffusion_module

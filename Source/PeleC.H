@@ -650,6 +650,7 @@ protected:
     static int       diffuse_temp;
     static int       diffuse_enth;
     static int       diffuse_spec;
+    static int       diffuse_aux;
     static int       diffuse_vel;
     static amrex::Real      diffuse_cutoff_density;
     static bool      do_diffuse;
@@ -665,6 +666,7 @@ protected:
     static int       comp_Cs2;
     static int       comp_CI;
     static int       comp_PrT;
+    static int       comp_Cs2ovPrT;
     static int       nCompC;
     amrex::MultiFab  filtered_les_source;
 
