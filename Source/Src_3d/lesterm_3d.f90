@@ -122,7 +122,7 @@ contains
     dxinv = 1.d0/deltax
     Cs2 = Cs**2
     call build(sfs_eos_state)
-       
+
     gfaci = dxinv(1)
     gfacj = dxinv(2)
     gfack = dxinv(3)
@@ -223,8 +223,7 @@ contains
 
              ! SFS turbulent diffusion
              Uface(:) = HALF*(Q(i,j,k,QU:QW) + Q(i,j,k-1,QU:QW))
-             fz(i,j,k,UEDEN) = - sigmazx*Uface(1) - sigmazy*Uface(2) - sigmazz*Uface(3)
-             
+             fz(i,j,k,UEDEN) = - sigmazx*Uface(1) - sigmazy*Uface(2) - sigmazz*Uface(3)             
              ! SFS heat flux - move state to faces to calculate cp
              sfs_eos_state % massfrac(:) = HALF* ( Q(i,j,k,QFS:QFS+nspecies-1) + Q(i,j,k-1,QFS:QFS+nspecies-1) )
              sfs_eos_state % T           = HALF* ( Q(i,j,k,QTEMP) + Q(i,j,k-1,QTEMP))
@@ -506,7 +505,7 @@ contains
     end do
 
   end subroutine pc_dynamic_smagorinsky_sfs_term
-  
+
   ! Quantities
   subroutine pc_dynamic_smagorinsky_quantities(lo, hi,&
                                                dmnlo, dmnhi,&
@@ -671,7 +670,7 @@ contains
     i31 = (1-1) * 3 + 3 ! index for entry (3,1)
     i32 = (2-1) * 3 + 3 ! index for entry (3,2)
     i33 = (3-1) * 3 + 3 ! index for entry (3,3)
-    
+
     dxinv = 1.d0/deltax
 
     gfaci = dxinv(1)
@@ -706,7 +705,7 @@ contains
              L(i32) = L(i23)
              L(i33) = Kij(i,j,k, 6) - Q(i,j,k,QRHO) * Q(i,j,k,QW) * Q(i,j,k,QW)
              KE(:)  = RUT(i,j,k,:) - Q(i,j,k,QRHO) * Q(i,j,k,QU:QW) * Q(i,j,k,QTEMP)
- 
+
              ! Contractions
              LM = sum(L(:) * M(:))
              MM = sum(M(:) * M(:))
@@ -766,7 +765,6 @@ contains
     S(:,:) = HALF * (dUdx(:,:) + transpose(dUdx(:,:)))
     Skk = S(1,1) + S(2,2) + S(3,3)
     Sijmag = sqrt(TWO * sum(S(:,:)**2))
-    ! S is located at faces, need to get rho at the face for consistency when calculating mut
     mut = HALF*(Q(i,j,k,QRHO) + Q(i-1,j,k,QRHO)) * deltabar**2 * Sijmag
 
     alphaij_xx = TWO * mut * ( S(1,1) - THIRD * Skk )
@@ -816,7 +814,6 @@ contains
     S(:,:) = HALF * (dUdx(:,:) + transpose(dUdx(:,:)))
     Skk = S(1,1) + S(2,2) + S(3,3)
     Sijmag = sqrt(TWO * sum(S(:,:)**2))
-    ! S is located at faces, need to get rho at the face for consistency when calculating mut
     mut = HALF*(Q(i,j,k,QRHO) + Q(i,j-1,k,QRHO)) * deltabar**2 * Sijmag
 
     alphaij_yx = TWO * mut * S(2,1)
@@ -866,7 +863,6 @@ contains
     S(:,:) = HALF * (dUdx(:,:) + transpose(dUdx(:,:)))
     Skk = S(1,1) + S(2,2) + S(3,3)
     Sijmag = sqrt(TWO * sum(S(:,:)**2))
-    ! S is located at faces, need to get rho at the face for consistency when calculating mut
     mut = HALF*(Q(i,j,k,QRHO) + Q(i,j,k-1,QRHO)) * deltabar**2 * Sijmag
 
     alphaij_zx = TWO * mut * S(3,1)
