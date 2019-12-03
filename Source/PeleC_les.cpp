@@ -237,7 +237,7 @@ PeleC::getSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::MultiFab&
 
       LESTerm[mfi].setVal(0,vbox,0, NUM_STATE);
       LESTerm[mfi].copy(Lterm,vbox,0,vbox,0,NUM_STATE);
-      
+
       if (do_reflux && flux_factor != 0)
       {
         for (int d = 0; d < BL_SPACEDIM ; d++)
@@ -361,8 +361,6 @@ PeleC::getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::Mu
       // Container on grown region, required to support hybrid divergence and redistribution
       Lterm.resize(cbox,NUM_STATE);
 
-      // Tangential derivatives now calculated inside of dynamic_smagorinsky_quantities
-
       
       // 2. Get dynamic Smagorinsky derived quantities after setting the
       // BC. These quantities need to be stored because we need to filter
@@ -413,7 +411,6 @@ PeleC::getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::Mu
       test_filter.apply_filter(g3box, alpha, filtered_alpha);
       test_filter.apply_filter(g3box, flux_T, filtered_flux_T);
 
-      // Again, the tangential derivatives are now dealt with inside the coeffs fortran routine
       
 
       // 4. Calculate the dynamic Smagorinsky coefficients - still at cell centers
@@ -439,11 +436,6 @@ PeleC::getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::Mu
       }
 
 
-      // FIXME: REMOVE THIS LATER
-      // coeff_cc.setVal(0.16*0.16,g3box,comp_Cs2,1);
-      // coeff_cc.setVal(0.09,g3box,comp_CI,1);
-      // coeff_cc.setVal(0.7*0.16*0.16,g3box,comp_PrT,1);
-      
       // 5. Filter to smooth the dynamic coefficients - still at cell centers
       coeff_filter.apply_filter(g4box, coeff_cc, LES_Coeffs[mfi]);
 

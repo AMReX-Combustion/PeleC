@@ -316,7 +316,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
         }  // diffuse_vel
 #endif
       }  // loop over dimension
-      
+
       // Compute extensive diffusion fluxes, F.A and (1/Vol).Div(F.A)
       {
         BL_PROFILE("PeleC::pc_diffterm()");
@@ -367,9 +367,9 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
 			      ARLIM_3D(dbox.loVect()),
 			      ARLIM_3D(dbox.hiVect()),
 			      BL_TO_FORTRAN_ANYD(Qfab),
-			      BL_TO_FORTRAN_N_ANYD(coeff_ec[0], dComp_rhoDaux),
-			      BL_TO_FORTRAN_ANYD(area[0][mfi]),
-			      BL_TO_FORTRAN_ANYD(flux_ec[0]),
+			      BL_TO_FORTRAN_N_ANYD(coeff_ec[d], dComp_rhoDaux),
+			      BL_TO_FORTRAN_ANYD(area[d][mfi]),
+			      BL_TO_FORTRAN_ANYD(flux_ec[d]),
 			      BL_TO_FORTRAN_ANYD(volume[mfi]),
 			      BL_TO_FORTRAN_ANYD(Dterm),
 			      geom.CellSize(), &d);

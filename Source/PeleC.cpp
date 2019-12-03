@@ -131,6 +131,7 @@ int           PeleC::les_filter_type = no_filter;
 int           PeleC::les_filter_fgr = 1;
 int           PeleC::les_test_filter_type = box_3pt_optimized_approx;
 int           PeleC::les_test_filter_fgr = 2;
+// PrT is used for constant smagorinsky, Cs2overPrT is used for dynamic
 int           PeleC::comp_Cs2 = 0;
 int           PeleC::comp_CI = PeleC::comp_Cs2 + 1;
 int           PeleC::comp_PrT = PeleC::comp_CI + 1;
@@ -2003,7 +2004,7 @@ void
 PeleC::init_les ()
 {
     // Fill with default coefficient values
-    LES_Coeffs.define(grids, dmap, nCompC, 1); 
+    LES_Coeffs.define(grids, dmap, nCompC, 1);
     LES_Coeffs.setVal(0.0);
     LES_Coeffs.setVal(Cs*Cs,comp_Cs2,1,LES_Coeffs.nGrow());
     LES_Coeffs.setVal(CI,comp_CI,1,LES_Coeffs.nGrow());
