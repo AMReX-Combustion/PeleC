@@ -67,6 +67,32 @@ subroutine pc_extern_init(name,namlen) bind(C, name="pc_extern_init")
 
 end subroutine pc_extern_init
 
+
+
+
+! :::
+! ::: ----------------------------------------------------------------
+! :::
+
+  subroutine pc_les_init() bind(C, name = "pc_les_init")
+    use network, only   : nspecies
+    use eos_module, only : eos_name
+    implicit none
+    
+    ! Do some error checking: see note on LES limitations at top of lesterm_3d.f90
+    if (trim(eos_name) .eq. "fuego") then
+       call bl_warning("WARNING: LES with Fuego assumes Cp is a weak function of T")
+    else if  (trim(eos_name) .ne. "gamma_law") then
+       call bl_error("ERROR: LES is only supported with Fuego and GammaLaw EoS")
+    end if
+    if (nspecies .gt. 2) then
+       call bl_error("ERROR: LES is not supported for multi-component systems")
+    else if (nspecies .eq. 2) then
+       call bl_warning ("WARNING: LES is not supported for multi-component systems")
+    end if
+
+  end subroutine pc_les_init
+  
 ! :::
 ! ::: ----------------------------------------------------------------
 ! :::

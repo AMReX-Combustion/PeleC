@@ -65,8 +65,6 @@ contains
     call build(sfs_eos_state)
 
     gfaci = dxinv(1)
-    if (lo(1).le.dmnlo(1) .and. physbc_lo(1).eq.Inflow) gfaci(dmnlo(1)) = gfaci(dmnlo(1)) * TWO
-    if (hi(1).gt.dmnhi(1) .and. physbc_hi(1).eq.Inflow) gfaci(dmnhi(1)+1) = gfaci(dmnhi(1)+1) * TWO
 
     do i=lo(1),hi(1)+1
        ! SFS stress
@@ -80,10 +78,10 @@ contains
        fx(i,UEDEN) = - sigmaxx*uface
 
        ! SFS heat flux
-       sfs_eos_state % massfrac(:) = Q(i,QFS:QFS+nspecies-1)
-       sfs_eos_state % T           = Q(i,QTEMP)
-       call eos_cv(sfs_eos_state)
-       fx(i,UEDEN) = fx(i,UEDEN) - sfs_eos_state%gam1 * sfs_eos_state%cv * Cs2 / PrT * flux_T
+       sfs_eos_state % massfrac(:) = HALF*(Q(i,QFS:QFS+nspecies-1) + Q(i-1,QFS:QFS+nspecies-1))
+       sfs_eos_state % T           = HALF*(Q(i,QTEMP) + Q(i-1,QTEMP))
+       call eos_cp(sfs_eos_state)
+       fx(i,UEDEN) = fx(i,UEDEN) - sfs_eos_state%cp * Cs2 / PrT * flux_T
     end do
 
     ! Scale fluxes by area
@@ -173,10 +171,10 @@ contains
        fx(i,UEDEN) = - sigmaxx*uface
 
        ! SFS heat flux
-       sfs_eos_state % massfrac(:) = Q(i,QFS:QFS+nspecies-1)
-       sfs_eos_state % T           = Q(i,QTEMP)
-       call eos_cv(sfs_eos_state)
-       fx(i,UEDEN) = fx(i,UEDEN) - sfs_eos_state%gam1 * sfs_eos_state%cv * Cs2x(i) / PrTx(i) * flux_T(i,1)
+       sfs_eos_state % massfrac(:) = HALF*(Q(i,QFS:QFS+nspecies-1) + Q(i-1,QFS:QFS+nspecies-1) )
+       sfs_eos_state % T           = HALF*(Q(i,QTEMP) + Q(i-1,QTEMP))
+       call eos_cp(sfs_eos_state)
+       fx(i,UEDEN) = fx(i,UEDEN) - sfs_eos_state%cp * Cs2x(i) / PrTx(i) * flux_T(i,1)
     end do
 
     ! Scale fluxes by area
@@ -242,8 +240,6 @@ contains
     dxinv = 1.d0/deltax
 
     gfaci = dxinv(1)
-    if (lo(1).le.dmnlo(1) .and. physbc_lo(1).eq.Inflow) gfaci(dmnlo(1)) = gfaci(dmnlo(1)) * TWO
-    if (hi(1).gt.dmnhi(1) .and. physbc_hi(1).eq.Inflow) gfaci(dmnhi(1)+1) = gfaci(dmnhi(1)+1) * TWO
 
     do i=lo(1),hi(1)
 
@@ -321,8 +317,6 @@ contains
     dxinv = 1.d0/deltax
 
     gfaci = dxinv(1)
-    if (lo(1).le.dmnlo(1) .and. physbc_lo(1).eq.Inflow) gfaci(dmnlo(1)) = gfaci(dmnlo(1)) * TWO
-    if (hi(1).gt.dmnhi(1) .and. physbc_hi(1).eq.Inflow) gfaci(dmnhi(1)+1) = gfaci(dmnhi(1)+1) * TWO
 
     do i=lo(1),hi(1)
 
@@ -337,21 +331,21 @@ contains
        KE(:) = RUT(i,:) - Q(i,QRHO) * Q(i,QU) * Q(i,QTEMP)
 
        ! Contractions
-       LM = sum(L(:) * M(:)) + small_num
-       MM = sum(M(:) * M(:)) + small_num
+       LM = sum(L(:) * M(:))
+       MM = sum(M(:) * M(:))
        Lkk = L(i11) + small_num
-       bma = sum(beta(:) - alpha(i,:)) + small_num
-       TT = sum(T(:)*T(:)) + small_num
-       KT = sum(KE(:)*T(:)) + small_num
+       bma = sum(beta(:) - alpha(i,:))
+       TT = sum(T(:)*T(:))
+       KT = sum(KE(:)*T(:))
 
-       ! Coefficients
-       Cs2(i) =  max(LM / MM, small_num)
-       CI(i) = max(Lkk / bma , small_num)
-       PrT(i) = max(TT / KT , small_num)
+       ! Coefficients (here PrT holds KT/TT)
+       Cs2(i) =  max(LM / (MM + small_num), small_num)
+       CI(i) = max(Lkk / (bma + small_num), small_num)
+       PrT(i) = max(KT / (TT + small_num), small_num)
     end do
 
-    ! scale Prandtl with Cs2
-    PrT(:) = Cs2(:) * PrT(:)
+    ! Calculate Pr according to Martin Piomelli Candler 2000, Eq. 24
+    PrT(:) = Cs2(:) / PrT(:)
 
   end subroutine pc_dynamic_smagorinsky_coeffs
 
@@ -381,7 +375,8 @@ contains
     S = dudx
     Skk = dudx
     Sijmag = sqrt(TWO * S**2)
-    mut = Q(i,QRHO) * deltabar**2 * Sijmag
+    ! S is located at faces, need to get rho at the face for consistency when calculating mut
+    mut = HALF*(Q(i,QRHO)+ Q(i-1,QRHO)) * deltabar**2 * Sijmag
 
     alphaij_xx = TWO * mut * ( S - THIRD * Skk )
     alpha      = TWO * mut * Sijmag

@@ -270,18 +270,25 @@ PeleC::getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::Mu
 
   /*
     Note on the grow cells:
-    N                                 (cbox) |----->         LESTerm
-    N                                 (cbox) |----->         coeff_ec
-    N + 1                            (g4box) |------>        filtered_coeff_cc
-    N + 1 + nGrowC                   (g3box) |-------->      coeff_cc, filtered(K, RUT, alphaij, alpha, flux_T)
-    N + 1 + nGrowC + nGrowD          (g2box) |---------->    filtered(S, Q, Qaux)
+    N + 0                             (cbox) |----->         LESTerm
+    N + 0**                           (ebox) |----->         flux_ec, coeff_ec, alphaij_ec, alpha_ec, flux_T_ec
+    N + 1                            (g4box) |------>        filtered_coeff_cc [= LES_Coeffs]
+    N + 1 + nGrowC                   (g3box) |-------->      coeff_cc, filtered_(K, RUT, alphaij, alpha, flux_T)
+    N + 1 + nGrowC + nGrowD          (g2box) |---------->    filtered_(S, Q, Qaux)
     N + 1 + nGrowC + nGrowT          (g1box) |----------->   K, RUT, alphaij, alpha, flux_T
     N + 1 + nGrowC + nGrowT + nGrowD (g0box) |-------------> S, Q, Qaux
+       |----------------------------|
+       This is the number of grow cells on each side
 
     where
     nGrowD = number of grow cells necessary for the diffusion operator
     nGrowC = number of grow cells necessary for filtering the Smagorinsky coefficients
     nGrowT = number of grow cells necessary for filtering the derived quantities (test level)
+
+    ** Everything is calculated at cell centers (cc), then at the very end the coefficients and the stress terms (e.g. alpha_ij)
+       are moved to edge/faces centers (ec) to calculate the fluxes. ec quantities have length N+1 in the face-normal 
+       direction and length N in the other two directions.
+
   */
   Filter test_filter = Filter(les_test_filter_type, les_test_filter_fgr);
   Filter coeff_filter = Filter(box,6);
@@ -314,7 +321,7 @@ PeleC::getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::Mu
 #endif
   {
     FArrayBox Qfab, Qaux, Lterm;
-    FArrayBox coeff_ec[BL_SPACEDIM], flux_ec[BL_SPACEDIM], tander_ec[BL_SPACEDIM];
+    FArrayBox coeff_ec[BL_SPACEDIM], flux_ec[BL_SPACEDIM];
     IArrayBox bcMask;
     for (MFIter mfi(S, MFItInfo().EnableTiling(hydro_tile_size).SetDynamic(true)); mfi.isValid(); ++mfi)
     {
@@ -354,35 +361,16 @@ PeleC::getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::Mu
       // Container on grown region, required to support hybrid divergence and redistribution
       Lterm.resize(cbox,NUM_STATE);
 
-      // Get the tangential derivatives
-      for (int d=0; d<BL_SPACEDIM; ++d)
-      {
-        Box ebox = amrex::surroundingNodes(g1box,d);
-
-#if (BL_SPACEDIM > 1)
-        int nCompTan = AMREX_D_PICK(1, 2, 6);
-        tander_ec[d].resize(ebox,nCompTan); tander_ec[d].setVal(0);
-        {
-          BL_PROFILE("PeleC::pc_compute_tangential_vel_derivs call");
-          pc_compute_tangential_vel_derivs(cbox.loVect(), cbox.hiVect(),
-                                           dbox.loVect(), dbox.hiVect(),
-                                           BL_TO_FORTRAN_ANYD(Qfab),
-                                           BL_TO_FORTRAN_ANYD(tander_ec[d]),
-                                           geom.CellSize(),&d);
-        }
-#endif
-      } // loop over dimension
-
-
+      
       // 2. Get dynamic Smagorinsky derived quantities after setting the
       // BC. These quantities need to be stored because we need to filter
-      // them at the test filter level
+      // them at the test filter level. All are located at cell centers.
       const int upper_triangle_n = static_cast<int>(0.5*BL_SPACEDIM*(BL_SPACEDIM+1));
       FArrayBox K, RUT, alphaij, alpha, flux_T;
       K.resize(g1box, upper_triangle_n);
       RUT.resize(g1box, BL_SPACEDIM);
       alphaij.resize(g1box, BL_SPACEDIM*BL_SPACEDIM);
-      alpha.resize(g1box, BL_SPACEDIM);
+      alpha.resize(g1box, 1);
       flux_T.resize(g1box, BL_SPACEDIM);
 
       {
@@ -390,13 +378,6 @@ PeleC::getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::Mu
         pc_dynamic_smagorinsky_quantities(g1box.loVect(), g1box.hiVect(),
                                           dbox.loVect(), dbox.hiVect(),
                                           BL_TO_FORTRAN_ANYD(Qfab),
-#if (BL_SPACEDIM > 1)
-                                          BL_TO_FORTRAN_ANYD(tander_ec[0]),
-                                          BL_TO_FORTRAN_ANYD(tander_ec[1]),
-#endif
-#if (BL_SPACEDIM > 2)
-                                          BL_TO_FORTRAN_ANYD(tander_ec[2]),
-#endif
                                           BL_TO_FORTRAN_ANYD(K),
                                           BL_TO_FORTRAN_ANYD(RUT),
                                           BL_TO_FORTRAN_ANYD(alphaij),
@@ -407,9 +388,8 @@ PeleC::getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::Mu
       }
 
 
-
       // 3. Filter the state variables and the derived quantities at the
-      // test filter level
+      // test filter level - still at cell centers
       FArrayBox filtered_S, filtered_Q, filtered_Qaux, filtered_K, filtered_RUT, filtered_alphaij, filtered_alpha, filtered_flux_T;
       filtered_S.resize(g2box,NUM_STATE);
       filtered_Q.resize(g2box,QVAR);
@@ -417,7 +397,7 @@ PeleC::getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::Mu
       filtered_K.resize(g3box,upper_triangle_n);
       filtered_RUT.resize(g3box,BL_SPACEDIM);
       filtered_alphaij.resize(g3box,BL_SPACEDIM*BL_SPACEDIM);
-      filtered_alpha.resize(g3box,BL_SPACEDIM);
+      filtered_alpha.resize(g3box,1);
       filtered_flux_T.resize(g3box,BL_SPACEDIM);
 
       test_filter.apply_filter(g2box, Sfab, filtered_S);
@@ -431,7 +411,9 @@ PeleC::getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::Mu
       test_filter.apply_filter(g3box, alpha, filtered_alpha);
       test_filter.apply_filter(g3box, flux_T, filtered_flux_T);
 
-      // 4. Calculate the dynamic Smagorinsky coefficients
+      
+
+      // 4. Calculate the dynamic Smagorinsky coefficients - still at cell centers
       int do_harmonic = 1;
       FArrayBox coeff_cc;
       coeff_cc.resize(g3box, nCompC);
@@ -441,13 +423,6 @@ PeleC::getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::Mu
         pc_dynamic_smagorinsky_coeffs(g3box.loVect(), g3box.hiVect(),
                                       dbox.loVect(), dbox.hiVect(),
                                       BL_TO_FORTRAN_ANYD(filtered_Q),
-#if (BL_SPACEDIM > 1)
-                                      BL_TO_FORTRAN_ANYD(tander_ec[0]),
-                                      BL_TO_FORTRAN_ANYD(tander_ec[1]),
-#endif
-#if (BL_SPACEDIM > 2)
-                                      BL_TO_FORTRAN_ANYD(tander_ec[2]),
-#endif
                                       BL_TO_FORTRAN_ANYD(filtered_K),
                                       BL_TO_FORTRAN_ANYD(filtered_RUT),
                                       BL_TO_FORTRAN_ANYD(filtered_alphaij),
@@ -455,53 +430,80 @@ PeleC::getDynamicSmagorinskyLESTerm (amrex::Real time, amrex::Real dt, amrex::Mu
                                       BL_TO_FORTRAN_ANYD(filtered_flux_T),
                                       BL_TO_FORTRAN_N_ANYD(coeff_cc,comp_Cs2),
                                       BL_TO_FORTRAN_N_ANYD(coeff_cc,comp_CI),
-                                      BL_TO_FORTRAN_N_ANYD(coeff_cc,comp_PrT),
+                                      BL_TO_FORTRAN_N_ANYD(coeff_cc,comp_Cs2ovPrT),
                                       &les_test_filter_fgr,
                                       geom.CellSize());
       }
 
-      // FIXME: REMOVE THIS LATER
-      coeff_cc.setVal(0.16*0.16,g3box,comp_Cs2,1);
-      coeff_cc.setVal(0.09,g3box,comp_CI,1);
-      coeff_cc.setVal(0.7,g3box,comp_PrT,1);
 
-      // 5. Filter to smooth the dynamic coefficients
+      // 5. Filter to smooth the dynamic coefficients - still at cell centers
       coeff_filter.apply_filter(g4box, coeff_cc, LES_Coeffs[mfi]);
 
       // 6. Get the SFS term
+      
+      //    First step: move everything needed to compute fluxes to ec (faces)
+      FArrayBox alphaij_ec[BL_SPACEDIM], alpha_ec[BL_SPACEDIM], flux_T_ec[BL_SPACEDIM];
+	
       for (int d=0; d<BL_SPACEDIM; ++d) {
+	int onedim=1;
+	int ndims = BL_SPACEDIM;
         Box ebox = amrex::surroundingNodes(cbox,d);
-        coeff_ec[d].resize(ebox,nCompC);
         flux_ec[d].resize(ebox,NUM_STATE); flux_ec[d].setVal(0);
+        coeff_ec[d].resize(ebox,nCompC);
+        alphaij_ec[d].resize(ebox,BL_SPACEDIM);
+        alpha_ec[d].resize(ebox,1);
+        flux_T_ec[d].resize(ebox,1);
         pc_move_transport_coeffs_to_ec(ARLIM_3D(cbox.loVect()), ARLIM_3D(cbox.hiVect()),
                                        ARLIM_3D(dbox.loVect()), ARLIM_3D(dbox.hiVect()),
                                        BL_TO_FORTRAN_ANYD(LES_Coeffs[mfi]),
                                        BL_TO_FORTRAN_ANYD(coeff_ec[d]),
                                        &d, &nCompC, &do_harmonic);
+        pc_move_transport_coeffs_to_ec(ARLIM_3D(cbox.loVect()), ARLIM_3D(cbox.hiVect()),
+                                       ARLIM_3D(dbox.loVect()), ARLIM_3D(dbox.hiVect()),
+                                       BL_TO_FORTRAN_N_ANYD(alphaij,BL_SPACEDIM*d),
+                                       BL_TO_FORTRAN_ANYD(alphaij_ec[d]),
+                                       &d, &ndims, &do_harmonic);
+        pc_move_transport_coeffs_to_ec(ARLIM_3D(cbox.loVect()), ARLIM_3D(cbox.hiVect()),
+                                       ARLIM_3D(dbox.loVect()), ARLIM_3D(dbox.hiVect()),
+                                       BL_TO_FORTRAN_ANYD(alpha),
+                                       BL_TO_FORTRAN_ANYD(alpha_ec[d]),
+                                       &d, &onedim, &do_harmonic);
+        pc_move_transport_coeffs_to_ec(ARLIM_3D(cbox.loVect()), ARLIM_3D(cbox.hiVect()),
+                                       ARLIM_3D(dbox.loVect()), ARLIM_3D(dbox.hiVect()),
+                                       BL_TO_FORTRAN_N_ANYD(flux_T,d),
+                                       BL_TO_FORTRAN_ANYD(flux_T_ec[d]),
+                                       &d, &onedim, &do_harmonic);
       }
 
+      // Compute the fluxes at the faces: all values passed are at faces except for Q, V, and Lterm
       {
         BL_PROFILE("PeleC::pc_dynamic_smagorinsky_sfs_term()");
         pc_dynamic_smagorinsky_sfs_term(cbox.loVect(), cbox.hiVect(),
                                         BL_TO_FORTRAN_ANYD(Qfab),
-                                        BL_TO_FORTRAN_ANYD(alphaij),
-                                        BL_TO_FORTRAN_ANYD(alpha),
-                                        BL_TO_FORTRAN_ANYD(flux_T),
+                                        BL_TO_FORTRAN_ANYD(alphaij_ec[0]),
+                                        BL_TO_FORTRAN_ANYD(alpha_ec[0]),
+                                        BL_TO_FORTRAN_ANYD(flux_T_ec[0]),
                                         BL_TO_FORTRAN_N_ANYD(coeff_ec[0],comp_Cs2),
                                         BL_TO_FORTRAN_N_ANYD(coeff_ec[0],comp_CI),
-                                        BL_TO_FORTRAN_N_ANYD(coeff_ec[0],comp_PrT),
+                                        BL_TO_FORTRAN_N_ANYD(coeff_ec[0],comp_Cs2ovPrT),
                                         BL_TO_FORTRAN_ANYD(area[0][mfi]),
                                         BL_TO_FORTRAN_ANYD(flux_ec[0]),
 #if (BL_SPACEDIM > 1)
+                                        BL_TO_FORTRAN_ANYD(alphaij_ec[1]),
+                                        BL_TO_FORTRAN_ANYD(alpha_ec[1]),
+                                        BL_TO_FORTRAN_ANYD(flux_T_ec[1]),
                                         BL_TO_FORTRAN_N_ANYD(coeff_ec[1],comp_Cs2),
                                         BL_TO_FORTRAN_N_ANYD(coeff_ec[1],comp_CI),
-                                        BL_TO_FORTRAN_N_ANYD(coeff_ec[1],comp_PrT),
+                                        BL_TO_FORTRAN_N_ANYD(coeff_ec[1],comp_Cs2ovPrT),
                                         BL_TO_FORTRAN_ANYD(area[1][mfi]),
                                         BL_TO_FORTRAN_ANYD(flux_ec[1]),
 #if (BL_SPACEDIM > 2)
+                                        BL_TO_FORTRAN_ANYD(alphaij_ec[2]),
+                                        BL_TO_FORTRAN_ANYD(alpha_ec[2]),
+                                        BL_TO_FORTRAN_ANYD(flux_T_ec[2]),
                                         BL_TO_FORTRAN_N_ANYD(coeff_ec[2],comp_Cs2),
                                         BL_TO_FORTRAN_N_ANYD(coeff_ec[2],comp_CI),
-                                        BL_TO_FORTRAN_N_ANYD(coeff_ec[2],comp_PrT),
+                                        BL_TO_FORTRAN_N_ANYD(coeff_ec[2],comp_Cs2ovPrT),
                                         BL_TO_FORTRAN_ANYD(area[2][mfi]),
                                         BL_TO_FORTRAN_ANYD(flux_ec[2]),
 #endif
