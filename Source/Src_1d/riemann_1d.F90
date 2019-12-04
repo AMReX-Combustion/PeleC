@@ -8,7 +8,7 @@ module riemann_module
                                    NGDNV, GDU, GDPRES, &
                                    URHO, UMX, UEDEN, UEINT, &
                                    small_temp, small_dens, small_pres, &
-                                   npassive, upass_map, qpass_map, &
+                                   npassive, npassnm, upass_map, qpass_map, &
                                    cg_maxiter, cg_tol, cg_blend, &
                                    fix_mass_flux, &
                                    riemann_solver, ppm_temp_fix, hybrid_riemann, &
@@ -615,6 +615,20 @@ contains
           endif
 
        enddo
+       ! advected quantities when Q = U
+       do ipassive = npassive + 1, npassive + npassnm
+          n  = upass_map(ipassive)
+          nqp = qpass_map(ipassive)
+
+          if (ustar > ZERO) then
+             uflx(k,n) = qint(k,GDU)*ql(k,nqp)
+          else if (ustar < ZERO) then
+             uflx(k,n) = qint(k,GDU)*qr(k,nqp)
+          else
+             qavg = HALF * (ql(k,nqp) + qr(k,nqp))
+             uflx(k,n) = qint(k,GDU)*qavg
+          endif
+       enddo
 
     enddo
 
@@ -812,7 +826,17 @@ contains
           endif
 
        enddo
+       ! advected quantities when Q = U
+       do ipassive = npassive + 1, npassive + npassnm
+          n  = upass_map(ipassive)
+          nqp = qpass_map(ipassive)
 
+          if (ustar >= ZERO) then
+             uflx(k,n) = qint(k,GDU)*ql(k,nqp)
+          else
+             uflx(k,n) = qint(k,GDU)*qr(k,nqp)
+          endif
+       enddo
     enddo
 
   end subroutine riemannus

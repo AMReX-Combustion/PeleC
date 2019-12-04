@@ -18,7 +18,7 @@ contains
        ilo,ihi,domlo,domhi,dx,dt)
 
     use meth_params_module, only : plm_iorder, QVAR, QRHO, QU, QREINT, QPRES, &
-         npassive, qpass_map, small_dens, ppm_type, fix_mass_flux, use_pslope
+         npassive, npassnm, qpass_map, small_dens, ppm_type, fix_mass_flux, use_pslope
     use prob_params_module, only : physbc_lo, physbc_hi
     use slope_module, only : uslope, pslope
     use amrex_constants_module
@@ -200,7 +200,7 @@ contains
        endif
     enddo
 
-    do ipassive = 1, npassive
+    do ipassive = 1, npassive + npassnm
        n = qpass_map(ipassive)
 
        ! Right state

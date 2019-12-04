@@ -23,7 +23,7 @@ contains
          small_dens, small_pres, fix_mass_flux, &
          ppm_type, ppm_trace_sources, ppm_temp_fix, &
          ppm_predict_gammae, ppm_reference_eigenvectors, &
-         npassive, qpass_map
+         npassive, npassnm, qpass_map
     use prob_params_module, only : physbc_lo, physbc_hi
     use ppm_module, only : ppm
 
@@ -567,7 +567,7 @@ contains
     !-------------------------------------------------------------------------
 
     ! We do all passively advected quantities in one loop
-    do ipassive = 1, npassive
+    do ipassive = 1, npassive + npassnm
        n = qpass_map(ipassive)
 
        ! plus state on face i
