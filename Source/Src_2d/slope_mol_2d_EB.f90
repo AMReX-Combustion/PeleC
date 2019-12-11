@@ -80,11 +80,9 @@ contains
                   enddo
 
                   dlft(i,4+nspecies+1:nv) = 0.0
-#ifdef SOOT_MODEL
                   do n = 1, nsoot
                      dlft(i,4+nspecies+n) = q(i,j,QFSOOT+n-1) - q(i-1,j,QFSOOT+n-1)
                   enddo
-#endif
                else
                   dlft(i,:) = 0.d0
                endif
@@ -101,11 +99,9 @@ contains
                   enddo
 
                   drgt(i,4+nspecies+1:nv) = 0.0
-#ifdef SOOT_MODEL
                   do n = 1, nsoot
                      drgt(i,4+nspecies+n) = q(i+1,j,QFSOOT+n-1) - q(i,j,QFSOOT+n-1)
                   enddo
-#endif
                else
                   drgt(i,:) = 0.d0
                endif
@@ -199,11 +195,9 @@ contains
                   enddo
 
                   dlft(i,4+nspecies+1:nv) = 0.0
-#ifdef SOOT_MODEL
                   do n = 1, nsoot
                      dlft(i,4+nspecies+n) = q(i,j,QFSOOT+n-1) - q(i,j-1,QFSOOT+n-1)
                   enddo
-#endif
                else
                   dlft(i,:) = 0.d0
                endif
@@ -220,11 +214,9 @@ contains
                   enddo
 
                   drgt(i,4+nspecies+1:nv) = 0.0
-#ifdef SOOT_MODEL
                   do n = 1, nsoot
                      drgt(i,4+nspecies+n) = q(i,j+1,QFSOOT+n-1) - q(i,j,QFSOOT+n-1)
                   enddo
-#endif
                else
                   drgt(i,:) = 0.d0
                endif

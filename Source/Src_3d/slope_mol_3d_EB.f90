@@ -115,7 +115,6 @@ contains
                      endif
                   enddo
                enddo
-#ifdef SOOT_MODEL
                do nsp = 1, nsoot
                   do i = ilo1, ihi1
                      if (flagArrayL(i)) then
@@ -126,7 +125,6 @@ contains
                      endif
                   enddo
                enddo
-#endif
                do n=1, nv
                   do i = ilo1, ihi1
                      dcen = 0.5d0 * (dlft(i,n)+drgt(i,n))
@@ -248,7 +246,6 @@ contains
                      endif
                   enddo
                enddo
-#ifdef SOOT_MODEL
                do nsp = 1, nsoot
                   do i = ilo1, ihi1
                      if (flagArrayL(i)) then
@@ -259,7 +256,6 @@ contains
                      endif
                   enddo
                enddo
-#endif
                do n=1, nv
                   do i = ilo1, ihi1
                      dcen = 0.5d0 * (dlft(i,n)+drgt(i,n))
@@ -381,7 +377,6 @@ contains
                      endif
                   enddo
                enddo
-#ifdef SOOT_MODEL
                do nsp = 1, nsoot
                   do i = ilo1, ihi1
                      if (flagArrayL(i)) then
@@ -392,7 +387,6 @@ contains
                      endif
                   enddo
                enddo
-#endif
                do n=1, nv
                   do i = ilo1, ihi1
                      dcen = 0.5d0 * (dlft(i,n)+drgt(i,n))
