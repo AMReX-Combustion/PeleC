@@ -148,6 +148,7 @@ contains
              ! SFS heat flux - move state from cell centers to faces to compute cp for flux at face
              sfs_eos_state % massfrac(:) = HALF*( Q(i,j,k,QFS:QFS+nspecies-1) + Q(i-1,j,k,QFS:QFS+nspecies-1) )
              sfs_eos_state % T           = HALF*( Q(i,j,k,QTEMP) + Q(i-1,j,k,QTEMP) )
+             sfs_eos_state % rho         = HALF*( Q(i,j,k,QRHO) + Q(i-1,j,k,QRHO) )
              call eos_cp(sfs_eos_state)
              fx(i,j,k,UEDEN) = fx(i,j,k,UEDEN) - sfs_eos_state%cp * Cs2 / PrT * flux_T(1)
           end do
@@ -188,6 +189,7 @@ contains
              ! SFS heat flux - move state to faces for cp calculation
              sfs_eos_state % massfrac(:) = HALF*( Q(i,j,k,QFS:QFS+nspecies-1) + Q(i,j-1,k,QFS:QFS+nspecies-1) )
              sfs_eos_state % T           = HALF*( Q(i,j,k,QTEMP) + Q(i,j-1,k,QTEMP) )
+             sfs_eos_state % rho         = HALF*( Q(i,j,k,QRHO) + Q(i,j-1,k,QRHO) )
              call eos_cp(sfs_eos_state)
              fy(i,j,k,UEDEN) = fy(i,j,k,UEDEN) - sfs_eos_state%cp * Cs2 / PrT * flux_T(2)
           end do
@@ -227,6 +229,7 @@ contains
              ! SFS heat flux - move state to faces to calculate cp
              sfs_eos_state % massfrac(:) = HALF* ( Q(i,j,k,QFS:QFS+nspecies-1) + Q(i,j,k-1,QFS:QFS+nspecies-1) )
              sfs_eos_state % T           = HALF* ( Q(i,j,k,QTEMP) + Q(i,j,k-1,QTEMP))
+             sfs_eos_state % rho         = HALF*( Q(i,j,k,QRHO) + Q(i,j,k-1,QRHO) )
              call eos_cp(sfs_eos_state)
              fz(i,j,k,UEDEN) = fz(i,j,k,UEDEN) - sfs_eos_state%cp * Cs2 / PrT * flux_T(3)
           end do
@@ -398,6 +401,7 @@ contains
              ! SFS heat flux - move state from cell centers to faces to compute cp for flux at face
              sfs_eos_state % massfrac(:) = HALF*( Q(i,j,k,QFS:QFS+nspecies-1) + Q(i-1,j,k,QFS:QFS+nspecies-1) )
              sfs_eos_state % T           = HALF*( Q(i,j,k,QTEMP) + Q(i-1,j,k,QTEMP) )
+             sfs_eos_state % rho         = HALF*( Q(i,j,k,QRHO) + Q(i-1,j,k,QRHO) )
              call eos_cp(sfs_eos_state)
              fx(i,j,k,UEDEN) = fx(i,j,k,UEDEN) - sfs_eos_state%cp * Cs2ovPrTx(i,j,k) * flux_Tx(i,j,k)
           end do
@@ -435,6 +439,7 @@ contains
              ! SFS heat flux - move state to faces for cp calculation
              sfs_eos_state % massfrac(:) = HALF*( Q(i,j,k,QFS:QFS+nspecies-1) + Q(i,j-1,k,QFS:QFS+nspecies-1) )
              sfs_eos_state % T           = HALF*( Q(i,j,k,QTEMP) + Q(i,j-1,k,QTEMP) )
+             sfs_eos_state % rho         = HALF*( Q(i,j,k,QRHO) + Q(i,j-1,k,QRHO) )
              call eos_cp(sfs_eos_state)
              fy(i,j,k,UEDEN) = fy(i,j,k,UEDEN) -  sfs_eos_state%cp * Cs2ovPrTy(i,j,k) * flux_Ty(i,j,k)
           end do
@@ -472,6 +477,7 @@ contains
              ! SFS heat flux - move state to faces to calculate cp
              sfs_eos_state % massfrac(:) = HALF* ( Q(i,j,k,QFS:QFS+nspecies-1) + Q(i,j,k-1,QFS:QFS+nspecies-1) )
              sfs_eos_state % T           = HALF* ( Q(i,j,k,QTEMP) + Q(i,j,k-1,QTEMP))
+             sfs_eos_state % rho         = HALF*( Q(i,j,k,QRHO) + Q(i,j,k-1,QRHO) )
              call eos_cp(sfs_eos_state)
              fz(i,j,k,UEDEN) = fz(i,j,k,UEDEN) - sfs_eos_state%cp * Cs2ovPrTz(i,j,k) * flux_Tz(i,j,k)
           end do
