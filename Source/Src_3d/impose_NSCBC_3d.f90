@@ -979,7 +979,7 @@ end subroutine impose_NSCBC
   elseif (idir == 3) then
   
      T1 =  (q(i,j,k,QU)*(dpdx - q(i,j,k,QRHO)*qaux(i,j,k,QC)*dwdx)) &
-         + (q(i,j,k,QV)*(dpdy - q(i,j,k,QRHO)*qaux(i,j,k,QC)*dwdz)) &  
+         + (q(i,j,k,QV)*(dpdy - q(i,j,k,QRHO)*qaux(i,j,k,QC)*dwdy)) &  
          + (qaux(i,j,k,QGAMC) * q(i,j,k,QPRES)*(dudx + dvdy))
      
      T2 =  q(i,j,k,QU)*dudx + q(i,j,k,QV)*dudy + dpdx*inv_rho
@@ -990,7 +990,7 @@ end subroutine impose_NSCBC
          + (q(i,j,k,QV)*((qaux(i,j,k,QC)*qaux(i,j,k,QC)*drhody)-dpdy))
      
      T5 =  (q(i,j,k,QU)*(dpdx + q(i,j,k,QRHO)*qaux(i,j,k,QC)*dwdx)) &
-         + (q(i,j,k,QV)*(dpdy + q(i,j,k,QRHO)*qaux(i,j,k,QC)*dwdz)) &  
+         + (q(i,j,k,QV)*(dpdy + q(i,j,k,QRHO)*qaux(i,j,k,QC)*dwdy)) &  
          + (qaux(i,j,k,QGAMC) * q(i,j,k,QPRES)*(dudx + dvdy))
      
   else

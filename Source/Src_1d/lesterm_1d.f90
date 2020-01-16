@@ -80,6 +80,7 @@ contains
        ! SFS heat flux
        sfs_eos_state % massfrac(:) = HALF*(Q(i,QFS:QFS+nspecies-1) + Q(i-1,QFS:QFS+nspecies-1))
        sfs_eos_state % T           = HALF*(Q(i,QTEMP) + Q(i-1,QTEMP))
+       sfs_eos_state % rho         = HALF*(Q(i,QRHO) + Q(i-1,QRHO))
        call eos_cp(sfs_eos_state)
        fx(i,UEDEN) = fx(i,UEDEN) - sfs_eos_state%cp * Cs2 / PrT * flux_T
     end do
@@ -173,6 +174,7 @@ contains
        ! SFS heat flux
        sfs_eos_state % massfrac(:) = HALF*(Q(i,QFS:QFS+nspecies-1) + Q(i-1,QFS:QFS+nspecies-1) )
        sfs_eos_state % T           = HALF*(Q(i,QTEMP) + Q(i-1,QTEMP))
+       sfs_eos_state % rho         = HALF*(Q(i,QRHO) + Q(i-1,QRHO))
        call eos_cp(sfs_eos_state)
        fx(i,UEDEN) = fx(i,UEDEN) - sfs_eos_state%cp * Cs2x(i) / PrTx(i) * flux_T(i,1)
     end do
