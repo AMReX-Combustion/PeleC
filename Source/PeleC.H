@@ -145,6 +145,10 @@ public:
     //
     static void read_particle_params ();
     //
+    // Define particle related variables
+    //
+    static void define_particles ();
+    //
     // Initialize particle locations and velocities (and strengths if relevant)
     //
     void init_particles ();
@@ -178,7 +182,7 @@ public:
     //
     // Redistribute
     //
-    virtual void particle_redistribute(int lbase = 0, bool init_part = false);
+    virtual void particle_redistribute(int lbase = 0, bool init_part = false) override;
 
     //
     // Setup virtual particles if necessary
@@ -225,6 +229,21 @@ public:
                              int where_width,
                              int spray_n_grow,
                              int tmp_src_width);
+
+  static int particle_mass_tran;
+  static int particle_heat_tran;
+  static int particle_mom_tran;
+  static int particle_nfuel_species;
+  static amrex::Vector<amrex::Real> partf_mf;
+  static amrex::Vector<amrex::Real> partf_crit_T;
+  static amrex::Vector<amrex::Real> partf_boil_T;
+  static amrex::Vector<amrex::Real> partf_cp;
+  static amrex::Vector<amrex::Real> partf_latent;
+  static amrex::Vector<amrex::Real> partf_molwt;
+  static amrex::Vector<std::string> partf_fuel_names;
+  static amrex::Real partf_ref_T;
+  static amrex::Vector<int> partf_indx;
+
 #endif
 
     //

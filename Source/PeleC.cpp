@@ -610,6 +610,9 @@ PeleC::PeleC (Amr&            papa,
   if (use_explicit_filter){
     init_filters();
   }
+#ifdef AMREX_PARTICLES
+  define_particles();
+#endif
 #ifdef SOOT_MODEL
   soot_model->define();
 #endif

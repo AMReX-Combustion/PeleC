@@ -255,7 +255,7 @@ PeleC::variableSetUp ()
     pstate_T = pstate_vel + BL_SPACEDIM;
     pstate_dia = pstate_T + 1;
     pstate_rho = pstate_dia + 1;
-    pstate_spc = pstate_rho + 1;
+    pstate_spc = pstate_rho + 1; // TODO: Should add number of species in droplet
     n_pstate = pstate_spc + 1;
 
     pfld_vel = 0;

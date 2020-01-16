@@ -5,12 +5,11 @@
 #include "PeleC.H"
 #include "PeleC_F.H"
 #include "Spray_F.H"
+#include <chemistry_file.H>
 
 using namespace amrex;
 
 #ifdef AMREX_PARTICLES
-
-#define MAX_NUM_FUELS 1
 
 namespace
 {
@@ -49,23 +48,23 @@ namespace
 int PeleC::do_spray_particles          =  0;
 int PeleC::particle_verbose            =  0;
 Real PeleC::particle_cfl               = 0.05;
+int PeleC::particle_mass_tran = 0;
+int PeleC::particle_heat_tran = 0;
+int PeleC::particle_mom_tran = 0;
+int PeleC::particle_nfuel_species = 1;
+Vector<Real> PeleC::partf_mf;
+Vector<Real> PeleC::partf_crit_T;
+Vector<Real> PeleC::partf_boil_T;
+Vector<Real> PeleC::partf_cp;
+Vector<Real> PeleC::partf_latent;
+Vector<Real> PeleC::partf_molwt;
+Vector<std::string> PeleC::partf_fuel_names;
+Real PeleC::partf_ref_T;
+Vector<int> PeleC::partf_indx;
 
 namespace {
     std::string       particle_init_file;
     int               particle_init_uniform = 0;
-    int               is_mass_tran = 0;
-    int               is_heat_tran = 0;
-    int               is_mom_tran = 0;
-    int               nfuel_species = 1;
-    Vector<Real>      fuel_mass_frac(MAX_NUM_FUELS);
-    Vector<Real>      fuel_density(MAX_NUM_FUELS);
-    Vector<Real>      fuel_crit_temp(MAX_NUM_FUELS);
-    Vector<Real>      fuel_boil_temp(MAX_NUM_FUELS);
-    Vector<Real>      fuel_latent(MAX_NUM_FUELS);
-    Vector<Real>      fuel_cp(MAX_NUM_FUELS);
-    Vector<Real>      fuel_molwt(MAX_NUM_FUELS);
-    Vector<int>       fuel_indx(MAX_NUM_FUELS);
-    std::string       particle_output_file;
     std::string       timestamp_dir;
     std::vector<int>  timestamp_indices;
 }
@@ -115,6 +114,10 @@ PeleC::particle_est_time_step (Real& est_dt)
 void 
 PeleC::read_particle_params ()
 {
+  if (verbose)
+    {
+      Print() << "reading particle parameters" << std::endl;
+    }
     ParmParse pp("pelec");
     
     pp.query("do_spray_particles",do_spray_particles);
@@ -122,23 +125,45 @@ PeleC::read_particle_params ()
     ParmParse ppp("particles");
     //
     // Control the verbosity of the Particle class
-    ppp.query("v",particle_verbose);
     //
-    ppp.get("mass_transfer",is_mass_tran);
-    ppp.get("heat_transfer",is_heat_tran);
-    ppp.get("mom_transfer",is_mom_tran);
+    ppp.query("v",particle_verbose);
+
+    ppp.get("mass_transfer",particle_mass_tran);
+    ppp.get("heat_transfer",particle_heat_tran);
+    ppp.get("mom_transfer",particle_mom_tran);
     //
     // Used in import_fuel_properties()
     //
-    ppp.get("fuel_species", nfuel_species);
-    ppp.getarr("fuel_mass_frac", fuel_mass_frac, 0, nfuel_species);
-    ppp.getarr("fuel_density", fuel_density, 0, nfuel_species);
-    ppp.getarr("fuel_crit_temp", fuel_crit_temp, 0, nfuel_species);
-    ppp.getarr("fuel_boil_temp", fuel_boil_temp, 0, nfuel_species);
-    ppp.getarr("fuel_latent", fuel_latent, 0, nfuel_species);
-    ppp.getarr("fuel_cp", fuel_cp, 0, nfuel_species);
-    ppp.getarr("fuel_molwt", fuel_molwt, 0, nfuel_species);
-    ppp.getarr("fuel_indx", fuel_indx, 0, nfuel_species);
+    particle_nfuel_species = ppp.countval("fuel_species");
+    const int nfuel = particle_nfuel_species;
+    partf_mf.resize(nfuel);
+    partf_crit_T.resize(nfuel);
+    partf_boil_T.resize(nfuel);
+    partf_latent.resize(nfuel);
+    partf_cp.resize(nfuel);
+    partf_molwt.resize(nfuel);
+    partf_indx.assign(nfuel, -1);
+    partf_fuel_names.assign(nfuel, "");
+    // Read in the mass fractions of the particles from the input file and ensure they sum to 1
+    Real total_fuel_mf = 0.;
+    for (int i = 0; i != nfuel; ++i)
+      {
+	ppp.getkth("fuel_species", i, partf_fuel_names[i], 0);
+	ppp.getkth("fuel_mass_frac", i, partf_mf[i], 0);
+	total_fuel_mf += partf_mf[i];
+      }
+    if (std::abs(total_fuel_mf - 1.) > 1.E-8)
+      {
+	Abort("Particle fuel mass fractions do not sum to 1");
+      }
+    // TODO: Would be nice if these were tabulated or computed and not input directly
+    ppp.getarr("fuel_crit_temp", partf_crit_T, 0, nfuel);
+    ppp.getarr("fuel_boil_temp", partf_boil_T, 0, nfuel);
+    ppp.getarr("fuel_latent", partf_latent, 0, nfuel);
+    ppp.getarr("fuel_cp", partf_cp, 0, nfuel);
+    // Must use same reference temperature for all fuels
+    // TODO: This means the reference temperature must be the same for all fuel species
+    ppp.get("fuel_ref_temp", partf_ref_T);
     //
     // Used in initData() on startup to read in a file of particles.
     //
@@ -159,7 +184,7 @@ PeleC::read_particle_params ()
     //
     // Used in post_restart() to write out the file of particles.
     //
-    ppp.query("particle_output_file", particle_output_file);
+    //ppp.query("particle_output_file", particle_output_file);
     //
     // The directory in which to store timestamp files.
     //
@@ -174,6 +199,30 @@ PeleC::read_particle_params ()
     // Force other processors to wait till directory is built.
     //
     ParallelDescriptor::Barrier();
+}
+
+void
+PeleC::define_particles()
+{
+  // Fluid species mass fractions
+  Vector<Real> species_mw(NumSpec);
+  get_mw(species_mw.dataPtr());
+  for (int i = 0; i != particle_nfuel_species; ++i)
+    {
+      for (int ns = 0; ns != NumSpec; ++ns)
+	{
+	  std::string gas_spec = spec_names[ns];
+	  if (gas_spec == partf_fuel_names[i])
+	    {
+	      partf_indx[i] = ns;
+	      partf_molwt[i] = species_mw[ns];
+	    }
+	}
+      if (partf_indx[i] < 0)
+	{
+	  Abort("Particle fuel species not found in fluid species list");
+	}
+    }
 }
 
 void
@@ -258,11 +307,11 @@ PeleC::init_particles ()
         }
 	
         // fuel properties from user input file
-        import_fuel_properties(&nfuel_species, fuel_mass_frac.data(),fuel_density.data(),
-                               fuel_crit_temp.data(), fuel_latent.data(), fuel_boil_temp.data(), 
-                               fuel_cp.data(),fuel_molwt.data(),fuel_indx.data());
+        import_fuel_properties(&particle_nfuel_species, partf_mf.data(), 
+			       partf_crit_T.data(), partf_latent.data(), partf_boil_T.data(),
+                               partf_cp.data(), partf_molwt.data(), partf_indx.data());
 
-        import_control_parameters(&is_heat_tran, &is_mass_tran, &is_mom_tran);
+        import_control_parameters(&particle_heat_tran, &particle_mass_tran, &particle_mom_tran);
 
 	if (! particle_init_file.empty())
 	{
@@ -272,17 +321,7 @@ PeleC::init_particles ()
         {
             // Initialize uniform particle distribution
             //  {vel(DIM), temperature, diameter, density}
-            //ParticleInitType<5, 0, 0, 0> pdata = {{0., 0., 300, 1e-2, 1.}, {}, {}, {}}; //2D
-            //ParticleInitType<6, 0, 0, 0> pdata = {{0., 0., 0., 298, 0.016, 0.68141}, {}, {}, {}}; //3D
-            //theSprayPC()->InitOnePerCell(Real(0.5),Real(0.5),Real(0.5),pdata);
             theSprayPC()->InitParticlesUniform(level, particle_init_uniform);
-          
-            if (!particle_output_file.empty())
-            {
-     //         long cnt = SprayPC->TotalNumberOfParticles();// (bool only_valid=true, bool only_local=false) const;
-     //         std::cout << "Writing " << cnt << "to " << particle_output_file.c_str() << std::endl;
-     //         theSprayPC()->WriteAsciiFile(particle_output_file,time);
-            }
         }
     }
 }
@@ -308,20 +347,17 @@ PeleC::particle_post_restart (const std::string& restart_file, bool is_checkpoin
         }
 
         // fuel properties from user input file
-        import_fuel_properties(&nfuel_species, fuel_mass_frac.data(),fuel_density.data(),
-                               fuel_crit_temp.data(), fuel_latent.data(), fuel_boil_temp.data(), 
-                               fuel_cp.data(),fuel_molwt.data(),fuel_indx.data());
+        import_fuel_properties(&particle_nfuel_species, partf_mf.data(),
+                               partf_crit_T.data(), partf_latent.data(), partf_boil_T.data(),
+                               partf_cp.data(), partf_molwt.data(),partf_indx.data());
 
-        import_control_parameters(&is_heat_tran, &is_mass_tran, &is_mom_tran);
+        import_control_parameters(&particle_heat_tran, &particle_mass_tran, &particle_mom_tran);
 
         // Make sure to call RemoveParticlesOnExit() on exit.
         //
         amrex::ExecOnFinalize(RemoveParticlesOnExit);
 
         theSprayPC()->Restart(parent->theRestartFile(), chk_particle_file, is_checkpoint);
-
-        if (!particle_output_file.empty())
-           theSprayPC()->WriteAsciiFile(particle_output_file);
     }
 }
 

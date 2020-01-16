@@ -270,33 +270,36 @@ PeleC::checkPoint(const std::string& dir,
 #ifdef AMREX_PARTICLES
    bool is_checkpoint = true;
 
-   Vector<std::string> real_comp_names;
-   Vector<std::string>  int_comp_names;
-   real_comp_names.push_back("xvel");
-   real_comp_names.push_back("yvel");
-#if (BL_SPACEDIM > 2)
-   real_comp_names.push_back("zvel");
-#endif
-   real_comp_names.push_back("temperature");
-   real_comp_names.push_back("diam");
-   real_comp_names.push_back("density");
-// real_comp_names.push_back("mass_frac");
+   Vector<std::string> real_comp_names(n_pstate);
+   AMREX_D_TERM(real_comp_names[pstate_vel] = "xvel";,
+		real_comp_names[pstate_vel+1] = "yvel";,
+		real_comp_names[pstate_vel+2] = "zvel";);
+   real_comp_names[pstate_T] = "temperature";
+   real_comp_names[pstate_dia] = "diam";
+   real_comp_names[pstate_rho] = "density";
+   real_comp_names[pstate_spc] = "fuel_mf";
    AMREX_ASSERT(real_comp_names.size()==NSR_SPR);
+   Vector<std::string>  int_comp_names;
 
-  if (PeleC::theSprayPC()) 
+  if (PeleC::theSprayPC())
   {
-       PeleC::theSprayPC()->Checkpoint(dir,"Spray",
-                                       is_checkpoint,real_comp_names,int_comp_names);
-
-       // Here we write ascii information every time we write a checkpoint file
-       if (level == 0)
-       {
-         if (do_spray_particles==1) {
-           theSprayPC()->Checkpoint(dir, ascii_spray_particle_file);
-           std::string fname = "spray" + dir.substr (3,6) + ".p3d";
-           theSprayPC()->WriteAsciiFile(fname);
-         }
-       }
+    PeleC::theSprayPC()->Checkpoint(dir,"Spray",
+				    is_checkpoint,real_comp_names,int_comp_names);
+    // Here we write ascii information every time we write a checkpoint file
+    // if (level == 0)
+    //   {
+    // 	if (do_spray_particles == 1)
+    // 	  {
+    // 	    // TODO: Would be nice to be able to use file_name_digits
+    // 	    // instead of doing this
+    // 	    int strlen = dir.length();
+    // 	    // Remove the ".temp" from the directory
+    // 	    std::string dirout = dir.substr(0, strlen-5);
+    // 	    size_t num_start_loc = dirout.find_last_not_of("0123456789") + 1;
+    // 	    std::string fname = "spray" + dirout.substr(num_start_loc, strlen) + ".p3d";
+    // 	    theSprayPC()->WriteAsciiFile(fname);
+    // 	  }
+    //   }
   }
 #endif
 
@@ -1090,19 +1093,31 @@ PeleC::writePlotFile (const std::string& dir,
 
     if (PeleC::theSprayPC())
     {
-       Vector<std::string> real_comp_names;
+       Vector<std::string> real_comp_names(n_pstate);
+       AMREX_D_TERM(real_comp_names[pstate_vel] = "xvel";,
+		    real_comp_names[pstate_vel+1] = "yvel";,
+		    real_comp_names[pstate_vel+2] = "zvel";);
+       real_comp_names[pstate_T] = "temperature";
+       real_comp_names[pstate_dia] = "diam";
+       real_comp_names[pstate_rho] = "density";
+       real_comp_names[pstate_spc] = "fuel_mf"; // TODO: This will need to allow multiple fuels eventually
        Vector<std::string>  int_comp_names;
-       real_comp_names.push_back("xvel");
-       real_comp_names.push_back("yvel");
-#if (BL_SPACEDIM > 2)
-   real_comp_names.push_back("zvel");
-#endif
-       real_comp_names.push_back("temp");
-       real_comp_names.push_back("diam");
-       real_comp_names.push_back("density");
-//     real_comp_names.push_back("mass_frac");
 
        PeleC::theSprayPC()->Checkpoint(dir,"PC",is_checkpoint,real_comp_names,int_comp_names);
+       if (level == 0)
+	 {
+	   if (do_spray_particles == 1)
+	     {
+	       // TODO: Would be nice to be able to use file_name_digits
+	       // instead of doing this
+	       int strlen = dir.length();
+	       // Remove the ".temp" from the directory
+	       std::string dirout = dir.substr(0, strlen-5);
+	       size_t num_start_loc = dirout.find_last_not_of("0123456789") + 1;
+	       std::string fname = "spray" + dirout.substr(num_start_loc, strlen) + ".p3d";
+	       theSprayPC()->WriteAsciiFile(fname);
+	     }
+	 }
     }
 #endif
 }
