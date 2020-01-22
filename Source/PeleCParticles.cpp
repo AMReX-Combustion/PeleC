@@ -15,15 +15,6 @@ namespace
 {
     bool virtual_particles_set = false;
 
-    std::string ascii_particle_file;
-    std::string binary_particle_file;
-
-    const std::string chk_particle_file("Spray");
-
-    //
-    // We want to call this routine when on exit to clean up particles.
-    //
-
     //
     // Containers for the real "active" Particles
     //
@@ -357,7 +348,7 @@ PeleC::particle_post_restart (const std::string& restart_file, bool is_checkpoin
         //
         amrex::ExecOnFinalize(RemoveParticlesOnExit);
 
-        theSprayPC()->Restart(parent->theRestartFile(), chk_particle_file, is_checkpoint);
+        theSprayPC()->Restart(parent->theRestartFile(), "particles", is_checkpoint);
     }
 }
 

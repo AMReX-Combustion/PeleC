@@ -134,6 +134,9 @@ else
 endif
 
 ifeq ($(USE_PARTICLES), TRUE)
+  ifneq ($(Eos_dir), Fuego)
+       $(error Eos_dir must be Fuego to use spray particles)
+  endif
   DEFINES+=-DAMREX_PARTICLES
   Pdirs += Particle
 endif

@@ -498,6 +498,9 @@ PeleC::PeleC ()
   ,mms_src_evaluated(false)
 #endif
 {
+#ifdef AMREX_PARTICLES
+  define_particles();
+#endif
 #ifdef SOOT_MODEL
   soot_model->define();
 #endif

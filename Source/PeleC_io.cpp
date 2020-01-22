@@ -283,7 +283,7 @@ PeleC::checkPoint(const std::string& dir,
 
   if (PeleC::theSprayPC())
   {
-    PeleC::theSprayPC()->Checkpoint(dir,"Spray",
+    PeleC::theSprayPC()->Checkpoint(dir,"particles",
 				    is_checkpoint,real_comp_names,int_comp_names);
     // Here we write ascii information every time we write a checkpoint file
     // if (level == 0)
@@ -1103,7 +1103,7 @@ PeleC::writePlotFile (const std::string& dir,
        real_comp_names[pstate_spc] = "fuel_mf"; // TODO: This will need to allow multiple fuels eventually
        Vector<std::string>  int_comp_names;
 
-       PeleC::theSprayPC()->Checkpoint(dir,"PC",is_checkpoint,real_comp_names,int_comp_names);
+       PeleC::theSprayPC()->Checkpoint(dir,"particles",is_checkpoint,real_comp_names,int_comp_names);
        if (level == 0)
 	 {
 	   if (do_spray_particles == 1)
