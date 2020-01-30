@@ -127,12 +127,6 @@ PeleC::react_state(Real time, Real dt, bool react_init, MultiFab* A_aux)
             }
             else
             {
-                //right now hard-coding number of substeps when doing explicit 
-                //reaction update. This will be changed later to an adaptive RK
-                //approach and will no longer be used.
-                int nsubsteps_min=20;
-                int nsubsteps_max=200;
-                int nsubsteps_guess=100;
 
                 pc_react_state_expl(ARLIM_3D(bx.loVect()), ARLIM_3D(bx.hiVect()),
                         uold.dataPtr(),  ARLIM_3D(uold.loVect()),  ARLIM_3D(uold.hiVect()),
