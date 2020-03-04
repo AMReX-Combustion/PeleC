@@ -260,6 +260,8 @@ bcnormal(
   }
 }
 
+void pc_prob_close();
+
 using ProblemTags = EmptyProbTagStruct;
 using ProblemDerives = EmptyProbDeriveStruct;
 
