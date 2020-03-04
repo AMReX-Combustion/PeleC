@@ -530,8 +530,8 @@ PeleC::getMOLSrcTerm(
 
           if (fr_as_crse) {
             fr_as_crse->CrseAdd(
-              mfi, {D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dxD.data(), dt,
-              vfrac[mfi],
+              mfi, {D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dxD.data(),
+              dt, vfrac[mfi],
               {D_DECL(
                 &((*areafrac[0])[mfi]), &((*areafrac[1])[mfi]),
                 &((*areafrac[2])[mfi]))},
@@ -545,8 +545,8 @@ PeleC::getMOLSrcTerm(
 
           if (fr_as_fine) {
             fr_as_fine->FineAdd(
-              mfi, {D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dxD.data(), dt,
-              vfrac[mfi],
+              mfi, {D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dxD.data(),
+              dt, vfrac[mfi],
               {D_DECL(
                 &((*areafrac[0])[mfi]), &((*areafrac[1])[mfi]),
                 &((*areafrac[2])[mfi]))},
@@ -583,14 +583,14 @@ PeleC::getMOLSrcTerm(
 
         if (level < parent->finestLevel()) {
           getFluxReg(level + 1).CrseAdd(
-            mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dxD.data(),
-            dt, run);
+            mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])},
+            dxD.data(), dt, run);
         }
 
         if (level > 0) {
           getFluxReg(level).FineAdd(
-            mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dxD.data(),
-            dt, run);
+            mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])},
+            dxD.data(), dt, run);
         }
       }
 

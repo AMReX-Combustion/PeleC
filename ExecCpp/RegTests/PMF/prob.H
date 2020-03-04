@@ -24,7 +24,8 @@ pmf(
   int lo_loside = 0, lo_hiside = 0;
   int hi_loside = 0, hi_hiside = 0;
   int loside = 0, hiside = 0;
-  amrex::Real ylo = 0.0, yhi = 0.0, x1 = 0.0, y1 = 0.0, x2 = 0.0, y2 = 0.0, dydx = 0.0;
+  amrex::Real ylo = 0.0, yhi = 0.0, x1 = 0.0, y1 = 0.0, x2 = 0.0, y2 = 0.0,
+              dydx = 0.0;
 
   if (ProbParm::pmf_do_average) {
     lo_loside = 0;
@@ -111,7 +112,8 @@ pmf(
     if (loside == -1) {
       for (int i = 0; i < ProbParm::pmf_N - 1; i++) {
         if (
-          (xmid >= ProbParm::d_pmf_X[i]) && (xmid <= ProbParm::d_pmf_X[i + 1])) {
+          (xmid >= ProbParm::d_pmf_X[i]) &&
+          (xmid <= ProbParm::d_pmf_X[i + 1])) {
           loside = i;
           hiside = i + 1;
         }

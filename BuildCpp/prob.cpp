@@ -164,8 +164,10 @@ init_bc()
   ProbParm::d_fuel_state = ProbParm::fuel_state.dataPtr();
 }
 
-void pc_prob_close()
-{}
+void
+pc_prob_close()
+{
+}
 
 extern "C" {
 void

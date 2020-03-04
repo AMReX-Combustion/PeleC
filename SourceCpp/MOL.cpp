@@ -189,133 +189,133 @@ PeleC::pc_compute_hyp_mol_flux(
 
   const amrex::Real captured_eb_small_vfrac = eb_small_vfrac;
   amrex::ParallelFor(nebflux, [=] AMREX_GPU_DEVICE(int L) {
-      const int i = ebg[L].iv[0];
-      const int j = ebg[L].iv[1];
-      const int k = ebg[L].iv[2];
-      amrex::Real qtempl[5 + NUM_SPECIES] = {0.0};
-      amrex::Real qtempr[5 + NUM_SPECIES] = {0.0};
-      amrex::Real cavg = 0.0, csmall = 0.0, cspeed = 0.0, rhoe_l = 0.0,
-                  gamc_l = 0.0;
-      amrex::Real spl[NUM_SPECIES] = {0.0};
-      amrex::Real flux_tmp[NVAR] = {0.0};
-      amrex::Real ebnorm[AMREX_SPACEDIM] = {AMREX_D_DECL(
-        ebg[L].eb_normal[0], ebg[L].eb_normal[1], ebg[L].eb_normal[2])};
-      const amrex::Real ebnorm_mag = std::sqrt(
-        ebnorm[0] * ebnorm[0] + ebnorm[1] * ebnorm[1] + ebnorm[2] * ebnorm[2]);
-      for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-        ebnorm[dir] /= ebnorm_mag;
-      }
-      if (is_inside(i, j, k, lo, hi, nextra)) {
-        if (vfrac(i, j, k) < captured_eb_small_vfrac) {
-          amrex::Real sum_kappa = 0.0, sum_nbrs_qc = 0.0,
-                      sum_nbrs_qcsmall = 0.0, sum_nbrs_qu = 0.0,
-                      sum_nbrs_qv = 0.0, sum_nbrs_qw = 0.0, sum_nbrs_qp = 0.0,
-                      sum_nbrs_qr = 0.0, sum_nbrs_sp[NUM_SPECIES] = {0.0};
-          for (int ii = -1; ii <= 1; ii++) {
-            for (int jj = -1; jj <= 1; jj++) {
-              for (int kk = -1; kk <= 1; kk++) {
-                int nbr = flags(i, j, k).isConnected(ii, jj, kk);
-                if ((ii == 0) and (jj == 0) and (kk == 0)) {
-                  nbr = 0;
-                }
-                sum_kappa += nbr * vfrac(i + ii, j + jj, k + kk);
-                sum_nbrs_qc += nbr * vfrac(i + ii, j + jj, k + kk) *
-                               qaux(i + ii, j + jj, k + kk, QC);
-                sum_nbrs_qcsmall += nbr * vfrac(i + ii, j + jj, k + kk) *
-                                    qaux(i + ii, j + jj, k + kk, QCSML);
-                sum_nbrs_qu += nbr * vfrac(i + ii, j + jj, k + kk) *
-                               q(i + ii, j + jj, k + kk, QU);
-                sum_nbrs_qv += nbr * vfrac(i + ii, j + jj, k + kk) *
-                               q(i + ii, j + jj, k + kk, QV);
-                sum_nbrs_qw += nbr * vfrac(i + ii, j + jj, k + kk) *
-                               q(i + ii, j + jj, k + kk, QW);
-                sum_nbrs_qp += nbr * vfrac(i + ii, j + jj, k + kk) *
-                               q(i + ii, j + jj, k + kk, QPRES);
-                sum_nbrs_qr += nbr * vfrac(i + ii, j + jj, k + kk) *
-                               q(i + ii, j + jj, k + kk, QRHO);
-                for (int n = 0; n < NUM_SPECIES; n++) {
-                  sum_nbrs_sp[n] += nbr * vfrac(i + ii, j + jj, k + kk) *
-                                    q(i + ii, j + jj, k + kk, QFS + n);
-                }
+    const int i = ebg[L].iv[0];
+    const int j = ebg[L].iv[1];
+    const int k = ebg[L].iv[2];
+    amrex::Real qtempl[5 + NUM_SPECIES] = {0.0};
+    amrex::Real qtempr[5 + NUM_SPECIES] = {0.0};
+    amrex::Real cavg = 0.0, csmall = 0.0, cspeed = 0.0, rhoe_l = 0.0,
+                gamc_l = 0.0;
+    amrex::Real spl[NUM_SPECIES] = {0.0};
+    amrex::Real flux_tmp[NVAR] = {0.0};
+    amrex::Real ebnorm[AMREX_SPACEDIM] = {AMREX_D_DECL(
+      ebg[L].eb_normal[0], ebg[L].eb_normal[1], ebg[L].eb_normal[2])};
+    const amrex::Real ebnorm_mag = std::sqrt(
+      ebnorm[0] * ebnorm[0] + ebnorm[1] * ebnorm[1] + ebnorm[2] * ebnorm[2]);
+    for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
+      ebnorm[dir] /= ebnorm_mag;
+    }
+    if (is_inside(i, j, k, lo, hi, nextra)) {
+      if (vfrac(i, j, k) < captured_eb_small_vfrac) {
+        amrex::Real sum_kappa = 0.0, sum_nbrs_qc = 0.0, sum_nbrs_qcsmall = 0.0,
+                    sum_nbrs_qu = 0.0, sum_nbrs_qv = 0.0, sum_nbrs_qw = 0.0,
+                    sum_nbrs_qp = 0.0, sum_nbrs_qr = 0.0,
+                    sum_nbrs_sp[NUM_SPECIES] = {0.0};
+        for (int ii = -1; ii <= 1; ii++) {
+          for (int jj = -1; jj <= 1; jj++) {
+            for (int kk = -1; kk <= 1; kk++) {
+              int nbr = flags(i, j, k).isConnected(ii, jj, kk);
+              if ((ii == 0) and (jj == 0) and (kk == 0)) {
+                nbr = 0;
+              }
+              sum_kappa += nbr * vfrac(i + ii, j + jj, k + kk);
+              sum_nbrs_qc += nbr * vfrac(i + ii, j + jj, k + kk) *
+                             qaux(i + ii, j + jj, k + kk, QC);
+              sum_nbrs_qcsmall += nbr * vfrac(i + ii, j + jj, k + kk) *
+                                  qaux(i + ii, j + jj, k + kk, QCSML);
+              sum_nbrs_qu += nbr * vfrac(i + ii, j + jj, k + kk) *
+                             q(i + ii, j + jj, k + kk, QU);
+              sum_nbrs_qv += nbr * vfrac(i + ii, j + jj, k + kk) *
+                             q(i + ii, j + jj, k + kk, QV);
+              sum_nbrs_qw += nbr * vfrac(i + ii, j + jj, k + kk) *
+                             q(i + ii, j + jj, k + kk, QW);
+              sum_nbrs_qp += nbr * vfrac(i + ii, j + jj, k + kk) *
+                             q(i + ii, j + jj, k + kk, QPRES);
+              sum_nbrs_qr += nbr * vfrac(i + ii, j + jj, k + kk) *
+                             q(i + ii, j + jj, k + kk, QRHO);
+              for (int n = 0; n < NUM_SPECIES; n++) {
+                sum_nbrs_sp[n] += nbr * vfrac(i + ii, j + jj, k + kk) *
+                                  q(i + ii, j + jj, k + kk, QFS + n);
               }
             }
           }
-          qtempl[R_UN] = 0.0;
-          qtempl[R_UN] -= (sum_nbrs_qu * ebnorm[0] + sum_nbrs_qv * ebnorm[1] +
-                           sum_nbrs_qw * ebnorm[2]) /
-                          sum_kappa;
-          qtempl[R_UT1] = 0.0;
-          qtempl[R_UT2] = 0.0;
-          qtempl[R_P] = sum_nbrs_qp / sum_kappa;
-          qtempl[R_RHO] = sum_nbrs_qr / sum_kappa;
-          for (int n = 0; n < NUM_SPECIES; n++) {
-            qtempl[R_Y + n] = sum_nbrs_sp[n] / sum_kappa;
-          }
-          cavg = sum_nbrs_qc / sum_kappa;
-          csmall = sum_nbrs_qcsmall / sum_kappa;
-          cspeed = cavg;
-
-          // Flip the velocity about the normal for the right state - will use
-          // left state for remainder of right state
-          qtempr[R_UN] = -1.0 * qtempl[R_UN];
-
-        } else {
-          // Assume left state is the cell centered state - normal velocity
-          qtempl[R_UN] =
-            -(q(i, j, k, QU) * ebnorm[0] + q(i, j, k, QV) * ebnorm[1] +
-              q(i, j, k, QW) * ebnorm[2]);
-          qtempl[R_UT1] = 0.0;
-          qtempl[R_UT2] = 0.0;
-          qtempl[R_P] = q(i, j, k, QPRES);
-          qtempl[R_RHO] = q(i, j, k, QRHO);
-          for (int n = 0; n < NUM_SPECIES; n++) {
-            qtempl[R_Y + n] = q(i, j, k, QFS + n);
-          }
-          cavg = qaux(i, j, k, QC);
-          csmall = qaux(i, j, k, QCSML);
-          cspeed = qaux(i, j, k, QC);
-
-          // Flip the velocity about the normal for the right state - will use
-          // left  state for remainder of right state
-          qtempr[R_UN] = -1.0 * qtempl[R_UN];
         }
-
-        amrex::Real eos_state_rho = qtempl[R_RHO];
-        amrex::Real eos_state_p = qtempl[R_P];
+        qtempl[R_UN] = 0.0;
+        qtempl[R_UN] -= (sum_nbrs_qu * ebnorm[0] + sum_nbrs_qv * ebnorm[1] +
+                         sum_nbrs_qw * ebnorm[2]) /
+                        sum_kappa;
+        qtempl[R_UT1] = 0.0;
+        qtempl[R_UT2] = 0.0;
+        qtempl[R_P] = sum_nbrs_qp / sum_kappa;
+        qtempl[R_RHO] = sum_nbrs_qr / sum_kappa;
         for (int n = 0; n < NUM_SPECIES; n++) {
-          spl[n] = qtempl[R_Y + n];
+          qtempl[R_Y + n] = sum_nbrs_sp[n] / sum_kappa;
         }
-        amrex::Real eos_state_e;
-        EOS::rhopY2e(eos_state_rho, spl, eos_state_p, eos_state_e);
-        rhoe_l = eos_state_rho * eos_state_e;
-        EOS::get_gamma(eos_state_e, gamc_l);
+        cavg = sum_nbrs_qc / sum_kappa;
+        csmall = sum_nbrs_qcsmall / sum_kappa;
+        cspeed = cavg;
+
+        // Flip the velocity about the normal for the right state - will use
+        // left state for remainder of right state
+        qtempr[R_UN] = -1.0 * qtempl[R_UN];
+
+      } else {
+        // Assume left state is the cell centered state - normal velocity
+        qtempl[R_UN] =
+          -(q(i, j, k, QU) * ebnorm[0] + q(i, j, k, QV) * ebnorm[1] +
+            q(i, j, k, QW) * ebnorm[2]);
+        qtempl[R_UT1] = 0.0;
+        qtempl[R_UT2] = 0.0;
+        qtempl[R_P] = q(i, j, k, QPRES);
+        qtempl[R_RHO] = q(i, j, k, QRHO);
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          qtempl[R_Y + n] = q(i, j, k, QFS + n);
+        }
+        cavg = qaux(i, j, k, QC);
+        csmall = qaux(i, j, k, QCSML);
+        cspeed = qaux(i, j, k, QC);
+
+        // Flip the velocity about the normal for the right state - will use
+        // left  state for remainder of right state
+        qtempr[R_UN] = -1.0 * qtempl[R_UN];
       }
 
-      if (is_inside(i, j, k, lo, hi, nextra - 1)) {
-        amrex::Real tmp0, tmp1, tmp2, tmp3, tmp4, ustar = 0.0;
-        riemann(
-          qtempl[R_RHO], qtempl[R_UN], qtempl[R_UT1], qtempl[R_UT2],
-          qtempl[R_P], rhoe_l, spl, gamc_l, qtempl[R_RHO], qtempr[R_UN],
-          qtempl[R_UT1], qtempl[R_UT2], qtempl[R_P], rhoe_l, spl, gamc_l,
-          bc_test_val, csmall, cavg, ustar, flux_tmp[URHO], flux_tmp[UMX],
-          flux_tmp[UMY], flux_tmp[UMZ], flux_tmp[UEDEN], flux_tmp[UEINT], tmp0,
-          tmp1, tmp2, tmp3, tmp4);
-
-        flux_tmp[UMY] = -flux_tmp[UMX] * ebnorm[1];
-        flux_tmp[UMZ] = -flux_tmp[UMX] * ebnorm[2];
-        flux_tmp[UMX] = -flux_tmp[UMX] * ebnorm[0];
-
-        // Compute species flux like passive scalar from intermediate state
-        for (int n = 0; n < NUM_SPECIES; n++) {
-          flux_tmp[UFS + n] = flux_tmp[URHO] * qtempl[R_Y + n];
-        }
-
-        // Copy result into ebflux vector. Being a bit chicken here and only
-        // copy values where ebg % iv is within box
-        for (int n = 0; n < NVAR; n++) {
-          ebflux[n * nebflux + L] += flux_tmp[n] * ebg[L].eb_area * full_area;
-        }
+      amrex::Real eos_state_rho = qtempl[R_RHO];
+      amrex::Real eos_state_p = qtempl[R_P];
+      for (int n = 0; n < NUM_SPECIES; n++) {
+        spl[n] = qtempl[R_Y + n];
       }
+      amrex::Real eos_state_e;
+      EOS::rhopY2e(eos_state_rho, spl, eos_state_p, eos_state_e);
+      rhoe_l = eos_state_rho * eos_state_e;
+      EOS::get_gamma(eos_state_e, gamc_l);
+    }
+
+    if (is_inside(i, j, k, lo, hi, nextra - 1)) {
+      amrex::Real tmp0, tmp1, tmp2, tmp3, tmp4, ustar = 0.0;
+      riemann(
+        qtempl[R_RHO], qtempl[R_UN], qtempl[R_UT1], qtempl[R_UT2], qtempl[R_P],
+        rhoe_l, spl, gamc_l, qtempl[R_RHO], qtempr[R_UN], qtempl[R_UT1],
+        qtempl[R_UT2], qtempl[R_P], rhoe_l, spl, gamc_l, bc_test_val, csmall,
+        cavg, ustar, flux_tmp[URHO], flux_tmp[UMX], flux_tmp[UMY],
+        flux_tmp[UMZ], flux_tmp[UEDEN], flux_tmp[UEINT], tmp0, tmp1, tmp2, tmp3,
+        tmp4);
+
+      flux_tmp[UMY] = -flux_tmp[UMX] * ebnorm[1];
+      flux_tmp[UMZ] = -flux_tmp[UMX] * ebnorm[2];
+      flux_tmp[UMX] = -flux_tmp[UMX] * ebnorm[0];
+
+      // Compute species flux like passive scalar from intermediate state
+      for (int n = 0; n < NUM_SPECIES; n++) {
+        flux_tmp[UFS + n] = flux_tmp[URHO] * qtempl[R_Y + n];
+      }
+
+      // Copy result into ebflux vector. Being a bit chicken here and only
+      // copy values where ebg % iv is within box
+      for (int n = 0; n < NVAR; n++) {
+        ebflux[n * nebflux + L] += flux_tmp[n] * ebg[L].eb_area * full_area;
+      }
+    }
   });
 #endif
 }

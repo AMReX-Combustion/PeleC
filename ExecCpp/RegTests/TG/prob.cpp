@@ -18,8 +18,10 @@ AMREX_GPU_DEVICE_MANAGED amrex::Real rho0 = 0.0;
 AMREX_GPU_DEVICE_MANAGED amrex::Real v0 = 0.0;
 } // namespace ProbParm
 
-void pc_prob_close()
-{}
+void
+pc_prob_close()
+{
+}
 
 extern "C" {
 void

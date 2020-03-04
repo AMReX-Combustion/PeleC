@@ -79,9 +79,9 @@ PeleC::initialize_eb2_structs()
   int bgs = -1;
   pp.get("boundary_grad_stencil_type", bgs);
 
-  #ifdef _OPENMP
-  #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
-  #endif
+#ifdef _OPENMP
+#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
+#endif
   for (amrex::MFIter mfi(vfrac, false); mfi.isValid(); ++mfi) {
     amrex::BaseFab<int>& mfab = ebmask[mfi];
     const amrex::Box tbox = mfi.growntilebox();
@@ -213,9 +213,9 @@ PeleC::initialize_eb2_structs()
         fbox[dir].grow(dir1, 1);
     }
 
-    #ifdef _OPENMP
-    #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
-    #endif
+#ifdef _OPENMP
+#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
+#endif
     for (amrex::MFIter mfi(vfrac, false); mfi.isValid(); ++mfi) {
       const amrex::Box tbox = mfi.growntilebox(nGrowTr);
       const auto& flagfab = flags[mfi];
