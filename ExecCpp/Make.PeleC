@@ -1,0 +1,127 @@
+PELEC_HOME        ?= ../
+PELE_PHYSICS_HOME ?= $(PELEC_HOME)/Submodules/PelePhysics
+AMREX_HOME        ?= $(PELEC_HOME)/Submodules/AMReX
+
+TOP := $(PELEC_HOME)
+
+EBASE = PeleC
+
+# EXTERN_CORE is simply a list of the directories we use in Eos, Reactions, Transport and Util
+# this list will be searched for runtime parameters
+EXTERN_CORE ?=
+
+# Ignore loops not vectorizing in amrex
+ifeq ($(COMP), llvm)
+  DEFINES += -Wno-pass-failed
+endif
+
+#Turn off all fortran in amrex
+ifneq ($(USE_MASA), TRUE)
+  BL_NO_FORT = TRUE
+endif
+
+include $(AMREX_HOME)/Tools/GNUMake/Make.defs
+
+# PeleC uses a coarse grained OMP approach
+DEFINES += -DCRSEGRNDOMP
+
+ifeq ($(USE_REACT), TRUE)
+  DEFINES += -DPELEC_USE_REACTIONS
+endif
+
+# Currently the code path requires the explicit reaction path because it works on the GPU and CPU
+ifeq ($(USE_EXPLICIT_REACT), TRUE)
+  DEFINES += -DPELEC_USE_EXPLICIT_REACT
+endif
+
+all: $(executable) 
+	$(SILENT) $(RM) AMReX_buildInfo.cpp
+	@echo SUCCESS
+
+# EOS
+ifeq ($(Eos_dir),$(filter $(Eos_dir),Fuego))
+  DEFINES += -DPELEC_EOS_FUEGO
+  TRANSPORT_TYPE := IDEAL_GAS
+else
+  ifeq ($(Eos_dir), GammaLaw)
+    DEFINES += -DPELEC_EOS_GAMMA
+    TRANSPORT_TYPE := IDEAL_GAS
+  else
+    TRANSPORT_TYPE := REAL_GAS
+  endif
+endif
+
+# Reactions
+REACTIONS_HOME     = $(PELEC_HOME)/SourceCpp/Chemistry
+EXTERN_CORE       += $(REACTIONS_HOME)
+INCLUDE_LOCATIONS += $(REACTIONS_HOME)
+VPATH_LOCATIONS   += $(REACTIONS_HOME)
+ifdef Chemistry_Model
+  USE_FUEGO = TRUE
+  CHEM_HOME = $(PELEC_HOME)/SourceCpp/Chemistry/$(Chemistry_Model)
+  VPATH_LOCATIONS += $(CHEM_HOME)
+  Bpack += $(CHEM_HOME)/Make.package
+  Blocs += $(CHEM_HOME)
+  Blocs += $(PELE_PHYSICS_HOME)/Support/Fuego/Evaluation
+else
+  CHEM_HOME = $(PELEC_HOME)/SourceCpp/Chemistry/Null
+  VPATH_LOCATIONS += $(CHEM_HOME)
+  Bpack += $(CHEM_HOME)/Make.package
+  Blocs += $(CHEM_HOME)
+endif
+
+# Transport
+ifeq ($(Transport_dir), Simple)
+  DEFINES += -DSIMPLE_TRANSPORT
+endif
+ifeq ($(Transport_dir), Constant)
+  DEFINES += -DCONSTANT_TRANSPORT
+endif
+
+Bdirs := SourceCpp SourceCpp/Params/param_includes
+
+Pdirs := Base Amr Boundary AmrCore
+ifeq ($(USE_EB), TRUE)
+  Pdirs += EB
+endif
+
+Bpack += $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir)/Make.package)
+Blocs += $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir))
+
+Bpack += $(foreach dir, $(Bdirs), $(TOP)/$(dir)/Make.package)
+Blocs += $(foreach dir, $(Bdirs), $(TOP)/$(dir))
+
+$(info $${Blocs} is [${Blocs}])
+
+include $(Bpack)
+
+INCLUDE_LOCATIONS += $(Blocs)
+VPATH_LOCATIONS   += $(Blocs)
+
+CEXE_sources += AMReX_buildInfo.cpp
+CEXE_headers += $(AMREX_HOME)/Tools/C_scripts/AMReX_buildInfo.H
+INCLUDE_LOCATIONS += $(AMREX_HOME)/Tools/C_scripts
+
+ifdef Chemistry_Model
+  MNAMES += CHEMISTRY=$(Chemistry_Model)
+endif
+
+AMReX_buildInfo.cpp:
+	$(AMREX_HOME)/Tools/C_scripts/makebuildinfo_C.py \
+          --amrex_home "$(AMREX_HOME)" \
+          --COMP "$(COMP)" --COMP_VERSION "$(COMP_VERSION)" \
+          --FCOMP "$(FCOMP)" --FCOMP_VERSION "$(FCOMP_VERSION)" \
+          --MODULES "$(MNAMES)" \
+          --GIT "$(TOP) $(AMREX_HOME) $(PELE_PHYSICS_HOME)"
+
+include $(AMREX_HOME)/Tools/GNUMake/Make.rules
+
+clean::
+	$(SILENT) $(RM) extern.f90
+	$(SILENT) $(RM) AMReX_buildInfo.cpp
+
+#-----------------------------------------------------------------------------
+# for debugging.  To see the value of a Makefile variable,
+# e.g. Fmlocs, simply do "make print-Fmlocs".  This will
+# print out the value.
+print-%: ; @echo $* is $($*) ; $(SILENT) $(RM) AMReX_buildInfo.cpp
