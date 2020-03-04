@@ -1,6 +1,6 @@
 target_sources(${pelec_exe_name}
    PRIVATE
-      chemistry_file.h
+      chemistry_file.H
       mechanism.h
       mechanism.cpp
    )
