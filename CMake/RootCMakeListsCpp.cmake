@@ -10,11 +10,17 @@ include(CMakePackageConfigHelpers)
 #General options for the project
 option(PELEC_ENABLE_MASA "Enable MASA for MMS" OFF)
 option(PELEC_ENABLE_EB "Enable EB" OFF)
+option(PELEC_ENABLE_PARTICLES "Enable particles" OFF)
 option(PELEC_ENABLE_ALL_WARNINGS "Enable all compiler warnings" OFF)
+option(PELEC_ENABLE_TESTING "Enable regression tests" OFF)
+option(PELEC_ENABLE_VERIFICATION "Enable verification tests" OFF)
+option(PELEC_ENABLE_FCOMPARE "Enable building fcompare when not testing" OFF)
+option(PELEC_TEST_WITH_FCOMPARE "Check test plots against gold files" OFF)
 
 #Options for the executable
 option(PELEC_ENABLE_MPI "Enable MPI" OFF)
 option(PELEC_ENABLE_OPENMP "Enable OpenMP" OFF)
+option(PELEC_ENABLE_CUDA "Enable CUDA" OFF)
 
 #Options for C++
 set(CMAKE_CXX_STANDARD 14)
@@ -28,11 +34,31 @@ set(pelec_unit_test_exe_name "${pelec_exe_name}_unit_tests")
 #Create main target executable
 add_executable(${pelec_exe_name} "")
 
+if(PELEC_ENABLE_TESTS)
+  set(PELEC_ENABLE_MPI ON)
+  #set(PELEC_ENABLE_MASA ON)
+  if(PELEC_TEST_WITH_FCOMPARE)
+    set(PELEC_ENABLE_FCOMPARE ON)
+  endif()
+endif()
+
+if(PELEC_ENABLE_VERIFICATION AND NOT PELEC_ENABLE_TESTS)
+  message(FATAL_ERROR "-- Testing must be on to enable verification suite")
+endif()
+
+if(PELEC_ENABLE_VERIFICATION)
+  message(STATUS "Warning: Verification tests expect a specific Python environment and take a long time to run")
+endif()
+
 ########################### AMReX #####################################
 
 set(AMREX_SUBMOD_LOCATION "Submodules/AMReX")
 include(${CMAKE_SOURCE_DIR}/CMake/SetAmrexOptions.cmake)
 add_subdirectory(${AMREX_SUBMOD_LOCATION})
+
+if(PELEC_ENABLE_FCOMPARE OR PELEC_TEST_WITH_FCOMPARE)
+  add_subdirectory(${AMREX_SUBMOD_LOCATION}/Tools/Plotfile)
+endif()
 
 ########################### MASA #####################################
 
@@ -87,6 +113,16 @@ add_dependencies(${pelec_exe_name} generate_build_info_${pelec_exe_name})
 
 #Build pelec and link to amrex library
 add_subdirectory(SourceCpp)
+
+if(PELEC_ENABLE_TESTS)
+  enable_testing()
+  include(CTest)
+  add_subdirectory(TestingCpp)
+endif()
+
+if(PELEC_ENABLE_DOCUMENTATION)
+   add_subdirectory(Docs)
+endif()
 
 #Define what we want to be installed during a make install 
 install(TARGETS ${pelec_exe_name}

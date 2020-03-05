@@ -73,7 +73,8 @@ before_script:
   # have CMake to generate build files
   - cd "${TRAVIS_BUILD_DIR}"
   - mkdir build && cd build
-  - cmake -DCMAKE_INSTALL_PREFIX:PATH=./install -DCMAKE_BUILD_TYPE:STRING=$BUILD_TYPE -DPELEC_ENABLE_MPI:BOOL=ON -DCMAKE_CXX_COMPILER:STRING=$MPI_CXX_COMPILER -DCMAKE_C_COMPILER:STRING=$MPI_C_COMPILER -DCMAKE_Fortran_COMPILER:STRING=$MPI_Fortran_COMPILER -DENABLE_TESTS:BOOL=ON -DTEST_WITH_FEXTREMA:BOOL=ON -DPELEC_ENABLE_MASA:BOOL=ON -DMASA_DIR:STRING=${MASA_ROOT_DIR} -DENABLE_VERIFICATION:BOOL=ON ..
+  - cp ../BuildCpp/prob* . && cp ../BuildCpp/extra_sources.cmake .
+  - cmake -DCMAKE_INSTALL_PREFIX:PATH=./install -DCMAKE_BUILD_TYPE:STRING=$BUILD_TYPE -DPELEC_ENABLE_MPI:BOOL=ON -DCMAKE_CXX_COMPILER:STRING=$MPI_CXX_COMPILER -DCMAKE_C_COMPILER:STRING=$MPI_C_COMPILER -DCMAKE_Fortran_COMPILER:STRING=$MPI_Fortran_COMPILER -DENABLE_TESTS:BOOL=ON -DPELEC_ENABLE_MASA:BOOL=ON -DPELEC_USE_CPP:BOOL=ON -DMASA_DIR:STRING=${MASA_ROOT_DIR} -DENABLE_VERIFICATION:BOOL=ON ..
 
 script:
   # Build the tests and run tests only if built successfully
@@ -81,4 +82,4 @@ script:
   # - ctest --output-on-failure -j${JOBS}
   # But really we only get 50 min on Travis CI and building the tests
   # takes 28 min so we exclude some longer running tests
-  - cmake --build . -- -j${JOBS} && ctest --output-on-failure -j${JOBS} -E "(fiab-3d|cns_no_amr_mol_3d|cns_no_amr_3d|cns_les_no_amr_3d)"
+  - cmake --build . -- -j${JOBS} && ctest --output-on-failure -j${JOBS}
