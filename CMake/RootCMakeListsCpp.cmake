@@ -32,11 +32,7 @@ if(PELEC_ENABLE_REACTIONS)
 endif()
 
 #Create target names
-set(pelec_exe_name "pelec")
-set(pelec_unit_test_exe_name "${pelec_exe_name}_unit_tests")
-
-#Create main target executable
-add_executable(${pelec_exe_name} "")
+set(pelec_unit_test_exe_name "pelec_unit_tests")
 
 if(PELEC_ENABLE_TESTS)
   set(PELEC_ENABLE_MPI ON)
@@ -71,11 +67,6 @@ if(PELEC_ENABLE_MASA)
   find_package(MASA QUIET REQUIRED)
   if(MASA_FOUND)
     message(STATUS "Found MASA = ${MASA_DIR}")
-    #Link our executable to the MASA libraries, etc
-    target_link_libraries(${pelec_exe_name} PRIVATE ${MASA_LIBRARY})
-    target_compile_definitions(${pelec_exe_name} PRIVATE USE_MASA DO_PROBLEM_POST_TIMESTEP DO_PROBLEM_POST_INIT)
-    target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${MASA_INCLUDE_DIRS})
-    target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${MASA_MOD_DIRS})
   endif()
 endif()
 
@@ -85,11 +76,7 @@ find_package(Python REQUIRED)
 find_package(Threads REQUIRED) # Needed this for the Travis CI system
 if(PELEC_ENABLE_MPI)
   find_package(MPI REQUIRED)
-  target_link_libraries(${pelec_exe_name} PUBLIC $<$<BOOL:${MPI_CXX_FOUND}>:MPI::MPI_CXX>)
 endif()
-
-include(${CMAKE_SOURCE_DIR}/CMake/SetCompileFlags.cmake)
-include(${CMAKE_SOURCE_DIR}/CMake/SetRpath.cmake)
 
 # General information about machine, compiler, and build type
 message(STATUS "PeleC Information:")
@@ -99,11 +86,11 @@ message(STATUS "CMAKE_CXX_COMPILER_VERSION = ${CMAKE_CXX_COMPILER_VERSION}")
 message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
 
 #Create directory unique to executable to store generated files
-set(GENERATED_FILES_DIR ${CMAKE_BINARY_DIR}/generated_files/${pelec_exe_name}_generated_files)
+set(GENERATED_FILES_DIR ${CMAKE_BINARY_DIR}/generated_files)
 file(MAKE_DIRECTORY ${GENERATED_FILES_DIR})
 
 #Generate the AMReX_buildInfo.cpp file with Python
-add_custom_target(generate_build_info_${pelec_exe_name} ALL
+add_custom_target(generate_build_info ALL
    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/${AMREX_SUBMOD_LOCATION}/Tools/C_scripts/makebuildinfo_C.py
    --amrex_home "${CMAKE_SOURCE_DIR}/${AMREX_SUBMOD_LOCATION}"                        
    --COMP ${CMAKE_CXX_COMPILER_ID} --COMP_VERSION ${CMAKE_CXX_COMPILER_VERSION}
@@ -112,11 +99,8 @@ add_custom_target(generate_build_info_${pelec_exe_name} ALL
    COMMENT "Generating AMReX_buildInfo.cpp"
 )                  
   
-#Set the dependencies on targets so the generated source code files are there before we try to build the executable 
-add_dependencies(${pelec_exe_name} generate_build_info_${pelec_exe_name})
-
-#Build pelec and link to amrex library
-add_subdirectory(SourceCpp)
+#Build pelec executables and link to amrex library
+add_subdirectory(ExecCpp)
 
 if(PELEC_ENABLE_TESTS)
   enable_testing()
@@ -127,9 +111,3 @@ endif()
 if(PELEC_ENABLE_DOCUMENTATION)
    add_subdirectory(Docs)
 endif()
-
-#Define what we want to be installed during a make install 
-install(TARGETS ${pelec_exe_name}
-        RUNTIME DESTINATION bin
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib)
