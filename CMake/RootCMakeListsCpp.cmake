@@ -10,7 +10,7 @@ include(CMakePackageConfigHelpers)
 #General options for the project
 option(PELEC_ENABLE_MASA "Enable MASA for MMS" OFF)
 option(PELEC_ENABLE_EB "Enable EB" OFF)
-option(PELEC_ENABLE_PARTICLES "Enable particles" OFF)
+option(PELEC_ENABLE_REACTIONS "Enable reactions" OFF)
 option(PELEC_ENABLE_ALL_WARNINGS "Enable all compiler warnings" OFF)
 option(PELEC_ENABLE_TESTING "Enable regression tests" OFF)
 option(PELEC_ENABLE_VERIFICATION "Enable verification tests" OFF)
@@ -27,6 +27,10 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if(PELEC_ENABLE_REACTIONS)
+  set(PELEC_ENABLE_EXPLICIT_REACT ON)
+endif()
+
 #Create target names
 set(pelec_exe_name "pelec")
 set(pelec_unit_test_exe_name "${pelec_exe_name}_unit_tests")
@@ -36,7 +40,7 @@ add_executable(${pelec_exe_name} "")
 
 if(PELEC_ENABLE_TESTS)
   set(PELEC_ENABLE_MPI ON)
-  #set(PELEC_ENABLE_MASA ON)
+  set(PELEC_ENABLE_MASA ON)
   if(PELEC_TEST_WITH_FCOMPARE)
     set(PELEC_ENABLE_FCOMPARE ON)
   endif()

@@ -1,7 +1,17 @@
+#Gather all other source files  
+add_subdirectory(Chemistry)
+add_subdirectory(Params)
+
 if("${PELEC_EOS_MODEL}" STREQUAL "Fuego")
-  target_sources(${pelec_exe_name} PRIVATE EOS_FUEGO.H EOS_FUEGO.cpp) 
+  add_subdirectory(EOS/Fuego)
 else()
-  target_sources(${pelec_exe_name} PRIVATE EOS_GAMMA.H EOS_GAMMA.cpp) 
+  add_subdirectory(EOS/Gamma)
+endif()
+
+if("${PELEC_TRANSPORT_MODEL}" STREQUAL "Simple")
+  add_subdirectory(Transport/Simple)
+elseif("${PELEC_TRANSPORT_MODEL}" STREQUAL "Constant")
+  add_subdirectory(Transport/Constant)
 endif()
 
 #Create the full path to the extra case-specific source files
@@ -10,10 +20,6 @@ include(${CMAKE_BINARY_DIR}/extra_sources.cmake)
 foreach(PELEC_EXTRA_SOURCE ${PELEC_EXTRA_SOURCES})
   list(APPEND MY_EXTRA_SOURCES ${PELEC_EXTRA_SOURCE})
 endforeach()
-
-#if("${PELEC_TRANSPORT_MODEL}" STREQUAL "Simple")
-#elseif("${PELEC_TRANSPORT_MODEL}" STREQUAL "Constant")
-#endif()
 
 if(PELEC_ENABLE_REACTIONS)
   target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_REACTIONS)
@@ -34,12 +40,6 @@ if(PELEC_ENABLE_EB)
   target_sources(${pelec_exe_name} PRIVATE EB.H EB.cpp InitEB.cpp SparseData.H EBStencilTypes.H)
 endif()
 
-if("${PELEC_TRANSPORT_MODEL}" STREQUAL "Simple")
-  target_sources(${pelec_exe_name} PRIVATE SimpleTransport.H SimpleTransportParams.H SimpleTransportParams.cpp)
-elseif("${PELEC_TRANSPORT_MODEL}" STREQUAL "Constant")
-  target_sources(${pelec_exe_name} PRIVATE ConstantTransport.H ConstantTransportParams.H ConstantTransportParams.cpp)
-endif()
-
 target_sources(${pelec_exe_name}
    PRIVATE
       Advance.cpp
@@ -52,8 +52,6 @@ target_sources(${pelec_exe_name}
       Diffterm.cpp
       Diffusion.H
       Diffusion.cpp
-      EOS.H
-      EOS.cpp
       External.cpp
       Filter.H
       Filter.cpp
@@ -86,8 +84,6 @@ target_sources(${pelec_exe_name}
       Tagging.cpp
       Timestep.H
       Timestep.cpp
-      Transport.H
-      Transport.cpp
       Utilities.H
       Utilities.cpp
       main.cpp
@@ -107,10 +103,6 @@ target_include_directories(${pelec_exe_name} PRIVATE ${CMAKE_BINARY_DIR})
 
 #Needed for AMReX_buildInfo.H
 target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/Submodules/AMReX/Tools/C_scripts)
-
-#Gather all other source files  
-add_subdirectory(Chemistry)
-add_subdirectory(Params)
 
 #Link to amrex library
 target_link_libraries(${pelec_exe_name} PRIVATE amrex)

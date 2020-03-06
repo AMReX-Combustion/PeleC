@@ -1,4 +1,2 @@
-CEXE_sources += EOS_Gamma.cpp
 CEXE_sources += EOS.cpp
-CEXE_headers += EOS_Gamma.H
 CEXE_headers += EOS.H
