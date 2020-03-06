@@ -70,11 +70,9 @@ Blocs += $(CHEM_HOME)
 
 # Transport
 ifeq ($(Transport_dir), Simple)
-  DEFINES += -DSIMPLE_TRANSPORT
   TRANSPORT_HOME = $(PELEC_HOME)/SourceCpp/Transport/Simple
 endif
 ifeq ($(Transport_dir), Constant)
-  DEFINES += -DCONSTANT_TRANSPORT
   TRANSPORT_HOME = $(PELEC_HOME)/SourceCpp/Transport/Constant
 endif
 EXTERN_CORE       += $(TRANSPORT_HOME)

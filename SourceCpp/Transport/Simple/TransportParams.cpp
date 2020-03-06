@@ -4,8 +4,7 @@
 
 #include "mechanism.h"
 #include "chemistry_file.H"
-
-#include "SimpleTransportParams.H"
+#include "TransportParams.H"
 
 extern "C" {
 void egtransetWT(amrex::Real* wt);

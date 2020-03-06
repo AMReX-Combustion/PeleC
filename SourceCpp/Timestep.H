@@ -10,11 +10,6 @@
 #include "EOS.H"
 #include "IndexDefines.H"
 #include "Transport.H"
-#ifdef SIMPLE_TRANSPORT
-#include "SimpleTransport.H"
-#elif CONSTANT_TRANSPORT
-#include "ConstantTransport.H"
-#endif
 
 // EstDt routines
 

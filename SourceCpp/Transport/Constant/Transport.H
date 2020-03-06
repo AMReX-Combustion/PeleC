@@ -1,5 +1,5 @@
-#ifndef _CONSTANT_TRANSPORT_H_
-#define _CONSTANT_TRANSPORT_H_
+#ifndef _TRANSPORT_H_
+#define _TRANSPORT_H_
 
 #include <cmath>
 
@@ -11,7 +11,8 @@
 
 #include "mechanism.h"
 #include "chemistry_file.H"
-#include "ConstantTransportParams.H"
+#include "TransportParams.H"
+#include "IndexDefines.H"
 
 extern "C" {
 }
@@ -54,5 +55,14 @@ pc_actual_transport(
     }
   }
 }
+
+void pc_transport_init();
+void pc_transport_close();
+
+AMREX_GPU_DEVICE
+void pc_get_transport_coeffs(
+  amrex::Box const& bx,
+  amrex::Array4<const amrex::Real> const& q,
+  amrex::Array4<amrex::Real> const& D);
 
 #endif

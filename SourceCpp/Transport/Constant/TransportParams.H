@@ -1,8 +1,10 @@
-#ifndef _CONSTANT_TRANSPORT_PARAMS_H_
-#define _CONSTANT_TRANSPORT_PARAMS_H_
+#ifndef _TRANSPORT_PARAMS_H_
+#define _TRANSPORT_PARAMS_H_
 
 #include <AMReX_REAL.H>
 #include <AMReX_GpuQualifiers.H>
+#include <AMReX_Arena.H>
+#include <AMReX_ParmParse.H>
 
 namespace transport_params {
 

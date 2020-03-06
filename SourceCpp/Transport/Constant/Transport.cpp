@@ -1,13 +1,3 @@
-#include <limits>
-#include <cmath>
-
-#ifdef SIMPLE_TRANSPORT
-#include "SimpleTransport.H"
-#elif CONSTANT_TRANSPORT
-#include "ConstantTransport.H"
-#endif
-
-#include "IndexDefines.H"
 #include "Transport.H"
 
 void

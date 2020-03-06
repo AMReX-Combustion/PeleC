@@ -1,18 +1,29 @@
-#ifndef _SIMPLE_TRANSPORT_H_
-#define _SIMPLE_TRANSPORT_H_
+#ifndef _TRANSPORT_H_
+#define _TRANSPORT_H_
 
-#include <cmath>
+//#include <limits>
+//#include <cmath>
 
+#include <AMReX.H>
+#include <AMReX_Gpu.H>
+#include <AMReX_FArrayBox.H>
 #include <AMReX_REAL.H>
 #include <AMReX_Array.H>
 #include <AMReX_GpuQualifiers.H>
-#include <AMReX.H>
-#include <AMReX_Gpu.H>
 
 #include "mechanism.h"
 #include "chemistry_file.H"
+#include "IndexDefines.H"
+#include "TransportParams.H"
 
-#include "SimpleTransportParams.H"
+void pc_transport_init();
+void pc_transport_close();
+
+AMREX_GPU_DEVICE
+void pc_get_transport_coeffs(
+  amrex::Box const& bx,
+  amrex::Array4<const amrex::Real> const& q,
+  amrex::Array4<amrex::Real> const& D);
 
 extern "C" {
 AMREX_GPU_HOST_DEVICE

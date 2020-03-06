@@ -1,5 +1,5 @@
-#ifndef _SIMPLE_TRANSPORT_PARAMS_H_
-#define _SIMPLE_TRANSPORT_PARAMS_H_
+#ifndef _TRANSPORT_PARAMS_H_
+#define _TRANSPORT_PARAMS_H_
 
 #include <AMReX_REAL.H>
 #include <AMReX_GpuQualifiers.H>
