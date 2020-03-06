@@ -10,15 +10,11 @@ using namespace MASA;
 #endif
 
 #include "mechanism.h"
-
 #include "PeleC.H"
 #include "Derive.H"
 #include "IndexDefines.H"
 #include "prob.H"
-
-#ifndef PELEC_EOS_GAMMA
 #include "chemistry_file.H"
-#endif
 
 //
 // Components are:
@@ -344,9 +340,7 @@ PeleC::variableSetUp()
   {
     int len = 20;
     amrex::Vector<int> int_spec_names(len * NUM_SPECIES);
-#ifndef PELEC_EOS_GAMMA
     CKSYMS(int_spec_names.dataPtr(), &len);
-#endif
     for (int i = 0; i < NUM_SPECIES; i++) {
       int j = 0;
       for (j = 0; j < len; j++) {

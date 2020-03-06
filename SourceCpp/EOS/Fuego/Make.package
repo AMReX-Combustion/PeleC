@@ -1,0 +1,4 @@
+CEXE_sources += EOS_Fuego.cpp
+CEXE_sources += EOS.cpp
+CEXE_headers += EOS_Fuego.H
+CEXE_headers += EOS.H

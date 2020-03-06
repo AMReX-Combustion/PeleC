@@ -1925,16 +1925,8 @@ PeleC::init_les()
     LES_Coeffs.setVal(PrT, comp_PrT, 1, LES_Coeffs.nGrow());
   }
 
-  // Error checking
-#ifdef PELEC_EOS_FUEGO
   amrex::Print() << "WARNING: LES with Fuego assumes Cp is a weak function of T"
                  << std::endl;
-#endif
-#ifndef PELEC_EOS_GAMMA
-#ifndef PELEC_EOS_FUEGO
-  amrex::Abort("ERROR: LES is only supported with Fuego and GammaLaw EoS");
-#endif
-#endif
   if (NUM_SPECIES > 2) {
     amrex::Abort("ERROR: LES is not supported for multi-component systems");
   } else if (NUM_SPECIES == 2) {

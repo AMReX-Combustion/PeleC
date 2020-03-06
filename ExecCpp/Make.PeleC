@@ -41,15 +41,16 @@ all: $(executable)
 # EOS
 ifeq ($(Eos_dir),$(filter $(Eos_dir),Fuego))
   DEFINES += -DPELEC_EOS_FUEGO
-  TRANSPORT_TYPE := IDEAL_GAS
+  EOS_HOME = $(PELEC_HOME)/SourceCpp/EOS/Fuego
 else
-  ifeq ($(Eos_dir), GammaLaw)
-    DEFINES += -DPELEC_EOS_GAMMA
-    TRANSPORT_TYPE := IDEAL_GAS
-  else
-    TRANSPORT_TYPE := REAL_GAS
-  endif
+  DEFINES += -DPELEC_EOS_GAMMA
+  EOS_HOME = $(PELEC_HOME)/SourceCpp/EOS/Gamma
 endif
+EXTERN_CORE       += $(EOS_HOME)
+INCLUDE_LOCATIONS += $(EOS_HOME)
+VPATH_LOCATIONS   += $(EOS_HOME)
+Bpack             += $(EOS_HOME)/Make.package
+Blocs             += $(EOS_HOME)
 
 # Reactions
 REACTIONS_HOME     = $(PELEC_HOME)/SourceCpp/Chemistry
@@ -59,24 +60,28 @@ VPATH_LOCATIONS   += $(REACTIONS_HOME)
 ifdef Chemistry_Model
   USE_FUEGO = TRUE
   CHEM_HOME = $(PELEC_HOME)/SourceCpp/Chemistry/$(Chemistry_Model)
-  VPATH_LOCATIONS += $(CHEM_HOME)
-  Bpack += $(CHEM_HOME)/Make.package
-  Blocs += $(CHEM_HOME)
   Blocs += $(PELE_PHYSICS_HOME)/Support/Fuego/Evaluation
 else
   CHEM_HOME = $(PELEC_HOME)/SourceCpp/Chemistry/Null
-  VPATH_LOCATIONS += $(CHEM_HOME)
-  Bpack += $(CHEM_HOME)/Make.package
-  Blocs += $(CHEM_HOME)
 endif
+VPATH_LOCATIONS += $(CHEM_HOME)
+Bpack += $(CHEM_HOME)/Make.package
+Blocs += $(CHEM_HOME)
 
 # Transport
 ifeq ($(Transport_dir), Simple)
   DEFINES += -DSIMPLE_TRANSPORT
+  TRANSPORT_HOME = $(PELEC_HOME)/SourceCpp/Transport/Simple
 endif
 ifeq ($(Transport_dir), Constant)
   DEFINES += -DCONSTANT_TRANSPORT
+  TRANSPORT_HOME = $(PELEC_HOME)/SourceCpp/Transport/Constant
 endif
+EXTERN_CORE       += $(TRANSPORT_HOME)
+INCLUDE_LOCATIONS += $(TRANSPORT_HOME)
+VPATH_LOCATIONS   += $(TRANSPORT_HOME)
+Bpack             += $(TRANSPORT_HOME)/Make.package
+Blocs             += $(TRANSPORT_HOME)
 
 Bdirs := SourceCpp SourceCpp/Params/param_includes
 

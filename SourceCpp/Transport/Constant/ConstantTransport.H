@@ -10,11 +10,7 @@
 #include <AMReX_Gpu.H>
 
 #include "mechanism.h"
-
-#ifndef PELEC_EOS_GAMMA
 #include "chemistry_file.H"
-#endif
-
 #include "ConstantTransportParams.H"
 
 extern "C" {

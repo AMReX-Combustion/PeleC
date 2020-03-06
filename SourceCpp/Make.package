@@ -14,7 +14,6 @@ CEXE_sources += SumIQ.cpp
 CEXE_sources += SumUtils.cpp
 CEXE_sources += Timestep.cpp
 CEXE_sources += Tagging.cpp
-CEXE_sources += EOS.cpp
 CEXE_sources += Diffterm.cpp
 CEXE_sources += Diffusion.cpp
 CEXE_sources += PLM.cpp
@@ -35,7 +34,6 @@ CEXE_headers += Constants.H
 CEXE_headers += Hydro.H
 CEXE_headers += Timestep.H
 CEXE_headers += IndexDefines.H
-CEXE_headers += EOS.H
 CEXE_headers += Diffterm.H
 CEXE_headers += Diffusion.H
 CEXE_headers += GradUtil.H
@@ -55,25 +53,6 @@ ifeq ($(USE_EB), TRUE)
   CEXE_headers += EB.H
   CEXE_headers += SparseData.H
   CEXE_headers += EBStencilTypes.H
-endif
-
-ifeq ($(Transport_dir), Simple)
-  CEXE_headers += SimpleTransport.H
-  CEXE_sources += SimpleTransportParams.cpp
-  CEXE_headers += SimpleTransportParams.H
-endif
-ifeq ($(Transport_dir), Constant)
-  CEXE_headers += ConstantTransport.H
-  CEXE_sources += ConstantTransportParams.cpp
-  CEXE_headers += ConstantTransportParams.H
-endif
-
-ifeq ($(Eos_dir),$(filter $(Eos_dir),Fuego))
-  CEXE_sources += EOS_FUEGO.cpp
-endif
-
-ifeq ($(Eos_dir), GammaLaw)
-  CEXE_sources += EOS_GAMMA.cpp
 endif
 
 ifeq ($(USE_REACT), TRUE)

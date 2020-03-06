@@ -1,7 +1,7 @@
 #include <AMReX_Arena.H>
 #include <AMReX_ParmParse.H>
 
-#include "EOS_GAMMA.H"
+#include "EOS_Gamma.H"
 
 namespace EOS {
 
