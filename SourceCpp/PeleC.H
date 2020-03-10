@@ -549,25 +549,6 @@ public:
 
   void enforce_consistent_e(amrex::MultiFab& S);
 
-  void pc_compute_hyp_mol_flux(
-    const amrex::Box& cbox,
-    const amrex::Array4<const amrex::Real>& q,
-    const amrex::Array4<const amrex::Real>& qaux,
-    const amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
-    const amrex::
-      GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM> a,
-    const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> del
-#ifdef AMREX_USE_EB
-    ,
-    const amrex::Array4<const amrex::Real>& vfrac,
-    const amrex::Array4<amrex::EBCellFlag const>& flags,
-    const EBBndryGeom* ebg,
-    const int Nebg,
-    amrex::Real* ebflux,
-    const int nebflux
-#endif
-  );
-
   amrex::Real volWgtSum(
     const std::string& name,
     amrex::Real time,

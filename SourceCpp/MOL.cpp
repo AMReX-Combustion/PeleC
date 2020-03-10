@@ -1,14 +1,15 @@
 #include "MOL.H"
 
 void
-PeleC::pc_compute_hyp_mol_flux(
+pc_compute_hyp_mol_flux(
   const amrex::Box& cbox,
   const amrex::Array4<const amrex::Real>& q,
   const amrex::Array4<const amrex::Real>& qaux,
   const amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
     a,
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> del
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> del,
+  const int plm_iorder
 #ifdef AMREX_USE_EB
   ,
   const amrex::Array4<const amrex::Real>& vfrac,

@@ -12,6 +12,7 @@
 #include "GradUtil.H"
 #include "Diffterm.H"
 #include "Transport.H"
+#include "MOL.H"
 #ifdef AMREX_USE_EB
 #include "EB.H"
 #endif
