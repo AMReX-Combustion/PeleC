@@ -57,6 +57,7 @@ plm_slope(
   dsgn = std::copysign(1.0, dcen);
   dlim = (dlft * drgt >= 0.0) ? 2.0 * amrex::min(std::abs(dlft), std::abs(drgt))
                               : 0.0;
+  dcen = dsgn * amrex::min(dlim, std::abs(dcen));
 
   dtemp = 4.0 / 3.0 * dcen - 1.0 / 6.0 * (dfp + dfm);
   // flattening can go here.
