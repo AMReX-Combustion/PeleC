@@ -49,6 +49,7 @@ pc_diffextrap(
       if (i == hx)
         dif(i + 1, j, k, n) = dif(i, j, k, n);
     }
+#if AMREX_SPACEDIM > 1
     // low y
     if (dlo.y < ly) {
       if (j == ly)
@@ -59,6 +60,7 @@ pc_diffextrap(
       if (j == hy)
         dif(i, j + 1, k, n) = dif(i, j, k, n);
     }
+#if AMREX_SPACEDIM == 3
     // low z
     if (dlo.z < lz) {
       if (k == lz)
@@ -69,6 +71,7 @@ pc_diffextrap(
       if (k == hz)
         dif(i, j, k + 1, n) = dif(i, j, k, n);
     }
+#endif
     //============================= Edges
     //============================================== low x low y
     if (dlo.x < lx && dlo.y < ly) {
@@ -90,6 +93,7 @@ pc_diffextrap(
       if (i == hx && j == hy)
         dif(i + 1, j + 1, k, n) = dif(i, j, k, n);
     }
+#if AMREX_SPACEDIM == 3
     // low x low z
     if (dlo.x < lx && dlo.z < lz) {
       if (i == lx && k == lz)
@@ -105,7 +109,7 @@ pc_diffextrap(
       if (i == hx && k == lz)
         dif(i + 1, j, k - 1, n) = dif(i, j, k, n);
     }
-    // high x high y
+    // high x high z
     if (dhi.x - 1 > hx && dhi.z - 1 > hz) {
       if (i == hx && k == hz)
         dif(i + 1, j, k + 1, n) = dif(i, j, k, n);
@@ -170,6 +174,8 @@ pc_diffextrap(
     if (dhi.x - 1 > hx && dhi.y - 1 > hy && dlo.z - 1 > hz)
       if (i == hx && j == hy && k == hz)
         dif(i + 1, j + 1, k + 1, n) = dif(i, j, k, n);
+#endif // AMREX_SPACEDIM == 3
+#endif // AMREX_SPACEDIM > 1
   }
 }
 

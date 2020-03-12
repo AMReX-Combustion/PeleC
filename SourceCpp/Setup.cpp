@@ -49,12 +49,13 @@ set_x_vel_bc(amrex::BCRec& bc, const amrex::BCRec& phys_bc)
 {
   const int* lo_bc = phys_bc.lo();
   const int* hi_bc = phys_bc.hi();
-  bc.setLo(0, norm_vel_bc[lo_bc[0]]);
-  bc.setHi(0, norm_vel_bc[hi_bc[0]]);
-  bc.setLo(1, tang_vel_bc[lo_bc[1]]);
-  bc.setHi(1, tang_vel_bc[hi_bc[1]]);
-  bc.setLo(2, tang_vel_bc[lo_bc[2]]);
-  bc.setHi(2, tang_vel_bc[hi_bc[2]]);
+  AMREX_D_TERM
+    (bc.setLo(0, norm_vel_bc[lo_bc[0]]);
+     bc.setHi(0, norm_vel_bc[hi_bc[0]]);,
+     bc.setLo(1, tang_vel_bc[lo_bc[1]]);
+     bc.setHi(1, tang_vel_bc[hi_bc[1]]);,
+     bc.setLo(2, tang_vel_bc[lo_bc[2]]);
+     bc.setHi(2, tang_vel_bc[hi_bc[2]]););
 }
 
 static void
@@ -62,12 +63,13 @@ set_y_vel_bc(amrex::BCRec& bc, const amrex::BCRec& phys_bc)
 {
   const int* lo_bc = phys_bc.lo();
   const int* hi_bc = phys_bc.hi();
-  bc.setLo(0, tang_vel_bc[lo_bc[0]]);
-  bc.setHi(0, tang_vel_bc[hi_bc[0]]);
-  bc.setLo(1, norm_vel_bc[lo_bc[1]]);
-  bc.setHi(1, norm_vel_bc[hi_bc[1]]);
-  bc.setLo(2, tang_vel_bc[lo_bc[2]]);
-  bc.setHi(2, tang_vel_bc[hi_bc[2]]);
+  AMREX_D_TERM
+    (bc.setLo(0, tang_vel_bc[lo_bc[0]]);
+     bc.setHi(0, tang_vel_bc[hi_bc[0]]);,
+     bc.setLo(1, norm_vel_bc[lo_bc[1]]);
+     bc.setHi(1, norm_vel_bc[hi_bc[1]]);,
+     bc.setLo(2, tang_vel_bc[lo_bc[2]]);
+     bc.setHi(2, tang_vel_bc[hi_bc[2]]););
 }
 
 static void
@@ -86,12 +88,13 @@ set_z_vel_bc(amrex::BCRec& bc, const amrex::BCRec& phys_bc)
 {
   const int* lo_bc = phys_bc.lo();
   const int* hi_bc = phys_bc.hi();
-  bc.setLo(0, tang_vel_bc[lo_bc[0]]);
-  bc.setHi(0, tang_vel_bc[hi_bc[0]]);
-  bc.setLo(1, tang_vel_bc[lo_bc[1]]);
-  bc.setHi(1, tang_vel_bc[hi_bc[1]]);
-  bc.setLo(2, norm_vel_bc[lo_bc[2]]);
-  bc.setHi(2, norm_vel_bc[hi_bc[2]]);
+  AMREX_D_TERM
+    (bc.setLo(0, tang_vel_bc[lo_bc[0]]);
+     bc.setHi(0, tang_vel_bc[hi_bc[0]]);,
+     bc.setLo(1, tang_vel_bc[lo_bc[1]]);
+     bc.setHi(1, tang_vel_bc[hi_bc[1]]);,
+     bc.setLo(2, norm_vel_bc[lo_bc[2]]);
+     bc.setHi(2, norm_vel_bc[hi_bc[2]]););
 }
 
 void
@@ -197,26 +200,13 @@ PeleC::variableSetUp()
   // NVAR = cnt;
 
 #ifdef AMREX_PARTICLES
-  // Set index locations for particle state vector and storage of field
-  // variables that get computed first and then interpolated to particle
-  // position
-  pstate_loc = 0;
-  pstate_vel = pstate_loc + AMREX_SPACEDIM;
-  pstate_T = pstate_vel + AMREX_SPACEDIM;
-  pstate_dia = pstate_T + 1;
-  pstate_rho = pstate_dia + 1;
-  pstate_spc = pstate_rho + 1;
-  n_pstate = pstate_spc + 1;
-
-  pfld_vel = 0;
-  pfld_rho = pfld_vel + AMREX_SPACEDIM;
-  pfld_T = pfld_rho + 1;
-  pfld_p = pfld_T + 1;
-  pfld_spc = pfld_p + 1;
-  n_pfld = pfld_spc + NUM_SPECIES; // increase this for multi-component droplets
-
-  //  amrex::Print() << "n_pstate = " << n_pstate << std::endl << "declared
-  //  components: " << SPRAY_COMPONENTS << std::endl;
+  // Set index locations for particle state vector
+  pstateVel = 0;
+  pstateT = pstateVel + AMREX_SPACEDIM;
+  pstateDia = pstateT + 1;
+  pstateRho = pstateDia + 1;
+  pstateY = pstateRho + SPRAY_FUEL_NUM;
+  pstateNum = pstateY + 1;
 
 #endif
 

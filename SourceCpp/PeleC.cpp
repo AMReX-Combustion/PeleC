@@ -71,19 +71,12 @@ int PeleC::FirstSpec = -1;
 int PeleC::FirstAux = -1;
 int PeleC::NumAdv = 0;
 int PeleC::FirstAdv = -1;
-int PeleC::pstate_loc = -1;
-int PeleC::pstate_vel = -1;
-int PeleC::pstate_T = -1;
-int PeleC::pstate_dia = -1;
-int PeleC::pstate_rho = -1;
-int PeleC::pstate_spc = -1;
-int PeleC::n_pstate = 0;
-int PeleC::pfld_vel = -1;
-int PeleC::pfld_rho = -1;
-int PeleC::pfld_T = -1;
-int PeleC::pfld_p = -1;
-int PeleC::pfld_spc = -1;
-int PeleC::n_pfld = 0;
+int PeleC::pstateVel = -1;
+int PeleC::pstateT = -1;
+int PeleC::pstateDia = -1;
+int PeleC::pstateRho = -1;
+int PeleC::pstateY = -1;
+int PeleC::pstateNum = 0;
 
 #include "pelec_defaults.H"
 
@@ -150,7 +143,6 @@ PeleC::variableCleanUp()
 #ifdef AMREX_PARTICLES
   delete SprayPC;
   SprayPC = nullptr;
-  ;
 #endif
 
   desc_lst.clear();
@@ -366,7 +358,7 @@ PeleC::read_params()
   }
 
 #ifdef AMREX_PARTICLES
-  read_particle_params();
+  readParticleParams();
 #endif
 
 #ifdef AMREX_USE_EB
@@ -398,6 +390,9 @@ PeleC::PeleC()
     mms_src_evaluated(false)
 #endif
 {
+#ifdef AMREX_PARTICLES
+  defineParticles();
+#endif
 }
 
 PeleC::PeleC(
@@ -432,15 +427,16 @@ PeleC::PeleC(
         grids, dmap, NVAR, S_new.nGrow(), amrex::MFInfo(), Factory()));
   }
 
-#ifdef AMREX_PARTICLES
-  Sborder.define(grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
-#endif
-
   if (do_hydro) {
     Sborder.define(grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
   } else if (do_diffuse) {
     Sborder.define(grids, dmap, NVAR, nGrowTr, amrex::MFInfo(), Factory());
   }
+#ifdef AMREX_PARTICLES
+  else if (do_spray_particles) {
+    Sborder.define(grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
+  }
+#endif
 
   if (!do_mol) {
     if (do_hydro) {
@@ -661,9 +657,7 @@ PeleC::initData()
 
   // make sure dx = dy = dz -- that's all we guarantee to support
   const amrex::Real small = 1.e-13;
-  if (
-    (fabs(dx[0] - dx[1]) > small * dx[0]) ||
-    (fabs(dx[0] - dx[2]) > small * dx[0])) {
+  if (amrex::max(AMREX_D_DECL(0., fabs(dx[0] - dx[1]), fabs(dx[0] - dx[2]))) > small * dx[0]) {
     amrex::Abort("dx != dy != dz not supported");
   }
 
@@ -706,9 +700,9 @@ PeleC::initData()
 
 #ifdef AMREX_PARTICLES
   if (level == 0) {
-    init_particles();
+    initParticles();
   } else {
-    particle_redistribute(level - 1, true);
+    particleRedistribute(level - 1, true);
   }
 #endif
 
@@ -956,7 +950,7 @@ PeleC::estTimeStep(amrex::Real dt_old)
 #ifdef AMREX_PARTICLES
   amrex::Real estdt_particle = max_dt;
   if (do_spray_particles) {
-    particle_est_time_step(estdt_particle);
+    particleEstTimeStep(estdt_particle);
     if (estdt_particle < estdt) {
       limiter = "particles";
       estdt = estdt_particle;
@@ -1098,13 +1092,13 @@ PeleC::post_timestep(int iteration)
     //
     // Remove virtual particles at this level if we have any.
     //
-    remove_virtual_particles();
+    removeVirtualParticles();
 
     //
     // Remove Ghost particles on the final iteration
     //
     if (iteration == parent->nCycle(level))
-      remove_ghost_particles();
+      removeGhostParticles();
 
     //
     // Sync up if we're level 0 or if we have particles that may have moved
@@ -1176,7 +1170,7 @@ PeleC::post_restart()
 
 #ifdef AMREX_PARTICLES
   if (do_spray_particles) {
-    particle_post_restart(parent->theRestartFile());
+    particlePostRestart(parent->theRestartFile());
   }
 #endif
 
@@ -1611,7 +1605,7 @@ PeleC::errorEst(
       }
 
       // Tagging pressure
-      S_derData.setVal(0.0);
+      S_derData.setVal<amrex::RunOn::Device>(0.0);
       pc_derpres(
         datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
         level);
@@ -1631,7 +1625,7 @@ PeleC::errorEst(
       }
 
       // Tagging vel_x
-      S_derData.setVal(0.0);
+      S_derData.setVal<amrex::RunOn::Device>(0.0);
       pc_dervelx(
         datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
         level);
@@ -1650,7 +1644,7 @@ PeleC::errorEst(
       }
 
       // Tagging vel_y
-      S_derData.setVal(0.0);
+      S_derData.setVal<amrex::RunOn::Device>(0.0);
       pc_dervely(
         datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
         level);
@@ -1669,7 +1663,7 @@ PeleC::errorEst(
       }
 
       // Tagging vel_z
-      S_derData.setVal(0.0);
+      S_derData.setVal<amrex::RunOn::Device>(0.0);
       pc_dervelz(
         datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
         level);
@@ -1688,7 +1682,7 @@ PeleC::errorEst(
       }
 
       // Tagging magnitude of vorticity
-      S_derData.setVal(0.0);
+      S_derData.setVal<amrex::RunOn::Device>(0.0);
       pc_dermagvort(
         tilebox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
         level);
@@ -1701,7 +1695,7 @@ PeleC::errorEst(
       }
 
       // Tagging temperature
-      S_derData.setVal(0.0);
+      S_derData.setVal<amrex::RunOn::Device>(0.0);
       pc_dertemp(
         datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
         level);
@@ -1733,7 +1727,7 @@ PeleC::errorEst(
           // if (amrex::ParallelDescriptor::IOProcessor())
           //  amrex::Print() << " Flame tracer will be " << name << '\n';
 
-          S_derData.setVal(0.0);
+          S_derData.setVal<amrex::RunOn::Device>(0.0);
           pc_derspectrac(
             datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
             level, idx);
@@ -1770,7 +1764,7 @@ PeleC::errorEst(
 
       // Problem specific tagging
       const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx =
-        AMREX_ZFILL(geom.CellSizeArray());
+	geom.CellSizeArray();
       const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_lo =
         geom.ProbLoArray();
       amrex::ParallelFor(
@@ -1827,7 +1821,7 @@ PeleC::derive(const std::string& name, amrex::Real time, int ngrow)
 #endif
 
 #ifdef AMREX_PARTICLES
-  return particle_derive(name, time, ngrow);
+  return particleDerive(name, time, ngrow);
 #else
   return AmrLevel::derive(name, time, ngrow);
 #endif
@@ -1864,7 +1858,7 @@ PeleC::close_network()
 void
 PeleC::clear_prob()
 {
-  pc_prob_close();
+  //pc_prob_close();
 }
 
 void

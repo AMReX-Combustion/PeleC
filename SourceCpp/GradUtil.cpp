@@ -41,6 +41,7 @@ pc_compute_tangential_vel_derivs_eb(
           0.5 * dx1inv *
           ((q(i, jhip, k, QV) - q(i, jhim, k, QV)) * wjhi +
            (q(i - 1, jlop, k, QV) - q(i - 1, jlom, k, QV)) * wjlo);
+#if AMREX_SPACEDIM == 3
         td(i, j, k, 2) =
           0.5 * dx1inv *
           ((q(i, jhip, k, QW) - q(i, jhim, k, QW)) * wjhi +
@@ -64,6 +65,7 @@ pc_compute_tangential_vel_derivs_eb(
           0.5 * dx2inv *
           ((q(i, j, khip, QW) - q(i, j, khim, QW)) * wkhi +
            (q(i - 1, j, klop, QW) - q(i - 1, j, klom, QW)) * wklo);
+#endif
       }
     });
   } else if (dir == 1) {
@@ -86,6 +88,7 @@ pc_compute_tangential_vel_derivs_eb(
           0.5 * dx1inv *
           ((q(ihip, j, k, QV) - q(ihim, j, k, QV)) * wihi +
            (q(ilop, j - 1, k, QV) - q(ilom, j - 1, k, QV)) * wilo);
+#if AMREX_SPACEDIM == 3
         td(i, j, k, 2) =
           0.5 * dx1inv *
           ((q(ihip, j, k, QW) - q(ihim, j, k, QW)) * wihi +
@@ -109,6 +112,7 @@ pc_compute_tangential_vel_derivs_eb(
           0.5 * dx2inv *
           ((q(i, j, khip, QW) - q(i, j, khim, QW)) * wkhi +
            (q(i, j - 1, klop, QW) - q(i, j - 1, klom, QW)) * wklo);
+#endif
       }
     });
   } else if (dir == 2) {

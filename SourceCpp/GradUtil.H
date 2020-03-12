@@ -12,7 +12,7 @@
   defined here. Where as non-inline functions are declared here. */
 
 namespace GradUtils {
-const int nCompTan = 6;
+const int nCompTan = AMREX_D_PICK(0, 2, 6);
 } // namespace GradUtils
 
 AMREX_GPU_DEVICE
@@ -40,6 +40,7 @@ pc_compute_tangential_vel_derivs(
     td(i, j, k, 1) = 0.25 * dx1inv *
                      (q(i, j + 1, k, QV) + q(i - 1, j + 1, k, QV) -
                       q(i, j - 1, k, QV) - q(i - 1, j - 1, k, QV)); // dvdy
+#if AMREX_SPACEDIM == 3
     td(i, j, k, 2) = 0.25 * dx1inv *
                      (q(i, j + 1, k, QW) + q(i - 1, j + 1, k, QW) -
                       q(i, j - 1, k, QW) - q(i - 1, j - 1, k, QW)); // dwdy
@@ -52,6 +53,7 @@ pc_compute_tangential_vel_derivs(
     td(i, j, k, 5) = 0.25 * dx2inv *
                      (q(i, j, k + 1, QW) + q(i - 1, j, k + 1, QW) -
                       q(i, j, k - 1, QW) - q(i - 1, j, k - 1, QW)); // dwdz
+#endif
   } else if (dir == 1) {
     // dx1 = dx, dx2 = dz
     td(i, j, k, 0) = 0.25 * dx1inv *
@@ -60,6 +62,7 @@ pc_compute_tangential_vel_derivs(
     td(i, j, k, 1) = 0.25 * dx1inv *
                      (q(i + 1, j, k, QV) + q(i + 1, j - 1, k, QV) -
                       q(i - 1, j, k, QV) - q(i - 1, j - 1, k, QV)); // dvdx
+#if AMREX_SPACEDIM == 3
     td(i, j, k, 2) = 0.25 * dx1inv *
                      (q(i + 1, j, k, QW) + q(i + 1, j - 1, k, QW) -
                       q(i - 1, j, k, QW) - q(i - 1, j - 1, k, QW)); // dwdx
@@ -72,6 +75,7 @@ pc_compute_tangential_vel_derivs(
     td(i, j, k, 5) = 0.25 * dx2inv *
                      (q(i, j, k + 1, QW) + q(i, j - 1, k + 1, QW) -
                       q(i, j, k - 1, QW) - q(i, j - 1, k - 1, QW)); // dwdz
+#endif
   } else if (dir == 2) {
     // dx1 = dx, dx2 = dy
     td(i, j, k, 0) = 0.25 * dx1inv *

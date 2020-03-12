@@ -17,9 +17,27 @@
 
 namespace EOS {
 
+extern AMREX_GPU_DEVICE_MANAGED int upassMap[NPASSIVE];
+extern AMREX_GPU_DEVICE_MANAGED int qpassMap[NPASSIVE];
 extern AMREX_GPU_DEVICE_MANAGED amrex::Real gamma;
 
 void init();
+
+AMREX_GPU_HOST_DEVICE
+AMREX_FORCE_INLINE
+void
+get_mw_eos(amrex::Real mw[])
+{
+  mw[0] = {28.97};
+}
+
+AMREX_GPU_HOST_DEVICE
+AMREX_FORCE_INLINE
+void
+get_imw_eos(amrex::Real imw[])
+{
+  imw[0] = {1./28.97};
+}
 
 AMREX_GPU_HOST_DEVICE
 AMREX_FORCE_INLINE
@@ -51,6 +69,14 @@ get_cp(amrex::Real T, amrex::Real mass[], amrex::Real& cp)
   amrex::Real cv;
   get_cv(mass, T, cv);
   cp = gamma * cv;
+}
+
+AMREX_GPU_HOST_DEVICE
+AMREX_FORCE_INLINE
+void
+get_cpi(amrex::Real T, amrex::Real cpi[])
+{
+  cpi[0] = gamma*RU/ (28.97 * (gamma - 1.0));
 }
 
 AMREX_GPU_HOST_DEVICE
@@ -232,7 +258,7 @@ AMREX_FORCE_INLINE
 int
 upass_map(const int i)
 {
-  return i + UFA;
+  return upassMap[i];
 }
 
 AMREX_GPU_HOST_DEVICE
@@ -240,7 +266,7 @@ AMREX_FORCE_INLINE
 int
 qpass_map(const int i)
 {
-  return i + QFA;
+  return qpassMap[i];
 }
 
 }; // namespace EOS

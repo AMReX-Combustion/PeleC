@@ -211,13 +211,13 @@ PeleC::do_mol_advance(
 
 #ifdef AMREX_PARTICLES
 void
-PeleC::set_spray_grid_info(
-  int amr_iteration,
-  int amr_ncycle,
-  int ghost_width,
-  int where_width,
-  int spray_n_grow,
-  int tmp_src_width)
+PeleC::setSprayGridInfo(
+  int& amr_iteration,
+  int& amr_ncycle,
+  int& ghost_width,
+  int& where_width,
+  int& spray_n_grow,
+  int& tmp_src_width)
 {
   // A particle in cell (i) can affect cell values in (i-1) to (i+1)
   int stencil_deposition_width = 1;
@@ -251,7 +251,7 @@ PeleC::set_spray_grid_info(
   //     have moved and we don't want to just lose it (we will redistribute it
   //     when we're done}
 
-  where_width = std::max(ghost_width + (1 - amr_iteration) - 1, amr_iteration);
+  where_width = amrex::max(ghost_width + (1 - amr_iteration) - 1, amr_iteration);
 
   // *** spray_n_grow *** is used
   //   *) to determine how many ghost cells we need to fill in the MultiFab from
@@ -349,16 +349,15 @@ PeleC::do_sdc_iteration(
     nGrow_Sborder = NUM_GROW;
   }
 #ifdef AMREX_PARTICLES
-  fill_Sborder = true;
   int ghost_width = 0;
   int where_width = 0;
   int spray_n_grow = 0;
   int tmp_src_width = 0;
-  set_spray_grid_info(
-    amr_iteration, amr_ncycle, ghost_width, where_width, spray_n_grow,
-    tmp_src_width);
 
   if (do_spray_particles) {
+    setSprayGridInfo(amr_iteration, amr_ncycle, ghost_width, where_width, spray_n_grow,
+                     tmp_src_width);
+    fill_Sborder = true;
     nGrow_Sborder = std::max(nGrow_Sborder, spray_n_grow);
   }
   if (fill_Sborder && Sborder.nGrow() < nGrow_Sborder) {
@@ -386,7 +385,7 @@ PeleC::do_sdc_iteration(
       //
       // Setup the virtual particles that represent finer level particles
       //
-      setup_virtual_particles();
+      setupVirtualParticles();
 
       //
       // Setup ghost particles for use in finer levels. Note that ghost
@@ -406,10 +405,10 @@ PeleC::do_sdc_iteration(
       if (level == finest_level)
         theSprayPC()->insertParticles(cur_time, nstep, level);
 
-      particle_redistribute(level, false);
+      particleRedistribute(level, false);
 
       if (level < finest_level)
-        setup_ghost_particles(ghost_width);
+        setupGhostParticles(ghost_width);
 
       // Advance the particle velocities to the half-time and the positions to
       // the new time
@@ -427,20 +426,20 @@ PeleC::do_sdc_iteration(
 
       // Do the valid particles themselves
       theSprayPC()->moveKickDrift(
-        Sborder, *old_sources[spray_src], level, dt, tmp_src_width,
-        where_width);
+        Sborder, *old_sources[spray_src], level, dt, cur_time,
+	tmp_src_width, true, where_width);
 
       // Only need the coarsest virtual particles here.
       if (level < finest_level)
         theVirtPC()->moveKickDrift(
-          Sborder, *old_sources[spray_src], level, dt, tmp_src_width,
-          where_width);
+	  Sborder, *old_sources[spray_src], level, dt, cur_time,
+	  tmp_src_width, true, where_width);
 
       // Miiiight need all Ghosts
       if (theGhostPC() != 0)
         theGhostPC()->moveKickDrift(
-          Sborder, *old_sources[spray_src], level, dt, tmp_src_width,
-          where_width);
+          Sborder, *old_sources[spray_src], level, dt, cur_time,
+	  tmp_src_width, true, where_width);
     }
 #endif
 
@@ -523,14 +522,6 @@ PeleC::do_sdc_iteration(
     if (particle_verbose)
       amrex::Print() << "moveKick ... updating velocity only\n";
 
-    if (!fill_Sborder) {
-      Print() << "Sborder already defined, has nGrow = " << Sborder.nGrow()
-              << ", needs " << nGrow_Sborder << std::endl;
-      Abort(
-        "Sborder should already be defined, why are we defining here again?");
-      Sborder.define(grids, dmap, NVAR, nGrow_Sborder);
-    }
-
     if (!do_diffuse) { // Else, this was already done above.  No need to redo
       FillPatch(*this, Sborder, nGrow_Sborder, time + dt, State_Type, 0, NVAR);
     }
@@ -538,7 +529,7 @@ PeleC::do_sdc_iteration(
     new_sources[spray_src]->setVal(0.);
 
     theSprayPC()->moveKick(
-      Sborder, *new_sources[spray_src], level, dt, tmp_src_width);
+      Sborder, *new_sources[spray_src], level, dt, time + dt, tmp_src_width);
 
     // Virtual particles will be recreated, so we need not kick them.
     // TODO: Is this true with SDC iterations??
@@ -546,7 +537,7 @@ PeleC::do_sdc_iteration(
     // Ghost particles need to be kicked except during the final iteration.
     if (amr_iteration != amr_ncycle)
       theGhostPC()->moveKick(
-        Sborder, *new_sources[spray_src], level, dt, tmp_src_width);
+      Sborder, *new_sources[spray_src], level, dt, time + dt, tmp_src_width);
   }
 #endif
 

@@ -88,6 +88,16 @@ ifeq ($(USE_EB), TRUE)
   Pdirs += EB
 endif
 
+ifeq ($(USE_PARTICLES), TRUE)
+  DEFINES+=-DAMREX_PARTICLES
+  Pdirs += Particle
+  DEFINES+=-DSPRAY_FUEL_NUM
+  Bpack   += $(PELEC_MP_HOME)/Source/PP_Spray/Make.package
+  Blocs   += $(PELEC_MP_HOME)/Source/PP_Spray
+  INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/Particle
+  VPATH_LOCATIONS   += $(AMREX_HOME)/Src/Particle
+endif
+
 Bpack += $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir)/Make.package)
 Blocs += $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir))
 
