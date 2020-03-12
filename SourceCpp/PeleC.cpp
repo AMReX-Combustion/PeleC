@@ -496,6 +496,9 @@ PeleC::PeleC(
   if (use_explicit_filter) {
     init_filters();
   }
+#ifdef AMREX_PARTICLES
+  defineParticles();
+#endif
 }
 
 PeleC::~PeleC() {}

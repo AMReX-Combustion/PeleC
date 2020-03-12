@@ -146,9 +146,10 @@ pc_diffusion_flux(
     flx(i, j, k, UEDEN) -= Yface * hface * Vc;
   }
   // Scale by area
-  flx(i, j, k, UMX) *= a(i, j, k);
-  flx(i, j, k, UMY) *= a(i, j, k);
-  flx(i, j, k, UMZ) *= a(i, j, k);
+  AMREX_D_TERM(
+  flx(i, j, k, UMX) *= a(i, j, k);,
+  flx(i, j, k, UMY) *= a(i, j, k);,
+  flx(i, j, k, UMZ) *= a(i, j, k););
   flx(i, j, k, UEDEN) *= a(i, j, k);
   for (int ns = 0; ns < NUM_SPECIES; ++ns)
     flx(i, j, k, UFS + ns) *= a(i, j, k);
