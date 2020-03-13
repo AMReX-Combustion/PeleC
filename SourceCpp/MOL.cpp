@@ -143,7 +143,7 @@ pc_compute_hyp_mol_flux(
         const amrex::Real rhoe_r = eos_state_rho * eos_state_e;
         const amrex::Real gamc_r = eos_state_gamma;
 
-        amrex::GpuArray<amrex::Real, NVAR> flux_tmp{0.0};
+        amrex::Real flux_tmp[NVAR] = {0.0};
         amrex::Real ustar = 0.0;
 
         amrex::Real tmp0, tmp1, tmp2, tmp3, tmp4;
