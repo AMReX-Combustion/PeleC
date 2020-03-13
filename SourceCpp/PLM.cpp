@@ -529,9 +529,6 @@ pc_umeth_2D(
   amrex::ParallelFor(xfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_cmpflx(i, j, k, bclx, bchx, dlx, dhx, qmarr, qparr, flx1, q1, qaux, cdir);
   });
-  fxeli.clear();
-  qymeli.clear();
-  qypeli.clear();
 
   // Y interface corrections
   cdir = 1;
