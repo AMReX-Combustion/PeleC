@@ -107,7 +107,6 @@ pc_compute_hyp_mol_flux(
                                           qaux(i, j, k, QC));
           qtempr[R_RHO] += qtempr[R_Y + n];
         }
-
         for (int n = 0; n < NUM_SPECIES; n++) {
           qtempr[R_Y + n] = qtempr[R_Y + n] / qtempr[R_RHO];
         }
@@ -127,7 +126,7 @@ pc_compute_hyp_mol_flux(
           spl[n] = qtempl[R_Y + n];
         }
         EOS::rhopY2e(eos_state_rho, spl, eos_state_p, eos_state_e);
-        EOS::get_gamma(eos_state_e, eos_state_gamma);
+        EOS::get_gamma(eos_state_e, spl, eos_state_gamma);
         EOS::get_cs_no_T(eos_state_rho, eos_state_p, spl, eos_state_cs);
         const amrex::Real rhoe_l = eos_state_rho * eos_state_e;
         const amrex::Real gamc_l = eos_state_gamma;
@@ -139,7 +138,7 @@ pc_compute_hyp_mol_flux(
           spr[n] = qtempr[R_Y + n];
         }
         EOS::rhopY2e(eos_state_rho, spr, eos_state_p, eos_state_e);
-        EOS::get_gamma(eos_state_e, eos_state_gamma);
+        EOS::get_gamma(eos_state_e, spr, eos_state_gamma);
         EOS::get_cs_no_T(eos_state_rho, eos_state_p, spr, eos_state_cs);
         const amrex::Real rhoe_r = eos_state_rho * eos_state_e;
         const amrex::Real gamc_r = eos_state_gamma;
@@ -289,7 +288,7 @@ pc_compute_hyp_mol_flux(
       amrex::Real eos_state_e;
       EOS::rhopY2e(eos_state_rho, spl, eos_state_p, eos_state_e);
       rhoe_l = eos_state_rho * eos_state_e;
-      EOS::get_gamma(eos_state_e, gamc_l);
+      EOS::get_gamma(eos_state_e, spl, gamc_l);
     }
 
     if (is_inside(i, j, k, lo, hi, nextra - 1)) {

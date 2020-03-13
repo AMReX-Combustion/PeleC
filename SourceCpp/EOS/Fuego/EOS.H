@@ -300,10 +300,9 @@ get_s(amrex::Real& s)
 AMREX_GPU_HOST_DEVICE
 AMREX_FORCE_INLINE
 void
-get_gamma(amrex::Real e, amrex::Real& gamma)
+get_gamma(amrex::Real e, amrex::Real massfrac[NUM_SPECIES], amrex::Real& gamma)
 {
   amrex::Real wbar, cv, T, Cvx;
-  amrex::Real massfrac[NUM_SPECIES];
   cmpT(e, massfrac, T);
   get_cv(massfrac, T, cv);
   get_wb(massfrac, wbar);
