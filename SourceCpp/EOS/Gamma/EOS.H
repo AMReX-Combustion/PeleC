@@ -245,7 +245,7 @@ get_s(amrex::Real& s)
 AMREX_GPU_HOST_DEVICE
 AMREX_FORCE_INLINE
 void
-get_gamma(amrex::Real e, amrex::Real& gam)
+get_gamma(amrex::Real e, amrex::Real massfrac[NUM_SPECIES], amrex::Real& gam)
 {
   gam = gamma;
 }
