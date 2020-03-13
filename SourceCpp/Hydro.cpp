@@ -200,9 +200,9 @@ PeleC::construct_hydro_source(
         amrex::Elixir pradial_eli = pradial.elixir();
 
 #ifdef AMREX_USE_GPU
-        auto run = amrex::RunOn::Gpu;
+        auto device = amrex::RunOn::Gpu;
 #else
-        auto run = amrex::RunOn::Cpu;
+        auto device = amrex::RunOn::Cpu;
 #endif
         BL_PROFILE_VAR("PeleC::umdrv()", purm);
         const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>
@@ -249,7 +249,7 @@ PeleC::construct_hydro_source(
           if (level < finest_level) {
             getFluxReg(level + 1).CrseAdd(
               mfi, {AMREX_D_DECL(&(flux[0]), &(flux[1]), &(flux[2]))}, dxDp, dt,
-              run);
+              device);
 
             if (!amrex::DefaultGeometry().IsCartesian()) {
               amrex::Abort("Flux registers not r-z compatible yet");
@@ -260,7 +260,7 @@ PeleC::construct_hydro_source(
           if (level > 0) {
             getFluxReg(level).FineAdd(
               mfi, {AMREX_D_DECL(&(flux[0]), &(flux[1]), &(flux[2]))}, dxDp, dt,
-              run);
+              device);
 
             if (!amrex::DefaultGeometry().IsCartesian()) {
               amrex::Abort("Flux registers not r-z compatible yet");
