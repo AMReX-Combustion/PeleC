@@ -33,7 +33,10 @@ pc_initdata(
   const amrex::Real* dx = geomdata.CellSize();
   const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
   const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
-  const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];
+  amrex::Real z = 0;
+#if AMREX_SPACEDIM == 3
+  z = prob_lo[2] + (k + 0.5) * dx[2];
+#endif
 
   // TG functions
   amrex::Real u[3] = {0.0};
