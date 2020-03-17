@@ -1861,7 +1861,7 @@ PeleC::close_network()
 void
 PeleC::clear_prob()
 {
-  //pc_prob_close();
+  pc_prob_close();
 }
 
 void
