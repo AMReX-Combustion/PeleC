@@ -212,8 +212,12 @@ pc_compute_hyp_mol_flux(
                     sum_nbrs_qp = 0.0, sum_nbrs_qr = 0.0,
                     sum_nbrs_sp[NUM_SPECIES] = {0.0};
         for (int ii = -1; ii <= 1; ii++) {
+#if AMREX_SPACEDIM > 1
           for (int jj = -1; jj <= 1; jj++) {
+#if AMREX_SPACEDIM == 3
             for (int kk = -1; kk <= 1; kk++) {
+#endif
+#endif
               int nbr = flags(i, j, k).isConnected(ii, jj, kk);
               if ((ii == 0) and (jj == 0) and (kk == 0)) {
                 nbr = 0;
@@ -237,8 +241,12 @@ pc_compute_hyp_mol_flux(
                 sum_nbrs_sp[n] += nbr * vfrac(i + ii, j + jj, k + kk) *
                                   q(i + ii, j + jj, k + kk, QFS + n);
               }
+#if AMREX_SPACEDIM > 1
+#if AMREX_SPACEDIM == 3
             }
+#endif
           }
+#endif
         }
         qtempl[R_UN] = 0.0;
         qtempl[R_UN] -= (sum_nbrs_qu * ebnorm[0] + sum_nbrs_qv * ebnorm[1] +

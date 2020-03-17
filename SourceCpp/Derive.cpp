@@ -261,20 +261,23 @@ pc_dermagvort(
       larr(i, j, k, 2) = dat(i, j, k, UMZ) * rhoInv;
     });
 
-  const amrex::Real dx = geomdata.CellSize(0);
-  const amrex::Real dy = geomdata.CellSize(1);
-  const amrex::Real dz = geomdata.CellSize(2);
+  AMREX_D_TERM(const amrex::Real dx = geomdata.CellSize(0);,
+	       const amrex::Real dy = geomdata.CellSize(1);,
+	       const amrex::Real dz = geomdata.CellSize(2););
 
   // Calculate vorticity.
   amrex::ParallelFor(
     bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      AMREX_D_TERM(
+      vort(i, j, k) = 0.;,
       const amrex::Real vx =
         0.5 * (larr(i + 1, j, k, 1) - larr(i - 1, j, k, 1)) / dx;
+      const amrex::Real uy =
+        0.5 * (larr(i, j + 1, k, 0) - larr(i, j - 1, k, 0)) / dy;
+      const amrex::Real v3 = vx - uy;,
       const amrex::Real wx =
         0.5 * (larr(i + 1, j, k, 2) - larr(i - 1, j, k, 2)) / dx;
 
-      const amrex::Real uy =
-        0.5 * (larr(i, j + 1, k, 0) - larr(i, j - 1, k, 0)) / dy;
       const amrex::Real wy =
         0.5 * (larr(i, j + 1, k, 2) - larr(i, j - 1, k, 2)) / dy;
 
@@ -284,9 +287,8 @@ pc_dermagvort(
         0.5 * (larr(i, j, k + 1, 1) - larr(i, j, k - 1, 1)) / dz;
 
       const amrex::Real v1 = wy - vz;
-      const amrex::Real v2 = uz - wx;
-      const amrex::Real v3 = vx - uy;
-      vort(i, j, k) = sqrt(v1 * v1 + v2 * v2 + v3 * v3);
+      const amrex::Real v2 = uz - wx;);
+      vort(i, j, k) = sqrt(AMREX_D_TERM(0., + v3 * v3, + v1 * v1 + v2 * v2));
     });
 }
 
@@ -305,20 +307,21 @@ pc_derdivu(
   auto const dat = datfab.array();
   auto divu = derfab.array();
 
-  const amrex::Real dx = geomdata.CellSize(0);
-  const amrex::Real dy = geomdata.CellSize(1);
-  const amrex::Real dz = geomdata.CellSize(2);
+  AMREX_D_TERM(const amrex::Real dx = geomdata.CellSize(0);,
+	       const amrex::Real dy = geomdata.CellSize(1);,
+	       const amrex::Real dz = geomdata.CellSize(2););
 
   amrex::ParallelFor(
     bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      AMREX_D_TERM(
       const amrex::Real uhi = dat(i + 1, j, k, UMX) / dat(i + 1, j, k, URHO);
-      const amrex::Real ulo = dat(i - 1, j, k, UMX) / dat(i - 1, j, k, URHO);
+      const amrex::Real ulo = dat(i - 1, j, k, UMX) / dat(i - 1, j, k, URHO);,
       const amrex::Real vhi = dat(i, j + 1, k, UMY) / dat(i, j + 1, k, URHO);
-      const amrex::Real vlo = dat(i, j - 1, k, UMY) / dat(i, j - 1, k, URHO);
+      const amrex::Real vlo = dat(i, j - 1, k, UMY) / dat(i, j - 1, k, URHO);,
       const amrex::Real whi = dat(i, j, k + 1, UMZ) / dat(i, j, k + 1, URHO);
-      const amrex::Real wlo = dat(i, j, k - 1, UMZ) / dat(i, j, k - 1, URHO);
+      const amrex::Real wlo = dat(i, j, k - 1, UMZ) / dat(i, j, k - 1, URHO););
       divu(i, j, k) =
-        0.5 * ((uhi - ulo) / dx + (vhi - vlo) / dy + (whi - wlo) / dz);
+        0.5 * (AMREX_D_TERM((uhi - ulo) / dx, + (vhi - vlo) / dy, + (whi - wlo) / dz));
     });
 }
 
@@ -354,20 +357,23 @@ pc_derenstrophy(
       larr(i, j, k, 2) = dat(i, j, k, UMZ) * rhoInv;
     });
 
-  const amrex::Real dx = geomdata.CellSize(0);
-  const amrex::Real dy = geomdata.CellSize(1);
-  const amrex::Real dz = geomdata.CellSize(2);
+  AMREX_D_TERM(const amrex::Real dx = geomdata.CellSize(0);,
+	       const amrex::Real dy = geomdata.CellSize(1);,
+	       const amrex::Real dz = geomdata.CellSize(2););
 
   // Calculate enstrophy.
   amrex::ParallelFor(
     bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      AMREX_D_TERM(
+      enstrophy(i, j, k) = 0.;,
       const amrex::Real vx =
         0.5 * (larr(i + 1, j, k, 1) - larr(i - 1, j, k, 1)) / dx;
+      const amrex::Real uy =
+        0.5 * (larr(i, j + 1, k, 0) - larr(i, j - 1, k, 0)) / dy;
+      const amrex::Real v3 = vx - uy;,
       const amrex::Real wx =
         0.5 * (larr(i + 1, j, k, 2) - larr(i - 1, j, k, 2)) / dx;
 
-      const amrex::Real uy =
-        0.5 * (larr(i, j + 1, k, 0) - larr(i, j - 1, k, 0)) / dy;
       const amrex::Real wy =
         0.5 * (larr(i, j + 1, k, 2) - larr(i, j - 1, k, 2)) / dy;
 
@@ -377,10 +383,9 @@ pc_derenstrophy(
         0.5 * (larr(i, j, k + 1, 1) - larr(i, j, k - 1, 1)) / dz;
 
       const amrex::Real v1 = wy - vz;
-      const amrex::Real v2 = uz - wx;
-      const amrex::Real v3 = vx - uy;
+      const amrex::Real v2 = uz - wx;);
       enstrophy(i, j, k) =
-        0.5 * dat(i, j, k, URHO) * (v1 * v1 + v2 * v2 + v3 * v3);
+        0.5 * dat(i, j, k, URHO) * (AMREX_D_TERM(0., + v3 * v3, + v1 * v1 + v2 * v2));
     });
 }
 

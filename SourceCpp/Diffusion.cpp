@@ -431,9 +431,9 @@ PeleC::getMOLSrcTerm(
       }
 
 #ifdef AMREX_USE_GPU
-      auto run = amrex::RunOn::Gpu;
+      auto device = amrex::RunOn::Gpu;
 #else
-      auto run = amrex::RunOn::Cpu;
+      auto device = amrex::RunOn::Cpu;
 #endif
 
 #ifdef AMREX_USE_EB
@@ -535,7 +535,7 @@ PeleC::getMOLSrcTerm(
               {D_DECL(
                 &((*areafrac[0])[mfi]), &((*areafrac[1])[mfi]),
                 &((*areafrac[2])[mfi]))},
-              run);
+              device);
             if (AMREX_SPACEDIM <= 2) {
               amrex::Print()
                 << "WARNING:Re redistribution crseadd for EB not tested "
@@ -550,7 +550,7 @@ PeleC::getMOLSrcTerm(
               {D_DECL(
                 &((*areafrac[0])[mfi]), &((*areafrac[1])[mfi]),
                 &((*areafrac[2])[mfi]))},
-              dm_as_fine, run);
+              dm_as_fine, device);
 
             if (AMREX_SPACEDIM <= 2) {
               amrex::Print()
@@ -584,13 +584,13 @@ PeleC::getMOLSrcTerm(
         if (level < parent->finestLevel()) {
           getFluxReg(level + 1).CrseAdd(
             mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])},
-            dxD.data(), dt, run);
+            dxD.data(), dt, device);
         }
 
         if (level > 0) {
           getFluxReg(level).FineAdd(
             mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])},
-            dxD.data(), dt, run);
+            dxD.data(), dt, device);
         }
       }
 

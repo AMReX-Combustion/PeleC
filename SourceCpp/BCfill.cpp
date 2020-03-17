@@ -36,8 +36,9 @@ struct PCHypFillExtDir
     // xlo and xhi
     int idir = 0;
     if ((bc[idir] == amrex::BCType::ext_dir) and (iv[idir] < domlo[idir])) {
+      amrex::IntVect loc(AMREX_D_DECL(domlo[idir], iv[1], iv[2]));
       for (int n = 0; n < NVAR; n++) {
-        s_int[n] = dest(domlo[idir], iv[1], iv[2], n);
+        s_int[n] = dest(loc, n);
       }
       bcnormal(x, s_int, s_ext, idir, +1, time, geom);
       for (int n = 0; n < NVAR; n++) {
@@ -46,20 +47,22 @@ struct PCHypFillExtDir
     } else if (
       (bc[idir + AMREX_SPACEDIM] == amrex::BCType::ext_dir) and
       (iv[idir] > domhi[idir])) {
+      amrex::IntVect loc(AMREX_D_DECL(domhi[idir], iv[1], iv[2]));
       for (int n = 0; n < NVAR; n++) {
-        s_int[n] = dest(domhi[idir], iv[1], iv[2], n);
+        s_int[n] = dest(loc, n);
       }
       bcnormal(x, s_int, s_ext, idir, -1, time, geom);
       for (int n = 0; n < NVAR; n++) {
         dest(iv, n) = s_ext[n];
       }
     }
-
+#if AMREX_SPACEDIM > 1
     // ylo and yhi
     idir = 1;
     if ((bc[idir] == amrex::BCType::ext_dir) and (iv[idir] < domlo[idir])) {
+      amrex::IntVect loc(AMREX_D_DECL(iv[0], domlo[idir], iv[2]));
       for (int n = 0; n < NVAR; n++) {
-        s_int[n] = dest(iv[0], domlo[idir], iv[2], n);
+        s_int[n] = dest(loc, n);
       }
       bcnormal(x, s_int, s_ext, idir, +1, time, geom);
       for (int n = 0; n < NVAR; n++) {
@@ -68,15 +71,16 @@ struct PCHypFillExtDir
     } else if (
       (bc[idir + AMREX_SPACEDIM] == amrex::BCType::ext_dir) and
       (iv[idir] > domhi[idir])) {
+      amrex::IntVect loc(AMREX_D_DECL(iv[0], domhi[idir], iv[2]));
       for (int n = 0; n < NVAR; n++) {
-        s_int[n] = dest(iv[0], domhi[idir], iv[2], n);
+        s_int[n] = dest(loc, n);
       }
       bcnormal(x, s_int, s_ext, idir, -1, time, geom);
       for (int n = 0; n < NVAR; n++) {
         dest(iv, n) = s_ext[n];
       }
     }
-
+#if AMREX_SPACEDIM == 3
     // zlo and zhi
     idir = 2;
     if ((bc[idir] == amrex::BCType::ext_dir) and (iv[idir] < domlo[idir])) {
@@ -98,6 +102,8 @@ struct PCHypFillExtDir
         dest(iv, n) = s_ext[n];
       }
     }
+#endif
+#endif
   }
 };
 

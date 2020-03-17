@@ -183,6 +183,8 @@ PeleC::getSmagorinskyLESTerm(
   amrex::MultiFab& LESTerm,
   amrex::Real flux_factor)
 {
+  // Only use this functionality for 3D
+#if AMREX_SPACEDIM == 3
   int ngrow = 1;
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx = geom.CellSizeArray();
   amrex::Real dx1 = dx[0];
@@ -322,9 +324,9 @@ PeleC::getSmagorinskyLESTerm(
       }
 
 #ifdef AMREX_USE_GPU
-      auto run = amrex::RunOn::Gpu;
+      auto device = amrex::RunOn::Gpu;
 #else
-      auto run = amrex::RunOn::Cpu;
+      auto device = amrex::RunOn::Cpu;
 #endif
       if (do_reflux && flux_factor != 0) // no eb in problem
       {
@@ -339,17 +341,18 @@ PeleC::getSmagorinskyLESTerm(
         if (level < parent->finestLevel()) {
           getFluxReg(level + 1).CrseAdd(
             mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dxDp,
-            dt, run);
+            dt, device);
         }
 
         if (level > 0) {
           getFluxReg(level).FineAdd(
             mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dxDp,
-            dt, run);
+            dt, device);
         }
       }
     } // End of MFIter scope
   }   // End of OMP scope
+#endif // End of AMREX_SPACEDIM == 3
 }
 
 /**
@@ -362,6 +365,7 @@ PeleC::getDynamicSmagorinskyLESTerm(
   amrex::MultiFab& LESTerm,
   amrex::Real flux_factor)
 {
+#if AMREX_SPACEDIM == 3
   // clang-format off
   /*
     Note on the grow cells:
@@ -666,9 +670,9 @@ PeleC::getDynamicSmagorinskyLESTerm(
       }
 
 #ifdef AMREX_USE_GPU
-      auto run = amrex::RunOn::Gpu;
+      auto device = amrex::RunOn::Gpu;
 #else
-      auto run = amrex::RunOn::Cpu;
+      auto device = amrex::RunOn::Cpu;
 #endif
       if (do_reflux && flux_factor != 0) // no eb in problem
       {
@@ -683,15 +687,16 @@ PeleC::getDynamicSmagorinskyLESTerm(
         if (level < parent->finestLevel()) {
           getFluxReg(level + 1).CrseAdd(
             mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dxDp,
-            dt, run);
+            dt, device);
         }
 
         if (level > 0) {
           getFluxReg(level).FineAdd(
             mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dxDp,
-            dt, run);
+            dt, device);
         }
       }
     } // End of MFIter scope
   }   // End of OMP scope
+#endif // End of AMREX_SPACEDIM == 3
 }

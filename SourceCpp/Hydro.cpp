@@ -200,9 +200,9 @@ PeleC::construct_hydro_source(
         amrex::Elixir pradial_eli = pradial.elixir();
 
 #ifdef AMREX_USE_GPU
-        auto run = amrex::RunOn::Gpu;
+        auto device = amrex::RunOn::Gpu;
 #else
-        auto run = amrex::RunOn::Cpu;
+        auto device = amrex::RunOn::Cpu;
 #endif
         BL_PROFILE_VAR("PeleC::umdrv()", purm);
         const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>
@@ -219,7 +219,7 @@ PeleC::construct_hydro_source(
         BL_PROFILE_VAR_STOP(purm);
 
         BL_PROFILE_VAR("courno + flux reg", crno);
-        courno = std::max(courno, cflLoc);
+        courno = amrex::max(courno, cflLoc);
 
         // Filter hydro source and fluxes here
         if (use_explicit_filter) {
@@ -249,7 +249,7 @@ PeleC::construct_hydro_source(
           if (level < finest_level) {
             getFluxReg(level + 1).CrseAdd(
               mfi, {AMREX_D_DECL(&(flux[0]), &(flux[1]), &(flux[2]))}, dxDp, dt,
-              run);
+              device);
 
             if (!amrex::DefaultGeometry().IsCartesian()) {
               amrex::Abort("Flux registers not r-z compatible yet");
@@ -260,7 +260,7 @@ PeleC::construct_hydro_source(
           if (level > 0) {
             getFluxReg(level).FineAdd(
               mfi, {AMREX_D_DECL(&(flux[0]), &(flux[1]), &(flux[2]))}, dxDp, dt,
-              run);
+              device);
 
             if (!amrex::DefaultGeometry().IsCartesian()) {
               amrex::Abort("Flux registers not r-z compatible yet");
@@ -373,19 +373,27 @@ pc_umdrv(
   auto const& pdivuarr = pdivu.array();
 
   BL_PROFILE_VAR("PeleC::umeth()", umeth);
+#if AMREX_SPACEDIM == 2
+  pc_umeth_2D(
+    bx, bclo, bchi, domlo, domhi, q, qaux, src_q, // bcMask,
+    flx[0], flx[1], qec_arr[0], qec_arr[1], a[0], a[1],
+    pdivuarr, vol, dx, dt);
+#elif AMREX_SPACEDIM == 3
   pc_umeth_3D(
     bx, bclo, bchi, domlo, domhi, q, qaux, src_q, // bcMask,
     flx[0], flx[1], flx[2], qec_arr[0], qec_arr[1], qec_arr[2], a[0], a[1],
     a[2], pdivuarr, vol, dx, dt);
+#endif
   BL_PROFILE_VAR_STOP(umeth);
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
     qec_eli[dir].clear();
   }
 
   // divu
-  const amrex::Real dx0 = dx[0];
-  const amrex::Real dx1 = dx[1];
-  const amrex::Real dx2 = dx[2];
+  AMREX_D_TERM
+    (const amrex::Real dx0 = dx[0];,
+     const amrex::Real dx1 = dx[1];,
+     const amrex::Real dx2 = dx[2];);
   amrex::ParallelFor(
     bxg2, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       pc_divu(i, j, k, q, AMREX_D_DECL(dx0, dx1, dx2), divarr);

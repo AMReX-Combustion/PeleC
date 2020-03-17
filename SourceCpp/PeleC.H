@@ -151,91 +151,92 @@ public:
   //
   // Read particle-related inputs
   //
-  static void read_particle_params();
+  static void readParticleParams();
+  //
+  // Define particle related variables
+  //
+  static void defineParticles();
   //
   // Initialize particle locations and velocities (and strengths if relevant)
   //
-  void init_particles();
-  //
-  // Write particles in checkpoint directories
-  //
-  void ParticleCheckPoint(const std::string& dir);
+  void initParticles();
   //
   // Timestamp particles
   //
-  void TimestampParticles(int ngrow);
-  //
-  // Advance the particles by dt
-  //
-  void advance_particles(int iteration, amrex::Real time, amrex::Real dt);
+  void particleTimestamp(int ngrow);
   //
   // Default verbosity of Particle class
   //
   static int particle_verbose;
 
   //
-  // Write particles in plotfile directories
-  //
-  void particle_plot_file(const std::string& dir);
-
-  //
   // How to initialize at restart
   //
-  void particle_post_restart(
+  void particlePostRestart(
     const std::string& restart_file, bool is_checkpoint = true);
 
   //
   // Redistribute
   //
-  virtual void particle_redistribute(int lbase = 0, bool init_part = false);
-
+  virtual void particleRedistribute(int lbase = 0, bool init_part = false);
   //
   // Setup virtual particles if necessary
   //
-  void setup_virtual_particles();
-
+  void setupVirtualParticles();
   //
   // Remove virtual particles if necessary
   //
-  void remove_virtual_particles();
+  void removeVirtualParticles();
   //
   // Setup ghost particles (for finer levels) if necessary
   //
-  void setup_ghost_particles(int ngrow);
-
+  void setupGhostParticles(int ngrow);
   //
   // Remove ghost particles (for this level) if necessary
   //
-  void remove_ghost_particles();
-
+  void removeGhostParticles();
   //
   // Time step control based on particles
   //
-  void particle_est_time_step(amrex::Real& est_dt);
+  void particleEstTimeStep(amrex::Real& est_dt);
 
-  //
   //
   // Derived quantities associated with particles
   //
   std::unique_ptr<amrex::MultiFab>
-  particle_derive(const std::string& name, amrex::Real time, int ngrow);
+  particleDerive(const std::string& name, amrex::Real time, int ngrow);
 
+  //
   // Default cfl of particles in Particle class
   //
   static amrex::Real particle_cfl;
-
   //
   // Should we write particles into plotfiles?
   //
-  static int write_particles_in_plotfile;
+  static int write_particle_plotfiles;
+  //
+  // Should we write particle ascii files?
+  //
+  static int write_spray_ascii_files;
 
-  void set_spray_grid_info(
-    int amr_iteration,
-    int amr_ncycle,
-    int ghost_width,
-    int where_width,
-    int spray_n_grow,
-    int tmp_src_width);
+  void setSprayGridInfo(
+    int& amr_iteration,
+    int& amr_ncycle,
+    int& ghost_width,
+    int& where_width,
+    int& spray_n_grow,
+    int& tmp_src_width);
+
+  static int particle_mass_tran;
+  static int particle_heat_tran;
+  static int particle_mom_tran;
+  static amrex::Gpu::HostVector<amrex::Real> sprayCritT;
+  static amrex::Gpu::HostVector<amrex::Real> sprayBoilT;
+  static amrex::Gpu::HostVector<amrex::Real> sprayCp;
+  static amrex::Gpu::HostVector<amrex::Real> sprayLatent;
+  static amrex::Vector<std::string> sprayFuelNames;
+  static amrex::Real sprayRefT;
+  static amrex::Gpu::HostVector<int> sprayIndxMap;
 #endif
 
   //
@@ -574,12 +575,9 @@ public:
   static int FirstAux;
 
   /// Index locations into particle state
-  static int pstate_loc, pstate_vel, pstate_T, pstate_dia, pstate_rho,
-    pstate_spc, n_pstate;
+  static int pstateVel, pstateT, pstateDia, pstateRho,
+    pstateY, pstateNum;
 
-  /// Component locations for field variables that get interpolated to particle
-  /// position
-  static int pfld_vel, pfld_rho, pfld_T, pfld_p, pfld_spc, n_pfld;
   //
   // This MultiFab is on the coarser level.  This is useful for the coarser
   // level to mask out the finer level.  We only build this when it is needed.

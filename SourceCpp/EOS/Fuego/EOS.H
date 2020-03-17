@@ -38,6 +38,9 @@ AMREX_GPU_HOST_DEVICE void CKRHOY(
 
 namespace EOS {
 
+extern AMREX_GPU_DEVICE_MANAGED int upassMap[NPASSIVE];
+extern AMREX_GPU_DEVICE_MANAGED int qpassMap[NPASSIVE];
+
 void init();
 /*
 AMREX_GPU_HOST_DEVICE
@@ -62,6 +65,30 @@ void bottom()
     dpdr = 0.0;
 }
 */
+
+AMREX_GPU_HOST_DEVICE
+AMREX_FORCE_INLINE
+void
+get_mw_eos(amrex::Real mw[])
+{
+  get_mw(mw);
+}
+
+AMREX_GPU_HOST_DEVICE
+AMREX_FORCE_INLINE
+void
+get_imw_eos(amrex::Real imw[])
+{
+  get_imw(imw);
+}
+
+AMREX_GPU_HOST_DEVICE
+AMREX_FORCE_INLINE
+void
+get_cpi(amrex::Real T, amrex::Real cpi[])
+{
+  CKCPMS(&T, cpi);
+}
 
 AMREX_GPU_HOST_DEVICE
 AMREX_FORCE_INLINE
@@ -318,7 +345,7 @@ AMREX_FORCE_INLINE
 int
 upass_map(const int i)
 {
-  return i + UFA;
+  return upassMap[i];
 }
 
 AMREX_GPU_HOST_DEVICE
@@ -327,7 +354,7 @@ int
 qpass_map(const int i)
 {
   /*V and W are passive*/
-  return i + QFA;
+  return qpassMap[i];
 }
 
 }; // namespace EOS

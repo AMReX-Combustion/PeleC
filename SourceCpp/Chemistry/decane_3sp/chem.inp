@@ -1,0 +1,24 @@
+!*****************************************
+! Dummy "mechanism" to represent 
+! a simple 3species system for 
+! n-decane non-reacting spray
+! data culled from dodecane_lu mech 
+!*****************************************
+
+
+ELEMENTS
+C H O N 
+END
+
+SPECIES
+NC10H22 O2     N2
+END
+
+TRANS ALL
+NC10H22            2   704.917     6.675     0.000     0.000     1.000          
+O2                 1   107.400     3.458     0.000     1.600     3.800          
+N2                 1    97.530     3.621     0.000     1.760     4.000          
+END
+
+REACTIONS
+END
