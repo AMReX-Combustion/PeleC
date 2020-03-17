@@ -370,8 +370,8 @@ PeleC::getMOLSrcTerm(
             cbox, qar, qauxar, flx, a, dx, plm_iorder
 #ifdef AMREX_USE_EB
             ,
-            vfrac.array(mfi), flags.array(mfi), d_sv_eb_bndry_geom, Ncut,
-            d_eb_flux_thdlocal, nFlux
+            eb_small_vfrac, vfrac.array(mfi), flags.array(mfi),
+            d_sv_eb_bndry_geom, Ncut, d_eb_flux_thdlocal, nFlux
 #endif
           );
         }

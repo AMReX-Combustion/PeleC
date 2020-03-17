@@ -20,8 +20,10 @@ AMREX_GPU_DEVICE_MANAGED amrex::GpuArray<amrex::Real, NUM_SPECIES> massfrac = {
   1.0};
 } // namespace ProbParm
 
-void pc_prob_close()
-{}
+void
+pc_prob_close()
+{
+}
 
 extern "C" {
 void
