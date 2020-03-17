@@ -251,7 +251,8 @@ PeleC::setSprayGridInfo(
   //     have moved and we don't want to just lose it (we will redistribute it
   //     when we're done}
 
-  where_width = amrex::max(ghost_width + (1 - amr_iteration) - 1, amr_iteration);
+  where_width =
+    amrex::max(ghost_width + (1 - amr_iteration) - 1, amr_iteration);
 
   // *** spray_n_grow *** is used
   //   *) to determine how many ghost cells we need to fill in the MultiFab from
@@ -355,8 +356,9 @@ PeleC::do_sdc_iteration(
   int tmp_src_width = 0;
 
   if (do_spray_particles) {
-    setSprayGridInfo(amr_iteration, amr_ncycle, ghost_width, where_width, spray_n_grow,
-                     tmp_src_width);
+    setSprayGridInfo(
+      amr_iteration, amr_ncycle, ghost_width, where_width, spray_n_grow,
+      tmp_src_width);
     fill_Sborder = true;
     nGrow_Sborder = std::max(nGrow_Sborder, spray_n_grow);
   }
@@ -426,20 +428,20 @@ PeleC::do_sdc_iteration(
 
       // Do the valid particles themselves
       theSprayPC()->moveKickDrift(
-        Sborder, *old_sources[spray_src], level, dt, cur_time,
-	tmp_src_width, true, where_width);
+        Sborder, *old_sources[spray_src], level, dt, cur_time, tmp_src_width,
+        true, where_width);
 
       // Only need the coarsest virtual particles here.
       if (level < finest_level)
         theVirtPC()->moveKickDrift(
-	  Sborder, *old_sources[spray_src], level, dt, cur_time,
-	  tmp_src_width, true, where_width);
+          Sborder, *old_sources[spray_src], level, dt, cur_time, tmp_src_width,
+          true, where_width);
 
       // Miiiight need all Ghosts
       if (theGhostPC() != 0)
         theGhostPC()->moveKickDrift(
-          Sborder, *old_sources[spray_src], level, dt, cur_time,
-	  tmp_src_width, true, where_width);
+          Sborder, *old_sources[spray_src], level, dt, cur_time, tmp_src_width,
+          true, where_width);
     }
 #endif
 
@@ -537,7 +539,7 @@ PeleC::do_sdc_iteration(
     // Ghost particles need to be kicked except during the final iteration.
     if (amr_iteration != amr_ncycle)
       theGhostPC()->moveKick(
-      Sborder, *new_sources[spray_src], level, dt, time + dt, tmp_src_width);
+        Sborder, *new_sources[spray_src], level, dt, time + dt, tmp_src_width);
   }
 #endif
 

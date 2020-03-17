@@ -392,7 +392,9 @@ pc_umeth_3D(
   // Construct p div{U}
   amrex::ParallelFor(
     bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      pc_pdivu(i, j, k, pdivu, AMREX_D_DECL(q1, q2, q3), AMREX_D_DECL(a1, a2, a3), vol);
+      pc_pdivu(
+        i, j, k, pdivu, AMREX_D_DECL(q1, q2, q3), AMREX_D_DECL(a1, a2, a3),
+        vol);
     });
 }
 
@@ -409,7 +411,7 @@ pc_umeth_2D(
     srcQ, // amrex::IArrayBox const& bcMask,
   amrex::Array4<amrex::Real> const& flx1,
   amrex::Array4<amrex::Real> const& flx2,
-  //amrex::Array4<const amrex::Real> const& dloga,
+  // amrex::Array4<const amrex::Real> const& dloga,
   amrex::Array4<amrex::Real> const& q1,
   amrex::Array4<amrex::Real> const& q2,
   amrex::Array4<const amrex::Real> const& a1,
@@ -422,8 +424,8 @@ pc_umeth_2D(
 #if AMREX_SPACEDIM == 2
   amrex::Real const dx = del[0];
   amrex::Real const dy = del[1];
-  amrex::Real const hdtdy = 0.5*dt/dy;
-  amrex::Real const hdt = 0.5*dt;
+  amrex::Real const hdtdy = 0.5 * dt / dy;
+  amrex::Real const hdt = 0.5 * dt;
 
   const int bclx = bclo[0];
   const int bcly = bclo[1];
@@ -463,21 +465,21 @@ pc_umeth_2D(
 
   amrex::ParallelFor(
     xslpbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    amrex::Real slope[QVAR];
-    // X slopes and interp
-    for (int n = 0; n < QVAR; ++n)
-      slope[n] = plm_slope(i, j, k, n, 0, q);
-    pc_plm_x(i, j, k, qxmarr, qxparr, slope, q, qaux(i, j, k, QC), dx, dt);
-  });
+      amrex::Real slope[QVAR];
+      // X slopes and interp
+      for (int n = 0; n < QVAR; ++n)
+        slope[n] = plm_slope(i, j, k, n, 0, q);
+      pc_plm_x(i, j, k, qxmarr, qxparr, slope, q, qaux(i, j, k, QC), dx, dt);
+    });
 
   amrex::ParallelFor(
     yslpbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    amrex::Real slope[QVAR];
-    // Y slopes and interp
-    for (int n = 0; n < QVAR; n++)
-      slope[n] = plm_slope(i, j, k, n, 1, q);
-    pc_plm_y(i, j, k, qymarr, qyparr, slope, q, qaux(i, j, k, QC), dy, dt);
-  });
+      amrex::Real slope[QVAR];
+      // Y slopes and interp
+      for (int n = 0; n < QVAR; n++)
+        slope[n] = plm_slope(i, j, k, n, 1, q);
+      pc_plm_y(i, j, k, qymarr, qyparr, slope, q, qaux(i, j, k, QC), dy, dt);
+    });
 
   // These are the first flux estimates as per the corner-transport-upwind
   // method X initial fluxes
@@ -491,9 +493,10 @@ pc_umeth_2D(
   auto const& gdtemp = qgdx.array();
   amrex::ParallelFor(
     xflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      pc_cmpflx(i, j, k, bclx, bchx, dlx, dhx, qxmarr, qxparr, fxarr, gdtemp, qaux,
-		cdir);
-  });
+      pc_cmpflx(
+        i, j, k, bclx, bchx, dlx, dhx, qxmarr, qxparr, fxarr, gdtemp, qaux,
+        cdir);
+    });
 
   // Y initial fluxes
   cdir = 1;
@@ -502,9 +505,9 @@ pc_umeth_2D(
   auto const& fyarr = fy.array();
   amrex::ParallelFor(
     yflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      pc_cmpflx(i, j, k, bcly, bchy, dly, dhy, qymarr, qyparr, fyarr, q2, qaux,
-		cdir);
-  });
+      pc_cmpflx(
+        i, j, k, bcly, bchy, dly, dhy, qymarr, qyparr, fyarr, q2, qaux, cdir);
+    });
 
   // X interface corrections
   cdir = 0;
@@ -516,9 +519,12 @@ pc_umeth_2D(
   auto const& qmarr = qm.array();
   auto const& qparr = qp.array();
 
-  amrex::ParallelFor(tybx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_transy(i, j, k, qmarr, qparr, qxmarr, qxparr, fyarr, srcQ, qaux, q2, hdt, hdtdy);
-  });
+  amrex::ParallelFor(
+    tybx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      pc_transy(
+        i, j, k, qmarr, qparr, qxmarr, qxparr, fyarr, srcQ, qaux, q2, hdt,
+        hdtdy);
+    });
 
   fyeli.clear();
   qxmeli.clear();
@@ -526,30 +532,38 @@ pc_umeth_2D(
   const amrex::Box& xfxbx = surroundingNodes(bx, cdir);
 
   // Final Riemann problem X
-  amrex::ParallelFor(xfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_cmpflx(i, j, k, bclx, bchx, dlx, dhx, qmarr, qparr, flx1, q1, qaux, cdir);
-  });
+  amrex::ParallelFor(
+    xfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      pc_cmpflx(
+        i, j, k, bclx, bchx, dlx, dhx, qmarr, qparr, flx1, q1, qaux, cdir);
+    });
 
   // Y interface corrections
   cdir = 1;
   const amrex::Box& txbx = grow(bx, cdir, 1);
 
-  amrex::ParallelFor(txbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_transx(i, j, k, qmarr, qparr, qymarr, qyparr, fxarr, srcQ, qaux, gdtemp, a1, vol, hdt);
-  });
+  amrex::ParallelFor(
+    txbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      pc_transx(
+        i, j, k, qmarr, qparr, qymarr, qyparr, fxarr, srcQ, qaux, gdtemp, a1,
+        vol, hdt);
+    });
   fxeli.clear();
   qymeli.clear();
   qypeli.clear();
 
   // Final Riemann problem Y
   const amrex::Box& yfxbx = surroundingNodes(bx, cdir);
-  amrex::ParallelFor(yfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_cmpflx(i, j, k, bcly, bchy, dly, dhy, qmarr, qparr, flx2, q2, qaux, cdir);
-  });
+  amrex::ParallelFor(
+    yfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      pc_cmpflx(
+        i, j, k, bcly, bchy, dly, dhy, qmarr, qparr, flx2, q2, qaux, cdir);
+    });
 
   // Construct p div{U}
-  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_pdivu(i, j, k, pdivu, q1, q2, a1, a2, vol);
-  });
+  amrex::ParallelFor(
+    bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      pc_pdivu(i, j, k, pdivu, q1, q2, a1, a2, vol);
+    });
 #endif // AMREX_SPACEDIM == 2
 }

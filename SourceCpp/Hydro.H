@@ -68,10 +68,14 @@ pc_divu(
 #if AMREX_SPACEDIM == 1
   amrex::Real ux = (q(i, j, k, QU) - q(i - 1, j, k, QU)) / dx;
 #elif AMREX_SPACEDIM == 2
-  amrex::Real ux = 0.5 * (q(i, j, k, QU) - q(i - 1, j, k, QU) + q(i, j - 1, k, QU)
-			  - q(i - 1, j - 1, k, QU)) / dx;
-  amrex::Real vy = 0.5 * (q(i, j, k, QV) - q(i, j - 1, k, QV) + q(i - 1, j, k, QV)
-			  - q(i - 1, j - 1, k ,QV)) / dy;
+  amrex::Real ux = 0.5 *
+                   (q(i, j, k, QU) - q(i - 1, j, k, QU) + q(i, j - 1, k, QU) -
+                    q(i - 1, j - 1, k, QU)) /
+                   dx;
+  amrex::Real vy = 0.5 *
+                   (q(i, j, k, QV) - q(i, j - 1, k, QV) + q(i - 1, j, k, QV) -
+                    q(i - 1, j - 1, k, QV)) /
+                   dy;
 #elif AMREX_SPACEDIM == 3
   amrex::Real ux =
     0.25 *
@@ -92,7 +96,7 @@ pc_divu(
      q(i - 1, j - 1, k, QW) - q(i - 1, j - 1, k - 1, QW)) /
     dz;
 #endif
-  divu(i, j, k) = AMREX_D_TERM(ux, + vy, + wz);
+  divu(i, j, k) = AMREX_D_TERM(ux, +vy, +wz);
 }
 
 AMREX_GPU_DEVICE
@@ -141,10 +145,11 @@ pc_update(
 {
   amrex::Real v = vol(i, j, k);
   for (int n = 0; n < NVAR; ++n) {
-    update(i, j, k, n) +=
-      (AMREX_D_TERM(flx[0](i, j, k, n) - flx[0](i + 1, j, k, n), + flx[1](i, j, k, n) -
-		    flx[1](i, j + 1, k, n), + flx[2](i, j, k, n) - flx[2](i, j, k + 1, n))) /
-      v;
+    update(i, j, k, n) += (AMREX_D_TERM(
+                            flx[0](i, j, k, n) - flx[0](i + 1, j, k, n),
+                            +flx[1](i, j, k, n) - flx[1](i, j + 1, k, n),
+                            +flx[2](i, j, k, n) - flx[2](i, j, k + 1, n))) /
+                          v;
   }
 
   update(i, j, k, UEINT) -= pdivu(i, j, k);

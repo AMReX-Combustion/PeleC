@@ -376,8 +376,7 @@ pc_umdrv(
 #if AMREX_SPACEDIM == 2
   pc_umeth_2D(
     bx, bclo, bchi, domlo, domhi, q, qaux, src_q, // bcMask,
-    flx[0], flx[1], qec_arr[0], qec_arr[1], a[0], a[1],
-    pdivuarr, vol, dx, dt);
+    flx[0], flx[1], qec_arr[0], qec_arr[1], a[0], a[1], pdivuarr, vol, dx, dt);
 #elif AMREX_SPACEDIM == 3
   pc_umeth_3D(
     bx, bclo, bchi, domlo, domhi, q, qaux, src_q, // bcMask,
@@ -390,10 +389,8 @@ pc_umdrv(
   }
 
   // divu
-  AMREX_D_TERM
-    (const amrex::Real dx0 = dx[0];,
-     const amrex::Real dx1 = dx[1];,
-     const amrex::Real dx2 = dx[2];);
+  AMREX_D_TERM(const amrex::Real dx0 = dx[0];, const amrex::Real dx1 = dx[1];
+               , const amrex::Real dx2 = dx[2];);
   amrex::ParallelFor(
     bxg2, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       pc_divu(i, j, k, q, AMREX_D_DECL(dx0, dx1, dx2), divarr);

@@ -26,10 +26,8 @@ pc_compute_tangential_vel_derivs_eb(
       int i = 0;
       int j = 0;
       int k = 0;
-      AMREX_D_TERM(
-      i = sv_ebg[L].iv[0];,
-      j = sv_ebg[L].iv[1];,
-      k = sv_ebg[L].iv[2];);
+      AMREX_D_TERM(i = sv_ebg[L].iv[0];, j = sv_ebg[L].iv[1];
+                   , k = sv_ebg[L].iv[2];);
       if (is_inside(i, j, k, lo, hi)) {
         const int jhip = j + flags(i, j, k).isConnected(0, 1, 0);
         const int jhim = j - flags(i, j, k).isConnected(0, -1, 0);
@@ -77,10 +75,8 @@ pc_compute_tangential_vel_derivs_eb(
       int i = 0;
       int j = 0;
       int k = 0;
-      AMREX_D_TERM(
-      i = sv_ebg[L].iv[0];,
-      j = sv_ebg[L].iv[1];,
-      k = sv_ebg[L].iv[2];);
+      AMREX_D_TERM(i = sv_ebg[L].iv[0];, j = sv_ebg[L].iv[1];
+                   , k = sv_ebg[L].iv[2];);
       if (is_inside(i, j, k, lo, hi)) {
         const int ihip = i + flags(i, j, k).isConnected(1, 0, 0);
         const int ihim = i - flags(i, j, k).isConnected(-1, 0, 0);

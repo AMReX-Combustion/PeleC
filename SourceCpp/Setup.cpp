@@ -49,13 +49,10 @@ set_x_vel_bc(amrex::BCRec& bc, const amrex::BCRec& phys_bc)
 {
   const int* lo_bc = phys_bc.lo();
   const int* hi_bc = phys_bc.hi();
-  AMREX_D_TERM
-    (bc.setLo(0, norm_vel_bc[lo_bc[0]]);
-     bc.setHi(0, norm_vel_bc[hi_bc[0]]);,
-     bc.setLo(1, tang_vel_bc[lo_bc[1]]);
-     bc.setHi(1, tang_vel_bc[hi_bc[1]]);,
-     bc.setLo(2, tang_vel_bc[lo_bc[2]]);
-     bc.setHi(2, tang_vel_bc[hi_bc[2]]););
+  AMREX_D_TERM(
+    bc.setLo(0, norm_vel_bc[lo_bc[0]]); bc.setHi(0, norm_vel_bc[hi_bc[0]]);
+    , bc.setLo(1, tang_vel_bc[lo_bc[1]]); bc.setHi(1, tang_vel_bc[hi_bc[1]]);
+    , bc.setLo(2, tang_vel_bc[lo_bc[2]]); bc.setHi(2, tang_vel_bc[hi_bc[2]]););
 }
 
 static void
@@ -63,13 +60,10 @@ set_y_vel_bc(amrex::BCRec& bc, const amrex::BCRec& phys_bc)
 {
   const int* lo_bc = phys_bc.lo();
   const int* hi_bc = phys_bc.hi();
-  AMREX_D_TERM
-    (bc.setLo(0, tang_vel_bc[lo_bc[0]]);
-     bc.setHi(0, tang_vel_bc[hi_bc[0]]);,
-     bc.setLo(1, norm_vel_bc[lo_bc[1]]);
-     bc.setHi(1, norm_vel_bc[hi_bc[1]]);,
-     bc.setLo(2, tang_vel_bc[lo_bc[2]]);
-     bc.setHi(2, tang_vel_bc[hi_bc[2]]););
+  AMREX_D_TERM(
+    bc.setLo(0, tang_vel_bc[lo_bc[0]]); bc.setHi(0, tang_vel_bc[hi_bc[0]]);
+    , bc.setLo(1, norm_vel_bc[lo_bc[1]]); bc.setHi(1, norm_vel_bc[hi_bc[1]]);
+    , bc.setLo(2, tang_vel_bc[lo_bc[2]]); bc.setHi(2, tang_vel_bc[hi_bc[2]]););
 }
 
 static void
@@ -88,13 +82,10 @@ set_z_vel_bc(amrex::BCRec& bc, const amrex::BCRec& phys_bc)
 {
   const int* lo_bc = phys_bc.lo();
   const int* hi_bc = phys_bc.hi();
-  AMREX_D_TERM
-    (bc.setLo(0, tang_vel_bc[lo_bc[0]]);
-     bc.setHi(0, tang_vel_bc[hi_bc[0]]);,
-     bc.setLo(1, tang_vel_bc[lo_bc[1]]);
-     bc.setHi(1, tang_vel_bc[hi_bc[1]]);,
-     bc.setLo(2, norm_vel_bc[lo_bc[2]]);
-     bc.setHi(2, norm_vel_bc[hi_bc[2]]););
+  AMREX_D_TERM(
+    bc.setLo(0, tang_vel_bc[lo_bc[0]]); bc.setHi(0, tang_vel_bc[hi_bc[0]]);
+    , bc.setLo(1, tang_vel_bc[lo_bc[1]]); bc.setHi(1, tang_vel_bc[hi_bc[1]]);
+    , bc.setLo(2, norm_vel_bc[lo_bc[2]]); bc.setHi(2, norm_vel_bc[hi_bc[2]]););
 }
 
 void

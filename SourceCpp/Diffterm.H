@@ -45,23 +45,22 @@ pc_diffusion_flux(
   const amrex::Real dxinv = 1.0 / delta;
   amrex::Real taux = 0.0, tauy = 0.0, tauz = 0.0;
   if (dir == 0) {
-    AMREX_D_TERM
-      (const amrex::Real dudx = dxinv * (q(i, j, k, QU) - q(im, jm, km, QU));,
-       const amrex::Real dvdx = dxinv * (q(i, j, k, QV) - q(im, jm, km, QV));
-       const amrex::Real dudy = td(i, j, k, 0);
-       const amrex::Real dvdy = td(i, j, k, 1);,
-       const amrex::Real dwdx = dxinv * (q(i, j, k, QW) - q(im, jm, km, QW));
-       //const amrex::Real dwdy = td(i, j, k, 2);
-       const amrex::Real dudz = td(i, j, k, 3);
-       //const amrex::Real dvdz = td(i, j, k, 4);
-       const amrex::Real dwdz = td(i, j, k, 5););
-    const amrex::Real divu = AMREX_D_TERM(dudx, + dvdy, + dwdz);
+    AMREX_D_TERM(
+      const amrex::Real dudx = dxinv * (q(i, j, k, QU) - q(im, jm, km, QU));
+      , const amrex::Real dvdx = dxinv * (q(i, j, k, QV) - q(im, jm, km, QV));
+      const amrex::Real dudy = td(i, j, k, 0);
+      const amrex::Real dvdy = td(i, j, k, 1);
+      , const amrex::Real dwdx = dxinv * (q(i, j, k, QW) - q(im, jm, km, QW));
+      // const amrex::Real dwdy = td(i, j, k, 2);
+      const amrex::Real dudz = td(i, j, k, 3);
+      // const amrex::Real dvdz = td(i, j, k, 4);
+      const amrex::Real dwdz = td(i, j, k, 5););
+    const amrex::Real divu = AMREX_D_TERM(dudx, +dvdy, +dwdz);
 
     taux =
       coef[dComp_mu] * (2.0 * dudx - 2.0 / 3.0 * divu) + coef[dComp_xi] * divu;
-    AMREX_D_TERM
-      (,tauy = coef[dComp_mu] * (dudy + dvdx);,
-       tauz = coef[dComp_mu] * (dudz + dwdx););
+    AMREX_D_TERM(, tauy = coef[dComp_mu] * (dudy + dvdx);
+                 , tauz = coef[dComp_mu] * (dudz + dwdx););
   } else if (dir == 1) {
     const amrex::Real dudx = td(i, j, k, 0);
     const amrex::Real dvdx = td(i, j, k, 1);
@@ -69,22 +68,22 @@ pc_diffusion_flux(
     const amrex::Real dvdy = dxinv * (q(i, j, k, QV) - q(im, jm, km, QV));
 #if AMREX_SPACEDIM == 3
     const amrex::Real dwdy = dxinv * (q(i, j, k, QW) - q(im, jm, km, QW));
-    //const amrex::Real dwdx = td(i, j, k, 2);
-    //const amrex::Real dudz = td(i, j, k, 3);
+    // const amrex::Real dwdx = td(i, j, k, 2);
+    // const amrex::Real dudz = td(i, j, k, 3);
     const amrex::Real dvdz = td(i, j, k, 4);
     const amrex::Real dwdz = td(i, j, k, 5);
     tauz = coef[dComp_mu] * (dwdy + dvdz);
 #endif
-    const amrex::Real divu = AMREX_D_TERM(dudx, + dvdy, + dwdz);
+    const amrex::Real divu = AMREX_D_TERM(dudx, +dvdy, +dwdz);
 
     taux = coef[dComp_mu] * (dudy + dvdx);
     tauy =
       coef[dComp_mu] * (2.0 * dvdy - 2.0 / 3.0 * divu) + coef[dComp_xi] * divu;
   } else if (dir == 2) {
     const amrex::Real dudx = td(i, j, k, 0);
-    //const amrex::Real dvdx = td(i, j, k, 1);
+    // const amrex::Real dvdx = td(i, j, k, 1);
     const amrex::Real dwdx = td(i, j, k, 2);
-    //const amrex::Real dudy = td(i, j, k, 3);
+    // const amrex::Real dudy = td(i, j, k, 3);
     const amrex::Real dvdy = td(i, j, k, 4);
     const amrex::Real dwdy = td(i, j, k, 5);
     const amrex::Real dudz = dxinv * (q(i, j, k, QU) - q(im, jm, km, QU));
@@ -101,9 +100,10 @@ pc_diffusion_flux(
   flx(i, j, k, UMY) = -tauy;
   flx(i, j, k, UMZ) = -tauz;
   flx(i, j, k, UEDEN) =
-    0.5*(AMREX_D_TERM(-taux * (q(i, j, k, QU) + q(im, jm, km, QU)),
-		      - tauy * (q(i, j, k, QV) + q(im, jm, km, QV)),
-		      - tauz * (q(i, j, k, QW) + q(im, jm, km, QW)))) -
+    0.5 * (AMREX_D_TERM(
+            -taux * (q(i, j, k, QU) + q(im, jm, km, QU)),
+            -tauy * (q(i, j, k, QV) + q(im, jm, km, QV)),
+            -tauz * (q(i, j, k, QW) + q(im, jm, km, QW)))) -
     coef[dComp_lambda] * (dxinv * (q(i, j, k, QTEMP) - q(im, jm, km, QTEMP)));
   const amrex::Real dlnp = dxinv * (q(i, j, k, QPRES) - q(im, jm, km, QPRES)) /
                            (0.5 * (q(i, j, k, QPRES) + q(im, jm, km, QPRES)));
@@ -146,10 +146,9 @@ pc_diffusion_flux(
     flx(i, j, k, UEDEN) -= Yface * hface * Vc;
   }
   // Scale by area
-  AMREX_D_TERM(
-  flx(i, j, k, UMX) *= a(i, j, k);,
-  flx(i, j, k, UMY) *= a(i, j, k);,
-  flx(i, j, k, UMZ) *= a(i, j, k););
+  AMREX_D_TERM(flx(i, j, k, UMX) *= a(i, j, k);
+               , flx(i, j, k, UMY) *= a(i, j, k);
+               , flx(i, j, k, UMZ) *= a(i, j, k););
   flx(i, j, k, UEDEN) *= a(i, j, k);
   for (int ns = 0; ns < NUM_SPECIES; ++ns)
     flx(i, j, k, UFS + ns) *= a(i, j, k);
@@ -165,15 +164,16 @@ pc_flux_div(
   const int k,
   const int n,
   AMREX_D_DECL(
-  const amrex::Array4<const amrex::Real>& fx,
-  const amrex::Array4<const amrex::Real>& fy,
-  const amrex::Array4<const amrex::Real>& fz),
+    const amrex::Array4<const amrex::Real>& fx,
+    const amrex::Array4<const amrex::Real>& fy,
+    const amrex::Array4<const amrex::Real>& fz),
   const amrex::Array4<const amrex::Real>& V,
   const amrex::Array4<amrex::Real>& D)
 {
   D(i, j, k, n) =
-    -(AMREX_D_TERM(fx(i + 1, j, k, n) - fx(i, j, k, n), + fy(i, j + 1, k, n) -
-		   fy(i, j, k, n), + fz(i, j, k + 1, n) - fz(i, j, k, n))) /
+    -(AMREX_D_TERM(
+      fx(i + 1, j, k, n) - fx(i, j, k, n), +fy(i, j + 1, k, n) - fy(i, j, k, n),
+      +fz(i, j, k + 1, n) - fz(i, j, k, n))) /
     V(i, j, k);
 }
 

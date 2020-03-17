@@ -240,14 +240,14 @@ PeleC::checkPoint(
   bool is_checkpoint = true;
 
   amrex::Vector<std::string> real_comp_names(pstateNum);
-  AMREX_D_TERM(real_comp_names[pstateVel]   = "xvel";,
-	       real_comp_names[pstateVel+1] = "yvel";,
-	       real_comp_names[pstateVel+2] = "zvel";);
-  real_comp_names[pstateT]   = "temperature";
+  AMREX_D_TERM(real_comp_names[pstateVel] = "xvel";
+               , real_comp_names[pstateVel + 1] = "yvel";
+               , real_comp_names[pstateVel + 2] = "zvel";);
+  real_comp_names[pstateT] = "temperature";
   real_comp_names[pstateDia] = "diam";
   real_comp_names[pstateRho] = "density";
   for (int sp = 0; sp != SPRAY_FUEL_NUM; ++sp) {
-    real_comp_names[pstateY+sp] = "spray_mf_"+ PeleC::sprayFuelNames[sp];
+    real_comp_names[pstateY + sp] = "spray_mf_" + PeleC::sprayFuelNames[sp];
   }
   amrex::Vector<std::string> int_comp_names;
   if (PeleC::theSprayPC()) {
@@ -992,30 +992,31 @@ PeleC::writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how)
 
   if (PeleC::theSprayPC()) {
     amrex::Vector<std::string> real_comp_names(pstateNum);
-    AMREX_D_TERM(real_comp_names[pstateVel]   = "xvel";,
-		 real_comp_names[pstateVel+1] = "yvel";,
-		 real_comp_names[pstateVel+2] = "zvel";);
-    real_comp_names[pstateT]   = "temperature";
+    AMREX_D_TERM(real_comp_names[pstateVel] = "xvel";
+                 , real_comp_names[pstateVel + 1] = "yvel";
+                 , real_comp_names[pstateVel + 2] = "zvel";);
+    real_comp_names[pstateT] = "temperature";
     real_comp_names[pstateDia] = "diam";
     real_comp_names[pstateRho] = "density";
     for (int sp = 0; sp != SPRAY_FUEL_NUM; ++sp) {
-      real_comp_names[pstateY+sp] = "spray_mf_"+ PeleC::sprayFuelNames[sp];
+      real_comp_names[pstateY + sp] = "spray_mf_" + PeleC::sprayFuelNames[sp];
     }
     amrex::Vector<std::string> int_comp_names;
     if (PeleC::theSprayPC()) {
       PeleC::theSprayPC()->Checkpoint(
-	dir, "particles", is_checkpoint, real_comp_names, int_comp_names);
+        dir, "particles", is_checkpoint, real_comp_names, int_comp_names);
       if (level == 0) {
-	if (do_spray_particles == 1 && write_spray_ascii_files == 1) {
-	  // TODO: Would be nice to be able to use file_name_digits
-	  // instead of doing this
-	  int strlen = dir.length();
-	  // Remove the ".temp" from the directory
-	  std::string dirout = dir.substr(0, strlen-5);
-	  size_t num_start_loc = dirout.find_last_not_of("0123456789") + 1;
-	  std::string fname = "spray" + dirout.substr(num_start_loc, strlen) + ".p3d";
-	  theSprayPC()->WriteAsciiFile(fname);
-	}
+        if (do_spray_particles == 1 && write_spray_ascii_files == 1) {
+          // TODO: Would be nice to be able to use file_name_digits
+          // instead of doing this
+          int strlen = dir.length();
+          // Remove the ".temp" from the directory
+          std::string dirout = dir.substr(0, strlen - 5);
+          size_t num_start_loc = dirout.find_last_not_of("0123456789") + 1;
+          std::string fname =
+            "spray" + dirout.substr(num_start_loc, strlen) + ".p3d";
+          theSprayPC()->WriteAsciiFile(fname);
+        }
       }
     }
   }

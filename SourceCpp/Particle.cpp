@@ -9,29 +9,28 @@ using namespace amrex;
 
 #ifdef AMREX_PARTICLES
 
-namespace
-{
-  bool virtual_particles_set = false;
-  //
-  // Containers for the real "active" Particles
-  //
-  SprayParticleContainer* SprayPC = 0;
-  //
-  // Container for temporary, virtual Particles
-  //
-  SprayParticleContainer* VirtPC = 0;
-  //
-  // Container for temporary, ghost Particles
-  //
-  SprayParticleContainer* GhostPC = 0;
+namespace {
+bool virtual_particles_set = false;
+//
+// Containers for the real "active" Particles
+//
+SprayParticleContainer* SprayPC = 0;
+//
+// Container for temporary, virtual Particles
+//
+SprayParticleContainer* VirtPC = 0;
+//
+// Container for temporary, ghost Particles
+//
+SprayParticleContainer* GhostPC = 0;
 
-  void
-  RemoveParticlesOnExit()
-  {
-    delete SprayPC;
-    delete GhostPC;
-    delete VirtPC;
-  }
+void
+RemoveParticlesOnExit()
+{
+  delete SprayPC;
+  delete GhostPC;
+  delete VirtPC;
+}
 } // namespace
 
 int PeleC::do_spray_particles = 0;
@@ -113,10 +112,9 @@ PeleC::readParticleParams()
   // Number of fuel species in spray droplets
   // Must match the number specified at compile time
   const int nfuel = ppp.countval("fuel_species");
-  if (nfuel != SPRAY_FUEL_NUM)
-    {
-      Abort("Number of fuel species in input file must match SPRAY_FUEL_NUM");
-    }
+  if (nfuel != SPRAY_FUEL_NUM) {
+    Abort("Number of fuel species in input file must match SPRAY_FUEL_NUM");
+  }
 
   sprayFuelNames.assign(nfuel, "");
   sprayCritT.resize(nfuel);
@@ -124,16 +122,16 @@ PeleC::readParticleParams()
   sprayLatent.resize(nfuel);
   sprayCp.resize(nfuel);
   sprayIndxMap.resize(nfuel);
-  for (int i = 0; i != nfuel; ++i)
-    {
-      ppp.getkth("fuel_species", i, sprayFuelNames[i], 0);
-      ppp.getkth("fuel_crit_temp", i, sprayCritT[i], 0);
-      ppp.getkth("fuel_boil_temp", i, sprayBoilT[i], 0);
-      ppp.getkth("fuel_latent", i, sprayLatent[i], 0);
-      ppp.getkth("fuel_cp", i, sprayCp[i], 0);
-    }
+  for (int i = 0; i != nfuel; ++i) {
+    ppp.getkth("fuel_species", i, sprayFuelNames[i], 0);
+    ppp.getkth("fuel_crit_temp", i, sprayCritT[i], 0);
+    ppp.getkth("fuel_boil_temp", i, sprayBoilT[i], 0);
+    ppp.getkth("fuel_latent", i, sprayLatent[i], 0);
+    ppp.getkth("fuel_cp", i, sprayCp[i], 0);
+  }
   // Must use same reference temperature for all fuels
-  // TODO: This means the reference temperature must be the same for all fuel species
+  // TODO: This means the reference temperature must be the same for all fuel
+  // species
   ppp.get("fuel_ref_temp", sprayRefT);
   //
   // Set if particle plot files should be written
@@ -184,27 +182,22 @@ PeleC::defineParticles()
 #ifdef PELEC_EOS_FUEGO
   // There must be at least as many fuel species in the spray as
   // there are species in the fluid
-  if (SPRAY_FUEL_NUM > NUM_SPECIES)
-    {
-      Abort("Cannot have more spray fuel species than fluid species");
+  if (SPRAY_FUEL_NUM > NUM_SPECIES) {
+    Abort("Cannot have more spray fuel species than fluid species");
+  }
+  for (int i = 0; i != SPRAY_FUEL_NUM; ++i) {
+    for (int ns = 0; ns != NUM_SPECIES; ++ns) {
+      std::string gas_spec = spec_names[ns];
+      if (gas_spec == sprayFuelNames[i]) {
+        sprayIndxMap[i] = ns;
+      }
     }
-  for (int i = 0; i != SPRAY_FUEL_NUM; ++i)
-    {
-      for (int ns = 0; ns != NUM_SPECIES; ++ns)
-	{
-	  std::string gas_spec = spec_names[ns];
-	  if (gas_spec == sprayFuelNames[i])
-	    {
-	      sprayIndxMap[i] = ns;
-	    }
-	}
-      if (sprayIndxMap[i] < 0)
-	{
-	  Print() << "Fuel " << sprayFuelNames[i] << " not found in species list"
-		  << std::endl;
-	  Abort();
-	}
+    if (sprayIndxMap[i] < 0) {
+      Print() << "Fuel " << sprayFuelNames[i] << " not found in species list"
+              << std::endl;
+      Abort();
     }
+  }
 #else
   for (int ns = 0; ns != SPRAY_FUEL_NUM; ++ns) {
     sprayIndxMap[ns] = 0;
@@ -293,14 +286,13 @@ PeleC::initParticles()
       theSprayPC()->InitParticlesUniform(this, level, particle_init_uniform);
     }
     // Pass constant reference data and memory allocations to GPU
-    theSprayPC()->buildFuelData(sprayCritT, sprayBoilT, sprayCp, sprayLatent,
-				sprayIndxMap, sprayRefT);
+    theSprayPC()->buildFuelData(
+      sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
   }
 }
 
 void
-PeleC::particlePostRestart(
-  const std::string& restart_file, bool is_checkpoint)
+PeleC::particlePostRestart(const std::string& restart_file, bool is_checkpoint)
 {
   if (level > 0)
     return;
@@ -321,8 +313,7 @@ PeleC::particlePostRestart(
     //
     amrex::ExecOnFinalize(RemoveParticlesOnExit);
 
-    theSprayPC()->Restart(
-      parent->theRestartFile(), "particles", is_checkpoint);
+    theSprayPC()->Restart(parent->theRestartFile(), "particles", is_checkpoint);
   }
 }
 
@@ -429,12 +420,12 @@ PeleC::particleRedistribute(int lbase, bool init_part)
       changed = true;
     } else {
       for (int i = 0; i <= flev && !changed; i++) {
-	// Check if BoxArrays have changed during regridding
+        // Check if BoxArrays have changed during regridding
         if (ba[i] != parent->boxArray(i))
           changed = true;
 
         if (!changed) {
-	  // Check DistributionMaps have changed during regridding
+          // Check DistributionMaps have changed during regridding
           if (dm[i] != parent->getLevel(i).get_new_data(0).DistributionMap())
             changed = true;
         }
@@ -500,8 +491,8 @@ PeleC::particleTimestamp(int ngrow)
     }
 
     if (!timestamp_indices.empty()) {
-      imax =
-        *(amrex::max_element(timestamp_indices.begin(), timestamp_indices.end()));
+      imax = *(
+        amrex::max_element(timestamp_indices.begin(), timestamp_indices.end()));
     }
   }
 

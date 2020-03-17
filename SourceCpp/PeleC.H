@@ -575,8 +575,7 @@ public:
   static int FirstAux;
 
   /// Index locations into particle state
-  static int pstateVel, pstateT, pstateDia, pstateRho,
-    pstateY, pstateNum;
+  static int pstateVel, pstateT, pstateDia, pstateRho, pstateY, pstateNum;
 
   //
   // This MultiFab is on the coarser level.  This is useful for the coarser

@@ -660,7 +660,9 @@ PeleC::initData()
 
   // make sure dx = dy = dz -- that's all we guarantee to support
   const amrex::Real small = 1.e-13;
-  if (amrex::max(AMREX_D_DECL(0., fabs(dx[0] - dx[1]), fabs(dx[0] - dx[2]))) > small * dx[0]) {
+  if (
+    amrex::max(AMREX_D_DECL(0., fabs(dx[0] - dx[1]), fabs(dx[0] - dx[2]))) >
+    small * dx[0]) {
     amrex::Abort("dx != dy != dz not supported");
   }
 
@@ -1767,7 +1769,7 @@ PeleC::errorEst(
 
       // Problem specific tagging
       const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx =
-	geom.CellSizeArray();
+        geom.CellSizeArray();
       const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_lo =
         geom.ProbLoArray();
       amrex::ParallelFor(
