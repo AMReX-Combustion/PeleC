@@ -352,6 +352,8 @@ PeleC::getSmagorinskyLESTerm(
       }
     }  // End of MFIter scope
   }    // End of OMP scope
+#else
+  amrex::Abort("LES only implemented in 3D for now");
 #endif // End of AMREX_SPACEDIM == 3
 }
 
@@ -698,5 +700,7 @@ PeleC::getDynamicSmagorinskyLESTerm(
       }
     }  // End of MFIter scope
   }    // End of OMP scope
+#else
+  amrex::Abort("LES only implemented in 3D for now");
 #endif // End of AMREX_SPACEDIM == 3
 }
