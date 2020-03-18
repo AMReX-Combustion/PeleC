@@ -1610,7 +1610,7 @@ PeleC::errorEst(
       }
 
       // Tagging pressure
-      S_derData.setVal(0.0);
+      S_derData.setVal<amrex::RunOn::Device>(0.0);
       pc_derpres(
         datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
         level);
@@ -1630,7 +1630,7 @@ PeleC::errorEst(
       }
 
       // Tagging vel_x
-      S_derData.setVal(0.0);
+      S_derData.setVal<amrex::RunOn::Device>(0.0);
       pc_dervelx(
         datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
         level);
@@ -1649,7 +1649,7 @@ PeleC::errorEst(
       }
 
       // Tagging vel_y
-      S_derData.setVal(0.0);
+      S_derData.setVal<amrex::RunOn::Device>(0.0);
       pc_dervely(
         datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
         level);
@@ -1668,7 +1668,7 @@ PeleC::errorEst(
       }
 
       // Tagging vel_z
-      S_derData.setVal(0.0);
+      S_derData.setVal<amrex::RunOn::Device>(0.0);
       pc_dervelz(
         datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
         level);
@@ -1687,7 +1687,7 @@ PeleC::errorEst(
       }
 
       // Tagging magnitude of vorticity
-      S_derData.setVal(0.0);
+      S_derData.setVal<amrex::RunOn::Device>(0.0);
       pc_dermagvort(
         tilebox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
         level);
@@ -1700,7 +1700,7 @@ PeleC::errorEst(
       }
 
       // Tagging temperature
-      S_derData.setVal(0.0);
+      S_derData.setVal<amrex::RunOn::Device>(0.0);
       pc_dertemp(
         datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
         level);
@@ -1732,7 +1732,7 @@ PeleC::errorEst(
           // if (amrex::ParallelDescriptor::IOProcessor())
           //  amrex::Print() << " Flame tracer will be " << name << '\n';
 
-          S_derData.setVal(0.0);
+          S_derData.setVal<amrex::RunOn::Device>(0.0);
           pc_derspectrac(
             datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
             level, idx);

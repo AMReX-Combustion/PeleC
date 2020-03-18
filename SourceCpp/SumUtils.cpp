@@ -25,7 +25,7 @@ PeleC::sumDerive(const std::string& name, amrex::Real time, bool local)
   {
     for (amrex::MFIter mfi(*mf, amrex::TilingIfNotGPU()); mfi.isValid();
          ++mfi) {
-      sum += (*mf)[mfi].sum(mfi.tilebox(), 0);
+      sum += (*mf)[mfi].sum<amrex::RunOn::Device>(mfi.tilebox(), 0);
     }
   }
 
