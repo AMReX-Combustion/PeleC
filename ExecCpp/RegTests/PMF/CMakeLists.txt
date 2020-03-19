@@ -1,4 +1,5 @@
 set(pelec_exe_name PeleC_PMF)
+set(pele_exe_name ${pelec_exe_name}) #For PelePhysics to be agnostic
 
 #Compile-time options for executable
 set(PELEC_DIM 3)

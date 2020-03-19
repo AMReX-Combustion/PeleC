@@ -1,4 +1,0 @@
-CEXE_headers += Transport.H
-CEXE_sources += Transport.cpp
-CEXE_sources += TransportParams.cpp
-CEXE_headers += TransportParams.H

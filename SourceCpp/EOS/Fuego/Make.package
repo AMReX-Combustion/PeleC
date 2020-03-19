@@ -1,2 +1,0 @@
-CEXE_sources += EOS.cpp
-CEXE_headers += EOS.H

@@ -40,9 +40,9 @@ all: $(executable)
 
 # EOS
 ifeq ($(Eos_dir),$(filter $(Eos_dir),Fuego))
-  EOS_HOME = $(PELEC_HOME)/SourceCpp/EOS/Fuego
+  EOS_HOME = $(PELE_PHYSICS_HOME)/Eos/Fuego/cpp
 else
-  EOS_HOME = $(PELEC_HOME)/SourceCpp/EOS/Gamma
+  EOS_HOME = $(PELE_PHYSICS_HOME)/Eos/GammaLaw/cpp
 endif
 EXTERN_CORE       += $(EOS_HOME)
 INCLUDE_LOCATIONS += $(EOS_HOME)
@@ -51,16 +51,16 @@ Bpack             += $(EOS_HOME)/Make.package
 Blocs             += $(EOS_HOME)
 
 # Reactions
-REACTIONS_HOME     = $(PELEC_HOME)/SourceCpp/Chemistry
+REACTIONS_HOME     = $(PELE_PHYSICS_HOME)/Reactions
 EXTERN_CORE       += $(REACTIONS_HOME)
 INCLUDE_LOCATIONS += $(REACTIONS_HOME)
 VPATH_LOCATIONS   += $(REACTIONS_HOME)
 ifdef Chemistry_Model
   USE_FUEGO = TRUE
-  CHEM_HOME = $(PELEC_HOME)/SourceCpp/Chemistry/$(Chemistry_Model)
+  CHEM_HOME = $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism/Models/$(Chemistry_Model)
   Blocs += $(PELE_PHYSICS_HOME)/Support/Fuego/Evaluation
 else
-  CHEM_HOME = $(PELEC_HOME)/SourceCpp/Chemistry/Null
+  CHEM_HOME = $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism/Models/Null
 endif
 VPATH_LOCATIONS += $(CHEM_HOME)
 Bpack += $(CHEM_HOME)/Make.package
@@ -68,10 +68,10 @@ Blocs += $(CHEM_HOME)
 
 # Transport
 ifeq ($(Transport_dir), Simple)
-  TRANSPORT_HOME = $(PELEC_HOME)/SourceCpp/Transport/Simple
+  TRANSPORT_HOME = $(PELE_PHYSICS_HOME)/Transport/Simple/cpp
 endif
 ifeq ($(Transport_dir), Constant)
-  TRANSPORT_HOME = $(PELEC_HOME)/SourceCpp/Transport/Constant
+  TRANSPORT_HOME = $(PELE_PHYSICS_HOME)/Transport/Constant/cpp
 endif
 EXTERN_CORE       += $(TRANSPORT_HOME)
 INCLUDE_LOCATIONS += $(TRANSPORT_HOME)

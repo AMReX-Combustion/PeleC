@@ -1,31 +1,24 @@
 function(build_pelec_exe pelec_exe_name)
 
+  set(PELE_PHYSICS_SRC_DIR ${CMAKE_SOURCE_DIR}/Submodules/PelePhysics)
+  set(PELE_PHYSICS_BIN_DIR ${CMAKE_BINARY_DIR}/Submodules/PelePhysics)
+
   set(SRC_DIR ${CMAKE_SOURCE_DIR}/SourceCpp)
   set(BIN_DIR ${CMAKE_BINARY_DIR}/SourceCpp)
 
   include(${CMAKE_SOURCE_DIR}/CMake/SetCompileFlags.cmake)
   include(${CMAKE_SOURCE_DIR}/CMake/SetRpath.cmake)
 
-  #Gather all other source files  
-  add_subdirectory(${SRC_DIR}/Chemistry ${BIN_DIR}/Chemistry)
+  add_subdirectory(${PELE_PHYSICS_SRC_DIR}/Support/Fuego/Mechanism/Models/${PELEC_CHEMISTRY_MODEL}
+                   ${PELE_PHYSICS_BIN_DIR}/Support/Fuego/Mechanism/Models/${PELEC_CHEMISTRY_MODEL})
   add_subdirectory(${SRC_DIR}/Params ${BIN_DIR}/Params)
-  
-  if("${PELEC_EOS_MODEL}" STREQUAL "Fuego")
-    add_subdirectory(${SRC_DIR}/EOS/Fuego ${BIN_DIR}/EOS/Fuego)
-  else()
-    add_subdirectory(${SRC_DIR}/EOS/Gamma ${BIN_DIR}/EOS/Gamma)
-  endif()
-  
-  if("${PELEC_TRANSPORT_MODEL}" STREQUAL "Simple")
-    add_subdirectory(${SRC_DIR}/Transport/Simple ${BIN_DIR}/Transport/Simple)
-  elseif("${PELEC_TRANSPORT_MODEL}" STREQUAL "Constant")
-    add_subdirectory(${SRC_DIR}/Transport/Constant ${BIN_DIR}/Transport/Constant)
-  endif()
+  add_subdirectory(${PELE_PHYSICS_SRC_DIR}/Eos/${PELEC_EOS_MODEL}/cpp ${PELE_PHYSICS_BIN_DIR}/Eos/${PELEC_EOS_MODEL}/cpp)
+  add_subdirectory(${PELE_PHYSICS_SRC_DIR}/Transport/${PELEC_TRANSPORT_MODEL}/cpp ${PELE_PHYSICS_BIN_DIR}/Transport/${PELEC_TRANSPORT_MODEL}/cpp)
   
   if(PELEC_ENABLE_REACTIONS)
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_REACTIONS)
     target_sources(${pelec_exe_name} PRIVATE ${SRC_DIR}/React.H ${SRC_DIR}/React.cpp)
-    target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/Submodules/PelePhysics/Support/Fuego/Evaluation)
+    target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELE_PHYSICS_SRC_DIR}/Support/Fuego/Evaluation)
   endif()
   
   if(PELEC_ENABLE_EXPLICIT_REACT)

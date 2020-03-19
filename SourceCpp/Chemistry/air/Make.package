@@ -1,4 +1,0 @@
-CEXE_headers += chemistry_file.H mechanism.h
-CEXE_sources += mechanism.cpp
-
-INCLUDE_LOCATIONS += $(CHEM_DIR)

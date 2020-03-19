@@ -1,3 +1,0 @@
-CEXE_sources += mechanism.cpp
-CEXE_headers += mechanism.h
-CEXE_headers += chemistry_file.H
