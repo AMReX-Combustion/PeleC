@@ -91,9 +91,9 @@ PeleC::initialize_eb2_structs()
     int iLocal = mfi.LocalIndex();
 
     if (typ == amrex::FabType::regular) {
-      mfab.setVal(1);
+      mfab.setVal<amrex::RunOn::Device>(1);
     } else if (typ == amrex::FabType::covered) {
-      mfab.setVal(-1);
+      mfab.setVal<amrex::RunOn::Device>(-1);
     } else if (typ == amrex::FabType::singlevalued) {
       int Ncut = 0;
       for (amrex::BoxIterator bit(tbox); bit.ok(); ++bit) {

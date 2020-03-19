@@ -132,7 +132,7 @@ PeleC::getMOLSrcTerm(
         setV(vbox, NVAR, MOLSrc, 0);
         if (do_mol_load_balance) {
           wt = (amrex::ParallelDescriptor::second() - wt) / vbox.d_numPts();
-          (*cost)[mfi].plus(wt, vbox);
+          (*cost)[mfi].plus<amrex::RunOn::Device>(wt, vbox);
         }
         continue;
       }
@@ -511,7 +511,7 @@ PeleC::getMOLSrcTerm(
           if (fr_as_fine) {
             dm_as_fine.resize(amrex::grow(vbox, 1), NVAR);
             dm_as_fine_eli = dm_as_fine.elixir();
-            dm_as_fine.setVal(0.0);
+            dm_as_fine.setVal<amrex::RunOn::Device>(0.0);
           }
           BL_PROFILE("PeleC::pc_fix_div_and_redistribute()");
           pc_fix_div_and_redistribute(
@@ -525,7 +525,7 @@ PeleC::getMOLSrcTerm(
 
         if (do_reflux && flux_factor != 0) {
           for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-            flux_ec[dir].mult(flux_factor);
+            flux_ec[dir].mult<amrex::RunOn::Device>(flux_factor);
           }
 
           if (fr_as_crse) {
@@ -597,7 +597,7 @@ PeleC::getMOLSrcTerm(
 #ifdef AMREX_USE_EB
       if (do_mol_load_balance) {
         wt = (amrex::ParallelDescriptor::second() - wt) / vbox.d_numPts();
-        (*cost)[mfi].plus(wt, vbox);
+        (*cost)[mfi].plus<amrex::RunOn::Device>(wt, vbox);
       }
 #endif
 
