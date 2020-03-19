@@ -80,7 +80,6 @@ PeleC::react_state_explicit(
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
   {
-    //        FArrayBox w;
     for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
          ++mfi) {
 
@@ -90,7 +89,9 @@ PeleC::react_state_explicit(
         react_init ? S_new.array(mfi) : get_old_data(State_Type).array(mfi);
       auto const& unew = S_new.array(mfi);
       auto const& a = Ap->array(mfi);
-      //            w.resize(bx,1);
+      amrex::FArrayBox w(bx, 1);
+      amrex::Elixir w_eli = w.elixir();
+      auto const& w_arr = w.array();
       auto const& I_R = reactions.array(mfi);
       const int do_update =
         react_init ? 0 : 1; // TODO: Update here? Or just get reaction source?
@@ -124,14 +125,13 @@ PeleC::react_state_explicit(
           amrex::ParallelFor(
             bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
               pc_expl_reactions(
-                i, j, k, uold, unew, a, I_R, dt, nsubsteps_min, nsubsteps_max,
+                i, j, k, uold, unew, a, w_arr, I_R, dt, nsubsteps_min, nsubsteps_max,
                 nsubsteps_guess, errtol, do_update);
             });
         }
 
         if (do_react_load_balance || do_mol_load_balance) {
-          amrex::Abort("Reaction Load Balacing not implemented yet for GPU");
-          //                get_new_data(Work_Estimate_Type)[mfi].plus(w);
+          get_new_data(Work_Estimate_Type)[mfi].plus<amrex::RunOn::Device>(w);
         }
       }
     }

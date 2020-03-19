@@ -75,6 +75,7 @@ pc_expl_reactions(
   amrex::Array4<const amrex::Real> const& uold,
   amrex::Array4<amrex::Real> const& unew,
   amrex::Array4<const amrex::Real> const& asrc,
+  amrex::Array4<amrex::Real> const& cost,
   amrex::Array4<amrex::Real> const& IR,
   const amrex::Real dt_react,
   const int nsteps_min,
@@ -155,6 +156,7 @@ pc_expl_reactions(
   amrex::Real urk_err[NVAR] = {};
 
   // Do the RK!
+  int steps = 0;
   while (updt_time < dt_react) {
     for (int n = 0; n < NVAR; n++) {
       urk_old[n] = urk[n];
@@ -164,6 +166,7 @@ pc_expl_reactions(
     amrex::Real massfrac[NUM_SPECIES] = {};
     amrex::Real ei[NUM_SPECIES] = {};
     updt_time += dt_rk;
+    steps += 1;
     for (int stage = 0; stage < 6; stage++) {
       rhoInv = 1.0 / urk[URHO];
       for (int n = 0; n < NUM_SPECIES; ++n)
@@ -211,6 +214,7 @@ pc_expl_reactions(
     } // end rk stages
     adapt_timestep(urk_err, dt_max, dt_rk, dt_min, errtol);
   } // end timestep loop
+  cost(i, j, k) = steps;
 
   // Add drhoY/dt to reactions MultiFab and update unew if needed
   amrex::Real umnew = uold(i, j, k, UMX) + dt_react * asrc(i, j, k, UMX);
