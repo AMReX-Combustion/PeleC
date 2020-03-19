@@ -596,6 +596,7 @@ PeleC::getMOLSrcTerm(
 
 #ifdef AMREX_USE_EB
       if (do_mol_load_balance) {
+        amrex::Gpu::streamSynchronize();
         wt = (amrex::ParallelDescriptor::second() - wt) / vbox.d_numPts();
         (*cost)[mfi].plus<amrex::RunOn::Device>(wt, vbox);
       }
