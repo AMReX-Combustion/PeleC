@@ -1895,7 +1895,7 @@ PeleC::close_reactor()
 void
 PeleC::init_eos()
 {
-  pc_eos_init();
+  EOS::init();
 }
 
 void
