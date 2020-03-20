@@ -271,11 +271,16 @@ PeleC::initParticles()
 
   if (do_spray_particles) {
     AMREX_ASSERT(theSprayPC() == 0);
+    // Whether we need to use ghost and virtual particles
+    bool gvParticles = false;
+    if (parent->subCycle() && parent->finestLevel() > 0) {
+      gvParticles = true;
+    }
 
     SprayPC = new SprayParticleContainer(parent, &phys_bc);
     theSprayPC()->SetVerbose(particle_verbose);
 
-    if (parent->subCycle()) {
+    if (gvParticles) {
       VirtPC = new SprayParticleContainer(parent, &phys_bc);
       GhostPC = new SprayParticleContainer(parent, &phys_bc);
     }
@@ -288,6 +293,12 @@ PeleC::initParticles()
     // Pass constant reference data and memory allocations to GPU
     theSprayPC()->buildFuelData(
       sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
+    if (gvParticles) {
+      theGhostPC()->buildFuelData(
+        sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
+      theVirtPC()->buildFuelData(
+        sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
+    }
   }
 }
 
