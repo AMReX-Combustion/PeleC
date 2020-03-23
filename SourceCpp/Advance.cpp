@@ -409,7 +409,7 @@ PeleC::do_sdc_iteration(
 
       particleRedistribute(level, false);
 
-      if (level < finest_level)
+      if (level < finest_level && finest_level > 0)
         setupGhostParticles(ghost_width);
 
       // Advance the particle velocities to the half-time and the positions to
@@ -537,7 +537,7 @@ PeleC::do_sdc_iteration(
     // TODO: Is this true with SDC iterations??
 
     // Ghost particles need to be kicked except during the final iteration.
-    if (amr_iteration != amr_ncycle)
+    if (amr_iteration != amr_ncycle && theGhostPC != 0)
       theGhostPC()->moveKick(
         Sborder, *new_sources[spray_src], level, dt, time + dt, tmp_src_width);
   }
