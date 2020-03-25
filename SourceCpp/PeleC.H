@@ -178,7 +178,8 @@ public:
   //
   // Redistribute
   //
-  virtual void particleRedistribute(int lbase = 0, bool init_part = false);
+  virtual void particleRedistribute(
+    int lbase = 0, int nGrow = 0, int local = 0, bool init_part = false);
   //
   // Setup virtual particles if necessary
   //
@@ -220,12 +221,12 @@ public:
   static int write_spray_ascii_files;
 
   void setSprayGridInfo(
-    int& amr_iteration,
-    int& amr_ncycle,
-    int& ghost_width,
-    int& where_width,
-    int& spray_n_grow,
-    int& tmp_src_width);
+    const int amr_iteration,
+    const int amr_ncycle,
+    int&      ghost_width,
+    int&      where_width,
+    int&      spray_n_grow,
+    int&      tmp_src_width);
 
   static int particle_mass_tran;
   static int particle_heat_tran;

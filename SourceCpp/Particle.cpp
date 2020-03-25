@@ -397,17 +397,17 @@ PeleC::particleDerive(const std::string& name, Real time, int ngrow)
 }
 
 void
-PeleC::particleRedistribute(int lbase, bool init_part)
+PeleC::particleRedistribute(int lbase, int nGrow, int local, bool init_part)
 {
   BL_PROFILE("PeleC::particleRedistribute()");
+  int flev = parent->finestLevel();
   if (theSprayPC()) {
     //
     // If we are calling with init_part = true, then we want to force the
-    // redistribute
-    //    without checking whether the grids have changed.
+    // redistribute without checking whether the grids have changed.
     //
     if (init_part) {
-      theSprayPC()->Redistribute(lbase);
+      theSprayPC()->Redistribute(lbase, flev, nGrow, local);
       return;
     }
 
@@ -448,13 +448,13 @@ PeleC::particleRedistribute(int lbase, bool init_part)
       // We only need to call Redistribute if the BoxArrays or DistMaps have
       // changed.
       // We also only call it for particles >= lbase. This is
-      // because of we called redistribute during a subcycle, there may be
+      // because if we called redistribute during a subcycle, there may be
       // particles not in the proper position on coarser levels.
       //
       if (verbose && ParallelDescriptor::IOProcessor())
-        amrex::Print() << "Calling redistribute because changed " << '\n';
+        amrex::Print() << "Calling redistribute because grid has changed " << '\n';
 
-      theSprayPC()->Redistribute(lbase);
+      theSprayPC()->Redistribute(lbase, flev, nGrow, local);
       //
       // Use the new BoxArray and DistMap to define ba and dm for next time.
       //
@@ -464,7 +464,7 @@ PeleC::particleRedistribute(int lbase, bool init_part)
       }
     } else {
       if (verbose && ParallelDescriptor::IOProcessor())
-        amrex::Print() << "NOT calling redistribute because NOT changed "
+        amrex::Print() << "NOT calling redistribute because grid has NOT changed "
                        << '\n';
     }
   }

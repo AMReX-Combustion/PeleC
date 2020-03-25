@@ -707,7 +707,9 @@ PeleC::initData()
   if (level == 0) {
     initParticles();
   } else {
-    particleRedistribute(level - 1, true);
+    // TODO: Determine how many ghost cells to use here
+    int nGrow = 0;
+    particleRedistribute(level - 1, nGrow, true);
   }
 #endif
 
@@ -1097,7 +1099,8 @@ PeleC::post_timestep(int iteration)
     //
     // Remove virtual particles at this level if we have any.
     //
-    removeVirtualParticles();
+    if (theVirtPC() != 0)
+      removeVirtualParticles();
 
     //
     // Remove Ghost particles on the final iteration
@@ -1110,7 +1113,9 @@ PeleC::post_timestep(int iteration)
     // off the next finest level and need to be added to our own level.
     //
     if ((iteration < ncycle and level < finest_level) || level == 0) {
-      theSprayPC()->Redistribute(level, theSprayPC()->finestLevel(), iteration);
+      // TODO: Determine how many ghost cells to use here
+      int nGrow = 0;
+      theSprayPC()->Redistribute(level, theSprayPC()->finestLevel(), nGrow);
     }
   }
 #endif
@@ -1219,7 +1224,9 @@ PeleC::post_regrid(int lbase, int new_finest)
 
 #ifdef AMREX_PARTICLES
   if (do_spray_particles && SprayPC && level == lbase) {
-    SprayPC->Redistribute(false, false, lbase);
+    // TODO: Determine how many ghost cells to use here
+    int nGrow = 0;
+    SprayPC->Redistribute(lbase, new_finest, nGrow, 0);
   }
 #endif
 }
