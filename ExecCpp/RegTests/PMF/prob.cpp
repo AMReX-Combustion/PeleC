@@ -144,8 +144,8 @@ init_bc()
   }
   const int p = ProbParm::pamb;
 
-  EOS::xty(molefrac, massfrac);
-  EOS::tp(p, massfrac, T, rho, e);
+  EOS::X2Y(molefrac, massfrac);
+  EOS::PYTR2E(p, massfrac, T, rho, e);
 
   vt = ProbParm::vn_in;
   ek = 0.5 * (vt * vt);

@@ -171,16 +171,16 @@ pc_expl_reactions(
       rhoInv = 1.0 / urk[URHO];
       for (int n = 0; n < NUM_SPECIES; ++n)
         massfrac[n] = urk[UFS + n] * rhoInv;
-      EOS::mpr2wdot(
+      EOS::RTY2WDOT(
         urk[URHO], urk[UTEMP], massfrac, wdot); // this is wdot*molecularweights
       for (int n = 0; n < NUM_SPECIES; ++n)
         wdot[n] += rhoydot_ext[n];
-      EOS::get_ei(urk[UTEMP], ei);
+      EOS::T2E(urk[UTEMP], ei);
       amrex::Real tempsrc = rhoedot_ext;
       for (int n = 0; n < NUM_SPECIES; ++n)
         tempsrc -= wdot[n] * ei[n];
       amrex::Real cv;
-      EOS::get_cv(massfrac, urk[UTEMP], cv);
+      EOS::YT2Cv(massfrac, urk[UTEMP], cv);
       tempsrc /= (urk[URHO] * cv);
 
       /*================== Update urk_err =================== */

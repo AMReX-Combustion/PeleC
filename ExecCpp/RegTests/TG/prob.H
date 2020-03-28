@@ -57,7 +57,7 @@ pc_initdata(
                      (cos(2.0 * ProbParm::omega_z * z / ProbParm::L) + 2.0);
   amrex::Real rho, eint;
   amrex::Real massfrac[NUM_SPECIES] = {1.0};
-  EOS::tp(p, massfrac, ProbParm::T0, rho, eint);
+  EOS::PYTR2E(p, massfrac, ProbParm::T0, rho, eint);
 
   // Set the state
   state(i, j, k, URHO) = rho;

@@ -47,10 +47,10 @@ amrex_probinit(
 
   amrex::Real cp = 0.0;
   ProbParm::massfrac[0] = 1.0;
-  EOS::rhopY2e(
+  EOS::RYP2E(
     ProbParm::rho, ProbParm::massfrac.begin(), ProbParm::p, ProbParm::eint);
-  EOS::cmpT(ProbParm::eint, ProbParm::massfrac.begin(), ProbParm::T);
-  EOS::get_cp(ProbParm::T, ProbParm::massfrac.begin(), cp);
+  EOS::EY2T(ProbParm::eint, ProbParm::massfrac.begin(), ProbParm::T);
+  EOS::TY2Cp(ProbParm::T, ProbParm::massfrac.begin(), cp);
 
   transport_params::const_bulk_viscosity = 0.0;
   transport_params::const_diffusivity = 0.0;

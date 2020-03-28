@@ -48,7 +48,7 @@ riemann(
     gdnv_state_massfrac[n] = spl[n];
   }
   amrex::Real gdnv_state_cs;
-  EOS::get_cs_no_T(
+  EOS::RPY2Cs(
     gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, gdnv_state_cs);
   const amrex::Real csl = gdnv_state_cs;
 
@@ -57,7 +57,7 @@ riemann(
   for (int n = 0; n < NUM_SPECIES; n++) {
     gdnv_state_massfrac[n] = spr[n];
   }
-  EOS::get_cs_no_T(
+  EOS::RPY2Cs(
     gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, gdnv_state_cs);
   const amrex::Real csr = gdnv_state_cs;
 
@@ -94,9 +94,9 @@ riemann(
     gdnv_state_massfrac[n] = sp[n];
   }
   amrex::Real gdnv_state_e;
-  EOS::rhopY2e(gdnv_state_rho, gdnv_state_massfrac, gdnv_state_p, gdnv_state_e);
+  EOS::RYP2E(gdnv_state_rho, gdnv_state_massfrac, gdnv_state_p, gdnv_state_e);
   const amrex::Real reo = gdnv_state_rho * gdnv_state_e;
-  EOS::get_cs_no_T(
+  EOS::RPY2Cs(
     gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, gdnv_state_cs);
   const amrex::Real co = gdnv_state_cs;
 
@@ -108,9 +108,9 @@ riemann(
   for (int n = 0; n < NUM_SPECIES; n++) {
     gdnv_state_massfrac[n] = sp[n];
   }
-  EOS::rhopY2e(gdnv_state_rho, gdnv_state_massfrac, gdnv_state_p, gdnv_state_e);
+  EOS::RYP2E(gdnv_state_rho, gdnv_state_massfrac, gdnv_state_p, gdnv_state_e);
   const amrex::Real estar = gdnv_state_rho * gdnv_state_e;
-  EOS::get_cs_no_T(
+  EOS::RPY2Cs(
     gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, gdnv_state_cs);
   const amrex::Real cstar = gdnv_state_cs;
 
@@ -144,7 +144,7 @@ riemann(
   for (int n = 0; n < NUM_SPECIES; n++) {
     gdnv_state_massfrac[n] = sp[n];
   }
-  EOS::rhopY2e(gdnv_state_rho, gdnv_state_massfrac, gdnv_state_p, gdnv_state_e);
+  EOS::RYP2E(gdnv_state_rho, gdnv_state_massfrac, gdnv_state_p, gdnv_state_e);
   amrex::Real regd = gdnv_state_rho * gdnv_state_e;
 
   mask = (spout < 0.0);
@@ -164,7 +164,7 @@ riemann(
   for (int n = 0; n < NUM_SPECIES; n++) {
     gdnv_state_massfrac[n] = sp[n];
   }
-  EOS::rhopY2e(gdnv_state_rho, gdnv_state_massfrac, gdnv_state_p, gdnv_state_e);
+  EOS::RYP2E(gdnv_state_rho, gdnv_state_massfrac, gdnv_state_p, gdnv_state_e);
   regd = gdnv_state_rho * gdnv_state_e;
 
   qint_gdgame = qint_gdpres / regd + 1.0;

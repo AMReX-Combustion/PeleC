@@ -12,7 +12,7 @@ pc_cmpTemp(
   for (int n = 0; n < NUM_SPECIES; ++n) {
     massfrac[n] = S(i, j, k, UFS + n) * rhoInv;
   }
-  EOS::cmpT(e, massfrac, T);
+  EOS::EY2T(e, massfrac, T);
   S(i, j, k, UTEMP) = T;
 }
 
