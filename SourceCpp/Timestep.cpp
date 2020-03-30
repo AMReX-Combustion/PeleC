@@ -37,7 +37,7 @@ pc_estdt_hydro(
       amrex::Real c;
       for (int n = 0; n < NUM_SPECIES; ++n)
         massfrac[n] = u(i, j, k, UFS + n) * rhoInv;
-      EOS::get_cs(rho, T, massfrac, c);
+      EOS::RTY2Cs(rho, T, massfrac, c);
       AMREX_D_TERM(const amrex::Real ux = u(i, j, k, UMX) * rhoInv;
                    const amrex::Real dt1 = dx / (c + std::abs(ux));
                    dt = amrex::min(dt, dt1);
@@ -129,7 +129,7 @@ pc_estdt_tempdif(
       amrex::Real D;
       pc_trans4dt(which_trans, T, rho, massfrac, D);
       amrex::Real cv;
-      EOS::get_cv(massfrac, T, cv);
+      EOS::YT2Cv(massfrac, T, cv);
       D *= rhoInv / cv;
       AMREX_D_TERM(
         const amrex::Real dt1 = 0.5 * dx * dx / (AMREX_SPACEDIM * D);
@@ -173,7 +173,7 @@ pc_estdt_enthdif(
         massfrac[n] = u(i, j, k, n + UFS) * rhoInv;
       amrex::Real T = u(i, j, k, UTEMP);
       amrex::Real cp;
-      EOS::get_cp(T, massfrac, cp);
+      EOS::TY2Cp(T, massfrac, cp);
       amrex::Real D;
       pc_trans4dt(which_trans, T, rho, massfrac, D);
       D *= rhoInv / cp;

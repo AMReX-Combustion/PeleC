@@ -429,7 +429,7 @@ pc_dermolefrac(
 
       for (int n = 0; n < NUM_SPECIES; n++)
         mass[n] = dat(i, j, k, UFS + n) * rhoInv;
-      EOS::ytx(mass, mole);
+      EOS::Y2X(mass, mole);
       for (int n = 0; n < NUM_SPECIES; n++)
         spec(i, j, k, UFS + n) = mole[n];
     });
@@ -458,7 +458,7 @@ pc_dersoundspeed(
       amrex::Real massfrac[NUM_SPECIES], c;
       for (int n = 0; n < NUM_SPECIES; ++n)
         massfrac[n] = dat(i, j, k, UFS + n) * rhoInv;
-      EOS::get_cs(rho, T, massfrac, c);
+      EOS::RTY2Cs(rho, T, massfrac, c);
       cfab(i, j, k) = c;
     });
 }
@@ -481,7 +481,7 @@ pc_derentropy(
   amrex::ParallelFor(
     bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       amrex::Real s;
-      EOS::get_s(s);
+      EOS::S(s);
       sfab(i, j, k) = s;
     });
 }
@@ -509,7 +509,7 @@ pc_dermachnumber(
       amrex::Real massfrac[NUM_SPECIES], c;
       for (int n = 0; n < NUM_SPECIES; ++n)
         massfrac[n] = dat(i, j, k, UFS + n) * rhoInv;
-      EOS::get_cs(rho, T, massfrac, c);
+      EOS::RTY2Cs(rho, T, massfrac, c);
       const amrex::Real datxsq = dat(i, j, k, UMX) * dat(i, j, k, UMX);
       const amrex::Real datysq = dat(i, j, k, UMY) * dat(i, j, k, UMY);
       const amrex::Real datzsq = dat(i, j, k, UMZ) * dat(i, j, k, UMZ);
@@ -541,7 +541,7 @@ pc_derpres(
       amrex::Real p, massfrac[NUM_SPECIES];
       for (int n = 0; n < NUM_SPECIES; ++n)
         massfrac[n] = dat(i, j, k, UFS + n) * rhoInv;
-      EOS::get_p(rho, massfrac, e, T, p);
+      EOS::RYET2P(rho, massfrac, e, T, p);
       pfab(i, j, k) = p;
     });
 }
@@ -797,7 +797,7 @@ pc_derpmmserror(
       }
 
       amrex::Real pdat;
-      EOS::get_p(rho, massfrac, eint, T, pdat);
+      EOS::RYET2P(rho, massfrac, eint, T, pdat);
       const amrex::Real p = masa_eval_3d_exact_p(x, y, z);
       pmmserror(i, j, k) = pdat - p;
     });

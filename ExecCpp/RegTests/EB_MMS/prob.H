@@ -51,8 +51,8 @@ pc_initdata(
   amrex::Real massfrac[NUM_SPECIES] = {1.0};
 
   amrex::Real eint, T;
-  EOS::rhopY2e(rho, massfrac, p, eint);
-  EOS::cmpT(eint, massfrac, T);
+  EOS::RYP2E(rho, massfrac, p, eint);
+  EOS::EY2T(eint, massfrac, T);
 
   // Set the state
   state(i, j, k, URHO) = rho;
@@ -87,8 +87,8 @@ bcnormal(
   amrex::Real massfrac[NUM_SPECIES] = {1.0};
 
   amrex::Real eint, T;
-  EOS::rhopY2e(rho, massfrac, p, eint);
-  EOS::cmpT(eint, massfrac, T);
+  EOS::RYP2E(rho, massfrac, p, eint);
+  EOS::EY2T(eint, massfrac, T);
 
   // Set the external state
   s_ext[URHO] = rho;

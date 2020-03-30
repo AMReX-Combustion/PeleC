@@ -58,8 +58,16 @@ pc_ctoprim(
     massfrac[sp] = q(i, j, k, sp + QFS);
   //    for(int ax = 0; ax < NUM_AUX; ++ax) aux[ax] = q(i,j,k,ax+QFX);
   amrex::Real dpdr_e, dpde, gam1, cs, wbar, p;
-  //  Use eos conversion;
-  EOS::ctop(massfrac, rho, e, T, p, dpdr_e, dpde, gam1, cs, wbar);
+
+  // Are all these EOS calls needed? Seems fairly convoluted.
+  EOS::Y2WBAR(massfrac, wbar);
+  EOS::EY2T(e, massfrac, T);
+  EOS::RYET2P(rho, massfrac, e, T, p);
+  EOS::RTY2Cs(rho, T, massfrac, cs);
+  EOS::EY2G(e, massfrac, gam1);
+  EOS::RPE2dpdr_e(rho, p, e, dpdr_e);
+  EOS::RG2dpde(rho, gam1, dpde);
+
   q(i, j, k, QTEMP) = T;
   q(i, j, k, QREINT) = e * rho;
   q(i, j, k, QPRES) = p;
