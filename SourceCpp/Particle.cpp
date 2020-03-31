@@ -14,15 +14,15 @@ bool virtual_particles_set = false;
 //
 // Containers for the real "active" Particles
 //
-SprayParticleContainer* SprayPC = 0;
+SprayParticleContainer* SprayPC = nullptr;
 //
 // Container for temporary, virtual Particles
 //
-SprayParticleContainer* VirtPC = 0;
+SprayParticleContainer* VirtPC = nullptr;
 //
 // Container for temporary, ghost Particles
 //
-SprayParticleContainer* GhostPC = 0;
+SprayParticleContainer* GhostPC = nullptr;
 
 void
 RemoveParticlesOnExit()

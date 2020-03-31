@@ -441,13 +441,13 @@ PeleC::do_sdc_iteration(
         true, where_width);
 
       // Only need the coarsest virtual particles here.
-      if (level < finest_level && theVirtPC() != 0)
+      if (level < finest_level && theVirtPC() != nullptr)
         theVirtPC()->moveKickDrift(
           Sborder, *old_sources[spray_src], level, dt, cur_time, tmp_src_width,
           true, where_width);
 
       // Miiiight need all Ghosts
-      if (theGhostPC() != 0)
+      if (theGhostPC() != nullptr)
         theGhostPC()->moveKickDrift(
           Sborder, *old_sources[spray_src], level, dt, cur_time, tmp_src_width,
           true, where_width);
@@ -546,7 +546,7 @@ PeleC::do_sdc_iteration(
     // TODO: Is this true with SDC iterations??
 
     // Ghost particles need to be kicked except during the final iteration.
-    if (amr_iteration != amr_ncycle && theGhostPC != 0)
+    if (amr_iteration != amr_ncycle && theGhostPC() != nullptr)
       theGhostPC()->moveKick(
         Sborder, *new_sources[spray_src], level, dt, time + dt, tmp_src_width);
   }
