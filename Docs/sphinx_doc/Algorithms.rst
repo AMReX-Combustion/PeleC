@@ -66,11 +66,11 @@ can be chosen through the ``ppm_type`` flag:
 * ``ppm_type = 0`` uses a piecewise linear interpolation to reconstruct values at face.
 * ``ppm_type = 1`` is the original PPM method presented in Colella and Woodward [JCP 1984].
 * ``ppm_type = 2`` is the "extrema preserving" variant of the PPM method.
-* ``ppm_type = 3`` is a new hybrid PPM/WENO method, that replace the interpolation and slope limiting procedures by a WENO reconstruction.
+* ``ppm_type = 3`` is a new hybrid PPM/WENO method developped by Motheay and Wakefield [CAMCOS 2020], that replace the interpolation and slope limiting procedures by a WENO reconstruction.
 
 In the remainder of this section, the extrema preserving PPM method, i.e ``ppm_type = 2``, is presented. Note that the implementation
 in PeleC is a recollection of different extension of the PPM method published in Miller and Colella [JCP 2002] and Colella and Sekora [JCP 2008].
-The actual implementation in PeleC is described in the upcoming paper `Motheau and Wakefield, Capturing shocks and turbulence spectra in compressible flows. Part 2: A new hybrid PPM/WENO method  [Submitted 2019]`, 
+The actual implementation in PeleC is described in the paper `Motheau and Wakefield, Investigation of finite-volume methods to capture shocks and turbulence spectra in compressible flows  [CAMCOS 2020]`, 
 and the following description is taken from that paper. Note that the algorithm is presented here in 1D
 for simplicity, but can be trivially extended to 2D and 3D. 
 
