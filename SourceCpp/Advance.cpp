@@ -241,9 +241,9 @@ PeleC::setSprayGridInfo(
   //      steps. We define ghost cells at the coarser level to cover all
   //      iterations so we can't reduce this number as amr_iteration increases.
 
-  ghost_width = stencil_deposition_width;
+  ghost_width = 0;
   if (level < parent->finestLevel() && parent->finestLevel() > 0)
-    ghost_width += amr_ncycle;
+    ghost_width += amr_ncycle + stencil_deposition_width;
 
   // *** where_width ***  is used
   //   *) to set how many cells the Where call in moveKickDrift tests = max of
@@ -437,20 +437,24 @@ PeleC::do_sdc_iteration(
 
       // Do the valid particles themselves
       theSprayPC()->moveKickDrift(
-        Sborder, *old_sources[spray_src], level, dt, cur_time, tmp_src_width,
-        true, where_width);
+        Sborder, *old_sources[spray_src], level, dt, cur_time,
+        false, // not virtual particles
+        false, // not ghost particles
+        tmp_src_width,
+        true,  // Move the particles
+        where_width);
 
       // Only need the coarsest virtual particles here.
       if (level < finest_level && theVirtPC() != nullptr)
         theVirtPC()->moveKickDrift(
-          Sborder, *old_sources[spray_src], level, dt, cur_time, tmp_src_width,
-          true, where_width);
+          Sborder, *old_sources[spray_src], level, dt, cur_time, true, false,
+          tmp_src_width, true, where_width);
 
       // Miiiight need all Ghosts
       if (theGhostPC() != nullptr)
         theGhostPC()->moveKickDrift(
-          Sborder, *old_sources[spray_src], level, dt, cur_time, tmp_src_width,
-          true, where_width);
+          Sborder, *old_sources[spray_src], level, dt, cur_time, false, true,
+          tmp_src_width, true, where_width);
     }
 #endif
 
@@ -540,7 +544,7 @@ PeleC::do_sdc_iteration(
     new_sources[spray_src]->setVal(0.);
 
     theSprayPC()->moveKick(
-      Sborder, *new_sources[spray_src], level, dt, time + dt, tmp_src_width);
+      Sborder, *new_sources[spray_src], level, dt, time + dt, false, false, tmp_src_width);
 
     // Virtual particles will be recreated, so we need not kick them.
     // TODO: Is this true with SDC iterations??
@@ -548,7 +552,7 @@ PeleC::do_sdc_iteration(
     // Ghost particles need to be kicked except during the final iteration.
     if (amr_iteration != amr_ncycle && theGhostPC() != nullptr)
       theGhostPC()->moveKick(
-        Sborder, *new_sources[spray_src], level, dt, time + dt, tmp_src_width);
+        Sborder, *new_sources[spray_src], level, dt, time + dt, false, true, tmp_src_width);
   }
 #endif
 
