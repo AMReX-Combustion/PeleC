@@ -175,8 +175,8 @@ pc_cmpflx(
 
   amrex::Real flxrho = flx(i, j, k, URHO);
   for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    int n = EOS::upass_map(ipass);
-    int nqp = EOS::qpass_map(ipass);
+    int n = indxmap::upass_map(ipass);
+    int nqp = indxmap::qpass_map(ipass);
     if (ustar > 0.0)
       flx(i, j, k, n) = flxrho * ql(i, j, k, nqp);
     else if (ustar < 0.0)
@@ -297,7 +297,7 @@ pc_plm_x(
   qm(i + 1, j, k, QREINT) = rhoe_ref + (apleft + amleft) * enth * cs + azeleft;
   // Upwind the passive variables
   for (int ipassive = 0; ipassive < NPASSIVE; ++ipassive) {
-    int n = EOS::qpass_map(ipassive);
+    int n = indxmap::qpass_map(ipassive);
     // Right state
     u = q(i, j, k, QU);
     amrex::Real spzero;
@@ -421,7 +421,7 @@ pc_plm_y(
 
   // Upwind the passive variables
   for (int ipassive = 0; ipassive < NPASSIVE; ++ipassive) {
-    int n = EOS::qpass_map(ipassive);
+    int n = indxmap::qpass_map(ipassive);
     // Right state
     v = q(i, j, k, QV);
     amrex::Real spzero;
@@ -545,7 +545,7 @@ pc_plm_z(
 
   // Upwind the passive variables
   for (int ipassive = 0; ipassive < NPASSIVE; ++ipassive) {
-    int n = EOS::qpass_map(ipassive);
+    int n = indxmap::qpass_map(ipassive);
     // Right state
     w = q(i, j, k, QW);
     amrex::Real spzero;
@@ -611,8 +611,8 @@ pc_transx(
   c = qa(i, j, k, QGAMC);
   // Update passive variables
   for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    int n = EOS::upass_map(ipass);
-    int nqp = EOS::qpass_map(ipass);
+    int n = indxmap::upass_map(ipass);
+    int nqp = indxmap::qpass_map(ipass);
     srcpass = srcQ(i, j, k, nqp);
     compn = hdt *
             (a1(i + 1, j, k) * flxx(i + 1, j, k, n) -
@@ -734,8 +734,8 @@ pc_transy(
 
   // Update passive variables
   for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    int n = EOS::upass_map(ipass);
-    int nqp = EOS::qpass_map(ipass);
+    int n = indxmap::upass_map(ipass);
+    int nqp = indxmap::qpass_map(ipass);
     srcpass = srcQ(i, j, k, nqp);
     compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
     rr = qxp(i, j, k, QRHO);
@@ -848,8 +848,8 @@ pc_transx1(
   c = qa(i, j, k, QGAMC);
   // Update passive variables
   for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    int n = EOS::upass_map(ipass);
-    int nqp = EOS::qpass_map(ipass);
+    int n = indxmap::upass_map(ipass);
+    int nqp = indxmap::qpass_map(ipass);
     compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n));
     rr = qyp(i, j, k, QRHO);
     rrnew = rr - flxrho;
@@ -972,8 +972,8 @@ pc_transy1(
   c = qa(i, j, k, QGAMC);
   // -  Update Passive Variables
   for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    int n = EOS::upass_map(ipass);
-    int nqp = EOS::qpass_map(ipass);
+    int n = indxmap::upass_map(ipass);
+    int nqp = indxmap::qpass_map(ipass);
     compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
     rr = qxp(i, j, k, QRHO);
     rrnew = rr - flxrho;
@@ -1096,8 +1096,8 @@ pc_transx2(
   c = qa(i, j, k, QGAMC);
   // -  Update Passive Variables
   for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    int n = EOS::upass_map(ipass);
-    int nqp = EOS::qpass_map(ipass);
+    int n = indxmap::upass_map(ipass);
+    int nqp = indxmap::qpass_map(ipass);
     compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n));
     rr = qzp(i, j, k, QRHO);
     rrnew = rr - flxrho;
@@ -1219,8 +1219,8 @@ pc_transy2(
   c = qa(i, j, k, QGAMC);
   // -  Update Passive Variables
   for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    int n = EOS::upass_map(ipass);
-    int nqp = EOS::qpass_map(ipass);
+    int n = indxmap::upass_map(ipass);
+    int nqp = indxmap::qpass_map(ipass);
     compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
     rr = qzp(i, j, k, QRHO);
     rrnew = rr - flxrho;
@@ -1342,8 +1342,8 @@ pc_transz1(
   c = qa(i, j, k, QGAMC);
   // -  Update Passive Variables
   for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    int n = EOS::upass_map(ipass);
-    int nqp = EOS::qpass_map(ipass);
+    int n = indxmap::upass_map(ipass);
+    int nqp = indxmap::qpass_map(ipass);
     compn = cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
     rr = qxp(i, j, k, QRHO);
     rrnew = rr - flxrho;
@@ -1466,8 +1466,8 @@ pc_transz2(
   c = qa(i, j, k, QGAMC);
   // Update passive variables
   for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    int n = EOS::upass_map(ipass);
-    int nqp = EOS::qpass_map(ipass);
+    int n = indxmap::upass_map(ipass);
+    int nqp = indxmap::qpass_map(ipass);
     compn = cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
     rr = qyp(i, j, k, QRHO);
     rrnew = rr - flxrho;
@@ -1612,8 +1612,8 @@ pc_transxy(
   rrnewl = rrl - flxrho;
   rrnewr = rrr - flxrho;
   for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    int n = EOS::upass_map(ipass);
-    int nqp = EOS::qpass_map(ipass);
+    int n = indxmap::upass_map(ipass);
+    int nqp = indxmap::qpass_map(ipass);
     srcpass = srcq(i, j, k, nqp);
     compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n)) +
             cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
@@ -1749,8 +1749,8 @@ pc_transxz(
   rrnewl = rrl - flxrho;
   rrnewr = rrr - flxrho;
   for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    int n = EOS::upass_map(ipass);
-    int nqp = EOS::qpass_map(ipass);
+    int n = indxmap::upass_map(ipass);
+    int nqp = indxmap::qpass_map(ipass);
     srcpass = srcq(i, j, k, nqp);
     compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n)) +
             cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
@@ -1887,8 +1887,8 @@ pc_transyz(
   rrnewr = rrr - flxrho;
 
   for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    int n = EOS::upass_map(ipass);
-    int nqp = EOS::qpass_map(ipass);
+    int n = indxmap::upass_map(ipass);
+    int nqp = indxmap::qpass_map(ipass);
     srcpass = srcq(i, j, k, nqp);
     compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n)) +
             cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));

@@ -40,9 +40,9 @@ all: $(executable)
 
 # EOS
 ifeq ($(Eos_dir),$(filter $(Eos_dir),Fuego))
-  EOS_HOME = $(PELE_PHYSICS_HOME)/Eos/Fuego/cpp
+  EOS_HOME = $(PELE_PHYSICS_HOME)/Eos/Fuego
 else
-  EOS_HOME = $(PELE_PHYSICS_HOME)/Eos/GammaLaw/cpp
+  EOS_HOME = $(PELE_PHYSICS_HOME)/Eos/GammaLaw
 endif
 EXTERN_CORE       += $(EOS_HOME)
 INCLUDE_LOCATIONS += $(EOS_HOME)

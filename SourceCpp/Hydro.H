@@ -47,8 +47,8 @@ pc_srctoprim(
     qa(i, j, k, QDPDR) * srcrho;
 
   for (int ip = 0; ip < NPASSIVE; ++ip) {
-    n = EOS::upass_map(ip);
-    nq = EOS::qpass_map(ip);
+    n = indxmap::upass_map(ip);
+    nq = indxmap::qpass_map(ip);
     srcq(i, j, k, nq) = (src(i, j, k, n) - q(i, j, k, nq) * srcrho) * rhoinv;
   }
 }

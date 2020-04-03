@@ -2,6 +2,7 @@
 #define _UTILITIES_H_
 
 #include <AMReX_FArrayBox.H>
+#include "Constants.H"
 #include "IndexDefines.H"
 #include "EOS.H"
 
@@ -45,8 +46,8 @@ pc_ctoprim(
   q(i, j, k, QV) = v.y;
   q(i, j, k, QW) = v.z;
   for (int ipassive = 0; ipassive < NPASSIVE; ++ipassive) {
-    n = EOS::upass_map(ipassive);
-    nq = EOS::qpass_map(ipassive);
+    n = indxmap::upass_map(ipassive);
+    nq = indxmap::qpass_map(ipassive);
     q(i, j, k, nq) = u(i, j, k, n) / rho;
   }
 
