@@ -122,12 +122,22 @@ PeleC::readParticleParams()
   sprayLatent.resize(nfuel);
   sprayCp.resize(nfuel);
   sprayIndxMap.resize(nfuel);
+  std::vector<std::string> fuel_names;
+  std::vector<Real> crit_T;
+  std::vector<Real> boil_T;
+  std::vector<Real> latent;
+  std::vector<Real> spraycp;
+  ppp.getarr("fuel_species", fuel_names);
+  ppp.getarr("fuel_crit_temp", crit_T);
+  ppp.getarr("fuel_boil_temp", boil_T);
+  ppp.getarr("fuel_latent", latent);
+  ppp.getarr("fuel_cp", spraycp);
   for (int i = 0; i != nfuel; ++i) {
-    ppp.getkth("fuel_species", i, sprayFuelNames[i], 0);
-    ppp.getkth("fuel_crit_temp", i, sprayCritT[i], 0);
-    ppp.getkth("fuel_boil_temp", i, sprayBoilT[i], 0);
-    ppp.getkth("fuel_latent", i, sprayLatent[i], 0);
-    ppp.getkth("fuel_cp", i, sprayCp[i], 0);
+    sprayFuelNames[i] = fuel_names[i];
+    sprayCritT[i] = crit_T[i];
+    sprayBoilT[i] = boil_T[i];
+    sprayLatent[i] = latent[i];
+    sprayCp[i] = spraycp[i];
   }
   // Must use same reference temperature for all fuels
   // TODO: This means the reference temperature must be the same for all fuel
