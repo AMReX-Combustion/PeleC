@@ -68,10 +68,10 @@ Blocs += $(CHEM_HOME)
 
 # Transport
 ifeq ($(Transport_dir), Simple)
-  TRANSPORT_HOME = $(PELE_PHYSICS_HOME)/Transport/Simple/cpp
+  TRANSPORT_HOME = $(PELE_PHYSICS_HOME)/Transport/Simple
 endif
 ifeq ($(Transport_dir), Constant)
-  TRANSPORT_HOME = $(PELE_PHYSICS_HOME)/Transport/Constant/cpp
+  TRANSPORT_HOME = $(PELE_PHYSICS_HOME)/Transport/Constant
 endif
 EXTERN_CORE       += $(TRANSPORT_HOME)
 INCLUDE_LOCATIONS += $(TRANSPORT_HOME)

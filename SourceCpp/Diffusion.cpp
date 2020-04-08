@@ -213,7 +213,7 @@ PeleC::getMOLSrcTerm(
         BL_PROFILE("PeleC::get_transport_coeffs()");
         // Get Transport coefs on GPU.
         amrex::launch(gbox, [=] AMREX_GPU_DEVICE(amrex::Box const& tbx) {
-          pc_get_transport_coeffs(tbx, qar, coe_cc);
+          get_transport_coeffs(tbx, qar, coe_cc);
         });
       }
 

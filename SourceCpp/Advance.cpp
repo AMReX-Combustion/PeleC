@@ -389,6 +389,7 @@ PeleC::do_sdc_iteration(
       //
       // Setup the virtual particles that particles on finer levels
       //
+      
       if (level < finest_level)
 	setupVirtualParticles();
 
@@ -410,7 +411,7 @@ PeleC::do_sdc_iteration(
       //
       if (injectParts || insertParts) {
 	// TODO: Determine the number of ghost cells needed here
-	int nGrow = 0;
+	int nGrow = 1;
 	particleRedistribute(level, nGrow, 0);
       }
 

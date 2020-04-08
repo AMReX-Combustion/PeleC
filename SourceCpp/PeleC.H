@@ -763,17 +763,13 @@ protected:
   amrex::MultiFab mms_source;
 #endif
 
-#ifdef AMREX_PARTICLES
-  static int do_spray_particles;
-#endif
-
   bool FillPatchedOldState_ok;
 
   // There can be only one Diffusion object, it covers all levels:
   static class Diffusion* diffusion;
 
 #ifdef AMREX_PARTICLES
-  static SprayParticleContainer* SprayPC;
+  static int do_spray_particles;
   static SprayParticleContainer* theSprayPC();
   static SprayParticleContainer* theVirtPC();
   static SprayParticleContainer* theGhostPC();

@@ -283,7 +283,7 @@ PeleC::initParticles()
     AMREX_ASSERT(theSprayPC() == 0);
     // Whether we need to use ghost and virtual particles
     bool gvParticles = false;
-    if (parent->subCycle() && parent->finestLevel() > 0) {
+    if (parent->subCycle()) {
       gvParticles = true;
     }
 
@@ -417,7 +417,7 @@ PeleC::particleRedistribute(int lbase, int nGrow, int local, bool init_part)
     // redistribute without checking whether the grids have changed.
     //
     if (init_part) {
-      theSprayPC()->Redistribute(lbase, flev, nGrow, local);
+      theSprayPC()->Redistribute(lbase);
       return;
     }
 
@@ -428,8 +428,6 @@ PeleC::particleRedistribute(int lbase, int nGrow, int local, bool init_part)
     static Vector<DistributionMapping> dm;
 
     bool changed = false;
-
-    int flev = parent->finestLevel();
 
     while (parent->getAmrLevels()[flev] == nullptr) {
       flev--;
@@ -463,8 +461,12 @@ PeleC::particleRedistribute(int lbase, int nGrow, int local, bool init_part)
       //
       if (verbose && ParallelDescriptor::IOProcessor())
         amrex::Print() << "Calling redistribute because grid has changed " << '\n';
-
-      theSprayPC()->Redistribute(lbase, flev, nGrow, local);
+      if (flev == 0) {
+        // Do a local redistribute
+        theSprayPC()->Redistribute(lbase, -1, nGrow, true);
+      } else {
+        theSprayPC()->Redistribute(lbase, -1, nGrow, false);
+      }
       //
       // Use the new BoxArray and DistMap to define ba and dm for next time.
       //
@@ -517,7 +519,7 @@ PeleC::particleTimestamp(int ngrow)
     }
   }
 
-  if (SprayPC && !timestamp_dir.empty()) {
+  if (theSprayPC() && !timestamp_dir.empty()) {
     std::string basename = timestamp_dir;
 
     if (basename[basename.length() - 1] != '/')
@@ -529,7 +531,7 @@ PeleC::particleTimestamp(int ngrow)
     Real time = state[State_Type].curTime();
 
     for (int lev = level; lev <= finest_level; lev++) {
-      if (SprayPC->NumberOfParticlesAtLevel(lev) <= 0)
+      if (theSprayPC()->NumberOfParticlesAtLevel(lev) <= 0)
         continue;
 
       MultiFab& S_new = parent->getLevel(lev).get_new_data(State_Type);
@@ -539,9 +541,9 @@ PeleC::particleTimestamp(int ngrow)
         FillPatchIterator fpi(
           parent->getLevel(lev), S_new, ng, time, State_Type, 0, imax + 1);
         const MultiFab& S = fpi.get_mf();
-        SprayPC->Timestamp(basename, S, lev, time, timestamp_indices);
+        theSprayPC()->Timestamp(basename, S, lev, time, timestamp_indices);
       } else {
-        SprayPC->Timestamp(basename, S_new, lev, time, timestamp_indices);
+        theSprayPC()->Timestamp(basename, S_new, lev, time, timestamp_indices);
       }
     }
   }

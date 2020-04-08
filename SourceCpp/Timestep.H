@@ -32,12 +32,12 @@ pc_trans4dt(
 
   if (which_trans == 0) {
     get_mu = true;
-    pc_actual_transport(
+    transport(
       get_xi, get_mu, get_lam, get_Ddiag, T, rho, massfrac, nullptr, D, dum1,
       dum2);
   } else if (which_trans == 1) {
     get_lam = true;
-    pc_actual_transport(
+    transport(
       get_xi, get_mu, get_lam, get_Ddiag, T, rho, massfrac, nullptr, dum1, dum2,
       D);
   }
