@@ -709,7 +709,7 @@ PeleC::initData()
   } else {
     // TODO: Determine how many ghost cells to use here
     int nGrow = 0;
-    particleRedistribute(level - 1, nGrow, false, true);
+    particleRedistribute(level - 1, nGrow, 0, false);
   }
 #endif
 
@@ -1105,7 +1105,7 @@ PeleC::post_timestep(int iteration)
     //
     // Remove Ghost particles on the final iteration
     //
-    if (iteration == parent->nCycle(level))
+    if (iteration == ncycle)
       removeGhostParticles();
 
     //
@@ -1226,7 +1226,7 @@ PeleC::post_regrid(int lbase, int new_finest)
   if (do_spray_particles && theSprayPC() != 0 && level == lbase) {
     // TODO: Determine how many ghost cells to use here
     int nGrow = 0;
-    theSprayPC()->Redistribute(lbase, new_finest, nGrow, 0);
+    particleRedistribute(lbase);
   }
 #endif
 }

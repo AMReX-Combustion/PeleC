@@ -242,7 +242,7 @@ PeleC::setSprayGridInfo(
   //      iterations so we can't reduce this number as amr_iteration increases.
 
   ghost_width = 0;
-  if (level < parent->finestLevel() && parent->finestLevel() > 0)
+  if (parent->subCycle())
     ghost_width += amr_ncycle + stencil_deposition_width;
 
   // *** where_width ***  is used

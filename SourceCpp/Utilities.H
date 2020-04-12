@@ -80,7 +80,7 @@ pc_ctoprim(
   qa(i, j, k, QGAMC) = gam1;
   qa(i, j, k, QC) = cs;
   qa(i, j, k, QCSML) = amrex::max(SMALL, SMALL * cs);
-  qa(i, j, k, QRSPEC) = RU / wbar;
+  qa(i, j, k, QRSPEC) = EOS::RU / wbar;
 }
 
 AMREX_GPU_DEVICE
