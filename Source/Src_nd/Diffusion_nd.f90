@@ -418,7 +418,7 @@ contains
                          D,   Dlo,   Dhi,&
                          deltax, dir) bind(C, name = "pc_diffterm_aux")
 
-    use network, only : naux
+    use fuego_chemistry, only : naux
     use meth_params_module, only : NVAR, UFX, QVAR, QFX
     use amrex_constants_module
     use prob_params_module, only : physbc_lo, physbc_hi

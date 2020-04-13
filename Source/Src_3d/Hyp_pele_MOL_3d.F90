@@ -57,7 +57,7 @@ module hyp_advection_module
                                    URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, UTEMP, UFX, UFA, &
                                    eb_small_vfrac
     use slope_module, only : slopex, slopey, slopez
-    use network, only : nspecies, naux
+    use fuego_chemistry, only : nspecies, naux
     use eos_type_module
     use eos_module, only : eos_t, eos_rp
     use riemann_module, only: cmpflx, shock

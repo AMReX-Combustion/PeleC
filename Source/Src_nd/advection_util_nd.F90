@@ -202,7 +202,7 @@ contains
   subroutine reset_to_small_state(old_state, new_state, idx, lo, hi, verbose)
 
     use amrex_constants_module, only: ZERO
-    use network, only: nspecies, naux
+    use fuego_chemistry, only: nspecies, naux
     use meth_params_module, only: NVAR, URHO, UMX, UMY, UMZ, UTEMP, UEINT, UEDEN, UFS, small_temp, small_dens, npassive, upass_map
     use eos_type_module
     use eos_module, only: eos_rt
@@ -393,7 +393,7 @@ contains
                      qaux, qa_lo,  qa_hi) bind(C, name = "ctoprim")
 
     use fundamental_constants_module, only: k_B, n_A
-    use network, only : nspecies, naux
+    use fuego_chemistry, only : nspecies, naux
     use eos_module, only : eos_re
     use eos_type_module
     use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UTEMP, &
@@ -647,7 +647,7 @@ contains
                                   allow_small_energy, allow_negative_energy
     use prob_params_module, only: dim, coord_type, dg
     use amrex_mempool_module, only: bl_allocate, bl_deallocate
-    use network, only: nspecies, naux
+    use fuego_chemistry, only: nspecies, naux
     use eos_type_module
     use eos_module, only: eos_rt
 

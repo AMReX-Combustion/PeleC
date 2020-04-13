@@ -632,7 +632,7 @@ end subroutine impose_NSCBC
                                 qaux, qa_l1, qa_l2, qa_h1, qa_h2)
                                
   use eos_module
-  use network, only : nspecies
+  use fuego_chemistry, only : nspecies
   use amrex_constants_module, only : ONE
   use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP,&
                                  UFS, NQAUX, QC, QGAMC, QRSPEC, &
