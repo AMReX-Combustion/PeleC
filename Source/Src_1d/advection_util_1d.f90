@@ -10,7 +10,7 @@ contains
 
   subroutine normalize_species_fluxes(flux,flux_l1,flux_h1,lo,hi)
 
-    use network, only : nspecies
+    use fuego_chemistry, only : nspecies
     use meth_params_module, only : NVAR, URHO, UFS
     use amrex_constants_module
 
@@ -47,7 +47,7 @@ contains
 
   subroutine normalize_new_species(u,u_l1,u_h1,lo,hi)
 
-    use network, only : nspecies
+    use fuego_chemistry, only : nspecies
     use meth_params_module, only : NVAR, URHO, UFS
     use amrex_constants_module    
 

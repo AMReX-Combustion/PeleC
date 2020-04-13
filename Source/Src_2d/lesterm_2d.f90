@@ -31,7 +31,7 @@ contains
                                      L,   Llo,   Lhi,&
                                      deltax) bind(C, name = "pc_smagorinsky_sfs_term")
 
-    use network, only : nspecies
+    use fuego_chemistry, only : nspecies
     use meth_params_module, only : NVAR, UMX, UMY, UEDEN, QVAR, QRHO, QU, QV, QTEMP, QFS, Cs, CI, PrT
     use amrex_constants_module
     use eos_type_module
@@ -178,7 +178,7 @@ contains
                                              L,   Llo,   Lhi,&
                                              deltax) bind(C, name = "pc_dynamic_smagorinsky_sfs_term")
 
-    use network, only : nspecies
+    use fuego_chemistry, only : nspecies
     use meth_params_module, only : NVAR, UMX, UMY, UEDEN, QVAR, QRHO, QU, QV, QTEMP, QFS
     use amrex_constants_module
     use eos_type_module

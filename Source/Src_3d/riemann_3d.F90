@@ -36,7 +36,7 @@ contains
                     idir,ilo,ihi,jlo,jhi,kc,kflux,k3d,domlo,domhi)
 
     use amrex_mempool_module, only : bl_allocate, bl_deallocate
-    use network, only : nspecies
+    use fuego_chemistry, only : nspecies
     use eos_module
 
     implicit none
@@ -381,7 +381,7 @@ contains
 
     use amrex_mempool_module, only : bl_allocate, bl_deallocate
     use prob_params_module, only : physbc_lo, physbc_hi, Symmetry, SlipWall, NoSlipWall
-    use network, only : nspecies, naux
+    use fuego_chemistry, only : nspecies, naux
     use eos_type_module
     use eos_module
 
