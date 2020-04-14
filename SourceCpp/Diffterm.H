@@ -117,13 +117,13 @@ pc_diffusion_flux(
   }
   EOS::Y2X(mass1, mole1);
   amrex::Real T = q(i, j, k, QTEMP);
-  EOS::YT2H(mass1, T, hi1);
+  EOS::T2Hi(T, hi1);
   for (int ns = 0; ns < NUM_SPECIES; ++ns) {
     mass2[ns] = q(im, jm, km, ns + QFS);
   }
   T = q(im, jm, km, QTEMP);
   EOS::Y2X(mass2, mole2);
-  EOS::YT2H(mass2, T, hi2);
+  EOS::T2Hi(T, hi2);
 
   // Get species/enthalpy diffusion, compute correction vel
   amrex::Real Vc = 0.0;
