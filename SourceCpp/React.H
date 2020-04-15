@@ -175,7 +175,7 @@ pc_expl_reactions(
         urk[URHO], urk[UTEMP], massfrac, wdot); // this is wdot*molecularweights
       for (int n = 0; n < NUM_SPECIES; ++n)
         wdot[n] += rhoydot_ext[n];
-      EOS::T2E(urk[UTEMP], ei);
+      EOS::T2Ei(urk[UTEMP], ei);
       amrex::Real tempsrc = rhoedot_ext;
       for (int n = 0; n < NUM_SPECIES; ++n)
         tempsrc -= wdot[n] * ei[n];
