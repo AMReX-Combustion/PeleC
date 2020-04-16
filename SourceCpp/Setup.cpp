@@ -146,6 +146,8 @@ PeleC::variableSetUp()
 
   init_transport();
 
+  indxmap::init();
+
 #ifdef PELEC_USE_MASA
   if (do_mms) {
     init_mms();

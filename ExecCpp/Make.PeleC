@@ -40,9 +40,9 @@ all: $(executable)
 
 # EOS
 ifeq ($(Eos_dir),$(filter $(Eos_dir),Fuego))
-  EOS_HOME = $(PELE_PHYSICS_HOME)/Eos/Fuego/cpp
+  EOS_HOME = $(PELE_PHYSICS_HOME)/Eos/Fuego
 else
-  EOS_HOME = $(PELE_PHYSICS_HOME)/Eos/GammaLaw/cpp
+  EOS_HOME = $(PELE_PHYSICS_HOME)/Eos/GammaLaw
 endif
 EXTERN_CORE       += $(EOS_HOME)
 INCLUDE_LOCATIONS += $(EOS_HOME)
@@ -68,10 +68,10 @@ Blocs += $(CHEM_HOME)
 
 # Transport
 ifeq ($(Transport_dir), Simple)
-  TRANSPORT_HOME = $(PELE_PHYSICS_HOME)/Transport/Simple/cpp
+  TRANSPORT_HOME = $(PELE_PHYSICS_HOME)/Transport/Simple
 endif
 ifeq ($(Transport_dir), Constant)
-  TRANSPORT_HOME = $(PELE_PHYSICS_HOME)/Transport/Constant/cpp
+  TRANSPORT_HOME = $(PELE_PHYSICS_HOME)/Transport/Constant
 endif
 EXTERN_CORE       += $(TRANSPORT_HOME)
 INCLUDE_LOCATIONS += $(TRANSPORT_HOME)

@@ -9,7 +9,6 @@
 //#define SMALLT 1.0e-50
 #define N_A 6.02214076e23
 #define K_B 1.380649e-16
-#define RU 8.31446261815324e7
 #define Outflow 2
 #define PI 3.14159265358979323846264338327950288
 

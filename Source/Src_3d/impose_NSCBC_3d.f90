@@ -1010,7 +1010,7 @@ end subroutine impose_NSCBC
                                
   use eos_module
   use amrex_constants_module, only : ONE
-  use network, only : nspecies
+  use fuego_chemistry, only : nspecies
   use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP,&
                                  UFS, NQAUX, QC, QGAMC, QRSPEC, &
                                  QC, QDPDE, QDPDR, QCSML, QGAMC, &

@@ -212,13 +212,14 @@ PeleC::do_mol_advance(
 #ifdef AMREX_PARTICLES
 void
 PeleC::setSprayGridInfo(
-  int& amr_iteration,
-  int& amr_ncycle,
-  int& ghost_width,
-  int& where_width,
-  int& spray_n_grow,
-  int& tmp_src_width)
+  const int amr_iteration,
+  const int amr_ncycle,
+  int&      ghost_width,
+  int&      where_width,
+  int&      spray_n_grow,
+  int&      tmp_src_width)
 {
+  // TODO: Re-evaluate these numbers and include the particle cfl into the calcuation
   // A particle in cell (i) can affect cell values in (i-1) to (i+1)
   int stencil_deposition_width = 1;
 
@@ -240,7 +241,9 @@ PeleC::setSprayGridInfo(
   //      steps. We define ghost cells at the coarser level to cover all
   //      iterations so we can't reduce this number as amr_iteration increases.
 
-  ghost_width = amr_ncycle + stencil_deposition_width;
+  ghost_width = 0;
+  if (parent->subCycle())
+    ghost_width += amr_ncycle + stencil_deposition_width;
 
   // *** where_width ***  is used
   //   *) to set how many cells the Where call in moveKickDrift tests = max of
@@ -258,10 +261,7 @@ PeleC::setSprayGridInfo(
   //   *) to determine how many ghost cells we need to fill in the MultiFab from
   //      which the particle interpolates its acceleration
 
-  // spray_n_grow = ghost_width + (1-amr_iteration) +
-  // stencil_interpolation_width;
-  spray_n_grow = ghost_width + (1 - amr_iteration) + (amr_iteration - 1) +
-                 stencil_interpolation_width;
+  spray_n_grow = ghost_width + stencil_interpolation_width;
 
   // *** tmp_src_width ***  is used
   //   *) to set how many ghost cells are needed in the tmp_src_ptr MultiFab
@@ -272,11 +272,6 @@ PeleC::setSprayGridInfo(
   //      trying to write out of bounds
 
   tmp_src_width = ghost_width + stencil_deposition_width;
-
-  //   std::cout << "src_width="<<tmp_src_width<< "spray_n_grow="<<spray_n_grow
-  //             << "where_width="<<where_width<< "ghost_width="<<ghost_width
-  //             << "stencil_deposition_width="<<stencil_deposition_width
-  //             << "stencil_interpolation_width="<<stencil_interpolation_width;
 }
 #endif
 
@@ -385,11 +380,6 @@ PeleC::do_sdc_iteration(
     // TODO: Maybe move this mess into construct_old_source?
     if (do_spray_particles) {
       //
-      // Setup the virtual particles that represent finer level particles
-      //
-      setupVirtualParticles();
-
-      //
       // Setup ghost particles for use in finer levels. Note that ghost
       // particles that will be used by this level have already been created,
       // the particles being set here are only used by finer levels.
@@ -397,18 +387,38 @@ PeleC::do_sdc_iteration(
       int finest_level = parent->finestLevel();
 
       //
+      // Setup the virtual particles that particles on finer levels
+      //
+      
+      if (level < finest_level)
+	setupVirtualParticles();
+
+      //
       // Check if I need to insert new particles
       //
       amrex::Real cur_time = state[State_Type].curTime();
       int nstep = parent->levelSteps(0);
 
-      //      if (level == finest_level)
-      //        theSprayPC()->injectParticles(cur_time,nstep,level);
+      bool injectParts = false;
+      bool insertParts = false;
       if (level == finest_level)
-        theSprayPC()->insertParticles(cur_time, nstep, level);
+	injectParts = theSprayPC()->injectParticles(cur_time, nstep, level);
+      if (level == finest_level)
+	insertParts = theSprayPC()->insertParticles(cur_time, nstep, level);
 
-      particleRedistribute(level, false);
+      //
+      // Only redistribute if we injected or inserted particles
+      //
+      if (injectParts || insertParts) {
+	// TODO: Determine the number of ghost cells needed here
+	int nGrow = 1;
+	particleRedistribute(level, nGrow, 0);
+      }
 
+      //
+      // Make a copy of the particles on this level into ghost particles
+      // for the finer level
+      //
       if (level < finest_level && finest_level > 0)
         setupGhostParticles(ghost_width);
 
@@ -428,20 +438,24 @@ PeleC::do_sdc_iteration(
 
       // Do the valid particles themselves
       theSprayPC()->moveKickDrift(
-        Sborder, *old_sources[spray_src], level, dt, cur_time, tmp_src_width,
-        true, where_width);
+        Sborder, *old_sources[spray_src], level, dt, cur_time,
+        false, // not virtual particles
+        false, // not ghost particles
+        tmp_src_width,
+        true,  // Move the particles
+        where_width);
 
       // Only need the coarsest virtual particles here.
-      if (level < finest_level)
+      if (level < finest_level && theVirtPC() != nullptr)
         theVirtPC()->moveKickDrift(
-          Sborder, *old_sources[spray_src], level, dt, cur_time, tmp_src_width,
-          true, where_width);
+          Sborder, *old_sources[spray_src], level, dt, cur_time, true, false,
+          tmp_src_width, true, where_width);
 
       // Miiiight need all Ghosts
-      if (theGhostPC() != 0)
+      if (theGhostPC() != nullptr)
         theGhostPC()->moveKickDrift(
-          Sborder, *old_sources[spray_src], level, dt, cur_time, tmp_src_width,
-          true, where_width);
+          Sborder, *old_sources[spray_src], level, dt, cur_time, false, true,
+          tmp_src_width, true, where_width);
     }
 #endif
 
@@ -531,15 +545,15 @@ PeleC::do_sdc_iteration(
     new_sources[spray_src]->setVal(0.);
 
     theSprayPC()->moveKick(
-      Sborder, *new_sources[spray_src], level, dt, time + dt, tmp_src_width);
+      Sborder, *new_sources[spray_src], level, dt, time + dt, false, false, tmp_src_width);
 
     // Virtual particles will be recreated, so we need not kick them.
     // TODO: Is this true with SDC iterations??
 
     // Ghost particles need to be kicked except during the final iteration.
-    if (amr_iteration != amr_ncycle && theGhostPC != 0)
+    if (amr_iteration != amr_ncycle && theGhostPC() != nullptr)
       theGhostPC()->moveKick(
-        Sborder, *new_sources[spray_src], level, dt, time + dt, tmp_src_width);
+        Sborder, *new_sources[spray_src], level, dt, time + dt, false, true, tmp_src_width);
   }
 #endif
 

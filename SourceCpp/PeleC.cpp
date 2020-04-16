@@ -108,10 +108,6 @@ amrex::GpuArray<amrex::Real, NVAR> PeleC::body_state;
 bool PeleC::do_react_load_balance = false;
 bool PeleC::do_mol_load_balance = false;
 
-#ifdef AMREX_PARTICLES
-SprayParticleContainer* PeleC::SprayPC = nullptr;
-#endif
-
 amrex::Vector<std::string> PeleC::spec_names;
 
 amrex::Vector<int> PeleC::src_list;
@@ -140,17 +136,13 @@ ebInitialized(bool eb_init_val)
 void
 PeleC::variableCleanUp()
 {
-#ifdef AMREX_PARTICLES
-  delete SprayPC;
-  SprayPC = nullptr;
-#endif
 
   desc_lst.clear();
 
   // Don't need this in pure C++?
   // clear_method_params();
 
-  pc_transport_close();
+  transport_close();
 
 #ifdef PELEC_USE_REACTIONS
   if (do_react == 1) {
@@ -419,12 +411,20 @@ PeleC::PeleC(
   amrex::MultiFab& S_new = get_new_data(State_Type);
 
   for (int n = 0; n < src_list.size(); ++n) {
+    int oldGrow = NUM_GROW;
+    int newGrow = S_new.nGrow();
+#ifdef AMREX_PARTICLES
+    if (src_list[n] == spray_src) {
+      oldGrow = 1;
+      newGrow = 1;
+    }
+#endif
     old_sources[src_list[n]] =
       std::unique_ptr<amrex::MultiFab>(new amrex::MultiFab(
-        grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory()));
+        grids, dmap, NVAR, oldGrow, amrex::MFInfo(), Factory()));
     new_sources[src_list[n]] =
       std::unique_ptr<amrex::MultiFab>(new amrex::MultiFab(
-        grids, dmap, NVAR, S_new.nGrow(), amrex::MFInfo(), Factory()));
+        grids, dmap, NVAR, newGrow, amrex::MFInfo(), Factory()));
   }
 
   if (do_hydro) {
@@ -707,7 +707,9 @@ PeleC::initData()
   if (level == 0) {
     initParticles();
   } else {
-    particleRedistribute(level - 1, true);
+    // TODO: Determine how many ghost cells to use here
+    int nGrow = 0;
+    particleRedistribute(level - 1, nGrow, 0, false);
   }
 #endif
 
@@ -1029,10 +1031,10 @@ PeleC::computeNewDt(
   }
 
   // Limit dt's by the value of stop_time.
-  const amrex::Real eps = 0.001 * dt_0;
+  const amrex::Real dt_eps = 0.001 * dt_0;
   amrex::Real cur_time = state[State_Type].curTime();
   if (stop_time >= 0.0) {
-    if ((cur_time + dt_0) > (stop_time - eps)) {
+    if ((cur_time + dt_0) > (stop_time - dt_eps)) {
       dt_0 = stop_time - cur_time;
     }
   }
@@ -1069,10 +1071,10 @@ PeleC::computeInitialDt(
   }
 
   // Limit dt's by the value of stop_time.
-  const amrex::Real eps = 0.001 * dt_0;
+  const amrex::Real dt_eps = 0.001 * dt_0;
   amrex::Real cur_time = state[State_Type].curTime();
   if (stop_time >= 0.0) {
-    if ((cur_time + dt_0) > (stop_time - eps)) {
+    if ((cur_time + dt_0) > (stop_time - dt_eps)) {
       dt_0 = stop_time - cur_time;
     }
   }
@@ -1097,12 +1099,13 @@ PeleC::post_timestep(int iteration)
     //
     // Remove virtual particles at this level if we have any.
     //
-    removeVirtualParticles();
+    if (theVirtPC() != 0)
+      removeVirtualParticles();
 
     //
     // Remove Ghost particles on the final iteration
     //
-    if (iteration == parent->nCycle(level))
+    if (iteration == ncycle)
       removeGhostParticles();
 
     //
@@ -1110,7 +1113,9 @@ PeleC::post_timestep(int iteration)
     // off the next finest level and need to be added to our own level.
     //
     if ((iteration < ncycle and level < finest_level) || level == 0) {
-      theSprayPC()->Redistribute(level, theSprayPC()->finestLevel(), iteration);
+      // TODO: Determine how many ghost cells to use here
+      int nGrow = 0;
+      theSprayPC()->Redistribute(level, theSprayPC()->finestLevel(), nGrow);
     }
   }
 #endif
@@ -1218,8 +1223,10 @@ PeleC::post_regrid(int lbase, int new_finest)
   fine_mask.clear();
 
 #ifdef AMREX_PARTICLES
-  if (do_spray_particles && SprayPC && level == lbase) {
-    SprayPC->Redistribute(false, false, lbase);
+  if (do_spray_particles && theSprayPC() != 0 && level == lbase) {
+    // TODO: Determine how many ghost cells to use here
+    int nGrow = 0;
+    particleRedistribute(lbase);
   }
 #endif
 }
@@ -1901,13 +1908,13 @@ PeleC::init_eos()
 void
 PeleC::init_transport()
 {
-  pc_transport_init();
+  transport_init();
 }
 
 void
 PeleC::close_transport()
 {
-  pc_transport_close();
+  transport_close();
 }
 
 void
@@ -2162,11 +2169,11 @@ PeleC::clean_state(amrex::MultiFab& S)
 
   amrex::MultiFab::Copy(temp_state, S, 0, 0, S.nComp(), S.nGrow());
 
-  amrex::Real frac_change = enforce_min_density(temp_state, S);
+  amrex::Real frac_change_t = enforce_min_density(temp_state, S);
 
   // normalize_species(S);
 
-  return frac_change;
+  return frac_change_t;
 }
 
 amrex::Real
@@ -2174,9 +2181,9 @@ PeleC::clean_state(amrex::MultiFab& S, amrex::MultiFab& S_old)
 {
   // Enforce a minimum density.
 
-  amrex::Real frac_change = enforce_min_density(S_old, S);
+  amrex::Real frac_change_t = enforce_min_density(S_old, S);
 
   // normalize_species(S);
 
-  return frac_change;
+  return frac_change_t;
 }

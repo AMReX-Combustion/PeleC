@@ -18,7 +18,7 @@ contains
                        gamc,gc_l1,gc_l2,gc_h1,gc_h2, &
                        ilo1,ilo2,ihi1,ihi2,dx,dy,dt)
 
-    use network, only : nspecies
+    use fuego_chemistry, only : nspecies
     use eos_type_module
     use eos_module
     use amrex_constants_module

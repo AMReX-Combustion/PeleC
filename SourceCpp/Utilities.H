@@ -2,6 +2,7 @@
 #define _UTILITIES_H_
 
 #include <AMReX_FArrayBox.H>
+#include "Constants.H"
 #include "IndexDefines.H"
 #include "EOS.H"
 
@@ -45,8 +46,8 @@ pc_ctoprim(
   q(i, j, k, QV) = v.y;
   q(i, j, k, QW) = v.z;
   for (int ipassive = 0; ipassive < NPASSIVE; ++ipassive) {
-    n = EOS::upass_map(ipassive);
-    nq = EOS::qpass_map(ipassive);
+    n = indxmap::upass_map(ipassive);
+    nq = indxmap::qpass_map(ipassive);
     q(i, j, k, nq) = u(i, j, k, n) / rho;
   }
 
@@ -79,7 +80,7 @@ pc_ctoprim(
   qa(i, j, k, QGAMC) = gam1;
   qa(i, j, k, QC) = cs;
   qa(i, j, k, QCSML) = amrex::max(SMALL, SMALL * cs);
-  qa(i, j, k, QRSPEC) = RU / wbar;
+  qa(i, j, k, QRSPEC) = EOS::RU / wbar;
 }
 
 AMREX_GPU_DEVICE

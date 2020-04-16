@@ -178,7 +178,8 @@ public:
   //
   // Redistribute
   //
-  virtual void particleRedistribute(int lbase = 0, bool init_part = false);
+  virtual void particleRedistribute(
+    int lbase = 0, int nGrow = 0, int local = 0, bool init_part = false);
   //
   // Setup virtual particles if necessary
   //
@@ -220,12 +221,12 @@ public:
   static int write_spray_ascii_files;
 
   void setSprayGridInfo(
-    int& amr_iteration,
-    int& amr_ncycle,
-    int& ghost_width,
-    int& where_width,
-    int& spray_n_grow,
-    int& tmp_src_width);
+    const int amr_iteration,
+    const int amr_ncycle,
+    int&      ghost_width,
+    int&      where_width,
+    int&      spray_n_grow,
+    int&      tmp_src_width);
 
   static int particle_mass_tran;
   static int particle_heat_tran;
@@ -762,17 +763,13 @@ protected:
   amrex::MultiFab mms_source;
 #endif
 
-#ifdef AMREX_PARTICLES
-  static int do_spray_particles;
-#endif
-
   bool FillPatchedOldState_ok;
 
   // There can be only one Diffusion object, it covers all levels:
   static class Diffusion* diffusion;
 
 #ifdef AMREX_PARTICLES
-  static SprayParticleContainer* SprayPC;
+  static int do_spray_particles;
   static SprayParticleContainer* theSprayPC();
   static SprayParticleContainer* theVirtPC();
   static SprayParticleContainer* theGhostPC();

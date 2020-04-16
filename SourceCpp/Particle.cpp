@@ -14,15 +14,15 @@ bool virtual_particles_set = false;
 //
 // Containers for the real "active" Particles
 //
-SprayParticleContainer* SprayPC = 0;
+SprayParticleContainer* SprayPC = nullptr;
 //
 // Container for temporary, virtual Particles
 //
-SprayParticleContainer* VirtPC = 0;
+SprayParticleContainer* VirtPC = nullptr;
 //
 // Container for temporary, ghost Particles
 //
-SprayParticleContainer* GhostPC = 0;
+SprayParticleContainer* GhostPC = nullptr;
 
 void
 RemoveParticlesOnExit()
@@ -122,12 +122,22 @@ PeleC::readParticleParams()
   sprayLatent.resize(nfuel);
   sprayCp.resize(nfuel);
   sprayIndxMap.resize(nfuel);
+  std::vector<std::string> fuel_names;
+  std::vector<Real> crit_T;
+  std::vector<Real> boil_T;
+  std::vector<Real> latent;
+  std::vector<Real> spraycp;
+  ppp.getarr("fuel_species", fuel_names);
+  ppp.getarr("fuel_crit_temp", crit_T);
+  ppp.getarr("fuel_boil_temp", boil_T);
+  ppp.getarr("fuel_latent", latent);
+  ppp.getarr("fuel_cp", spraycp);
   for (int i = 0; i != nfuel; ++i) {
-    ppp.getkth("fuel_species", i, sprayFuelNames[i], 0);
-    ppp.getkth("fuel_crit_temp", i, sprayCritT[i], 0);
-    ppp.getkth("fuel_boil_temp", i, sprayBoilT[i], 0);
-    ppp.getkth("fuel_latent", i, sprayLatent[i], 0);
-    ppp.getkth("fuel_cp", i, sprayCp[i], 0);
+    sprayFuelNames[i] = fuel_names[i];
+    sprayCritT[i] = crit_T[i];
+    sprayBoilT[i] = boil_T[i];
+    sprayLatent[i] = latent[i];
+    sprayCp[i] = spraycp[i];
   }
   // Must use same reference temperature for all fuels
   // TODO: This means the reference temperature must be the same for all fuel
@@ -273,7 +283,7 @@ PeleC::initParticles()
     AMREX_ASSERT(theSprayPC() == 0);
     // Whether we need to use ghost and virtual particles
     bool gvParticles = false;
-    if (parent->subCycle() && parent->finestLevel() > 0) {
+    if (parent->subCycle()) {
       gvParticles = true;
     }
 
@@ -397,14 +407,14 @@ PeleC::particleDerive(const std::string& name, Real time, int ngrow)
 }
 
 void
-PeleC::particleRedistribute(int lbase, bool init_part)
+PeleC::particleRedistribute(int lbase, int nGrow, int local, bool init_part)
 {
   BL_PROFILE("PeleC::particleRedistribute()");
+  int flev = parent->finestLevel();
   if (theSprayPC()) {
     //
     // If we are calling with init_part = true, then we want to force the
-    // redistribute
-    //    without checking whether the grids have changed.
+    // redistribute without checking whether the grids have changed.
     //
     if (init_part) {
       theSprayPC()->Redistribute(lbase);
@@ -418,8 +428,6 @@ PeleC::particleRedistribute(int lbase, bool init_part)
     static Vector<DistributionMapping> dm;
 
     bool changed = false;
-
-    int flev = parent->finestLevel();
 
     while (parent->getAmrLevels()[flev] == nullptr) {
       flev--;
@@ -448,13 +456,17 @@ PeleC::particleRedistribute(int lbase, bool init_part)
       // We only need to call Redistribute if the BoxArrays or DistMaps have
       // changed.
       // We also only call it for particles >= lbase. This is
-      // because of we called redistribute during a subcycle, there may be
+      // because if we called redistribute during a subcycle, there may be
       // particles not in the proper position on coarser levels.
       //
       if (verbose && ParallelDescriptor::IOProcessor())
-        amrex::Print() << "Calling redistribute because changed " << '\n';
-
-      theSprayPC()->Redistribute(lbase);
+        amrex::Print() << "Calling redistribute because grid has changed " << '\n';
+      if (flev == 0) {
+        // Do a local redistribute
+        theSprayPC()->Redistribute(lbase, -1, nGrow, true);
+      } else {
+        theSprayPC()->Redistribute(lbase, -1, nGrow, false);
+      }
       //
       // Use the new BoxArray and DistMap to define ba and dm for next time.
       //
@@ -464,7 +476,7 @@ PeleC::particleRedistribute(int lbase, bool init_part)
       }
     } else {
       if (verbose && ParallelDescriptor::IOProcessor())
-        amrex::Print() << "NOT calling redistribute because NOT changed "
+        amrex::Print() << "NOT calling redistribute because grid has NOT changed "
                        << '\n';
     }
   }
@@ -507,7 +519,7 @@ PeleC::particleTimestamp(int ngrow)
     }
   }
 
-  if (SprayPC && !timestamp_dir.empty()) {
+  if (theSprayPC() && !timestamp_dir.empty()) {
     std::string basename = timestamp_dir;
 
     if (basename[basename.length() - 1] != '/')
@@ -519,7 +531,7 @@ PeleC::particleTimestamp(int ngrow)
     Real time = state[State_Type].curTime();
 
     for (int lev = level; lev <= finest_level; lev++) {
-      if (SprayPC->NumberOfParticlesAtLevel(lev) <= 0)
+      if (theSprayPC()->NumberOfParticlesAtLevel(lev) <= 0)
         continue;
 
       MultiFab& S_new = parent->getLevel(lev).get_new_data(State_Type);
@@ -529,9 +541,9 @@ PeleC::particleTimestamp(int ngrow)
         FillPatchIterator fpi(
           parent->getLevel(lev), S_new, ng, time, State_Type, 0, imax + 1);
         const MultiFab& S = fpi.get_mf();
-        SprayPC->Timestamp(basename, S, lev, time, timestamp_indices);
+        theSprayPC()->Timestamp(basename, S, lev, time, timestamp_indices);
       } else {
-        SprayPC->Timestamp(basename, S_new, lev, time, timestamp_indices);
+        theSprayPC()->Timestamp(basename, S_new, lev, time, timestamp_indices);
       }
     }
   }

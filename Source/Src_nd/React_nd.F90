@@ -22,7 +22,7 @@ contains
 use amrex_ebcellflag_module, only : is_covered_cell
 #endif
 
-    use network, only : nspecies
+    use fuego_chemistry, only : nspecies
     use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UTEMP, &
                                    UFS
 #ifdef USE_SUNDIALS_PP
@@ -164,9 +164,7 @@ use amrex_ebcellflag_module, only : is_covered_cell
                             time,dt_react,do_update,&
                             nsubsteps_min,nsubsteps_max,nsubsteps_guess,errtol) bind(C, name="pc_react_state_expl")
 
-    use network, only : nspecies
-    use chemistry_module  , only : molecular_weight
-    use fuego_chemistry, only : CKWC,CKCVBS,CKUMS,CKYTCR
+    use fuego_chemistry, only : nspecies, molecular_weight, CKWC,CKCVBS,CKUMS,CKYTCR
     use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UTEMP, UFS
     use amrex_fort_module, only : amrex_real
     use amrex_constants_module, only : HALF
