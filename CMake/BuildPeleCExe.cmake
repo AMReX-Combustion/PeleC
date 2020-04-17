@@ -9,15 +9,34 @@ function(build_pelec_exe pelec_exe_name)
   include(${CMAKE_SOURCE_DIR}/CMake/SetCompileFlags.cmake)
   include(${CMAKE_SOURCE_DIR}/CMake/SetRpath.cmake)
 
-  add_subdirectory(${PELE_PHYSICS_SRC_DIR}/Support/Fuego/Mechanism/Models/${PELEC_CHEMISTRY_MODEL}
-                   ${PELE_PHYSICS_BIN_DIR}/Support/Fuego/Mechanism/Models/${PELEC_CHEMISTRY_MODEL})
   add_subdirectory(${SRC_DIR}/Params ${BIN_DIR}/Params)
-  add_subdirectory(${PELE_PHYSICS_SRC_DIR}/Eos/${PELEC_EOS_MODEL}/cpp ${PELE_PHYSICS_BIN_DIR}/Eos/${PELEC_EOS_MODEL}/cpp)
-  add_subdirectory(${PELE_PHYSICS_SRC_DIR}/Transport/${PELEC_TRANSPORT_MODEL}/cpp ${PELE_PHYSICS_BIN_DIR}/Transport/${PELEC_TRANSPORT_MODEL}/cpp)
+
+  set(PELEC_TRANSPORT_DIR "${PELE_PHYSICS_SRC_DIR}/Transport/${PELEC_TRANSPORT_MODEL}")
+  target_sources(${pelec_exe_name} PRIVATE
+                 ${PELEC_TRANSPORT_DIR}/Transport.H
+                 ${PELEC_TRANSPORT_DIR}/Transport.cpp
+                 ${PELEC_TRANSPORT_DIR}/TransportParams.cpp
+                 ${PELEC_TRANSPORT_DIR}/TransportParams.H)
+  target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELEC_TRANSPORT_DIR})
+
+  set(PELEC_EOS_DIR "${PELE_PHYSICS_SRC_DIR}/Eos/${PELEC_EOS_MODEL}")
+  target_sources(${pelec_exe_name} PRIVATE
+                 ${PELEC_EOS_DIR}/EOS.cpp
+                 ${PELEC_EOS_DIR}/EOS.H)
+  target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELEC_EOS_DIR})
+
+  set(PELEC_MECHANISM_DIR "${PELE_PHYSICS_SRC_DIR}/Support/Fuego/Mechanism/Models/${PELEC_CHEMISTRY_MODEL}")
+  target_sources(${pelec_exe_name} PRIVATE
+                 ${PELEC_MECHANISM_DIR}/chemistry_file.H
+                 ${PELEC_MECHANISM_DIR}/mechanism.cpp
+                 ${PELEC_MECHANISM_DIR}/mechanism.h)
+  target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELEC_MECHANISM_DIR})
   
   if(PELEC_ENABLE_REACTIONS)
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_REACTIONS)
-    target_sources(${pelec_exe_name} PRIVATE ${SRC_DIR}/React.H ${SRC_DIR}/React.cpp)
+    target_sources(${pelec_exe_name} PRIVATE
+                   ${SRC_DIR}/React.H
+                   ${SRC_DIR}/React.cpp)
     target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELE_PHYSICS_SRC_DIR}/Support/Fuego/Evaluation)
   endif()
   
@@ -25,13 +44,20 @@ function(build_pelec_exe pelec_exe_name)
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_EXPLICIT_REACT)
   endif()
   
-  if(PELEC_ENABLE_MASA)
-    target_sources(${pelec_exe_name} PRIVATE ${SRC_DIR}/MMS.cpp)
+  if(PELEC_ENABLE_TESTING OR PELEC_ENABLE_VERIFICATION)
+    target_sources(${pelec_exe_name} PRIVATE
+                   ${SRC_DIR}/MMS.cpp)
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_MASA)
   endif()
   
   if(PELEC_ENABLE_EB)
-    target_sources(${pelec_exe_name} PRIVATE ${SRC_DIR}/EB.H ${SRC_DIR}/EB.cpp ${SRC_DIR}/InitEB.cpp ${SRC_DIR}/SparseData.H ${SRC_DIR}/EBStencilTypes.H)
+    target_sources(${pelec_exe_name}
+                   PRIVATE
+                   ${SRC_DIR}/EB.H
+                   ${SRC_DIR}/EB.cpp
+                   ${SRC_DIR}/InitEB.cpp
+                   ${SRC_DIR}/SparseData.H
+                   ${SRC_DIR}/EBStencilTypes.H)
   endif()
   
   target_sources(${pelec_exe_name}
@@ -58,6 +84,7 @@ function(build_pelec_exe pelec_exe_name)
        ${SRC_DIR}/IO.H
        ${SRC_DIR}/IO.cpp
        ${SRC_DIR}/IndexDefines.H
+       ${SRC_DIR}/IndexDefines.cpp
        ${SRC_DIR}/LES.H
        ${SRC_DIR}/LES.cpp
        ${SRC_DIR}/MOL.H
@@ -85,12 +112,9 @@ function(build_pelec_exe pelec_exe_name)
   
   #Add generated source files
   set_property(SOURCE ${GENERATED_FILES_DIR}/AMReX_buildInfo.cpp PROPERTY GENERATED 1)
-  target_sources(${pelec_exe_name}
-     PRIVATE
-        ${GENERATED_FILES_DIR}/AMReX_buildInfo.cpp
-  )
+  target_sources(${pelec_exe_name} PRIVATE ${GENERATED_FILES_DIR}/AMReX_buildInfo.cpp)
 
-  if(PELEC_ENABLE_MASA)
+  if(PELEC_ENABLE_TESTING OR PELEC_ENABLE_VERIFICATION)
    if(MASA_FOUND)
      #Link our executable to the MASA libraries, etc
      target_link_libraries(${pelec_exe_name} PRIVATE ${MASA_LIBRARY})
@@ -116,6 +140,15 @@ function(build_pelec_exe pelec_exe_name)
 
   #Set the dependencies on targets so the generated source code files are there before we try to build the executable 
   add_dependencies(${pelec_exe_name} generate_build_info)
+
+  if(PELEC_ENABLE_CUDA)
+    set(pctargets "${pelec_exe_name}")
+    foreach(tgt IN LISTS pctargets)
+      get_target_property(PELEC_SOURCES ${tgt} SOURCES)
+      list(FILTER PELEC_SOURCES INCLUDE REGEX "\\.cpp")
+      set_source_files_properties(${PELEC_SOURCES} PROPERTIES LANGUAGE CUDA)
+    endforeach()
+  endif()
  
   #Define what we want to be installed during a make install 
   install(TARGETS ${pelec_exe_name}
