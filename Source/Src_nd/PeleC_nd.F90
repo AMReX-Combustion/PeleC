@@ -1,6 +1,6 @@
 subroutine pc_network_init() bind(C, name="pc_network_init")
 
-  use network, only: network_init
+  use fuego_chemistry, only: network_init
   implicit none
 
   call network_init()
@@ -14,7 +14,7 @@ end subroutine pc_network_init
 
 subroutine pc_network_close() bind(C, name="pc_network_close")
 
-  use network, only: network_close
+  use fuego_chemistry, only: network_close
   implicit none
 
   call network_close()
@@ -28,10 +28,10 @@ end subroutine pc_network_close
 
 subroutine pc_transport_init() bind(C, name="pc_transport_init")
 
-  use transport_module, only: transport_init
+  use transport_module, only: transport_init_F
   implicit none
 
-  call transport_init()
+  call transport_init_F()
 
 end subroutine pc_transport_init
 
@@ -42,10 +42,10 @@ end subroutine pc_transport_init
 
 subroutine pc_transport_close() bind(C, name="pc_transport_close")
 
-  use transport_module, only: transport_close
+  use transport_module, only: transport_close_F
   implicit none
 
-  call transport_close()
+  call transport_close_F()
 
 end subroutine pc_transport_close
 
@@ -75,7 +75,7 @@ end subroutine pc_extern_init
 ! :::
 
   subroutine pc_les_init() bind(C, name = "pc_les_init")
-    use network, only   : nspecies
+    use fuego_chemistry, only   : nspecies
     use eos_module, only : eos_name
     implicit none
     
@@ -151,7 +151,7 @@ end subroutine pc_reactor_close
 
 subroutine get_num_spec(nspecies_out) bind(C, name="get_num_spec")
 
-  use network, only : nspecies
+  use fuego_chemistry, only : nspecies
 
   implicit none
 
@@ -167,7 +167,7 @@ end subroutine get_num_spec
 
 subroutine get_num_aux(naux_out) bind(C, name="get_num_aux")
 
-  use network, only : naux
+  use fuego_chemistry, only : naux
 
   implicit none
 
@@ -184,7 +184,7 @@ end subroutine get_num_aux
 subroutine get_spec_names(spec_names_out,ispec,len) &
      bind(C, name="get_spec_names")
 
-  use network, only : spec_names
+  use fuego_chemistry, only : spec_names
 
   implicit none
 
@@ -210,7 +210,7 @@ end subroutine get_spec_names
 subroutine get_aux_names(aux_names_out,iaux,len) &
      bind(C, name="get_aux_names")
 
-  use network, only : aux_names
+  use fuego_chemistry, only : aux_names
 
   implicit none
 
@@ -427,9 +427,8 @@ subroutine set_method_params(dm,Density,Xmom,Eden,Eint,Temp, &
      bind(C, name="set_method_params")
 
   use meth_params_module
-  use network, only : nspecies, naux
+  use fuego_chemistry, only : nspecies, naux
   use eos_module, only : eos_init, eos_get_small_dens, eos_get_small_temp
-  use transport_module, only : transport_init
   use amrex_constants_module, only : ZERO, ONE
 
   implicit none

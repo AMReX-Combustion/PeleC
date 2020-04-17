@@ -8,16 +8,17 @@ include(CMakePackageConfigHelpers)
 ########################## OPTIONS #####################################
 
 #General options for the project
-option(PELEC_ENABLE_MASA "Enable MASA for MMS" OFF)
+option(PELEC_ENABLE_DOCUMENTATION "Build documentation" OFF)
 option(PELEC_ENABLE_EB "Enable EB" OFF)
 option(PELEC_ENABLE_REACTIONS "Enable reactions" OFF)
 option(PELEC_ENABLE_ALL_WARNINGS "Enable all compiler warnings" OFF)
 option(PELEC_ENABLE_TESTING "Enable regression tests" OFF)
+#option(PELEC_ENABLE_UNIT_TESTING "Enable unit tests" OFF)
 option(PELEC_ENABLE_VERIFICATION "Enable verification tests" OFF)
 option(PELEC_ENABLE_FCOMPARE "Enable building fcompare when not testing" OFF)
 option(PELEC_TEST_WITH_FCOMPARE "Check test plots against gold files" OFF)
 
-#Options for the executable
+#Options for performance
 option(PELEC_ENABLE_MPI "Enable MPI" OFF)
 option(PELEC_ENABLE_OPENMP "Enable OpenMP" OFF)
 option(PELEC_ENABLE_CUDA "Enable CUDA" OFF)
@@ -31,23 +32,21 @@ if(PELEC_ENABLE_REACTIONS)
   set(PELEC_ENABLE_EXPLICIT_REACT ON)
 endif()
 
-#Create target names
-set(pelec_unit_test_exe_name "pelec_unit_tests")
-
-if(PELEC_ENABLE_TESTS)
-  set(PELEC_ENABLE_MPI ON)
-  set(PELEC_ENABLE_MASA ON)
-  if(PELEC_TEST_WITH_FCOMPARE)
-    set(PELEC_ENABLE_FCOMPARE ON)
-  endif()
-endif()
-
-if(PELEC_ENABLE_VERIFICATION AND NOT PELEC_ENABLE_TESTS)
-  message(FATAL_ERROR "-- Testing must be on to enable verification suite")
-endif()
-
 if(PELEC_ENABLE_VERIFICATION)
+  set(PELEC_ENABLE_TESTING ON)
   message(STATUS "Warning: Verification tests expect a specific Python environment and take a long time to run")
+endif()
+
+if(PELEC_ENABLE_TESTING AND PELEC_TEST_WITH_FCOMPARE)
+  set(PELEC_ENABLE_FCOMPARE ON)
+endif()
+
+if(PELEC_ENABLE_CUDA)
+  enable_language(CUDA)
+  if(CMAKE_CUDA_COMPILER_VERSION VERSION_LESS "9.0")
+    message(FATAL_ERROR "Your nvcc version is ${CMAKE_CUDA_COMPILER_VERSION} which is unsupported."
+      "Please use CUDA toolkit version 9.0 or newer.")
+  endif()
 endif()
 
 ########################### AMReX #####################################
@@ -56,13 +55,9 @@ set(AMREX_SUBMOD_LOCATION "Submodules/AMReX")
 include(${CMAKE_SOURCE_DIR}/CMake/SetAmrexOptions.cmake)
 add_subdirectory(${AMREX_SUBMOD_LOCATION})
 
-if(PELEC_ENABLE_FCOMPARE OR PELEC_TEST_WITH_FCOMPARE)
-  add_subdirectory(${AMREX_SUBMOD_LOCATION}/Tools/Plotfile)
-endif()
-
 ########################### MASA #####################################
 
-if(PELEC_ENABLE_MASA)
+if(PELEC_ENABLE_TESTING)
   set(CMAKE_PREFIX_PATH ${MASA_DIR} ${CMAKE_PREFIX_PATH})
   find_package(MASA QUIET REQUIRED)
   if(MASA_FOUND)
@@ -73,7 +68,6 @@ endif()
 ########################### PeleC #####################################
 
 find_package(Python REQUIRED)
-find_package(Threads REQUIRED) # Needed this for the Travis CI system
 if(PELEC_ENABLE_MPI)
   find_package(MPI REQUIRED)
 endif()
@@ -98,14 +92,17 @@ add_custom_target(generate_build_info ALL
    WORKING_DIRECTORY ${GENERATED_FILES_DIR} BYPRODUCTS ${GENERATED_FILES_DIR}/AMReX_buildInfo.cpp
    COMMENT "Generating AMReX_buildInfo.cpp"
 )                  
-  
+
+#Create target names
+set(pelec_unit_test_exe_name "pelec_unit_tests")
+
 #Build pelec executables and link to amrex library
 add_subdirectory(ExecCpp)
 
-if(PELEC_ENABLE_TESTS)
+if(PELEC_ENABLE_TESTING)
   enable_testing()
   include(CTest)
-  add_subdirectory(TestingCpp)
+  add_subdirectory(TestsCpp)
 endif()
 
 if(PELEC_ENABLE_DOCUMENTATION)

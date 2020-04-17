@@ -179,7 +179,7 @@ contains
                           domhi,delta,xlo,time,dt,bc,level,grid_no) &
                           bind(C, name="pc_deruplusc")
 
-    use network, only : nspecies, naux
+    use fuego_chemistry, only : nspecies, naux
     use eos_module
     use meth_params_module, only : URHO, UEINT, UTEMP, UFS, UFX
     use amrex_constants_module
@@ -233,7 +233,7 @@ contains
                            domhi,delta,xlo,time,dt,bc,level,grid_no) &
                            bind(C, name="pc_deruminusc")
 
-    use network, only : nspecies, naux
+    use fuego_chemistry, only : nspecies, naux
     use eos_module
     use meth_params_module, only : URHO, UEINT, UTEMP, UFS, UFX
     use amrex_constants_module
@@ -406,7 +406,7 @@ contains
                         domhi,dx,xlo,time,dt,bc,level,grid_no) &
                         bind(C, name="pc_derpres")
 
-    use network, only: nspecies, naux
+    use fuego_chemistry, only: nspecies, naux
     use eos_module
     use meth_params_module, only: URHO, UEINT, UTEMP, UFS, UFX
     use amrex_constants_module
@@ -532,7 +532,7 @@ contains
                               domhi,dx,xlo,time,dt,bc,level,grid_no) &
                               bind(C, name="pc_dersoundspeed")
 
-    use network, only: nspecies, naux
+    use fuego_chemistry, only: nspecies, naux
     use eos_module
     use meth_params_module, only: URHO, UEINT, UTEMP, UFS, UFX
     use amrex_constants_module
@@ -584,7 +584,7 @@ contains
                               domhi,dx,xlo,time,dt,bc,level,grid_no) &
                               bind(C, name="pc_dermachnumber")
 
-    use network, only: nspecies, naux
+    use fuego_chemistry, only: nspecies, naux
     use eos_module
     use meth_params_module, only: URHO, UMX, UMZ, UEINT, UTEMP, UFS, UFX
     use amrex_constants_module
@@ -636,7 +636,7 @@ contains
                            domhi,dx,xlo,time,dt,bc,level,grid_no) &
                            bind(C, name="pc_derentropy")
 
-    use network, only: nspecies, naux
+    use fuego_chemistry, only: nspecies, naux
     use eos_module
     use meth_params_module, only: URHO, UEINT, UTEMP, UFS, UFX
     use amrex_constants_module
@@ -690,7 +690,7 @@ contains
 
     use amrex_constants_module, only: ZERO, ONE
     use meth_params_module, only: URHO, UEINT, UTEMP, UFS, UFX
-    use network, only: nspecies, naux
+    use fuego_chemistry, only: nspecies, naux
     use prob_params_module, only: dim
     use eos_module
 
@@ -762,7 +762,7 @@ contains
                         bind(C, name="pc_derspec")
 
     use meth_params_module, only: URHO, UEINT, UTEMP, UFS, UFX
-    use network, only: nspecies
+    use fuego_chemistry, only: nspecies
     !
     ! This routine derives the mass fractions of the species.
     !
@@ -798,7 +798,7 @@ contains
     ! This routine derives the mole fractions of the species.
     !
     use meth_params_module, only: URHO, UEINT, UTEMP, UFS, UFX
-    use network, only: nspecies, naux
+    use fuego_chemistry, only: nspecies, naux
     use eos_module
     use amrex_constants_module
     
@@ -853,7 +853,7 @@ contains
     ! This routine derives the mole fractions of the species.
     !
     use meth_params_module, only: URHO, UFX
-    use network, only: naux
+    use fuego_chemistry, only: naux
     use eos_module
     use amrex_constants_module
     
