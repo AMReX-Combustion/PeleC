@@ -13,7 +13,7 @@ option(PELEC_ENABLE_EB "Enable EB" OFF)
 option(PELEC_ENABLE_REACTIONS "Enable reactions" OFF)
 option(PELEC_ENABLE_ALL_WARNINGS "Enable all compiler warnings" OFF)
 option(PELEC_ENABLE_TESTING "Enable regression tests" OFF)
-option(PELEC_ENABLE_UNIT_TESTING "Enable unit tests" OFF)
+#option(PELEC_ENABLE_UNIT_TESTING "Enable unit tests" OFF)
 option(PELEC_ENABLE_VERIFICATION "Enable verification tests" OFF)
 option(PELEC_ENABLE_FCOMPARE "Enable building fcompare when not testing" OFF)
 option(PELEC_TEST_WITH_FCOMPARE "Check test plots against gold files" OFF)
@@ -32,13 +32,13 @@ if(PELEC_ENABLE_REACTIONS)
   set(PELEC_ENABLE_EXPLICIT_REACT ON)
 endif()
 
-if(PELEC_ENABLE_TESTING AND PELEC_TEST_WITH_FCOMPARE)
-  set(PELEC_ENABLE_FCOMPARE ON)
-endif()
-
 if(PELEC_ENABLE_VERIFICATION)
   set(PELEC_ENABLE_TESTING ON)
   message(STATUS "Warning: Verification tests expect a specific Python environment and take a long time to run")
+endif()
+
+if(PELEC_ENABLE_TESTING AND PELEC_TEST_WITH_FCOMPARE)
+  set(PELEC_ENABLE_FCOMPARE ON)
 endif()
 
 if(PELEC_ENABLE_CUDA)
@@ -57,7 +57,7 @@ add_subdirectory(${AMREX_SUBMOD_LOCATION})
 
 ########################### MASA #####################################
 
-if(PELEC_ENABLE_TESTING OR PELEC_ENABLE_VERIFICATION)
+if(PELEC_ENABLE_TESTING)
   set(CMAKE_PREFIX_PATH ${MASA_DIR} ${CMAKE_PREFIX_PATH})
   find_package(MASA QUIET REQUIRED)
   if(MASA_FOUND)
@@ -99,20 +99,10 @@ set(pelec_unit_test_exe_name "pelec_unit_tests")
 #Build pelec executables and link to amrex library
 add_subdirectory(ExecCpp)
 
-if(PELEC_ENABLE_UNIT_TESTING OR PELEC_ENABLE_TESTING)
-  add_executable(${pelec_unit_test_exe_name})
-  add_subdirectory("Submodules/GoogleTest")
-  add_subdirectory("unit_tests")
-  if(PELEC_ENABLE_CUDA)
-    get_target_property(UTEST_SOURCES ${pelec_unit_test_exe_name} SOURCES)
-    set_source_files_properties(${UTEST_SOURCES} PROPERTIES LANGUAGE CUDA)
-  endif()
-endif()
-
 if(PELEC_ENABLE_TESTING)
   enable_testing()
   include(CTest)
-  add_subdirectory(TestingCpp)
+  add_subdirectory(TestsCpp)
 endif()
 
 if(PELEC_ENABLE_DOCUMENTATION)

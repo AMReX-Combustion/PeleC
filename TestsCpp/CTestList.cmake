@@ -9,44 +9,16 @@ endif()
 include(ProcessorCount)
 ProcessorCount(PROCESSES)
 
-# Set TOLERANCE for testing
-#if(NOT ${TEST_TOLERANCE} STREQUAL "")
-#  set(TOLERANCE ${TEST_TOLERANCE}) # User defined
-#else(NOT ${TEST_TOLERANCE} STREQUAL "")
-#  if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-#    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang"
-#        OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
-#      set(TOLERANCE "1e-3")
-#    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-#      set(TOLERANCE "1e-3")
-#    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-#      set(TOLERANCE "1e-2")
-#    else()
-#      set(TOLERANCE "1e-8") # Mac default
-#    endif()
-#  elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-#    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-#      set(TOLERANCE "1e-5")
-#    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-#      set(TOLERANCE "1e-15")
-#    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-#      set(TOLERANCE "1e-2")
-#    else()
-#      set(TOLERANCE "1e-8") # Linux default
-#    endif()
-#  endif()
-#endif()
-#message(STATUS "Using test tolerance of ${TOLERANCE}")
-
 #=============================================================================
 # Functions for adding tests / Categories of tests
 #=============================================================================
 
 # Standard regression test
-function(add_test_r TEST_NAME NP)
+function(add_test_r TEST_NAME TEST_EXE_DIR NP)
     # Set variables for respective binary and source directories for the test
     set(CURRENT_TEST_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test_files/${TEST_NAME})
     set(CURRENT_TEST_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/test_files/${TEST_NAME})
+    set(CURRENT_TEST_EXE ${CMAKE_BINARY_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/PeleC_${TEST_EXE_DIR})
     # Gold files should be submodule organized by machine and compiler (these are output during configure)
     set(PLOT_GOLD ${FCOMPARE_GOLD_FILES_DIRECTORY}/${TEST_NAME}/plt00010)
     # Test plot is currently expected to be after 10 steps
@@ -71,10 +43,15 @@ function(add_test_r TEST_NAME NP)
     if(TEST_WITH_FCOMPARE)
       set(FCOMPARE_COMMAND "&& ${FCOMPARE} ${PLOT_GOLD} ${PLOT_TEST}")
     endif()
+    if(PELEC_ENABLE_MPI)
+      set(MPI_COMMANDS "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${MPIEXEC_PREFLAGS}")
+    else()
+      unset(MPI_COMMANDS)
+    endif()
     # Place the exe in the correct working directory
     #set_target_properties(${pelec_exe_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/")
     # Add test and actual test commands to CTest database
-    add_test(${TEST_NAME} sh -c "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${MPIEXEC_PREFLAGS} ${CMAKE_BINARY_DIR}/${pelec_exe_name} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i ${RUNTIME_OPTIONS} ${FEXTREMA_COMMAND} ${FCOMPARE_COMMAND}")
+    add_test(${TEST_NAME} sh -c "${MPI_COMMANDS} ${CURRENT_TEST_EXE} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i ${RUNTIME_OPTIONS} ${FEXTREMA_COMMAND} ${FCOMPARE_COMMAND}")
     # Set properties for test
     set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 1500 PROCESSORS ${NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "regression")
 endfunction(add_test_r)
@@ -96,8 +73,13 @@ function(add_test_v1 TEST_NAME TEST_DEPENDENCY NP)
     set(EXE_OPTIONS_FILE ${TEST_DEPENDENCY_SOURCE_DIR}/exe_options.cmake)
     # Define our test options
     include(${EXE_OPTIONS_FILE})
+    if(PELEC_ENABLE_MPI)
+      set(MPI_COMMANDS "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${MPIEXEC_PREFLAGS}")
+    else()
+      unset(MPI_COMMANDS)
+    endif()
     # Define our main run command
-    set(RUN_COMMAND "rm mmslog datlog || true && ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${MPIEXEC_PREFLAGS} ${TEST_DEPENDENCY_BINARY_DIR}/PeleC-${TEST_DEPENDENCY} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i")
+    set(RUN_COMMAND "rm mmslog datlog || true && ${MPI_COMMANDS} ${TEST_DEPENDENCY_BINARY_DIR}/PeleC-${TEST_DEPENDENCY} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i")
     # Set some default runtime options for all tests in this category
     set(RUNTIME_OPTIONS "amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1")
     # Add test and actual test commands to CTest database
@@ -141,8 +123,13 @@ function(add_test_v2 TEST_NAME TEST_DEPENDENCY LIST_OF_GRID_SIZES)
       endif()
       # Set the command to delete files from previous test runs in each resolution
       set(DELETE_PREVIOUS_FILES_COMMAND "rm mmslog datlog || true")
+      if(PELEC_ENABLE_MPI)
+        set(MPI_COMMANDS "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${PROCESSES} ${MPIEXEC_PREFLAGS}")
+      else()
+        unset(MPI_COMMANDS)
+      endif()
       # Set the run command for this resolution
-      set(RUN_COMMAND_${GRID_SIZE} "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${PROCESSES} ${MPIEXEC_PREFLAGS} ${TEST_DEPENDENCY_BINARY_DIR}/PeleC-${TEST_DEPENDENCY} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${GRID_SIZE}/${TEST_NAME}.i")
+      set(RUN_COMMAND_${GRID_SIZE} "${MPI_COMMANDS} ${TEST_DEPENDENCY_BINARY_DIR}/PeleC-${TEST_DEPENDENCY} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${GRID_SIZE}/${TEST_NAME}.i")
       # Set some runtime options for each resolution
       set(RUNTIME_OPTIONS_${GRID_SIZE} "amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.n_cell=${NCELLS}")
       # Construct our large run command with everything &&'d together
@@ -178,8 +165,13 @@ function(add_test_u TEST_NAME NP)
     file(MAKE_DIRECTORY ${CURRENT_TEST_BINARY_DIR})
     # Place the exe in the correct working directory
     set_target_properties(${TEST_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/")
+    if(PELEC_ENABLE_MPI)
+      set(MPI_COMMANDS "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${MPIEXEC_PREFLAGS}")
+    else()
+      unset(MPI_COMMANDS)
+    endif()
     # Add test and commands to CTest database
-    add_test(${TEST_NAME} sh -c "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${MPIEXEC_PREFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}")
+    add_test(${TEST_NAME} sh -c "${MPI_COMMANDS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}")
     # Set properties for test
     set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 500 PROCESSORS ${NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "unit")
 endfunction(add_test_u)
@@ -187,25 +179,25 @@ endfunction(add_test_u)
 #=============================================================================
 # Regression tests
 #=============================================================================
-#add_test_r(fiab-2d 4)
-add_test_r(fiab-3d 4)
-#add_test_r(hit-3d-1 4)
-#add_test_r(hit-3d-2 4)
-#add_test_r(hit-3d-3 4)
-#add_test_r(mms-2d-1 4)
-#add_test_r(mms-2d-2 4)
-#add_test_r(mms-3d-1 4)
-#add_test_r(mms-3d-2 4)
-#add_test_r(mms-3d-3 4)
-#add_test_r(mms-3d-4 1)
-#add_test_r(mms-3d-5 1)
-#add_test_r(ebmms-3d-1 4)
-#add_test_r(sod-3d-1 4)
-#add_test_r(tg-2d-1 4)
-#add_test_r(tg-3d-1 4)
-#add_test_r(tg-3d-2 4)
-#add_test_r(tg-3d-3 4)
-#add_test_r(tg-3d-4 4)
+#add_test_r(fiab-2d PMF 4)
+add_test_r(fiab-3d PMF 4)
+#add_test_r(hit-3d-1 HIT 4)
+#add_test_r(hit-3d-2 HIT 4)
+#add_test_r(hit-3d-3 HIT 4)
+#add_test_r(mms-2d-1 MMS 4)
+#add_test_r(mms-2d-2 MMS 4)
+#add_test_r(mms-3d-1 MMS 4)
+#add_test_r(mms-3d-2 MMS 4)
+#add_test_r(mms-3d-3 MMS 4)
+#add_test_r(mms-3d-4 MMS 1)
+#add_test_r(mms-3d-5 MMS 1)
+#add_test_r(ebmms-3d-1 EB_MMS 4)
+#add_test_r(sod-3d-1 Sod 4)
+#add_test_r(tg-2d-1 TG 4)
+#add_test_r(tg-3d-1 TG 4)
+#add_test_r(tg-3d-2 TG 4)
+#add_test_r(tg-3d-3 TG 4)
+#add_test_r(tg-3d-4 TG 4)
 
 #=============================================================================
 # Verification tests

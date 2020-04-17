@@ -44,7 +44,7 @@ function(build_pelec_exe pelec_exe_name)
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_EXPLICIT_REACT)
   endif()
   
-  if(PELEC_ENABLE_TESTING OR PELEC_ENABLE_VERIFICATION)
+  if(PELEC_ENABLE_MASA)
     target_sources(${pelec_exe_name} PRIVATE
                    ${SRC_DIR}/MMS.cpp)
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_MASA)
@@ -114,7 +114,7 @@ function(build_pelec_exe pelec_exe_name)
   set_property(SOURCE ${GENERATED_FILES_DIR}/AMReX_buildInfo.cpp PROPERTY GENERATED 1)
   target_sources(${pelec_exe_name} PRIVATE ${GENERATED_FILES_DIR}/AMReX_buildInfo.cpp)
 
-  if(PELEC_ENABLE_TESTING OR PELEC_ENABLE_VERIFICATION)
+  if(PELEC_ENABLE_MASA)
    if(MASA_FOUND)
      #Link our executable to the MASA libraries, etc
      target_link_libraries(${pelec_exe_name} PRIVATE ${MASA_LIBRARY})
