@@ -57,6 +57,7 @@ INCLUDE_LOCATIONS += $(REACTIONS_HOME)
 VPATH_LOCATIONS   += $(REACTIONS_HOME)
 ifdef Chemistry_Model
   USE_FUEGO = TRUE
+  DEFINES += -DPELEC_EOS_FUEGO
   CHEM_HOME = $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism/Models/$(Chemistry_Model)
   Blocs += $(PELE_PHYSICS_HOME)/Support/Fuego/Evaluation
 else

@@ -189,12 +189,12 @@ PeleC::readParticleParams()
 void
 PeleC::defineParticles()
 {
-#ifdef PELEC_EOS_FUEGO
   // There must be at least as many fuel species in the spray as
   // there are species in the fluid
   if (SPRAY_FUEL_NUM > NUM_SPECIES) {
     Abort("Cannot have more spray fuel species than fluid species");
   }
+#ifdef PELEC_EOS_FUEGO
   for (int i = 0; i != SPRAY_FUEL_NUM; ++i) {
     for (int ns = 0; ns != NUM_SPECIES; ++ns) {
       std::string gas_spec = spec_names[ns];
