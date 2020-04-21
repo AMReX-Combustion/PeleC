@@ -231,13 +231,8 @@ public:
   static int particle_mass_tran;
   static int particle_heat_tran;
   static int particle_mom_tran;
-  static amrex::Gpu::HostVector<amrex::Real> sprayCritT;
-  static amrex::Gpu::HostVector<amrex::Real> sprayBoilT;
-  static amrex::Gpu::HostVector<amrex::Real> sprayCp;
-  static amrex::Gpu::HostVector<amrex::Real> sprayLatent;
   static amrex::Vector<std::string> sprayFuelNames;
   static amrex::Real sprayRefT;
-  static amrex::Gpu::HostVector<int> sprayIndxMap;
 #endif
 
   //

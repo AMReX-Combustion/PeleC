@@ -24,6 +24,12 @@ SprayParticleContainer* VirtPC = nullptr;
 //
 SprayParticleContainer* GhostPC = nullptr;
 
+Gpu::HostVector<Real> sprayCritT;
+Gpu::HostVector<Real> sprayBoilT;
+Gpu::HostVector<Real> sprayCp;
+Gpu::HostVector<Real> sprayLatent;
+Gpu::HostVector<int> sprayIndxMap;
+
 void
 RemoveParticlesOnExit()
 {
@@ -42,13 +48,8 @@ int PeleC::write_spray_ascii_files = 1;
 int PeleC::particle_mass_tran = 0;
 int PeleC::particle_heat_tran = 0;
 int PeleC::particle_mom_tran = 0;
-Gpu::HostVector<Real> PeleC::sprayCritT;
-Gpu::HostVector<Real> PeleC::sprayBoilT;
-Gpu::HostVector<Real> PeleC::sprayCp;
-Gpu::HostVector<Real> PeleC::sprayLatent;
 Vector<std::string> PeleC::sprayFuelNames;
 Real PeleC::sprayRefT;
-Gpu::HostVector<int> PeleC::sprayIndxMap;
 
 namespace {
 std::string particle_init_file;
