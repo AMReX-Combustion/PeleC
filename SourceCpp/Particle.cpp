@@ -295,12 +295,6 @@ PeleC::initParticles()
       VirtPC = new SprayParticleContainer(parent, &phys_bc);
       GhostPC = new SprayParticleContainer(parent, &phys_bc);
     }
-
-    if (!particle_init_file.empty()) {
-      theSprayPC()->InitFromAsciiFile(particle_init_file, NSR_SPR);
-    } else if (particle_init_uniform > 0) {
-      theSprayPC()->InitParticlesUniform(this, level, particle_init_uniform);
-    }
     // Pass constant reference data and memory allocations to GPU
     theSprayPC()->buildFuelData(
       sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
@@ -309,6 +303,12 @@ PeleC::initParticles()
         sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
       theVirtPC()->buildFuelData(
         sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
+    }
+
+    if (!particle_init_file.empty()) {
+      theSprayPC()->InitFromAsciiFile(particle_init_file, NSR_SPR);
+    } else if (particle_init_uniform > 0) {
+      theSprayPC()->InitParticlesUniform(this, level, particle_init_uniform);
     }
   }
 }

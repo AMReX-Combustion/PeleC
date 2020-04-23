@@ -198,9 +198,8 @@ PeleC::variableSetUp()
   pstateT = pstateVel + AMREX_SPACEDIM;
   pstateDia = pstateT + 1;
   pstateRho = pstateDia + 1;
-  pstateY = pstateRho + SPRAY_FUEL_NUM;
-  pstateNum = pstateY + 1;
-
+  pstateY = pstateRho + 1;
+  pstateNum = pstateY + SPRAY_FUEL_NUM;
 #endif
 
   // const amrex::Real run_strt = amrex::ParallelDescriptor::second() ;
