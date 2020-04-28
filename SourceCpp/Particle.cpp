@@ -306,6 +306,9 @@ PeleC::initParticles()
     }
 
     if (!particle_init_file.empty()) {
+#ifdef USE_SPRAY_SOA
+      amrex::Abort("InitFromAsciiFile function does not work with spraySOA");
+#endif
       theSprayPC()->InitFromAsciiFile(particle_init_file, NSR_SPR);
     } else if (particle_init_uniform > 0) {
       theSprayPC()->InitParticlesUniform(this, level, particle_init_uniform);
