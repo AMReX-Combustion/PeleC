@@ -2,6 +2,13 @@
 
 #include "PeleC.H"
 #include "React.H"
+#if defined(USE_SUNDIALS_PP)
+    #ifdef USE_ARKODE_PP
+        #include <actual_CARKODE.h>
+    #else
+        #include <actual_Creactor.h>
+    #endif
+#endif
 
 #ifdef PELEC_USE_EXPLICIT_REACT
 void
@@ -76,12 +83,14 @@ PeleC::react_state_explicit(
   auto const& flags = fact.getMultiEBCellFlagFab();
 #endif
 
+
 #ifdef _OPENMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
   {
     for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
-         ++mfi) {
+         ++mfi) 
+    {
 
       const amrex::Box& bx = mfi.growntilebox(ng);
 
@@ -99,61 +108,223 @@ PeleC::react_state_explicit(
 #ifdef AMREX_USE_EB
       const auto& flag_fab = flags[mfi];
       amrex::FabType typ = flag_fab.getType(bx);
-      if (typ == amrex::FabType::covered) {
+      if (typ == amrex::FabType::covered) 
+      {
         continue;
-      } else if (
-        typ == amrex::FabType::singlevalued || typ == amrex::FabType::regular)
+      } 
+      else if (typ == amrex::FabType::singlevalued || typ == amrex::FabType::regular)
 #endif
       {
-        if (chem_integrator == 1) {
-          amrex::Abort("Implicit Chemistry is not implemented yet on GPU,  "
-                       "only explicit (use pelec.chem_integrator=2).");
-          /*                pc_react_state(ARLIM_3D(bx.loVect()),
-             ARLIM_3D(bx.hiVect()), uold.dataPtr(),  ARLIM_3D(uold.loVect()),
-             ARLIM_3D(uold.hiVect()), unew.dataPtr(),  ARLIM_3D(unew.loVect()),
-             ARLIM_3D(unew.hiVect()), a.dataPtr(),     ARLIM_3D(a.loVect()),
-             ARLIM_3D(a.hiVect()), m.dataPtr(),     ARLIM_3D(m.loVect()),
-             ARLIM_3D(m.hiVect()), w.dataPtr(),     ARLIM_3D(w.loVect()),
-             ARLIM_3D(w.hiVect()), I_R.dataPtr(),   ARLIM_3D(I_R.loVect()),
-             ARLIM_3D(I_R.hiVect()), time, dt, do_update); */
-        } else {
-          const int nsubsteps_min = adaptrk_nsubsteps_min;
-          const int nsubsteps_max = adaptrk_nsubsteps_max;
-          const int nsubsteps_guess = adaptrk_nsubsteps_guess;
-          const amrex::Real errtol = adaptrk_errtol;
+#ifdef USE_SUNDIALS_PP 
+        {
+            const auto len = amrex::length(bx);
+            const auto lo  = amrex::lbound(bx);
+            const int ncells=len.x*len.y*len.z;
+            int reactor_type=1;
+            amrex::Real fabcost;
+            amrex::Real current_time=0.0;
+        
+            amrex::Real *rY_in;
+            amrex::Real *rY_src_in;
+            amrex::Real *re_in;
+            amrex::Real *re_src_in;
 
-          amrex::ParallelFor(
-            bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-              pc_expl_reactions(
-                i, j, k, uold, unew, a, w_arr, I_R, dt, nsubsteps_min, nsubsteps_max,
-                nsubsteps_guess, errtol, do_update);
+#ifdef USE_CUDA_SUNDIALS_PP
+            cudaError_t cuda_status = cudaSuccess;
+            cudaMallocManaged(&rY_in,     (NUM_SPECIES+1)*ncells*sizeof(amrex::Real));
+            cudaMallocManaged(&rY_src_in, NUM_SPECIES*ncells*sizeof(amrex::Real));
+            cudaMallocManaged(&re_in,     ncells*sizeof(amrex::Real));
+            cudaMallocManaged(&re_src_in, ncells*sizeof(amrex::Real));
+
+            int ode_ncells=ncells;
+#else
+            rY_in            =  new amrex::Real[ncells*(NUM_SPECIES+1)];
+            rY_src_in        =  new amrex::Real[ncells*(NUM_SPECIES)];
+            re_in            =  new amrex::Real[ncells];
+            re_src_in        =  new amrex::Real[ncells];
+            
+            int ode_ncells=1;
+#endif
+            amrex::ParallelFor(bx, [=]
+                AMREX_GPU_DEVICE(int i, int j, int k) noexcept
+            {
+                amrex::Real rhou = uold(i, j, k, UMX);
+                amrex::Real rhov = uold(i, j, k, UMY);
+                amrex::Real rhow = uold(i, j, k, UMZ);
+                amrex::Real rho_old = uold(i, j, k, URHO);
+                amrex::Real rhoInv = 1.0 / rho_old;
+                amrex::Real rho = 0.;
+
+                for (int nsp=UFS; nsp<(UFS + NUM_SPECIES);nsp++)
+                {
+                    rho += uold(i, j, k, nsp);
+                }
+  
+                amrex::Real nrg =
+                (uold(i, j, k, UEDEN) -
+                (0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv)) *
+                rhoInv;
+
+                rhou = unew(i, j, k, UMX);
+                rhov = unew(i, j, k, UMY);
+                rhow = unew(i, j, k, UMZ);
+                rhoInv = 1.0 / unew(i, j, k, URHO);
+
+                amrex::Real rhoedot_ext =((unew(i, j, k, UEDEN) -
+                        (0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv)) -
+                    rho * nrg)/dt;
+
+                int offset=(k-lo.z)*len.x*len.y+(j-lo.y)*len.x+(i-lo.x);
+                for(int nsp=0;nsp<NUM_SPECIES;nsp++)
+                {
+                    rY_in[offset*(NUM_SPECIES+1)+nsp] = uold(i,j,k,UFS+nsp);
+                    rY_src_in[offset*NUM_SPECIES+nsp] = a(i,j,k,UFS+nsp);
+                }
+                rY_in[offset*(NUM_SPECIES+1)+NUM_SPECIES] = uold(i,j,k,UTEMP);
+                re_in[offset]             = uold(i,j,k,UEINT);
+                re_src_in[offset]         = rhoedot_ext;
             });
-        }
 
-        if (do_react_load_balance || do_mol_load_balance) {
-          get_new_data(Work_Estimate_Type)[mfi].plus<amrex::RunOn::Device>(w);
+#ifdef USE_CUDA_SUNDIALS_PP
+            cuda_status = cudaStreamSynchronize(amrex::Gpu::gpuStream());  
+#endif
+            fabcost=0.0;
+            for(int i = 0; i < ncells; i+=ode_ncells)
+            {
+
+#ifndef USE_CUDA_SUNDIALS_PP
+	            fabcost += react(rY_in+i*(NUM_SPECIES+1), rY_src_in+i*NUM_SPECIES,
+		        re_in+i, re_src_in+i, &dt, &current_time);
+#else
+	            fabcost += react(rY_in+i*(NUM_SPECIES+1), rY_src_in+i*NUM_SPECIES,
+	                    re_in+i, re_src_in+i,
+	                    &dt, &current_time, &reactor_type, 
+                        &ode_ncells, amrex::Gpu::gpuStream());
+#endif
+        
+            }
+            fabcost=fabcost/ncells;
+        
+            //unpack data 
+            amrex::ParallelFor(
+            bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
+            {
+                w_arr(i,j,k)=fabcost;
+                amrex::Real rhou = uold(i, j, k, UMX);
+                amrex::Real rhov = uold(i, j, k, UMY);
+                amrex::Real rhow = uold(i, j, k, UMZ);
+                amrex::Real rho_old = uold(i, j, k, URHO);
+                amrex::Real rhoInv = 1.0 / rho_old;
+
+                amrex::Real rho = 0.;
+                for (int nsp=UFS; nsp<(UFS + NUM_SPECIES);nsp++)
+                {
+                    rho += uold(i, j, k, nsp);
+                }
+                amrex::Real nrg = (uold(i, j, k, UEDEN) -
+                (0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv))*rhoInv;
+
+                rhou = unew(i, j, k, UMX);
+                rhov = unew(i, j, k, UMY);
+                rhow = unew(i, j, k, UMZ);
+                rhoInv = 1.0 / unew(i, j, k, URHO);
+
+                amrex::Real rhoedot_ext =((unew(i, j, k, UEDEN) -
+                    (0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv)) -
+                rho * nrg)/dt;
+
+                amrex::Real umnew = uold(i, j, k, UMX) + dt * a(i, j, k, UMX);
+                amrex::Real vmnew = uold(i, j, k, UMY) + dt * a(i, j, k, UMY);
+                amrex::Real wmnew = uold(i, j, k, UMZ) + dt * a(i, j, k, UMZ);
+                amrex::Real rhonew;
+
+                int offset=(k-lo.z)*len.x*len.y+(j-lo.y)*len.x+(i-lo.x);
+                for(int nsp=0;nsp<NUM_SPECIES;nsp++)
+                {
+                    rhonew   += rY_in[offset*(NUM_SPECIES+1)+nsp];
+                }
+
+                if(do_update)
+                {
+                    unew(i, j, k,URHO) = rhonew;
+                    unew(i, j, k, UMX) = umnew;
+                    unew(i, j, k, UMY) = vmnew;
+                    unew(i, j, k, UMZ) = wmnew;
+                    for(int nsp=0;nsp<NUM_SPECIES;nsp++)
+                    {
+                        unew(i,j,k,UFS+nsp) = rY_in[offset*(NUM_SPECIES+1)+nsp];
+                    }
+                    unew(i,j,k,UTEMP) = rY_in[offset*(NUM_SPECIES+1)+NUM_SPECIES];
+                }
+
+                for (int nsp=0;nsp<NUM_SPECIES;nsp++) 
+                {
+                    I_R(i, j, k, nsp) = (rY_in[offset*(NUM_SPECIES+1)+nsp] 
+                    - uold(i, j, k, UFS+nsp)) / dt
+                    - rY_src_in[offset*(NUM_SPECIES)+nsp];
+                }
+                I_R(i, j, k, NUM_SPECIES) = ((nrg * rho_old) + dt * rhoedot_ext +
+                0.5 * (umnew * umnew + vmnew * vmnew + wmnew * wmnew) / rhonew -
+                uold(i, j, k, UEDEN)) /dt - a(i, j, k, UEDEN);
+
+            });
+
+
+            if (do_react_load_balance || do_mol_load_balance) 
+            {
+                get_new_data(Work_Estimate_Type)[mfi].plus<amrex::RunOn::Device>(w);
+            }
         }
+#else
+        if (chem_integrator == 1) 
+        {
+            amrex::Abort("Implicit Chemistry is not implemented yet on GPU,  "
+                    "only explicit (use pelec.chem_integrator=2).");
+            /*                pc_react_state(ARLIM_3D(bx.loVect()),
+                              ARLIM_3D(bx.hiVect()), uold.dataPtr(),  ARLIM_3D(uold.loVect()),
+                              ARLIM_3D(uold.hiVect()), unew.dataPtr(),  ARLIM_3D(unew.loVect()),
+                              ARLIM_3D(unew.hiVect()), a.dataPtr(),     ARLIM_3D(a.loVect()),
+                              ARLIM_3D(a.hiVect()), m.dataPtr(),     ARLIM_3D(m.loVect()),
+                              ARLIM_3D(m.hiVect()), w.dataPtr(),     ARLIM_3D(w.loVect()),
+                              ARLIM_3D(w.hiVect()), I_R.dataPtr(),   ARLIM_3D(I_R.loVect()),
+                              ARLIM_3D(I_R.hiVect()), time, dt, do_update); */
+        }
+        else
+        {
+            const int nsubsteps_min = adaptrk_nsubsteps_min;
+            const int nsubsteps_max = adaptrk_nsubsteps_max;
+            const int nsubsteps_guess = adaptrk_nsubsteps_guess;
+            const amrex::Real errtol = adaptrk_errtol;
+
+            amrex::ParallelFor(
+                    bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+                    pc_expl_reactions(
+                            i, j, k, uold, unew, a, w_arr, I_R, dt, nsubsteps_min, nsubsteps_max,
+                            nsubsteps_guess, errtol, do_update);
+                    });
+        }
+#endif 
       }
     }
   }
 
-  if (ng > 0)
-    S_new.FillBoundary(geom.periodicity());
+  if (ng > 0) S_new.FillBoundary(geom.periodicity());
 
-  if (verbose > 1) {
+  if (verbose > 1) 
+  {
 
-    const int IOProc = amrex::ParallelDescriptor::IOProcessorNumber();
-    amrex::Real run_time = amrex::ParallelDescriptor::second() - strt_time;
+      const int IOProc = amrex::ParallelDescriptor::IOProcessorNumber();
+      amrex::Real run_time = amrex::ParallelDescriptor::second() - strt_time;
 
 #ifdef AMREX_LAZY
-    Lazy::QueueReduction([=]() mutable {
+      Lazy::QueueReduction([=]() mutable {
 #endif
-      amrex::ParallelDescriptor::ReduceRealMax(run_time, IOProc);
+              amrex::ParallelDescriptor::ReduceRealMax(run_time, IOProc);
 
-      if (amrex::ParallelDescriptor::IOProcessor())
-        amrex::Print() << "PeleC::react_state() time = " << run_time << "\n";
+              if (amrex::ParallelDescriptor::IOProcessor())
+              amrex::Print() << "PeleC::react_state() time = " << run_time << "\n";
 #ifdef AMREX_LAZY
-    });
+              });
 #endif
   }
 }
