@@ -383,7 +383,7 @@ PeleC::PeleC()
 #endif
 {
 #ifdef AMREX_PARTICLES
-  defineParticles();
+  if (level == 0) defineParticles();
 #endif
 }
 
@@ -1114,7 +1114,7 @@ PeleC::post_timestep(int iteration)
     //
     if ((iteration < ncycle and level < finest_level) || level == 0) {
       // TODO: Determine how many ghost cells to use here
-      int nGrow = 0;
+      int nGrow = iteration;
       theSprayPC()->Redistribute(level, theSprayPC()->finestLevel(), nGrow);
     }
   }
