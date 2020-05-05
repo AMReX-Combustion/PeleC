@@ -12,11 +12,10 @@ option(PELEC_ENABLE_DOCUMENTATION "Build documentation" OFF)
 option(PELEC_ENABLE_EB "Enable EB" OFF)
 option(PELEC_ENABLE_REACTIONS "Enable reactions" OFF)
 option(PELEC_ENABLE_ALL_WARNINGS "Enable all compiler warnings" OFF)
-option(PELEC_ENABLE_TESTING "Enable regression tests" OFF)
-#option(PELEC_ENABLE_UNIT_TESTING "Enable unit tests" OFF)
-option(PELEC_ENABLE_VERIFICATION "Enable verification tests" OFF)
+option(PELEC_ENABLE_TESTS "Enable regression and unit tests" OFF)
+option(PELEC_ENABLE_VERIFICATION_TESTS "Enable verification tests" OFF)
 option(PELEC_ENABLE_FCOMPARE "Enable building fcompare when not testing" OFF)
-option(PELEC_TEST_WITH_FCOMPARE "Check test plots against gold files" OFF)
+option(PELEC_ENABLE_FCOMPARE_FOR_TESTS "Check test plots against gold files" OFF)
 
 #Options for performance
 option(PELEC_ENABLE_MPI "Enable MPI" OFF)
@@ -32,12 +31,13 @@ if(PELEC_ENABLE_REACTIONS)
   set(PELEC_ENABLE_EXPLICIT_REACT ON)
 endif()
 
-if(PELEC_ENABLE_VERIFICATION)
-  set(PELEC_ENABLE_TESTING ON)
+if(PELEC_ENABLE_VERIFICATION_TESTS)
+  set(PELEC_ENABLE_TESTS ON)
+  set(PELEC_ENABLE_UNIT_TESTS ON)
   message(STATUS "Warning: Verification tests expect a specific Python environment and take a long time to run")
 endif()
 
-if(PELEC_ENABLE_TESTING AND PELEC_TEST_WITH_FCOMPARE)
+if(PELEC_ENABLE_TESTS AND PELEC_ENABLE_FCOMPARE_FOR_TESTS)
   set(PELEC_ENABLE_FCOMPARE ON)
 endif()
 
@@ -51,13 +51,14 @@ endif()
 
 ########################### AMReX #####################################
 
-set(AMREX_SUBMOD_LOCATION "Submodules/AMReX")
+set(AMREX_SUBMOD_LOCATION "${CMAKE_SOURCE_DIR}/Submodules/AMReX")
 include(${CMAKE_SOURCE_DIR}/CMake/SetAmrexOptions.cmake)
+list(APPEND CMAKE_MODULE_PATH "${AMREX_SUBMOD_LOCATION}/Tools/CMake")
 add_subdirectory(${AMREX_SUBMOD_LOCATION})
 
 ########################### MASA #####################################
 
-if(PELEC_ENABLE_TESTING)
+if(PELEC_ENABLE_TESTS)
   set(CMAKE_PREFIX_PATH ${MASA_DIR} ${CMAKE_PREFIX_PATH})
   find_package(MASA QUIET REQUIRED)
   if(MASA_FOUND)
@@ -67,7 +68,6 @@ endif()
 
 ########################### PeleC #####################################
 
-find_package(Python REQUIRED)
 if(PELEC_ENABLE_MPI)
   find_package(MPI REQUIRED)
 endif()
@@ -79,30 +79,17 @@ message(STATUS "CMAKE_CXX_COMPILER_ID = ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "CMAKE_CXX_COMPILER_VERSION = ${CMAKE_CXX_COMPILER_VERSION}")
 message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
 
-#Create directory unique to executable to store generated files
-set(GENERATED_FILES_DIR ${CMAKE_BINARY_DIR}/generated_files)
-file(MAKE_DIRECTORY ${GENERATED_FILES_DIR})
-
-#Generate the AMReX_buildInfo.cpp file with Python
-add_custom_target(generate_build_info ALL
-   COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/${AMREX_SUBMOD_LOCATION}/Tools/C_scripts/makebuildinfo_C.py
-   --amrex_home "${CMAKE_SOURCE_DIR}/${AMREX_SUBMOD_LOCATION}"                        
-   --COMP ${CMAKE_CXX_COMPILER_ID} --COMP_VERSION ${CMAKE_CXX_COMPILER_VERSION}
-   --GIT "${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/${AMREX_SUBMOD_LOCATION}"
-   WORKING_DIRECTORY ${GENERATED_FILES_DIR} BYPRODUCTS ${GENERATED_FILES_DIR}/AMReX_buildInfo.cpp
-   COMMENT "Generating AMReX_buildInfo.cpp"
-)                  
-
 #Create target names
 set(pelec_unit_test_exe_name "pelec_unit_tests")
 
 #Build pelec executables and link to amrex library
 add_subdirectory(ExecCpp)
 
-if(PELEC_ENABLE_TESTING)
+if(PELEC_ENABLE_TESTS)
   enable_testing()
   include(CTest)
   add_subdirectory(TestsCpp)
+  add_subdirectory("Submodules/GoogleTest")
 endif()
 
 if(PELEC_ENABLE_DOCUMENTATION)

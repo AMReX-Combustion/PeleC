@@ -111,8 +111,12 @@ function(build_pelec_exe pelec_exe_name)
      )
   
   #Add generated source files
-  set_property(SOURCE ${GENERATED_FILES_DIR}/AMReX_buildInfo.cpp PROPERTY GENERATED 1)
-  target_sources(${pelec_exe_name} PRIVATE ${GENERATED_FILES_DIR}/AMReX_buildInfo.cpp)
+  #set_property(SOURCE ${GENERATED_FILES_DIR}/AMReX_buildInfo.cpp PROPERTY GENERATED 1)
+  #target_sources(${pelec_exe_name} PRIVATE ${GENERATED_FILES_DIR}/AMReX_buildInfo.cpp)
+
+  include(AMReXBuildInfo)
+  generate_buildinfo(${pelec_exe_name} ${CMAKE_SOURCE_DIR})
+  target_include_directories(${pelec_exe_name} PUBLIC ${AMREX_SUBMOD_LOCATION}/Tools/C_scripts)
 
   if(PELEC_ENABLE_MASA)
    if(MASA_FOUND)
@@ -139,7 +143,7 @@ function(build_pelec_exe pelec_exe_name)
   target_link_libraries(${pelec_exe_name} PRIVATE amrex)
 
   #Set the dependencies on targets so the generated source code files are there before we try to build the executable 
-  add_dependencies(${pelec_exe_name} generate_build_info)
+  #add_dependencies(${pelec_exe_name} generate_build_info)
 
   if(PELEC_ENABLE_CUDA)
     set(pctargets "${pelec_exe_name}")

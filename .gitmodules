@@ -10,6 +10,3 @@
 [submodule "Submodules/PeleC-MP"]
 	path = Submodules/PeleC-MP
 	url = https://github.com/AMReX-Combustion/PeleC-MP.git
-[submodule "TestingCpp/GoogleTest"]
-	path = TestsCpp/GoogleTest
-	url = https://github.com/google/googletest.git
