@@ -46,7 +46,7 @@ jobs:
           -DPELEC_ENABLE_MPI:BOOL=ON \
           -DPELEC_ENABLE_TESTS:BOOL=OFF \
           -DPELEC_TEST_WITH_FCOMPARE:BOOL=ON \
-          -DPELEC_ENABLE_CPP:BOOL=ON \
+          -DPELEC_USE_CPP:BOOL=ON \
           ${GITHUB_WORKSPACE}
     - name: make
       working-directory: ${{runner.workspace}}/build-ci
