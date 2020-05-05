@@ -31,6 +31,13 @@ using namespace MASA;
 #include "Utilities.H"
 #include "Tagging.H"
 #include "IndexDefines.H"
+#if defined(USE_SUNDIALS_PP)
+    #ifdef USE_ARKODE_PP
+        #include <actual_CARKODE.h>
+    #else
+        #include <actual_Creactor.h>
+    #endif
+#endif
 
 bool PeleC::signalStopJob = false;
 bool PeleC::dump_old = false;
@@ -1890,6 +1897,17 @@ void
 PeleC::init_reactor()
 {
   CKINIT();
+
+#if defined(USE_SUNDIALS_PP)
+    int reactor_type=1;
+    int ode_ncells=1;
+    #ifndef USE_CUDA_SUNDIALS_PP
+        reactor_init(&reactor_type, &ode_ncells);
+    #else
+        reactor_info(&reactor_type, &ode_ncells);
+    #endif
+#endif
+        
 }
 
 void

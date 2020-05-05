@@ -30,6 +30,7 @@ Eos_dir := Fuego
 Reactions_dir := Fuego
 Chemistry_Model := LiDryer
 Transport_dir := Simple
+USE_SUNDIALS_PP = TRUE
 
 # GNU Make
 Bpack := ./Make.package
