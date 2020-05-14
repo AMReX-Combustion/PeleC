@@ -2,5 +2,6 @@
 #add_subdirectory(HIT)
 #add_subdirectory(MMS)
 add_subdirectory(PMF)
+#add_subdirectory(Sod)
 #add_subdirectory(TG)
 #add_subdirectory(zeroD)
