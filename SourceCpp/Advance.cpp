@@ -347,7 +347,7 @@ PeleC::do_sdc_iteration(
 #ifdef AMREX_PARTICLES
   bool use_ghost_parts = false; // Use ghost particles
   bool use_virt_parts = false; // Use virtual particles
-  if (parent->maxLevel() > 0) {
+  if (parent->finestLevel() > 0 && level < parent->finestLevel()) {
     use_ghost_parts = true;
     use_virt_parts = true;
   }
@@ -385,6 +385,7 @@ PeleC::do_sdc_iteration(
     //
     // TODO: Maybe move this mess into construct_old_source?
     if (do_spray_particles) {
+      amrex::Gpu::LaunchSafeGuard lsg(true);
       //
       // Setup ghost particles for use in finer levels. Note that ghost
       // particles that will be used by this level have already been created,
@@ -425,7 +426,7 @@ PeleC::do_sdc_iteration(
       // Make a copy of the particles on this level into ghost particles
       // for the finer level
       //
-      if (level < finest_level && use_ghost_parts)
+      if (use_ghost_parts)
         setupGhostParticles(ghost_width);
 
       // Advance the particle velocities to the half-time and the positions to
@@ -458,7 +459,7 @@ PeleC::do_sdc_iteration(
           tmp_src_width, true, where_width);
 
       // Miiiight need all Ghosts
-      if (use_ghost_parts)
+      if (use_ghost_parts && theGhostPC() != 0)
         theGhostPC()->moveKickDrift(
           Sborder, *old_sources[spray_src], level, dt, cur_time, false, true,
           tmp_src_width, true, where_width);
@@ -557,7 +558,7 @@ PeleC::do_sdc_iteration(
     // TODO: Is this true with SDC iterations??
 
     // Ghost particles need to be kicked except during the final iteration.
-    if (amr_iteration != amr_ncycle && use_ghost_parts)
+    if (amr_iteration != amr_ncycle && use_ghost_parts && theGhostPC() != 0)
       theGhostPC()->moveKick(
         Sborder, *new_sources[spray_src], level, dt, time + dt, false, true, tmp_src_width);
   }

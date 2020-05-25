@@ -423,7 +423,7 @@ PeleC::PeleC(
 #ifdef AMREX_PARTICLES
     if (src_list[n] == spray_src) {
       oldGrow = 1;
-      newGrow = 1;
+      newGrow = amrex::max(1, newGrow);
     }
 #endif
     old_sources[src_list[n]] =
