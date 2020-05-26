@@ -210,10 +210,17 @@ PeleC::getMOLSrcTerm(
       // Compute transport coefficients, coincident with Q
       auto const& coe_cc = coeff_cc.array();
       {
+        auto const& qar_yin = q.array(QFS);
+        auto const& qar_Tin = q.array(QTEMP);
+        auto const& qar_rhoin = q.array(QRHO);
+        auto const& coe_rhoD = coeff_cc.array(dComp_rhoD);
+        auto const& coe_mu = coeff_cc.array(dComp_mu);
+        auto const& coe_xi = coeff_cc.array(dComp_xi);
+        auto const& coe_lambda = coeff_cc.array(dComp_lambda);
         BL_PROFILE("PeleC::get_transport_coeffs()");
         // Get Transport coefs on GPU.
         amrex::launch(gbox, [=] AMREX_GPU_DEVICE(amrex::Box const& tbx) {
-          get_transport_coeffs(tbx, qar, coe_cc);
+          get_transport_coeffs(tbx, qar_yin, qar_Tin, qar_rhoin, coe_rhoD, coe_mu, coe_xi, coe_lambda);
         });
       }
 
