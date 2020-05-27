@@ -180,7 +180,7 @@ pc_expl_reactions(
       for (int n = 0; n < NUM_SPECIES; ++n)
         tempsrc -= wdot[n] * ei[n];
       amrex::Real cv;
-      EOS::YT2Cv(massfrac, urk[UTEMP], cv);
+      EOS::TY2Cv(urk[UTEMP], massfrac, cv);
       tempsrc /= (urk[URHO] * cv);
 
       /*================== Update urk_err =================== */

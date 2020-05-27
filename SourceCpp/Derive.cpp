@@ -541,7 +541,7 @@ pc_derpres(
       amrex::Real p, massfrac[NUM_SPECIES];
       for (int n = 0; n < NUM_SPECIES; ++n)
         massfrac[n] = dat(i, j, k, UFS + n) * rhoInv;
-      EOS::RYET2P(rho, massfrac, e, T, p);
+      EOS::TRY2P(T, rho, massfrac, p);
       pfab(i, j, k) = p;
     });
 }

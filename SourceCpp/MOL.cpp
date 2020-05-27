@@ -118,7 +118,7 @@ pc_compute_hyp_mol_flux(
           amrex::min(qaux(i, j, k, QCSML), qaux(ii, jj, kk, QCSML));
 
         amrex::Real eos_state_rho, eos_state_p, eos_state_e, eos_state_cs,
-          eos_state_gamma;
+          eos_state_gamma, eos_state_T;
 
         eos_state_rho = qtempl[R_RHO];
         eos_state_p = qtempl[R_P];
@@ -126,8 +126,9 @@ pc_compute_hyp_mol_flux(
         for (int n = 0; n < NUM_SPECIES; n++) {
           spl[n] = qtempl[R_Y + n];
         }
+        EOS::RYP2T(eos_state_rho, spl, eos_state_p, eos_state_T);
         EOS::RYP2E(eos_state_rho, spl, eos_state_p, eos_state_e);
-        EOS::EY2G(eos_state_e, spl, eos_state_gamma);
+        EOS::TY2G(eos_state_T, spl, eos_state_gamma);
         EOS::RPY2Cs(eos_state_rho, eos_state_p, spl, eos_state_cs);
         const amrex::Real rhoe_l = eos_state_rho * eos_state_e;
         const amrex::Real gamc_l = eos_state_gamma;
@@ -138,8 +139,9 @@ pc_compute_hyp_mol_flux(
         for (int n = 0; n < NUM_SPECIES; n++) {
           spr[n] = qtempr[R_Y + n];
         }
+        EOS::RYP2T(eos_state_rho, spr, eos_state_p, eos_state_T);
         EOS::RYP2E(eos_state_rho, spr, eos_state_p, eos_state_e);
-        EOS::EY2G(eos_state_e, spr, eos_state_gamma);
+        EOS::TY2G(eos_state_T, spr, eos_state_gamma);
         EOS::RPY2Cs(eos_state_rho, eos_state_p, spr, eos_state_cs);
         const amrex::Real rhoe_r = eos_state_rho * eos_state_e;
         const amrex::Real gamc_r = eos_state_gamma;
