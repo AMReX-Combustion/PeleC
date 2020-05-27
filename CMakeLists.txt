@@ -4,7 +4,7 @@ project(PeleC CXX C Fortran)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
 
-option(USE_CPP "Use C++ kernels instead of Fortran kernels" OFF)
+option(PELEC_USE_CPP "Use C++ kernels instead of Fortran kernels" OFF)
 
 if(PELEC_USE_CPP)
   include(${CMAKE_SOURCE_DIR}/CMake/RootCMakeListsCpp.cmake)
