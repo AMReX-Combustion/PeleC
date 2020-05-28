@@ -44,7 +44,7 @@ RemoveParticlesOnExit()
 
 int PeleC::do_spray_particles = 0;
 int PeleC::particle_verbose = 0;
-Real PeleC::particle_cfl = 0.05;
+Real PeleC::particle_cfl = 0.4;
 
 int PeleC::write_particle_plotfiles = 1;
 int PeleC::write_spray_ascii_files = 1;
@@ -113,6 +113,8 @@ PeleC::readParticleParams()
   ppp.get("mass_transfer", particle_mass_tran);
   ppp.get("heat_transfer", particle_heat_tran);
   ppp.get("mom_transfer", particle_mom_tran);
+  ppp.query("particle_cfl", particle_cfl);
+  if (particle_cfl > 0.5) Abort("particle_cfl must be <= 0.5");
   // Number of fuel species in spray droplets
   // Must match the number specified at compile time
   const int nfuel = ppp.countval("fuel_species");
