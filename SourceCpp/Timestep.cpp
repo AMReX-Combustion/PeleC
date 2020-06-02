@@ -129,7 +129,7 @@ pc_estdt_tempdif(
       amrex::Real D;
       pc_trans4dt(which_trans, T, rho, massfrac, D);
       amrex::Real cv;
-      EOS::YT2Cv(massfrac, T, cv);
+      EOS::TY2Cv(T, massfrac, cv);
       D *= rhoInv / cv;
       AMREX_D_TERM(
         const amrex::Real dt1 = 0.5 * dx * dx / (AMREX_SPACEDIM * D);

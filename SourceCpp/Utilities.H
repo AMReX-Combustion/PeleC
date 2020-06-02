@@ -63,9 +63,9 @@ pc_ctoprim(
   // Are all these EOS calls needed? Seems fairly convoluted.
   EOS::Y2WBAR(massfrac, wbar);
   EOS::EY2T(e, massfrac, T);
-  EOS::RYET2P(rho, massfrac, e, T, p);
+  EOS::TRY2P(T, rho, massfrac, p);
   EOS::RTY2Cs(rho, T, massfrac, cs);
-  EOS::EY2G(e, massfrac, gam1);
+  EOS::TY2G(T, massfrac, gam1);
   EOS::RPE2dpdr_e(rho, p, e, dpdr_e);
   EOS::RG2dpde(rho, gam1, dpde);
 

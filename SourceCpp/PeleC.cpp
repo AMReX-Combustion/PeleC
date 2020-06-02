@@ -390,7 +390,7 @@ PeleC::PeleC()
 #endif
 {
 #ifdef AMREX_PARTICLES
-  defineParticles();
+  if (level == 0) defineParticles();
 #endif
 }
 
@@ -423,7 +423,7 @@ PeleC::PeleC(
 #ifdef AMREX_PARTICLES
     if (src_list[n] == spray_src) {
       oldGrow = 1;
-      newGrow = 1;
+      newGrow = amrex::max(1, newGrow);
     }
 #endif
     old_sources[src_list[n]] =
@@ -1121,7 +1121,7 @@ PeleC::post_timestep(int iteration)
     //
     if ((iteration < ncycle and level < finest_level) || level == 0) {
       // TODO: Determine how many ghost cells to use here
-      int nGrow = 0;
+      int nGrow = iteration;
       theSprayPC()->Redistribute(level, theSprayPC()->finestLevel(), nGrow);
     }
   }

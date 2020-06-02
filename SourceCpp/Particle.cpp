@@ -14,15 +14,15 @@ bool virtual_particles_set = false;
 //
 // Containers for the real "active" Particles
 //
-SprayParticleContainer* SprayPC = nullptr;
+SprayParticleContainer* SprayPC = 0;
 //
 // Container for temporary, virtual Particles
 //
-SprayParticleContainer* VirtPC = nullptr;
+SprayParticleContainer* VirtPC = 0;
 //
 // Container for temporary, ghost Particles
 //
-SprayParticleContainer* GhostPC = nullptr;
+SprayParticleContainer* GhostPC = 0;
 
 Gpu::HostVector<Real> sprayCritT;
 Gpu::HostVector<Real> sprayBoilT;
@@ -34,14 +34,17 @@ void
 RemoveParticlesOnExit()
 {
   delete SprayPC;
+  SprayPC = 0;
   delete GhostPC;
+  GhostPC = 0;
   delete VirtPC;
+  VirtPC = 0;
 }
 } // namespace
 
 int PeleC::do_spray_particles = 0;
 int PeleC::particle_verbose = 0;
-Real PeleC::particle_cfl = 0.05;
+Real PeleC::particle_cfl = 0.4;
 
 int PeleC::write_particle_plotfiles = 1;
 int PeleC::write_spray_ascii_files = 1;
@@ -110,6 +113,8 @@ PeleC::readParticleParams()
   ppp.get("mass_transfer", particle_mass_tran);
   ppp.get("heat_transfer", particle_heat_tran);
   ppp.get("mom_transfer", particle_mom_tran);
+  ppp.query("particle_cfl", particle_cfl);
+  if (particle_cfl > 0.5) Abort("particle_cfl must be <= 0.5");
   // Number of fuel species in spray droplets
   // Must match the number specified at compile time
   const int nfuel = ppp.countval("fuel_species");
@@ -220,7 +225,7 @@ void
 PeleC::setupVirtualParticles()
 {
   BL_PROFILE("PeleC::setupVirtualParticles()");
-
+  amrex::Gpu::LaunchSafeGuard lsg(true);
   if (PeleC::theSprayPC() != 0 && !virtual_particles_set) {
     SprayParticleContainer::AoS virts;
     if (level < parent->finestLevel()) {
@@ -239,6 +244,7 @@ void
 PeleC::removeVirtualParticles()
 {
   BL_PROFILE("PeleC::removeVirtualParticles()");
+  amrex::Gpu::LaunchSafeGuard lsg(true);
   if (VirtPC != 0)
     VirtPC->RemoveParticlesAtLevel(level);
   virtual_particles_set = false;
@@ -249,6 +255,7 @@ PeleC::setupGhostParticles(int ngrow)
 {
   BL_PROFILE("PeleC::setupGhostParticles()");
   AMREX_ASSERT(level < parent->finestLevel());
+  amrex::Gpu::LaunchSafeGuard lsg(true);
   if (PeleC::theSprayPC() != 0) {
     SprayParticleContainer::AoS ghosts;
     PeleC::theSprayPC()->CreateGhostParticles(level, ngrow, ghosts);
@@ -260,6 +267,7 @@ void
 PeleC::removeGhostParticles()
 {
   BL_PROFILE("PeleC::removeGhostParticles()");
+  amrex::Gpu::LaunchSafeGuard lsg(true);
   if (GhostPC != 0)
     GhostPC->RemoveParticlesAtLevel(level);
 }
@@ -306,7 +314,7 @@ PeleC::initParticles()
     }
 
     if (!particle_init_file.empty()) {
-      theSprayPC()->InitFromAsciiFile(particle_init_file, NSR_SPR);
+      theSprayPC()->InitFromAsciiFile(particle_init_file, NSR_SPR + NAR_SPR);
     } else if (particle_init_uniform > 0) {
       theSprayPC()->InitParticlesUniform(this, level, particle_init_uniform);
     }
@@ -316,6 +324,7 @@ PeleC::initParticles()
 void
 PeleC::particlePostRestart(const std::string& restart_file, bool is_checkpoint)
 {
+  amrex::Gpu::setLaunchRegion(false);
   if (level > 0)
     return;
 
@@ -334,8 +343,11 @@ PeleC::particlePostRestart(const std::string& restart_file, bool is_checkpoint)
     // Make sure to call RemoveParticlesOnExit() on exit.
     //
     amrex::ExecOnFinalize(RemoveParticlesOnExit);
-
-    theSprayPC()->Restart(parent->theRestartFile(), "particles", is_checkpoint);
+    {
+      amrex::Gpu::LaunchSafeGuard lsg(true);
+      theSprayPC()->Restart(parent->theRestartFile(), "particles", is_checkpoint);
+      amrex::Gpu::Device::streamSynchronize();
+    }
   }
 }
 
@@ -413,6 +425,7 @@ PeleC::particleRedistribute(int lbase, int nGrow, int local, bool init_part)
   BL_PROFILE("PeleC::particleRedistribute()");
   int flev = parent->finestLevel();
   if (theSprayPC()) {
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     //
     // If we are calling with init_part = true, then we want to force the
     // redistribute without checking whether the grids have changed.
