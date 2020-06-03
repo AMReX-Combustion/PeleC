@@ -150,32 +150,44 @@ pc_expl_reactions(
   const amrex::Real dt_max = dt_react / nsteps_min;
   amrex::Real updt_time = 0.0;
   amrex::Real urk[NVAR];
-  amrex::Real urk_old[NVAR] = {};
+  amrex::Real urk_carryover[NVAR] = {};
   for (int n = 0; n < NVAR; ++n)
     urk[n] = uold(i, j, k, n);
   amrex::Real urk_err[NVAR] = {};
+  
+  amrex::Real rhoe_carryover=rho*nrg;
+  amrex::Real rhoe_rk=rho*nrg;
 
   // Do the RK!
   int steps = 0;
-  while (updt_time < dt_react) {
-    for (int n = 0; n < NVAR; n++) {
-      urk_old[n] = urk[n];
+  while (updt_time < dt_react) 
+  {
+    for (int n = 0; n < NVAR; n++) 
+    {
+      urk_carryover[n] = urk[n];
       urk_err[n] = 0.0;
     }
+    rhoe_carryover=rhoe_rk;
+
     amrex::Real wdot[NUM_SPECIES] = {};
     amrex::Real massfrac[NUM_SPECIES] = {};
     amrex::Real ei[NUM_SPECIES] = {};
-    updt_time += dt_rk;
-    steps += 1;
-    for (int stage = 0; stage < 6; stage++) {
+    for (int stage = 0; stage < 6; stage++) 
+    {
       rhoInv = 1.0 / urk[URHO];
       for (int n = 0; n < NUM_SPECIES; ++n)
+      {
         massfrac[n] = urk[UFS + n] * rhoInv;
-      EOS::RTY2WDOT(
-        urk[URHO], urk[UTEMP], massfrac, wdot); // this is wdot*molecularweights
+      }
+      EOS::RTY2WDOT(urk[URHO], urk[UTEMP], massfrac, wdot); // this is wdot*molecularweights
+     
+      amrex::Real Temp_rk;
+      EOS::EY2T(rhoe_rk/urk[URHO], massfrac, Temp_rk);
+      
       for (int n = 0; n < NUM_SPECIES; ++n)
         wdot[n] += rhoydot_ext[n];
-      EOS::T2Ei(urk[UTEMP], ei);
+
+      EOS::T2Ei(Temp_rk, ei);
       amrex::Real tempsrc = rhoedot_ext;
       for (int n = 0; n < NUM_SPECIES; ++n)
         tempsrc -= wdot[n] * ei[n];
@@ -193,17 +205,22 @@ pc_expl_reactions(
       /*================== Update Stage solution =================== */
       // Species
       for (int n = 0; n < NUM_SPECIES; ++n) {
-        urk[UFS + n] = urk_old[UFS + n] + alpha_rk64[stage] * dt_rk * wdot[n];
+        urk[UFS + n] = urk_carryover[UFS + n] + alpha_rk64[stage] * dt_rk * wdot[n];
       }
       // Temperature
-      urk[UTEMP] = urk_old[UTEMP] + alpha_rk64[stage] * dt_rk * tempsrc;
+      urk[UTEMP] = urk_carryover[UTEMP] + alpha_rk64[stage] * dt_rk * tempsrc;
+      //update energy
+      rhoe_rk        = rhoe_carryover+alpha_rk64[stage]*dt_rk*rhoedot_ext;
 
-      /*================== Update urk_old =========================== */
+      /*================== Update urk_carryover =========================== */
       // Species
-      for (int n = 0; n < NUM_SPECIES; ++n)
-        urk_old[UFS + n] = urk[UFS + n] + beta_rk64[stage] * dt_rk * wdot[n];
+      for (int n = 0; n < NUM_SPECIES; ++n){
+        urk_carryover[UFS + n] = urk[UFS + n] + beta_rk64[stage] * dt_rk * wdot[n];
+      }
       // Temperature
-      urk_old[UTEMP] = urk[UTEMP] + beta_rk64[stage] * dt_rk * tempsrc;
+      urk_carryover[UTEMP] = urk[UTEMP] + beta_rk64[stage] * dt_rk * tempsrc;
+      //update energy
+      rhoe_carryover = rhoe_rk + beta_rk64[stage]*dt_rk*rhoedot_ext; 
 
       /*================= Update urk[rho] ========================= */
       urk[URHO] = 0.0;
@@ -212,6 +229,8 @@ pc_expl_reactions(
 
       /*================ Adapt Time step! ======================== */
     } // end rk stages
+    updt_time += dt_rk;
+    steps += 1;
     adapt_timestep(urk_err, dt_max, dt_rk, dt_min, errtol);
   } // end timestep loop
   cost(i, j, k) = steps;
