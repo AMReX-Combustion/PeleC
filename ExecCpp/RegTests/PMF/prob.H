@@ -176,7 +176,7 @@ pc_initdata(
     pres = ProbParm::pamb;
     u[AMREX_SPACEDIM - 1] = pmf_vals[1];
     EOS::X2Y(molefrac, massfrac);
-    EOS::PYTR2E(pres, massfrac, T, rho, energy);
+    EOS::PYT2RE(pres, massfrac, T, rho, energy);
     state(i, j, k, URHO) = rho;
     state(i, j, k, UMX) = rho * u[0];
     state(i, j, k, UMY) = rho * u[1];
@@ -224,7 +224,7 @@ bcnormal(
     u[2] = 0.0;
     u[AMREX_SPACEDIM - 1] = pmf_vals[1];
     EOS::X2Y(molefrac, massfrac);
-    EOS::PYTR2E(pres, massfrac, T, rho, energy);
+    EOS::PYT2RE(pres, massfrac, T, rho, energy);
     s_ext[URHO] = rho;
     s_ext[UMX] = rho * u[0];
     s_ext[UMY] = rho * u[1];
@@ -247,7 +247,7 @@ bcnormal(
     u[2] = 0.0;
     u[AMREX_SPACEDIM - 1] = pmf_vals[1];
     EOS::X2Y(molefrac, massfrac);
-    EOS::PYTR2E(pres, massfrac, T, rho, energy);
+    EOS::PYT2RE(pres, massfrac, T, rho, energy);
     s_ext[URHO] = rho;
     s_ext[UMX] = rho * u[0];
     s_ext[UMY] = rho * u[1];
