@@ -389,9 +389,6 @@ PeleC::PeleC()
     mms_src_evaluated(false)
 #endif
 {
-#ifdef AMREX_PARTICLES
-  if (level == 0) defineParticles();
-#endif
 }
 
 PeleC::PeleC(
@@ -503,9 +500,6 @@ PeleC::PeleC(
   if (use_explicit_filter) {
     init_filters();
   }
-#ifdef AMREX_PARTICLES
-  defineParticles();
-#endif
 }
 
 PeleC::~PeleC() {}
