@@ -9,8 +9,8 @@ include(CMakePackageConfigHelpers)
 
 #General options for the project
 option(PELEC_ENABLE_DOCUMENTATION "Build documentation" OFF)
-option(PELEC_ENABLE_EB "Enable EB" OFF)
-option(PELEC_ENABLE_REACTIONS "Enable reactions" OFF)
+option(PELEC_ENABLE_EB "Enable EB" ON)
+option(PELEC_ENABLE_REACTIONS "Enable reactions" ON)
 option(PELEC_ENABLE_ALL_WARNINGS "Enable all compiler warnings" OFF)
 option(PELEC_ENABLE_TESTS "Enable regression and unit tests" OFF)
 option(PELEC_ENABLE_VERIFICATION_TESTS "Enable verification tests" OFF)
@@ -33,7 +33,6 @@ endif()
 
 if(PELEC_ENABLE_VERIFICATION_TESTS)
   set(PELEC_ENABLE_TESTS ON)
-  set(PELEC_ENABLE_UNIT_TESTS ON)
   message(STATUS "Warning: Verification tests expect a specific Python environment and take a long time to run")
 endif()
 
@@ -88,8 +87,8 @@ add_subdirectory(ExecCpp)
 if(PELEC_ENABLE_TESTS)
   enable_testing()
   include(CTest)
-  add_subdirectory(TestsCpp)
   add_subdirectory("Submodules/GoogleTest")
+  add_subdirectory(TestsCpp)
 endif()
 
 if(PELEC_ENABLE_DOCUMENTATION)

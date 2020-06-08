@@ -136,9 +136,6 @@ function(build_pelec_exe pelec_exe_name)
   target_include_directories(${pelec_exe_name} PRIVATE ${SRC_DIR})
   target_include_directories(${pelec_exe_name} PRIVATE ${CMAKE_BINARY_DIR})
   
-  #Needed for AMReX_buildInfo.H
-  target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/Submodules/AMReX/Tools/C_scripts)
-  
   #Link to amrex library
   target_link_libraries(${pelec_exe_name} PRIVATE amrex)
 

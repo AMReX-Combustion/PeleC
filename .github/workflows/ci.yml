@@ -12,6 +12,7 @@ env:
   FORTRAN_COMPILER: mpifort
   BUILD_TYPE: RelWithDebInfo
   NUM_PROCS: 16
+  MASA_ROOT_DIR: ${{runner.workspace}}/deps/install/MASA
 
 jobs:
   build:
@@ -31,7 +32,22 @@ jobs:
       with: 
         submodules: true
     - name: dependencies
-      run: ${{matrix.install_deps}}
+      run: |
+        ${{matrix.install_deps}}
+        cmake -E make_directory ${{runner.workspace}}/deps
+        cd ${{runner.workspace}}/deps
+        git clone https://github.com/roystgnr/MetaPhysicL.git ${{runner.workspace}}/deps/MetaPhysicL
+        git clone https://github.com/manufactured-solutions/MASA.git ${{runner.workspace}}/deps/MASA
+        cd ${{runner.workspace}}/deps/MetaPhysicL
+        ./bootstrap
+        ./configure --prefix="${{runner.workspace}}/deps/install/MetaPhysicL"
+        make -j ${{env.NUM_PROCS}}
+        make install
+        cd ${{runner.workspace}}/deps/MASA
+        ./bootstrap
+        ./configure --enable-fortran-interfaces METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" --prefix="${{env.MASA_ROOT_DIR}}"
+        make -j ${{env.NUM_PROCS}}
+        make install
     - name: setup
       run: cmake -E make_directory ${{runner.workspace}}/build-ci
     - name: configure
@@ -44,8 +60,9 @@ jobs:
           -DCMAKE_C_COMPILER:STRING=${{env.C_COMPILER}} \
           -DCMAKE_Fortran_COMPILER:STRING=${{env.FORTRAN_COMPILER}} \
           -DPELEC_ENABLE_MPI:BOOL=ON \
-          -DPELEC_ENABLE_TESTS:BOOL=OFF \
-          -DPELEC_TEST_WITH_FCOMPARE:BOOL=ON \
+          -DPELEC_ENABLE_TESTS:BOOL=ON \
+          -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
+          -DMASA_DIR:STRING=${{env.MASA_ROOT_DIR}} \
           -DPELEC_USE_CPP:BOOL=ON \
           ${GITHUB_WORKSPACE}
     - name: make
