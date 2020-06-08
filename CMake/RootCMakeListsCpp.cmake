@@ -9,7 +9,7 @@ include(CMakePackageConfigHelpers)
 
 #General options for the project
 option(PELEC_ENABLE_DOCUMENTATION "Build documentation" OFF)
-option(PELEC_ENABLE_EB "Enable EB" ON)
+option(PELEC_ENABLE_EB "Enable EB" OFF)
 option(PELEC_ENABLE_REACTIONS "Enable reactions" ON)
 option(PELEC_ENABLE_ALL_WARNINGS "Enable all compiler warnings" OFF)
 option(PELEC_ENABLE_TESTS "Enable regression and unit tests" OFF)

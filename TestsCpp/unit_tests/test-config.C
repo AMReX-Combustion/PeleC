@@ -19,8 +19,8 @@ TEST(Configuration, Build)
 {
     const char* pc_git = amrex::buildInfoGetGitHash(1);
     const char* amrex_git = amrex::buildInfoGetGitHash(2);
-    amrex::Print() << "PeleC SHA = " << pc_git
-                   << "\nAMReX    SHA = " << amrex_git << std::endl;
+    amrex::Print() << "PeleC SHA = " << pc_git << std::endl
+                   << "AMReX SHA = " << amrex_git << std::endl;
 }
 
 TEST(Configuration, MPI)

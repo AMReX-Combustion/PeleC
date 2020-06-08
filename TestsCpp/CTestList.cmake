@@ -38,7 +38,7 @@ function(add_test_r TEST_NAME TEST_EXE_DIR NP)
     # Copy files to test working directory
     file(COPY ${TEST_FILES} DESTINATION "${CURRENT_TEST_BINARY_DIR}/")
     # Set some default runtime options for all tests in this category
-    set(RUNTIME_OPTIONS "max_step=10 amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1")
+    set(RUNTIME_OPTIONS "max_step=10 amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1 amrex.signal_handling=0")
     # Use fcompare to test diffs in plots against gold files
     if(TEST_WITH_FCOMPARE)
       set(FCOMPARE_COMMAND "&& ${FCOMPARE} ${PLOT_GOLD} ${PLOT_TEST}")
@@ -81,7 +81,7 @@ endfunction(add_test_r)
 #    # Define our main run command
 #    set(RUN_COMMAND "rm mmslog datlog || true && ${MPI_COMMANDS} ${TEST_DEPENDENCY_BINARY_DIR}/PeleC-${TEST_DEPENDENCY} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i")
 #    # Set some default runtime options for all tests in this category
-#    set(RUNTIME_OPTIONS "amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1")
+#    set(RUNTIME_OPTIONS "amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1 amrex.signal_handling=0")
 #    # Add test and actual test commands to CTest database
 #    add_test(${TEST_NAME} sh -c "${RUN_COMMAND} ${RUNTIME_OPTIONS} && nosetests ${TEST_NAME}.py")
 #    # Set properties for test
@@ -131,7 +131,7 @@ endfunction(add_test_r)
 #      # Set the run command for this resolution
 #      set(RUN_COMMAND_${GRID_SIZE} "${MPI_COMMANDS} ${TEST_DEPENDENCY_BINARY_DIR}/PeleC-${TEST_DEPENDENCY} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${GRID_SIZE}/${TEST_NAME}.i")
 #      # Set some runtime options for each resolution
-#      set(RUNTIME_OPTIONS_${GRID_SIZE} "amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.n_cell=${NCELLS}")
+#      set(RUNTIME_OPTIONS_${GRID_SIZE} "amrex.signal_handling=0 amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.n_cell=${NCELLS}")
 #      # Construct our large run command with everything &&'d together
 #      string(APPEND MASTER_RUN_COMMAND "cd ${CURRENT_TEST_BINARY_DIR}/${GRID_SIZE}")
 #      string(APPEND MASTER_RUN_COMMAND " && ")

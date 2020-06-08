@@ -1,12 +1,12 @@
 add_executable(${pelec_unit_test_exe_name} "")
 
 target_sources(${pelec_unit_test_exe_name}
-  PRIVATE
+  PUBLIC
   unit-tests-main.C
   test-config.C
   )
 
-target_include_directories(${pelec_unit_test_exe_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(${pelec_unit_test_exe_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 include(AMReXBuildInfo)
 generate_buildinfo(${pelec_unit_test_exe_name} ${CMAKE_SOURCE_DIR})
@@ -18,12 +18,15 @@ if(PELEC_ENABLE_CUDA)
 endif()
 
 #Link our unit test executable with GoogleTest
-#target_link_libraries(${pelec_unit_test_exe_name} PRIVATE GTest::GTest GTest::Main)
-target_link_libraries(${pelec_unit_test_exe_name} PRIVATE gtest)
-target_include_directories(${pelec_unit_test_exe_name} SYSTEM PRIVATE
+target_link_libraries(${pelec_unit_test_exe_name} PUBLIC gtest)
+target_include_directories(${pelec_unit_test_exe_name} SYSTEM PUBLIC
   ${CMAKE_SOURCE_DIR}/Submodules/GoogleTest/googletest/include)
 
-target_link_libraries(${pelec_unit_test_exe_name} PRIVATE amrex)
+if(PELEC_ENABLE_MPI)
+  target_link_libraries(${pelec_unit_test_exe_name} PUBLIC $<$<BOOL:${MPI_CXX_FOUND}>:MPI::MPI_CXX>)
+endif()
+
+target_link_libraries(${pelec_unit_test_exe_name} PUBLIC amrex)
 
 #Define what we want to be installed during a make install 
 install(TARGETS ${pelec_unit_test_exe_name}

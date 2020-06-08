@@ -70,4 +70,6 @@ pelec.flame_trac_name = HO2
 pelec.do_mol=0
 pelec.chem_integrator=2
 
-amrex.signal_handling=0
+eb2.use_eb2 = 1
+eb2.geom_type = "all_regular"
+ebd.boundary_grad_stencil_type = 0
