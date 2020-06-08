@@ -333,10 +333,16 @@ PeleC::particlePostRestart(const std::string& restart_file, bool is_checkpoint)
 
     SprayPC = new SprayParticleContainer(parent, &phys_bc);
     theSprayPC()->SetVerbose(particle_verbose);
+    theSprayPC()->buildFuelData(
+      sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
 
     if (parent->subCycle()) {
       VirtPC = new SprayParticleContainer(parent, &phys_bc);
       GhostPC = new SprayParticleContainer(parent, &phys_bc);
+      theGhostPC()->buildFuelData(
+        sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
+      theVirtPC()->buildFuelData(
+        sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
     }
 
     //

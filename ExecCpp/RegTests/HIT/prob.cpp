@@ -100,7 +100,7 @@ amrex_probinit(
   // Initial density, velocity, and material properties
   amrex::Real cs, cp;
   amrex::Real massfrac[NUM_SPECIES] = {1.0};
-  EOS::PYTR2E(
+  EOS::PYT2RE(
     ProbParm::p0, massfrac, ProbParm::T0, ProbParm::rho0, ProbParm::eint0);
   EOS::RTY2Cs(ProbParm::rho0, ProbParm::T0, massfrac, cs);
   EOS::TY2Cp(ProbParm::T0, massfrac, cp);

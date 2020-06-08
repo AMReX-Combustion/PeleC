@@ -475,10 +475,8 @@ PeleC::writeJobInfo(const std::string& dir)
   tm* localtm = localtime(&now);
   jobInfoFile << "output data / time: " << asctime(localtm);
 
-  char currentDir[FILENAME_MAX];
-  if (getcwd(currentDir, FILENAME_MAX)) {
-    jobInfoFile << "output dir:         " << currentDir << "\n";
-  }
+  std::string currentDir = FileSystem::CurrentPath();
+  jobInfoFile << "output dir:         " << currentDir << "\n";
 
   jobInfoFile << "\n\n";
 

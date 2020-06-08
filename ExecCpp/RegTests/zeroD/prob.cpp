@@ -39,7 +39,7 @@ amrex_probinit(
   ProbParm::massfrac[H2_ID] = ProbParm::Y_init_H2;
   ProbParm::massfrac[O2_ID] = ProbParm::Y_init_O2;
   ProbParm::massfrac[N2_ID] = ProbParm::Y_init_N2;
-  EOS::PYTR2E(
+  EOS::PYT2RE(
     ProbParm::p_init, ProbParm::massfrac.begin(), ProbParm::T_init,
     ProbParm::rho_init, ProbParm::e_init);
 }
