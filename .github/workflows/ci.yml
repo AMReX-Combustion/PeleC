@@ -24,7 +24,7 @@ jobs:
             install_deps: brew install open-mpi
             comp: llvm
           - os: ubuntu-latest
-            install_deps: sudo apt-get install mpich libmpich-dev
+            install_deps: sudo apt-get install mpich libmpich-dev pkgconf
             comp: gnu
     steps:
     - uses: actions/checkout@v2
