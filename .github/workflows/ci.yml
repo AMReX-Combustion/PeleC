@@ -21,7 +21,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
         include:
           - os: macos-latest
-            install_deps: brew install open-mpi
+            install_deps: brew install open-mpi automake
             comp: llvm
           - os: ubuntu-latest
             install_deps: sudo apt-get install mpich libmpich-dev
