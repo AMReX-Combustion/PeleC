@@ -39,12 +39,12 @@ jobs:
         git clone --recursive https://github.com/manufactured-solutions/MASA.git ${{runner.workspace}}/deps/MASA
         cd ${{runner.workspace}}/deps/MetaPhysicL
         ./bootstrap
-        ./configure --prefix="${{runner.workspace}}/deps/install/MetaPhysicL"
+        ./configure CXX='${{env.CXX_COMPILER}} -std=c++11' CC=${{env.C_COMPILER}} FC=${{env.FORTRAN_COMPILER}} --prefix="${{runner.workspace}}/deps/install/MetaPhysicL"
         make -j ${{env.NUM_PROCS}}
         make install
         cd ${{runner.workspace}}/deps/MASA
         ./bootstrap
-        ./configure CXX=mpicxx CC=mpicc FC=mpifort CXXFLAGS=-std=c++11 --enable-fortran-interfaces METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" --prefix="${{runner.workspace}}/deps/install/MASA"
+        ./configure CXX='${{env.CXX_COMPILER}} -std=c++11' CC=${{env.C_COMPILER}} FC=${{env.FORTRAN_COMPILER}} --enable-fortran-interfaces METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" --prefix="${{runner.workspace}}/deps/install/MASA"
         make -j ${{env.NUM_PROCS}}
         make install
     - name: setup
