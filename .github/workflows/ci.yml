@@ -12,7 +12,6 @@ env:
   FORTRAN_COMPILER: mpifort
   BUILD_TYPE: RelWithDebInfo
   NUM_PROCS: 16
-  MASA_ROOT_DIR: ${{runner.workspace}}/deps/install/MASA
 
 jobs:
   build:
@@ -45,7 +44,7 @@ jobs:
         make install
         cd ${{runner.workspace}}/deps/MASA
         ./bootstrap
-        ./configure --enable-fortran-interfaces METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" --prefix="${{env.MASA_ROOT_DIR}}"
+        ./configure --enable-fortran-interfaces METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" --prefix="${{runner.workspace}}/deps/install/MASA"
         make -j ${{env.NUM_PROCS}}
         make install
     - name: setup
@@ -62,7 +61,7 @@ jobs:
           -DPELEC_ENABLE_MPI:BOOL=ON \
           -DPELEC_ENABLE_TESTS:BOOL=ON \
           -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
-          -DMASA_DIR:STRING=${{env.MASA_ROOT_DIR}} \
+          -DMASA_DIR:STRING=${{runner.workspace}}/deps/install/MASA \
           -DPELEC_USE_CPP:BOOL=ON \
           ${GITHUB_WORKSPACE}
     - name: make
