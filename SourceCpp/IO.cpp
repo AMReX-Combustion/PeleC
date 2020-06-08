@@ -475,7 +475,7 @@ PeleC::writeJobInfo(const std::string& dir)
   tm* localtm = localtime(&now);
   jobInfoFile << "output data / time: " << asctime(localtm);
 
-  std::string currentDir = FileSystem::CurrentPath();
+  std::string currentDir = amrex::FileSystem::CurrentPath();
   jobInfoFile << "output dir:         " << currentDir << "\n";
 
   jobInfoFile << "\n\n";
