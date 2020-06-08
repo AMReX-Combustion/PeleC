@@ -24,7 +24,7 @@ jobs:
             install_deps: brew install open-mpi
             comp: llvm
           - os: ubuntu-latest
-            install_deps: sudo apt-get install mpich libmpich-dev gnulib
+            install_deps: sudo apt-get install mpich libmpich-dev
             comp: gnu
     steps:
     - uses: actions/checkout@v2
@@ -35,11 +35,13 @@ jobs:
         ${{matrix.install_deps}}
         cmake -E make_directory ${{runner.workspace}}/deps
         cd ${{runner.workspace}}/deps
-        git clone https://github.com/roystgnr/MetaPhysicL.git ${{runner.workspace}}/deps/MetaPhysicL
-        git clone https://github.com/manufactured-solutions/MASA.git ${{runner.workspace}}/deps/MASA
+        git clone --recursive https://github.com/roystgnr/MetaPhysicL.git ${{runner.workspace}}/deps/MetaPhysicL
+        git clone --recursive https://github.com/manufactured-solutions/MASA.git ${{runner.workspace}}/deps/MASA
         cd ${{runner.workspace}}/deps/MetaPhysicL
         ./bootstrap
-        ./configure --prefix="${{runner.workspace}}/deps/install/MetaPhysicL"
+        mkdir build
+        cd build
+        ../configure --prefix="${{runner.workspace}}/deps/install/MetaPhysicL"
         make -j ${{env.NUM_PROCS}}
         make install
         cd ${{runner.workspace}}/deps/MASA
