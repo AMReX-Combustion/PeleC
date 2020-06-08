@@ -44,7 +44,7 @@ jobs:
         make install
         cd ${{runner.workspace}}/deps/MASA
         ./bootstrap
-        ./configure CPPFLAGS='-O0 -std=c++11' --enable-fortran-interfaces METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" --prefix="${{runner.workspace}}/deps/install/MASA"
+        ./configure CXX=mpicxx CC=mpicc FC=mpifort CXXFLAGS=-std=c++11 --enable-fortran-interfaces METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" --prefix="${{runner.workspace}}/deps/install/MASA"
         make -j ${{env.NUM_PROCS}}
         make install
     - name: setup
