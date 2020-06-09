@@ -1,4 +1,4 @@
-set(pelec_exe_name pelec_pmf)
+set(pelec_exe_name pelec_PMF)
 
 #Compile-time options for executable
 set(PELEC_DIM 3)

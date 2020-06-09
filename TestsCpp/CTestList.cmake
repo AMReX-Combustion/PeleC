@@ -18,7 +18,7 @@ function(add_test_r TEST_NAME TEST_EXE_DIR NP)
     # Set variables for respective binary and source directories for the test
     set(CURRENT_TEST_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test_files/${TEST_NAME})
     set(CURRENT_TEST_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/test_files/${TEST_NAME})
-    set(CURRENT_TEST_EXE ${CMAKE_BINARY_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/PeleC_${TEST_EXE_DIR})
+    set(CURRENT_TEST_EXE ${CMAKE_BINARY_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/pelec_${TEST_EXE_DIR})
     # Gold files should be submodule organized by machine and compiler (these are output during configure)
     set(PLOT_GOLD ${FCOMPARE_GOLD_FILES_DIRECTORY}/${TEST_NAME}/plt00010)
     # Test plot is currently expected to be after 10 steps

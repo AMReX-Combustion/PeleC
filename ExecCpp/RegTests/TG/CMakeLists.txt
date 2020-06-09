@@ -1,4 +1,4 @@
-set(pelec_exe_name pelec_tg)
+set(pelec_exe_name pelec_TG)
 
 #Compile-time options for executable
 set(PELEC_DIM 3)
