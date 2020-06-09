@@ -1,2 +1,3 @@
 add_subdirectory(RegTests)
-add_subdirectory(Tutorials)
+add_subdirectory(UnitTests)
+#add_subdirectory(Tutorials)

@@ -1,15 +1,15 @@
-set(pelec_exe_name pelec_pmf)
+set(pelec_exe_name pelec_tg)
 
 #Compile-time options for executable
 set(PELEC_DIM 3)
 set(PELEC_ENABLE_EB OFF)
 set(PELEC_ENABLE_MASA OFF)
-set(PELEC_ENABLE_REACTIONS ON)
+set(PELEC_ENABLE_REACTIONS OFF)
 set(PELEC_ENABLE_PARTICLES OFF)
-set(PELEC_EOS_MODEL Fuego)
-set(PELEC_REACTIONS_MODEL Fuego)
-set(PELEC_CHEMISTRY_MODEL LiDryer)
-set(PELEC_TRANSPORT_MODEL Simple)
+set(PELEC_EOS_MODEL GammaLaw)
+set(PELEC_REACTIONS_MODEL Null)
+set(PELEC_CHEMISTRY_MODEL Null)
+set(PELEC_TRANSPORT_MODEL Constant)
 
 add_executable(${pelec_exe_name} "")
 target_sources(${pelec_exe_name}

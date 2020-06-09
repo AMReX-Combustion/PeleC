@@ -161,17 +161,18 @@ function(add_test_u TEST_NAME NP)
     # Set variables for respective binary and source directories for the test
     set(CURRENT_TEST_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test_files/${TEST_NAME})
     set(CURRENT_TEST_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/test_files/${TEST_NAME})
+    set(CURRENT_TEST_EXE ${CMAKE_BINARY_DIR}/ExecCpp/UnitTests/${TEST_NAME})
     # Make working directory for test
     file(MAKE_DIRECTORY ${CURRENT_TEST_BINARY_DIR})
     # Place the exe in the correct working directory
-    set_target_properties(${TEST_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/")
+    #set_target_properties(${TEST_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/")
     if(PELEC_ENABLE_MPI)
       set(MPI_COMMANDS "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${MPIEXEC_PREFLAGS}")
     else()
       unset(MPI_COMMANDS)
     endif()
     # Add test and commands to CTest database
-    add_test(${TEST_NAME} sh -c "${MPI_COMMANDS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}")
+    add_test(${TEST_NAME} sh -c "${MPI_COMMANDS} ${CURRENT_TEST_EXE} ${MPIEXEC_POSTFLAGS}")
     # Set properties for test
     set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 500 PROCESSORS ${NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "unit")
 endfunction(add_test_u)
@@ -179,49 +180,43 @@ endfunction(add_test_u)
 #=============================================================================
 # Regression tests
 #=============================================================================
-#add_test_r(fiab-2d PMF 4)
-add_test_r(fiab-3d PMF 4)
-#add_test_r(hit-3d-1 HIT 4)
-#add_test_r(hit-3d-2 HIT 4)
-#add_test_r(hit-3d-3 HIT 4)
-#add_test_r(mms-2d-1 MMS 4)
-#add_test_r(mms-2d-2 MMS 4)
-#add_test_r(mms-3d-1 MMS 4)
-#add_test_r(mms-3d-2 MMS 4)
-#add_test_r(mms-3d-3 MMS 4)
-#add_test_r(mms-3d-4 MMS 1)
-#add_test_r(mms-3d-5 MMS 1)
-#add_test_r(ebmms-3d-1 EB_MMS 4)
-#add_test_r(sod-3d-1 Sod 4)
-#add_test_r(tg-2d-1 TG 4)
-#add_test_r(tg-3d-1 TG 4)
-#add_test_r(tg-3d-2 TG 4)
-#add_test_r(tg-3d-3 TG 4)
-#add_test_r(tg-3d-4 TG 4)
+add_test_r(fiab PMF 4)
+#add_test_r(hit-1 HIT 4)
+#add_test_r(hit-2 HIT 4)
+#add_test_r(hit-3 HIT 4)
+#add_test_r(mms-1 MMS 4)
+#add_test_r(mms-2 MMS 4)
+#add_test_r(mms-3 MMS 4)
+#add_test_r(mms-4 MMS 1)
+#add_test_r(mms-5 MMS 1)
+#add_test_r(ebmms-1 EB_MMS 4)
+#add_test_r(sod-1 Sod 4)
+#add_test_r(tg-1 TG 4)
+#add_test_r(tg-2 TG 4)
+#add_test_r(tg-3 TG 4)
+#add_test_r(tg-4 TG 4)
 
 #=============================================================================
 # Verification tests
 #=============================================================================
 #if(ENABLE_VERIFICATION)
-#  add_test_v1(symmetry_3d mms-3d-1 4)
-#  add_test_v1(eb_symmetry_3d ebmms-3d-1 4)
+#  add_test_v1(symmetry mms-1 4)
+#  add_test_v1(eb_symmetry ebmms-1 4)
 #
 #  # Create list of resolutions we want to test with; make sure to pass it as a string in quotes
 #  set(LIST_OF_GRID_SIZES 8 12 16 20)
-#  add_test_v2(cns_no_amr_2d mms-2d-1 "${LIST_OF_GRID_SIZES}")
-#  add_test_v2(cns_no_amr_3d mms-3d-1 "${LIST_OF_GRID_SIZES}")
-#  add_test_v2(cns_no_amr_mol_2d mms-2d-2 "${LIST_OF_GRID_SIZES}")
-#  add_test_v2(cns_no_amr_mol_3d mms-3d-3 "${LIST_OF_GRID_SIZES}")
-#  #add_test_v3(cns_amr_3d mms-3d-1 "${LIST_OF_GRID_SIZES}") # This one takes a while with AMR
+#  add_test_v2(cns_no_amr mms-1 "${LIST_OF_GRID_SIZES}")
+#  add_test_v2(cns_no_amr_mol mms-3 "${LIST_OF_GRID_SIZES}")
+#  #add_test_v3(cns_amr mms-1 "${LIST_OF_GRID_SIZES}") # This one takes a while with AMR
 #
 #  set(LIST_OF_GRID_SIZES 8 12 16 24)
-#  add_test_v2(cns_les_no_amr_3d mms-3d-5 "${LIST_OF_GRID_SIZES}")
+#  add_test_v2(cns_les_no_amr mms-5 "${LIST_OF_GRID_SIZES}")
 #endif()
 
 #=============================================================================
 # Unit tests
 #=============================================================================
-add_test_u(${pelec_unit_test_exe_name} 1)
+add_test_u(pelec_unit_tests 1)
 
 #=============================================================================
 # Performance tests

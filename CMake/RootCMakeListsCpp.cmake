@@ -78,9 +78,6 @@ message(STATUS "CMAKE_CXX_COMPILER_ID = ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "CMAKE_CXX_COMPILER_VERSION = ${CMAKE_CXX_COMPILER_VERSION}")
 message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
 
-#Create target names
-set(pelec_unit_test_exe_name "pelec_unit_tests")
-
 #Build pelec executables and link to amrex library
 add_subdirectory(ExecCpp)
 

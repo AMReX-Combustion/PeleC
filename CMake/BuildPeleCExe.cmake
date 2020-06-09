@@ -1,15 +1,15 @@
 function(build_pelec_exe pelec_exe_name)
 
   set(PELE_PHYSICS_SRC_DIR ${CMAKE_SOURCE_DIR}/Submodules/PelePhysics)
-  set(PELE_PHYSICS_BIN_DIR ${CMAKE_BINARY_DIR}/Submodules/PelePhysics)
+  set(PELE_PHYSICS_BIN_DIR ${CMAKE_BINARY_DIR}/Submodules/PelePhysics/${pelec_exe_name})
 
   set(SRC_DIR ${CMAKE_SOURCE_DIR}/SourceCpp)
-  set(BIN_DIR ${CMAKE_BINARY_DIR}/SourceCpp)
+  set(BIN_DIR ${CMAKE_BINARY_DIR}/SourceCpp/${pelec_exe_name})
 
   include(${CMAKE_SOURCE_DIR}/CMake/SetCompileFlags.cmake)
   include(${CMAKE_SOURCE_DIR}/CMake/SetRpath.cmake)
 
-  add_subdirectory(${SRC_DIR}/Params ${BIN_DIR}/Params)
+  add_subdirectory(${SRC_DIR}/Params ${BIN_DIR}/Params/${pelec_exe_name})
 
   set(PELEC_TRANSPORT_DIR "${PELE_PHYSICS_SRC_DIR}/Transport/${PELEC_TRANSPORT_MODEL}")
   target_sources(${pelec_exe_name} PRIVATE
@@ -81,10 +81,10 @@ function(build_pelec_exe pelec_exe_name)
        ${SRC_DIR}/GradUtil.cpp
        ${SRC_DIR}/Hydro.H
        ${SRC_DIR}/Hydro.cpp
-       ${SRC_DIR}/IO.H
-       ${SRC_DIR}/IO.cpp
        ${SRC_DIR}/IndexDefines.H
        ${SRC_DIR}/IndexDefines.cpp
+       ${SRC_DIR}/IO.H
+       ${SRC_DIR}/IO.cpp
        ${SRC_DIR}/LES.H
        ${SRC_DIR}/LES.cpp
        ${SRC_DIR}/MOL.H
@@ -107,8 +107,14 @@ function(build_pelec_exe pelec_exe_name)
        ${SRC_DIR}/Timestep.cpp
        ${SRC_DIR}/Utilities.H
        ${SRC_DIR}/Utilities.cpp
-       ${SRC_DIR}/main.cpp
-     )
+  )
+
+  if(NOT "${pelec_exe_name}" STREQUAL "pelec_unit_tests")
+    target_sources(${pelec_exe_name}
+       PRIVATE
+         ${SRC_DIR}/main.cpp
+    )
+  endif()
   
   include(AMReXBuildInfo)
   generate_buildinfo(${pelec_exe_name} ${CMAKE_SOURCE_DIR})
