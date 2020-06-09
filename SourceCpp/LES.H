@@ -333,8 +333,8 @@ pc_dynamic_smagorinsky_quantities(
   // Maybe revisit how to determine deltahat in the case where dx1 != dx2 != dx3
   // (irrelevant for now as this is presently not allowed)
   const amrex::Real deltabar = fgr * (dx[0] + dx[1] + dx[2]) / 3.0;
-  const amrex::Real dxinv[AMREX_SPACEDIM] = {1.0 / dx[0], 1.0 / dx[1],
-                                             1.0 / dx[2]};
+  const amrex::Real dxinv[AMREX_SPACEDIM] = {
+    1.0 / dx[0], 1.0 / dx[1], 1.0 / dx[2]};
 
   get_sfs_stresses_cc(
     i, j, k, q, dxinv, deltabar, alphaij(i, j, k, i00), alphaij(i, j, k, i01),
@@ -388,8 +388,8 @@ pc_dynamic_smagorinsky_coeffs(
   // Maybe revisit how to determine deltahat in the case where dx1 != dx2 != dx3
   // (irrelevant for now as this is presently not allowed)
   const amrex::Real deltahat = fgr * (dx[0] + dx[1] + dx[2]) / 3.0;
-  const amrex::Real dxinv[AMREX_SPACEDIM] = {1.0 / dx[0], 1.0 / dx[1],
-                                             1.0 / dx[2]};
+  const amrex::Real dxinv[AMREX_SPACEDIM] = {
+    1.0 / dx[0], 1.0 / dx[1], 1.0 / dx[2]};
 
   amrex::Real L[AMREX_SPACEDIM * AMREX_SPACEDIM],
     M[AMREX_SPACEDIM * AMREX_SPACEDIM], betaij[AMREX_SPACEDIM * AMREX_SPACEDIM],

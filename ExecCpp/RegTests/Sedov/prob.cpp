@@ -1,7 +1,7 @@
 #include "prob.H"
 
 namespace ProbParm {
-AMREX_GPU_DEVICE_MANAGED amrex::Real p_ambient; 
+AMREX_GPU_DEVICE_MANAGED amrex::Real p_ambient;
 AMREX_GPU_DEVICE_MANAGED amrex::Real dens_ambient;
 AMREX_GPU_DEVICE_MANAGED amrex::Real exp_energy;
 AMREX_GPU_DEVICE_MANAGED amrex::Real r_init;
@@ -29,5 +29,5 @@ amrex_probinit(
   pp.query("exp_energy", ProbParm::exp_energy);
   pp.query("r_init", ProbParm::r_init);
   pp.query("nsub", ProbParm::nsub);
-  }
+}
 }

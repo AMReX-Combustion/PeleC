@@ -80,14 +80,13 @@ PeleC::fill_forcing_source(
     auto const& src = forcing_src.array(mfi);
 
     // Evaluate the linear forcing term
-    amrex::ParallelFor(
-      bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-        src(i, j, k, UMX) = forcing_params::forcing * sarr(i, j, k, URHO) *
-                            (sarr(i, j, k, UMX) - forcing_params::u0);
-        src(i, j, k, UMY) = forcing_params::forcing * sarr(i, j, k, URHO) *
-                            (sarr(i, j, k, UMY) - forcing_params::v0);
-        src(i, j, k, UMZ) = forcing_params::forcing * sarr(i, j, k, URHO) *
-                            (sarr(i, j, k, UMZ) - forcing_params::w0);
-      });
+    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      src(i, j, k, UMX) = forcing_params::forcing * sarr(i, j, k, URHO) *
+                          (sarr(i, j, k, UMX) - forcing_params::u0);
+      src(i, j, k, UMY) = forcing_params::forcing * sarr(i, j, k, URHO) *
+                          (sarr(i, j, k, UMY) - forcing_params::v0);
+      src(i, j, k, UMZ) = forcing_params::forcing * sarr(i, j, k, URHO) *
+                          (sarr(i, j, k, UMZ) - forcing_params::w0);
+    });
   }
 }

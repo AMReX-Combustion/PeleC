@@ -71,12 +71,13 @@ tag_graderror(
 {
   // Tag on regions of high field gradient
   AMREX_D_TERM(
-    amrex::Real ax = std::abs(field(i + 1, j, k) - field(i, j, k));
-    ax = amrex::max(ax, std::abs(field(i, j, k) - field(i - 1, j, k)));
-    , amrex::Real ay = std::abs(field(i, j + 1, k) - field(i, j, k));
-    ay = amrex::max(ay, std::abs(field(i, j, k) - field(i, j - 1, k)));
-    , amrex::Real az = std::abs(field(i, j, k + 1) - field(i, j, k));
-    az = amrex::max(az, std::abs(field(i, j, k) - field(i, j, k - 1))););
+    amrex::Real ax = amrex::Math::abs(field(i + 1, j, k) - field(i, j, k));
+    ax = amrex::max(ax, amrex::Math::abs(field(i, j, k) - field(i - 1, j, k)));
+    , amrex::Real ay = amrex::Math::abs(field(i, j + 1, k) - field(i, j, k));
+    ay = amrex::max(ay, amrex::Math::abs(field(i, j, k) - field(i, j - 1, k)));
+    , amrex::Real az = amrex::Math::abs(field(i, j, k + 1) - field(i, j, k));
+    az =
+      amrex::max(az, amrex::Math::abs(field(i, j, k) - field(i, j, k - 1))););
   if (amrex::max(AMREX_D_DECL(ax, ay, az)) >= fieldgrad) {
     tag(i, j, k) = tagval;
   }
@@ -95,7 +96,7 @@ tag_abserror(
   char tagval) noexcept
 {
   // Tag on regions of high field values
-  if (std::abs(field(i, j, k)) >= fielderr) {
+  if (amrex::Math::abs(field(i, j, k)) >= fielderr) {
     tag(i, j, k) = tagval;
   }
 }

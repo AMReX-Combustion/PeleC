@@ -214,13 +214,13 @@ void
 PeleC::setSprayGridInfo(
   const int amr_iteration,
   const int amr_ncycle,
-  int&      ghost_width,
-  int&      where_width,
-  int&      spray_n_grow,
-  int&      tmp_src_width)
+  int& ghost_width,
+  int& where_width,
+  int& spray_n_grow,
+  int& tmp_src_width)
 {
-  // TODO: Re-evaluate these numbers and include the particle cfl into the calcuation
-  // A particle in cell (i) can affect cell values in (i-1) to (i+1)
+  // TODO: Re-evaluate these numbers and include the particle cfl into the
+  // calcuation A particle in cell (i) can affect cell values in (i-1) to (i+1)
   int stencil_deposition_width = 1;
 
   // A particle in cell (i) may need information from cell values in (i-1) to
@@ -346,7 +346,7 @@ PeleC::do_sdc_iteration(
   }
 #ifdef AMREX_PARTICLES
   bool use_ghost_parts = false; // Use ghost particles
-  bool use_virt_parts = false; // Use virtual particles
+  bool use_virt_parts = false;  // Use virtual particles
   if (parent->finestLevel() > 0 && level < parent->finestLevel()) {
     use_ghost_parts = true;
     use_virt_parts = true;
@@ -396,7 +396,7 @@ PeleC::do_sdc_iteration(
       //
       // Setup the virtual particles that particles on finer levels
       //
-      
+
       if (level < finest_level && use_virt_parts)
         setupVirtualParticles();
 
@@ -409,17 +409,17 @@ PeleC::do_sdc_iteration(
       bool injectParts = false;
       bool insertParts = false;
       if (level == finest_level)
-	injectParts = theSprayPC()->injectParticles(cur_time, nstep, level);
+        injectParts = theSprayPC()->injectParticles(cur_time, nstep, level);
       if (level == finest_level)
-	insertParts = theSprayPC()->insertParticles(cur_time, nstep, level);
+        insertParts = theSprayPC()->insertParticles(cur_time, nstep, level);
 
       //
       // Only redistribute if we injected or inserted particles
       //
       if (injectParts || insertParts) {
-	// TODO: Determine the number of ghost cells needed here
-	int nGrow = 1;
-	particleRedistribute(level, nGrow, 0);
+        // TODO: Determine the number of ghost cells needed here
+        int nGrow = 1;
+        particleRedistribute(level, nGrow, 0);
       }
 
       //
@@ -449,7 +449,7 @@ PeleC::do_sdc_iteration(
         false, // not virtual particles
         false, // not ghost particles
         tmp_src_width,
-        true,  // Move the particles
+        true, // Move the particles
         where_width);
 
       // Only need the coarsest virtual particles here.
@@ -552,7 +552,8 @@ PeleC::do_sdc_iteration(
     new_sources[spray_src]->setVal(0.);
 
     theSprayPC()->moveKick(
-      Sborder, *new_sources[spray_src], level, dt, time + dt, false, false, tmp_src_width);
+      Sborder, *new_sources[spray_src], level, dt, time + dt, false, false,
+      tmp_src_width);
 
     // Virtual particles will be recreated, so we need not kick them.
     // TODO: Is this true with SDC iterations??
@@ -560,7 +561,8 @@ PeleC::do_sdc_iteration(
     // Ghost particles need to be kicked except during the final iteration.
     if (amr_iteration != amr_ncycle && use_ghost_parts && theGhostPC() != 0)
       theGhostPC()->moveKick(
-        Sborder, *new_sources[spray_src], level, dt, time + dt, false, true, tmp_src_width);
+        Sborder, *new_sources[spray_src], level, dt, time + dt, false, true,
+        tmp_src_width);
   }
 #endif
 

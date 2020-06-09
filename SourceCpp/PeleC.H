@@ -223,10 +223,10 @@ public:
   void setSprayGridInfo(
     const int amr_iteration,
     const int amr_ncycle,
-    int&      ghost_width,
-    int&      where_width,
-    int&      spray_n_grow,
-    int&      tmp_src_width);
+    int& ghost_width,
+    int& where_width,
+    int& spray_n_grow,
+    int& tmp_src_width);
 
   static int particle_mass_tran;
   static int particle_heat_tran;

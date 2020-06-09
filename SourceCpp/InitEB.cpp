@@ -486,7 +486,7 @@ initialize_EB2(
       {pipelo[0], pipelo[1], -1.}, {pipehi[0], pipehi[1], 1.}, false);
 
     // where does plane 1 and plane 2 intersect?
-    amrex::Real k2 = std::abs(pl2nm[0] / pl2nm[1]);
+    amrex::Real k2 = amrex::Math::abs(pl2nm[0] / pl2nm[1]);
     amrex::Real secty = pl2pt[1] + k2 * (pl3pt[0] - pl2pt[0]);
     // How much do we cut?
     amrex::Real dx = geom.CellSize(0);

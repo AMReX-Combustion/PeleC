@@ -92,10 +92,10 @@ mol_slope(
     const amrex::Real dcen = 0.5 * (dlft[n] + drgt[n]);
     const amrex::Real dlim =
       dlft[n] * drgt[n] >= 0.0
-        ? 2.0 * amrex::min(std::abs(dlft[n]), std::abs(drgt[n]))
+        ? 2.0 * amrex::min(amrex::Math::abs(dlft[n]), amrex::Math::abs(drgt[n]))
         : 0.0;
-    dq(i, j, k, n) =
-      std::copysign(1.0, dcen) * amrex::min(dlim, std::abs(dcen));
+    dq(i, j, k, n) = amrex::Math::copysign(1.0, dcen) *
+                     amrex::min(dlim, amrex::Math::abs(dcen));
   }
 }
 

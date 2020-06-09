@@ -286,8 +286,9 @@ PeleC::construct_hydro_source(
     }
 
     if (print_energy_diagnostics) {
-      amrex::Real foo[5] = {E_added_flux, xmom_added_flux, ymom_added_flux,
-                            zmom_added_flux, mass_added_flux};
+      amrex::Real foo[5] = {
+        E_added_flux, xmom_added_flux, ymom_added_flux, zmom_added_flux,
+        mass_added_flux};
 
 #ifdef AMREX_LAZY
       Lazy::QueueReduction([=]() mutable {
@@ -391,10 +392,9 @@ pc_umdrv(
   // divu
   AMREX_D_TERM(const amrex::Real dx0 = dx[0];, const amrex::Real dx1 = dx[1];
                , const amrex::Real dx2 = dx[2];);
-  amrex::ParallelFor(
-    bxg2, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      pc_divu(i, j, k, q, AMREX_D_DECL(dx0, dx1, dx2), divarr);
-    });
+  amrex::ParallelFor(bxg2, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    pc_divu(i, j, k, q, AMREX_D_DECL(dx0, dx1, dx2), divarr);
+  });
 
   // consup
   amrex::Real difmag = 0.1;
@@ -419,19 +419,17 @@ pc_consup(
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
     amrex::Box const& fbx = surroundingNodes(bx, dir);
     const amrex::Real dx = del[dir];
-    amrex::ParallelFor(
-      fbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-        pc_artif_visc(i, j, k, flx[dir], div, u, dx, difmag, dir);
-        // Normalize Species Flux
-        pc_norm_spec_flx(i, j, k, flx[dir]);
-        // Make flux extensive
-        pc_ext_flx(i, j, k, flx[dir], a[dir]);
-      });
+    amrex::ParallelFor(fbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      pc_artif_visc(i, j, k, flx[dir], div, u, dx, difmag, dir);
+      // Normalize Species Flux
+      pc_norm_spec_flx(i, j, k, flx[dir]);
+      // Make flux extensive
+      pc_ext_flx(i, j, k, flx[dir], a[dir]);
+    });
   }
 
   // Combine for Hydro Sources
-  amrex::ParallelFor(
-    bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      pc_update(i, j, k, update, flx, vol, pdivu);
-    });
+  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    pc_update(i, j, k, update, flx, vol, pdivu);
+  });
 }

@@ -29,7 +29,8 @@ pc_initdata(
 
   // Set explosion pressure -- we will convert the point-explosion energy into
   //    a corresponding pressure distributed throughout the perturbed volume
-  amrex::Real  vctr = 4.0/3.0*M_PI*(ProbParm::r_init * ProbParm::r_init * ProbParm::r_init);
+  amrex::Real vctr =
+    4.0 / 3.0 * M_PI * (ProbParm::r_init * ProbParm::r_init * ProbParm::r_init);
   amrex::Real p_exp = (EOS::gamma - 1.0) * ProbParm::exp_energy / vctr;
 
   // Geometry
@@ -51,52 +52,51 @@ pc_initdata(
   amrex::Real ctr_y = 0.5 * (prob_lo[1] + prob_hi[2]);
   amrex::Real ctr_z = 0.5 * (prob_lo[1] + prob_hi[2]);
 
-  // We initialize by summing over subvolumes of each cell 
+  // We initialize by summing over subvolumes of each cell
   int npert = 0;
   int n_amb = 0;
 
 #if AMREX_SPACEDIM == 3
-  for (int kk = 0; kk < ProbParm::nsub; kk++)
-  {
-      const amrex::Real z = zmin + (kk + 0.5) * dz_sub - ctr_z;
+  for (int kk = 0; kk < ProbParm::nsub; kk++) {
+    const amrex::Real z = zmin + (kk + 0.5) * dz_sub - ctr_z;
 #endif
-      for (int jj = 0; jj < ProbParm::nsub; jj++)
-      {
-          const amrex::Real y = ymin + (jj + 0.5) * dy_sub - ctr_y;
-          for (int ii = 0; ii < ProbParm::nsub; ii++)
-          {
-              const amrex::Real x = xmin + (ii + 0.5) * dx_sub - ctr_x;
+    for (int jj = 0; jj < ProbParm::nsub; jj++) {
+      const amrex::Real y = ymin + (jj + 0.5) * dy_sub - ctr_y;
+      for (int ii = 0; ii < ProbParm::nsub; ii++) {
+        const amrex::Real x = xmin + (ii + 0.5) * dx_sub - ctr_x;
 
-              amrex::Real dist = x*x + y*y + z*z; 
+        amrex::Real dist = x * x + y * y + z * z;
 
-              if (dist <= ProbParm::r_init*ProbParm::r_init) {
-                   npert += 1;
-              } else {
-                   n_amb += 1;
-              }
-          }
+        if (dist <= ProbParm::r_init * ProbParm::r_init) {
+          npert += 1;
+        } else {
+          n_amb += 1;
+        }
       }
+    }
 #if AMREX_SPACEDIM == 3
   }
 #endif
 
-  amrex::Real p_zone = (static_cast<amrex::Real>(npert) * p_exp +
-                        static_cast<amrex::Real>(n_amb) * ProbParm::p_ambient) / 
-                        static_cast<amrex::Real>(ProbParm::nsub*ProbParm::nsub*ProbParm::nsub);
+  amrex::Real p_zone =
+    (static_cast<amrex::Real>(npert) * p_exp +
+     static_cast<amrex::Real>(n_amb) * ProbParm::p_ambient) /
+    static_cast<amrex::Real>(ProbParm::nsub * ProbParm::nsub * ProbParm::nsub);
 
-  amrex::Real eint = p_zone/ (EOS::gamma - 1.0);
+  amrex::Real eint = p_zone / (EOS::gamma - 1.0);
 
   state(i, j, k, URHO) = ProbParm::dens_ambient;
   state(i, j, k, UMX) = 0.0;
   state(i, j, k, UMY) = 0.0;
   state(i, j, k, UMZ) = 0.0;
 
-  state(i, j, k, UEDEN) = eint + 
-        0.5*(state(i, j, k, UMX)*state(i, j, k, UMX) +
-             state(i, j, k, UMY)*state(i, j, k, UMY) +
-             state(i, j, k, UMZ)*state(i, j, k, UMZ)) / state(i, j, k, URHO);
+  state(i, j, k, UEDEN) = eint + 0.5 *
+                                   (state(i, j, k, UMX) * state(i, j, k, UMX) +
+                                    state(i, j, k, UMY) * state(i, j, k, UMY) +
+                                    state(i, j, k, UMZ) * state(i, j, k, UMZ)) /
+                                   state(i, j, k, URHO);
 
-  state(i,j,k,UEINT) = eint;
+  state(i, j, k, UEINT) = eint;
 
   for (int n = 0; n < NUM_SPECIES; n++)
     state(i, j, k, UFS + n) = 0;
@@ -104,10 +104,10 @@ pc_initdata(
   state(i, j, k, UFS) = state(i, j, k, URHO);
 
   amrex::Real T;
-  amrex::Real e = eint / state(i,j,k,URHO);
+  amrex::Real e = eint / state(i, j, k, URHO);
   amrex::Real massfrac[NUM_SPECIES] = {1.0};
   EOS::EY2T(e, massfrac, T);
-  state(i,j,k,UTEMP) = T;
+  state(i, j, k, UTEMP) = T;
 }
 
 AMREX_GPU_DEVICE
