@@ -7,6 +7,7 @@ cmake -DCMAKE_INSTALL_PREFIX:PATH=./install \
       -DPELEC_DIM:STRING=3 \
       -DPELEC_ENABLE_MPI:BOOL=OFF \
       -DPELEC_ENABLE_TESTS:BOOL=ON \
+      -DPELEC_ENABLE_MASA:BOOL=ON \
       -DMASA_DIR:STRING=$(spack location -i masa) \
       -DPELEC_USE_CPP:BOOL=ON \
       .. && make -j8

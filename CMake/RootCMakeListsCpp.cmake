@@ -8,12 +8,13 @@ include(CMakePackageConfigHelpers)
 ########################## OPTIONS #####################################
 
 #General options for the project
+set(PELEC_DIM "3" CACHE STRING "Number of physical dimensions")
 option(PELEC_ENABLE_DOCUMENTATION "Build documentation" OFF)
 option(PELEC_ENABLE_EB "Enable EB" OFF)
 option(PELEC_ENABLE_REACTIONS "Enable reactions" ON)
 option(PELEC_ENABLE_ALL_WARNINGS "Enable all compiler warnings" OFF)
 option(PELEC_ENABLE_TESTS "Enable regression and unit tests" OFF)
-option(PELEC_ENABLE_VERIFICATION_TESTS "Enable verification tests" OFF)
+option(PELEC_ENABLE_MASA "Enable tests that require MASA" OFF)
 option(PELEC_ENABLE_FCOMPARE "Enable building fcompare when not testing" OFF)
 option(PELEC_ENABLE_FCOMPARE_FOR_TESTS "Check test plots against gold files" OFF)
 
@@ -29,11 +30,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(PELEC_ENABLE_REACTIONS)
   set(PELEC_ENABLE_EXPLICIT_REACT ON)
-endif()
-
-if(PELEC_ENABLE_VERIFICATION_TESTS)
-  set(PELEC_ENABLE_TESTS ON)
-  message(STATUS "Warning: Verification tests expect a specific Python environment and take a long time to run")
 endif()
 
 if(PELEC_ENABLE_TESTS AND PELEC_ENABLE_FCOMPARE_FOR_TESTS)
@@ -54,10 +50,11 @@ set(AMREX_SUBMOD_LOCATION "${CMAKE_SOURCE_DIR}/Submodules/AMReX")
 include(${CMAKE_SOURCE_DIR}/CMake/SetAmrexOptions.cmake)
 list(APPEND CMAKE_MODULE_PATH "${AMREX_SUBMOD_LOCATION}/Tools/CMake")
 add_subdirectory(${AMREX_SUBMOD_LOCATION})
+include(${CMAKE_SOURCE_DIR}/CMake/SetAmrexCompileFlags.cmake)
 
 ########################### MASA #####################################
 
-if(PELEC_ENABLE_TESTS)
+if(PELEC_ENABLE_MASA)
   set(CMAKE_PREFIX_PATH ${MASA_DIR} ${CMAKE_PREFIX_PATH})
   find_package(MASA QUIET REQUIRED)
   if(MASA_FOUND)
@@ -77,6 +74,9 @@ message(STATUS "CMAKE_SYSTEM_NAME = ${CMAKE_SYSTEM_NAME}")
 message(STATUS "CMAKE_CXX_COMPILER_ID = ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "CMAKE_CXX_COMPILER_VERSION = ${CMAKE_CXX_COMPILER_VERSION}")
 message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
+
+# Turn on rpath stuff
+include(${CMAKE_SOURCE_DIR}/CMake/SetRpath.cmake)
 
 #Build pelec executables and link to amrex library
 add_subdirectory(ExecCpp)

@@ -6,8 +6,7 @@ function(build_pelec_exe pelec_exe_name)
   set(SRC_DIR ${CMAKE_SOURCE_DIR}/SourceCpp)
   set(BIN_DIR ${CMAKE_BINARY_DIR}/SourceCpp/${pelec_exe_name})
 
-  include(${CMAKE_SOURCE_DIR}/CMake/SetCompileFlags.cmake)
-  include(${CMAKE_SOURCE_DIR}/CMake/SetRpath.cmake)
+  include(${CMAKE_SOURCE_DIR}/CMake/SetPeleCCompileFlags.cmake)
 
   add_subdirectory(${SRC_DIR}/Params ${BIN_DIR}/Params/${pelec_exe_name})
 

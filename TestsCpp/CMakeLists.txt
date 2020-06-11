@@ -189,18 +189,21 @@ add_test_r(tg-4 TG)
 add_test_r(hit-1 HIT)
 add_test_r(hit-2 HIT)
 add_test_r(hit-3 HIT)
-add_test_r(mms-1 MMS)
-add_test_r(mms-2 MMS)
-#add_test_r(mms-3 MMS)
-add_test_r(mms-4 MMS)
-add_test_r(mms-5 MMS)
 add_test_r(sod-1 Sod)
-#add_test_r(ebmms-1 EB_MMS)
+
+if(PELEC_ENABLE_MASA)
+  add_test_r(mms-1 MMS)
+  add_test_r(mms-2 MMS)
+  #add_test_r(mms-3 MMS)
+  add_test_r(mms-4 MMS)
+  add_test_r(mms-5 MMS)
+  #add_test_r(ebmms-1 EB_MMS)
+endif()
 
 #=============================================================================
 # Verification tests
 #=============================================================================
-#if(ENABLE_VERIFICATION)
+#if(PELEC_ENABLE_MASA)
 #  add_test_v1(symmetry mms-1 4)
 #  add_test_v1(eb_symmetry ebmms-1 4)
 #

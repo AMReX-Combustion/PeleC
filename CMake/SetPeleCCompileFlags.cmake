@@ -1,5 +1,4 @@
 # Logic for handling warnings
-list(APPEND PELEC_CXX_FLAGS "-Wno-pass-failed") # Ignore loop not vectorized warnings
 if(PELEC_ENABLE_ALL_WARNINGS)
   # GCC, Clang, and Intel seem to accept these
   list(APPEND PELEC_CXX_FLAGS "-Wall" "-Wextra" "-pedantic")

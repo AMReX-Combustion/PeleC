@@ -1,8 +1,6 @@
 set(pelec_exe_name pelec_MMS)
 
 #Compile-time options for executable
-set(PELEC_DIM 3)
-set(PELEC_ENABLE_EB OFF)
 set(PELEC_ENABLE_MASA ON)
 set(PELEC_ENABLE_REACTIONS OFF)
 set(PELEC_ENABLE_PARTICLES OFF)
