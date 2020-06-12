@@ -32,6 +32,7 @@ function(build_pelec_exe pelec_exe_name)
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELEC_MECHANISM_DIR})
   
   if(PELEC_ENABLE_REACTIONS)
+    set(PELEC_ENABLE_EXPLICIT_REACT ON)
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_REACTIONS)
     target_sources(${pelec_exe_name} PRIVATE
                    ${SRC_DIR}/React.H
