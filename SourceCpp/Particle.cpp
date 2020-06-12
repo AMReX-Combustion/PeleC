@@ -324,7 +324,6 @@ PeleC::initParticles()
 void
 PeleC::particlePostRestart(const std::string& restart_file, bool is_checkpoint)
 {
-  amrex::Gpu::setLaunchRegion(false);
   if (level > 0)
     return;
 
@@ -426,9 +425,9 @@ PeleC::particleDerive(const std::string& name, Real time, int ngrow)
 }
 
 void
-PeleC::particleRedistribute(int lbase, int nGrow, int local, bool init_part)
+PeleC::particle_redistribute(int lbase, bool init_part)
 {
-  BL_PROFILE("PeleC::particleRedistribute()");
+  BL_PROFILE("PeleC::particle_redistribute()");
   int flev = parent->finestLevel();
   if (theSprayPC()) {
     amrex::Gpu::LaunchSafeGuard lsg(true);
@@ -483,9 +482,9 @@ PeleC::particleRedistribute(int lbase, int nGrow, int local, bool init_part)
         amrex::Print() << "Calling redistribute because grid has changed " << '\n';
       if (flev == 0) {
         // Do a local redistribute
-        theSprayPC()->Redistribute(lbase, -1, nGrow, true);
+        theSprayPC()->Redistribute(lbase, theSprayPC()->finestLevel(), 1);
       } else {
-        theSprayPC()->Redistribute(lbase, -1, nGrow, false);
+        theSprayPC()->Redistribute(lbase, theSprayPC()->finestLevel(), 1);
       }
       //
       // Use the new BoxArray and DistMap to define ba and dm for next time.

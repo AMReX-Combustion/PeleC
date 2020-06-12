@@ -710,7 +710,7 @@ PeleC::initData()
   } else {
     // TODO: Determine how many ghost cells to use here
     int nGrow = 0;
-    particleRedistribute(level - 1, nGrow, 0, false);
+    particle_redistribute(level - 1);
   }
 #endif
 
@@ -1227,7 +1227,7 @@ PeleC::post_regrid(int lbase, int new_finest)
   if (do_spray_particles && theSprayPC() != 0 && level == lbase) {
     // TODO: Determine how many ghost cells to use here
     int nGrow = 0;
-    particleRedistribute(lbase);
+    particle_redistribute(lbase);
   }
 #endif
 }

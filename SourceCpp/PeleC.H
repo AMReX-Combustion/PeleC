@@ -178,8 +178,8 @@ public:
   //
   // Redistribute
   //
-  virtual void particleRedistribute(
-    int lbase = 0, int nGrow = 0, int local = 0, bool init_part = false);
+  virtual void particle_redistribute(
+    int lbase = 0, bool init_part = false) override;
   //
   // Setup virtual particles if necessary
   //

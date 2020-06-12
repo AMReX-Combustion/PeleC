@@ -242,7 +242,7 @@ PeleC::setSprayGridInfo(
   //      iterations so we can't reduce this number as amr_iteration increases.
 
   ghost_width = 0;
-  if (parent->subCycle() && parent->maxLevel() > 0)
+  if (parent->subCycle() && parent->finestLevel() > 0)
     ghost_width += amr_ncycle + stencil_deposition_width;
 
   // *** where_width ***  is used
@@ -419,7 +419,7 @@ PeleC::do_sdc_iteration(
       if (injectParts || insertParts) {
 	// TODO: Determine the number of ghost cells needed here
 	int nGrow = 1;
-	particleRedistribute(level, nGrow, 0);
+	particle_redistribute(level);
       }
 
       //
