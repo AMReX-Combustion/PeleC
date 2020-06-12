@@ -1,15 +1,14 @@
 function(build_pelec_exe pelec_exe_name)
 
   set(PELE_PHYSICS_SRC_DIR ${CMAKE_SOURCE_DIR}/Submodules/PelePhysics)
-  set(PELE_PHYSICS_BIN_DIR ${CMAKE_BINARY_DIR}/Submodules/PelePhysics)
+  set(PELE_PHYSICS_BIN_DIR ${CMAKE_BINARY_DIR}/Submodules/PelePhysics/${pelec_exe_name})
 
   set(SRC_DIR ${CMAKE_SOURCE_DIR}/SourceCpp)
-  set(BIN_DIR ${CMAKE_BINARY_DIR}/SourceCpp)
+  set(BIN_DIR ${CMAKE_BINARY_DIR}/SourceCpp/${pelec_exe_name})
 
-  include(${CMAKE_SOURCE_DIR}/CMake/SetCompileFlags.cmake)
-  include(${CMAKE_SOURCE_DIR}/CMake/SetRpath.cmake)
+  include(${CMAKE_SOURCE_DIR}/CMake/SetPeleCCompileFlags.cmake)
 
-  add_subdirectory(${SRC_DIR}/Params ${BIN_DIR}/Params)
+  add_subdirectory(${SRC_DIR}/Params ${BIN_DIR}/Params/${pelec_exe_name})
 
   set(PELEC_TRANSPORT_DIR "${PELE_PHYSICS_SRC_DIR}/Transport/${PELEC_TRANSPORT_MODEL}")
   target_sources(${pelec_exe_name} PRIVATE
@@ -81,10 +80,10 @@ function(build_pelec_exe pelec_exe_name)
        ${SRC_DIR}/GradUtil.cpp
        ${SRC_DIR}/Hydro.H
        ${SRC_DIR}/Hydro.cpp
-       ${SRC_DIR}/IO.H
-       ${SRC_DIR}/IO.cpp
        ${SRC_DIR}/IndexDefines.H
        ${SRC_DIR}/IndexDefines.cpp
+       ${SRC_DIR}/IO.H
+       ${SRC_DIR}/IO.cpp
        ${SRC_DIR}/LES.H
        ${SRC_DIR}/LES.cpp
        ${SRC_DIR}/MOL.H
@@ -107,25 +106,27 @@ function(build_pelec_exe pelec_exe_name)
        ${SRC_DIR}/Timestep.cpp
        ${SRC_DIR}/Utilities.H
        ${SRC_DIR}/Utilities.cpp
-       ${SRC_DIR}/main.cpp
-     )
-  
-  #Add generated source files
-  #set_property(SOURCE ${GENERATED_FILES_DIR}/AMReX_buildInfo.cpp PROPERTY GENERATED 1)
-  #target_sources(${pelec_exe_name} PRIVATE ${GENERATED_FILES_DIR}/AMReX_buildInfo.cpp)
+  )
 
+  if(NOT "${pelec_exe_name}" STREQUAL "pelec_unit_tests")
+    target_sources(${pelec_exe_name}
+       PRIVATE
+         ${SRC_DIR}/main.cpp
+    )
+  endif()
+  
   include(AMReXBuildInfo)
   generate_buildinfo(${pelec_exe_name} ${CMAKE_SOURCE_DIR})
   target_include_directories(${pelec_exe_name} PUBLIC ${AMREX_SUBMOD_LOCATION}/Tools/C_scripts)
 
   if(PELEC_ENABLE_MASA)
-   if(MASA_FOUND)
-     #Link our executable to the MASA libraries, etc
-     target_link_libraries(${pelec_exe_name} PRIVATE ${MASA_LIBRARY})
-     target_compile_definitions(${pelec_exe_name} PRIVATE USE_MASA DO_PROBLEM_POST_TIMESTEP DO_PROBLEM_POST_INIT)
-     target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${MASA_INCLUDE_DIRS})
-     target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${MASA_MOD_DIRS})
-   endif()
+    if(MASA_FOUND)
+      #Link our executable to the MASA libraries, etc
+      target_link_libraries(${pelec_exe_name} PRIVATE ${MASA_LIBRARY})
+      target_compile_definitions(${pelec_exe_name} PRIVATE USE_MASA DO_PROBLEM_POST_TIMESTEP DO_PROBLEM_POST_INIT)
+      target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${MASA_INCLUDE_DIRS})
+      target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${MASA_MOD_DIRS})
+    endif()
   endif()
 
   if(PELEC_ENABLE_MPI)
@@ -138,9 +139,6 @@ function(build_pelec_exe pelec_exe_name)
   
   #Link to amrex library
   target_link_libraries(${pelec_exe_name} PRIVATE amrex)
-
-  #Set the dependencies on targets so the generated source code files are there before we try to build the executable 
-  #add_dependencies(${pelec_exe_name} generate_build_info)
 
   if(PELEC_ENABLE_CUDA)
     set(pctargets "${pelec_exe_name}")

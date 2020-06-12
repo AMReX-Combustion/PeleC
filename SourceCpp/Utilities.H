@@ -151,11 +151,10 @@ setC(
   const amrex::Array4<amrex::Real>& array,
   const amrex::Real val)
 {
-  amrex::ParallelFor(
-    box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      for (int n = Nstart; n < Nend; n++)
-        array(i, j, k, n) = val;
-    });
+  amrex::ParallelFor(box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    for (int n = Nstart; n < Nend; n++)
+      array(i, j, k, n) = val;
+  });
 }
 
 AMREX_FORCE_INLINE
@@ -184,11 +183,10 @@ lincomb_array4(
   const amrex::Real beta,
   const amrex::Array4<amrex::Real>& d)
 {
-  amrex::ParallelFor(
-    box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      for (int n = Nstart; n < Nend; n++)
-        d(i, j, k, n) = alpha * f1(i, j, k, n) + beta * f2(i, j, k, n);
-    });
+  amrex::ParallelFor(box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    for (int n = Nstart; n < Nend; n++)
+      d(i, j, k, n) = alpha * f1(i, j, k, n) + beta * f2(i, j, k, n);
+  });
 }
 
 AMREX_FORCE_INLINE

@@ -300,7 +300,7 @@ pc_compute_hyp_mol_flux(
       EOS::RYP2E(eos_state_rho, spl, eos_state_p, eos_state_e);
       rhoe_l = eos_state_rho * eos_state_e;
       amrex::Real eos_state_T;
-      EOS::RYP2T(eos_state_rho, spl, eos_state_p, eos_state_T); 
+      EOS::RYP2T(eos_state_rho, spl, eos_state_p, eos_state_T);
       EOS::TY2G(eos_state_T, spl, gamc_l);
     }
 

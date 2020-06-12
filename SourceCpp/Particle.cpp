@@ -114,7 +114,8 @@ PeleC::readParticleParams()
   ppp.get("heat_transfer", particle_heat_tran);
   ppp.get("mom_transfer", particle_mom_tran);
   ppp.query("particle_cfl", particle_cfl);
-  if (particle_cfl > 0.5) Abort("particle_cfl must be <= 0.5");
+  if (particle_cfl > 0.5)
+    Abort("particle_cfl must be <= 0.5");
   // Number of fuel species in spray droplets
   // Must match the number specified at compile time
   const int nfuel = ppp.countval("fuel_species");
@@ -350,7 +351,8 @@ PeleC::particlePostRestart(const std::string& restart_file, bool is_checkpoint)
     amrex::ExecOnFinalize(RemoveParticlesOnExit);
     {
       amrex::Gpu::LaunchSafeGuard lsg(true);
-      theSprayPC()->Restart(parent->theRestartFile(), "particles", is_checkpoint);
+      theSprayPC()->Restart(
+        parent->theRestartFile(), "particles", is_checkpoint);
       amrex::Gpu::Device::streamSynchronize();
     }
   }
@@ -479,7 +481,8 @@ PeleC::particle_redistribute(int lbase, bool init_part)
       // particles not in the proper position on coarser levels.
       //
       if (verbose && ParallelDescriptor::IOProcessor())
-        amrex::Print() << "Calling redistribute because grid has changed " << '\n';
+        amrex::Print() << "Calling redistribute because grid has changed "
+                       << '\n';
       if (flev == 0) {
         // Do a local redistribute
         theSprayPC()->Redistribute(lbase, theSprayPC()->finestLevel(), 1);
@@ -495,8 +498,8 @@ PeleC::particle_redistribute(int lbase, bool init_part)
       }
     } else {
       if (verbose && ParallelDescriptor::IOProcessor())
-        amrex::Print() << "NOT calling redistribute because grid has NOT changed "
-                       << '\n';
+        amrex::Print()
+          << "NOT calling redistribute because grid has NOT changed " << '\n';
     }
   }
 }

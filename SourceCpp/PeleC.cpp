@@ -32,11 +32,11 @@ using namespace MASA;
 #include "Tagging.H"
 #include "IndexDefines.H"
 #if defined(USE_SUNDIALS_PP)
-    #ifdef USE_ARKODE_PP
-        #include <actual_CARKODE.h>
-    #else
-        #include <actual_Creactor.h>
-    #endif
+#ifdef USE_ARKODE_PP
+#include <actual_CARKODE.h>
+#else
+#include <actual_Creactor.h>
+#endif
 #endif
 
 bool PeleC::signalStopJob = false;
@@ -688,12 +688,11 @@ PeleC::initData()
     auto sfab = S_new.array(mfi);
     const auto geomdata = geom.data();
 
-    amrex::ParallelFor(
-      box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-        pc_initdata(i, j, k, sfab, geomdata);
-        // Verify that the sum of (rho Y)_i = rho at every cell
-        pc_check_initial_species(i, j, k, sfab);
-      });
+    amrex::ParallelFor(box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      pc_initdata(i, j, k, sfab, geomdata);
+      // Verify that the sum of (rho Y)_i = rho at every cell
+      pc_check_initial_species(i, j, k, sfab);
+    });
   }
 
   enforce_consistent_e(S_new);
@@ -854,7 +853,7 @@ PeleC::estTimeStep(amrex::Real dt_old)
           ,
           const amrex::Array4<const amrex::EBCellFlag>& flag_arr
 #endif
-          ) noexcept->amrex::Real {
+          ) noexcept -> amrex::Real {
           return pc_estdt_hydro(
             bx, fab_arr,
 #ifdef AMREX_USE_EB
@@ -878,7 +877,7 @@ PeleC::estTimeStep(amrex::Real dt_old)
           ,
           const amrex::Array4<const amrex::EBCellFlag>& flag_arr
 #endif
-          ) noexcept->amrex::Real {
+          ) noexcept -> amrex::Real {
           return pc_estdt_veldif(
             bx, fab_arr,
 #ifdef AMREX_USE_EB
@@ -902,7 +901,7 @@ PeleC::estTimeStep(amrex::Real dt_old)
           ,
           const amrex::Array4<const amrex::EBCellFlag>& flag_arr
 #endif
-          ) noexcept->amrex::Real {
+          ) noexcept -> amrex::Real {
           return pc_estdt_tempdif(
             bx, fab_arr,
 #ifdef AMREX_USE_EB
@@ -926,7 +925,7 @@ PeleC::estTimeStep(amrex::Real dt_old)
           ,
           const amrex::Array4<const amrex::EBCellFlag>& flag_arr
 #endif
-          ) noexcept->amrex::Real {
+          ) noexcept -> amrex::Real {
           return pc_estdt_enthdif(
             bx, fab_arr,
 #ifdef AMREX_USE_EB
@@ -1158,8 +1157,8 @@ PeleC::post_timestep(int iteration)
     bool sum_per_test = false;
 
     if (sum_per > 0.0) {
-      const int num_per_old = floor((cumtime - dtlev) / sum_per);
-      const int num_per_new = floor((cumtime) / sum_per);
+      const int num_per_old = amrex::Math::floor((cumtime - dtlev) / sum_per);
+      const int num_per_new = amrex::Math::floor((cumtime) / sum_per);
 
       if (num_per_old != num_per_new) {
         sum_per_test = true;
@@ -1288,8 +1287,8 @@ PeleC::post_init(amrex::Real stop_time)
   bool sum_per_test = false;
 
   if (sum_per > 0.0) {
-    const int num_per_old = floor((cumtime - dtlev) / sum_per);
-    const int num_per_new = floor((cumtime) / sum_per);
+    const int num_per_old = amrex::Math::floor((cumtime - dtlev) / sum_per);
+    const int num_per_new = amrex::Math::floor((cumtime) / sum_per);
 
     if (num_per_old != num_per_new) {
       sum_per_test = true;
@@ -1496,7 +1495,7 @@ PeleC::enforce_min_density(amrex::MultiFab& S_old, amrex::MultiFab& S_new)
         eint_added = foo[1];
         eden_added = foo[2];
 
-        if (std::abs(mass_added) != 0.0) {
+        if (amrex::Math::abs(mass_added) != 0.0) {
           amrex::Print() << "   Mass added from negative density correction : "
                          << mass_added << std::endl;
           amrex::Print() << "(rho e) added from negative density correction : "
@@ -1893,15 +1892,14 @@ PeleC::init_reactor()
   CKINIT();
 
 #if defined(USE_SUNDIALS_PP)
-    int reactor_type=1;
-    int ode_ncells=1;
-    #ifndef USE_CUDA_SUNDIALS_PP
-        reactor_init(&reactor_type, &ode_ncells);
-    #else
-        reactor_info(&reactor_type, &ode_ncells);
-    #endif
+  int reactor_type = 1;
+  int ode_ncells = 1;
+#ifndef USE_CUDA_SUNDIALS_PP
+  reactor_init(&reactor_type, &ode_ncells);
+#else
+  reactor_info(&reactor_type, &ode_ncells);
 #endif
-        
+#endif
 }
 
 void
@@ -2031,10 +2029,9 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
        ++mfi) {
     const amrex::Box& bx = mfi.growntilebox(ng);
     const auto& sarr = S_new.array(mfi);
-    amrex::ParallelFor(
-      bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-        pc_rst_int_e(i, j, k, sarr);
-      });
+    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      pc_rst_int_e(i, j, k, sarr);
+    });
   }
 
 #ifndef AMREX_USE_GPU
@@ -2046,7 +2043,9 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
 #endif
       amrex::ParallelDescriptor::ReduceRealSum(sum0);
       amrex::ParallelDescriptor::ReduceRealSum(sum);
-      if (amrex::ParallelDescriptor::IOProcessor() && std::abs(sum - sum0) > 0)
+      if (
+        amrex::ParallelDescriptor::IOProcessor() &&
+        amrex::Math::abs(sum - sum0) > 0)
         amrex::Print() << "(rho E) added from reset terms                 : "
                        << sum - sum0 << " out of " << sum0 << std::endl;
 #ifdef AMREX_LAZY
@@ -2082,10 +2081,9 @@ PeleC::computeTemp(amrex::MultiFab& S, int ng)
 #endif
 
     const auto& sarr = S.array(mfi);
-    amrex::ParallelFor(
-      bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-        pc_cmpTemp(i, j, k, sarr);
-      });
+    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      pc_cmpTemp(i, j, k, sarr);
+    });
   }
 }
 

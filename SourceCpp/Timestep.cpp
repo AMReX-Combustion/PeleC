@@ -39,13 +39,13 @@ pc_estdt_hydro(
         massfrac[n] = u(i, j, k, UFS + n) * rhoInv;
       EOS::RTY2Cs(rho, T, massfrac, c);
       AMREX_D_TERM(const amrex::Real ux = u(i, j, k, UMX) * rhoInv;
-                   const amrex::Real dt1 = dx / (c + std::abs(ux));
+                   const amrex::Real dt1 = dx / (c + amrex::Math::abs(ux));
                    dt = amrex::min(dt, dt1);
                    , const amrex::Real uy = u(i, j, k, UMY) * rhoInv;
-                   const amrex::Real dt2 = dy / (c + std::abs(uy));
+                   const amrex::Real dt2 = dy / (c + amrex::Math::abs(uy));
                    dt = amrex::min(dt, dt2);
                    , const amrex::Real uz = u(i, j, k, UMZ) * rhoInv;
-                   const amrex::Real dt3 = dz / (c + std::abs(uz));
+                   const amrex::Real dt3 = dz / (c + amrex::Math::abs(uz));
                    dt = amrex::min(dt, dt3););
 #ifdef AMREX_USE_EB
     }

@@ -70,38 +70,41 @@ pc_fill_bndry_grad_stencil(
       const int ivs[AMREX_SPACEDIM] = {
         AMREX_D_DECL(ebg[L].iv[0], ebg[L].iv[1], ebg[L].iv[2])};
       const int s[AMREX_SPACEDIM] = {AMREX_D_DECL(
-        (int)std::copysign(1.0, n[c[0]]), (int)std::copysign(1.0, n[c[1]]),
-        (int)std::copysign(1.0, n[c[2]]))};
+        (int)amrex::Math::copysign(1.0, n[c[0]]),
+        (int)amrex::Math::copysign(1.0, n[c[1]]),
+        (int)amrex::Math::copysign(1.0, n[c[2]]))};
       amrex::Real b[AMREX_SPACEDIM] = {AMREX_D_DECL(
         ebg[L].eb_centroid[c[0]] * s[0], ebg[L].eb_centroid[c[1]] * s[1],
         ebg[L].eb_centroid[c[2]] * s[2])};
 
       // From ivs, move to center of stencil, then move to lower-left of that
       const int baseiv[AMREX_SPACEDIM] = {AMREX_D_DECL(
-        ivs[0] + (int)std::copysign(1.0, n[0]) - 1,
-        ivs[1] + (int)std::copysign(1.0, n[1]) - 1,
-        ivs[2] + (int)std::copysign(1.0, n[2]) - 1)};
+        ivs[0] + (int)amrex::Math::copysign(1.0, n[0]) - 1,
+        ivs[1] + (int)amrex::Math::copysign(1.0, n[1]) - 1,
+        ivs[2] + (int)amrex::Math::copysign(1.0, n[2]) - 1)};
 
       const amrex::Real x[2] = {1.0, 2.0};
-      amrex::Real y[2] = {b[1] + (x[0] - b[0]) * std::abs(n[c[1]] / n[c[0]]),
-                          b[1] + (x[1] - b[0]) * std::abs(n[c[1]] / n[c[0]])};
-      amrex::Real z[2] = {b[2] + (x[0] - b[0]) * std::abs(n[c[2]] / n[c[0]]),
-                          b[2] + (x[1] - b[0]) * std::abs(n[c[2]] / n[c[0]])};
+      amrex::Real y[2] = {
+        b[1] + (x[0] - b[0]) * amrex::Math::abs(n[c[1]] / n[c[0]]),
+        b[1] + (x[1] - b[0]) * amrex::Math::abs(n[c[1]] / n[c[0]])};
+      amrex::Real z[2] = {
+        b[2] + (x[0] - b[0]) * amrex::Math::abs(n[c[2]] / n[c[0]]),
+        b[2] + (x[1] - b[0]) * amrex::Math::abs(n[c[2]] / n[c[0]])};
 
       int sh[AMREX_SPACEDIM] = {0};
       if (y[0] < 0.0 || y[1] < 0.0) {
         sh[c[1]] = -s[1]; // Slide stencil down to avoid extrapolating, push
                           // up eb, shift down base later
         b[1] += 1;
-        y[0] = b[1] + (x[0] - b[0]) * std::abs(n[c[1]] / n[c[0]]);
-        y[1] = b[1] + (x[1] - b[0]) * std::abs(n[c[1]] / n[c[0]]);
+        y[0] = b[1] + (x[0] - b[0]) * amrex::Math::abs(n[c[1]] / n[c[0]]);
+        y[1] = b[1] + (x[1] - b[0]) * amrex::Math::abs(n[c[1]] / n[c[0]]);
       }
       if (z[0] < 0.0 || z[1] < 0.0) {
         sh[c[2]] = -s[2]; // Slide stencil down to avoid extrapolating, push
                           // up eb, shift down base later
         b[2] += 1;
-        z[0] = b[2] + (x[0] - b[0]) * std::abs(n[c[2]] / n[c[0]]);
-        z[1] = b[2] + (x[1] - b[0]) * std::abs(n[c[2]] / n[c[0]]);
+        z[0] = b[2] + (x[0] - b[0]) * amrex::Math::abs(n[c[2]] / n[c[0]]);
+        z[1] = b[2] + (x[1] - b[0]) * amrex::Math::abs(n[c[2]] / n[c[0]]);
       }
       const amrex::Real d[2] = {
         std::sqrt(
@@ -195,10 +198,10 @@ pc_fill_flux_interp_stencil(
       }
       const amrex::Real ct0 = fc(i, j, k, 0);
       const amrex::Real ct1 = fc(i, j, k, 1);
-      const int t0n = (int)std::copysign(1.0, ct0);
-      const int t1n = (int)std::copysign(1.0, ct1);
-      const amrex::Real act0 = std::abs(ct0);
-      const amrex::Real act1 = std::abs(ct1);
+      const int t0n = (int)amrex::Math::copysign(1.0, ct0);
+      const int t1n = (int)amrex::Math::copysign(1.0, ct1);
+      const amrex::Real act0 = amrex::Math::abs(ct0);
+      const amrex::Real act1 = amrex::Math::abs(ct1);
       sten[L].val[1][1] = fa(i, j, k) * (1.0 - act0) * (1.0 - act1);
       sten[L].val[t1n + 1][1] = fa(i, j, k) * act0 * (1.0 - act1);
       sten[L].val[1][t0n + 1] = fa(i, j, k) * (1.0 - act0) * act1;
@@ -504,9 +507,9 @@ pc_apply_eb_boundry_visc_flux_stencil(
         ebg[L].eb_normal[0] * ebg[L].eb_normal[0] +
         ebg[L].eb_normal[1] * ebg[L].eb_normal[1] +
         ebg[L].eb_normal[2] * ebg[L].eb_normal[2]);
-      const amrex::Real norm[AMREX_SPACEDIM] = {ebg[L].eb_normal[0] / Nmag,
-                                                ebg[L].eb_normal[1] / Nmag,
-                                                ebg[L].eb_normal[2] / Nmag};
+      const amrex::Real norm[AMREX_SPACEDIM] = {
+        ebg[L].eb_normal[0] / Nmag, ebg[L].eb_normal[1] / Nmag,
+        ebg[L].eb_normal[2] / Nmag};
       amrex::Real alpha[AMREX_SPACEDIM] = {0.0};
       int c[AMREX_SPACEDIM] = {0};
       idxsort(norm, c);

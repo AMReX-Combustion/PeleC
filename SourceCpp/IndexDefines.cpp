@@ -22,4 +22,4 @@ init()
     curMapIndx++;
   }
 }
-}
+} // namespace indxmap

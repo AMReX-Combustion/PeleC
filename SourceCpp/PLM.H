@@ -38,30 +38,33 @@ plm_slope(
   dlft = qm - q(i - 2 * bdim[0], j - 2 * bdim[1], k - 2 * bdim[2], n);
   drgt = qc - qm;
   dcen = 0.5 * (dlft + drgt);
-  dsgn = std::copysign(1.0, dcen);
-  dlim = (dlft * drgt >= 0.0) ? 2.0 * amrex::min(std::abs(dlft), std::abs(drgt))
-                              : 0.0;
-  dfm = dsgn * amrex::min(dlim, std::abs(dcen));
+  dsgn = amrex::Math::copysign(1.0, dcen);
+  dlim = (dlft * drgt >= 0.0)
+           ? 2.0 * amrex::min(amrex::Math::abs(dlft), amrex::Math::abs(drgt))
+           : 0.0;
+  dfm = dsgn * amrex::min(dlim, amrex::Math::abs(dcen));
 
   dlft = qp - qc;
   drgt = q(i + 2 * bdim[0], j + 2 * bdim[1], k + 2 * bdim[2], n) - qp;
   dcen = 0.5 * (dlft + drgt);
-  dsgn = std::copysign(1.0, dcen);
-  dlim = (dlft * drgt >= 0.0) ? 2.0 * amrex::min(std::abs(dlft), std::abs(drgt))
-                              : 0.0;
-  dfp = dsgn * amrex::min(dlim, std::abs(dcen));
+  dsgn = amrex::Math::copysign(1.0, dcen);
+  dlim = (dlft * drgt >= 0.0)
+           ? 2.0 * amrex::min(amrex::Math::abs(dlft), amrex::Math::abs(drgt))
+           : 0.0;
+  dfp = dsgn * amrex::min(dlim, amrex::Math::abs(dcen));
 
   dlft = qc - qm;
   drgt = qp - qc;
   dcen = 0.5 * (dlft + drgt);
-  dsgn = std::copysign(1.0, dcen);
-  dlim = (dlft * drgt >= 0.0) ? 2.0 * amrex::min(std::abs(dlft), std::abs(drgt))
-                              : 0.0;
-  dcen = dsgn * amrex::min(dlim, std::abs(dcen));
+  dsgn = amrex::Math::copysign(1.0, dcen);
+  dlim = (dlft * drgt >= 0.0)
+           ? 2.0 * amrex::min(amrex::Math::abs(dlft), amrex::Math::abs(drgt))
+           : 0.0;
+  dcen = dsgn * amrex::min(dlim, amrex::Math::abs(dcen));
 
   dtemp = 4.0 / 3.0 * dcen - 1.0 / 6.0 * (dfp + dfm);
   // flattening can go here.
-  return dsgn * amrex::min(dlim, std::abs(dtemp));
+  return dsgn * amrex::min(dlim, amrex::Math::abs(dtemp));
 }
 
 AMREX_GPU_DEVICE
@@ -238,20 +241,20 @@ pc_plm_x(
   amrex::Real rhoe_ref =
     rhoe - 0.5 * (1.0 + dtdx * amrex::min(e[0], 0.0)) * drhoe;
 
-  amrex::Real apright =
-    0.25 * dtdx * (e[0] - e[2]) * (1.0 - std::copysign(1.0, e[2])) * alphap;
+  amrex::Real apright = 0.25 * dtdx * (e[0] - e[2]) *
+                        (1.0 - amrex::Math::copysign(1.0, e[2])) * alphap;
   //                  amright = 0.25*dtdx*(e[0] - e[0])*(1.0 -
-  //                  std::copysign(1.0, e[0]))*alpham;
+  //                  amrex::Math::copysign(1.0, e[0]))*alpham;
   amrex::Real amright = 0.0;
 
-  amrex::Real azrright =
-    0.25 * dtdx * (e[0] - e[1]) * (1.0 - std::copysign(1.0, e[1])) * alpha0r;
-  amrex::Real azeright =
-    0.25 * dtdx * (e[0] - e[1]) * (1.0 - std::copysign(1.0, e[1])) * alpha0e;
-  amrex::Real azv1rght =
-    0.25 * dtdx * (e[0] - e[1]) * (1.0 - std::copysign(1.0, e[1])) * alpha0v;
-  amrex::Real azw1rght =
-    0.25 * dtdx * (e[0] - e[1]) * (1.0 - std::copysign(1.0, e[1])) * alpha0w;
+  amrex::Real azrright = 0.25 * dtdx * (e[0] - e[1]) *
+                         (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0r;
+  amrex::Real azeright = 0.25 * dtdx * (e[0] - e[1]) *
+                         (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0e;
+  amrex::Real azv1rght = 0.25 * dtdx * (e[0] - e[1]) *
+                         (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0v;
+  amrex::Real azw1rght = 0.25 * dtdx * (e[0] - e[1]) *
+                         (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0w;
 
   qp(i, j, k, QRHO) = rho_ref + apright + amright + azrright;
   qp(i, j, k, QRHO) = amrex::max(SMALL_DENS, qp(i, j, k, QRHO));
@@ -273,19 +276,19 @@ pc_plm_x(
   rhoe_ref = rhoe + 0.5 * (1.0 - dtdx * amrex::max(e[2], 0.0)) * drhoe;
 
   //                  apleft = 0.25*dtdx*(e[2] - e[2])*(1.0 +
-  //                  std::copysign(1.0,e[2]))*alphap;
+  //                  amrex::Math::copysign(1.0,e[2]))*alphap;
   amrex::Real apleft = 0.0;
-  amrex::Real amleft =
-    0.25 * dtdx * (e[2] - e[0]) * (1.0 + std::copysign(1.0, e[0])) * alpham;
+  amrex::Real amleft = 0.25 * dtdx * (e[2] - e[0]) *
+                       (1.0 + amrex::Math::copysign(1.0, e[0])) * alpham;
 
-  amrex::Real azrleft =
-    0.25 * dtdx * (e[2] - e[1]) * (1.0 + std::copysign(1.0, e[1])) * alpha0r;
-  amrex::Real azeleft =
-    0.25 * dtdx * (e[2] - e[1]) * (1.0 + std::copysign(1.0, e[1])) * alpha0e;
-  amrex::Real azv1left =
-    0.25 * dtdx * (e[2] - e[1]) * (1.0 + std::copysign(1.0, e[1])) * alpha0v;
-  amrex::Real azw1left =
-    0.25 * dtdx * (e[2] - e[1]) * (1.0 + std::copysign(1.0, e[1])) * alpha0w;
+  amrex::Real azrleft = 0.25 * dtdx * (e[2] - e[1]) *
+                        (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0r;
+  amrex::Real azeleft = 0.25 * dtdx * (e[2] - e[1]) *
+                        (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0e;
+  amrex::Real azv1left = 0.25 * dtdx * (e[2] - e[1]) *
+                         (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0v;
+  amrex::Real azw1left = 0.25 * dtdx * (e[2] - e[1]) *
+                         (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0w;
   qm(i + 1, j, k, QRHO) = rho_ref + apleft + amleft + azrleft;
   qm(i + 1, j, k, QRHO) = amrex::max(qm(i + 1, j, k, QRHO), SMALL_DENS);
   AMREX_D_TERM(qm(i + 1, j, k, QU) = u_ref + (apleft - amleft) * cc / rho;
@@ -361,20 +364,20 @@ pc_plm_y(
   amrex::Real rhoe_ref =
     rhoe - 0.5 * (1.0 + dtdy * amrex::min(e[0], 0.0)) * drhoe;
 
-  amrex::Real apright =
-    0.25 * dtdy * (e[0] - e[2]) * (1.0 - std::copysign(1.0, e[2])) * alphap;
-  //     amright = 0.25*dtdy*(e[0] - e[0])*(1.0 - std::copysign(1.0,
+  amrex::Real apright = 0.25 * dtdy * (e[0] - e[2]) *
+                        (1.0 - amrex::Math::copysign(1.0, e[2])) * alphap;
+  //     amright = 0.25*dtdy*(e[0] - e[0])*(1.0 - amrex::Math::copysign(1.0,
   //     e[0]))*alpham;
   amrex::Real amright = 0.0;
 
-  amrex::Real azrright =
-    0.25 * dtdy * (e[0] - e[1]) * (1.0 - std::copysign(1.0, e[1])) * alpha0r;
-  amrex::Real azeright =
-    0.25 * dtdy * (e[0] - e[1]) * (1.0 - std::copysign(1.0, e[1])) * alpha0e;
-  amrex::Real azu1rght =
-    0.25 * dtdy * (e[0] - e[1]) * (1.0 - std::copysign(1.0, e[1])) * alpha0u;
-  amrex::Real azw1rght =
-    0.25 * dtdy * (e[0] - e[1]) * (1.0 - std::copysign(1.0, e[1])) * alpha0w;
+  amrex::Real azrright = 0.25 * dtdy * (e[0] - e[1]) *
+                         (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0r;
+  amrex::Real azeright = 0.25 * dtdy * (e[0] - e[1]) *
+                         (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0e;
+  amrex::Real azu1rght = 0.25 * dtdy * (e[0] - e[1]) *
+                         (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0u;
+  amrex::Real azw1rght = 0.25 * dtdy * (e[0] - e[1]) *
+                         (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0w;
 
   qp(i, j, k, QRHO) = rho_ref + apright + amright + azrright;
   qp(i, j, k, QRHO) = amrex::max(SMALL_DENS, qp(i, j, k, QRHO));
@@ -395,19 +398,19 @@ pc_plm_y(
   rhoe_ref = rhoe + 0.5 * (1.0 - dtdy * amrex::max(e[2], 0.0)) * drhoe;
 
   //                 apleft = 0.25*dtdy*(e[2] - e[2])*(1.0 +
-  //                 std::copysign(1.0,e[2]))*alphap;
+  //                 amrex::Math::copysign(1.0,e[2]))*alphap;
   amrex::Real apleft = 0.0;
-  amrex::Real amleft =
-    0.25 * dtdy * (e[2] - e[0]) * (1.0 + std::copysign(1.0, e[0])) * alpham;
+  amrex::Real amleft = 0.25 * dtdy * (e[2] - e[0]) *
+                       (1.0 + amrex::Math::copysign(1.0, e[0])) * alpham;
 
-  amrex::Real azrleft =
-    0.25 * dtdy * (e[2] - e[1]) * (1.0 + std::copysign(1.0, e[1])) * alpha0r;
-  amrex::Real azeleft =
-    0.25 * dtdy * (e[2] - e[1]) * (1.0 + std::copysign(1.0, e[1])) * alpha0e;
-  amrex::Real azu1left =
-    0.25 * dtdy * (e[2] - e[1]) * (1.0 + std::copysign(1.0, e[1])) * alpha0u;
-  amrex::Real azw1left =
-    0.25 * dtdy * (e[2] - e[1]) * (1.0 + std::copysign(1.0, e[1])) * alpha0w;
+  amrex::Real azrleft = 0.25 * dtdy * (e[2] - e[1]) *
+                        (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0r;
+  amrex::Real azeleft = 0.25 * dtdy * (e[2] - e[1]) *
+                        (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0e;
+  amrex::Real azu1left = 0.25 * dtdy * (e[2] - e[1]) *
+                         (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0u;
+  amrex::Real azw1left = 0.25 * dtdy * (e[2] - e[1]) *
+                         (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0w;
 
   qm(i, j + 1, k, QRHO) = rho_ref + apleft + amleft + azrleft;
   qm(i, j + 1, k, QRHO) = amrex::max(qm(i, j + 1, k, QRHO), SMALL_DENS);
@@ -486,20 +489,20 @@ pc_plm_z(
   amrex::Real rhoe_ref =
     rhoe - 0.5 * (1.0 + dtdz * amrex::min(e[0], 0.0)) * drhoe;
 
-  amrex::Real apright =
-    0.25 * dtdz * (e[0] - e[2]) * (1.0 - std::copysign(1.0, e[2])) * alphap;
-  //     amright = 0.25*dtdz*(e[0] - e[0])*(1.0 - std::copysign(1.0,
+  amrex::Real apright = 0.25 * dtdz * (e[0] - e[2]) *
+                        (1.0 - amrex::Math::copysign(1.0, e[2])) * alphap;
+  //     amright = 0.25*dtdz*(e[0] - e[0])*(1.0 - amrex::Math::copysign(1.0,
   //     e[0]))*alpham;
   amrex::Real amright = 0.0;
 
-  amrex::Real azrright =
-    0.25 * dtdz * (e[0] - e[1]) * (1.0 - std::copysign(1.0, e[1])) * alpha0r;
-  amrex::Real azeright =
-    0.25 * dtdz * (e[0] - e[1]) * (1.0 - std::copysign(1.0, e[1])) * alpha0e;
-  amrex::Real azu1rght =
-    0.25 * dtdz * (e[0] - e[1]) * (1.0 - std::copysign(1.0, e[1])) * alpha0u;
-  amrex::Real azv1rght =
-    0.25 * dtdz * (e[0] - e[1]) * (1.0 - std::copysign(1.0, e[1])) * alpha0v;
+  amrex::Real azrright = 0.25 * dtdz * (e[0] - e[1]) *
+                         (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0r;
+  amrex::Real azeright = 0.25 * dtdz * (e[0] - e[1]) *
+                         (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0e;
+  amrex::Real azu1rght = 0.25 * dtdz * (e[0] - e[1]) *
+                         (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0u;
+  amrex::Real azv1rght = 0.25 * dtdz * (e[0] - e[1]) *
+                         (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0v;
 
   qp(i, j, k, QRHO) = rho_ref + apright + amright + azrright;
   qp(i, j, k, QRHO) = amrex::max(SMALL_DENS, qp(i, j, k, QRHO));
@@ -520,19 +523,19 @@ pc_plm_z(
   rhoe_ref = rhoe + 0.5 * (1.0 - dtdz * amrex::max(e[2], 0.0)) * drhoe;
 
   //                 apleft = 0.25*dtdz*(e[2] - e[2])*(1.0 +
-  //                 std::copysign(1.0,e[2]))*alphap;
+  //                 amrex::Math::copysign(1.0,e[2]))*alphap;
   amrex::Real apleft = 0.0;
-  amrex::Real amleft =
-    0.25 * dtdz * (e[2] - e[0]) * (1.0 + std::copysign(1.0, e[0])) * alpham;
+  amrex::Real amleft = 0.25 * dtdz * (e[2] - e[0]) *
+                       (1.0 + amrex::Math::copysign(1.0, e[0])) * alpham;
 
-  amrex::Real azrleft =
-    0.25 * dtdz * (e[2] - e[1]) * (1.0 + std::copysign(1.0, e[1])) * alpha0r;
-  amrex::Real azeleft =
-    0.25 * dtdz * (e[2] - e[1]) * (1.0 + std::copysign(1.0, e[1])) * alpha0e;
-  amrex::Real azu1left =
-    0.25 * dtdz * (e[2] - e[1]) * (1.0 + std::copysign(1.0, e[1])) * alpha0u;
-  amrex::Real azv1left =
-    0.25 * dtdz * (e[2] - e[1]) * (1.0 + std::copysign(1.0, e[1])) * alpha0v;
+  amrex::Real azrleft = 0.25 * dtdz * (e[2] - e[1]) *
+                        (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0r;
+  amrex::Real azeleft = 0.25 * dtdz * (e[2] - e[1]) *
+                        (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0e;
+  amrex::Real azu1left = 0.25 * dtdz * (e[2] - e[1]) *
+                         (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0u;
+  amrex::Real azv1left = 0.25 * dtdz * (e[2] - e[1]) *
+                         (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0v;
 
   qm(i, j, k + 1, QRHO) = rho_ref + apleft + amleft + azrleft;
   qm(i, j, k + 1, QRHO) = amrex::max(qm(i, j, k + 1, QRHO), SMALL_DENS);

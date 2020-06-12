@@ -76,7 +76,7 @@ idxsort(const amrex::Real array[AMREX_SPACEDIM], int idx[AMREX_SPACEDIM])
 {
   amrex::Real absarray[AMREX_SPACEDIM] = {0.0};
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-    absarray[dir] = std::abs(array[dir]);
+    absarray[dir] = amrex::Math::abs(array[dir]);
   }
 
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
