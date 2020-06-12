@@ -77,7 +77,7 @@ TEST(Configuration, CUDA)
               << " ShMem/Blk: " << (dev.sharedMemPerBlock / (1 << 10)) << "KB"
               << std::endl;
 #else
-    amrex::Print() << "PeleC not build with CUDA support" << std::endl;
+    amrex::Print() << "PeleC not built with CUDA support" << std::endl;
     GTEST_SKIP();
 #endif
 }
