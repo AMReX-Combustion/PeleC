@@ -61,6 +61,7 @@ jobs:
           -DPELEC_ENABLE_MPI:BOOL=ON \
           -DPELEC_ENABLE_TESTS:BOOL=ON \
           -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
+          -DPELEC_ENABLE_MASA:BOOL=ON \
           -DMASA_DIR:STRING=${{runner.workspace}}/deps/install/MASA \
           -DPELEC_USE_CPP:BOOL=ON \
           ${GITHUB_WORKSPACE}
