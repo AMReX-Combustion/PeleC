@@ -16,7 +16,7 @@ amrex::Real
 pc_estdt_hydro(
   amrex::Box const& bx,
   const amrex::Array4<const amrex::Real>& u,
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
 #endif
   AMREX_D_DECL(
@@ -27,7 +27,7 @@ pc_estdt_hydro(
   amrex::Real dt = TimeStep::max_dt;
 
   amrex::Loop(bx, [=, &dt](int i, int j, int k) {
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
     if (not flags(i, j, k).isCovered()) {
 #endif
       const amrex::Real rho = u(i, j, k, URHO);
@@ -47,7 +47,7 @@ pc_estdt_hydro(
                    , const amrex::Real uz = u(i, j, k, UMZ) * rhoInv;
                    const amrex::Real dt3 = dz / (c + amrex::Math::abs(uz));
                    dt = amrex::min(dt, dt3););
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
     }
 #endif
   });
@@ -60,7 +60,7 @@ amrex::Real
 pc_estdt_veldif(
   amrex::Box const bx,
   const amrex::Array4<const amrex::Real>& u,
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
 #endif
   AMREX_D_DECL(
@@ -72,7 +72,7 @@ pc_estdt_veldif(
   int which_trans = 0;
 
   amrex::Loop(bx, [=, &dt](int i, int j, int k) {
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
     if (not flags(i, j, k).isCovered()) {
 #endif
       const amrex::Real rho = u(i, j, k, URHO);
@@ -92,7 +92,7 @@ pc_estdt_veldif(
         dt = amrex::min(dt, dt2);
         , const amrex::Real dt3 = 0.5 * dz * dz / (AMREX_SPACEDIM * D);
         dt = amrex::min(dt, dt3););
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
     }
 #endif
   });
@@ -105,7 +105,7 @@ amrex::Real
 pc_estdt_tempdif(
   amrex::Box const bx,
   const amrex::Array4<const amrex::Real>& u,
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
 #endif
   AMREX_D_DECL(
@@ -117,7 +117,7 @@ pc_estdt_tempdif(
   int which_trans = 1;
 
   amrex::Loop(bx, [=, &dt](int i, int j, int k) {
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
     if (not flags(i, j, k).isCovered()) {
 #endif
       const amrex::Real rho = u(i, j, k, URHO);
@@ -138,7 +138,7 @@ pc_estdt_tempdif(
         dt = amrex::min(dt, dt2);
         , const amrex::Real dt3 = 0.5 * dz * dz / (AMREX_SPACEDIM * D);
         dt = amrex::min(dt, dt3););
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
     }
 #endif
   });
@@ -151,7 +151,7 @@ amrex::Real
 pc_estdt_enthdif(
   amrex::Box const bx,
   const amrex::Array4<const amrex::Real>& u,
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
 #endif
   AMREX_D_DECL(
@@ -163,7 +163,7 @@ pc_estdt_enthdif(
   int which_trans = 1;
 
   amrex::Loop(bx, [=, &dt](int i, int j, int k) {
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
     if (not flags(i, j, k).isCovered()) {
 #endif
       const amrex::Real rho = u(i, j, k, URHO);
@@ -185,7 +185,7 @@ pc_estdt_enthdif(
         , const amrex::Real dt3 = 0.5 * dz * dz / (AMREX_SPACEDIM * D);
         dt = amrex::min(dt, dt3););
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
     }
 #endif
   });

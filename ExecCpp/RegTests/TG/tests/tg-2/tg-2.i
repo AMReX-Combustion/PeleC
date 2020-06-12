@@ -64,3 +64,7 @@ prob.prandtl = 0.71
 # TAGGING PARAMETERS
 tagging.vorterr = 2e4
 tagging.max_vorterr_lev = 5
+
+# EB
+eb2.geom_type = "all_regular"
+ebd.boundary_grad_stencil_type = 0

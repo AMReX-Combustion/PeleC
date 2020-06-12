@@ -7,11 +7,10 @@ include(CMakePackageConfigHelpers)
 
 ########################## OPTIONS #####################################
 
-#General options for the project
+#General options for all executables in the project
 set(PELEC_DIM "3" CACHE STRING "Number of physical dimensions")
 option(PELEC_ENABLE_DOCUMENTATION "Build documentation" OFF)
-option(PELEC_ENABLE_EB "Enable EB" ON)
-option(PELEC_ENABLE_REACTIONS "Enable reactions" OFF)
+option(PELEC_ENABLE_AMREX_EB "Enable EB in AMReX library" OFF)
 option(PELEC_ENABLE_ALL_WARNINGS "Enable all compiler warnings" OFF)
 option(PELEC_ENABLE_TESTS "Enable regression and unit tests" OFF)
 option(PELEC_ENABLE_MASA "Enable tests that require MASA" OFF)
@@ -28,8 +27,11 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if(PELEC_ENABLE_TESTS AND PELEC_ENABLE_FCOMPARE_FOR_TESTS)
-  set(PELEC_ENABLE_FCOMPARE ON)
+if(PELEC_ENABLE_TESTS)
+  set(PELEC_ENABLE_AMREX_EB ON)
+  if(PELEC_ENABLE_FCOMPARE_FOR_TESTS)
+    set(PELEC_ENABLE_FCOMPARE ON)
+  endif()
 endif()
 
 if(PELEC_ENABLE_CUDA)

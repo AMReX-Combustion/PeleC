@@ -10,7 +10,7 @@ pc_compute_hyp_mol_flux(
     a,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> del,
   const int plm_iorder
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   ,
   const amrex::Real eb_small_vfrac,
   const amrex::Array4<const amrex::Real>& vfrac,
@@ -52,7 +52,7 @@ pc_compute_hyp_mol_flux(
         cbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
           mol_slope(
             i, j, k, bdim, q_idx, q, qaux, dq
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
             ,
             flags
 #endif
@@ -181,7 +181,7 @@ pc_compute_hyp_mol_flux(
       });
   }
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   // nextra was 3 for EB in PeleC but we are operating on a different
   // box here, so this should be zero.
   const int nextra = 0;

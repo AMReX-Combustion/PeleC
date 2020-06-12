@@ -163,7 +163,7 @@ endfunction(add_test_r)
 # Standard unit test
 function(add_test_u TEST_NAME)
     set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/ExecCpp/UnitTests/tests/${TEST_NAME})
-    set(CURRENT_TEST_EXE ${CMAKE_BINARY_DIR}/ExecCpp/UnitTests/${TEST_NAME})
+    set(CURRENT_TEST_EXE ${CMAKE_BINARY_DIR}/ExecCpp/UnitTests/pelec_${TEST_NAME})
     # Make working directory for test
     file(MAKE_DIRECTORY ${CURRENT_TEST_BINARY_DIR})
     set(NP 1)
@@ -220,7 +220,7 @@ endif()
 #=============================================================================
 # Unit tests
 #=============================================================================
-add_test_u(pelec_unit_tests)
+add_test_u(unit_tests)
 
 #=============================================================================
 # Performance tests

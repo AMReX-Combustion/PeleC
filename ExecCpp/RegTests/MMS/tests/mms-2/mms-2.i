@@ -69,3 +69,7 @@ tagging.max_presserr_lev = 5
 tagging.max_pressgrad_lev = 5
 
 # PROBLEM PARAMETERS
+
+# EB
+eb2.geom_type = "all_regular"
+ebd.boundary_grad_stencil_type = 0

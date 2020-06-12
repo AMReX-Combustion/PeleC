@@ -64,3 +64,7 @@ prob.reynolds_lambda0 = 100.0
 prob.mach_t0 = 0.1
 prob.prandtl = 0.71
 prob.inres = 32
+
+# EB
+eb2.geom_type = "all_regular"
+ebd.boundary_grad_stencil_type = 0

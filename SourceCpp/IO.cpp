@@ -10,7 +10,7 @@
 #include <AMReX_Utility.H>
 #include <AMReX_buildInfo.H>
 #include <AMReX_ParmParse.H>
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
 #include <AMReX_EBMultiFabUtil.H>
 #endif
 
@@ -89,7 +89,7 @@ PeleC::restart(amrex::Amr& papa, istream& is, bool bReadSpecial)
   }
   buildMetrics();
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   init_eb(geom, grids, dmap);
 #endif
 
@@ -198,7 +198,7 @@ PeleC::restart(amrex::Amr& papa, istream& is, bool bReadSpecial)
     }
   }
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   if (input_version > 0 && level == 0 && eb_in_domain) {
     if (amrex::ParallelDescriptor::IOProcessor()) {
       std::ifstream BodyFile;
@@ -320,7 +320,7 @@ PeleC::checkPoint(
     }*/
   }
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   if (current_version > 0) {
     if (amrex::ParallelDescriptor::IOProcessor() && eb_in_domain) {
       amrex::IntVect iv(AMREX_D_DECL(0, 0, 0));
@@ -346,7 +346,7 @@ PeleC::thePlotFileType() const
   //
   // Increment this whenever the writePlotFile() format changes.
   //
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   static const std::string the_plot_file_type =
     (!eb_in_domain) ? "HyperCLaw-V1.1" : "CartGrid-V2.0";
 #else
@@ -363,7 +363,7 @@ PeleC::setPlotVariables()
 
   amrex::ParmParse pp("pelec");
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   bool plot_vfrac = eb_in_domain;
   pp.query("plot_vfrac ", plot_vfrac);
   if (plot_vfrac) {
@@ -729,11 +729,11 @@ PeleC::writeBuildInfo(std::ostream& os)
      << "is undefined (0)" << std::endl;
 #endif
 
-#ifdef AMREX_USE_EB
-  os << std::setw(35) << std::left << "AMREX_USE_EB " << std::setw(6) << "ON"
+#ifdef PELEC_USE_EB
+  os << std::setw(35) << std::left << "PELEC_USE_EB " << std::setw(6) << "ON"
      << std::endl;
 #else
-  os << std::setw(35) << std::left << "AMREX_USE_EB " << std::setw(6) << "OFF"
+  os << std::setw(35) << std::left << "PELEC_USE_EB " << std::setw(6) << "OFF"
      << std::endl;
 #endif
 
@@ -745,11 +745,11 @@ PeleC::writeBuildInfo(std::ostream& os)
      << std::endl;
 #endif
 
-#ifdef AMREX_USE_EB
-  os << std::setw(35) << std::left << "AMREX_USE_EB " << std::setw(6) << "ON"
+#ifdef PELEC_USE_EB
+  os << std::setw(35) << std::left << "PELEC_USE_EB " << std::setw(6) << "ON"
      << std::endl;
 #else
-  os << std::setw(35) << std::left << "AMREX_USE_EB " << std::setw(6) << "OFF"
+  os << std::setw(35) << std::left << "PELEC_USE_EB " << std::setw(6) << "OFF"
      << std::endl;
 #endif
 
@@ -938,7 +938,7 @@ PeleC::writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how)
       os << PathNameInHeader << '\n';
     }
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
     if (eb_in_domain && level == parent->finestLevel()) {
       os << vfraceps << '\n';
     }
@@ -982,7 +982,7 @@ PeleC::writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how)
     }
   }
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   // Prefer app-specific one
   // amrex::EB_set_covered(plotMF);
 #endif

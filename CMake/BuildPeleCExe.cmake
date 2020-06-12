@@ -51,6 +51,7 @@ function(build_pelec_exe pelec_exe_name)
   endif()
   
   if(PELEC_ENABLE_EB)
+    target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_EB)
     target_sources(${pelec_exe_name}
                    PRIVATE
                    ${SRC_DIR}/EB.H

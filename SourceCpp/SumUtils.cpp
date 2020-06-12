@@ -5,7 +5,7 @@
 amrex::Real
 PeleC::sumDerive(const std::string& name, amrex::Real time, bool local)
 {
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   amrex::Abort("sumDerive undefined for EB");
 #endif
 
@@ -52,7 +52,7 @@ PeleC::volWgtSum(
     amrex::MultiFab::Multiply(*mf, mask, 0, 0, 1, 0);
   }
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   amrex::MultiFab::Multiply(*mf, vfrac, 0, 0, 1, 0);
 #endif
 
@@ -80,7 +80,7 @@ PeleC::volWgtSquaredSum(const std::string& name, amrex::Real time, bool local)
     amrex::MultiFab::Multiply(*mf, mask, 0, 0, 1, 0);
   }
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   amrex::MultiFab::Multiply(*mf, vfrac, 0, 0, 1, 0);
 #endif
 
@@ -115,7 +115,7 @@ PeleC ::volWgtSquaredSumDiff(int comp, amrex::Real time, bool local)
     amrex::MultiFab::Multiply(diff, mask, 0, 0, 1, 0);
   }
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   amrex::MultiFab::Multiply(diff, vfrac, 0, 0, 1, 0);
 #endif
 
@@ -144,7 +144,7 @@ PeleC::volWgtSumMF(
     amrex::MultiFab::Multiply(vol, mask, 0, 0, 1, 0);
   }
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   amrex::MultiFab::Multiply(vol, vfrac, 0, 0, 1, 0);
 #endif
 

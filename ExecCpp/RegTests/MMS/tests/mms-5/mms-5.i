@@ -65,3 +65,7 @@ amr.plot_vars  =  density Temp
 amr.derive_plot_vars = x_velocity y_velocity z_velocity magvel magvort pressure rhommserror ummserror vmmserror wmmserror pmmserror C_s2 C_I Pr_T
 
 # PROBLEM PARAMETERS
+
+# EB
+eb2.geom_type = "all_regular"
+ebd.boundary_grad_stencil_type = 0

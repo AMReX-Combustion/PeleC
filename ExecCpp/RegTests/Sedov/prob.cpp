@@ -31,3 +31,15 @@ amrex_probinit(
   pp.query("nsub", ProbParm::nsub);
 }
 }
+
+#ifdef DO_PROBLEM_POST_TIMESTEP
+void
+PeleC::problem_post_timestep()
+{}
+#endif
+
+#ifdef DO_PROBLEM_POST_INIT
+void
+PeleC::problem_post_init()
+{}
+#endif

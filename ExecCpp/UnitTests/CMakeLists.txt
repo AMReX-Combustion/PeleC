@@ -1,7 +1,6 @@
 set(pelec_exe_name pelec_unit_tests)
 
 #Compile-time options for executable
-set(PELEC_ENABLE_MASA OFF)
 set(PELEC_ENABLE_REACTIONS OFF)
 set(PELEC_ENABLE_PARTICLES OFF)
 set(PELEC_EOS_MODEL GammaLaw)

@@ -1,7 +1,7 @@
-set(pelec_exe_name pelec_HIT)
+set(pelec_exe_name pelec_EB_MMS)
 
 #Compile-time options for executable
-set(PELEC_ENABLE_EB OFF)
+set(PELEC_ENABLE_EB ON)
 set(PELEC_ENABLE_REACTIONS OFF)
 set(PELEC_ENABLE_PARTICLES OFF)
 set(PELEC_EOS_MODEL GammaLaw)

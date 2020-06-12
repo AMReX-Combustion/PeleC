@@ -2,7 +2,7 @@
 #define _TIMESTEP_H_
 
 #include <AMReX_FArrayBox.H>
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
 #include <AMReX_EBFArrayBox.H>
 #include <AMReX_EBCellFlag.H>
 #endif
@@ -47,7 +47,7 @@ AMREX_GPU_HOST_DEVICE
 amrex::Real pc_estdt_hydro(
   amrex::Box const& bx,
   const amrex::Array4<const amrex::Real>& u,
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
 #endif
   AMREX_D_DECL(
@@ -60,7 +60,7 @@ AMREX_GPU_HOST_DEVICE
 amrex::Real pc_estdt_veldif(
   amrex::Box const bx,
   const amrex::Array4<const amrex::Real>& u,
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
 #endif
   AMREX_D_DECL(
@@ -73,7 +73,7 @@ AMREX_GPU_HOST_DEVICE
 amrex::Real pc_estdt_tempdif(
   amrex::Box const bx,
   const amrex::Array4<const amrex::Real>& u,
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
 #endif
   AMREX_D_DECL(
@@ -86,7 +86,7 @@ AMREX_GPU_HOST_DEVICE
 amrex::Real pc_estdt_enthdif(
   amrex::Box const bx,
   const amrex::Array4<const amrex::Real>& u,
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
 #endif
   AMREX_D_DECL(

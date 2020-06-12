@@ -65,3 +65,7 @@ prob.mach_t0 = 0.1
 prob.prandtl = 0.71
 prob.inres = 32
 prob.uin_norm = 1.4142135623730950
+
+# EB
+eb2.geom_type = "all_regular"
+ebd.boundary_grad_stencil_type = 0

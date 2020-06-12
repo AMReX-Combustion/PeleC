@@ -66,3 +66,7 @@ amr.derive_plot_vars = x_velocity y_velocity z_velocity magvel magvort pressure
 prob.reynolds = 1600.0
 prob.mach = 0.1
 prob.prandtl = 0.71
+
+# EB
+eb2.geom_type = "all_regular"
+ebd.boundary_grad_stencil_type = 0
