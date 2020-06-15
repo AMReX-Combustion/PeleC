@@ -194,10 +194,10 @@ add_test_r(sod-1 Sod)
 if(PELEC_ENABLE_MASA)
   add_test_r(mms-1 MMS)
   add_test_r(mms-2 MMS)
-  #add_test_r(mms-3 MMS)
+  add_test_r(mms-3 MMS)
   add_test_r(mms-4 MMS)
   add_test_r(mms-5 MMS)
-  #add_test_r(ebmms-1 EB_MMS)
+  add_test_r(ebmms-1 EB_MMS)
 endif()
 
 #=============================================================================
