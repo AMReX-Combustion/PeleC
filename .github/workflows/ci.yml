@@ -60,7 +60,7 @@ jobs:
         make install
         # Install Python packages
         python -m pip install --upgrade pip
-        pip install nose
+        pip install nose numpy pandas
     - name: configure
       working-directory: ${{runner.workspace}}/build-ci
       run: |
@@ -83,6 +83,6 @@ jobs:
     - name: test
       working-directory: ${{runner.workspace}}/build-ci
       run: ctest -j ${{env.NUM_PROCS}} -LE no-ci --output-on-failure
-    - name: gnumake-pmf
+    - name: gnumake
       working-directory: ./ExecCpp/RegTests/PMF
       run: make -j ${{env.NUM_PROCS}} COMP=${{matrix.comp}} USE_MPI=TRUE
