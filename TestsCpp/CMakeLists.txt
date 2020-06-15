@@ -52,8 +52,6 @@ function(add_test_r TEST_NAME TEST_EXE_DIR)
       set(NP 1)
       unset(MPI_COMMANDS)
     endif()
-    # Place the exe in the correct working directory
-    #set_target_properties(${pelec_exe_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/")
     # Add test and actual test commands to CTest database
     add_test(${TEST_NAME} sh -c "${MPI_COMMANDS} ${CURRENT_TEST_EXE} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i ${RUNTIME_OPTIONS} ${FEXTREMA_COMMAND} ${FCOMPARE_COMMAND}")
     # Set properties for test
@@ -61,36 +59,34 @@ function(add_test_r TEST_NAME TEST_EXE_DIR)
 endfunction(add_test_r)
 
 # Verification test with 1 resolution
-#function(add_test_v1 TEST_NAME TEST_DEPENDENCY NP)
-#    # Set variables for respective binary and source directories for the test
-#    set(CURRENT_TEST_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test_files/${TEST_NAME})
-#    set(CURRENT_TEST_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/test_files/${TEST_NAME})
-#    set(TEST_DEPENDENCY_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test_files/${TEST_DEPENDENCY})
-#    set(TEST_DEPENDENCY_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/test_files/${TEST_DEPENDENCY})
-#    # Make working directory for test
-#    file(MAKE_DIRECTORY ${CURRENT_TEST_BINARY_DIR})
-#    # Gather all files in source directory for test
-#    file(GLOB TEST_FILES "${CURRENT_TEST_SOURCE_DIR}/*")
-#    # Copy files to test working directory
-#    file(COPY ${TEST_FILES} DESTINATION "${CURRENT_TEST_BINARY_DIR}/")
-#    # Get test options
-#    set(EXE_OPTIONS_FILE ${TEST_DEPENDENCY_SOURCE_DIR}/exe_options.cmake)
-#    # Define our test options
-#    include(${EXE_OPTIONS_FILE})
-#    if(PELEC_ENABLE_MPI)
-#      set(MPI_COMMANDS "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${MPIEXEC_PREFLAGS}")
-#    else()
-#      unset(MPI_COMMANDS)
-#    endif()
-#    # Define our main run command
-#    set(RUN_COMMAND "rm mmslog datlog || true && ${MPI_COMMANDS} ${TEST_DEPENDENCY_BINARY_DIR}/PeleC-${TEST_DEPENDENCY} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i")
-#    # Set some default runtime options for all tests in this category
-#    set(RUNTIME_OPTIONS "amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1 amrex.signal_handling=0")
-#    # Add test and actual test commands to CTest database
-#    add_test(${TEST_NAME} sh -c "${RUN_COMMAND} ${RUNTIME_OPTIONS} && nosetests ${TEST_NAME}.py")
-#    # Set properties for test
-#    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 1500 PROCESSORS ${NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "verification" FIXTURES_REQUIRED ${TEST_DEPENDENCY})
-#endfunction(add_test_v1)
+function(add_test_v1 TEST_NAME TEST_EXE_DIR)
+    # Set variables for respective binary and source directories for the test
+    set(CURRENT_TEST_SOURCE_DIR ${CMAKE_SOURCE_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/tests/${TEST_NAME})
+    set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/tests/${TEST_NAME})
+    set(CURRENT_TEST_EXE ${CMAKE_BINARY_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/pelec_${TEST_EXE_DIR})
+    # Make working directory for test
+    file(MAKE_DIRECTORY ${CURRENT_TEST_BINARY_DIR})
+    # Gather all files in source directory for test
+    file(GLOB TEST_FILES "${CURRENT_TEST_SOURCE_DIR}/*")
+    # Copy files to test working directory
+    file(COPY ${TEST_FILES} DESTINATION "${CURRENT_TEST_BINARY_DIR}/")
+    # Get test options
+    if(PELEC_ENABLE_MPI)
+      set(NP 4)
+      set(MPI_COMMANDS "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${MPIEXEC_PREFLAGS}")
+    else()
+      set(NP 1)
+      unset(MPI_COMMANDS)
+    endif()
+    # Set some default runtime options for all tests in this category
+    set(RUNTIME_OPTIONS "amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1 amrex.signal_handling=0")
+    # Define our main run command
+    set(RUN_COMMAND "rm mmslog datlog || true && ${MPI_COMMANDS} ${CURRENT_TEST_EXE} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i")
+    # Add test and actual test commands to CTest database
+    add_test(${TEST_NAME} sh -c "${RUN_COMMAND} ${RUNTIME_OPTIONS} && nosetests ${TEST_NAME}.py")
+    # Set properties for test
+    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 1500 PROCESSORS ${NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "verification")
+endfunction(add_test_v1)
 
 # Verification test with multiple resolutions (each test runs on maximum number of processes on node)
 #function(add_test_v2 TEST_NAME TEST_DEPENDENCY LIST_OF_GRID_SIZES)
@@ -203,10 +199,10 @@ endif()
 #=============================================================================
 # Verification tests
 #=============================================================================
-#if(PELEC_ENABLE_MASA)
-#  add_test_v1(symmetry mms-1 4)
-#  add_test_v1(eb_symmetry ebmms-1 4)
-#
+if(PELEC_ENABLE_MASA)
+  add_test_v1(symmetry MMS)
+  add_test_v1(eb-symmetry EB_MMS)
+
 #  # Create list of resolutions we want to test with; make sure to pass it as a string in quotes
 #  set(LIST_OF_GRID_SIZES 8 12 16 20)
 #  add_test_v2(cns_no_amr mms-1 "${LIST_OF_GRID_SIZES}")
@@ -215,7 +211,7 @@ endif()
 #
 #  set(LIST_OF_GRID_SIZES 8 12 16 24)
 #  add_test_v2(cns_les_no_amr mms-5 "${LIST_OF_GRID_SIZES}")
-#endif()
+endif()
 
 #=============================================================================
 # Unit tests
