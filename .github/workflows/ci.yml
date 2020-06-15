@@ -34,10 +34,11 @@ jobs:
       run: |
         cmake -E make_directory ${{runner.workspace}}/build-ci
         cmake -E make_directory ${{runner.workspace}}/deps
-    - name: dependencies
+    - name: python
       uses: actions/setup-python@v2
       with:
         python-version: '3.x'
+    - name: dependencies
       run: |
         # Install MPI
         ${{matrix.install_deps}}
