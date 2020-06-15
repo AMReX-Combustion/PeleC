@@ -58,6 +58,12 @@ function(add_test_r TEST_NAME TEST_EXE_DIR)
     set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 1500 PROCESSORS ${NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "regression" ATTACHED_FILES_ON_FAIL "${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.log")
 endfunction(add_test_r)
 
+# Regression tests excluded from CI
+function(add_test_re TEST_NAME TEST_EXE_DIR)
+    add_test_r(${TEST_NAME} ${TEST_EXE_DIR})
+    set_tests_properties(${TEST_NAME} PROPERTIES LABELS "regression;no-ci")
+endfunction(add_test_re)
+
 # Verification test with 1 resolution
 function(add_test_v1 TEST_NAME TEST_EXE_DIR)
     # Set variables for respective binary and source directories for the test
@@ -150,7 +156,7 @@ function(add_test_v2 TEST_NAME TEST_EXE_DIR LIST_OF_GRID_SIZES)
     # Add test and actual test commands to CTest database (need to convert this to arrays for resolutions)
     add_test(${TEST_NAME} sh -c "${MASTER_RUN_COMMAND} && cd ${CURRENT_TEST_BINARY_DIR} && nosetests test_second_order.py")
     # Set properties for test and make sure test dependencies have run before this test will run
-    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 7200 PROCESSORS ${NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS "verification" ATTACHED_FILES "${IMAGES_TO_UPLOAD}")
+    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 7200 PROCESSORS ${NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS "verification;no-ci" ATTACHED_FILES "${IMAGES_TO_UPLOAD}")
 endfunction(add_test_v2)
 
 # Standard unit test
@@ -174,15 +180,17 @@ endfunction(add_test_u)
 #=============================================================================
 # Regression tests
 #=============================================================================
-add_test_r(pmf-1 PMF)
 add_test_r(tg-1 TG)
 add_test_r(tg-2 TG)
-add_test_r(tg-3 TG)
-add_test_r(tg-4 TG)
 add_test_r(hit-1 HIT)
 add_test_r(hit-2 HIT)
 add_test_r(hit-3 HIT)
 add_test_r(sod-1 Sod)
+
+# Not run in CI
+add_test_re(tg-3 TG)
+add_test_re(tg-4 TG)
+add_test_re(pmf-1 PMF)
 
 if(PELEC_ENABLE_MASA)
   add_test_r(mms-1 MMS)

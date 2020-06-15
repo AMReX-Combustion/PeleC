@@ -70,7 +70,7 @@ jobs:
       run: cmake --build . -- -j ${{env.NUM_PROCS}}
     - name: test
       working-directory: ${{runner.workspace}}/build-ci
-      run: ctest -j ${{env.NUM_PROCS}} -LE no_ci --output-on-failure
+      run: ctest -j ${{env.NUM_PROCS}} -LE no-ci --output-on-failure
     - name: gnumake-pmf
       working-directory: ./ExecCpp/RegTests/PMF
       run: make -j ${{env.NUM_PROCS}} COMP=${{matrix.comp}} USE_MPI=TRUE
