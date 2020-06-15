@@ -15,9 +15,9 @@ To build `PeleC` and run a sample 2D flame problem:
 1. One can have PeleC use the default submodules for AMReX and PelePhysics in its own repo by simply performing: ::
 
     git clone --recursive git@github.com:AMReX-Combustion/PeleC.git
-    cd PeleC/Exec/RegTests/PMF
+    cd PeleC/ExecCpp/RegTests/PMF
     make
-    ./Pele2d.xxx,yyy.ex inputs-2d-regt
+    ./Pele3d.xxx,yyy.ex inputs_ex
 
 Alternatively, one can set environment variables to use AMReX and PelePhysics repos from external locations: ::
 
@@ -38,19 +38,18 @@ Alternatively, one can set environment variables to use AMReX and PelePhysics re
 
 4. Move to an example build folder, build an executable, run a test case: ::
 
-    cd ${PELEC_HOME}/Exec/RegTests/PMF
+    cd ${PELEC_HOME}/ExecCpp/RegTests/PMF
     make
-    ./Pele2d.xxx,yyy.ex inputs-2d-regt
+    ./Pele3d.xxx,yyy.ex inputs_ex
 
 * Notes
 
    A. In the exec line above, xxx.yyy is a tag identifying your compiler and various build options, and will vary across pltaform.  (Note that GNU compilers must be at least 4.8.4, and MPI should be at least version 3).
-   B. The example is 2D premixed flame, flowing vertically upward through the domain with no gravity. The lateral boundaries are periodic.  A detailed hydrogen model is used.  The solution is initialized with a wrinkled (perturbed) 1D steady flame solution computed using the PREMIX code.  Two levels of solution-adaptive refinement are automatically triggered by the presence of the flame intermediate, HO2.
+   B. The example is 3D premixed flame, flowing vertically upward through the domain with no gravity. The lateral boundaries are periodic.  A detailed hydrogen model is used.  The solution is initialized with a wrinkled (perturbed) 2D steady flame solution computed using the PREMIX code.  Two levels of solution-adaptive refinement are automatically triggered by the presence of the flame intermediate, HO2.
    C. In addition to informative output to the terminal, periodic plotfiles are written in the run folder.  These may be viewed with CCSE's Amrvis (<https://ccse.lbl.gov/Downloads/downloadAmrvis.html>) or Vis-It (<http://vis.lbl.gov/NERSC/Software/visit/>):
 
       1. In Vis-It, direct the File->Open dialogue to select the file named "Header" that is inside each plotfile folder..
-      2. With Amrvis, "amrvis2d plt00030", for example.
-   D. The sample case is one of the `PeleC` regresion tests, and is therefore quite small/coarse and quick to run.  For a more significant test, replace the input file above with inputs-2d-fiab.
+      2. With Amrvis, "amrvis3d plt00030", for example.
 
 
 Dependencies
@@ -68,31 +67,25 @@ To add a new feature to PeleC, the procedure is:
 
     git checkout -b AmazingNewFeature
 
-2. Develop against the submodules for AMReX and PelePhysics tracked in PeleC by updating them to the latest commits: ::
-
-    cd PeleC/Submodules/AMReX && git checkout development && git pull
-    cd PeleC/Submodules/PelePhysics && git checkout development && git pull
-
-3. Develop the feature, merging changes often from the development branch into your AmazingNewFeature branch and commit the updated submodules as well: ::
+2. Develop the feature, merging changes often from the development branch into your AmazingNewFeature branch: ::
    
-    git add Submodules/AMReX && git add Submodules/PelePhysics
     git commit -m "Developed AmazingNewFeature"
     git checkout development
     git pull                     [fix any identified conflicts between local and remote branches of "development"]
     git checkout AmazingNewFeature
     git merge development        [fix any identified conflicts between "development" and "AmazingNewFeature"]
 
-4. Push feature branch to PeleC repository: ::
+3. Push feature branch to PeleC repository: ::
 
     git push -u origin AmazingNewFeature [Note: -u option required only for the first push of new branch]
 
-5. Submit a merge request through git@github.com:AMReX-Combustion/PeleC.git, and make sure you are requesting a merge against the development branch
+4. Submit a merge request through git@github.com:AMReX-Combustion/PeleC.git, and make sure you are requesting a merge against the development branch
 
-6. Check the Travis CI status and make sure the tests passed for merge request
+5. Check the CI status on Github and make sure the tests passed for merge request
 
 .. note::
 
-   Travis CI uses the CMake build system and CTest to test the core source files of PeleC. If you are adding source files, you will need to add them to the list of source files in the ``CMake`` directory for the tests to pass. Make sure to add them to the GNU make makefiles as well.
+   Github CI uses the CMake build system and CTest to test the core source files of PeleC. If you are adding source files, you will need to add them to the list of source files in the ``CMake`` directory for the tests to pass. Make sure to add them to the GNU make makefiles as well.
 
 
 Test Status
