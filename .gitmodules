@@ -4,9 +4,6 @@
 [submodule "Submodules/PelePhysics"]
 	path = Submodules/PelePhysics
 	url = https://github.com/AMReX-Combustion/PelePhysics.git
-[submodule "Testing/GoogleTest"]
-	path = Tests/GoogleTest
-	url = https://github.com/google/googletest.git
 [submodule "Submodules/PeleC-MP"]
 	path = Submodules/PeleC-MP
 	url = https://github.com/AMReX-Combustion/PeleC-MP.git
