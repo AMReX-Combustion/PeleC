@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Example CMake config script for PMF on an OSX laptop with OpenMPI
+# Example CMake config script for an OSX laptop with OpenMPI
 
 cmake -DCMAKE_INSTALL_PREFIX:PATH=./install \
       -DCMAKE_CXX_COMPILER:STRING=mpicxx \
