@@ -17,5 +17,4 @@ cmake -DCMAKE_INSTALL_PREFIX:PATH=./install \
       -DMASA_DIR:STRING=$(spack location -i masa) \
       -DPELEC_ENABLE_DOCUMENTATION:BOOL=OFF \
       -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON \
-      -DPELEC_USE_CPP:BOOL=ON \
       .. && make -j8
