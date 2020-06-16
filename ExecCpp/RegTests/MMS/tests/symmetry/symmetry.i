@@ -78,3 +78,6 @@ prob.a_wz = 2.0
 # EB
 eb2.geom_type = "all_regular"
 ebd.boundary_grad_stencil_type = 0
+
+# Tiling
+fabarray.mfiter_tile_size = 1024 1024 1024
