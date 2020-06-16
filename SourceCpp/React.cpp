@@ -77,7 +77,7 @@ PeleC::react_state_explicit(
     amrex::Abort("Need to implement redistribution of chemistry work");
   }
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   auto const& fact =
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(S_new.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
@@ -103,7 +103,7 @@ PeleC::react_state_explicit(
       const int do_update =
         react_init ? 0 : 1; // TODO: Update here? Or just get reaction source?
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
       const auto& flag_fab = flags[mfi];
       amrex::FabType typ = flag_fab.getType(bx);
       if (typ == amrex::FabType::covered) {

@@ -20,7 +20,7 @@ pc_compute_diffusion_flux(
     a,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> del,
   const int do_harmonic
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   ,
   const amrex::FabType typ,
   const int Ncut,
@@ -53,7 +53,7 @@ pc_compute_diffusion_flux(
           pc_compute_tangential_vel_derivs(i, j, k, q, dir, d1, d2, tander);
         });
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
       // Reset tangential derivatives to avoid using covered (invalid) data
       if (typ == amrex::FabType::singlevalued) {
         if (Ncut > 0) {

@@ -1,6 +1,6 @@
 #include "GradUtil.H"
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
 void
 pc_compute_tangential_vel_derivs_eb(
   const amrex::Box bx,

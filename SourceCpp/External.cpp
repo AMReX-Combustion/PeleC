@@ -46,7 +46,7 @@ PeleC::fill_ext_source(
   const amrex::Real* dx = geom.CellSize();
   const amrex::Real* prob_lo = geom.ProbLo();
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   auto const& fact =
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(state_old.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
@@ -59,7 +59,7 @@ PeleC::fill_ext_source(
        ++mfi) {
     const amrex::Box& bx = mfi.growntilebox(ng);
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
     const auto& flag_fab = flags[mfi];
     amrex::FabType typ = flag_fab.getType(bx);
     if (typ == amrex::FabType::covered) {

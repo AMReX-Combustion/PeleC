@@ -73,3 +73,7 @@ prob.a_vz = 0.0
 prob.w_0_fact = 0.0
 prob.a_wy = 1.0
 prob.p_x_fact = 0.0
+
+# EB
+eb2.geom_type = "all_regular"
+ebd.boundary_grad_stencil_type = 0

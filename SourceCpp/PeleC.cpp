@@ -9,7 +9,7 @@
 #include <AMReX_TagBox.H>
 #include <AMReX_ParmParse.H>
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
 #include <AMReX_EBMultiFabUtil.H>
 #endif
 
@@ -105,7 +105,7 @@ int PeleC::les_filter_fgr = 1;
 int PeleC::les_test_filter_type = box_3pt_optimized_approx;
 int PeleC::les_test_filter_fgr = 2;
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
 bool PeleC::eb_initialized = false;
 bool PeleC::eb_in_domain = false;
 bool PeleC::body_state_set = false;
@@ -124,7 +124,7 @@ amrex::Real PeleC::previousCPUTimeUsed = 0.0;
 amrex::Real PeleC::startCPUTime = 0.0;
 int PeleC::num_state_type = 0;
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
 static bool eb_initialized = false;
 
 bool
@@ -164,7 +164,7 @@ PeleC::variableCleanUp()
 
   clear_prob();
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   eb_initialized = false;
 #endif
 }
@@ -360,7 +360,7 @@ PeleC::read_params()
   readParticleParams();
 #endif
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   if (do_mol == 0) {
     amrex::Abort("Must do_mol = 1 when using EB\n");
   }
@@ -408,7 +408,7 @@ PeleC::PeleC(
 {
   buildMetrics();
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   init_eb(level_geom, bl, dm);
 #endif
 
@@ -552,7 +552,7 @@ PeleC::buildMetrics()
     geom.GetFaceArea(area[dir], dir);
   }
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   vfrac.clear();
   vfrac.define(grids, dmap, 1, NUM_GROW, amrex::MFInfo(), Factory());
   const auto& ebfactory =
@@ -699,7 +699,7 @@ PeleC::initData()
 
   // computeTemp(S_new,0);
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   set_body_state(S_new);
 #endif
 
@@ -831,7 +831,7 @@ PeleC::estTimeStep(amrex::Real dt_old)
   amrex::Real estdt_edif = max_dt / cfl;
   if (do_hydro || do_mol || diffuse_vel || diffuse_temp || diffuse_enth) {
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
     auto const& fact =
       dynamic_cast<amrex::EBFArrayBoxFactory const&>(stateMF.Factory());
     auto const& flags = fact.getMultiEBCellFlagFab();
@@ -843,20 +843,20 @@ PeleC::estTimeStep(amrex::Real dt_old)
     if (do_hydro) {
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
         flags,
 #endif
         0,
         [=] AMREX_GPU_HOST_DEVICE(
           amrex::Box const& bx, const amrex::Array4<const amrex::Real>& fab_arr
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
           ,
           const amrex::Array4<const amrex::EBCellFlag>& flag_arr
 #endif
           ) noexcept -> amrex::Real {
           return pc_estdt_hydro(
             bx, fab_arr,
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
             flag_arr,
 #endif
             AMREX_D_DECL(dx1, dx2, dx3));
@@ -867,20 +867,20 @@ PeleC::estTimeStep(amrex::Real dt_old)
     if (diffuse_vel) {
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
         flags,
 #endif
         0,
         [=] AMREX_GPU_HOST_DEVICE(
           amrex::Box const& bx, const amrex::Array4<const amrex::Real>& fab_arr
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
           ,
           const amrex::Array4<const amrex::EBCellFlag>& flag_arr
 #endif
           ) noexcept -> amrex::Real {
           return pc_estdt_veldif(
             bx, fab_arr,
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
             flag_arr,
 #endif
             AMREX_D_DECL(dx1, dx2, dx3));
@@ -891,20 +891,20 @@ PeleC::estTimeStep(amrex::Real dt_old)
     if (diffuse_temp) {
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
         flags,
 #endif
         0,
         [=] AMREX_GPU_HOST_DEVICE(
           amrex::Box const& bx, const amrex::Array4<const amrex::Real>& fab_arr
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
           ,
           const amrex::Array4<const amrex::EBCellFlag>& flag_arr
 #endif
           ) noexcept -> amrex::Real {
           return pc_estdt_tempdif(
             bx, fab_arr,
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
             flag_arr,
 #endif
             AMREX_D_DECL(dx1, dx2, dx3));
@@ -915,20 +915,20 @@ PeleC::estTimeStep(amrex::Real dt_old)
     if (diffuse_enth) {
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
         flags,
 #endif
         0,
         [=] AMREX_GPU_HOST_DEVICE(
           amrex::Box const& bx, const amrex::Array4<const amrex::Real>& fab_arr
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
           ,
           const amrex::Array4<const amrex::EBCellFlag>& flag_arr
 #endif
           ) noexcept -> amrex::Real {
           return pc_estdt_enthdif(
             bx, fab_arr,
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
             flag_arr,
 #endif
             AMREX_D_DECL(dx1, dx2, dx3));
@@ -1337,7 +1337,7 @@ PeleC::reflux()
   PeleC& fine_level = getLevel(level + 1);
   amrex::MultiFab& S_crse = get_new_data(State_Type);
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
 
   amrex::MultiFab& S_fine = fine_level.get_new_data(State_Type);
 
@@ -1442,7 +1442,7 @@ PeleC::enforce_min_density(amrex::MultiFab& S_old, amrex::MultiFab& S_new)
   amrex::Real eint_added = 0.0;
   amrex::Real eden_added = 0.0;
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   auto const& fact =
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(S_new.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
@@ -1458,7 +1458,7 @@ PeleC::enforce_min_density(amrex::MultiFab& S_old, amrex::MultiFab& S_new)
 
     const amrex::Box& bx = mfi.growntilebox();
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
     const auto& flag_fab = flags[mfi];
     amrex::FabType typ = flag_fab.getType(bx);
     if (typ == amrex::FabType::covered) {
@@ -1523,7 +1523,7 @@ PeleC::avgDown(int state_indx)
   amrex::MultiFab& S_crse = get_new_data(state_indx);
   amrex::MultiFab& S_fine = getLevel(level + 1).get_new_data(state_indx);
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   PeleC& fine_lev = getLevel(level + 1);
 
   amrex::EB_average_down(
@@ -1592,7 +1592,7 @@ PeleC::errorEst(
       const auto datbox = S_data[mfi].box();
       amrex::Elixir S_data_mfi_eli = S_data[mfi].elixir();
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
       const auto vfrac_arr = vfrac.array(mfi);
 #endif
 
@@ -1764,7 +1764,7 @@ PeleC::errorEst(
         }
       }
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
       // Tagging volume fraction
       if (level < TaggingParm::max_vfracerr_lev) {
         amrex::ParallelFor(
@@ -1820,7 +1820,7 @@ PeleC::derive(const std::string& name, amrex::Real time, int ngrow)
     return derive_dat;
   }
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   if (name == "vfrac") {
     std::unique_ptr<amrex::MultiFab> mf(
       new amrex::MultiFab(grids, dmap, 1, ngrow, amrex::MFInfo()));
@@ -1843,7 +1843,7 @@ void
 PeleC::derive(
   const std::string& name, amrex::Real time, amrex::MultiFab& mf, int dcomp)
 {
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   if (name == "vfrac") {
     amrex::MultiFab::Copy(mf, vfrac, 0, dcomp, 1, 0);
   } else
@@ -2060,7 +2060,7 @@ PeleC::computeTemp(amrex::MultiFab& S, int ng)
 {
   reset_internal_energy(S, ng);
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   auto const& fact =
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(S.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
@@ -2072,7 +2072,7 @@ PeleC::computeTemp(amrex::MultiFab& S, int ng)
   for (amrex::MFIter mfi(S, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
     const amrex::Box& bx = mfi.growntilebox(ng);
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
     const auto& flag_fab = flags[mfi];
     amrex::FabType typ = flag_fab.getType(bx);
     if (typ == amrex::FabType::covered) {

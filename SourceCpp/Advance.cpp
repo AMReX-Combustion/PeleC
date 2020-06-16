@@ -82,7 +82,7 @@ PeleC::do_mol_advance(
   amrex::MultiFab& I_R = get_new_data(Reactions_Type);
 #endif
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   set_body_state(U_old);
   set_body_state(U_new);
 #endif
@@ -202,7 +202,7 @@ PeleC::do_mol_advance(
   }
 #endif
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   set_body_state(U_new);
 #endif
 

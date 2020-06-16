@@ -242,7 +242,7 @@ PeleC::variableSetUp()
     }
   }
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   // Decide from input whether eb interp is needed for FillPatch operations
   if ((eb_in_domain) and (state_interp_order != 0)) {
     interp = &amrex::eb_cell_cons_interp;
@@ -553,7 +553,7 @@ PeleC::variableSetUp()
     "magmom", amrex::IndexType::TheCellType(), 1, pc_dermagmom, the_same_box);
   derive_lst.addComponent("magmom", desc_lst, State_Type, Density, NVAR);
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   // A dummy
   derive_lst.add(
     "vfrac", amrex::IndexType::TheCellType(), 1, pc_dermagvel, the_same_box);

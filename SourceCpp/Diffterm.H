@@ -2,7 +2,7 @@
 #define _DIFFTERM_H_
 
 #include <AMReX_FArrayBox.H>
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
 #include <AMReX_EBCellFlag.H>
 #endif
 
@@ -186,7 +186,7 @@ void pc_compute_diffusion_flux(
     a,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> del,
   const int do_harmonic
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   ,
   const amrex::FabType typ,
   const int Ncut,

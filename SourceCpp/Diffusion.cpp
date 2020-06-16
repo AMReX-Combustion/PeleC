@@ -75,7 +75,7 @@ PeleC::getMOLSrcTerm(
   prefetchToDevice(S);
   prefetchToDevice(MOLSrcTerm);
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   auto const& fact =
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(S.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
@@ -123,7 +123,7 @@ PeleC::getMOLSrcTerm(
       const amrex::Box cbox = amrex::grow(vbox, ng - 1);
       auto const& MOLSrc = MOLSrcTerm.array(mfi);
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
       amrex::Real wt = amrex::ParallelDescriptor::second();
       const auto& flag_fab = flags[mfi];
       // amrex::Elixir flag_fab_eli = flag_fab.elixir();
@@ -250,7 +250,7 @@ PeleC::getMOLSrcTerm(
 
       pc_compute_diffusion_flux(
         cbox, qar, coe_cc, flx, a, dx, do_harmonic
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
         ,
         typ, Ncut, d_sv_eb_bndry_geom, flags.array(mfi)
 #endif
@@ -295,7 +295,7 @@ PeleC::getMOLSrcTerm(
         }
       }
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
       //  Set extensive flux at embedded boundary, potentially
       //  non-zero only for heat flux on isothermal boundaries,
       //  and momentum fluxes at no-slip walls
@@ -370,14 +370,14 @@ PeleC::getMOLSrcTerm(
         { // Get face-centered hyperbolic fluxes and their divergences.
           // Get hyp flux at EB wall
           BL_PROFILE("PeleC::pc_hyp_mol_flux()");
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
           amrex::Real* d_eb_flux_thdlocal =
             (nFlux > 0 ? eb_flux_thdlocal.dataPtr() : 0);
 #endif
           auto const& vol = volume.array(mfi);
           pc_compute_hyp_mol_flux(
             cbox, qar, qauxar, flx, a, dx, plm_iorder
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
             ,
             eb_small_vfrac, vfrac.array(mfi), flags.array(mfi),
             d_sv_eb_bndry_geom, Ncut, d_eb_flux_thdlocal, nFlux
@@ -445,7 +445,7 @@ PeleC::getMOLSrcTerm(
       auto device = amrex::RunOn::Cpu;
 #endif
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
       amrex::Gpu::DeviceVector<int> v_eb_tile_mask(Ncut, 0);
       int* eb_tile_mask = v_eb_tile_mask.dataPtr();
       amrex::ParallelFor(Ncut, [=] AMREX_GPU_DEVICE(int icut) {
@@ -575,7 +575,7 @@ PeleC::getMOLSrcTerm(
 
       copy_array4(vbox, NVAR, Dterm, MOLSrc);
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
       // do regular flux reg ops
       if (do_reflux && flux_factor != 0 && typ == amrex::FabType::regular)
 #else
@@ -603,7 +603,7 @@ PeleC::getMOLSrcTerm(
         }
       }
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
       if (do_mol_load_balance) {
         amrex::Gpu::streamSynchronize();
         wt = (amrex::ParallelDescriptor::second() - wt) / vbox.d_numPts();

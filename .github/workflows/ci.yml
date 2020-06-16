@@ -30,25 +30,37 @@ jobs:
     - uses: actions/checkout@v2
       with: 
         submodules: true
+    - name: setup
+      run: |
+        cmake -E make_directory ${{runner.workspace}}/build-ci
+        cmake -E make_directory ${{runner.workspace}}/deps
+    - name: python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
     - name: dependencies
       run: |
+        # Install MPI
         ${{matrix.install_deps}}
-        cmake -E make_directory ${{runner.workspace}}/deps
+        # Install MetaPhysicL
         cd ${{runner.workspace}}/deps
         git clone --recursive https://github.com/roystgnr/MetaPhysicL.git ${{runner.workspace}}/deps/MetaPhysicL
-        git clone --recursive https://github.com/manufactured-solutions/MASA.git ${{runner.workspace}}/deps/MASA
         cd ${{runner.workspace}}/deps/MetaPhysicL
         ./bootstrap
         ./configure CXX=${{env.CXX_COMPILER}} CC=${{env.C_COMPILER}} FC=${{env.FORTRAN_COMPILER}} --prefix="${{runner.workspace}}/deps/install/MetaPhysicL"
         make -j ${{env.NUM_PROCS}}
         make install
+        # Install MASA
+        cd ${{runner.workspace}}/deps
+        git clone --recursive https://github.com/manufactured-solutions/MASA.git ${{runner.workspace}}/deps/MASA
         cd ${{runner.workspace}}/deps/MASA
         ./bootstrap
         ./configure CXX='${{env.CXX_COMPILER}} -std=c++11' CC=${{env.C_COMPILER}} FC=${{env.FORTRAN_COMPILER}} --enable-fortran-interfaces METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" --prefix="${{runner.workspace}}/deps/install/MASA"
         make -j ${{env.NUM_PROCS}}
         make install
-    - name: setup
-      run: cmake -E make_directory ${{runner.workspace}}/build-ci
+        # Install Python packages
+        python -m pip install --upgrade pip
+        pip install nose numpy pandas
     - name: configure
       working-directory: ${{runner.workspace}}/build-ci
       run: |
@@ -61,6 +73,7 @@ jobs:
           -DPELEC_ENABLE_MPI:BOOL=ON \
           -DPELEC_ENABLE_TESTS:BOOL=ON \
           -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
+          -DPELEC_ENABLE_MASA:BOOL=ON \
           -DMASA_DIR:STRING=${{runner.workspace}}/deps/install/MASA \
           -DPELEC_USE_CPP:BOOL=ON \
           ${GITHUB_WORKSPACE}
@@ -69,7 +82,7 @@ jobs:
       run: cmake --build . -- -j ${{env.NUM_PROCS}}
     - name: test
       working-directory: ${{runner.workspace}}/build-ci
-      run: ctest -j ${{env.NUM_PROCS}} -LE no_ci --output-on-failure
-    - name: gnumake-pmf
+      run: ctest -j ${{env.NUM_PROCS}} -LE no-ci --output-on-failure
+    - name: gnumake
       working-directory: ./ExecCpp/RegTests/PMF
       run: make -j ${{env.NUM_PROCS}} COMP=${{matrix.comp}} USE_MPI=TRUE

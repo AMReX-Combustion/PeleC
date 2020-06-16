@@ -98,7 +98,7 @@ amrex_probinit(
   // p = p_0 + p_r * cos(a_px * PI * r / L)
   // clang-format on
   masa_set_param("L", ProbParm::L_x);
-  masa_set_param("R", RU);
+  masa_set_param("R", EOS::RU);
   masa_set_param("k", transport_params::const_conductivity);
   masa_set_param("Gamma", EOS::gamma);
   masa_set_param("mu", transport_params::const_viscosity);

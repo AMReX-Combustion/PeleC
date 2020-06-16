@@ -68,5 +68,6 @@ prob.reynolds = 1600.0
 prob.mach = 0.1
 prob.prandtl = 0.71
 
-#EB
-eb2.geom_type="all_regular"
+# EB
+eb2.geom_type = "all_regular"
+ebd.boundary_grad_stencil_type = 0

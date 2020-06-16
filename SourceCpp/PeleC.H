@@ -7,7 +7,7 @@
 #include <AMReX_AmrLevel.H>
 #include <AMReX_iMultiFab.H>
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
 #include <AMReX_EBFArrayBox.H>
 #include "EBStencilTypes.H"
 #include "SparseData.H"
@@ -263,7 +263,7 @@ public:
    * Initialize EB geometry for finest_level and level grids for
    * other levels
    */
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   static bool DoMOLLoadBalance() { return do_mol_load_balance; }
 
   // for the Amr class to do timed load balances.
@@ -582,7 +582,7 @@ public:
   amrex::MultiFab fine_mask;
   amrex::MultiFab& build_fine_mask();
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   static bool eb_in_domain;
 
   amrex::EBFluxRegister flux_reg;
@@ -613,7 +613,7 @@ public:
 
 protected:
   amrex::iMultiFab level_mask;
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   std::array<const amrex::MultiCutFab*, AMREX_SPACEDIM> areafrac;
 #endif
   //
@@ -781,7 +781,7 @@ protected:
 
   static int nGrowTr;
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
 
   amrex::FabArray<amrex::BaseFab<int>> ebmask;
   static amrex::GpuArray<amrex::Real, NVAR> body_state;
@@ -922,7 +922,7 @@ void pc_nullfill(
   const int bcomp,
   const int scomp);
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
 AMREX_FORCE_INLINE
 amrex::EBFluxRegister&
 PeleC::getFluxReg()

@@ -1,7 +1,7 @@
 #ifndef _MOL_H_
 #define _MOL_H_
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
 #include <AMReX_EBCellFlag.H>
 #endif
 
@@ -23,7 +23,7 @@ mol_slope(
   const amrex::Array4<const amrex::Real>& q,
   const amrex::Array4<const amrex::Real>& qaux,
   const amrex::Array4<amrex::Real>& dq
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   ,
   const amrex::Array4<amrex::EBCellFlag const>& flags
 #endif
@@ -31,7 +31,7 @@ mol_slope(
 {
   bool flagArrayL = true;
   bool flagArrayR = true;
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   flagArrayL = flags(i, j, k).isConnected(-bdim[0], -bdim[1], -bdim[2]) and
                !flags(i, j, k).isCovered();
   flagArrayR = flags(i, j, k).isConnected(+bdim[0], +bdim[1], +bdim[2]) and
@@ -108,7 +108,7 @@ void pc_compute_hyp_mol_flux(
     a,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> del,
   const int plm_iorder
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   ,
   const amrex::Real eb_small_vfrac,
   const amrex::Array4<const amrex::Real>& vfrac,

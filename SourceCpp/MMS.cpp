@@ -71,7 +71,7 @@ PeleC::fill_mms_source(
     const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_lo =
       geom.ProbLoArray();
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
     auto const& fact =
       dynamic_cast<amrex::EBFArrayBoxFactory const&>(S.Factory());
     auto const& flags = fact.getMultiEBCellFlagFab();
@@ -89,7 +89,7 @@ PeleC::fill_mms_source(
            mfi.isValid(); ++mfi) {
         const amrex::Box& bx = mfi.growntilebox(ng);
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
         const auto& flag_fab = flags[mfi];
         amrex::FabType typ = flag_fab.getType(bx);
         if (typ == amrex::FabType::covered) {

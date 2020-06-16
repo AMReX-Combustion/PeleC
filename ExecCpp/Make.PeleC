@@ -38,6 +38,10 @@ ifeq ($(USE_REACT), TRUE)
   DEFINES += -DPELEC_USE_REACTIONS
 endif
 
+ifeq ($(USE_EB), TRUE)
+  DEFINES += -DPELEC_USE_EB
+endif
+
 # Currently the code path requires the explicit reaction path because it works on the GPU and CPU
 ifeq ($(USE_EXPLICIT_REACT), TRUE)
   DEFINES += -DPELEC_USE_EXPLICIT_REACT
@@ -81,7 +85,6 @@ ifeq ($(USE_SUNDIALS_PP), TRUE)
   Blocs += $(REACTIONS_HOME)/Fuego
   Bpack += $(REACTIONS_HOME)/Fuego/Make.package
 endif
-
 
 # Transport
 ifeq ($(Transport_dir), Simple)

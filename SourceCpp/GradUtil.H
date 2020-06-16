@@ -3,7 +3,7 @@
 
 #include <AMReX_FArrayBox.H>
 #include "IndexDefines.H"
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
 #include "EB.H"
 #endif
 
@@ -99,7 +99,7 @@ pc_compute_tangential_vel_derivs(
   }
 }
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
 void pc_compute_tangential_vel_derivs_eb(
   const amrex::Box,
   const int,

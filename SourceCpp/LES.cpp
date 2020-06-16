@@ -202,7 +202,7 @@ PeleC::getSmagorinskyLESTerm(
   prefetchToDevice(S);
   prefetchToDevice(LESTerm);
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   auto const& fact =
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(S.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
@@ -218,7 +218,7 @@ PeleC::getSmagorinskyLESTerm(
       const amrex::Box cbox = amrex::grow(vbox, ngrow - 1);
       const amrex::Box& dbox = geom.Domain();
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
       const auto& flag_fab = flags[mfi];
       amrex::FabType typ = flag_fab.getType(cbox);
       if (typ != amrex::FabType::regular) {
@@ -420,7 +420,7 @@ PeleC::getDynamicSmagorinskyLESTerm(
   prefetchToDevice(LESTerm);
   prefetchToDevice(LES_Coeffs);
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
   auto const& fact =
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(S.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
@@ -440,7 +440,7 @@ PeleC::getDynamicSmagorinskyLESTerm(
       const amrex::Box cbox = amrex::grow(vbox, 0);
       const amrex::Box& dbox = geom.Domain();
 
-#ifdef AMREX_USE_EB
+#ifdef PELEC_USE_EB
       const auto& flag_fab = flags[mfi];
       amrex::FabType typ = flag_fab.getType(cbox);
       if (typ != amrex::FabType::regular) {

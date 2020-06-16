@@ -1,7 +1,7 @@
 set(pelec_exe_name pelec_PMF)
 
 #Compile-time options for executable
-set(PELEC_ENABLE_MASA OFF)
+set(PELEC_ENABLE_EB OFF)
 set(PELEC_ENABLE_REACTIONS ON)
 set(PELEC_ENABLE_PARTICLES OFF)
 set(PELEC_EOS_MODEL Fuego)
