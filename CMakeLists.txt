@@ -83,7 +83,7 @@ if(PELEC_ENABLE_TESTS)
   enable_testing()
   include(CTest)
   add_subdirectory("Submodules/GoogleTest")
-  add_subdirectory(TestsCpp)
+  add_subdirectory(Tests)
 endif()
 
 if(PELEC_ENABLE_DOCUMENTATION)
