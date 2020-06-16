@@ -5,12 +5,18 @@ PeleC
 `PeleC` is an adaptive-mesh compressible hydrodynamics code for reacting
 flows.
 
+
+A Note on the Current Status of PeleC Development
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Please be aware that kernels previously written in Fortran in PeleC have been recently ported to C++ to allow for execution on GPUs. These new kernels are located in directories marked ``*Cpp``. The Fortran kernels are currently preserved in this repo using the original directory organization, as all functionality has not yet been ported to C++ and GPUs. However, development in Fortran will not continue and any future development should be done entirely in C++ and with the ability to execute the code within AMReX's GPU framework. The Fortran kernels will be phased out at a future date. This is done in order to run portably using CPUS, CUDA, HIP, and DPC++ programming model backends in the future.
+
 Getting Started
 ~~~~~~~~~~~~~~~
 
-* To compile and run the `Pele` suite of codes, one needs a C++ compiler that supports the C++11 standard and a Fortran compiler that supports the 2003 standard.  A hierarchical strategy for parallelism is supported, based MPI + OpenMP.  The codes work with all major MPI and OpenMP implementations.  The codes should build and run with no modifications to the `make` system if using a Linux system with the GNU compilers, version 4.8.4 and above.
+* To compile and run the `Pele` suite of codes, one needs a C++ compiler that supports the C++14 standard.  A hierarchical strategy for parallelism is supported, based MPI + OpenMP, or MPI + CUDA.  The codes work with all major MPI and OpenMP implementations.  The codes should build and run with no modifications to the `make` system if using a Linux system with the GNU compilers, version 4.9.4 and above.
 
-To build `PeleC` and run a sample 2D flame problem:
+To build `PeleC` and run a sample 3D flame problem:
 
 1. One can have PeleC use the default submodules for AMReX and PelePhysics in its own repo by simply performing: ::
 
