@@ -22,38 +22,39 @@ namespace pelec_tests {
 class AmrexTestEnv : public ::testing::Environment
 {
 public:
-    AmrexTestEnv(int& argc, char**& argv) : m_argc(argc), m_argv(argv) {}
+  AmrexTestEnv(int& argc, char**& argv) : m_argc(argc), m_argv(argv) {}
 
-    ~AmrexTestEnv() = default;
+  ~AmrexTestEnv() = default;
 
-    void SetUp() override
-    {
-        amrex::Initialize(m_argc, m_argv, true, MPI_COMM_WORLD, []() {
-            amrex::ParmParse pp("amrex");
-            if (!(pp.contains("v") || pp.contains("verbose"))) {
-                pp.add("verbose", -1);
-                pp.add("v", -1);
-            }
+  void SetUp() override
+  {
+    amrex::Initialize(m_argc, m_argv, true, MPI_COMM_WORLD, []() {
+      amrex::ParmParse pp("amrex");
+      if (!(pp.contains("v") || pp.contains("verbose"))) {
+        pp.add("verbose", -1);
+        pp.add("v", -1);
+      }
 
-            pp.add("throw_exception", 1);
-            pp.add("signal_handling", 0);
-        });
+      pp.add("throw_exception", 1);
+      pp.add("signal_handling", 0);
+    });
 
-        // Call ParmParse::Finalize immediately to allow unit tests to start
-        // with a clean "input file". However, allow user to override this
-        // behavior through command line arguments.
-        amrex::ParmParse pp("utest");
-        bool keep_parameters = false;
-        pp.query("keep_parameters", keep_parameters);
+    // Call ParmParse::Finalize immediately to allow unit tests to start
+    // with a clean "input file". However, allow user to override this
+    // behavior through command line arguments.
+    amrex::ParmParse pp("utest");
+    bool keep_parameters = false;
+    pp.query("keep_parameters", keep_parameters);
 
-        if (!keep_parameters) amrex::ParmParse::Finalize();
-    }
+    if (!keep_parameters)
+      amrex::ParmParse::Finalize();
+  }
 
-    void TearDown() override { amrex::Finalize(); }
+  void TearDown() override { amrex::Finalize(); }
 
 protected:
-    int& m_argc;
-    char**& m_argv;
+  int& m_argc;
+  char**& m_argv;
 };
 
 } // namespace pelec_tests

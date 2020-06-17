@@ -44,9 +44,9 @@ pc_initdata(
 
   // Get state from MASA
   const amrex::Real rho = masa_eval_3d_exact_rho(x, y, z);
-  const amrex::Real u[3] = {masa_eval_3d_exact_u(x, y, z),
-                            masa_eval_3d_exact_v(x, y, z),
-                            masa_eval_3d_exact_w(x, y, z)};
+  const amrex::Real u[3] = {
+    masa_eval_3d_exact_u(x, y, z), masa_eval_3d_exact_v(x, y, z),
+    masa_eval_3d_exact_w(x, y, z)};
   const amrex::Real p = masa_eval_3d_exact_p(x, y, z);
   amrex::Real massfrac[NUM_SPECIES] = {1.0};
 
@@ -80,9 +80,10 @@ bcnormal(
   amrex::GeometryData const& geomdata)
 {
   const amrex::Real rho = masa_eval_3d_exact_rho(x[0], x[1], x[2]);
-  const amrex::Real u[3] = {masa_eval_3d_exact_u(x[0], x[1], x[2]),
-                            masa_eval_3d_exact_v(x[0], x[1], x[2]),
-                            masa_eval_3d_exact_w(x[0], x[1], x[2])};
+  const amrex::Real u[3] = {
+    masa_eval_3d_exact_u(x[0], x[1], x[2]),
+    masa_eval_3d_exact_v(x[0], x[1], x[2]),
+    masa_eval_3d_exact_w(x[0], x[1], x[2])};
   const amrex::Real p = masa_eval_3d_exact_p(x[0], x[1], x[2]);
   amrex::Real massfrac[NUM_SPECIES] = {1.0};
 
