@@ -47,7 +47,7 @@ amr.max_level       = 0       # maximum level number allowed
 amr.ref_ratio       = 2 2 2 2 # refinement ratio
 amr.regrid_int      = 2 2 2 2 # how often to regrid
 amr.blocking_factor = 4       # block factor in grid generation
-amr.max_grid_size   = 64
+amr.max_grid_size   = 8
 amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
 
 # CHECKPOINT FILES
