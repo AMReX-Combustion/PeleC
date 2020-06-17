@@ -2,9 +2,9 @@ name: PeleC-CI
 
 on:
   push:
-    branches: [cpp]
+    branches: [development]
   pull_request:
-    branches: [cpp]
+    branches: [development]
 
 env:
   CXX_COMPILER: mpicxx

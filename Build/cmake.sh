@@ -5,8 +5,8 @@
 cmake -DCMAKE_INSTALL_PREFIX:PATH=./install \
       -DCMAKE_CXX_COMPILER:STRING=mpicxx \
       -DCMAKE_C_COMPILER:STRING=mpicc \
-      -DMPIEXEC_PREFLAGS:STRING=--oversubscribe \
       -DCMAKE_Fortran_COMPILER:STRING=mpifort \
+      -DMPIEXEC_PREFLAGS:STRING=--oversubscribe \
       -DCMAKE_BUILD_TYPE:STRING=Release \
       -DPELEC_DIM:STRING=3 \
       -DPELEC_ENABLE_MPI:BOOL=ON \

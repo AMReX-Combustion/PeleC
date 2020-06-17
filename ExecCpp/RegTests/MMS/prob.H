@@ -79,6 +79,27 @@ bcnormal(
   const amrex::Real time,
   amrex::GeometryData const& geomdata)
 {
+  const amrex::Real rho = masa_eval_3d_exact_rho(x[0], x[1], x[2]);
+  const amrex::Real u[3] = {masa_eval_3d_exact_u(x[0], x[1], x[2]),
+                            masa_eval_3d_exact_v(x[0], x[1], x[2]),
+                            masa_eval_3d_exact_w(x[0], x[1], x[2])};
+  const amrex::Real p = masa_eval_3d_exact_p(x[0], x[1], x[2]);
+  amrex::Real massfrac[NUM_SPECIES] = {1.0};
+
+  amrex::Real eint, T;
+  EOS::RYP2E(rho, massfrac, p, eint);
+  EOS::EY2T(eint, massfrac, T);
+
+  // Set the external state
+  s_ext[URHO] = rho;
+  s_ext[UMX] = rho * u[0];
+  s_ext[UMY] = rho * u[1];
+  s_ext[UMZ] = rho * u[2];
+  s_ext[UEINT] = rho * eint;
+  s_ext[UEDEN] = rho * (eint + 0.5 * (u[0] * u[0] + u[1] * u[1] + u[2] * u[2]));
+  s_ext[UTEMP] = T;
+  for (int n = 0; n < NUM_SPECIES; n++)
+    s_ext[UFS + n] = rho * massfrac[n];
 }
 
 void pc_prob_close();
