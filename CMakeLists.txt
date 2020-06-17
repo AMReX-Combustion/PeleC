@@ -42,6 +42,10 @@ if(PELEC_ENABLE_CUDA)
   endif()
 endif()
 
+if((NOT PELEC_DIM EQUAL 3) AND PELEC_ENABLE_AMREX_EB)
+  message(FATAL_ERROR "EB is only supported in 3D.")
+endif()
+
 ########################### AMReX #####################################
 
 set(AMREX_SUBMOD_LOCATION "${CMAKE_SOURCE_DIR}/Submodules/AMReX")

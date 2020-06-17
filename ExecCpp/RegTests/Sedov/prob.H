@@ -26,9 +26,8 @@ pc_initdata(
   amrex::Array4<amrex::Real> const& state,
   amrex::GeometryData const& geomdata)
 {
-
   // Set explosion pressure -- we will convert the point-explosion energy into
-  //    a corresponding pressure distributed throughout the perturbed volume
+  // a corresponding pressure distributed throughout the perturbed volume
   amrex::Real vctr =
     4.0 / 3.0 * M_PI * (ProbParm::r_init * ProbParm::r_init * ProbParm::r_init);
   amrex::Real p_exp = (EOS::gamma - 1.0) * ProbParm::exp_energy / vctr;
@@ -37,35 +36,37 @@ pc_initdata(
   const amrex::Real* prob_lo = geomdata.ProbLo();
   const amrex::Real* prob_hi = geomdata.ProbHi();
   const amrex::Real* dx = geomdata.CellSize();
-  const amrex::Real xmin = prob_lo[0] + (i + 0.5) * dx[0];
-  const amrex::Real ymin = prob_lo[1] + (j + 0.5) * dx[1];
-  amrex::Real zmin = 0;
-#if AMREX_SPACEDIM == 3
-  zmin = prob_lo[2] + (k + 0.5) * dx[2];
-#endif
+  AMREX_D_TERM(
+  const amrex::Real xmin = prob_lo[0] + (i + 0.5) * dx[0];,
+  const amrex::Real ymin = prob_lo[1] + (j + 0.5) * dx[1];,
+  const amrex::Real zmin = prob_lo[2] + (k + 0.5) * dx[2];
+  )
 
+  AMREX_D_TERM(
   amrex::Real dx_sub = dx[0] / static_cast<amrex::Real>(ProbParm::nsub);
+  amrex::Real ctr_x = 0.5 * (prob_lo[0] + prob_hi[0]);,
   amrex::Real dy_sub = dx[1] / static_cast<amrex::Real>(ProbParm::nsub);
+  amrex::Real ctr_y = 0.5 * (prob_lo[1] + prob_hi[2]);,
   amrex::Real dz_sub = dx[2] / static_cast<amrex::Real>(ProbParm::nsub);
-
-  amrex::Real ctr_x = 0.5 * (prob_lo[0] + prob_hi[0]);
-  amrex::Real ctr_y = 0.5 * (prob_lo[1] + prob_hi[2]);
   amrex::Real ctr_z = 0.5 * (prob_lo[1] + prob_hi[2]);
+  )
 
   // We initialize by summing over subvolumes of each cell
   int npert = 0;
   int n_amb = 0;
 
-#if AMREX_SPACEDIM == 3
+#if AMREX_SPACEDIM > 2
   for (int kk = 0; kk < ProbParm::nsub; kk++) {
     const amrex::Real z = zmin + (kk + 0.5) * dz_sub - ctr_z;
 #endif
+#if AMREX_SPACEDIM > 1
     for (int jj = 0; jj < ProbParm::nsub; jj++) {
       const amrex::Real y = ymin + (jj + 0.5) * dy_sub - ctr_y;
+#endif
       for (int ii = 0; ii < ProbParm::nsub; ii++) {
         const amrex::Real x = xmin + (ii + 0.5) * dx_sub - ctr_x;
 
-        amrex::Real dist = x * x + y * y + z * z;
+        amrex::Real dist = AMREX_D_TERM(x * x, + y * y, + z * z);
 
         if (dist <= ProbParm::r_init * ProbParm::r_init) {
           npert += 1;
@@ -73,8 +74,10 @@ pc_initdata(
           n_amb += 1;
         }
       }
+#if AMREX_SPACEDIM > 1
     }
-#if AMREX_SPACEDIM == 3
+#endif
+#if AMREX_SPACEDIM > 2
   }
 #endif
 

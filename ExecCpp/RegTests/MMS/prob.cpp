@@ -101,9 +101,11 @@ amrex_probinit(
   pp.query("a_pz", ProbParm::a_pz);
 
   // Define the length scale
-  ProbParm::L_x = probhi[0] - problo[0];
-  ProbParm::L_y = probhi[1] - problo[1];
+  AMREX_D_TERM(
+  ProbParm::L_x = probhi[0] - problo[0];,
+  ProbParm::L_y = probhi[1] - problo[1];,
   ProbParm::L_z = probhi[2] - problo[2];
+  )
 
   // Initial density, velocity, and material properties
   amrex::Real eint, cs, cp;

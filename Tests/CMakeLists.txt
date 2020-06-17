@@ -198,7 +198,9 @@ if(PELEC_ENABLE_MASA)
   add_test_r(mms-3 MMS)
   add_test_r(mms-4 MMS)
   add_test_r(mms-5 MMS)
-  add_test_r(ebmms-1 EB_MMS)
+  if(PELEC_ENABLE_AMREX_EB)
+    add_test_r(ebmms-1 EB_MMS)
+  endif()
 endif()
 
 #=============================================================================
@@ -206,7 +208,9 @@ endif()
 #=============================================================================
 if(PELEC_ENABLE_MASA)
   add_test_v1(symmetry MMS)
-  add_test_v1(eb-symmetry EB_MMS)
+  if(PELEC_ENABLE_AMREX_EB)
+    add_test_v1(eb-symmetry EB_MMS)
+  endif()
 
   # Create list of resolutions we want to test with; make sure to pass it as a string in quotes
   set(LIST_OF_GRID_SIZES 8 12 16 20)
