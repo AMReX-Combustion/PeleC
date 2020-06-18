@@ -52,7 +52,7 @@ pc_initdata(
                                                    ProbParm::u_l;
       state(i, j, k, UEINT) = ProbParm::rhoe_l;
       state(i, j, k, UTEMP) = ProbParm::T_l;
-      state(i, j, k, UFS+ProbParm::left_gas_id) = state(i, j, k, URHO);
+      state(i, j, k, UFS + ProbParm::left_gas_id) = state(i, j, k, URHO);
     } else {
       state(i, j, k, URHO) = ProbParm::rho_r;
       state(i, j, k, UMX) = ProbParm::rho_r * ProbParm::u_r;
@@ -63,7 +63,7 @@ pc_initdata(
                                                    ProbParm::u_r;
       state(i, j, k, UEINT) = ProbParm::rhoe_r;
       state(i, j, k, UTEMP) = ProbParm::T_r;
-      state(i, j, k, UFS+ProbParm::right_gas_id) = state(i, j, k, URHO);
+      state(i, j, k, UFS + ProbParm::right_gas_id) = state(i, j, k, URHO);
     }
   } else if (ProbParm::idir == 2) {
     if (y <= ProbParm::split[1]) {
@@ -76,7 +76,7 @@ pc_initdata(
                                                    ProbParm::u_l;
       state(i, j, k, UEINT) = ProbParm::rhoe_l;
       state(i, j, k, UTEMP) = ProbParm::T_l;
-      state(i, j, k, UFS+ProbParm::left_gas_id) = state(i, j, k, URHO);
+      state(i, j, k, UFS + ProbParm::left_gas_id) = state(i, j, k, URHO);
     } else {
       state(i, j, k, URHO) = ProbParm::rho_r;
       state(i, j, k, UMX) = 0.0;
@@ -87,7 +87,7 @@ pc_initdata(
                                                    ProbParm::u_r;
       state(i, j, k, UEINT) = ProbParm::rhoe_r;
       state(i, j, k, UTEMP) = ProbParm::T_r;
-      state(i, j, k, UFS+ProbParm::right_gas_id) = state(i, j, k, URHO);
+      state(i, j, k, UFS + ProbParm::right_gas_id) = state(i, j, k, URHO);
     }
   } else if (ProbParm::idir == 3) {
     if (z <= ProbParm::split[2]) {
@@ -100,7 +100,7 @@ pc_initdata(
                                                    ProbParm::u_l;
       state(i, j, k, UEINT) = ProbParm::rhoe_l;
       state(i, j, k, UTEMP) = ProbParm::T_l;
-      state(i, j, k, UFS+ProbParm::left_gas_id) = state(i, j, k, URHO);
+      state(i, j, k, UFS + ProbParm::left_gas_id) = state(i, j, k, URHO);
     } else {
       state(i, j, k, URHO) = ProbParm::rho_r;
       state(i, j, k, UMX) = 0.0;
@@ -111,7 +111,7 @@ pc_initdata(
                                                    ProbParm::u_r;
       state(i, j, k, UEINT) = ProbParm::rhoe_r;
       state(i, j, k, UTEMP) = ProbParm::T_r;
-      state(i, j, k, UFS+ProbParm::right_gas_id) = state(i, j, k, URHO);
+      state(i, j, k, UFS + ProbParm::right_gas_id) = state(i, j, k, URHO);
     }
   } else {
     amrex::Abort("invalid idir");

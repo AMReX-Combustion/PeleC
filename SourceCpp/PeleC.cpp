@@ -249,12 +249,14 @@ PeleC::read_params()
     //
     for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
       if (amrex::DefaultGeometry().isPeriodic(dir)) {
-        if (lo_bc[dir] != Interior) {
+        if (
+          lo_bc[dir] != Interior && amrex::ParallelDescriptor::IOProcessor()) {
           std::cerr << "PeleC::read_params:periodic in direction " << dir
                     << " but low BC is not Interior\n";
           amrex::Error();
         }
-        if (hi_bc[dir] != Interior) {
+        if (
+          hi_bc[dir] != Interior && amrex::ParallelDescriptor::IOProcessor()) {
           std::cerr << "PeleC::read_params:periodic in direction " << dir
                     << " but high BC is not Interior\n";
           amrex::Error();
@@ -266,12 +268,12 @@ PeleC::read_params()
     // Do idiot check.  If not periodic, should be no interior.
     //
     for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-      if (lo_bc[dir] == Interior) {
+      if (lo_bc[dir] == Interior && amrex::ParallelDescriptor::IOProcessor()) {
         std::cerr << "PeleC::read_params:interior bc in direction " << dir
                   << " but not periodic\n";
         amrex::Error();
       }
-      if (hi_bc[dir] == Interior) {
+      if (hi_bc[dir] == Interior && amrex::ParallelDescriptor::IOProcessor()) {
         std::cerr << "PeleC::read_params:interior bc in direction " << dir
                   << " but not periodic\n";
         amrex::Error();
@@ -280,9 +282,8 @@ PeleC::read_params()
   }
 
   if (amrex::DefaultGeometry().IsRZ() && (lo_bc[0] != Symmetry)) {
-    std::cerr << "ERROR:PeleC::read_params: must set r=0 boundary condition to "
-                 "Symmetry for r-z\n";
-    amrex::Error();
+    amrex::Error("PeleC::read_params: must set r=0 boundary condition to "
+                 "Symmetry for r-z");
   }
 
   // TODO: Any reason to support spherical in PeleC?
@@ -303,6 +304,10 @@ PeleC::read_params()
   // sanity checks
   if (cfl <= 0.0 || cfl > 1.0) {
     amrex::Error("Invalid CFL factor; must be between zero and one.");
+  }
+
+  if ((do_les or use_explicit_filter) and (AMREX_SPACEDIM != 3)) {
+    amrex::Abort("Using LES/filtering currently requires 3d.");
   }
 
   if (do_les) {
@@ -328,32 +333,26 @@ PeleC::read_params()
   }
   /*
     if (ppm_temp_fix > 0 && AMREX_SPACEDIM == 1) {
-      std::cerr << "ppm_temp_fix > 0 not implemented in 1-d \n";
-      amrex::Error();
+      amrex::Error("ppm_temp_fix > 0 not implemented in 1-d");
     }
 
     if (hybrid_riemann == 1 && AMREX_SPACEDIM == 1) {
-      std::cerr << "hybrid_riemann only implemented in 2- and 3-d\n";
-      amrex::Error();
+      amrex::Error("hybrid_riemann only implemented in 2- and 3-d");
     }
   */
   if (
     hybrid_riemann == 1 && (amrex::DefaultGeometry().IsSPHERICAL() ||
                             amrex::DefaultGeometry().IsRZ())) {
-    std::cerr
-      << "hybrid_riemann should only be used for Cartesian coordinates\n";
-    amrex::Error();
+    amrex::Error(
+      "hybrid_riemann should only be used for Cartesian coordinates");
   }
 
   if (use_colglaz >= 0) {
-    std::cerr
-      << "ERROR:: use_colglaz is deprecated.  Use riemann_solver instead\n";
-    amrex::Error();
+    amrex::Error("use_colglaz is deprecated. Use riemann_solver instead");
   }
 
   if (max_dt < fixed_dt) {
-    std::cerr << "cannot have max_dt < fixed_dt\n";
-    amrex::Error();
+    amrex::Error("Cannot have max_dt < fixed_dt");
   }
 
 #ifdef AMREX_PARTICLES
@@ -1944,7 +1943,7 @@ PeleC::init_les()
   amrex::Print() << "WARNING: LES with Fuego assumes Cp is a weak function of T"
                  << std::endl;
   if (NUM_SPECIES > 2) {
-    amrex::Abort("ERROR: LES is not supported for multi-component systems");
+    amrex::Abort("LES is not supported for multi-component systems");
   } else if (NUM_SPECIES == 2) {
     amrex::Print()
       << "WARNING: LES is not supported for multi-component systems"

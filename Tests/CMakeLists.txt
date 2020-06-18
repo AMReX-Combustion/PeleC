@@ -180,33 +180,38 @@ endfunction(add_test_u)
 #=============================================================================
 # Regression tests
 #=============================================================================
+
+# Run in CI
 add_test_r(tg-1 TG)
 add_test_r(tg-2 TG)
 add_test_r(hit-1 HIT)
 add_test_r(hit-2 HIT)
 add_test_r(hit-3 HIT)
 add_test_r(sod-1 Sod)
-
-# Not run in CI
-add_test_re(tg-3 TG)
-add_test_re(tg-4 TG)
-add_test_re(pmf-1 PMF)
-
 if(PELEC_ENABLE_MASA)
   add_test_r(mms-1 MMS)
   add_test_r(mms-2 MMS)
   add_test_r(mms-3 MMS)
   add_test_r(mms-4 MMS)
-  add_test_r(mms-5 MMS)
+  if(PELEC_DIM EQUAL 3)
+    add_test_r(mms-5 MMS)
+  endif()
   if(PELEC_ENABLE_AMREX_EB)
     add_test_r(ebmms-1 EB_MMS)
   endif()
 endif()
 
+# Not run in CI
+if(PELEC_DIM EQUAL 3)
+  add_test_re(tg-3 TG)
+  add_test_re(tg-4 TG)
+endif()
+add_test_re(pmf-1 PMF)
+
 #=============================================================================
 # Verification tests
 #=============================================================================
-if(PELEC_ENABLE_MASA)
+if(PELEC_ENABLE_MASA AND (PELEC_DIM EQUAL 3))
   add_test_v1(symmetry MMS)
   if(PELEC_ENABLE_AMREX_EB)
     add_test_v1(eb-symmetry EB_MMS)
