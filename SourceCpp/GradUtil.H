@@ -34,13 +34,15 @@ pc_compute_tangential_vel_derivs(
   // This is because it is a tangential velocity derivative.
   if (dir == 0) {
     // dx1 = dy, dx2 = dz
+#if AMREX_SPACEDIM > 1
     td(i, j, k, 0) = 0.25 * dx1inv *
                      (q(i, j + 1, k, QU) + q(i - 1, j + 1, k, QU) -
                       q(i, j - 1, k, QU) - q(i - 1, j - 1, k, QU)); // dudy
     td(i, j, k, 1) = 0.25 * dx1inv *
                      (q(i, j + 1, k, QV) + q(i - 1, j + 1, k, QV) -
                       q(i, j - 1, k, QV) - q(i - 1, j - 1, k, QV)); // dvdy
-#if AMREX_SPACEDIM == 3
+#endif
+#if AMREX_SPACEDIM > 2
     td(i, j, k, 2) = 0.25 * dx1inv *
                      (q(i, j + 1, k, QW) + q(i - 1, j + 1, k, QW) -
                       q(i, j - 1, k, QW) - q(i - 1, j - 1, k, QW)); // dwdy
@@ -62,7 +64,7 @@ pc_compute_tangential_vel_derivs(
     td(i, j, k, 1) = 0.25 * dx1inv *
                      (q(i + 1, j, k, QV) + q(i + 1, j - 1, k, QV) -
                       q(i - 1, j, k, QV) - q(i - 1, j - 1, k, QV)); // dvdx
-#if AMREX_SPACEDIM == 3
+#if AMREX_SPACEDIM > 2
     td(i, j, k, 2) = 0.25 * dx1inv *
                      (q(i + 1, j, k, QW) + q(i + 1, j - 1, k, QW) -
                       q(i - 1, j, k, QW) - q(i - 1, j - 1, k, QW)); // dwdx

@@ -75,10 +75,15 @@ tag_graderror(
     ax = amrex::max(ax, amrex::Math::abs(field(i, j, k) - field(i - 1, j, k)));
     , amrex::Real ay = amrex::Math::abs(field(i, j + 1, k) - field(i, j, k));
     ay = amrex::max(ay, amrex::Math::abs(field(i, j, k) - field(i, j - 1, k)));
-    , amrex::Real az = amrex::Math::abs(field(i, j, k + 1) - field(i, j, k));
-    az =
-      amrex::max(az, amrex::Math::abs(field(i, j, k) - field(i, j, k - 1))););
-  if (amrex::max(AMREX_D_DECL(ax, ay, az)) >= fieldgrad) {
+    amrex::Real az = amrex::Math::abs(field(i, j, k + 1) - field(i, j, k));
+    ,
+    az = amrex::max(az, amrex::Math::abs(field(i, j, k) - field(i, j, k - 1)));)
+#if AMREX_SPACEDIM > 1
+  if (amrex::max(AMREX_D_DECL(ax, ay, az)) >= fieldgrad)
+#elif AMREX_SPACEDIM == 1
+  if (ax >= fieldgrad)
+#endif
+  {
     tag(i, j, k) = tagval;
   }
 }

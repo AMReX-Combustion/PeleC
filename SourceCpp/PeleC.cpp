@@ -658,13 +658,15 @@ PeleC::initData()
 
   S_new.setVal(0.0);
 
+#if AMREX_SPACEDIM > 1
   // make sure dx = dy = dz -- that's all we guarantee to support
   const amrex::Real small = 1.e-13;
   if (
-    amrex::max(AMREX_D_DECL(0., fabs(dx[0] - dx[1]), fabs(dx[0] - dx[2]))) >
+    amrex::max(AMREX_D_DECL(0.0, fabs(dx[0] - dx[1]), fabs(dx[0] - dx[2]))) >
     small * dx[0]) {
     amrex::Abort("dx != dy != dz not supported");
   }
+#endif
 
   if (verbose) {
     amrex::Print() << "Initializing the data at level " << level << std::endl;
