@@ -1,9 +1,7 @@
-set(pelec_exe_name PeleC_MultiSpec_Sod)
+set(pelec_exe_name pelec_MultiSpecSod)
 
 #Compile-time options for executable
-set(PELEC_DIM 3)
 set(PELEC_ENABLE_EB OFF)
-set(PELEC_ENABLE_MASA OFF)
 set(PELEC_ENABLE_REACTIONS ON)
 set(PELEC_ENABLE_PARTICLES OFF)
 set(PELEC_EOS_MODEL Fuego)
