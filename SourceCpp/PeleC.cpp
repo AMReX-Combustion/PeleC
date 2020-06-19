@@ -32,11 +32,7 @@ using namespace MASA;
 #include "Tagging.H"
 #include "IndexDefines.H"
 #if defined(USE_SUNDIALS_PP)
-#ifdef USE_ARKODE_PP
-#include <actual_CARKODE.h>
-#else
-#include <actual_Creactor.h>
-#endif
+#include <reactor.h>
 #endif
 
 bool PeleC::signalStopJob = false;
@@ -1896,7 +1892,12 @@ PeleC::init_reactor()
   int reactor_type = 1;
   int ode_ncells = 1;
 #ifndef USE_CUDA_SUNDIALS_PP
-  reactor_init(&reactor_type, &ode_ncells);
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
+  {
+     reactor_init(&reactor_type, &ode_ncells);
+  }
 #else
   reactor_info(&reactor_type, &ode_ncells);
 #endif
