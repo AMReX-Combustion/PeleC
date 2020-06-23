@@ -56,10 +56,10 @@ amrex_probinit(
   massfrac[0] = 1.0;
 
   if (ProbParm::use_Tinit) {
-    EOS::TRY2P(ProbParm::rho_l, ProbParm::T_l, massfrac, ProbParm::p_l);
+    EOS::RTY2P(ProbParm::rho_l, ProbParm::T_l, massfrac, ProbParm::p_l);
     EOS::RYP2E(ProbParm::rho_l, massfrac, ProbParm::p_l, e_l);
     ProbParm::rhoe_l = ProbParm::rho_l * e_l;
-    EOS::TRY2P(ProbParm::rho_r, ProbParm::T_r, massfrac, ProbParm::p_r);
+    EOS::RTY2P(ProbParm::rho_r, ProbParm::T_r, massfrac, ProbParm::p_r);
     EOS::RYP2E(ProbParm::rho_r, massfrac, ProbParm::p_r, e_r);
     ProbParm::rhoe_r = ProbParm::rho_r * e_r;
   } else {
