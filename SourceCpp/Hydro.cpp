@@ -374,7 +374,12 @@ pc_umdrv(
   auto const& pdivuarr = pdivu.array();
 
   BL_PROFILE_VAR("PeleC::umeth()", umeth);
-#if AMREX_SPACEDIM == 2
+#if AMREX_SPACEDIM == 1
+  amrex::Abort("PLM isn't implemented in 1D.");
+  //pc_umeth_1D(
+  //  bx, bclo, bchi, domlo, domhi, q, qaux, src_q, // bcMask,
+  //  flx[0], qec_arr[0], a[0], pdivuarr, vol, dx, dt);
+#elif AMREX_SPACEDIM == 2
   pc_umeth_2D(
     bx, bclo, bchi, domlo, domhi, q, qaux, src_q, // bcMask,
     flx[0], flx[1], qec_arr[0], qec_arr[1], a[0], a[1], pdivuarr, vol, dx, dt);

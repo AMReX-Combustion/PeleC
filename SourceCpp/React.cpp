@@ -3,11 +3,7 @@
 #include "PeleC.H"
 #include "React.H"
 #if defined(USE_SUNDIALS_PP)
-#ifdef USE_ARKODE_PP
-#include <actual_CARKODE.h>
-#else
-#include <actual_Creactor.h>
-#endif
+#include <reactor.h>
 #endif
 
 #ifdef PELEC_USE_EXPLICIT_REACT

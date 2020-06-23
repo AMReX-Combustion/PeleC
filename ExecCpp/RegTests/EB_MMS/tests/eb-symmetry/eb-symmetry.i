@@ -47,7 +47,7 @@ amr.max_level       = 0       # maximum level number allowed
 amr.ref_ratio       = 2 2 2 2 # refinement ratio
 amr.regrid_int      = 2 2 2 2 # how often to regrid
 amr.blocking_factor = 4       # block factor in grid generation
-amr.max_grid_size   = 64
+amr.max_grid_size   = 8
 amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
 
 # CHECKPOINT FILES
@@ -71,3 +71,6 @@ eb2.sphere_has_fluid_inside = 0
 pelec.eb_isothermal = 0
 eb_verbosity = 1
 ebd.boundary_grad_stencil_type=0
+
+# Tiling
+fabarray.mfiter_tile_size = 1024 1024 1024

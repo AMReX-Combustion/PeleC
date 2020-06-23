@@ -2,9 +2,9 @@ name: PeleC-CI
 
 on:
   push:
-    branches: [cpp]
+    branches: [development]
   pull_request:
-    branches: [cpp]
+    branches: [development]
 
 env:
   CXX_COMPILER: mpicxx
@@ -75,7 +75,6 @@ jobs:
           -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
           -DPELEC_ENABLE_MASA:BOOL=ON \
           -DMASA_DIR:STRING=${{runner.workspace}}/deps/install/MASA \
-          -DPELEC_USE_CPP:BOOL=ON \
           ${GITHUB_WORKSPACE}
     - name: make
       working-directory: ${{runner.workspace}}/build-ci

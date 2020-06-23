@@ -1,6 +1,6 @@
 #Set amrex options
 set(USE_XSDK_DEFAULTS OFF)
-set(DIM ${PELEC_DIM})
+set(DIM "${PELEC_DIM}" CACHE STRING "Number of physical dimensions" FORCE)
 set(ENABLE_PIC OFF)
 set(ENABLE_MPI ${PELEC_ENABLE_MPI})
 set(ENABLE_OMP ${PELEC_ENABLE_OPENMP})

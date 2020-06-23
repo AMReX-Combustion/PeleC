@@ -5,7 +5,7 @@ Testing and Verification
 
 Testing and verfication of PeleC can be performed using CTest, which is included in the CMake build system. If one builds PeleC with CMake, the testing suite, and the verification suite, can be enabled during the CMake configure step. A nightly test is reflected on the dashboard `here <https://my.cdash.org/index.php?project=PeleC>`_ .
 
-An example ``cmake`` configure command performed in the ``BuildCpp`` directory in PeleC is shown below with options relevant to the testing suite:
+An example ``cmake`` configure command performed in the ``Build`` directory in PeleC is shown below with options relevant to the testing suite:
 
 ::
 
@@ -44,11 +44,11 @@ Once the user has performed the CMake configure step, the ``make`` command will 
 Running the Tests
 ~~~~~~~~~~~~~~~~~
 
-Once the test executables are built, CTest also creates working directories for each test within the ``BuildCpp`` directory where plot files will be output, etc. This directory is analogous to the source location of the tests in ``Testing/test_files``.
+Once the test executables are built, CTest also creates working directories for each test within the ``Build`` directory where plot files will be output, etc. This directory is analogous to the source location of the tests in ``Testing/test_files``.
 
-To run the test suite, run ``ctest`` in the ``BuildCpp`` directory. CTest will run the tests and report their exit status. Useful options for CTest are ``-VV`` which runs in a verbose mode where the output of each test can be seen. ``-R`` where a regex string can be used to run specific sets of tests. ``-j`` where CTest will bin pack and run tests in parallel based on how many processes each test is specified to use and fit them into the amount of cores available on the machine. ``-L`` where the subset of tests containing a particular label will be run. Output for the last set of tests run is available in the ``BuildCpp`` directory in ``Testing/Temporary/LastTest.log``.
+To run the test suite, run ``ctest`` in the ``Build`` directory. CTest will run the tests and report their exit status. Useful options for CTest are ``-VV`` which runs in a verbose mode where the output of each test can be seen. ``-R`` where a regex string can be used to run specific sets of tests. ``-j`` where CTest will bin pack and run tests in parallel based on how many processes each test is specified to use and fit them into the amount of cores available on the machine. ``-L`` where the subset of tests containing a particular label will be run. Output for the last set of tests run is available in the ``Build`` directory in ``Testing/Temporary/LastTest.log``.
 
 Adding Tests
 ~~~~~~~~~~~~
 
-Developers are encouraged to add tests to PeleC and in this section we describe how the tests are organized in the CTest framework. The locations of the tests are in ``PeleC/TestsCpp``. To add a test, first create a test directory with a name in ``PeleC/ExecCpp/<test_exe>/tests/<test_name>``. Place the input file for the test as ``PeleC/TestsCpp/<test_exe>/tests/<test_name>/<test_name>.i`` along with any other files necessary for the test. Any file in the test directory will be copied during CMake configure to the test's working directory. Next, edit the ``PeleC/TestsCpp/CMakeLists.txt`` file, add the test to the list. Note there are different categories of tests and if your test falls outside of these categories, a new function to add the test will need to be created. After these steps, your test will be automatically added to the test suite database when doing the CMake configure with the testing suite enabled.
+Developers are encouraged to add tests to PeleC and in this section we describe how the tests are organized in the CTest framework. The locations of the tests are in ``PeleC/Tests``. To add a test, first create a test directory with a name in ``PeleC/ExecCpp/<test_exe>/tests/<test_name>``. Place the input file for the test as ``PeleC/Tests/<test_exe>/tests/<test_name>/<test_name>.i`` along with any other files necessary for the test. Any file in the test directory will be copied during CMake configure to the test's working directory. Next, edit the ``PeleC/Tests/CMakeLists.txt`` file, add the test to the list. Note there are different categories of tests and if your test falls outside of these categories, a new function to add the test will need to be created. After these steps, your test will be automatically added to the test suite database when doing the CMake configure with the testing suite enabled.
