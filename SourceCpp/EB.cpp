@@ -311,6 +311,9 @@ pc_fix_div_and_redistribute(
       if (is_inside(i, j, k, lo, hi, 2)) {
         const amrex::Real kappa_inv = 1.0 / amrex::max(vf(i, j, k), 1.0e-12);
         amrex::Real tmp;
+#ifdef _OPENMP
+#pragma omp atomic read
+#endif
         tmp = ebflux[n * Ncut + L];
         DC(i, j, k, n) =
           -(f0(i + 1, j, k, n) - f0(i, j, k, n) + f1(i, j + 1, k, n) -

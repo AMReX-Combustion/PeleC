@@ -141,6 +141,9 @@ SparseData<T, Cell>::merge(
   amrex::ParallelFor(captured_m_region_size, [=] AMREX_GPU_DEVICE(int i) {
     if (d_mask[i]) {
       for (int n = 0; n < ncomp; ++n) {
+#ifdef _OPENMP
+#pragma omp atomic write
+#endif
         d_data[getIndex(i, comp + n, captured_m_region_size)] =
           d_thdlocal_data[getIndex(i, comp + n, captured_m_region_size)];
       }

@@ -2133,6 +2133,9 @@ PeleC::build_fine_mask()
     const auto iarr = ifab.array();
     amrex::ParallelFor(
       fab.box(), [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+#ifdef _OPENMP
+#pragma omp atomic write
+#endif
         arr(i, j, k) = iarr(i, j, k);
       });
   }

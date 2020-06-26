@@ -19,36 +19,31 @@ pc_srctoprim(
   amrex::Array4<const amrex::Real> const& src,
   amrex::Array4<amrex::Real> const& srcq)
 {
-  int n, nq;
-  amrex::Real rhoinv;
-  amrex::Real srcrho;
-  Real3 v;
-  Real3 um;
   // Local loading Vars ==> Load once from global memory use multiple times
-  srcrho = src(i, j, k, URHO);
-  rhoinv = 1.0 / q(i, j, k, QRHO);
-  v.x = q(i, j, k, QU);
-  v.y = q(i, j, k, QV);
-  v.z = q(i, j, k, QW);
-  um.x = src(i, j, k, UMX);
-  um.y = src(i, j, k, UMY);
-  um.z = src(i, j, k, UMZ);
+  const amrex::Real srcrho = src(i, j, k, URHO);
+  const amrex::Real rhoinv = 1.0 / q(i, j, k, QRHO);
+  const amrex::Real vx = q(i, j, k, QU);
+  const amrex::Real vy = q(i, j, k, QV);
+  const amrex::Real vz = q(i, j, k, QW);
+  const amrex::Real umx = src(i, j, k, UMX);
+  const amrex::Real umy = src(i, j, k, UMY);
+  const amrex::Real umz = src(i, j, k, UMZ);
   // SrcQ Calc
   srcq(i, j, k, QRHO) = srcrho;
-  srcq(i, j, k, QU) = (um.x - v.x * srcrho) * rhoinv;
-  srcq(i, j, k, QV) = (um.y - v.y * srcrho) * rhoinv;
-  srcq(i, j, k, QW) = (um.z - v.z * srcrho) * rhoinv;
-  srcq(i, j, k, QREINT) = src(i, j, k, UEDEN) - v.x * um.x - v.y * um.y -
-                          v.z * um.z +
-                          srcrho * (v.x * v.x + v.y * v.y + v.z * v.z);
+  srcq(i, j, k, QU) = (umx - vx * srcrho) * rhoinv;
+  srcq(i, j, k, QV) = (umy - vy * srcrho) * rhoinv;
+  srcq(i, j, k, QW) = (umz - vz * srcrho) * rhoinv;
+  srcq(i, j, k, QREINT) = src(i, j, k, UEDEN) - vx * umx - vy * umy -
+                          vz * umz +
+                          srcrho * (vx * vx + vy * vy + vz * vz);
   srcq(i, j, k, QPRES) =
     qa(i, j, k, QDPDE) *
       (srcq(i, j, k, QREINT) - q(i, j, k, QREINT) * srcrho * rhoinv) * rhoinv +
     qa(i, j, k, QDPDR) * srcrho;
 
   for (int ip = 0; ip < NPASSIVE; ++ip) {
-    n = indxmap::upass_map(ip);
-    nq = indxmap::qpass_map(ip);
+    const int n = indxmap::upass_map(ip);
+    const int nq = indxmap::qpass_map(ip);
     srcq(i, j, k, nq) = (src(i, j, k, n) - q(i, j, k, nq) * srcrho) * rhoinv;
   }
 }
