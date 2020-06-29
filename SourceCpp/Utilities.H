@@ -6,13 +6,6 @@
 #include "IndexDefines.H"
 #include "EOS.H"
 
-struct Real3
-{
-  amrex::Real x;
-  amrex::Real y;
-  amrex::Real z;
-};
-
 AMREX_GPU_DEVICE
 void pc_cmpTemp(
   const int i, const int j, const int k, amrex::Array4<amrex::Real> const& S);
@@ -32,32 +25,29 @@ pc_ctoprim(
   amrex::Array4<amrex::Real> const& q,
   amrex::Array4<amrex::Real> const& qa)
 {
-
-  Real3 v;
-  int n, nq;
-  amrex::Real rho = u(i, j, k, URHO);
-  amrex::Real rhoinv = 1.0 / rho;
-  v.x = u(i, j, k, UMX) * rhoinv;
-  v.y = u(i, j, k, UMY) * rhoinv;
-  v.z = u(i, j, k, UMZ) * rhoinv;
-  amrex::Real kineng = 0.5 * rho * (v.x * v.x + v.y * v.y + v.z * v.z);
+  const amrex::Real rho = u(i, j, k, URHO);
+  const amrex::Real rhoinv = 1.0 / rho;
+  const amrex::Real vx = u(i, j, k, UMX) * rhoinv;
+  const amrex::Real vy = u(i, j, k, UMY) * rhoinv;
+  const amrex::Real vz = u(i, j, k, UMZ) * rhoinv;
+  const amrex::Real kineng = 0.5 * rho * (vx * vx + vy * vy + vz * vz);
   q(i, j, k, QRHO) = rho;
-  q(i, j, k, QU) = v.x;
-  q(i, j, k, QV) = v.y;
-  q(i, j, k, QW) = v.z;
+  q(i, j, k, QU) = vx;
+  q(i, j, k, QV) = vy;
+  q(i, j, k, QW) = vz;
   for (int ip = 0; ip < NPASSIVE; ++ip) {
-    n = indxmap::upass_map(ip);
-    nq = indxmap::qpass_map(ip);
+    const int n = indxmap::upass_map(ip);
+    const int nq = indxmap::qpass_map(ip);
     q(i, j, k, nq) = u(i, j, k, n) * rhoinv;
   }
   // Handle passive variables that are not per unit mass
   for (int ip = NPASSIVE; ip < NPASSIVE + NPASSNM; ++ip) {
-    n = indxmap::upass_map(ip);
-    nq = indxmap::qpass_map(ip);
+    const int n = indxmap::upass_map(ip);
+    const int nq = indxmap::qpass_map(ip);
     q(i, j, k, nq) = u(i, j, k, n);
   }
 
-  amrex::Real e = (u(i, j, k, UEDEN) - kineng) * rhoinv;
+  const amrex::Real e = (u(i, j, k, UEDEN) - kineng) * rhoinv;
   amrex::Real T = u(i, j, k, UTEMP);
   amrex::Real massfrac[NUM_SPECIES];
   //    amrex::Real aux[NUM_AUX];
