@@ -45,10 +45,16 @@ pc_ctoprim(
   q(i, j, k, QU) = v.x;
   q(i, j, k, QV) = v.y;
   q(i, j, k, QW) = v.z;
-  for (int ipassive = 0; ipassive < NPASSIVE; ++ipassive) {
-    n = indxmap::upass_map(ipassive);
-    nq = indxmap::qpass_map(ipassive);
-    q(i, j, k, nq) = u(i, j, k, n) / rho;
+  for (int ip = 0; ip < NPASSIVE; ++ip) {
+    n = indxmap::upass_map(ip);
+    nq = indxmap::qpass_map(ip);
+    q(i, j, k, nq) = u(i, j, k, n) * rhoinv;
+  }
+  // Handle passive variables that are not per unit mass
+  for (int ip = NPASSIVE; ip < NPASSIVE + NPASSNM; ++ip) {
+    n = indxmap::upass_map(ip);
+    nq = indxmap::qpass_map(ip);
+    q(i, j, k, nq) = u(i, j, k, n);
   }
 
   amrex::Real e = (u(i, j, k, UEDEN) - kineng) * rhoinv;

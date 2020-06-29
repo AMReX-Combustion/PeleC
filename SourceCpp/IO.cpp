@@ -386,6 +386,20 @@ PeleC::setPlotVariables()
     }
   }
 
+#ifdef SOOT_MODEL
+    bool plot_soot = true;
+    pp.query("plot_soot",plot_soot);
+    if (plot_soot) {
+      for (int i = 0; i < NumSootVars; i++) {
+        parent->addStatePlotVar(desc_lst[State_Type].name(FirstSootVar+i));
+      }
+    } else {
+      for (int i = 0; i < NumSootVars; i++) {
+        parent->deleteStatePlotVar(desc_lst[State_Type].name(FirstSootVar+i));
+      }
+    }
+#endif
+
   bool plot_massfrac = false;
   pp.query("plot_massfrac", plot_massfrac);
   //    if (plot_massfrac)

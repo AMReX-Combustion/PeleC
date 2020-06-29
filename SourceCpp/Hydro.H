@@ -51,6 +51,11 @@ pc_srctoprim(
     nq = indxmap::qpass_map(ip);
     srcq(i, j, k, nq) = (src(i, j, k, n) - q(i, j, k, nq) * srcrho) * rhoinv;
   }
+  for (int ip = NPASSIVE; ip < NPASSIVE + NPASSNM; ++ip) {
+    n = indxmap::upass_map(ip);
+    nq = indxmap::qpass_map(ip);
+    srcq(i, j, k, nq) = src(i, j, k, n);
+  }
 }
 
 AMREX_GPU_DEVICE

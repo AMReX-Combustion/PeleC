@@ -27,6 +27,10 @@
 #include <SprayParticles.H>
 #endif
 
+#ifdef SOOT_MODEL
+#include <SootModel.H>
+#endif
+
 #include "Filter.H"
 #include "IndexDefines.H"
 
@@ -55,6 +59,9 @@ enum sources {
 #endif
   diff_src,
   les_src,
+#ifdef SOOT_MODEL
+  soot_src,
+#endif
 #ifdef PELEC_USE_MASA
   mms_src,
 #endif
@@ -386,6 +393,20 @@ public:
     amrex::MultiFab& forcing_src,
     int ng);
 
+#ifdef SOOT_MODEL
+  void construct_old_soot_source(amrex::Real time, amrex::Real dt);
+
+  void construct_new_soot_source(amrex::Real time, amrex::Real dt);
+
+  void fill_soot_source(
+    amrex::Real time,
+    amrex::Real dt,
+    const amrex::MultiFab& S_old,
+    const amrex::MultiFab& S_new,
+    amrex::MultiFab& soot_src,
+    int ng);
+#endif
+
 #ifdef PELEC_USE_MASA
   void construct_old_mms_source(amrex::Real time);
 
@@ -569,6 +590,9 @@ public:
   static int FirstAdv, NumAdv;
   static int FirstSpec;
   static int FirstAux;
+
+  /// Index locations for soot modeling components
+  static int FirstSootVar, NumSootVars;
 
   /// Index locations into particle state
   static int pstateVel, pstateT, pstateDia, pstateRho, pstateY, pstateNum;
@@ -768,6 +792,10 @@ protected:
   static SprayParticleContainer* theSprayPC();
   static SprayParticleContainer* theVirtPC();
   static SprayParticleContainer* theGhostPC();
+#endif
+
+#ifdef SOOT_MODEL
+  static SootModel* soot_model;
 #endif
 
   static int num_state_type;

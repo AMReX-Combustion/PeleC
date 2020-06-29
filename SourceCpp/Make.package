@@ -60,6 +60,10 @@ ifeq ($(USE_PARTICLES), TRUE)
   CEXE_sources += Particle.cpp
 endif
 
+ifeq ($(USE_SOOT), TRUE)
+  CEXE_sources += Soot.cpp
+endif
+
 ifeq ($(USE_REACT), TRUE)
   CEXE_sources += React.cpp
   CEXE_headers += React.H

@@ -187,6 +187,17 @@ pc_cmpflx(
     else
       flx(i, j, k, n) = flxrho * 0.50 * (ql(i, j, k, nqp) + qr(i, j, k, nqp));
   }
+  // Passive variables where U = Q, F = u Q instead of F = rho u Q
+  for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
+    int n = indxmap::upass_map(ipass);
+    int nqp = indxmap::qpass_map(ipass);
+    if (ustar > 0.0)
+      flx(i, j, k, n) = q(i, j, k, GU) * ql(i, j, k, nqp);
+    else if (ustar < 0.0)
+      flx(i, j, k, n) = q(i, j, k, GU) * qr(i, j, k, nqp);
+    else
+      flx(i, j, k, n) = q(i, j, k, GU) * 0.50 * (ql(i, j, k, nqp) + qr(i, j, k, nqp));
+  }
 }
 
 AMREX_GPU_DEVICE
@@ -299,7 +310,7 @@ pc_plm_x(
   qm(i + 1, j, k, QPRES) = amrex::max(qm(i + 1, j, k, QPRES), SMALL_PRES);
   qm(i + 1, j, k, QREINT) = rhoe_ref + (apleft + amleft) * enth * cs + azeleft;
   // Upwind the passive variables
-  for (int ipassive = 0; ipassive < NPASSIVE; ++ipassive) {
+  for (int ipassive = 0; ipassive < NPASSIVE + NPASSNM; ++ipassive) {
     int n = indxmap::qpass_map(ipassive);
     // Right state
     u = q(i, j, k, QU);
@@ -423,7 +434,7 @@ pc_plm_y(
   qm(i, j + 1, k, QREINT) = rhoe_ref + (apleft + amleft) * enth * cs + azeleft;
 
   // Upwind the passive variables
-  for (int ipassive = 0; ipassive < NPASSIVE; ++ipassive) {
+  for (int ipassive = 0; ipassive < NPASSIVE + NPASSNM; ++ipassive) {
     int n = indxmap::qpass_map(ipassive);
     // Right state
     v = q(i, j, k, QV);
@@ -547,7 +558,7 @@ pc_plm_z(
   qm(i, j, k + 1, QREINT) = rhoe_ref + (apleft + amleft) * enth * cs + azeleft;
 
   // Upwind the passive variables
-  for (int ipassive = 0; ipassive < NPASSIVE; ++ipassive) {
+  for (int ipassive = 0; ipassive < NPASSIVE + NPASSNM; ++ipassive) {
     int n = indxmap::qpass_map(ipassive);
     // Right state
     w = q(i, j, k, QW);
@@ -630,6 +641,21 @@ pc_transx(
     rrnew = rr - flxrho;
     compo = rr * qym(i, j + 1, k, nqp) - compn;
     qm(i, j + 1, k, nqp) = compo / rrnew + hdt * srcpass;
+  }
+  // Update passive variables that aren't per unit mass
+  for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
+    int n = indxmap::upass_map(ipass);
+    int nqp = indxmap::qpass_map(ipass);
+    srcpass = srcQ(i, j, k, nqp);
+    compn = hdt *
+            (a1(i + 1, j, k) * flxx(i + 1, j, k, n) -
+             a1(i, j, k) * flxx(i, j, k, n)) /
+            vol(i, j, k);
+    compo = qyp(i, j, k, nqp) - compn;
+    qp(i, j, k, nqp) = compo + hdt * srcpass;
+
+    compo = qym(i, j + 1, k, nqp) - compn;
+    qm(i, j + 1, k, nqp) = compo + hdt * srcpass;
   }
 
   pggp = qint(i + 1, j, k, GDPRES);
@@ -751,6 +777,18 @@ pc_transy(
     compo = rr * qxm(i + 1, j, k, nqp) - compn;
     qm(i + 1, j, k, nqp) = compo / rrnew + hdt * srcpass;
   }
+  // Update passive variables that aren't per unit mass
+  for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
+    int n = indxmap::upass_map(ipass);
+    int nqp = indxmap::qpass_map(ipass);
+    srcpass = srcQ(i, j, k, nqp);
+    compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
+    compo = qxp(i, j, k, nqp) - compn;
+    qp(i, j, k, nqp) = compo + hdt * srcpass;
+
+    compo = qxm(i + 1, j, k, nqp) - compn;
+    qm(i + 1, j, k, nqp) = compo + hdt * srcpass;
+  }
 
   // Update hydro vars
   pggp = qint(i, j + 1, k, GDPRES);
@@ -863,6 +901,17 @@ pc_transx1(
     rrnew = rr - flxrho;
     compo = rr * qym(i, j + 1, k, nqp) - compn;
     qm(i, j + 1, k, nqp) = compo / rrnew;
+  }
+  // Update passive variables that aren't per unit mass
+  for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
+    int n = indxmap::upass_map(ipass);
+    int nqp = indxmap::qpass_map(ipass);
+    compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n));
+    compo = qyp(i, j, k, nqp) - compn;
+    qp(i, j, k, nqp) = compo;
+
+    compo = qym(i, j + 1, k, nqp) - compn;
+    qm(i, j + 1, k, nqp) = compo;
   }
   // Update hydro vars
 
@@ -988,6 +1037,17 @@ pc_transy1(
     compo = rr * qxm(i + 1, j, k, nqp) - compn;
     qm(i + 1, j, k, nqp) = compo / rrnew;
   }
+  // -  Update Passive Variables that aren't per unit mass
+  for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
+    int n = indxmap::upass_map(ipass);
+    int nqp = indxmap::qpass_map(ipass);
+    compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
+    compo = qxp(i, j, k, nqp) - compn;
+    qp(i, j, k, nqp) = compo;
+
+    compo = qxm(i + 1, j, k, nqp) - compn;
+    qm(i + 1, j, k, nqp) = compo;
+  }
 
   //- Update hydro vars -
   // pressure divergence and such.
@@ -1112,6 +1172,17 @@ pc_transx2(
     compo = rr * qzm(i, j, k + 1, nqp) - compn;
     qm(i, j, k + 1, nqp) = compo / rrnew;
   }
+  // -  Update Passive Variables
+  for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
+    int n = indxmap::upass_map(ipass);
+    int nqp = indxmap::qpass_map(ipass);
+    compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n));
+    compo = qzp(i, j, k, nqp) - compn;
+    qp(i, j, k, nqp) = compo;
+
+    compo = qzm(i, j, k + 1, nqp) - compn;
+    qm(i, j, k + 1, nqp) = compo;
+  }
   //- Update hydro vars -
 
   pggp = qint(i + 1, j, k, GDPRES);
@@ -1234,6 +1305,17 @@ pc_transy2(
     rrnew = rr - flxrho;
     compo = rr * qzm(i, j, k + 1, nqp) - compn;
     qm(i, j, k + 1, nqp) = compo / rrnew;
+  }
+  // -  Update Passive Variables that aren't per unit mass
+  for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
+    int n = indxmap::upass_map(ipass);
+    int nqp = indxmap::qpass_map(ipass);
+    compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
+    compo = qzp(i, j, k, nqp) - compn;
+    qp(i, j, k, nqp) = compo;
+
+    compo = qzm(i, j, k + 1, nqp) - compn;
+    qm(i, j, k + 1, nqp) = compo;
   }
   //- Update hydro vars -
 
@@ -1358,6 +1440,17 @@ pc_transz1(
     compo = rr * qxm(i + 1, j, k, nqp) - compn;
     qm(i + 1, j, k, nqp) = compo / rrnew;
   }
+  // -  Update Passive Variables that aren't per unit mass
+  for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
+    int n = indxmap::upass_map(ipass);
+    int nqp = indxmap::qpass_map(ipass);
+    compn = cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
+    compo = qxp(i, j, k, nqp) - compn;
+    qp(i, j, k, nqp) = compo;
+
+    compo = qxm(i + 1, j, k, nqp) - compn;
+    qm(i + 1, j, k, nqp) = compo;
+  }
 
   //- Update hydro vars -
   // pressure divergence and such.
@@ -1481,6 +1574,17 @@ pc_transz2(
     rrnew = rr - flxrho;
     compo = rr * qym(i, j + 1, k, nqp) - compn;
     qm(i, j + 1, k, nqp) = compo / rrnew;
+  }
+  // Update passive variables that aren't per unit mass
+  for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
+    int n = indxmap::upass_map(ipass);
+    int nqp = indxmap::qpass_map(ipass);
+    compn = cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
+    compo = qyp(i, j, k, nqp) - compn;
+    qp(i, j, k, nqp) = compo;
+
+    compo = qym(i, j + 1, k, nqp) - compn;
+    qm(i, j + 1, k, nqp) = compo;
   }
 
   // Update hydro vars
@@ -1627,6 +1731,20 @@ pc_transxy(
     compo = rrl * qzm(i, j, k + 1, nqp) - compn;
     qm(i, j, k + 1, nqp) = compo / rrnewl + hdt * srcpass;
   }
+  // Update Passive Variables that aren't per unit mass
+  for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
+    int n = indxmap::upass_map(ipass);
+    int nqp = indxmap::qpass_map(ipass);
+    srcpass = srcq(i, j, k, nqp);
+    compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n)) +
+            cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
+    // qp
+    compo = qzp(i, j, k, nqp) - compn;
+    qp(i, j, k, nqp) = compo + hdt * srcpass;
+    // qm
+    compo = qzm(i, j, k + 1, nqp) - compn;
+    qm(i, j, k + 1, nqp) = compo + hdt * srcpass;
+  }
 
   // Update hydro vars
   pggpx = qx(i + 1, j, k, GDPRES);
@@ -1763,6 +1881,20 @@ pc_transxz(
     // qm
     compo = rrl * qym(i, j + 1, k, nqp) - compn;
     qm(i, j + 1, k, nqp) = compo / rrnewl + hdt * srcpass;
+  }
+  // Update passive variables that aren't per unit mass
+  for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
+    int n = indxmap::upass_map(ipass);
+    int nqp = indxmap::qpass_map(ipass);
+    srcpass = srcq(i, j, k, nqp);
+    compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n)) +
+            cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
+    // qp
+    compo = qyp(i, j, k, nqp) - compn;
+    qp(i, j, k, nqp) = compo + hdt * srcpass;
+    // qm
+    compo = qym(i, j + 1, k, nqp) - compn;
+    qm(i, j + 1, k, nqp) = compo + hdt * srcpass;
   }
 
   // Update hydro vars
@@ -1901,6 +2033,20 @@ pc_transyz(
     // qm
     compo = rrl * qxm(i + 1, j, k, nqp) - compn;
     qm(i + 1, j, k, nqp) = compo / rrnewl + hdt * srcpass;
+  }
+  // Update passive variables that aren't per unit mass
+  for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
+    int n = indxmap::upass_map(ipass);
+    int nqp = indxmap::qpass_map(ipass);
+    srcpass = srcq(i, j, k, nqp);
+    compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n)) +
+            cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
+    // qp
+    compo = qxp(i, j, k, nqp) - compn;
+    qp(i, j, k, nqp) = compo + hdt * srcpass;
+    // qm
+    compo = qxm(i + 1, j, k, nqp) - compn;
+    qm(i + 1, j, k, nqp) = compo + hdt * srcpass;
   }
 
   // Update hydro vars

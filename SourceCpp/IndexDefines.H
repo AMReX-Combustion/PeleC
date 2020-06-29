@@ -62,24 +62,35 @@
 
 #define UFS UFA + NUM_ADV
 #define UFX UFS + NUM_SPECIES
-#define NVAR NTHERM + NUM_ADV + NUM_SPECIES + NUM_AUX
+#ifdef SOOT_MODEL
+#define NUM_SOOT_VARS NUM_SOOT_MOMENTS + 1
+#define UFSOOT UFX + NUM_AUX
+#else
+#define NUM_SOOT_VARS 0
+#endif
+#define NVAR NTHERM + NUM_ADV + NUM_SPECIES + NUM_AUX + NUM_SOOT_VARS
 
 #define QFS QFA + NUM_ADV
 #define QFX QFS + NUM_SPECIES
-#define QVAR QTHERM + NUM_ADV + NUM_SPECIES + NUM_AUX
+#ifdef SOOT_MODEL
+#define QFSOOT QFX + NUM_AUX
+#endif
+#define QVAR QTHERM + NUM_ADV + NUM_SPECIES + NUM_AUX + NUM_SOOT_VARS
 #define NQ QVAR
 #define NQAUX 6
 #define NGDNV 6
 
 #define NPASSIVE NUM_SPECIES + NUM_ADV + NUM_AUX + 3 - AMREX_SPACEDIM
+// Number of passive variables that are not per unit mass, U = Q instead of U = rho Q
+#define NPASSNM NUM_SOOT_VARS
 
 // This value was hardcoded to 4 in get_method_params in the old Fortran code
 #define NUM_GROW 4
 
 namespace indxmap {
 
-extern AMREX_GPU_DEVICE_MANAGED int qpassMap[NPASSIVE];
-extern AMREX_GPU_DEVICE_MANAGED int upassMap[NPASSIVE];
+extern AMREX_GPU_DEVICE_MANAGED int qpassMap[NPASSIVE+NPASSNM];
+extern AMREX_GPU_DEVICE_MANAGED int upassMap[NPASSIVE+NPASSNM];
 
 void init();
 

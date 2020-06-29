@@ -122,6 +122,16 @@ ifeq ($(USE_PARTICLES), TRUE)
   VPATH_LOCATIONS   += $(AMREX_HOME)/Src/Particle
 endif
 
+ifeq ($(USE_SOOT), TRUE)
+# Ensure the number of soot moments is correct
+    ifeq (,$(filter $(NUM_SOOT_MOMENTS),3 6))
+        $(error NUM_SOOT_MOMENTS must be 3 or 6)
+    endif
+  DEFINES += -DSOOT_MODEL
+  Bpack   += $(PELEC_MP_HOME)/Source/Soot_Models/Make.package
+  Blocs   += $(PELEC_MP_HOME)/Source/Soot_Models
+endif
+
 Bpack += $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir)/Make.package)
 Blocs += $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir))
 

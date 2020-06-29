@@ -190,6 +190,14 @@ PeleC::variableSetUp()
     cnt += NUM_AUX;
   }
 
+#ifdef SOOT_MODEL
+  // Set number of soot variables to be equal to the number of moments
+  // plus a variable for the weight of the delta function
+  NumSootVars = NUM_SOOT_MOMENTS + 1;
+  FirstSootVar = cnt;
+  cnt += NumSootVars;
+#endif
+
   // NVAR = cnt;
 
 #ifdef AMREX_PARTICLES
@@ -381,6 +389,23 @@ PeleC::variableSetUp()
     name[cnt] = "rho_" + aux_names[i];
   }
 
+#ifdef SOOT_MODEL
+    // Set the soot model names
+    if ( ParallelDescriptor::IOProcessor()) {
+      amrex::Print() << NumSootVars << " Soot Variables: " << std::endl;
+      for (int i = 0; i < NumSootVars; ++i)
+        amrex::Print() << soot_model->sootVariableName(i) << ' ' << ' ';
+      amrex::Print() << std::endl;
+    }
+
+    for (int i = 0; i < NumSootVars; ++i) {
+      cnt++;
+      set_scalar_bc(bc,phys_bc);
+      bcs[cnt] = bc;
+      name[cnt] = soot_model->sootVariableName(i);
+    }
+#endif
+
   amrex::StateDescriptor::BndryFunc bndryfunc1(pc_bcfill_hyp);
   bndryfunc1.setRunOnGPU(true);
 
@@ -559,6 +584,11 @@ PeleC::variableSetUp()
     "vfrac", amrex::IndexType::TheCellType(), 1, pc_dermagvel, the_same_box);
 #endif
 
+#ifdef SOOT_MODEL
+  // Add soot variables
+  soot_model->addSootDerivePlotVars(derive_lst, desc_lst);
+#endif
+
 #ifdef AMREX_PARTICLES
   // We want a derived type that corresponds to the number of particles
   // in each cell.  We only intend to use it in plotfiles for debugging
@@ -629,6 +659,10 @@ PeleC::variableSetUp()
 
   // Problem-specific derives
   add_problem_derives<ProblemDerives>(derive_lst, desc_lst);
+
+#ifdef SOOT_MODEL
+  soot_model->define();
+#endif
 
   // Set list of active sources
   set_active_sources();

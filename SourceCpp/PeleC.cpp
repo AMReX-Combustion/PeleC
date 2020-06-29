@@ -74,6 +74,8 @@ int PeleC::FirstSpec = -1;
 int PeleC::FirstAux = -1;
 int PeleC::NumAdv = 0;
 int PeleC::FirstAdv = -1;
+int PeleC::NumSootVars = 0;
+int PeleC::FirstSootVar = -1;
 int PeleC::pstateVel = -1;
 int PeleC::pstateT = -1;
 int PeleC::pstateDia = -1;
@@ -115,6 +117,10 @@ amrex::Vector<std::string> PeleC::spec_names;
 
 amrex::Vector<int> PeleC::src_list;
 
+#ifdef SOOT_MODEL
+SootModel* PeleC::soot_model = new SootModel();
+#endif
+
 // this will be reset upon restart
 amrex::Real PeleC::previousCPUTimeUsed = 0.0;
 amrex::Real PeleC::startCPUTime = 0.0;
@@ -139,6 +145,10 @@ ebInitialized(bool eb_init_val)
 void
 PeleC::variableCleanUp()
 {
+#ifdef SOOT_MODEL
+  delete soot_model;
+  soot_model = nullptr;
+#endif
 
   desc_lst.clear();
 
@@ -353,6 +363,10 @@ PeleC::read_params()
 
 #ifdef AMREX_PARTICLES
   readParticleParams();
+#endif
+
+#ifdef SOOT_MODEL
+  soot_model->readSootParams();
 #endif
 
 #ifdef PELEC_USE_EB
