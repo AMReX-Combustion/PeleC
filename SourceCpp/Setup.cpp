@@ -688,6 +688,12 @@ PeleC::set_active_sources()
     src_list.push_back(forcing_src);
   }
 
+#ifdef SOOT_MODEL
+  if (add_soot_src == 1) {
+    src_list.push_back(soot_src);
+  }
+#endif
+
 #ifdef AMREX_PARTICLES
   if (do_spray_particles) {
     src_list.push_back(spray_src);

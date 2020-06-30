@@ -69,7 +69,7 @@ PeleC::construct_new_source(
 
 #ifdef SOOT_MODEL
   case soot_src:
-    construct_new_forcing_source(time, dt);
+    construct_new_soot_source(time, dt);
     break;
 #endif
 
