@@ -56,7 +56,7 @@ Real PeleC::sprayRefT;
 
 namespace {
 std::string particle_init_file;
-int particle_init_uniform = 0;
+int particle_init_function = 0;
 std::string timestamp_dir;
 std::vector<int> timestamp_indices;
 } // namespace
@@ -165,7 +165,7 @@ PeleC::readParticleParams()
   //
   // Used in initData() on startup to set a uniform particle field
   //
-  ppp.query("particle_init_uniform", particle_init_uniform);
+  ppp.query("particle_init_function", particle_init_function);
   //
   // Used in post_restart() to read in a file of particles.
   //
@@ -316,8 +316,8 @@ PeleC::initParticles()
 
     if (!particle_init_file.empty()) {
       theSprayPC()->InitFromAsciiFile(particle_init_file, NSR_SPR + NAR_SPR);
-    } else if (particle_init_uniform > 0) {
-      theSprayPC()->InitParticlesUniform(this, level, particle_init_uniform);
+    } else if (particle_init_function > 0) {
+      theSprayPC()->InitSprayParticles(this, level, particle_init_function);
     }
   }
 }

@@ -392,14 +392,6 @@ PeleC::do_sdc_iteration(
       // the particles being set here are only used by finer levels.
       //
       int finest_level = parent->finestLevel();
-
-      //
-      // Setup the virtual particles that particles on finer levels
-      //
-
-      if (level < finest_level && use_virt_parts)
-        setupVirtualParticles();
-
       //
       // Check if I need to insert new particles
       //
@@ -408,12 +400,14 @@ PeleC::do_sdc_iteration(
 
       bool injectParts = false;
       bool insertParts = false;
-      // Inject or insert particles at the coarsest level,
-      // then redistribute to finer levels
-      if (level == 0)
-        injectParts = theSprayPC()->injectParticles(cur_time, nstep, level);
-      if (level == 0)
-        insertParts = theSprayPC()->insertParticles(cur_time, nstep, level);
+      // Particles should be added on the coarsest level
+      // since region might not be refined
+      if (level == 0) {
+        injectParts = theSprayPC()->
+          injectParticles(cur_time, dt, nstep, level);
+        insertParts = theSprayPC()->
+          insertParticles(cur_time, dt, nstep, level);
+      }
 
       //
       // Only redistribute if we injected or inserted particles
@@ -423,6 +417,12 @@ PeleC::do_sdc_iteration(
 	int nGrow = 1;
 	particle_redistribute(level);
       }
+
+      //
+      // Setup the virtual particles that represent particles on finer levels
+      //
+      if (level < finest_level && use_virt_parts)
+        setupVirtualParticles();
 
       //
       // Make a copy of the particles on this level into ghost particles
