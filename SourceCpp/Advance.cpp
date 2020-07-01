@@ -408,9 +408,11 @@ PeleC::do_sdc_iteration(
 
       bool injectParts = false;
       bool insertParts = false;
-      if (level == finest_level)
+      // Inject or insert particles at the coarsest level,
+      // then redistribute to finer levels
+      if (level == 0)
         injectParts = theSprayPC()->injectParticles(cur_time, nstep, level);
-      if (level == finest_level)
+      if (level == 0)
         insertParts = theSprayPC()->insertParticles(cur_time, nstep, level);
 
       //
