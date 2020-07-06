@@ -695,6 +695,26 @@ initialize_EB2(
     // auto gshop = EB2::makeShop(pf);
     // EB2::Build(gshop, geom, max_level, max_level);
 
+  } else if (geom_type == "moving_plane") {
+    amrex::RealArray point;
+    point[0] = 0.5;
+    point[1] = 0.0;
+    point[2] = 0.0;
+
+    amrex::RealArray normal;
+    normal[0] = -1.0;
+    normal[1] = 0.0;
+    normal[2] = 0.0;
+
+    amrex::EB2::PlaneIF pf(point, normal);
+
+    // amrex::EB2::GeometryShop<amrex::EB2::PlaneIF> gshop(pf);
+
+    amrex::EB2::BoxIF pipe({-1.0, 0.25, -1.}, {1.5, 0.5, 1.}, false);
+    auto gshop = amrex::EB2::makeShop(pipe);
+
+    amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
+
   } else {
     amrex::EB2::Build(geom, max_level, max_level);
   }
