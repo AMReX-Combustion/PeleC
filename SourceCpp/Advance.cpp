@@ -413,9 +413,7 @@ PeleC::do_sdc_iteration(
       // Only redistribute if we injected or inserted particles
       //
       if (injectParts || insertParts) {
-	// TODO: Determine the number of ghost cells needed here
-	int nGrow = 1;
-	particle_redistribute(level);
+        particle_redistribute(level);
       }
 
       //
