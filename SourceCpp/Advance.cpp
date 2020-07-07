@@ -166,11 +166,7 @@ PeleC::do_mol_advance(
     amrex::MultiFab::Subtract(S, I_R, NUM_SPECIES, Eden, 1, 0);
 
     // Compute I_R and U^{n+1} = U^n + dt*(F_{AD} + I_R)
-#if defined(AMREX_USE_GPU) || defined(PELEC_USE_EXPLICIT_REACT)
-    react_state_explicit(time, dt);
-#else
-    react_state(time, dt, false, &S);   // false = not react_init
-#endif
+    react_state(time, dt);
   }
 #endif
 
@@ -191,11 +187,7 @@ PeleC::do_mol_advance(
       amrex::MultiFab::LinComb(S, 0.5, S_old, 0, 0.5, S_new, 0, 0, NVAR, 0);
 
       // Compute I_R and U^{n+1} = U^n + dt*(F_{AD} + I_R)
-#if defined(AMREX_USE_GPU) || defined(PELEC_USE_EXPLICIT_REACT)
-      react_state_explicit(time, dt);
-#else
-      react_state(time, dt, false, &S); // false = not react_init
-#endif
+      react_state(time, dt);
 
       computeTemp(U_new, 0);
     }
@@ -569,11 +561,7 @@ PeleC::do_sdc_iteration(
 #ifdef PELEC_USE_REACTIONS
   // Update I_R and rebuild S_new accordingly
   if (do_react == 1) {
-#if defined(AMREX_USE_GPU) || defined(PELEC_USE_EXPLICIT_REACT)
-    react_state_explicit(time, dt);
-#else
     react_state(time, dt);
-#endif
   } else {
     construct_Snew(S_new, S_old, dt);
     get_new_data(Reactions_Type).setVal(0);

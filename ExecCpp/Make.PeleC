@@ -45,11 +45,6 @@ ifeq ($(USE_EB), TRUE)
   endif
 endif
 
-# Currently the code path requires the explicit reaction path because it works on the GPU and CPU
-ifeq ($(USE_EXPLICIT_REACT), TRUE)
-  DEFINES += -DPELEC_USE_EXPLICIT_REACT
-endif
-
 all: $(executable) 
 	$(SILENT) $(RM) AMReX_buildInfo.cpp
 	@echo SUCCESS

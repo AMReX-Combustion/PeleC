@@ -524,13 +524,6 @@ public:
     amrex::Real dt,
     bool init = false,
     amrex::MultiFab* A_aux = nullptr);
-#ifdef PELEC_USE_EXPLICIT_REACT
-  void react_state_explicit(
-    amrex::Real time,
-    amrex::Real dt,
-    bool init = false,
-    amrex::MultiFab* A_aux = nullptr);
-#endif
 #endif
 
   void reset_internal_energy(amrex::MultiFab& State, int ng);
