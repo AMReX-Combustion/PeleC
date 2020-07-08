@@ -107,8 +107,20 @@ PeleC::react_state(
         typ == amrex::FabType::singlevalued || typ == amrex::FabType::regular)
 #endif
       {
+        if (chem_integrator == 1) {
+          const int nsubsteps_min = adaptrk_nsubsteps_min;
+          const int nsubsteps_max = adaptrk_nsubsteps_max;
+          const int nsubsteps_guess = adaptrk_nsubsteps_guess;
+          const amrex::Real errtol = adaptrk_errtol;
+
+          amrex::ParallelFor(
+            bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+              pc_expl_reactions(
+                i, j, k, uold, unew, a, w_arr, I_R, dt, nsubsteps_min,
+                nsubsteps_max, nsubsteps_guess, errtol, do_update);
+            });
+        } else if (chem_integrator == 2) {
 #ifdef USE_SUNDIALS_PP
-        {
           const auto len = amrex::length(bx);
           const auto lo = amrex::lbound(bx);
           const int ncells = len.x * len.y * len.z;
@@ -187,15 +199,15 @@ PeleC::react_state(
           fabcost = 0.0;
           for (int i = 0; i < ncells; i += ode_ncells) {
 
-#ifndef USE_CUDA_SUNDIALS_PP
-            fabcost += react(
-              rY_in + i * (NUM_SPECIES + 1), rY_src_in + i * NUM_SPECIES,
-              re_in + i, re_src_in + i, &dt, &current_time);
-#else
+#ifdef USE_CUDA_SUNDIALS_PP
             fabcost += react(
               rY_in + i * (NUM_SPECIES + 1), rY_src_in + i * NUM_SPECIES,
               re_in + i, re_src_in + i, &dt, &current_time, &reactor_type,
               &ode_ncells, amrex::Gpu::gpuStream());
+#else
+            fabcost += react(
+              rY_in + i * (NUM_SPECIES + 1), rY_src_in + i * NUM_SPECIES,
+              re_in + i, re_src_in + i, &dt, &current_time);
 #endif
           }
           fabcost = fabcost / ncells;
@@ -272,20 +284,13 @@ PeleC::react_state(
           if (do_react_load_balance || do_mol_load_balance) {
             get_new_data(Work_Estimate_Type)[mfi].plus<amrex::RunOn::Device>(w);
           }
-        }
 #else
-          const int nsubsteps_min = adaptrk_nsubsteps_min;
-          const int nsubsteps_max = adaptrk_nsubsteps_max;
-          const int nsubsteps_guess = adaptrk_nsubsteps_guess;
-          const amrex::Real errtol = adaptrk_errtol;
-
-          amrex::ParallelFor(
-            bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-              pc_expl_reactions(
-                i, j, k, uold, unew, a, w_arr, I_R, dt, nsubsteps_min,
-                nsubsteps_max, nsubsteps_guess, errtol, do_update);
-            });
+          amrex::Abort(
+            "chem_integrator=2 which requires Sundials to be enabled");
 #endif
+        } else {
+          amrex::Abort("chem_integrator must be equal to 1 or 2");
+        }
       }
     }
   }

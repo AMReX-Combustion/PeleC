@@ -1892,7 +1892,7 @@ PeleC::init_reactor()
 #pragma omp parallel
 #endif
   {
-     reactor_init(&reactor_type, &ode_ncells);
+    reactor_init(&reactor_type, &ode_ncells);
   }
 #else
   reactor_info(&reactor_type, &ode_ncells);
