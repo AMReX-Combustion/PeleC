@@ -376,7 +376,7 @@ pc_umdrv(
   BL_PROFILE_VAR("PeleC::umeth()", umeth);
 #if AMREX_SPACEDIM == 1
   amrex::Abort("PLM isn't implemented in 1D.");
-  //pc_umeth_1D(
+  // pc_umeth_1D(
   //  bx, bclo, bchi, domlo, domhi, q, qaux, src_q, // bcMask,
   //  flx[0], qec_arr[0], a[0], pdivuarr, vol, dx, dt);
 #elif AMREX_SPACEDIM == 2

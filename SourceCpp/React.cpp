@@ -2,13 +2,12 @@
 
 #include "PeleC.H"
 #include "React.H"
-#if defined(USE_SUNDIALS_PP)
+#ifdef USE_SUNDIALS_PP
 #include <reactor.h>
 #endif
 
-#ifdef PELEC_USE_EXPLICIT_REACT
 void
-PeleC::react_state_explicit(
+PeleC::react_state(
   amrex::Real time, amrex::Real dt, bool react_init, amrex::MultiFab* A_aux)
 {
   /*
@@ -108,8 +107,20 @@ PeleC::react_state_explicit(
         typ == amrex::FabType::singlevalued || typ == amrex::FabType::regular)
 #endif
       {
+        if (chem_integrator == 1) {
+          const int nsubsteps_min = adaptrk_nsubsteps_min;
+          const int nsubsteps_max = adaptrk_nsubsteps_max;
+          const int nsubsteps_guess = adaptrk_nsubsteps_guess;
+          const amrex::Real errtol = adaptrk_errtol;
+
+          amrex::ParallelFor(
+            bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+              pc_expl_reactions(
+                i, j, k, uold, unew, a, w_arr, I_R, dt, nsubsteps_min,
+                nsubsteps_max, nsubsteps_guess, errtol, do_update);
+            });
+        } else if (chem_integrator == 2) {
 #ifdef USE_SUNDIALS_PP
-        {
           const auto len = amrex::length(bx);
           const auto lo = amrex::lbound(bx);
           const int ncells = len.x * len.y * len.z;
@@ -188,15 +199,15 @@ PeleC::react_state_explicit(
           fabcost = 0.0;
           for (int i = 0; i < ncells; i += ode_ncells) {
 
-#ifndef USE_CUDA_SUNDIALS_PP
-            fabcost += react(
-              rY_in + i * (NUM_SPECIES + 1), rY_src_in + i * NUM_SPECIES,
-              re_in + i, re_src_in + i, &dt, &current_time);
-#else
+#ifdef USE_CUDA_SUNDIALS_PP
             fabcost += react(
               rY_in + i * (NUM_SPECIES + 1), rY_src_in + i * NUM_SPECIES,
               re_in + i, re_src_in + i, &dt, &current_time, &reactor_type,
               &ode_ncells, amrex::Gpu::gpuStream());
+#else
+            fabcost += react(
+              rY_in + i * (NUM_SPECIES + 1), rY_src_in + i * NUM_SPECIES,
+              re_in + i, re_src_in + i, &dt, &current_time);
 #endif
           }
           fabcost = fabcost / ncells;
@@ -273,34 +284,13 @@ PeleC::react_state_explicit(
           if (do_react_load_balance || do_mol_load_balance) {
             get_new_data(Work_Estimate_Type)[mfi].plus<amrex::RunOn::Device>(w);
           }
-        }
 #else
-        if (chem_integrator == 1) {
-          amrex::Abort("Implicit Chemistry is not implemented yet on GPU,  "
-                       "only explicit (use pelec.chem_integrator=2).");
-          /*                pc_react_state(ARLIM_3D(bx.loVect()),
-                            ARLIM_3D(bx.hiVect()), uold.dataPtr(),
-             ARLIM_3D(uold.loVect()), ARLIM_3D(uold.hiVect()), unew.dataPtr(),
-             ARLIM_3D(unew.loVect()), ARLIM_3D(unew.hiVect()), a.dataPtr(),
-             ARLIM_3D(a.loVect()), ARLIM_3D(a.hiVect()), m.dataPtr(),
-             ARLIM_3D(m.loVect()), ARLIM_3D(m.hiVect()), w.dataPtr(),
-             ARLIM_3D(w.loVect()), ARLIM_3D(w.hiVect()), I_R.dataPtr(),
-             ARLIM_3D(I_R.loVect()), ARLIM_3D(I_R.hiVect()), time, dt,
-             do_update); */
-        } else {
-          const int nsubsteps_min = adaptrk_nsubsteps_min;
-          const int nsubsteps_max = adaptrk_nsubsteps_max;
-          const int nsubsteps_guess = adaptrk_nsubsteps_guess;
-          const amrex::Real errtol = adaptrk_errtol;
-
-          amrex::ParallelFor(
-            bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-              pc_expl_reactions(
-                i, j, k, uold, unew, a, w_arr, I_R, dt, nsubsteps_min,
-                nsubsteps_max, nsubsteps_guess, errtol, do_update);
-            });
-        }
+          amrex::Abort(
+            "chem_integrator=2 which requires Sundials to be enabled");
 #endif
+        } else {
+          amrex::Abort("chem_integrator must be equal to 1 or 2");
+        }
       }
     }
   }
@@ -325,4 +315,3 @@ PeleC::react_state_explicit(
 #endif
   }
 }
-#endif

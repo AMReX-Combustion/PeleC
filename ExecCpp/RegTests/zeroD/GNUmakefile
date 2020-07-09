@@ -25,7 +25,6 @@ THREAD_SANITIZER = FALSE
 
 # PeleC
 USE_REACT = TRUE
-USE_EXPLICIT_REACT = TRUE
 USE_EB = FALSE
 Eos_dir := Fuego
 Reactions_dir := Fuego

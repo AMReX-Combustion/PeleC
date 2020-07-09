@@ -68,7 +68,6 @@ pelec.diffuse_vel=1
 pelec.sdc_iters = 2
 pelec.flame_trac_name = HO2
 pelec.do_mol=0
-pelec.chem_integrator=2
 
 eb2.use_eb2 = 1
 eb2.geom_type = "all_regular"

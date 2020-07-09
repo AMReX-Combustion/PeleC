@@ -31,7 +31,7 @@ using namespace MASA;
 #include "Utilities.H"
 #include "Tagging.H"
 #include "IndexDefines.H"
-#if defined(USE_SUNDIALS_PP)
+#ifdef USE_SUNDIALS_PP
 #include <reactor.h>
 #endif
 
@@ -1254,11 +1254,7 @@ PeleC::post_init(amrex::Real stop_time)
 #ifdef PELEC_USE_REACTIONS
   if (do_react == 1) {
     bool react_init = true;
-#if defined(AMREX_USE_GPU) || defined(PELEC_USE_EXPLICIT_REACT)
-    react_state_explicit(cumtime, dtlev, react_init);
-#else
     react_state(cumtime, dtlev, react_init);
-#endif
   }
 #endif
 
@@ -1902,7 +1898,7 @@ PeleC::init_reactor()
 {
   CKINIT();
 
-#if defined(USE_SUNDIALS_PP)
+#ifdef USE_SUNDIALS_PP
   int reactor_type = 1;
   int ode_ncells = 1;
 #ifndef USE_CUDA_SUNDIALS_PP
@@ -1910,7 +1906,7 @@ PeleC::init_reactor()
 #pragma omp parallel
 #endif
   {
-     reactor_init(&reactor_type, &ode_ncells);
+    reactor_init(&reactor_type, &ode_ncells);
   }
 #else
   reactor_info(&reactor_type, &ode_ncells);

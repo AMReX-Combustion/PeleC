@@ -367,7 +367,7 @@ react_rho_max                Real          1.e200
 # disable burning inside hydrodynamic shock regions
 disable_shock_burning        int           0
 
-# chemistry integrator 1 for vode, 2 for explicit RK
+# chemistry integrator: 1 for built-in explicit RK, 2 for Sundials
 chem_integrator              int           1                  n
 
 #explict RK chemistry integrator options (minimum substeps)
