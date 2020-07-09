@@ -2,8 +2,8 @@
 #include <AMReX_SPACE.H>
 
 namespace indxmap {
-AMREX_GPU_DEVICE_MANAGED int upassMap[NPASSIVE];
-AMREX_GPU_DEVICE_MANAGED int qpassMap[NPASSIVE];
+AMREX_GPU_DEVICE_MANAGED int upassMap[NPASSIVE+NPASSNM];
+AMREX_GPU_DEVICE_MANAGED int qpassMap[NPASSIVE+NPASSNM];
 
 void
 init()

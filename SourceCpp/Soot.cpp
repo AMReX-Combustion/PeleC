@@ -11,7 +11,7 @@ PeleC::construct_old_soot_source(amrex::Real time,
   int ng = 0; // None filled
 
   old_sources[soot_src]->setVal(0.0);
-  fill_soot_source(time, dt, S_old, S_old, *old_sources[soot_src], ng);
+  fill_soot_source(time, dt, S_old, *old_sources[soot_src], ng);
 
   old_sources[soot_src]->FillBoundary(geom.periodicity());
 }
@@ -20,22 +20,19 @@ void
 PeleC::construct_new_soot_source(amrex::Real time,
                                  amrex::Real dt)
 {
-  amrex::MultiFab& S_old = get_old_data(State_Type);
   amrex::MultiFab& S_new = get_new_data(State_Type);
 
   int ng = 0;
 
   new_sources[soot_src]->setVal(0.0);
 
-  fill_soot_source(time, dt, S_old, S_new, *new_sources[soot_src], ng);
-
+  fill_soot_source(time, dt, S_new, *new_sources[soot_src], ng);
 }
 
 void
 PeleC::fill_soot_source (amrex::Real            time,
                          amrex::Real            dt,
-                         const amrex::MultiFab& state_old,
-                         const amrex::MultiFab& state_new,
+                         const amrex::MultiFab& state,
                          amrex::MultiFab&       soot_src,
                          int                    ng)
 {
@@ -44,18 +41,16 @@ PeleC::fill_soot_source (amrex::Real            time,
   const amrex::Real* prob_lo = geom.ProbLo();
 
 #ifdef PELE_USE_EB
-  auto const& fact = dynamic_cast<EBFArrayBoxFactory const&>(state_old.Factory());
+  auto const& fact = dynamic_cast<EBFArrayBoxFactory const&>(state.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
 #endif
 
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-  for (MFIter mfi(soot_src, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi)
-  {
+  for (MFIter mfi(soot_src, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
     const amrex::Box& bx = mfi.growntilebox(ng);
     amrex::RealBox gridloc = amrex::RealBox(grids[mfi.index()],geom.CellSize(),geom.ProbLo());
-
 #ifdef PELE_USE_EB
     const auto& flag_fab = flags[mfi];
     FabType typ = flag_fab.getType(bx);
@@ -63,18 +58,18 @@ PeleC::fill_soot_source (amrex::Real            time,
       continue;
     }
 #endif
-
-    auto const& s_old_arr = state_old.array(mfi);
-    auto const& s_new_arr = state_new.array(mfi);
-    auto& soot_arr = soot_src.array(mfi);
+    const amrex::FArrayBox& Sfab = state[mfi];
+    amrex::FArrayBox& soot_fab = soot_src[mfi];
+    auto const& s_arr = Sfab.array();
+    auto const& soot_arr = soot_fab.array();
     const int nqaux = NQAUX > 0 ? NQAUX : 1;
     amrex::FArrayBox coeff_cc(bx, nCompTr), q(bx,QVAR), qaux(bx, nqaux);
     amrex::Elixir qeli = q.elixir();
     amrex::Elixir qauxeli = qaux.elixir();
-    amrex::Elixir coef_eli = coef_cc.elixir();
+    amrex::Elixir coeff_eli = coeff_cc.elixir();
     auto const& q_arr = q.array();
     auto const& qaux_arr = qaux.array();
-    auto const& coef_arr = coef_cc.array();
+    auto const& coeff_arr = coeff_cc.array();
 
     // Get primitives, Q, including (Y, T, p, rho) from conserved state
     // required for D term
@@ -82,7 +77,7 @@ PeleC::fill_soot_source (amrex::Real            time,
       BL_PROFILE("PeleC::ctoprim()");
       amrex::ParallelFor(
         bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-          pc_ctoprim(i, j, k, s_new_arr, q_arr, qaux_arr);
+          pc_ctoprim(i, j, k, s_arr, q_arr, qaux_arr);
         });
     }
 
@@ -102,6 +97,6 @@ PeleC::fill_soot_source (amrex::Real            time,
           coe_lambda);
         });
     }
-    soot_model->addSootSourceTerm(bx, Snfab, Qfab, coeff_cc, Ffab, time, dt);
+    soot_model->addSootSourceTerm(bx, Sfab, q, coeff_cc, soot_fab, time, dt);
   }
 }

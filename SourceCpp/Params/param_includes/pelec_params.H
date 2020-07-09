@@ -26,6 +26,7 @@ static int nscbc_adv;
 static int nscbc_diff;
 static int add_ext_src;
 static int add_forcing_src;
+static int add_soot_src;
 static int hybrid_hydro;
 static int ppm_type;
 static int weno_variant;

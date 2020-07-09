@@ -402,7 +402,7 @@ PeleC::do_sdc_iteration(
       bool insertParts = false;
       // Particles should be added on the coarsest level
       // since region might not be refined
-      if (level == 0) {
+      if (level == finest_level) {
         injectParts = theSprayPC()->
           injectParticles(cur_time, dt, nstep, level);
         insertParts = theSprayPC()->
