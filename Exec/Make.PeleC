@@ -49,12 +49,16 @@ ifeq ($(HYP_TYPE), MOL)
 endif
 
 # EOS
+# Both Fortran and cpp can be loaded for EOS
+EOS_HOME_F90 := $(EOS_HOME)/F90
 EOS_PATH := $(EOS_HOME)/$(strip $(Eos_dir))
-include $(EOS_HOME)/Make.package
+EOS_PATH_F90 := $(EOS_PATH)/F90
+include $(EOS_HOME_F90)/Make.package
 include $(EOS_PATH)/Make.package
-EXTERN_CORE       += $(EOS_HOME) $(EOS_PATH)
-INCLUDE_LOCATIONS += $(EOS_HOME) $(EOS_PATH)
-VPATH_LOCATIONS   += $(EOS_HOME) $(EOS_PATH)
+include $(EOS_PATH_F90)/Make.package
+EXTERN_CORE       += $(EOS_HOME_F90) $(EOS_PATH_F90)
+INCLUDE_LOCATIONS += $(EOS_HOME) $(EOS_HOME_F90) $(EOS_PATH) $(EOS_PATH_F90)
+VPATH_LOCATIONS   += $(EOS_HOME) $(EOS_HOME_F90) $(EOS_PATH) $(EOS_PATH_F90)
 ifeq ($(Eos_dir), Fuego)
   TRANSPORT_TYPE := IDEAL_GAS
 else
@@ -69,13 +73,19 @@ endif
 ifeq ($(USE_SUNDIALS_PP),TRUE) 
   include $(PELE_PHYSICS_HOME)/ThirdParty/Make.ThirdParty
 endif
+REACTIONS_HOME_F90 := $(REACTIONS_HOME)/F90
 REACTIONS_PATH := $(REACTIONS_HOME)/$(strip $(Reactions_dir))
-include $(REACTIONS_HOME)/Make.package
+REACTIONS_PATH_F90 := $(REACTIONS_PATH)/F90
 include $(REACTIONS_PATH)/Make.package
-EXTERN_CORE       += $(REACTIONS_HOME) $(REACTIONS_PATH)
-INCLUDE_LOCATIONS += $(REACTIONS_HOME) $(REACTIONS_PATH)
-VPATH_LOCATIONS   += $(REACTIONS_HOME) $(REACTIONS_PATH)
-ifdef Chemistry_Model
+EXTERN_CORE       += $(REACTIONS_HOME_F90) $(REACTIONS_PATH_F90)
+INCLUDE_LOCATIONS += $(REACTIONS_HOME) $(REACTIONS_HOME_F90) $(REACTIONS_PATH) $(REACTIONS_PATH_F90)
+VPATH_LOCATIONS   += $(REACTIONS_HOME) $(REACTIONS_HOME_F90) $(REACTIONS_PATH) $(REACTIONS_PATH_F90)
+#ifdef Chemistry_Model
+  ifeq ($(Eos_dir), GammaLaw)
+    ifneq ($(Chemistry_Model), Null)
+      $(error Chemistry_Model definition not compatible with Eos_Dir=GammaLaw)
+    endif
+  endif
   CHEM_HOME = $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism/Models/$(Chemistry_Model)
   CHEM_ALL  = $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism/Models
   VPATH_LOCATIONS += $(CHEM_HOME) $(CHEM_ALL)
@@ -83,36 +93,30 @@ ifdef Chemistry_Model
            $(CHEM_ALL)/Make.package
   Blocs += $(CHEM_HOME) $(CHEM_ALL)
 
-  CHEM_HOME1 = $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism
-  VPATH_LOCATIONS += $(CHEM_HOME1)
-  Bpack += $(CHEM_HOME1)/Make.package
-  Blocs += $(CHEM_HOME1)
-endif
+  Bpack += $(PELE_PHYSICS_HOME)/Support/Fuego/Evaluation/Make.package
+  Blocs += $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism \
+           $(PELE_PHYSICS_HOME)/Support/Fuego/Evaluation
+#endif
 
 # Transport
+TRAN_HOME_F90 := $(TRAN_HOME)/F90
 TRAN_PATH := $(TRAN_HOME)/$(strip $(Transport_dir))
-include $(TRAN_HOME)/Make.package
-include $(TRAN_PATH)/Make.package
-EXTERN_CORE       += $(TRAN_HOME) $(TRAN_PATH)
-INCLUDE_LOCATIONS += $(TRAN_HOME) $(TRAN_PATH)
-VPATH_LOCATIONS   += $(TRAN_HOME) $(TRAN_PATH)
+TRAN_PATH_F90 := $(TRAN_PATH)/F90
+# Put inside an if use FORTRAN later
+include $(TRAN_HOME_F90)/Make.package
+include $(TRAN_PATH_F90)/Make.package
+# CPP TRANSPORT NOT USED RIGHT NOW
+#include $(TRAN_PATH)/Make.package
+EXTERN_CORE       += $(TRAN_HOME_F90) $(TRAN_PATH_F90)
+INCLUDE_LOCATIONS += $(TRAN_HOME_F90) $(TRAN_PATH_F90)
+VPATH_LOCATIONS   += $(TRAN_HOME_F90) $(TRAN_PATH_F90)
 USE_FUEGO = FALSE
 ifeq ($(Transport_dir), EGLib)
   USE_FUEGO = TRUE
   DEFINES += -DEGLIB_TRANSPORT
-  Bpack   += $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism/Make.package \
-             $(PELE_PHYSICS_HOME)/Support/Fuego/Evaluation/Make.package
-
-  Blocs   += $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism \
-             $(PELE_PHYSICS_HOME)/Support/Fuego/Evaluation
 endif
 ifeq ($(Transport_dir), Simple)
   DEFINES += -DSIMPLE_TRANSPORT
-  Bpack   += $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism/Make.package \
-             $(PELE_PHYSICS_HOME)/Support/Fuego/Evaluation/Make.package
-
-  Blocs   += $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism \
-             $(PELE_PHYSICS_HOME)/Support/Fuego/Evaluation
 endif
 ifeq ($(Transport_dir), Constant)
   DEFINES += -DCONSTANT_TRANSPORT
@@ -159,7 +163,9 @@ ifeq ($(USE_SOOT), TRUE)
     ifeq (,$(filter $(NUM_SOOT_MOMENTS),3 6))
         $(error NUM_SOOT_MOMENTS must be 3 or 6)
     endif
-  DEFINES += -DSOOT_MODEL
+  DEFINES+=-DSOOT_MODEL
+  DEFINES+=-DNUM_SOOT_MOMENTS=$(NUM_SOOT_MOMENTS)
+  DEFINES+=-DNUM_SOOT_VARS=$(NUM_SOOT_VARS)
   Bpack   += $(PELEC_MP_HOME)/Source/Soot_Models/Make.package
   Blocs   += $(PELEC_MP_HOME)/Source/Soot_Models
 endif

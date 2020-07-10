@@ -25,7 +25,7 @@ contains
       use amrex_mempool_module, only : bl_allocate, bl_deallocate
       use meth_params_module
       use amrex_constants_module
-      use network, only : nspecies
+      use fuego_chemistry, only : nspecies
       use prob_params_module, only : physbc_lo, physbc_hi, Inflow
 
       implicit none
@@ -155,7 +155,7 @@ contains
       use amrex_mempool_module, only : bl_allocate, bl_deallocate
       use meth_params_module
       use amrex_constants_module
-      use network, only : nspecies
+      use fuego_chemistry, only : nspecies
       use prob_params_module, only : physbc_lo, physbc_hi, Inflow
 
       implicit none
@@ -286,7 +286,7 @@ contains
       use amrex_mempool_module, only : bl_allocate, bl_deallocate
       use meth_params_module
       use amrex_constants_module
-      use network, only : nspecies
+      use fuego_chemistry, only : nspecies
       use prob_params_module, only : physbc_lo, physbc_hi, Inflow
 
       implicit none

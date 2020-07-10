@@ -22,7 +22,7 @@ contains
 use amrex_ebcellflag_module, only : is_covered_cell
 #endif
 
-    use network, only : nspecies
+    use fuego_chemistry, only : nspecies
     use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UTEMP, &
                                    UFS
 #ifdef USE_SUNDIALS_PP
@@ -164,16 +164,11 @@ use amrex_ebcellflag_module, only : is_covered_cell
                             time,dt_react,do_update,&
                             nsubsteps_min,nsubsteps_max,nsubsteps_guess,errtol) bind(C, name="pc_react_state_expl")
 
-    use eos_type_module
-    use eos_module, only : eos_t,eos_rt
-    use network, only : nspecies
-    use chemistry_module  , only : molecular_weight
-    use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UTEMP, &
-                                   UFS
+    use fuego_chemistry, only : nspecies, molecular_weight, CKWC,CKCVBS,CKUMS,CKYTCR
+    use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UTEMP, UFS
     use amrex_fort_module, only : amrex_real
     use amrex_constants_module, only : HALF
     use rk_params_module
-    use fuego_chemistry, only : VCKWYR
 
     implicit none
 
@@ -201,39 +196,29 @@ use amrex_ebcellflag_module, only : is_covered_cell
     !integer,parameter :: nrkstages=1
     !double precision,parameter,dimension(nrkstages)  :: rkcoeffs=(/1.d0/)
 
-    integer :: npts,steps,stage,ns
+    integer :: steps,stage,ns
 
     double precision :: saneval(NVAR)
     double precision :: urk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),NVAR)
-    double precision :: yrk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),nspecies)
+    double precision :: rhs(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),nspecies+1)
     double precision :: urk_carryover(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),NVAR)
     double precision :: urk_err(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),NVAR)
-    double precision :: wdot(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),nspecies)
-    double precision :: eint(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),nspecies)
-    double precision :: cv(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))
     double precision :: rhoedot_ext(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))
     double precision :: rhoydot_ext(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),nspecies)
     double precision :: re_old(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))
-    double precision :: tempsrc(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))
-    type (eos_t) :: eos_state
 
     double precision :: rhoE_old,rho_e_K_old,rho,energy,rho_e_K_new,rho_new
-    double precision :: rhoe_new,rhoet_new,rhoInv,mom_new(3)
+    double precision :: rhoe_new,rhoet_new,mom_new(3)
     double precision :: dt_rk,dt_rk_max,dt_rk_min,updt_time
+    double precision :: spec_y(nspecies),spec_c(nspecies),eint(nspecies),cv
     
-    call build(eos_state)
-
     !initialize all local arrays
-    yrk         = 0.d0
     urk         = uold(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),:)
     urk_err     = 0.d0
-    wdot        = 0.d0
-    eint        = 0.d0
-    cv          = 0.d0
+    rhs         = 0.d0
     rhoedot_ext = 0.d0
     rhoydot_ext = 0.d0
     re_old      = 0.d0
-    tempsrc     = 0.d0
     mom_new     = 0.d0
 
     !==============================================================
@@ -290,6 +275,7 @@ use amrex_ebcellflag_module, only : is_covered_cell
             enddo
         enddo
     enddo
+
     !===============================================================
     dt_rk     = dt_react/nsubsteps_guess
     dt_rk_min = dt_react/nsubsteps_max
@@ -301,85 +287,46 @@ use amrex_ebcellflag_module, only : is_covered_cell
     !write(6,*) "============================"
     !flush(6)
 
-    npts=(hi(3)-lo(3)+1)*(hi(2)-lo(2)+1)*(hi(1)-lo(1)+1)
     updt_time=0.d0
     steps=0
 
     do while(updt_time .lt. dt_react)
-    !do steps=1,nsubsteps
 
         urk_carryover   = urk
         urk_err     = 0.d0
-        wdot        = 0.d0
-        tempsrc     = 0.d0
+        rhs         = 0.d0
         updt_time = updt_time+dt_rk
         steps     = steps+1
 
-        !write(6,*) "updt_time,dt_rk:",updt_time,dt_rk,dt_rk_min,dt_rk_max,dt_react
-        !flush(6)
 
         do stage=1,rk64_stages
 
-           !computing mass fractions
-           !hope the compiler can optimize this better
+           !computing rhs
            do k=lo(3),hi(3)
               do j=lo(2),hi(2)
                 do i=lo(1),hi(1)
-                    yrk(i,j,k,1:nspecies)=urk(i,j,k,UFS:UFS+nspecies-1)/urk(i,j,k,URHO)
+
+                    rho=urk(i,j,k,URHO)
+                    spec_y(1:nspecies)=urk(i,j,k,UFS:UFS+nspecies-1)/rho
+                    
+                    call CKYTCR(rho,urk(i,j,k,UTEMP),spec_y,spec_c)
+                    call CKWC(urk(i,j,k,UTEMP),spec_c,rhs(i,j,k,1:nspecies))
+                    call CKUMS(urk(i,j,k,UTEMP),eint)
+                    call CKCVBS(urk(i,j,k,UTEMP),spec_y,cv)
+                    
+                    rhs(i,j,k,1:nspecies) = rhs(i,j,k,1:nspecies)*molecular_weight(1:nspecies) &
+                                + rhoydot_ext(i,j,k,1:nspecies)
+
+                    rhs(i,j,k,nspecies+1)=rhoedot_ext(i,j,k)
+                    do ns=1,nspecies
+                        rhs(i,j,k,nspecies+1)=rhs(i,j,k,nspecies+1)-rhs(i,j,k,ns)*eint(ns)
+                    enddo
+                    rhs(i,j,k,nspecies+1)=rhs(i,j,k,nspecies+1)/(rho*cv)
+
                 enddo
               enddo
            enddo
 
-           !Returns the molar production rate of species
-           !Given rho, T, and mass fractions
-           call VCKWYR(npts, urk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),URHO), &
-               urk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),UTEMP), &
-               yrk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),1:nspecies), &
-               wdot)
-
-            !Ideally this has to come from a vector call to fuego
-            !will replace after pelephysics has this facility
-            do k=lo(3),hi(3)
-                do j=lo(2),hi(2)
-                    do i=lo(1),hi(1)
-
-                            eos_state % rho               = urk(i,j,k,URHO)
-                            rhoInv                        = 1.d0 / eos_state % rho
-                            eos_state % massfrac(1:nspecies) = urk(i,j,k,UFS:UFS+nspecies-1) * rhoInv
-                            eos_state % T                 = urk(i,j,k,UTEMP)
-                            call eos_rt(eos_state)
-                            do ns=1,nspecies
-                                eint(i,j,k,ns)=eos_state%ei(ns)
-                            enddo
-                            cv(i,j,k)=eos_state%cv
-
-                    enddo
-                enddo
-            enddo
-
-           !convert wdot to gms/s and add external source
-           !hope the compiler can optimize this better
-           do k=lo(3),hi(3)
-            do j=lo(2),hi(2)
-              do i=lo(1),hi(1)
-                wdot(i,j,k,1:nspecies) = wdot(i,j,k,1:nspecies)*molecular_weight(1:nspecies) + rhoydot_ext(i,j,k,1:nspecies)
-              enddo
-            enddo
-           enddo
-           
-           !update temperature src
-           !hope the compiler can optimize this better
-           do k=lo(3),hi(3)
-                do j=lo(2),hi(2)
-                    do i=lo(1),hi(1)
-                        tempsrc(i,j,k)=rhoedot_ext(i,j,k)
-                        do ns=1,nspecies
-                            tempsrc(i,j,k)=tempsrc(i,j,k)-wdot(i,j,k,ns)*eint(i,j,k,ns)
-                        enddo
-                        tempsrc(i,j,k)=tempsrc(i,j,k)/urk(i,j,k,URHO)/cv(i,j,k)
-                    enddo
-                enddo
-            enddo
            
            !update species and temperature
            !hope the compiler can optimize this better
@@ -388,15 +335,16 @@ use amrex_ebcellflag_module, only : is_covered_cell
              do i=lo(1),hi(1)
 
                 !=====================
-                !update urk_err
+                !update error register
                 !=====================
 
                 !update species
                 urk_err(i,j,k,UFS:UFS+nspecies-1)  = urk_err(i,j,k,UFS:UFS+nspecies-1) + &
-                err_rk64(stage)*dt_rk*wdot(i,j,k,1:nspecies)*mask(i,j,k)
+                err_rk64(stage)*dt_rk*rhs(i,j,k,1:nspecies)*mask(i,j,k)
 
                 !update temperature 
-                urk_err(i,j,k,UTEMP) = urk_err(i,j,k,UTEMP) + err_rk64(stage)*dt_rk*tempsrc(i,j,k)*mask(i,j,k)
+                urk_err(i,j,k,UTEMP) = urk_err(i,j,k,UTEMP) + &
+                err_rk64(stage)*dt_rk*rhs(i,j,k,nspecies+1)*mask(i,j,k)
                 !===============================================================================================
 
                 !=====================
@@ -405,22 +353,24 @@ use amrex_ebcellflag_module, only : is_covered_cell
 
                 !update species
                 urk(i,j,k,UFS:UFS+nspecies-1)  = urk_carryover(i,j,k,UFS:UFS+nspecies-1) + &
-                alpha_rk64(stage)*dt_rk*wdot(i,j,k,1:nspecies)*mask(i,j,k)
+                alpha_rk64(stage)*dt_rk*rhs(i,j,k,1:nspecies)*mask(i,j,k)
 
                 !update temperature 
-                urk(i,j,k,UTEMP) = urk_carryover(i,j,k,UTEMP) + alpha_rk64(stage)*dt_rk*tempsrc(i,j,k)*mask(i,j,k)
+                urk(i,j,k,UTEMP) = urk_carryover(i,j,k,UTEMP) + &
+                alpha_rk64(stage)*dt_rk*rhs(i,j,k,nspecies+1)*mask(i,j,k)
                 !===============================================================================================
 
                 !=====================
-                !update urk_carryover
+                !update carryover
                 !=====================
                 
                 !update species
                 urk_carryover(i,j,k,UFS:UFS+nspecies-1)  = urk(i,j,k,UFS:UFS+nspecies-1) + &
-                beta_rk64(stage)*dt_rk*wdot(i,j,k,1:nspecies)*mask(i,j,k)
+                beta_rk64(stage)*dt_rk*rhs(i,j,k,1:nspecies)*mask(i,j,k)
 
                 !update temperature 
-                urk_carryover(i,j,k,UTEMP) = urk(i,j,k,UTEMP) + beta_rk64(stage)*dt_rk*tempsrc(i,j,k)*mask(i,j,k)
+                urk_carryover(i,j,k,UTEMP) = urk(i,j,k,UTEMP) + &
+                beta_rk64(stage)*dt_rk*rhs(i,j,k,nspecies+1)*mask(i,j,k)
                 !===============================================================================================
 
             enddo
@@ -515,6 +465,8 @@ use amrex_ebcellflag_module, only : is_covered_cell
       double precision,parameter :: exp1=0.25
       double precision,parameter :: exp2=0.2
       double precision,parameter :: beta=1.d0
+    
+      double precision :: maxerr_cell
 
 
       max_err=tiny(max_err)
@@ -523,19 +475,17 @@ use amrex_ebcellflag_module, only : is_covered_cell
         do j=lo(2),hi(2)
             do i=lo(1),hi(1)
                 
-                if(maxval(abs(urk_err(i,j,k,:))) .gt. max_err) then
-                    max_err=maxval(abs(urk_err(i,j,k,:)))
+                maxerr_cell=maxval(abs(urk_err(i,j,k,:)))
+                if(maxerr_cell .gt. max_err) then
+                    max_err=maxerr_cell
                 endif
+
             enddo
         enddo
     enddo
     
-    !write(6,*)"max_err:",max_err
-    !flush(6)
-
     !chance to increase time step
     if(max_err .lt. tol) then
-
         !limit max_err,can't be 0
         max_err=max(max_err,tol/safety_fac)
         change_factor=beta*(tol/max_err)**(exp1)

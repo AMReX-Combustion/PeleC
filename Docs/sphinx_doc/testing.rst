@@ -17,26 +17,21 @@ An example ``cmake`` configure command performed in the ``Build`` directory in P
         -DCMAKE_Fortran_COMPILER:STRING=mpifort \
         -DENABLE_FCOMPARE:BOOL=ON \
         -DENABLE_TESTS:BOOL=ON \
-        -DTEST_WITH_FCOMPARE:BOOL=OFF \
-        -DTEST_WITH_FEXTREMA:BOOL=OFF \
-        -DENABLE_VERIFICATION:BOOL=ON \
+        -DENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
         -DPELEC_ENABLE_MASA:BOOL=ON \
         -DMASA_DIR:STRING=/path/to/masa/dir \
+        -DPELEC_USE_CPP:BOOL=ON \
         ..
 
 While performing a ``cmake -LAH ..`` command will give descriptions of every option for the CMake project. Descriptions of particular options regarding the testing suite are listed below:
 
 **ENABLE_FCOMPARE** -- builds the ``fcompare`` utility from AMReX as well as the executable(s), to allow for testing differences between plot files
 
-**ENABLE_FEXTREMA** -- builds the ``fextrema`` utility from AMReX as well as the executable(s), to allow for testing differences between plot files
-
 **ENABLE_TESTS** -- enables the base level regression test suite that will check whether each test will run its executable to completion successfully
 
-**TEST_WITH_FCOMPARE** -- enables an additional step in the regression tests where the ``fcompare`` program from AMReX will also test for differences in the plots generated from the tests against "gold" files which contain previously verified results to machine precision
+**ENABLE_FCOMPARE_FOR_TESTS** -- enables an additional step in the regression tests where the ``fcompare`` program from AMReX will also test for differences in the plots generated from the tests against "gold" files which contain previously verified results to machine precision
 
-**TEST_WITH_FEXTREMA** -- enables an additional step in the regression tests where the ``fextrema`` program from AMReX will also test for differences in the maxima and minima of the plots generated from the tests against "gold" files which contain previously verified results to machine precision (this is the default method in which Travis CI detects diffs in results because it's more portable than storing plot files)
-
-**ENABLE_VERIFICATION** -- enables the verification suite which checks that PeleC is second order accurate using several additional tests, but note that the verification tests can take a significant amount of time to run and certain Python modules are expected to exist on the user's system to generate PNG plot files
+**ENABLE_MASA** -- enables the verification suite which checks that PeleC is second order accurate using several additional tests, but note that the verification tests can take a significant amount of time to run and certain Python modules are expected to exist on the user's system to generate PNG plot files
 
 **PELEC_ENABLE_MASA** and **MASA_DIR** -- are required when the verification suite is enabled to perform the method of manufactured solutions
 
@@ -56,4 +51,4 @@ To run the test suite, run ``ctest`` in the ``Build`` directory. CTest will run 
 Adding Tests
 ~~~~~~~~~~~~
 
-Developers are encouraged to add tests to PeleC and in this section we describe how the tests are organized in the CTest framework. The locations of the tests are in ``PeleC/Testing``. To add a test, first create a test directory with a name in ``PeleC/Testing/test_files/<test_name>``. Place an ``exe_options.cmake`` file in the directory, using others tests as an example. Place the input file for the test as ``PeleC/Testing/test_files/<test_name>.i`` and a "probin" file as ``PeleC/Testing/test_files/<test_name>.probin``, along with any other files necessary for the test. Any file in the test directory will be copied during CMake configure to the test's working directory. Next, edit the ``PeleC/Testing/CTestList.cmake`` file, add the test to the list, and specify the number of MPI ranks the test should be run with. Note there are different categories of tests and if your test falls outside of these categories, a new function to add the test will need to be created. After these steps, your test will be automatically added to the test suite database when doing the CMake configure with the testing suite enabled.
+Developers are encouraged to add tests to PeleC and in this section we describe how the tests are organized in the CTest framework. The locations of the tests are in ``PeleC/Tests``. To add a test, first create a test directory with a name in ``PeleC/ExecCpp/<test_exe>/tests/<test_name>``. Place the input file for the test as ``PeleC/Tests/<test_exe>/tests/<test_name>/<test_name>.i`` along with any other files necessary for the test. Any file in the test directory will be copied during CMake configure to the test's working directory. Next, edit the ``PeleC/Tests/CMakeLists.txt`` file, add the test to the list. Note there are different categories of tests and if your test falls outside of these categories, a new function to add the test will need to be created. After these steps, your test will be automatically added to the test suite database when doing the CMake configure with the testing suite enabled.

@@ -2,7 +2,7 @@ module transverse_module
 
   use amrex_constants_module
 
-  use network, only : nspecies, naux
+  use fuego_chemistry, only : nspecies, naux
   use meth_params_module, only : NQ, QVAR, NVAR, QRHO, QU, QV, QW, &
                                  QPRES, QREINT, QGAME, QFS, QFX, &
                                  URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, &

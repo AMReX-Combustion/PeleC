@@ -18,7 +18,7 @@ contains
     use meth_params_module, only : NVAR
 
 #ifdef USE_MASA
-    use network, only : nspecies
+    use fuego_chemistry, only : nspecies
     use amrex_constants_module, only: HALF
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS
     use prob_params_module, only: dim

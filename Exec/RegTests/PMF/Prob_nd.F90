@@ -91,7 +91,7 @@ contains
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEINT, UEDEN, UTEMP, UFS
     use prob_params_module, only : problo, dim
     use eos_module
-    use network, only: nspecies
+    use fuego_chemistry, only: nspecies
     use amrex_constants_module, only: M_PI, HALF
 
     implicit none

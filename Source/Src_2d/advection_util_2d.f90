@@ -13,7 +13,7 @@ contains
                     flux2,flux2_l1,flux2_l2,flux2_h1,flux2_h2, &
                     lo,hi)
 
-    use network, only : nspecies
+    use fuego_chemistry, only : nspecies
     use meth_params_module, only : NVAR, URHO, UFS
     use amrex_constants_module
     
@@ -70,7 +70,7 @@ contains
 
   subroutine normalize_new_species(u,u_l1,u_l2,u_h1,u_h2,lo,hi)
 
-    use network, only : nspecies
+    use fuego_chemistry, only : nspecies
     use meth_params_module, only : NVAR, URHO, UFS
     use amrex_constants_module
     
