@@ -1,0 +1,70 @@
+#C++ files
+CEXE_sources += PeleC.cpp
+CEXE_sources += Advance.cpp
+CEXE_sources += Derive.cpp
+CEXE_sources += Bld.cpp
+CEXE_sources += BCfill.cpp
+CEXE_sources += Hydro.cpp
+CEXE_sources += GradUtil.cpp
+CEXE_sources += IO.cpp 
+CEXE_sources += Sources.cpp
+CEXE_sources += Setup.cpp
+CEXE_sources += main.cpp
+CEXE_sources += SumIQ.cpp
+CEXE_sources += SumUtils.cpp
+CEXE_sources += Timestep.cpp
+CEXE_sources += IndexDefines.cpp
+CEXE_sources += Tagging.cpp
+CEXE_sources += Diffterm.cpp
+CEXE_sources += Diffusion.cpp
+CEXE_sources += PLM.cpp
+CEXE_sources += Utilities.cpp
+CEXE_sources += Transport.cpp
+CEXE_sources += MOL.cpp
+CEXE_sources += Filter.cpp
+CEXE_sources += External.cpp
+CEXE_sources += Forcing.cpp
+CEXE_sources += LES.cpp
+
+#C++ headers
+CEXE_headers += PeleC.H
+CEXE_headers += IO.H
+CEXE_headers += Problem.H
+CEXE_headers += ProblemDerive.H
+CEXE_headers += Constants.H
+CEXE_headers += Hydro.H
+CEXE_headers += Timestep.H
+CEXE_headers += IndexDefines.H
+CEXE_headers += Diffterm.H
+CEXE_headers += Diffusion.H
+CEXE_headers += GradUtil.H
+CEXE_headers += PLM.H
+CEXE_headers += Utilities.H
+CEXE_headers += Transport.H
+CEXE_headers += MOL.H
+CEXE_headers += Filter.H
+CEXE_headers += Riemann.H
+CEXE_headers += Forcing.H
+CEXE_headers += LES.H
+
+#Source file logic
+ifeq ($(USE_EB), TRUE)
+  CEXE_sources += EB.cpp
+  CEXE_sources += InitEB.cpp
+  CEXE_headers += EB.H
+  CEXE_headers += SparseData.H
+  CEXE_headers += EBStencilTypes.H
+endif
+
+ifeq ($(USE_PARTICLES), TRUE)
+  CEXE_sources += Particle.cpp
+endif
+
+ifeq ($(USE_REACT), TRUE)
+  CEXE_sources += React.cpp
+  CEXE_headers += React.H
+endif
+
+ifeq ($(USE_MASA), TRUE)
+  CEXE_sources += MMS.cpp
+endif

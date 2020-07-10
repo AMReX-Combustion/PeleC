@@ -233,9 +233,9 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
       
       // Compute transport coefficients, coincident with Q
       {
-        BL_PROFILE("PeleC::get_transport_coeffs call");
+        BL_PROFILE("PeleC::get_transport_coeffs_F call");
         coeff_cc.resize(gbox, nCompTr);
-        get_transport_coeffs(ARLIM_3D(gbox.loVect()),
+        get_transport_coeffs_F(ARLIM_3D(gbox.loVect()),
                              ARLIM_3D(gbox.hiVect()),
                              BL_TO_FORTRAN_N_3D(Qfab, cQFS),
                              BL_TO_FORTRAN_N_3D(Qfab, cQTEMP),

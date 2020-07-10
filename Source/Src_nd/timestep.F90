@@ -10,7 +10,7 @@ contains
 
   subroutine pc_estdt(lo,hi,u,u_lo,u_hi,dx,dt) bind(C, name="pc_estdt")
 
-    use network, only: nspecies, naux
+    use fuego_chemistry, only: nspecies, naux
     use eos_module
     use meth_params_module, only: NVAR, URHO, UMX, UMY, UMZ, UEINT, UTEMP, UFS, UFX
     use prob_params_module, only: dim
@@ -80,7 +80,7 @@ contains
   subroutine pc_estdt_vel_diffusion(lo,hi,state,s_lo,s_hi,dx,dt) &
        bind(C, name="pc_estdt_vel_diffusion")
 
-    use network, only: nspecies, naux
+    use fuego_chemistry, only: nspecies, naux
     use eos_module
     use eos_type_module
     use meth_params_module, only: NVAR, URHO, UTEMP, UFS
@@ -124,7 +124,7 @@ contains
           coeff%eos_state(1:np)%T   = state(lo(1):hi(1),j,k,UTEMP)
           coeff%eos_state(1:np)%rho = state(lo(1):hi(1),j,k,URHO) 
 
-          call transport(which_trans, coeff)
+          call transport_F(which_trans, coeff)
 
           D(:) = coeff%mu(:) * rho_inv(:)
 
@@ -153,7 +153,7 @@ contains
   subroutine pc_estdt_temp_diffusion(lo,hi,state,s_lo,s_hi,dx,dt) &
        bind(C, name="pc_estdt_temp_diffusion")
 
-    use network, only: nspecies, naux
+    use fuego_chemistry, only: nspecies, naux
     use eos_module
     use eos_type_module
     use meth_params_module, only: NVAR, URHO, UTEMP, UFS
@@ -203,7 +203,7 @@ contains
              coeff%eos_state(i)%rho = state(lo(1)+i-1,j,k,URHO) ! Note: Assumes this is a good T!
           end do
 
-          call transport(which_trans, coeff)
+          call transport_F(which_trans, coeff)
 
           do i=1,np
              call eos_cv(coeff % eos_state(i))
@@ -236,7 +236,7 @@ contains
   subroutine pc_estdt_enth_diffusion(lo,hi,state,s_lo,s_hi,dx,dt) &
        bind(C, name="pc_estdt_enth_diffusion")
 
-    use network, only: nspecies, naux
+    use fuego_chemistry, only: nspecies, naux
     use eos_module
     use eos_type_module
     use meth_params_module, only: NVAR, URHO, UEINT, UTEMP, UFS, UFX, &
@@ -288,7 +288,7 @@ contains
 
                 ! we also need the conductivity
                 if (coeff%eos_state(1)%rho > diffuse_cutoff_density) then
-                   call transport(which_trans, coeff)
+                   call transport_F(which_trans, coeff)
                    cond = coeff % lam(1)
                 else
                    cond = ZERO
@@ -336,7 +336,7 @@ contains
     use meth_params_module, only: NVAR, URHO, UTEMP, UEINT, UFS, UFX, UMX, UMZ, &
                                   cfl, do_hydro
     use prob_params_module, only: dim
-    use network, only: nspecies, naux
+    use fuego_chemistry, only: nspecies, naux
     use eos_module
 
     implicit none

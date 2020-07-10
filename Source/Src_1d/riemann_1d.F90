@@ -108,7 +108,7 @@ contains
     ! this implements the approximate Riemann solver of Colella & Glaz (1985)
 
     use amrex_fort_module
-    use network, only : nspecies, naux
+    use fuego_chemistry, only : nspecies, naux
     use eos_type_module
     use eos_module
     use riemann_util_module

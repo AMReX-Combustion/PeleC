@@ -378,7 +378,7 @@ contains
     ! this implements the approximate Riemann solver of Colella & Glaz (1985)
 
     use amrex_fort_module
-    use network, only : nspecies, naux
+    use fuego_chemistry, only : nspecies, naux
     use eos_type_module
     use eos_module
     use prob_params_module, only : coord_type
@@ -1185,7 +1185,7 @@ contains
                        idir, ilo1, ihi1, ilo2, ihi2, domlo, domhi)
 
     use prob_params_module, only : coord_type
-    use network, only : nspecies
+    use fuego_chemistry, only : nspecies
 
     use eos_module
 

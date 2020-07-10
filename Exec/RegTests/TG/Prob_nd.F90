@@ -84,7 +84,7 @@ contains
 
     use amrex_paralleldescriptor_module, only: amrex_pd_ioprocessor
     use probdata_module
-    use network, only: nspecies, naux, molec_wt
+    use fuego_chemistry, only: nspecies, naux, molecular_weight
     use eos_type_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, &
          UEDEN, UEINT, UFS, UTEMP, small_temp
@@ -112,7 +112,7 @@ contains
     call build(eos_state)
 
     ! Define the molecular weight for air
-    molec_wt = 28.97
+    molecular_weight = 28.97
 
     ! Define the length scale
     L = 1.d0/M_PI
