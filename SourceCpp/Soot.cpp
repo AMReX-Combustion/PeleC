@@ -6,6 +6,8 @@ void
 PeleC::construct_old_soot_source(amrex::Real time,
                                  amrex::Real dt)
 {
+  if (!add_soot_src)
+    return;
   amrex::MultiFab& S_old = get_old_data(State_Type);
 
   int ng = 0; // None filled
@@ -20,6 +22,8 @@ void
 PeleC::construct_new_soot_source(amrex::Real time,
                                  amrex::Real dt)
 {
+  if (!add_soot_src)
+    return;
   amrex::MultiFab& S_new = get_new_data(State_Type);
 
   int ng = 0;
@@ -61,7 +65,6 @@ PeleC::fill_soot_source (amrex::Real            time,
     const amrex::FArrayBox& Sfab = state[mfi];
     amrex::FArrayBox& soot_fab = soot_src[mfi];
     auto const& s_arr = Sfab.array();
-    auto const& soot_arr = soot_fab.array();
     const int nqaux = NQAUX > 0 ? NQAUX : 1;
     amrex::FArrayBox coeff_cc(bx, nCompTr), q(bx,QVAR), qaux(bx, nqaux);
     amrex::Elixir qeli = q.elixir();
