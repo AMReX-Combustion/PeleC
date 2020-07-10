@@ -1,0 +1,87 @@
+name: PeleC-CI
+
+on:
+  push:
+    branches: [development]
+  pull_request:
+    branches: [development]
+
+env:
+  CXX_COMPILER: mpicxx
+  C_COMPILER: mpicc
+  FORTRAN_COMPILER: mpifort
+  BUILD_TYPE: RelWithDebInfo
+  NUM_PROCS: 16
+
+jobs:
+  build:
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        include:
+          - os: macos-latest
+            install_deps: brew install open-mpi automake
+            comp: llvm
+          - os: ubuntu-latest
+            install_deps: sudo apt-get install mpich libmpich-dev
+            comp: gnu
+    steps:
+    - uses: actions/checkout@v2
+      with: 
+        submodules: true
+    - name: setup
+      run: |
+        cmake -E make_directory ${{runner.workspace}}/build-ci
+        cmake -E make_directory ${{runner.workspace}}/deps
+    - name: python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: dependencies
+      run: |
+        # Install MPI
+        ${{matrix.install_deps}}
+        # Install MetaPhysicL
+        cd ${{runner.workspace}}/deps
+        git clone --recursive https://github.com/roystgnr/MetaPhysicL.git ${{runner.workspace}}/deps/MetaPhysicL
+        cd ${{runner.workspace}}/deps/MetaPhysicL
+        ./bootstrap
+        ./configure CXX=${{env.CXX_COMPILER}} CC=${{env.C_COMPILER}} FC=${{env.FORTRAN_COMPILER}} --prefix="${{runner.workspace}}/deps/install/MetaPhysicL"
+        make -j ${{env.NUM_PROCS}}
+        make install
+        # Install MASA
+        cd ${{runner.workspace}}/deps
+        git clone --recursive https://github.com/manufactured-solutions/MASA.git ${{runner.workspace}}/deps/MASA
+        cd ${{runner.workspace}}/deps/MASA
+        ./bootstrap
+        ./configure CXX='${{env.CXX_COMPILER}} -std=c++11' CC=${{env.C_COMPILER}} FC=${{env.FORTRAN_COMPILER}} --enable-fortran-interfaces METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" --prefix="${{runner.workspace}}/deps/install/MASA"
+        make -j ${{env.NUM_PROCS}}
+        make install
+        # Install Python packages
+        python -m pip install --upgrade pip
+        pip install nose numpy pandas
+    - name: configure
+      working-directory: ${{runner.workspace}}/build-ci
+      run: |
+        cmake \
+          -DCMAKE_INSTALL_PREFIX:PATH=${{runner.workspace}}/install \
+          -DCMAKE_BUILD_TYPE:STRING=${{env.BUILD_TYPE}} \
+          -DCMAKE_CXX_COMPILER:STRING=${{env.CXX_COMPILER}} \
+          -DCMAKE_C_COMPILER:STRING=${{env.C_COMPILER}} \
+          -DCMAKE_Fortran_COMPILER:STRING=${{env.FORTRAN_COMPILER}} \
+          -DPELEC_ENABLE_MPI:BOOL=ON \
+          -DPELEC_ENABLE_TESTS:BOOL=ON \
+          -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
+          -DPELEC_ENABLE_MASA:BOOL=ON \
+          -DMASA_DIR:STRING=${{runner.workspace}}/deps/install/MASA \
+          ${GITHUB_WORKSPACE}
+    - name: make
+      working-directory: ${{runner.workspace}}/build-ci
+      run: cmake --build . -- -j ${{env.NUM_PROCS}}
+    - name: test
+      working-directory: ${{runner.workspace}}/build-ci
+      run: ctest -j ${{env.NUM_PROCS}} -LE no-ci --output-on-failure
+    - name: gnumake
+      working-directory: ./ExecCpp/RegTests/PMF
+      run: make -j ${{env.NUM_PROCS}} COMP=${{matrix.comp}} USE_MPI=TRUE

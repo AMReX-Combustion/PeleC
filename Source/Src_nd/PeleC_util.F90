@@ -122,7 +122,7 @@ contains
 
     use eos_module
     use eos_type_module
-    use network, only : nspecies, naux
+    use fuego_chemistry, only : nspecies, naux
     use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, UFX, &
          UTEMP, small_temp, allow_negative_energy, allow_small_energy, &
          dual_energy_eta2, dual_energy_update_E_from_e
@@ -332,7 +332,7 @@ contains
   subroutine compute_temp(lo,hi,state,s_lo,s_hi) &
        bind(C, name="compute_temp")
 
-    use network, only : nspecies, naux
+    use fuego_chemistry, only : nspecies, naux
     use eos_type_module
     use eos_module
     use meth_params_module, only : NVAR, URHO, UEDEN, UEINT, UTEMP, &
@@ -406,7 +406,7 @@ contains
   subroutine pc_check_initial_species(lo,hi,state,state_lo,state_hi) &
                                       bind(C, name="pc_check_initial_species")
 
-    use network, only : nspecies
+    use fuego_chemistry, only : nspecies
     use meth_params_module, only : NVAR, URHO, UFS
     use amrex_constants_module
 

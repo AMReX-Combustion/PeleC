@@ -17,7 +17,7 @@ contains
     ! they sum to 0.  This is essentially the CMA procedure that is
     ! defined in Plewa & Muller, 1999, A&A, 342, 179
 
-    use network, only : nspecies
+    use fuego_chemistry, only : nspecies
     use meth_params_module, only : NVAR, URHO, UFS
     use amrex_constants_module
 

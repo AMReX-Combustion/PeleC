@@ -1,0 +1,42 @@
+#ifndef _EBStencilTypes_H_
+#define _EBStencilTypes_H_
+
+#include <AMReX_REAL.H>
+#include <AMReX_IntVect.H>
+
+static amrex::Box stencil_volume_box(
+  amrex::IntVect(AMREX_D_DECL(-1, -1, -1)),
+  amrex::IntVect(AMREX_D_DECL(+1, +1, +1)));
+
+struct VolSten
+{
+  amrex::Real val[3][3][3];
+  amrex::IntVect iv;
+};
+
+struct FaceSten
+{
+  amrex::Real val[3][3];
+  amrex::IntVect iv;
+};
+
+struct EBBndrySten
+{
+  amrex::Real val[3][3][3];
+  amrex::Real bcval_sten;
+  amrex::IntVect iv;
+  amrex::IntVect iv_base;
+};
+
+struct EBBndryGeom
+{
+  amrex::Real eb_normal[AMREX_SPACEDIM];
+  amrex::Real eb_centroid[AMREX_SPACEDIM];
+  amrex::Real eb_area;
+  amrex::Real eb_vfrac;
+  amrex::IntVect iv;
+
+  bool operator<(const EBBndryGeom& rhs) const { return iv < rhs.iv; }
+};
+
+#endif

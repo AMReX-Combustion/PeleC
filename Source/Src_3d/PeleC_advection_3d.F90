@@ -58,7 +58,7 @@ contains
                                   transxy, transxz, transyz
     use ppm_module, only : ppm
     use slope_module, only : uslope, pslope
-    use network, only : nspecies, naux
+    use fuego_chemistry, only : nspecies, naux
     use eos_type_module
     use eos_module, only : eos_t, eos_rt
     use riemann_module, only: cmpflx, shock
@@ -741,7 +741,7 @@ contains
                     eden_lost,xang_lost,yang_lost,zang_lost, &
                     verbose)
 
-    use network, only : nspecies, naux
+    use fuego_chemistry, only : nspecies, naux
     use meth_params_module, only : difmag, NVAR, URHO, UMX, UMY, UMZ, &
                                    UEDEN, UEINT, UTEMP, NGDNV, QVAR, track_grid_losses, limit_fluxes_on_small_dens
     use amrex_constants_module, only : ZERO, FOURTH, ONE
