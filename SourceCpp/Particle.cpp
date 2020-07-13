@@ -163,7 +163,8 @@ PeleC::readParticleParams()
   //
   ppp.query("particle_init_file", particle_init_file);
   //
-  // Used in initData() on startup to set a uniform particle field
+  // Used in initData() on startup to set the particle field using the
+  // SprayParticlesInitInsert.cpp problem specific function
   //
   ppp.query("particle_init_function", particle_init_function);
   //
@@ -325,6 +326,7 @@ PeleC::initParticles()
 void
 PeleC::particlePostRestart(const std::string& restart_file, bool is_checkpoint)
 {
+  //amrex::Gpu::setLaunchRegion(false);
   if (level > 0)
     return;
 

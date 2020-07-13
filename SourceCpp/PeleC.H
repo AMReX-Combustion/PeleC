@@ -187,6 +187,7 @@ public:
   //
   virtual void particle_redistribute(
     int lbase = 0, bool init_part = false) override;
+
   //
   // Setup virtual particles if necessary
   //

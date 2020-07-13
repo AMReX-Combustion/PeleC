@@ -718,8 +718,6 @@ PeleC::initData()
   if (level == 0) {
     initParticles();
   } else {
-    // TODO: Determine how many ghost cells to use here
-    int nGrow = 0;
     particle_redistribute(level - 1);
   }
 #endif
@@ -1235,8 +1233,6 @@ PeleC::post_regrid(int lbase, int new_finest)
 
 #ifdef AMREX_PARTICLES
   if (do_spray_particles && theSprayPC() != 0 && level == lbase) {
-    // TODO: Determine how many ghost cells to use here
-    int nGrow = 0;
     particle_redistribute(lbase);
   }
 #endif

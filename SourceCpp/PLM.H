@@ -913,6 +913,7 @@ pc_transx1(
     compo = qym(i, j + 1, k, nqp) - compn;
     qm(i, j + 1, k, nqp) = compo;
   }
+
   // Update hydro vars
 
   pggp = qint(i + 1, j, k, GDPRES);
@@ -1317,6 +1318,7 @@ pc_transy2(
     compo = qzm(i, j, k + 1, nqp) - compn;
     qm(i, j, k + 1, nqp) = compo;
   }
+
   //- Update hydro vars -
 
   pggp = qint(i, j + 1, k, GDPRES);

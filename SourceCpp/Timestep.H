@@ -9,6 +9,7 @@
 
 #include "EOS.H"
 #include "IndexDefines.H"
+#include "Constants.H"
 #include "Transport.H"
 
 // EstDt routines

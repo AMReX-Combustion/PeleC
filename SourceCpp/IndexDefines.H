@@ -81,6 +81,7 @@
 #define NGDNV 6
 
 #define NPASSIVE NUM_SPECIES + NUM_ADV + NUM_AUX + 3 - AMREX_SPACEDIM
+
 // Number of passive variables that are not per unit mass, U = Q instead of U = rho Q
 #define NPASSNM NUM_SOOT_VARS
 

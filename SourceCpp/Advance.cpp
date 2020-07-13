@@ -384,6 +384,7 @@ PeleC::do_sdc_iteration(
       // the particles being set here are only used by finer levels.
       //
       int finest_level = parent->finestLevel();
+
       //
       // Check if I need to insert new particles
       //
@@ -404,9 +405,8 @@ PeleC::do_sdc_iteration(
       //
       // Only redistribute if we injected or inserted particles
       //
-      if (injectParts || insertParts) {
+      if (injectParts || insertParts)
         particle_redistribute(level);
-      }
 
       //
       // Setup the virtual particles that represent particles on finer levels
