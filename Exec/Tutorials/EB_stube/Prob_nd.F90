@@ -86,7 +86,7 @@ contains
   subroutine pc_initdata(level,time,lo,hi,nvar, &
        state,state_lo,state_hi, &
        delta,xlo,xhi) bind(C, name="pc_initdata")
-    use network, only: nspecies, molec_wt
+    use fuego_chemistry, only: nspecies, molec_wt
     use probdata_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP, UFS
     use amrex_constants_module, only: M_PI, HALF

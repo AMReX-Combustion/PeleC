@@ -131,7 +131,7 @@ contains
   subroutine bcnormal(x,u_int,u_ext,dir,sgn,time,bc_type,bc_params,bc_target)
 
     use probdata_module
-    use network, only: nspecies
+    use fuego_chemistry, only: nspecies
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, UTEMP
     use amrex_constants_module, only: HALF, M_PI
     use prob_params_module, only : Interior, Inflow, Outflow, SlipWall, NoSlipWall, &
