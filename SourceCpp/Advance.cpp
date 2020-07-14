@@ -391,16 +391,10 @@ PeleC::do_sdc_iteration(
       amrex::Real cur_time = state[State_Type].curTime();
       int nstep = parent->levelSteps(0);
 
-      bool injectParts = false;
-      bool insertParts = false;
-      // Particles should be added on the coarsest level
-      // since region might not be refined
-      if (level == finest_level) {
-        injectParts = theSprayPC()->
-          injectParticles(cur_time, dt, nstep, level);
-        insertParts = theSprayPC()->
-          insertParticles(cur_time, dt, nstep, level);
-      }
+      bool injectParts = theSprayPC()->
+        injectParticles(cur_time, dt, nstep, level, finest_level);
+      bool insertParts = theSprayPC()->
+        insertParticles(cur_time, dt, nstep, level, finest_level);
 
       //
       // Only redistribute if we injected or inserted particles
