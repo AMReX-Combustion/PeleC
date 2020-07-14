@@ -136,7 +136,7 @@ contains
     use eos_type_module
     use eos_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UTEMP, UEDEN, UEINT, UFS, NVAR
-    use network, only: nspecies, naux
+    use fuego_chemistry, only: nspecies, naux
     use prob_params_module, only : problo, probhi, dim, Interior, Inflow, Outflow, SlipWall, NoSlipWall
         
     use amrex_constants_module, only: M_PI
