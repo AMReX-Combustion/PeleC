@@ -59,7 +59,7 @@ pc_compute_hyp_mol_flux(
           );
         });
     }
-    const amrex::Box tbox = amrex::grow(cbox, -1);
+    const amrex::Box tbox = amrex::grow(cbox, dir, -1);
     const amrex::Box ebox = amrex::surroundingNodes(tbox, dir);
     amrex::ParallelFor(
       ebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
