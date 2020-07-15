@@ -75,7 +75,7 @@ contains
        dx,xlo,xhi) bind(C, name="pc_initdata")
     use eos_type_module
     use probdata_module
-    use network, only: nspecies, naux, molec_wt
+    use fuego_chemistry, only: nspecies, naux, molecular_weight
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEINT, UEDEN, UTEMP, UFS
     use prob_params_module, only : problo, probhi
     use eos_module
@@ -107,7 +107,7 @@ contains
     eos_state % p = p_ref
     eos_state % T = T_ref
     eos_state % massfrac(1) = 1.d0
-    molec_wt = 289703.374673617 
+    molecular_weight = 289703.374673617 
 
     call eos_tp(eos_state)
     c_0 = eos_state % cs

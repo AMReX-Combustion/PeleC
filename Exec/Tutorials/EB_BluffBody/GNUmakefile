@@ -14,7 +14,6 @@ USE_EB = TRUE
 HYP_TYPE = MOL
 
 Eos_dir     := GammaLaw
-Reactions_dir := Fuego
 Transport_dir := Constant
 Chemistry_Model = Null
 

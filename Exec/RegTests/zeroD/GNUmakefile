@@ -5,9 +5,7 @@ PRECISION  = DOUBLE
 PROFILE    = FALSE
 
 DEBUG      = FALSE
-#DEBUG      = TRUE
 
-#DIM        = 1
 DIM        = 2
 
 COMP	   = gcc
@@ -21,9 +19,6 @@ USE_REACT  = TRUE
 # This sets the EOS directory in $(PELE_PHYSICS_HOME)/Eos
 #Eos_dir     := Soave-Redlich-Kwong
 Eos_dir     := Fuego
-
-# This sets the network directory in $(PELE_PHYSICS_HOME)/Reactions
-Reactions_dir := Fuego
 
 # This sets the model directory in $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism/Models
 #Chemistry_Model := Davis

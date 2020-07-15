@@ -6,7 +6,7 @@ DIM        = 3
 
 COMP	   = gnu
 
-USE_MPI    = TRUE
+USE_MPI    = FALSE
 USE_OMP    = FALSE
 
 USE_EB = TRUE
@@ -14,7 +14,6 @@ USE_EB = TRUE
 HYP_TYPE = MOL
 
 Eos_dir     := GammaLaw
-Reactions_dir := Fuego
 Transport_dir := Constant
 Chemistry_Model = Null
 

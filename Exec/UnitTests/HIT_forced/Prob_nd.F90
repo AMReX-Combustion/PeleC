@@ -16,7 +16,7 @@ contains
     use probdata_module
     use bl_error_module
     use bl_constants_module, only: HALF
-    use network, only: nspecies, naux, molec_wt
+    use fuego_chemistry, only: nspecies, naux, molecular_weight
     use extern_probin_module, only: const_viscosity, const_bulk_viscosity, const_conductivity, const_diffusivity
     use eos_module
 
@@ -96,7 +96,7 @@ contains
     Lz = probhi(3) - problo(3)
 
     ! Define the molecular weight for air
-    molec_wt = 28.97
+    molecular_weight = 28.97d0
 
     ! Wavelength associated to Taylor length scale
     k0 = 2.d0/lambda0
@@ -500,7 +500,7 @@ contains
        delta,xlo,xhi) bind(C, name = "pc_initdata")
 
     use probdata_module
-    use network, only: nspecies, naux, molec_wt
+    use fuego_chemistry, only: nspecies, naux, molecular_weight
     use eos_type_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, &
          UEDEN, UEINT, UFS, UTEMP
@@ -523,7 +523,7 @@ contains
     double precision :: uinterp, vinterp, winterp
 
     ! Define the molecular weight for air
-    molec_wt = 28.97
+    molecular_weight = 28.97d0
 
     ! Set the equation of state variables
     call build(eos_state)

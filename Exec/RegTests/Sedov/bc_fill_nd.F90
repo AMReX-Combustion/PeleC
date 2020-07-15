@@ -132,7 +132,7 @@ contains
   subroutine bcnormal(x,u_int,u_ext,dir,sgn,time,bc_type,bc_params,bc_target)
 
     use probdata_module
-    use network, only: nspecies
+    use fuego_chemistry, only: nspecies
     use eos_type_module
     use eos_module
     use prob_params_module, only : Interior, Inflow, Outflow, SlipWall, NoSlipWall, &

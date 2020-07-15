@@ -153,7 +153,7 @@ contains
     use eos_type_module
     use eos_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UTEMP, UEDEN, UEINT, UFS
-    use network, only: nspecies, naux, molec_wt
+    use fuego_chemistry, only: nspecies, naux, molecular_weight
     use prob_params_module, only : Interior, Inflow, Outflow, SlipWall, NoSlipWall, &
                                    problo, probhi
     

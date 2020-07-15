@@ -25,14 +25,11 @@ DEFINES += -DSPRAY_COMPONENTS=$(SPRAY_COMPONENTS)
 Eos_dir := Fuego
 #Eos_dir := GammaLaw
 
-# This sets the network directory in $(PELE_PHYSICS_HOME)/Reactions
-Reactions_dir := Fuego
-#Reactions_dir := Null
-#
 # This sets the model directory in $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism/Models
 #Chemistry_Model := chem-H
 #Chemistry_Model := grimech12
 Chemistry_Model := heptane_3sp
+#Chemistry_Model := Null
 #Chemistry_Model := decane_3sp
 
 # This sets the transport directory in $(PELE_PHYSICS_HOME)/Transport
