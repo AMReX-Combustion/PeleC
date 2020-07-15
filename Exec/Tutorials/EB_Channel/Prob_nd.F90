@@ -81,7 +81,7 @@ contains
        state,state_lo,state_hi, &
        delta,xlo,xhi) bind(C, name="pc_initdata")
     use amrex_paralleldescriptor_module, only: amrex_pd_ioprocessor
-    use fuego_chemistry, only: nspecies, molec_wt
+    use fuego_chemistry, only: nspecies, molecular_weight
     use probdata_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP, UFS
     use amrex_constants_module, only: M_PI, HALF
@@ -106,7 +106,7 @@ contains
     call build(eos_state)
 
     ! Define the molecular weight for air
-    molec_wt = 28.97
+    molecular_weight = 28.97d0
 
     ! Initial pressure and temperature
     p0 = 1.013d6 ! [erg cm^-3]

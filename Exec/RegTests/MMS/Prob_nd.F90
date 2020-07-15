@@ -113,7 +113,7 @@ contains
 
     use amrex_paralleldescriptor_module, only: amrex_pd_ioprocessor
     use probdata_module
-    use network, only: nspecies, naux, molec_wt
+    use fuego_chemistry, only: nspecies, naux, molecular_weight
     use fundamental_constants_module, only: k_B, n_A
     use eos_type_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, &
@@ -145,7 +145,7 @@ contains
 #ifdef USE_MASA
 
     ! Define the molecular weight for air
-    molec_wt = 28.97d0
+    molecular_weight = 28.97d0
 
     ! Initial pressure and temperature
     p0 = 1.013d6 ! [erg cm^-3]

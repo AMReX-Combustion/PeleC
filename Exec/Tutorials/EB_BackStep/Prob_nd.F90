@@ -94,7 +94,7 @@ contains
   subroutine pc_initdata(level,time,lo,hi,nvar, &
        state,state_lo,state_hi, &
        delta,xlo,xhi) bind(C, name="pc_initdata")
-    use fuego_chemistry, only: nspecies
+    use fuego_chemistry, only: nspecies, molecular_weight
     use probdata_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP, UFS
     use amrex_constants_module, only: M_PI, FOUR3RD, ONE, HALF, ZERO
@@ -116,6 +116,9 @@ contains
     integer :: i,j,k
 
     type (eos_t) :: eos_state
+
+    ! Define the molecular weight for air
+    molecular_weight = 28.97d0
 
     call build(eos_state)
 

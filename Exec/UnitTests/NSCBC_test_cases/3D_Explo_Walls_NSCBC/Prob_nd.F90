@@ -75,7 +75,7 @@ contains
        dx,xlo,xhi) bind(C, name="pc_initdata")
     use eos_type_module
     use probdata_module
-    use network, only: nspecies, naux, molec_wt
+    use fuego_chemistry, only: nspecies, naux, molecular_weight
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEINT, UEDEN, UTEMP, UFS
     use prob_params_module, only : problo, probhi
     use eos_module
@@ -113,7 +113,7 @@ contains
     RC = 0.05 * probhi(1)
     RCsqr = RC**2.0
     C =  5.0e-3
-    molec_wt = 289703.374673617
+    molecular_weight = 289703.374673617
 
 
     do k = lo(3), hi(3)

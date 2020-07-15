@@ -112,7 +112,7 @@ contains
     call build(eos_state)
 
     ! Define the molecular weight for air
-    molecular_weight = 28.97
+    molecular_weight = 28.97d0
 
     ! Define the length scale
     L = 1.d0/M_PI

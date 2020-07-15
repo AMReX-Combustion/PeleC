@@ -13,7 +13,7 @@ contains
     use eos_module
     use eos_type_module
     use amrex_fort_module 
-    use network
+    use fuego_chemistry
     use probdata_module
 
     implicit none
@@ -149,7 +149,7 @@ contains
   subroutine pc_initdata(level,time,lo,hi,nvar, &
        state,state_lo,state_hi, &
        delta,xlo,xhi) bind(C, name = "pc_initdata")
-    use network, only: nspecies
+    use fuego_chemistry, only: nspecies
     use probdata_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEDEN, UEINT, UTEMP, UFS
     implicit none
