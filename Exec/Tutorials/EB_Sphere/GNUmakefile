@@ -18,7 +18,6 @@ HYP_TYPE = MOL
 #PROFILE = TRUE
 
 Eos_dir     := Fuego
-Reactions_dir := Fuego
 Chemistry_Model = air
 
 # This sets the transport directory in $(PELE_PHYSICS_HOME)/Transport
