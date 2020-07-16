@@ -29,6 +29,7 @@ Gpu::HostVector<Real> sprayBoilT;
 Gpu::HostVector<Real> sprayCp;
 Gpu::HostVector<Real> sprayLatent;
 Gpu::HostVector<int> sprayIndxMap;
+amrex::Real parcelSize = 1.;
 
 void
 RemoveParticlesOnExit()
@@ -105,7 +106,7 @@ PeleC::readParticleParams()
 
   pp.query("do_spray_particles", do_spray_particles);
 
-  ParmParse ppp("particles");
+  amrex::ParmParse ppp("particles");
   //
   // Control the verbosity of the Particle class
   ppp.query("v", particle_verbose);
@@ -115,13 +116,12 @@ PeleC::readParticleParams()
   ppp.get("mom_transfer", particle_mom_tran);
   ppp.query("particle_cfl", particle_cfl);
   if (particle_cfl > 0.5)
-    Abort("particle_cfl must be <= 0.5");
+    amrex::Abort("particle_cfl must be <= 0.5");
   // Number of fuel species in spray droplets
   // Must match the number specified at compile time
   const int nfuel = ppp.countval("fuel_species");
-  if (nfuel != SPRAY_FUEL_NUM) {
-    Abort("Number of fuel species in input file must match SPRAY_FUEL_NUM");
-  }
+  if (nfuel != SPRAY_FUEL_NUM)
+    amrex::Abort("Number of fuel species in input file must match SPRAY_FUEL_NUM");
 
   sprayFuelNames.assign(nfuel, "");
   sprayCritT.resize(nfuel);
@@ -146,6 +146,12 @@ PeleC::readParticleParams()
     sprayLatent[i] = latent[i];
     sprayCp[i] = spraycp[i];
   }
+
+  //
+  // Set the number of particles per parcel
+  //
+  ppp.query("parcel_size", parcelSize);
+
   // Must use same reference temperature for all fuels
   // TODO: This means the reference temperature must be the same for all fuel
   // species
@@ -188,6 +194,14 @@ PeleC::readParticleParams()
   if (ParallelDescriptor::IOProcessor())
     if (!amrex::UtilCreateDirectory(timestamp_dir, 0755))
       amrex::CreateDirectoryFailed(timestamp_dir);
+
+  if (verbose && ParallelDescriptor::IOProcessor()) {
+    amrex::Print() << "Spray fuel species " << sprayFuelNames[0];
+    for (int i = 1; i != SPRAY_FUEL_NUM; ++i)
+      amrex::Print() << ", " << sprayFuelNames[i];
+    amrex::Print() << std::endl;
+    amrex::Print() << "Number of particles per parcel " << parcelSize << std::endl;
+  }
   //
   // Force other processors to wait till directory is built.
   //
@@ -200,7 +214,7 @@ PeleC::defineParticles()
   // There must be at least as many fuel species in the spray as
   // there are species in the fluid
   if (SPRAY_FUEL_NUM > NUM_SPECIES) {
-    Abort("Cannot have more spray fuel species than fluid species");
+    amrex::Abort("Cannot have more spray fuel species than fluid species");
   }
 #ifdef PELEC_EOS_FUEGO
   for (int i = 0; i != SPRAY_FUEL_NUM; ++i) {
@@ -211,9 +225,9 @@ PeleC::defineParticles()
       }
     }
     if (sprayIndxMap[i] < 0) {
-      Print() << "Fuel " << sprayFuelNames[i] << " not found in species list"
-              << std::endl;
-      Abort();
+      amrex::Print() << "Fuel " << sprayFuelNames[i] << " not found in species list"
+                     << std::endl;
+      amrex::Abort();
     }
   }
 #else
@@ -308,11 +322,14 @@ PeleC::initParticles()
     // Pass constant reference data and memory allocations to GPU
     theSprayPC()->buildFuelData(
       sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
+    theSprayPC()->setParcelSize(parcelSize);
     if (gvParticles) {
       theGhostPC()->buildFuelData(
         sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
       theVirtPC()->buildFuelData(
         sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
+      theGhostPC()->setParcelSize(parcelSize);
+      theVirtPC()->setParcelSize(parcelSize);
     }
 
     if (!particle_init_file.empty()) {
@@ -367,7 +384,7 @@ PeleC::particleDerive(const std::string& name, Real time, int ngrow)
   BL_PROFILE("PeleC::particleDerive()");
 
   if (theSprayPC() && name == "particle_count") {
-    Abort("Should not be called until it is updated");
+    amrex::Abort("Should not be called until it is updated");
     std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids, dmap, 1, 0));
     MultiFab temp_dat(grids, dmap, 1, 0);
     temp_dat.setVal(0);
@@ -375,7 +392,7 @@ PeleC::particleDerive(const std::string& name, Real time, int ngrow)
     MultiFab::Copy(*derive_dat, temp_dat, 0, 0, 1, 0);
     return derive_dat;
   } else if (theSprayPC() && name == "total_particle_count") {
-    Abort("Should not be called until it is updated");
+    amrex::Abort("Should not be called until it is updated");
     //
     // We want the total particle count at this level or higher.
     //
