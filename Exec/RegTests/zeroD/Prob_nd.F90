@@ -82,8 +82,7 @@ contains
     use probdata_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEINT, UEDEN, UTEMP, UFS
     use eos_module
-    use fuego_chemistry, only: nspecies
-    use chemistry_module, only : get_species_index
+    use fuego_chemistry, only: nspecies, get_species_index
     use amrex_constants_module, only: M_PI, HALF
 
     implicit none
