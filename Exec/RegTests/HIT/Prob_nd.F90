@@ -226,6 +226,9 @@ contains
     double precision :: rr, s, t, uinterp, vinterp, winterp
     double precision :: f0, f1, f2, f3, f4, f5, f6, f7
 
+    ! Define the molecular weight for air
+    molecular_weight = 28.97d0
+
     ! Set the equation of state variables
     call build(eos_state)
     eos_state % p = p0

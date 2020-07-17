@@ -13,6 +13,7 @@ contains
     use probdata_module
     use amrex_error_module
     use prob_params_module, only: dim  
+    use fuego_chemistry, only: molecular_weight
 
     implicit none
 
@@ -27,6 +28,8 @@ contains
     ! Build "probin" filename -- the name of file containing fortin namelist.
     integer, parameter :: maxlen = 256
     character probin*(maxlen)
+
+    molecular_weight = 289703.374673617 
 
     if (namlen .gt. maxlen) then
        call bl_error('probin file name too long')
