@@ -391,10 +391,12 @@ PeleC::do_sdc_iteration(
       amrex::Real cur_time = state[State_Type].curTime();
       int nstep = parent->levelSteps(0);
 
+      BL_PROFILE_VAR("SprayParticles::injectParticles()", INJECT_SPRAY);
       bool injectParts = theSprayPC()->
         injectParticles(cur_time, dt, nstep, level, finest_level);
       bool insertParts = theSprayPC()->
         insertParticles(cur_time, dt, nstep, level, finest_level);
+      BL_PROFILE_VAR_STOP(INJECT_SPRAY);
 
       //
       // Only redistribute if we injected or inserted particles
