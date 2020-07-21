@@ -14,6 +14,7 @@ contains
     use amrex_fort_module
     use amrex_constants_module, only: M_PI, HALF
     use eos_module
+    use fuego_chemistry, only: molecular_weight
 
     implicit none
     integer :: init, namlen
@@ -29,6 +30,9 @@ contains
     integer, parameter :: maxlen = 256
     character :: probin*(maxlen)
     double precision :: cost, sint, lo_xd,hi_xd
+
+    ! Define the molecular weight for air
+    molecular_weight = 28.97d0
 
     if (namlen .gt. maxlen) then
        call bl_error('probin file name too long')

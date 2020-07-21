@@ -129,7 +129,7 @@ amrex_probinit(
   // p = p_0 + p_x * cos(a_px * PI * x / L) * p_y * cos(a_py * PI * y / L) * p_z * cos(a_pz * PI * z / L);
   // clang-format on
   masa_set_param("L", ProbParm::L_x);
-  masa_set_param("R", EOS::RU);
+  masa_set_param("R", EOS::RU / EOS::AIRMW);
   masa_set_param("k", transport_params::const_conductivity);
   masa_set_param("Gamma", EOS::gamma);
   masa_set_param("mu", transport_params::const_viscosity);

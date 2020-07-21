@@ -442,9 +442,9 @@ pc_dynamic_smagorinsky_coeffs(
   const amrex::Real bma = beta - alpha(i, j, k);
 
   // Coefficients
-  coeff(i, j, k, comp_Cs2) = amrex::max(LM / (MM + SMALL_NUM), SMALL_NUM);
-  coeff(i, j, k, comp_CI) = amrex::max(Lkk / (bma + SMALL_NUM), SMALL_NUM);
-  coeff(i, j, k, comp_Cs2ovPrT) = amrex::max(KT / (TT + SMALL_NUM), SMALL_NUM);
+  coeff(i, j, k, comp_Cs2) = amrex::max(LM / (MM + SMALL), SMALL);
+  coeff(i, j, k, comp_CI) = amrex::max(Lkk / (bma + SMALL), SMALL);
+  coeff(i, j, k, comp_Cs2ovPrT) = amrex::max(KT / (TT + SMALL), SMALL);
 
   // Limit CI to reasonable bounds
   coeff(i, j, k, comp_CI) = amrex::min(coeff(i, j, k, comp_CI), 1.0);
