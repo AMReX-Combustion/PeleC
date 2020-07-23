@@ -20,7 +20,6 @@ contains
     
   use fuego_chemistry, only : nspecies
   use eos_module
-  use fundamental_constants_module, only: k_B, n_A
   use amrex_fort_module
 
   use amrex_constants_module

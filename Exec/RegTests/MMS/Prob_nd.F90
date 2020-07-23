@@ -117,8 +117,7 @@ contains
 
     use amrex_paralleldescriptor_module, only: amrex_pd_ioprocessor
     use probdata_module
-    use fuego_chemistry, only: nspecies, naux, molecular_weight
-    use fundamental_constants_module, only: k_B, n_A
+    use fuego_chemistry, only: Ru, nspecies, naux, molecular_weight
     use eos_type_module
     use meth_params_module, only : URHO, UMX, UMY, UMZ, &
          UEDEN, UEINT, UFS, UTEMP, small_temp, Cs, CI, PrT
@@ -178,7 +177,7 @@ contains
     ! w = w_0 + w_x * cos(a_wx * PI * x / L) * w_y * cos(a_wy * PI * y / L) * w_z * cos(a_wz * PI * z / L);
     ! p = p_0 + p_x * cos(a_px * PI * x / L) * p_y * cos(a_py * PI * y / L) * p_z * cos(a_pz * PI * z / L);
     call masa_set_param("L", L_x)
-    call masa_set_param("R", (k_B*n_A)/eos_state % wbar)
+    call masa_set_param("R", Ru/eos_state % wbar)
     call masa_set_param("k", const_conductivity)
     call masa_set_param("Gamma", gamma_const)
     call masa_set_param("mu", const_viscosity)

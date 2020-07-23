@@ -203,8 +203,8 @@ pc_fill_flux_interp_stencil(
       const amrex::Real act0 = amrex::Math::abs(ct0);
       const amrex::Real act1 = amrex::Math::abs(ct1);
       sten[L].val[1][1] = fa(i, j, k) * (1.0 - act0) * (1.0 - act1);
-      sten[L].val[t1n + 1][1] = fa(i, j, k) * act0 * (1.0 - act1);
-      sten[L].val[1][t0n + 1] = fa(i, j, k) * (1.0 - act0) * act1;
+      sten[L].val[1][t0n + 1] = fa(i, j, k) * act0 * (1.0 - act1);
+      sten[L].val[t1n + 1][1] = fa(i, j, k) * (1.0 - act0) * act1;
       sten[L].val[t1n + 1][t0n + 1] = fa(i, j, k) * act0 * act1;
     }
   });
@@ -233,7 +233,6 @@ pc_apply_face_stencil(
       const int j = sten[L].iv[1];
       const int k = sten[L].iv[2];
       if (is_inside(i, j, k, lo, hi)) {
-
         if (dir == 0) {
           for (int t0 = 0; t0 < 3; t0++) {
             for (int t1 = 0; t1 < 3; t1++) {
