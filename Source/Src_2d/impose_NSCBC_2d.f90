@@ -26,7 +26,6 @@ contains
     
   use amrex_fort_module
   use eos_module
-  use fundamental_constants_module, only: k_B, n_A
 
   use amrex_constants_module
   use prob_params_module, only : physbc_lo, physbc_hi, problo, probhi, UserBC
