@@ -392,8 +392,7 @@ contains
                      q,     q_lo,   q_hi, &
                      qaux, qa_lo,  qa_hi) bind(C, name = "ctoprim")
 
-    use fundamental_constants_module, only: k_B, n_A
-    use fuego_chemistry, only : nspecies, naux
+    use fuego_chemistry, only : Ru, nspecies, naux
     use eos_module, only : eos_re
     use eos_type_module
     use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UTEMP, &
@@ -415,7 +414,6 @@ contains
     double precision, intent(inout) :: qaux(qa_lo(1):qa_hi(1),qa_lo(2):qa_hi(2),qa_lo(3):qa_hi(3),NQAUX)
 
     double precision, parameter :: small = 1.d-8
-    double precision, parameter :: R = k_B*n_A
 
     integer          :: i, j, k
     integer          :: n, nq, ipassive
@@ -483,7 +481,7 @@ contains
              qaux(i,j,k,QGAMC)  = eos_state % gam1
              qaux(i,j,k,QC   )  = eos_state % cs
              qaux(i,j,k,QCSML)  = max(small, small * qaux(i,j,k,QC))
-             qaux(i,j,k,QRSPEC)  = R/eos_state % wbar
+             qaux(i,j,k,QRSPEC)  = Ru/eos_state % wbar
           enddo
        enddo
     enddo

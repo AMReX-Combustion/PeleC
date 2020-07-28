@@ -310,7 +310,7 @@ PeleC::getMOLSrcTerm(
         AMREX_ASSERT(nFlux == Ncut);
 
         if (eb_isothermal && (diffuse_temp != 0 || diffuse_enth != 0)) {
-          amrex::Box box_to_apply = mfi.growntilebox(2);
+          amrex::Box box_to_apply = amrex::grow(vbox, 2);
           {
             BL_PROFILE("PeleC::pc_apply_eb_boundry_flux_stencil()");
             pc_apply_eb_boundry_flux_stencil(
@@ -321,7 +321,7 @@ PeleC::getMOLSrcTerm(
         }
         // Compute momentum transfer at no-slip EB wall
         if (eb_noslip && diffuse_vel == 1) {
-          amrex::Box box_to_apply = mfi.growntilebox(2);
+          amrex::Box box_to_apply = amrex::grow(vbox, 2);
           {
             BL_PROFILE("PeleC::pc_apply_eb_boundry_visc_flux_stencil()");
             pc_apply_eb_boundry_visc_flux_stencil(
