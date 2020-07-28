@@ -19,13 +19,15 @@ pc_cmpTemp(
 AMREX_GPU_DEVICE
 void
 pc_rst_int_e(
-  const int i, const int j, const int k, amrex::Array4<amrex::Real> const& S)
+  const int i,
+  const int j,
+  const int k,
+  amrex::Array4<amrex::Real> const& S,
+  const int allow_small_energy,
+  const int allow_negative_energy,
+  const int dual_energy_update_E_from_e,
+  const int verbose)
 {
-  const int allow_small_energy = 1;
-  const int allow_negative_energy = 0;
-  const int dual_energy_update_E_from_e = 1;
-  const int verbose = 0;
-
   if (allow_small_energy == 0) {
     const amrex::Real rhoInv = 1.0 / S(i, j, k, URHO);
     const amrex::Real Up = S(i, j, k, UMX) * rhoInv;
