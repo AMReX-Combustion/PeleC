@@ -9,6 +9,6 @@
 | 5  | [Quiescent flow on EB tilted plane but with case 4 BC](C5/README.md)                           | examine transient                     | x | x | x |   |
 | 6  | [3 orthogonal planes, not centered on grid, species diffusion with different BC](C6/README.md) | testing homog. neu. at the species EB | x | x | x |   |
 | 7  | [gamma-law shock tube at an angle with AMR](C7/README.md)                                      | analytic left/right states            | x |   |   |   |
-| 8  | [multi-species shock tube at an angle with AMR](C8/README.md)                                  | parabolic profile                     | x |   | x |   |
+| 8  | [multi-species shock tube at an angle with AMR](C8/README.md)                                  | literature                            | x |   | x |   |
 | 9  | [acoustic pulse in circular channel](C9/README.md)                                             | analytical                            | x |   |   |   |
 | 10 | [Hagen–Poiseuille flow](C10/README.md)                                                         | analytical                            | x | x |   |   |

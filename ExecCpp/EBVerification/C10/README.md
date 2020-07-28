@@ -6,7 +6,7 @@
 |:-------------------|:----------------------------------------------------|
 | Problem definition | Hagen–Poiseuille flow                               |
 | EB geometry        | circular channel                                    |
-| Mechanism          | LiDryer                                             |
+| Mechanism          | GammaLaw                                            |
 | Multi-level        | no                                                  |
 | Metric             | velocity profile should match the analytic solution |
 
