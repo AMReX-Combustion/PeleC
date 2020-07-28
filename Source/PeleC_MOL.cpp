@@ -422,7 +422,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
           // Compute heat flux at EB wall
           int nComp = 1;
 
-          Box box_to_apply = mfi.growntilebox(2);
+          Box box_to_apply = amrex::grow(vbox, 2);
           {
             BL_PROFILE("PeleC::pc_apply_eb_boundry_flux_stencil call");
             pc_apply_eb_boundry_flux_stencil(BL_TO_FORTRAN_BOX(box_to_apply),
@@ -440,7 +440,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
         if (eb_noslip && diffuse_vel == 1) {
           int nComp = BL_SPACEDIM;
 
-          Box box_to_apply = mfi.growntilebox(2);
+          Box box_to_apply = amrex::grow(vbox, 2);
           {
             BL_PROFILE("PeleC::pc_apply_eb_boundry_visc_flux_stencil call");
             pc_apply_eb_boundry_visc_flux_stencil(BL_TO_FORTRAN_BOX(box_to_apply),
