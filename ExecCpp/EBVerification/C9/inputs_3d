@@ -13,12 +13,12 @@ amr.n_cell           =  40 8 8
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 
-pelec.lo_bc       =  "Interior" "FOExtrap" "FOExtrap"
-pelec.hi_bc       =  "Interior" "FOExtrap" "FOExtrap"
+pelec.lo_bc       =  "Interior" "Symmetry" "Symmetry"
+pelec.hi_bc       =  "Interior" "Symmetry" "Symmetry"
 
 # Problem setup
-pelec.eb_boundary_T = 252.1754978394151
-pelec.eb_isothermal = 0
+pelec.eb_boundary_T = 24.887786611341241
+pelec.eb_isothermal = 1
 
 # WHICH PHYSICS
 pelec.do_hydro = 1
@@ -62,8 +62,8 @@ amr.derive_plot_vars=ALL
 
 eb2.geom_type = "cylinder"
 eb2.cylinder_direction = 0
-eb2.cylinder_center = -1.0 0.0 0.0
+eb2.cylinder_center = 0.0 0.0 0.0
 eb2.cylinder_radius = 5.0
-eb2.cylinder_height = 100.0
+eb2.cylinder_height = 1000.0
 eb2.cylinder_has_fluid_inside = 1
 ebd.boundary_grad_stencil_type = 0
