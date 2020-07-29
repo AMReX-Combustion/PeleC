@@ -9,11 +9,12 @@
 
 namespace ProbParm {
 AMREX_GPU_DEVICE_MANAGED amrex::Real p = 1013250.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real dp = 0.0;
+AMREX_GPU_DEVICE_MANAGED amrex::Real dpdx = 0.0;
 AMREX_GPU_DEVICE_MANAGED amrex::Real T = 300.0;
 AMREX_GPU_DEVICE_MANAGED amrex::Real rho = 0.0;
 AMREX_GPU_DEVICE_MANAGED amrex::Real eint = 0.0;
 AMREX_GPU_DEVICE_MANAGED amrex::Real umax = 0.0;
+AMREX_GPU_DEVICE_MANAGED amrex::Real uavg = 0.0;
 AMREX_GPU_DEVICE_MANAGED amrex::Real Re = 100.0;
 AMREX_GPU_DEVICE_MANAGED amrex::Real Ma = 0.1;
 AMREX_GPU_DEVICE_MANAGED amrex::Real Pr = 0.7;
@@ -60,9 +61,10 @@ amrex_probinit(
   EOS::TY2Cp(ProbParm::T, ProbParm::massfrac.begin(), cp);
 
   ProbParm::umax = ProbParm::Ma * cs;
+  ProbParm::uavg = 0.5 * ProbParm::umax;
   ProbParm::G = 4 * ProbParm::rho * ProbParm::umax * ProbParm::umax * L /
                 (ProbParm::radius * ProbParm::radius * ProbParm::Re);
-  ProbParm::dp = ProbParm::G * L;
+  ProbParm::dpdx = -ProbParm::G * L;
 
   transport_params::const_bulk_viscosity = 0.0;
   transport_params::const_diffusivity = 0.0;
@@ -74,14 +76,14 @@ amrex_probinit(
   // Output IC
   std::ofstream ofs("ic.txt", std::ofstream::out);
   amrex::Print(ofs)
-    << "L, rho, umax, p, T, gamma, mu, k, Re, Ma, Pr, dp, G, radius"
+    << "L, rho, umax, p, T, gamma, mu, k, Re, Ma, Pr, dpdx, G, radius"
     << std::endl;
   amrex::Print(ofs).SetPrecision(17)
     << L << "," << ProbParm::rho << "," << ProbParm::umax << "," << ProbParm::p
     << "," << ProbParm::T << "," << EOS::gamma << ","
     << transport_params::const_viscosity << ","
     << transport_params::const_conductivity << "," << ProbParm::Re << ","
-    << ProbParm::Ma << "," << ProbParm::Pr << "," << ProbParm::dp << ","
+    << ProbParm::Ma << "," << ProbParm::Pr << "," << ProbParm::dpdx << ","
     << ProbParm::G << "," << ProbParm::radius << std::endl;
   ofs.close();
 }

@@ -6,15 +6,15 @@ stop_time = 6.0
 geometry.is_periodic =  0  0  0
 geometry.coord_sys   =  0       # 0 => cart
 geometry.prob_lo     =  0   -2.0  -2.0
-geometry.prob_hi     =  1.0  2.0   2.0
-amr.n_cell           =  16 64 64
+geometry.prob_hi     =  10.0  2.0   2.0
+amr.n_cell           =  160 64 64
 
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 
 pelec.lo_bc       =  "Hard" "FOExtrap" "FOExtrap"
-pelec.hi_bc       =  "FOExtrap" "FOExtrap" "FOExtrap"
+pelec.hi_bc       =  "Hard" "FOExtrap" "FOExtrap"
 
 # Problem setup
 pelec.eb_boundary_T = 300.
