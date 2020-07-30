@@ -52,6 +52,10 @@ PeleC::fill_soot_source (amrex::Real            time,
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
+  amrex::ReduceOps<amrex::ReduceOpMin> reduce_op;
+  amrex::ReduceData<amrex::Real> reduce_data(reduce_op);
+  using ReduceTuple = typename decltype(reduce_data)::Type;
+  amrex::Real soot_dt = std::numeric_limits<amrex::Real>::max();
   for (MFIter mfi(soot_src, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
     const amrex::Box& bx = mfi.growntilebox(ng);
     amrex::RealBox gridloc = amrex::RealBox(grids[mfi.index()],geom.CellSize(),geom.ProbLo());
@@ -100,6 +104,41 @@ PeleC::fill_soot_source (amrex::Real            time,
           coe_lambda);
         });
     }
-    soot_model->addSootSourceTerm(bx, Sfab, q, coeff_cc, soot_fab, time, dt);
+    // FAB to store the rate of change of soot variables
+    amrex::FArrayBox rate_fab(bx, 1);
+    amrex::Elixir rateeli = rate_fab.elixir();
+    auto const& rate_arr = rate_fab.array();
+    auto const& soot_arr = soot_fab.array();
+    soot_model->addSootSourceTerm(bx, s_arr, q_arr, coeff_arr, soot_arr, rate_arr, time, dt);
+    //}
+  // amrex::ReduceOps<amrex::ReduceOpMin> reduce_op;
+  // amrex::ReduceData<amrex::Real> reduce_data(reduce_op);
+  // using ReduceTuple = typename decltype(reduce_data)::Type;
+  // amrex::Real soot_dt = std::numeric_limits<amrex::Real>::max();
+  // for (MFIter mfi(soot_src, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
+  //   const amrex::Box& bx = mfi.growntilebox(ng);
+  //   const amrex::FArrayBox& Sfab = state[mfi];
+  //   const amrex::FArrayBox& soot_fab = soot_src[mfi];
+  //   auto const& s_arr = Sfab.array();
+  //   auto const& soot_arr = soot_fab.array();
+    {
+      BL_PROFILE("PeleC::estSootTimeStep()");
+      reduce_op.eval(bx, reduce_data,
+                     [=] AMREX_GPU_DEVICE (int i, int j, int k) -> ReduceTuple
+                     {
+                       return rate_arr(i,j,k,0);
+                       // amrex::Real max_rate = 1.E-12;
+                       // for (int n = 0; n != NVAR; ++n) {
+                       //   const amrex::Real sval = s_arr(i,j,k,n);
+                       //   if (sval != 0.)
+                       //     max_rate = amrex::max(max_rate, std::abs(soot_arr(i,j,k,n)/sval));
+                       // }
+                       // return 1./max_rate;
+                     });
+      ReduceTuple hv = reduce_data.value();
+      Real ldt_cpu = amrex::get<0>(hv);
+      soot_dt = amrex::min(soot_dt, ldt_cpu);
+    }
   }
+  soot_model->setTimeStep(soot_dt);
 }
