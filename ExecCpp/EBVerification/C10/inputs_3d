@@ -1,13 +1,13 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 # max_step = 10
-stop_time = 0.028802654166668534 # 10 flowthroughs (1 flowthrough = L / umax)
+stop_time = 0.01728159250000112 # 5 flowthroughs (1 flowthrough = L / umax)
 
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic =  0  0  0
 geometry.coord_sys   =  0       # 0 => cart
 geometry.prob_lo     =  0   -2.0  -2.0
-geometry.prob_hi     =  10.0  2.0   2.0
-amr.n_cell           =  40 16 16
+geometry.prob_hi     =  12.0  2.0   2.0
+amr.n_cell           =  48 16 16
 
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall

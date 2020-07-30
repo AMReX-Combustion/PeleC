@@ -1,0 +1,51 @@
+C10. Hagen–Poiseuille flow
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Case description
+################
+
+This is the standard Hagen–Poiseuille flow. The geometry is a
+:math:`x`-direction aligned circular channel with imposed pressure
+boundary conditions at the inflow and the outflow to enforce a driving
+pressure gradient :math:`dp /dx`. For this case, the Mach number is
+set to 0.1, the Reynolds number to 100, and the Prandtl number to
+0.71. The background pressure is atmospheric and the background
+temperature is 300K. The cylinder radius, :math:`R`, is 1cm and the
+cylinder length, :math:`L`, is 12cm. The simulations are performed for
+5 flowthroughs, at which point in time quantities such as kinetic
+energy and momentum are converged.
+
+The exact solution at steady state is
+
+.. math::
+   u(r) = \frac{G}{4 \mu} (R^2 - r^2)
+
+where :math:`G = -dp/dx`, and :math:`\mu` is the dynamic viscosity.
+
+
+Velocity profiles at :math:`x=6` cm (channel center)
+####################################################
+
+.. image:: ./ebverification/C10/u.png
+   :height: 300pt
+
+:math:`L_2` error norm of velocity
+##################################
+
+The :math:`L_2` error norm for a quantity :math:`s` is defined as
+
+.. math::
+   e_s = \sqrt{ \frac{\int_{-r}^{r} (s^h-s^*)^2 \mathrm{d}r}{2 n_r}}
+
+where :math:`s^h` is the numerical solution, :math:`s^*` is the exact
+solution, and :math:`n_r` is the number of cells per radius.
+
+.. image:: ./ebverification/C10/error.png
+   :height: 300pt
+
+time convergence of kinetic energy
+##################################
+
+.. image:: ./ebverification/C10/ke.png
+   :height: 300pt
+
