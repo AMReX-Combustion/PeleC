@@ -7,7 +7,7 @@ geometry.is_periodic =  1  0  0
 geometry.coord_sys   =  0       # 0 => cart
 geometry.prob_lo     =  -50.0 -10.0  -10.0
 geometry.prob_hi     =   50.0  10.0   10.0
-amr.n_cell           =  40 8 8
+amr.n_cell           =  160 32 32
 
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
