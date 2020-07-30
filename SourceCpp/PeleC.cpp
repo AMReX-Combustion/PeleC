@@ -2028,7 +2028,9 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
     const amrex::Box& bx = mfi.growntilebox(ng);
     const auto& sarr = S_new.array(mfi);
     amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      pc_rst_int_e(i, j, k, sarr);
+      pc_rst_int_e(
+        i, j, k, sarr, allow_small_energy, allow_negative_energy,
+        dual_energy_update_E_from_e, verbose);
     });
   }
 
