@@ -62,9 +62,6 @@ amrex_probinit(
 
   ProbParm::umax = ProbParm::Ma * cs;
   ProbParm::uavg = 0.5 * ProbParm::umax;
-  ProbParm::G = 4 * ProbParm::rho * ProbParm::umax * ProbParm::umax * L /
-                (ProbParm::radius * ProbParm::radius * ProbParm::Re);
-  ProbParm::dpdx = -ProbParm::G * L;
 
   transport_params::const_bulk_viscosity = 0.0;
   transport_params::const_diffusivity = 0.0;
@@ -72,6 +69,10 @@ amrex_probinit(
     ProbParm::rho * ProbParm::umax * L / ProbParm::Re;
   transport_params::const_conductivity =
     transport_params::const_viscosity * cp / ProbParm::Pr;
+
+  ProbParm::G = ProbParm::umax * 4 * transport_params::const_viscosity /
+                (ProbParm::radius * ProbParm::radius);
+  ProbParm::dpdx = -ProbParm::G;
 
   // Output IC
   std::ofstream ofs("ic.txt", std::ofstream::out);
