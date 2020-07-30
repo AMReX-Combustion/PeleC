@@ -43,9 +43,9 @@ solution, and :math:`n_r` is the number of cells per radius.
 .. image:: ./ebverification/C10/error.png
    :height: 300pt
 
-time convergence of kinetic energy
+Time convergence of kinetic energy
 ##################################
 
-.. image:: ./ebverification/C10/ke.png
+.. image:: ./ebverification/C10/ke_history.png
    :height: 300pt
 
