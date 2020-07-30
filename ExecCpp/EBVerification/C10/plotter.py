@@ -79,7 +79,7 @@ if __name__ == "__main__":
         df = df[df.xloc == 6.0].reset_index()
 
         res = int(fdir)
-        errors[0, k] = res
+        errors[0, k] = 2 * res
         errors[1, k] = np.sqrt(
             np.sum(
                 (df.x_velocity / ics["umax"] - eval_u_exact(ics, df.y) / ics["umax"])
@@ -152,7 +152,7 @@ if __name__ == "__main__":
 
         plt.figure("error")
         ax = plt.gca()
-        plt.xlabel(r"$n_r$", fontsize=22)
+        plt.xlabel(r"$2 n_r$", fontsize=22)
         plt.ylabel(r"$\epsilon$", fontsize=22)
         plt.setp(ax.get_xmajorticklabels(), fontsize=16)
         plt.setp(ax.get_ymajorticklabels(), fontsize=16)

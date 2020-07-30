@@ -44,6 +44,10 @@ def parse_ic(fname):
     return df.to_dict("records")[0]
 
 
+def theory_ooa(order, res, orig):
+    return orig * (res[0] / res) ** order
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Extract data")
     parser.add_argument(
@@ -88,10 +92,9 @@ if __name__ == "__main__":
         label=r"Sim.",
     )
 
-    theory_order = 1
-    theory = (errors[1, 0] * errors[0, 0] / errors[0, :]) ** theory_order
+    p1 = theory_ooa(1, errors[0, :], errors[1, 0])
     plt.loglog(
-        errors[0, :], theory, lw=2, color=cmap[-1], label=f"$p={theory_order}",
+        errors[0, :], p1, lw=2, color=cmap[-1], label=f"$p=1$",
     )
 
     print("Estimated order of the error:")
@@ -115,5 +118,6 @@ if __name__ == "__main__":
         plt.ylabel(r"$\epsilon$", fontsize=22)
         plt.setp(ax.get_xmajorticklabels(), fontsize=16)
         plt.setp(ax.get_ymajorticklabels(), fontsize=16)
+        legend = ax.legend(loc="best")
         plt.tight_layout()
         pdf.savefig(dpi=300)
