@@ -310,22 +310,20 @@ PeleC::getMOLSrcTerm(
         AMREX_ASSERT(nFlux == Ncut);
 
         if (eb_isothermal && (diffuse_temp != 0 || diffuse_enth != 0)) {
-          amrex::Box box_to_apply = mfi.growntilebox(2);
           {
             BL_PROFILE("PeleC::pc_apply_eb_boundry_flux_stencil()");
             pc_apply_eb_boundry_flux_stencil(
-              box_to_apply, sv_eb_bndry_grad_stencil[local_i].data(), Ncut, qar,
+              ebfluxbox, sv_eb_bndry_grad_stencil[local_i].data(), Ncut, qar,
               QTEMP, coe_cc, dComp_lambda, sv_eb_bcval[local_i].dataPtr(QTEMP),
               Nvals, eb_flux_thdlocal.dataPtr(Eden), nFlux, 1);
           }
         }
         // Compute momentum transfer at no-slip EB wall
         if (eb_noslip && diffuse_vel == 1) {
-          amrex::Box box_to_apply = mfi.growntilebox(2);
           {
             BL_PROFILE("PeleC::pc_apply_eb_boundry_visc_flux_stencil()");
             pc_apply_eb_boundry_visc_flux_stencil(
-              box_to_apply, sv_eb_bndry_grad_stencil[local_i].data(), Ncut,
+              ebfluxbox, sv_eb_bndry_grad_stencil[local_i].data(), Ncut,
               d_sv_eb_bndry_geom, Ncut, qar, coe_cc,
               sv_eb_bcval[local_i].dataPtr(QU), Nvals,
               eb_flux_thdlocal.dataPtr(Xmom), nFlux);
@@ -475,7 +473,7 @@ PeleC::getMOLSrcTerm(
             int Nsten = flux_interp_stencil[dir][local_i].size();
             int in_place = 1;
             const amrex::Box valid_interped_flux_box =
-              amrex::Box(amrex::grow(vbox, 2)).surroundingNodes(dir);
+              amrex::Box(ebfluxbox).surroundingNodes(dir);
             pc_apply_face_stencil(
               valid_interped_flux_box, stencil_volume_box,
               flux_interp_stencil[dir][local_i].data(), Nsten, dir, NVAR,

@@ -422,10 +422,9 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
           // Compute heat flux at EB wall
           int nComp = 1;
 
-          Box box_to_apply = mfi.growntilebox(2);
           {
             BL_PROFILE("PeleC::pc_apply_eb_boundry_flux_stencil call");
-            pc_apply_eb_boundry_flux_stencil(BL_TO_FORTRAN_BOX(box_to_apply),
+            pc_apply_eb_boundry_flux_stencil(BL_TO_FORTRAN_BOX(ebfluxbox),
                                              sv_eb_bndry_grad_stencil[local_i].data(),
                                              &Ncut,
                                              BL_TO_FORTRAN_N_ANYD(Qfab, cQTEMP),
@@ -440,10 +439,9 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
         if (eb_noslip && diffuse_vel == 1) {
           int nComp = BL_SPACEDIM;
 
-          Box box_to_apply = mfi.growntilebox(2);
           {
             BL_PROFILE("PeleC::pc_apply_eb_boundry_visc_flux_stencil call");
-            pc_apply_eb_boundry_visc_flux_stencil(BL_TO_FORTRAN_BOX(box_to_apply),
+            pc_apply_eb_boundry_visc_flux_stencil(BL_TO_FORTRAN_BOX(ebfluxbox),
                                                   sv_eb_bndry_grad_stencil[local_i].data(),
                                                   &Ncut,
                                                   sv_eb_bndry_geom[local_i].data(), &Ncut,
@@ -580,7 +578,7 @@ PeleC::getMOLSrcTerm(const amrex::MultiFab& S,
           int Nsten = flux_interp_stencil[idir][local_i].size();
           int in_place = 1;
           const Box valid_interped_flux_box =
-            Box(amrex::grow(vbox, 2)).surroundingNodes(idir);
+            Box(ebfluxbox).surroundingNodes(idir);
           {
             BL_PROFILE("PeleC::pc_apply_face_stencil call");
             pc_apply_face_stencil(BL_TO_FORTRAN_BOX(valid_interped_flux_box),
