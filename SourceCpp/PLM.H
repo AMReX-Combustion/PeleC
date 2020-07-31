@@ -1394,7 +1394,7 @@ pc_transz1(
   qp(i, j, k, QRHO) = rrnewr; // + hdt*srcr;
   qp(i, j, k, QU) = runewr / rrnewr;
   qp(i, j, k, QV) = rvnewr / rrnewr;
-  qp(i, j, k, QW) = rvnewr / rrnewr;
+  qp(i, j, k, QW) = rwnewr / rrnewr;
   rhoekinr =
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
 
