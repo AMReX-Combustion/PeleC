@@ -9,6 +9,6 @@ Full description and the results of this case can be found in the
 |:-------------------|:----------------------------------------------------|
 | Problem definition | Hagen–Poiseuille flow                               |
 | EB geometry        | circular channel                                    |
-| Mechanism          | GammaLaw                                            |
+| EOS                | GammaLaw                                            |
 | Multi-level        | no                                                  |
 | Metric             | velocity profile should match the analytic solution |
