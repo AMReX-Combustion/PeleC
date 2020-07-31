@@ -156,7 +156,6 @@ amrex_probinit(
     }
 
     // Extract position and velocities
-    ProbParm::v_xinput = new amrex::Gpu::ManagedVector<amrex::Real>;
     ProbParm::v_uinput = new amrex::Gpu::ManagedVector<amrex::Real>;
     ProbParm::v_vinput = new amrex::Gpu::ManagedVector<amrex::Real>;
     ProbParm::v_winput = new amrex::Gpu::ManagedVector<amrex::Real>;
