@@ -9,6 +9,9 @@ rectangular channel at :math:`30^\circ` to the mesh. This case is run
 with multiple levels of AMR. The profiles shown below are through the
 channel centerline.
 
+Density at t=0.1s
+#################
+
 .. image:: ./ebverification/C7/stube.png
    :height: 300pt
 

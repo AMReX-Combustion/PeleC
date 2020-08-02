@@ -217,7 +217,7 @@ preserve the second order accuracy of the code.
    :width: 300pt
 
 Testing the constant Smagorinsky Large Eddy Simulation model
-------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This setup is identical to the MMS study for the compressible
 Navier-Stokes equations. The Large Eddy Simulation (LES) constants,

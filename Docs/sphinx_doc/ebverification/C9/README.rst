@@ -21,6 +21,9 @@ velocity is set to 0. The length of the channel is 100cm and the
 radius is 5cm. The simulations are performed until the acoustic pulse
 comes back to the center of the channel, :math:`t=0.01s`.
 
+Acoustic pulse at t=0.01s
+#########################
+
 .. image:: ./ebverification/C9/pulse.png
    :height: 200pt
 
@@ -37,7 +40,7 @@ Density profiles in the centerline at t=0.01s
 The :math:`L_2` error norm for a quantity :math:`s` is defined as
 
 .. math::
-   e_s = \sqrt{ \frac{\int_{-L/2}^{L} (s^h-s^*)^2 \mathrm{d}r}{n_x}}
+   e_s = \sqrt{ \frac{\sum_{i=1}^{n_x} (s_i^h-s_i^*)^2 }{n_x}}
 
 where :math:`s^h` is the numerical solution, :math:`s^*` is the exact
 solution, and :math:`n_x` is the number of cells in the
