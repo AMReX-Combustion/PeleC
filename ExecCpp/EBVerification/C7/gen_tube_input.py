@@ -44,7 +44,7 @@ if __name__ == "__main__":
         type=float,
         default=0.0,
     )
-    parser.add_argument("--length", help="Domain length", type=float, default=2.0)
+    parser.add_argument("--length", help="Domain length", type=float, default=4.0)
     args = parser.parse_args()
 
     # Tube description

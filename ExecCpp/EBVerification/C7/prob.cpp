@@ -57,5 +57,16 @@ amrex_probinit(
     ProbParm::rhor, ProbParm::massfrac.begin(), ProbParm::pr, ProbParm::Tr);
   EOS::RYP2E(
     ProbParm::rhor, ProbParm::massfrac.begin(), ProbParm::pr, ProbParm::eintr);
+
+  // Output IC
+  std::ofstream ofs("ic.txt", std::ofstream::out);
+  amrex::Print(ofs) << "L, rhol, pl, Tl, rhor, pr, Tr, gamma, angle"
+                    << std::endl;
+  amrex::Print(ofs).SetPrecision(17)
+    << ProbParm::L << "," << ProbParm::rhol << "," << ProbParm::pl << "," << ProbParm::Tl << ","
+    << ProbParm::rhor << "," << ProbParm::pr << "," << ProbParm::Tr << ","
+    << EOS::gamma << "," << ProbParm::angle
+    << std::endl;
+  ofs.close();
 }
 }

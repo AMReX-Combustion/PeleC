@@ -1,5 +1,4 @@
 import os
-import glob
 import argparse
 import pandas as pd
 import numpy as np
@@ -128,12 +127,8 @@ if __name__ == "__main__":
 
     p1 = theory_ooa(1, errors[0, :], errors[1, 0])
     p2 = theory_ooa(2, errors[0, :], errors[1, 0])
-    plt.loglog(
-        errors[0, :], p1, lw=2, color=cmap[-1], label=f"$p=1$",
-    )
-    plt.loglog(
-        errors[0, :], p2, lw=2, color=cmap[-2], label=f"$p=2$",
-    )
+    plt.loglog(errors[0, :], p1, lw=2, color=cmap[-1], label=f"$p=1$")
+    plt.loglog(errors[0, :], p2, lw=2, color=cmap[-2], label=f"$p=2$")
 
     print("Estimated order of the error:")
     print(np.log(errors[1, :-1] / errors[1, 1:]) / np.log(2))

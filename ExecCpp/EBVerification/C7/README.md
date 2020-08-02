@@ -9,6 +9,6 @@ Full description and the results of this case can be found in the
 |:-------------------|:--------------------------------------|
 | Problem definition | Sod shock tube in channel at an angle |
 | EB geometry        | Channel                               |
-| Mechanism          | GammaLaw                              |
+| EOS                | GammaLaw                              |
 | Multi-level        | yes                                   |
 | Metric             | reference shock tube solutions        |
