@@ -21,6 +21,9 @@ velocity is set to 0. The length of the channel is 100cm and the
 radius is 5cm. The simulations are performed until the acoustic pulse
 comes back to the center of the channel, :math:`t=0.01s`.
 
+.. image:: ./ebverification/C9/pulse.png
+   :height: 200pt
+
 
 Density profiles in the centerline at t=0.01s
 #############################################
