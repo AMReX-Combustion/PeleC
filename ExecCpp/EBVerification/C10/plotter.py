@@ -100,7 +100,7 @@ if __name__ == "__main__":
         df = pd.read_csv(os.path.join(fdir, "history.csv"))
         plt.figure("ke")
         plt.plot(
-            df.time / ics["L"] / ics["umax"],
+            df.time / (ics["L"] / ics["umax"]),
             df.rho_ke
             / (
                 0.5
