@@ -102,8 +102,6 @@ function(add_test_v2 TEST_NAME TEST_EXE_DIR LIST_OF_GRID_SIZES)
     set(CURRENT_TEST_SOURCE_DIR ${CMAKE_SOURCE_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/tests/${TEST_NAME})
     set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/tests/${TEST_NAME})
     set(CURRENT_TEST_EXE ${CMAKE_BINARY_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/pelec_${TEST_EXE_DIR})
-    # Copy python file to test directory for running nosetests
-    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/test_second_order.py DESTINATION "${CURRENT_TEST_BINARY_DIR}/")
     # Get last item in resolution list so we can find out when we are on the last item in our loop
     list(GET LIST_OF_GRID_SIZES -1 LAST_GRID_SIZE_IN_LIST)
     # Create the commands to run for each resolution
@@ -154,7 +152,7 @@ function(add_test_v2 TEST_NAME TEST_EXE_DIR LIST_OF_GRID_SIZES)
       list(APPEND IMAGES_TO_UPLOAD ${CURRENT_TEST_BINARY_DIR}/v_error.png)
     endif()
     # Add test and actual test commands to CTest database (need to convert this to arrays for resolutions)
-    add_test(${TEST_NAME} sh -c "${MASTER_RUN_COMMAND} && cd ${CURRENT_TEST_BINARY_DIR} && nosetests test_second_order.py")
+    add_test(${TEST_NAME} sh -c "${MASTER_RUN_COMMAND} && cd ${CURRENT_TEST_BINARY_DIR} && nosetests ${CMAKE_CURRENT_SOURCE_DIR}/test_second_order.py")
     # Set properties for test and make sure test dependencies have run before this test will run
     set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 14400 PROCESSORS ${NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS "verification;no-ci" ATTACHED_FILES "${IMAGES_TO_UPLOAD}")
 endfunction(add_test_v2)
