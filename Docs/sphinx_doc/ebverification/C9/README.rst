@@ -34,8 +34,8 @@ Density profiles in the centerline at t=0.01s
 .. image:: ./ebverification/C9/rho.png
    :height: 300pt
 
-:math:`L_2` error norm of velocity
-##################################
+:math:`L_2` error norm of density
+#################################
 
 The :math:`L_2` error norm for a quantity :math:`s` is defined as
 
