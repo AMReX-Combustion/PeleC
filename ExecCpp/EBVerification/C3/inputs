@@ -1,6 +1,6 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 max_step = 3000000
-stop_time = 0.001
+stop_time = 3e-5
 
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic =  0   0  0
@@ -76,4 +76,4 @@ prob.p_init    = 1013250.0
 prob.Y_init_H2 = 0.06
 prob.Y_init_O2 = 0.5
 prob.Y_init_N2 = 0.44
-prob.T_init    = 1000.0
+prob.T_init    = 1500.0
