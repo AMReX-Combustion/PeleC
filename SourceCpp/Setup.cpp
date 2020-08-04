@@ -391,7 +391,7 @@ PeleC::variableSetUp()
 
 #ifdef SOOT_MODEL
     // Set the soot model names
-    if ( ParallelDescriptor::IOProcessor()) {
+    if (ParallelDescriptor::IOProcessor()) {
       amrex::Print() << NumSootVars << " Soot Variables: " << std::endl;
       for (int i = 0; i < NumSootVars; ++i)
         amrex::Print() << soot_model->sootVariableName(i) << ' ' << ' ';

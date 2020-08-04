@@ -22,10 +22,14 @@ endif
 
 #sundials stuff
 ifeq ($(USE_SUNDIALS_PP), TRUE)
-  USE_ARKODE_PP=TRUE
   ifeq ($(USE_CUDA), TRUE)
     USE_CUDA_SUNDIALS_PP = TRUE
   endif
+  ifeq ($(USE_CVODE_PP), TRUE)
+    USE_ARKODE_PP = FALSE
+  endif
+  DEFINES += -DUSE_ARKODE_PP=$(USE_ARKODE_PP)
+  DEFINES += -DUSE_CVODE_PP=$(USE_CVODE_PP)
   include $(PELE_PHYSICS_HOME)/ThirdParty/Make.ThirdParty
 endif
 
@@ -149,6 +153,17 @@ ifdef Chemistry_Model
   MNAMES += CHEMISTRY=$(Chemistry_Model)
 endif
 
+ifeq ($(shell uname),Darwin)
+  all: $(executable)
+	install_name_tool -add_rpath $(PELE_PHYSICS_HOME)/ThirdParty/INSTALL/$(configSpecificTPSuffix)/lib $(executable)
+	$(SILENT) $(RM) AMReX_buildInfo.cpp
+	@echo SUCCESS
+else
+  all: $(executable)
+	$(SILENT) $(RM) AMReX_buildInfo.cpp
+	@echo SUCCESS
+endif
+
 AMReX_buildInfo.cpp:
 	$(AMREX_HOME)/Tools/C_scripts/makebuildinfo_C.py \
           --amrex_home "$(AMREX_HOME)" \
@@ -158,6 +173,21 @@ AMReX_buildInfo.cpp:
           --GIT "$(TOP) $(AMREX_HOME) $(PELE_PHYSICS_HOME)"
 
 include $(AMREX_HOME)/Tools/GNUMake/Make.rules
+
+ifeq ($(USE_SUNDIALS_PP),TRUE)
+  TPL:
+	cd $(PELE_PHYSICS_HOME)/ThirdParty; make AMREX_HOME=$(AMREX_HOME) USE_CUDA=$(USE_CUDA) USE_KLU=$(USE_KLU_PP) DEBUG=$(DEBUG) COMP=$(HOSTCC) NVCC=$(COMP)
+
+  TPLclean:
+	cd $(PELE_PHYSICS_HOME)/ThirdParty; make AMREX_HOME=$(AMREX_HOME) USE_CUDA=$(USE_CUDA) USE_KLU=$(USE_KLU_PP) DEBUG=$(DEBUG) COMP=$(HOSTCC) NVCC=$(COMP) clean
+
+  TPLrealclean:
+	cd $(PELE_PHYSICS_HOME)/ThirdParty; make AMREX_HOME=$(AMREX_HOME) USE_CUDA=$(USE_CUDA) USE_KLU=$(USE_KLU_PP) DEBUG=$(DEBUG) COMP=$(HOSTCC) NVCC=$(COMP) realclean
+else
+  TPL:
+  TPLclean:
+  TPLrealclean:
+endif
 
 clean::
 	$(SILENT) $(RM) extern.f90

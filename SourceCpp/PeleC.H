@@ -402,7 +402,7 @@ public:
   void fill_soot_source(
     amrex::Real time,
     amrex::Real dt,
-    const amrex::MultiFab& state,
+    amrex::MultiFab& state,
     amrex::MultiFab& soot_src,
     int ng);
 #endif

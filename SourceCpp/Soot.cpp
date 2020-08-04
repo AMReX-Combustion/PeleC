@@ -34,11 +34,11 @@ PeleC::construct_new_soot_source(amrex::Real time,
 }
 
 void
-PeleC::fill_soot_source (amrex::Real            time,
-                         amrex::Real            dt,
-                         const amrex::MultiFab& state,
-                         amrex::MultiFab&       soot_src,
-                         int                    ng)
+PeleC::fill_soot_source (amrex::Real      time,
+                         amrex::Real      dt,
+                         amrex::MultiFab& state,
+                         amrex::MultiFab& soot_src,
+                         int              ng)
 {
   const int nCompTr = dComp_lambda + 1;
   const amrex::Real* dx = geom.CellSize();
@@ -62,7 +62,7 @@ PeleC::fill_soot_source (amrex::Real            time,
       continue;
     }
 #endif
-    const amrex::FArrayBox& Sfab = state[mfi];
+    amrex::FArrayBox& Sfab = state[mfi];
     amrex::FArrayBox& soot_fab = soot_src[mfi];
     auto const& s_arr = Sfab.array();
     const int nqaux = NQAUX > 0 ? NQAUX : 1;
@@ -130,7 +130,8 @@ PeleC::fill_soot_source (amrex::Real            time,
                        // Limit time step based only on positive moment sources
                        for (int n = 0; n != NUM_SOOT_VARS; ++n) {
                          int indx = UFSOOT + n;
-                         max_rate = amrex::max(max_rate, -soot_arr(i,j,k,indx)/s_arr(i,j,k,indx));
+                         max_rate =
+                           amrex::max(max_rate, -soot_arr(i, j, k, indx)/s_arr(i, j, k, indx));
                        }
                        return 1./max_rate;
                      });
