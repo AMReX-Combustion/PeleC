@@ -636,23 +636,12 @@ protected:
   amrex::Vector<std::unique_ptr<amrex::MultiFab>> old_sources;
   amrex::Vector<std::unique_ptr<amrex::MultiFab>> new_sources;
 
-  ///
-  ///  Call extern/networks/.../network.f90::network_init()
-  ///
-  static void init_extern();
-
-  static void init_network();
-  static void close_network();
-
 #ifdef PELEC_USE_REACTIONS
   static void init_reactor();
   static void close_reactor();
 #endif
 
-  static void init_eos();
-
   static void init_transport();
-  static void close_transport();
 
   void init_les();
   void init_filters();
