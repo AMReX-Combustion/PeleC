@@ -1845,7 +1845,8 @@ PeleC::init_reactor()
 
 void
 PeleC::close_reactor()
-{ }
+{
+}
 #endif
 
 void
