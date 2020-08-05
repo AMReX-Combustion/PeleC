@@ -128,16 +128,16 @@ PeleC::variableSetUp()
   // Get options, set phys_bc
   read_params();
 
+  EOS::init();
+
+  init_transport();
+
 #ifdef PELEC_USE_REACTIONS
   // Initialize the reactor
   if (do_react == 1) {
     init_reactor();
   }
 #endif
-
-  EOS::init();
-
-  init_transport();
 
   indxmap::init();
 
