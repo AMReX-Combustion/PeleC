@@ -4,6 +4,14 @@ import argparse
 import yt
 import pandas as pd
 import numpy as np
+import re
+
+
+def natural_sort(l):
+    convert = lambda text: int(text) if text.isdigit() else text.lower()
+    alphanum_key = lambda key: [convert(c) for c in re.split("([0-9]+)", key)]
+    return sorted(l, key=alphanum_key)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Extract data")
@@ -17,10 +25,10 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    fields = ["x", "density"]
+    fields = ["x", "density", "x_velocity", "pressure"]
     idxs = [0, -1]
     for fdir in args.fdirs:
-        pltfiles = sorted(glob.glob(os.path.join(fdir, "plt*")))
+        pltfiles = natural_sort(glob.glob(os.path.join(fdir, "plt*")))
 
         lst = []
         for idx in idxs:

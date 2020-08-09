@@ -29,6 +29,8 @@ Eos_dir := GammaLaw
 Reactions_dir := Null_air
 Transport_dir := Constant
 
+DEFINES += -DDO_PROBLEM_POST_TIMESTEP -DDO_PROBLEM_POST_INIT
+
 # GNU Make
 Bpack := ./Make.package
 Blocs := .

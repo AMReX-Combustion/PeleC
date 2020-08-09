@@ -1,14 +1,18 @@
 #ifndef _PROB_H_
 #define _PROB_H_
 
+#include <AMReX_Print.H>
+#include <AMReX_ParmParse.H>
 #include <AMReX_Geometry.H>
 #include <AMReX_FArrayBox.H>
 
 #include "mechanism.h"
 
+#include "PeleC.H"
 #include "IndexDefines.H"
 #include "Constants.H"
 #include "EOS.H"
+#include "Transport.H"
 #include "Tagging.H"
 #include "ProblemDerive.H"
 #include "prob_parm.H"
@@ -31,13 +35,13 @@ pc_initdata(
   const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
   const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];
 
-  const amrex::Real rho =
-    ProbParm::rho +
-    ProbParm::alpha * std::exp(-(x / ProbParm::sigma) * (x / ProbParm::sigma));
+  const amrex::Real rho_p = ProbParm::alpha * std::exp(-(x / ProbParm::sigma) * (x / ProbParm::sigma));
+  const amrex::Real rho = ProbParm::rho + rho_p;
+  const amrex::Real p = ProbParm::p + rho_p * ProbParm::cs * ProbParm::cs;
 
-  amrex::Real p = 0.0, eint = 0.0;
-  EOS::RTY2P(rho, ProbParm::T, ProbParm::massfrac.begin(), p);
+  amrex::Real T, eint = 0.0;
   EOS::RYP2E(rho, ProbParm::massfrac.begin(), p, eint);
+  EOS::RYP2T(rho, ProbParm::massfrac.begin(), p, T);
 
   state(i, j, k, URHO) = rho;
   state(i, j, k, UMX) = 0.0;
@@ -45,7 +49,7 @@ pc_initdata(
   state(i, j, k, UMZ) = 0.0;
   state(i, j, k, UEINT) = rho * eint;
   state(i, j, k, UEDEN) = rho * eint;
-  state(i, j, k, UTEMP) = ProbParm::T;
+  state(i, j, k, UTEMP) = T;
   for (int n = 0; n < NUM_SPECIES; n++)
     state(i, j, k, UFS + n) = rho * ProbParm::massfrac[n];
 }
@@ -67,6 +71,43 @@ bcnormal(
 void pc_prob_close();
 
 using ProblemTags = EmptyProbTagStruct;
-using ProblemDerives = EmptyProbDeriveStruct;
+
+struct MyProbDeriveStruct
+{
+  static void
+  add(amrex::DeriveList& derive_lst, amrex::DescriptorList& desc_lst)
+  {
+    // Add derives as follows and define the derive function below:
+    derive_lst.add(
+     "rhoerror", amrex::IndexType::TheCellType(), 1, pc_rhoerror,
+     the_same_box);
+    derive_lst.addComponent("rhoerror", desc_lst, State_Type, 0, NVAR);
+  }
+
+  static void pc_rhoerror(
+    const amrex::Box& bx,
+    amrex::FArrayBox& derfab,
+    int dcomp,
+    int /*ncomp*/,
+    const amrex::FArrayBox& datfab,
+    const amrex::Geometry& geomdata,
+    amrex::Real /*time*/,
+    const int* /*bcrec*/,
+    int level)
+  {
+    auto const dat = datfab.array();
+    auto arr = derfab.array();
+    const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_lo = geomdata.ProbLoArray();
+    const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx = geomdata.CellSizeArray();
+
+    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
+      const amrex::Real rho_exact = ProbParm::rho + ProbParm::alpha * std::exp(-(x / ProbParm::sigma) * (x / ProbParm::sigma));
+      arr(i,j,k,0) = dat(i,j,k,URHO) - rho_exact;
+    });
+  }
+};
+
+using ProblemDerives = MyProbDeriveStruct;
 
 #endif

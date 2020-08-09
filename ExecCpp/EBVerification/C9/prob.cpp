@@ -1,11 +1,4 @@
-#include <AMReX_Print.H>
-#include <AMReX_ParmParse.H>
-
-#include "mechanism.h"
-
-#include "EOS.H"
-#include "prob_parm.H"
-#include "Transport.H"
+#include "prob.H"
 
 namespace ProbParm {
 AMREX_GPU_DEVICE_MANAGED amrex::Real alpha = 1e-4;
@@ -65,3 +58,88 @@ amrex_probinit(
   ofs.close();
 }
 }
+
+#ifdef DO_PROBLEM_POST_TIMESTEP
+void
+PeleC::problem_post_timestep()
+{
+
+  if (verbose <= 0)
+    return;
+
+  bool local_flag = true;
+
+  int finest_level = parent->finestLevel();
+  amrex::Real time = state[State_Type].curTime();
+  amrex::Real rho_err = 0.0;
+  int datwidth = 14;
+  int datprecision = 6;
+
+  if (level == 0) {
+    if (amrex::ParallelDescriptor::IOProcessor()) {
+      amrex::Print() << "... ERROR problem post timestep" << std::endl;
+    }
+
+    // Calculate the errors
+    for (int lev = 0; lev <= finest_level; lev++) {
+      PeleC& pc_lev = getLevel(lev);
+
+      rho_err += pc_lev.volWgtSquaredSum("rhoerror", time, local_flag);
+
+    }
+
+    // Reductions
+    amrex::ParallelDescriptor::ReduceRealSum(
+      &rho_err, 1, amrex::ParallelDescriptor::IOProcessorNumber());
+
+    // Get the norm and normalize it
+    amrex::Real V = volume.sum(0, false);
+    rho_err = std::sqrt(rho_err / V);
+
+    if (amrex::ParallelDescriptor::IOProcessor()) {
+      amrex::Print() << "TIME= " << time << " RHO ERROR  = " << rho_err
+                     << '\n';
+
+      if (parent->NumDataLogs() > 1) {
+
+        std::ostream& data_log2 = parent->DataLog(1);
+
+        // Write the quantities at this time
+        data_log2 << std::setw(datwidth) << time;
+        data_log2 << std::setw(datwidth) << std::setprecision(datprecision)
+                  << rho_err;
+        data_log2 << std::endl;
+      }
+    }
+  }
+}
+#endif
+
+#ifdef DO_PROBLEM_POST_INIT
+void
+PeleC::problem_post_init()
+{
+
+  if (verbose <= 0)
+    return;
+
+  amrex::Real time = state[State_Type].curTime();
+  int datwidth = 14;
+  int datprecision = 6;
+
+  if (level == 0) {
+    if (amrex::ParallelDescriptor::IOProcessor()) {
+
+      if (parent->NumDataLogs() > 1) {
+
+        std::ostream& data_log2 = parent->DataLog(1);
+        if (time == 0.0) {
+          data_log2 << std::setw(datwidth) << "          time";
+          data_log2 << std::setw(datwidth) << "       rho_err";
+          data_log2 << std::endl;
+        }
+      }
+    }
+  }
+}
+#endif

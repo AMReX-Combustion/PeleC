@@ -12,9 +12,11 @@ propagates along the :math:`x` direction.
 The density pulse at the center of the channel is defined as:
 
 .. math::
-   \rho(x) = \rho_0 + \alpha \exp(-(x/\sigma)^2)
+   \rho'(x) = \alpha \exp(-(x/\sigma)^2)
+   \rho(x) = \rho_0 + \rho'(x)
+   p(x) = p_0 + \rho'(x) c_s c_s
 
-The background pressure is set to :math:`100000 erg/cm^3`, the
+The background pressure is set to :math:`p_0 = 100000 erg/cm^3`, the
 background density is set to :math:`\rho_0 = 0.0014 g/cm^3`,
 :math:`\alpha=10^{-4} g/cm^3`, :math:`\sigma=10cm`, and the background
 velocity is set to 0. The length of the channel is 100cm and the

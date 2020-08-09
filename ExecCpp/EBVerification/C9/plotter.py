@@ -69,6 +69,7 @@ if __name__ == "__main__":
     errors = np.zeros((2, len(args.fdirs)))
     for k, fdir in enumerate(args.fdirs):
         df = pd.read_csv(os.path.join(fdir, "profiles.csv"))
+        df["entropy"] = df.pressure / (df.density ** ics["gamma"])
         init = df[df.time == df.time.min()].reset_index()
         final = df[df.time == df.time.max()].reset_index()
 
@@ -79,6 +80,16 @@ if __name__ == "__main__":
         plt.figure("rho")
         p = plt.plot(
             final.x, final.density, lw=2, color=cmap[k], label=f"$n_x = {res}$"
+        )
+        p[0].set_dashes(dashseq[k])
+
+        plt.figure("entropy")
+        p = plt.plot(
+            final.x,
+            final.entropy / (ics["p"] / (ics["rho"] ** ics["gamma"])),
+            lw=2,
+            color=cmap[k],
+            label=f"$n_x = {res}$",
         )
         p[0].set_dashes(dashseq[k])
 
@@ -93,9 +104,7 @@ if __name__ == "__main__":
     )
 
     p1 = theory_ooa(1, errors[0, :], errors[1, 0])
-    plt.loglog(
-        errors[0, :], p1, lw=2, color=cmap[-1], label=f"$p=1$",
-    )
+    plt.loglog(errors[0, :], p1, lw=2, color=cmap[-1], label=f"$p=1$")
 
     print("Estimated order of the error:")
     print(np.log(errors[1, :-1] / errors[1, 1:]) / np.log(2))
@@ -106,6 +115,16 @@ if __name__ == "__main__":
         ax = plt.gca()
         plt.xlabel(r"$x~[cm]$", fontsize=22)
         plt.ylabel(r"$\rho$", fontsize=22)
+        plt.setp(ax.get_xmajorticklabels(), fontsize=16)
+        plt.setp(ax.get_ymajorticklabels(), fontsize=16)
+        legend = ax.legend(loc="best")
+        plt.tight_layout()
+        pdf.savefig(dpi=300)
+
+        plt.figure("entropy")
+        ax = plt.gca()
+        plt.xlabel(r"$x~[cm]$", fontsize=22)
+        plt.ylabel(r"$(p / \rho^\gamma) / (p_0 / \rho_0^\gamma)$", fontsize=22)
         plt.setp(ax.get_xmajorticklabels(), fontsize=16)
         plt.setp(ax.get_ymajorticklabels(), fontsize=16)
         legend = ax.legend(loc="best")
