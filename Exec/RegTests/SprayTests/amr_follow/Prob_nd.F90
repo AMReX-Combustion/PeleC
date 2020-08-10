@@ -69,8 +69,7 @@ subroutine pc_initdata(level,time,lo,hi,nvar, &
                        delta,xlo,xhi) bind(C, name="pc_initdata")
 
   use probdata_module
-  use fuego_chemistry, only: nspecies, naux
-  use chemistry_module, only : nspecies, get_species_index
+  use fuego_chemistry, only: nspecies, naux, get_species_index
   use eos_type_module
   use meth_params_module, only : URHO, UMX, UMY, UMZ, &
        UEDEN, UEINT, UFS, UTEMP, small_temp
