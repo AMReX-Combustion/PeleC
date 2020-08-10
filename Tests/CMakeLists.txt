@@ -26,7 +26,7 @@ function(add_test_r TEST_NAME TEST_EXE_DIR)
     set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/tests/${TEST_NAME})
     set(CURRENT_TEST_EXE ${CMAKE_BINARY_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/pelec_${TEST_EXE_DIR})
     # Gold files should be submodule organized by machine and compiler (these are output during configure)
-    set(PLOT_GOLD ${FCOMPARE_GOLD_FILES_DIRECTORY}/${TEST_NAME}/plt00010)
+    set(PLOT_GOLD ${FCOMPARE_GOLD_FILES_DIRECTORY}/${TEST_EXE_DIR}/tests/${TEST_NAME}/plt00010)
     # Test plot is currently expected to be after 10 steps
     set(PLOT_TEST ${CURRENT_TEST_BINARY_DIR}/plt00010)
     # Find fcompare
@@ -55,7 +55,7 @@ function(add_test_r TEST_NAME TEST_EXE_DIR)
     # Add test and actual test commands to CTest database
     add_test(${TEST_NAME} sh -c "${MPI_COMMANDS} ${CURRENT_TEST_EXE} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i ${RUNTIME_OPTIONS} > ${TEST_NAME}.log ${FCOMPARE_COMMAND}")
     # Set properties for test
-    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 3600 PROCESSORS ${NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "regression" ATTACHED_FILES_ON_FAIL "${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.log")
+    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 7200 PROCESSORS ${NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "regression" ATTACHED_FILES_ON_FAIL "${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.log")
 endfunction(add_test_r)
 
 # Regression tests excluded from CI
@@ -91,7 +91,7 @@ function(add_test_v1 TEST_NAME TEST_EXE_DIR)
     # Add test and actual test commands to CTest database
     add_test(${TEST_NAME} sh -c "${RUN_COMMAND} ${RUNTIME_OPTIONS} > ${TEST_NAME}.log && nosetests ${TEST_NAME}.py")
     # Set properties for test
-    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 3600 PROCESSORS ${NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "verification" ATTACHED_FILES_ON_FAIL "${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.log")
+    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 7200 PROCESSORS ${NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "verification" ATTACHED_FILES_ON_FAIL "${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.log")
 endfunction(add_test_v1)
 
 # Verification test with multiple resolutions (each test runs on maximum number of processes on node)
@@ -154,7 +154,7 @@ function(add_test_v2 TEST_NAME TEST_EXE_DIR LIST_OF_GRID_SIZES)
     # Add test and actual test commands to CTest database (need to convert this to arrays for resolutions)
     add_test(${TEST_NAME} sh -c "${MASTER_RUN_COMMAND} && cd ${CURRENT_TEST_BINARY_DIR} && nosetests ${CMAKE_CURRENT_SOURCE_DIR}/test_second_order.py")
     # Set properties for test and make sure test dependencies have run before this test will run
-    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 21600 PROCESSORS ${NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS "verification;no-ci" ATTACHED_FILES "${IMAGES_TO_UPLOAD}")
+    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 28800 PROCESSORS ${NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS "verification;no-ci" ATTACHED_FILES "${IMAGES_TO_UPLOAD}")
 endfunction(add_test_v2)
 
 # Standard unit test
