@@ -126,6 +126,7 @@ pc_rst_int_e(
           eos_state_e += eos_state_massfrac[sp] * eos_state_ei[sp];
         }
         const amrex::Real eint_new = eos_state_e;
+        /* Avoiding this for now due to GPU restricitions
         if (verbose) {
           amrex::Print() << std::endl;
           amrex::Print()
@@ -136,7 +137,7 @@ pc_rst_int_e(
           amrex::Print() << ">>> ... from ',S(i,j,k,UEINT)/S(i,j,k,URHO),' to "
                          << std::endl;
           amrex::Print() << eint_new << std::endl;
-        }
+        }*/
         if (dual_energy_update_E_from_e == 1) {
           S(i, j, k, UEDEN) = S(i, j, k, UEDEN) +
                               (S(i, j, k, URHO) * eint_new - S(i, j, k, UEINT));
