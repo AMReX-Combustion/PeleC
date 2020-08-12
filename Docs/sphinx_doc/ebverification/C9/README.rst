@@ -13,7 +13,9 @@ The density pulse at the center of the channel is defined as:
 
 .. math::
    \rho'(x) = \alpha \exp(-(x/\sigma)^2)
+
    \rho(x) = \rho_0 + \rho'(x)
+
    p(x) = p_0 + \rho'(x) c_s c_s
 
 The background pressure is set to :math:`p_0 = 100000 erg/cm^3`, the
@@ -42,7 +44,7 @@ Density profiles in the centerline at t=0.01s
 The :math:`L_2` error norm for a quantity :math:`s` is defined as
 
 .. math::
-   e_s = \sqrt{ \frac{\sum_{i=1}^{n_x} (s_i^h-s_i^*)^2 }{n_x}}
+   \epsilon = \sqrt{ \frac{\sum_{i=1}^{n_x} (s_i^h-s_i^*)^2 }{n_x}}
 
 where :math:`s^h` is the numerical solution, :math:`s^*` is the exact
 solution, and :math:`n_x` is the number of cells in the
