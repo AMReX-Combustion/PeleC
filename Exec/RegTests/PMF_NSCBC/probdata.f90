@@ -33,7 +33,7 @@ contains
   subroutine init_bc
 
     use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEINT, UEDEN, UTEMP, UFS
-    use chemistry_module, only : nspecies, get_species_index
+    use fuego_chemistry, only : nspecies, get_species_index
     use eos_type_module
 
     integer :: iN2, iO2, iH2, nPMF

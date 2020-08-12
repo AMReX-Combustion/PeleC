@@ -206,7 +206,7 @@ class MMSTestCase(unittest.TestCase):
     def setUp(self):
 
         self.theory_order = 2.0
-        self.tol = 2e-1
+        self.tol = 2.5e-1
 
     def test_second_order(self):
         """Is this test second order accurate?"""

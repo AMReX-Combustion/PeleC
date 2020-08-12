@@ -40,28 +40,6 @@ bool PeleC::dump_old = false;
 int PeleC::verbose = 0;
 int PeleC::radius_grow = 1;
 amrex::BCRec PeleC::phys_bc;
-// int PeleC::NUM_GROW = -1;
-// int PeleC::NVAR = -1;
-// int          PeleC::QTHERM        = -1;
-// int          PeleC::QVAR          = -1;
-// int          PeleC::cQRHO         = -1;
-// int          PeleC::cQU           = -1;
-// int          PeleC::cQV           = -1;
-// int          PeleC::cQW           = -1;
-// int          PeleC::cQGAME        = -1;
-// int          PeleC::cQPRES        = -1;
-// int          PeleC::cQREINT       = -1;
-// int          PeleC::cQTEMP        = -1;
-// int          PeleC::cQFA          = -1;
-// int          PeleC::cQFS          = -1;
-// int          PeleC::cQFX          = -1;
-// int          PeleC::NQAUX         = -1;
-// int          PeleC::cQGAMC        = -1;
-// int          PeleC::cQC           = -1;
-// int          PeleC::cQCSML        = -1;
-// int          PeleC::cQDPDR        = -1;
-// int          PeleC::cQDPDE        = -1;
-// int          PeleC::cQRSPEC        = -1;
 amrex::Real PeleC::frac_change = 1.e200;
 int PeleC::Density = -1;
 int PeleC::Eden = -1;
@@ -139,24 +117,17 @@ ebInitialized(bool eb_init_val)
 void
 PeleC::variableCleanUp()
 {
-
   desc_lst.clear();
 
-  // Don't need this in pure C++?
-  // clear_method_params();
-
   transport_close();
+
+  EOS::close();
 
 #ifdef PELEC_USE_REACTIONS
   if (do_react == 1) {
     close_reactor();
   }
 #endif
-
-  close_network();
-
-  // Don't need this in pure C++?
-  // clear_grid_info();
 
   clear_prob();
 
@@ -1847,43 +1818,15 @@ PeleC::derive(
 }
 
 void
-PeleC::init_network()
-{
-  // pc_network_init();
-  //__network_MOD_network_init();
-}
-
-void
-PeleC::close_network()
-{
-  // pc_network_close();
-  //__network_MOD_network_close();
-}
-
-void
 PeleC::clear_prob()
 {
   pc_prob_close();
-}
-
-void
-PeleC::init_extern()
-{
-  // initialize the external runtime parameters -- these will
-  // live in the probin
-
-  amrex::Print() << "reading extern runtime parameters ..." << std::endl;
-
-  // Disabled for CUDA
-  // pc_extern_init();
 }
 
 #ifdef PELEC_USE_REACTIONS
 void
 PeleC::init_reactor()
 {
-  CKINIT();
-
 #ifdef USE_SUNDIALS_PP
   int reactor_type = 1;
   int ode_ncells = 1;
@@ -1903,26 +1846,13 @@ PeleC::init_reactor()
 void
 PeleC::close_reactor()
 {
-  CKFINALIZE();
 }
 #endif
-
-void
-PeleC::init_eos()
-{
-  EOS::init();
-}
 
 void
 PeleC::init_transport()
 {
   transport_init();
-}
-
-void
-PeleC::close_transport()
-{
-  transport_close();
 }
 
 void
@@ -2023,14 +1953,19 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
 #ifdef _OPENMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
+  const auto captured_allow_small_energy = allow_small_energy;
+  const auto captured_allow_negative_energy = allow_negative_energy;
+  const auto captured_dual_energy_update_E_from_e = dual_energy_update_E_from_e;
+  const auto captured_verbose = verbose;
   for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
        ++mfi) {
     const amrex::Box& bx = mfi.growntilebox(ng);
     const auto& sarr = S_new.array(mfi);
     amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       pc_rst_int_e(
-        i, j, k, sarr, allow_small_energy, allow_negative_energy,
-        dual_energy_update_E_from_e, verbose);
+        i, j, k, sarr, captured_allow_small_energy,
+        captured_allow_negative_energy, captured_dual_energy_update_E_from_e,
+        captured_verbose);
     });
   }
 
