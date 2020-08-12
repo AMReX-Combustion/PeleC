@@ -6,13 +6,13 @@ void
 PeleC::construct_old_soot_source(amrex::Real time,
                                  amrex::Real dt)
 {
+  old_sources[soot_src]->setVal(0.0);
   if (!add_soot_src)
     return;
   amrex::MultiFab& S_old = get_old_data(State_Type);
 
   int ng = 0; // None filled
 
-  old_sources[soot_src]->setVal(0.0);
   fill_soot_source(time, dt, S_old, *old_sources[soot_src], ng);
 
   old_sources[soot_src]->FillBoundary(geom.periodicity());
@@ -22,13 +22,12 @@ void
 PeleC::construct_new_soot_source(amrex::Real time,
                                  amrex::Real dt)
 {
+  new_sources[soot_src]->setVal(0.0);
   if (!add_soot_src)
     return;
   amrex::MultiFab& S_new = get_new_data(State_Type);
 
   int ng = 0;
-
-  new_sources[soot_src]->setVal(0.0);
 
   fill_soot_source(time, dt, S_new, *new_sources[soot_src], ng);
 }
@@ -101,7 +100,7 @@ PeleC::fill_soot_source (amrex::Real      time,
         });
     }
     auto const& soot_arr = soot_fab.array();
-    soot_model->addSootSourceTerm(bx, s_arr, q_arr, coeff_arr, soot_arr, time, dt);
+    soot_model->addSootSourceTerm(bx, q_arr, coeff_arr, soot_arr, time, dt);
   }
   amrex::ReduceOps<amrex::ReduceOpMin> reduce_op;
   amrex::ReduceData<amrex::Real> reduce_data(reduce_op);
