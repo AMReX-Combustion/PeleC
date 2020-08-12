@@ -1743,10 +1743,11 @@ PeleC::errorEst(
         geom.CellSizeArray();
       const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_lo =
         geom.ProbLoArray();
+      const auto captured_level = level;
       amrex::ParallelFor(
         tilebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
           set_problem_tags<ProblemTags>(
-            i, j, k, tag_arr, Sfab, tagval, dx, prob_lo, time, level);
+            i, j, k, tag_arr, Sfab, tagval, dx, prob_lo, time, captured_level);
         });
 
       // Now update the tags in the TagBox.
