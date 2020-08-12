@@ -245,7 +245,7 @@ PeleC::react_state(
               amrex::Real umnew = uold(i, j, k, UMX) + dt * a(i, j, k, UMX);
               amrex::Real vmnew = uold(i, j, k, UMY) + dt * a(i, j, k, UMY);
               amrex::Real wmnew = uold(i, j, k, UMZ) + dt * a(i, j, k, UMZ);
-              amrex::Real rhonew;
+              amrex::Real rhonew = 0.;
 
               int offset =
                 (k - lo.z) * len.x * len.y + (j - lo.y) * len.x + (i - lo.x);
