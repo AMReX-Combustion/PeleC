@@ -2,17 +2,21 @@
 
 namespace ProbParm {
 AMREX_GPU_DEVICE_MANAGED amrex::Real p_l = 1.0;   // left pressure (erg/cc)
-AMREX_GPU_DEVICE_MANAGED amrex::Real rho_l = 1.0; // left density (g/cc)
-AMREX_GPU_DEVICE_MANAGED amrex::Real rhoe_l = 0.0;
+AMREX_GPU_DEVICE_MANAGED amrex::Real u_l = 0.0;   // left velocity (cm/s)
+AMREX_GPU_DEVICE_MANAGED amrex::Real rho_l = 0.0; // left density (g/cc)
+AMREX_GPU_DEVICE_MANAGED amrex::Real rhoe_l;
 AMREX_GPU_DEVICE_MANAGED amrex::Real T_l = 1.0;
 AMREX_GPU_DEVICE_MANAGED amrex::Real p_r = 0.1;     // right pressure (erg/cc)
+AMREX_GPU_DEVICE_MANAGED amrex::Real u_r = 0.0;     // right velocity (cm/s)
 AMREX_GPU_DEVICE_MANAGED amrex::Real rho_r = 0.125; // right density (g/cc)
-AMREX_GPU_DEVICE_MANAGED amrex::Real rhoe_r = 0.0;
+AMREX_GPU_DEVICE_MANAGED amrex::Real rhoe_r;
 AMREX_GPU_DEVICE_MANAGED amrex::Real T_r = 1.0;
+AMREX_GPU_DEVICE_MANAGED amrex::Real frac =
+  0.5; // fraction of the domain for the interface
+AMREX_GPU_DEVICE_MANAGED int idir = 1; // direction across which to jump
+AMREX_GPU_DEVICE_MANAGED amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> split;
 AMREX_GPU_DEVICE_MANAGED std::string gasL = "N2";
 AMREX_GPU_DEVICE_MANAGED std::string gasR = "HE";
-AMREX_GPU_DEVICE_MANAGED amrex::Real angle = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real L = 0.0;
 AMREX_GPU_DEVICE_MANAGED int left_gas_id = N2_ID;
 AMREX_GPU_DEVICE_MANAGED int right_gas_id = HE_ID;
 } // namespace ProbParm
@@ -34,14 +38,19 @@ amrex_probinit(
   // Parse params
   amrex::ParmParse pp("prob");
   pp.query("p_l", ProbParm::p_l);
+  pp.query("u_l", ProbParm::u_l);
   pp.query("rho_l", ProbParm::rho_l);
   pp.query("p_r", ProbParm::p_r);
+  pp.query("u_r", ProbParm::u_r);
   pp.query("rho_r", ProbParm::rho_r);
-  pp.query("angle", ProbParm::angle);
+  pp.query("frac", ProbParm::frac);
+  pp.query("idir", ProbParm::idir);
   pp.get("left_gas", ProbParm::gasL);
   pp.get("right_gas", ProbParm::gasR);
-  
-  ProbParm::L = (probhi[0] - problo[0]);
+
+  for (int idir = 0; idir < AMREX_SPACEDIM; idir++) {
+    ProbParm::split[idir] = 0.5;
+  }
 
   if (ProbParm::gasL == "N2") {
     ProbParm::left_gas_id = N2_ID;
