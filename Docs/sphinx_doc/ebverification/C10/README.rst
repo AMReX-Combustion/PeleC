@@ -35,7 +35,7 @@ Velocity profiles at :math:`x=6` cm (channel center)
 The :math:`L_2` error norm for a quantity :math:`s` is defined as
 
 .. math::
-   e_s = \sqrt{ \frac{\int_{-r}^{r} (s^h-s^*)^2 \mathrm{d}r}{2 n_r}}
+   \epsilon = \sqrt{ \frac{\int_{-r}^{r} (s^h-s^*)^2 \mathrm{d}r}{2 n_r}}
 
 where :math:`s^h` is the numerical solution, :math:`s^*` is the exact
 solution, and :math:`n_r` is the number of cells per radius.

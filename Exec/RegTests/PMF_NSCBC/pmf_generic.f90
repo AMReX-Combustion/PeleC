@@ -291,7 +291,7 @@ end module pmf_module
 
 subroutine initialize_pmf(filename)
   use pmf_module
-  use chemistry_module, only : nspecies, get_species_index
+  use fuego_chemistry, only : nspecies, get_species_index
   implicit none
   character (len=*) :: filename
   integer :: n

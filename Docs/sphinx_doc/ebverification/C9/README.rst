@@ -12,9 +12,13 @@ propagates along the :math:`x` direction.
 The density pulse at the center of the channel is defined as:
 
 .. math::
-   \rho(x) = \rho_0 + \alpha \exp(-(x/\sigma)^2)
+   \rho'(x) = \alpha \exp(-(x/\sigma)^2)
 
-The background pressure is set to :math:`100000 erg/cm^3`, the
+   \rho(x) = \rho_0 + \rho'(x)
+
+   p(x) = p_0 + \rho'(x) c_s c_s
+
+The background pressure is set to :math:`p_0 = 100000 erg/cm^3`, the
 background density is set to :math:`\rho_0 = 0.0014 g/cm^3`,
 :math:`\alpha=10^{-4} g/cm^3`, :math:`\sigma=10cm`, and the background
 velocity is set to 0. The length of the channel is 100cm and the
@@ -34,13 +38,13 @@ Density profiles in the centerline at t=0.01s
 .. image:: ./ebverification/C9/rho.png
    :height: 300pt
 
-:math:`L_2` error norm of velocity
-##################################
+:math:`L_2` error norm of density
+#################################
 
 The :math:`L_2` error norm for a quantity :math:`s` is defined as
 
 .. math::
-   e_s = \sqrt{ \frac{\sum_{i=1}^{n_x} (s_i^h-s_i^*)^2 }{n_x}}
+   \epsilon = \sqrt{ \frac{\sum_{i=1}^{n_x} (s_i^h-s_i^*)^2 }{n_x}}
 
 where :math:`s^h` is the numerical solution, :math:`s^*` is the exact
 solution, and :math:`n_x` is the number of cells in the
