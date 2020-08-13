@@ -12,3 +12,5 @@
 | 8  | [multi-species shock tube at an angle with AMR](C8/README.md)                                  | literature                            | x |   | x |   |
 | 9  | [acoustic pulse in circular channel](C9/README.md)                                             | analytical                            | x |   |   |   |
 | 10 | [Hagen–Poiseuille flow](C10/README.md)                                                         | analytical                            | x | x |   |   |
+| 11 | [Multi-species shock tube with end box](C11/README.md)                                         | literature                            | x | x | x |   |
+| 12 | [Advection of smooth density](C12/README.md)                                                   | analytical                            | x | x |   |   |

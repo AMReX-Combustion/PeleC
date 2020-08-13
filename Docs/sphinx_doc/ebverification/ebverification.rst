@@ -21,6 +21,8 @@ description and the source code for these test cases are included
 `here
 <https://github.com/AMReX-Combustion/PeleC/blob/development/ExecCpp/EBVerification/README.md>`_.
 
+.. include:: ./ebverification/C1/README.rst
+
 .. include:: ./ebverification/C7/README.rst
 
 .. include:: ./ebverification/C9/README.rst
