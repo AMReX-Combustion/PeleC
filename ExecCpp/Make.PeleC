@@ -28,7 +28,6 @@ ifeq ($(USE_SUNDIALS_PP), TRUE)
   ifeq ($(USE_CVODE_PP), TRUE)
     USE_ARKODE_PP = FALSE
   endif
-  DEFINES += -DUSE_ARKODE_PP=$(USE_ARKODE_PP)
   DEFINES += -DUSE_CVODE_PP=$(USE_CVODE_PP)
   include $(PELE_PHYSICS_HOME)/ThirdParty/Make.ThirdParty
 endif

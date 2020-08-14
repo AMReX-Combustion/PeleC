@@ -27,6 +27,7 @@ int         PeleC::nscbc_diff = 0;
 int         PeleC::add_ext_src = 0;
 int         PeleC::add_forcing_src = 0;
 int         PeleC::add_soot_src = 1;
+int         PeleC::plot_soot = 1;
 int         PeleC::hybrid_hydro = 0;
 int         PeleC::ppm_type = 1;
 int         PeleC::weno_variant = 1;

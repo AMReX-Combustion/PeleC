@@ -106,6 +106,7 @@ PeleC::fill_soot_source (amrex::Real      time,
   amrex::ReduceData<amrex::Real> reduce_data(reduce_op);
   using ReduceTuple = typename decltype(reduce_data)::Type;
   amrex::Real soot_dt = std::numeric_limits<amrex::Real>::max();
+  SootData sd = soot_model->getSootData();
   for (MFIter mfi(soot_src, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
     const amrex::Box& bx = mfi.growntilebox(ng);
     const amrex::FArrayBox& Sfab = state[mfi];
@@ -126,11 +127,16 @@ PeleC::fill_soot_source (amrex::Real      time,
                            soot_arr(i, j, k, indx)/(s_arr(i, j, k, indx) + 1.E-12);
                          max_rate = amrex::max(max_rate, std::abs(cur_rate));
                        }
+                       amrex::Real moments[NUM_SOOT_VARS];
+                       for (int n = 0; n != NUM_SOOT_VARS; ++n)
+                         moments[n] = s_arr(i, j, k, UFSOOT + n);
+                       // Convert moments to mol, clip moments, and convert back to CGS
+                       sd.momConvClipConv(moments);
                        // Limit time step based only on positive moment sources
                        for (int n = 0; n != NUM_SOOT_VARS; ++n) {
                          int indx = UFSOOT + n;
                          max_rate =
-                           amrex::max(max_rate, -soot_arr(i, j, k, indx)/s_arr(i, j, k, indx));
+                           amrex::max(max_rate, -soot_arr(i, j, k, indx)/moments[n]);
                        }
                        return 1./max_rate;
                      });
