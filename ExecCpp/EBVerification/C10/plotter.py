@@ -43,8 +43,8 @@ def parse_ic(fname):
     return df.to_dict("records")[0]
 
 
-def eval_u_exact(ics, r):
-    return ics["G"] / (4.0 * ics["mu"]) * (ics["radius"] ** 2 - r ** 2)
+def eval_u_exact(ics, r, factor):
+    return factor * ics["G"] / (4.0 * ics["mu"]) * (ics["radius"] ** 2 - r ** 2)
 
 
 def theory_ooa(order, res, orig):
@@ -65,7 +65,8 @@ if __name__ == "__main__":
 
     ics = parse_ic(os.path.join(args.fdirs[0], "ic.txt"))
     r = np.linspace(-ics["radius"], ics["radius"], 1000)
-    u_exact = eval_u_exact(ics, r)
+    factor = 0.993
+    u_exact = eval_u_exact(ics, r, factor)
 
     plt.figure("u")
     plt.plot(
@@ -81,7 +82,10 @@ if __name__ == "__main__":
         errors[0, k] = 2 * res
         errors[1, k] = np.sqrt(
             np.sum(
-                (df.x_velocity / ics["umax"] - eval_u_exact(ics, df.y) / ics["umax"])
+                (
+                    df.x_velocity / ics["umax"]
+                    - eval_u_exact(ics, df.y, factor) / ics["umax"]
+                )
                 ** 2
             )
             / (2 * res)
