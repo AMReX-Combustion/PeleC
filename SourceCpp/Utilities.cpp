@@ -42,7 +42,7 @@ pc_rst_int_e(
     EOS::T2Ei(eos_state_T, eos_state_ei);
     amrex::Real eos_state_e = 0.0;
     for (int sp = 0; sp < NUM_SPECIES; sp++) {
-      eos_state_massfrac[sp] = S(i, j, k, sp + QFS) * rhoInv;
+      eos_state_massfrac[sp] = S(i, j, k, sp + UFS) * rhoInv;
       eos_state_e += eos_state_massfrac[sp] * eos_state_ei[sp];
     }
     const amrex::Real small_e = eos_state_e;
@@ -97,7 +97,7 @@ pc_rst_int_e(
         EOS::T2Ei(eos_state_T, eos_state_ei);
         amrex::Real eos_state_e = 0.0;
         for (int sp = 0; sp < NUM_SPECIES; sp++) {
-          eos_state_massfrac[sp] = S(i, j, k, sp + QFS) * rhoInv;
+          eos_state_massfrac[sp] = S(i, j, k, sp + UFS) * rhoInv;
           eos_state_e += eos_state_massfrac[sp] * eos_state_ei[sp];
         }
         S(i, j, k, UEINT) = S(i, j, k, URHO) * eos_state_e;
@@ -122,7 +122,7 @@ pc_rst_int_e(
         EOS::T2Ei(eos_state_T, eos_state_ei);
         amrex::Real eos_state_e = 0.0;
         for (int sp = 0; sp < NUM_SPECIES; sp++) {
-          eos_state_massfrac[sp] = S(i, j, k, sp + QFS) * rhoInv;
+          eos_state_massfrac[sp] = S(i, j, k, sp + UFS) * rhoInv;
           eos_state_e += eos_state_massfrac[sp] * eos_state_ei[sp];
         }
         const amrex::Real eint_new = eos_state_e;
