@@ -109,7 +109,7 @@ PeleC::fill_soot_source (amrex::Real      time,
   SootData sd = soot_model->getSootData();
   for (MFIter mfi(soot_src, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
     const amrex::Box& bx = mfi.growntilebox(ng);
-    const amrex::FArrayBox& Sfab = state[mfi];
+    amrex::FArrayBox& Sfab = state[mfi];
     const amrex::FArrayBox& soot_fab = soot_src[mfi];
     auto const& s_arr = Sfab.array();
     auto const& soot_arr = soot_fab.array();
@@ -135,6 +135,7 @@ PeleC::fill_soot_source (amrex::Real      time,
                        // Limit time step based only on positive moment sources
                        for (int n = 0; n != NUM_SOOT_VARS; ++n) {
                          int indx = UFSOOT + n;
+                         s_arr(i, j, k, indx) = moments[n];
                          max_rate =
                            amrex::max(max_rate, -soot_arr(i, j, k, indx)/moments[n]);
                        }
