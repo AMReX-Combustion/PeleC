@@ -55,13 +55,26 @@ With time-implicit reactions, the final update is iterated:
 Hyperbolics
 -----------
 
-Two hyperbolic treatments are available.
+Two hyperbolic treatments are available: Piecewise Parabolic Method and the Method of Lines.
 
 Piecewise Parabolic Method (PPM)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The unsplit piecewise parabolic method is used for regular geometries. Currently in PeleC, there are 4 variants that 
-can be chosen through the ``ppm_type`` flag:
+The unsplit piecewise parabolic method is used for regular
+geometries. Currently in PeleC, there are 2 variants that can be
+chosen through the ``ppm_type`` flag:
+
+* ``ppm_type = 0`` (default) uses a piecewise linear interpolation to reconstruct values at face. This is denoted PLM in the source code.
+* ``ppm_type = 1`` is the original PPM method presented in Colella and Woodward [JCP 1984].
+
+.. note::
+
+   The following description of PPM implementations are only available
+   in the (deprecated) Fortran source code. Efforts are ongoing to
+   port all the PPM variants into the C++ source code.
+
+Currently in PeleC Fortran source, there are 4 variants that can be
+chosen through the ``ppm_type`` flag:
 
 * ``ppm_type = 0`` uses a piecewise linear interpolation to reconstruct values at face.
 * ``ppm_type = 1`` is the original PPM method presented in Colella and Woodward [JCP 1984].

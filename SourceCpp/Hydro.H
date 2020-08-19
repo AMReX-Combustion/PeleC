@@ -5,7 +5,7 @@
 #include "IndexDefines.H"
 #include "EOS.H"
 #include "Utilities.H"
-#include "PLM.H"
+#include "Godunov.H"
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
@@ -166,6 +166,8 @@ void pc_umdrv(
     src_q, // amrex::IArrayBox const& bcMask,
   const amrex::Real* dx,
   const amrex::Real dt,
+  const int ppm_type,
+  const int use_flattening,
   const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
     a,
