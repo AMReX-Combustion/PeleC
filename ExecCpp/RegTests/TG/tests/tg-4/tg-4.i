@@ -26,7 +26,6 @@ pelec.diffuse_vel = 1
 pelec.diffuse_temp = 1
 pelec.do_react = 0
 pelec.do_grav = 0
-pelec.allow_negative_energy = 0
 pelec.use_explicit_filter=1
 pelec.les_filter_type=2
 pelec.les_filter_fgr=2

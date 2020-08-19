@@ -26,7 +26,6 @@ pelec.do_mol = 1
 pelec.do_react = 0
 pelec.do_mms = 1
 pelec.masa_solution_name = ad_cns_3d_les_sph
-pelec.allow_negative_energy = 0
 
 # TIME STEP CONTROL
 pelec.cfl            = 0.1     # cfl number for hyperbolic system
@@ -73,4 +72,4 @@ eb_verbosity = 1
 ebd.boundary_grad_stencil_type=0
 
 # Tiling
-fabarray.mfiter_tile_size = 1024 1024 1024
+#fabarray.mfiter_tile_size = 1024 1024 1024
