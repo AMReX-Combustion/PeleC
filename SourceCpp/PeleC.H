@@ -117,12 +117,6 @@ public:
     amrex::VisMF::How how,
     bool dump_old) override;
 
-  /*A string written as the first item in writePlotFile() at
-    level zero. It is so we can distinguish between different
-    types of plot files. For PeleC it has the form: PeleC-Vnnn
-  */
-  virtual std::string thePlotFileType() const override;
-
   virtual void setPlotVariables() override;
   //
   // Write a plotfile to specified directory.
