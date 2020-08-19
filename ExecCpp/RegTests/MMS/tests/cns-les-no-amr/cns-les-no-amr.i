@@ -23,7 +23,6 @@ pelec.diffuse_temp = 1
 pelec.do_react = 0
 pelec.do_mms = 1
 pelec.do_les = 1
-pelec.allow_negative_energy = 0
 
 # TURBULENCE PARAMETERS
 pelec.Cs = 2.0

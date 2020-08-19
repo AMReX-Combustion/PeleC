@@ -23,7 +23,6 @@ pelec.diffuse_temp = 1
 pelec.do_react = 0
 pelec.do_grav = 0
 pelec.do_mms = 1
-pelec.allow_negative_energy = 0
 pelec.do_mol = 1
 
 # TIME STEP CONTROL
@@ -81,4 +80,4 @@ eb2.geom_type = "all_regular"
 ebd.boundary_grad_stencil_type = 0
 
 # Tiling
-fabarray.mfiter_tile_size = 1024 1024 1024
+#fabarray.mfiter_tile_size = 1024 1024 1024

@@ -340,22 +340,6 @@ PeleC::checkPoint(
 #endif
 }
 
-std::string
-PeleC::thePlotFileType() const
-{
-  //
-  // Increment this whenever the writePlotFile() format changes.
-  //
-#ifdef PELEC_USE_EB
-  static const std::string the_plot_file_type =
-    eb_in_domain ? "HyperClaw-V1.1" : "CartGrid-V2.0";
-#else
-  static const std::string the_plot_file_type = "CartGrid-V2.0";
-#endif
-
-  return the_plot_file_type;
-}
-
 void
 PeleC::setPlotVariables()
 {

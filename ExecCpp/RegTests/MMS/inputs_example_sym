@@ -31,7 +31,6 @@ pelec.diffuse_vel = 1
 pelec.diffuse_temp = 1
 pelec.do_react = 0
 pelec.do_mms = 1
-pelec.allow_negative_energy = 0
 
 # TIME STEP CONTROL
 pelec.cfl            = 0.1     # cfl number for hyperbolic system
@@ -80,4 +79,4 @@ prob.a_vz = 0.0
 prob.a_wx = 0.0
 prob.a_wy = 0.0
 prob.a_wz = 2.0
-fabarray.mfiter_tile_size = 1024 1024 1024
+#fabarray.mfiter_tile_size = 1024 1024 1024
