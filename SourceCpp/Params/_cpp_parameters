@@ -106,7 +106,7 @@ weno_variant                 int           1
 
 # to we reconstruct and trace under the parabolas of the source
 # terms to the velocity
-ppm_trace_sources            int           1
+ppm_trace_sources            int           0
 
 # various methods of giving temperature a larger role in the
 # reconstruction---see Zingale \& Katz 2015
