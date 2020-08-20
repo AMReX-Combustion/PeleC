@@ -67,10 +67,11 @@ plm_slope(
 
   // Calculate flattening in-place
   amrex::Real flatn = 1.0;
+  /* FIXME: Flattening disabled due to arrays going out of bounds; needs further investigation
   if (use_flattening == 1) {
     for (int dir_flat = 0; dir_flat < AMREX_SPACEDIM; dir_flat++)
       flatn = amrex::min(flatn, flatten(i, j, k, dir_flat, q));
-  }
+  }*/
 
   return flatn * dsgn * amrex::min(dlim, amrex::Math::abs(dtemp));
 }
