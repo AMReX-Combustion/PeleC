@@ -299,6 +299,13 @@ PeleC::read_params()
     pp.query("les_filter_fgr", les_filter_fgr);
   }
 
+  // Check on PPM type
+  if ((do_hydro == 1) && (do_mol == 0)) {
+    if (ppm_type != 0 && ppm_type != 1) {
+      amrex::Error("PeleC::ppm_type must be 0 (PLM) or 1 (PPM)");
+    }
+  }
+
   // for the moment, ppm_type = 0 does not support ppm_trace_sources --
   // we need to add the momentum sources to the states (and not
   // add it in trans_3d

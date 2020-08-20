@@ -214,8 +214,8 @@ PeleC::construct_hydro_source(
             area[0].array(mfi), area[1].array(mfi), area[2].array(mfi))};
         pc_umdrv(
           is_finest_level, time, bx, domain_lo, domain_hi, phys_bc.lo(),
-          phys_bc.hi(), s, hyd_src, qarr, qauxar, srcqarr, dx, dt, flx_arr, a,
-          volume.array(mfi), cflLoc);
+          phys_bc.hi(), s, hyd_src, qarr, qauxar, srcqarr, dx, dt, ppm_type,
+          use_flattening, flx_arr, a, volume.array(mfi), cflLoc);
         BL_PROFILE_VAR_STOP(purm);
 
         BL_PROFILE_VAR("courno + flux reg", crno);
@@ -286,9 +286,8 @@ PeleC::construct_hydro_source(
     }
 
     if (print_energy_diagnostics) {
-      amrex::Real foo[5] = {
-        E_added_flux, xmom_added_flux, ymom_added_flux, zmom_added_flux,
-        mass_added_flux};
+      amrex::Real foo[5] = {E_added_flux, xmom_added_flux, ymom_added_flux,
+                            zmom_added_flux, mass_added_flux};
 
 #ifdef AMREX_LAZY
       Lazy::QueueReduction([=]() mutable {
@@ -347,6 +346,8 @@ pc_umdrv(
     src_q, // amrex::IArrayBox const& bcMask,
   const amrex::Real* dx,
   const amrex::Real dt,
+  const int ppm_type,
+  const int use_flattening,
   const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
     a,
@@ -382,12 +383,13 @@ pc_umdrv(
 #elif AMREX_SPACEDIM == 2
   pc_umeth_2D(
     bx, bclo, bchi, domlo, domhi, q, qaux, src_q, // bcMask,
-    flx[0], flx[1], qec_arr[0], qec_arr[1], a[0], a[1], pdivuarr, vol, dx, dt);
+    flx[0], flx[1], qec_arr[0], qec_arr[1], a[0], a[1], pdivuarr, vol, dx, dt,
+    ppm_type, use_flattening);
 #elif AMREX_SPACEDIM == 3
   pc_umeth_3D(
     bx, bclo, bchi, domlo, domhi, q, qaux, src_q, // bcMask,
     flx[0], flx[1], flx[2], qec_arr[0], qec_arr[1], qec_arr[2], a[0], a[1],
-    a[2], pdivuarr, vol, dx, dt);
+    a[2], pdivuarr, vol, dx, dt, ppm_type, use_flattening);
 #endif
   BL_PROFILE_VAR_STOP(umeth);
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
