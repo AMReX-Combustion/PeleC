@@ -24,7 +24,6 @@ plm_slope(
   const int k,
   const int n,
   const int dir,
-  const int use_flattening,
   amrex::Array4<const amrex::Real> const& q)
 {
   const int bdim[3] = {dir == 0, dir == 1, dir == 2};
@@ -65,15 +64,8 @@ plm_slope(
 
   dtemp = 4.0 / 3.0 * dcen - 1.0 / 6.0 * (dfp + dfm);
 
-  // Calculate flattening in-place
-  amrex::Real flatn = 1.0;
-  /* FIXME: Flattening disabled due to arrays going out of bounds; needs further investigation
-  if (use_flattening == 1) {
-    for (int dir_flat = 0; dir_flat < AMREX_SPACEDIM; dir_flat++)
-      flatn = amrex::min(flatn, flatten(i, j, k, dir_flat, q));
-  }*/
-
-  return flatn * dsgn * amrex::min(dlim, amrex::Math::abs(dtemp));
+  // Flattening could be done here (see Nyx if we want to do it)
+  return dsgn * amrex::min(dlim, amrex::Math::abs(dtemp));
 }
 
 AMREX_GPU_DEVICE
