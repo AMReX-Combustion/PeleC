@@ -31,8 +31,6 @@ trace_ppm(
   //
   // for pure hydro, we will only consider:
   //    rho, u, v, w, ptot, rhoe_g, cc, h_g
-  const int nq = q_arr.nComp();
-
   amrex::Real hdt = 0.5 * dt;
   amrex::Real dtdx = dt / dx[idir];
 
@@ -81,7 +79,7 @@ trace_ppm(
 
   // Trace to left and right edges using upwind PPM
   amrex::ParallelFor(
-    bx, [=] AMREX_GPU_HOST_DEVICE(int i, int j, int k) noexcept {
+    bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       amrex::Real rho = q_arr(i, j, k, QRHO);
 
       amrex::Real massfrac[NUM_SPECIES];
@@ -108,10 +106,10 @@ trace_ppm(
       amrex::Real sm;
       amrex::Real sp;
 
-      amrex::Real Ip[nq][3];
-      amrex::Real Im[nq][3];
+      amrex::Real Ip[QVAR][3];
+      amrex::Real Im[QVAR][3];
 
-      for (int n = 0; n < nq; n++) {
+      for (int n = 0; n < QVAR; n++) {
 
         if (idir == 0) {
           s[im2] = q_arr(i - 2, j, k, n);
@@ -151,10 +149,10 @@ trace_ppm(
       // anything that uses Im_src and Ip_src.
 
       // // source terms
-      // amrex::Real Ip_src[nq][3];
-      // amrex::Real Im_src[nq][3];
+      // amrex::Real Ip_src[QVAR][3];
+      // amrex::Real Im_src[QVAR][3];
 
-      // for (int n = 0; n < nq; n++) {
+      // for (int n = 0; n < QVAR; n++) {
       //   if (idir == 0) {
       //     s[im2] = srcQ(i - 2, j, k, n);
       //     s[im1] = srcQ(i - 1, j, k, n);
