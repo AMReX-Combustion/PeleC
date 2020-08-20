@@ -829,6 +829,17 @@ void pc_reactfill_hyp(
   const int bcomp,
   const int scomp);
 
+void pc_nullfill(
+  amrex::Box const& bx,
+  amrex::FArrayBox& data,
+  const int dcomp,
+  const int numcomp,
+  amrex::Geometry const& geom,
+  const amrex::Real time,
+  const amrex::Vector<amrex::BCRec>& bcr,
+  const int bcomp,
+  const int scomp);
+
 //
 // Inlines.
 //
@@ -891,40 +902,6 @@ pc_check_initial_species(
     amrex::Abort("Error:: Failed check of initial species summing to 1");
   }
 }
-
-void pc_bcfill_hyp(
-  amrex::Box const& bx,
-  amrex::FArrayBox& data,
-  const int dcomp,
-  const int numcomp,
-  amrex::Geometry const& geom,
-  const amrex::Real time,
-  const amrex::Vector<amrex::BCRec>& bcr,
-  const int bcomp,
-  const int scomp);
-#ifdef PELEC_USE_REACTIONS
-void pc_reactfill_hyp(
-  amrex::Box const& bx,
-  amrex::FArrayBox& data,
-  const int dcomp,
-  const int numcomp,
-  amrex::Geometry const& geom,
-  const amrex::Real time,
-  const amrex::Vector<amrex::BCRec>& bcr,
-  const int bcomp,
-  const int scomp);
-#endif
-
-void pc_nullfill(
-  amrex::Box const& bx,
-  amrex::FArrayBox& data,
-  const int dcomp,
-  const int numcomp,
-  amrex::Geometry const& geom,
-  const amrex::Real time,
-  const amrex::Vector<amrex::BCRec>& bcr,
-  const int bcomp,
-  const int scomp);
 
 #ifdef PELEC_USE_EB
 AMREX_FORCE_INLINE

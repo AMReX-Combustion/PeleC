@@ -31,7 +31,6 @@ pc_umeth_3D(
   const int ppm_type,
   const int use_flattening)
 {
-  const int use_flattening_loc = use_flattening;
   amrex::Real const dx = del[0];
   amrex::Real const dy = del[1];
   amrex::Real const dz = del[2];
@@ -101,17 +100,17 @@ pc_umeth_3D(
         amrex::Real slope[QVAR];
         // X slopes and interp
         for (int n = 0; n < QVAR; ++n)
-          slope[n] = plm_slope(i, j, k, n, 0, use_flattening_loc, q);
+          slope[n] = plm_slope(i, j, k, n, 0, q);
         pc_plm_x(i, j, k, qxmarr, qxparr, slope, q, qaux(i, j, k, QC), dx, dt);
 
         // Y slopes and interp
         for (int n = 0; n < QVAR; n++)
-          slope[n] = plm_slope(i, j, k, n, 1, use_flattening_loc, q);
+          slope[n] = plm_slope(i, j, k, n, 1, q);
         pc_plm_y(i, j, k, qymarr, qyparr, slope, q, qaux(i, j, k, QC), dy, dt);
 
         // Z slopes and interp
         for (int n = 0; n < QVAR; ++n)
-          slope[n] = plm_slope(i, j, k, n, 2, use_flattening_loc, q);
+          slope[n] = plm_slope(i, j, k, n, 2, q);
         pc_plm_z(i, j, k, qzmarr, qzparr, slope, q, qaux(i, j, k, QC), dz, dt);
       });
   } else if (ppm_type == 1) {
@@ -505,7 +504,7 @@ pc_umeth_2D(
         amrex::Real slope[QVAR];
         // X slopes and interp
         for (int n = 0; n < QVAR; ++n)
-          slope[n] = plm_slope(i, j, k, n, 0, use_flattening_loc, q);
+          slope[n] = plm_slope(i, j, k, n, 0, q);
         pc_plm_x(i, j, k, qxmarr, qxparr, slope, q, qaux(i, j, k, QC), dx, dt);
       });
 
@@ -514,7 +513,7 @@ pc_umeth_2D(
         amrex::Real slope[QVAR];
         // Y slopes and interp
         for (int n = 0; n < QVAR; n++)
-          slope[n] = plm_slope(i, j, k, n, 1, use_flattening_loc, q);
+          slope[n] = plm_slope(i, j, k, n, 1, q);
         pc_plm_y(i, j, k, qymarr, qyparr, slope, q, qaux(i, j, k, QC), dy, dt);
       });
 
