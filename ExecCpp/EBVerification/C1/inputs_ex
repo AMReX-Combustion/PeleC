@@ -1,6 +1,6 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 max_step = 1000000
-stop_time = 0.000005
+stop_time = 0.000001
 
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic = 0 0 0
@@ -8,9 +8,7 @@ geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
 geometry.prob_lo     =  -1.0 -1.0 -1.0
 geometry.prob_hi     =   1.0  1.0  1.0
 # use with single level
-#amr.n_cell           =  8 8 8
-#amr.n_cell           =  16    16    16
-amr.n_cell           =  32 32 32
+amr.n_cell           =  16    16    16
 
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
 # 0 = Interior           3 = Symmetry
@@ -28,6 +26,7 @@ pelec.do_mol = 1
 pelec.do_react = 0
 pelec.do_mms = 1
 pelec.masa_solution_name = "ad_cns_3d_les_sph"
+pelec.allow_negative_energy = 1
 
 # TIME STEP CONTROL
 pelec.cfl            = 0.1     # cfl number for hyperbolic system
@@ -64,6 +63,7 @@ amr.plot_vars  =  density Temp
 amr.derive_plot_vars = x_velocity y_velocity z_velocity magvel magvort pressure rhommserror ummserror vmmserror wmmserror pmmserror vfrac
 
 # PROBLEM PARAMETERS
+prob.rho_x_fact = 0.0
 
 # EB
 #eb2.geom_type = all_regular
