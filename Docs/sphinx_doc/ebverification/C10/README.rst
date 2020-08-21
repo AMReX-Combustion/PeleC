@@ -43,9 +43,23 @@ solution, and :math:`n_r` is the number of cells per radius.
 .. image:: ./ebverification/C10/error.png
    :height: 300pt
 
+.. note::
+
+   The exact solution centerline velocity is adjusted by 0.7% to
+   account for compressibility effects. The observance of second order
+   behavior is attributed to the fact that this is a diffusion
+   dominated problem and diffusion treatment at EB surfaces is second
+   order.
+
 Time convergence of kinetic energy
 ##################################
 
 .. image:: ./ebverification/C10/ke_history.png
    :height: 300pt
 
+.. note::
+
+   This figure shows that the compressible solution reached a steady
+   state. It is not expected that the total integration of the kinetic
+   energy in the domain match the incompressible value for integrated
+   kinetic energy :math:`K_e` because of compressibility effects.
