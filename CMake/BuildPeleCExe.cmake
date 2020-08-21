@@ -77,6 +77,11 @@ function(build_pelec_exe pelec_exe_name)
        ${SRC_DIR}/GradUtil.cpp
        ${SRC_DIR}/Hydro.H
        ${SRC_DIR}/Hydro.cpp
+       ${SRC_DIR}/Godunov.H
+       ${SRC_DIR}/Godunov.cpp
+       ${SRC_DIR}/PLM.H
+       ${SRC_DIR}/PPM.H
+       ${SRC_DIR}/PPM.cpp
        ${SRC_DIR}/IndexDefines.H
        ${SRC_DIR}/IndexDefines.cpp
        ${SRC_DIR}/IO.H
@@ -88,8 +93,6 @@ function(build_pelec_exe pelec_exe_name)
        ${SRC_DIR}/Particle.cpp
        ${SRC_DIR}/PeleC.H
        ${SRC_DIR}/PeleC.cpp
-       ${SRC_DIR}/PLM.H
-       ${SRC_DIR}/PLM.cpp
        ${SRC_DIR}/Problem.H
        ${SRC_DIR}/ProblemDerive.H
        ${SRC_DIR}/Riemann.H

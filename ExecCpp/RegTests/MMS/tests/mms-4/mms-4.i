@@ -26,7 +26,6 @@ pelec.diffuse_vel = 1
 pelec.diffuse_temp = 1
 pelec.do_react = 0
 pelec.do_mms = 1
-pelec.allow_negative_energy = 0
 
 # TIME STEP CONTROL
 pelec.cfl            = 0.1     # cfl number for hyperbolic system

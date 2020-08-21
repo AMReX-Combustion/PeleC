@@ -1,4 +1,6 @@
+#include "Godunov.H"
 #include "PLM.H"
+#include "PPM.H"
 
 // Host function to call gpu hydro functions
 void
@@ -25,7 +27,9 @@ pc_umeth_3D(
   amrex::Array4<amrex::Real> const& pdivu,
   amrex::Array4<const amrex::Real> const& vol,
   const amrex::Real* del,
-  const amrex::Real dt)
+  const amrex::Real dt,
+  const int ppm_type,
+  const int use_flattening)
 {
   amrex::Real const dx = del[0];
   amrex::Real const dy = del[1];
@@ -90,23 +94,43 @@ pc_umeth_3D(
   // Put the PLM and slopes in the same kernel launch to avoid unnecessary
   // launch overhead Pelec_Slope_* are SIMD as well as PeleC_plm_* which loop
   // over the same box
-  amrex::ParallelFor(bxg2, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    amrex::Real slope[QVAR];
-    // X slopes and interp
-    for (int n = 0; n < QVAR; ++n)
-      slope[n] = plm_slope(i, j, k, n, 0, q);
-    pc_plm_x(i, j, k, qxmarr, qxparr, slope, q, qaux(i, j, k, QC), dx, dt);
+  if (ppm_type == 0) {
+    amrex::ParallelFor(
+      bxg2, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+        amrex::Real slope[QVAR];
+        // X slopes and interp
+        for (int n = 0; n < QVAR; ++n)
+          slope[n] = plm_slope(i, j, k, n, 0, q);
+        pc_plm_x(i, j, k, qxmarr, qxparr, slope, q, qaux(i, j, k, QC), dx, dt);
 
-    // Y slopes and interp
-    for (int n = 0; n < QVAR; n++)
-      slope[n] = plm_slope(i, j, k, n, 1, q);
-    pc_plm_y(i, j, k, qymarr, qyparr, slope, q, qaux(i, j, k, QC), dy, dt);
+        // Y slopes and interp
+        for (int n = 0; n < QVAR; n++)
+          slope[n] = plm_slope(i, j, k, n, 1, q);
+        pc_plm_y(i, j, k, qymarr, qyparr, slope, q, qaux(i, j, k, QC), dy, dt);
 
-    // Z slopes and interp
-    for (int n = 0; n < QVAR; ++n)
-      slope[n] = plm_slope(i, j, k, n, 2, q);
-    pc_plm_z(i, j, k, qzmarr, qzparr, slope, q, qaux(i, j, k, QC), dz, dt);
-  });
+        // Z slopes and interp
+        for (int n = 0; n < QVAR; ++n)
+          slope[n] = plm_slope(i, j, k, n, 2, q);
+        pc_plm_z(i, j, k, qzmarr, qzparr, slope, q, qaux(i, j, k, QC), dz, dt);
+      });
+  } else if (ppm_type == 1) {
+    // Compute the normal interface states by reconstructing
+    // the primitive variables using the piecewise parabolic method
+    // and doing characteristic tracing.  We do not apply the
+    // transverse terms here.
+
+    int idir = 0;
+    trace_ppm(bxg1, idir, q, srcQ, qxmarr, qxparr, bx, dt, del, use_flattening);
+
+    idir = 1;
+    trace_ppm(bxg1, idir, q, srcQ, qymarr, qyparr, bx, dt, del, use_flattening);
+
+    idir = 2;
+    trace_ppm(bxg1, idir, q, srcQ, qzmarr, qzparr, bx, dt, del, use_flattening);
+
+  } else {
+    amrex::Error("PeleC::ppm_type must be 0 (PLM) or 1 (PPM)");
+  }
 
   // These are the first flux estimates as per the corner-transport-upwind
   // method X initial fluxes
@@ -427,145 +451,154 @@ pc_umeth_2D(
   amrex::Array4<amrex::Real> const& pdivu,
   amrex::Array4<const amrex::Real> const& vol,
   const amrex::Real* del,
-  const amrex::Real dt)
+  const amrex::Real dt,
+  const int ppm_type,
+  const int use_flattening)
 {
 #if AMREX_SPACEDIM == 2
-  amrex::Real const dx = del[0];
-  amrex::Real const dy = del[1];
-  amrex::Real const hdtdy = 0.5 * dt / dy;
-  amrex::Real const hdt = 0.5 * dt;
+  {
+    const int use_flattening_loc = use_flattening;
+    amrex::Real const dx = del[0];
+    amrex::Real const dy = del[1];
+    amrex::Real const hdtdy = 0.5 * dt / dy;
+    amrex::Real const hdt = 0.5 * dt;
 
-  const int bclx = bclo[0];
-  const int bcly = bclo[1];
-  const int bchx = bchi[0];
-  const int bchy = bchi[1];
-  const int dlx = domlo[0];
-  const int dly = domlo[1];
-  const int dhx = domhi[0];
-  const int dhy = domhi[1];
+    const int bclx = bclo[0];
+    const int bcly = bclo[1];
+    const int bchx = bchi[0];
+    const int bchy = bchi[1];
+    const int dlx = domlo[0];
+    const int dly = domlo[1];
+    const int dhx = domhi[0];
+    const int dhy = domhi[1];
 
-  // auto const& bcMaskarr = bcMask.array();
-  const amrex::Box& bxg1 = grow(bx, 1);
-  const amrex::Box& bxg2 = grow(bx, 2);
+    // auto const& bcMaskarr = bcMask.array();
+    const amrex::Box& bxg1 = grow(bx, 1);
+    const amrex::Box& bxg2 = grow(bx, 2);
 
-  // X data
-  int cdir = 0;
-  const amrex::Box& xslpbx = grow(bxg1, cdir, 1);
-  const amrex::Box& xmbx = growHi(xslpbx, cdir, 1);
-  amrex::FArrayBox qxm(xmbx, QVAR);
-  amrex::FArrayBox qxp(xslpbx, QVAR);
-  amrex::Elixir qxmeli = qxm.elixir();
-  amrex::Elixir qxpeli = qxp.elixir();
-  auto const& qxmarr = qxm.array();
-  auto const& qxparr = qxp.array();
+    // X data
+    int cdir = 0;
+    const amrex::Box& xslpbx = grow(bxg1, cdir, 1);
+    const amrex::Box& xmbx = growHi(xslpbx, cdir, 1);
+    amrex::FArrayBox qxm(xmbx, QVAR);
+    amrex::FArrayBox qxp(xslpbx, QVAR);
+    amrex::Elixir qxmeli = qxm.elixir();
+    amrex::Elixir qxpeli = qxp.elixir();
+    auto const& qxmarr = qxm.array();
+    auto const& qxparr = qxp.array();
 
-  // Y data
-  cdir = 1;
-  const amrex::Box& yflxbx = surroundingNodes(bxg1, cdir);
-  const amrex::Box& yslpbx = grow(bxg1, cdir, 1);
-  const amrex::Box& ymbx = growHi(yslpbx, cdir, 1);
-  amrex::FArrayBox qym(ymbx, QVAR);
-  amrex::FArrayBox qyp(yslpbx, QVAR);
-  amrex::Elixir qymeli = qym.elixir();
-  amrex::Elixir qypeli = qyp.elixir();
-  auto const& qymarr = qym.array();
-  auto const& qyparr = qyp.array();
+    // Y data
+    cdir = 1;
+    const amrex::Box& yflxbx = surroundingNodes(bxg1, cdir);
+    const amrex::Box& yslpbx = grow(bxg1, cdir, 1);
+    const amrex::Box& ymbx = growHi(yslpbx, cdir, 1);
+    amrex::FArrayBox qym(ymbx, QVAR);
+    amrex::FArrayBox qyp(yslpbx, QVAR);
+    amrex::Elixir qymeli = qym.elixir();
+    amrex::Elixir qypeli = qyp.elixir();
+    auto const& qymarr = qym.array();
+    auto const& qyparr = qyp.array();
 
-  amrex::ParallelFor(
-    xslpbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      amrex::Real slope[QVAR];
-      // X slopes and interp
-      for (int n = 0; n < QVAR; ++n)
-        slope[n] = plm_slope(i, j, k, n, 0, q);
-      pc_plm_x(i, j, k, qxmarr, qxparr, slope, q, qaux(i, j, k, QC), dx, dt);
+    amrex::ParallelFor(
+      xslpbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+        amrex::Real slope[QVAR];
+        // X slopes and interp
+        for (int n = 0; n < QVAR; ++n)
+          slope[n] = plm_slope(i, j, k, n, 0, q);
+        pc_plm_x(i, j, k, qxmarr, qxparr, slope, q, qaux(i, j, k, QC), dx, dt);
+      });
+
+    amrex::ParallelFor(
+      yslpbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+        amrex::Real slope[QVAR];
+        // Y slopes and interp
+        for (int n = 0; n < QVAR; n++)
+          slope[n] = plm_slope(i, j, k, n, 1, q);
+        pc_plm_y(i, j, k, qymarr, qyparr, slope, q, qaux(i, j, k, QC), dy, dt);
+      });
+
+    // These are the first flux estimates as per the corner-transport-upwind
+    // method X initial fluxes
+    cdir = 0;
+    const amrex::Box& xflxbx = surroundingNodes(bxg1, cdir);
+    amrex::FArrayBox fx(xflxbx, NVAR);
+    amrex::Elixir fxeli = fx.elixir();
+    auto const& fxarr = fx.array();
+    amrex::FArrayBox qgdx(bxg2, NGDNV);
+    amrex::Elixir qgdxeli = qgdx.elixir();
+    auto const& gdtemp = qgdx.array();
+    amrex::ParallelFor(
+      xflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+        pc_cmpflx(
+          i, j, k, bclx, bchx, dlx, dhx, qxmarr, qxparr, fxarr, gdtemp, qaux,
+          cdir);
+      });
+
+    // Y initial fluxes
+    cdir = 1;
+    amrex::FArrayBox fy(yflxbx, NVAR);
+    amrex::Elixir fyeli = fy.elixir();
+    auto const& fyarr = fy.array();
+    amrex::ParallelFor(
+      yflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+        pc_cmpflx(
+          i, j, k, bcly, bchy, dly, dhy, qymarr, qyparr, fyarr, q2, qaux, cdir);
+      });
+
+    // X interface corrections
+    cdir = 0;
+    const amrex::Box& tybx = grow(bx, cdir, 1);
+    amrex::FArrayBox qm(bxg2, QVAR);
+    amrex::Elixir qmeli = qm.elixir();
+    amrex::FArrayBox qp(bxg1, QVAR);
+    amrex::Elixir qpeli = qp.elixir();
+    auto const& qmarr = qm.array();
+    auto const& qparr = qp.array();
+
+    amrex::ParallelFor(
+      tybx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+        pc_transy(
+          i, j, k, qmarr, qparr, qxmarr, qxparr, fyarr, srcQ, qaux, q2, hdt,
+          hdtdy);
+      });
+
+    fyeli.clear();
+    qxmeli.clear();
+    qxpeli.clear();
+    const amrex::Box& xfxbx = surroundingNodes(bx, cdir);
+
+    // Final Riemann problem X
+    amrex::ParallelFor(
+      xfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+        pc_cmpflx(
+          i, j, k, bclx, bchx, dlx, dhx, qmarr, qparr, flx1, q1, qaux, cdir);
+      });
+
+    // Y interface corrections
+    cdir = 1;
+    const amrex::Box& txbx = grow(bx, cdir, 1);
+
+    amrex::ParallelFor(
+      txbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+        pc_transx(
+          i, j, k, qmarr, qparr, qymarr, qyparr, fxarr, srcQ, qaux, gdtemp, a1,
+          vol, hdt);
+      });
+    fxeli.clear();
+    qymeli.clear();
+    qypeli.clear();
+
+    // Final Riemann problem Y
+    const amrex::Box& yfxbx = surroundingNodes(bx, cdir);
+    amrex::ParallelFor(
+      yfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+        pc_cmpflx(
+          i, j, k, bcly, bchy, dly, dhy, qmarr, qparr, flx2, q2, qaux, cdir);
+      });
+
+    // Construct p div{U}
+    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      pc_pdivu(i, j, k, pdivu, q1, q2, a1, a2, vol);
     });
-
-  amrex::ParallelFor(
-    yslpbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      amrex::Real slope[QVAR];
-      // Y slopes and interp
-      for (int n = 0; n < QVAR; n++)
-        slope[n] = plm_slope(i, j, k, n, 1, q);
-      pc_plm_y(i, j, k, qymarr, qyparr, slope, q, qaux(i, j, k, QC), dy, dt);
-    });
-
-  // These are the first flux estimates as per the corner-transport-upwind
-  // method X initial fluxes
-  cdir = 0;
-  const amrex::Box& xflxbx = surroundingNodes(bxg1, cdir);
-  amrex::FArrayBox fx(xflxbx, NVAR);
-  amrex::Elixir fxeli = fx.elixir();
-  auto const& fxarr = fx.array();
-  amrex::FArrayBox qgdx(bxg2, NGDNV);
-  amrex::Elixir qgdxeli = qgdx.elixir();
-  auto const& gdtemp = qgdx.array();
-  amrex::ParallelFor(
-    xflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      pc_cmpflx(
-        i, j, k, bclx, bchx, dlx, dhx, qxmarr, qxparr, fxarr, gdtemp, qaux,
-        cdir);
-    });
-
-  // Y initial fluxes
-  cdir = 1;
-  amrex::FArrayBox fy(yflxbx, NVAR);
-  amrex::Elixir fyeli = fy.elixir();
-  auto const& fyarr = fy.array();
-  amrex::ParallelFor(
-    yflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      pc_cmpflx(
-        i, j, k, bcly, bchy, dly, dhy, qymarr, qyparr, fyarr, q2, qaux, cdir);
-    });
-
-  // X interface corrections
-  cdir = 0;
-  const amrex::Box& tybx = grow(bx, cdir, 1);
-  amrex::FArrayBox qm(bxg2, QVAR);
-  amrex::Elixir qmeli = qm.elixir();
-  amrex::FArrayBox qp(bxg1, QVAR);
-  amrex::Elixir qpeli = qp.elixir();
-  auto const& qmarr = qm.array();
-  auto const& qparr = qp.array();
-
-  amrex::ParallelFor(tybx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_transy(
-      i, j, k, qmarr, qparr, qxmarr, qxparr, fyarr, srcQ, qaux, q2, hdt, hdtdy);
-  });
-
-  fyeli.clear();
-  qxmeli.clear();
-  qxpeli.clear();
-  const amrex::Box& xfxbx = surroundingNodes(bx, cdir);
-
-  // Final Riemann problem X
-  amrex::ParallelFor(xfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_cmpflx(
-      i, j, k, bclx, bchx, dlx, dhx, qmarr, qparr, flx1, q1, qaux, cdir);
-  });
-
-  // Y interface corrections
-  cdir = 1;
-  const amrex::Box& txbx = grow(bx, cdir, 1);
-
-  amrex::ParallelFor(txbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_transx(
-      i, j, k, qmarr, qparr, qymarr, qyparr, fxarr, srcQ, qaux, gdtemp, a1, vol,
-      hdt);
-  });
-  fxeli.clear();
-  qymeli.clear();
-  qypeli.clear();
-
-  // Final Riemann problem Y
-  const amrex::Box& yfxbx = surroundingNodes(bx, cdir);
-  amrex::ParallelFor(yfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_cmpflx(
-      i, j, k, bcly, bchy, dly, dhy, qmarr, qparr, flx2, q2, qaux, cdir);
-  });
-
-  // Construct p div{U}
-  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_pdivu(i, j, k, pdivu, q1, q2, a1, a2, vol);
-  });
 #endif // AMREX_SPACEDIM == 2
-}
+  }

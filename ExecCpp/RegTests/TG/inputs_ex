@@ -30,7 +30,6 @@ pelec.diffuse_vel = 1
 pelec.diffuse_temp = 1
 pelec.do_react = 0
 pelec.do_grav = 0
-pelec.allow_negative_energy = 0
 pelec.do_mol = 1
 
 # TIME STEP CONTROL
@@ -74,4 +73,4 @@ prob.prandtl = 0.71
 
 amrex.signal_handling=0
 #amrex.throw_handling=0
-fabarray.mfiter_tile_size = 1024000 8 8
+#fabarray.mfiter_tile_size = 1024000 8 8

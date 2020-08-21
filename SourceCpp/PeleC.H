@@ -117,12 +117,6 @@ public:
     amrex::VisMF::How how,
     bool dump_old) override;
 
-  /*A string written as the first item in writePlotFile() at
-    level zero. It is so we can distinguish between different
-    types of plot files. For PeleC it has the form: PeleC-Vnnn
-  */
-  virtual std::string thePlotFileType() const override;
-
   virtual void setPlotVariables() override;
   //
   // Write a plotfile to specified directory.
@@ -807,6 +801,17 @@ void pc_reactfill_hyp(
   const int bcomp,
   const int scomp);
 
+void pc_nullfill(
+  amrex::Box const& bx,
+  amrex::FArrayBox& data,
+  const int dcomp,
+  const int numcomp,
+  amrex::Geometry const& geom,
+  const amrex::Real time,
+  const amrex::Vector<amrex::BCRec>& bcr,
+  const int bcomp,
+  const int scomp);
+
 //
 // Inlines.
 //
@@ -869,40 +874,6 @@ pc_check_initial_species(
     amrex::Abort("Error:: Failed check of initial species summing to 1");
   }
 }
-
-void pc_bcfill_hyp(
-  amrex::Box const& bx,
-  amrex::FArrayBox& data,
-  const int dcomp,
-  const int numcomp,
-  amrex::Geometry const& geom,
-  const amrex::Real time,
-  const amrex::Vector<amrex::BCRec>& bcr,
-  const int bcomp,
-  const int scomp);
-#ifdef PELEC_USE_REACTIONS
-void pc_reactfill_hyp(
-  amrex::Box const& bx,
-  amrex::FArrayBox& data,
-  const int dcomp,
-  const int numcomp,
-  amrex::Geometry const& geom,
-  const amrex::Real time,
-  const amrex::Vector<amrex::BCRec>& bcr,
-  const int bcomp,
-  const int scomp);
-#endif
-
-void pc_nullfill(
-  amrex::Box const& bx,
-  amrex::FArrayBox& data,
-  const int dcomp,
-  const int numcomp,
-  amrex::Geometry const& geom,
-  const amrex::Real time,
-  const amrex::Vector<amrex::BCRec>& bcr,
-  const int bcomp,
-  const int scomp);
 
 #ifdef PELEC_USE_EB
 AMREX_FORCE_INLINE

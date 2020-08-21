@@ -93,9 +93,9 @@ hybrid_hydro                 int           0
 # reconstruction type:
 # 0: piecewise linear;
 # 1: classic Colella \& Woodward ppm;
-# 2: extrema-preserving ppm
-# 3: Hybrid WENO-PPM
-ppm_type                     int           1
+# 2: extrema-preserving ppm (deprecated in C++)
+# 3: Hybrid WENO-PPM (deprecated in C++)
+ppm_type                     int           0
 
 # For Hybrid WENO-PPM (ppm_type=3), which kind of WENO reconstruction method at faces?
 # 0 : Classical 5th-order JS method (quite dissipative)
@@ -106,7 +106,7 @@ weno_variant                 int           1
 
 # to we reconstruct and trace under the parabolas of the source
 # terms to the velocity
-ppm_trace_sources            int           1
+ppm_trace_sources            int           0
 
 # various methods of giving temperature a larger role in the
 # reconstruction---see Zingale \& Katz 2015
