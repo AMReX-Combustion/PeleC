@@ -1,13 +1,13 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 max_step = 100000
-stop_time = 1e-2
+stop_time = 0.0625e-2
 
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic =  1  0  0
 geometry.coord_sys   =  0       # 0 => cart
-geometry.prob_lo     =  -50.0 -10.0  -10.0
-geometry.prob_hi     =   50.0  10.0   10.0
-amr.n_cell           =  160 32 32
+geometry.prob_lo     =  -50.0 -50.0  -50.0
+geometry.prob_hi     =   50.0  50.0   50.0
+amr.n_cell           =  32 32 32
 
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
@@ -18,7 +18,7 @@ pelec.hi_bc       =  "Interior" "Symmetry" "Symmetry"
 
 # Problem setup
 pelec.eb_boundary_T = 24.887786611341241
-pelec.eb_isothermal = 1
+pelec.eb_isothermal = 0
 
 # WHICH PHYSICS
 pelec.do_hydro = 1
@@ -32,8 +32,8 @@ pelec.diffuse_enth = 0
 
 # TIME STEP CONTROL
 pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
-pelec.cfl            = 0.3     # cfl number for hyperbolic system
-pelec.init_shrink    = 0.8    # scale back initial timestep
+pelec.cfl            = 0.001     # cfl number for hyperbolic system
+pelec.init_shrink    = 1.0    # scale back initial timestep
 pelec.change_max     = 1.05     # maximum increase in dt over successive steps
 
 # DIAGNOSTICS & VERBOSITY
@@ -57,13 +57,13 @@ amr.check_int       = -1       # number of timesteps between checkpoints
 # PLOTFILES
 amr.plot_files_output = 1
 amr.plot_file       = plt
-amr.plot_int        = 50
+amr.plot_int        = 1000
 amr.derive_plot_vars=ALL
 
 eb2.geom_type = "cylinder"
 eb2.cylinder_direction = 0
 eb2.cylinder_center = 0.0 0.0 0.0
-eb2.cylinder_radius = 5.0
+eb2.cylinder_radius = 25.0
 eb2.cylinder_height = 1000.0
 eb2.cylinder_has_fluid_inside = 1
 ebd.boundary_grad_stencil_type = 0

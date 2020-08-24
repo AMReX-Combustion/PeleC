@@ -38,17 +38,18 @@ pc_initdata(
   const amrex::Real rho_p = ProbParm::alpha * std::exp(-(x / ProbParm::sigma) * (x / ProbParm::sigma));
   const amrex::Real rho = ProbParm::rho + rho_p;
   const amrex::Real p = ProbParm::p + rho_p * ProbParm::cs * ProbParm::cs;
+  const amrex::Real u_p = ProbParm::cs * rho_p / ProbParm::rho;
 
   amrex::Real T, eint = 0.0;
   EOS::RYP2E(rho, ProbParm::massfrac.begin(), p, eint);
   EOS::RYP2T(rho, ProbParm::massfrac.begin(), p, T);
 
   state(i, j, k, URHO) = rho;
-  state(i, j, k, UMX) = 0.0;
+  state(i, j, k, UMX) = rho * u_p;
   state(i, j, k, UMY) = 0.0;
   state(i, j, k, UMZ) = 0.0;
   state(i, j, k, UEINT) = rho * eint;
-  state(i, j, k, UEDEN) = rho * eint;
+  state(i, j, k, UEDEN) = rho * (eint + 0.5 * u_p * u_p);
   state(i, j, k, UTEMP) = T;
   for (int n = 0; n < NUM_SPECIES; n++)
     state(i, j, k, UFS + n) = rho * ProbParm::massfrac[n];
@@ -91,7 +92,7 @@ struct MyProbDeriveStruct
     int /*ncomp*/,
     const amrex::FArrayBox& datfab,
     const amrex::Geometry& geomdata,
-    amrex::Real /*time*/,
+    amrex::Real time,
     const int* /*bcrec*/,
     int level)
   {
@@ -102,7 +103,7 @@ struct MyProbDeriveStruct
 
     amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
-      const amrex::Real rho_exact = ProbParm::rho + ProbParm::alpha * std::exp(-(x / ProbParm::sigma) * (x / ProbParm::sigma));
+      const amrex::Real rho_exact = ProbParm::rho + ProbParm::alpha * std::exp(-((x - ProbParm::cs * time) / ProbParm::sigma) * ((x - ProbParm::cs * time) / ProbParm::sigma));
       arr(i,j,k,0) = dat(i,j,k,URHO) - rho_exact;
     });
   }

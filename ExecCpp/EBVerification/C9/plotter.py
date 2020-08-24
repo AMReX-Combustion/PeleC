@@ -48,6 +48,12 @@ def theory_ooa(order, res, orig):
     return orig * (res[0] / res) ** order
 
 
+def rho_exact(ics, x):
+    return ics["rho"] + ics["alpha"] * np.exp(
+        -(((x - ics["cs"] * tf) / ics["sigma"]) ** 2)
+    )
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Extract data")
     parser.add_argument(
@@ -61,23 +67,26 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     ics = parse_ic(os.path.join(args.fdirs[0], "ic.txt"))
-    x = np.linspace(-50, 50, 1000)
-    rho_exact = ics["rho"] + ics["alpha"] * np.exp(-((x / ics["sigma"]) ** 2))
-    plt.figure("rho")
-    plt.plot(x, rho_exact, lw=2, color=cmap[-1], label=r"Exact")
 
     errors = np.zeros((2, len(args.fdirs)))
     for k, fdir in enumerate(args.fdirs):
         df = pd.read_csv(os.path.join(fdir, "profiles.csv"))
         df["entropy"] = df.pressure / (df.density ** ics["gamma"])
-        init = df[df.time == df.time.min()].reset_index()
         final = df[df.time == df.time.max()].reset_index()
+        tf = df.time.max()
 
-        res = int(fdir) * 4 * 5
+        res = int(fdir)
         errors[0, k] = res
-        errors[1, k] = np.sqrt(np.sum((final.density - init.density) ** 2) / res)
+        errors[1, k] = np.sqrt(
+            np.sum((final.density - rho_exact(ics, final.x)) ** 2) / res
+        )
 
         plt.figure("rho")
+        if k == 0:
+            x = np.linspace(-50, 50, 1000)
+            rho_e = rho_exact(ics, x)
+            plt.plot(x, rho_e, lw=2, color=cmap[-1], label=r"Exact")
+
         p = plt.plot(
             final.x, final.density, lw=2, color=cmap[k], label=f"$n_x = {res}$"
         )
@@ -103,8 +112,8 @@ if __name__ == "__main__":
         label=r"Sim.",
     )
 
-    p1 = theory_ooa(1, errors[0, :], errors[1, 0])
-    plt.loglog(errors[0, :], p1, lw=2, color=cmap[-1], label=f"$p=1$")
+    p2 = theory_ooa(2, errors[0, :], errors[1, 0])
+    plt.loglog(errors[0, :], p2, lw=2, color=cmap[-1], label=f"$p=2$")
 
     print("Estimated order of the error:")
     print(np.log(errors[1, :-1] / errors[1, 1:]) / np.log(2))

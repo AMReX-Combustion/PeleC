@@ -7,15 +7,17 @@
 #SBATCH -o %x.o%j
 
 module purge
-MODULES=modules
+MODULES=modules-2020-07
+COMPILER=gcc-8.4.0 #MPT 2.22
 module unuse ${MODULEPATH}
+module use /nopt/nrel/ecom/hpacf/binaries/${MODULES}
 module use /nopt/nrel/ecom/hpacf/compilers/${MODULES}
 module use /nopt/nrel/ecom/hpacf/utilities/${MODULES}
-module use /nopt/nrel/ecom/hpacf/software/${MODULES}/gcc-7.4.0
+module use /nopt/nrel/ecom/hpacf/software/${MODULES}/${COMPILER}
 
 module load gcc
 module load git
-module load mpich
+module load mpt
 
 ranks_per_node=36
 mpi_ranks=$(expr $SLURM_JOB_NUM_NODES \* $ranks_per_node)
@@ -32,16 +34,14 @@ echo "Working dir    = $PWD"
 paren=`pwd`
 pelec="${paren}/PeleC3d.gnu.MPI.ex"
 
-res=( 2 4 8 16 32 )
+res=( 8 16 32 64 )
 for i in "${res[@]}"
 do
     rm -rf "${i}"
     mkdir "${i}"
     cd "${i}" || exit
     cp "${paren}/inputs_3d" .
-    ny="$((i*4))"
-    nx="$((i*4*5))"
-    srun -n ${mpi_ranks} "${pelec}" inputs_3d amr.n_cell="${nx} ${ny} ${ny}" > out
+    srun -n ${mpi_ranks} "${pelec}" inputs_3d amr.n_cell="${i} ${i} ${i}" > out
     ls -1v *plt*/Header | tee movie.visit
     cd "${paren}" || exit
 done

@@ -1,7 +1,7 @@
 #include "prob.H"
 
 namespace ProbParm {
-AMREX_GPU_DEVICE_MANAGED amrex::Real alpha = 1e-4;
+AMREX_GPU_DEVICE_MANAGED amrex::Real alpha = 1e-6;
 AMREX_GPU_DEVICE_MANAGED amrex::Real sigma = 10.0;
 AMREX_GPU_DEVICE_MANAGED amrex::Real p = 100000.0;
 AMREX_GPU_DEVICE_MANAGED amrex::Real rho = 0.0014;
@@ -77,7 +77,7 @@ PeleC::problem_post_timestep()
 
   if (level == 0) {
     if (amrex::ParallelDescriptor::IOProcessor()) {
-      amrex::Print() << "... ERROR problem post timestep" << std::endl;
+      amrex::Print() << "... Compute error problem post timestep" << std::endl;
     }
 
     // Calculate the errors
