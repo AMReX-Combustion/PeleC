@@ -57,7 +57,7 @@ Real PeleC::sprayRefT;
 
 namespace {
 std::string particle_init_file;
-int particle_init_function = 0;
+int particle_init_function = 1;
 std::string timestamp_dir;
 std::vector<int> timestamp_indices;
 } // namespace
@@ -351,7 +351,6 @@ PeleC::initParticles()
 void
 PeleC::particlePostRestart(const std::string& restart_file, bool is_checkpoint)
 {
-  //amrex::Gpu::setLaunchRegion(false);
   if (level > 0)
     return;
 
