@@ -83,6 +83,7 @@ PeleC::theGhostPC()
 void
 PeleC::particleEstTimeStep(Real& est_dt)
 {
+  if (!do_spray_particles) return;
   BL_PROFILE("PeleC::particleEstTimeStep()");
   Real est_dt_particle = theSprayPC()->estTimestep(level, particle_cfl);
 
@@ -455,6 +456,7 @@ PeleC::particleDerive(const std::string& name, Real time, int ngrow)
 void
 PeleC::particle_redistribute(int lbase, bool init_part)
 {
+  if (!do_spray_particles) return;
   BL_PROFILE("PeleC::particle_redistribute()");
   int flev = parent->finestLevel();
   if (theSprayPC()) {
