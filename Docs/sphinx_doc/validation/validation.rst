@@ -234,7 +234,7 @@ This test case simulated the well-known counter flow diffusion flame
 where fuel and oxidizer are injected head-on from opposite sides
 forming a stagnation region. The fuel-oxidizer diffusion in the
 stagnation region determines the flame location. The results from a
-PeleC simulation are shown in Figure X. The fuel (CH4) is injected
+PeleC simulation are shown in the figure below. The fuel (CH4) is injected
 from the left and air from the right.  The temperature distribution
 indicates the flame location towards the oxidizer side. In a counter
 flow diffusion flame the key quantity to vary is the strain rate which
@@ -251,8 +251,13 @@ limit.
    :align: center
    :figwidth: 40%
 
-   Fuel mass density is shown in left figure (g/cm3(0(red)-1e-4(yellow)), Oxygen mass density is shown in the middle figure (0 (red)-1e-5 (yellow) and temperature is shown in right figure (1800K (red)-2300 (yellow))
+   Fuel mass density is shown in left figure in g/cm3 (0(red)-1e-4(yellow)), oxygen mass density 
+   is shown in the middle figure (0 (red)-1e-5 (yellow)) and temperature is shown in right figure (1800K (red) - 2300 (yellow)) along with 
+   velocity vectors.
 
+.. note::
+
+   A quantitative comparison with Cantera for varying strain-rates is work in progress 
 
 Counter flow premixed flame
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
