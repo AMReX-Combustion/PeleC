@@ -418,7 +418,7 @@ void
 initialize_EB2(
   const amrex::Geometry& geom, const int required_level, const int max_level)
 {
-  BL_PROFILE("initializeEB2");
+  BL_PROFILE("PeleC::initialize_EB2()");
 
   amrex::Print() << "Initializing EB2" << std::endl;
   amrex::ParmParse ppeb2("eb2");
