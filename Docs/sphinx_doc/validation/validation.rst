@@ -296,7 +296,7 @@ corresponding to a vortex field is superimposed using the Oseen vortex
 expression. This simulation is performed in an unsteady fashion with
 time evolution of flame area and stretch for varying ratios of vortex
 strength and laminar flame speed as the key metric for
-validation. Experimental data (`Thiesset et. al, PROCI Volume 36,
+validation. Experimental data (`Thiesset et. al, Proc. Combust. Inst. Volume 36,
 Issue 2, 2017, Pages 1843-1851`) and data from a number of previously
 established simulation data will be used to validate PeleC.
 
@@ -308,7 +308,7 @@ Sandia Flame D
 ~~~~~~~~~~~~~~
 
 Flame D from the Sandia series of piloted methane/air turbulent jet
-flames (`R. S. Barlow, J. H. Frank. Proc. Combust. Inst. 27 (1998)
+flames (`R. S. Barlow and J. H. Frank, Proc. Combust. Inst. Volume 27, 1998, Pages
 1087-1095`) is a canonical case for assessment of nonpremixed
 combustion models for LES in the literature and at the International
 Workshop on Measurement and Computation of Turbulent Flames
@@ -328,8 +328,8 @@ Premixed ignition kernel in isotropic turbulence
 
 This test case is based on a set of DNS of spherical premixed Jet-A
 fuel/air kernels in decaying isotropic turbulence performed at Sandia
-National Laboratories (`A. Krisman, T. Lu, J. H. Chen. National
-Combustion Meeting (2017) #2E04`). This test case will be used for
+National Laboratories (`A. Krisman, T. Lu, and J. H. Chen, National
+Combustion Meeting, 2017, Paper #2E04`). This test case will be used for
 validation of LES premixed combustion models in PeleC. This case
 allows for a priori model evaluation of local predictions of filtered
 reaction rates as well as a posteriori comparisons of global
