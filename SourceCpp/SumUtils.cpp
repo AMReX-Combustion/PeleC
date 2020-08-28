@@ -80,12 +80,14 @@ PeleC::volWgtSquaredSum(const std::string& name, amrex::Real time, bool local)
     amrex::MultiFab::Multiply(*mf, mask, 0, 0, 1, 0);
   }
 
-#ifdef PELEC_USE_EB
-  amrex::MultiFab::Multiply(*mf, vfrac, 0, 0, 1, 0);
-#endif
-
   amrex::MultiFab::Multiply(*mf, *mf, 0, 0, 1, 0);
-  sum = amrex::MultiFab::Dot(*mf, 0, volume, 0, 1, 0, local);
+
+  amrex::MultiFab vol(grids, dmap, 1, 0);
+  amrex::MultiFab::Copy(vol, volume, 0, 0, 1, 0);
+#ifdef PELEC_USE_EB
+  amrex::MultiFab::Multiply(vol, vfrac, 0, 0, 1, 0);
+#endif
+  sum = amrex::MultiFab::Dot(*mf, 0, vol, 0, 1, 0, local);
 
   if (!local)
     amrex::ParallelDescriptor::ReduceRealSum(sum);
@@ -115,12 +117,14 @@ PeleC ::volWgtSquaredSumDiff(int comp, amrex::Real time, bool local)
     amrex::MultiFab::Multiply(diff, mask, 0, 0, 1, 0);
   }
 
-#ifdef PELEC_USE_EB
-  amrex::MultiFab::Multiply(diff, vfrac, 0, 0, 1, 0);
-#endif
-
   amrex::MultiFab::Multiply(diff, diff, 0, 0, 1, 0);
-  sum = amrex::MultiFab::Dot(diff, 0, volume, 0, 1, 0, local);
+
+  amrex::MultiFab vol(grids, dmap, 1, 0);
+  amrex::MultiFab::Copy(vol, volume, 0, 0, 1, 0);
+#ifdef PELEC_USE_EB
+  amrex::MultiFab::Multiply(vol, vfrac, 0, 0, 1, 0);
+#endif
+  sum = amrex::MultiFab::Dot(diff, 0, vol, 0, 1, 0, local);
 
   if (!local)
     amrex::ParallelDescriptor::ReduceRealSum(sum);

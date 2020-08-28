@@ -20,7 +20,7 @@ Verification of PeleC uses `MASA
 auto-differention tools to implement the Method of Manufactured
 Solutions into PeleC.
 
-There :math:`L_2` error norm for a quantity :math:`s` is defined as
+The :math:`L_2` error norm for a quantity :math:`s` is defined as
 
 .. math::
    e_s = \sqrt{ \frac{\sum_{i=1}^{N_e} \int_{V_i} (s^h-s^*)^2 \mathrm{d}V}{\sum_{i=1}^{N_e} \|V_i\|}}
@@ -217,7 +217,7 @@ preserve the second order accuracy of the code.
    :width: 300pt
 
 Testing the constant Smagorinsky Large Eddy Simulation model
-------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This setup is identical to the MMS study for the compressible
 Navier-Stokes equations. The Large Eddy Simulation (LES) constants,
