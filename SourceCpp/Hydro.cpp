@@ -286,8 +286,9 @@ PeleC::construct_hydro_source(
     }
 
     if (print_energy_diagnostics) {
-      amrex::Real foo[5] = {E_added_flux, xmom_added_flux, ymom_added_flux,
-                            zmom_added_flux, mass_added_flux};
+      amrex::Real foo[5] = {
+        E_added_flux, xmom_added_flux, ymom_added_flux, zmom_added_flux,
+        mass_added_flux};
 
 #ifdef AMREX_LAZY
       Lazy::QueueReduction([=]() mutable {
