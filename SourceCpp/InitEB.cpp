@@ -283,6 +283,7 @@ PeleC::initialize_eb2_structs()
             }
           }
         });
+
 #ifdef AMREX_USE_GPU
         const int v_all_cut_faces_size = v_all_cut_faces.size();
         thrust::sort(
@@ -305,6 +306,7 @@ PeleC::initialize_eb2_structs()
         amrex::Gpu::DeviceVector<amrex::IntVect> v_cut_faces =
           unique<amrex::Gpu::DeviceVector<amrex::IntVect>>(v_all_cut_faces);
 #endif
+
         const int Nsten = v_cut_faces.size();
         if (Nsten > 0) {
           flux_interp_stencil[dir][iLocal].resize(Nsten);
