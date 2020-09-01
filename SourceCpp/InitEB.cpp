@@ -152,6 +152,7 @@ PeleC::initialize_eb2_structs()
         tbox, Ncut, vfrac_arr, bndrycent_arr,
         AMREX_D_DECL(eb2areafrac_arr_0, eb2areafrac_arr_1, eb2areafrac_arr_2),
         sv_eb_bndry_geom[iLocal].data());
+
       sv_eb_bndry_grad_stencil[iLocal].resize(Ncut);
 
       // Fill in boundary gradient for cut cells in this grown tile
