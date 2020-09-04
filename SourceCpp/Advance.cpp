@@ -447,7 +447,7 @@ PeleC::do_sdc_iteration(
           tmp_src_width, true, where_width);
 
       // Miiiight need all Ghosts
-      if (use_ghost_parts && theGhostPC() != 0)
+      if (theGhostPC() != 0)
         theGhostPC()->moveKickDrift(
           Sborder, *old_sources[spray_src], level, dt, cur_time, false, true,
           tmp_src_width, true, where_width);
@@ -547,7 +547,7 @@ PeleC::do_sdc_iteration(
     // TODO: Is this true with SDC iterations??
 
     // Ghost particles need to be kicked except during the final iteration.
-    if (amr_iteration != amr_ncycle && use_ghost_parts && theGhostPC() != 0)
+    if (amr_iteration != amr_ncycle && theGhostPC() != 0)
       theGhostPC()->moveKick(
         Sborder, *new_sources[spray_src], level, dt, time + dt, false, true,
         tmp_src_width);

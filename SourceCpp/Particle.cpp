@@ -45,7 +45,7 @@ RemoveParticlesOnExit()
 
 int PeleC::do_spray_particles = 0;
 int PeleC::particle_verbose = 0;
-Real PeleC::particle_cfl = 0.4;
+Real PeleC::particle_cfl = 0.5;
 
 int PeleC::write_particle_plotfiles = 1;
 int PeleC::write_spray_ascii_files = 1;
@@ -321,24 +321,21 @@ PeleC::initParticles()
       gvParticles = true;
     }
 
-    SprayPC = new SprayParticleContainer(parent, &phys_bc);
+    SprayPC = new SprayParticleContainer(parent, &phys_bc, parcelSize);
     theSprayPC()->SetVerbose(particle_verbose);
 
     if (gvParticles) {
-      VirtPC = new SprayParticleContainer(parent, &phys_bc);
-      GhostPC = new SprayParticleContainer(parent, &phys_bc);
+      VirtPC = new SprayParticleContainer(parent, &phys_bc, parcelSize);
+      GhostPC = new SprayParticleContainer(parent, &phys_bc, parcelSize);
     }
     // Pass constant reference data and memory allocations to GPU
     theSprayPC()->buildFuelData(
       sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
-    theSprayPC()->setParcelSize(parcelSize);
     if (gvParticles) {
       theGhostPC()->buildFuelData(
         sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
       theVirtPC()->buildFuelData(
         sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
-      theGhostPC()->setParcelSize(parcelSize);
-      theVirtPC()->setParcelSize(parcelSize);
     }
 
     if (!particle_init_file.empty()) {
@@ -358,14 +355,14 @@ PeleC::particlePostRestart(const std::string& restart_file, bool is_checkpoint)
   if (do_spray_particles) {
     AMREX_ASSERT(SprayPC == 0);
 
-    SprayPC = new SprayParticleContainer(parent, &phys_bc);
+    SprayPC = new SprayParticleContainer(parent, &phys_bc, parcelSize);
     theSprayPC()->SetVerbose(particle_verbose);
     theSprayPC()->buildFuelData(
       sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
 
     if (parent->subCycle()) {
-      VirtPC = new SprayParticleContainer(parent, &phys_bc);
-      GhostPC = new SprayParticleContainer(parent, &phys_bc);
+      VirtPC = new SprayParticleContainer(parent, &phys_bc, parcelSize);
+      GhostPC = new SprayParticleContainer(parent, &phys_bc, parcelSize);
       theGhostPC()->buildFuelData(
         sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
       theVirtPC()->buildFuelData(
