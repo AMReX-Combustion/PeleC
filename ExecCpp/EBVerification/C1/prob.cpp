@@ -202,7 +202,12 @@ PeleC::problem_post_timestep()
       &rhoE_residual, 1, amrex::ParallelDescriptor::IOProcessorNumber());
 
     // Get the norm and normalize it
-    amrex::Real V = volume.sum(0, false);
+    amrex::MultiFab vol(grids, dmap, 1, 0);
+    amrex::MultiFab::Copy(vol, volume, 0, 0, 1, 0);
+#ifdef PELEC_USE_EB
+    amrex::MultiFab::Multiply(vol, vfrac, 0, 0, 1, 0);
+#endif
+    amrex::Real V = vol.sum(0, false);
     rho_mms_err = std::sqrt(rho_mms_err / V);
     u_mms_err = std::sqrt(u_mms_err / V);
     v_mms_err = std::sqrt(v_mms_err / V);

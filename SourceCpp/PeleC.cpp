@@ -349,7 +349,7 @@ PeleC::read_params()
 #endif
 
 #ifdef PELEC_USE_EB
-  if (do_mol == 0) {
+  if ((do_mol == 0) and (eb_in_domain)) {
     amrex::Abort("Must do_mol = 1 when using EB\n");
   }
 #endif

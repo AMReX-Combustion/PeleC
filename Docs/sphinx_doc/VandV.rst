@@ -8,4 +8,6 @@ PeleC undergoes significant testing to ensure correct operation. Synthetic tests
 
 .. include:: ./verification/verification.rst
 
+.. include:: ./ebverification/ebverification.rst
+
 .. include:: ./validation/validation.rst
