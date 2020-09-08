@@ -263,7 +263,8 @@ PeleC::setSprayGridInfo(
   //      ghost_width so that we don't have to test on whether the particles are
   //      trying to write out of bounds
 
-  tmp_src_width = ghost_width + stencil_deposition_width;
+  tmp_src_width = stencil_deposition_width;
+  if (level > 0) tmp_src_width += ghost_width;
 }
 #endif
 
@@ -368,6 +369,13 @@ PeleC::do_sdc_iteration(
     FillPatch(*this, Sborder, nGrow_Sborder, time, State_Type, 0, NVAR);
   }
 
+#ifdef AMREX_PARTICLES
+  // We must make a temporary spray source term to ensure number of ghost
+  // cells are correct
+  amrex::MultiFab tmp_spray_source(
+    grids,dmap, NVAR, tmp_src_width, amrex::MFInfo(), Factory());
+  tmp_spray_source.setVal(0.);
+#endif
   if (sub_iteration == 0) {
 #ifdef AMREX_PARTICLES
     //
@@ -376,6 +384,7 @@ PeleC::do_sdc_iteration(
     //  based on old-time velocity field
     //
     // TODO: Maybe move this mess into construct_old_source?
+
     if (do_spray_particles) {
       amrex::Gpu::LaunchSafeGuard lsg(true);
       //
@@ -433,7 +442,8 @@ PeleC::do_sdc_iteration(
 
       // Do the valid particles themselves
       theSprayPC()->moveKickDrift(
-        Sborder, *old_sources[spray_src], level, dt, cur_time,
+        Sborder, tmp_spray_source,
+        level, dt, cur_time,
         false, // not virtual particles
         false, // not ghost particles
         tmp_src_width,
@@ -443,14 +453,20 @@ PeleC::do_sdc_iteration(
       // Only need the coarsest virtual particles here.
       if (level < finest_level && use_virt_parts)
         theVirtPC()->moveKickDrift(
-          Sborder, *old_sources[spray_src], level, dt, cur_time, true, false,
+          Sborder, tmp_spray_source,
+          level, dt, cur_time, true, false,
           tmp_src_width, true, where_width);
 
       // Miiiight need all Ghosts
       if (theGhostPC() != 0)
         theGhostPC()->moveKickDrift(
-          Sborder, *old_sources[spray_src], level, dt, cur_time, false, true,
+          Sborder, tmp_spray_source,
+          level, dt, cur_time, false, true,
           tmp_src_width, true, where_width);
+      // Must call transfer source after moveKick and moveKickDrift
+      // on all particle types
+      theSprayPC()->transferSource(
+        tmp_src_width, level, tmp_spray_source, *old_sources[spray_src]);
     }
 #endif
 
@@ -540,7 +556,8 @@ PeleC::do_sdc_iteration(
     new_sources[spray_src]->setVal(0.);
 
     theSprayPC()->moveKick(
-      Sborder, *new_sources[spray_src], level, dt, time + dt, false, false,
+      Sborder, tmp_spray_source,
+      level, dt, time + dt, false, false,
       tmp_src_width);
 
     // Virtual particles will be recreated, so we need not kick them.
@@ -549,8 +566,11 @@ PeleC::do_sdc_iteration(
     // Ghost particles need to be kicked except during the final iteration.
     if (amr_iteration != amr_ncycle && theGhostPC() != 0)
       theGhostPC()->moveKick(
-        Sborder, *new_sources[spray_src], level, dt, time + dt, false, true,
+        Sborder, tmp_spray_source,
+        level, dt, time + dt, false, true,
         tmp_src_width);
+    theSprayPC()->transferSource(
+      tmp_src_width, level, tmp_spray_source, *new_sources[spray_src]);
   }
 #endif
 
