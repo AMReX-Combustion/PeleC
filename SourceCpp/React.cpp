@@ -284,7 +284,7 @@ PeleC::react_state(
                 a(i, j, k, UEDEN);
             });
 
-          wt = (amrex::ParallelDescriptor::second() - wt) / vbox.d_numPts();
+          wt = (amrex::ParallelDescriptor::second() - wt) / bx.d_numPts();
 
 
           if (do_react_load_balance) {
