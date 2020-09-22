@@ -97,17 +97,14 @@ PeleC::react_state(
         react_init ? 0 : 1; // TODO: Update here? Or just get reaction source?
 
       amrex::Real wt = amrex::ParallelDescriptor::second(); //timing for each fab
-      if (typ == amrex::FabType::covered){
-	wt=0.0;
-        if (do_react_load_balance) {
-            get_new_data(Work_Estimate_Type)[mfi].plus<amrex::RunOn::Device>(wt,vbox);
-          }
-       }
-	
 #ifdef PELEC_USE_EB
       const auto& flag_fab = flags[mfi];
       amrex::FabType typ = flag_fab.getType(bx);
       if (typ == amrex::FabType::covered) {
+        if (do_react_load_balance) {
+	    wt=0.0;
+            get_new_data(Work_Estimate_Type)[mfi].plus<amrex::RunOn::Device>(wt,vbox);
+          }
         continue;
       } else if (
         typ == amrex::FabType::singlevalued || typ == amrex::FabType::regular)
