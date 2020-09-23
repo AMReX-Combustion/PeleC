@@ -257,11 +257,12 @@ public:
    * Initialize EB geometry for finest_level and level grids for
    * other levels
    */
+  // for the Amr class to do timed load balances.
+  virtual int WorkEstType() override { return Work_Estimate_Type; }
+
 #ifdef PELEC_USE_EB
   static bool DoMOLLoadBalance() { return do_mol_load_balance; }
 
-  // for the Amr class to do timed load balances.
-  virtual int WorkEstType() override { return Work_Estimate_Type; }
 
   const amrex::MultiFab& volFrac() const { return vfrac; }
 
