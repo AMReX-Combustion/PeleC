@@ -21,5 +21,10 @@ init()
     qpassMap[curMapIndx] = i + QFS;
     curMapIndx++;
   }
+  for (int i = 0; i != NUM_AUX; ++i) {
+    upassMap[curMapIndx] = i + UFX;
+    qpassMap[curMapIndx] = i + QFX;
+    curMapIndx++;
+  }
 }
 } // namespace indxmap
