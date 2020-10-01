@@ -446,6 +446,7 @@ PeleC::do_sdc_iteration(
         level, dt, cur_time,
         false, // not virtual particles
         false, // not ghost particles
+        spray_n_grow,
         tmp_src_width,
         true, // Move the particles
         where_width);
@@ -455,14 +456,14 @@ PeleC::do_sdc_iteration(
         theVirtPC()->moveKickDrift(
           Sborder, tmp_spray_source,
           level, dt, cur_time, true, false,
-          tmp_src_width, true, where_width);
+          spray_n_grow, tmp_src_width, true, where_width);
 
       // Miiiight need all Ghosts
       if (theGhostPC() != 0)
         theGhostPC()->moveKickDrift(
           Sborder, tmp_spray_source,
           level, dt, cur_time, false, true,
-          tmp_src_width, true, where_width);
+          spray_n_grow, tmp_src_width, true, where_width);
       // Must call transfer source after moveKick and moveKickDrift
       // on all particle types
       theSprayPC()->transferSource(
@@ -558,7 +559,7 @@ PeleC::do_sdc_iteration(
     theSprayPC()->moveKick(
       Sborder, tmp_spray_source,
       level, dt, time + dt, false, false,
-      tmp_src_width);
+      spray_n_grow, tmp_src_width);
 
     // Virtual particles will be recreated, so we need not kick them.
     // TODO: Is this true with SDC iterations??
@@ -568,7 +569,7 @@ PeleC::do_sdc_iteration(
       theGhostPC()->moveKick(
         Sborder, tmp_spray_source,
         level, dt, time + dt, false, true,
-        tmp_src_width);
+        spray_n_grow, tmp_src_width);
     theSprayPC()->transferSource(
       tmp_src_width, level, tmp_spray_source, *new_sources[spray_src]);
   }

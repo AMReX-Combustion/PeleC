@@ -21,6 +21,11 @@ init()
     qpassMap[curMapIndx] = i + QFS;
     curMapIndx++;
   }
+  for (int i = 0; i != NUM_AUX; ++i) {
+    upassMap[curMapIndx] = i + UFX;
+    qpassMap[curMapIndx] = i + QFX;
+    curMapIndx++;
+  }
 #ifdef SOOT_MODEL
   for (int i = 0; i != NUM_SOOT_VARS; ++i) {
     upassMap[curMapIndx] = i + UFSOOT;

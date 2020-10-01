@@ -68,9 +68,6 @@ PeleC::react_state(
   amrex::MultiFab& reactions = get_new_data(Reactions_Type);
   reactions.setVal(0.0);
   prefetchToDevice(reactions);
-  if (use_reactions_work_estimate) {
-    amrex::Abort("Need to implement redistribution of chemistry work");
-  }
 
 #ifdef PELEC_USE_EB
   auto const& fact =
@@ -86,6 +83,7 @@ PeleC::react_state(
          ++mfi) {
 
       const amrex::Box& bx = mfi.growntilebox(ng);
+      const amrex::Box vbox = mfi.tilebox();
 
       auto const& uold =
         react_init ? S_new.array(mfi) : get_old_data(State_Type).array(mfi);
@@ -98,10 +96,15 @@ PeleC::react_state(
       const int do_update =
         react_init ? 0 : 1; // TODO: Update here? Or just get reaction source?
 
+      amrex::Real wt = amrex::ParallelDescriptor::second(); //timing for each fab
 #ifdef PELEC_USE_EB
       const auto& flag_fab = flags[mfi];
       amrex::FabType typ = flag_fab.getType(bx);
       if (typ == amrex::FabType::covered) {
+        if (do_react_load_balance) {
+	    wt=0.0;
+            get_new_data(Work_Estimate_Type)[mfi].plus<amrex::RunOn::Device>(wt,vbox);
+          }
         continue;
       } else if (
         typ == amrex::FabType::singlevalued || typ == amrex::FabType::regular)
@@ -281,8 +284,11 @@ PeleC::react_state(
                 a(i, j, k, UEDEN);
             });
 
-          if (do_react_load_balance || do_mol_load_balance) {
-            get_new_data(Work_Estimate_Type)[mfi].plus<amrex::RunOn::Device>(w);
+          wt = (amrex::ParallelDescriptor::second() - wt) / bx.d_numPts();
+
+
+          if (do_react_load_balance) {
+            get_new_data(Work_Estimate_Type)[mfi].plus<amrex::RunOn::Device>(wt,vbox);
           }
 #else
           amrex::Abort(

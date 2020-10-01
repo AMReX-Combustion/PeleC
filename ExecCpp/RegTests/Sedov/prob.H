@@ -44,9 +44,9 @@ pc_initdata(
     amrex::Real dx_sub = dx[0] / static_cast<amrex::Real>(ProbParm::nsub);
     amrex::Real ctr_x = 0.5 * (prob_lo[0] + prob_hi[0]);
     , amrex::Real dy_sub = dx[1] / static_cast<amrex::Real>(ProbParm::nsub);
-    amrex::Real ctr_y = 0.5 * (prob_lo[1] + prob_hi[2]);
+    amrex::Real ctr_y = 0.5 * (prob_lo[1] + prob_hi[1]);
     , amrex::Real dz_sub = dx[2] / static_cast<amrex::Real>(ProbParm::nsub);
-    amrex::Real ctr_z = 0.5 * (prob_lo[1] + prob_hi[2]);)
+    amrex::Real ctr_z = 0.5 * (prob_lo[2] + prob_hi[2]);)
 
   // We initialize by summing over subvolumes of each cell
   int npert = 0;
