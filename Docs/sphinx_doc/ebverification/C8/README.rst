@@ -1,4 +1,4 @@
-C7. Sod shock tube in rotated channel with AMR
+C8. Multi-species shock tube in a rotated channel with AMR
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Case description
