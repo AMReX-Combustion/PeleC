@@ -25,6 +25,8 @@ description and the source code for these test cases are included
 
 .. include:: ./ebverification/C7/README.rst
 
+.. include:: ./ebverification/C8/README.rst
+
 .. include:: ./ebverification/C9/README.rst
 
 .. include:: ./ebverification/C10/README.rst
