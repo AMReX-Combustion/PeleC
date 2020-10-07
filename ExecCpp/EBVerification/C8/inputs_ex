@@ -60,8 +60,8 @@ prob.rho_l = 9.6e-4
 prob.p_r = 1e6
 prob.rho_r = 1.2e-4
 prob.angle = 30.0
-prob.left_gas = HE
-prob.right_gas = N2
+prob.left_gas = N2
+prob.right_gas = HE
 
 # Problem setup
 pelec.eb_boundary_T = 300.
