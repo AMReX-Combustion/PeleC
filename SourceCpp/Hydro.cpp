@@ -24,7 +24,7 @@ PeleC::construct_hydro_source(
       amrex::Print() << "... Computing hydro advance" << std::endl;
     }
 
-    AMREX_ASSERT(S.nGrow() == NUM_GROW + nGrowF);
+    AMREX_ASSERT(S.nGrow() >= NUM_GROW + nGrowF);
     sources_for_hydro.setVal(0.0);
     int ng = 0; // TODO: This is currently the largest ngrow of the source
                 // data...maybe this needs fixing?

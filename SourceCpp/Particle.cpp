@@ -510,9 +510,9 @@ PeleC::particle_redistribute(int lbase, bool init_part)
                        << '\n';
       if (flev == 0) {
         // Do a local redistribute
-        theSprayPC()->Redistribute(lbase, theSprayPC()->finestLevel(), 1);
+        theSprayPC()->Redistribute(lbase, theSprayPC()->finestLevel(), 0, 1);
       } else {
-        theSprayPC()->Redistribute(lbase, theSprayPC()->finestLevel(), 1);
+        theSprayPC()->Redistribute(lbase, theSprayPC()->finestLevel(), 0);
       }
       //
       // Use the new BoxArray and DistMap to define ba and dm for next time.

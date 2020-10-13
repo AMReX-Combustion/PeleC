@@ -118,7 +118,11 @@ PeleC::getMOLSrcTerm(
     for (amrex::MFIter mfi(MOLSrcTerm, amrex::TilingIfNotGPU()); mfi.isValid();
          ++mfi) {
       const amrex::Box vbox = mfi.tilebox();
+#ifdef AMREX_PARTICLES
+      int ng = NUM_GROW;
+#else
       int ng = S.nGrow();
+#endif
       const amrex::Box gbox = amrex::grow(vbox, ng);
       const amrex::Box cbox = amrex::grow(vbox, ng - 1);
       auto const& MOLSrc = MOLSrcTerm.array(mfi);

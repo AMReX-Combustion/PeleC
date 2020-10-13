@@ -405,12 +405,6 @@ PeleC::PeleC(
   for (int n = 0; n < src_list.size(); ++n) {
     int oldGrow = NUM_GROW;
     int newGrow = S_new.nGrow();
-#ifdef AMREX_PARTICLES
-    if (src_list[n] == spray_src) {
-      oldGrow = 1;
-      newGrow = amrex::max(1, newGrow);
-    }
-#endif
     old_sources[src_list[n]] =
       std::unique_ptr<amrex::MultiFab>(new amrex::MultiFab(
         grids, dmap, NVAR, oldGrow, amrex::MFInfo(), Factory()));
@@ -419,14 +413,24 @@ PeleC::PeleC(
         grids, dmap, NVAR, newGrow, amrex::MFInfo(), Factory()));
   }
 
+  int nGrowS = NUM_GROW;
+#ifdef AMREX_PARTICLES
+  if (level > 0 && do_spray_particles) {
+    int cRefRatio = papa.MaxRefRatio(level - 1);
+    if (cRefRatio > 4)
+      amrex::Abort("Spray particles not supported for ref_ratio > 4");
+    else if (cRefRatio > 2)
+      nGrowS += 2;
+  }
+#endif
   if (do_hydro) {
-    Sborder.define(grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
+    Sborder.define(grids, dmap, NVAR, nGrowS, amrex::MFInfo(), Factory());
   } else if (do_diffuse) {
     Sborder.define(grids, dmap, NVAR, nGrowTr, amrex::MFInfo(), Factory());
   }
 #ifdef AMREX_PARTICLES
   else if (do_spray_particles) {
-    Sborder.define(grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
+    Sborder.define(grids, dmap, NVAR, nGrowS, amrex::MFInfo(), Factory());
   }
 #endif
 

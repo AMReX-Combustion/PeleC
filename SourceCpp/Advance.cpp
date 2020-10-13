@@ -232,10 +232,13 @@ PeleC::setSprayGridInfo(
   //      that live on (level-1) can affect the grid over all of the amr_ncycle
   //      steps. We define ghost cells at the coarser level to cover all
   //      iterations so we can't reduce this number as amr_iteration increases.
+  // LDO: Previously, ghost_num and ghost_width were the same. Numerical testing
+  //      showed that ghost_width causes problems if greater than 2 for ref_ratios > 2
 
-  ghost_width = 0;
+  ghost_width = parent->MaxRefRatio(level)/2;
+  int ghost_num = 0;
   if (parent->subCycle() && parent->finestLevel() > 0)
-    ghost_width += amr_ncycle + stencil_deposition_width;
+    ghost_num += amr_ncycle + stencil_deposition_width;
 
   // *** where_width ***  is used
   //   *) to set how many cells the Where call in moveKickDrift tests = max of
@@ -247,13 +250,13 @@ PeleC::setSprayGridInfo(
   //     when we're done}
 
   where_width =
-    amrex::max(ghost_width + (1 - amr_iteration) - 1, amr_iteration);
+    amrex::max(ghost_num + (1 - amr_iteration) - 1, amr_iteration);
 
   // *** spray_n_grow *** is used
   //   *) to determine how many ghost cells we need to fill in the MultiFab from
   //      which the particle interpolates its acceleration
 
-  spray_n_grow = ghost_width + stencil_interpolation_width;
+  spray_n_grow = ghost_num + stencil_interpolation_width;
 
   // *** tmp_src_width ***  is used
   //   *) to set how many ghost cells are needed in the tmp_src_ptr MultiFab
@@ -264,7 +267,7 @@ PeleC::setSprayGridInfo(
   //      trying to write out of bounds
 
   tmp_src_width = stencil_deposition_width;
-  if (level > 0) tmp_src_width += ghost_width;
+  if (level > 0) tmp_src_width += ghost_num;
 }
 #endif
 
@@ -411,7 +414,7 @@ PeleC::do_sdc_iteration(
       // Only redistribute if we injected or inserted particles
       //
       if (injectParts || insertParts)
-        particle_redistribute(level);
+        theSprayPC()->Redistribute(level);
 
       //
       // Setup the virtual particles that represent particles on finer levels
