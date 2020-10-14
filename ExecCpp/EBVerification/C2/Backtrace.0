@@ -1,0 +1,22 @@
+ 0: amrex::BLBackTrace::print_backtrace_info(__sFILE*) (in PeleC3d.gnu.ex) (AMReX_BLBackTrace.cpp:170)
+
+ 1: amrex::BLBackTrace::handler(int) (in PeleC3d.gnu.ex) (AMReX_BLBackTrace.cpp:80)
+
+ 2: _sigtramp (in libsystem_platform.dylib) + 29
+
+ 3: tiny_malloc_from_free_list (in libsystem_malloc.dylib) + 450
+
+ 4: amrex::MultiFab::Multiply(amrex::MultiFab&, amrex::MultiFab const&, int, int, int, int) (in PeleC3d.gnu.ex) (AMReX_MultiFab.cpp:259)
+
+ 5: PeleC::volWgtSum(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, double, bool, bool) (in PeleC3d.gnu.ex) (memory:2613)
+
+ 6: PeleC::sum_integrated_quantities() (in PeleC3d.gnu.ex) (SumIQ.cpp:38)
+
+ 7: amrex::Amr::timeStep(int, double, int, int, double) (in PeleC3d.gnu.ex) (AMReX_Amr.cpp:2036)
+
+ 8: amrex::Amr::coarseTimeStep(double) (in PeleC3d.gnu.ex) (AMReX_Amr.cpp:0)
+
+ 9: main (in PeleC3d.gnu.ex) (main.cpp:144)
+
+10: start (in libdyld.dylib) + 1
+

@@ -748,7 +748,31 @@ initialize_EB2(
 
     amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
 
-  } else {
+  } else if (geom_type == "sphere_cylinder") {
+
+        amrex::RealArray point;
+        amrex::RealArray normal;
+
+        amrex::RealArray center;
+        center[0]=0.0;
+        center[1]=0.0;
+        center[2]=0.0;
+
+        amrex::Real radius;
+        radius=0.25;
+
+        bool has_fluid_inside=0;
+        amrex::EB2::SphereIF sf(radius, center, has_fluid_inside);
+
+        amrex::EB2::CylinderIF cf(0.1, 1.0, 0, {0.1,0.0,0.0}, false);
+
+        auto polys = amrex::EB2::makeUnion(sf,cf);
+
+        auto gshop = amrex::EB2::makeShop(polys);
+        amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level, 4, false);
+  } 
+
+else {
     amrex::EB2::Build(geom, max_level, max_level);
   }
 }
