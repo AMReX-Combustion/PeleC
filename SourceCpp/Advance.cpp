@@ -228,14 +228,12 @@ PeleC::setSprayGridInfo(
 
   // *** ghost_width ***  is used
   //   *) to set how many cells are used to hold ghost particles i.e copies of
-  //   particles
-  //      that live on (level-1) can affect the grid over all of the amr_ncycle
-  //      steps. We define ghost cells at the coarser level to cover all
-  //      iterations so we can't reduce this number as amr_iteration increases.
-  // LDO: Previously, ghost_num and ghost_width were the same. Numerical testing
-  //      showed that ghost_width causes problems if greater than 2 for ref_ratios > 2
+  //   particles that live on (level) that can affect the grid on level+1 over the
+  //   total number of cycles on level+1, which is equal to the refinement ratio
 
-  ghost_width = parent->MaxRefRatio(level)/2;
+  ghost_width = 0;
+  if (level < parent->finestLevel() && parent->finestLevel() > 0)
+    ghost_width = parent->MaxRefRatio(level);
   int ghost_num = 0;
   if (parent->subCycle() && parent->finestLevel() > 0)
     ghost_num += amr_ncycle + stencil_deposition_width;
@@ -249,8 +247,7 @@ PeleC::setSprayGridInfo(
   //     have moved and we don't want to just lose it (we will redistribute it
   //     when we're done}
 
-  where_width =
-    amrex::max(ghost_num + (1 - amr_iteration) - 1, amr_iteration);
+  where_width = amr_ncycle + amr_ncycle/2 - amr_iteration;
 
   // *** spray_n_grow *** is used
   //   *) to determine how many ghost cells we need to fill in the MultiFab from
@@ -528,7 +525,14 @@ PeleC::do_sdc_iteration(
       amrex::Print() << "... Computing diffusion terms at t^(n+1,"
                      << sub_iteration + 1 << ")" << std::endl;
     }
-    FillPatch(*this, Sborder, nGrowTr, time + dt, State_Type, 0, NVAR);
+    int nGrowDiff = nGrowTr;
+#ifdef AMREX_PARTICLES
+    if (do_spray_particles && level > 0) {
+      int maxref = parent->MaxRefRatio(level - 1);
+      if (maxref > 2) nGrowDiff = nGrow_Sborder;
+    }
+#endif
+    FillPatch(*this, Sborder, nGrowDiff, time + dt, State_Type, 0, NVAR);
     amrex::Real flux_factor_new = sub_iteration == sub_ncycle - 1 ? 0.5 : 0;
     getMOLSrcTerm(Sborder, *new_sources[diff_src], time, dt, flux_factor_new);
   }
