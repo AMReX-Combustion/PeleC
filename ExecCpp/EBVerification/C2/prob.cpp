@@ -1,24 +1,20 @@
-#include <AMReX_Print.H>
-#include <AMReX_ParmParse.H>
-
-#include "mechanism.h"
-
-#include "EOS.H"
-#include "prob_parm.H"
-#include "Transport.H"
+#include "prob.H"
 
 namespace ProbParm {
-AMREX_GPU_DEVICE_MANAGED amrex::Real p = 1013250.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real T = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real rho = 0.00116;
-AMREX_GPU_DEVICE_MANAGED amrex::Real eint = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real vx_in = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real vy_in = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real vz_in = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real Re_L = 2500.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real Pr = 0.7;
-AMREX_GPU_DEVICE_MANAGED amrex::GpuArray<amrex::Real, NUM_SPECIES> massfrac = {
-  1.0};
+AMREX_GPU_DEVICE_MANAGED amrex::Real p_l = 1.0;   // left pressure (erg/cc)
+AMREX_GPU_DEVICE_MANAGED amrex::Real rho_l = 1.0; // left density (g/cc)
+AMREX_GPU_DEVICE_MANAGED amrex::Real rhoe_l = 0.0;
+AMREX_GPU_DEVICE_MANAGED amrex::Real T_l = 1.0;
+AMREX_GPU_DEVICE_MANAGED amrex::Real p_r = 0.1;     // right pressure (erg/cc)
+AMREX_GPU_DEVICE_MANAGED amrex::Real rho_r = 0.125; // right density (g/cc)
+AMREX_GPU_DEVICE_MANAGED amrex::Real rhoe_r = 0.0;
+AMREX_GPU_DEVICE_MANAGED amrex::Real T_r = 1.0;
+AMREX_GPU_DEVICE_MANAGED std::string gasL = "N2";
+AMREX_GPU_DEVICE_MANAGED std::string gasR = "HE";
+AMREX_GPU_DEVICE_MANAGED amrex::Real angle = 0.0;
+AMREX_GPU_DEVICE_MANAGED amrex::Real L = 0.0;
+AMREX_GPU_DEVICE_MANAGED int left_gas_id = N2_ID;
+AMREX_GPU_DEVICE_MANAGED int right_gas_id = HE_ID;
 } // namespace ProbParm
 
 void
@@ -37,27 +33,47 @@ amrex_probinit(
 {
   // Parse params
   amrex::ParmParse pp("prob");
-  pp.query("p", ProbParm::p);
-  pp.query("rho", ProbParm::rho);
-  pp.query("vx_in", ProbParm::vx_in);
-  pp.query("vy_in", ProbParm::vy_in);
-  pp.query("Re_L", ProbParm::Re_L);
-  pp.query("Pr", ProbParm::Pr);
+  pp.query("p_l", ProbParm::p_l);
+  pp.query("rho_l", ProbParm::rho_l);
+  pp.query("p_r", ProbParm::p_r);
+  pp.query("rho_r", ProbParm::rho_r);
+  pp.query("angle", ProbParm::angle);
+  pp.get("left_gas", ProbParm::gasL);
+  pp.get("right_gas", ProbParm::gasR);
+  
+  ProbParm::L = (probhi[0] - problo[0])/cos(M_PI/180.0 * ProbParm::angle);
 
-  amrex::Real L = (probhi[0] - problo[0]) * 0.2;
+  if (ProbParm::gasL == "N2") {
+    ProbParm::left_gas_id = N2_ID;
+    ProbParm::right_gas_id = HE_ID;
+  } else {
+    ProbParm::left_gas_id = HE_ID;
+    ProbParm::right_gas_id = N2_ID;
+  }
 
-  amrex::Real cp = 0.0;
-  ProbParm::massfrac[0] = 1.0;
-  EOS::RYP2E(
-    ProbParm::rho, ProbParm::massfrac.begin(), ProbParm::p, ProbParm::eint);
-  EOS::EY2T(ProbParm::eint, ProbParm::massfrac.begin(), ProbParm::T);
-  EOS::TY2Cp(ProbParm::T, ProbParm::massfrac.begin(), cp);
+  amrex::Real e_l, e_r, cs, cp;
+  amrex::Real massfrac_l[NUM_SPECIES] = {0.0};
+  amrex::Real massfrac_r[NUM_SPECIES] = {0.0};
+  massfrac_l[ProbParm::left_gas_id] = 1.0;
+  massfrac_r[ProbParm::right_gas_id] = 1.0;
 
-  transport_params::const_bulk_viscosity = 0.0;
-  transport_params::const_diffusivity = 0.0;
-  transport_params::const_viscosity =
-    ProbParm::rho * ProbParm::vx_in * L / ProbParm::Re_L;
-  transport_params::const_conductivity =
-    transport_params::const_viscosity * cp / ProbParm::Pr;
+  EOS::RYP2E(ProbParm::rho_l, massfrac_l, ProbParm::p_l, e_l);
+  EOS::EY2T(e_l, massfrac_l, ProbParm::T_l);
+  ProbParm::rhoe_l = ProbParm::rho_l * e_l;
+
 }
 }
+
+#ifdef DO_PROBLEM_POST_TIMESTEP
+void
+PeleC::problem_post_timestep()
+{
+}
+#endif
+
+#ifdef DO_PROBLEM_POST_INIT
+void
+PeleC::problem_post_init()
+{
+}
+#endif

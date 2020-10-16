@@ -5,16 +5,20 @@
 #include <AMReX_GpuQualifiers.H>
 
 namespace ProbParm {
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real p;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real T;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real rho;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real eint;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real vx_in;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real vy_in;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real Re_L;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real Pr;
-extern AMREX_GPU_DEVICE_MANAGED amrex::GpuArray<amrex::Real, NUM_SPECIES>
-  massfrac;
+extern AMREX_GPU_DEVICE_MANAGED amrex::Real p_l;
+extern AMREX_GPU_DEVICE_MANAGED amrex::Real rho_l;
+extern AMREX_GPU_DEVICE_MANAGED amrex::Real rhoe_l;
+extern AMREX_GPU_DEVICE_MANAGED amrex::Real T_l;
+extern AMREX_GPU_DEVICE_MANAGED amrex::Real p_r;
+extern AMREX_GPU_DEVICE_MANAGED amrex::Real rho_r;
+extern AMREX_GPU_DEVICE_MANAGED amrex::Real rhoe_r;
+extern AMREX_GPU_DEVICE_MANAGED amrex::Real T_r;
+extern AMREX_GPU_DEVICE_MANAGED amrex::Real angle;
+extern AMREX_GPU_DEVICE_MANAGED amrex::Real L;
+extern AMREX_GPU_DEVICE_MANAGED std::string gasL;
+extern AMREX_GPU_DEVICE_MANAGED std::string gasR;
+extern AMREX_GPU_DEVICE_MANAGED int left_gas_id;
+extern AMREX_GPU_DEVICE_MANAGED int right_gas_id;
 } // namespace ProbParm
 
 #endif
