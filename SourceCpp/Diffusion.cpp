@@ -571,8 +571,6 @@ PeleC::getMOLSrcTerm(
       }
 #endif
 
-      copy_array4(vbox, NVAR, Dterm, MOLSrc);
-
 #ifdef PELEC_USE_EB
       // do regular flux reg ops
       if (do_reflux && flux_factor != 0 && typ == amrex::FabType::regular)
@@ -601,14 +599,6 @@ PeleC::getMOLSrcTerm(
         }
       }
 
-#ifdef PELEC_USE_EB
-      if (do_mol_load_balance) {
-        amrex::Gpu::streamSynchronize();
-        wt = (amrex::ParallelDescriptor::second() - wt) / vbox.d_numPts();
-        (*cost)[mfi].plus<amrex::RunOn::Device>(wt, vbox);
-      }
-#endif
-
       // Extrapolate to GhostCells
       if (MOLSrcTerm.nGrow() > 0) {
         BL_PROFILE("PeleC::diffextrap()");
@@ -633,6 +623,16 @@ PeleC::getMOLSrcTerm(
               AMREX_D_DECL(hx, hy, hz), dlo, dhi);
           });
       }
+
+      copy_array4(vbox, NVAR, Dterm, MOLSrc);
+
+#ifdef PELEC_USE_EB
+      if (do_mol_load_balance) {
+        amrex::Gpu::streamSynchronize();
+        wt = (amrex::ParallelDescriptor::second() - wt) / vbox.d_numPts();
+        (*cost)[mfi].plus<amrex::RunOn::Device>(wt, vbox);
+      }
+#endif
     } // End of MFIter scope
   }   // End of OMP scope
 } // End of Function
