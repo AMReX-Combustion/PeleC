@@ -600,5 +600,6 @@ pc_umeth_2D(
     amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       pc_pdivu(i, j, k, pdivu, q1, q2, a1, a2, vol);
     });
-#endif // AMREX_SPACEDIM == 2
   }
+#endif // AMREX_SPACEDIM == 2
+}
