@@ -364,7 +364,11 @@ PeleC::setPlotVariables()
 
   bool plot_rhoy = true;
   pp.query("plot_rhoy", plot_rhoy);
-  if (!plot_rhoy) {
+  if (plot_rhoy) {
+    for (int i = 0; i < NUM_SPECIES; i++) {
+      parent->addStatePlotVar(desc_lst[State_Type].name(FirstSpec + i));
+    }
+  } else {
     for (int i = 0; i < NUM_SPECIES; i++) {
       parent->deleteStatePlotVar(desc_lst[State_Type].name(FirstSpec + i));
     }
