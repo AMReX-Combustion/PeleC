@@ -22,10 +22,12 @@ endif
 
 #sundials stuff
 ifeq ($(USE_SUNDIALS_PP), TRUE)
-  USE_ARKODE_PP=TRUE
-  ifeq ($(USE_CUDA), TRUE)
-    USE_CUDA_SUNDIALS_PP = TRUE
+  ifeq ($(USE_CVODE_PP), TRUE)
+    USE_ARKODE_PP=FALSE
+  else
+    USE_ARKODE_PP=TRUE
   endif
+  DEFINES += -DUSE_CVODE_PP=$(USE_CVODE_PP)
   include $(PELE_PHYSICS_HOME)/ThirdParty/Make.ThirdParty
 endif
 

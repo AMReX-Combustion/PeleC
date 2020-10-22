@@ -136,7 +136,7 @@ PeleC::react_state(
           amrex::Real* re_in;
           amrex::Real* re_src_in;
 
-#ifdef USE_CUDA_SUNDIALS_PP
+#ifdef AMREX_USE_CUDA
           cudaError_t cuda_status = cudaSuccess;
           cudaMallocManaged(
             &rY_in, (NUM_SPECIES + 1) * ncells * sizeof(amrex::Real));
@@ -196,17 +196,17 @@ PeleC::react_state(
               re_src_in[offset] = rhoedot_ext;
             });
 
-#ifdef USE_CUDA_SUNDIALS_PP
+#ifdef AMREX_USE_CUDA
           cuda_status = cudaStreamSynchronize(amrex::Gpu::gpuStream());
 #endif
           fabcost = 0.0;
           for (int i = 0; i < ncells; i += ode_ncells) {
 
-#ifdef USE_CUDA_SUNDIALS_PP
+#ifdef AMREX_USE_CUDA
             fabcost += react(
               rY_in + i * (NUM_SPECIES + 1), rY_src_in + i * NUM_SPECIES,
-              re_in + i, re_src_in + i, &dt, &current_time, &reactor_type,
-              &ode_ncells, amrex::Gpu::gpuStream());
+              re_in + i, re_src_in + i, &dt, &current_time, reactor_type,
+              ode_ncells, amrex::Gpu::gpuStream());
 #else
             fabcost += react(
               rY_in + i * (NUM_SPECIES + 1), rY_src_in + i * NUM_SPECIES,
