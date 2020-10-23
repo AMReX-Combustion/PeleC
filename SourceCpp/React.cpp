@@ -207,7 +207,7 @@ PeleC::react_state(
 #ifdef AMREX_USE_CUDA
             fabcost += react(
               rY_in + i * (NUM_SPECIES + 1), rY_src_in + i * NUM_SPECIES,
-              re_in + i, re_src_in + i, dt, current_time, reactor_type,
+              re_in + i, re_src_in + i, &dt, &current_time, reactor_type,
               ode_ncells, amrex::Gpu::gpuStream());
 #else
             fabcost += react(
