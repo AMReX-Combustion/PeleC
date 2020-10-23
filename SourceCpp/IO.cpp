@@ -98,12 +98,6 @@ PeleC::restart(amrex::Amr& papa, istream& is, bool bReadSpecial)
   for (int n = 0; n < src_list.size(); ++n) {
     int oldGrow = NUM_GROW;
     int newGrow = S_new.nGrow();
-#ifdef AMREX_PARTICLES
-    if (src_list[n] == spray_src) {
-      oldGrow = 1;
-      newGrow = 1;
-    }
-#endif
     old_sources[src_list[n]] =
       std::unique_ptr<amrex::MultiFab>(new amrex::MultiFab(
         grids, dmap, NVAR, oldGrow, amrex::MFInfo(), Factory()));
@@ -130,8 +124,6 @@ PeleC::restart(amrex::Amr& papa, istream& is, bool bReadSpecial)
       sources_for_hydro.define(
         grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
     }
-  } else {
-    Sborder.define(grids, dmap, NVAR, nGrowTr, amrex::MFInfo(), Factory());
   }
 
   // get the elapsed CPU time to now;

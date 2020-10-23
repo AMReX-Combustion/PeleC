@@ -443,8 +443,6 @@ PeleC::PeleC(
       sources_for_hydro.define(
         grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
     }
-  } else {
-    Sborder.define(grids, dmap, NVAR, nGrowTr, amrex::MFInfo(), Factory());
   }
 
   // Is this relevant for PeleC?

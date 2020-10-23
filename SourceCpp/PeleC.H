@@ -183,6 +183,30 @@ public:
     int lbase = 0, bool init_part = false) override;
 
   //
+  // Setup ghost and virtual particles and do moveKickDrift
+  //
+  void particleMKD(const bool       use_virt_parts,
+                   const bool       use_ghost_parts,
+                   const Real       time,
+                   const Real       dt,
+                   const int        ghost_width,
+                   const int        spray_n_grow,
+                   const int        tmp_src_width,
+                   const int        where_width,
+                   amrex::MultiFab& tmp_spray_source);
+
+  //
+  // Do the moveKick for active and ghost particles
+  //
+  void particleMK(const Real       time,
+                  const Real       dt,
+                  const int        spray_n_grow,
+                  const int        tmp_src_width,
+                  const int        amr_iteration,
+                  const int        amr_ncycle,
+                  amrex::MultiFab& tmp_spray_source);
+
+  //
   // Setup virtual particles if necessary
   //
   void setupVirtualParticles();

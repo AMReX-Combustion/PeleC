@@ -382,6 +382,124 @@ PeleC::particlePostRestart(const std::string& restart_file, bool is_checkpoint)
   }
 }
 
+void
+PeleC::particleMKD (const bool       use_virt_parts,
+                    const bool       use_ghost_parts,
+                    const Real       time,
+                    const Real       dt,
+                    const int        ghost_width,
+                    const int        spray_n_grow,
+                    const int        tmp_src_width,
+                    const int        where_width,
+                    amrex::MultiFab& tmp_spray_source)
+{
+  amrex::Gpu::LaunchSafeGuard lsg(true);
+  //
+  // Setup ghost particles for use in finer levels. Note that ghost
+  // particles that will be used by this level have already been created,
+  // the particles being set here are only used by finer levels.
+  //
+  int finest_level = parent->finestLevel();
+
+  //
+  // Check if I need to insert new particles
+  //
+  int nstep = parent->levelSteps(0);
+
+  BL_PROFILE_VAR("SprayParticles::injectParticles()", INJECT_SPRAY);
+  bool injectParts = theSprayPC()->
+    injectParticles(time, dt, nstep, level, finest_level);
+  bool insertParts = theSprayPC()->
+    insertParticles(time, dt, nstep, level, finest_level);
+  //
+  // Only redistribute if we injected or inserted particles
+  //
+  if (injectParts || insertParts)
+    theSprayPC()->Redistribute(level);
+  BL_PROFILE_VAR_STOP(INJECT_SPRAY);
+
+  //
+  // Setup the virtual particles that represent particles on finer levels
+  //
+  if (level < finest_level && use_virt_parts)
+    setupVirtualParticles();
+
+  //
+  // Make a copy of the particles on this level into ghost particles
+  // for the finer level
+  //
+  if (use_ghost_parts)
+    setupGhostParticles(ghost_width);
+
+  // Advance the particle velocities to the half-time and the positions to
+  // the new time
+  if (particle_verbose)
+    amrex::Print()
+      << "moveKickDrift ... updating particle positions and velocity\n";
+
+  // We will make a temporary copy of the source term array inside
+  // moveKickDrift
+  //    and we are only going to use the spray force out to one ghost cell
+  //    so we need only define spray_force_old with one ghost cell
+
+  AMREX_ASSERT(old_sources[spray_src]->nGrow() >= 1);
+
+  // Do the valid particles themselves
+  theSprayPC()->moveKickDrift(
+    Sborder, tmp_spray_source,
+    level, dt, time,
+    false, // not virtual particles
+    false, // not ghost particles
+    spray_n_grow,
+    tmp_src_width,
+    true, // Move the particles
+    where_width);
+
+  // Only need the coarsest virtual particles here.
+  if (level < finest_level && use_virt_parts)
+    theVirtPC()->moveKickDrift(
+      Sborder, tmp_spray_source,
+      level, dt, time, true, false,
+      spray_n_grow, tmp_src_width, true, where_width);
+
+  // Miiiight need all Ghosts
+  if (theGhostPC() != 0)
+    theGhostPC()->moveKickDrift(
+      Sborder, tmp_spray_source,
+      level, dt, time, false, true,
+      spray_n_grow, tmp_src_width, true, where_width);
+  // Must call transfer source after moveKick and moveKickDrift
+  // on all particle types
+  theSprayPC()->transferSource(
+    tmp_src_width, level, tmp_spray_source, *old_sources[spray_src]);
+}
+
+void
+PeleC::particleMK (const Real       time,
+                   const Real       dt,
+                   const int        spray_n_grow,
+                   const int        tmp_src_width,
+                   const int        amr_iteration,
+                   const int        amr_ncycle,
+                   amrex::MultiFab& tmp_spray_source)
+{
+  theSprayPC()->moveKick(
+    Sborder, tmp_spray_source,
+    level, dt, time, false, false,
+    spray_n_grow, tmp_src_width);
+
+  // Virtual particles will be recreated, so we need not kick them.
+  // TODO: Is this true with SDC iterations??
+  // Ghost particles need to be kicked except during the final iteration.
+  if (amr_iteration != amr_ncycle && theGhostPC() != 0)
+    theGhostPC()->moveKick(
+      Sborder, tmp_spray_source,
+      level, dt, time, false, true,
+      spray_n_grow, tmp_src_width);
+  theSprayPC()->transferSource(
+    tmp_src_width, level, tmp_spray_source, *new_sources[spray_src]);
+}
+
 // TODO: This has not been checked or updated, use with caution
 std::unique_ptr<MultiFab>
 PeleC::particleDerive(const std::string& name, Real time, int ngrow)
