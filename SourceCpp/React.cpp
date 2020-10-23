@@ -96,15 +96,17 @@ PeleC::react_state(
       const int do_update =
         react_init ? 0 : 1; // TODO: Update here? Or just get reaction source?
 
-      amrex::Real wt = amrex::ParallelDescriptor::second(); //timing for each fab
+      amrex::Real wt =
+        amrex::ParallelDescriptor::second(); // timing for each fab
 #ifdef PELEC_USE_EB
       const auto& flag_fab = flags[mfi];
       amrex::FabType typ = flag_fab.getType(bx);
       if (typ == amrex::FabType::covered) {
         if (do_react_load_balance) {
-	    wt=0.0;
-            get_new_data(Work_Estimate_Type)[mfi].plus<amrex::RunOn::Device>(wt,vbox);
-          }
+          wt = 0.0;
+          get_new_data(Work_Estimate_Type)[mfi].plus<amrex::RunOn::Device>(
+            wt, vbox);
+        }
         continue;
       } else if (
         typ == amrex::FabType::singlevalued || typ == amrex::FabType::regular)
@@ -284,11 +286,22 @@ PeleC::react_state(
                 a(i, j, k, UEDEN);
             });
 
+#ifdef USE_CUDA_SUNDIALS_PP
+          cudaFree(rY_in);
+          cudaFree(rY_src_in);
+          cudaFree(re_in);
+          cudaFree(re_src_in);
+#else
+          delete[] rY_in;
+          delete[] rY_src_in;
+          delete[] re_in;
+          delete[] re_src_in;
+#endif
           wt = (amrex::ParallelDescriptor::second() - wt) / bx.d_numPts();
 
-
           if (do_react_load_balance) {
-            get_new_data(Work_Estimate_Type)[mfi].plus<amrex::RunOn::Device>(wt,vbox);
+            get_new_data(Work_Estimate_Type)[mfi].plus<amrex::RunOn::Device>(
+              wt, vbox);
           }
 #else
           amrex::Abort(
