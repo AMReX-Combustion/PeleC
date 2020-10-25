@@ -125,7 +125,7 @@ PeleC::do_mol_advance(
   // We must make a temporary spray source term to ensure number of ghost
   // cells are correct
   amrex::MultiFab tmp_spray_source(
-    grids,dmap, NVAR, tmp_src_width, amrex::MFInfo(), Factory());
+    grids, dmap, NVAR, tmp_src_width, amrex::MFInfo(), Factory());
   tmp_spray_source.setVal(0.);
   old_sources[spray_src]->setVal(0.);
   if (do_spray_particles) {
@@ -176,9 +176,8 @@ PeleC::do_mol_advance(
 #ifdef AMREX_PARTICLES
   new_sources[spray_src]->setVal(0.);
   if (do_spray_particles) {
-    amrex::Real newtime = time + dt;
     particleMK(
-      newtime, dt, spray_n_grow, tmp_src_width, amr_iteration, amr_ncycle, tmp_spray_source);
+      time + dt, dt, spray_n_grow, tmp_src_width, amr_iteration, amr_ncycle, tmp_spray_source);
     amrex::MultiFab::Saxpy(S, 1.0, *new_sources[spray_src], 0, 0, NVAR, 0);
   }
 #endif
@@ -229,7 +228,7 @@ PeleC::do_mol_advance(
         amrex::Print() << "... Re-computing MOL source term at t^{n+1} (iter = "
                        << mol_iter << " of " << mol_iters << ")" << std::endl;
       }
-      FillPatch(*this, Sborder, nGrowTr, time + dt, State_Type, 0, NVAR);
+      FillPatch(*this, Sborder, nGrow_Sborder, time + dt, State_Type, 0, NVAR);
       flux_factor = mol_iter == mol_iters ? 1 : 0;
       getMOLSrcTerm(Sborder, S_new, time, dt, flux_factor);
 
@@ -423,7 +422,7 @@ PeleC::do_sdc_iteration(
   // We must make a temporary spray source term to ensure number of ghost
   // cells are correct
   amrex::MultiFab tmp_spray_source(
-    grids,dmap, NVAR, tmp_src_width, amrex::MFInfo(), Factory());
+    grids, dmap, NVAR, tmp_src_width, amrex::MFInfo(), Factory());
   tmp_spray_source.setVal(0.);
 #endif
   if (sub_iteration == 0) {
@@ -434,6 +433,7 @@ PeleC::do_sdc_iteration(
     //  based on old-time velocity field
     //
     // TODO: Maybe move this mess into construct_old_source?
+    old_sources[spray_src]->setVal(0.);
     if (do_spray_particles)
       particleMKD(
         use_virt_parts, use_ghost_parts, time, dt, ghost_width, spray_n_grow,
@@ -522,6 +522,7 @@ PeleC::do_sdc_iteration(
   }
 
 #ifdef AMREX_PARTICLES
+  new_sources[spray_src]->setVal(0.);
   if (do_spray_particles) {
     // Advance the particle velocities by dt/2 to the new time.
     if (particle_verbose)
@@ -530,7 +531,6 @@ PeleC::do_sdc_iteration(
     if (!do_diffuse) { // Else, this was already done above.  No need to redo
       FillPatch(*this, Sborder, nGrow_Sborder, time + dt, State_Type, 0, NVAR);
     }
-
     particleMK(
       time + dt, dt, spray_n_grow, tmp_src_width, amr_iteration, amr_ncycle, tmp_spray_source);
   }
