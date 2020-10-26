@@ -1834,15 +1834,15 @@ PeleC::init_reactor()
 #ifdef USE_SUNDIALS_PP
   int reactor_type = 1;
   int ode_ncells = 1;
-#ifndef USE_CUDA_SUNDIALS_PP
+#ifdef AMREX_USE_CUDA
+  reactor_info(reactor_type, ode_ncells);
+#else
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
   {
-    reactor_init(&reactor_type, &ode_ncells);
+    reactor_init(reactor_type, ode_ncells);
   }
-#else
-  reactor_info(&reactor_type, &ode_ncells);
 #endif
 #endif
 }
