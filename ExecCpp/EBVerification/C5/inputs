@@ -1,5 +1,5 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
-max_step = 3000
+max_step = 10000
 #max_step = 2
 stop_time = 3e-2
 
@@ -65,7 +65,7 @@ amr.check_int       = -1       # number of timesteps between checkpoints
 amr.plot_files_output = 1
 amr.plot_file       = plt
 amr.plot_int        = 100
-#amr.plot_int        = 1
+#amr.plot_int        = 2
 amr.derive_plot_vars=ALL
 
 #extruded triangles lets the user create a maximum of 5 triangles 
@@ -75,6 +75,10 @@ amr.derive_plot_vars=ALL
 eb2.geom_type = "plane"
 eb2.plane_point = 0.025 0 0 
 eb2.plane_normal = -1.0 0.2 0.2
+# eb2.geom_type = "sphere"
+# eb2.sphere_center = 0.05 0 0
+# eb2.sphere_radius = 0.025
+# eb2.sphere_has_fluid_inside = 1
 
 ebd.boundary_grad_stencil_type = 0
 #fabarray.mfiter_tile_size = 1024 1024 1024
