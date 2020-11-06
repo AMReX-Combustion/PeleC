@@ -72,10 +72,9 @@ pc_expl_reactions(
   const int i,
   const int j,
   const int k,
-  amrex::Array4<const amrex::Real> const& uold,
-  amrex::Array4<amrex::Real> const& unew,
-  amrex::Array4<const amrex::Real> const& asrc,
-  amrex::Array4<amrex::Real> const& cost,
+  amrex::Array4<const amrex::Real> const& sold,
+  amrex::Array4<amrex::Real> const& snew,
+  amrex::Array4<const amrex::Real> const& nr_src,
   amrex::Array4<amrex::Real> const& IR,
   const amrex::Real dt_react,
   const int nsteps_min,
@@ -115,50 +114,59 @@ pc_expl_reactions(
 #endif
 
   // compute rhoe_ext/rhoy_ext
-  amrex::Real rhou = uold(i, j, k, UMX), rhov = uold(i, j, k, UMY),
-              rhow = uold(i, j, k, UMZ);
-  amrex::Real rho_old = uold(i, j, k, URHO);
+  
+  //work on old state
+  amrex::Real rhou = sold(i, j, k, UMX), 
+              rhov = sold(i, j, k, UMY),
+              rhow = sold(i, j, k, UMZ);
+  amrex::Real rho_old = sold(i, j, k, URHO);
   amrex::Real rhoInv = 1.0 / rho_old;
 
+  //ideally rho and rho_old are the same
   amrex::Real rho = 0.;
-
   for (int n = UFS; n < UFS + NUM_SPECIES; n++)
-    rho += uold(i, j, k, n);
+    rho += sold(i, j, k, n);
 
-  amrex::Real nrg =
-    (uold(i, j, k, UEDEN) -
+  amrex::Real e_old =
+    (sold(i, j, k, UEDEN) -
      (0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv)) *
     rhoInv;
-  rhou = unew(i, j, k, UMX);
-  rhov = unew(i, j, k, UMY);
-  rhow = unew(i, j, k, UMZ);
-  rhoInv = 1.0 / unew(i, j, k, URHO);
+
+  //work on new state
+  rhou = snew(i, j, k, UMX);
+  rhov = snew(i, j, k, UMY);
+  rhow = snew(i, j, k, UMZ);
+  rhoInv = 1.0 / snew(i, j, k, URHO);
 
   amrex::Real rhoedot_ext =
-    ((unew(i, j, k, UEDEN) -
+    ((snew(i, j, k, UEDEN) -
       (0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv)) -
-     rho * nrg) /
+     rho_old * e_old) /
     dt_react;
 
   amrex::Real rhoydot_ext[NUM_SPECIES];
   for (int n = 0; n < NUM_SPECIES; n++)
-    rhoydot_ext[n] = asrc(i, j, k, UFS + n);
+    rhoydot_ext[n] = nr_src(i, j, k, UFS + n);
 
   // RK dts
   amrex::Real dt_rk = dt_react / nsteps_guess;
   const amrex::Real dt_min = dt_react / nsteps_max;
   const amrex::Real dt_max = dt_react / nsteps_min;
   amrex::Real updt_time = 0.0;
+
   amrex::Real urk[NVAR];
   amrex::Real urk_carryover[NVAR] = {};
   for (int n = 0; n < NVAR; ++n)
-    urk[n] = uold(i, j, k, n);
+    urk[n] = sold(i, j, k, n);
   amrex::Real urk_err[NVAR] = {};
 
-  amrex::Real rhoe_carryover = rho * nrg;
-  amrex::Real rhoe_rk = rho * nrg;
+  //using rho instead of rho_old for
+  //being consistent with rho update inside 
+  //reaction time-stepping
+  amrex::Real rhoe_carryover = rho * e_old;
+  amrex::Real rhoe_rk = rho * e_old;
 
-  // Do the RK!
+  // Do RK time-stepping
   int steps = 0;
   while (updt_time < dt_react) {
     for (int n = 0; n < NVAR; n++) {
@@ -175,8 +183,8 @@ pc_expl_reactions(
       for (int n = 0; n < NUM_SPECIES; ++n) {
         massfrac[n] = urk[UFS + n] * rhoInv;
       }
-      EOS::RTY2WDOT(
-        urk[URHO], urk[UTEMP], massfrac, wdot); // this is wdot*molecularweights
+
+      EOS::RTY2WDOT(urk[URHO], urk[UTEMP], massfrac, wdot); 
 
       amrex::Real Temp_rk;
       EOS::EY2T(rhoe_rk / urk[URHO], massfrac, Temp_rk);
@@ -184,12 +192,13 @@ pc_expl_reactions(
       for (int n = 0; n < NUM_SPECIES; ++n)
         wdot[n] += rhoydot_ext[n];
 
+      amrex::Real cv;
+      EOS::TY2Cv(urk[UTEMP], massfrac, cv);
       EOS::T2Ei(Temp_rk, ei);
+
       amrex::Real tempsrc = rhoedot_ext;
       for (int n = 0; n < NUM_SPECIES; ++n)
         tempsrc -= wdot[n] * ei[n];
-      amrex::Real cv;
-      EOS::TY2Cv(urk[UTEMP], massfrac, cv);
       tempsrc /= (urk[URHO] * cv);
 
       /*================== Update urk_err =================== */
@@ -232,42 +241,46 @@ pc_expl_reactions(
     steps += 1;
     adapt_timestep(urk_err, dt_max, dt_rk, dt_min, errtol);
   } // end timestep loop
-  cost(i, j, k) = steps;
 
-  // Add drhoY/dt to reactions MultiFab and update unew if needed
-  amrex::Real umnew = uold(i, j, k, UMX) + dt_react * asrc(i, j, k, UMX);
-  amrex::Real vmnew = uold(i, j, k, UMY) + dt_react * asrc(i, j, k, UMY);
-  amrex::Real wmnew = uold(i, j, k, UMZ) + dt_react * asrc(i, j, k, UMZ);
+  // Add drhoY/dt to reactions MultiFab and update snew if needed
+  amrex::Real umnew = sold(i, j, k, UMX) + dt_react * nr_src(i, j, k, UMX);
+  amrex::Real vmnew = sold(i, j, k, UMY) + dt_react * nr_src(i, j, k, UMY);
+  amrex::Real wmnew = sold(i, j, k, UMZ) + dt_react * nr_src(i, j, k, UMZ);
 
   if (do_update) {
-    unew(i, j, k, URHO) = urk[URHO];
-    unew(i, j, k, UMX) = umnew;
-    unew(i, j, k, UMY) = vmnew;
-    unew(i, j, k, UMZ) = wmnew;
-    unew(i, j, k, UTEMP) = urk[UTEMP];
+    snew(i, j, k, URHO) = urk[URHO];
+    snew(i, j, k, UMX) = umnew;
+    snew(i, j, k, UMY) = vmnew;
+    snew(i, j, k, UMZ) = wmnew;
+    snew(i, j, k, UTEMP) = urk[UTEMP];
     for (int n = 0; n < NUM_SPECIES; ++n) {
-      unew(i, j, k, UFS + n) = urk[UFS + n];
+      snew(i, j, k, UFS + n) = urk[UFS + n];
     }
+    snew(i, j, k, UEINT) = (e_old * rho_old) + dt_react * rhoedot_ext;
+    snew(i, j, k, UEDEN) = snew(i, j, k, UEINT) + 
+	0.5 * (umnew * umnew + vmnew * vmnew + wmnew * wmnew) / urk[URHO];
   }
 
+  //we are using urk instead of snew because snew is updated only
+  //if do_update is true
   for (int n = 0; n < NUM_SPECIES; ++n) {
     IR(i, j, k, n) =
-      (urk[UFS + n] - uold(i, j, k, UFS + n)) / dt_react - rhoydot_ext[n];
+      (urk[UFS+n] - sold(i, j, k, UFS + n)) / dt_react - rhoydot_ext[n];
   }
   IR(i, j, k, NUM_SPECIES) =
-    ((nrg * rho_old) + dt_react * rhoedot_ext +
+    ((e_old * rho_old) + dt_react * rhoedot_ext +
      0.5 * (umnew * umnew + vmnew * vmnew + wmnew * wmnew) / urk[URHO] -
-     uold(i, j, k, UEDEN)) /
+     sold(i, j, k, UEDEN)) /
       dt_react -
-    asrc(i, j, k, UEDEN);
+    nr_src(i, j, k, UEDEN);
   /*    if(i==22 && j == 23 && k == 208){
           std::cout<<std::setprecision(17);
           amrex::Print()<< IR(i,j,k,NUM_SPECIES) << '\t' << (nrg*rho_old) +
      dt_react*rhoedot_ext
                                                   + 0.5*(umnew*umnew +
      vmnew*vmnew + wmnew*wmnew)/urk[URHO] << '\t'
-                                                 << -uold(i,j,k,UEDEN) << '\t'
-     << -asrc(i,j,k,UEDEN) << std::endl; std::cin.get();
+                                                 << -sold(i,j,k,UEDEN) << '\t'
+     << -nr_src(i,j,k,UEDEN) << std::endl; std::cin.get();
       } */
 }
 
