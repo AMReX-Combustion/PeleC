@@ -2,9 +2,9 @@ name: PeleC-CI
 
 on:
   push:
-    branches: [hari/refactor]
+    branches: [development]
   pull_request:
-    branches: [hari/refactor]
+    branches: [development]
 
 env:
   CXX_COMPILER: mpicxx
