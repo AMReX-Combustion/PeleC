@@ -97,9 +97,6 @@ PeleC::react_state(
       //new state
       auto const& snew_arr = S_new.array(mfi);
       auto const& nonrs_arr = non_react_src->array(mfi);
-      amrex::FArrayBox fabcost(bx, 1);
-      amrex::Elixir fabcost_eli = fabcost.elixir();
-      auto const& fabcost_arr = w.array();
       auto const& I_R = react_src.array(mfi);
       
       //only update beyond first step
@@ -136,7 +133,7 @@ PeleC::react_state(
           amrex::ParallelFor(
             bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
               pc_expl_reactions(
-                i, j, k, sold_arr, snew_arr nonrs_arr, 
+                i, j, k, sold_arr, snew_arr, nonrs_arr, 
 		I_R, dt, nsubsteps_min,
                 nsubsteps_max, nsubsteps_guess, errtol, do_update);
             });
@@ -146,7 +143,7 @@ PeleC::react_state(
           const auto lo = amrex::lbound(bx);
           const int ncells = len.x * len.y * len.z;
           int reactor_type = 1;
-          amrex::Real sundials_cost;
+          amrex::Real chemintg_cost;
           amrex::Real current_time = 0.0;
 
           amrex::Real* rY_in;
@@ -182,27 +179,22 @@ PeleC::react_state(
               amrex::Real rho_old = sold_arr(i, j, k, URHO);
               amrex::Real rhoInv = 1.0 / rho_old;
 
-              //ideally rho and rho_old will be the same
-              amrex::Real rho = 0.;
-              for (int nsp = UFS; nsp < (UFS + NUM_SPECIES); nsp++) {
-                rho += sold_arr(i, j, k, nsp);
-              }
-
               amrex::Real e_old =
-                (sold_arr(i, j, k, UEDEN) -
-                 (0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv)) *
-                rhoInv;
+                (  sold_arr(i, j, k, UEDEN) //total energy
+                 - 0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv ) //KE
+                 * rhoInv;
 
+              //work on new state
               rhou = snew_arr(i, j, k, UMX);
               rhov = snew_arr(i, j, k, UMY);
               rhow = snew_arr(i, j, k, UMZ);
               rhoInv = 1.0 / snew_arr(i, j, k, URHO);
 
               amrex::Real rhoedot_ext =
-                ((unew(i, j, k, UEDEN) -
-                  (0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv)) -
-                 rho_old * e_old) /
-                dt;
+                (  snew_arr(i, j, k, UEDEN) //new total energy
+                 - 0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv //new KE
+                 - rho_old * e_old)
+                 / dt;
 
               int offset =
                 (k - lo.z) * len.x * len.y + (j - lo.y) * len.x + (i - lo.x);
@@ -220,52 +212,48 @@ PeleC::react_state(
 #ifdef AMREX_USE_CUDA
           cuda_status = cudaStreamSynchronize(amrex::Gpu::gpuStream());
 #endif
-          sundials_cost = 0.0;
+          chemintg_cost = 0.0;
           for (int i = 0; i < ncells; i += ode_ncells) {
 
 #ifdef AMREX_USE_CUDA
-            sundials_cost += react(
+            chemintg_cost += react(
               rY_in + i * (NUM_SPECIES + 1), rY_src_in + i * NUM_SPECIES,
               re_in + i, re_src_in + i, &dt, &current_time, reactor_type,
               ode_ncells, amrex::Gpu::gpuStream());
 #else
-            sundials_cost += react(
+            chemintg_cost += react(
               rY_in + i * (NUM_SPECIES + 1), rY_src_in + i * NUM_SPECIES,
               re_in + i, re_src_in + i, dt, current_time);
 #endif
           }
-          sundials_cost = sundials_cost / ncells;
+          chemintg_cost = chemintg_cost / ncells;
 
           // unpack data
           amrex::ParallelFor(
             bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+
+	      //work on old state
               amrex::Real rhou    = sold_arr(i, j, k, UMX);
               amrex::Real rhov    = sold_arr(i, j, k, UMY);
               amrex::Real rhow    = sold_arr(i, j, k, UMZ);
               amrex::Real rho_old = sold_arr(i, j, k, URHO);
               amrex::Real rhoInv  = 1.0 / rho_old;
 
-              //ideally rho and rho_old will be the same
-              amrex::Real rho = 0.;
-              for (int nsp = UFS; nsp < (UFS + NUM_SPECIES); nsp++) {
-                rho += sold_arr(i, j, k, nsp);
-              }
-
               amrex::Real e_old =
-                (sold_arr(i, j, k, UEDEN) -
-                 (0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv)) *
-                rhoInv;
+                (  sold_arr(i, j, k, UEDEN) //old total energy
+                 - 0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv ) //KE
+                * rhoInv;
 
-              rhou = unew(i, j, k, UMX);
-              rhov = unew(i, j, k, UMY);
-              rhow = unew(i, j, k, UMZ);
-              rhoInv = 1.0 / unew(i, j, k, URHO);
+              rhou = snew_arr(i, j, k, UMX);
+              rhov = snew_arr(i, j, k, UMY);
+              rhow = snew_arr(i, j, k, UMZ);
+              rhoInv = 1.0 / snew_arr(i, j, k, URHO);
 
               amrex::Real rhoedot_ext =
-                ((unew(i, j, k, UEDEN) -
-                  (0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv)) -
-                 rho_old * e_old) /
-                dt;
+                (  snew_arr(i, j, k, UEDEN) //new total energy
+                 - 0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv //KE
+                 - rho_old * e_old ) //old internal energy
+                 / dt;
 
               amrex::Real umnew = sold_arr(i, j, k, UMX) + dt * nonrs_arr(i, j, k, UMX);
               amrex::Real vmnew = sold_arr(i, j, k, UMY) + dt * nonrs_arr(i, j, k, UMY);
@@ -299,16 +287,15 @@ PeleC::react_state(
               }
 
               for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
-                I_R(i, j, k, nsp) = ( rY_in[offset * (NUM_SPECIES + 1) + nsp] -
-                                     sold_arr(i, j, k, UFS + nsp)) /
-                                      dt - nonrs_arr(i, j, k, UFS + nsp);
+                I_R(i, j, k, nsp) = (  rY_in[offset * (NUM_SPECIES + 1) + nsp] //new rhoy
+                                      - sold_arr(i, j, k, UFS + nsp) )  //old rhoy
+                                      / dt - nonrs_arr(i, j, k, UFS + nsp);
               }
               I_R(i, j, k, NUM_SPECIES) =
-                ((e_old * rho_old) + dt * rhoedot_ext +
-                 0.5 * (umnew * umnew + vmnew * vmnew + wmnew * wmnew) /
-                   rhonew -
-                 sold_arr(i, j, k, UEDEN)) /
-                  dt -
+                (  rho_old * e_old + dt * rhoedot_ext //new internal energy
+                 + 0.5 * (umnew * umnew + vmnew * vmnew + wmnew * wmnew)/rhonew //new KE
+                 - sold_arr(i, j, k, UEDEN) ) //old total energy
+                 / dt -
                 nonrs_arr(i, j, k, UEDEN);
             });
 

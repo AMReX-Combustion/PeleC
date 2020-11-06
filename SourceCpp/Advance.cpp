@@ -156,19 +156,19 @@ PeleC::do_mol_advance(
 
   // U^{n+1.**} = 0.5*(U^n + U^{n+1,*}) + 0.5*dt*S^{n+1} = U^n + 0.5*dt*S^n +
   // 0.5*dt*S^{n+1} + 0.5*dt*I_R
-  amrex::MultiFab::LinComb(U_new, 0.5, Sborder, 0, 0.5, S_old, 0, 0, NVAR, 0);
+  amrex::MultiFab::LinComb(S_new, 0.5, Sborder, 0, 0.5, S_old, 0, 0, NVAR, 0);
   amrex::MultiFab::Saxpy(
-    U_new, 0.5 * dt, molSrc, 0, 0, NVAR,
+    S_new, 0.5 * dt, molSrc, 0, 0, NVAR,
     0); //  NOTE: If I_R=0, we are done and U_new is the final new-time state
 
 #ifdef PELEC_USE_REACTIONS
   if (do_react == 1) {
-    amrex::MultiFab::Saxpy(U_new, 0.5 * dt, I_R, 0, FirstSpec, NUM_SPECIES, 0);
-    amrex::MultiFab::Saxpy(U_new, 0.5 * dt, I_R, NUM_SPECIES, Eden, 1, 0);
+    amrex::MultiFab::Saxpy(S_new, 0.5 * dt, I_R, 0, FirstSpec, NUM_SPECIES, 0);
+    amrex::MultiFab::Saxpy(S_new, 0.5 * dt, I_R, NUM_SPECIES, Eden, 1, 0);
 
     // F_{AD} = (1/dt)(U^{n+1,**} - U^n) - I_R = 0.5*(S^{n}+S^{n+1}(which is a guess!))
     amrex::MultiFab::LinComb(
-      molSrc, 1.0 / dt, U_new, 0, -1.0 / dt, U_old, 0, 0, NVAR, 0);
+      molSrc, 1.0 / dt, S_new, 0, -1.0 / dt, S_old, 0, 0, NVAR, 0);
     amrex::MultiFab::Subtract(molSrc, I_R, 0, FirstSpec, NUM_SPECIES, 0);
     amrex::MultiFab::Subtract(molSrc, I_R, NUM_SPECIES, Eden, 1, 0);
 
@@ -196,7 +196,7 @@ PeleC::do_mol_advance(
       // Compute I_R and U^{n+1} = U^n + dt*(F_{AD} + I_R)
       react_state(time, dt, false, &molSrc);
 
-      computeTemp(U_new, 0);
+      computeTemp(S_new, 0);
     }
   }
 #endif

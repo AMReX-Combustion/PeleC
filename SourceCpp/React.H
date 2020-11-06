@@ -140,7 +140,7 @@ pc_expl_reactions(
 
   amrex::Real rhoedot_ext =
     ((snew(i, j, k, UEDEN) -
-      (0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv)) -
+      0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv) -
      rho_old * e_old) /
     dt_react;
 
@@ -191,11 +191,15 @@ pc_expl_reactions(
 
       for (int n = 0; n < NUM_SPECIES; ++n)
         wdot[n] += rhoydot_ext[n];
-
+       
+      //get mixture specific heat
       amrex::Real cv;
       EOS::TY2Cv(urk[UTEMP], massfrac, cv);
+
+      //get species internal energies
       EOS::T2Ei(Temp_rk, ei);
 
+      //update temperature eqn source term
       amrex::Real tempsrc = rhoedot_ext;
       for (int n = 0; n < NUM_SPECIES; ++n)
         tempsrc -= wdot[n] * ei[n];
@@ -256,32 +260,25 @@ pc_expl_reactions(
     for (int n = 0; n < NUM_SPECIES; ++n) {
       snew(i, j, k, UFS + n) = urk[UFS + n];
     }
-    snew(i, j, k, UEINT) = (e_old * rho_old) + dt_react * rhoedot_ext;
+    //old rhoe + source*dt
+    snew(i, j, k, UEINT) = rho_old * e_old + dt_react * rhoedot_ext; 
+    //total new energy
     snew(i, j, k, UEDEN) = snew(i, j, k, UEINT) + 
 	0.5 * (umnew * umnew + vmnew * vmnew + wmnew * wmnew) / urk[URHO];
   }
 
-  //we are using urk instead of snew because snew is updated only
+  //we are using urk instead of snew here because snew is updated only
   //if do_update is true
   for (int n = 0; n < NUM_SPECIES; ++n) {
     IR(i, j, k, n) =
-      (urk[UFS+n] - sold(i, j, k, UFS + n)) / dt_react - rhoydot_ext[n];
+      (urk[UFS + n] - sold(i, j, k, UFS + n)) / dt_react - rhoydot_ext[n];
   }
   IR(i, j, k, NUM_SPECIES) =
-    ((e_old * rho_old) + dt_react * rhoedot_ext +
-     0.5 * (umnew * umnew + vmnew * vmnew + wmnew * wmnew) / urk[URHO] -
-     sold(i, j, k, UEDEN)) /
-      dt_react -
-    nr_src(i, j, k, UEDEN);
-  /*    if(i==22 && j == 23 && k == 208){
-          std::cout<<std::setprecision(17);
-          amrex::Print()<< IR(i,j,k,NUM_SPECIES) << '\t' << (nrg*rho_old) +
-     dt_react*rhoedot_ext
-                                                  + 0.5*(umnew*umnew +
-     vmnew*vmnew + wmnew*wmnew)/urk[URHO] << '\t'
-                                                 << -sold(i,j,k,UEDEN) << '\t'
-     << -nr_src(i,j,k,UEDEN) << std::endl; std::cin.get();
-      } */
+      (  rho_old*e_old + dt_react * rhoedot_ext  //new internal energy
+       + 0.5 * (umnew * umnew + vmnew * vmnew + wmnew * wmnew) / urk[URHO] //new KE
+       - sold(i, j, k, UEDEN) ) //old total energy
+       / dt_react -
+       nr_src(i, j, k, UEDEN);
 }
 
 #endif
