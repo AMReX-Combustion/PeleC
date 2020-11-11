@@ -111,7 +111,6 @@ ifeq ($(USE_EB), TRUE)
 endif
 
 ifeq ($(USE_PARTICLES), TRUE)
-  DEFINES+=-DAMREX_PARTICLES
   Pdirs += Particle
   DEFINES+=-DSPRAY_FUEL_NUM=$(SPRAY_FUEL_NUM)
   ifeq ($(USE_SPRAY_SOA), TRUE)
@@ -119,8 +118,6 @@ ifeq ($(USE_PARTICLES), TRUE)
   endif
   Bpack   += $(PELEC_MP_HOME)/Source/PP_Spray/Make.package
   Blocs   += $(PELEC_MP_HOME)/Source/PP_Spray
-  INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/Particle
-  VPATH_LOCATIONS   += $(AMREX_HOME)/Src/Particle
 endif
 
 ifeq ($(USE_SOOT), TRUE)

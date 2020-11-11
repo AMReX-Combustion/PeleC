@@ -30,6 +30,7 @@ Gpu::HostVector<Real> sprayCp;
 Gpu::HostVector<Real> sprayLatent;
 Gpu::HostVector<int> sprayIndxMap;
 amrex::Real parcelSize = 1.;
+amrex::GpuArray<int, SprayComps::NumIndx> scomps;
 
 void
 RemoveParticlesOnExit()
@@ -236,6 +237,19 @@ PeleC::defineParticles()
     sprayIndxMap[ns] = 0;
   }
 #endif
+  scomps[SprayComps::heat_tran] = PeleC::particle_heat_tran;
+  scomps[SprayComps::mass_tran] = PeleC::particle_mass_tran;
+  scomps[SprayComps::mom_tran] = PeleC::particle_mom_tran;
+  scomps[SprayComps::pstateVel] = PeleC::pstateVel;
+  scomps[SprayComps::pstateT] = PeleC::pstateT;
+  scomps[SprayComps::pstateRho] = PeleC::pstateRho;
+  scomps[SprayComps::pstateDia] = PeleC::pstateDia;
+  scomps[SprayComps::pstateY] = PeleC::pstateY;
+  scomps[SprayComps::rhoIndx] = PeleC::Density;
+  scomps[SprayComps::momIndx] = PeleC::Xmom;
+  scomps[SprayComps::engIndx] = PeleC::Eden;
+  scomps[SprayComps::utempIndx] = PeleC::Temp;
+  scomps[SprayComps::specIndx] = PeleC::FirstSpec;
 }
 
 void
@@ -330,18 +344,18 @@ PeleC::initParticles()
     }
     // Pass constant reference data and memory allocations to GPU
     theSprayPC()->buildFuelData(
-      sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
+      sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT, scomps);
     if (gvParticles) {
       theGhostPC()->buildFuelData(
-        sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
+        sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT, scomps);
       theVirtPC()->buildFuelData(
-        sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
+        sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT, scomps);
     }
 
     if (!particle_init_file.empty()) {
       theSprayPC()->InitFromAsciiFile(particle_init_file, NSR_SPR + NAR_SPR);
     } else if (particle_init_function > 0) {
-      theSprayPC()->InitSprayParticles(this, level, particle_init_function);
+      theSprayPC()->InitSprayParticles();
     }
   }
 }
@@ -358,15 +372,15 @@ PeleC::particlePostRestart(const std::string& restart_file, bool is_checkpoint)
     SprayPC = new SprayParticleContainer(parent, &phys_bc, parcelSize);
     theSprayPC()->SetVerbose(particle_verbose);
     theSprayPC()->buildFuelData(
-      sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
+      sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT, scomps);
 
     if (parent->subCycle()) {
       VirtPC = new SprayParticleContainer(parent, &phys_bc, parcelSize);
       GhostPC = new SprayParticleContainer(parent, &phys_bc, parcelSize);
       theGhostPC()->buildFuelData(
-        sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
+        sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT, scomps);
       theVirtPC()->buildFuelData(
-        sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
+        sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT, scomps);
     }
 
     //

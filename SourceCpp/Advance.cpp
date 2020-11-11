@@ -127,8 +127,8 @@ PeleC::do_mol_advance(
   amrex::MultiFab tmp_spray_source(
     grids, dmap, NVAR, tmp_src_width, amrex::MFInfo(), Factory());
   tmp_spray_source.setVal(0.);
-  old_sources[spray_src]->setVal(0.);
   if (do_spray_particles) {
+    old_sources[spray_src]->setVal(0.);
     particleMKD(
       use_virt_parts, use_ghost_parts, time, dt, ghost_width, spray_n_grow,
       tmp_src_width, where_width, tmp_spray_source);
@@ -174,8 +174,8 @@ PeleC::do_mol_advance(
   getMOLSrcTerm(Sborder, S, time, dt, flux_factor);
 
 #ifdef AMREX_PARTICLES
-  new_sources[spray_src]->setVal(0.);
   if (do_spray_particles) {
+    new_sources[spray_src]->setVal(0.);
     particleMK(
       time + dt, dt, spray_n_grow, tmp_src_width, amr_iteration, amr_ncycle, tmp_spray_source);
     amrex::MultiFab::Saxpy(S, 1.0, *new_sources[spray_src], 0, 0, NVAR, 0);
@@ -433,11 +433,12 @@ PeleC::do_sdc_iteration(
     //  based on old-time velocity field
     //
     // TODO: Maybe move this mess into construct_old_source?
-    old_sources[spray_src]->setVal(0.);
-    if (do_spray_particles)
+    if (do_spray_particles) {
+      old_sources[spray_src]->setVal(0.);
       particleMKD(
         use_virt_parts, use_ghost_parts, time, dt, ghost_width, spray_n_grow,
         tmp_src_width, where_width, tmp_spray_source);
+    }
 
 #endif
 
@@ -522,8 +523,8 @@ PeleC::do_sdc_iteration(
   }
 
 #ifdef AMREX_PARTICLES
-  new_sources[spray_src]->setVal(0.);
   if (do_spray_particles) {
+    new_sources[spray_src]->setVal(0.);
     // Advance the particle velocities by dt/2 to the new time.
     if (particle_verbose)
       amrex::Print() << "moveKick ... updating velocity only\n";
