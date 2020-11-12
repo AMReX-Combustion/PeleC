@@ -36,9 +36,6 @@ Transport_dir := Constant
 #Chemistry_Model := LiDryer
 #Transport_dir := Simple
 #USE_SUNDIALS_PP = FALSE
-#USE_SUNDIALS_PP = TRUE
-#SUNDIALS_LIB_DIR = /home/bperry/PDRs/opt/sundials-4/lib64
-
 
 # GNU Make
 Bpack := ./Make.package
