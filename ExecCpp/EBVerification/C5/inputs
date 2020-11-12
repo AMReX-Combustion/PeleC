@@ -54,7 +54,7 @@ amr.max_level       = 0       # maximum level number allowed
 amr.ref_ratio       = 2 2 2 2 # refinement ratio
 amr.regrid_int      = 2       # how often to regrid
 amr.blocking_factor = 4       # block factor in grid generation
-amr.max_grid_size   = 4 
+amr.max_grid_size   = 4
 
 # CHECKPOINT FILES
 amr.checkpoint_files_output = 0
@@ -71,10 +71,9 @@ amr.derive_plot_vars=ALL
 #extruded triangles lets the user create a maximum of 5 triangles 
 #in 2D that will be extruded in the z direction
 #make sure the coordinates are in anti-clockwise direction 
-#eb2.geom_type = "all_regular"
 eb2.geom_type = "plane"
-eb2.plane_point = 0.025 0 0 
-eb2.plane_normal = -1.0 0.2 0.2
+eb2.plane_point = 0.053125 0 0
+eb2.plane_normal = 1.0 -1.0 0
 # eb2.geom_type = "sphere"
 # eb2.sphere_center = 0.05 0 0
 # eb2.sphere_radius = 0.025

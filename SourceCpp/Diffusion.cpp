@@ -136,6 +136,10 @@ PeleC::getMOLSrcTerm(
         }
         continue;
       }
+      // Note on typ: if interior cells (vbox) are all covered, no need to
+      // do anything. But otherwise, we need to do EB stuff if there are any
+      // cut cells within 1 grow cell (cbox) due to fix_div_and_redistribute
+      typ = flag_fab.getType(cbox);
 
       // TODO: Add check that this is nextra-1
       //       (better: fix bounds on ebflux computation in hyperbolic routine

@@ -24,16 +24,18 @@ FSANITIZER = FALSE
 THREAD_SANITIZER = FALSE
 
 # PeleC
-USE_REACT = TRUE
+USE_REACT = FALSE
 USE_EB = TRUE
-Eos_dir := Fuego
-Reactions_dir := Fuego
-Chemistry_Model := LiDryer
-Transport_dir := Simple
-USE_SUNDIALS_PP = FALSE
-#USE_SUNDIALS_PP = TRUE
-#SUNDIALS_LIB_DIR = /home/bperry/PDRs/opt/sundials-4/lib64
 
+Eos_dir := GammaLaw
+Chemistry_Model := Null
+Transport_dir := Constant
+
+#Eos_dir := Fuego
+#Reactions_dir := Fuego
+#Chemistry_Model := LiDryer
+#Transport_dir := Simple
+#USE_SUNDIALS_PP = FALSE
 
 # GNU Make
 Bpack := ./Make.package
