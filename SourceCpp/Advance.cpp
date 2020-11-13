@@ -135,7 +135,7 @@ PeleC::do_mol_advance(
     particleMKD(
       use_virt_parts, use_ghost_parts, time, dt, ghost_width, spray_n_grow,
       tmp_src_width, where_width, tmp_spray_source);
-    amrex::MultiFab::Saxpy(S, 1.0, *old_sources[spray_src], 0, 0, NVAR, 0);
+    amrex::MultiFab::Saxpy(molSrc, 1.0, *old_sources[spray_src], 0, 0, NVAR, 0);
   }
 #endif
   // Build other (neither spray nor diffusion) sources at t_old
@@ -183,7 +183,7 @@ PeleC::do_mol_advance(
     new_sources[spray_src]->setVal(0.);
     particleMK(
       time + dt, dt, spray_n_grow, tmp_src_width, amr_iteration, amr_ncycle, tmp_spray_source);
-    amrex::MultiFab::Saxpy(S, 1.0, *new_sources[spray_src], 0, 0, NVAR, 0);
+    amrex::MultiFab::Saxpy(molSrc, 1.0, *new_sources[spray_src], 0, 0, NVAR, 0);
   }
 #endif
 

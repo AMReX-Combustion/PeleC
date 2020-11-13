@@ -119,7 +119,7 @@ PeleC::getMOLSrcTerm(
          ++mfi) {
       const amrex::Box vbox = mfi.tilebox();
 #ifdef AMREX_PARTICLES
-      int ng = NUM_GROW;
+      int ng = NUM_GROW - 2;
 #else
       int ng = S.nGrow();
 #endif
