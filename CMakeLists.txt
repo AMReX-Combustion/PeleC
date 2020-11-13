@@ -1,7 +1,7 @@
 ############################ BASE ######################################
 
 cmake_minimum_required (VERSION 3.14 FATAL_ERROR)
-project(PeleC CXX C Fortran)
+project(PeleC CXX C)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
 include(CMakePackageConfigHelpers)
 
@@ -21,6 +21,8 @@ option(PELEC_ENABLE_FCOMPARE_FOR_TESTS "Check test plots against gold files" OFF
 option(PELEC_ENABLE_MPI "Enable MPI" OFF)
 option(PELEC_ENABLE_OPENMP "Enable OpenMP" OFF)
 option(PELEC_ENABLE_CUDA "Enable CUDA" OFF)
+option(PELEC_ENABLE_HIP "Enable HIP" OFF)
+option(PELEC_ENABLE_DPCPP "Enable DPC++" OFF)
 
 #Options for C++
 set(CMAKE_CXX_STANDARD 14)
