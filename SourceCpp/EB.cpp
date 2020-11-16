@@ -196,8 +196,8 @@ pc_fill_flux_interp_stencil(
           sten[L].val[ii][jj] = 0.0;
         }
       }
-      const amrex::Real ct0 = fc(i, j, k, 0);
-      const amrex::Real ct1 = fc(i, j, k, 1);
+      const amrex::Real ct0 = 0.0;//fc(i, j, k, 0);
+      const amrex::Real ct1 = 0.0;//fc(i, j, k, 1);
       const int t0n = (int)amrex::Math::copysign(1.0, ct0);
       const int t1n = (int)amrex::Math::copysign(1.0, ct1);
       const amrex::Real act0 = amrex::Math::abs(ct0);
