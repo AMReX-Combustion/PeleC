@@ -136,6 +136,10 @@ PeleC::getMOLSrcTerm(
         }
         continue;
       }
+      // Note on typ: if interior cells (vbox) are all covered, no need to
+      // do anything. But otherwise, we need to do EB stuff if there are any
+      // cut cells within 1 grow cell (cbox) due to fix_div_and_redistribute
+      typ = flag_fab.getType(cbox);
 
       // TODO: Add check that this is nextra-1
       //       (better: fix bounds on ebflux computation in hyperbolic routine
@@ -571,8 +575,6 @@ PeleC::getMOLSrcTerm(
       }
 #endif
 
-      copy_array4(vbox, NVAR, Dterm, MOLSrc);
-
 #ifdef PELEC_USE_EB
       // do regular flux reg ops
       if (do_reflux && flux_factor != 0 && typ == amrex::FabType::regular)
@@ -601,14 +603,6 @@ PeleC::getMOLSrcTerm(
         }
       }
 
-#ifdef PELEC_USE_EB
-      if (do_mol_load_balance) {
-        amrex::Gpu::streamSynchronize();
-        wt = (amrex::ParallelDescriptor::second() - wt) / vbox.d_numPts();
-        (*cost)[mfi].plus<amrex::RunOn::Device>(wt, vbox);
-      }
-#endif
-
       // Extrapolate to GhostCells
       if (MOLSrcTerm.nGrow() > 0) {
         BL_PROFILE("PeleC::diffextrap()");
@@ -633,6 +627,16 @@ PeleC::getMOLSrcTerm(
               AMREX_D_DECL(hx, hy, hz), dlo, dhi);
           });
       }
+
+      copy_array4(vbox, NVAR, Dterm, MOLSrc);
+
+#ifdef PELEC_USE_EB
+      if (do_mol_load_balance) {
+        amrex::Gpu::streamSynchronize();
+        wt = (amrex::ParallelDescriptor::second() - wt) / vbox.d_numPts();
+        (*cost)[mfi].plus<amrex::RunOn::Device>(wt, vbox);
+      }
+#endif
     } // End of MFIter scope
   }   // End of OMP scope
 } // End of Function

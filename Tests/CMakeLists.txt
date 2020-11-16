@@ -7,7 +7,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/CTestCustom.cmake ${CMAKE_BINARY_DIR}
 # Set location of gold files according to system/compiler/compiler_version
 set(FCOMPARE_GOLD_FILES_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PeleCGoldFiles/${CMAKE_SYSTEM_NAME}/${CMAKE_CXX_COMPILER_ID}/${CMAKE_CXX_COMPILER_VERSION})
 
-if(TEST_WITH_FCOMPARE)
+if(PELEC_ENABLE_FCOMPARE_FOR_TESTS)
   message(STATUS "Test golds directory for fcompare: ${FCOMPARE_GOLD_FILES_DIRECTORY}")
 endif()
 
@@ -30,7 +30,7 @@ function(add_test_r TEST_NAME TEST_EXE_DIR)
     # Test plot is currently expected to be after 10 steps
     set(PLOT_TEST ${CURRENT_TEST_BINARY_DIR}/plt00010)
     # Find fcompare
-    if(TEST_WITH_FCOMPARE)
+    if(PELEC_ENABLE_FCOMPARE_FOR_TESTS)
       set(FCOMPARE ${CMAKE_BINARY_DIR}/${AMREX_SUBMOD_LOCATION}/Tools/Plotfile/fcompare)
     endif()
     # Make working directory for test
@@ -42,7 +42,7 @@ function(add_test_r TEST_NAME TEST_EXE_DIR)
     # Set some default runtime options for all tests in this category
     set(RUNTIME_OPTIONS "max_step=10 amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1 amrex.signal_handling=0")
     # Use fcompare to test diffs in plots against gold files
-    if(TEST_WITH_FCOMPARE)
+    if(PELEC_ENABLE_FCOMPARE_FOR_TESTS)
       set(FCOMPARE_COMMAND "&& ${FCOMPARE} ${PLOT_GOLD} ${PLOT_TEST}")
     endif()
     if(PELEC_ENABLE_MPI)

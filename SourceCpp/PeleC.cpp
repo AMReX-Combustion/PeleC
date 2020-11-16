@@ -210,31 +210,27 @@ PeleC::read_params()
   // Check phys_bc against possible periodic geometry
   // if periodic, must have internal BC marked.
   //
-  if (amrex::DefaultGeometry().isAnyPeriodic()) {
-    //
-    // Do idiot check.  Periodic means interior in those directions.
-    //
-    for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-      if (amrex::DefaultGeometry().isPeriodic(dir)) {
-        if (
-          lo_bc[dir] != Interior && amrex::ParallelDescriptor::IOProcessor()) {
-          std::cerr << "PeleC::read_params:periodic in direction " << dir
-                    << " but low BC is not Interior\n";
-          amrex::Error();
-        }
-        if (
-          hi_bc[dir] != Interior && amrex::ParallelDescriptor::IOProcessor()) {
-          std::cerr << "PeleC::read_params:periodic in direction " << dir
-                    << " but high BC is not Interior\n";
-          amrex::Error();
-        }
+  //
+  // Do idiot check.  Periodic means interior in those directions.
+  //
+  for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
+    if (amrex::DefaultGeometry().isPeriodic(dir)) {
+      if (
+        lo_bc[dir] != Interior && amrex::ParallelDescriptor::IOProcessor()) {
+        std::cerr << "PeleC::read_params:periodic in direction " << dir
+                  << " but low BC is not Interior\n";
+        amrex::Error();
       }
-    }
-  } else {
-    //
-    // Do idiot check.  If not periodic, should be no interior.
-    //
-    for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
+      if (
+        hi_bc[dir] != Interior && amrex::ParallelDescriptor::IOProcessor()) {
+        std::cerr << "PeleC::read_params:periodic in direction " << dir
+                  << " but high BC is not Interior\n";
+        amrex::Error();
+      }
+    } else {
+      //
+      // Do idiot check. If not periodic, should not be interior.
+      //
       if (lo_bc[dir] == Interior && amrex::ParallelDescriptor::IOProcessor()) {
         std::cerr << "PeleC::read_params:interior bc in direction " << dir
                   << " but not periodic\n";
@@ -1838,15 +1834,15 @@ PeleC::init_reactor()
 #ifdef USE_SUNDIALS_PP
   int reactor_type = 1;
   int ode_ncells = 1;
-#ifndef USE_CUDA_SUNDIALS_PP
+#ifdef AMREX_USE_CUDA
+  reactor_info(reactor_type, ode_ncells);
+#else
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
   {
-    reactor_init(&reactor_type, &ode_ncells);
+    reactor_init(reactor_type, ode_ncells);
   }
-#else
-  reactor_info(&reactor_type, &ode_ncells);
 #endif
 #endif
 }

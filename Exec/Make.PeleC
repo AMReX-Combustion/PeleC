@@ -50,6 +50,7 @@ endif
 
 # EOS
 # Both Fortran and cpp can be loaded for EOS
+USE_F90_PP := TRUE
 EOS_HOME_F90 := $(EOS_HOME)/F90
 EOS_PATH := $(EOS_HOME)/$(strip $(Eos_dir))
 EOS_PATH_F90 := $(EOS_PATH)/F90
