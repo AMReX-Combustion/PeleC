@@ -31,7 +31,7 @@ function(add_test_r TEST_NAME TEST_EXE_DIR)
     set(PLOT_TEST ${CURRENT_TEST_BINARY_DIR}/plt00010)
     # Find fcompare
     if(PELEC_ENABLE_FCOMPARE_FOR_TESTS)
-      set(FCOMPARE ${CMAKE_BINARY_DIR}/${AMREX_SUBMOD_LOCATION}/Tools/Plotfile/fcompare)
+      set(FCOMPARE ${CMAKE_BINARY_DIR}/Submodules/AMReX/Tools/Plotfile/fcompare)
     endif()
     # Make working directory for test
     file(MAKE_DIRECTORY ${CURRENT_TEST_BINARY_DIR})
