@@ -4,16 +4,16 @@
 
 class PeleCBld : public amrex::LevelBld
 {
-  virtual void variableSetUp();
-  virtual void variableCleanUp();
-  virtual amrex::AmrLevel* operator()();
-  virtual amrex::AmrLevel* operator()(
+  void variableSetUp() override;
+  void variableCleanUp() override;
+  amrex::AmrLevel* operator()() override;
+  amrex::AmrLevel* operator()(
     amrex::Amr& papa,
     int lev,
     const amrex::Geometry& level_geom,
     const amrex::BoxArray& ba,
     const amrex::DistributionMapping& dm,
-    amrex::Real time);
+    amrex::Real time) override;
 };
 
 PeleCBld PeleC_bld;

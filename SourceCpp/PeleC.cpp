@@ -215,14 +215,12 @@ PeleC::read_params()
   //
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
     if (amrex::DefaultGeometry().isPeriodic(dir)) {
-      if (
-        lo_bc[dir] != Interior && amrex::ParallelDescriptor::IOProcessor()) {
+      if (lo_bc[dir] != Interior && amrex::ParallelDescriptor::IOProcessor()) {
         std::cerr << "PeleC::read_params:periodic in direction " << dir
                   << " but low BC is not Interior\n";
         amrex::Error();
       }
-      if (
-        hi_bc[dir] != Interior && amrex::ParallelDescriptor::IOProcessor()) {
+      if (hi_bc[dir] != Interior && amrex::ParallelDescriptor::IOProcessor()) {
         std::cerr << "PeleC::read_params:periodic in direction " << dir
                   << " but high BC is not Interior\n";
         amrex::Error();
