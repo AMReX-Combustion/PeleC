@@ -15,5 +15,6 @@ cmake -DCMAKE_INSTALL_PREFIX:PATH=./install \
       -DPELEC_ENABLE_MASA:BOOL=ON \
       -DMASA_DIR:STRING=$(spack location -i masa) \
       -DPELEC_ENABLE_DOCUMENTATION:BOOL=OFF \
+      -DPYTHON_EXECUTABLE=$(which python3) \
       -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON \
       .. && make -j8
