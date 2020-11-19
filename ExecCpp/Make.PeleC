@@ -73,8 +73,6 @@ ifdef Chemistry_Model
   DEFINES += -DPELEC_EOS_FUEGO
   CHEM_HOME = $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism/Models/$(Chemistry_Model)
   Blocs += $(PELE_PHYSICS_HOME)/Support/Fuego/Evaluation
-else
-  CHEM_HOME = $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism/Models/Null
 endif
 VPATH_LOCATIONS += $(CHEM_HOME)
 Bpack += $(CHEM_HOME)/Make.package

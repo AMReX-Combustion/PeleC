@@ -1,5 +1,6 @@
+add_subdirectory(EBVerification)
 add_subdirectory(RegTests)
+add_subdirectory(Tutorials)
 if(PELEC_ENABLE_TESTS)
   add_subdirectory(UnitTests)
 endif()
-#add_subdirectory(Tutorials)

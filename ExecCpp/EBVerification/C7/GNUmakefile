@@ -1,6 +1,6 @@
 # AMReX
 DIM = 3
-COMP = gnu
+COMP = llvm
 PRECISION = DOUBLE
 
 # Profiling
@@ -26,7 +26,7 @@ THREAD_SANITIZER = FALSE
 # PeleC
 USE_EB = TRUE
 Eos_dir := GammaLaw
-Reactions_dir := Null_air
+Chemistry_Model := air
 Transport_dir := Constant
 
 # GNU Make

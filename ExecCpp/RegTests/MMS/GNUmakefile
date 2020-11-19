@@ -27,7 +27,6 @@ THREAD_SANITIZER = FALSE
 USE_REACT = FALSE
 USE_EB  = FALSE
 Eos_dir := GammaLaw
-Reactions_dir := Null
 Transport_dir := Constant
 
 # MASA

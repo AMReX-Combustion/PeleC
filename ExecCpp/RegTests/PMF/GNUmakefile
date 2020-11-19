@@ -1,6 +1,6 @@
 # AMReX
 DIM = 3
-COMP = gnu
+COMP = llvm
 PRECISION = DOUBLE
 
 # Profiling
@@ -25,11 +25,10 @@ THREAD_SANITIZER = FALSE
 
 # PeleC
 USE_REACT = TRUE
-USE_SUNDIALS_PP = FALSE
+USE_SUNDIALS_PP = TRUE
 USE_EB = FALSE
 USE_MASA = FALSE
 Eos_dir := Fuego
-Reactions_dir := Fuego
 Chemistry_Model := LiDryer
 Transport_dir := Simple
 

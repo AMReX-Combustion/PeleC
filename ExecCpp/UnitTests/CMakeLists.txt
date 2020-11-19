@@ -4,7 +4,6 @@ set(pelec_exe_name pelec_unit_tests)
 set(PELEC_ENABLE_REACTIONS OFF)
 set(PELEC_ENABLE_PARTICLES OFF)
 set(PELEC_EOS_MODEL GammaLaw)
-set(PELEC_REACTIONS_MODEL Null)
 set(PELEC_CHEMISTRY_MODEL Null)
 set(PELEC_TRANSPORT_MODEL Constant)
 

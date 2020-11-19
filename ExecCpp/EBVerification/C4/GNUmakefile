@@ -24,18 +24,12 @@ FSANITIZER = FALSE
 THREAD_SANITIZER = FALSE
 
 # PeleC
+USE_SUNDIALS_PP = FALSE
 USE_REACT = FALSE
 USE_EB = TRUE
-
 Eos_dir := GammaLaw
 Chemistry_Model := Null
 Transport_dir := Constant
-
-#Eos_dir := Fuego
-#Reactions_dir := Fuego
-#Chemistry_Model := LiDryer
-#Transport_dir := Simple
-#USE_SUNDIALS_PP = FALSE
 
 # GNU Make
 Bpack := ./Make.package

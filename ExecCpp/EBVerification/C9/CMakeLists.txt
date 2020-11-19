@@ -1,15 +1,16 @@
-set(pelec_exe_name pelec_TG)
+set(pelec_exe_name pelec_EB_C9)
 
 #Compile-time options for executable
-set(PELEC_ENABLE_EB OFF)
+set(PELEC_ENABLE_EB ON)
 set(PELEC_ENABLE_MASA_FOR_EXE OFF)
 set(PELEC_ENABLE_REACTIONS OFF)
 set(PELEC_ENABLE_PARTICLES OFF)
 set(PELEC_EOS_MODEL GammaLaw)
-set(PELEC_CHEMISTRY_MODEL Null)
+set(PELEC_CHEMISTRY_MODEL air)
 set(PELEC_TRANSPORT_MODEL Constant)
 
 add_executable(${pelec_exe_name} "")
+target_compile_definitions(${pelec_exe_name} PRIVATE DO_PROBLEM_POST_TIMESTEP DO_PROBLEM_POST_INIT)
 target_sources(${pelec_exe_name}
    PRIVATE
      prob_parm.H

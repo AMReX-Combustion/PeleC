@@ -24,10 +24,11 @@ FSANITIZER = FALSE
 THREAD_SANITIZER = FALSE
 
 # PeleC
+USE_SUNDIALS_PP = FALSE
 USE_REACT = FALSE
 USE_EB = TRUE
 Eos_dir := GammaLaw
-Reactions_dir := Null
+Chemistry_Model := Null
 Transport_dir := Constant
 
 # MASA
