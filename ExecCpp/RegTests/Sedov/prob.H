@@ -8,6 +8,7 @@
 
 // #include "mechanism.h"
 
+#include "PeleC.H"
 #include "IndexDefines.H"
 #include "Constants.H"
 #include "EOS.H"

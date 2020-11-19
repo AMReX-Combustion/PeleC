@@ -749,30 +749,6 @@ PeleC::writeBuildInfo(std::ostream& os)
      << "OFF" << std::endl;
 #endif
 
-#ifdef DO_PROBLEM_POST_TIMESTEP
-  os << std::setw(35) << std::left << "DO_PROBLEM_POST_TIMESTEP "
-     << std::setw(6) << "ON" << std::endl;
-#else
-  os << std::setw(35) << std::left << "DO_PROBLEM_POST_TIMESTEP "
-     << std::setw(6) << "OFF" << std::endl;
-#endif
-
-#ifdef DO_PROBLEM_POST_RESTART
-  os << std::setw(35) << std::left << "DO_PROBLEM_POST_RESTART " << std::setw(6)
-     << "ON" << std::endl;
-#else
-  os << std::setw(35) << std::left << "DO_PROBLEM_POST_RESTART " << std::setw(6)
-     << "OFF" << std::endl;
-#endif
-
-#ifdef DO_PROBLEM_POST_INIT
-  os << std::setw(35) << std::left << "DO_PROBLEM_POST_INIT " << std::setw(6)
-     << "ON" << std::endl;
-#else
-  os << std::setw(35) << std::left << "DO_PROBLEM_POST_INIT " << std::setw(6)
-     << "OFF" << std::endl;
-#endif
-
   os << "\n\n";
 }
 

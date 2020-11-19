@@ -1,5 +1,15 @@
 function(build_pelec_exe pelec_exe_name)
 
+  add_executable(${pelec_exe_name} "")
+  target_sources(${pelec_exe_name}
+     PRIVATE
+       prob_parm.H
+       prob.H
+       prob.cpp
+  )
+  
+  target_include_directories(${pelec_exe_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
   set(PELE_PHYSICS_SRC_DIR ${CMAKE_SOURCE_DIR}/Submodules/PelePhysics)
   set(PELE_PHYSICS_BIN_DIR ${CMAKE_BINARY_DIR}/Submodules/PelePhysics/${pelec_exe_name})
 
@@ -127,10 +137,6 @@ function(build_pelec_exe pelec_exe_name)
     target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${MASA_MOD_DIRS})
   endif()
  
-  if(PELEC_ENABLE_MASA_FOR_EXE)
-    target_compile_definitions(${pelec_exe_name} PRIVATE DO_PROBLEM_POST_TIMESTEP DO_PROBLEM_POST_INIT)
-  endif()
-
   if(PELEC_ENABLE_MPI)
     target_link_libraries(${pelec_exe_name} PUBLIC $<$<BOOL:${MPI_CXX_FOUND}>:MPI::MPI_CXX>)
   endif()
