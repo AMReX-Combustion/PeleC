@@ -40,8 +40,8 @@ amrex_probinit(
   pp.query("angle", ProbParm::angle);
   pp.get("left_gas", ProbParm::gasL);
   pp.get("right_gas", ProbParm::gasR);
-  
-  ProbParm::L = (probhi[0] - problo[0])/cos(M_PI/180.0 * ProbParm::angle);
+
+  ProbParm::L = (probhi[0] - problo[0]) / cos(M_PI / 180.0 * ProbParm::angle);
 
   if (ProbParm::gasL == "N2") {
     ProbParm::left_gas_id = N2_ID;

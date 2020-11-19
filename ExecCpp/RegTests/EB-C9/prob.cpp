@@ -84,7 +84,6 @@ PeleC::problem_post_timestep()
       PeleC& pc_lev = getLevel(lev);
 
       rho_err += pc_lev.volWgtSquaredSum("rhoerror", time, local_flag);
-
     }
 
     // Reductions
@@ -96,8 +95,7 @@ PeleC::problem_post_timestep()
     rho_err = std::sqrt(rho_err / V);
 
     if (amrex::ParallelDescriptor::IOProcessor()) {
-      amrex::Print() << "TIME= " << time << " RHO ERROR  = " << rho_err
-                     << '\n';
+      amrex::Print() << "TIME= " << time << " RHO ERROR  = " << rho_err << '\n';
 
       if (parent->NumDataLogs() > 1) {
 

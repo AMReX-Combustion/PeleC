@@ -35,7 +35,8 @@ pc_initdata(
   const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
   const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];
 
-  const amrex::Real rho_p = ProbParm::alpha * std::exp(-(x / ProbParm::sigma) * (x / ProbParm::sigma));
+  const amrex::Real rho_p =
+    ProbParm::alpha * std::exp(-(x / ProbParm::sigma) * (x / ProbParm::sigma));
   const amrex::Real rho = ProbParm::rho + rho_p;
   const amrex::Real p = ProbParm::p + rho_p * ProbParm::cs * ProbParm::cs;
   const amrex::Real u_p = ProbParm::cs * rho_p / ProbParm::rho;
@@ -80,8 +81,8 @@ struct MyProbDeriveStruct
   {
     // Add derives as follows and define the derive function below:
     derive_lst.add(
-     "rhoerror", amrex::IndexType::TheCellType(), 1, pc_rhoerror,
-     the_same_box);
+      "rhoerror", amrex::IndexType::TheCellType(), 1, pc_rhoerror,
+      the_same_box);
     derive_lst.addComponent("rhoerror", desc_lst, State_Type, 0, NVAR);
   }
 
@@ -98,13 +99,19 @@ struct MyProbDeriveStruct
   {
     auto const dat = datfab.array();
     auto arr = derfab.array();
-    const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_lo = geomdata.ProbLoArray();
-    const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx = geomdata.CellSizeArray();
+    const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_lo =
+      geomdata.ProbLoArray();
+    const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx =
+      geomdata.CellSizeArray();
 
     amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
-      const amrex::Real rho_exact = ProbParm::rho + ProbParm::alpha * std::exp(-((x - ProbParm::cs * time) / ProbParm::sigma) * ((x - ProbParm::cs * time) / ProbParm::sigma));
-      arr(i,j,k,0) = dat(i,j,k,URHO) - rho_exact;
+      const amrex::Real rho_exact =
+        ProbParm::rho +
+        ProbParm::alpha * std::exp(
+                            -((x - ProbParm::cs * time) / ProbParm::sigma) *
+                            ((x - ProbParm::cs * time) / ProbParm::sigma));
+      arr(i, j, k, 0) = dat(i, j, k, URHO) - rho_exact;
     });
   }
 };

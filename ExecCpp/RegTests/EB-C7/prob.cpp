@@ -56,10 +56,9 @@ amrex_probinit(
   amrex::Print(ofs) << "L, rhol, pl, Tl, rhor, pr, Tr, gamma, angle"
                     << std::endl;
   amrex::Print(ofs).SetPrecision(17)
-    << ProbParm::L << "," << ProbParm::rhol << "," << ProbParm::pl << "," << ProbParm::Tl << ","
-    << ProbParm::rhor << "," << ProbParm::pr << "," << ProbParm::Tr << ","
-    << EOS::gamma << "," << ProbParm::angle
-    << std::endl;
+    << ProbParm::L << "," << ProbParm::rhol << "," << ProbParm::pl << ","
+    << ProbParm::Tl << "," << ProbParm::rhor << "," << ProbParm::pr << ","
+    << ProbParm::Tr << "," << EOS::gamma << "," << ProbParm::angle << std::endl;
   ofs.close();
 }
 }
