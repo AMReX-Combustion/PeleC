@@ -21,6 +21,7 @@
 #include <AMReX_EB2_IF_Plane.H>
 #include <AMReX_EB2_IF_Extrusion.H>
 #include <AMReX_EB2_GeometryShop.H>
+#include <AMReX_EB2_IF_Difference.H>
 #include <AMReX_EBFluxRegister_C.H>
 
 #include "PeleC.H"
