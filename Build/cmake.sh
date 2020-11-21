@@ -3,6 +3,7 @@
 # Example CMake config script for an OSX laptop with OpenMPI
 
 cmake -DCMAKE_INSTALL_PREFIX:PATH=./install \
+      -G Ninja \
       -DCMAKE_CXX_COMPILER:STRING=mpicxx \
       -DCMAKE_C_COMPILER:STRING=mpicc \
       -DMPIEXEC_PREFLAGS:STRING=--oversubscribe \
@@ -17,4 +18,4 @@ cmake -DCMAKE_INSTALL_PREFIX:PATH=./install \
       -DPELEC_ENABLE_DOCUMENTATION:BOOL=OFF \
       -DPYTHON_EXECUTABLE=$(which python3) \
       -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON \
-      .. && make -j8
+      .. && cmake --build .
