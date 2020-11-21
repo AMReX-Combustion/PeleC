@@ -7,6 +7,6 @@ set(PELEC_TRANSPORT_MODEL Constant)
 
 #Generic stuff for every executable
 get_filename_component(DIR_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
-set(pelec_exe_name pelec_${DIR_NAME})
+set(pelec_exe_name pelec-${DIR_NAME})
 include(${CMAKE_SOURCE_DIR}/CMake/BuildPeleCExe.cmake)
 build_pelec_exe(${pelec_exe_name})
