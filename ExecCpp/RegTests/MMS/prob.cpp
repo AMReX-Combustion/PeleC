@@ -178,7 +178,6 @@ amrex_probinit(
 }
 }
 
-#ifdef DO_PROBLEM_POST_TIMESTEP
 void
 PeleC::problem_post_timestep()
 {
@@ -323,9 +322,7 @@ PeleC::problem_post_timestep()
   Error("MASA is not turned on. Turn on with USE_MASA=TRUE.");
 #endif
 }
-#endif
 
-#ifdef DO_PROBLEM_POST_INIT
 void
 PeleC::problem_post_init()
 {
@@ -361,4 +358,8 @@ PeleC::problem_post_init()
     }
   }
 }
-#endif
+
+void
+PeleC::problem_post_restart()
+{
+}

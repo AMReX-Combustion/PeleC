@@ -27,7 +27,6 @@ THREAD_SANITIZER = FALSE
 USE_REACT = TRUE
 USE_EB = FALSE
 Eos_dir := Fuego
-Reactions_dir := Fuego
 Chemistry_Model := Davis
 Transport_dir := Simple
 
