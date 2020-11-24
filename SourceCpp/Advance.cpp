@@ -688,5 +688,5 @@ PeleC::finalize_sdc_advance(
     }
   }
 
-  amrex::Real cur_time = state[State_Type].curTime();
+  // amrex::Real cur_time = state[State_Type].curTime();
 }

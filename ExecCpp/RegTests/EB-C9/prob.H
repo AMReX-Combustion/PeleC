@@ -32,8 +32,8 @@ pc_initdata(
   const amrex::Real* dx = geomdata.CellSize();
 
   const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
-  const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
-  const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];
+  // const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
+  // const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];
 
   const amrex::Real rho_p =
     ProbParm::alpha * std::exp(-(x / ProbParm::sigma) * (x / ProbParm::sigma));
@@ -76,6 +76,8 @@ using ProblemTags = EmptyProbTagStruct;
 
 struct MyProbDeriveStruct
 {
+  static amrex::Box the_same_box(const amrex::Box& b) { return b; }
+
   static void
   add(amrex::DeriveList& derive_lst, amrex::DescriptorList& desc_lst)
   {

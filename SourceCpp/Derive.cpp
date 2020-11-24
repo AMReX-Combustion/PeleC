@@ -456,7 +456,7 @@ pc_derentropy(
   const int* /*bcrec*/,
   const int /*level*/)
 {
-  auto const dat = datfab.array();
+  // auto const dat = datfab.array();
   auto sfab = derfab.array();
 
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -515,7 +515,7 @@ pc_derpres(
     const amrex::Real rho = dat(i, j, k, URHO);
     const amrex::Real rhoInv = 1.0 / rho;
     amrex::Real T = dat(i, j, k, UTEMP);
-    amrex::Real e = dat(i, j, k, UEINT) * rhoInv;
+    // amrex::Real e = dat(i, j, k, UEINT) * rhoInv;
     amrex::Real p, massfrac[NUM_SPECIES];
     for (int n = 0; n < NUM_SPECIES; ++n)
       massfrac[n] = dat(i, j, k, UFS + n) * rhoInv;
@@ -619,8 +619,8 @@ pc_derrhommserror(
 
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_lo =
     geomdata.ProbLoArray();
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_hi =
-    geomdata.ProbHiArray();
+  // const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_hi =
+  // geomdata.ProbHiArray();
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx =
     geomdata.CellSizeArray();
 
@@ -651,8 +651,8 @@ pc_derummserror(
 
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_lo =
     geomdata.ProbLoArray();
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_hi =
-    geomdata.ProbHiArray();
+  // const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_hi =
+  // geomdata.ProbHiArray();
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx =
     geomdata.CellSizeArray();
 
@@ -683,8 +683,8 @@ pc_dervmmserror(
 
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_lo =
     geomdata.ProbLoArray();
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_hi =
-    geomdata.ProbHiArray();
+  // const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_hi =
+  // geomdata.ProbHiArray();
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx =
     geomdata.CellSizeArray();
 
@@ -715,8 +715,8 @@ pc_derwmmserror(
 
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_lo =
     geomdata.ProbLoArray();
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_hi =
-    geomdata.ProbHiArray();
+  // const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_hi =
+  // geomdata.ProbHiArray();
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx =
     geomdata.CellSizeArray();
 
@@ -747,8 +747,8 @@ pc_derpmmserror(
 
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_lo =
     geomdata.ProbLoArray();
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_hi =
-    geomdata.ProbHiArray();
+  // const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_hi =
+  // geomdata.ProbHiArray();
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx =
     geomdata.CellSizeArray();
 

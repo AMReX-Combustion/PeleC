@@ -32,7 +32,7 @@ get_sfs_stresses_xdir(
   amrex::Real& flux_T)
 {
 
-  amrex::Real dUdx[3][3] = {0.0};
+  amrex::Real dUdx[3][3] = {{0.0}};
   dUdx[0][0] = dxinv * (q(i, j, k, QU) - q(i - 1, j, k, QU)); // dudx
   dUdx[0][1] = td(i, j, k, 0);                                // dudy
   dUdx[0][2] = td(i, j, k, 3);                                // dudz
@@ -43,7 +43,7 @@ get_sfs_stresses_xdir(
   dUdx[2][1] = td(i, j, k, 2);                                // dwdy
   dUdx[2][2] = td(i, j, k, 5);                                // dwdz
 
-  amrex::Real S[3][3] = {0.0};
+  amrex::Real S[3][3] = {{0.0}};
   amrex::Real Sijmag = 0;
   for (int m = 0; m < 3; m++) {
     for (int n = 0; n < 3; n++) {
@@ -84,7 +84,7 @@ get_sfs_stresses_ydir(
   amrex::Real& flux_T)
 {
 
-  amrex::Real dUdx[3][3] = {0.0};
+  amrex::Real dUdx[3][3] = {{0.0}};
   dUdx[0][0] = td(i, j, k, 0);                                // dudx
   dUdx[0][1] = dxinv * (q(i, j, k, QU) - q(i, j - 1, k, QU)); // dudy
   dUdx[0][2] = td(i, j, k, 3);                                // dudz
@@ -95,7 +95,7 @@ get_sfs_stresses_ydir(
   dUdx[2][1] = dxinv * (q(i, j, k, QW) - q(i, j - 1, k, QW)); // dwdy
   dUdx[2][2] = td(i, j, k, 5);                                // dwdz
 
-  amrex::Real S[3][3] = {0.0};
+  amrex::Real S[3][3] = {{0.0}};
   amrex::Real Sijmag = 0;
   for (int m = 0; m < 3; m++) {
     for (int n = 0; n < 3; n++) {
@@ -136,7 +136,7 @@ get_sfs_stresses_zdir(
   amrex::Real& flux_T)
 {
 
-  amrex::Real dUdx[3][3] = {0.0};
+  amrex::Real dUdx[3][3] = {{0.0}};
   dUdx[0][0] = td(i, j, k, 0);                                // dudx
   dUdx[0][1] = td(i, j, k, 3);                                // dudy
   dUdx[0][2] = dxinv * (q(i, j, k, QU) - q(i, j, k - 1, QU)); // dudz
@@ -147,7 +147,7 @@ get_sfs_stresses_zdir(
   dUdx[2][1] = td(i, j, k, 5);                                // dwdy
   dUdx[2][2] = dxinv * (q(i, j, k, QW) - q(i, j, k - 1, QW)); // dwdz
 
-  amrex::Real S[3][3] = {0.0};
+  amrex::Real S[3][3] = {{0.0}};
   amrex::Real Sijmag = 0;
   for (int m = 0; m < 3; m++) {
     for (int n = 0; n < 3; n++) {
@@ -264,7 +264,7 @@ get_sfs_stresses_cc(
   amrex::Real& flux_T2)
 {
   // Calculate derivatives at cell centers, second order central difference
-  amrex::Real dUdx[3][3] = {0.0};
+  amrex::Real dUdx[3][3] = {{0.0}};
   dUdx[0][0] = 0.5 * dxinv[0] * (q(i + 1, j, k, QU) - q(i - 1, j, k, QU));
   dUdx[0][1] = 0.5 * dxinv[1] * (q(i, j + 1, k, QU) - q(i, j - 1, k, QU));
   dUdx[0][2] = 0.5 * dxinv[2] * (q(i, j, k + 1, QU) - q(i, j, k - 1, QU));
@@ -275,7 +275,7 @@ get_sfs_stresses_cc(
   dUdx[2][1] = 0.5 * dxinv[1] * (q(i, j + 1, k, QW) - q(i, j - 1, k, QW));
   dUdx[2][2] = 0.5 * dxinv[2] * (q(i, j, k + 1, QW) - q(i, j, k - 1, QW));
 
-  amrex::Real S[3][3] = {0.0};
+  amrex::Real S[3][3] = {{0.0}};
   amrex::Real Sijmag = 0;
   for (int m = 0; m < 3; m++) {
     for (int n = 0; n < 3; n++) {

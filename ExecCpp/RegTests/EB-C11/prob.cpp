@@ -60,7 +60,7 @@ amrex_probinit(
     ProbParm::right_gas_id = N2_ID;
   }
 
-  amrex::Real e_l, e_r, cs, cp;
+  amrex::Real e_l, e_r /*, cs, cp*/;
   amrex::Real massfrac_l[NUM_SPECIES] = {0.0};
   amrex::Real massfrac_r[NUM_SPECIES] = {0.0};
   massfrac_l[ProbParm::left_gas_id] = 1.0;

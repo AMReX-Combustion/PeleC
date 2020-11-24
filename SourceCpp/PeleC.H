@@ -61,16 +61,19 @@ enum sources {
   num_src
 };
 
+/*
 static amrex::Box
 the_same_box(const amrex::Box& b)
 {
   return b;
 }
+
 static amrex::Box
 grow_box_by_one(const amrex::Box& b)
 {
   return amrex::grow(b, 1);
 }
+*/
 
 //
 // AmrLevel-derived class for hyperbolic conservation equations for stellar

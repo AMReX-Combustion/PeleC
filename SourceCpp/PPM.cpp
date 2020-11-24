@@ -31,11 +31,11 @@ trace_ppm(
   //
   // for pure hydro, we will only consider:
   //    rho, u, v, w, ptot, rhoe_g, cc, h_g
-  amrex::Real hdt = 0.5 * dt;
+  // amrex::Real hdt = 0.5 * dt;
   amrex::Real dtdx = dt / dx[idir];
 
-  auto lo = bx.loVect3d();
-  auto hi = bx.hiVect3d();
+  // auto lo = bx.loVect3d();
+  // auto hi = bx.hiVect3d();
 
   auto vlo = vbx.loVect3d();
   auto vhi = vbx.hiVect3d();
@@ -61,7 +61,9 @@ trace_ppm(
   // jumps that are moving toward the interface to the reference
   // state to get the full state on that interface.
 
-  int QUN, QUT, QUTT;
+  int QUN = 0;
+  int QUT = 0;
+  int QUTT = 0;
 
   if (idir == 0) {
     QUN = QU;
@@ -79,7 +81,7 @@ trace_ppm(
 
   // Trace to left and right edges using upwind PPM
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    amrex::Real rho = q_arr(i, j, k, QRHO);
+    // amrex::Real rho = q_arr(i, j, k, QRHO);
 
     amrex::Real massfrac[NUM_SPECIES];
     for (int sp = 0; sp < NUM_SPECIES; ++sp)

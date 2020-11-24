@@ -332,7 +332,7 @@ PeleC::problem_post_init()
 
   amrex::Real time = state[State_Type].curTime();
   int datwidth = 14;
-  int datprecision = 6;
+  // int datprecision = 6;
 
   if (level == 0) {
     if (amrex::ParallelDescriptor::IOProcessor()) {

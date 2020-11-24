@@ -166,7 +166,7 @@ amrex_probinit(
     ProbParm::v_uinput->resize(nx * ny * nz);
     ProbParm::v_vinput->resize(nx * ny * nz);
     ProbParm::v_winput->resize(nx * ny * nz);
-    for (int i = 0; i < ProbParm::v_xinput->size(); i++) {
+    for (unsigned long i = 0; i < ProbParm::v_xinput->size(); i++) {
       (*ProbParm::v_xinput)[i] = data[0 + i * 6];
       (*ProbParm::v_uinput)[i] =
         data[3 + i * 6] * ProbParm::urms0 / ProbParm::uin_norm;
@@ -178,7 +178,7 @@ amrex_probinit(
 
     // Get the xarray table and the differences.
     ProbParm::v_xarray->resize(nx);
-    for (int i = 0; i < ProbParm::v_xarray->size(); i++) {
+    for (unsigned long i = 0; i < ProbParm::v_xarray->size(); i++) {
       (*ProbParm::v_xarray)[i] = (*ProbParm::v_xinput)[i];
     }
     ProbParm::v_xdiff->resize(nx);

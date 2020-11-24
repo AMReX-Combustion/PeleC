@@ -49,7 +49,7 @@ riemann(
   }
   amrex::Real gdnv_state_cs;
   EOS::RPY2Cs(gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, gdnv_state_cs);
-  const amrex::Real csl = gdnv_state_cs;
+  // const amrex::Real csl = gdnv_state_cs;
 
   gdnv_state_rho = rr;
   gdnv_state_p = pr;
@@ -57,7 +57,7 @@ riemann(
     gdnv_state_massfrac[n] = spr[n];
   }
   EOS::RPY2Cs(gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, gdnv_state_cs);
-  const amrex::Real csr = gdnv_state_cs;
+  // const amrex::Real csr = gdnv_state_cs;
 
   const amrex::Real wl =
     amrex::max(wsmall, std::sqrt(amrex::Math::abs(gamcl * pl * rl)));

@@ -50,8 +50,8 @@ PeleC::fill_forcing_source(
   amrex::MultiFab& forcing_src,
   int ng)
 {
-  const amrex::Real* dx = geom.CellSize();
-  const amrex::Real* prob_lo = geom.ProbLo();
+  // const amrex::Real* dx = geom.CellSize();
+  // const amrex::Real* prob_lo = geom.ProbLo();
 
 #ifdef PELEC_USE_EB
   auto const& fact =
@@ -65,8 +65,8 @@ PeleC::fill_forcing_source(
   for (amrex::MFIter mfi(forcing_src, amrex::TilingIfNotGPU()); mfi.isValid();
        ++mfi) {
     const amrex::Box& bx = mfi.growntilebox(ng);
-    amrex::RealBox gridloc =
-      amrex::RealBox(grids[mfi.index()], geom.CellSize(), geom.ProbLo());
+    // amrex::RealBox gridloc =
+    // amrex::RealBox(grids[mfi.index()], geom.CellSize(), geom.ProbLo());
 
 #ifdef PELEC_USE_EB
     const auto& flag_fab = flags[mfi];

@@ -35,7 +35,7 @@ pc_rst_int_e(
     const amrex::Real Wp = S(i, j, k, UMZ) * rhoInv;
     const amrex::Real ke = 0.5 * (Up * Up + Vp * Vp + Wp * Wp);
     const amrex::Real eden = S(i, j, k, UEDEN) * rhoInv;
-    const amrex::Real eos_state_rho = S(i, j, k, URHO);
+    // const amrex::Real eos_state_rho = S(i, j, k, URHO);
     const amrex::Real eos_state_T = SMALL_TEMP;
     amrex::Real eos_state_massfrac[NUM_SPECIES];
     amrex::Real eos_state_ei[NUM_SPECIES];
@@ -90,7 +90,7 @@ pc_rst_int_e(
     const amrex::Real ke = 0.5 * (Up * Up + Vp * Vp + Wp * Wp);
     if (S(i, j, k, UEDEN) < (S(i, j, k, URHO) * SMALL_E)) {
       if (S(i, j, k, UEINT) < (S(i, j, k, URHO) * SMALL_E)) {
-        const amrex::Real eos_state_rho = S(i, j, k, URHO);
+        // const amrex::Real eos_state_rho = S(i, j, k, URHO);
         const amrex::Real eos_state_T = SMALL_TEMP;
         amrex::Real eos_state_massfrac[NUM_SPECIES];
         amrex::Real eos_state_ei[NUM_SPECIES];
@@ -115,7 +115,7 @@ pc_rst_int_e(
         (dual_energy_update_E_from_e == 1)) {
         S(i, j, k, UEDEN) = S(i, j, k, UEINT) + S(i, j, k, URHO) * ke;
       } else if (S(i, j, k, UEINT) <= (S(i, j, k, URHO) * SMALL_E)) {
-        const amrex::Real eos_state_rho = S(i, j, k, URHO);
+        // const amrex::Real eos_state_rho = S(i, j, k, URHO);
         const amrex::Real eos_state_T = SMALL_TEMP;
         amrex::Real eos_state_massfrac[NUM_SPECIES];
         amrex::Real eos_state_ei[NUM_SPECIES];
@@ -180,7 +180,7 @@ read_binary(
     amrex::Abort("Unable to open input file " + iname);
   }
 
-  for (int i = 0; i < nx * ny * nz * ncol; i++) {
+  for (size_t i = 0; i < nx * ny * nz * ncol; i++) {
     infile.read(reinterpret_cast<char*>(&data[i]), sizeof(data[i]));
   }
   infile.close();
@@ -212,7 +212,7 @@ read_csv(
   std::istringstream iss(memfile);
 
   // Read the file
-  int nlines = 0;
+  size_t nlines = 0;
   std::string firstline, line;
   std::getline(iss, firstline); // skip header
   while (getline(iss, line))

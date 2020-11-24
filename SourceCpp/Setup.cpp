@@ -29,9 +29,22 @@ static int norm_vel_bc[] = {INT_DIR,     EXT_DIR,     FOEXTRAP, REFLECT_ODD,
 static int tang_vel_bc[] = {INT_DIR,      EXT_DIR,     FOEXTRAP, REFLECT_EVEN,
                             REFLECT_EVEN, REFLECT_ODD, EXT_DIR};
 
+#ifdef PELEC_USE_REACTIONS
 static int react_src_bc[] = {INT_DIR,      REFLECT_EVEN, REFLECT_EVEN,
                              REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN,
                              REFLECT_EVEN};
+#endif
+
+static amrex::Box
+the_same_box(const amrex::Box& b)
+{
+  return b;
+}
+static amrex::Box
+grow_box_by_one(const amrex::Box& b)
+{
+  return amrex::grow(b, 1);
+}
 
 static void
 set_scalar_bc(amrex::BCRec& bc, const amrex::BCRec& phys_bc)
@@ -66,6 +79,7 @@ set_y_vel_bc(amrex::BCRec& bc, const amrex::BCRec& phys_bc)
     , bc.setLo(2, tang_vel_bc[lo_bc[2]]); bc.setHi(2, tang_vel_bc[hi_bc[2]]););
 }
 
+#ifdef PELEC_USE_REACTIONS
 static void
 set_react_src_bc(amrex::BCRec& bc, const amrex::BCRec& phys_bc)
 {
@@ -76,6 +90,7 @@ set_react_src_bc(amrex::BCRec& bc, const amrex::BCRec& phys_bc)
     bc.setHi(dir, react_src_bc[hi_bc[dir]]);
   }
 }
+#endif
 
 static void
 set_z_vel_bc(amrex::BCRec& bc, const amrex::BCRec& phys_bc)
@@ -171,7 +186,7 @@ PeleC::variableSetUp()
     cnt += NumAdv;
   }
 
-  int dm = AMREX_SPACEDIM;
+  // int dm = AMREX_SPACEDIM;
 
   if (NUM_SPECIES > 0) {
     FirstSpec = cnt;
@@ -216,7 +231,7 @@ PeleC::variableSetUp()
                    << nscbc_diff << '\n'
                    << '\n';
 
-  int coord_type = amrex::DefaultGeometry().Coord();
+  // int coord_type = amrex::DefaultGeometry().Coord();
 
   amrex::Vector<amrex::Real> center(AMREX_SPACEDIM, 0.0);
   amrex::ParmParse ppc("pelec");

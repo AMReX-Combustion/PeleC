@@ -49,7 +49,7 @@ void
 read_pmf(const std::string myfile)
 {
   std::string firstline, secondline, remaininglines;
-  int pos1, pos2;
+  unsigned int pos1, pos2;
   int variable_count, line_count;
 
   std::ifstream infile(myfile);
@@ -102,11 +102,11 @@ read_pmf(const std::string myfile)
   iss.seekg(0, std::ios::beg);
   std::getline(iss, firstline);
   std::getline(iss, secondline);
-  for (int i = 0; i < ProbParm::pmf_N; i++) {
+  for (unsigned int i = 0; i < ProbParm::pmf_N; i++) {
     std::getline(iss, remaininglines);
     std::istringstream sinput(remaininglines);
     sinput >> (*ProbParm::pmf_X)[i];
-    for (int j = 0; j < ProbParm::pmf_M; j++) {
+    for (unsigned int j = 0; j < ProbParm::pmf_M; j++) {
       sinput >> (*ProbParm::pmf_Y)[j * ProbParm::pmf_N + i];
     }
   }
@@ -117,7 +117,7 @@ read_pmf(const std::string myfile)
 void
 init_bc()
 {
-  amrex::Real vt, ek, a, yl, yr, sumY, T, rho, e;
+  amrex::Real vt, ek, a, yl, yr, /* sumY, */ T, rho, e;
   amrex::Real molefrac[NUM_SPECIES], massfrac[NUM_SPECIES];
   amrex::GpuArray<amrex::Real, NUM_SPECIES + 4> pmf_vals = {0.0};
 
