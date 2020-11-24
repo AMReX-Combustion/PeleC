@@ -397,9 +397,7 @@ PeleC::particlePostRestart(const std::string& restart_file, bool is_checkpoint)
 }
 
 void
-PeleC::particleMKD (const bool       use_virt_parts,
-                    const bool       use_ghost_parts,
-                    const Real       time,
+PeleC::particleMKD (const Real       time,
                     const Real       dt,
                     const int        ghost_width,
                     const int        spray_n_grow,
@@ -435,14 +433,14 @@ PeleC::particleMKD (const bool       use_virt_parts,
   //
   // Setup the virtual particles that represent particles on finer levels
   //
-  if (level < finest_level && use_virt_parts)
+  if (level < finest_level)
     setupVirtualParticles();
 
   //
   // Make a copy of the particles on this level into ghost particles
   // for the finer level
   //
-  if (use_ghost_parts)
+  if (level < finest_level)
     setupGhostParticles(ghost_width);
 
   // Advance the particle velocities to the half-time and the positions to
@@ -470,14 +468,14 @@ PeleC::particleMKD (const bool       use_virt_parts,
     where_width);
 
   // Only need the coarsest virtual particles here.
-  if (level < finest_level && use_virt_parts)
+  if (level < finest_level)
     theVirtPC()->moveKickDrift(
       Sborder, tmp_spray_source,
       level, dt, time, true, false,
       spray_n_grow, tmp_src_width, true, where_width);
 
   // Miiiight need all Ghosts
-  if (theGhostPC() != 0)
+  if (theGhostPC() != 0 && level != 0)
     theGhostPC()->moveKickDrift(
       Sborder, tmp_spray_source,
       level, dt, time, false, true,
@@ -502,10 +500,13 @@ PeleC::particleMK (const Real       time,
     level, dt, time, false, false,
     spray_n_grow, tmp_src_width);
 
-  // Virtual particles will be recreated, so we need not kick them.
-  // TODO: Is this true with SDC iterations??
-  // Ghost particles need to be kicked except during the final iteration.
-  if (amr_iteration != amr_ncycle && theGhostPC() != 0)
+  if (level < parent->finestLevel())
+    theVirtPC()->moveKick(
+      Sborder, tmp_spray_source,
+      level, dt, time, true, false,
+      spray_n_grow, tmp_src_width);
+
+  if (theGhostPC() != 0 && level != 0)
     theGhostPC()->moveKick(
       Sborder, tmp_spray_source,
       level, dt, time, false, true,

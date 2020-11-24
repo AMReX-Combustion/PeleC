@@ -417,7 +417,7 @@ PeleC::PeleC(
     if (cRefRatio > 4)
       amrex::Abort("Spray particles not supported for ref_ratio > 4");
     else if (cRefRatio > 2)
-      nGrowS += 2;
+      nGrowS += 3;
   }
 #endif
   if (do_hydro) {

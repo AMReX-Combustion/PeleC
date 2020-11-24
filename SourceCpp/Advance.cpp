@@ -96,21 +96,18 @@ PeleC::do_mol_advance(
   }
   int nGrow_Sborder = nGrowTr;
 #ifdef AMREX_PARTICLES
-  bool use_ghost_parts = false; // Use ghost particles
-  bool use_virt_parts = false;  // Use virtual particles
-  if (parent->finestLevel() > 0 && level < parent->finestLevel()) {
-    use_ghost_parts = true;
-    use_virt_parts = true;
-  }
   int ghost_width = 0;
   int where_width = 0;
   int spray_n_grow = 0;
   int tmp_src_width = 0;
 
   if (do_spray_particles) {
-    setSprayGridInfo(
-      amr_iteration, amr_ncycle, ghost_width, where_width, spray_n_grow,
-      tmp_src_width);
+    int finest_level = parent->finestLevel();
+    int finer_ref = 0;
+    if (level < finest_level) finer_ref = parent->MaxRefRatio(level);
+    theSprayPC()->setSprayGridInfo(
+      level, finest_level, amr_ncycle, amr_iteration, finer_ref,
+      ghost_width, where_width, spray_n_grow, tmp_src_width);
     nGrow_Sborder = std::max(nGrow_Sborder, spray_n_grow);
   }
   if (Sborder.nGrow() < nGrow_Sborder) {
@@ -133,7 +130,7 @@ PeleC::do_mol_advance(
   if (do_spray_particles) {
     old_sources[spray_src]->setVal(0.);
     particleMKD(
-      use_virt_parts, use_ghost_parts, time, dt, ghost_width, spray_n_grow,
+      time, dt, ghost_width, spray_n_grow,
       tmp_src_width, where_width, tmp_spray_source);
     amrex::MultiFab::Saxpy(molSrc, 1.0, *old_sources[spray_src], 0, 0, NVAR, 0);
   }
@@ -257,73 +254,6 @@ PeleC::do_mol_advance(
   return dt;
 }
 
-#ifdef AMREX_PARTICLES
-void
-PeleC::setSprayGridInfo(
-  const int amr_iteration,
-  const int amr_ncycle,
-  int& ghost_width,
-  int& where_width,
-  int& spray_n_grow,
-  int& tmp_src_width)
-{
-  // TODO: Re-evaluate these numbers and include the particle cfl into the
-  // calcuation A particle in cell (i) can affect cell values in (i-1) to (i+1)
-  int stencil_deposition_width = 1;
-
-  // A particle in cell (i) may need information from cell values in (i-1) to
-  // (i+1)
-  //   to update its position (typically via interpolation of the acceleration
-  //   from the grid)
-  int stencil_interpolation_width = 1;
-
-  // A particle that starts in cell (i + amr_ncycle) can reach
-  //   cell (i) in amr_ncycle number of steps .. after "amr_iteration" steps
-  //   the particle has to be within (i + amr_ncycle+1-amr_iteration) to reach
-  //   cell (i) in the remaining (amr_ncycle-amr_iteration) steps
-
-  // *** ghost_width ***  is used
-  //   *) to set how many cells are used to hold ghost particles i.e copies of
-  //   particles that live on (level) that can affect the grid on level+1 over the
-  //   total number of cycles on level+1, which is equal to the refinement ratio
-
-  ghost_width = 0;
-  if (level < parent->finestLevel() && parent->finestLevel() > 0)
-    ghost_width = parent->MaxRefRatio(level);
-  int ghost_num = 0;
-  if (parent->subCycle() && parent->finestLevel() > 0)
-    ghost_num += amr_ncycle + stencil_deposition_width;
-
-  // *** where_width ***  is used
-  //   *) to set how many cells the Where call in moveKickDrift tests = max of
-  //     {ghost_width + (1-amr_iteration) - 1}:
-  //      the minus 1 arises because this occurs *after* the move} and
-  //     {amr_iteration}:
-  //     the number of cells out that a cell initially in the fine grid may
-  //     have moved and we don't want to just lose it (we will redistribute it
-  //     when we're done}
-
-  where_width = amr_ncycle + amr_ncycle/2 - amr_iteration;
-
-  // *** spray_n_grow *** is used
-  //   *) to determine how many ghost cells we need to fill in the MultiFab from
-  //      which the particle interpolates its acceleration
-
-  spray_n_grow = ghost_num + stencil_interpolation_width;
-
-  // *** tmp_src_width ***  is used
-  //   *) to set how many ghost cells are needed in the tmp_src_ptr MultiFab
-  //   that we
-  //      define inside moveKickDrift and moveKick.   This needs to be big
-  //      enough to hold the contribution from all the particles within
-  //      ghost_width so that we don't have to test on whether the particles are
-  //      trying to write out of bounds
-
-  tmp_src_width = stencil_deposition_width;
-  if (level > 0) tmp_src_width += ghost_num;
-}
-#endif
-
 amrex::Real
 PeleC::do_sdc_advance(
   amrex::Real time, amrex::Real dt, int amr_iteration, int amr_ncycle)
@@ -394,21 +324,18 @@ PeleC::do_sdc_iteration(
     nGrow_Sborder = NUM_GROW;
   }
 #ifdef AMREX_PARTICLES
-  bool use_ghost_parts = false; // Use ghost particles
-  bool use_virt_parts = false;  // Use virtual particles
-  if (parent->finestLevel() > 0 && level < parent->finestLevel()) {
-    use_ghost_parts = true;
-    use_virt_parts = true;
-  }
   int ghost_width = 0;
   int where_width = 0;
   int spray_n_grow = 0;
   int tmp_src_width = 0;
 
   if (do_spray_particles) {
-    setSprayGridInfo(
-      amr_iteration, amr_ncycle, ghost_width, where_width, spray_n_grow,
-      tmp_src_width);
+    int finest_level = parent->finestLevel();
+    int finer_ref = 0;
+    if (level < finest_level) finer_ref = parent->MaxRefRatio(level);
+    theSprayPC()->setSprayGridInfo(
+      level, finest_level, amr_ncycle, amr_iteration, finer_ref,
+      ghost_width, where_width, spray_n_grow, tmp_src_width);
     fill_Sborder = true;
     nGrow_Sborder = std::max(nGrow_Sborder, spray_n_grow);
   }
@@ -443,7 +370,7 @@ PeleC::do_sdc_iteration(
     if (do_spray_particles) {
       old_sources[spray_src]->setVal(0.);
       particleMKD(
-        use_virt_parts, use_ghost_parts, time, dt, ghost_width, spray_n_grow,
+        time, dt, ghost_width, spray_n_grow,
         tmp_src_width, where_width, tmp_spray_source);
     }
 

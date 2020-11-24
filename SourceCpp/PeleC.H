@@ -185,9 +185,7 @@ public:
   //
   // Setup ghost and virtual particles and do moveKickDrift
   //
-  void particleMKD(const bool       use_virt_parts,
-                   const bool       use_ghost_parts,
-                   const Real       time,
+  void particleMKD(const Real       time,
                    const Real       dt,
                    const int        ghost_width,
                    const int        spray_n_grow,
@@ -245,14 +243,6 @@ public:
   // Should we write particle ascii files?
   //
   static int write_spray_ascii_files;
-
-  void setSprayGridInfo(
-    const int amr_iteration,
-    const int amr_ncycle,
-    int& ghost_width,
-    int& where_width,
-    int& spray_n_grow,
-    int& tmp_src_width);
 
   static int particle_mass_tran;
   static int particle_heat_tran;
