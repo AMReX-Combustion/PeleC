@@ -31,8 +31,8 @@ struct EmptyProbDeriveStruct
     const int* /*bcrec*/,
     int level)
   {
-    auto const dat = datfab.array();
-    auto arr = derfab.array();
+    // auto const dat = datfab.array();
+    // auto arr = derfab.array();
     // amrex::ParallelFor(
     //  bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // do something with arr

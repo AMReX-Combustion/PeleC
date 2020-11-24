@@ -22,7 +22,7 @@ struct PCHypFillExtDir
     const int* domlo = geom.Domain().loVect();
     const int* domhi = geom.Domain().hiVect();
     const amrex::Real* prob_lo = geom.ProbLo();
-    const amrex::Real* prob_hi = geom.ProbHi();
+    // const amrex::Real* prob_hi = geom.ProbHi();
     const amrex::Real* dx = geom.CellSize();
     const amrex::Real x[AMREX_SPACEDIM] = {AMREX_D_DECL(
       prob_lo[0] + (iv[0] + 0.5) * dx[0], prob_lo[1] + (iv[1] + 0.5) * dx[1],

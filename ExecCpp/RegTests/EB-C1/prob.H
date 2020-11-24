@@ -32,10 +32,9 @@ pc_initdata(
   amrex::Array4<amrex::Real> const& state,
   amrex::GeometryData const& geomdata)
 {
-
   // Geometry
   const amrex::Real* prob_lo = geomdata.ProbLo();
-  const amrex::Real* prob_hi = geomdata.ProbHi();
+  // const amrex::Real* prob_hi = geomdata.ProbHi();
   const amrex::Real* dx = geomdata.CellSize();
   masa_set_param("deltabar", dx[0]);
   const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];

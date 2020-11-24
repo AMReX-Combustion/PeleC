@@ -140,7 +140,7 @@ PeleC::initialize_eb2_structs()
         }
       }
 
-      int Nebg = sv_eb_bndry_geom[iLocal].size();
+      // int Nebg = sv_eb_bndry_geom[iLocal].size();
 
       // Now fill the sv_eb_bndry_geom
       auto const& vfrac_arr = vfrac.array(mfi);
@@ -238,7 +238,7 @@ PeleC::initialize_eb2_structs()
 
       if (typ == amrex::FabType::regular || typ == amrex::FabType::covered) {
       } else if (typ == amrex::FabType::singlevalued) {
-        const amrex::Box ebox = amrex::Box(tbox).surroundingNodes(dir);
+        // const amrex::Box ebox = amrex::Box(tbox).surroundingNodes(dir);
         const auto afrac_arr = (*eb2areafrac[dir])[mfi].array();
         const auto facecent_arr = (*facecent[dir])[mfi].array();
 
@@ -486,7 +486,7 @@ initialize_EB2(
     point.fill(0.0);
     point[upDir] = -slope * startPt;
 
-    bool normalInside = true;
+    // bool normalInside = true;
 
     amrex::EB2::PlaneIF ramp(point, normal);
     auto gshop = amrex::EB2::makeShop(ramp);
@@ -538,8 +538,8 @@ initialize_EB2(
     auto gshop = amrex::EB2::makeShop(pr);
     amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
   } else if (geom_type == "ICE_PistonBowl") {
-    amrex::RealArray point;
-    amrex::RealArray normal;
+    // amrex::RealArray point;
+    // amrex::RealArray normal;
 
     amrex::RealArray center;
     center[0] = 0.04 - 0.0125 - 0.02;
@@ -715,7 +715,7 @@ initialize_EB2(
     amrex::Abort();
     amrex::Print() << "creating geometry from polygon surfaces of revolution"
                    << std::endl;
-    bool insideRegular = false;
+    // bool insideRegular = false;
 
     // Data for polygons making up nozzle
     amrex::Vector<amrex::Vector<amrex::RealArray>> polygons;

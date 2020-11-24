@@ -50,7 +50,7 @@ pmf(
       hi_hiside = ProbParm::pmf_N - 1;
     }
     if (lo_loside == 0) {
-      for (int i = 0; i < ProbParm::pmf_N - 1; i++) {
+      for (unsigned int i = 0; i < ProbParm::pmf_N - 1; i++) {
         if ((xlo > ProbParm::d_pmf_X[i]) && (xlo < ProbParm::d_pmf_X[i + 1])) {
           lo_loside = i;
           lo_hiside = i + 1;
@@ -58,14 +58,14 @@ pmf(
       }
     }
     if (hi_loside == 0) {
-      for (int i = 0; i < ProbParm::pmf_N - 1; i++) {
+      for (unsigned int i = 0; i < ProbParm::pmf_N - 1; i++) {
         if ((xhi > ProbParm::d_pmf_X[i]) && (xhi < ProbParm::d_pmf_X[i + 1])) {
           hi_loside = i;
           hi_hiside = i + 1;
         }
       }
     }
-    for (int j = 0; j < ProbParm::pmf_M; j++) {
+    for (unsigned int j = 0; j < ProbParm::pmf_M; j++) {
       x1 = ProbParm::d_pmf_X[lo_loside];
       y1 = ProbParm::d_pmf_Y[ProbParm::pmf_N * j + lo_loside];
       x2 = ProbParm::d_pmf_X[lo_hiside];
@@ -111,7 +111,7 @@ pmf(
       hiside = ProbParm::pmf_N - 1;
     }
     if (loside == -1) {
-      for (int i = 0; i < ProbParm::pmf_N - 1; i++) {
+      for (unsigned int i = 0; i < ProbParm::pmf_N - 1; i++) {
         if (
           (xmid >= ProbParm::d_pmf_X[i]) &&
           (xmid <= ProbParm::d_pmf_X[i + 1])) {
@@ -120,7 +120,7 @@ pmf(
         }
       }
     }
-    for (int j = 0; j < ProbParm::pmf_M; j++) {
+    for (unsigned int j = 0; j < ProbParm::pmf_M; j++) {
       x1 = ProbParm::d_pmf_X[loside];
       y1 = ProbParm::d_pmf_Y[ProbParm::pmf_N * j + loside];
       x2 = ProbParm::d_pmf_X[hiside];
@@ -145,7 +145,7 @@ pc_initdata(
   amrex::GeometryData const& geomdata)
 {
   const amrex::Real* prob_lo = geomdata.ProbLo();
-  const amrex::Real* prob_hi = geomdata.ProbHi();
+  // const amrex::Real* prob_hi = geomdata.ProbHi();
   const amrex::Real* dx = geomdata.CellSize();
   const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
   const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
@@ -212,7 +212,7 @@ bcnormal(
   amrex::Real u[3] = {0.0};
   amrex::Real molefrac[NUM_SPECIES] = {0.0};
   amrex::Real massfrac[NUM_SPECIES] = {0.0};
-  amrex::Real pert, rho, energy, T, pres;
+  amrex::Real /* pert, */ rho, energy, T, pres;
 
   if (sgn == -1) {
     pmf(prob_hi[idir], prob_hi[idir], pmf_vals);

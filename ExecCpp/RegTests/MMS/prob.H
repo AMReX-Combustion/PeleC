@@ -34,7 +34,7 @@ pc_initdata(
 {
   // Geometry
   const amrex::Real* prob_lo = geomdata.ProbLo();
-  const amrex::Real* prob_hi = geomdata.ProbHi();
+  // const amrex::Real* prob_hi = geomdata.ProbHi();
   const amrex::Real* dx = geomdata.CellSize();
   masa_set_param("deltabar", dx[0]);
   amrex::Real x = 0.0, y = 0.0, z = 0.0;

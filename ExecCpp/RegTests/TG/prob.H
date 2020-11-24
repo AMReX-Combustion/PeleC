@@ -30,7 +30,7 @@ pc_initdata(
 
   // Geometry
   const amrex::Real* prob_lo = geomdata.ProbLo();
-  const amrex::Real* prob_hi = geomdata.ProbHi();
+  // const amrex::Real* prob_hi = geomdata.ProbHi();
   const amrex::Real* dx = geomdata.CellSize();
   const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
   const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
@@ -132,11 +132,11 @@ struct MyProbDeriveStruct
     const int* /*bcrec*/,
     int level)
   {
-    auto const dat = datfab.array();
-    auto arr = derfab.array();
-    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      // do something with arr
-    });
+    // auto const dat = datfab.array();
+    // auto arr = derfab.array();
+    // amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept
+    // { do something with arr
+    // });
   }
 };
 

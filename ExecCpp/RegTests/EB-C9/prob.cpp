@@ -114,13 +114,12 @@ PeleC::problem_post_timestep()
 void
 PeleC::problem_post_init()
 {
-
   if (verbose <= 0)
     return;
 
   amrex::Real time = state[State_Type].curTime();
   int datwidth = 14;
-  int datprecision = 6;
+  // int datprecision = 6;
 
   if (level == 0) {
     if (amrex::ParallelDescriptor::IOProcessor()) {

@@ -93,7 +93,7 @@ PeleC::construct_hydro_source(
       // amrex::IArrayBox bcMask[AMREX_SPACEDIM];
       amrex::Real cflLoc = -1.0e+200;
       int is_finest_level = (level == finest_level) ? 1 : 0;
-      int flag_nscbc_isAnyPerio = (geom.isAnyPeriodic()) ? 1 : 0;
+      // int flag_nscbc_isAnyPerio = (geom.isAnyPeriodic()) ? 1 : 0;
       int flag_nscbc_perio[AMREX_SPACEDIM]; // For 3D, we will know which
                                             // corners have a periodicity
       for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
@@ -111,8 +111,8 @@ PeleC::construct_hydro_source(
         const amrex::Box& bx = mfi.tilebox();
         const amrex::Box& qbx = amrex::grow(bx, NUM_GROW + nGrowF);
         const amrex::Box& fbx = amrex::grow(bx, nGrowF);
-        const int* lo = bx.loVect();
-        const int* hi = bx.hiVect();
+        // const int* lo = bx.loVect();
+        // const int* hi = bx.hiVect();
 
         amrex::GpuArray<amrex::FArrayBox, AMREX_SPACEDIM> flux;
         amrex::Elixir flux_eli[AMREX_SPACEDIM];

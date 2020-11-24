@@ -114,7 +114,7 @@ pc_fill_bndry_grad_stencil(
           (x[1] - b[0]) * (x[1] - b[0]) + (y[1] - b[1]) * (y[1] - b[1]) +
           (z[1] - b[2]) * (z[1] - b[2]))};
 
-      amrex::Real sten[3][3][3] = {0.0};
+      amrex::Real sten[3][3][3] = {{{0.0}}};
       // The two intersections, that are d(1) and d(2) away from the eb
       // centroid, are both in
       //  y-z planes, bounded in (0:2)x(0:2) in normalized coordinates
@@ -146,7 +146,7 @@ pc_fill_bndry_grad_stencil(
       const amrex::Real bcs = -(d[0] + d[1]) / (d[0] * d[1]);
 
       // Transform stencil into regular stencil structure
-      amrex::Real tsten[3][3][3] = {0.0};
+      amrex::Real tsten[3][3][3] = {{{0.0}}};
       int iv[3] = {0};
       for (int ii = 0; ii < 3; ii++) {
         for (int jj = 0; jj < 3; jj++) {

@@ -43,8 +43,8 @@ PeleC::fill_ext_source(
   amrex::MultiFab& ext_src,
   int ng)
 {
-  const amrex::Real* dx = geom.CellSize();
-  const amrex::Real* prob_lo = geom.ProbLo();
+  // const amrex::Real* dx = geom.CellSize();
+  // const amrex::Real* prob_lo = geom.ProbLo();
 
 #ifdef PELEC_USE_EB
   auto const& fact =
@@ -67,8 +67,8 @@ PeleC::fill_ext_source(
     }
 #endif
 
-    auto const& So = state_old.array(mfi);
-    auto const& Sn = state_new.array(mfi);
+    // auto const& So = state_old.array(mfi);
+    // auto const& Sn = state_new.array(mfi);
     auto const& Farr = ext_src.array(mfi);
 
     // Evaluate the external source

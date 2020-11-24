@@ -29,9 +29,8 @@ flatten(
   const amrex::Real zcut2 = 0.85e0;
   const amrex::Real dzcut = 1.0 / (zcut2 - zcut1);
 
-  amrex::Real dlft, drgt, dcen, dfm, dfp, dlim, dsgn, dtemp, drgtm1, dlftp1,
-    slop;
-  const amrex::Real qc = q(i, j, k, n);
+  // amrex::Real dlft, drgt, dcen, dfm, dfp, dlim, dsgn, dtemp, drgtm1, dlftp1,
+  // slop; const amrex::Real qc = q(i, j, k, n);
   const amrex::Real qm =
     q(i - 1 * bdim[0], j - 1 * bdim[1], k - 1 * bdim[2], n);
   const amrex::Real qp =

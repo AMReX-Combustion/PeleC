@@ -216,7 +216,7 @@ PeleC::getSmagorinskyLESTerm(
       const amrex::Box vbox = mfi.tilebox();
       const amrex::Box gbox = amrex::grow(vbox, ngrow);
       const amrex::Box cbox = amrex::grow(vbox, ngrow - 1);
-      const amrex::Box& dbox = geom.Domain();
+      // const amrex::Box& dbox = geom.Domain();
 
 #ifdef PELEC_USE_EB
       const auto& flag_fab = flags[mfi];
@@ -438,7 +438,7 @@ PeleC::getDynamicSmagorinskyLESTerm(
       const amrex::Box g3box = amrex::grow(vbox, nGrowC + 1);
       const amrex::Box g4box = amrex::grow(vbox, 1);
       const amrex::Box cbox = amrex::grow(vbox, 0);
-      const amrex::Box& dbox = geom.Domain();
+      // const amrex::Box& dbox = geom.Domain();
 
 #ifdef PELEC_USE_EB
       const auto& flag_fab = flags[mfi];
