@@ -114,15 +114,14 @@ pc_expl_reactions(
 #endif
 
   // compute rhoe_ext/rhoy_ext
-  
-  //work on old state
-  amrex::Real rhou = sold(i, j, k, UMX), 
-              rhov = sold(i, j, k, UMY),
+
+  // work on old state
+  amrex::Real rhou = sold(i, j, k, UMX), rhov = sold(i, j, k, UMY),
               rhow = sold(i, j, k, UMZ);
   amrex::Real rho_old = sold(i, j, k, URHO);
   amrex::Real rhoInv = 1.0 / rho_old;
 
-  //ideally rho and rho_old are the same
+  // ideally rho and rho_old are the same
   amrex::Real rho = 0.;
   for (int n = UFS; n < UFS + NUM_SPECIES; n++)
     rho += sold(i, j, k, n);
@@ -132,7 +131,7 @@ pc_expl_reactions(
      (0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv)) *
     rhoInv;
 
-  //work on new state
+  // work on new state
   rhou = snew(i, j, k, UMX);
   rhov = snew(i, j, k, UMY);
   rhow = snew(i, j, k, UMZ);
@@ -160,9 +159,9 @@ pc_expl_reactions(
     urk[n] = sold(i, j, k, n);
   amrex::Real urk_err[NVAR] = {};
 
-  //using rho instead of rho_old for
-  //being consistent with rho update inside 
-  //reaction time-stepping
+  // using rho instead of rho_old for
+  // being consistent with rho update inside
+  // reaction time-stepping
   amrex::Real rhoe_carryover = rho * e_old;
   amrex::Real rhoe_rk = rho * e_old;
 
@@ -184,22 +183,22 @@ pc_expl_reactions(
         massfrac[n] = urk[UFS + n] * rhoInv;
       }
 
-      EOS::RTY2WDOT(urk[URHO], urk[UTEMP], massfrac, wdot); 
+      EOS::RTY2WDOT(urk[URHO], urk[UTEMP], massfrac, wdot);
 
       amrex::Real Temp_rk;
       EOS::EY2T(rhoe_rk / urk[URHO], massfrac, Temp_rk);
 
       for (int n = 0; n < NUM_SPECIES; ++n)
         wdot[n] += rhoydot_ext[n];
-       
-      //get mixture specific heat
+
+      // get mixture specific heat
       amrex::Real cv;
       EOS::TY2Cv(urk[UTEMP], massfrac, cv);
 
-      //get species internal energies
+      // get species internal energies
       EOS::T2Ei(Temp_rk, ei);
 
-      //update temperature eqn source term
+      // update temperature eqn source term
       amrex::Real tempsrc = rhoedot_ext;
       for (int n = 0; n < NUM_SPECIES; ++n)
         tempsrc -= wdot[n] * ei[n];
@@ -260,25 +259,27 @@ pc_expl_reactions(
     for (int n = 0; n < NUM_SPECIES; ++n) {
       snew(i, j, k, UFS + n) = urk[UFS + n];
     }
-    //old rhoe + source*dt
-    snew(i, j, k, UEINT) = rho_old * e_old + dt_react * rhoedot_ext; 
-    //total new energy
-    snew(i, j, k, UEDEN) = snew(i, j, k, UEINT) + 
-	0.5 * (umnew * umnew + vmnew * vmnew + wmnew * wmnew) / urk[URHO];
+    // old rhoe + source*dt
+    snew(i, j, k, UEINT) = rho_old * e_old + dt_react * rhoedot_ext;
+    // total new energy
+    snew(i, j, k, UEDEN) =
+      snew(i, j, k, UEINT) +
+      0.5 * (umnew * umnew + vmnew * vmnew + wmnew * wmnew) / urk[URHO];
   }
 
-  //we are using urk instead of snew here because snew is updated only
-  //if do_update is true
+  // we are using urk instead of snew here because snew is updated only
+  // if do_update is true
   for (int n = 0; n < NUM_SPECIES; ++n) {
     IR(i, j, k, n) =
       (urk[UFS + n] - sold(i, j, k, UFS + n)) / dt_react - rhoydot_ext[n];
   }
   IR(i, j, k, NUM_SPECIES) =
-      (  rho_old*e_old + dt_react * rhoedot_ext  //new internal energy
-       + 0.5 * (umnew * umnew + vmnew * vmnew + wmnew * wmnew) / urk[URHO] //new KE
-       - sold(i, j, k, UEDEN) ) //old total energy
-       / dt_react -
-       nr_src(i, j, k, UEDEN);
+    (rho_old * e_old + dt_react * rhoedot_ext // new internal energy
+     +
+     0.5 * (umnew * umnew + vmnew * vmnew + wmnew * wmnew) / urk[URHO] // new KE
+     - sold(i, j, k, UEDEN)) // old total energy
+      / dt_react -
+    nr_src(i, j, k, UEDEN);
 }
 
 #endif

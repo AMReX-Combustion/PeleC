@@ -65,3 +65,5 @@ prob.idir = 1
 prob.frac = 0.5
 prob.left_gas = N2
 prob.right_gas = HE
+
+eb2.geom_type = "all_regular"

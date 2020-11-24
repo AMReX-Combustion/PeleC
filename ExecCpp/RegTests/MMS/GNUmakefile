@@ -27,7 +27,6 @@ THREAD_SANITIZER = FALSE
 USE_REACT = FALSE
 USE_EB  = FALSE
 Eos_dir := GammaLaw
-Reactions_dir := Null
 Transport_dir := Constant
 
 # MASA
@@ -36,7 +35,7 @@ ifeq ($(USE_MASA), TRUE)
   INCLUDE_LOCATIONS += ${MASA_HOME}/include ${MASA_HOME}/lib
   LIBRARY_LOCATIONS += ${MASA_HOME}/lib
   LIBRARIES += -Wl,-rpath,${MASA_HOME}/lib -lmasa -lfmasa
-  DEFINES += -DPELEC_USE_MASA -DDO_PROBLEM_POST_TIMESTEP -DDO_PROBLEM_POST_INIT
+  DEFINES += -DPELEC_USE_MASA
 endif
 
 # GNU Make

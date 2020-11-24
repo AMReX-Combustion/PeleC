@@ -68,11 +68,11 @@ PeleC::do_mol_advance(
     get_new_data(Work_Estimate_Type).setVal(0.0);
   }
 
-  //get old and new state
+  // get old and new state
   amrex::MultiFab& S_old = get_old_data(State_Type);
   amrex::MultiFab& S_new = get_new_data(State_Type);
 
-  //define sourceterm
+  // define sourceterm
   amrex::MultiFab molSrc(grids, dmap, NVAR, 0, amrex::MFInfo(), Factory());
 
   amrex::MultiFab molSrc_old, molSrc_new;
@@ -146,8 +146,9 @@ PeleC::do_mol_advance(
       construct_old_source(
         src_list[n], time, dt, amr_iteration, amr_ncycle, 0, 0);
 
-      //add sources to molsrc
-      amrex::MultiFab::Saxpy(molSrc, 1.0, *old_sources[src_list[n]], 0, 0, NVAR, 0);
+      // add sources to molsrc
+      amrex::MultiFab::Saxpy(
+        molSrc, 1.0, *old_sources[src_list[n]], 0, 0, NVAR, 0);
     }
   }
 
@@ -195,8 +196,9 @@ PeleC::do_mol_advance(
       construct_new_source(
         src_list[n], time + dt, dt, amr_iteration, amr_ncycle, 0, 0);
 
-      //add sources to molsrc
-      amrex::MultiFab::Saxpy(molSrc, 1.0, *new_sources[src_list[n]], 0, 0, NVAR, 0);
+      // add sources to molsrc
+      amrex::MultiFab::Saxpy(
+        molSrc, 1.0, *new_sources[src_list[n]], 0, 0, NVAR, 0);
     }
   }
 
@@ -212,7 +214,8 @@ PeleC::do_mol_advance(
     amrex::MultiFab::Saxpy(S_new, 0.5 * dt, I_R, 0, FirstSpec, NUM_SPECIES, 0);
     amrex::MultiFab::Saxpy(S_new, 0.5 * dt, I_R, NUM_SPECIES, Eden, 1, 0);
 
-    // F_{AD} = (1/dt)(U^{n+1,**} - U^n) - I_R = 0.5*(S^{n}+S^{n+1}(which is a guess!))
+    // F_{AD} = (1/dt)(U^{n+1,**} - U^n) - I_R = 0.5*(S^{n}+S^{n+1}(which is a
+    // guess!))
     amrex::MultiFab::LinComb(
       molSrc, 1.0 / dt, S_new, 0, -1.0 / dt, S_old, 0, 0, NVAR, 0);
     amrex::MultiFab::Subtract(molSrc, I_R, 0, FirstSpec, NUM_SPECIES, 0);
@@ -237,7 +240,8 @@ PeleC::do_mol_advance(
       getMOLSrcTerm(Sborder, molSrc_new, time, dt, flux_factor);
 
       // F_{AD} = (1/2)(S_old + S_new)
-      amrex::MultiFab::LinComb(molSrc, 0.5, molSrc_old, 0, 0.5, molSrc_new, 0, 0, NVAR, 0);
+      amrex::MultiFab::LinComb(
+        molSrc, 0.5, molSrc_old, 0, 0.5, molSrc_new, 0, 0, NVAR, 0);
 
       // Compute I_R and U^{n+1} = U^n + dt*(F_{AD} + I_R)
       react_state(time, dt, false, &molSrc);

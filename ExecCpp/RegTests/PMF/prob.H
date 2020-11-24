@@ -5,6 +5,7 @@
 #include <AMReX_Geometry.H>
 #include <AMReX_FArrayBox.H>
 
+#include "PeleC.H"
 #include "IndexDefines.H"
 #include "EOS.H"
 #include "Tagging.H"

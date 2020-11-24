@@ -1,6 +1,6 @@
 # AMReX
 DIM = 3
-COMP = gnu
+COMP = llvm
 PRECISION = DOUBLE
 
 # Profiling
@@ -29,7 +29,6 @@ USE_SUNDIALS_PP = FALSE
 USE_EB = FALSE
 USE_MASA = FALSE
 Eos_dir := Fuego
-Reactions_dir := Fuego
 Chemistry_Model := LiDryer
 Transport_dir := Simple
 

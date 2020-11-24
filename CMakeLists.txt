@@ -10,7 +10,7 @@ include(CMakePackageConfigHelpers)
 #General options for all executables in the project
 set(PELEC_DIM "3" CACHE STRING "Number of physical dimensions")
 option(PELEC_ENABLE_DOCUMENTATION "Build documentation" OFF)
-option(PELEC_ENABLE_AMREX_EB "Enable EB in AMReX library" OFF)
+option(PELEC_ENABLE_AMREX_EB "Enable EB in AMReX library" ON)
 option(PELEC_ENABLE_ALL_WARNINGS "Enable all compiler warnings" OFF)
 option(PELEC_ENABLE_TESTS "Enable regression and unit tests" OFF)
 option(PELEC_ENABLE_MASA "Enable tests that require MASA" OFF)

@@ -8,6 +8,7 @@
 
 #include "mechanism.h"
 
+#include "PeleC.H"
 #include "IndexDefines.H"
 #include "EOS.H"
 #include "Tagging.H"

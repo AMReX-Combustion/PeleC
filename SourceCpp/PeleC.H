@@ -285,7 +285,6 @@ public:
 #ifdef PELEC_USE_EB
   static bool DoMOLLoadBalance() { return do_mol_load_balance; }
 
-
   const amrex::MultiFab& volFrac() const { return vfrac; }
 
   void init_eb(
