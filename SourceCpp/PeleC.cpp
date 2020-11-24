@@ -1110,11 +1110,7 @@ PeleC::post_timestep(int iteration)
   int ng_pts = 0;
   computeTemp(S_new, ng_pts);
 
-#ifdef DO_PROBLEM_POST_TIMESTEP
-
   problem_post_timestep();
-
-#endif
 
   if (level == 0) {
     int nstep = parent->levelSteps(0);
@@ -1173,9 +1169,7 @@ PeleC::post_restart()
     init_filters();
   }
 
-#ifdef DO_PROBLEM_POST_RESTART
   problem_post_restart();
-#endif
 }
 
 void
@@ -1230,12 +1224,10 @@ PeleC::post_init(amrex::Real stop_time)
     }
   }
 
-#ifdef DO_PROBLEM_POST_INIT
   //
   // Allow the user to define their own post_init functions.
   //
   problem_post_init();
-#endif
 
   int nstep = parent->levelSteps(0);
   if (cumtime != 0.0)

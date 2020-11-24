@@ -537,6 +537,46 @@ initialize_EB2(
 
     auto gshop = amrex::EB2::makeShop(pr);
     amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
+  } else if (geom_type == "ICE_PistonBowl") {
+    amrex::RealArray point;
+    amrex::RealArray normal;
+
+    amrex::RealArray center;
+    center[0] = 0.04 - 0.0125 - 0.02;
+    center[1] = 0.0;
+    center[2] = 0.0;
+
+    amrex::Real radius;
+    radius = 0.02;
+
+    bool has_fluid_inside = 0;
+    amrex::EB2::SphereIF sf(radius, center, has_fluid_inside);
+
+    amrex::EB2::CylinderIF cf1(0.04, 0.09, 0, {0.045, 0.0, 0.0}, true);
+    amrex::EB2::CylinderIF cf2(
+      0.04, 0.125, 0, {-0.0125 - 0.02, 0.0, 0.0}, false);
+    amrex::EB2::CylinderIF cf3(
+      0.03, 0.125, 0, {-0.0125 - 0.02, 0.0, 0.0}, false);
+    auto pipe = amrex::EB2::makeDifference(cf2, cf3);
+    amrex::EB2::CylinderIF cf4(
+      0.03, 0.10, 0, {-0.0125 - 0.02, 0.0, 0.0}, false);
+
+    amrex::RealArray center2;
+    center2[0] = 0.0;
+    center2[1] = 0.0;
+    center2[2] = 0.0;
+
+    amrex::Real radius2;
+    radius2 = 0.09;
+
+    bool has_fluid_inside2 = 1;
+    amrex::EB2::SphereIF sf2(radius2, center2, has_fluid_inside2);
+
+    auto polys = amrex::EB2::makeUnion(cf1, pipe, cf4, sf, sf2);
+
+    auto gshop = amrex::EB2::makeShop(polys);
+    amrex::EB2::Build(
+      gshop, geom, max_coarsening_level, max_coarsening_level, 4);
   } else if (geom_type == "extruded_triangles") {
     // setting some constants
     // the polygon is triangle
@@ -670,8 +710,8 @@ initialize_EB2(
     amrex::Abort("Line-Piston-Cylinder geom_type not supported");
 #endif
   } else if (geom_type == "polygon_revolution") {
-    amrex::Print()
-      << "polygon_revolution  geometry not currently supported.  combustor?\n";
+    amrex::Print() << "polygon_revolution  geometry not currently supported. "
+                      " combustor?\n";
     amrex::Abort();
     amrex::Print() << "creating geometry from polygon surfaces of revolution"
                    << std::endl;
@@ -679,8 +719,8 @@ initialize_EB2(
 
     // Data for polygons making up nozzle
     amrex::Vector<amrex::Vector<amrex::RealArray>> polygons;
-    // For building each polygon - unlike original PeleEB, don't scale by domain
-    // size
+    // For building each polygon - unlike original PeleEB, don't scale by
+    // domain size
     int num_poly;
     ppeb2.get("num_poly", num_poly);
     polygons.resize(num_poly);
@@ -713,8 +753,8 @@ initialize_EB2(
         normal.fill(0.0);
         amrex::RealArray point;
 
-        // Set the normal remembering that the last point connects to the first
-        // point
+        // Set the normal remembering that the last point connects to the
+        // first point
         normal[0] = -(polygon[(n + 1) % numPts][1] - polygon[n][1]);
         normal[1] = (polygon[(n + 1) % numPts][0] - polygon[n][0]);
 
@@ -727,7 +767,6 @@ initialize_EB2(
     // PolygonIF pf(planes);
     // auto gshop = EB2::makeShop(pf);
     // EB2::Build(gshop, geom, max_level, max_level);
-
   } else if (geom_type == "moving_plane") {
     amrex::RealArray point;
     point[0] = 0.5;
@@ -747,7 +786,6 @@ initialize_EB2(
     auto gshop = amrex::EB2::makeShop(pipe);
 
     amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
-
   } else {
     amrex::EB2::Build(geom, max_level, max_level);
   }
