@@ -39,7 +39,8 @@ function(build_pelec_exe pelec_exe_name)
                  ${PELEC_MECHANISM_DIR}/chemistry_file.H
                  ${PELEC_MECHANISM_DIR}/mechanism.cpp
                  ${PELEC_MECHANISM_DIR}/mechanism.h)
-  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
+     "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
     list(APPEND MY_CXX_FLAGS "-Wno-unused-variable")
     list(APPEND MY_CXX_FLAGS "-Wno-unused-parameter")
     list(APPEND MY_CXX_FLAGS "-Wno-vla-extension")
@@ -159,7 +160,7 @@ function(build_pelec_exe pelec_exe_name)
   #PeleC include directories
   target_include_directories(${pelec_exe_name} PRIVATE ${SRC_DIR})
   target_include_directories(${pelec_exe_name} PRIVATE ${CMAKE_BINARY_DIR})
-  
+
   #Link to amrex library
   target_link_libraries(${pelec_exe_name} PRIVATE amrex)
 
