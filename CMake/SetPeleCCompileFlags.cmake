@@ -1,7 +1,7 @@
 # Logic for handling warnings
 if(PELEC_ENABLE_ALL_WARNINGS)
   # GCC, Clang, and Intel seem to accept these
-  list(APPEND PELEC_CXX_FLAGS "-Wall" "-Wextra" "-pedantic")
+  list(APPEND PELEC_CXX_FLAGS "-Wall" "-Wextra" "-Wpedantic")
   if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
     list(APPEND PELEC_CXX_FLAGS "-diag-disable:11074,11076")
   endif()

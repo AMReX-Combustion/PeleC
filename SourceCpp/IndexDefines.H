@@ -98,6 +98,6 @@ upass_map(const int i)
 {
   return upassMap[i];
 }
-}; // namespace indxmap
+} // namespace indxmap
 
 #endif
