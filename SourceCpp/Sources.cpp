@@ -6,8 +6,8 @@ PeleC::construct_old_source(
   int src,
   amrex::Real time,
   amrex::Real dt,
-  int amr_iteration,
-  int amr_ncycle,
+  int /*amr_iteration*/,
+  int /*amr_ncycle*/,
   int sub_iteration,
   int sub_ncycle)
 {
@@ -40,8 +40,8 @@ PeleC::construct_new_source(
   int src,
   amrex::Real time,
   amrex::Real dt,
-  int amr_iteration,
-  int amr_ncycle,
+  int /*amr_iteration*/,
+  int /*amr_ncycle*/,
   int sub_iteration,
   int sub_ncycle)
 {

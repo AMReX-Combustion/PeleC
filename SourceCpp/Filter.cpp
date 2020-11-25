@@ -482,7 +482,7 @@ Filter::apply_filter(
   amrex::FArrayBox& out,
   const int nstart,
   const int ncnt,
-  const int ncomp)
+  const int /*ncomp*/)
 {
 
   const auto q = in.array();

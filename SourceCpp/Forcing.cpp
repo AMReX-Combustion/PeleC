@@ -43,9 +43,13 @@ PeleC::construct_new_forcing_source(amrex::Real time, amrex::Real dt)
 
 void
 PeleC::fill_forcing_source(
-  amrex::Real time,
-  amrex::Real dt,
-  const amrex::MultiFab& state_old,
+  amrex::Real /*time*/,
+  amrex::Real /*dt*/,
+  const amrex::MultiFab&
+#ifdef PELEC_USE_EB
+    state_old
+#endif
+  ,
   const amrex::MultiFab& state_new,
   amrex::MultiFab& forcing_src,
   int ng)

@@ -26,7 +26,7 @@ pc_rst_int_e(
   const int allow_small_energy,
   const int allow_negative_energy,
   const int dual_energy_update_E_from_e,
-  const int verbose)
+  const int /*verbose*/)
 {
   if (allow_small_energy == 0) {
     const amrex::Real rhoInv = 1.0 / S(i, j, k, URHO);

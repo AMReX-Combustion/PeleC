@@ -8,8 +8,8 @@ PeleC::construct_hydro_source(
   const amrex::MultiFab& S,
   amrex::Real time,
   amrex::Real dt,
-  int amr_iteration,
-  int amr_ncycle,
+  int /*amr_iteration*/,
+  int /*amr_ncycle*/,
   int sub_iteration,
   int sub_ncycle)
 {
@@ -332,8 +332,8 @@ PeleC::construct_hydro_source(
 
 void
 pc_umdrv(
-  const int is_finest_level,
-  const amrex::Real time,
+  const int /*is_finest_level*/,
+  const amrex::Real /*time*/,
   amrex::Box const& bx,
   const int* domlo,
   const int* domhi,
@@ -353,7 +353,7 @@ pc_umdrv(
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
     a,
   amrex::Array4<amrex::Real> const& vol,
-  amrex::Real cflLoc)
+  amrex::Real /*cflLoc*/)
 {
   //  Set Up for Hydro Flux Calculations
   auto const& bxg2 = grow(bx, 2);

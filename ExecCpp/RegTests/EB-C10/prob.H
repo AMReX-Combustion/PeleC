@@ -58,10 +58,9 @@ bcnormal(
   amrex::Real s_ext[NVAR],
   const int idir,
   const int sgn,
-  const amrex::Real time,
+  const amrex::Real /*time*/,
   amrex::GeometryData const& geomdata)
 {
-
   if (idir == 0) {
     amrex::Real rho = 0.0, u = 0.0, v = 0.0, w = 0.0, eint = 0.0, T = 0.0;
 
