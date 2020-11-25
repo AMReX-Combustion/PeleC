@@ -229,7 +229,7 @@ sort(T& vec)
   typename T::value_type* d_vec = vec.data();
   const int vec_size = vec.size();
   // Serial loop on the GPU
-  amrex::ParallelFor(1, [=] AMREX_GPU_DEVICE(int dummy) {
+  amrex::ParallelFor(1, [=] AMREX_GPU_DEVICE(int /*dummy*/) {
     for (int i = 0; i < vec_size - 1; i++) {
       for (int j = 0; j < vec_size - i - 1; j++) {
         if (d_vec[j + 1] < d_vec[j]) {
@@ -279,7 +279,7 @@ unique(T input)
   typename T::value_type* d_output = output.data();
 
   // get the uniques
-  amrex::ParallelFor(1, [=] AMREX_GPU_DEVICE(int dummy) {
+  amrex::ParallelFor(1, [=] AMREX_GPU_DEVICE(int /*dummy*/) {
     int cnt = 1;
     d_output[0] = d_input[0];
     for (int i = 0; i < input_size - 1; i++) {

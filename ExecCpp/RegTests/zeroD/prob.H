@@ -24,7 +24,7 @@ pc_initdata(
   int j,
   int k,
   amrex::Array4<amrex::Real> const& state,
-  amrex::GeometryData const& geomdata)
+  amrex::GeometryData const& /*geomdata*/)
 {
   // Set the state
   state(i, j, k, URHO) = ProbParm::rho_init;
@@ -42,13 +42,13 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 bcnormal(
-  const amrex::Real x[AMREX_SPACEDIM],
-  const amrex::Real s_int[NVAR],
-  amrex::Real s_ext[NVAR],
-  const int idir,
-  const int sgn,
-  const amrex::Real time,
-  amrex::GeometryData const& geomdata)
+  const amrex::Real* /*x[AMREX_SPACEDIM]*/,
+  const amrex::Real* /*s_int[NVAR]*/,
+  amrex::Real* /*s_ext[NVAR]*/,
+  const int /*idir*/,
+  const int /*sgn*/,
+  const amrex::Real /*time*/,
+  amrex::GeometryData const& /*geomdata*/)
 {
 }
 

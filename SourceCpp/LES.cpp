@@ -51,7 +51,7 @@
 
 void
 PeleC::construct_old_les_source(
-  amrex::Real time, amrex::Real dt, int sub_iteration, int sub_ncycle)
+  amrex::Real time, amrex::Real dt, int /*sub_iteration*/, int /*sub_ncycle*/)
 {
   // Add grow cells necessary for explicit filtering of source terms
   if (use_explicit_filter) {

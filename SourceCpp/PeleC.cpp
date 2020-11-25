@@ -556,12 +556,13 @@ PeleC::setGridInfo()
     */
 
   if (level == 0) {
-    int max_level = parent->maxLevel();
-    int nlevs = max_level + 1;
+    const int max_level = parent->maxLevel();
+    const int nlevs = max_level + 1;
+    const int size = 3 * nlevs;
 
-    amrex::Real dx_level[3 * nlevs];
-    int domlo_level[3 * nlevs];
-    int domhi_level[3 * nlevs];
+    amrex::Vector<amrex::Real> dx_level(size);
+    amrex::Vector<int> domlo_level(size);
+    amrex::Vector<int> domhi_level(size);
 
     const amrex::Real* dx_coarse = geom.CellSize();
 
@@ -771,8 +772,7 @@ PeleC::initialTimeStep()
   return init_dt;
 }
 
-amrex::Real
-PeleC::estTimeStep(amrex::Real dt_old)
+amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 {
   BL_PROFILE("PeleC::estTimeStep()");
 
@@ -945,9 +945,9 @@ PeleC::estTimeStep(amrex::Real dt_old)
 void
 PeleC::computeNewDt(
   int finest_level,
-  int sub_cycle,
+  int /*sub_cycle*/,
   amrex::Vector<int>& n_cycle,
-  const amrex::Vector<amrex::IntVect>& ref_ratio,
+  const amrex::Vector<amrex::IntVect>& /*ref_ratio*/,
   amrex::Vector<amrex::Real>& dt_min,
   amrex::Vector<amrex::Real>& dt_level,
   amrex::Real stop_time,
@@ -1018,9 +1018,9 @@ PeleC::computeNewDt(
 void
 PeleC::computeInitialDt(
   int finest_level,
-  int sub_cycle,
+  int /*sub_cycle*/,
   amrex::Vector<int>& n_cycle,
-  const amrex::Vector<amrex::IntVect>& ref_ratio,
+  const amrex::Vector<amrex::IntVect>& /*ref_ratio*/,
   amrex::Vector<amrex::Real>& dt_level,
   amrex::Real stop_time)
 {
@@ -1056,7 +1056,11 @@ PeleC::computeInitialDt(
 }
 
 void
-PeleC::post_timestep(int iteration)
+PeleC::post_timestep(int
+#ifdef AMREX_PARTICLES
+                       iteration
+#endif
+)
 {
   BL_PROFILE("PeleC::post_timestep()");
 
@@ -1180,7 +1184,13 @@ PeleC::postCoarseTimeStep(amrex::Real cumtime)
 }
 
 void
-PeleC::post_regrid(int lbase, int new_finest)
+PeleC::post_regrid(
+  int
+#ifdef AMREX_PARTICLES
+    lbase
+#endif
+  ,
+  int /*new_finest*/)
 {
   BL_PROFILE("PeleC::post_regrid()");
   fine_mask.clear();
@@ -1194,8 +1204,7 @@ PeleC::post_regrid(int lbase, int new_finest)
 #endif
 }
 
-void
-PeleC::post_init(amrex::Real stop_time)
+void PeleC::post_init(amrex::Real /*stop_time*/)
 {
   BL_PROFILE("PeleC::post_init()");
 
@@ -1351,7 +1360,7 @@ PeleC::avgDown()
 }
 
 void
-PeleC::normalize_species(amrex::MultiFab& S)
+PeleC::normalize_species(amrex::MultiFab& /*S*/)
 {
   amrex::Abort("We don't normalize species!");
 }
@@ -1379,7 +1388,7 @@ PeleC::enforce_consistent_e(amrex::MultiFab& S)
 }
 
 amrex::Real
-PeleC::enforce_min_density(amrex::MultiFab& S_old, amrex::MultiFab& S_new)
+PeleC::enforce_min_density(amrex::MultiFab& /*S_old*/, amrex::MultiFab& S_new)
 {
 
   /** This routine sets the density in S_new to be larger than the density
@@ -1519,8 +1528,8 @@ PeleC::errorEst(
   int /*clearval*/,
   int /*tagval*/,
   amrex::Real time,
-  int n_error_buf,
-  int ngrow)
+  int /*n_error_buf*/,
+  int /*ngrow*/)
 {
   BL_PROFILE("PeleC::errorEst()");
 

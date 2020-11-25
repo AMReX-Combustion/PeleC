@@ -36,10 +36,14 @@ PeleC::construct_new_ext_source(amrex::Real time, amrex::Real dt)
 
 void
 PeleC::fill_ext_source(
-  amrex::Real time,
-  amrex::Real dt,
-  const amrex::MultiFab& state_old,
-  const amrex::MultiFab& state_new,
+  amrex::Real /*time*/,
+  amrex::Real /*dt*/,
+  const amrex::MultiFab&
+#ifdef PELEC_USE_EB
+    state_old
+#endif
+  ,
+  const amrex::MultiFab& /*state_new*/,
   amrex::MultiFab& ext_src,
   int ng)
 {

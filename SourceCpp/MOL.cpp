@@ -8,7 +8,11 @@ pc_compute_hyp_mol_flux(
   const amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
     a,
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> del,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>
+#ifdef PELEC_USE_EB
+    del
+#endif
+  ,
   const int plm_iorder
 #ifdef PELEC_USE_EB
   ,
@@ -16,7 +20,7 @@ pc_compute_hyp_mol_flux(
   const amrex::Array4<const amrex::Real>& vfrac,
   const amrex::Array4<amrex::EBCellFlag const>& flags,
   const EBBndryGeom* ebg,
-  const int Nebg,
+  const int /*Nebg*/,
   amrex::Real* ebflux,
   const int nebflux
 #endif

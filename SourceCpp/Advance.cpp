@@ -617,12 +617,12 @@ PeleC::construct_Snew(
 
 void
 PeleC::initialize_sdc_iteration(
-  amrex::Real time,
-  amrex::Real dt,
-  int amr_iteration,
-  int amr_ncycle,
-  int sdc_iteration,
-  int sdc_ncycle)
+  amrex::Real /*time*/,
+  amrex::Real /*dt*/,
+  int /*amr_iteration*/,
+  int /*amr_ncycle*/,
+  int /*sdc_iteration*/,
+  int /*sdc_ncycle*/)
 {
   BL_PROFILE("PeleC::initialize_sdc_iteration()");
 
@@ -639,19 +639,22 @@ PeleC::initialize_sdc_iteration(
 
 void
 PeleC::finalize_sdc_iteration(
-  amrex::Real time,
-  amrex::Real dt,
-  int amr_iteration,
-  int amr_ncycle,
-  int sdc_iteration,
-  int sdc_ncycle)
+  amrex::Real /*time*/,
+  amrex::Real /*dt*/,
+  int /*amr_iteration*/,
+  int /*amr_ncycle*/,
+  int /*sdc_iteration*/,
+  int /*sdc_ncycle*/)
 {
   BL_PROFILE("PeleC::finalize_sdc_iteration()");
 }
 
 void
 PeleC::initialize_sdc_advance(
-  amrex::Real time, amrex::Real dt, int amr_iteration, int amr_ncycle)
+  amrex::Real /*time*/,
+  amrex::Real dt,
+  int /*amr_iteration*/,
+  int /*amr_ncycle*/)
 {
   BL_PROFILE("PeleC::initialize_sdc_advance()");
 
@@ -673,7 +676,10 @@ PeleC::initialize_sdc_advance(
 
 void
 PeleC::finalize_sdc_advance(
-  amrex::Real time, amrex::Real dt, int amr_iteration, int amr_ncycle)
+  amrex::Real /*time*/,
+  amrex::Real /*dt*/,
+  int /*amr_iteration*/,
+  int /*amr_ncycle*/)
 {
   BL_PROFILE("PeleC::finalize_sdc_advance()");
 

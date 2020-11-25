@@ -4,7 +4,7 @@ void
 PeleC::getMOLSrcTerm(
   const amrex::MultiFab& S,
   amrex::MultiFab& MOLSrcTerm,
-  amrex::Real time,
+  amrex::Real /*time*/,
   amrex::Real dt,
   amrex::Real flux_factor)
 {

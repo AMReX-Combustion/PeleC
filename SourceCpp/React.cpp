@@ -8,7 +8,10 @@
 
 void
 PeleC::react_state(
-  amrex::Real time, amrex::Real dt, bool react_init, amrex::MultiFab* aux_src)
+  amrex::Real /*time*/,
+  amrex::Real dt,
+  bool react_init,
+  amrex::MultiFab* aux_src)
 {
   /*
     Update I_R, and recompute S_new

@@ -96,7 +96,7 @@ PeleC::volWgtSquaredSum(const std::string& name, amrex::Real time, bool local)
 }
 
 amrex::Real
-PeleC ::volWgtSquaredSumDiff(int comp, amrex::Real time, bool local)
+PeleC ::volWgtSquaredSumDiff(int comp, amrex::Real /*time*/, bool local)
 {
   // Calculate volume weighted sum of the square of the difference
   // between the old and new quantity

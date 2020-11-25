@@ -240,7 +240,7 @@ PeleC::checkPoint(
   const std::string& dir,
   std::ostream& os,
   amrex::VisMF::How how,
-  bool dump_old_default)
+  bool /*dump_old_default*/)
 {
   amrex::AmrLevel::checkPoint(dir, os, how, dump_old);
 

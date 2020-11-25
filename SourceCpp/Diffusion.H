@@ -29,7 +29,7 @@ pc_diffextrap(
   const int j,
   const int k,
   const amrex::Array4<amrex::Real>& dif,
-  const int ng,
+  const int /*ng*/,
   const int first,
   const int last,
   AMREX_D_DECL(const int lx, const int ly, const int lz),

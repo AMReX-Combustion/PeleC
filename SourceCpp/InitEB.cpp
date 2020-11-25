@@ -16,9 +16,9 @@ PeleC::ebInitialized()
 
 void
 PeleC::init_eb(
-  const amrex::Geometry& level_geom,
-  const amrex::BoxArray& ba,
-  const amrex::DistributionMapping& dm)
+  const amrex::Geometry& /*level_geom*/,
+  const amrex::BoxArray& /*ba*/,
+  const amrex::DistributionMapping& /*dm*/)
 {
   amrex::ParmParse pp("eb2");
   std::string geom_type("all_regular");
@@ -119,7 +119,7 @@ PeleC::initialize_eb2_structs()
           EBBndryGeom* d_sv_eb_bndry_geom = sv_eb_bndry_geom[iLocal].data();
           amrex::IntVect captured_bit = bit();
           // Serial loop on the GPU
-          amrex::ParallelFor(1, [=] AMREX_GPU_DEVICE(int dummy) {
+          amrex::ParallelFor(1, [=] AMREX_GPU_DEVICE(int /*dummy*/) {
             d_sv_eb_bndry_geom[ivec].iv = captured_bit;
           });
           ivec++;
@@ -270,7 +270,7 @@ PeleC::initialize_eb2_structs()
 
         const int sv_eb_bndry_geom_size = sv_eb_bndry_geom[iLocal].size();
         // Serial loop on the GPU
-        amrex::ParallelFor(1, [=] AMREX_GPU_DEVICE(int dummy) {
+        amrex::ParallelFor(1, [=] AMREX_GPU_DEVICE(int /*dummy*/) {
           int cnt = 0;
           for (int i = 0; i < sv_eb_bndry_geom_size; i++) {
             const amrex::IntVect& iv = d_sv_eb_bndry_geom[i].iv;
@@ -449,7 +449,13 @@ convertIntGG(int number)
  **/
 void
 initialize_EB2(
-  const amrex::Geometry& geom, const int required_level, const int max_level)
+  const amrex::Geometry& geom,
+  const int
+#ifdef LinePistonCylinder
+    required_level
+#endif
+  ,
+  const int max_level)
 {
   BL_PROFILE("PeleC::initialize_EB2()");
 

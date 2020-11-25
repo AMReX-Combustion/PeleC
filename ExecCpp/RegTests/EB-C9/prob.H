@@ -60,13 +60,13 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 bcnormal(
-  const amrex::Real x[AMREX_SPACEDIM],
-  const amrex::Real s_int[NVAR],
-  amrex::Real s_ext[NVAR],
-  const int idir,
-  const int sgn,
-  const amrex::Real time,
-  amrex::GeometryData const& geomdata)
+  const amrex::Real* /*x[AMREX_SPACEDIM]*/,
+  const amrex::Real* /*s_int[NVAR]*/,
+  amrex::Real* /*s_ext[NVAR]*/,
+  const int /*idir*/,
+  const int /*sgn*/,
+  const amrex::Real /*time*/,
+  amrex::GeometryData const& /*geomdata*/)
 {
 }
 
@@ -91,13 +91,13 @@ struct MyProbDeriveStruct
   static void pc_rhoerror(
     const amrex::Box& bx,
     amrex::FArrayBox& derfab,
-    int dcomp,
+    int /*dcomp*/,
     int /*ncomp*/,
     const amrex::FArrayBox& datfab,
     const amrex::Geometry& geomdata,
     amrex::Real time,
     const int* /*bcrec*/,
-    int level)
+    int /*level*/)
   {
     auto const dat = datfab.array();
     auto arr = derfab.array();

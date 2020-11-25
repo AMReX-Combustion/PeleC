@@ -71,12 +71,12 @@ AMREX_FORCE_INLINE
 void
 bcnormal(
   const amrex::Real x[AMREX_SPACEDIM],
-  const amrex::Real s_int[NVAR],
+  const amrex::Real* /*s_int[NVAR]*/,
   amrex::Real s_ext[NVAR],
-  const int idir,
-  const int sgn,
-  const amrex::Real time,
-  amrex::GeometryData const& geomdata)
+  const int /*idir*/,
+  const int /*sgn*/,
+  const amrex::Real /*time*/,
+  amrex::GeometryData const& /*geomdata*/)
 {
   const amrex::Real rho = masa_eval_3d_exact_rho(x[0], x[1], x[2]);
   const amrex::Real u[3] = {
