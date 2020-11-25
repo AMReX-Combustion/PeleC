@@ -184,7 +184,7 @@ read_binary(
     infile.read(reinterpret_cast<char*>(&data[i]), sizeof(data[i]));
   }
   infile.close();
-};
+}
 
 // -----------------------------------------------------------
 // Read a csv file
@@ -238,7 +238,7 @@ read_csv(
       cnt++;
     }
   }
-};
+}
 
 // -----------------------------------------------------------
 // Search for the closest index in an array to a given value
@@ -278,4 +278,4 @@ locate(const amrex::Real* xtable, const int n, amrex::Real& x, int& idxlo)
       }
     }
   }
-};
+}
