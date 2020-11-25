@@ -1458,6 +1458,7 @@ pc_artif_visc(
 }
 
 // Host Functions
+#if AMREX_SPACEDIM == 3
 void pc_umeth_3D(
   amrex::Box const& bx,
   const int* bclo,
@@ -1483,6 +1484,8 @@ void pc_umeth_3D(
   const int ppm_type,
   const int use_flattening);
 
+#elif AMREX_SPACEDIM == 2
+
 void pc_umeth_2D(
   amrex::Box const& bx,
   const int* bclo,
@@ -1505,5 +1508,6 @@ void pc_umeth_2D(
   const amrex::Real dt,
   const int ppm_type,
   const int use_flattening);
+#endif
 
 #endif
