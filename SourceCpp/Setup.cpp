@@ -337,11 +337,11 @@ PeleC::variableSetUp()
           break;
       }
       const int strlen = j;
-      std::string char_spec_names(strlen + 1, ' ');
+      char char_spec_names[strlen + 1];
       for (j = 0; j < strlen; j++)
         char_spec_names[j] = int_spec_names[i * len + j];
       char_spec_names[j] = '\0';
-      spec_names.push_back(char_spec_names);
+      spec_names.push_back(std::string(char_spec_names));
     }
   }
 
@@ -368,11 +368,11 @@ PeleC::variableSetUp()
       // This call return the actual length of each string in "len"
       get_aux_names(int_aux_names.dataPtr(),&i,&len);
     */
-    std::string char_aux_names(len + 1, ' ');
+    char char_aux_names[len + 1];
     for (int j = 0; j < len; j++)
       char_aux_names[j] = int_aux_names[j];
     char_aux_names[len] = '\0';
-    aux_names.push_back(char_aux_names);
+    aux_names.push_back(std::string(char_aux_names));
   }
   if (amrex::ParallelDescriptor::IOProcessor()) {
     amrex::Print() << NUM_AUX << " Auxiliary Variables: " << std::endl;
