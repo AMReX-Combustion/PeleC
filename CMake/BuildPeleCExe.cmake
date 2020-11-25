@@ -39,6 +39,9 @@ function(build_pelec_exe pelec_exe_name)
                  ${PELEC_MECHANISM_DIR}/chemistry_file.H
                  ${PELEC_MECHANISM_DIR}/mechanism.cpp
                  ${PELEC_MECHANISM_DIR}/mechanism.h)
+  set_source_files_properties(${PELEC_MECHANISM_DIR}/mechanism.cpp PROPERTIES COMPILE_FLAGS "-Wno-unused-variable -Wno-unused-parameter -Wno-vla-extension -Wno-zero-length-array")
+  set_source_files_properties(${PELEC_MECHANISM_DIR}/chemistry_file.H PROPERTIES COMPILE_FLAGS "-Wno-unused-variable -Wno-unused-parameter -Wno-vla-extension -Wno-zero-length-array")
+  set_source_files_properties(${PELEC_MECHANISM_DIR}/mechanism.H PROPERTIES COMPILE_FLAGS "-Wno-unused-variable -Wno-unused-parameter -Wno-vla-extension -Wno-zero-length-array")
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELEC_MECHANISM_DIR})
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELE_PHYSICS_SRC_DIR}/Support/Fuego/Evaluation)
   
