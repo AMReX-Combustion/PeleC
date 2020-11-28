@@ -1388,9 +1388,9 @@ PeleC::enforce_consistent_e(amrex::MultiFab& S)
 }
 
 amrex::Real
-PeleC::enforce_min_density(amrex::MultiFab& /*S_old*/, amrex::MultiFab& S_new)
+PeleC::enforce_min_density(
+  amrex::MultiFab& /*S_old*/, const amrex::MultiFab& S_new)
 {
-
   /** This routine sets the density in S_new to be larger than the density
      floor. Note that it will operate everywhere on S_new, including ghost
      zones. S_old is present so that, after the hydro call, we know what the old

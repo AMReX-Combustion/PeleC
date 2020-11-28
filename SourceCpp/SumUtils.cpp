@@ -103,8 +103,8 @@ PeleC ::volWgtSquaredSumDiff(int comp, amrex::Real /*time*/, bool local)
 
   amrex::Real sum = 0.0;
   // const amrex::Real* dx = geom.CellSize();
-  amrex::MultiFab& S_old = get_old_data(State_Type);
-  amrex::MultiFab& S_new = get_new_data(State_Type);
+  const amrex::MultiFab& S_old = get_old_data(State_Type);
+  const amrex::MultiFab& S_new = get_new_data(State_Type);
   amrex::MultiFab diff(grids, dmap, 1, 0);
 
   // Calculate the difference between the states

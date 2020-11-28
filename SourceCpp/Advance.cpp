@@ -54,14 +54,14 @@ PeleC::do_mol_advance(
   // into MOL advance yet");
 
   for (int i = 0; i < num_state_type; ++i) {
-    bool skip = false;
 #ifdef PELEC_USE_REACTIONS
-    skip = i == Reactions_Type && do_react;
+    if (!(i == Reactions_Type && do_react)) {
 #endif
-    if (!skip) {
       state[i].allocOldData();
       state[i].swapTimeLevels(dt);
+#ifdef PELEC_USE_REACTIONS
     }
+#endif
   }
 
   if (do_mol_load_balance || do_react_load_balance) {
@@ -329,7 +329,7 @@ PeleC::do_sdc_iteration(
 
   BL_PROFILE("PeleC::do_sdc_iteration()");
 
-  amrex::MultiFab& S_old = get_old_data(State_Type);
+  const amrex::MultiFab& S_old = get_old_data(State_Type);
   amrex::MultiFab& S_new = get_new_data(State_Type);
 
   initialize_sdc_iteration(

@@ -4,7 +4,7 @@
 void
 PeleC::construct_old_ext_source(amrex::Real time, amrex::Real dt)
 {
-  amrex::MultiFab& S_old = get_old_data(State_Type);
+  const amrex::MultiFab& S_old = get_old_data(State_Type);
 
   int ng = 0; // None filled
 
@@ -21,8 +21,8 @@ PeleC::construct_old_ext_source(amrex::Real time, amrex::Real dt)
 void
 PeleC::construct_new_ext_source(amrex::Real time, amrex::Real dt)
 {
-  amrex::MultiFab& S_old = get_old_data(State_Type);
-  amrex::MultiFab& S_new = get_new_data(State_Type);
+  const amrex::MultiFab& S_old = get_old_data(State_Type);
+  const amrex::MultiFab& S_new = get_new_data(State_Type);
 
   int ng = 0;
 

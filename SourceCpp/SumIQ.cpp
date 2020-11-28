@@ -22,8 +22,6 @@ PeleC::sum_integrated_quantities()
   amrex::Real enstr = 0.0;
   amrex::Real fuel_prod = 0;
   amrex::Real temp = 0;
-  int datwidth = 14;
-  int datprecision = 6;
 
   for (int lev = 0; lev <= finest_level; lev++) {
     PeleC& pc_lev = getLevel(lev);
@@ -90,6 +88,7 @@ PeleC::sum_integrated_quantities()
         if (parent->NumDataLogs() > 0) {
           std::ostream& data_log1 = parent->DataLog(0);
           if (data_log1.good()) {
+            const int datwidth = 14;
             if (time == 0.0) {
               data_log1 << std::setw(datwidth) << "          time";
               data_log1 << std::setw(datwidth) << "          mass";
@@ -106,6 +105,7 @@ PeleC::sum_integrated_quantities()
             }
 
             // Write the quantities at this time
+            const int datprecision = 6;
             data_log1 << std::setw(datwidth) << time;
             data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
                       << mass;

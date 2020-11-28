@@ -48,9 +48,9 @@ pc_rst_int_e(
     const amrex::Real small_e = eos_state_e;
     if (eden < small_e) {
       if (S(i, j, k, UEINT) * rhoInv < small_e) {
-        const amrex::Real eos_state_T =
+        const amrex::Real eos_state_T_loc =
           amrex::max(S(i, j, k, UTEMP), SMALL_TEMP);
-        EOS::T2Ei(eos_state_T, eos_state_ei);
+        EOS::T2Ei(eos_state_T_loc, eos_state_ei);
         eos_state_e = 0.0;
         for (int sp = 0; sp < NUM_SPECIES; sp++) {
           eos_state_e += eos_state_massfrac[sp] * eos_state_ei[sp];
@@ -67,9 +67,9 @@ pc_rst_int_e(
         S(i, j, k, UEINT) = rho_eint;
       }
       if (S(i, j, k, UEINT) * rhoInv < small_e) {
-        const amrex::Real eos_state_T =
+        const amrex::Real eos_state_T_loc =
           amrex::max(S(i, j, k, UTEMP), SMALL_TEMP);
-        EOS::T2Ei(eos_state_T, eos_state_ei);
+        EOS::T2Ei(eos_state_T_loc, eos_state_ei);
         eos_state_e = 0.0;
         for (int sp = 0; sp < NUM_SPECIES; sp++) {
           eos_state_e += eos_state_massfrac[sp] * eos_state_ei[sp];
@@ -251,7 +251,7 @@ read_csv(
 // -----------------------------------------------------------
 AMREX_GPU_HOST_DEVICE
 void
-locate(const amrex::Real* xtable, const int n, amrex::Real& x, int& idxlo)
+locate(const amrex::Real* xtable, const int n, const amrex::Real& x, int& idxlo)
 {
   // If x is out of bounds, return boundary index
   if (x >= xtable[n - 1]) {

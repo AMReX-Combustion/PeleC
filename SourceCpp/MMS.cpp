@@ -13,7 +13,7 @@ using namespace MASA;
 void
 PeleC::construct_old_mms_source(amrex::Real time)
 {
-  auto& S_old = get_old_data(State_Type);
+  const auto& S_old = get_old_data(State_Type);
 
   int ng = 0; // None filled
 
@@ -27,7 +27,7 @@ PeleC::construct_old_mms_source(amrex::Real time)
 void
 PeleC::construct_new_mms_source(amrex::Real time)
 {
-  auto& S_old = get_old_data(State_Type);
+  const auto& S_old = get_old_data(State_Type);
 
   int ng = 0;
 

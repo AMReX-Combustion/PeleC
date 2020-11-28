@@ -660,7 +660,7 @@ protected:
   void normalize_species(amrex::MultiFab& S_new);
 
   amrex::Real
-  enforce_min_density(amrex::MultiFab& S_old, amrex::MultiFab& S_new);
+  enforce_min_density(amrex::MultiFab& S_old, const amrex::MultiFab& S_new);
 
   amrex::Real clean_state(amrex::MultiFab& state);
 
