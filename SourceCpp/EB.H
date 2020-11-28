@@ -116,7 +116,7 @@ void pc_fill_sv_ebg(
   EBBndryGeom*);
 
 void pc_fill_bndry_grad_stencil(
-  const amrex::Box&&,
+  const amrex::Box&,
   const amrex::Real,
   const int,
   const EBBndryGeom*,
