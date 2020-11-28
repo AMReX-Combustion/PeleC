@@ -30,10 +30,12 @@ mol_slope(
 )
 {
 #ifdef PELEC_USE_EB
-  bool flagArrayL = flags(i, j, k).isConnected(-bdim[0], -bdim[1], -bdim[2]) and
-                    !flags(i, j, k).isCovered();
-  bool flagArrayR = flags(i, j, k).isConnected(+bdim[0], +bdim[1], +bdim[2]) and
-                    !flags(i, j, k).isCovered();
+  const bool flagArrayL =
+    flags(i, j, k).isConnected(-bdim[0], -bdim[1], -bdim[2]) and
+    !flags(i, j, k).isCovered();
+  const bool flagArrayR =
+    flags(i, j, k).isConnected(+bdim[0], +bdim[1], +bdim[2]) and
+    !flags(i, j, k).isCovered();
 #else
   const bool flagArrayL = true;
   const bool flagArrayR = true;
