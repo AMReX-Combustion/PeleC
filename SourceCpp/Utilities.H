@@ -211,7 +211,8 @@ void read_csv(
   amrex::Vector<amrex::Real>& data);
 
 AMREX_GPU_HOST_DEVICE
-void locate(const amrex::Real* xtable, const int n, amrex::Real& x, int& idxlo);
+void locate(
+  const amrex::Real* xtable, const int n, const amrex::Real& x, int& idxlo);
 
 template <typename T>
 AMREX_GPU_DEVICE AMREX_FORCE_INLINE void
