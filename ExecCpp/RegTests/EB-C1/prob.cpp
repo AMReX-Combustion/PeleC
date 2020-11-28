@@ -134,11 +134,8 @@ amrex_probinit(
 void
 PeleC::problem_post_timestep()
 {
-
   if ((verbose <= 0) || (!do_mms))
     return;
-
-  bool local_flag = true;
 
   int finest_level = parent->finestLevel();
   amrex::Real time = state[State_Type].curTime();
@@ -152,8 +149,6 @@ PeleC::problem_post_timestep()
   amrex::Real rhov_residual = 0.0;
   amrex::Real rhow_residual = 0.0;
   amrex::Real rhoE_residual = 0.0;
-  int datwidth = 14;
-  int datprecision = 6;
 
 #ifdef PELEC_USE_MASA
   if (level == 0) {
@@ -165,6 +160,7 @@ PeleC::problem_post_timestep()
     for (int lev = 0; lev <= finest_level; lev++) {
       PeleC& pc_lev = getLevel(lev);
 
+      const bool local_flag = true;
       rho_mms_err += pc_lev.volWgtSquaredSum("rhommserror", time, local_flag);
       u_mms_err += pc_lev.volWgtSquaredSum("ummserror", time, local_flag);
       v_mms_err += pc_lev.volWgtSquaredSum("vmmserror", time, local_flag);
@@ -245,6 +241,8 @@ PeleC::problem_post_timestep()
         std::ostream& data_log2 = parent->DataLog(1);
 
         // Write the quantities at this time
+        const int datwidth = 14;
+        const int datprecision = 6;
         data_log2 << std::setw(datwidth) << time;
         data_log2 << std::setw(datwidth) << std::setprecision(datprecision)
                   << rho_mms_err;
