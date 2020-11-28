@@ -556,7 +556,7 @@ PeleC::writeJobInfo(const std::string& dir)
 
   jobInfoFile << "\n\n";
 
-  int mlen = 20;
+  const int mlen = 20;
 
   jobInfoFile << PrettyLine;
   jobInfoFile << " Species Information\n";

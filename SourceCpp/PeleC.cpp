@@ -760,12 +760,12 @@ PeleC::initialTimeStep()
 {
   BL_PROFILE("PeleC::initialTimeStep()");
 
-  amrex::Real dummy_dt = 0.0;
   amrex::Real init_dt = 0.0;
 
   if (initial_dt > 0.0) {
     init_dt = initial_dt;
   } else {
+    const amrex::Real dummy_dt = 0.0;
     init_dt = init_shrink * estTimeStep(dummy_dt);
   }
 
@@ -794,10 +794,11 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
   // This ensures that if max_dt is more restrictive than the hydro
   // criterion, we will get exactly max_dt for a timestep.
 
-  amrex::Real estdt_hydro = max_dt / cfl;
-  amrex::Real estdt_vdif = max_dt / cfl;
-  amrex::Real estdt_tdif = max_dt / cfl;
-  amrex::Real estdt_edif = max_dt / cfl;
+  const amrex::Real max_dt_over_cfl = max_dt / cfl;
+  amrex::Real estdt_hydro = max_dt_over_cfl;
+  amrex::Real estdt_vdif = max_dt_over_cfl;
+  amrex::Real estdt_tdif = max_dt_over_cfl;
+  amrex::Real estdt_edif = max_dt_over_cfl;
   if (do_hydro || do_mol || diffuse_vel || diffuse_temp || diffuse_enth) {
 
 #ifdef PELEC_USE_EB
@@ -1403,7 +1404,6 @@ PeleC::enforce_min_density(
   */
 
   amrex::Real dens_change = 1.0;
-
   amrex::Real mass_added = 0.0;
   amrex::Real eint_added = 0.0;
   amrex::Real eden_added = 0.0;
@@ -1943,8 +1943,7 @@ void
 PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
 {
 #ifndef AMREX_USE_GPU
-  amrex::Real sum = 0.;
-  amrex::Real sum0 = 0.;
+  amrex::Real sum0 = 0.0;
   if (parent->finestLevel() == 0 && print_energy_diagnostics) {
     // Pass in the multifab and the component
     sum0 = volWgtSumMF(S_new, Eden, true);
@@ -1973,7 +1972,7 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
 #ifndef AMREX_USE_GPU
   if (parent->finestLevel() == 0 && print_energy_diagnostics) {
     // Pass in the multifab and the component
-    sum = volWgtSumMF(S_new, Eden, true);
+    amrex::Real sum = volWgtSumMF(S_new, Eden, true);
 #ifdef AMREX_LAZY
     Lazy::QueueReduction([=]() mutable {
 #endif
@@ -2126,7 +2125,7 @@ PeleC::clean_state(amrex::MultiFab& S)
 }
 
 amrex::Real
-PeleC::clean_state(amrex::MultiFab& S, amrex::MultiFab& S_old)
+PeleC::clean_state(const amrex::MultiFab& S, amrex::MultiFab& S_old)
 {
   // Enforce a minimum density.
 

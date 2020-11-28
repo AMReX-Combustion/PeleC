@@ -185,7 +185,7 @@ PeleC::getSmagorinskyLESTerm(
 {
   // Only use this functionality for 3D
 #if AMREX_SPACEDIM == 3
-  int ngrow = 1;
+  const int ngrow = 1;
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx = geom.CellSizeArray();
   amrex::Real dx1 = dx[0];
   for (int dir = 1; dir < AMREX_SPACEDIM; ++dir) {

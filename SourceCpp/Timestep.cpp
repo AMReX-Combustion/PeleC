@@ -14,7 +14,7 @@ AMREX_GPU_DEVICE_MANAGED amrex::Real max_dt = 1.e37;
 AMREX_GPU_HOST_DEVICE
 amrex::Real
 pc_estdt_hydro(
-  amrex::Box const& bx,
+  const amrex::Box& bx,
   const amrex::Array4<const amrex::Real>& u,
 #ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
@@ -58,7 +58,7 @@ pc_estdt_hydro(
 AMREX_GPU_HOST_DEVICE
 amrex::Real
 pc_estdt_veldif(
-  amrex::Box const bx,
+  const amrex::Box& bx,
   const amrex::Array4<const amrex::Real>& u,
 #ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
@@ -105,7 +105,7 @@ pc_estdt_veldif(
 AMREX_GPU_HOST_DEVICE
 amrex::Real
 pc_estdt_tempdif(
-  amrex::Box const bx,
+  const amrex::Box& bx,
   const amrex::Array4<const amrex::Real>& u,
 #ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
@@ -153,7 +153,7 @@ pc_estdt_tempdif(
 AMREX_GPU_HOST_DEVICE
 amrex::Real
 pc_estdt_enthdif(
-  amrex::Box const bx,
+  const amrex::Box& bx,
   const amrex::Array4<const amrex::Real>& u,
 #ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
