@@ -2,7 +2,7 @@
 
 void
 pc_fill_sv_ebg(
-  const amrex::Box bx,
+  const amrex::Box& bx,
   const int Nebg,
   const amrex::Array4<const amrex::Real>& vfrac,
   const amrex::Array4<const amrex::Real>& bcent,
@@ -45,7 +45,7 @@ pc_fill_sv_ebg(
 
 void
 pc_fill_bndry_grad_stencil(
-  const amrex::Box bx,
+  const amrex::Box& bx,
   const amrex::Real dx,
   const int /*Nebg*/,
   const EBBndryGeom* ebg,
@@ -177,7 +177,7 @@ pc_fill_bndry_grad_stencil(
 
 void
 pc_fill_flux_interp_stencil(
-  const amrex::Box bx,
+  const amrex::Box& bx,
   const amrex::Box /*fbx*/,
   const int Nsten,
   const amrex::Array4<const amrex::Real>& fc,
@@ -212,7 +212,7 @@ pc_fill_flux_interp_stencil(
 
 void
 pc_apply_face_stencil(
-  const amrex::Box bx,
+  const amrex::Box& bx,
   const amrex::Box /*sbx*/,
   const FaceSten* sten,
   const int Nsten,
@@ -271,7 +271,7 @@ pc_apply_face_stencil(
 
 void
 pc_fix_div_and_redistribute(
-  const amrex::Box bx,
+  const amrex::Box& bx,
   const amrex::Real vol,
   const amrex::Real dt,
   const int nc,
@@ -485,7 +485,7 @@ pc_fix_div_and_redistribute(
 
 void
 pc_apply_eb_boundry_visc_flux_stencil(
-  const amrex::Box bx,
+  const amrex::Box& bx,
   const EBBndrySten* sten,
   const int Nsten,
   const EBBndryGeom* ebg,
@@ -613,7 +613,7 @@ pc_apply_eb_boundry_visc_flux_stencil(
 
 void
 pc_apply_eb_boundry_flux_stencil(
-  const amrex::Box bx,
+  const amrex::Box& bx,
   const EBBndrySten* sten,
   const int Nsten,
   amrex::Array4<const amrex::Real> const& s,
