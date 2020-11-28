@@ -128,7 +128,7 @@ pc_move_transcoefs_to_ec(
 AMREX_FORCE_INLINE
 void
 setV(
-  const amrex::Box box,
+  const amrex::Box& box,
   const int Ncomp,
   const amrex::Array4<amrex::Real>& array,
   const amrex::Real val)
@@ -142,7 +142,7 @@ setV(
 AMREX_FORCE_INLINE
 void
 setC(
-  const amrex::Box box,
+  const amrex::Box& box,
   const int Nstart,
   const int Nend,
   const amrex::Array4<amrex::Real>& array,
@@ -157,7 +157,7 @@ setC(
 AMREX_FORCE_INLINE
 void
 copy_array4(
-  const amrex::Box box,
+  const amrex::Box& box,
   const int Ncomp,
   const amrex::Array4<const amrex::Real>& in,
   const amrex::Array4<amrex::Real>& out)
@@ -171,7 +171,7 @@ copy_array4(
 AMREX_FORCE_INLINE
 void
 lincomb_array4(
-  const amrex::Box box,
+  const amrex::Box& box,
   const int Nstart,
   const int Nend,
   const amrex::Array4<const amrex::Real>& f1,
@@ -196,7 +196,7 @@ read_file(std::ifstream& in)
 }
 
 void read_binary(
-  const std::string iname,
+  const std::string& iname,
   const size_t nx,
   const size_t ny,
   const size_t nz,
@@ -204,7 +204,7 @@ void read_binary(
   amrex::Vector<amrex::Real>& data);
 
 void read_csv(
-  const std::string iname,
+  const std::string& iname,
   const size_t nx,
   const size_t ny,
   const size_t nz,

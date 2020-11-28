@@ -167,7 +167,7 @@ pc_rst_int_e(
 // -----------------------------------------------------------
 void
 read_binary(
-  const std::string iname,
+  const std::string& iname,
   const size_t nx,
   const size_t ny,
   const size_t nz,
@@ -197,7 +197,7 @@ read_binary(
 // -----------------------------------------------------------
 void
 read_csv(
-  const std::string iname,
+  const std::string& iname,
   const size_t nx,
   const size_t ny,
   const size_t nz,

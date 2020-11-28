@@ -46,7 +46,7 @@ pc_trans4dt(
 
 AMREX_GPU_HOST_DEVICE
 amrex::Real pc_estdt_hydro(
-  amrex::Box const& bx,
+  const amrex::Box& bx,
   const amrex::Array4<const amrex::Real>& u,
 #ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
@@ -59,7 +59,7 @@ amrex::Real pc_estdt_hydro(
 // Diffusion Velocity
 AMREX_GPU_HOST_DEVICE
 amrex::Real pc_estdt_veldif(
-  amrex::Box const bx,
+  const amrex::Box& bx,
   const amrex::Array4<const amrex::Real>& u,
 #ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
@@ -72,7 +72,7 @@ amrex::Real pc_estdt_veldif(
 // Diffusion Temperature
 AMREX_GPU_HOST_DEVICE
 amrex::Real pc_estdt_tempdif(
-  amrex::Box const bx,
+  const amrex::Box& bx,
   const amrex::Array4<const amrex::Real>& u,
 #ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
@@ -85,7 +85,7 @@ amrex::Real pc_estdt_tempdif(
 // Diffusion Enthalpy
 AMREX_GPU_HOST_DEVICE
 amrex::Real pc_estdt_enthdif(
-  amrex::Box const bx,
+  const amrex::Box& bx,
   const amrex::Array4<const amrex::Real>& u,
 #ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,

@@ -662,9 +662,9 @@ protected:
   amrex::Real
   enforce_min_density(amrex::MultiFab& S_old, const amrex::MultiFab& S_new);
 
-  amrex::Real clean_state(amrex::MultiFab& state);
+  amrex::Real clean_state(amrex::MultiFab& S);
 
-  amrex::Real clean_state(amrex::MultiFab& state, amrex::MultiFab& state_old);
+  amrex::Real clean_state(const amrex::MultiFab& S, amrex::MultiFab& S_old);
 
   void buildMetrics();
 
