@@ -79,7 +79,7 @@ struct MyProbDeriveStruct
   static amrex::Box the_same_box(const amrex::Box& b) { return b; }
 
   static void
-  add(amrex::DeriveList& derive_lst, amrex::DescriptorList& desc_lst)
+  add(amrex::DeriveList& derive_lst, const amrex::DescriptorList& desc_lst)
   {
     // Add derives as follows and define the derive function below:
     derive_lst.add(

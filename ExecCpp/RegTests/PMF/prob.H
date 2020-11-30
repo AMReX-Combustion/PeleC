@@ -69,13 +69,12 @@ pmf(
       else
         dydx = (y2 - y1) / (x2 - x1);
       amrex::Real ylo = y1 + dydx * (xlo - x1);
-      amrex::Real sum = 0.0;
       amrex::Real yhi = 0.0;
       if (lo_loside == hi_loside) {
         yhi = y1 + dydx * (xhi - x1);
         y_vector[j] = 0.5 * (ylo + yhi);
       } else {
-        sum = (x2 - xlo) * 0.5 * (ylo + y2);
+        amrex::Real sum = (x2 - xlo) * 0.5 * (ylo + y2);
         x1 = ProbParm::d_pmf_X[hi_loside];
         y1 = ProbParm::d_pmf_Y[ProbParm::pmf_N * j + hi_loside];
         x2 = ProbParm::d_pmf_X[hi_hiside];

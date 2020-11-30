@@ -65,19 +65,19 @@ PeleC::construct_hydro_source(
     amrex::MultiFab& S_new = get_new_data(State_Type);
 
     // note: the radiation consup currently does not fill these
-    amrex::Real E_added_flux = 0.;
-    amrex::Real mass_added_flux = 0.;
-    amrex::Real xmom_added_flux = 0.;
-    amrex::Real ymom_added_flux = 0.;
-    amrex::Real zmom_added_flux = 0.;
-    amrex::Real mass_lost = 0.;
-    amrex::Real xmom_lost = 0.;
-    amrex::Real ymom_lost = 0.;
-    amrex::Real zmom_lost = 0.;
-    amrex::Real eden_lost = 0.;
-    amrex::Real xang_lost = 0.;
-    amrex::Real yang_lost = 0.;
-    amrex::Real zang_lost = 0.;
+    amrex::Real E_added_flux = 0.;    // cppcheck-suppress variableScope
+    amrex::Real mass_added_flux = 0.; // cppcheck-suppress variableScope
+    amrex::Real xmom_added_flux = 0.; // cppcheck-suppress variableScope
+    amrex::Real ymom_added_flux = 0.; // cppcheck-suppress variableScope
+    amrex::Real zmom_added_flux = 0.; // cppcheck-suppress variableScope
+    amrex::Real mass_lost = 0.;       // cppcheck-suppress variableScope
+    amrex::Real xmom_lost = 0.;       // cppcheck-suppress variableScope
+    amrex::Real ymom_lost = 0.;       // cppcheck-suppress variableScope
+    amrex::Real zmom_lost = 0.;       // cppcheck-suppress variableScope
+    amrex::Real eden_lost = 0.;       // cppcheck-suppress variableScope
+    amrex::Real xang_lost = 0.;       // cppcheck-suppress variableScope
+    amrex::Real yang_lost = 0.;       // cppcheck-suppress variableScope
+    amrex::Real zang_lost = 0.;       // cppcheck-suppress variableScope
 
     BL_PROFILE_VAR("PeleC::advance_hydro_pc_umdrv()", PC_UMDRV);
 
@@ -296,13 +296,13 @@ PeleC::construct_hydro_source(
         amrex::ParallelDescriptor::ReduceRealSum(
           foo, 5, amrex::ParallelDescriptor::IOProcessorNumber());
 
+#ifdef AMREX_DEBUG
         if (amrex::ParallelDescriptor::IOProcessor()) {
           E_added_flux = foo[0];
           xmom_added_flux = foo[1];
           ymom_added_flux = foo[2];
           zmom_added_flux = foo[3];
           mass_added_flux = foo[4];
-#ifdef AMREX_DEBUG
           amrex::Print() << "mass added from fluxes                      : "
                          << mass_added_flux << std::endl;
           amrex::Print() << "xmom added from fluxes                      : "
@@ -313,8 +313,8 @@ PeleC::construct_hydro_source(
                          << zmom_added_flux << std::endl;
           amrex::Print() << "(rho E) added from fluxes                   : "
                          << E_added_flux << std::endl;
-#endif
         }
+#endif
 #ifdef AMREX_LAZY
       });
 #endif
