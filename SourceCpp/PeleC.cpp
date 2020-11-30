@@ -1403,10 +1403,10 @@ PeleC::enforce_min_density(
      is meaningless.
   */
 
-  amrex::Real dens_change = 1.0;
-  amrex::Real mass_added = 0.0;
-  amrex::Real eint_added = 0.0;
-  amrex::Real eden_added = 0.0;
+  amrex::Real dens_change = 1.0; // cppcheck-suppress variableScope
+  amrex::Real mass_added = 0.0;  // cppcheck-suppress variableScope
+  amrex::Real eint_added = 0.0;  // cppcheck-suppress variableScope
+  amrex::Real eden_added = 0.0;  // cppcheck-suppress variableScope
 
 #ifdef PELEC_USE_EB
   auto const& fact =
