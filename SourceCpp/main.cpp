@@ -193,7 +193,7 @@ main(int argc, char* argv[])
     char buf[256];
 
     sprintf(
-      buf, "CPU(%d): Heap Space (bytes) used by Coalescing FAB Arena: %ld",
+      buf, "CPU(%d): Heap Space (bytes) used by Coalescing FAB Arena: %zu",
       amrex::ParallelDescriptor::MyProc(), arena->heap_space_used());
 
     amrex::Print() << buf << std::endl;

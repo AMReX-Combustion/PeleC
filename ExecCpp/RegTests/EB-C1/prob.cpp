@@ -281,16 +281,13 @@ PeleC::problem_post_init()
     return;
 
   amrex::Real time = state[State_Type].curTime();
-  int datwidth = 14;
-  // int datprecision = 6;
 
   if (level == 0) {
     if (amrex::ParallelDescriptor::IOProcessor()) {
-
       if (parent->NumDataLogs() > 1) {
-
         std::ostream& data_log2 = parent->DataLog(1);
         if (time == 0.0) {
+          const int datwidth = 14;
           data_log2 << std::setw(datwidth) << "          time";
           data_log2 << std::setw(datwidth) << "   rho_mms_err";
           data_log2 << std::setw(datwidth) << "     u_mms_err";

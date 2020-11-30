@@ -296,13 +296,13 @@ PeleC::construct_hydro_source(
         amrex::ParallelDescriptor::ReduceRealSum(
           foo, 5, amrex::ParallelDescriptor::IOProcessorNumber());
 
+#ifdef AMREX_DEBUG
         if (amrex::ParallelDescriptor::IOProcessor()) {
           E_added_flux = foo[0];
           xmom_added_flux = foo[1];
           ymom_added_flux = foo[2];
           zmom_added_flux = foo[3];
           mass_added_flux = foo[4];
-#ifdef AMREX_DEBUG
           amrex::Print() << "mass added from fluxes                      : "
                          << mass_added_flux << std::endl;
           amrex::Print() << "xmom added from fluxes                      : "
@@ -313,8 +313,8 @@ PeleC::construct_hydro_source(
                          << zmom_added_flux << std::endl;
           amrex::Print() << "(rho E) added from fluxes                   : "
                          << E_added_flux << std::endl;
-#endif
         }
+#endif
 #ifdef AMREX_LAZY
       });
 #endif
