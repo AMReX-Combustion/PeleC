@@ -27,6 +27,7 @@ THREAD_SANITIZER = FALSE
 USE_EB = TRUE
 Eos_dir := GammaLaw
 Transport_dir := Constant
+Chemistry_Model := Null
 
 # GNU Make
 Bpack := ./Make.package
