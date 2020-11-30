@@ -101,17 +101,17 @@ public:
     const int ncnt);
 
   void apply_filter(
-    const amrex::Box cbox, const amrex::FArrayBox& in, amrex::FArrayBox& out);
+    const amrex::Box& cbox, const amrex::FArrayBox& in, amrex::FArrayBox& out);
 
   void apply_filter(
-    const amrex::Box cbox,
+    const amrex::Box& cbox,
     const amrex::FArrayBox& in,
     amrex::FArrayBox& out,
     const int nstart,
     const int ncnt);
 
   void apply_filter(
-    const amrex::Box box,
+    const amrex::Box& box,
     const amrex::FArrayBox& in,
     amrex::FArrayBox& out,
     const int nstart,

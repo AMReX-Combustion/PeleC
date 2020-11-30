@@ -21,18 +21,11 @@ pmf(
   amrex::Real xhi,
   amrex::GpuArray<amrex::Real, NUM_SPECIES + 4>& y_vector)
 {
-  amrex::Real sum = 0.0, xmid = 0.0;
-  int lo_loside = 0, lo_hiside = 0;
-  int hi_loside = 0, hi_hiside = 0;
-  int loside = 0, hiside = 0;
-  amrex::Real ylo = 0.0, yhi = 0.0, x1 = 0.0, y1 = 0.0, x2 = 0.0, y2 = 0.0,
-              dydx = 0.0;
-
   if (ProbParm::pmf_do_average) {
-    lo_loside = 0;
-    lo_hiside = 0;
-    hi_loside = 0;
-    hi_hiside = 0;
+    int lo_loside = 0;
+    int lo_hiside = 0;
+    int hi_loside = 0;
+    int hi_hiside = 0;
     if (xlo < ProbParm::d_pmf_X[0]) {
       lo_loside = 0;
       lo_hiside = 0;
@@ -50,7 +43,7 @@ pmf(
       hi_hiside = ProbParm::pmf_N - 1;
     }
     if (lo_loside == 0) {
-      for (int i = 0; i < ProbParm::pmf_N - 1; i++) {
+      for (unsigned int i = 0; i < ProbParm::pmf_N - 1; i++) {
         if ((xlo > ProbParm::d_pmf_X[i]) && (xlo < ProbParm::d_pmf_X[i + 1])) {
           lo_loside = i;
           lo_hiside = i + 1;
@@ -58,28 +51,30 @@ pmf(
       }
     }
     if (hi_loside == 0) {
-      for (int i = 0; i < ProbParm::pmf_N - 1; i++) {
+      for (unsigned int i = 0; i < ProbParm::pmf_N - 1; i++) {
         if ((xhi > ProbParm::d_pmf_X[i]) && (xhi < ProbParm::d_pmf_X[i + 1])) {
           hi_loside = i;
           hi_hiside = i + 1;
         }
       }
     }
-    for (int j = 0; j < ProbParm::pmf_M; j++) {
-      x1 = ProbParm::d_pmf_X[lo_loside];
-      y1 = ProbParm::d_pmf_Y[ProbParm::pmf_N * j + lo_loside];
-      x2 = ProbParm::d_pmf_X[lo_hiside];
-      y2 = ProbParm::d_pmf_Y[ProbParm::pmf_N * j + lo_hiside];
+    for (unsigned int j = 0; j < ProbParm::pmf_M; j++) {
+      amrex::Real x1 = ProbParm::d_pmf_X[lo_loside];
+      amrex::Real y1 = ProbParm::d_pmf_Y[ProbParm::pmf_N * j + lo_loside];
+      amrex::Real x2 = ProbParm::d_pmf_X[lo_hiside];
+      amrex::Real y2 = ProbParm::d_pmf_Y[ProbParm::pmf_N * j + lo_hiside];
+      amrex::Real dydx = 0.0;
       if (lo_loside == lo_hiside)
         dydx = 0.0;
       else
         dydx = (y2 - y1) / (x2 - x1);
-      ylo = y1 + dydx * (xlo - x1);
+      amrex::Real ylo = y1 + dydx * (xlo - x1);
+      amrex::Real yhi = 0.0;
       if (lo_loside == hi_loside) {
         yhi = y1 + dydx * (xhi - x1);
         y_vector[j] = 0.5 * (ylo + yhi);
       } else {
-        sum = (x2 - xlo) * 0.5 * (ylo + y2);
+        amrex::Real sum = (x2 - xlo) * 0.5 * (ylo + y2);
         x1 = ProbParm::d_pmf_X[hi_loside];
         y1 = ProbParm::d_pmf_Y[ProbParm::pmf_N * j + hi_loside];
         x2 = ProbParm::d_pmf_X[hi_hiside];
@@ -89,19 +84,19 @@ pmf(
         else
           dydx = (y2 - y1) / (x2 - x1);
         yhi = y1 + dydx * (xhi - x1);
-        sum = sum + (xhi - x1) * 0.5 * (yhi + y1);
+        sum += (xhi - x1) * 0.5 * (yhi + y1);
         for (int k = lo_hiside; k < hi_loside - 1; k++) {
-          sum = sum + (ProbParm::d_pmf_X[k + 1] - ProbParm::d_pmf_X[k]) * 0.5 *
-                        (ProbParm::d_pmf_Y[ProbParm::pmf_N * j + k] +
-                         ProbParm::d_pmf_Y[ProbParm::pmf_N * j + k + 1]);
+          sum += (ProbParm::d_pmf_X[k + 1] - ProbParm::d_pmf_X[k]) * 0.5 *
+                 (ProbParm::d_pmf_Y[ProbParm::pmf_N * j + k] +
+                  ProbParm::d_pmf_Y[ProbParm::pmf_N * j + k + 1]);
         }
         y_vector[j] = sum / (xhi - xlo);
       }
     }
   } else {
-    xmid = 0.5 * (xlo + xhi);
-    loside = -1;
-    hiside = -1;
+    amrex::Real xmid = 0.5 * (xlo + xhi);
+    int loside = -1;
+    int hiside = -1;
     if (xmid < ProbParm::d_pmf_X[0]) {
       loside = 0;
       hiside = 0;
@@ -111,7 +106,7 @@ pmf(
       hiside = ProbParm::pmf_N - 1;
     }
     if (loside == -1) {
-      for (int i = 0; i < ProbParm::pmf_N - 1; i++) {
+      for (unsigned int i = 0; i < ProbParm::pmf_N - 1; i++) {
         if (
           (xmid >= ProbParm::d_pmf_X[i]) &&
           (xmid <= ProbParm::d_pmf_X[i + 1])) {
@@ -120,11 +115,12 @@ pmf(
         }
       }
     }
-    for (int j = 0; j < ProbParm::pmf_M; j++) {
-      x1 = ProbParm::d_pmf_X[loside];
-      y1 = ProbParm::d_pmf_Y[ProbParm::pmf_N * j + loside];
-      x2 = ProbParm::d_pmf_X[hiside];
-      y2 = ProbParm::d_pmf_Y[ProbParm::pmf_N * j + hiside];
+    for (unsigned int j = 0; j < ProbParm::pmf_M; j++) {
+      const amrex::Real x1 = ProbParm::d_pmf_X[loside];
+      const amrex::Real y1 = ProbParm::d_pmf_Y[ProbParm::pmf_N * j + loside];
+      const amrex::Real x2 = ProbParm::d_pmf_X[hiside];
+      const amrex::Real y2 = ProbParm::d_pmf_Y[ProbParm::pmf_N * j + hiside];
+      amrex::Real dydx = 0.0;
       if (loside == hiside)
         dydx = 0.0;
       else
@@ -144,20 +140,15 @@ pc_initdata(
   amrex::Array4<amrex::Real> const& state,
   amrex::GeometryData const& geomdata)
 {
-  const amrex::Real* prob_lo = geomdata.ProbLo();
-  const amrex::Real* prob_hi = geomdata.ProbHi();
-  const amrex::Real* dx = geomdata.CellSize();
-  const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
-  const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
-  const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];
-  amrex::GpuArray<amrex::Real, NUM_SPECIES + 4> pmf_vals = {0.0};
-  amrex::Real u[3] = {0.0};
-  amrex::Real molefrac[NUM_SPECIES] = {0.0};
-  amrex::Real massfrac[NUM_SPECIES] = {0.0};
-  amrex::Real pert, rho, energy, T, pres;
-
   if (ProbParm::phi_in < 0.0) {
-    pert = 0.0;
+    const amrex::Real* prob_lo = geomdata.ProbLo();
+    // const amrex::Real* prob_hi = geomdata.ProbHi();
+    const amrex::Real* dx = geomdata.CellSize();
+    const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
+    const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
+    const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];
+    amrex::GpuArray<amrex::Real, NUM_SPECIES + 4> pmf_vals = {0.0};
+    amrex::Real pert = 0.0;
     if (ProbParm::pertmag > 0.0) {
       pert = ProbParm::pertmag *
              (1.0 * std::sin(2 * PI * 4 * x / ProbParm::L[0]) *
@@ -171,12 +162,17 @@ pc_initdata(
               0.982 * std::sin(2 * PI * 5 * (x - 1.4234) / ProbParm::L[0]));
     }
     pmf(z + pert, z + pert, pmf_vals);
+    amrex::Real molefrac[NUM_SPECIES] = {0.0};
     for (int n = 0; n < NUM_SPECIES; n++)
       molefrac[n] = pmf_vals[3 + n];
-    T = pmf_vals[0];
-    pres = ProbParm::pamb;
+    const amrex::Real T = pmf_vals[0];
+    const amrex::Real pres = ProbParm::pamb;
+    amrex::Real u[3] = {0.0};
     u[AMREX_SPACEDIM - 1] = pmf_vals[1];
+    amrex::Real massfrac[NUM_SPECIES] = {0.0};
     EOS::X2Y(molefrac, massfrac);
+    amrex::Real rho = 0.0;
+    amrex::Real energy = 0.0;
     EOS::PYT2RE(pres, massfrac, T, rho, energy);
     state(i, j, k, URHO) = rho;
     state(i, j, k, UMX) = rho * u[0];
@@ -198,12 +194,12 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 bcnormal(
-  const amrex::Real x[AMREX_SPACEDIM],
-  const amrex::Real s_int[NVAR],
+  const amrex::Real* /*x[AMREX_SPACEDIM]*/,
+  const amrex::Real* /*s_int[NVAR]*/,
   amrex::Real s_ext[NVAR],
   const int idir,
   const int sgn,
-  const amrex::Real time,
+  const amrex::Real /*time*/,
   amrex::GeometryData const& geomdata)
 {
   const amrex::Real* prob_lo = geomdata.ProbLo();
@@ -212,7 +208,7 @@ bcnormal(
   amrex::Real u[3] = {0.0};
   amrex::Real molefrac[NUM_SPECIES] = {0.0};
   amrex::Real massfrac[NUM_SPECIES] = {0.0};
-  amrex::Real pert, rho, energy, T, pres;
+  amrex::Real /* pert, */ rho, energy, T, pres;
 
   if (sgn == -1) {
     pmf(prob_hi[idir], prob_hi[idir], pmf_vals);

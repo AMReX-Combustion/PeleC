@@ -11,7 +11,7 @@
 struct EmptyProbDeriveStruct
 {
   static void
-  add(amrex::DeriveList& derive_lst, amrex::DescriptorList& desc_lst)
+  add(amrex::DeriveList& /*derive_lst*/, amrex::DescriptorList& /*desc_lst*/)
   {
     // Add derives as follows and define the derive function below:
     // derive_lst.add(
@@ -21,18 +21,18 @@ struct EmptyProbDeriveStruct
   }
 
   static void pc_varname(
-    const amrex::Box& bx,
-    amrex::FArrayBox& derfab,
-    int dcomp,
+    const amrex::Box& /*bx*/,
+    amrex::FArrayBox& /*derfab*/,
+    int /*dcomp*/,
     int /*ncomp*/,
-    const amrex::FArrayBox& datfab,
-    const amrex::Geometry& geomdata,
+    const amrex::FArrayBox& /*datfab*/,
+    const amrex::Geometry& /*geomdata*/,
     amrex::Real /*time*/,
     const int* /*bcrec*/,
-    int level)
+    int /*level*/)
   {
-    auto const dat = datfab.array();
-    auto arr = derfab.array();
+    // auto const dat = datfab.array();
+    // auto arr = derfab.array();
     // amrex::ParallelFor(
     //  bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // do something with arr

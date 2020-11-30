@@ -21,9 +21,9 @@ pc_prob_close()
 extern "C" {
 void
 amrex_probinit(
-  const int* init,
-  const int* name,
-  const int* namelen,
+  const int* /*init*/,
+  const int* /*name*/,
+  const int* /*namelen*/,
   const amrex_real* problo,
   const amrex_real* probhi)
 {
@@ -62,17 +62,12 @@ amrex_probinit(
 void
 PeleC::problem_post_timestep()
 {
-
   if (verbose <= 0)
     return;
-
-  bool local_flag = true;
 
   int finest_level = parent->finestLevel();
   amrex::Real time = state[State_Type].curTime();
   amrex::Real rho_err = 0.0;
-  int datwidth = 14;
-  int datprecision = 6;
 
   if (level == 0) {
     if (amrex::ParallelDescriptor::IOProcessor()) {
@@ -83,6 +78,7 @@ PeleC::problem_post_timestep()
     for (int lev = 0; lev <= finest_level; lev++) {
       PeleC& pc_lev = getLevel(lev);
 
+      bool local_flag = true;
       rho_err += pc_lev.volWgtSquaredSum("rhoerror", time, local_flag);
     }
 
@@ -96,12 +92,12 @@ PeleC::problem_post_timestep()
 
     if (amrex::ParallelDescriptor::IOProcessor()) {
       amrex::Print() << "TIME= " << time << " RHO ERROR  = " << rho_err << '\n';
-
       if (parent->NumDataLogs() > 1) {
-
         std::ostream& data_log2 = parent->DataLog(1);
 
         // Write the quantities at this time
+        const int datwidth = 14;
+        const int datprecision = 6;
         data_log2 << std::setw(datwidth) << time;
         data_log2 << std::setw(datwidth) << std::setprecision(datprecision)
                   << rho_err;
@@ -114,21 +110,17 @@ PeleC::problem_post_timestep()
 void
 PeleC::problem_post_init()
 {
-
   if (verbose <= 0)
     return;
 
   amrex::Real time = state[State_Type].curTime();
-  int datwidth = 14;
-  int datprecision = 6;
 
   if (level == 0) {
     if (amrex::ParallelDescriptor::IOProcessor()) {
-
       if (parent->NumDataLogs() > 1) {
-
         std::ostream& data_log2 = parent->DataLog(1);
         if (time == 0.0) {
+          const int datwidth = 14;
           data_log2 << std::setw(datwidth) << "          time";
           data_log2 << std::setw(datwidth) << "       rho_err";
           data_log2 << std::endl;

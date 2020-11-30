@@ -33,7 +33,7 @@ PeleC::advance(
     }
   }
 
-  amrex::Real dt_new = dt;
+  amrex::Real dt_new;
   if (do_mol) {
     dt_new = do_mol_advance(time, dt, amr_iteration, amr_ncycle);
   } else {
@@ -54,14 +54,14 @@ PeleC::do_mol_advance(
   // into MOL advance yet");
 
   for (int i = 0; i < num_state_type; ++i) {
-    bool skip = false;
 #ifdef PELEC_USE_REACTIONS
-    skip = i == Reactions_Type && do_react;
+    if (!(i == Reactions_Type && do_react)) {
 #endif
-    if (!skip) {
       state[i].allocOldData();
       state[i].swapTimeLevels(dt);
+#ifdef PELEC_USE_REACTIONS
     }
+#endif
   }
 
   if (do_mol_load_balance || do_react_load_balance) {
@@ -309,7 +309,7 @@ PeleC::do_sdc_iteration(
 
   BL_PROFILE("PeleC::do_sdc_iteration()");
 
-  amrex::MultiFab& S_old = get_old_data(State_Type);
+  const amrex::MultiFab& S_old = get_old_data(State_Type);
   amrex::MultiFab& S_new = get_new_data(State_Type);
 
   initialize_sdc_iteration(
@@ -523,12 +523,12 @@ PeleC::construct_Snew(
 
 void
 PeleC::initialize_sdc_iteration(
-  amrex::Real time,
-  amrex::Real dt,
-  int amr_iteration,
-  int amr_ncycle,
-  int sdc_iteration,
-  int sdc_ncycle)
+  amrex::Real /*time*/,
+  amrex::Real /*dt*/,
+  int /*amr_iteration*/,
+  int /*amr_ncycle*/,
+  int /*sdc_iteration*/,
+  int /*sdc_ncycle*/)
 {
   BL_PROFILE("PeleC::initialize_sdc_iteration()");
 
@@ -545,19 +545,22 @@ PeleC::initialize_sdc_iteration(
 
 void
 PeleC::finalize_sdc_iteration(
-  amrex::Real time,
-  amrex::Real dt,
-  int amr_iteration,
-  int amr_ncycle,
-  int sdc_iteration,
-  int sdc_ncycle)
+  amrex::Real /*time*/,
+  amrex::Real /*dt*/,
+  int /*amr_iteration*/,
+  int /*amr_ncycle*/,
+  int /*sdc_iteration*/,
+  int /*sdc_ncycle*/)
 {
   BL_PROFILE("PeleC::finalize_sdc_iteration()");
 }
 
 void
 PeleC::initialize_sdc_advance(
-  amrex::Real time, amrex::Real dt, int amr_iteration, int amr_ncycle)
+  amrex::Real /*time*/,
+  amrex::Real dt,
+  int /*amr_iteration*/,
+  int /*amr_ncycle*/)
 {
   BL_PROFILE("PeleC::initialize_sdc_advance()");
 
@@ -579,7 +582,10 @@ PeleC::initialize_sdc_advance(
 
 void
 PeleC::finalize_sdc_advance(
-  amrex::Real time, amrex::Real dt, int amr_iteration, int amr_ncycle)
+  amrex::Real /*time*/,
+  amrex::Real /*dt*/,
+  int /*amr_iteration*/,
+  int /*amr_ncycle*/)
 {
   BL_PROFILE("PeleC::finalize_sdc_advance()");
 
@@ -594,5 +600,5 @@ PeleC::finalize_sdc_advance(
     }
   }
 
-  amrex::Real cur_time = state[State_Type].curTime();
+  // amrex::Real cur_time = state[State_Type].curTime();
 }

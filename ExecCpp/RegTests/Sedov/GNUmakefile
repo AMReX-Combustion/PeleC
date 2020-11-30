@@ -28,6 +28,7 @@ USE_REACT = FALSE
 USE_EB = FALSE
 Eos_dir := GammaLaw
 Transport_dir := Constant
+Chemistry_Model := Null
 
 # GNU Make
 Bpack := ./Make.package

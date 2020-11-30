@@ -2,7 +2,7 @@
 
 void
 pc_fill_sv_ebg(
-  const amrex::Box bx,
+  const amrex::Box& bx,
   const int Nebg,
   const amrex::Array4<const amrex::Real>& vfrac,
   const amrex::Array4<const amrex::Real>& bcent,
@@ -45,9 +45,9 @@ pc_fill_sv_ebg(
 
 void
 pc_fill_bndry_grad_stencil(
-  const amrex::Box bx,
+  const amrex::Box& bx,
   const amrex::Real dx,
-  const int Nebg,
+  const int /*Nebg*/,
   const EBBndryGeom* ebg,
   const int Nsten,
   EBBndrySten* grad_stencil)
@@ -114,7 +114,7 @@ pc_fill_bndry_grad_stencil(
           (x[1] - b[0]) * (x[1] - b[0]) + (y[1] - b[1]) * (y[1] - b[1]) +
           (z[1] - b[2]) * (z[1] - b[2]))};
 
-      amrex::Real sten[3][3][3] = {0.0};
+      amrex::Real sten[3][3][3] = {{{0.0}}};
       // The two intersections, that are d(1) and d(2) away from the eb
       // centroid, are both in
       //  y-z planes, bounded in (0:2)x(0:2) in normalized coordinates
@@ -146,7 +146,7 @@ pc_fill_bndry_grad_stencil(
       const amrex::Real bcs = -(d[0] + d[1]) / (d[0] * d[1]);
 
       // Transform stencil into regular stencil structure
-      amrex::Real tsten[3][3][3] = {0.0};
+      amrex::Real tsten[3][3][3] = {{{0.0}}};
       int iv[3] = {0};
       for (int ii = 0; ii < 3; ii++) {
         for (int jj = 0; jj < 3; jj++) {
@@ -177,8 +177,8 @@ pc_fill_bndry_grad_stencil(
 
 void
 pc_fill_flux_interp_stencil(
-  const amrex::Box bx,
-  const amrex::Box fbx,
+  const amrex::Box& bx,
+  const amrex::Box /*fbx*/,
   const int Nsten,
   const amrex::Array4<const amrex::Real>& fc,
   const amrex::Array4<const amrex::Real>& fa,
@@ -212,8 +212,8 @@ pc_fill_flux_interp_stencil(
 
 void
 pc_apply_face_stencil(
-  const amrex::Box bx,
-  const amrex::Box sbx,
+  const amrex::Box& bx,
+  const amrex::Box /*sbx*/,
   const FaceSten* sten,
   const int Nsten,
   const int dir,
@@ -271,7 +271,7 @@ pc_apply_face_stencil(
 
 void
 pc_fix_div_and_redistribute(
-  const amrex::Box bx,
+  const amrex::Box& bx,
   const amrex::Real vol,
   const amrex::Real dt,
   const int nc,
@@ -284,7 +284,7 @@ pc_fix_div_and_redistribute(
   const amrex::Array4<const amrex::Real>& f1,
   const amrex::Array4<const amrex::Real>& f2,
   const amrex::Real* ebflux,
-  const int nebflux,
+  const int /*nebflux*/,
   const amrex::Array4<const amrex::Real>& vf,
   const amrex::Array4<const amrex::Real>& W,
   const bool as_crse,
@@ -485,15 +485,15 @@ pc_fix_div_and_redistribute(
 
 void
 pc_apply_eb_boundry_visc_flux_stencil(
-  const amrex::Box bx,
+  const amrex::Box& bx,
   const EBBndrySten* sten,
   const int Nsten,
   const EBBndryGeom* ebg,
-  const int Nebg,
+  const int /*Nebg*/,
   amrex::Array4<const amrex::Real> const& q,
   amrex::Array4<const amrex::Real> const& coeff,
   const amrex::Real* bcval,
-  const int Nvals,
+  const int /*Nvals*/,
   amrex::Real* bcflux,
   const int Nflux)
 {
@@ -613,7 +613,7 @@ pc_apply_eb_boundry_visc_flux_stencil(
 
 void
 pc_apply_eb_boundry_flux_stencil(
-  const amrex::Box bx,
+  const amrex::Box& bx,
   const EBBndrySten* sten,
   const int Nsten,
   amrex::Array4<const amrex::Real> const& s,
@@ -621,7 +621,7 @@ pc_apply_eb_boundry_flux_stencil(
   amrex::Array4<const amrex::Real> const& D,
   const int Dcomp,
   const amrex::Real* bcval,
-  const int Nvals,
+  const int /*Nvals*/,
   amrex::Real* bcflux,
   const int Nflux,
   const int nc)

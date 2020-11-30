@@ -4,7 +4,7 @@ void
 PeleC::getMOLSrcTerm(
   const amrex::MultiFab& S,
   amrex::MultiFab& MOLSrcTerm,
-  amrex::Real time,
+  amrex::Real /*time*/,
   amrex::Real dt,
   amrex::Real flux_factor)
 {
@@ -105,15 +105,15 @@ PeleC::getMOLSrcTerm(
   {
     // amrex::IArrayBox bcMask[AMREX_SPACEDIM];
 
-    int flag_nscbc_isAnyPerio = (geom.isAnyPeriodic()) ? 1 : 0;
-    int flag_nscbc_perio[AMREX_SPACEDIM]; // For 3D, we will know which corners
-                                          // have a periodicity
-    for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
-      flag_nscbc_perio[dir] =
-        (amrex::DefaultGeometry().isPeriodic(dir)) ? 1 : 0;
-    }
-    const int* domain_lo = geom.Domain().loVect();
-    const int* domain_hi = geom.Domain().hiVect();
+    // int flag_nscbc_isAnyPerio = (geom.isAnyPeriodic()) ? 1 : 0;
+    // int flag_nscbc_perio[AMREX_SPACEDIM] = {0}; // For 3D, we will know which
+    // corners have a periodicity
+    // for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
+    //   flag_nscbc_perio[dir] =
+    //     (amrex::DefaultGeometry().isPeriodic(dir)) ? 1 : 0;
+    // }
+    // const int* domain_lo = geom.Domain().loVect();
+    // const int* domain_hi = geom.Domain().hiVect();
 
     for (amrex::MFIter mfi(MOLSrcTerm, amrex::TilingIfNotGPU()); mfi.isValid();
          ++mfi) {
@@ -158,8 +158,8 @@ PeleC::getMOLSrcTerm(
         (Ncut > 0 ? sv_eb_bndry_geom[local_i].data() : 0);
 #endif
 
-      const int* lo = vbox.loVect();
-      const int* hi = vbox.hiVect();
+      // const int* lo = vbox.loVect();
+      // const int* hi = vbox.hiVect();
 
       BL_PROFILE_VAR_START(diff);
       int nqaux = NQAUX > 0 ? NQAUX : 1;
@@ -380,7 +380,7 @@ PeleC::getMOLSrcTerm(
           amrex::Real* d_eb_flux_thdlocal =
             (nFlux > 0 ? eb_flux_thdlocal.dataPtr() : 0);
 #endif
-          auto const& vol = volume.array(mfi);
+          // auto const& vol = volume.array(mfi);
           pc_compute_hyp_mol_flux(
             cbox, qar, qauxar, flx, a, dx, plm_iorder
 #ifdef PELEC_USE_EB
@@ -479,7 +479,7 @@ PeleC::getMOLSrcTerm(
           BL_PROFILE("PeleC::pc_apply_face_stencil()");
           for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
             int Nsten = flux_interp_stencil[dir][local_i].size();
-            int in_place = 1;
+            // int in_place = 1;
             const amrex::Box valid_interped_flux_box =
               amrex::Box(ebfluxbox).surroundingNodes(dir);
             pc_apply_face_stencil(
@@ -509,7 +509,7 @@ PeleC::getMOLSrcTerm(
 
         // Set weighting for redistribution
         auto const& W = vfrac.array(mfi);
-        int wComp = 0;
+        // int wComp = 0;
 
         dm_as_fine.resize(amrex::Box::TheUnitBox(), NVAR);
         dm_as_fine_eli = dm_as_fine.elixir();

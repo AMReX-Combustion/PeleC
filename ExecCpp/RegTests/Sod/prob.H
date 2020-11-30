@@ -30,7 +30,7 @@ pc_initdata(
 
   // Geometry
   const amrex::Real* prob_lo = geomdata.ProbLo();
-  const amrex::Real* prob_hi = geomdata.ProbHi();
+  // const amrex::Real* prob_hi = geomdata.ProbHi();
   const amrex::Real* dx = geomdata.CellSize();
   const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
   const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
@@ -118,13 +118,13 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 bcnormal(
-  const amrex::Real x[AMREX_SPACEDIM],
+  const amrex::Real* /*x[AMREX_SPACEDIM]*/,
   const amrex::Real s_int[NVAR],
   amrex::Real s_ext[NVAR],
-  const int idir,
-  const int sgn,
-  const amrex::Real time,
-  amrex::GeometryData const& geomdata)
+  const int /*idir*/,
+  const int /*sgn*/,
+  const amrex::Real /*time*/,
+  amrex::GeometryData const& /*geomdata*/)
 {
   for (int n = 0; n < NVAR; n++) {
     s_ext[n] = s_int[n];

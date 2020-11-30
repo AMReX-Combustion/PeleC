@@ -14,7 +14,7 @@ AMREX_GPU_DEVICE_MANAGED amrex::Real max_dt = 1.e37;
 AMREX_GPU_HOST_DEVICE
 amrex::Real
 pc_estdt_hydro(
-  amrex::Box const& bx,
+  const amrex::Box& bx,
   const amrex::Array4<const amrex::Real>& u,
 #ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
@@ -58,7 +58,7 @@ pc_estdt_hydro(
 AMREX_GPU_HOST_DEVICE
 amrex::Real
 pc_estdt_veldif(
-  amrex::Box const bx,
+  const amrex::Box& bx,
   const amrex::Array4<const amrex::Real>& u,
 #ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
@@ -69,7 +69,6 @@ pc_estdt_veldif(
     const amrex::Real& dz)) noexcept
 {
   amrex::Real dt = TimeStep::max_dt;
-  int which_trans = 0;
 
   amrex::Loop(bx, [=, &dt](int i, int j, int k) {
 #ifdef PELEC_USE_EB
@@ -83,6 +82,7 @@ pc_estdt_veldif(
       }
       amrex::Real T = u(i, j, k, UTEMP);
       amrex::Real D = 0.0;
+      const int which_trans = 0;
       pc_trans4dt(which_trans, T, rho, massfrac, D);
       D *= rhoInv;
       if (D == 0.0)
@@ -105,7 +105,7 @@ pc_estdt_veldif(
 AMREX_GPU_HOST_DEVICE
 amrex::Real
 pc_estdt_tempdif(
-  amrex::Box const bx,
+  const amrex::Box& bx,
   const amrex::Array4<const amrex::Real>& u,
 #ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
@@ -116,7 +116,6 @@ pc_estdt_tempdif(
     const amrex::Real& dz)) noexcept
 {
   amrex::Real dt = TimeStep::max_dt;
-  int which_trans = 1;
 
   amrex::Loop(bx, [=, &dt](int i, int j, int k) {
 #ifdef PELEC_USE_EB
@@ -129,6 +128,7 @@ pc_estdt_tempdif(
         massfrac[n] = u(i, j, k, n + UFS) * rhoInv;
       amrex::Real T = u(i, j, k, UTEMP);
       amrex::Real D = 0.0;
+      const int which_trans = 1;
       pc_trans4dt(which_trans, T, rho, massfrac, D);
       amrex::Real cv;
       EOS::TY2Cv(T, massfrac, cv);
@@ -153,7 +153,7 @@ pc_estdt_tempdif(
 AMREX_GPU_HOST_DEVICE
 amrex::Real
 pc_estdt_enthdif(
-  amrex::Box const bx,
+  const amrex::Box& bx,
   const amrex::Array4<const amrex::Real>& u,
 #ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
@@ -164,7 +164,6 @@ pc_estdt_enthdif(
     const amrex::Real& dz)) noexcept
 {
   amrex::Real dt = TimeStep::max_dt;
-  int which_trans = 1;
 
   amrex::Loop(bx, [=, &dt](int i, int j, int k) {
 #ifdef PELEC_USE_EB
@@ -179,6 +178,7 @@ pc_estdt_enthdif(
       amrex::Real cp;
       EOS::TY2Cp(T, massfrac, cp);
       amrex::Real D;
+      const int which_trans = 1;
       pc_trans4dt(which_trans, T, rho, massfrac, D);
       D *= rhoInv / cp;
       AMREX_D_TERM(

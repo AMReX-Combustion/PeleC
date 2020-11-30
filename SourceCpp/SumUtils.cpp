@@ -42,7 +42,7 @@ PeleC::volWgtSum(
   BL_PROFILE("PeleC::volWgtSum()");
 
   amrex::Real sum = 0.0;
-  const amrex::Real* dx = geom.CellSize();
+  // const amrex::Real* dx = geom.CellSize();
   auto mf = derive(name, time, 0);
 
   AMREX_ASSERT(mf != 0);
@@ -70,7 +70,7 @@ PeleC::volWgtSquaredSum(const std::string& name, amrex::Real time, bool local)
   BL_PROFILE("PeleC::volWgtSquaredSum()");
 
   amrex::Real sum = 0.0;
-  const amrex::Real* dx = geom.CellSize();
+  // const amrex::Real* dx = geom.CellSize();
   auto mf = derive(name, time, 0);
 
   AMREX_ASSERT(mf != 0);
@@ -96,16 +96,15 @@ PeleC::volWgtSquaredSum(const std::string& name, amrex::Real time, bool local)
 }
 
 amrex::Real
-PeleC ::volWgtSquaredSumDiff(int comp, amrex::Real time, bool local)
+PeleC ::volWgtSquaredSumDiff(int comp, amrex::Real /*time*/, bool local)
 {
-
   // Calculate volume weighted sum of the square of the difference
   // between the old and new quantity
 
   amrex::Real sum = 0.0;
-  const amrex::Real* dx = geom.CellSize();
-  amrex::MultiFab& S_old = get_old_data(State_Type);
-  amrex::MultiFab& S_new = get_new_data(State_Type);
+  // const amrex::Real* dx = geom.CellSize();
+  const amrex::MultiFab& S_old = get_old_data(State_Type);
+  const amrex::MultiFab& S_new = get_new_data(State_Type);
   amrex::MultiFab diff(grids, dmap, 1, 0);
 
   // Calculate the difference between the states
@@ -139,7 +138,7 @@ PeleC::volWgtSumMF(
   BL_PROFILE("PeleC::volWgtSumMF()");
 
   amrex::Real sum = 0.0;
-  const amrex::Real* dx = geom.CellSize();
+  // const amrex::Real* dx = geom.CellSize();
   amrex::MultiFab vol(grids, dmap, 1, 0);
   amrex::MultiFab::Copy(vol, mf, comp, 0, 1, 0);
 

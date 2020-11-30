@@ -162,17 +162,16 @@ pc_expl_reactions(
   // using rho instead of rho_old for
   // being consistent with rho update inside
   // reaction time-stepping
-  amrex::Real rhoe_carryover = rho * e_old;
   amrex::Real rhoe_rk = rho * e_old;
 
   // Do RK time-stepping
-  int steps = 0;
+  // int steps = 0;
   while (updt_time < dt_react) {
     for (int n = 0; n < NVAR; n++) {
       urk_carryover[n] = urk[n];
       urk_err[n] = 0.0;
     }
-    rhoe_carryover = rhoe_rk;
+    amrex::Real rhoe_carryover = rhoe_rk;
 
     amrex::Real wdot[NUM_SPECIES] = {};
     amrex::Real massfrac[NUM_SPECIES] = {};
@@ -241,7 +240,7 @@ pc_expl_reactions(
       /*================ Adapt Time step! ======================== */
     } // end rk stages
     updt_time += dt_rk;
-    steps += 1;
+    // steps += 1;
     adapt_timestep(urk_err, dt_max, dt_rk, dt_min, errtol);
   } // end timestep loop
 

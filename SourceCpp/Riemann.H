@@ -12,7 +12,7 @@ riemann(
   const amrex::Real vl,
   const amrex::Real v2l,
   const amrex::Real pl,
-  const amrex::Real rel,
+  const amrex::Real /*rel*/,
   const amrex::Real spl[NUM_SPECIES],
   const amrex::Real gamcl,
   const amrex::Real rr,
@@ -20,7 +20,7 @@ riemann(
   const amrex::Real vr,
   const amrex::Real v2r,
   const amrex::Real pr,
-  const amrex::Real rer,
+  const amrex::Real /*rer*/,
   const amrex::Real spr[NUM_SPECIES],
   const amrex::Real gamcr,
   const int bc_test_val,
@@ -49,7 +49,7 @@ riemann(
   }
   amrex::Real gdnv_state_cs;
   EOS::RPY2Cs(gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, gdnv_state_cs);
-  const amrex::Real csl = gdnv_state_cs;
+  // const amrex::Real csl = gdnv_state_cs;
 
   gdnv_state_rho = rr;
   gdnv_state_p = pr;
@@ -57,7 +57,7 @@ riemann(
     gdnv_state_massfrac[n] = spr[n];
   }
   EOS::RPY2Cs(gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, gdnv_state_cs);
-  const amrex::Real csr = gdnv_state_cs;
+  // const amrex::Real csr = gdnv_state_cs;
 
   const amrex::Real wl =
     amrex::max(wsmall, std::sqrt(amrex::Math::abs(gamcl * pl * rl)));

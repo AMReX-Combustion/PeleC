@@ -8,7 +8,11 @@ pc_compute_hyp_mol_flux(
   const amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
     a,
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> del,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>
+#ifdef PELEC_USE_EB
+    del
+#endif
+  ,
   const int plm_iorder
 #ifdef PELEC_USE_EB
   ,
@@ -16,7 +20,7 @@ pc_compute_hyp_mol_flux(
   const amrex::Array4<const amrex::Real>& vfrac,
   const amrex::Array4<amrex::EBCellFlag const>& flags,
   const EBBndryGeom* ebg,
-  const int Nebg,
+  const int /*Nebg*/,
   amrex::Real* ebflux,
   const int nebflux
 #endif
@@ -197,7 +201,7 @@ pc_compute_hyp_mol_flux(
     const int k = ebg[L].iv[2];
     amrex::Real qtempl[5 + NUM_SPECIES] = {0.0};
     amrex::Real qtempr[5 + NUM_SPECIES] = {0.0};
-    amrex::Real cavg = 0.0, csmall = 0.0, cspeed = 0.0, rhoe_l = 0.0,
+    amrex::Real cavg = 0.0, csmall = 0.0, /*cspeed = 0.0,*/ rhoe_l = 0.0,
                 gamc_l = 0.0;
     amrex::Real spl[NUM_SPECIES] = {0.0};
     amrex::Real flux_tmp[NVAR] = {0.0};
@@ -264,7 +268,7 @@ pc_compute_hyp_mol_flux(
         }
         cavg = sum_nbrs_qc / sum_kappa;
         csmall = sum_nbrs_qcsmall / sum_kappa;
-        cspeed = cavg;
+        // cspeed = cavg;
 
         // Flip the velocity about the normal for the right state - will use
         // left state for remainder of right state
@@ -284,7 +288,7 @@ pc_compute_hyp_mol_flux(
         }
         cavg = qaux(i, j, k, QC);
         csmall = qaux(i, j, k, QCSML);
-        cspeed = qaux(i, j, k, QC);
+        // cspeed = qaux(i, j, k, QC);
 
         // Flip the velocity about the normal for the right state - will use
         // left  state for remainder of right state

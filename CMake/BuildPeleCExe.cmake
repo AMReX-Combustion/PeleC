@@ -39,6 +39,22 @@ function(build_pelec_exe pelec_exe_name)
                  ${PELEC_MECHANISM_DIR}/chemistry_file.H
                  ${PELEC_MECHANISM_DIR}/mechanism.cpp
                  ${PELEC_MECHANISM_DIR}/mechanism.h)
+  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
+     "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+    list(APPEND MY_CXX_FLAGS "-Wno-unused-variable")
+    list(APPEND MY_CXX_FLAGS "-Wno-unused-parameter")
+    list(APPEND MY_CXX_FLAGS "-Wno-vla-extension")
+    list(APPEND MY_CXX_FLAGS "-Wno-zero-length-array")
+  elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    list(APPEND MY_CXX_FLAGS "-Wno-unused-variable")
+    list(APPEND MY_CXX_FLAGS "-Wno-unused-parameter")
+    list(APPEND MY_CXX_FLAGS "-Wno-vla")
+    list(APPEND MY_CXX_FLAGS "-Wno-pedantic")
+  endif()
+  separate_arguments(MY_CXX_FLAGS)
+  set_source_files_properties(${PELEC_MECHANISM_DIR}/mechanism.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+  set_source_files_properties(${PELEC_MECHANISM_DIR}/chemistry_file.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+  set_source_files_properties(${PELEC_MECHANISM_DIR}/mechanism.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELEC_MECHANISM_DIR})
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELE_PHYSICS_SRC_DIR}/Support/Fuego/Evaluation)
   
@@ -144,7 +160,7 @@ function(build_pelec_exe pelec_exe_name)
   #PeleC include directories
   target_include_directories(${pelec_exe_name} PRIVATE ${SRC_DIR})
   target_include_directories(${pelec_exe_name} PRIVATE ${CMAKE_BINARY_DIR})
-  
+
   #Link to amrex library
   target_link_libraries(${pelec_exe_name} PRIVATE amrex)
 

@@ -30,8 +30,8 @@ pc_initdata(
   const amrex::Real* dx = geomdata.CellSize();
 
   const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
-  const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
-  const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];
+  // const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
+  // const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];
 
   const amrex::Real p = ProbParm::dpdx * x + ProbParm::p;
   amrex::Real rho = 0.0, eint = 0.0;
@@ -58,10 +58,9 @@ bcnormal(
   amrex::Real s_ext[NVAR],
   const int idir,
   const int sgn,
-  const amrex::Real time,
+  const amrex::Real /*time*/,
   amrex::GeometryData const& geomdata)
 {
-
   if (idir == 0) {
     amrex::Real rho = 0.0, u = 0.0, v = 0.0, w = 0.0, eint = 0.0, T = 0.0;
 

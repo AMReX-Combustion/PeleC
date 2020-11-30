@@ -115,13 +115,13 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 bcnormal(
-  const amrex::Real x[AMREX_SPACEDIM],
+  const amrex::Real* /*x[AMREX_SPACEDIM]*/,
   const amrex::Real s_int[NVAR],
   amrex::Real s_ext[NVAR],
-  const int idir,
-  const int sgn,
-  const amrex::Real time,
-  amrex::GeometryData const& geomdata)
+  const int /*idir*/,
+  const int /*sgn*/,
+  const amrex::Real /*time*/,
+  amrex::GeometryData const& /*geomdata*/)
 {
   for (int n = 0; n < NVAR; n++) {
     s_ext[n] = s_int[n];

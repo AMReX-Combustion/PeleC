@@ -51,7 +51,7 @@
 
 void
 PeleC::construct_old_les_source(
-  amrex::Real time, amrex::Real dt, int sub_iteration, int sub_ncycle)
+  amrex::Real time, amrex::Real dt, int /*sub_iteration*/, int /*sub_ncycle*/)
 {
   // Add grow cells necessary for explicit filtering of source terms
   if (use_explicit_filter) {
@@ -185,7 +185,7 @@ PeleC::getSmagorinskyLESTerm(
 {
   // Only use this functionality for 3D
 #if AMREX_SPACEDIM == 3
-  int ngrow = 1;
+  const int ngrow = 1;
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx = geom.CellSizeArray();
   amrex::Real dx1 = dx[0];
   for (int dir = 1; dir < AMREX_SPACEDIM; ++dir) {
@@ -216,7 +216,7 @@ PeleC::getSmagorinskyLESTerm(
       const amrex::Box vbox = mfi.tilebox();
       const amrex::Box gbox = amrex::grow(vbox, ngrow);
       const amrex::Box cbox = amrex::grow(vbox, ngrow - 1);
-      const amrex::Box& dbox = geom.Domain();
+      // const amrex::Box& dbox = geom.Domain();
 
 #ifdef PELEC_USE_EB
       const auto& flag_fab = flags[mfi];
@@ -438,7 +438,7 @@ PeleC::getDynamicSmagorinskyLESTerm(
       const amrex::Box g3box = amrex::grow(vbox, nGrowC + 1);
       const amrex::Box g4box = amrex::grow(vbox, 1);
       const amrex::Box cbox = amrex::grow(vbox, 0);
-      const amrex::Box& dbox = geom.Domain();
+      // const amrex::Box& dbox = geom.Domain();
 
 #ifdef PELEC_USE_EB
       const auto& flag_fab = flags[mfi];

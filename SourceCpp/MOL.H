@@ -29,13 +29,16 @@ mol_slope(
 #endif
 )
 {
-  bool flagArrayL = true;
-  bool flagArrayR = true;
 #ifdef PELEC_USE_EB
-  flagArrayL = flags(i, j, k).isConnected(-bdim[0], -bdim[1], -bdim[2]) and
-               !flags(i, j, k).isCovered();
-  flagArrayR = flags(i, j, k).isConnected(+bdim[0], +bdim[1], +bdim[2]) and
-               !flags(i, j, k).isCovered();
+  const bool flagArrayL =
+    flags(i, j, k).isConnected(-bdim[0], -bdim[1], -bdim[2]) and
+    !flags(i, j, k).isCovered();
+  const bool flagArrayR =
+    flags(i, j, k).isConnected(+bdim[0], +bdim[1], +bdim[2]) and
+    !flags(i, j, k).isCovered();
+#else
+  const bool flagArrayL = true;
+  const bool flagArrayR = true;
 #endif
 
   amrex::Real dlft[QVAR] = {0.0};

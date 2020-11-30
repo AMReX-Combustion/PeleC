@@ -68,16 +68,19 @@ enum sources {
   num_src
 };
 
+/*
 static amrex::Box
 the_same_box(const amrex::Box& b)
 {
   return b;
 }
+
 static amrex::Box
 grow_box_by_one(const amrex::Box& b)
 {
   return amrex::grow(b, 1);
 }
+*/
 
 //
 // AmrLevel-derived class for hyperbolic conservation equations for stellar
@@ -695,11 +698,11 @@ protected:
   void normalize_species(amrex::MultiFab& S_new);
 
   amrex::Real
-  enforce_min_density(amrex::MultiFab& S_old, amrex::MultiFab& S_new);
+  enforce_min_density(amrex::MultiFab& S_old, const amrex::MultiFab& S_new);
 
-  amrex::Real clean_state(amrex::MultiFab& state);
+  amrex::Real clean_state(amrex::MultiFab& S);
 
-  amrex::Real clean_state(amrex::MultiFab& state, amrex::MultiFab& state_old);
+  amrex::Real clean_state(const amrex::MultiFab& S, amrex::MultiFab& S_old);
 
   void buildMetrics();
 

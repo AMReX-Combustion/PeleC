@@ -32,10 +32,9 @@ pc_initdata(
   amrex::Array4<amrex::Real> const& state,
   amrex::GeometryData const& geomdata)
 {
-
   // Geometry
   const amrex::Real* prob_lo = geomdata.ProbLo();
-  const amrex::Real* prob_hi = geomdata.ProbHi();
+  // const amrex::Real* prob_hi = geomdata.ProbHi();
   const amrex::Real* dx = geomdata.CellSize();
   masa_set_param("deltabar", dx[0]);
   const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
@@ -72,12 +71,12 @@ AMREX_FORCE_INLINE
 void
 bcnormal(
   const amrex::Real x[AMREX_SPACEDIM],
-  const amrex::Real s_int[NVAR],
+  const amrex::Real* /*s_int[NVAR]*/,
   amrex::Real s_ext[NVAR],
-  const int idir,
-  const int sgn,
-  const amrex::Real time,
-  amrex::GeometryData const& geomdata)
+  const int /*idir*/,
+  const int /*sgn*/,
+  const amrex::Real /*time*/,
+  amrex::GeometryData const& /*geomdata*/)
 {
   const amrex::Real rho = masa_eval_3d_exact_rho(x[0], x[1], x[2]);
   const amrex::Real u[3] = {

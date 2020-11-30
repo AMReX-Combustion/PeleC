@@ -29,9 +29,22 @@ static int norm_vel_bc[] = {INT_DIR,     EXT_DIR,     FOEXTRAP, REFLECT_ODD,
 static int tang_vel_bc[] = {INT_DIR,      EXT_DIR,     FOEXTRAP, REFLECT_EVEN,
                             REFLECT_EVEN, REFLECT_ODD, EXT_DIR};
 
+#ifdef PELEC_USE_REACTIONS
 static int react_src_bc[] = {INT_DIR,      REFLECT_EVEN, REFLECT_EVEN,
                              REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN,
                              REFLECT_EVEN};
+#endif
+
+static amrex::Box
+the_same_box(const amrex::Box& b)
+{
+  return b;
+}
+static amrex::Box
+grow_box_by_one(const amrex::Box& b)
+{
+  return amrex::grow(b, 1);
+}
 
 static void
 set_scalar_bc(amrex::BCRec& bc, const amrex::BCRec& phys_bc)
@@ -66,6 +79,7 @@ set_y_vel_bc(amrex::BCRec& bc, const amrex::BCRec& phys_bc)
     , bc.setLo(2, tang_vel_bc[lo_bc[2]]); bc.setHi(2, tang_vel_bc[hi_bc[2]]););
 }
 
+#ifdef PELEC_USE_REACTIONS
 static void
 set_react_src_bc(amrex::BCRec& bc, const amrex::BCRec& phys_bc)
 {
@@ -76,6 +90,7 @@ set_react_src_bc(amrex::BCRec& bc, const amrex::BCRec& phys_bc)
     bc.setHi(dir, react_src_bc[hi_bc[dir]]);
   }
 }
+#endif
 
 static void
 set_z_vel_bc(amrex::BCRec& bc, const amrex::BCRec& phys_bc)
@@ -171,7 +186,7 @@ PeleC::variableSetUp()
     cnt += NumAdv;
   }
 
-  int dm = AMREX_SPACEDIM;
+  // int dm = AMREX_SPACEDIM;
 
   if (NUM_SPECIES > 0) {
     FirstSpec = cnt;
@@ -224,7 +239,7 @@ PeleC::variableSetUp()
                    << nscbc_diff << '\n'
                    << '\n';
 
-  int coord_type = amrex::DefaultGeometry().Coord();
+  // int coord_type = amrex::DefaultGeometry().Coord();
 
   amrex::Vector<amrex::Real> center(AMREX_SPACEDIM, 0.0);
   amrex::ParmParse ppc("pelec");
@@ -330,11 +345,12 @@ PeleC::variableSetUp()
           break;
       }
       const int strlen = j;
-      char char_spec_names[strlen + 1];
+      char* char_spec_names = new char[strlen + 1];
       for (j = 0; j < strlen; j++)
         char_spec_names[j] = int_spec_names[i * len + j];
       char_spec_names[j] = '\0';
       spec_names.push_back(std::string(char_spec_names));
+      delete[] char_spec_names;
     }
   }
 
@@ -361,11 +377,12 @@ PeleC::variableSetUp()
       // This call return the actual length of each string in "len"
       get_aux_names(int_aux_names.dataPtr(),&i,&len);
     */
-    char char_aux_names[len + 1];
+    char* char_aux_names = new char[len + 1];
     for (int j = 0; j < len; j++)
       char_aux_names[j] = int_aux_names[j];
     char_aux_names[len] = '\0';
     aux_names.push_back(std::string(char_aux_names));
+    delete[] char_aux_names;
   }
   if (amrex::ParallelDescriptor::IOProcessor()) {
     amrex::Print() << NUM_AUX << " Auxiliary Variables: " << std::endl;

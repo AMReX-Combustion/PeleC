@@ -27,9 +27,9 @@ pc_prob_close()
 extern "C" {
 void
 amrex_probinit(
-  const int* init,
-  const int* name,
-  const int* namelen,
+  const int* /*init*/,
+  const int* /*name*/,
+  const int* /*namelen*/,
   const amrex_real* problo,
   const amrex_real* probhi)
 {
@@ -51,7 +51,7 @@ amrex_probinit(
     ProbParm::split[idir] = ProbParm::frac * (problo[idir] + probhi[idir]);
   }
 
-  amrex::Real e_l, e_r, cs, cp;
+  amrex::Real e_l, e_r /*, cs, cp */;
   amrex::Real massfrac[NUM_SPECIES] = {0.0};
   massfrac[0] = 1.0;
 

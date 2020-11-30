@@ -11,18 +11,18 @@ struct PCHypFillExtDir
   void operator()(
     const amrex::IntVect& iv,
     amrex::Array4<amrex::Real> const& dest,
-    const int dcomp,
-    const int numcomp,
+    const int /*dcomp*/,
+    const int /*numcomp*/,
     amrex::GeometryData const& geom,
     const amrex::Real time,
     const amrex::BCRec* bcr,
-    const int bcomp,
-    const int orig_comp) const
+    const int /*bcomp*/,
+    const int /*orig_comp*/) const
   {
     const int* domlo = geom.Domain().loVect();
     const int* domhi = geom.Domain().hiVect();
     const amrex::Real* prob_lo = geom.ProbLo();
-    const amrex::Real* prob_hi = geom.ProbHi();
+    // const amrex::Real* prob_hi = geom.ProbHi();
     const amrex::Real* dx = geom.CellSize();
     const amrex::Real x[AMREX_SPACEDIM] = {AMREX_D_DECL(
       prob_lo[0] + (iv[0] + 0.5) * dx[0], prob_lo[1] + (iv[1] + 0.5) * dx[1],
@@ -111,15 +111,15 @@ struct PCReactFillExtDir
 {
   AMREX_GPU_DEVICE
   void operator()(
-    const amrex::IntVect& iv,
-    amrex::Array4<amrex::Real> const& dest,
-    const int dcomp,
-    const int numcomp,
-    amrex::GeometryData const& geom,
-    const amrex::Real time,
-    const amrex::BCRec* bcr,
-    const int bcomp,
-    const int orig_comp) const
+    const amrex::IntVect& /*iv*/,
+    amrex::Array4<amrex::Real> const& /*dest*/,
+    const int /*dcomp*/,
+    const int /*numcomp*/,
+    amrex::GeometryData const& /*geom*/,
+    const amrex::Real /*time*/,
+    const amrex::BCRec* /*bcr*/,
+    const int /*bcomp*/,
+    const int /*orig_comp*/) const
   {
   }
 };
@@ -148,6 +148,7 @@ pc_bcfill_hyp(
   hyp_bndry_func(bx, data, dcomp, numcomp, geom, time, bcr, bcomp, scomp);
 }
 
+#ifdef PELEC_USE_REACTIONS
 void
 pc_reactfill_hyp(
   amrex::Box const& bx,
@@ -160,21 +161,20 @@ pc_reactfill_hyp(
   const int bcomp,
   const int scomp)
 {
-#ifdef PELEC_USE_REACTIONS
   react_bndry_func(bx, data, dcomp, numcomp, geom, time, bcr, bcomp, scomp);
-#endif
 }
+#endif
 
 void
 pc_nullfill(
-  amrex::Box const& bx,
-  amrex::FArrayBox& data,
-  const int dcomp,
-  const int numcomp,
-  amrex::Geometry const& geom,
-  const amrex::Real time,
-  const amrex::Vector<amrex::BCRec>& bcr,
-  const int bcomp,
-  const int scomp)
+  amrex::Box const& /*bx*/,
+  amrex::FArrayBox& /*data*/,
+  const int /*dcomp*/,
+  const int /*numcomp*/,
+  amrex::Geometry const& /*geom*/,
+  const amrex::Real /*time*/,
+  const amrex::Vector<amrex::BCRec>& /*bcr*/,
+  const int /*bcomp*/,
+  const int /*scomp*/)
 {
 }

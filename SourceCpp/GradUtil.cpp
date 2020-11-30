@@ -3,7 +3,7 @@
 #ifdef PELEC_USE_EB
 void
 pc_compute_tangential_vel_derivs_eb(
-  const amrex::Box bx,
+  const amrex::Box& bx,
   const int dir,
   const amrex::Real dx1,
   const amrex::Real dx2,

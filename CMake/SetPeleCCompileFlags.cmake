@@ -2,12 +2,8 @@
 if(PELEC_ENABLE_ALL_WARNINGS)
   # GCC, Clang, and Intel seem to accept these
   list(APPEND PELEC_CXX_FLAGS "-Wall" "-Wextra" "-pedantic")
-  if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-    # ifort doesn't like -Wall
-    list(APPEND PELEC_Fortran_FLAGS "-Wall")
-  else()
-    # Intel always reports some diagnostics we don't necessarily care about
-    list(APPEND PELEC_CXX_FLAGS "-diag-disable:11074,11076")
+  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+    list(APPEND PELEC_CXX_FLAGS "-diag-disable:11074,11076,10397,15335")
   endif()
   if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 7.0)
     # Avoid notes about -faligned-new with GCC > 7

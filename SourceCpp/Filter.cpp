@@ -454,20 +454,19 @@ Filter::apply_filter(
  **/
 void
 Filter::apply_filter(
-  const amrex::Box cbox, const amrex::FArrayBox& in, amrex::FArrayBox& out)
+  const amrex::Box& cbox, const amrex::FArrayBox& in, amrex::FArrayBox& out)
 {
   apply_filter(cbox, in, out, 0, out.nComp());
 }
 
 void
 Filter::apply_filter(
-  const amrex::Box cbox,
+  const amrex::Box& cbox,
   const amrex::FArrayBox& in,
   amrex::FArrayBox& out,
   const int nstart,
   const int ncnt)
 {
-
   BL_PROFILE("Filter::apply_filter()");
   AMREX_ASSERT(in.nComp() == out.nComp());
 
@@ -477,12 +476,12 @@ Filter::apply_filter(
 
 void
 Filter::apply_filter(
-  const amrex::Box box,
+  const amrex::Box& box,
   const amrex::FArrayBox& in,
   amrex::FArrayBox& out,
   const int nstart,
   const int ncnt,
-  const int ncomp)
+  const int /*ncomp*/)
 {
 
   const auto q = in.array();

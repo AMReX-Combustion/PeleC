@@ -11,7 +11,7 @@ AMREX_GPU_DEVICE_MANAGED amrex::Real forcing = 0.0;
 void
 PeleC::construct_old_forcing_source(amrex::Real time, amrex::Real dt)
 {
-  amrex::MultiFab& S_old = get_old_data(State_Type);
+  const amrex::MultiFab& S_old = get_old_data(State_Type);
 
   int ng = 0; // None filled
 
@@ -28,8 +28,8 @@ PeleC::construct_old_forcing_source(amrex::Real time, amrex::Real dt)
 void
 PeleC::construct_new_forcing_source(amrex::Real time, amrex::Real dt)
 {
-  amrex::MultiFab& S_old = get_old_data(State_Type);
-  amrex::MultiFab& S_new = get_new_data(State_Type);
+  const amrex::MultiFab& S_old = get_old_data(State_Type);
+  const amrex::MultiFab& S_new = get_new_data(State_Type);
 
   int ng = 0;
 
@@ -43,15 +43,19 @@ PeleC::construct_new_forcing_source(amrex::Real time, amrex::Real dt)
 
 void
 PeleC::fill_forcing_source(
-  amrex::Real time,
-  amrex::Real dt,
-  const amrex::MultiFab& state_old,
+  amrex::Real /*time*/,
+  amrex::Real /*dt*/,
+  const amrex::MultiFab&
+#ifdef PELEC_USE_EB
+    state_old
+#endif
+  ,
   const amrex::MultiFab& state_new,
   amrex::MultiFab& forcing_src,
   int ng)
 {
-  const amrex::Real* dx = geom.CellSize();
-  const amrex::Real* prob_lo = geom.ProbLo();
+  // const amrex::Real* dx = geom.CellSize();
+  // const amrex::Real* prob_lo = geom.ProbLo();
 
 #ifdef PELEC_USE_EB
   auto const& fact =
@@ -65,8 +69,8 @@ PeleC::fill_forcing_source(
   for (amrex::MFIter mfi(forcing_src, amrex::TilingIfNotGPU()); mfi.isValid();
        ++mfi) {
     const amrex::Box& bx = mfi.growntilebox(ng);
-    amrex::RealBox gridloc =
-      amrex::RealBox(grids[mfi.index()], geom.CellSize(), geom.ProbLo());
+    // amrex::RealBox gridloc =
+    // amrex::RealBox(grids[mfi.index()], geom.CellSize(), geom.ProbLo());
 
 #ifdef PELEC_USE_EB
     const auto& flag_fab = flags[mfi];

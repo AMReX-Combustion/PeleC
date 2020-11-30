@@ -8,8 +8,8 @@ PeleC::construct_hydro_source(
   const amrex::MultiFab& S,
   amrex::Real time,
   amrex::Real dt,
-  int amr_iteration,
-  int amr_ncycle,
+  int /*amr_iteration*/,
+  int /*amr_ncycle*/,
   int sub_iteration,
   int sub_ncycle)
 {
@@ -65,19 +65,19 @@ PeleC::construct_hydro_source(
     amrex::MultiFab& S_new = get_new_data(State_Type);
 
     // note: the radiation consup currently does not fill these
-    amrex::Real E_added_flux = 0.;
-    amrex::Real mass_added_flux = 0.;
-    amrex::Real xmom_added_flux = 0.;
-    amrex::Real ymom_added_flux = 0.;
-    amrex::Real zmom_added_flux = 0.;
-    amrex::Real mass_lost = 0.;
-    amrex::Real xmom_lost = 0.;
-    amrex::Real ymom_lost = 0.;
-    amrex::Real zmom_lost = 0.;
-    amrex::Real eden_lost = 0.;
-    amrex::Real xang_lost = 0.;
-    amrex::Real yang_lost = 0.;
-    amrex::Real zang_lost = 0.;
+    amrex::Real E_added_flux = 0.;    // cppcheck-suppress variableScope
+    amrex::Real mass_added_flux = 0.; // cppcheck-suppress variableScope
+    amrex::Real xmom_added_flux = 0.; // cppcheck-suppress variableScope
+    amrex::Real ymom_added_flux = 0.; // cppcheck-suppress variableScope
+    amrex::Real zmom_added_flux = 0.; // cppcheck-suppress variableScope
+    amrex::Real mass_lost = 0.;       // cppcheck-suppress variableScope
+    amrex::Real xmom_lost = 0.;       // cppcheck-suppress variableScope
+    amrex::Real ymom_lost = 0.;       // cppcheck-suppress variableScope
+    amrex::Real zmom_lost = 0.;       // cppcheck-suppress variableScope
+    amrex::Real eden_lost = 0.;       // cppcheck-suppress variableScope
+    amrex::Real xang_lost = 0.;       // cppcheck-suppress variableScope
+    amrex::Real yang_lost = 0.;       // cppcheck-suppress variableScope
+    amrex::Real zang_lost = 0.;       // cppcheck-suppress variableScope
 
     BL_PROFILE_VAR("PeleC::advance_hydro_pc_umdrv()", PC_UMDRV);
 
@@ -93,13 +93,13 @@ PeleC::construct_hydro_source(
       // amrex::IArrayBox bcMask[AMREX_SPACEDIM];
       amrex::Real cflLoc = -1.0e+200;
       int is_finest_level = (level == finest_level) ? 1 : 0;
-      int flag_nscbc_isAnyPerio = (geom.isAnyPeriodic()) ? 1 : 0;
-      int flag_nscbc_perio[AMREX_SPACEDIM]; // For 3D, we will know which
-                                            // corners have a periodicity
-      for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
-        flag_nscbc_perio[dir] =
-          (amrex::DefaultGeometry().isPeriodic(dir)) ? 1 : 0;
-      }
+      // int flag_nscbc_isAnyPerio = (geom.isAnyPeriodic()) ? 1 : 0;
+      // int flag_nscbc_perio[AMREX_SPACEDIM] = {0}; // For 3D, we will know
+      // which corners have a periodicity
+      // for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
+      //  flag_nscbc_perio[dir] =
+      //    (amrex::DefaultGeometry().isPeriodic(dir)) ? 1 : 0;
+      // }
 
       const int* domain_lo = geom.Domain().loVect();
       const int* domain_hi = geom.Domain().hiVect();
@@ -111,8 +111,8 @@ PeleC::construct_hydro_source(
         const amrex::Box& bx = mfi.tilebox();
         const amrex::Box& qbx = amrex::grow(bx, NUM_GROW + nGrowF);
         const amrex::Box& fbx = amrex::grow(bx, nGrowF);
-        const int* lo = bx.loVect();
-        const int* hi = bx.hiVect();
+        // const int* lo = bx.loVect();
+        // const int* hi = bx.hiVect();
 
         amrex::GpuArray<amrex::FArrayBox, AMREX_SPACEDIM> flux;
         amrex::Elixir flux_eli[AMREX_SPACEDIM];
@@ -296,13 +296,13 @@ PeleC::construct_hydro_source(
         amrex::ParallelDescriptor::ReduceRealSum(
           foo, 5, amrex::ParallelDescriptor::IOProcessorNumber());
 
+#ifdef AMREX_DEBUG
         if (amrex::ParallelDescriptor::IOProcessor()) {
           E_added_flux = foo[0];
           xmom_added_flux = foo[1];
           ymom_added_flux = foo[2];
           zmom_added_flux = foo[3];
           mass_added_flux = foo[4];
-#ifdef AMREX_DEBUG
           amrex::Print() << "mass added from fluxes                      : "
                          << mass_added_flux << std::endl;
           amrex::Print() << "xmom added from fluxes                      : "
@@ -313,8 +313,8 @@ PeleC::construct_hydro_source(
                          << zmom_added_flux << std::endl;
           amrex::Print() << "(rho E) added from fluxes                   : "
                          << E_added_flux << std::endl;
-#endif
         }
+#endif
 #ifdef AMREX_LAZY
       });
 #endif
@@ -332,8 +332,8 @@ PeleC::construct_hydro_source(
 
 void
 pc_umdrv(
-  const int is_finest_level,
-  const amrex::Real time,
+  const int /*is_finest_level*/,
+  const amrex::Real /*time*/,
   amrex::Box const& bx,
   const int* domlo,
   const int* domhi,
@@ -353,7 +353,7 @@ pc_umdrv(
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
     a,
   amrex::Array4<amrex::Real> const& vol,
-  amrex::Real cflLoc)
+  amrex::Real /*cflLoc*/)
 {
   //  Set Up for Hydro Flux Calculations
   auto const& bxg2 = grow(bx, 2);

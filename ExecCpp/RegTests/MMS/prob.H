@@ -34,7 +34,7 @@ pc_initdata(
 {
   // Geometry
   const amrex::Real* prob_lo = geomdata.ProbLo();
-  const amrex::Real* prob_hi = geomdata.ProbHi();
+  // const amrex::Real* prob_hi = geomdata.ProbHi();
   const amrex::Real* dx = geomdata.CellSize();
   masa_set_param("deltabar", dx[0]);
   amrex::Real x = 0.0, y = 0.0, z = 0.0;
@@ -78,12 +78,12 @@ AMREX_FORCE_INLINE
 void
 bcnormal(
   const amrex::Real x[AMREX_SPACEDIM],
-  const amrex::Real s_int[NVAR],
+  const amrex::Real* /*s_int[NVAR]*/,
   amrex::Real s_ext[NVAR],
-  const int idir,
-  const int sgn,
-  const amrex::Real time,
-  amrex::GeometryData const& geomdata)
+  const int /*idir*/,
+  const int /*sgn*/,
+  const amrex::Real /*time*/,
+  amrex::GeometryData const& /*geomdata*/)
 {
   amrex::Real x0 = 0.0, x1 = 0.0, x2 = 0.0;
 

@@ -30,7 +30,7 @@ pc_initdata(
 
   const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
   const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
-  const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];
+  // const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];
 
   const amrex::Real cost = cos(M_PI / 180.0 * ProbParm::angle);
   const amrex::Real sint = sin(M_PI / 180.0 * ProbParm::angle);
@@ -63,13 +63,13 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 bcnormal(
-  const amrex::Real x[AMREX_SPACEDIM],
-  const amrex::Real s_int[NVAR],
-  amrex::Real s_ext[NVAR],
-  const int idir,
-  const int sgn,
-  const amrex::Real time,
-  amrex::GeometryData const& geomdata)
+  const amrex::Real* /*x[AMREX_SPACEDIM]*/,
+  const amrex::Real* /*s_int[NVAR]*/,
+  amrex::Real* /*s_ext[NVAR]*/,
+  const int /*idir*/,
+  const int /*sgn*/,
+  const amrex::Real /*time*/,
+  amrex::GeometryData const& /*geomdata*/)
 {
 }
 

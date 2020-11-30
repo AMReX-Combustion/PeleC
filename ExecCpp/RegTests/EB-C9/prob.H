@@ -32,8 +32,8 @@ pc_initdata(
   const amrex::Real* dx = geomdata.CellSize();
 
   const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
-  const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
-  const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];
+  // const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
+  // const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];
 
   const amrex::Real rho_p =
     ProbParm::alpha * std::exp(-(x / ProbParm::sigma) * (x / ProbParm::sigma));
@@ -60,13 +60,13 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 bcnormal(
-  const amrex::Real x[AMREX_SPACEDIM],
-  const amrex::Real s_int[NVAR],
-  amrex::Real s_ext[NVAR],
-  const int idir,
-  const int sgn,
-  const amrex::Real time,
-  amrex::GeometryData const& geomdata)
+  const amrex::Real* /*x[AMREX_SPACEDIM]*/,
+  const amrex::Real* /*s_int[NVAR]*/,
+  amrex::Real* /*s_ext[NVAR]*/,
+  const int /*idir*/,
+  const int /*sgn*/,
+  const amrex::Real /*time*/,
+  amrex::GeometryData const& /*geomdata*/)
 {
 }
 
@@ -76,8 +76,10 @@ using ProblemTags = EmptyProbTagStruct;
 
 struct MyProbDeriveStruct
 {
+  static amrex::Box the_same_box(const amrex::Box& b) { return b; }
+
   static void
-  add(amrex::DeriveList& derive_lst, amrex::DescriptorList& desc_lst)
+  add(amrex::DeriveList& derive_lst, const amrex::DescriptorList& desc_lst)
   {
     // Add derives as follows and define the derive function below:
     derive_lst.add(
@@ -89,13 +91,13 @@ struct MyProbDeriveStruct
   static void pc_rhoerror(
     const amrex::Box& bx,
     amrex::FArrayBox& derfab,
-    int dcomp,
+    int /*dcomp*/,
     int /*ncomp*/,
     const amrex::FArrayBox& datfab,
     const amrex::Geometry& geomdata,
     amrex::Real time,
     const int* /*bcrec*/,
-    int level)
+    int /*level*/)
   {
     auto const dat = datfab.array();
     auto arr = derfab.array();

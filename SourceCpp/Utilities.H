@@ -134,7 +134,7 @@ pc_move_transcoefs_to_ec(
 AMREX_FORCE_INLINE
 void
 setV(
-  const amrex::Box box,
+  const amrex::Box& box,
   const int Ncomp,
   const amrex::Array4<amrex::Real>& array,
   const amrex::Real val)
@@ -148,7 +148,7 @@ setV(
 AMREX_FORCE_INLINE
 void
 setC(
-  const amrex::Box box,
+  const amrex::Box& box,
   const int Nstart,
   const int Nend,
   const amrex::Array4<amrex::Real>& array,
@@ -163,7 +163,7 @@ setC(
 AMREX_FORCE_INLINE
 void
 copy_array4(
-  const amrex::Box box,
+  const amrex::Box& box,
   const int Ncomp,
   const amrex::Array4<const amrex::Real>& in,
   const amrex::Array4<amrex::Real>& out)
@@ -177,7 +177,7 @@ copy_array4(
 AMREX_FORCE_INLINE
 void
 lincomb_array4(
-  const amrex::Box box,
+  const amrex::Box& box,
   const int Nstart,
   const int Nend,
   const amrex::Array4<const amrex::Real>& f1,
@@ -202,7 +202,7 @@ read_file(std::ifstream& in)
 }
 
 void read_binary(
-  const std::string iname,
+  const std::string& iname,
   const size_t nx,
   const size_t ny,
   const size_t nz,
@@ -210,14 +210,15 @@ void read_binary(
   amrex::Vector<amrex::Real>& data);
 
 void read_csv(
-  const std::string iname,
+  const std::string& iname,
   const size_t nx,
   const size_t ny,
   const size_t nz,
   amrex::Vector<amrex::Real>& data);
 
 AMREX_GPU_HOST_DEVICE
-void locate(const amrex::Real* xtable, const int n, amrex::Real& x, int& idxlo);
+void locate(
+  const amrex::Real* xtable, const int n, const amrex::Real& x, int& idxlo);
 
 template <typename T>
 AMREX_GPU_DEVICE AMREX_FORCE_INLINE void
@@ -235,7 +236,7 @@ sort(T& vec)
   typename T::value_type* d_vec = vec.data();
   const int vec_size = vec.size();
   // Serial loop on the GPU
-  amrex::ParallelFor(1, [=] AMREX_GPU_DEVICE(int dummy) {
+  amrex::ParallelFor(1, [=] AMREX_GPU_DEVICE(int /*dummy*/) {
     for (int i = 0; i < vec_size - 1; i++) {
       for (int j = 0; j < vec_size - i - 1; j++) {
         if (d_vec[j + 1] < d_vec[j]) {
@@ -285,7 +286,7 @@ unique(T input)
   typename T::value_type* d_output = output.data();
 
   // get the uniques
-  amrex::ParallelFor(1, [=] AMREX_GPU_DEVICE(int dummy) {
+  amrex::ParallelFor(1, [=] AMREX_GPU_DEVICE(int /*dummy*/) {
     int cnt = 1;
     d_output[0] = d_input[0];
     for (int i = 0; i < input_size - 1; i++) {
