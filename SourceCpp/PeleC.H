@@ -871,7 +871,9 @@ pc_check_initial_species(
   for (int n = 0; n < NUM_SPECIES; n++) {
     spec_sum = spec_sum + Sfab(i, j, k, UFS + n);
   }
-  if (fabs(Sfab(i, j, k, URHO) - spec_sum) > 1.e-8 * Sfab(i, j, k, URHO)) {
+  if (
+    amrex::Math::abs(Sfab(i, j, k, URHO) - spec_sum) >
+    1.e-8 * Sfab(i, j, k, URHO)) {
     // print *,'Sum of (rho X)_i vs rho at (i,j,k):
     // ',i,j,k,spec_sum,state(i,j,k,URHO)
     amrex::Abort("Error:: Failed check of initial species summing to 1");

@@ -393,7 +393,7 @@ PeleC::PeleC(
 #ifdef AMREX_PARTICLES
     if (src_list[n] == spray_src) {
       oldGrow = 1;
-      newGrow = amrex::max(1, newGrow);
+      newGrow = amrex::max<amrex::Real>(1, newGrow);
     }
 #endif
     old_sources[src_list[n]] =
@@ -637,7 +637,10 @@ PeleC::initData()
   // make sure dx = dy = dz -- that's all we guarantee to support
   const amrex::Real small = 1.e-13;
   if (
-    amrex::max(AMREX_D_DECL(0.0, fabs(dx[0] - dx[1]), fabs(dx[0] - dx[2]))) >
+    amrex::max<amrex::Real>(AMREX_D_DECL(
+      static_cast<amrex::Real>(0.0),
+      static_cast<amrex::Real>(amrex::Math::abs(dx[0] - dx[1])),
+      static_cast<amrex::Real>(amrex::Math::abs(dx[0] - dx[2])))) >
     small * dx[0]) {
     amrex::Abort("dx != dy != dz not supported");
   }
@@ -837,7 +840,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 #endif
             AMREX_D_DECL(dx1, dx2, dx3));
         });
-      estdt_hydro = amrex::min(estdt_hydro, dt);
+      estdt_hydro = amrex::min<amrex::Real>(estdt_hydro, dt);
     }
 
     if (diffuse_vel) {
@@ -861,7 +864,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 #endif
             AMREX_D_DECL(dx1, dx2, dx3));
         });
-      estdt_vdif = amrex::min(estdt_vdif, dt);
+      estdt_vdif = amrex::min<amrex::Real>(estdt_vdif, dt);
     }
 
     if (diffuse_temp) {
@@ -885,7 +888,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 #endif
             AMREX_D_DECL(dx1, dx2, dx3));
         });
-      estdt_tdif = amrex::min(estdt_tdif, dt);
+      estdt_tdif = amrex::min<amrex::Real>(estdt_tdif, dt);
     }
 
     if (diffuse_enth) {
@@ -909,11 +912,13 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 #endif
             AMREX_D_DECL(dx1, dx2, dx3));
         });
-      estdt_edif = amrex::min(estdt_edif, dt);
+      estdt_edif = amrex::min<amrex::Real>(estdt_edif, dt);
     }
 
-    estdt_hydro = amrex::min(
-      estdt_hydro, amrex::min(estdt_vdif, amrex::min(estdt_tdif, estdt_edif)));
+    estdt_hydro = amrex::min<amrex::Real>(
+      estdt_hydro,
+      amrex::min<amrex::Real>(
+        estdt_vdif, amrex::min<amrex::Real>(estdt_tdif, estdt_edif)));
 
     amrex::ParallelDescriptor::ReduceRealMin(estdt_hydro);
     estdt_hydro *= cfl;
@@ -980,7 +985,7 @@ PeleC::computeNewDt(
     if (post_regrid_flag == 1) {
       // Limit dt's by pre-regrid dt
       for (int i = 0; i <= finest_level; i++) {
-        dt_min[i] = amrex::min(dt_min[i], dt_level[i]);
+        dt_min[i] = amrex::min<amrex::Real>(dt_min[i], dt_level[i]);
       }
     } else {
       // Limit dt's by change_max * old dt
@@ -995,7 +1000,8 @@ PeleC::computeNewDt(
                            << " * " << dt_level[i] << '\n';
           }
         }
-        dt_min[i] = amrex::min(dt_min[i], change_max * dt_level[i]);
+        dt_min[i] =
+          amrex::min<amrex::Real>(dt_min[i], change_max * dt_level[i]);
       }
     }
   }
@@ -1003,7 +1009,7 @@ PeleC::computeNewDt(
   // Find the minimum over all levels
   for (int i = 0; i <= finest_level; i++) {
     n_factor *= n_cycle[i];
-    dt_0 = amrex::min(dt_0, n_factor * dt_min[i]);
+    dt_0 = amrex::min<amrex::Real>(dt_0, n_factor * dt_min[i]);
   }
 
   // Limit dt's by the value of stop_time.
@@ -1043,7 +1049,7 @@ PeleC::computeInitialDt(
   for (int i = 0; i <= finest_level; i++) {
     dt_level[i] = getLevel(i).initialTimeStep();
     n_factor *= n_cycle[i];
-    dt_0 = amrex::min(dt_0, n_factor * dt_level[i]);
+    dt_0 = amrex::min<amrex::Real>(dt_0, n_factor * dt_level[i]);
   }
 
   // Limit dt's by the value of stop_time.

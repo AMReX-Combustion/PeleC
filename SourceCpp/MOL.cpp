@@ -118,8 +118,8 @@ pc_compute_hyp_mol_flux(
 
         const amrex::Real cavg =
           0.5 * (qaux(i, j, k, QC) + qaux(ii, jj, kk, QC));
-        const amrex::Real csmall =
-          amrex::min(qaux(i, j, k, QCSML), qaux(ii, jj, kk, QCSML));
+        const amrex::Real csmall = amrex::min<amrex::Real>(
+          qaux(i, j, k, QCSML), qaux(ii, jj, kk, QCSML));
 
         amrex::Real eos_state_rho, eos_state_p, eos_state_e, eos_state_cs,
           eos_state_gamma, eos_state_T;

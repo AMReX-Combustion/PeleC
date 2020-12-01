@@ -40,13 +40,13 @@ pc_estdt_hydro(
       EOS::RTY2Cs(rho, T, massfrac, c);
       AMREX_D_TERM(const amrex::Real ux = u(i, j, k, UMX) * rhoInv;
                    const amrex::Real dt1 = dx / (c + amrex::Math::abs(ux));
-                   dt = amrex::min(dt, dt1);
+                   dt = amrex::min<amrex::Real>(dt, dt1);
                    , const amrex::Real uy = u(i, j, k, UMY) * rhoInv;
                    const amrex::Real dt2 = dy / (c + amrex::Math::abs(uy));
-                   dt = amrex::min(dt, dt2);
+                   dt = amrex::min<amrex::Real>(dt, dt2);
                    , const amrex::Real uz = u(i, j, k, UMZ) * rhoInv;
                    const amrex::Real dt3 = dz / (c + amrex::Math::abs(uz));
-                   dt = amrex::min(dt, dt3););
+                   dt = amrex::min<amrex::Real>(dt, dt3););
 #ifdef PELEC_USE_EB
     }
 #endif
@@ -86,14 +86,14 @@ pc_estdt_veldif(
       pc_trans4dt(which_trans, T, rho, massfrac, D);
       D *= rhoInv;
       if (D == 0.0)
-        D = SMALL;
+        D = SMALL_NUM;
       AMREX_D_TERM(
         const amrex::Real dt1 = 0.5 * dx * dx / (AMREX_SPACEDIM * D);
-        dt = amrex::min(dt, dt1);
+        dt = amrex::min<amrex::Real>(dt, dt1);
         , const amrex::Real dt2 = 0.5 * dy * dy / (AMREX_SPACEDIM * D);
-        dt = amrex::min(dt, dt2);
+        dt = amrex::min<amrex::Real>(dt, dt2);
         , const amrex::Real dt3 = 0.5 * dz * dz / (AMREX_SPACEDIM * D);
-        dt = amrex::min(dt, dt3););
+        dt = amrex::min<amrex::Real>(dt, dt3););
 #ifdef PELEC_USE_EB
     }
 #endif
@@ -134,14 +134,14 @@ pc_estdt_tempdif(
       EOS::TY2Cv(T, massfrac, cv);
       D *= rhoInv / cv;
       if (D == 0.0)
-        D = SMALL;
+        D = SMALL_NUM;
       AMREX_D_TERM(
         const amrex::Real dt1 = 0.5 * dx * dx / (AMREX_SPACEDIM * D);
-        dt = amrex::min(dt, dt1);
+        dt = amrex::min<amrex::Real>(dt, dt1);
         , const amrex::Real dt2 = 0.5 * dy * dy / (AMREX_SPACEDIM * D);
-        dt = amrex::min(dt, dt2);
+        dt = amrex::min<amrex::Real>(dt, dt2);
         , const amrex::Real dt3 = 0.5 * dz * dz / (AMREX_SPACEDIM * D);
-        dt = amrex::min(dt, dt3););
+        dt = amrex::min<amrex::Real>(dt, dt3););
 #ifdef PELEC_USE_EB
     }
 #endif
@@ -183,11 +183,11 @@ pc_estdt_enthdif(
       D *= rhoInv / cp;
       AMREX_D_TERM(
         const amrex::Real dt1 = 0.5 * dx * dx / (AMREX_SPACEDIM * D);
-        dt = amrex::min(dt, dt1);
+        dt = amrex::min<amrex::Real>(dt, dt1);
         , const amrex::Real dt2 = 0.5 * dy * dy / (AMREX_SPACEDIM * D);
-        dt = amrex::min(dt, dt2);
+        dt = amrex::min<amrex::Real>(dt, dt2);
         , const amrex::Real dt3 = 0.5 * dz * dz / (AMREX_SPACEDIM * D);
-        dt = amrex::min(dt, dt3););
+        dt = amrex::min<amrex::Real>(dt, dt3););
 
 #ifdef PELEC_USE_EB
     }

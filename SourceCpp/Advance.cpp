@@ -257,8 +257,8 @@ PeleC::setSprayGridInfo(
   //     have moved and we don't want to just lose it (we will redistribute it
   //     when we're done}
 
-  where_width =
-    amrex::max(ghost_width + (1 - amr_iteration) - 1, amr_iteration);
+  where_width = amrex::max<amrex::Real>(
+    ghost_width + (1 - amr_iteration) - 1, amr_iteration);
 
   // *** spray_n_grow *** is used
   //   *) to determine how many ghost cells we need to fill in the MultiFab from

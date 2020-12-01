@@ -72,14 +72,16 @@ tag_graderror(
   // Tag on regions of high field gradient
   AMREX_D_TERM(
     amrex::Real ax = amrex::Math::abs(field(i + 1, j, k) - field(i, j, k));
-    ax = amrex::max(ax, amrex::Math::abs(field(i, j, k) - field(i - 1, j, k)));
+    ax = amrex::max<amrex::Real>(
+      ax, amrex::Math::abs(field(i, j, k) - field(i - 1, j, k)));
     , amrex::Real ay = amrex::Math::abs(field(i, j + 1, k) - field(i, j, k));
-    ay = amrex::max(ay, amrex::Math::abs(field(i, j, k) - field(i, j - 1, k)));
+    ay = amrex::max<amrex::Real>(
+      ay, amrex::Math::abs(field(i, j, k) - field(i, j - 1, k)));
     amrex::Real az = amrex::Math::abs(field(i, j, k + 1) - field(i, j, k));
-    ,
-    az = amrex::max(az, amrex::Math::abs(field(i, j, k) - field(i, j, k - 1)));)
+    , az = amrex::max<amrex::Real>(
+        az, amrex::Math::abs(field(i, j, k) - field(i, j, k - 1)));)
 #if AMREX_SPACEDIM > 1
-  if (amrex::max(AMREX_D_DECL(ax, ay, az)) >= fieldgrad)
+  if (amrex::max<amrex::Real>(AMREX_D_DECL(ax, ay, az)) >= fieldgrad)
 #elif AMREX_SPACEDIM == 1
   if (ax >= fieldgrad)
 #endif

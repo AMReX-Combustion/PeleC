@@ -144,10 +144,14 @@ amrex_probinit(
     amrex::Print() << "Skipping input file reading and assuming restart."
                    << std::endl;
   } else {
+#ifdef AMREX_USE_FLOAT
+    amrex::Abort("HIT cannot run in single precision at the moment.");
+#else
     const size_t nx = ProbParm::inres;
     const size_t ny = ProbParm::inres;
     const size_t nz = ProbParm::inres;
-    amrex::Vector<double> data(nx * ny * nz * 6); /* this needs to be double */
+    amrex::Vector<amrex::Real> data(
+      nx * ny * nz * 6); /* this needs to be double */
     if (ProbParm::binfmt) {
       read_binary(ProbParm::iname, nx, ny, nz, 6, data);
     } else {
@@ -202,6 +206,7 @@ amrex_probinit(
     // Dimensions of the input box.
     ProbParm::Linput =
       (*ProbParm::v_xarray)[nx - 1] + 0.5 * (*ProbParm::v_xdiff)[nx - 1];
+#endif
   }
 }
 }

@@ -86,7 +86,7 @@ PeleC::particleEstTimeStep(Real& est_dt)
   Real est_dt_particle = theSprayPC()->estTimestep(level, particle_cfl);
 
   if (est_dt_particle > 0)
-    est_dt = amrex::min(est_dt, est_dt_particle);
+    est_dt = amrex::min<amrex::Real>(est_dt, est_dt_particle);
 
   if (verbose && ParallelDescriptor::IOProcessor()) {
     if (est_dt_particle > 0) {
@@ -537,8 +537,8 @@ PeleC::particleTimestamp(int ngrow)
     }
 
     if (!timestamp_indices.empty()) {
-      imax = *(
-        amrex::max_element(timestamp_indices.begin(), timestamp_indices.end()));
+      imax = *(amrex::max<amrex::Real> _element(
+        timestamp_indices.begin(), timestamp_indices.end()));
     }
   }
 

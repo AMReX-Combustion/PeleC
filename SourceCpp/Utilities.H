@@ -76,7 +76,7 @@ pc_ctoprim(
   qa(i, j, k, QDPDE) = dpde;
   qa(i, j, k, QGAMC) = gam1;
   qa(i, j, k, QC) = cs;
-  qa(i, j, k, QCSML) = amrex::max(SMALL, SMALL * cs);
+  qa(i, j, k, QCSML) = amrex::max<amrex::Real>(SMALL_NUM, SMALL_NUM * cs);
   qa(i, j, k, QRSPEC) = EOS::RU / wbar;
 }
 

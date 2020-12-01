@@ -48,18 +48,18 @@ adapt_timestep(
   const amrex::Real tol)
 {
   amrex::Real change_factor;
-  amrex::Real err = amrex::max(rk_err[0], rk_err[1]);
+  amrex::Real err = amrex::max<amrex::Real>(rk_err[0], rk_err[1]);
   for (int n = 2; n < NVAR; n++)
-    err = amrex::max(rk_err[n], err);
+    err = amrex::max<amrex::Real>(rk_err[n], err);
 
   if (err < tol) {
-    err = amrex::max(err, tol * 1.e-4);
+    err = amrex::max<amrex::Real>(err, tol * 1.e-4);
     change_factor = std::sqrt(
       std::sqrt(tol / err)); // sqrt sqrt is faster than pow(var, 0.25)
-    dt = amrex::min(dt_rk4max, dt * change_factor);
+    dt = amrex::min<amrex::Real>(dt_rk4max, dt * change_factor);
   } else {
     change_factor = std::pow(tol / err, 0.2);
-    dt = amrex::max(dt_rk4min, dt * change_factor);
+    dt = amrex::max<amrex::Real>(dt_rk4min, dt * change_factor);
   }
 }
 

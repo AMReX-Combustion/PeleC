@@ -44,10 +44,11 @@ ppm_reconstruct(
   amrex::Real dsvl_l = 0.0;
   if (dsl * dsr > 0.0) {
     amrex::Real dsc = 0.5 * (s[i0] - s[im2]);
-    dsvl_l = amrex::Math::copysign(1.0, dsc) *
-             amrex::min(
-               amrex::Math::abs(dsc),
-               amrex::min(amrex::Math::abs(dsl), amrex::Math::abs(dsr)));
+    dsvl_l =
+      amrex::Math::copysign(1.0, dsc) *
+      amrex::min<amrex::Real>(
+        amrex::Math::abs(dsc),
+        amrex::min<amrex::Real>(amrex::Math::abs(dsl), amrex::Math::abs(dsr)));
   }
 
   dsl = 2.0 * (s[i0] - s[im1]);
@@ -56,10 +57,11 @@ ppm_reconstruct(
   amrex::Real dsvl_r = 0.0;
   if (dsl * dsr > 0.0) {
     amrex::Real dsc = 0.5 * (s[ip1] - s[im1]);
-    dsvl_r = amrex::Math::copysign(1.0, dsc) *
-             amrex::min(
-               amrex::Math::abs(dsc),
-               amrex::min(amrex::Math::abs(dsl), amrex::Math::abs(dsr)));
+    dsvl_r =
+      amrex::Math::copysign(1.0, dsc) *
+      amrex::min<amrex::Real>(
+        amrex::Math::abs(dsc),
+        amrex::min<amrex::Real>(amrex::Math::abs(dsl), amrex::Math::abs(dsr)));
   }
 
   // Interpolate s to edges
@@ -68,8 +70,8 @@ ppm_reconstruct(
 
   // Make sure sedge lies in between adjacent cell-centered values
 
-  sm = amrex::max(sm, amrex::min(s[i0], s[im1]));
-  sm = amrex::min(sm, amrex::max(s[i0], s[im1]));
+  sm = amrex::max<amrex::Real>(sm, amrex::min<amrex::Real>(s[i0], s[im1]));
+  sm = amrex::min<amrex::Real>(sm, amrex::max<amrex::Real>(s[i0], s[im1]));
 
   // Compute van Leer slopes
 
@@ -79,10 +81,11 @@ ppm_reconstruct(
   dsvl_l = 0.0;
   if (dsl * dsr > 0.0) {
     amrex::Real dsc = 0.5 * (s[ip1] - s[im1]);
-    dsvl_l = amrex::Math::copysign(1.0, dsc) *
-             amrex::min(
-               amrex::Math::abs(dsc),
-               amrex::min(amrex::Math::abs(dsl), amrex::Math::abs(dsr)));
+    dsvl_l =
+      amrex::Math::copysign(1.0, dsc) *
+      amrex::min<amrex::Real>(
+        amrex::Math::abs(dsc),
+        amrex::min<amrex::Real>(amrex::Math::abs(dsl), amrex::Math::abs(dsr)));
   }
 
   dsl = 2.0 * (s[ip1] - s[i0]);
@@ -91,10 +94,11 @@ ppm_reconstruct(
   dsvl_r = 0.0;
   if (dsl * dsr > 0.0) {
     amrex::Real dsc = 0.5 * (s[ip2] - s[i0]);
-    dsvl_r = amrex::Math::copysign(1.0, dsc) *
-             amrex::min(
-               amrex::Math::abs(dsc),
-               amrex::min(amrex::Math::abs(dsl), amrex::Math::abs(dsr)));
+    dsvl_r =
+      amrex::Math::copysign(1.0, dsc) *
+      amrex::min<amrex::Real>(
+        amrex::Math::abs(dsc),
+        amrex::min<amrex::Real>(amrex::Math::abs(dsl), amrex::Math::abs(dsr)));
   }
 
   // Interpolate s to edges
@@ -103,8 +107,8 @@ ppm_reconstruct(
 
   // Make sure sedge lies in between adjacent cell-centered values
 
-  sp = amrex::max(sp, amrex::min(s[ip1], s[i0]));
-  sp = amrex::min(sp, amrex::max(s[ip1], s[i0]));
+  sp = amrex::max<amrex::Real>(sp, amrex::min<amrex::Real>(s[ip1], s[i0]));
+  sp = amrex::min<amrex::Real>(sp, amrex::max<amrex::Real>(s[ip1], s[i0]));
 
   // Flatten the parabola
 
