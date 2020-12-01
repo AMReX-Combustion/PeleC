@@ -36,9 +36,10 @@ PeleC::react_state(
   prefetchToDevice(S_new);
 
   // Create a MultiFab with all of the non-reacting source terms.
-  amrex::MultiFab non_react_src_tmp, *non_react_src;
+  amrex::MultiFab* non_react_src = NULL;
 
   if (react_init) {
+    amrex::MultiFab non_react_src_tmp;
     non_react_src_tmp.define(grids, dmap, NVAR, ng, amrex::MFInfo(), Factory());
     non_react_src_tmp.setVal(0);
     non_react_src = &non_react_src_tmp;
@@ -47,6 +48,7 @@ PeleC::react_state(
     // Build non-reacting source term, and an S_new that does not include
     // reactions
     if (aux_src == nullptr) {
+      amrex::MultiFab non_react_src_tmp;
       non_react_src_tmp.define(
         grids, dmap, NVAR, ng, amrex::MFInfo(), Factory());
       non_react_src_tmp.setVal(0);
