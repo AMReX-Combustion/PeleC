@@ -686,7 +686,7 @@ protected:
   amrex::MultiFab area[AMREX_SPACEDIM];
   amrex::MultiFab dLogArea[1];
   amrex::Vector<amrex::Vector<amrex::Real>> radius;
-  int m_ngrow;
+  // int m_ngrow;
   //
   // Static data members.
   //
@@ -737,7 +737,7 @@ protected:
   amrex::MultiFab mms_source;
 #endif
 
-  bool FillPatchedOldState_ok;
+  // bool FillPatchedOldState_ok;
 
   // There can be only one Diffusion object, it covers all levels:
   static class Diffusion* diffusion;
