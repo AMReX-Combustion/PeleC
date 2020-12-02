@@ -1,0 +1,42 @@
+name: PeleC-Docs
+
+on:
+  push:
+    branches:
+      - development
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: setup
+        run: |
+          cmake -E make_directory ${{runner.workspace}}/build-docs
+      - name: python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      #- name: dependencies
+      #  run: |
+      #    export DEBIAN_FRONTEND=noninteractive
+      #    sudo apt-get update
+      #    sudo apt-get install -y --no-install-recommends \
+      #      doxygen graphviz
+      - name: configure
+        working-directory: ${{runner.workspace}}/build-docs
+        run:  |
+          cmake \
+            -DPELEC_ENABLE_DOCUMENTATION:BOOL=ON \
+            -DPYTHON_EXECUTABLE=$(which python3) \
+            ..
+      - name: build
+        working-directory: ${{runner.workspace}}/build-docs
+        run:  |
+           make docs
+      - name: deploy
+        uses: JamesIves/github-pages-deploy-action@releases/v3
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: gh-pages
+          FOLDER: build-docs/Docs/sphinx_doc/html
