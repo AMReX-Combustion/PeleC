@@ -14,7 +14,19 @@ env:
   NUM_PROCS: 16
 
 jobs:
+  formatting:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: DoozyX/clang-format-lint-action@v0.11
+      with:
+        source: './SourceCpp ./ExecCpp'
+        exclude: '.'
+        extensions: 'H,h,cpp'
+        clangFormatVersion: 11
+        #style: chromium
   build:
+    needs: formatting
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
