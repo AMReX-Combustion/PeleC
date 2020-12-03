@@ -192,7 +192,7 @@ PeleC::getSmagorinskyLESTerm(
     dx1 *= dx[dir];
   }
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dxD = {
-    D_DECL(dx1, dx1, dx1)};
+    {D_DECL(dx1, dx1, dx1)}};
   const amrex::Real* dxDp = &(dxD[0]);
 
   amrex::MultiFab S(grids, dmap, NVAR, ngrow);
