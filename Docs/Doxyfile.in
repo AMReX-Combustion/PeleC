@@ -58,7 +58,7 @@ PROJECT_LOGO           =
 # entered, it will be relative to the location where doxygen was started. If
 # left blank the current directory will be used.
 
-OUTPUT_DIRECTORY       = doxygen_output
+OUTPUT_DIRECTORY       = @CMAKE_CURRENT_BINARY_DIR@/sphinx/html/doxygen
 
 # If the CREATE_SUBDIRS tag is set to YES then doxygen will create 4096 sub-
 # directories (in 2 levels) under the output directory of each output format and
@@ -765,8 +765,7 @@ WARN_LOGFILE           = doxy.log
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = ../Source  ../../amrex/Src/EB/AMReX_EBFArrayBox.cpp ../../amrex/Src/EB/AMReX_EBFArrayBox.H ../../amrex/Src/Base/AMReX_FabFactory.H ../../amrex/Src/Base/AMReX_BoxArray.H ../../amrex/Src/Amr/AMReX_StateData.H  ../../amrex/Src/Boundary/AMReX_InterpBndryData.H  ../../amrex/Src/Base/AMReX_Array.H  ../../amrex/Src/Base/AMReX_FArrayBox.H  ../../amrex/Src/AMReX_BaseFab.H ../../amrex/Src/AMRex_MultiFab.H ../../amrex/Src/AMReX_IntVect.H  ../../amrex/Src/Base/AMReX_RealBox.H ../../amrex/Src//GeometryShop/AMReX_GeometryShop.H
-
+INPUT                  = @CMAKE_SOURCE_DIR@/SourceCpp
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -791,7 +790,7 @@ INPUT_ENCODING         = UTF-8
 # *.m, *.markdown, *.md, *.mm, *.dox, *.py, *.f90, *.f, *.for, *.tcl, *.vhd,
 # *.vhdl, *.ucf, *.qsf, *.as and *.js.
 
-FILE_PATTERNS          = *.H *.c *.cpp #*.f90 *.F *.F90
+FILE_PATTERNS          = *.H *.cpp *.h
 
 # The RECURSIVE tag can be used to specify whether or not subdirectories should
 # be searched for input files as well.
@@ -1844,7 +1843,7 @@ MAN_LINKS              = NO
 # captures the structure of the code including all documentation.
 # The default value is: NO.
 
-GENERATE_XML           = YES
+GENERATE_XML           = NO
 
 # The XML_OUTPUT tag is used to specify where the XML pages will be put. If a
 # relative path is entered the value of OUTPUT_DIRECTORY will be put in front of

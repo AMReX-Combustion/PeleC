@@ -42,15 +42,15 @@ jobs:
     - uses: actions/checkout@v2
       with: 
         submodules: true
-    - name: setup
+    - name: Setup
       run: |
         cmake -E make_directory ${{runner.workspace}}/build-ci
         cmake -E make_directory ${{runner.workspace}}/deps
-    - name: python
+    - name: Python
       uses: actions/setup-python@v2
       with:
         python-version: '3.x'
-    - name: dependencies
+    - name: Dependencies
       run: |
         # Install MPI
         ${{matrix.install_deps}}
@@ -73,7 +73,7 @@ jobs:
         # Install Python packages
         python -m pip install --upgrade pip
         pip install nose numpy pandas
-    - name: configure
+    - name: Configure
       working-directory: ${{runner.workspace}}/build-ci
       run: |
         cmake \
@@ -87,12 +87,12 @@ jobs:
           -DPELEC_ENABLE_MASA:BOOL=ON \
           -DMASA_DIR:STRING=${{runner.workspace}}/deps/install/MASA \
           ${GITHUB_WORKSPACE}
-    - name: make
+    - name: Make
       working-directory: ${{runner.workspace}}/build-ci
       run: cmake --build . -- -j ${{env.NUM_PROCS}}
-    - name: test
+    - name: Test
       working-directory: ${{runner.workspace}}/build-ci
       run: ctest -j ${{env.NUM_PROCS}} -LE no-ci --output-on-failure
-    - name: gnumake
+    - name: Gnumake
       working-directory: ./ExecCpp/RegTests/PMF
       run: make -j ${{env.NUM_PROCS}} COMP=${{matrix.comp}} USE_MPI=TRUE
