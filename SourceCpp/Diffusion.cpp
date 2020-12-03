@@ -69,7 +69,7 @@ PeleC::getMOLSrcTerm(
     dx1 *= dx[dir];
   }
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dxD = {
-    AMREX_D_DECL(dx1, dx1, dx1)};
+    {AMREX_D_DECL(dx1, dx1, dx1)}};
 
   // Fetch some gpu arrays
   prefetchToDevice(S);
@@ -238,8 +238,8 @@ PeleC::getMOLSrcTerm(
       amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx;
       const amrex::GpuArray<
         const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
-        a{AMREX_D_DECL(
-          area[0].array(mfi), area[1].array(mfi), area[2].array(mfi))};
+        a{{AMREX_D_DECL(
+          area[0].array(mfi), area[1].array(mfi), area[2].array(mfi))}};
       for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
         flux_ec[dir].resize(eboxes[dir], NVAR);
         flux_eli[dir] = flux_ec[dir].elixir();
@@ -592,13 +592,13 @@ PeleC::getMOLSrcTerm(
 
         if (level < parent->finestLevel()) {
           getFluxReg(level + 1).CrseAdd(
-            mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])},
+            mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}},
             dxD.data(), dt, device);
         }
 
         if (level > 0) {
           getFluxReg(level).FineAdd(
-            mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])},
+            mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}},
             dxD.data(), dt, device);
         }
       }
