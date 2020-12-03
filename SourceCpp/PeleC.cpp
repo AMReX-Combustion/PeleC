@@ -372,6 +372,12 @@ PeleC::PeleC()
     mms_src_evaluated(false)
 #endif
 {
+  nGrowF = 0;
+  // Is this relevant for PeleC?
+  for (int i = 0; i < n_lost; i++) {
+    material_lost_through_boundary_cumulative[i] = 0.0;
+    material_lost_through_boundary_temp[i] = 0.0;
+  }
 }
 
 PeleC::PeleC(
@@ -447,7 +453,7 @@ PeleC::PeleC(
   // Is this relevant for PeleC?
   for (int i = 0; i < n_lost; i++) {
     material_lost_through_boundary_cumulative[i] = 0.0;
-    material_lost_through_boundary_temp[i] = 0.;
+    material_lost_through_boundary_temp[i] = 0.0;
   }
 
   if (do_reflux && level > 0) {
@@ -1425,10 +1431,10 @@ PeleC::enforce_min_density(
      is meaningless.
   */
 
-  amrex::Real dens_change = 1.0; // cppcheck-suppress variableScope
-  amrex::Real mass_added = 0.0;  // cppcheck-suppress variableScope
-  amrex::Real eint_added = 0.0;  // cppcheck-suppress variableScope
-  amrex::Real eden_added = 0.0;  // cppcheck-suppress variableScope
+  amrex::Real dens_change = 1.0;
+  amrex::Real mass_added = 0.0; // cppcheck-suppress variableScope
+  amrex::Real eint_added = 0.0; // cppcheck-suppress variableScope
+  amrex::Real eden_added = 0.0; // cppcheck-suppress variableScope
 
 #ifdef PELEC_USE_EB
   auto const& fact =

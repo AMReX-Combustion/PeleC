@@ -147,7 +147,7 @@ pc_initdata(
     const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
     const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
     const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];
-    amrex::GpuArray<amrex::Real, NUM_SPECIES + 4> pmf_vals = {0.0};
+    amrex::GpuArray<amrex::Real, NUM_SPECIES + 4> pmf_vals = {{0.0}};
     amrex::Real pert = 0.0;
     if (ProbParm::pertmag > 0.0) {
       pert = ProbParm::pertmag *
@@ -204,7 +204,7 @@ bcnormal(
 {
   const amrex::Real* prob_lo = geomdata.ProbLo();
   const amrex::Real* prob_hi = geomdata.ProbHi();
-  amrex::GpuArray<amrex::Real, NUM_SPECIES + 4> pmf_vals = {0.0};
+  amrex::GpuArray<amrex::Real, NUM_SPECIES + 4> pmf_vals = {{0.0}};
   amrex::Real u[3] = {0.0};
   amrex::Real molefrac[NUM_SPECIES] = {0.0};
   amrex::Real massfrac[NUM_SPECIES] = {0.0};

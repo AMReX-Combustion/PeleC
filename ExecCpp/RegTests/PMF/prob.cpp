@@ -6,7 +6,8 @@ AMREX_GPU_DEVICE_MANAGED amrex::Real phi_in = -0.2;
 AMREX_GPU_DEVICE_MANAGED amrex::Real T_in = 298.0;
 AMREX_GPU_DEVICE_MANAGED amrex::Real vn_in = 0.2;
 AMREX_GPU_DEVICE_MANAGED amrex::Real pertmag = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> L = {1.0};
+AMREX_GPU_DEVICE_MANAGED amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> L = {
+  {1.0}};
 AMREX_GPU_DEVICE_MANAGED unsigned int pmf_N = 0;
 AMREX_GPU_DEVICE_MANAGED unsigned int pmf_M = 0;
 AMREX_GPU_DEVICE_MANAGED bool pmf_do_average = false;
@@ -119,7 +120,7 @@ init_bc()
 {
   amrex::Real vt, ek, T, rho, e;
   amrex::Real molefrac[NUM_SPECIES], massfrac[NUM_SPECIES];
-  amrex::GpuArray<amrex::Real, NUM_SPECIES + 4> pmf_vals = {0.0};
+  amrex::GpuArray<amrex::Real, NUM_SPECIES + 4> pmf_vals = {{0.0}};
 
   if (ProbParm::phi_in < 0) {
     const amrex::Real yl = 0.0;

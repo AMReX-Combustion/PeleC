@@ -57,7 +57,8 @@ PeleC::construct_hydro_source(
       dx1 *= dx[dir];
     }
 
-    std::array<amrex::Real, AMREX_SPACEDIM> dxD = {AMREX_D_DECL(dx1, dx1, dx1)};
+    std::array<amrex::Real, AMREX_SPACEDIM> dxD = {
+      {AMREX_D_DECL(dx1, dx1, dx1)}};
     const amrex::Real* dxDp = &(dxD[0]);
 
     amrex::Real courno = -1.0e+200;
@@ -207,11 +208,11 @@ PeleC::construct_hydro_source(
         BL_PROFILE_VAR("PeleC::umdrv()", purm);
         const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>
           flx_arr{
-            AMREX_D_DECL(flux[0].array(), flux[1].array(), flux[2].array())};
+            {AMREX_D_DECL(flux[0].array(), flux[1].array(), flux[2].array())}};
         const amrex::GpuArray<
           const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
-          a{AMREX_D_DECL(
-            area[0].array(mfi), area[1].array(mfi), area[2].array(mfi))};
+          a{{AMREX_D_DECL(
+            area[0].array(mfi), area[1].array(mfi), area[2].array(mfi))}};
         pc_umdrv(
           is_finest_level, time, bx, domain_lo, domain_hi, phys_bc.lo(),
           phys_bc.hi(), s, hyd_src, qarr, qauxar, srcqarr, dx, dt, ppm_type,
@@ -248,8 +249,8 @@ PeleC::construct_hydro_source(
         if (do_reflux && sub_iteration == sub_ncycle - 1) {
           if (level < finest_level) {
             getFluxReg(level + 1).CrseAdd(
-              mfi, {AMREX_D_DECL(&(flux[0]), &(flux[1]), &(flux[2]))}, dxDp, dt,
-              device);
+              mfi, {{AMREX_D_DECL(&(flux[0]), &(flux[1]), &(flux[2]))}}, dxDp,
+              dt, device);
 
             if (!amrex::DefaultGeometry().IsCartesian()) {
               amrex::Abort("Flux registers not r-z compatible yet");
@@ -259,8 +260,8 @@ PeleC::construct_hydro_source(
 
           if (level > 0) {
             getFluxReg(level).FineAdd(
-              mfi, {AMREX_D_DECL(&(flux[0]), &(flux[1]), &(flux[2]))}, dxDp, dt,
-              device);
+              mfi, {{AMREX_D_DECL(&(flux[0]), &(flux[1]), &(flux[2]))}}, dxDp,
+              dt, device);
 
             if (!amrex::DefaultGeometry().IsCartesian()) {
               amrex::Abort("Flux registers not r-z compatible yet");
@@ -365,7 +366,7 @@ pc_umdrv(
     qec_eli[dir] = qec[dir].elixir();
   }
   amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> qec_arr{
-    AMREX_D_DECL(qec[0].array(), qec[1].array(), qec[2].array())};
+    {AMREX_D_DECL(qec[0].array(), qec[1].array(), qec[2].array())}};
 
   //  Temporary FArrayBoxes
   amrex::FArrayBox divu(bxg2, 1);
