@@ -14,7 +14,7 @@ env:
   NUM_PROCS: 16
 
 jobs:
-  formatting:
+  Formatting:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -25,7 +25,7 @@ jobs:
         extensions: 'H,h,cpp'
         clangFormatVersion: 11
         #style: chromium
-  build:
+  Test:
     needs: formatting
     runs-on: ${{matrix.os}}
     strategy:
