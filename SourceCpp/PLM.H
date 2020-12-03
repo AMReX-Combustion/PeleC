@@ -504,12 +504,12 @@ pc_transx(
   for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
     int n = indxmap::upass_map(ipass);
     int nqp = indxmap::qpass_map(ipass);
-    srcpass = srcQ(i, j, k, nqp);
-    compn = hdt *
-            (a1(i + 1, j, k) * flxx(i + 1, j, k, n) -
-             a1(i, j, k) * flxx(i, j, k, n)) /
-            vol(i, j, k);
-    compo = qyp(i, j, k, nqp) - compn;
+    amrex::Real srcpass = srcQ(i, j, k, nqp);
+    amrex::Real compn = hdt *
+                        (a1(i + 1, j, k) * flxx(i + 1, j, k, n) -
+                         a1(i, j, k) * flxx(i, j, k, n)) /
+                        vol(i, j, k);
+    amrex::Real compo = qyp(i, j, k, nqp) - compn;
     qp(i, j, k, nqp) = compo + hdt * srcpass;
 
     compo = qym(i, j + 1, k, nqp) - compn;
@@ -636,9 +636,9 @@ pc_transy(
   for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
     int n = indxmap::upass_map(ipass);
     int nqp = indxmap::qpass_map(ipass);
-    srcpass = srcQ(i, j, k, nqp);
-    compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
-    compo = qxp(i, j, k, nqp) - compn;
+    amrex::Real srcpass = srcQ(i, j, k, nqp);
+    amrex::Real compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
+    amrex::Real compo = qxp(i, j, k, nqp) - compn;
     qp(i, j, k, nqp) = compo + hdt * srcpass;
 
     compo = qxm(i + 1, j, k, nqp) - compn;
