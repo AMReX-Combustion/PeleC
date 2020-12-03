@@ -22,7 +22,7 @@ The PeleC directory structure is as shown below:
 
 * **Docs**   - PeleC documentation 
 
-  * sphinx_doc
+  * sphinx
 
 * **ExecCpp** - regression tests and various capability demonstrations
   
