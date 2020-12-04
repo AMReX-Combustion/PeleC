@@ -39,7 +39,7 @@ jobs:
         run:  |
           cmake \
             -DPELEC_ENABLE_DOCUMENTATION:BOOL=ON \
-            ${GITHUB_WORKSPACE}
+            ${{github.workspace}}
       - name: Build
         working-directory: ${{runner.workspace}}/build-docs
         run:  |
