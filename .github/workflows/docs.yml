@@ -37,19 +37,17 @@ jobs:
       - name: Configure
         working-directory: ${{runner.workspace}}/build-docs
         run:  |
-          cmake \
-            -DPELEC_ENABLE_DOCUMENTATION:BOOL=ON \
-            ${{github.workspace}}
+          cmake ${{github.workspace}}/Docs
       - name: Build
         working-directory: ${{runner.workspace}}/build-docs
         run:  |
-           make docs
-           touch ${{runner.workspace}}/build-docs/Docs/sphinx/html/.nojekyll
+           make
+           touch ${{runner.workspace}}/build-docs/sphinx/html/.nojekyll
       - name: Deploy
         if: github.event_name == 'push' && github.ref == 'refs/heads/development'
         uses: JamesIves/github-pages-deploy-action@releases/v3
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: gh-pages
-          FOLDER: ${{runner.workspace}}/build-docs/Docs/sphinx/html
+          FOLDER: ${{runner.workspace}}/build-docs/sphinx/html
           SINGLE_COMMIT: true
