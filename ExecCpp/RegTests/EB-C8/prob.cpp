@@ -9,12 +9,12 @@ AMREX_GPU_DEVICE_MANAGED amrex::Real p_r = 0.1;     // right pressure (erg/cc)
 AMREX_GPU_DEVICE_MANAGED amrex::Real rho_r = 0.125; // right density (g/cc)
 AMREX_GPU_DEVICE_MANAGED amrex::Real rhoe_r = 0.0;
 AMREX_GPU_DEVICE_MANAGED amrex::Real T_r = 1.0;
-AMREX_GPU_DEVICE_MANAGED std::string gasL = "N2";
-AMREX_GPU_DEVICE_MANAGED std::string gasR = "HE";
 AMREX_GPU_DEVICE_MANAGED amrex::Real angle = 0.0;
 AMREX_GPU_DEVICE_MANAGED amrex::Real L = 0.0;
 AMREX_GPU_DEVICE_MANAGED int left_gas_id = N2_ID;
 AMREX_GPU_DEVICE_MANAGED int right_gas_id = HE_ID;
+std::string gasL = "N2";
+std::string gasR = "HE";
 } // namespace ProbParm
 
 void

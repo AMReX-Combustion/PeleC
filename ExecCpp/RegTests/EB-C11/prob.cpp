@@ -15,10 +15,10 @@ AMREX_GPU_DEVICE_MANAGED amrex::Real frac =
   0.5; // fraction of the domain for the interface
 AMREX_GPU_DEVICE_MANAGED int idir = 1; // direction across which to jump
 AMREX_GPU_DEVICE_MANAGED amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> split;
-AMREX_GPU_DEVICE_MANAGED std::string gasL = "N2";
-AMREX_GPU_DEVICE_MANAGED std::string gasR = "HE";
 AMREX_GPU_DEVICE_MANAGED int left_gas_id = N2_ID;
 AMREX_GPU_DEVICE_MANAGED int right_gas_id = HE_ID;
+std::string gasL = "N2";
+std::string gasR = "HE";
 } // namespace ProbParm
 
 void
