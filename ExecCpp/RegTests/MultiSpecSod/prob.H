@@ -27,7 +27,6 @@ pc_initdata(
   amrex::Array4<amrex::Real> const& state,
   amrex::GeometryData const& geomdata)
 {
-
   // Geometry
   const amrex::Real* prob_lo = geomdata.ProbLo();
   // const amrex::Real* prob_hi = geomdata.ProbHi();
