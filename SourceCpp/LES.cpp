@@ -285,8 +285,8 @@ PeleC::getSmagorinskyLESTerm(
       amrex::Elixir flux_eli[AMREX_SPACEDIM];
       const amrex::GpuArray<
         const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
-        a{AMREX_D_DECL(
-          area[0].array(mfi), area[1].array(mfi), area[2].array(mfi))};
+        a{{AMREX_D_DECL(
+          area[0].array(mfi), area[1].array(mfi), area[2].array(mfi))}};
       amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx;
       for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
         flux_ec[dir].resize(eboxes[dir], NVAR);
@@ -340,13 +340,13 @@ PeleC::getSmagorinskyLESTerm(
 
         if (level < parent->finestLevel()) {
           getFluxReg(level + 1).CrseAdd(
-            mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dxDp,
+            mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}}, dxDp,
             dt, device);
         }
 
         if (level > 0) {
           getFluxReg(level).FineAdd(
-            mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dxDp,
+            mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}}, dxDp,
             dt, device);
         }
       }
@@ -405,7 +405,7 @@ PeleC::getDynamicSmagorinskyLESTerm(
     dx1 *= dx[dir];
   }
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dxD = {
-    D_DECL(dx1, dx1, dx1)};
+    {D_DECL(dx1, dx1, dx1)}};
   const amrex::Real* dxDp = &(dxD[0]);
 
   // 1. Get state variable data
@@ -636,8 +636,8 @@ PeleC::getDynamicSmagorinskyLESTerm(
       amrex::Elixir flux_eli[AMREX_SPACEDIM];
       const amrex::GpuArray<
         const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
-        a{AMREX_D_DECL(
-          area[0].array(mfi), area[1].array(mfi), area[2].array(mfi))};
+        a{{AMREX_D_DECL(
+          area[0].array(mfi), area[1].array(mfi), area[2].array(mfi))}};
       amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx;
       for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
         flux_ec[dir].resize(eboxes[dir], NVAR);
@@ -688,13 +688,13 @@ PeleC::getDynamicSmagorinskyLESTerm(
 
         if (level < parent->finestLevel()) {
           getFluxReg(level + 1).CrseAdd(
-            mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dxDp,
+            mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}}, dxDp,
             dt, device);
         }
 
         if (level > 0) {
           getFluxReg(level).FineAdd(
-            mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dxDp,
+            mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}}, dxDp,
             dt, device);
         }
       }
