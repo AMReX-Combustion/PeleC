@@ -17,7 +17,8 @@ cmake -DCMAKE_INSTALL_PREFIX:PATH=./install \
       -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
       -DPELEC_ENABLE_MASA:BOOL=ON \
       -DMASA_DIR:STRING=$(spack location -i masa) \
-      -DPELEC_ENABLE_DOCUMENTATION:BOOL=OFF \
+      -DPELEC_ENABLE_CUDA:BOOL=OFF \
+      -DAMReX_CUDA_ARCH=Volta \
       -DPYTHON_EXECUTABLE=$(which python3) \
       -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON \
       .. && cmake --build . --parallel 8

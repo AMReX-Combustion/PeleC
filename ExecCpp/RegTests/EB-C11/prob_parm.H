@@ -17,12 +17,12 @@ extern AMREX_GPU_DEVICE_MANAGED amrex::Real rhoe_r;
 extern AMREX_GPU_DEVICE_MANAGED amrex::Real T_r;
 extern AMREX_GPU_DEVICE_MANAGED amrex::Real frac;
 extern AMREX_GPU_DEVICE_MANAGED int idir;
-extern AMREX_GPU_DEVICE_MANAGED std::string gasL;
-extern AMREX_GPU_DEVICE_MANAGED std::string gasR;
 extern AMREX_GPU_DEVICE_MANAGED amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>
   split;
 extern AMREX_GPU_DEVICE_MANAGED int left_gas_id;
 extern AMREX_GPU_DEVICE_MANAGED int right_gas_id;
+extern std::string gasL;
+extern std::string gasR;
 } // namespace ProbParm
 
 #endif
