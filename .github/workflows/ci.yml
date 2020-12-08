@@ -25,7 +25,7 @@ jobs:
         extensions: 'H,h,cpp'
         clangFormatVersion: 11
         #style: chromium
-  Test:
+  CMake:
     needs: formatting
     runs-on: ${{matrix.os}}
     strategy:
@@ -40,7 +40,7 @@ jobs:
             comp: gnu
     steps:
     - uses: actions/checkout@v2
-      with: 
+      with:
         submodules: true
     - name: Setup
       run: |
@@ -60,7 +60,7 @@ jobs:
         cd ${{runner.workspace}}/deps/MetaPhysicL
         ./bootstrap
         ./configure CXX=${{env.CXX_COMPILER}} CC=${{env.C_COMPILER}} FC=${{env.FORTRAN_COMPILER}} --prefix="${{runner.workspace}}/deps/install/MetaPhysicL"
-        make -j ${{env.NUM_PROCS}}
+        make -j
         make install
         # Install MASA
         cd ${{runner.workspace}}/deps
@@ -68,7 +68,7 @@ jobs:
         cd ${{runner.workspace}}/deps/MASA
         ./bootstrap
         ./configure CXX='${{env.CXX_COMPILER}} -std=c++11' CC=${{env.C_COMPILER}} FC=${{env.FORTRAN_COMPILER}} --enable-fortran-interfaces METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" --prefix="${{runner.workspace}}/deps/install/MASA"
-        make -j ${{env.NUM_PROCS}}
+        make -j
         make install
         # Install Python packages
         python -m pip install --upgrade pip
@@ -93,15 +93,22 @@ jobs:
     - name: Test
       working-directory: ${{runner.workspace}}/build-ci
       run: ctest -j ${{env.NUM_PROCS}} -LE no-ci --output-on-failure
-    - name: GNUmake PMF debug build
+  GNUmake:
+    needs: formatting
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - name: PMF debug make
       working-directory: ./ExecCpp/RegTests/PMF
-      run: make -j ${{env.NUM_PROCS}} COMP=${{matrix.comp}} USE_MPI=FALSE DEBUG=TRUE
-    - name: GNUmake PMF debug test
+      run: make -j COMP=gnu USE_MPI=FALSE DEBUG=TRUE
+    - name: PMF debug test
       working-directory: ./ExecCpp/RegTests/PMF
-      run: ./PeleC3d.${{matrix.comp}}.DEBUG.ex tests/pmf-1/pmf-1.i max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
-    - name: GNUmake EB debug build
+      run: ./PeleC3d.gnu.DEBUG.ex tests/pmf-1/pmf-1.i max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
+    - name: EB debug build
       working-directory: ./ExecCpp/RegTests/PMF
-      run: make -j ${{env.NUM_PROCS}} COMP=${{matrix.comp}} USE_MPI=FALSE DEBUG=TRUE
-    - name: GNUmake EB debug test
+      run: make -j COMP=gnu USE_MPI=FALSE DEBUG=TRUE
+    - name: EB debug test
       working-directory: ./ExecCpp/RegTests/EB-C10
-      run: ./PeleC3d.${{matrix.comp}}.DEBUG.ex tests/eb-c10/eb-c10.i max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
+      run: ./PeleC3d.gnu.DEBUG.ex tests/eb-c10/eb-c10.i max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
