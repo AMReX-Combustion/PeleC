@@ -9,6 +9,9 @@ if(PELEC_ENABLE_ALL_WARNINGS)
     # Avoid notes about -faligned-new with GCC > 7
     list(APPEND PELEC_CXX_FLAGS "-faligned-new")
   endif()
+  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang" AND CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 9.0.0.9000037)
+    list(APPEND PELEC_CXX_FLAGS "-Wno-missing-braces")
+  endif()
 endif()
 
 # Add our extra flags according to language
