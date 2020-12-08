@@ -93,6 +93,15 @@ jobs:
     - name: Test
       working-directory: ${{runner.workspace}}/build-ci
       run: ctest -j ${{env.NUM_PROCS}} -LE no-ci --output-on-failure
-    - name: Gnumake
+    - name: GNUmake PMF debug build
       working-directory: ./ExecCpp/RegTests/PMF
-      run: make -j ${{env.NUM_PROCS}} COMP=${{matrix.comp}} USE_MPI=TRUE
+      run: make -j ${{env.NUM_PROCS}} COMP=${{matrix.comp}} USE_MPI=FALSE DEBUG=TRUE
+    - name: GNUmake PMF debug test
+      working-directory: ./ExecCpp/RegTests/PMF
+      run: ./PeleC3d.${{matrix.comp}}.DEBUG.ex tests/pmf-1/pmf-1.i max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
+    - name: GNUmake EB debug build
+      working-directory: ./ExecCpp/RegTests/PMF
+      run: make -j ${{env.NUM_PROCS}} COMP=${{matrix.comp}} USE_MPI=FALSE DEBUG=TRUE
+    - name: GNUmake EB debug test
+      working-directory: ./ExecCpp/RegTests/EB-C10
+      run: ./PeleC3d.${{matrix.comp}}.DEBUG.ex tests/eb-c10/eb-c10.i max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
