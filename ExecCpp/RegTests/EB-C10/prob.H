@@ -93,7 +93,8 @@ bcnormal(
       // Boundary state (point b)
       const amrex::Real xb = prob_hi[0];
       const amrex::Real pb = ProbParm::dpdx * xb + ProbParm::p;
-      const amrex::Real rhob = s_inter[URHO] + (pb - p_inter) / (cs_inter * cs_inter);
+      const amrex::Real rhob =
+        s_inter[URHO] + (pb - p_inter) / (cs_inter * cs_inter);
       const amrex::Real ub = u_inter + (p_inter - pb) / (rho_inter * cs_inter);
       const amrex::Real vb = v_inter;
       const amrex::Real wb = w_inter;
