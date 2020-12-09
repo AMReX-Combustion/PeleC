@@ -54,7 +54,7 @@ AMREX_FORCE_INLINE
 void
 bcnormal(
   const amrex::Real x[AMREX_SPACEDIM],
-  const amrex::Real s_int[NVAR],
+  const amrex::Real s_inter[NVAR],
   amrex::Real s_ext[NVAR],
   const int idir,
   const int sgn,
@@ -69,9 +69,9 @@ bcnormal(
       T = ProbParm::T;
       EOS::PYT2RE(p, ProbParm::massfrac.begin(), T, rho, eint);
 
-      u = s_int[UMX] / s_int[URHO];
-      v = s_int[UMY] / s_int[URHO];
-      w = s_int[UMZ] / s_int[URHO];
+      u = s_inter[UMX] / s_inter[URHO];
+      v = s_inter[UMY] / s_inter[URHO];
+      w = s_inter[UMZ] / s_inter[URHO];
 
     } else if (sgn == -1) {
 
@@ -81,33 +81,33 @@ bcnormal(
       const amrex::Real* prob_hi = geomdata.ProbHi();
       const amrex::Real* dx = geomdata.CellSize();
       const amrex::Real xd = prob_hi[0] - 0.5 * dx[0];
-      const amrex::Real rho_int = s_int[URHO];
-      const amrex::Real u_int = s_int[UMX] / rho_int;
-      const amrex::Real v_int = s_int[UMY] / rho_int;
-      const amrex::Real w_int = s_int[UMZ] / rho_int;
-      const amrex::Real T_int = s_int[UTEMP];
-      amrex::Real p_int = 0.0, cs_int = 0.0;
-      EOS::RTY2P(rho_int, T_int, ProbParm::massfrac.begin(), p_int);
-      EOS::RTY2Cs(rho_int, T_int, ProbParm::massfrac.begin(), cs_int);
+      const amrex::Real rho_inter = s_inter[URHO];
+      const amrex::Real u_inter = s_inter[UMX] / rho_inter;
+      const amrex::Real v_inter = s_inter[UMY] / rho_inter;
+      const amrex::Real w_inter = s_inter[UMZ] / rho_inter;
+      const amrex::Real T_inter = s_inter[UTEMP];
+      amrex::Real p_inter = 0.0, cs_inter = 0.0;
+      EOS::RTY2P(rho_inter, T_inter, ProbParm::massfrac.begin(), p_inter);
+      EOS::RTY2Cs(rho_inter, T_inter, ProbParm::massfrac.begin(), cs_inter);
 
       // Boundary state (point b)
       const amrex::Real xb = prob_hi[0];
       const amrex::Real pb = ProbParm::dpdx * xb + ProbParm::p;
-      const amrex::Real rhob = s_int[URHO] + (pb - p_int) / (cs_int * cs_int);
-      const amrex::Real ub = u_int + (p_int - pb) / (rho_int * cs_int);
-      const amrex::Real vb = v_int;
-      const amrex::Real wb = w_int;
+      const amrex::Real rhob = s_inter[URHO] + (pb - p_inter) / (cs_inter * cs_inter);
+      const amrex::Real ub = u_inter + (p_inter - pb) / (rho_inter * cs_inter);
+      const amrex::Real vb = v_inter;
+      const amrex::Real wb = w_inter;
 
       // Ghost state (point a). Linear extrapolation from d and b
-      rho = (rhob - rho_int) / (xb - xd) * (x[0] - xd) + rho_int;
-      const amrex::Real p = (pb - p_int) / (xb - xd) * (x[0] - xd) + p_int;
+      rho = (rhob - rho_inter) / (xb - xd) * (x[0] - xd) + rho_inter;
+      const amrex::Real p = (pb - p_inter) / (xb - xd) * (x[0] - xd) + p_inter;
 
       EOS::RYP2E(rho, ProbParm::massfrac.begin(), p, eint);
       EOS::EY2T(eint, ProbParm::massfrac.begin(), T);
 
-      u = (ub - u_int) / (xb - xd) * (x[0] - xd) + u_int;
-      v = (vb - v_int) / (xb - xd) * (x[0] - xd) + v_int;
-      w = (wb - w_int) / (xb - xd) * (x[0] - xd) + w_int;
+      u = (ub - u_inter) / (xb - xd) * (x[0] - xd) + u_inter;
+      v = (vb - v_inter) / (xb - xd) * (x[0] - xd) + v_inter;
+      w = (wb - w_inter) / (xb - xd) * (x[0] - xd) + w_inter;
     }
 
     s_ext[URHO] = rho;

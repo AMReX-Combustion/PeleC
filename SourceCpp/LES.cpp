@@ -297,13 +297,13 @@ PeleC::getSmagorinskyLESTerm(
       {
         BL_PROFILE("PeleC::pc_smagorinsky_sfs_term()");
         for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-          amrex::Real Cs = PeleC::Cs;
-          amrex::Real CI = PeleC::CI;
-          amrex::Real PrT = PeleC::PrT;
+          amrex::Real Cs_local = PeleC::Cs;
+          amrex::Real CI_local = PeleC::CI;
+          amrex::Real PrT_local = PeleC::PrT;
           amrex::ParallelFor(
             eboxes[dir], [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
               pc_smagorinsky_sfs_term(
-                i, j, k, q_ar, tanders[dir], a[dir], dx[dir], dir, Cs, CI, PrT,
+                i, j, k, q_ar, tanders[dir], a[dir], dx[dir], dir, Cs_local, CI_local, PrT_local,
                 flx[dir]);
             });
         }
@@ -492,12 +492,12 @@ PeleC::getDynamicSmagorinskyLESTerm(
       auto const& alpha_ar = alpha.array();
       auto const& flux_T_ar = flux_T.array();
       {
-        const int les_filter_fgr = PeleC::les_filter_fgr;
+        const int les_filter_fgr_local = PeleC::les_filter_fgr;
         BL_PROFILE("PeleC::pc_smagorinsky_sfs_term()");
         amrex::ParallelFor(
           g1box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
             pc_dynamic_smagorinsky_quantities(
-              i, j, k, q_ar, les_filter_fgr, dx, K_ar, RUT_ar, alphaij_ar,
+              i, j, k, q_ar, les_filter_fgr_local, dx, K_ar, RUT_ar, alphaij_ar,
               alpha_ar, flux_T_ar);
           });
       }
@@ -555,12 +555,12 @@ PeleC::getDynamicSmagorinskyLESTerm(
       auto const& filtered_alpha_ar = filtered_alpha.array();
       auto const& filtered_flux_T_ar = filtered_flux_T.array();
       {
-        const int les_test_filter_fgr = PeleC::les_test_filter_fgr;
+        const int les_test_filter_fgr_local = PeleC::les_test_filter_fgr;
         BL_PROFILE("PeleC::pc_dynamic_smagorinsky_coeffs()");
         amrex::ParallelFor(
           g3box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
             pc_dynamic_smagorinsky_coeffs(
-              i, j, k, filtered_Q_ar, les_test_filter_fgr, dx, filtered_K_ar,
+              i, j, k, filtered_Q_ar, les_test_filter_fgr_local, dx, filtered_K_ar,
               filtered_RUT_ar, filtered_alphaij_ar, filtered_alpha_ar,
               filtered_flux_T_ar, coeff_cc_ar);
           });
