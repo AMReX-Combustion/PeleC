@@ -303,8 +303,8 @@ PeleC::getSmagorinskyLESTerm(
           amrex::ParallelFor(
             eboxes[dir], [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
               pc_smagorinsky_sfs_term(
-                i, j, k, q_ar, tanders[dir], a[dir], dx[dir], dir, Cs_local, CI_local, PrT_local,
-                flx[dir]);
+                i, j, k, q_ar, tanders[dir], a[dir], dx[dir], dir, Cs_local,
+                CI_local, PrT_local, flx[dir]);
             });
         }
       }
@@ -560,9 +560,9 @@ PeleC::getDynamicSmagorinskyLESTerm(
         amrex::ParallelFor(
           g3box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
             pc_dynamic_smagorinsky_coeffs(
-              i, j, k, filtered_Q_ar, les_test_filter_fgr_local, dx, filtered_K_ar,
-              filtered_RUT_ar, filtered_alphaij_ar, filtered_alpha_ar,
-              filtered_flux_T_ar, coeff_cc_ar);
+              i, j, k, filtered_Q_ar, les_test_filter_fgr_local, dx,
+              filtered_K_ar, filtered_RUT_ar, filtered_alphaij_ar,
+              filtered_alpha_ar, filtered_flux_T_ar, coeff_cc_ar);
           });
       }
 
