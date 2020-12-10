@@ -114,7 +114,7 @@ jobs:
           submodules: true
       - name: Setup
         run: |
-          echo "NPROCS=${{matrix.procs}}" >> $GITHUB_ENV
+          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
           echo "CC=gcc-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
           echo "CXX=g++-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
           echo "FC=gfortran-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
