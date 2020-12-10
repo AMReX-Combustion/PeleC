@@ -44,13 +44,12 @@ jobs:
         uses: styfle/cancel-workflow-action@0.6.0
         with:
           access_token: ${{github.token}}
-      - name: Set NPROCS
-        run: echo "NPROCS=${{matrix.procs}}" >> $GITHUB_ENV
       - uses: actions/checkout@v2
         with:
           submodules: true
       - name: Setup
         run: |
+          echo "NPROCS=${{matrix.procs}}" >> $GITHUB_ENV
           cmake -E make_directory ${{runner.workspace}}/build-ci
           cmake -E make_directory ${{runner.workspace}}/deps
       - name: Python
