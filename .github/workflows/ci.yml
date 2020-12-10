@@ -93,6 +93,7 @@ jobs:
             -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
             -DPELEC_ENABLE_MASA:BOOL=ON \
             -DMASA_DIR:STRING=${{runner.workspace}}/deps/install/MASA \
+            -DPELEC_ENABLE_WERROR:BOOL=ON \
             ${GITHUB_WORKSPACE}
       - name: Make
         working-directory: ${{runner.workspace}}/build-ci
