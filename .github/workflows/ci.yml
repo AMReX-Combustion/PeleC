@@ -47,15 +47,15 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
+      - name: Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
       - name: Setup
         run: |
           echo "NPROCS=${{matrix.procs}}" >> $GITHUB_ENV
           cmake -E make_directory ${{runner.workspace}}/build-ci
           cmake -E make_directory ${{runner.workspace}}/deps
-      - name: Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
       - name: Dependencies
         run: |
           # Install MPI
@@ -113,6 +113,7 @@ jobs:
           submodules: true
       - name: Setup
         run: |
+          echo "NPROCS=${{matrix.procs}}" >> $GITHUB_ENV
           echo "CC=gcc-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
           echo "CXX=g++-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
           echo "FC=gfortran-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
