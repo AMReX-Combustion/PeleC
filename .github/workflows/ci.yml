@@ -7,6 +7,9 @@ on:
     branches: [development]
 
 env:
+  OMPI_CC: gcc-8
+  OMPI_CXX: g++-8
+  OMPI_FC: gfortran-8
   CXX_COMPILER: mpicxx
   C_COMPILER: mpicc
   FORTRAN_COMPILER: mpifort
