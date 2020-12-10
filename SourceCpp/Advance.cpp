@@ -461,7 +461,7 @@ PeleC::do_sdc_iteration(
   }
 
 #ifdef AMREX_PARTICLES
-  if (do_spray_particles) {
+  if (do_spray_particles && sub_iteration == sub_ncycle - 1) {
     new_sources[spray_src]->setVal(0.);
     // Advance the particle velocities by dt/2 to the new time.
     if (particle_verbose)
