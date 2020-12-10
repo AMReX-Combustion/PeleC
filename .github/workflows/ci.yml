@@ -44,6 +44,8 @@ jobs:
         uses: styfle/cancel-workflow-action@0.6.0
         with:
           access_token: ${{github.token}}
+      - name: Set NPROCS
+        run: echo "GITHUB_NPROCS=${{matrix.procs}}" >> $GITHUB_ENV
       - uses: actions/checkout@v2
         with:
           submodules: true
@@ -65,7 +67,7 @@ jobs:
           cd ${{runner.workspace}}/deps/MetaPhysicL
           ./bootstrap
           ./configure CXX=${{env.CXX_COMPILER}} CC=${{env.C_COMPILER}} FC=${{env.FORTRAN_COMPILER}} --prefix="${{runner.workspace}}/deps/install/MetaPhysicL"
-          make -j ${{matrix.procs}}
+          make -j ${GITHUB_NPROCS}
           make install
           # Install MASA
           cd ${{runner.workspace}}/deps
@@ -73,7 +75,7 @@ jobs:
           cd ${{runner.workspace}}/deps/MASA
           ./bootstrap
           ./configure CXX='${{env.CXX_COMPILER}} -std=c++11' CC=${{env.C_COMPILER}} FC=${{env.FORTRAN_COMPILER}} --enable-fortran-interfaces METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" --prefix="${{runner.workspace}}/deps/install/MASA"
-          make -j ${{matrix.procs}}
+          make -j ${GITHUB_NPROCS}
           make install
           # Install Python packages
           python -m pip install --upgrade pip
@@ -95,10 +97,10 @@ jobs:
             ${GITHUB_WORKSPACE}
       - name: Make
         working-directory: ${{runner.workspace}}/build-ci
-        run: cmake --build . -- -j ${{matrix.procs}}
+        run: cmake --build . -- -j ${GITHUB_NPROCS}
       - name: Test
         working-directory: ${{runner.workspace}}/build-ci
-        run: ctest -j ${{matrix.procs}} -LE no-ci --output-on-failure
+        run: ctest -j ${GITHUB_NPROCS} -LE no-ci --output-on-failure
   GNUmake:
     needs: Formatting
     runs-on: ubuntu-latest
@@ -112,13 +114,13 @@ jobs:
           submodules: true
       - name: PMF debug make
         working-directory: ./ExecCpp/RegTests/PMF
-        run: make -j ${{matrix.procs}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE
+        run: make -j ${GITHUB_NPROCS} COMP=gnu USE_MPI=FALSE DEBUG=TRUE
       - name: PMF debug test
         working-directory: ./ExecCpp/RegTests/PMF
         run: ./PeleC3d.gnu.DEBUG.ex tests/pmf-1/pmf-1.i max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
       - name: EB debug build
         working-directory: ./ExecCpp/RegTests/EB-C10
-        run: make -j ${{matrix.procs}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE
+        run: make -j ${GITHUB_NPROCS} COMP=gnu USE_MPI=FALSE DEBUG=TRUE
       - name: EB debug test
         working-directory: ./ExecCpp/RegTests/EB-C10
         run: ./PeleC3d.gnu.DEBUG.ex tests/eb-c10/eb-c10.i max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
