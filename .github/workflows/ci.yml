@@ -30,11 +30,11 @@ jobs:
         os: [ubuntu-latest, macos-latest]
         include:
           - os: macos-latest
-            install_deps: brew install open-mpi automake
+            install_deps: brew install open-mpi automake ninja
             comp: llvm
             procs: $(nproc)
           - os: ubuntu-latest
-            install_deps: sudo apt-get install mpich libmpich-dev
+            install_deps: sudo apt-get install mpich libmpich-dev ninja-build
             comp: gnu
             procs: $(sysctl -n hw.ncpu)
     steps:
@@ -80,6 +80,7 @@ jobs:
         working-directory: ${{runner.workspace}}/build-ci
         run: |
           cmake \
+            -G Ninja \
             -DCMAKE_INSTALL_PREFIX:PATH=${{runner.workspace}}/install \
             -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo \
             -DCMAKE_CXX_COMPILER:STRING=${{env.CXX_COMPILER}} \
