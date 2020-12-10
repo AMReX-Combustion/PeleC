@@ -143,7 +143,7 @@ init_bc()
     molefrac[N2_ID] = 1.0 - molefrac[H2_ID] - molefrac[O2_ID];
     T = ProbParm::T_in;
   }
-  const int p = ProbParm::pamb;
+  const amrex::Real p = ProbParm::pamb;
 
   EOS::X2Y(molefrac, massfrac);
   EOS::PYT2RE(p, massfrac, T, rho, e);

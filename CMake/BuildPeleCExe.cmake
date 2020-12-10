@@ -39,7 +39,14 @@ function(build_pelec_exe pelec_exe_name)
                  ${PELEC_MECHANISM_DIR}/chemistry_file.H
                  ${PELEC_MECHANISM_DIR}/mechanism.cpp
                  ${PELEC_MECHANISM_DIR}/mechanism.h)
+  # Avoid warnings from mechanism.cpp for now
   if(NOT PELEC_ENABLE_CUDA)
+    list(APPEND MY_CXX_FLAGS "-Wno-sign-compare"
+                             "-Wno-unreachable-code"
+                             "-Wno-null-dereference"
+                             "-Wno-float-conversion"
+                             "-Wno-shadow"
+                             "-Wno-overloaded-virtual")
   if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
      "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
     list(APPEND MY_CXX_FLAGS "-Wno-unused-variable")
