@@ -112,11 +112,11 @@ jobs:
         with:
           submodules: true
       - name: Setup
-         run: |
-           echo "CC=gcc-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
-           echo "CXX=g++-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
-           echo "FC=gfortran-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
-           echo "F90=gfortran-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
+        run: |
+          echo "CC=gcc-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
+          echo "CXX=g++-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
+          echo "FC=gfortran-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
+          echo "F90=gfortran-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
       - name: PMF debug make
         working-directory: ./ExecCpp/RegTests/PMF
         run: make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE
