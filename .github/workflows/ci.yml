@@ -7,9 +7,6 @@ on:
     branches: [development]
 
 env:
-  OMPI_CC: gcc-8
-  OMPI_CXX: g++-8
-  OMPI_FC: gfortran-8
   CXX_COMPILER: mpicxx
   C_COMPILER: mpicc
   FORTRAN_COMPILER: mpifort
@@ -35,11 +32,13 @@ jobs:
           - os: macos-latest
             install_deps: brew install open-mpi automake ninja
             comp: llvm
-            procs: $(sysctl -n hw.ncpu)
+            # GCC will have internal compiler error due to OOM with too many processes
+            procs: $(echo "$(sysctl -n hw.ncpu) - 4" | bc)
           - os: ubuntu-latest
             install_deps: sudo apt-get install mpich libmpich-dev ninja-build
             comp: gnu
-            procs: $(nproc)
+            # GCC will have internal compiler error due to OOM with too many processes
+            procs: $(echo "$(nproc) - 4" | bc)
     steps:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.6.0
@@ -111,12 +110,6 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
-      - name: Setup
-        run: |
-          echo "CC=gcc-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
-          echo "CXX=g++-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
-          echo "FC=gfortran-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
-          echo "F90=gfortran-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
       - name: PMF debug make
         working-directory: ./ExecCpp/RegTests/PMF
         run: make -j COMP=gnu USE_MPI=FALSE DEBUG=TRUE
