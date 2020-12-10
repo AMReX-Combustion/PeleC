@@ -35,11 +35,11 @@ jobs:
           - os: macos-latest
             install_deps: brew install open-mpi automake ninja
             comp: llvm
-            procs: $(nproc)
+            procs: $(sysctl -n hw.ncpu)
           - os: ubuntu-latest
             install_deps: sudo apt-get install mpich libmpich-dev ninja-build
             comp: gnu
-            procs: $(sysctl -n hw.ncpu)
+            procs: $(nproc)
     steps:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.6.0
