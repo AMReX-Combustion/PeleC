@@ -10,8 +10,6 @@ env:
   CXX_COMPILER: mpicxx
   C_COMPILER: mpicc
   FORTRAN_COMPILER: mpifort
-  BUILD_TYPE: RelWithDebInfo
-  NUM_PROCS: 16
 
 jobs:
   Formatting:
@@ -34,9 +32,11 @@ jobs:
           - os: macos-latest
             install_deps: brew install open-mpi automake
             comp: llvm
+            procs: $(nproc)
           - os: ubuntu-latest
             install_deps: sudo apt-get install mpich libmpich-dev
             comp: gnu
+            procs: $(sysctl -n hw.ncpu)
     steps:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.6.0
@@ -81,7 +81,7 @@ jobs:
         run: |
           cmake \
             -DCMAKE_INSTALL_PREFIX:PATH=${{runner.workspace}}/install \
-            -DCMAKE_BUILD_TYPE:STRING=${{env.BUILD_TYPE}} \
+            -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo \
             -DCMAKE_CXX_COMPILER:STRING=${{env.CXX_COMPILER}} \
             -DCMAKE_C_COMPILER:STRING=${{env.C_COMPILER}} \
             -DPELEC_ENABLE_MPI:BOOL=ON \
@@ -92,10 +92,10 @@ jobs:
             ${GITHUB_WORKSPACE}
       - name: Make
         working-directory: ${{runner.workspace}}/build-ci
-        run: cmake --build . -- -j ${{env.NUM_PROCS}}
+        run: cmake --build . -- -j ${{matrix.procs}}
       - name: Test
         working-directory: ${{runner.workspace}}/build-ci
-        run: ctest -j ${{env.NUM_PROCS}} -LE no-ci --output-on-failure
+        run: ctest -j ${{matrix.procs}} -LE no-ci --output-on-failure
   GNUmake:
     needs: Formatting
     runs-on: ubuntu-latest
