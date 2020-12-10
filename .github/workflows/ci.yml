@@ -24,9 +24,8 @@ jobs:
         exclude: '.'
         extensions: 'H,h,cpp'
         clangFormatVersion: 11
-        #style: chromium
   CMake:
-    needs: formatting
+    needs: Formatting
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
@@ -39,76 +38,90 @@ jobs:
             install_deps: sudo apt-get install mpich libmpich-dev
             comp: gnu
     steps:
-    - uses: actions/checkout@v2
-      with:
-        submodules: true
-    - name: Setup
-      run: |
-        cmake -E make_directory ${{runner.workspace}}/build-ci
-        cmake -E make_directory ${{runner.workspace}}/deps
-    - name: Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
-    - name: Dependencies
-      run: |
-        # Install MPI
-        ${{matrix.install_deps}}
-        # Install MetaPhysicL
-        cd ${{runner.workspace}}/deps
-        git clone --recursive https://github.com/roystgnr/MetaPhysicL.git ${{runner.workspace}}/deps/MetaPhysicL
-        cd ${{runner.workspace}}/deps/MetaPhysicL
-        ./bootstrap
-        ./configure CXX=${{env.CXX_COMPILER}} CC=${{env.C_COMPILER}} FC=${{env.FORTRAN_COMPILER}} --prefix="${{runner.workspace}}/deps/install/MetaPhysicL"
-        make -j
-        make install
-        # Install MASA
-        cd ${{runner.workspace}}/deps
-        git clone --recursive https://github.com/manufactured-solutions/MASA.git ${{runner.workspace}}/deps/MASA
-        cd ${{runner.workspace}}/deps/MASA
-        ./bootstrap
-        ./configure CXX='${{env.CXX_COMPILER}} -std=c++11' CC=${{env.C_COMPILER}} FC=${{env.FORTRAN_COMPILER}} --enable-fortran-interfaces METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" --prefix="${{runner.workspace}}/deps/install/MASA"
-        make -j
-        make install
-        # Install Python packages
-        python -m pip install --upgrade pip
-        pip install nose numpy pandas
-    - name: Configure
-      working-directory: ${{runner.workspace}}/build-ci
-      run: |
-        cmake \
-          -DCMAKE_INSTALL_PREFIX:PATH=${{runner.workspace}}/install \
-          -DCMAKE_BUILD_TYPE:STRING=${{env.BUILD_TYPE}} \
-          -DCMAKE_CXX_COMPILER:STRING=${{env.CXX_COMPILER}} \
-          -DCMAKE_C_COMPILER:STRING=${{env.C_COMPILER}} \
-          -DPELEC_ENABLE_MPI:BOOL=ON \
-          -DPELEC_ENABLE_TESTS:BOOL=ON \
-          -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
-          -DPELEC_ENABLE_MASA:BOOL=ON \
-          -DMASA_DIR:STRING=${{runner.workspace}}/deps/install/MASA \
-          ${GITHUB_WORKSPACE}
-    - name: Make
-      working-directory: ${{runner.workspace}}/build-ci
-      run: cmake --build . -- -j ${{env.NUM_PROCS}}
-    - name: Test
-      working-directory: ${{runner.workspace}}/build-ci
-      run: ctest -j ${{env.NUM_PROCS}} -LE no-ci --output-on-failure
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.6.0
+        with:
+          access_token: ${{github.token}}
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Setup
+        run: |
+          cmake -E make_directory ${{runner.workspace}}/build-ci
+          cmake -E make_directory ${{runner.workspace}}/deps
+      - name: Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Dependencies
+        run: |
+          # Install MPI
+          ${{matrix.install_deps}}
+          # Install MetaPhysicL
+          cd ${{runner.workspace}}/deps
+          git clone --recursive https://github.com/roystgnr/MetaPhysicL.git ${{runner.workspace}}/deps/MetaPhysicL
+          cd ${{runner.workspace}}/deps/MetaPhysicL
+          ./bootstrap
+          ./configure CXX=${{env.CXX_COMPILER}} CC=${{env.C_COMPILER}} FC=${{env.FORTRAN_COMPILER}} --prefix="${{runner.workspace}}/deps/install/MetaPhysicL"
+          make -j
+          make install
+          # Install MASA
+          cd ${{runner.workspace}}/deps
+          git clone --recursive https://github.com/manufactured-solutions/MASA.git ${{runner.workspace}}/deps/MASA
+          cd ${{runner.workspace}}/deps/MASA
+          ./bootstrap
+          ./configure CXX='${{env.CXX_COMPILER}} -std=c++11' CC=${{env.C_COMPILER}} FC=${{env.FORTRAN_COMPILER}} --enable-fortran-interfaces METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" --prefix="${{runner.workspace}}/deps/install/MASA"
+          make -j
+          make install
+          # Install Python packages
+          python -m pip install --upgrade pip
+          pip install nose numpy pandas
+      - name: Configure
+        working-directory: ${{runner.workspace}}/build-ci
+        run: |
+          cmake \
+            -DCMAKE_INSTALL_PREFIX:PATH=${{runner.workspace}}/install \
+            -DCMAKE_BUILD_TYPE:STRING=${{env.BUILD_TYPE}} \
+            -DCMAKE_CXX_COMPILER:STRING=${{env.CXX_COMPILER}} \
+            -DCMAKE_C_COMPILER:STRING=${{env.C_COMPILER}} \
+            -DPELEC_ENABLE_MPI:BOOL=ON \
+            -DPELEC_ENABLE_TESTS:BOOL=ON \
+            -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
+            -DPELEC_ENABLE_MASA:BOOL=ON \
+            -DMASA_DIR:STRING=${{runner.workspace}}/deps/install/MASA \
+            ${GITHUB_WORKSPACE}
+      - name: Make
+        working-directory: ${{runner.workspace}}/build-ci
+        run: cmake --build . -- -j ${{env.NUM_PROCS}}
+      - name: Test
+        working-directory: ${{runner.workspace}}/build-ci
+        run: ctest -j ${{env.NUM_PROCS}} -LE no-ci --output-on-failure
   GNUmake:
-    needs: formatting
+    needs: Formatting
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-      with:
-        submodules: true
-    - name: PMF debug make
-      working-directory: ./ExecCpp/RegTests/PMF
-      run: make -j COMP=gnu USE_MPI=FALSE DEBUG=TRUE
-    - name: PMF debug test
-      working-directory: ./ExecCpp/RegTests/PMF
-      run: ./PeleC3d.gnu.DEBUG.ex tests/pmf-1/pmf-1.i max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
-    - name: EB debug build
-      working-directory: ./ExecCpp/RegTests/PMF
-      run: make -j COMP=gnu USE_MPI=FALSE DEBUG=TRUE
-    - name: EB debug test
-      working-directory: ./ExecCpp/RegTests/EB-C10
-      run: ./PeleC3d.gnu.DEBUG.ex tests/eb-c10/eb-c10.i max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.6.0
+        with:
+          access_token: ${{github.token}}
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Setup
+        run: |
+          echo "CC=gcc-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
+          echo "CXX=g++-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
+          echo "FC=gfortran-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
+          echo "F90=gfortran-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
+      - name: PMF debug make
+        working-directory: ./ExecCpp/RegTests/PMF
+        run: make -j COMP=gnu USE_MPI=FALSE DEBUG=TRUE
+      - name: PMF debug test
+        working-directory: ./ExecCpp/RegTests/PMF
+        run: ./PeleC3d.gnu.DEBUG.ex tests/pmf-1/pmf-1.i max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
+      - name: EB debug build
+        working-directory: ./ExecCpp/RegTests/PMF
+        run: make -j COMP=gnu USE_MPI=FALSE DEBUG=TRUE
+      - name: EB debug test
+        working-directory: ./ExecCpp/RegTests/EB-C10
+        run: ./PeleC3d.gnu.DEBUG.ex tests/eb-c10/eb-c10.i max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
