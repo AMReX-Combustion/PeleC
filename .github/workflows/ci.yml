@@ -76,8 +76,8 @@ jobs:
       - name: Configure
         run: |
           for DIM in 1 2 3; do \
-            if [ "${DIM}" != '3' ]; then WERROR=OFF; else WERROR=ON; fi \
-            echo "\n-------- Configuring ${DIM}D --------"; \
+            if [ "${DIM}" != '3' ]; then WERROR=OFF; else WERROR=ON; fi; \
+            printf "\n-------- Configuring ${DIM}D --------\n"; \
             cmake -G Ninja \
             -B${{runner.workspace}}/build-${DIM}d-${{matrix.os}} \
             -DCMAKE_INSTALL_PREFIX:PATH=${{runner.workspace}}/install \
@@ -94,13 +94,13 @@ jobs:
       - name: Build
         run: |
           for DIM in 1 2 3; do \
-            echo "\n-------- Building ${DIM}D --------"; \
+            printf "\n-------- Building ${DIM}D --------\n"; \
             cmake --build ${{runner.workspace}}/build-${DIM}d-${{matrix.os}} -- -j ${{env.NPROCS}}; \
           done
       - name: Test
         run: |
           for DIM in 1 2 3; do \
-            echo "\n-------- Testing ${DIM}D --------"; \
+            printf "\n-------- Testing ${DIM}D --------\n"; \
             cd ${{runner.workspace}}/build-${DIM}d-${{matrix.os}}; \
             ctest -j ${{env.NPROCS}} -LE no-ci --output-on-failure; \
           done
@@ -118,7 +118,7 @@ jobs:
       - name: Setup
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
-          echo "CC=gcc-8\nCXX=g++-8\nFC=gfortran-8\nF90=gfortran-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
+          printf "CC=gcc-8\nCXX=g++-8\nFC=gfortran-8\nF90=gfortran-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
       - name: PMF debug make
         working-directory: ./ExecCpp/RegTests/PMF
         run: make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE
