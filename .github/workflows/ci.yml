@@ -75,32 +75,33 @@ jobs:
           pip install nose numpy pandas
       - name: Configure
         run: |
-          for dim in 1 2 3; do \
-            echo "-------- Configuring ${dim}D --------"; \
+          for DIM in 1 2 3; do \
+            if [ "${DIM}" != '3' ]; then WERROR=OFF; else WERROR=ON; fi \
+            echo "\n-------- Configuring ${DIM}D --------"; \
             cmake -G Ninja \
-            -B${{runner.workspace}}/build-${dim}d-${{matrix.os}} \
+            -B${{runner.workspace}}/build-${DIM}d-${{matrix.os}} \
             -DCMAKE_INSTALL_PREFIX:PATH=${{runner.workspace}}/install \
             -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo \
-            -DPELEC_DIM:STRING=${dim} \
+            -DPELEC_DIM:STRING=${DIM} \
             -DPELEC_ENABLE_MPI:BOOL=ON \
             -DPELEC_ENABLE_TESTS:BOOL=ON \
             -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
             -DPELEC_ENABLE_MASA:BOOL=ON \
             -DMASA_DIR:STRING=${{runner.workspace}}/deps/install/MASA \
-            -DPELEC_ENABLE_WERROR:BOOL=ON \
+            -DPELEC_ENABLE_WERROR:BOOL=${WERROR} \
             ${GITHUB_WORKSPACE}; \
           done
       - name: Build
         run: |
-          for dim in 1 2 3; do \
-            echo "-------- Building ${dim}D --------"; \
-            cmake --build ${{runner.workspace}}/build-${dim}d-${{matrix.os}} -- -j ${{env.NPROCS}}; \
+          for DIM in 1 2 3; do \
+            echo "\n-------- Building ${DIM}D --------"; \
+            cmake --build ${{runner.workspace}}/build-${DIM}d-${{matrix.os}} -- -j ${{env.NPROCS}}; \
           done
       - name: Test
         run: |
-          for dim in 1 2 3; do \
-            echo "-------- Testing ${dim}D --------"; \
-            cd ${{runner.workspace}}/build-${dim}d-${{matrix.os}}; \
+          for DIM in 1 2 3; do \
+            echo "\n-------- Testing ${DIM}D --------"; \
+            cd ${{runner.workspace}}/build-${DIM}d-${{matrix.os}}; \
             ctest -j ${{env.NPROCS}} -LE no-ci --output-on-failure; \
           done
   GNUmake:
