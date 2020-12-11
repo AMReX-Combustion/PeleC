@@ -54,7 +54,6 @@ jobs:
       - name: Setup
         run: |
           echo "NPROCS=${{matrix.procs}}" >> $GITHUB_ENV
-          cmake -E make_directory ${{runner.workspace}}/build-ci
           cmake -E make_directory ${{runner.workspace}}/deps
       - name: Dependencies
         run: |
@@ -80,14 +79,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install nose numpy pandas
       - name: Configure
-        working-directory: ${{runner.workspace}}/build-ci
         run: |
           cmake \
             -G Ninja \
+            -B${{runner.workspace}}/build-${{matrix.os}} \
             -DCMAKE_INSTALL_PREFIX:PATH=${{runner.workspace}}/install \
             -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo \
-            -DCMAKE_CXX_COMPILER:STRING=${{env.CXX_COMPILER}} \
-            -DCMAKE_C_COMPILER:STRING=${{env.C_COMPILER}} \
             -DPELEC_ENABLE_MPI:BOOL=ON \
             -DPELEC_ENABLE_TESTS:BOOL=ON \
             -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
@@ -96,10 +93,10 @@ jobs:
             -DPELEC_ENABLE_WERROR:BOOL=ON \
             ${GITHUB_WORKSPACE}
       - name: Make
-        working-directory: ${{runner.workspace}}/build-ci
+        working-directory: ${{runner.workspace}}/build-${{matrix.os}}
         run: cmake --build . -- -j ${{env.NPROCS}}
       - name: Test
-        working-directory: ${{runner.workspace}}/build-ci
+        working-directory: ${{runner.workspace}}/build-${{matrix.os}}
         run: ctest -j ${{env.NPROCS}} -LE no-ci --output-on-failure
   GNUmake:
     needs: Formatting
