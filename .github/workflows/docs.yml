@@ -30,7 +30,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install sphinx sphinx_rtd_theme
       - name: Configure
-        working-directory: ${{runner.workspace}}/build-docs
         run: cmake -B${{runner.workspace}}/build-docs ${{github.workspace}}/Docs
       - name: Build
         working-directory: ${{runner.workspace}}/build-docs
