@@ -41,24 +41,26 @@ function(build_pelec_exe pelec_exe_name)
                  ${PELEC_MECHANISM_DIR}/mechanism.h)
   # Avoid warnings from mechanism.cpp for now
   if(NOT PELEC_ENABLE_CUDA)
-    list(APPEND MY_CXX_FLAGS "-Wno-sign-compare"
-                             "-Wno-unreachable-code"
-                             "-Wno-null-dereference"
-                             "-Wno-float-conversion"
-                             "-Wno-shadow"
-                             "-Wno-overloaded-virtual")
-  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
-     "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
-    list(APPEND MY_CXX_FLAGS "-Wno-unused-variable")
-    list(APPEND MY_CXX_FLAGS "-Wno-unused-parameter")
-    list(APPEND MY_CXX_FLAGS "-Wno-vla-extension")
-    list(APPEND MY_CXX_FLAGS "-Wno-zero-length-array")
-  elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    list(APPEND MY_CXX_FLAGS "-Wno-unused-variable")
-    list(APPEND MY_CXX_FLAGS "-Wno-unused-parameter")
-    list(APPEND MY_CXX_FLAGS "-Wno-vla")
-    list(APPEND MY_CXX_FLAGS "-Wno-pedantic")
-  endif()
+    if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$")
+      if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 7.0)
+        list(APPEND MY_CXX_FLAGS "-Wno-unreachable-code"
+                                 "-Wno-null-dereference"
+                                 "-Wno-float-conversion"
+                                 "-Wno-shadow"
+                                 "-Wno-overloaded-virtual")
+      endif()
+      if(CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|AppleClang)$")
+        list(APPEND MY_CXX_FLAGS "-Wno-unused-variable")
+        list(APPEND MY_CXX_FLAGS "-Wno-unused-parameter")
+        list(APPEND MY_CXX_FLAGS "-Wno-vla-extension")
+        list(APPEND MY_CXX_FLAGS "-Wno-zero-length-array")
+      elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        list(APPEND MY_CXX_FLAGS "-Wno-unused-variable")
+        list(APPEND MY_CXX_FLAGS "-Wno-unused-parameter")
+        list(APPEND MY_CXX_FLAGS "-Wno-vla")
+        list(APPEND MY_CXX_FLAGS "-Wno-pedantic")
+      endif()
+    endif()
   endif()
   separate_arguments(MY_CXX_FLAGS)
   set_source_files_properties(${PELEC_MECHANISM_DIR}/mechanism.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
