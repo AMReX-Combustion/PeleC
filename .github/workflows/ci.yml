@@ -76,7 +76,7 @@ jobs:
       - name: Configure
         run: |
           for DIM in 1 2 3; do \
-            if [ "${DIM}" != '3' ]; then WERROR=OFF; else WERROR=ON; fi; \
+            if [ "${DIM}" != '3' ]; then WARNINGS=OFF; else WARNINGS=ON; fi; \
             printf "\n-------- Configuring ${DIM}D --------\n"; \
             cmake -G Ninja \
             -B${{runner.workspace}}/build-${DIM}d-${{matrix.os}} \
@@ -88,7 +88,8 @@ jobs:
             -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
             -DPELEC_ENABLE_MASA:BOOL=ON \
             -DMASA_DIR:STRING=${{runner.workspace}}/deps/install/MASA \
-            -DPELEC_ENABLE_WERROR:BOOL=${WERROR} \
+            -DPELEC_ENABLE_ALL_WARNINGS:BOOL=${WARNINGS} \
+            -DPELEC_ENABLE_WERROR:BOOL=${WARNINGS} \
             ${GITHUB_WORKSPACE}; \
           done
       - name: Build
@@ -131,3 +132,50 @@ jobs:
       - name: EB debug test
         working-directory: ./ExecCpp/RegTests/EB-C10
         run: ./PeleC3d.gnu.DEBUG.ex tests/eb-c10/eb-c10.i max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
+  CUDA:
+    needs: Formatting
+    runs-on: ubuntu-latest
+    name: CUDA v${{matrix.cuda_ver}}
+    strategy:
+      matrix:
+        #cuda_pkg: [11-1, 10-2]
+        cuda_pkg: [11-1]
+        include:
+          - cuda_ver: "11.1"
+            cuda_pkg: 11-1
+            cuda_extra: libcurand-dev-11-1 cuda-cupti-dev-11-1
+          #- cuda_ver: "10.2"
+          #  cuda_pkg: 10-2
+          #  cuda_extra: cuda-curand-dev-10-2 cuda-cupti-dev-10-2
+    steps:
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.6.0
+        with:
+          access_token: ${{github.token}}
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Dependencies
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          wget -q -O - https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub | sudo apt-key add -
+          echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /" | sudo tee /etc/apt/sources.list.d/cuda.list
+          echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /" | sudo tee /etc/apt/sources.list.d/nvidia-ml.list
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+              libopenmpi-dev cuda-command-line-tools-${{matrix.cuda_pkg}} \
+              cuda-compiler-${{matrix.cuda_pkg}} cuda-minimal-build-${{matrix.cuda_pkg}} \
+              cuda-nvml-dev-${{matrix.cuda_pkg}} cuda-nvtx-${{matrix.cuda_pkg}} ${{matrix.cuda_extra}}
+      - name: Configure
+        run: |
+          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
+          export PATH=/usr/local/nvidia/bin:/usr/local/cuda-${{matrix.cuda_ver}}/bin:${PATH}
+          export LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/cuda-${{matrix.cuda_ver}}/lib:${LD_LIBRARY_PATH}
+          cmake -Bbuild-${{matrix.cuda_pkg}} \
+            -DPELEC_ENABLE_MPI=OFF \
+            -DPELEC_ENABLE_CUDA=ON \
+            -DAMReX_CUDA_ERROR_CAPTURE_THIS:BOOL=ON \
+            -DAMReX_CUDA_ARCH=Volta \
+            ${GITHUB_WORKSPACE}
+      - name: Build
+        run: cmake --build build-${{matrix.cuda_pkg}} -- -j ${{env.NPROC}}
