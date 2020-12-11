@@ -6,11 +6,6 @@ on:
   pull_request:
     branches: [development]
 
-env:
-  CXX_COMPILER: mpicxx
-  C_COMPILER: mpicc
-  FORTRAN_COMPILER: mpifort
-
 jobs:
   Formatting:
     runs-on: ubuntu-latest
@@ -64,7 +59,7 @@ jobs:
           git clone --recursive https://github.com/roystgnr/MetaPhysicL.git ${{runner.workspace}}/deps/MetaPhysicL
           cd ${{runner.workspace}}/deps/MetaPhysicL
           ./bootstrap
-          ./configure CXX=${{env.CXX_COMPILER}} CC=${{env.C_COMPILER}} FC=${{env.FORTRAN_COMPILER}} --prefix="${{runner.workspace}}/deps/install/MetaPhysicL"
+          ./configure --prefix="${{runner.workspace}}/deps/install/MetaPhysicL"
           make -j ${{env.NPROCS}}
           make install
           # Install MASA
@@ -72,7 +67,7 @@ jobs:
           git clone --recursive https://github.com/manufactured-solutions/MASA.git ${{runner.workspace}}/deps/MASA
           cd ${{runner.workspace}}/deps/MASA
           ./bootstrap
-          ./configure CXX='${{env.CXX_COMPILER}} -std=c++11' CC=${{env.C_COMPILER}} FC=${{env.FORTRAN_COMPILER}} --enable-fortran-interfaces METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" --prefix="${{runner.workspace}}/deps/install/MASA"
+          ./configure --enable-fortran-interfaces METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" --prefix="${{runner.workspace}}/deps/install/MASA"
           make -j ${{env.NPROCS}}
           make install
           # Install Python packages
