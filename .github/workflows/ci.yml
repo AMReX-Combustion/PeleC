@@ -178,4 +178,4 @@ jobs:
             -DAMReX_CUDA_ARCH=Volta \
             ${GITHUB_WORKSPACE}
       - name: Build
-        run: cmake --build build-${{matrix.cuda_pkg}} -- -j ${{env.NPROC}}
+        run: cmake --build build-${{matrix.cuda_pkg}} -- -j ${{env.NPROCS}}
