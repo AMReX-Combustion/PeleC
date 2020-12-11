@@ -67,7 +67,7 @@ jobs:
           git clone --recursive https://github.com/manufactured-solutions/MASA.git ${{runner.workspace}}/deps/MASA
           cd ${{runner.workspace}}/deps/MASA
           ./bootstrap
-          ./configure --enable-fortran-interfaces METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" --prefix="${{runner.workspace}}/deps/install/MASA"
+          ./configure CXX='mpicxx -std=c++11' CC=mpicc FC=mpifort --enable-fortran-interfaces METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" --prefix="${{runner.workspace}}/deps/install/MASA"
           make -j ${{env.NPROCS}}
           make install
           # Install Python packages
