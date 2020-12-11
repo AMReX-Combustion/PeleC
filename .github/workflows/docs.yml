@@ -17,9 +17,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Setup
-        run: |
-          cmake -E make_directory ${{runner.workspace}}/build-docs
       - name: Python
         uses: actions/setup-python@v2
         with:
@@ -34,12 +31,11 @@ jobs:
           pip install sphinx sphinx_rtd_theme
       - name: Configure
         working-directory: ${{runner.workspace}}/build-docs
-        run:  |
-          cmake ${{github.workspace}}/Docs
+        run: cmake -B${{runner.workspace}}/build-docs ${{github.workspace}}/Docs
       - name: Build
         working-directory: ${{runner.workspace}}/build-docs
         run:  |
-           make
+           cmake --build ${{runner.workspace}}/build-docs
            touch ${{runner.workspace}}/build-docs/sphinx/html/.nojekyll
       - name: Deploy
         if: github.event_name == 'push' && github.ref == 'refs/heads/development'
