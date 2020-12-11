@@ -45,7 +45,8 @@ if(PELEC_ENABLE_CUDA)
 endif()
 
 if((NOT PELEC_DIM EQUAL 3) AND PELEC_ENABLE_AMREX_EB)
-  message(FATAL_ERROR "EB is only supported in 3D.")
+  set(PELEC_ENABLE_AMREX_EB OFF)
+  message(WARNING "Disabling EB for ${PELEC_DIM}D.")
 endif()
 
 ########################### AMReX #####################################
