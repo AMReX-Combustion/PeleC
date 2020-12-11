@@ -49,6 +49,10 @@ if((NOT PELEC_DIM EQUAL 3) AND PELEC_ENABLE_AMREX_EB)
   message(WARNING "Disabling EB for ${PELEC_DIM}D.")
 endif()
 
+if(PELEC_ENABLE_WERROR)
+  message(STATUS "Enabling Werror.")
+endif()
+
 ########################### AMReX #####################################
 
 set(AMREX_SUBMOD_LOCATION "${CMAKE_SOURCE_DIR}/Submodules/AMReX")
