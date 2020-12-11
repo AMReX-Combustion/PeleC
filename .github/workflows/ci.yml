@@ -75,24 +75,31 @@ jobs:
           pip install nose numpy pandas
       - name: Configure
         run: |
-          cmake \
-            -G Ninja \
-            -B${{runner.workspace}}/build-${{matrix.os}} \
+          for dim in 1 2 3; do \
+            cmake -G Ninja \
+            -B${{runner.workspace}}/build-${dim}d-${{matrix.os}} \
             -DCMAKE_INSTALL_PREFIX:PATH=${{runner.workspace}}/install \
             -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo \
+            -DPELEC_DIM:STRING=${dim} \
             -DPELEC_ENABLE_MPI:BOOL=ON \
             -DPELEC_ENABLE_TESTS:BOOL=ON \
             -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
             -DPELEC_ENABLE_MASA:BOOL=ON \
             -DMASA_DIR:STRING=${{runner.workspace}}/deps/install/MASA \
             -DPELEC_ENABLE_WERROR:BOOL=ON \
-            ${GITHUB_WORKSPACE}
+            ${GITHUB_WORKSPACE}; \
+          done
       - name: Make
-        working-directory: ${{runner.workspace}}/build-${{matrix.os}}
-        run: cmake --build . -- -j ${{env.NPROCS}}
+        run: |
+          for dim in 1 2 3; do \
+            cmake --build ${{runner.workspace}}/build-${dim}d-${{matrix.os}} -- -j ${{env.NPROCS}}; \
+          done
       - name: Test
-        working-directory: ${{runner.workspace}}/build-${{matrix.os}}
-        run: ctest -j ${{env.NPROCS}} -LE no-ci --output-on-failure
+        run: |
+          for dim in 1 2 3; do \
+            cd ${{runner.workspace}}/build-${dim}d-${{matrix.os}}; \
+            ctest -j ${{env.NPROCS}} -LE no-ci --output-on-failure; \
+          done
   GNUmake:
     needs: Formatting
     runs-on: ubuntu-latest
@@ -107,10 +114,7 @@ jobs:
       - name: Setup
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
-          echo "CC=gcc-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
-          echo "CXX=g++-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
-          echo "FC=gfortran-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
-          echo "F90=gfortran-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
+          echo "CC=gcc-8\nCXX=g++-8\nFC=gfortran-8\nF90=gfortran-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
       - name: PMF debug make
         working-directory: ./ExecCpp/RegTests/PMF
         run: make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE
