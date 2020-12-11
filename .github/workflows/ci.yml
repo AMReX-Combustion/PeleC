@@ -76,7 +76,7 @@ jobs:
       - name: Configure
         run: |
           for dim in 1 2 3; do \
-            echo "Configuring ${dim}D --------------------------"; \
+            echo "-------- Configuring ${dim}D --------"; \
             cmake -G Ninja \
             -B${{runner.workspace}}/build-${dim}d-${{matrix.os}} \
             -DCMAKE_INSTALL_PREFIX:PATH=${{runner.workspace}}/install \
@@ -93,13 +93,13 @@ jobs:
       - name: Build
         run: |
           for dim in 1 2 3; do \
-            echo "Building ${dim}D --------------------------"; \
+            echo "-------- Building ${dim}D --------"; \
             cmake --build ${{runner.workspace}}/build-${dim}d-${{matrix.os}} -- -j ${{env.NPROCS}}; \
           done
       - name: Test
         run: |
           for dim in 1 2 3; do \
-            echo "Testing ${dim}D --------------------------"; \
+            echo "-------- Testing ${dim}D --------"; \
             cd ${{runner.workspace}}/build-${dim}d-${{matrix.os}}; \
             ctest -j ${{env.NPROCS}} -LE no-ci --output-on-failure; \
           done
