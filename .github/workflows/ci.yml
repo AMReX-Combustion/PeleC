@@ -179,3 +179,37 @@ jobs:
             ${GITHUB_WORKSPACE}
       - name: Build
         run: cmake --build build-${{matrix.cuda_pkg}} -- -j ${{env.NPROCS}}
+  Static analysis:
+    needs: Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.6.0
+        with:
+          access_token: ${{github.token}}
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Dependencies
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          sudo apt-get install cppcheck
+      - name: Configure
+        run: |
+          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
+          cmake \
+          -B${{runner.workspace}}/build-sa \
+          -DPELEC_ENABLE_MPI:BOOL=ON \
+          -DPELEC_ENABLE_TESTS:BOOL=ON \
+          -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
+          -DPELEC_ENABLE_MASA:BOOL=OFF \
+          ${GITHUB_WORKSPACE}
+      - name: Check
+        working-directory: ${{runner.workspace}}/build-sa
+        run: |
+          cppcheck --inline-suppr --std=c++14 --language=c++ --enable=all --project=compile_commands.json -j ${{env.NPROCS}} -i./Submodules/AMReX/Src --output-file=cppcheck.txt
+          awk -v nlines=2 '/Submodules/AMReX/ {for (i=0; i<nlines; i++) {getline}; next} 1' < cppcheck.txt > pelec-static-analysis.txt
+          #WARNINGS1=$(wc -l < pelec-static-analysis.txt | xargs echo -n)
+          #WARNINGS2=$(bc <<< "$WARNINGS1/3")
+          #printf \"%s warnings\n\" \"${WARNINGS2}\" >> pelec-static-analysis.txt
+          cat pelec-static-analysis.txt
