@@ -181,7 +181,7 @@ jobs:
   #      run: cmake --build build-${{matrix.cuda_pkg}} -- -j ${{env.NPROCS}}
   Lint:
     needs: Formatting
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.6.0
@@ -191,9 +191,7 @@ jobs:
         with:
           submodules: true
       - name: Dependencies
-        run: |
-          export DEBIAN_FRONTEND=noninteractive
-          sudo apt-get install cppcheck
+        run: brew install cppcheck
       - name: Configure
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
