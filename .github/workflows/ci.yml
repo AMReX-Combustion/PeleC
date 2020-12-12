@@ -199,7 +199,7 @@ jobs:
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
           cmake \
           -B${{runner.workspace}}/build-sa \
-          -DPELEC_ENABLE_MPI:BOOL=ON \
+          -DPELEC_ENABLE_MPI:BOOL=OFF \
           -DPELEC_ENABLE_TESTS:BOOL=ON \
           -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
           -DPELEC_ENABLE_MASA:BOOL=OFF \
