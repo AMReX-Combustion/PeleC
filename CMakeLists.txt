@@ -14,6 +14,7 @@ option(PELEC_ENABLE_ALL_WARNINGS "Enable all compiler warnings" ON)
 option(PELEC_ENABLE_WERROR "Treat compiler warnings as errors" OFF)
 option(PELEC_ENABLE_TESTS "Enable regression and unit tests" OFF)
 option(PELEC_ENABLE_MASA "Enable tests that require MASA" OFF)
+option(PELEC_ENABLE_SUNDIALS "Enable SUNDIALS as ODE solver" OFF)
 option(PELEC_ENABLE_FCOMPARE "Enable building fcompare when not testing" OFF)
 option(PELEC_ENABLE_FCOMPARE_FOR_TESTS "Check test plots against gold files" OFF)
 
@@ -67,6 +68,16 @@ if(PELEC_ENABLE_MASA)
   find_package(MASA QUIET REQUIRED)
   if(MASA_FOUND)
     message(STATUS "Found MASA = ${MASA_DIR}")
+  endif()
+endif()
+
+########################### SUNDIALS #####################################
+
+if(PELEC_ENABLE_SUNDIALS)
+  set(CMAKE_PREFIX_PATH ${SUNDIALS_DIR} ${CMAKE_PREFIX_PATH})
+  find_package(SUNDIALS QUIET REQUIRED)
+  if(SUNDIALS_FOUND)
+    message(STATUS "Found SUNDIALS = ${SUNDIALS_DIR}")
   endif()
 endif()
 
