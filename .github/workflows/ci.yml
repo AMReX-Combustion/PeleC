@@ -203,6 +203,7 @@ jobs:
           -DPELEC_ENABLE_TESTS:BOOL=ON \
           -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
           -DPELEC_ENABLE_MASA:BOOL=OFF \
+          -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON \
           ${GITHUB_WORKSPACE}
       - name: Check
         working-directory: ${{runner.workspace}}/build-sa
