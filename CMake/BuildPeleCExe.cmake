@@ -70,16 +70,22 @@ function(build_pelec_exe pelec_exe_name)
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELE_PHYSICS_SRC_DIR}/Support/Fuego/Evaluation)
   
   if(PELEC_ENABLE_REACTIONS)
+    if(PELEC_ENABLE_SUNDIALS)
+      if(PELEC_ENABLE_CUDA)
+        set(DEVICE GPU)
+      else()
+        set(DEVICE CPU)
+      endif()
+      target_compile_definitions(${pelec_exe_name} PRIVATE USE_SUNDIALS_PP)
+      target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/arkode/reactor.cpp
+                                               ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/arkode/reactor.h)
+      target_link_libraries(${pelec_exe_name} PRIVATE SUNDIALS::arkode)
+      target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/arkode)
+    endif()
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_REACTIONS)
     target_sources(${pelec_exe_name} PRIVATE
                    ${SRC_DIR}/React.H
                    ${SRC_DIR}/React.cpp)
-  endif()
-  
-  if(PELEC_ENABLE_MASA)
-    target_sources(${pelec_exe_name} PRIVATE
-                   ${SRC_DIR}/MMS.cpp)
-    target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_MASA)
   endif()
   
   if(PELEC_ENABLE_EB)
@@ -155,16 +161,15 @@ function(build_pelec_exe pelec_exe_name)
   include(AMReXBuildInfo)
   generate_buildinfo(${pelec_exe_name} ${CMAKE_SOURCE_DIR})
   target_include_directories(${pelec_exe_name} PUBLIC ${AMREX_SUBMOD_LOCATION}/Tools/C_scripts)
-  #set_target_properties(${amr_wind_lib_name} buildInfo${amr_wind_lib_name} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
-  if(PELEC_ENABLE_MASA AND MASA_FOUND)
-    #Link our executable to the MASA libraries, etc
-    target_link_libraries(${pelec_exe_name} PRIVATE ${MASA_LIBRARY})
+  if(PELEC_ENABLE_MASA)
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_MASA)
+    target_sources(${pelec_exe_name} PRIVATE ${SRC_DIR}/MMS.cpp)
+    target_link_libraries(${pelec_exe_name} PRIVATE ${MASA_LIBRARY})
     target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${MASA_INCLUDE_DIRS})
     target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${MASA_MOD_DIRS})
   endif()
- 
+
   if(PELEC_ENABLE_MPI)
     target_link_libraries(${pelec_exe_name} PUBLIC $<$<BOOL:${MPI_CXX_FOUND}>:MPI::MPI_CXX>)
   endif()
