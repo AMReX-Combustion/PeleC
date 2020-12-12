@@ -179,7 +179,7 @@ jobs:
   #          ${GITHUB_WORKSPACE}
   #    - name: Build
   #      run: cmake --build build-${{matrix.cuda_pkg}} -- -j ${{env.NPROCS}}
-  Static analysis:
+  Lint:
     needs: Formatting
     runs-on: ubuntu-latest
     steps:
