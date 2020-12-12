@@ -194,7 +194,7 @@ jobs:
         run: brew install cppcheck
       - name: Configure
         run: |
-          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
+          echo "NPROCS=$(sysctl -n hw.ncpu)" >> $GITHUB_ENV
           cmake \
           -B${{runner.workspace}}/build-sa \
           -DPELEC_ENABLE_MPI:BOOL=OFF \
