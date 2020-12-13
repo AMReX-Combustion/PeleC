@@ -206,8 +206,10 @@ jobs:
       - name: Check
         working-directory: ${{runner.workspace}}/build-sa
         run: |
-          cppcheck --inline-suppr --std=c++14 --language=c++ --enable=all --project=compile_commands.json -j ${{env.NPROCS}} -i./Submodules/AMReX/Src --output-file=cppcheck.txt
-          awk -v nlines=2 '/Submodules\/AMReX/ {for (i=0; i<nlines; i++) {getline}; next} 1' < cppcheck.txt > pelec-static-analysis.txt
+          cppcheck --inline-suppr --suppress=unmatchedSuppression --std=c++14 --language=c++ --enable=all --project=compile_commands.json -j ${{env.NPROCS}} -i./Submodules/AMReX/Src --output-file=cppcheck.txt
+          #awk -v nlines=2 '/Submodules\/AMReX/ || /Submodules\/GoogleTest/ {for (i=0; i<nlines; i++) {getline}; next} 1' < cppcheck.txt > pelec-static-analysis.txt
+          # Ignore all submodules for now
+          awk -v nlines=2 '/Submodules/ {for (i=0; i<nlines; i++) {getline}; next} 1' < cppcheck.txt > pelec-static-analysis.txt
       - name: Report
         working-directory: ${{runner.workspace}}/build-sa
         run: |
@@ -216,4 +218,5 @@ jobs:
           WARNINGS2=$(bc <<< "$WARNINGS1/3")
           printf "%s warnings\n" "${WARNINGS2}" >> pelec-static-analysis.txt
           cat pelec-static-analysis.txt
-          exit ${WARNINGS2}
+          # Just report for now and don't fail
+          #exit ${WARNINGS2}
