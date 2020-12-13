@@ -67,7 +67,9 @@ jobs:
           git clone --recursive https://github.com/manufactured-solutions/MASA.git ${{runner.workspace}}/deps/MASA
           cd ${{runner.workspace}}/deps/MASA
           ./bootstrap
-          ./configure CXX='mpicxx -std=c++11' CC=mpicc FC=mpifort --enable-fortran-interfaces METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" --prefix="${{runner.workspace}}/deps/install/MASA"
+          ./configure CXX='mpicxx -std=c++11' CC=mpicc FC=mpifort --enable-fortran-interfaces \
+            METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" \
+            --prefix="${{runner.workspace}}/deps/install/MASA"
           make -j ${{env.NPROCS}}
           make install
           # Install Python packages
@@ -90,7 +92,7 @@ jobs:
             -DMASA_DIR:STRING=${{runner.workspace}}/deps/install/MASA \
             -DPELEC_ENABLE_ALL_WARNINGS:BOOL=${WARNINGS} \
             -DPELEC_ENABLE_WERROR:BOOL=${WARNINGS} \
-            ${GITHUB_WORKSPACE}; \
+            ${{github.workspace}}; \
           done
       - name: Build
         run: |
@@ -176,6 +178,55 @@ jobs:
             -DPELEC_ENABLE_CUDA=ON \
             -DAMReX_CUDA_ERROR_CAPTURE_THIS:BOOL=ON \
             -DAMReX_CUDA_ARCH=Volta \
-            ${GITHUB_WORKSPACE}
+            ${{github.workspace}}
       - name: Build
         run: cmake --build build-${{matrix.cuda_pkg}} -- -j ${{env.NPROCS}}
+  Lint:
+    needs: Formatting
+    runs-on: macos-latest
+    steps:
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.6.0
+        with:
+          access_token: ${{github.token}}
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Dependencies
+        run: brew install cppcheck
+      - name: Configure
+        run: |
+          echo "NPROCS=$(sysctl -n hw.ncpu)" >> $GITHUB_ENV
+          cmake \
+          -B${{runner.workspace}}/build-sa \
+          -DPELEC_ENABLE_MPI:BOOL=OFF \
+          -DPELEC_ENABLE_TESTS:BOOL=ON \
+          -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
+          -DPELEC_ENABLE_MASA:BOOL=OFF \
+          -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON \
+          ${{github.workspace}}
+      - name: Check
+        working-directory: ${{runner.workspace}}/build-sa
+        run: |
+          cppcheck --inline-suppr --suppress=unmatchedSuppression \
+            --std=c++14 --language=c++ --enable=all --project=compile_commands.json \
+            -j ${{env.NPROCS}} -i ${{github.workspace}}/Submodules/AMReX/Src \
+            -i ${{github.workspace}}/Submodules/GoogleTest --output-file=cppcheck.txt
+          #awk -v nlines=2 \
+          #   '/Submodules\/AMReX/ || /Submodules\/GoogleTest/ {for (i=0; i<nlines; i++) {getline}; next} 1' \
+          #   < cppcheck.txt > pelec-static-analysis.txt
+          # Ignore all submodules for now
+          # Might be wrong to assume cppcheck always reports issues using 3 lines
+          awk -v nlines=2 \
+              '/Submodules/ {for (i=0; i<nlines; i++) {getline}; next} 1' \
+              < cppcheck.txt > pelec-static-analysis.txt
+      - name: Report
+        working-directory: ${{runner.workspace}}/build-sa
+        run: |
+          # Might be wrong to assume cppcheck always reports issues using 3 lines
+          WARNINGS1=$(wc -l < pelec-static-analysis.txt | xargs echo -n)
+          WARNINGS2=$(bc <<< "$WARNINGS1/3")
+          printf "%s warnings\n" "${WARNINGS2}" >> pelec-static-analysis.txt
+          cat pelec-static-analysis.txt
+          # Just report for now and don't fail
+          #exit ${WARNINGS2}
