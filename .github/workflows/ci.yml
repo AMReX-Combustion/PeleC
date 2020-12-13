@@ -17,168 +17,170 @@ jobs:
         exclude: '.'
         extensions: 'H,h,cpp'
         clangFormatVersion: 11
-  #CMake:
-  #  needs: Formatting
-  #  runs-on: ${{matrix.os}}
-  #  strategy:
-  #    matrix:
-  #      os: [ubuntu-latest, macos-latest]
-  #      include:
-  #        - os: macos-latest
-  #          install_deps: brew install open-mpi automake ninja
-  #          comp: llvm
-  #          # GCC will have internal compiler error due to OOM with too many processes
-  #          procs: $(sysctl -n hw.ncpu)
-  #        - os: ubuntu-latest
-  #          install_deps: sudo apt-get install mpich libmpich-dev ninja-build
-  #          comp: gnu
-  #          # GCC will have internal compiler error due to OOM with too many processes
-  #          procs: $(nproc)
-  #  steps:
-  #    - name: Cancel previous runs
-  #      uses: styfle/cancel-workflow-action@0.6.0
-  #      with:
-  #        access_token: ${{github.token}}
-  #    - uses: actions/checkout@v2
-  #      with:
-  #        submodules: true
-  #    - name: Python
-  #      uses: actions/setup-python@v2
-  #      with:
-  #        python-version: '3.x'
-  #    - name: Setup
-  #      run: |
-  #        echo "NPROCS=${{matrix.procs}}" >> $GITHUB_ENV
-  #        cmake -E make_directory ${{runner.workspace}}/deps
-  #    - name: Dependencies
-  #      run: |
-  #        # Install MPI
-  #        ${{matrix.install_deps}}
-  #        # Install MetaPhysicL
-  #        cd ${{runner.workspace}}/deps
-  #        git clone --recursive https://github.com/roystgnr/MetaPhysicL.git ${{runner.workspace}}/deps/MetaPhysicL
-  #        cd ${{runner.workspace}}/deps/MetaPhysicL
-  #        ./bootstrap
-  #        ./configure --prefix="${{runner.workspace}}/deps/install/MetaPhysicL"
-  #        make -j ${{env.NPROCS}}
-  #        make install
-  #        # Install MASA
-  #        cd ${{runner.workspace}}/deps
-  #        git clone --recursive https://github.com/manufactured-solutions/MASA.git ${{runner.workspace}}/deps/MASA
-  #        cd ${{runner.workspace}}/deps/MASA
-  #        ./bootstrap
-  #        ./configure CXX='mpicxx -std=c++11' CC=mpicc FC=mpifort --enable-fortran-interfaces METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" --prefix="${{runner.workspace}}/deps/install/MASA"
-  #        make -j ${{env.NPROCS}}
-  #        make install
-  #        # Install Python packages
-  #        python -m pip install --upgrade pip
-  #        pip install nose numpy pandas
-  #    - name: Configure
-  #      run: |
-  #        for DIM in 1 2 3; do \
-  #          if [ "${DIM}" != '3' ]; then WARNINGS=OFF; else WARNINGS=ON; fi; \
-  #          printf "\n-------- Configuring ${DIM}D --------\n"; \
-  #          cmake -G Ninja \
-  #          -B${{runner.workspace}}/build-${DIM}d-${{matrix.os}} \
-  #          -DCMAKE_INSTALL_PREFIX:PATH=${{runner.workspace}}/install \
-  #          -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo \
-  #          -DPELEC_DIM:STRING=${DIM} \
-  #          -DPELEC_ENABLE_MPI:BOOL=ON \
-  #          -DPELEC_ENABLE_TESTS:BOOL=ON \
-  #          -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
-  #          -DPELEC_ENABLE_MASA:BOOL=ON \
-  #          -DMASA_DIR:STRING=${{runner.workspace}}/deps/install/MASA \
-  #          -DPELEC_ENABLE_ALL_WARNINGS:BOOL=${WARNINGS} \
-  #          -DPELEC_ENABLE_WERROR:BOOL=${WARNINGS} \
-  #          ${GITHUB_WORKSPACE}; \
-  #        done
-  #    - name: Build
-  #      run: |
-  #        for DIM in 1 2 3; do \
-  #          printf "\n-------- Building ${DIM}D --------\n"; \
-  #          cmake --build ${{runner.workspace}}/build-${DIM}d-${{matrix.os}} -- -j ${{env.NPROCS}}; \
-  #        done
-  #    - name: Test
-  #      run: |
-  #        for DIM in 1 2 3; do \
-  #          printf "\n-------- Testing ${DIM}D --------\n"; \
-  #          cd ${{runner.workspace}}/build-${DIM}d-${{matrix.os}}; \
-  #          ctest -j ${{env.NPROCS}} -LE no-ci --output-on-failure; \
-  #        done
-  #GNUmake:
-  #  needs: Formatting
-  #  runs-on: ubuntu-latest
-  #  steps:
-  #    - name: Cancel previous runs
-  #      uses: styfle/cancel-workflow-action@0.6.0
-  #      with:
-  #        access_token: ${{github.token}}
-  #    - uses: actions/checkout@v2
-  #      with:
-  #        submodules: true
-  #    - name: Setup
-  #      run: |
-  #        echo "NPROCS=$(nproc)" >> $GITHUB_ENV
-  #        printf "CC=gcc-8\nCXX=g++-8\nFC=gfortran-8\nF90=gfortran-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
-  #    - name: PMF debug make
-  #      working-directory: ./ExecCpp/RegTests/PMF
-  #      run: make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE
-  #    - name: PMF debug test
-  #      working-directory: ./ExecCpp/RegTests/PMF
-  #      run: ./PeleC3d.gnu.DEBUG.ex tests/pmf-1/pmf-1.i max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
-  #    - name: EB debug build
-  #      working-directory: ./ExecCpp/RegTests/EB-C10
-  #      run: make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE
-  #    - name: EB debug test
-  #      working-directory: ./ExecCpp/RegTests/EB-C10
-  #      run: ./PeleC3d.gnu.DEBUG.ex tests/eb-c10/eb-c10.i max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
-  #CUDA:
-  #  needs: Formatting
-  #  runs-on: ubuntu-latest
-  #  name: CUDA v${{matrix.cuda_ver}}
-  #  strategy:
-  #    matrix:
-  #      #cuda_pkg: [11-1, 10-2]
-  #      cuda_pkg: [11-1]
-  #      include:
-  #        - cuda_ver: "11.1"
-  #          cuda_pkg: 11-1
-  #          cuda_extra: libcurand-dev-11-1 cuda-cupti-dev-11-1
-  #        #- cuda_ver: "10.2"
-  #        #  cuda_pkg: 10-2
-  #        #  cuda_extra: cuda-curand-dev-10-2 cuda-cupti-dev-10-2
-  #  steps:
-  #    - name: Cancel previous runs
-  #      uses: styfle/cancel-workflow-action@0.6.0
-  #      with:
-  #        access_token: ${{github.token}}
-  #    - uses: actions/checkout@v2
-  #      with:
-  #        submodules: true
-  #    - name: Dependencies
-  #      run: |
-  #        export DEBIAN_FRONTEND=noninteractive
-  #        wget -q -O - https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub | sudo apt-key add -
-  #        echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /" | sudo tee /etc/apt/sources.list.d/cuda.list
-  #        echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /" | sudo tee /etc/apt/sources.list.d/nvidia-ml.list
-  #        sudo apt-get update
-  #        sudo apt-get install -y --no-install-recommends \
-  #            libopenmpi-dev cuda-command-line-tools-${{matrix.cuda_pkg}} \
-  #            cuda-compiler-${{matrix.cuda_pkg}} cuda-minimal-build-${{matrix.cuda_pkg}} \
-  #            cuda-nvml-dev-${{matrix.cuda_pkg}} cuda-nvtx-${{matrix.cuda_pkg}} ${{matrix.cuda_extra}}
-  #    - name: Configure
-  #      run: |
-  #        echo "NPROCS=$(nproc)" >> $GITHUB_ENV
-  #        export PATH=/usr/local/nvidia/bin:/usr/local/cuda-${{matrix.cuda_ver}}/bin:${PATH}
-  #        export LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/cuda-${{matrix.cuda_ver}}/lib:${LD_LIBRARY_PATH}
-  #        cmake -Bbuild-${{matrix.cuda_pkg}} \
-  #          -DPELEC_ENABLE_MPI=OFF \
-  #          -DPELEC_ENABLE_CUDA=ON \
-  #          -DAMReX_CUDA_ERROR_CAPTURE_THIS:BOOL=ON \
-  #          -DAMReX_CUDA_ARCH=Volta \
-  #          ${GITHUB_WORKSPACE}
-  #    - name: Build
-  #      run: cmake --build build-${{matrix.cuda_pkg}} -- -j ${{env.NPROCS}}
+  CMake:
+    needs: Formatting
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        include:
+          - os: macos-latest
+            install_deps: brew install open-mpi automake ninja
+            comp: llvm
+            # GCC will have internal compiler error due to OOM with too many processes
+            procs: $(sysctl -n hw.ncpu)
+          - os: ubuntu-latest
+            install_deps: sudo apt-get install mpich libmpich-dev ninja-build
+            comp: gnu
+            # GCC will have internal compiler error due to OOM with too many processes
+            procs: $(nproc)
+    steps:
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.6.0
+        with:
+          access_token: ${{github.token}}
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Setup
+        run: |
+          echo "NPROCS=${{matrix.procs}}" >> $GITHUB_ENV
+          cmake -E make_directory ${{runner.workspace}}/deps
+      - name: Dependencies
+        run: |
+          # Install MPI
+          ${{matrix.install_deps}}
+          # Install MetaPhysicL
+          cd ${{runner.workspace}}/deps
+          git clone --recursive https://github.com/roystgnr/MetaPhysicL.git ${{runner.workspace}}/deps/MetaPhysicL
+          cd ${{runner.workspace}}/deps/MetaPhysicL
+          ./bootstrap
+          ./configure --prefix="${{runner.workspace}}/deps/install/MetaPhysicL"
+          make -j ${{env.NPROCS}}
+          make install
+          # Install MASA
+          cd ${{runner.workspace}}/deps
+          git clone --recursive https://github.com/manufactured-solutions/MASA.git ${{runner.workspace}}/deps/MASA
+          cd ${{runner.workspace}}/deps/MASA
+          ./bootstrap
+          ./configure CXX='mpicxx -std=c++11' CC=mpicc FC=mpifort --enable-fortran-interfaces \
+            METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" \
+            --prefix="${{runner.workspace}}/deps/install/MASA"
+          make -j ${{env.NPROCS}}
+          make install
+          # Install Python packages
+          python -m pip install --upgrade pip
+          pip install nose numpy pandas
+      - name: Configure
+        run: |
+          for DIM in 1 2 3; do \
+            if [ "${DIM}" != '3' ]; then WARNINGS=OFF; else WARNINGS=ON; fi; \
+            printf "\n-------- Configuring ${DIM}D --------\n"; \
+            cmake -G Ninja \
+            -B${{runner.workspace}}/build-${DIM}d-${{matrix.os}} \
+            -DCMAKE_INSTALL_PREFIX:PATH=${{runner.workspace}}/install \
+            -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo \
+            -DPELEC_DIM:STRING=${DIM} \
+            -DPELEC_ENABLE_MPI:BOOL=ON \
+            -DPELEC_ENABLE_TESTS:BOOL=ON \
+            -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
+            -DPELEC_ENABLE_MASA:BOOL=ON \
+            -DMASA_DIR:STRING=${{runner.workspace}}/deps/install/MASA \
+            -DPELEC_ENABLE_ALL_WARNINGS:BOOL=${WARNINGS} \
+            -DPELEC_ENABLE_WERROR:BOOL=${WARNINGS} \
+            ${{github.workspace}}; \
+          done
+      - name: Build
+        run: |
+          for DIM in 1 2 3; do \
+            printf "\n-------- Building ${DIM}D --------\n"; \
+            cmake --build ${{runner.workspace}}/build-${DIM}d-${{matrix.os}} -- -j ${{env.NPROCS}}; \
+          done
+      - name: Test
+        run: |
+          for DIM in 1 2 3; do \
+            printf "\n-------- Testing ${DIM}D --------\n"; \
+            cd ${{runner.workspace}}/build-${DIM}d-${{matrix.os}}; \
+            ctest -j ${{env.NPROCS}} -LE no-ci --output-on-failure; \
+          done
+  GNUmake:
+    needs: Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.6.0
+        with:
+          access_token: ${{github.token}}
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Setup
+        run: |
+          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
+          printf "CC=gcc-8\nCXX=g++-8\nFC=gfortran-8\nF90=gfortran-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
+      - name: PMF debug make
+        working-directory: ./ExecCpp/RegTests/PMF
+        run: make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE
+      - name: PMF debug test
+        working-directory: ./ExecCpp/RegTests/PMF
+        run: ./PeleC3d.gnu.DEBUG.ex tests/pmf-1/pmf-1.i max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
+      - name: EB debug build
+        working-directory: ./ExecCpp/RegTests/EB-C10
+        run: make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE
+      - name: EB debug test
+        working-directory: ./ExecCpp/RegTests/EB-C10
+        run: ./PeleC3d.gnu.DEBUG.ex tests/eb-c10/eb-c10.i max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
+  CUDA:
+    needs: Formatting
+    runs-on: ubuntu-latest
+    name: CUDA v${{matrix.cuda_ver}}
+    strategy:
+      matrix:
+        #cuda_pkg: [11-1, 10-2]
+        cuda_pkg: [11-1]
+        include:
+          - cuda_ver: "11.1"
+            cuda_pkg: 11-1
+            cuda_extra: libcurand-dev-11-1 cuda-cupti-dev-11-1
+          #- cuda_ver: "10.2"
+          #  cuda_pkg: 10-2
+          #  cuda_extra: cuda-curand-dev-10-2 cuda-cupti-dev-10-2
+    steps:
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.6.0
+        with:
+          access_token: ${{github.token}}
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Dependencies
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          wget -q -O - https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub | sudo apt-key add -
+          echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /" | sudo tee /etc/apt/sources.list.d/cuda.list
+          echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /" | sudo tee /etc/apt/sources.list.d/nvidia-ml.list
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+              libopenmpi-dev cuda-command-line-tools-${{matrix.cuda_pkg}} \
+              cuda-compiler-${{matrix.cuda_pkg}} cuda-minimal-build-${{matrix.cuda_pkg}} \
+              cuda-nvml-dev-${{matrix.cuda_pkg}} cuda-nvtx-${{matrix.cuda_pkg}} ${{matrix.cuda_extra}}
+      - name: Configure
+        run: |
+          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
+          export PATH=/usr/local/nvidia/bin:/usr/local/cuda-${{matrix.cuda_ver}}/bin:${PATH}
+          export LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/cuda-${{matrix.cuda_ver}}/lib:${LD_LIBRARY_PATH}
+          cmake -Bbuild-${{matrix.cuda_pkg}} \
+            -DPELEC_ENABLE_MPI=OFF \
+            -DPELEC_ENABLE_CUDA=ON \
+            -DAMReX_CUDA_ERROR_CAPTURE_THIS:BOOL=ON \
+            -DAMReX_CUDA_ARCH=Volta \
+            ${{github.workspace}}
+      - name: Build
+        run: cmake --build build-${{matrix.cuda_pkg}} -- -j ${{env.NPROCS}}
   Lint:
     needs: Formatting
     runs-on: macos-latest
@@ -202,14 +204,22 @@ jobs:
           -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
           -DPELEC_ENABLE_MASA:BOOL=OFF \
           -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON \
-          ${GITHUB_WORKSPACE}
+          ${{github.workspace}}
       - name: Check
         working-directory: ${{runner.workspace}}/build-sa
         run: |
-          cppcheck --inline-suppr --suppress=unmatchedSuppression --std=c++14 --language=c++ --enable=all --project=compile_commands.json -j ${{env.NPROCS}} -i ./Submodules/AMReX/Src -i ./Submodules/GoogleTest --output-file=cppcheck.txt
-          #awk -v nlines=2 '/Submodules\/AMReX/ || /Submodules\/GoogleTest/ {for (i=0; i<nlines; i++) {getline}; next} 1' < cppcheck.txt > pelec-static-analysis.txt
+          cppcheck --inline-suppr --suppress=unmatchedSuppression \
+            --std=c++14 --language=c++ --enable=all --project=compile_commands.json \
+            -j ${{env.NPROCS}} -i ${{github.workspace}}/Submodules/AMReX/Src \
+            -i ${{github.workspace}}/Submodules/GoogleTest --output-file=cppcheck.txt
+          #awk -v nlines=2 \
+          #   '/Submodules\/AMReX/ || /Submodules\/GoogleTest/ {for (i=0; i<nlines; i++) {getline}; next} 1' \
+          #   < cppcheck.txt > pelec-static-analysis.txt
           # Ignore all submodules for now
-          awk -v nlines=2 '/Submodules/ {for (i=0; i<nlines; i++) {getline}; next} 1' < cppcheck.txt > pelec-static-analysis.txt
+          # Might be wrong to assume cppcheck always reports issues using 3 lines
+          awk -v nlines=2 \
+              '/Submodules/ {for (i=0; i<nlines; i++) {getline}; next} 1' \
+              < cppcheck.txt > pelec-static-analysis.txt
       - name: Report
         working-directory: ${{runner.workspace}}/build-sa
         run: |
