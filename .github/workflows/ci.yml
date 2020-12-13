@@ -207,8 +207,13 @@ jobs:
         working-directory: ${{runner.workspace}}/build-sa
         run: |
           cppcheck --inline-suppr --std=c++14 --language=c++ --enable=all --project=compile_commands.json -j ${{env.NPROCS}} -i./Submodules/AMReX/Src --output-file=cppcheck.txt
-          awk -v nlines=2 '/Submodules/AMReX/ {for (i=0; i<nlines; i++) {getline}; next} 1' < cppcheck.txt > pelec-static-analysis.txt
-          #WARNINGS1=$(wc -l < pelec-static-analysis.txt | xargs echo -n)
-          #WARNINGS2=$(bc <<< "$WARNINGS1/3")
-          #printf \"%s warnings\n\" \"${WARNINGS2}\" >> pelec-static-analysis.txt
+          awk -v nlines=2 '/Submodules\/AMReX/ {for (i=0; i<nlines; i++) {getline}; next} 1' < cppcheck.txt > pelec-static-analysis.txt
+      - name: Report
+        working-directory: ${{runner.workspace}}/build-sa
+        run: |
+          # Might be wrong to assume cppcheck always reports issues using 3 lines
+          WARNINGS1=$(wc -l < pelec-static-analysis.txt | xargs echo -n)
+          WARNINGS2=$(bc <<< "$WARNINGS1/3")
+          printf "%s warnings\n" "${WARNINGS2}" >> pelec-static-analysis.txt
           cat pelec-static-analysis.txt
+          exit ${WARNINGS2}
