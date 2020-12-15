@@ -34,7 +34,11 @@ jobs:
       - name: Build
         working-directory: ${{runner.workspace}}/build-docs
         run:  |
+           echo "::add-matcher::.github/problem-matchers/sphinx.json"
            cmake --build ${{runner.workspace}}/build-docs
+           echo "::remove-matcher owner=sphinx-problem-matcher-loose-no-severity::"
+           echo "::remove-matcher owner=sphinx-problem-matcher-loose::"
+           echo "::remove-matcher owner=sphinx-problem-matcher::"
            touch ${{runner.workspace}}/build-docs/sphinx/html/.nojekyll
       - name: Deploy
         if: github.event_name == 'push' && github.ref == 'refs/heads/development'
