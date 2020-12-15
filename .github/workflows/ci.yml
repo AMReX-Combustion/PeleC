@@ -96,6 +96,7 @@ jobs:
           done
       - name: Build
         run: |
+          echo "::add-matcher::.github/problem-matchers/gcc.json"
           for DIM in 1 2 3; do \
             printf "\n-------- Building ${DIM}D --------\n"; \
             cmake --build ${{runner.workspace}}/build-${DIM}d-${{matrix.os}} -- -j ${{env.NPROCS}}; \
@@ -208,6 +209,7 @@ jobs:
       - name: Check
         working-directory: ${{runner.workspace}}/build-sa
         run: |
+          echo "::add-matcher::.github/problem-matchers/gcc.json"
           cppcheck --inline-suppr --suppress=unmatchedSuppression \
             --std=c++14 --language=c++ --enable=all --project=compile_commands.json \
             -j ${{env.NPROCS}} -i ${{github.workspace}}/Submodules/AMReX/Src \
