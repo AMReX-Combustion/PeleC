@@ -11,8 +11,10 @@ include(CMakePackageConfigHelpers)
 set(PELEC_DIM "3" CACHE STRING "Number of physical dimensions")
 option(PELEC_ENABLE_AMREX_EB "Enable EB in AMReX library" ON)
 option(PELEC_ENABLE_ALL_WARNINGS "Enable all compiler warnings" ON)
+option(PELEC_ENABLE_WERROR "Treat compiler warnings as errors" OFF)
 option(PELEC_ENABLE_TESTS "Enable regression and unit tests" OFF)
 option(PELEC_ENABLE_MASA "Enable tests that require MASA" OFF)
+option(PELEC_ENABLE_SUNDIALS "Enable SUNDIALS as ODE solver" OFF)
 option(PELEC_ENABLE_FCOMPARE "Enable building fcompare when not testing" OFF)
 option(PELEC_ENABLE_FCOMPARE_FOR_TESTS "Check test plots against gold files" OFF)
 
@@ -44,7 +46,8 @@ if(PELEC_ENABLE_CUDA)
 endif()
 
 if((NOT PELEC_DIM EQUAL 3) AND PELEC_ENABLE_AMREX_EB)
-  message(FATAL_ERROR "EB is only supported in 3D.")
+  set(PELEC_ENABLE_AMREX_EB OFF)
+  message(WARNING "Disabling EB for ${PELEC_DIM}D.")
 endif()
 
 ########################### AMReX #####################################
@@ -68,6 +71,16 @@ if(PELEC_ENABLE_MASA)
   endif()
 endif()
 
+########################### SUNDIALS #####################################
+
+if(PELEC_ENABLE_SUNDIALS)
+  set(CMAKE_PREFIX_PATH ${SUNDIALS_DIR} ${CMAKE_PREFIX_PATH})
+  find_package(SUNDIALS QUIET REQUIRED)
+  if(SUNDIALS_FOUND)
+    message(STATUS "Found SUNDIALS = ${SUNDIALS_DIR}")
+  endif()
+endif()
+
 ########################### PeleC #####################################
 
 if(PELEC_ENABLE_MPI)
@@ -80,6 +93,9 @@ message(STATUS "CMAKE_SYSTEM_NAME = ${CMAKE_SYSTEM_NAME}")
 message(STATUS "CMAKE_CXX_COMPILER_ID = ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "CMAKE_CXX_COMPILER_VERSION = ${CMAKE_CXX_COMPILER_VERSION}")
 message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
+if(PELEC_ENABLE_WERROR)
+  message(STATUS "Enabling Werror.")
+endif()
 
 # Turn on rpath stuff
 include(${CMAKE_SOURCE_DIR}/CMake/SetRpath.cmake)

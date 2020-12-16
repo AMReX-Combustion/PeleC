@@ -23,7 +23,7 @@ TEST(Configuration, Build)
                  << "AMReX SHA = " << amrex_git << std::endl;
 }
 
-TEST(Configuration, MPI)
+TEST(Configuration, MPI) // cppcheck-suppress syntaxError
 {
 #ifdef AMREX_USE_MPI
   int nprocs = amrex::ParallelDescriptor::NProcs();

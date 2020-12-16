@@ -95,11 +95,15 @@ amrex::Real PeleC::react_T_min = 0.0;
 amrex::Real PeleC::react_T_max = 1.e200;
 amrex::Real PeleC::react_rho_min = 0.0;
 amrex::Real PeleC::react_rho_max = 1.e200;
-int         PeleC::disable_shock_burning = 0;
-int         PeleC::chem_integrator = 1;
-int         PeleC::adaptrk_nsubsteps_min = 20;
-int         PeleC::adaptrk_nsubsteps_max = 300;
-int         PeleC::adaptrk_nsubsteps_guess = 50;
+int PeleC::disable_shock_burning = 0;
+#ifdef USE_SUNDIALS_PP
+int PeleC::chem_integrator = 2;
+#else
+int PeleC::chem_integrator = 1;
+#endif
+int PeleC::adaptrk_nsubsteps_min = 20;
+int PeleC::adaptrk_nsubsteps_max = 300;
+int PeleC::adaptrk_nsubsteps_guess = 50;
 amrex::Real PeleC::adaptrk_errtol = 1e-16;
 int         PeleC::bndry_func_thread_safe = 1;
 #ifdef AMREX_DEBUG

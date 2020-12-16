@@ -1157,8 +1157,10 @@ PeleC::post_timestep(int
     bool sum_per_test = false;
 
     if (sum_per > 0.0) {
-      const int num_per_old = amrex::Math::floor((cumtime - dtlev) / sum_per);
-      const int num_per_new = amrex::Math::floor((cumtime) / sum_per);
+      const int num_per_old =
+        static_cast<int>(amrex::Math::floor((cumtime - dtlev) / sum_per));
+      const int num_per_new =
+        static_cast<int>(amrex::Math::floor((cumtime) / sum_per));
 
       if (num_per_old != num_per_new) {
         sum_per_test = true;
@@ -1282,8 +1284,10 @@ void PeleC::post_init(amrex::Real /*stop_time*/)
   bool sum_per_test = false;
 
   if (sum_per > 0.0) {
-    const int num_per_old = amrex::Math::floor((cumtime - dtlev) / sum_per);
-    const int num_per_new = amrex::Math::floor((cumtime) / sum_per);
+    const int num_per_old =
+      static_cast<int>(amrex::Math::floor((cumtime - dtlev) / sum_per));
+    const int num_per_new =
+      static_cast<int>(amrex::Math::floor((cumtime) / sum_per));
 
     if (num_per_old != num_per_new) {
       sum_per_test = true;
@@ -1910,8 +1914,9 @@ PeleC::init_filters()
 {
   if (level > 0) {
     amrex::IntVect ref_ratio = parent->refRatio(level - 1);
-    les_filter =
-      Filter(les_filter_type, les_filter_fgr * std::pow(ref_ratio[0], level));
+    les_filter = Filter(
+      les_filter_type,
+      static_cast<int>(les_filter_fgr * std::pow(ref_ratio[0], level)));
   } else {
     les_filter = Filter(les_filter_type, les_filter_fgr);
   }
