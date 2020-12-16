@@ -1825,11 +1825,7 @@ PeleC::derive(const std::string& name, amrex::Real time, int ngrow)
   }
 #endif
 
-#ifdef AMREX_PARTICLES
-  return particleDerive(name, time, ngrow);
-#else
   return AmrLevel::derive(name, time, ngrow);
-#endif
 }
 
 void
