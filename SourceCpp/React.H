@@ -34,6 +34,37 @@ const amrex::Real err_rk64[6] = {
 };
 #endif
 
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+react_clean_state(
+  const amrex::Real temp,
+  const amrex::Real rho,
+  amrex::Real* rY,
+  amrex::Real & eint){
+
+  amrex::Real Y_old[NUM_SPECIES];
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    Y_old[n] = rY[n] / rho;
+  }
+
+  // Clip
+  amrex::Real sum = 0.0;
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    Y_old[n] = amrex::max(amrex::min(Y_old[n], 1.0), 0.0);
+    sum += Y_old[n];
+  }
+
+  // Normalize
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    Y_old[n] /= sum;
+  }
+
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    rY[n] = Y_old[n] * rho;
+  }
+}
+
 // Timestep adapter
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
