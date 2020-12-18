@@ -37,7 +37,7 @@ const amrex::Real err_rk64[6] = {
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
-react_clean_state(
+clean_react_state(
   const amrex::Real temp,
   const amrex::Real rho,
   amrex::Real* rY,

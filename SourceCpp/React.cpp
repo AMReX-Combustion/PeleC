@@ -74,6 +74,8 @@ PeleC::react_state(
   react_src.setVal(0.0);
   prefetchToDevice(react_src);
 
+  const int captured_clean_react_state = do_clean_react_state;
+
 #ifdef PELEC_USE_EB
   auto const& fact =
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(S_new.Factory());
@@ -206,7 +208,9 @@ PeleC::react_state(
               rY_in[offset * (NUM_SPECIES + 1) + NUM_SPECIES] =
                 sold_arr(i, j, k, UTEMP);
 
-              react_clean_state(sold_arr(i, j, k, UTEMP), sold_arr(i, j, k, URHO), &rY_in[offset * (NUM_SPECIES + 1)], e_old);
+              if(captured_clean_react_state == 1){
+                clean_react_state(sold_arr(i, j, k, UTEMP), sold_arr(i, j, k, URHO), &rY_in[offset * (NUM_SPECIES + 1)], e_old);
+              }
 
               re_in[offset] = rho_old * e_old;
               re_src_in[offset] = rhoedot_ext;
