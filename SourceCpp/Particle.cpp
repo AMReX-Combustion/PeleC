@@ -28,6 +28,7 @@ Gpu::HostVector<Real> sprayCritT;
 Gpu::HostVector<Real> sprayBoilT;
 Gpu::HostVector<Real> sprayCp;
 Gpu::HostVector<Real> sprayLatent;
+Gpu::HostVector<Real> spraySigma;
 Gpu::HostVector<int> sprayIndxMap;
 amrex::Real parcelSize = 1.;
 SprayComps scomps;
@@ -130,22 +131,26 @@ PeleC::readParticleParams()
   sprayBoilT.resize(nfuel);
   sprayLatent.resize(nfuel);
   sprayCp.resize(nfuel);
+  spraySigma.resize(nfuel);
   sprayIndxMap.resize(nfuel);
   std::vector<std::string> fuel_names;
   std::vector<Real> crit_T;
   std::vector<Real> boil_T;
   std::vector<Real> latent;
   std::vector<Real> spraycp;
+  std::vector<Real> sigma(nfuel, 0.);
   ppp.getarr("fuel_species", fuel_names);
   ppp.getarr("fuel_crit_temp", crit_T);
   ppp.getarr("fuel_boil_temp", boil_T);
   ppp.getarr("fuel_latent", latent);
   ppp.getarr("fuel_cp", spraycp);
+  ppp.queryarr("fuel_sigma", sigma);
   for (int i = 0; i != nfuel; ++i) {
     sprayFuelNames[i] = fuel_names[i];
     sprayCritT[i] = crit_T[i];
     sprayBoilT[i] = boil_T[i];
     sprayLatent[i] = latent[i];
+    spraySigma[i] = sigma[i];
     sprayCp[i] = spraycp[i];
   }
 
@@ -189,13 +194,13 @@ PeleC::readParticleParams()
   //
   // The directory in which to store timestamp files.
   //
-  ppp.query("timestamp_dir", timestamp_dir);
+  //ppp.query("timestamp_dir", timestamp_dir);
   //
   // Only the I/O processor makes the directory if it doesn't already exist.
   //
-  if (ParallelDescriptor::IOProcessor())
-    if (!amrex::UtilCreateDirectory(timestamp_dir, 0755))
-      amrex::CreateDirectoryFailed(timestamp_dir);
+//   if (ParallelDescriptor::IOProcessor())
+//     if (!amrex::UtilCreateDirectory(timestamp_dir, 0755))
+//       amrex::CreateDirectoryFailed(timestamp_dir);
 
   if (verbose && ParallelDescriptor::IOProcessor()) {
     amrex::Print() << "Spray fuel species " << sprayFuelNames[0];
@@ -312,6 +317,25 @@ PeleC::removeGhostParticles()
 }
 
 /**
+ * Create new particle data
+ **/
+void
+PeleC::createParticleData()
+{
+  SprayPC = new SprayParticleContainer(parent, &phys_bc, parcelSize);
+  theSprayPC()->SetVerbose(particle_verbose);
+  VirtPC = new SprayParticleContainer(parent, &phys_bc, parcelSize);
+  GhostPC = new SprayParticleContainer(parent, &phys_bc, parcelSize);
+  // Pass constant reference data and memory allocations to GPU
+  theSprayPC()->buildFuelData(sprayCritT, sprayBoilT, sprayCp, sprayLatent,
+                              spraySigma, sprayIndxMap, sprayRefT, scomps);
+  theGhostPC()->buildFuelData(sprayCritT, sprayBoilT, sprayCp, sprayLatent,
+                              spraySigma, sprayIndxMap, sprayRefT, scomps);
+  theVirtPC()->buildFuelData(sprayCritT, sprayBoilT, sprayCp, sprayLatent,
+                             spraySigma, sprayIndxMap, sprayRefT, scomps);
+}
+
+/**
  * Initialize the particles on the grid at level 0
  **/
 void
@@ -329,28 +353,7 @@ PeleC::initParticles()
 
   if (do_spray_particles) {
     AMREX_ASSERT(theSprayPC() == 0);
-    // Whether we need to use ghost and virtual particles
-    bool gvParticles = false;
-    if (parent->subCycle()) {
-      gvParticles = true;
-    }
-
-    SprayPC = new SprayParticleContainer(parent, &phys_bc, parcelSize);
-    theSprayPC()->SetVerbose(particle_verbose);
-
-    if (gvParticles) {
-      VirtPC = new SprayParticleContainer(parent, &phys_bc, parcelSize);
-      GhostPC = new SprayParticleContainer(parent, &phys_bc, parcelSize);
-    }
-    // Pass constant reference data and memory allocations to GPU
-    theSprayPC()->buildFuelData(
-      sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT, scomps);
-    if (gvParticles) {
-      theGhostPC()->buildFuelData(
-        sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT, scomps);
-      theVirtPC()->buildFuelData(
-        sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT, scomps);
-    }
+    createParticleData();
 
     if (!particle_init_file.empty()) {
       theSprayPC()->InitFromAsciiFile(particle_init_file, NSR_SPR + NAR_SPR);
@@ -368,20 +371,7 @@ PeleC::particlePostRestart(const std::string& restart_file, bool is_checkpoint)
 
   if (do_spray_particles) {
     AMREX_ASSERT(SprayPC == 0);
-
-    SprayPC = new SprayParticleContainer(parent, &phys_bc, parcelSize);
-    theSprayPC()->SetVerbose(particle_verbose);
-    theSprayPC()->buildFuelData(
-      sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT, scomps);
-
-    if (parent->subCycle()) {
-      VirtPC = new SprayParticleContainer(parent, &phys_bc, parcelSize);
-      GhostPC = new SprayParticleContainer(parent, &phys_bc, parcelSize);
-      theGhostPC()->buildFuelData(
-        sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT, scomps);
-      theVirtPC()->buildFuelData(
-        sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT, scomps);
-    }
+    createParticleData();
 
     //
     // Make sure to call RemoveParticlesOnExit() on exit.
