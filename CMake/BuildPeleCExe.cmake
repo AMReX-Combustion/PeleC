@@ -170,7 +170,7 @@ function(build_pelec_exe pelec_exe_name)
   if(PELEC_ENABLE_MASA)
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_MASA)
     target_sources(${pelec_exe_name} PRIVATE ${SRC_DIR}/MMS.cpp)
-    target_link_libraries(${pelec_exe_name} PUBLIC MASA::MASA)
+    target_link_libraries(${pelec_exe_name} PRIVATE MASA::MASA)
   endif()
 
   if(PELEC_ENABLE_MPI)
