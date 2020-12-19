@@ -22,8 +22,8 @@ TEST(Configuration, Build)
   amrex::Print() << "PeleC SHA = " << pc_git << std::endl
                  << "AMReX SHA = " << amrex_git << std::endl;
 }
-
-TEST(Configuration, MPI) // cppcheck-suppress syntaxError
+// cppcheck-suppress syntaxError
+TEST(Configuration, MPI)
 {
 #ifdef AMREX_USE_MPI
   int nprocs = amrex::ParallelDescriptor::NProcs();

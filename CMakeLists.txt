@@ -4,6 +4,7 @@ cmake_minimum_required (VERSION 3.14 FATAL_ERROR)
 project(PeleC CXX C)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
 include(CMakePackageConfigHelpers)
+include(PeleCUtils)
 
 ########################## OPTIONS #####################################
 
@@ -11,6 +12,7 @@ include(CMakePackageConfigHelpers)
 set(PELEC_DIM "3" CACHE STRING "Number of physical dimensions")
 option(PELEC_ENABLE_AMREX_EB "Enable EB in AMReX library" ON)
 option(PELEC_ENABLE_ALL_WARNINGS "Enable all compiler warnings" ON)
+option(PELEC_ENABLE_CLANG_TIDY "Enable clang-tidy analysis" OFF)
 option(PELEC_ENABLE_WERROR "Treat compiler warnings as errors" OFF)
 option(PELEC_ENABLE_TESTS "Enable regression and unit tests" OFF)
 option(PELEC_ENABLE_MASA "Enable tests that require MASA" OFF)
@@ -71,7 +73,7 @@ if(PELEC_ENABLE_MASA)
   endif()
 endif()
 
-########################### SUNDIALS #####################################
+########################## SUNDIALS ###################################
 
 if(PELEC_ENABLE_SUNDIALS)
   set(CMAKE_PREFIX_PATH ${SUNDIALS_DIR} ${CMAKE_PREFIX_PATH})
@@ -96,6 +98,8 @@ message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
 if(PELEC_ENABLE_WERROR)
   message(STATUS "Enabling Werror.")
 endif()
+
+init_clang_tidy()
 
 # Turn on rpath stuff
 include(${CMAKE_SOURCE_DIR}/CMake/SetRpath.cmake)
