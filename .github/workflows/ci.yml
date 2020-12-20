@@ -100,7 +100,7 @@ jobs:
           echo "::add-matcher::.github/problem-matchers/gcc.json"
           for DIM in 1 2 3; do \
             printf "\n-------- Building ${DIM}D --------\n"; \
-            cmake --build ${{runner.workspace}}/build-${DIM}d-${{matrix.os}} -- -j ${{env.NPROCS}}; \
+            cmake --build ${{runner.workspace}}/build-${DIM}d-${{matrix.os}} --parallel ${{env.NPROCS}}; \
           done
       - name: Test
         run: |
@@ -182,7 +182,7 @@ jobs:
             -DAMReX_CUDA_ARCH=Volta \
             ${{github.workspace}}
       - name: Build
-        run: cmake --build build-${{matrix.cuda_pkg}} -- -j ${{env.NPROCS}}
+        run: cmake --build build-${{matrix.cuda_pkg}} --parallel ${{env.NPROCS}}
   cppcheck:
     needs: Formatting
     runs-on: macos-latest
@@ -198,44 +198,23 @@ jobs:
         run: brew install cppcheck
       - name: Configure
         run: |
-          echo "NPROCS=$(sysctl -n hw.ncpu)" >> $GITHUB_ENV
-          cmake \
-          -B${{runner.workspace}}/build-cppcheck \
+          cmake -B${{runner.workspace}}/build-cppcheck \
           -DPELEC_ENABLE_MPI:BOOL=OFF \
           -DPELEC_ENABLE_TESTS:BOOL=ON \
           -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
           -DPELEC_ENABLE_MASA:BOOL=OFF \
-          -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON \
           ${{github.workspace}}
       - name: Check
         working-directory: ${{runner.workspace}}/build-cppcheck
-        run: |
-          mkdir cppcheck-wd
-          # cppcheck ignores -isystem directories, so we change them to regular -I include directories (with no spaces either)
-          sed -i '' -e 's/isystem /I/g' compile_commands.json
-          cppcheck --inline-suppr \
-            --suppress=unmatchedSuppression --suppress=syntaxError --suppress=internalAstError \
-            --suppress=unusedFunction --std=c++14 --language=c++ --enable=all --project=compile_commands.json \
-            -j ${{env.NPROCS}} --cppcheck-build-dir=cppcheck-wd -i ${{github.workspace}}/Submodules/AMReX/Src \
-            -i ${{github.workspace}}/Submodules/GoogleTest --output-file=cppcheck.txt
-          #awk -v nlines=2 \
-          #   '/Submodules\/AMReX/ || /Submodules\/GoogleTest/ {for (i=0; i<nlines; i++) {getline}; next} 1' \
-          #   < cppcheck.txt > cppcheck-warnings.txt
-          # Ignore all submodules for now
-          # Might be wrong to assume cppcheck always reports issues using 3 lines
-          awk -v nlines=2 \
-              '/Submodules/ {for (i=0; i<nlines; i++) {getline}; next} 1' \
-              < cppcheck.txt > cppcheck-warnings.txt
+        run: make cppcheck
       - name: Full report
-        working-directory: ${{runner.workspace}}/build-cppcheck
-        run: |
-          cat cppcheck-warnings.txt
+        working-directory: ${{runner.workspace}}/build-cppcheck/cppcheck
+        run: cat cppcheck-full-report.txt
       - name: Short report
         working-directory: ${{runner.workspace}}/build-cppcheck
         run: |
           echo "::add-matcher::.github/problem-matchers/cppcheck.json"
-          cat cppcheck-warnings.txt | egrep 'information:|error:|performance:|portability:|style:|warning:' | sort | \
-            awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}'
+          cat cppcheck-warnings.txt
   clang-tidy:
     needs: Formatting
     runs-on: ubuntu-latest
@@ -254,25 +233,24 @@ jobs:
       - name: Configure
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
-          cmake \
-          -B${{runner.workspace}}/build-clang-tidy \
+          cmake -B${{runner.workspace}}/build-clang-tidy \
           -DPELEC_ENABLE_MPI:BOOL=OFF \
           -DPELEC_ENABLE_TESTS:BOOL=ON \
           -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
           -DPELEC_ENABLE_MASA:BOOL=OFF \
           -DPELEC_ENABLE_CLANG_TIDY:BOOL=ON \
-          -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON \
           ${{github.workspace}}
       - name: Check
         working-directory: ${{runner.workspace}}/build-clang-tidy
-        run: cmake --build . -- -j ${{env.NPROCS}} 2> clang-tidy-warnings.txt
+        run: |
+          cmake --build . --parallel ${{env.NPROCS}} 2> clang-tidy-full-report.txt
+          cat clang-tidy-full-report.txt | grep "warning:" | grep -v "Submodules" | sort | uniq -c | sort -nr | \
+            awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > clang-tidy-warnings.txt
       - name: Full report
         working-directory: ${{runner.workspace}}/build-clang-tidy
-        run: |
-          cat clang-tidy-warnings.txt
+        run: cat clang-tidy-full-report.txt
       - name: Short report
         working-directory: ${{runner.workspace}}/build-clang-tidy
         run: |
           #echo "::add-matcher::.github/problem-matchers/gcc.json"
-          cat clang-tidy-warnings.txt | grep "warning:" | grep -v "Submodules" | sort | uniq -c | sort -nr | \
-            awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}'
+          cat clang-tidy-warnings.txt
