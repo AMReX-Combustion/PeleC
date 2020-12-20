@@ -229,7 +229,7 @@ jobs:
       - name: Short report
         working-directory: ${{runner.workspace}}/build-cppcheck
         run: |
-          cat cppcheck-warnings.txt | egrep 'error:|performance:|portability:|style:|warning:' | sort | \
+          cat cppcheck-warnings.txt | egrep 'information:|error:|performance:|portability:|style:|warning:' | sort | \
             awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}'
       - name: Full report
         working-directory: ${{runner.workspace}}/build-cppcheck
@@ -269,7 +269,7 @@ jobs:
       - name: Short report
         working-directory: ${{runner.workspace}}/build-clang-tidy
         run: |
-          cat clang-tidy-warnings.txt | grep "warning:" | sort | uniq -c | sort -nr | \
+          cat clang-tidy-warnings.txt | grep "warning:" | grep -v "Submodules" | sort | uniq -c | sort -nr | \
             awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}'
       - name: Full report
         working-directory: ${{runner.workspace}}/build-clang-tidy
