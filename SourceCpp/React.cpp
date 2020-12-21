@@ -208,8 +208,10 @@ PeleC::react_state(
               rY_in[offset * (NUM_SPECIES + 1) + NUM_SPECIES] =
                 sold_arr(i, j, k, UTEMP);
 
-              if(captured_clean_react_state == 1){
-                clean_react_state(sold_arr(i, j, k, UTEMP), sold_arr(i, j, k, URHO), &rY_in[offset * (NUM_SPECIES + 1)], e_old);
+              if (captured_clean_react_state == 1) {
+                clean_react_state(
+                  sold_arr(i, j, k, UTEMP), sold_arr(i, j, k, URHO),
+                  &rY_in[offset * (NUM_SPECIES + 1)], e_old);
               }
 
               re_in[offset] = rho_old * e_old;

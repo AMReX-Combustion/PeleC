@@ -41,7 +41,8 @@ clean_react_state(
   const amrex::Real temp,
   const amrex::Real rho,
   amrex::Real* rY,
-  amrex::Real & eint){
+  amrex::Real& eint)
+{
 
   amrex::Real Y_old[NUM_SPECIES];
   for (int n = 0; n < NUM_SPECIES; n++) {
