@@ -1,5 +1,3 @@
-#include <iomanip>
-
 #include "PeleC.H"
 
 amrex::Real

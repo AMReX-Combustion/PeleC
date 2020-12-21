@@ -1,8 +1,5 @@
 #include <AMReX_CArena.H>
 #include <AMReX_REAL.H>
-#include <AMReX_Utility.H>
-#include <AMReX_IntVect.H>
-#include <AMReX_Box.H>
 #include <AMReX_Amr.H>
 #include <AMReX_ParmParse.H>
 #include <AMReX_ParallelDescriptor.H>
@@ -12,7 +9,6 @@
 #include <AMReX_EB2.H>
 #endif
 
-#include "IO.H"
 #include "PeleC.H"
 
 std::string inputs_name = "";

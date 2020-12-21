@@ -1,8 +1,6 @@
 #ifndef _PELEC_H_
 #define _PELEC_H_
 
-#include <iostream>
-
 #include <AMReX_BC_TYPES.H>
 #include <AMReX_AmrLevel.H>
 #include <AMReX_iMultiFab.H>
