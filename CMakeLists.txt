@@ -2,6 +2,7 @@
 
 cmake_minimum_required (VERSION 3.14 FATAL_ERROR)
 project(PeleC CXX C)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
 include(CMakePackageConfigHelpers)
 include(PeleCUtils)
@@ -13,6 +14,7 @@ set(PELEC_DIM "3" CACHE STRING "Number of physical dimensions")
 option(PELEC_ENABLE_AMREX_EB "Enable EB in AMReX library" ON)
 option(PELEC_ENABLE_ALL_WARNINGS "Enable all compiler warnings" ON)
 option(PELEC_ENABLE_CLANG_TIDY "Enable clang-tidy analysis" OFF)
+option(PELEC_ENABLE_CPPCHECK "Enable cppcheck analysis" OFF)
 option(PELEC_ENABLE_WERROR "Treat compiler warnings as errors" OFF)
 option(PELEC_ENABLE_TESTS "Enable regression and unit tests" OFF)
 option(PELEC_ENABLE_MASA "Enable tests that require MASA" OFF)
@@ -55,13 +57,13 @@ endif()
 ########################### AMReX #####################################
 
 set(AMREX_SUBMOD_LOCATION "${CMAKE_SOURCE_DIR}/Submodules/AMReX")
-include(${CMAKE_SOURCE_DIR}/CMake/SetAmrexOptions.cmake)
+include(SetAmrexOptions)
 list(APPEND CMAKE_MODULE_PATH "${AMREX_SUBMOD_LOCATION}/Tools/CMake")
 if(PELEC_ENABLE_CUDA)
   include(AMReX_SetupCUDA)
 endif()
 add_subdirectory(${AMREX_SUBMOD_LOCATION})
-include(${CMAKE_SOURCE_DIR}/CMake/SetAmrexCompileFlags.cmake)
+include(SetAmrexCompileFlags)
 
 ########################### MASA #####################################
 
@@ -99,10 +101,10 @@ if(PELEC_ENABLE_WERROR)
   message(STATUS "Enabling Werror.")
 endif()
 
-init_clang_tidy()
+init_code_checks()
 
-# Turn on rpath stuff
-include(${CMAKE_SOURCE_DIR}/CMake/SetRpath.cmake)
+#Turn on rpath stuff
+include(SetRpath)
 
 #Build pelec executables and link to amrex library
 add_subdirectory(ExecCpp)
