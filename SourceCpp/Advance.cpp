@@ -1,5 +1,3 @@
-#include <cmath>
-
 #include "mechanism.h"
 
 #include "PeleC.H"

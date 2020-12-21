@@ -1,5 +1,3 @@
-#include <AMReX_DistributionMapping.H>
-
 #include "PeleC.H"
 #include "React.H"
 #ifdef USE_SUNDIALS_PP

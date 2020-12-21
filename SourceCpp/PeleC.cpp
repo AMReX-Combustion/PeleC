@@ -3,9 +3,6 @@
 #endif
 
 #include <AMReX_Vector.H>
-#include <AMReX_Utility.H>
-#include <AMReX_CONSTANTS.H>
-#include <AMReX_VisMF.H>
 #include <AMReX_TagBox.H>
 #include <AMReX_ParmParse.H>
 

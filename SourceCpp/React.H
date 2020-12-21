@@ -1,8 +1,6 @@
 #ifndef _REACT_H_
 #define _REACT_H_
 
-#include <iomanip>
-
 #include <AMReX_FArrayBox.H>
 
 #include "IndexDefines.H"

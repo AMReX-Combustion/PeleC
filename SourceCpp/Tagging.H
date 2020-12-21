@@ -1,8 +1,6 @@
 #ifndef _TAGGING_H_
 #define _TAGGING_H_
 
-#include <cmath>
-
 #include <AMReX_FArrayBox.H>
 #include <AMReX_TagBox.H>
 
