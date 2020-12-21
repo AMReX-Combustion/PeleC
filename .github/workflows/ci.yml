@@ -92,7 +92,6 @@ jobs:
             -DPELEC_ENABLE_MASA:BOOL=ON \
             -DMASA_DIR:STRING=${{runner.workspace}}/deps/install/MASA \
             -DPELEC_ENABLE_ALL_WARNINGS:BOOL=${WARNINGS} \
-            -DPELEC_ENABLE_WERROR:BOOL=${WARNINGS} \
             ${{github.workspace}}; \
           done
       - name: Build
