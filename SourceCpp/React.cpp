@@ -74,8 +74,6 @@ PeleC::react_state(
   react_src.setVal(0.0);
   prefetchToDevice(react_src);
 
-  const int captured_clean_react_state = do_clean_react_state;
-
 #ifdef PELEC_USE_EB
   auto const& fact =
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(S_new.Factory());
@@ -150,6 +148,8 @@ PeleC::react_state(
           amrex::Real* rY_src_in;
           amrex::Real* re_in;
           amrex::Real* re_src_in;
+
+          const int captured_clean_react_state = do_clean_react_state;
 
 #ifdef AMREX_USE_CUDA
           cudaError_t cuda_status = cudaSuccess;

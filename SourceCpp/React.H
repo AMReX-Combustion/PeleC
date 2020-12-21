@@ -38,10 +38,10 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 clean_react_state(
-  const amrex::Real temp,
+  const amrex::Real /*temp*/,
   const amrex::Real rho,
   amrex::Real* rY,
-  amrex::Real& eint)
+  amrex::Real& /*eint*/)
 {
 
   amrex::Real Y_old[NUM_SPECIES];
