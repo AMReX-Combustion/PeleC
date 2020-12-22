@@ -1,3 +1,4 @@
+#include <memory>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -145,8 +146,7 @@ PeleC::read_params()
 
   amrex::ParmParse pp("pelec");
 
-#include <memory>
-#include <pelec_queries.H>
+#include "pelec_queries.H"
 
   pp.query("v", verbose);
   pp.query("sum_interval", sum_interval);
@@ -160,38 +160,38 @@ PeleC::read_params()
 
   amrex::Vector<int> lo_bc(AMREX_SPACEDIM), hi_bc(AMREX_SPACEDIM);
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-    if (!lo_bc_char[dir].compare("Interior")) {
+    if (lo_bc_char[dir] == "Interior") {
       lo_bc[dir] = 0;
-    } else if (!lo_bc_char[dir].compare("Hard")) {
+    } else if (lo_bc_char[dir] == "Hard") {
       lo_bc[dir] = 1;
-    } else if (!lo_bc_char[dir].compare("FOExtrap")) {
+    } else if (lo_bc_char[dir] == "FOExtrap") {
       lo_bc[dir] = 2;
-    } else if (!lo_bc_char[dir].compare("Symmetry")) {
+    } else if (lo_bc_char[dir] == "Symmetry") {
       lo_bc[dir] = 3;
-    } else if (!lo_bc_char[dir].compare("SlipWall")) {
+    } else if (lo_bc_char[dir] == "SlipWall") {
       lo_bc[dir] = 4;
-    } else if (!lo_bc_char[dir].compare("NoSlipWall")) {
+    } else if (lo_bc_char[dir] == "NoSlipWall") {
       lo_bc[dir] = 5;
-    } else if (!lo_bc_char[dir].compare("UserBC")) {
+    } else if (lo_bc_char[dir] == "UserBC") {
       lo_bc[dir] = 6;
     } else {
       amrex::Abort("Wrong boundary condition word in lo_bc, please use: "
                    "Interior, UserBC, Symmetry, SlipWall, NoSlipWall");
     }
 
-    if (!hi_bc_char[dir].compare("Interior")) {
+    if (hi_bc_char[dir] == "Interior") {
       hi_bc[dir] = 0;
-    } else if (!hi_bc_char[dir].compare("Hard")) {
+    } else if (hi_bc_char[dir] == "Hard") {
       hi_bc[dir] = 1;
-    } else if (!hi_bc_char[dir].compare("FOExtrap")) {
+    } else if (hi_bc_char[dir] == "FOExtrap") {
       hi_bc[dir] = 2;
-    } else if (!hi_bc_char[dir].compare("Symmetry")) {
+    } else if (hi_bc_char[dir] == "Symmetry") {
       hi_bc[dir] = 3;
-    } else if (!hi_bc_char[dir].compare("SlipWall")) {
+    } else if (hi_bc_char[dir] == "SlipWall") {
       hi_bc[dir] = 4;
-    } else if (!hi_bc_char[dir].compare("NoSlipWall")) {
+    } else if (hi_bc_char[dir] == "NoSlipWall") {
       hi_bc[dir] = 5;
-    } else if (!hi_bc_char[dir].compare("UserBC")) {
+    } else if (hi_bc_char[dir] == "UserBC") {
       hi_bc[dir] = 6;
     } else {
       amrex::Abort("Wrong boundary condition word in hi_bc, please use: "
