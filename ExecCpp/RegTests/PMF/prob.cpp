@@ -133,7 +133,7 @@ init_bc()
     ProbParm::vn_in = pmf_vals[1];
   } else {
     const amrex::Real a = 0.5;
-    for (double& n : molefrac)
+    for (amrex::Real& n : molefrac)
       n = 0.0;
     molefrac[O2_ID] = 1.0 / (1.0 + ProbParm::phi_in / a + 0.79 / 0.21);
     molefrac[H2_ID] = ProbParm::phi_in * molefrac[O2_ID] / a;
