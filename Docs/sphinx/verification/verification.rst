@@ -124,21 +124,21 @@ are imposed everywhere.
 
 - Density :math:`L_2` error norm:
 
-.. image:: ./verification/hydro/rho_error.png
+.. image:: /verification/hydro/rho_error.png
    :width: 300pt
 
 - Velocity (u, v, w) :math:`L_2` error norm:
 
-.. image:: ./verification/hydro/u_error.png
+.. image:: /verification/hydro/u_error.png
    :width: 300pt
-.. image:: ./verification/hydro/v_error.png
+.. image:: /verification/hydro/v_error.png
    :width: 300pt
-.. image:: ./verification/hydro/w_error.png
+.. image:: /verification/hydro/w_error.png
    :width: 300pt
 
 - Pressure :math:`L_2` error norm:
 
-.. image:: ./verification/hydro/p_error.png
+.. image:: /verification/hydro/p_error.png
    :width: 300pt
 
 
@@ -177,21 +177,21 @@ state solver would fail to test the temporal discretization scheme.
 
 - Density :math:`L_2` error norm:
 
-.. image:: ./verification/pelec/rho_error.png
+.. image:: /verification/pelec/rho_error.png
    :width: 300pt
 
 - Velocity (u, v, w) :math:`L_2` error norm:
 
-.. image:: ./verification/pelec/u_error.png
+.. image:: /verification/pelec/u_error.png
    :width: 300pt
-.. image:: ./verification/pelec/v_error.png
+.. image:: /verification/pelec/v_error.png
    :width: 300pt
-.. image:: ./verification/pelec/w_error.png
+.. image:: /verification/pelec/w_error.png
    :width: 300pt
 
 - Pressure :math:`L_2` error norm:
 
-.. image:: ./verification/pelec/p_error.png
+.. image:: /verification/pelec/p_error.png
    :width: 300pt
 
 Testing the adaptive mesh refinement algorithm
@@ -208,12 +208,12 @@ preserve the second order accuracy of the code.
 
 - Magnitude of velocity and mesh:
 
-.. image:: ./verification/amr/umag_amr.png
+.. image:: /verification/amr/umag_amr.png
    :width: 200pt
 
 - Velocity :math:`L_2` error norm:
 
-.. image:: ./verification/amr/u_error_amr.png
+.. image:: /verification/amr/u_error_amr.png
    :width: 300pt
 
 Testing the constant Smagorinsky Large Eddy Simulation model
@@ -234,19 +234,19 @@ constant Smagorinsky Large Eddy Simulation model.
 
 - Density :math:`L_2` error norm:
 
-.. image:: ./verification/les/rho_error.png
+#.. image:: ./verification/les/rho_error.png
    :width: 300pt
 
 - Velocity (u, v, w) :math:`L_2` error norm:
 
-.. image:: ./verification/les/u_error.png
+#.. image:: ./verification/les/u_error.png
    :width: 300pt
-.. image:: ./verification/les/v_error.png
+#.. image:: ./verification/les/v_error.png
    :width: 300pt
-.. image:: ./verification/les/w_error.png
+#.. image:: ./verification/les/w_error.png
    :width: 300pt
 
 - Pressure :math:`L_2` error norm:
 
-.. image:: ./verification/les/p_error.png
+#.. image:: ./verification/les/p_error.png
    :width: 300pt

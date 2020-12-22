@@ -26,7 +26,7 @@ where :math:`G = -dp/dx`, and :math:`\mu` is the dynamic viscosity.
 Velocity profiles at :math:`x=6` cm (channel center)
 ####################################################
 
-.. image:: ./ebverification/C10/u.png
+.. image:: /ebverification/C10/u.png
    :height: 300pt
 
 :math:`L_2` error norm of velocity
@@ -40,7 +40,7 @@ The :math:`L_2` error norm for a quantity :math:`s` is defined as
 where :math:`s^h` is the numerical solution, :math:`s^*` is the exact
 solution, and :math:`n_r` is the number of cells per radius.
 
-.. image:: ./ebverification/C10/error.png
+.. image:: /ebverification/C10/error.png
    :height: 300pt
 
 .. note::
@@ -54,7 +54,7 @@ solution, and :math:`n_r` is the number of cells per radius.
 Time convergence of kinetic energy
 ##################################
 
-.. image:: ./ebverification/C10/ke_history.png
+.. image:: /ebverification/C10/ke_history.png
    :height: 300pt
 
 .. note::

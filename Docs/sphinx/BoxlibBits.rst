@@ -1,11 +1,11 @@
 Development Reference
 =====================
 
-Function Listing for PeleC
---------------------------
-
-When built, the full doxygen documentation for PeleC can be found 
-`here <../../../doxygen_output/html/index.html>`_.
+#Function Listing for PeleC
+#--------------------------
+#
+#When built, the full doxygen documentation for PeleC can be found 
+#`here <../../../doxygen_output/html/index.html>`_.
 
 
 
@@ -101,9 +101,7 @@ To add a new feature to PeleC, the procedure is:
 
     git push -u origin AmazingNewFeature [Note: -u option required only for the first push of new branch]
 
-3a. Check that Travis CI build passed. Currently to reduce load on the CI framework this is just a test that one of the regression tests will compile.
-
-3b. Check :ref:`locally that the regression suite passes<LocalTesting>`.
+    Check that Travis CI build passed. Currently to reduce load on the CI framework this is just a test that one of the regression tests will compile.
 
 4.  Submit a merge request through git@github.com:AMReX-Combustion/PeleC.git - be sure you are requesting to merge your branch to the development branch.
 

@@ -42,7 +42,7 @@ The PeleC directory structure is as shown below:
     * NSCBC_test_cases - This directory contains many 1D, 2D and 3D cases to test the implementation of the Ghost-Cells Navier-Stokes Boundary Conditions (GC-NSCBC) on various different configurations.
     * HIT_forced - This test case is similar to the homogeneous isotropic turbulence present in the RegTests directory, at the exception that we are not starting from a turbulent initial solution, but from a flow at rest where we superimpose forcing sources to generate turbulence.
   
-  * :ref:`Tutorials<Tutorials>`
+  * :ref:`Tutorials`
 
     * EB_Sphere - Reacting flow around a sphere
     * EB_OblqShock - Supersonic flow over a wedge resulting in a steady attached oblique shock
@@ -73,13 +73,10 @@ A list of available data in the Pele group can be found in PeleC/Source/param_in
 **GNUMakefile** -- In addition to setting options to build profiling, debugging, MPI, OpenMP, Compiler toolchain options, the chemical mechanism, transport model, equation of state model, and use of EB are set here for compile time selection. The GNUMakefile includes the ``Make.PeleC`` file from the `ExecCpp` directory that contains build configuration common across the examples.
 
 
-.. include:: building.rst
+.. toctree::
+   :maxdepth: 1
 
-
-.. include:: InputFiles.rst
-
-
-.. include:: tutorials.rst
-
-
-.. include:: testing.rst
+   Building
+   InputFiles
+   Tutorials
+   Testing

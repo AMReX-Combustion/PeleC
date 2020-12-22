@@ -42,7 +42,7 @@ A precomputed 1D flame profile is interpolated onto a uniform PeleC grid. Becaus
 
 .. only:: html
 
-    .. figure:: ./1D_PMF_NO_NSCBC.gif
+    .. figure:: /images/1D_PMF_NO_NSCBC.gif
        :align: center
        :figwidth: 40%
 
@@ -51,7 +51,7 @@ A precomputed 1D flame profile is interpolated onto a uniform PeleC grid. Becaus
 
 .. only:: html
 
-    .. figure:: ./1D_PMF_WITH_NSCBC.gif
+    .. figure:: /images/1D_PMF_WITH_NSCBC.gif
        :align: center
        :figwidth: 40%
 

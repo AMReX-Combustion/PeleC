@@ -271,7 +271,7 @@ Other similar routines incldue:
 * pc_apply_eb_boundry_visc_flux_stencil
 * pc_fix_div_and_redistribute
 
-.. include:: geometry_init.rst
+.. include:: /geometry/geometry_init.rst
 
 Basic work iterator for for EB geometry
 ---------------------------------------
