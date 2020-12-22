@@ -530,8 +530,9 @@ PeleC::getMOLSrcTerm(
             pc_fix_div_and_redistribute(
               vbox, vol, dt, NVAR, eb_small_vfrac, levmsk_notcovered,
               d_sv_eb_bndry_geom, Ncut, flags.array(mfi),
-              AMREX_D_DECL(flx[0], flx[1], flx[2]), sv_eb_flux[local_i].dataPtr(),
-              nFlux, vfrac.array(mfi), W, as_crse, as_fine, level_mask.array(mfi),
+              AMREX_D_DECL(flx[0], flx[1], flx[2]),
+              sv_eb_flux[local_i].dataPtr(), nFlux, vfrac.array(mfi), W,
+              as_crse, as_fine, level_mask.array(mfi),
               (*p_rrflag_as_crse).array(), Dterm, (*p_drho_as_crse).array(),
               dm_as_fine.array());
           }
