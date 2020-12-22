@@ -144,7 +144,7 @@ pc_expl_reactions(
   amrex::Real rhoydot_ext[NUM_SPECIES];
   for (int n = 0; n < NUM_SPECIES; n++)
     rhoydot_ext[n] = nr_src(i, j, k, UFS + n);
-
+         
   // RK dts
   amrex::Real dt_rk = dt_react / nsteps_guess;
   const amrex::Real dt_min = dt_react / nsteps_max;
@@ -173,40 +173,26 @@ pc_expl_reactions(
 
     amrex::Real wdot[NUM_SPECIES] = {};
     amrex::Real massfrac[NUM_SPECIES] = {};
-    amrex::Real ei[NUM_SPECIES] = {};
     for (int stage = 0; stage < 6; stage++) {
+      // Find up to date temperature and mass fractions
       rhoInv = 1.0 / urk[URHO];
       for (int n = 0; n < NUM_SPECIES; ++n) {
         massfrac[n] = urk[UFS + n] * rhoInv;
       }
-
-      EOS::RTY2WDOT(urk[URHO], urk[UTEMP], massfrac, wdot);
-
       amrex::Real Temp_rk;
       EOS::EY2T(rhoe_rk / urk[URHO], massfrac, Temp_rk);
 
+      // Compute species source terms
+      EOS::RTY2WDOT(urk[URHO], Temp_rk, massfrac, wdot);
       for (int n = 0; n < NUM_SPECIES; ++n)
         wdot[n] += rhoydot_ext[n];
-
-      // get mixture specific heat
-      amrex::Real cv;
-      EOS::TY2Cv(urk[UTEMP], massfrac, cv);
-
-      // get species internal energies
-      EOS::T2Ei(Temp_rk, ei);
-
-      // update temperature eqn source term
-      amrex::Real tempsrc = rhoedot_ext;
-      for (int n = 0; n < NUM_SPECIES; ++n)
-        tempsrc -= wdot[n] * ei[n];
-      tempsrc /= (urk[URHO] * cv);
 
       /*================== Update urk_err =================== */
       // Species
       for (int n = 0; n < NUM_SPECIES; ++n)
         urk_err[UFS + n] += err_rk64[stage] * dt_rk * wdot[n];
-      // Temperature
-      urk_err[UTEMP] += err_rk64[stage] * dt_rk * tempsrc;
+      // Energy
+      urk_err[UEDEN] += err_rk64[stage] * dt_rk * rhoedot_ext;
 
       /*================== Update Stage solution =================== */
       // Species
@@ -214,8 +200,6 @@ pc_expl_reactions(
         urk[UFS + n] =
           urk_carryover[UFS + n] + alpha_rk64[stage] * dt_rk * wdot[n];
       }
-      // Temperature
-      urk[UTEMP] = urk_carryover[UTEMP] + alpha_rk64[stage] * dt_rk * tempsrc;
       // update energy
       rhoe_rk = rhoe_carryover + alpha_rk64[stage] * dt_rk * rhoedot_ext;
 
@@ -225,8 +209,6 @@ pc_expl_reactions(
         urk_carryover[UFS + n] =
           urk[UFS + n] + beta_rk64[stage] * dt_rk * wdot[n];
       }
-      // Temperature
-      urk_carryover[UTEMP] = urk[UTEMP] + beta_rk64[stage] * dt_rk * tempsrc;
       // update energy
       rhoe_carryover = rhoe_rk + beta_rk64[stage] * dt_rk * rhoedot_ext;
 
