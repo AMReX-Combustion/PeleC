@@ -155,7 +155,7 @@ PeleC::restart(amrex::Amr& papa, istream& is, bool bReadSpecial)
     FullPathDiagFile += "/Diagnostics";
     DiagFile.open(FullPathDiagFile.c_str(), std::ios::in);
 
-    for (double& i : material_lost_through_boundary_cumulative)
+    for (amrex::Real& i : material_lost_through_boundary_cumulative)
       DiagFile >> i;
 
     DiagFile.close();
@@ -293,7 +293,7 @@ PeleC::checkPoint(
       FullPathDiagFile += "/Diagnostics";
       DiagFile.open(FullPathDiagFile.c_str(), std::ios::out);
 
-      for (double i : material_lost_through_boundary_cumulative)
+      for (amrex::Real i : material_lost_through_boundary_cumulative)
         DiagFile << std::setprecision(15) << i << std::endl;
 
       DiagFile.close();

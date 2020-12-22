@@ -174,7 +174,6 @@ read_binary(
   const size_t ncol,
   amrex::Vector<double>& data /*needs to be double*/)
 {
-
   std::ifstream infile(iname, std::ios::in | std::ios::binary);
   if (not infile.is_open()) {
     amrex::Abort("Unable to open input file " + iname);

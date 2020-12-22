@@ -209,7 +209,7 @@ pc_compute_hyp_mol_flux(
       ebg[L].eb_normal[0], ebg[L].eb_normal[1], ebg[L].eb_normal[2])};
     const amrex::Real ebnorm_mag = std::sqrt(
       ebnorm[0] * ebnorm[0] + ebnorm[1] * ebnorm[1] + ebnorm[2] * ebnorm[2]);
-    for (double& dir : ebnorm) {
+    for (amrex::Real& dir : ebnorm) {
       dir /= ebnorm_mag;
     }
     if (is_inside(i, j, k, lo, hi, nextra)) {

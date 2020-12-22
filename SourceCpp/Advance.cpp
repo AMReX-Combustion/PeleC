@@ -629,7 +629,7 @@ PeleC::initialize_sdc_iteration(
 
   // Reset the grid loss tracking.
   if (track_grid_losses) {
-    for (double& i : material_lost_through_boundary_temp) {
+    for (amrex::Real& i : material_lost_through_boundary_temp) {
       i = 0.0;
     }
   }
