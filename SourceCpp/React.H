@@ -37,32 +37,38 @@ const amrex::Real err_rk64[6] = {
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
-clean_react_state(
-  const amrex::Real /*temp*/,
-  const amrex::Real rho,
-  amrex::Real* rY,
-  amrex::Real& /*eint*/)
+clip_normalize_Y(amrex::Real* Y)
 {
-
-  amrex::Real Y_old[NUM_SPECIES];
-  for (int n = 0; n < NUM_SPECIES; n++) {
-    Y_old[n] = rY[n] / rho;
-  }
 
   // Clip
   amrex::Real sum = 0.0;
   for (int n = 0; n < NUM_SPECIES; n++) {
-    Y_old[n] = amrex::max(amrex::min(Y_old[n], 1.0), 0.0);
-    sum += Y_old[n];
+    Y[n] = amrex::max(amrex::min(Y[n], 1.0), 0.0);
+    sum += Y[n];
   }
 
   // Normalize
   for (int n = 0; n < NUM_SPECIES; n++) {
-    Y_old[n] /= sum;
+    Y[n] /= sum;
+  }
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+clip_normalize_rY(const amrex::Real rho, amrex::Real* rY)
+{
+
+  amrex::Real Y[NUM_SPECIES];
+  const amrex::Real rhoInv = 1.0 / rho;
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    Y[n] = rY[n] * rhoInv;
   }
 
+  clip_normalize_Y(Y);
+
   for (int n = 0; n < NUM_SPECIES; n++) {
-    rY[n] = Y_old[n] * rho;
+    rY[n] = Y[n] * rho;
   }
 }
 

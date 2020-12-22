@@ -380,7 +380,7 @@ adaptrk_nsubsteps_guess      int           50                 n
 adaptrk_errtol               Real          1e-16              n
 
 #flag to clean the state for the reactions
-do_clean_react_state         int           1                  n
+clean_react_massfrac         int           1                  n
 
 #-----------------------------------------------------------------------------
 # category: parallelization

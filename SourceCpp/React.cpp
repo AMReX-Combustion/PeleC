@@ -149,7 +149,7 @@ PeleC::react_state(
           amrex::Real* re_in;
           amrex::Real* re_src_in;
 
-          const int captured_clean_react_state = do_clean_react_state;
+          const int captured_clean_react_massfrac = clean_react_massfrac;
 
 #ifdef AMREX_USE_CUDA
           cudaError_t cuda_status = cudaSuccess;
@@ -208,10 +208,9 @@ PeleC::react_state(
               rY_in[offset * (NUM_SPECIES + 1) + NUM_SPECIES] =
                 sold_arr(i, j, k, UTEMP);
 
-              if (captured_clean_react_state == 1) {
-                clean_react_state(
-                  sold_arr(i, j, k, UTEMP), sold_arr(i, j, k, URHO),
-                  &rY_in[offset * (NUM_SPECIES + 1)], e_old);
+              if (captured_clean_react_massfrac == 1) {
+                clip_normalize_rY(
+                  sold_arr(i, j, k, URHO), &rY_in[offset * (NUM_SPECIES + 1)]);
               }
 
               re_in[offset] = rho_old * e_old;
