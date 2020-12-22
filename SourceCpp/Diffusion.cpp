@@ -477,10 +477,12 @@ PeleC::getMOLSrcTerm(
             // int in_place = 1;
             const amrex::Box valid_interped_flux_box =
               amrex::Box(ebfluxbox).surroundingNodes(dir);
-            pc_apply_face_stencil(
-              valid_interped_flux_box, stencil_volume_box,
-              flux_interp_stencil[dir][local_i].data(), Nsten, dir, NVAR,
-              flx[dir]);
+            if (Nsten > 0) {
+              pc_apply_face_stencil(
+                valid_interped_flux_box, stencil_volume_box,
+                flux_interp_stencil[dir][local_i].data(), Nsten, dir, NVAR,
+                flx[dir]);
+            }
           }
         }
 
