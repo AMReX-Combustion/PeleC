@@ -126,11 +126,10 @@ struct PCReactFillExtDir
 };
 
 namespace {
-static PCHypFillExtDir pc_hyp_fill_ext_dir;
-static PCReactFillExtDir pc_react_fill_ext_dir;
-static amrex::GpuBndryFuncFab<PCHypFillExtDir>
-  hyp_bndry_func(pc_hyp_fill_ext_dir);
-static amrex::GpuBndryFuncFab<PCReactFillExtDir>
+PCHypFillExtDir pc_hyp_fill_ext_dir;
+PCReactFillExtDir pc_react_fill_ext_dir;
+amrex::GpuBndryFuncFab<PCHypFillExtDir> hyp_bndry_func(pc_hyp_fill_ext_dir);
+amrex::GpuBndryFuncFab<PCReactFillExtDir>
   react_bndry_func(pc_react_fill_ext_dir);
 } // namespace
 

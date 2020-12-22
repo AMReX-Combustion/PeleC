@@ -190,7 +190,6 @@ read_binary(
   const size_t ncol,
   amrex::Vector<double>& data /*needs to be double*/)
 {
-
   std::ifstream infile(iname, std::ios::in | std::ios::binary);
   if (not infile.is_open()) {
     amrex::Abort("Unable to open input file " + iname);
@@ -273,7 +272,8 @@ locate(const amrex::Real* xtable, const int n, const amrex::Real& x, int& idxlo)
   if (x >= xtable[n - 1]) {
     idxlo = n - 1;
     return;
-  } else if (x <= xtable[0]) {
+  }
+  if (x <= xtable[0]) {
     idxlo = 0;
     return;
   }

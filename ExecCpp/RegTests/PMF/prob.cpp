@@ -20,7 +20,7 @@ AMREX_GPU_DEVICE_MANAGED amrex::Real* d_pmf_X = nullptr;
 AMREX_GPU_DEVICE_MANAGED amrex::Real* d_pmf_Y = nullptr;
 AMREX_GPU_DEVICE_MANAGED amrex::Real* d_fuel_state = nullptr;
 
-std::string pmf_datafile = "";
+std::string pmf_datafile;
 amrex::Vector<std::string> pmf_names;
 } // namespace ProbParm
 
@@ -40,10 +40,7 @@ checkQuotes(const std::string& str)
     if (c == '"')
       count++;
   }
-  if ((count % 2) == 0)
-    return true;
-  else
-    return false;
+  return (count % 2) == 0;
 }
 
 void
@@ -136,8 +133,8 @@ init_bc()
     ProbParm::vn_in = pmf_vals[1];
   } else {
     const amrex::Real a = 0.5;
-    for (int n = 0; n < NUM_SPECIES; n++)
-      molefrac[n] = 0.0;
+    for (amrex::Real& n : molefrac)
+      n = 0.0;
     molefrac[O2_ID] = 1.0 / (1.0 + ProbParm::phi_in / a + 0.79 / 0.21);
     molefrac[H2_ID] = ProbParm::phi_in * molefrac[O2_ID] / a;
     molefrac[N2_ID] = 1.0 - molefrac[H2_ID] - molefrac[O2_ID];

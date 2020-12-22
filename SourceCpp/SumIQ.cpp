@@ -35,7 +35,7 @@ PeleC::sum_integrated_quantities()
     rho_E += pc_lev.volWgtSum("rho_E", time, local_flag);
     enstr += pc_lev.volWgtSum("enstrophy", time, local_flag);
 
-    if (fuel_name != "") {
+    if (!fuel_name.empty()) {
       fuel_prod += pc_lev.volWgtSum("rho_omega_" + fuel_name, time, local_flag);
     }
 

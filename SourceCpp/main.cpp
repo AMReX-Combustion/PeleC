@@ -11,11 +11,11 @@
 
 #include "PeleC.H"
 
-std::string inputs_name = "";
+std::string inputs_name;
 
 #ifdef PELEC_USE_EB
-void initialize_EB2(
-  const amrex::Geometry& geom, const int required_level, const int max_level);
+void
+initialize_EB2(const amrex::Geometry& geom, int required_level, int max_level);
 #endif
 
 int
@@ -101,7 +101,7 @@ main(int argc, char* argv[])
                    << time_pointer->tm_mday << "." << std::endl;
 
   // Initialize random seed after we're running in parallel.
-  amrex::Amr* amrptr = new amrex::Amr;
+  auto* amrptr = new amrex::Amr;
 
 #if defined(AMREX_USE_EB) && !defined(PELEC_USE_EB)
   amrex::Print() << "Initializing EB2 as all_regular because AMReX has EB "
@@ -180,7 +180,7 @@ main(int argc, char* argv[])
     amrex::Print() << "Run time w/o init = " << runtime_timestep << std::endl;
   }
 
-  if (amrex::CArena* arena = dynamic_cast<amrex::CArena*>(amrex::The_Arena())) {
+  if (auto* arena = dynamic_cast<amrex::CArena*>(amrex::The_Arena())) {
     // A barrier to make sure our output follows that of RunStats.
     amrex::ParallelDescriptor::Barrier();
     // We're using a CArena -- output some FAB memory stats.

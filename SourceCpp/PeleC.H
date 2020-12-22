@@ -317,7 +317,7 @@ public:
     int sdc_iteration,
     int sdc_ncycle);
 
-  void finalize_sdc_iteration(
+  static void finalize_sdc_iteration(
     amrex::Real time,
     amrex::Real dt,
     int amr_iteration,
@@ -361,10 +361,10 @@ public:
 
   void construct_new_ext_source(amrex::Real time, amrex::Real dt);
 
-  void fill_ext_source(
+  static void fill_ext_source(
     amrex::Real time,
     amrex::Real dt,
-    const amrex::MultiFab& S_old,
+    const amrex::MultiFab& state_old,
     const amrex::MultiFab& S_new,
     amrex::MultiFab& ext_src,
     int ng);
@@ -373,11 +373,11 @@ public:
 
   void construct_new_forcing_source(amrex::Real time, amrex::Real dt);
 
-  void fill_forcing_source(
+  static void fill_forcing_source(
     amrex::Real time,
     amrex::Real dt,
-    const amrex::MultiFab& S_old,
-    const amrex::MultiFab& S_new,
+    const amrex::MultiFab& state_old,
+    const amrex::MultiFab& state_new,
     amrex::MultiFab& forcing_src,
     int ng);
 
@@ -489,7 +489,7 @@ public:
   // Error estimation for regridding.
   //
   virtual void errorEst(
-    amrex::TagBoxArray& tb,
+    amrex::TagBoxArray& tags,
     int clearval,
     int tagval,
     amrex::Real time,
@@ -518,10 +518,10 @@ public:
     amrex::Real time,
     amrex::Real dt,
     bool init = false,
-    amrex::MultiFab* A_aux = nullptr);
+    amrex::MultiFab* aux_src = nullptr);
 #endif
 
-  void reset_internal_energy(amrex::MultiFab& State, int ng);
+  void reset_internal_energy(amrex::MultiFab& S_new, int ng);
 
   void computeTemp(amrex::MultiFab& State, int ng);
 
@@ -532,7 +532,7 @@ public:
     amrex::Real dt,
     amrex::Real flux_factor);
 
-  void enforce_consistent_e(amrex::MultiFab& S);
+  static void enforce_consistent_e(amrex::MultiFab& S);
 
   amrex::Real volWgtSum(
     const std::string& name,
@@ -655,14 +655,15 @@ protected:
 
   void reflux();
 
-  void normalize_species(amrex::MultiFab& S_new);
+  static void normalize_species(amrex::MultiFab& S_new);
 
-  amrex::Real
+  static amrex::Real
   enforce_min_density(amrex::MultiFab& S_old, const amrex::MultiFab& S_new);
 
   amrex::Real clean_state(amrex::MultiFab& S);
 
-  amrex::Real clean_state(const amrex::MultiFab& S, amrex::MultiFab& S_old);
+  static amrex::Real
+  clean_state(const amrex::MultiFab& S, amrex::MultiFab& S_old);
 
   void buildMetrics();
 

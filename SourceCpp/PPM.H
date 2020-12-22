@@ -262,7 +262,7 @@ void trace_ppm(
   amrex::Array4<amrex::Real> const& qp,
   const amrex::Box& vbx,
   const amrex::Real dt,
-  const amrex::Real* del,
+  const amrex::Real* dx,
   const int use_flattening);
 
 #endif

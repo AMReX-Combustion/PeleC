@@ -187,7 +187,7 @@ PeleC::variableSetUp()
 
   if (NUM_SPECIES > 0) {
     FirstSpec = cnt;
-    cnt += NUM_SPECIES;
+    cnt += NUM_SPECIES; // NOLINT
   }
 
   if (NUM_AUX > 0) {

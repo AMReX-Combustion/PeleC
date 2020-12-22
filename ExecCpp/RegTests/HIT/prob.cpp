@@ -1,7 +1,7 @@
 #include "prob.H"
 
 namespace ProbParm {
-std::string iname = "";
+std::string iname;
 AMREX_GPU_DEVICE_MANAGED bool binfmt = false;
 AMREX_GPU_DEVICE_MANAGED bool restart = false;
 AMREX_GPU_DEVICE_MANAGED amrex::Real lambda0 = 0.5;

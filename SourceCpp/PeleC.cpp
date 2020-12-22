@@ -1,3 +1,4 @@
+#include <memory>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -145,7 +146,7 @@ PeleC::read_params()
 
   amrex::ParmParse pp("pelec");
 
-#include <pelec_queries.H>
+#include "pelec_queries.H"
 
   pp.query("v", verbose);
   pp.query("sum_interval", sum_interval);
@@ -159,38 +160,38 @@ PeleC::read_params()
 
   amrex::Vector<int> lo_bc(AMREX_SPACEDIM), hi_bc(AMREX_SPACEDIM);
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-    if (!lo_bc_char[dir].compare("Interior")) {
+    if (lo_bc_char[dir] == "Interior") {
       lo_bc[dir] = 0;
-    } else if (!lo_bc_char[dir].compare("Hard")) {
+    } else if (lo_bc_char[dir] == "Hard") {
       lo_bc[dir] = 1;
-    } else if (!lo_bc_char[dir].compare("FOExtrap")) {
+    } else if (lo_bc_char[dir] == "FOExtrap") {
       lo_bc[dir] = 2;
-    } else if (!lo_bc_char[dir].compare("Symmetry")) {
+    } else if (lo_bc_char[dir] == "Symmetry") {
       lo_bc[dir] = 3;
-    } else if (!lo_bc_char[dir].compare("SlipWall")) {
+    } else if (lo_bc_char[dir] == "SlipWall") {
       lo_bc[dir] = 4;
-    } else if (!lo_bc_char[dir].compare("NoSlipWall")) {
+    } else if (lo_bc_char[dir] == "NoSlipWall") {
       lo_bc[dir] = 5;
-    } else if (!lo_bc_char[dir].compare("UserBC")) {
+    } else if (lo_bc_char[dir] == "UserBC") {
       lo_bc[dir] = 6;
     } else {
       amrex::Abort("Wrong boundary condition word in lo_bc, please use: "
                    "Interior, UserBC, Symmetry, SlipWall, NoSlipWall");
     }
 
-    if (!hi_bc_char[dir].compare("Interior")) {
+    if (hi_bc_char[dir] == "Interior") {
       hi_bc[dir] = 0;
-    } else if (!hi_bc_char[dir].compare("Hard")) {
+    } else if (hi_bc_char[dir] == "Hard") {
       hi_bc[dir] = 1;
-    } else if (!hi_bc_char[dir].compare("FOExtrap")) {
+    } else if (hi_bc_char[dir] == "FOExtrap") {
       hi_bc[dir] = 2;
-    } else if (!hi_bc_char[dir].compare("Symmetry")) {
+    } else if (hi_bc_char[dir] == "Symmetry") {
       hi_bc[dir] = 3;
-    } else if (!hi_bc_char[dir].compare("SlipWall")) {
+    } else if (hi_bc_char[dir] == "SlipWall") {
       hi_bc[dir] = 4;
-    } else if (!hi_bc_char[dir].compare("NoSlipWall")) {
+    } else if (hi_bc_char[dir] == "NoSlipWall") {
       hi_bc[dir] = 5;
-    } else if (!hi_bc_char[dir].compare("UserBC")) {
+    } else if (hi_bc_char[dir] == "UserBC") {
       hi_bc[dir] = 6;
     } else {
       amrex::Abort("Wrong boundary condition word in hi_bc, please use: "
@@ -393,12 +394,10 @@ PeleC::PeleC(
       newGrow = amrex::max<amrex::Real>(1, newGrow);
     }
 #endif
-    old_sources[src_list[n]] =
-      std::unique_ptr<amrex::MultiFab>(new amrex::MultiFab(
-        grids, dmap, NVAR, oldGrow, amrex::MFInfo(), Factory()));
-    new_sources[src_list[n]] =
-      std::unique_ptr<amrex::MultiFab>(new amrex::MultiFab(
-        grids, dmap, NVAR, newGrow, amrex::MFInfo(), Factory()));
+    old_sources[src_list[n]] = std::make_unique<amrex::MultiFab>(
+      grids, dmap, NVAR, oldGrow, amrex::MFInfo(), Factory());
+    new_sources[src_list[n]] = std::make_unique<amrex::MultiFab>(
+      grids, dmap, NVAR, newGrow, amrex::MFInfo(), Factory());
   }
 
   if (do_hydro) {
@@ -472,7 +471,7 @@ PeleC::PeleC(
   }
 }
 
-PeleC::~PeleC() {}
+PeleC::~PeleC() = default;
 
 void
 PeleC::buildMetrics()
@@ -700,7 +699,7 @@ PeleC::init(AmrLevel& old)
 {
   BL_PROFILE("PeleC::init(old)");
 
-  PeleC* oldlev = (PeleC*)&old;
+  auto* oldlev = (PeleC*)&old;
 
   //
   // Create new grid data by fillpatching from old.
@@ -1780,17 +1779,20 @@ PeleC::derive(const std::string& name, amrex::Real time, int ngrow)
       new amrex::MultiFab(grids, dmap, 1, 0));
     amrex::MultiFab::Copy(*derive_dat, LES_Coeffs, comp_Cs2, 0, 1, 0);
     return derive_dat;
-  } else if ((do_les) && (name == "C_I")) {
+  }
+  if ((do_les) && (name == "C_I")) {
     std::unique_ptr<amrex::MultiFab> derive_dat(
       new amrex::MultiFab(grids, dmap, 1, 0));
     amrex::MultiFab::Copy(*derive_dat, LES_Coeffs, comp_CI, 0, 1, 0);
     return derive_dat;
-  } else if ((do_les) && (les_model != 1) && (name == "Pr_T")) {
+  }
+  if ((do_les) && (les_model != 1) && (name == "Pr_T")) {
     std::unique_ptr<amrex::MultiFab> derive_dat(
       new amrex::MultiFab(grids, dmap, 1, 0));
     amrex::MultiFab::Copy(*derive_dat, LES_Coeffs, comp_PrT, 0, 1, 0);
     return derive_dat;
-  } else if ((do_les) && (les_model == 1) && (name == "Pr_T")) {
+  }
+  if ((do_les) && (les_model == 1) && (name == "Pr_T")) {
     std::unique_ptr<amrex::MultiFab> derive_dat(
       new amrex::MultiFab(grids, dmap, 1, 0));
     amrex::MultiFab::Copy(*derive_dat, LES_Coeffs, comp_Cs2ovPrT, 0, 1, 0);
@@ -2100,13 +2102,13 @@ PeleC::build_interior_boundary_mask(int ng)
   }
 
   //  If we got here, we need to build a new one
-  if (ib_mask.size() == 0) {
+  if (ib_mask.empty()) {
     ib_mask.resize(0);
   }
 
-  ib_mask.push_back(std::unique_ptr<amrex::iMultiFab>(new amrex::iMultiFab(
+  ib_mask.push_back(std::make_unique<amrex::iMultiFab>(
     grids, dmap, 1, ng, amrex::MFInfo(),
-    amrex::DefaultFabFactory<amrex::IArrayBox>())));
+    amrex::DefaultFabFactory<amrex::IArrayBox>()));
 
   amrex::iMultiFab* imf = ib_mask.back().get();
   int ghost_covered_by_valid = 0;

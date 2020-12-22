@@ -35,7 +35,7 @@ PeleC::react_state(
 
   // Create a MultiFab with all of the non-reacting source terms.
   amrex::MultiFab non_react_src_tmp;
-  amrex::MultiFab* non_react_src = NULL;
+  amrex::MultiFab* non_react_src = nullptr;
 
   if (react_init) {
     non_react_src_tmp.define(grids, dmap, NVAR, ng, amrex::MFInfo(), Factory());
@@ -114,8 +114,8 @@ PeleC::react_state(
             0.0, vbox);
         }
         continue;
-      } else if (
-        typ == amrex::FabType::singlevalued || typ == amrex::FabType::regular)
+      }
+      if (typ == amrex::FabType::singlevalued || typ == amrex::FabType::regular)
 #endif
       {
         if (chem_integrator == 1) {
