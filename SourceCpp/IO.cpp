@@ -1,5 +1,6 @@
 #include <iomanip>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <ctime>
 
@@ -104,12 +105,10 @@ PeleC::restart(amrex::Amr& papa, istream& is, bool bReadSpecial)
       newGrow = 1;
     }
 #endif
-    old_sources[src_list[n]] =
-      std::unique_ptr<amrex::MultiFab>(new amrex::MultiFab(
-        grids, dmap, NVAR, oldGrow, amrex::MFInfo(), Factory()));
-    new_sources[src_list[n]] =
-      std::unique_ptr<amrex::MultiFab>(new amrex::MultiFab(
-        grids, dmap, NVAR, newGrow, amrex::MFInfo(), Factory()));
+    old_sources[src_list[n]] = std::make_unique<amrex::MultiFab>(
+      grids, dmap, NVAR, oldGrow, amrex::MFInfo(), Factory());
+    new_sources[src_list[n]] = std::make_unique<amrex::MultiFab>(
+      grids, dmap, NVAR, newGrow, amrex::MFInfo(), Factory());
   }
 
   if (do_hydro) {
@@ -156,8 +155,8 @@ PeleC::restart(amrex::Amr& papa, istream& is, bool bReadSpecial)
     FullPathDiagFile += "/Diagnostics";
     DiagFile.open(FullPathDiagFile.c_str(), std::ios::in);
 
-    for (int i = 0; i < n_lost; i++)
-      DiagFile >> material_lost_through_boundary_cumulative[i];
+    for (double& i : material_lost_through_boundary_cumulative)
+      DiagFile >> i;
 
     DiagFile.close();
   }
@@ -294,9 +293,8 @@ PeleC::checkPoint(
       FullPathDiagFile += "/Diagnostics";
       DiagFile.open(FullPathDiagFile.c_str(), std::ios::out);
 
-      for (int i = 0; i < n_lost; i++)
-        DiagFile << std::setprecision(15)
-                 << material_lost_through_boundary_cumulative[i] << std::endl;
+      for (double i : material_lost_through_boundary_cumulative)
+        DiagFile << std::setprecision(15) << i << std::endl;
 
       DiagFile.close();
     }
@@ -351,26 +349,26 @@ PeleC::setPlotVariables()
   bool plot_vfrac = eb_in_domain;
   pp.query("plot_vfrac ", plot_vfrac);
   if (plot_vfrac) {
-    parent->addDerivePlotVar("vfrac");
-  } else if (parent->isDerivePlotVar("vfrac")) {
-    parent->deleteDerivePlotVar("vfrac");
+    amrex::Amr::addDerivePlotVar("vfrac");
+  } else if (amrex::Amr::isDerivePlotVar("vfrac")) {
+    amrex::Amr::deleteDerivePlotVar("vfrac");
   }
 #endif
   bool plot_cost = true;
   pp.query("plot_cost", plot_cost);
   if (plot_cost) {
-    parent->addDerivePlotVar("WorkEstimate");
+    amrex::Amr::addDerivePlotVar("WorkEstimate");
   }
 
   bool plot_rhoy = true;
   pp.query("plot_rhoy", plot_rhoy);
   if (plot_rhoy) {
     for (int i = 0; i < NUM_SPECIES; i++) {
-      parent->addStatePlotVar(desc_lst[State_Type].name(FirstSpec + i));
+      amrex::Amr::addStatePlotVar(desc_lst[State_Type].name(FirstSpec + i));
     }
   } else {
     for (int i = 0; i < NUM_SPECIES; i++) {
-      parent->deleteStatePlotVar(desc_lst[State_Type].name(FirstSpec + i));
+      amrex::Amr::deleteStatePlotVar(desc_lst[State_Type].name(FirstSpec + i));
     }
   }
 
@@ -403,17 +401,17 @@ PeleC::setPlotVariables()
   //    }
 
   if (plot_massfrac) {
-    parent->addDerivePlotVar("massfrac");
+    amrex::Amr::addDerivePlotVar("massfrac");
   } else {
-    parent->deleteDerivePlotVar("massfrac");
+    amrex::Amr::deleteDerivePlotVar("massfrac");
   }
 
   bool plot_moleFrac = false;
   pp.query("plot_molefrac", plot_moleFrac);
   if (plot_moleFrac) {
-    parent->addDerivePlotVar("molefrac");
+    amrex::Amr::addDerivePlotVar("molefrac");
   } else {
-    parent->deleteDerivePlotVar("molefrac");
+    amrex::Amr::deleteDerivePlotVar("molefrac");
   }
 }
 
@@ -457,7 +455,7 @@ PeleC::writeJobInfo(const std::string& dir)
   jobInfoFile << " Plotfile Information\n";
   jobInfoFile << PrettyLine;
 
-  time_t now = time(0);
+  time_t now = time(nullptr);
 
   // Convert now to tm struct for local timezone
   tm* localtm = localtime(&now);
@@ -764,7 +762,7 @@ PeleC::writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how)
   for (int typ = 0; typ < desc_lst.size(); typ++)
     for (int comp = 0; comp < desc_lst[typ].nComp(); comp++)
       if (
-        parent->isStatePlotVar(desc_lst[typ].name(comp)) &&
+        amrex::Amr::isStatePlotVar(desc_lst[typ].name(comp)) &&
         desc_lst[typ].getType() == amrex::IndexType::TheCellType())
         plot_var_map.push_back(std::pair<int, int>(typ, comp));
 
@@ -772,10 +770,8 @@ PeleC::writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how)
   std::list<std::string> derive_names;
   const std::list<amrex::DeriveRec>& dlist = derive_lst.dlist();
 
-  for (std::list<amrex::DeriveRec>::const_iterator it = dlist.begin(),
-                                                   end = dlist.end();
-       it != end; ++it) {
-    if (parent->isDerivePlotVar(it->name())) {
+  for (const auto& it : dlist) {
+    if (amrex::Amr::isDerivePlotVar(it.name())) {
 #ifdef AMREX_PARTICLES
       if (
         it->name() == "particle_count" ||
@@ -788,8 +784,8 @@ PeleC::writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how)
       } else
 #endif
       {
-        derive_names.push_back(it->name());
-        num_derive += it->numDerive();
+        derive_names.push_back(it.name());
+        num_derive += it.numDerive();
       }
     }
   }
@@ -818,10 +814,8 @@ PeleC::writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how)
       os << desc_lst[typ].name(comp) << '\n';
     }
 
-    for (std::list<std::string>::const_iterator it = derive_names.begin(),
-                                                end = derive_names.end();
-         it != end; ++it) {
-      const amrex::DeriveRec* rec = derive_lst.get(*it);
+    for (const auto& derive_name : derive_names) {
+      const amrex::DeriveRec* rec = derive_lst.get(derive_name);
       for (int i = 0; i < rec->numDerive(); i++)
         os << rec->variableName(i) << '\n';
     }
@@ -929,14 +923,12 @@ PeleC::writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how)
   //
   // Cull data from derived variables.
   //
-  if (derive_names.size() > 0) {
-    for (std::list<std::string>::const_iterator it = derive_names.begin(),
-                                                end = derive_names.end();
-         it != end; ++it) {
-      const amrex::DeriveRec* rec = derive_lst.get(*it);
+  if (!derive_names.empty()) {
+    for (const auto& derive_name : derive_names) {
+      const amrex::DeriveRec* rec = derive_lst.get(derive_name);
       int ncomp = rec->numDerive();
 
-      auto derive_dat = derive(*it, cur_time, nGrow);
+      auto derive_dat = derive(derive_name, cur_time, nGrow);
       amrex::MultiFab::Copy(plotMF, *derive_dat, 0, cnt, ncomp, nGrow);
       cnt += ncomp;
     }
@@ -1002,7 +994,7 @@ PeleC::writeSmallPlotFile(
   for (int typ = 0; typ < desc_lst.size(); typ++)
     for (int comp = 0; comp < desc_lst[typ].nComp(); comp++)
       if (
-        parent->isStateSmallPlotVar(desc_lst[typ].name(comp)) &&
+        amrex::Amr::isStateSmallPlotVar(desc_lst[typ].name(comp)) &&
         desc_lst[typ].getType() == amrex::IndexType::TheCellType())
         plot_var_map.push_back(std::pair<int, int>(typ, comp));
 

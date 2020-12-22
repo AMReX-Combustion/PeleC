@@ -257,7 +257,8 @@ locate(const amrex::Real* xtable, const int n, const amrex::Real& x, int& idxlo)
   if (x >= xtable[n - 1]) {
     idxlo = n - 1;
     return;
-  } else if (x <= xtable[0]) {
+  }
+  if (x <= xtable[0]) {
     idxlo = 0;
     return;
   }

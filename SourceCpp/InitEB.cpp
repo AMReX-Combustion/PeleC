@@ -1,3 +1,5 @@
+#include <memory>
+
 #include "EB.H"
 #include "prob.H"
 #include "Utilities.H"
@@ -555,7 +557,7 @@ initialize_EB2(
     amrex::Real radius;
     radius = 0.02;
 
-    bool has_fluid_inside = 0;
+    bool has_fluid_inside = false;
     amrex::EB2::SphereIF sf(radius, center, has_fluid_inside);
 
     amrex::EB2::CylinderIF cf1(0.04, 0.09, 0, {0.045, 0.0, 0.0}, true);
@@ -575,7 +577,7 @@ initialize_EB2(
     amrex::Real radius2;
     radius2 = 0.09;
 
-    bool has_fluid_inside2 = 1;
+    bool has_fluid_inside2 = true;
     amrex::EB2::SphereIF sf2(radius2, center2, has_fluid_inside2);
 
     auto polys = amrex::EB2::makeUnion(cf1, pipe, cf4, sf, sf2);
@@ -693,11 +695,10 @@ initialize_EB2(
       amrex::EB2::PlaneIF plane1(point1, norm1);
       amrex::EB2::PlaneIF plane2(point2, norm2);
 
-      impfunc_triangles[itri] = std::unique_ptr<amrex::EB2::IntersectionIF<
+      impfunc_triangles[itri] = std::make_unique<amrex::EB2::IntersectionIF<
         amrex::EB2::PlaneIF, amrex::EB2::PlaneIF, amrex::EB2::PlaneIF>>(
-        new amrex::EB2::IntersectionIF<
-          amrex::EB2::PlaneIF, amrex::EB2::PlaneIF, amrex::EB2::PlaneIF>(
-          plane0, plane1, plane2));
+
+        plane0, plane1, plane2);
     }
 
     auto alltri_IF = amrex::EB2::makeUnion(

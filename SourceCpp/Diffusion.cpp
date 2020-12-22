@@ -151,7 +151,7 @@ PeleC::getMOLSrcTerm(
       SparseData<amrex::Real, EBBndrySten> eb_flux_thdlocal;
       eb_flux_thdlocal.define(sv_eb_bndry_grad_stencil[local_i], NVAR);
       auto* d_sv_eb_bndry_geom =
-        (Ncut > 0 ? sv_eb_bndry_geom[local_i].data() : 0);
+        (Ncut > 0 ? sv_eb_bndry_geom[local_i].data() : nullptr);
 #endif
 
       // const int* lo = vbox.loVect();
@@ -303,8 +303,7 @@ PeleC::getMOLSrcTerm(
       //  Set extensive flux at embedded boundary, potentially
       //  non-zero only for heat flux on isothermal boundaries,
       //  and momentum fluxes at no-slip walls
-      const int nFlux =
-        sv_eb_flux.size() == 0 ? 0 : sv_eb_flux[local_i].numPts();
+      const int nFlux = sv_eb_flux.empty() ? 0 : sv_eb_flux[local_i].numPts();
       if (typ == amrex::FabType::singlevalued && Ncut > 0) {
         eb_flux_thdlocal.setVal(0); // Default to Neumann for all fields
 
@@ -374,7 +373,7 @@ PeleC::getMOLSrcTerm(
           BL_PROFILE("PeleC::pc_hyp_mol_flux()");
 #ifdef PELEC_USE_EB
           amrex::Real* d_eb_flux_thdlocal =
-            (nFlux > 0 ? eb_flux_thdlocal.dataPtr() : 0);
+            (nFlux > 0 ? eb_flux_thdlocal.dataPtr() : nullptr);
 #endif
           // auto const& vol = volume.array(mfi);
           pc_compute_hyp_mol_flux(
@@ -535,8 +534,8 @@ PeleC::getMOLSrcTerm(
         }
 
         if (do_reflux && flux_factor != 0) {
-          for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-            flux_ec[dir].mult<amrex::RunOn::Device>(flux_factor);
+          for (auto& dir : flux_ec) {
+            dir.mult<amrex::RunOn::Device>(flux_factor);
           }
 
           if (fr_as_crse) {
@@ -608,8 +607,8 @@ PeleC::getMOLSrcTerm(
         BL_PROFILE("PeleC::diffextrap()");
         const int mg = MOLSrcTerm.nGrow();
         const amrex::Box bx = mfi.tilebox();
-        auto low = bx.loVect();
-        auto high = bx.hiVect();
+        const auto* low = bx.loVect();
+        const auto* high = bx.hiVect();
         auto dlo = Dterm.begin;
         auto dhi = Dterm.end;
         const int AMREX_D_DECL(lx = low[0], ly = low[1], lz = low[2]);

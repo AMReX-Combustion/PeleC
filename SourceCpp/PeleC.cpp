@@ -145,6 +145,7 @@ PeleC::read_params()
 
   amrex::ParmParse pp("pelec");
 
+#include <memory>
 #include <pelec_queries.H>
 
   pp.query("v", verbose);
@@ -393,12 +394,10 @@ PeleC::PeleC(
       newGrow = amrex::max(1, newGrow);
     }
 #endif
-    old_sources[src_list[n]] =
-      std::unique_ptr<amrex::MultiFab>(new amrex::MultiFab(
-        grids, dmap, NVAR, oldGrow, amrex::MFInfo(), Factory()));
-    new_sources[src_list[n]] =
-      std::unique_ptr<amrex::MultiFab>(new amrex::MultiFab(
-        grids, dmap, NVAR, newGrow, amrex::MFInfo(), Factory()));
+    old_sources[src_list[n]] = std::make_unique<amrex::MultiFab>(
+      grids, dmap, NVAR, oldGrow, amrex::MFInfo(), Factory());
+    new_sources[src_list[n]] = std::make_unique<amrex::MultiFab>(
+      grids, dmap, NVAR, newGrow, amrex::MFInfo(), Factory());
   }
 
   if (do_hydro) {
@@ -472,7 +471,7 @@ PeleC::PeleC(
   }
 }
 
-PeleC::~PeleC() {}
+PeleC::~PeleC() = default;
 
 void
 PeleC::buildMetrics()
@@ -697,7 +696,7 @@ PeleC::init(AmrLevel& old)
 {
   BL_PROFILE("PeleC::init(old)");
 
-  PeleC* oldlev = (PeleC*)&old;
+  auto* oldlev = (PeleC*)&old;
 
   //
   // Create new grid data by fillpatching from old.
@@ -1774,17 +1773,20 @@ PeleC::derive(const std::string& name, amrex::Real time, int ngrow)
       new amrex::MultiFab(grids, dmap, 1, 0));
     amrex::MultiFab::Copy(*derive_dat, LES_Coeffs, comp_Cs2, 0, 1, 0);
     return derive_dat;
-  } else if ((do_les) && (name == "C_I")) {
+  }
+  if ((do_les) && (name == "C_I")) {
     std::unique_ptr<amrex::MultiFab> derive_dat(
       new amrex::MultiFab(grids, dmap, 1, 0));
     amrex::MultiFab::Copy(*derive_dat, LES_Coeffs, comp_CI, 0, 1, 0);
     return derive_dat;
-  } else if ((do_les) && (les_model != 1) && (name == "Pr_T")) {
+  }
+  if ((do_les) && (les_model != 1) && (name == "Pr_T")) {
     std::unique_ptr<amrex::MultiFab> derive_dat(
       new amrex::MultiFab(grids, dmap, 1, 0));
     amrex::MultiFab::Copy(*derive_dat, LES_Coeffs, comp_PrT, 0, 1, 0);
     return derive_dat;
-  } else if ((do_les) && (les_model == 1) && (name == "Pr_T")) {
+  }
+  if ((do_les) && (les_model == 1) && (name == "Pr_T")) {
     std::unique_ptr<amrex::MultiFab> derive_dat(
       new amrex::MultiFab(grids, dmap, 1, 0));
     amrex::MultiFab::Copy(*derive_dat, LES_Coeffs, comp_Cs2ovPrT, 0, 1, 0);
@@ -2094,13 +2096,13 @@ PeleC::build_interior_boundary_mask(int ng)
   }
 
   //  If we got here, we need to build a new one
-  if (ib_mask.size() == 0) {
+  if (ib_mask.empty()) {
     ib_mask.resize(0);
   }
 
-  ib_mask.push_back(std::unique_ptr<amrex::iMultiFab>(new amrex::iMultiFab(
+  ib_mask.push_back(std::make_unique<amrex::iMultiFab>(
     grids, dmap, 1, ng, amrex::MFInfo(),
-    amrex::DefaultFabFactory<amrex::IArrayBox>())));
+    amrex::DefaultFabFactory<amrex::IArrayBox>()));
 
   amrex::iMultiFab* imf = ib_mask.back().get();
   int ghost_covered_by_valid = 0;

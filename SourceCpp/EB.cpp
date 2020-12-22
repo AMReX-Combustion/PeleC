@@ -191,9 +191,9 @@ pc_fill_flux_interp_stencil(
     const int j = sten[L].iv[1];
     const int k = sten[L].iv[2];
     if (is_inside(i, j, k, lo, hi)) {
-      for (int ii = 0; ii < 3; ii++) {
-        for (int jj = 0; jj < 3; jj++) {
-          sten[L].val[ii][jj] = 0.0;
+      for (auto& ii : sten[L].val) {
+        for (double& jj : ii) {
+          jj = 0.0;
         }
       }
       const amrex::Real ct0 = fc(i, j, k, 0);
@@ -524,8 +524,8 @@ pc_apply_eb_boundry_visc_flux_stencil(
 
       const amrex::Real denom =
         1.0 / std::sqrt(t1[0] * t1[0] + t1[1] * t1[1] + t1[2] * t1[2]);
-      for (int idir = 0; idir < AMREX_SPACEDIM; idir++)
-        t1[idir] *= denom;
+      for (double& idir : t1)
+        idir *= denom;
 
       amrex::Real t2[AMREX_SPACEDIM];
       t2[0] = norm[1] * t1[2] - norm[2] * t1[1];

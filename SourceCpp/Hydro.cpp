@@ -394,8 +394,8 @@ pc_umdrv(
     a[2], pdivuarr, vol, dx, dt, ppm_type, use_flattening);
 #endif
   BL_PROFILE_VAR_STOP(umeth);
-  for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-    qec_eli[dir].clear();
+  for (auto& dir : qec_eli) {
+    dir.clear();
   }
 
   // divu
