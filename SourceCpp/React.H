@@ -164,6 +164,12 @@ pc_expl_reactions(
 
   // Do RK time-stepping
   // int steps = 0;
+  amrex::Real massfrac[NUM_SPECIES] = {};
+  rhoInv = 1.0 / urk[URHO];
+  for (int n = 0; n < NUM_SPECIES; ++n) {
+    massfrac[n] = urk[UFS + n] * rhoInv;
+  }
+
   while (updt_time < dt_react) {
     for (int n = 0; n < NVAR; n++) {
       urk_carryover[n] = urk[n];
@@ -172,18 +178,9 @@ pc_expl_reactions(
     amrex::Real rhoe_carryover = rhoe_rk;
 
     amrex::Real wdot[NUM_SPECIES] = {};
-    amrex::Real massfrac[NUM_SPECIES] = {};
     for (int stage = 0; stage < 6; stage++) {
-      // Find up to date temperature and mass fractions
-      rhoInv = 1.0 / urk[URHO];
-      for (int n = 0; n < NUM_SPECIES; ++n) {
-        massfrac[n] = urk[UFS + n] * rhoInv;
-      }
-      amrex::Real Temp_rk;
-      EOS::EY2T(rhoe_rk / urk[URHO], massfrac, Temp_rk);
-
       // Compute species source terms
-      EOS::RTY2WDOT(urk[URHO], Temp_rk, massfrac, wdot);
+      EOS::RTY2WDOT(urk[URHO], urk[UTEMP], massfrac, wdot);
       for (int n = 0; n < NUM_SPECIES; ++n)
         wdot[n] += rhoydot_ext[n];
 
@@ -212,10 +209,15 @@ pc_expl_reactions(
       // update energy
       rhoe_carryover = rhoe_rk + beta_rk64[stage] * dt_rk * rhoedot_ext;
 
-      /*================= Update urk[rho] ========================= */
+      /*================= Update urk[rho] and urk[temp] =================== */
       urk[URHO] = 0.0;
       for (int n = 0; n < NUM_SPECIES; ++n)
         urk[URHO] += urk[UFS + n];
+      rhoInv = 1.0 / urk[URHO];
+      for (int n = 0; n < NUM_SPECIES; ++n) {
+	massfrac[n] = urk[UFS + n] * rhoInv;
+      }
+      EOS::EY2T(rhoe_rk / urk[URHO], massfrac, urk[UTEMP]);
 
       /*================ Adapt Time step! ======================== */
     } // end rk stages
