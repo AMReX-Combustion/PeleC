@@ -117,7 +117,8 @@ pc_expl_reactions(
   const int nsteps_max,
   const int nsteps_guess,
   const amrex::Real errtol,
-  const int do_update)
+  const int do_update,
+  const int clean_react_massfrac)
 {
 #ifdef AMREX_USE_GPU
   // having a global __constant__ variable is slower than having this in local
@@ -193,6 +194,9 @@ pc_expl_reactions(
   amrex::Real urk_carryover[NVAR] = {};
   for (int n = 0; n < NVAR; ++n)
     urk[n] = sold(i, j, k, n);
+  if (clean_react_massfrac == 1) {
+    clip_normalize_rY(urk[URHO], &urk[UFS]);
+  }
   amrex::Real urk_err[NVAR] = {};
 
   // using rho instead of rho_old for
