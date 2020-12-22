@@ -308,7 +308,8 @@ pc_fix_div_and_redistribute(
       const int j = sv_ebg[L].iv[1];
       const int k = sv_ebg[L].iv[2];
       if (is_inside(i, j, k, lo, hi, 2)) {
-        const amrex::Real kappa_inv = 1.0 / amrex::max(vf(i, j, k), 1.0e-12);
+        const amrex::Real kappa_inv =
+          1.0 / amrex::max<amrex::Real>(vf(i, j, k), 1.0e-12);
         amrex::Real tmp;
 #ifdef _OPENMP
 #pragma omp atomic read

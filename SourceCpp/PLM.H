@@ -40,32 +40,35 @@ plm_slope(
   dcen = 0.5 * (dlft + drgt);
   dsgn = amrex::Math::copysign(1.0, dcen);
   dlim = (dlft * drgt >= 0.0)
-           ? 2.0 * amrex::min(amrex::Math::abs(dlft), amrex::Math::abs(drgt))
+           ? 2.0 * amrex::min<amrex::Real>(
+                     amrex::Math::abs(dlft), amrex::Math::abs(drgt))
            : 0.0;
-  dfm = dsgn * amrex::min(dlim, amrex::Math::abs(dcen));
+  dfm = dsgn * amrex::min<amrex::Real>(dlim, amrex::Math::abs(dcen));
 
   dlft = qp - qc;
   drgt = q(i + 2 * bdim[0], j + 2 * bdim[1], k + 2 * bdim[2], n) - qp;
   dcen = 0.5 * (dlft + drgt);
   dsgn = amrex::Math::copysign(1.0, dcen);
   dlim = (dlft * drgt >= 0.0)
-           ? 2.0 * amrex::min(amrex::Math::abs(dlft), amrex::Math::abs(drgt))
+           ? 2.0 * amrex::min<amrex::Real>(
+                     amrex::Math::abs(dlft), amrex::Math::abs(drgt))
            : 0.0;
-  dfp = dsgn * amrex::min(dlim, amrex::Math::abs(dcen));
+  dfp = dsgn * amrex::min<amrex::Real>(dlim, amrex::Math::abs(dcen));
 
   dlft = qc - qm;
   drgt = qp - qc;
   dcen = 0.5 * (dlft + drgt);
   dsgn = amrex::Math::copysign(1.0, dcen);
   dlim = (dlft * drgt >= 0.0)
-           ? 2.0 * amrex::min(amrex::Math::abs(dlft), amrex::Math::abs(drgt))
+           ? 2.0 * amrex::min<amrex::Real>(
+                     amrex::Math::abs(dlft), amrex::Math::abs(drgt))
            : 0.0;
-  dcen = dsgn * amrex::min(dlim, amrex::Math::abs(dcen));
+  dcen = dsgn * amrex::min<amrex::Real>(dlim, amrex::Math::abs(dcen));
 
   dtemp = 4.0 / 3.0 * dcen - 1.0 / 6.0 * (dfp + dfm);
 
   // Flattening could be done here (see Nyx if we want to do it)
-  return dsgn * amrex::min(dlim, amrex::Math::abs(dtemp));
+  return dsgn * amrex::min<amrex::Real>(dlim, amrex::Math::abs(dtemp));
 }
 
 AMREX_GPU_DEVICE
@@ -112,13 +115,18 @@ pc_plm_x(
   e[1] = u;
   e[2] = u + cc;
   //  Construct the right state on the i-1/2 interface
-  amrex::Real rho_ref = rho - 0.5 * (1.0 + dtdx * amrex::min(e[0], 0.0)) * drho;
-  amrex::Real u_ref = u - 0.5 * (1.0 + dtdx * amrex::min(e[0], 0.0)) * du;
-  amrex::Real v_ref = v - 0.5 * (1.0 + dtdx * amrex::min(e[0], 0.0)) * dv;
-  amrex::Real w_ref = w - 0.5 * (1.0 + dtdx * amrex::min(e[0], 0.0)) * dw;
-  amrex::Real p_ref = p - 0.5 * (1.0 + dtdx * amrex::min(e[0], 0.0)) * dp;
+  amrex::Real rho_ref =
+    rho - 0.5 * (1.0 + dtdx * amrex::min<amrex::Real>(e[0], 0.0)) * drho;
+  amrex::Real u_ref =
+    u - 0.5 * (1.0 + dtdx * amrex::min<amrex::Real>(e[0], 0.0)) * du;
+  amrex::Real v_ref =
+    v - 0.5 * (1.0 + dtdx * amrex::min<amrex::Real>(e[0], 0.0)) * dv;
+  amrex::Real w_ref =
+    w - 0.5 * (1.0 + dtdx * amrex::min<amrex::Real>(e[0], 0.0)) * dw;
+  amrex::Real p_ref =
+    p - 0.5 * (1.0 + dtdx * amrex::min<amrex::Real>(e[0], 0.0)) * dp;
   amrex::Real rhoe_ref =
-    rhoe - 0.5 * (1.0 + dtdx * amrex::min(e[0], 0.0)) * drhoe;
+    rhoe - 0.5 * (1.0 + dtdx * amrex::min<amrex::Real>(e[0], 0.0)) * drhoe;
 
   amrex::Real apright = 0.25 * dtdx * (e[0] - e[2]) *
                         (1.0 - amrex::Math::copysign(1.0, e[2])) * alphap;
@@ -136,23 +144,27 @@ pc_plm_x(
                          (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0w;
 
   qp(i, j, k, QRHO) = rho_ref + apright + amright + azrright;
-  qp(i, j, k, QRHO) = amrex::max(SMALL_DENS, qp(i, j, k, QRHO));
+  qp(i, j, k, QRHO) = amrex::max<amrex::Real>(
+    std::numeric_limits<amrex::Real>::min(), qp(i, j, k, QRHO));
   AMREX_D_TERM(qp(i, j, k, QU) = u_ref + (apright - amright) * cc / rho;
                qp(i, j, k, QV) = 0.; qp(i, j, k, QW) = 0.;
                , qp(i, j, k, QV) = v_ref + azv1rght;
                , qp(i, j, k, QW) = w_ref + azw1rght;);
   qp(i, j, k, QPRES) = p_ref + (apright + amright) * cs;
-  qp(i, j, k, QPRES) = amrex::max(qp(i, j, k, QPRES), SMALL_PRES);
+  qp(i, j, k, QPRES) = amrex::max<amrex::Real>(
+    qp(i, j, k, QPRES), std::numeric_limits<amrex::Real>::min());
   qp(i, j, k, QREINT) = rhoe_ref + (apright + amright) * enth * cs + azeright;
 
   //  Construct the left state on the i+1/2 interface
 
-  rho_ref = rho + 0.5 * (1.0 - dtdx * amrex::max(e[2], 0.0)) * drho;
-  u_ref = u + 0.5 * (1.0 - dtdx * amrex::max(e[2], 0.0)) * du;
-  v_ref = v + 0.5 * (1.0 - dtdx * amrex::max(e[2], 0.0)) * dv;
-  w_ref = w + 0.5 * (1.0 - dtdx * amrex::max(e[2], 0.0)) * dw;
-  p_ref = p + 0.5 * (1.0 - dtdx * amrex::max(e[2], 0.0)) * dp;
-  rhoe_ref = rhoe + 0.5 * (1.0 - dtdx * amrex::max(e[2], 0.0)) * drhoe;
+  rho_ref =
+    rho + 0.5 * (1.0 - dtdx * amrex::max<amrex::Real>(e[2], 0.0)) * drho;
+  u_ref = u + 0.5 * (1.0 - dtdx * amrex::max<amrex::Real>(e[2], 0.0)) * du;
+  v_ref = v + 0.5 * (1.0 - dtdx * amrex::max<amrex::Real>(e[2], 0.0)) * dv;
+  w_ref = w + 0.5 * (1.0 - dtdx * amrex::max<amrex::Real>(e[2], 0.0)) * dw;
+  p_ref = p + 0.5 * (1.0 - dtdx * amrex::max<amrex::Real>(e[2], 0.0)) * dp;
+  rhoe_ref =
+    rhoe + 0.5 * (1.0 - dtdx * amrex::max<amrex::Real>(e[2], 0.0)) * drhoe;
 
   //                  apleft = 0.25*dtdx*(e[2] - e[2])*(1.0 +
   //                  amrex::Math::copysign(1.0,e[2]))*alphap;
@@ -169,13 +181,15 @@ pc_plm_x(
   amrex::Real azw1left = 0.25 * dtdx * (e[2] - e[1]) *
                          (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0w;
   qm(i + 1, j, k, QRHO) = rho_ref + apleft + amleft + azrleft;
-  qm(i + 1, j, k, QRHO) = amrex::max(qm(i + 1, j, k, QRHO), SMALL_DENS);
+  qm(i + 1, j, k, QRHO) = amrex::max<amrex::Real>(
+    qm(i + 1, j, k, QRHO), std::numeric_limits<amrex::Real>::min());
   AMREX_D_TERM(qm(i + 1, j, k, QU) = u_ref + (apleft - amleft) * cc / rho;
                qm(i + 1, j, k, QV) = 0.; qm(i + 1, j, k, QW) = 0.;
                , qm(i + 1, j, k, QV) = v_ref + azv1left;
                , qm(i + 1, j, k, QW) = w_ref + azw1left;);
   qm(i + 1, j, k, QPRES) = p_ref + (apleft + amleft) * cs;
-  qm(i + 1, j, k, QPRES) = amrex::max(qm(i + 1, j, k, QPRES), SMALL_PRES);
+  qm(i + 1, j, k, QPRES) = amrex::max<amrex::Real>(
+    qm(i + 1, j, k, QPRES), std::numeric_limits<amrex::Real>::min());
   qm(i + 1, j, k, QREINT) = rhoe_ref + (apleft + amleft) * enth * cs + azeleft;
   // Upwind the passive variables
   for (int ipassive = 0; ipassive < NPASSIVE; ++ipassive) {
@@ -235,13 +249,18 @@ pc_plm_y(
   e[1] = v;
   e[2] = v + cc;
   // Construct the "right" state on the j-1/2 interface
-  amrex::Real rho_ref = rho - 0.5 * (1.0 + dtdy * amrex::min(e[0], 0.0)) * drho;
-  amrex::Real u_ref = u - 0.5 * (1.0 + dtdy * amrex::min(e[0], 0.0)) * du;
-  amrex::Real v_ref = v - 0.5 * (1.0 + dtdy * amrex::min(e[0], 0.0)) * dv;
-  amrex::Real w_ref = w - 0.5 * (1.0 + dtdy * amrex::min(e[0], 0.0)) * dw;
-  amrex::Real p_ref = p - 0.5 * (1.0 + dtdy * amrex::min(e[0], 0.0)) * dp;
+  amrex::Real rho_ref =
+    rho - 0.5 * (1.0 + dtdy * amrex::min<amrex::Real>(e[0], 0.0)) * drho;
+  amrex::Real u_ref =
+    u - 0.5 * (1.0 + dtdy * amrex::min<amrex::Real>(e[0], 0.0)) * du;
+  amrex::Real v_ref =
+    v - 0.5 * (1.0 + dtdy * amrex::min<amrex::Real>(e[0], 0.0)) * dv;
+  amrex::Real w_ref =
+    w - 0.5 * (1.0 + dtdy * amrex::min<amrex::Real>(e[0], 0.0)) * dw;
+  amrex::Real p_ref =
+    p - 0.5 * (1.0 + dtdy * amrex::min<amrex::Real>(e[0], 0.0)) * dp;
   amrex::Real rhoe_ref =
-    rhoe - 0.5 * (1.0 + dtdy * amrex::min(e[0], 0.0)) * drhoe;
+    rhoe - 0.5 * (1.0 + dtdy * amrex::min<amrex::Real>(e[0], 0.0)) * drhoe;
 
   amrex::Real apright = 0.25 * dtdy * (e[0] - e[2]) *
                         (1.0 - amrex::Math::copysign(1.0, e[2])) * alphap;
@@ -259,22 +278,26 @@ pc_plm_y(
                          (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0w;
 
   qp(i, j, k, QRHO) = rho_ref + apright + amright + azrright;
-  qp(i, j, k, QRHO) = amrex::max(SMALL_DENS, qp(i, j, k, QRHO));
+  qp(i, j, k, QRHO) = amrex::max<amrex::Real>(
+    std::numeric_limits<amrex::Real>::min(), qp(i, j, k, QRHO));
   qp(i, j, k, QU) = u_ref + azu1rght;
   qp(i, j, k, QV) = v_ref + (apright - amright) * cc / rho;
   AMREX_D_TERM(qp(i, j, k, QW) = 0.;, , qp(i, j, k, QW) = w_ref + azw1rght;);
   qp(i, j, k, QPRES) = p_ref + (apright + amright) * cs;
-  qp(i, j, k, QPRES) = amrex::max(qp(i, j, k, QPRES), SMALL_PRES);
+  qp(i, j, k, QPRES) = amrex::max<amrex::Real>(
+    qp(i, j, k, QPRES), std::numeric_limits<amrex::Real>::min());
   qp(i, j, k, QREINT) = rhoe_ref + (apright + amright) * enth * cs + azeright;
 
   // Construct the "left" state on the j+1/2 interface
 
-  rho_ref = rho + 0.5 * (1.0 - dtdy * amrex::max(e[2], 0.0)) * drho;
-  u_ref = u + 0.5 * (1.0 - dtdy * amrex::max(e[2], 0.0)) * du;
-  v_ref = v + 0.5 * (1.0 - dtdy * amrex::max(e[2], 0.0)) * dv;
-  w_ref = w + 0.5 * (1.0 - dtdy * amrex::max(e[2], 0.0)) * dw;
-  p_ref = p + 0.5 * (1.0 - dtdy * amrex::max(e[2], 0.0)) * dp;
-  rhoe_ref = rhoe + 0.5 * (1.0 - dtdy * amrex::max(e[2], 0.0)) * drhoe;
+  rho_ref =
+    rho + 0.5 * (1.0 - dtdy * amrex::max<amrex::Real>(e[2], 0.0)) * drho;
+  u_ref = u + 0.5 * (1.0 - dtdy * amrex::max<amrex::Real>(e[2], 0.0)) * du;
+  v_ref = v + 0.5 * (1.0 - dtdy * amrex::max<amrex::Real>(e[2], 0.0)) * dv;
+  w_ref = w + 0.5 * (1.0 - dtdy * amrex::max<amrex::Real>(e[2], 0.0)) * dw;
+  p_ref = p + 0.5 * (1.0 - dtdy * amrex::max<amrex::Real>(e[2], 0.0)) * dp;
+  rhoe_ref =
+    rhoe + 0.5 * (1.0 - dtdy * amrex::max<amrex::Real>(e[2], 0.0)) * drhoe;
 
   //                 apleft = 0.25*dtdy*(e[2] - e[2])*(1.0 +
   //                 amrex::Math::copysign(1.0,e[2]))*alphap;
@@ -292,13 +315,15 @@ pc_plm_y(
                          (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0w;
 
   qm(i, j + 1, k, QRHO) = rho_ref + apleft + amleft + azrleft;
-  qm(i, j + 1, k, QRHO) = amrex::max(qm(i, j + 1, k, QRHO), SMALL_DENS);
+  qm(i, j + 1, k, QRHO) = amrex::max<amrex::Real>(
+    qm(i, j + 1, k, QRHO), std::numeric_limits<amrex::Real>::min());
   qm(i, j + 1, k, QU) = u_ref + azu1left;
   qm(i, j + 1, k, QV) = v_ref + (apleft - amleft) * cc / rho;
   AMREX_D_TERM(qm(i, j + 1, k, QW) = 0.;
                , , qm(i, j + 1, k, QW) = w_ref + azw1left;);
   qm(i, j + 1, k, QPRES) = p_ref + (apleft + amleft) * cs;
-  qm(i, j + 1, k, QPRES) = amrex::max(qm(i, j + 1, k, QPRES), SMALL_PRES);
+  qm(i, j + 1, k, QPRES) = amrex::max<amrex::Real>(
+    qm(i, j + 1, k, QPRES), std::numeric_limits<amrex::Real>::min());
   qm(i, j + 1, k, QREINT) = rhoe_ref + (apleft + amleft) * enth * cs + azeleft;
 
   // Upwind the passive variables
@@ -360,13 +385,18 @@ pc_plm_z(
   e[2] = w + cc;
 
   // Construct the "right" state on the k-1/2 interface
-  amrex::Real rho_ref = rho - 0.5 * (1.0 + dtdz * amrex::min(e[0], 0.0)) * drho;
-  amrex::Real u_ref = u - 0.5 * (1.0 + dtdz * amrex::min(e[0], 0.0)) * du;
-  amrex::Real v_ref = v - 0.5 * (1.0 + dtdz * amrex::min(e[0], 0.0)) * dv;
-  amrex::Real w_ref = w - 0.5 * (1.0 + dtdz * amrex::min(e[0], 0.0)) * dw;
-  amrex::Real p_ref = p - 0.5 * (1.0 + dtdz * amrex::min(e[0], 0.0)) * dp;
+  amrex::Real rho_ref =
+    rho - 0.5 * (1.0 + dtdz * amrex::min<amrex::Real>(e[0], 0.0)) * drho;
+  amrex::Real u_ref =
+    u - 0.5 * (1.0 + dtdz * amrex::min<amrex::Real>(e[0], 0.0)) * du;
+  amrex::Real v_ref =
+    v - 0.5 * (1.0 + dtdz * amrex::min<amrex::Real>(e[0], 0.0)) * dv;
+  amrex::Real w_ref =
+    w - 0.5 * (1.0 + dtdz * amrex::min<amrex::Real>(e[0], 0.0)) * dw;
+  amrex::Real p_ref =
+    p - 0.5 * (1.0 + dtdz * amrex::min<amrex::Real>(e[0], 0.0)) * dp;
   amrex::Real rhoe_ref =
-    rhoe - 0.5 * (1.0 + dtdz * amrex::min(e[0], 0.0)) * drhoe;
+    rhoe - 0.5 * (1.0 + dtdz * amrex::min<amrex::Real>(e[0], 0.0)) * drhoe;
 
   amrex::Real apright = 0.25 * dtdz * (e[0] - e[2]) *
                         (1.0 - amrex::Math::copysign(1.0, e[2])) * alphap;
@@ -384,22 +414,26 @@ pc_plm_z(
                          (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0v;
 
   qp(i, j, k, QRHO) = rho_ref + apright + amright + azrright;
-  qp(i, j, k, QRHO) = amrex::max(SMALL_DENS, qp(i, j, k, QRHO));
+  qp(i, j, k, QRHO) = amrex::max<amrex::Real>(
+    std::numeric_limits<amrex::Real>::min(), qp(i, j, k, QRHO));
   qp(i, j, k, QU) = u_ref + azu1rght;
   qp(i, j, k, QV) = v_ref + azv1rght;
   qp(i, j, k, QW) = w_ref + (apright - amright) * cc / rho;
   qp(i, j, k, QPRES) = p_ref + (apright + amright) * cs;
-  qp(i, j, k, QPRES) = amrex::max(qp(i, j, k, QPRES), SMALL_PRES);
+  qp(i, j, k, QPRES) = amrex::max<amrex::Real>(
+    qp(i, j, k, QPRES), std::numeric_limits<amrex::Real>::min());
   qp(i, j, k, QREINT) = rhoe_ref + (apright + amright) * enth * cs + azeright;
 
   // Construct the "left" state on the j+1/2 interface
 
-  rho_ref = rho + 0.5 * (1.0 - dtdz * amrex::max(e[2], 0.0)) * drho;
-  u_ref = u + 0.5 * (1.0 - dtdz * amrex::max(e[2], 0.0)) * du;
-  v_ref = v + 0.5 * (1.0 - dtdz * amrex::max(e[2], 0.0)) * dv;
-  w_ref = w + 0.5 * (1.0 - dtdz * amrex::max(e[2], 0.0)) * dw;
-  p_ref = p + 0.5 * (1.0 - dtdz * amrex::max(e[2], 0.0)) * dp;
-  rhoe_ref = rhoe + 0.5 * (1.0 - dtdz * amrex::max(e[2], 0.0)) * drhoe;
+  rho_ref =
+    rho + 0.5 * (1.0 - dtdz * amrex::max<amrex::Real>(e[2], 0.0)) * drho;
+  u_ref = u + 0.5 * (1.0 - dtdz * amrex::max<amrex::Real>(e[2], 0.0)) * du;
+  v_ref = v + 0.5 * (1.0 - dtdz * amrex::max<amrex::Real>(e[2], 0.0)) * dv;
+  w_ref = w + 0.5 * (1.0 - dtdz * amrex::max<amrex::Real>(e[2], 0.0)) * dw;
+  p_ref = p + 0.5 * (1.0 - dtdz * amrex::max<amrex::Real>(e[2], 0.0)) * dp;
+  rhoe_ref =
+    rhoe + 0.5 * (1.0 - dtdz * amrex::max<amrex::Real>(e[2], 0.0)) * drhoe;
 
   //                 apleft = 0.25*dtdz*(e[2] - e[2])*(1.0 +
   //                 amrex::Math::copysign(1.0,e[2]))*alphap;
@@ -417,12 +451,14 @@ pc_plm_z(
                          (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0v;
 
   qm(i, j, k + 1, QRHO) = rho_ref + apleft + amleft + azrleft;
-  qm(i, j, k + 1, QRHO) = amrex::max(qm(i, j, k + 1, QRHO), SMALL_DENS);
+  qm(i, j, k + 1, QRHO) = amrex::max<amrex::Real>(
+    qm(i, j, k + 1, QRHO), std::numeric_limits<amrex::Real>::min());
   qm(i, j, k + 1, QU) = u_ref + azu1left;
   qm(i, j, k + 1, QV) = v_ref + azv1left;
   qm(i, j, k + 1, QW) = w_ref + (apleft - amleft) * cc / rho;
   qm(i, j, k + 1, QPRES) = p_ref + (apleft + amleft) * cs;
-  qm(i, j, k + 1, QPRES) = amrex::max(qm(i, j, k + 1, QPRES), SMALL_PRES);
+  qm(i, j, k + 1, QPRES) = amrex::max<amrex::Real>(
+    qm(i, j, k + 1, QPRES), std::numeric_limits<amrex::Real>::min());
   qm(i, j, k + 1, QREINT) = rhoe_ref + (apleft + amleft) * enth * cs + azeleft;
 
   // Upwind the passive variables
@@ -537,7 +573,8 @@ pc_transx(
   amrex::Real pnewr =
     qyp(i, j, k, QPRES) - hdt * (dAup + pav * dAu * (c - 1.)) / vol(i, j, k);
   pnewr += hdt * srcp;
-  qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
+  qp(i, j, k, QPRES) =
+    amrex::max<amrex::Real>(pnewr, std::numeric_limits<amrex::Real>::min());
   qp(i, j, k, QREINT) = renewr - rhoekinr + hdt * srce;
 
   // QM
@@ -566,7 +603,8 @@ pc_transx(
   qm(i, j + 1, k, QREINT) = renewl - rhoekinl + hdt * srce;
   const amrex::Real pnewl = qym(i, j + 1, k, QPRES) -
                             hdt * (dAup + pav * dAu * (c - 1.)) / vol(i, j, k);
-  qm(i, j + 1, k, QPRES) = amrex::max(pnewl + hdt * srcp, SMALL_PRES);
+  qm(i, j + 1, k, QPRES) = amrex::max<amrex::Real>(
+    pnewl + hdt * srcp, std::numeric_limits<amrex::Real>::min());
 }
 
 // Corrects the left and right Y-states with the X-Flux
@@ -653,7 +691,8 @@ pc_transy(
     0.5 * (runewr * runewr + rvnewr * rvnewr) / rrnewr;
   const amrex::Real pnewr =
     qxp(i, j, k, QPRES) - cdtdy * (dup + pav * du * (c - 1.));
-  qp(i, j, k, QPRES) = amrex::max(pnewr + hdt * srcp, SMALL_PRES);
+  qp(i, j, k, QPRES) = amrex::max<amrex::Real>(
+    pnewr + hdt * srcp, std::numeric_limits<amrex::Real>::min());
   qp(i, j, k, QREINT) = renewr - rhoekinr + hdt * srce;
 
   // QM
@@ -681,7 +720,8 @@ pc_transy(
 
   const amrex::Real pnewl =
     qxm(i + 1, j, k, QPRES) - cdtdy * (dup + pav * du * (c - 1.));
-  qm(i + 1, j, k, QPRES) = amrex::max(pnewl + hdt * srcp, SMALL_PRES);
+  qm(i + 1, j, k, QPRES) = amrex::max<amrex::Real>(
+    pnewl + hdt * srcp, std::numeric_limits<amrex::Real>::min());
   qm(i + 1, j, k, QREINT) = renewl - rhoekinl + hdt * srce;
 }
 

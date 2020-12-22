@@ -21,4 +21,5 @@ cmake -DCMAKE_INSTALL_PREFIX:PATH=./install \
       -DAMReX_CUDA_ARCH=Volta \
       -DPYTHON_EXECUTABLE=$(which python3) \
       -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON \
+      -DPELEC_PRECISION:STRING=DOUBLE \
       .. && cmake --build . --parallel 8

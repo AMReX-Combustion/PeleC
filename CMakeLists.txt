@@ -21,6 +21,7 @@ option(PELEC_ENABLE_MASA "Enable tests that require MASA" OFF)
 option(PELEC_ENABLE_SUNDIALS "Enable SUNDIALS as ODE solver" OFF)
 option(PELEC_ENABLE_FCOMPARE "Enable building fcompare when not testing" OFF)
 option(PELEC_ENABLE_FCOMPARE_FOR_TESTS "Check test plots against gold files" OFF)
+set(PELEC_PRECISION "DOUBLE" CACHE STRING "Floating point precision SINGLE or DOUBLE")
 
 #Options for performance
 option(PELEC_ENABLE_MPI "Enable MPI" OFF)
@@ -102,6 +103,14 @@ if(PELEC_ENABLE_WERROR)
 endif()
 
 init_code_checks()
+
+message(STATUS "PELEC_PRECISION = ${PELEC_PRECISION}")
+if("${PELEC_PRECISION}" STREQUAL "SINGLE" AND PELEC_ENABLE_AMREX_EB)
+  message(FATAL_ERROR "Single precision currently not allowed in AMReX with EB enabled")
+endif()
+if("${PELEC_PRECISION}" STREQUAL "SINGLE" AND PELEC_ENABLE_MASA)
+  message(FATAL_ERROR "Single precision currently not allowed in AMReX with MASA enabled")
+endif()
 
 #Turn on rpath stuff
 include(SetRpath)

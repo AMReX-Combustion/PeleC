@@ -220,7 +220,7 @@ PeleC::construct_hydro_source(
         BL_PROFILE_VAR_STOP(purm);
 
         BL_PROFILE_VAR("courno + flux reg", crno);
-        courno = amrex::max(courno, cflLoc);
+        courno = amrex::max<amrex::Real>(courno, cflLoc);
 
         // Filter hydro source and fluxes here
         if (use_explicit_filter) {

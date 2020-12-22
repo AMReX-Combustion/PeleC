@@ -128,7 +128,7 @@ init_bc()
     pmf(yl, yr, pmf_vals);
     amrex::Real mysum = 0.0;
     for (int n = 0; n < NUM_SPECIES; n++) {
-      molefrac[n] = amrex::max(0.0, pmf_vals[3 + n]);
+      molefrac[n] = amrex::max<amrex::Real>(0.0, pmf_vals[3 + n]);
       mysum += molefrac[n];
     }
     molefrac[N2_ID] = 1.0 - (mysum - molefrac[N2_ID]);
