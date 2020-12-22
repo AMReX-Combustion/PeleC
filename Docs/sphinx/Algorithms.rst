@@ -13,7 +13,7 @@ Numerical Treatment and Algorithms
 ==================================
 
 PeleC Time-stepping
-------------------
+-------------------
 
 PeleC supports two options for time-stepping: a second-order explicit method-of-lines approach (MOL), and an iterative scheme base on a spectral deferred correction approach (SDC). Both time-steppers share a considerable amount of code.
 
@@ -149,31 +149,31 @@ The eigenvalues of the matrix :math:`\mathbf{A}_x` are given by:
 .. math::
    \mathbf{\Lambda}\left(\mathbf{A}_x\right) = \{u-c,u,u,u+c\}.
   
-  
 The right column eigenvectors are:
 
 .. math::
+   :label: matrix_lx
   
-  \mathbf{r}_x =
-  \left(\begin{array}{ccccc}
-  1 & 1 &  0  & 1 \\
-  -\frac{c}{\rho} &  0 & 0 & \frac{c}{\rho} \\
-  c^2 & 0  & 0 & c^2 \\
-  h & 0 &  1  & h
-  \end{array}\right).
-    :label: matrix_lx
+   \mathbf{r}_x =
+   \left(\begin{array}{ccccc}
+   1 & 1 &  0  & 1 \\
+   -\frac{c}{\rho} &  0 & 0 & \frac{c}{\rho} \\
+   c^2 & 0  & 0 & c^2 \\
+   h & 0 &  1  & h
+   \end{array}\right).
   
 The left row eigenvectors, normalized so that :math:`\mathbf{l}_x\cdot\mathbf{r}_x = \mathbf{I}` are:
 
 .. math::
-    \mathbf{l}_x =
-  \left(\begin{array}{ccccc}
-  0 & -\frac{\rho}{2c} &  \frac{1}{2c^2}  & 0 \\
-  1 & 0  & -\frac{1}{c^2}  & 0 \\
-  0 & 0 &  -\frac{h}{c^2}  & 0 \\
-  0 & \frac{\rho}{2c} & \frac{1}{2c^2}  & 0
-  \end{array}\right).
-    :label: matrix_rx
+   :label: matrix_rx
+
+   \mathbf{l}_x =
+   \left(\begin{array}{ccccc}
+   0 & -\frac{\rho}{2c} &  \frac{1}{2c^2}  & 0 \\
+   1 & 0  & -\frac{1}{c^2}  & 0 \\
+   0 & 0 &  -\frac{h}{c^2}  & 0 \\
+   0 & \frac{\rho}{2c} & \frac{1}{2c^2}  & 0
+   \end{array}\right).
 
 Note that here, :math:`c` and :math:`h` are the sound speed and the enthalpy, respectively.
 
@@ -249,11 +249,13 @@ Once the limited values :math:`q_{R,i-\frac{1}{2}}` and :math:`q_{L,i+\frac{1}{2
 in each cell is done by computing the average value swept out by parabola profile across a face, assuming that it moves at the speed of a
 characteristic wave :math:`\lambda_k`. The average is defined by the following integrals:
 
+
 .. math::
+  :label: int_parab_2
+
     \mathcal{I}^{(k)}_{+} \left(q_i \right) &= \frac{1}{\sigma_k \Delta x}\int^{(i+1/2)\Delta x}_{((i+1/2)-\sigma_k)\Delta x} q_i^I\left(x\right){\rm d}x,
 
-  \mathcal{I}^{(k)}_{-} \left(q_i \right) &= \frac{1}{\sigma_k \Delta x}\int^{((i-1/2)+\sigma_k)\Delta x}_{(i-1/2)\Delta x} q_i^I\left(x\right){\rm d}x,
-  :label: int_parab_2
+    \mathcal{I}^{(k)}_{-} \left(q_i \right) &= \frac{1}{\sigma_k \Delta x}\int^{((i-1/2)+\sigma_k)\Delta x}_{(i-1/2)\Delta x} q_i^I\left(x\right){\rm d}x,
 
 with :math:`\sigma_k = |\lambda_k|\Delta t / \Delta x`, where :math:`\lambda_k=\{u-c,u,u,u+c\}`, while :math:`\Delta t` and :math:`\Delta x` are the discretization
 step in time and space, respectively, with the assumption that :math:`\Delta x` is constant in the computational domain.
@@ -265,8 +267,10 @@ The parabolic profile is defined by
   
 with 
 
-.. math:: q_{i,6} = 6 q_i - 3\left(q_{R,i-\frac{1}{2}} + q_{L,i+\frac{1}{2}} \right).   
+.. math::
    :label: parabolic_profile
+
+   q_{i,6} = 6 q_i - 3\left(q_{R,i-\frac{1}{2}} + q_{L,i+\frac{1}{2}} \right).   
 
 and
 
@@ -318,7 +322,7 @@ Method of Lines with Characteristic Extrapolation
 
 An alternative formulation well suited to Embedded Boundary geometry treatment and also available for regular grids is available and based on a method of lines approach. The advective (hyperbolic) fluxes computation is driven by the routine pc_hyp_mol_flux found in the file Hyp_pele_MOL_3d.F90, with call signature:
 
-.. f:function:: hyp_advection_module/pc_hyp_mol_flux
+.. code-block:: fortran
 
     :p q: Input state
     :p qaux: Augmented state
@@ -392,7 +396,7 @@ Once the left and right states are computed, a Riemann solver (in this case one 
 The characteristic extrapolation requires (slope limited) fluxes; these are found in the file slope_mol_3d_EB.f90. The call signature for the slope computation is:
 
 
-.. f:function:: slope_module/slopex
+.. code-block:: fortran
 
     :p q: Input state
     :p flatn: Flattening coefficient (not used)
@@ -459,19 +463,19 @@ PPM. Finally, the MOL has a more restrictive CFL condition (CFL=0.3),
 and, therefore, MOL simulations were approximately three times slower
 than PPM simulations.
 
-.. figure:: ./KE_mol_ppm.png
+.. figure:: /images/KE_mol_ppm.png
    :align: center
    :figwidth: 40%
 
    Kinetic energy as a function of time. Solid red: PPM at :math:`N=128^3`; dashed green: MOL at :math:`N=128^3`; dot-dashed  blue: PPM at :math:`N=512^3`; dotted orange: MOL at :math:`N=512^3`; dashed black: spectral code.
 
-.. figure:: ./dissipation_mol_ppm.png
+.. figure:: /images/dissipation_mol_ppm.png
    :align: center
    :figwidth: 40%
 
    Dissipation as a function of time. Solid red: PPM at :math:`N=128^3`; dashed green: MOL at :math:`N=128^3`; dot-dashed  blue: PPM at :math:`N=512^3`; dotted orange: MOL at :math:`N=512^3`; dashed black: spectral code.
 
-.. figure:: ./E3D_mol_ppm.png
+.. figure:: /images/E3D_mol_ppm.png
    :align: center
    :figwidth: 40%
 

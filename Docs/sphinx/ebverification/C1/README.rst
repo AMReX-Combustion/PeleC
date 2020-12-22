@@ -11,19 +11,19 @@ is performed around a sphere at a Re number and Mach number of 1.
 :math:`L_2` error norm of fields
 #################################
 
-.. image:: ./ebverification/C1/rho_error.png
-   :height: 300pt
+.. image:: /ebverification/C1/rho_error.png
+   :height: 3
 
-.. image:: ./ebverification/C1/p_error.png
-   :height: 300pt
+.. image:: /ebverification/C1/p_error.png
+   :height: 3
 
-.. image:: ./ebverification/C1/u_error.png
-   :height: 300pt
+.. image:: /ebverification/C1/u_error.png
+   :height: 3
 
-.. image:: ./ebverification/C1/v_error.png
-   :height: 300pt
+.. image:: /ebverification/C1/v_error.png
+   :height: 3
 
-.. image:: ./ebverification/C1/w_error.png
+.. image:: /ebverification/C1/w_error.png
    :height: 300pt
 
 .. note::

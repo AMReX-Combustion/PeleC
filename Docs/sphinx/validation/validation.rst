@@ -88,25 +88,25 @@ Results
 As the resolution increases, there is good agreement between the Pele
 data and reference data.
 
-.. figure:: ./validation/hit/reynolds.png
+.. figure:: /validation/hit/reynolds.png
    :align: center
    :figwidth: 40%
 
    Reynolds number as a function of time. Solid red: :math:`32^3`, dashed green :math:`64^3`, dash-dotted blue: :math:`128^3`, dotted orange: :math:`256^3`, black squares: Johnsen et al. (2009) JCP.
 
-.. figure:: ./validation/hit/mach.png
+.. figure:: /validation/hit/mach.png
    :align: center
    :figwidth: 40%
 
    Mach number as a function of time. Solid red: :math:`32^3`, dashed green :math:`64^3`, dash-dotted blue: :math:`128^3`, dotted orange: :math:`256^3`, black squares: Johnsen et al. (2009) JCP.
 
-.. figure:: ./validation/hit/enstrophy.png
+.. figure:: /validation/hit/enstrophy.png
    :align: center
    :figwidth: 40%
 
    Enstrophy as a function of time. Solid red: :math:`32^3`, dashed green :math:`64^3`, dash-dotted blue: :math:`128^3`, dotted orange: :math:`256^3`, black squares: Johnsen et al. (2009) JCP.
 
-.. figure:: ./validation/hit/KE.png
+.. figure:: /validation/hit/KE.png
    :align: center
    :figwidth: 40%
 
@@ -146,25 +146,25 @@ Results
 As the resolution increases, there is good agreement between the Pele
 data and reference data.
 
-.. figure:: ./validation/tg/dissipation.png
+.. figure:: /validation/tg/dissipation.png
    :align: center
    :figwidth: 40%
 
    Dissipation as a function of time. Solid red: :math:`32^3`, dashed green :math:`64^3`, dash-dotted blue: :math:`128^3`, dotted orange: :math:`256^3`, black squares: HOCFDW.
 
-.. figure:: ./validation/tg/enstrophy.png
+.. figure:: /validation/tg/enstrophy.png
    :align: center
    :figwidth: 40%
 
    Enstrophy as a function of time. Solid red: :math:`32^3`, dashed green :math:`64^3`, dash-dotted blue: :math:`128^3`, dotted orange: :math:`256^3`, black squares: HOCFDW.
 
-.. figure:: ./validation/tg/KE.png
+.. figure:: /validation/tg/KE.png
    :align: center
    :figwidth: 40%
 
    Kinetic energy as a function of time. Solid red: :math:`32^3`, dashed green :math:`64^3`, dash-dotted blue: :math:`128^3`, dotted orange: :math:`256^3`, black: HOCFDW.
 
-.. figure:: ./validation/tg/spectrum.png
+.. figure:: /validation/tg/spectrum.png
    :align: center
    :figwidth: 40%
 
@@ -186,25 +186,25 @@ final 3D reacting case.
 Good comparisons with the reference simulations were obtained in most
 of the quantities of interest.
 
-.. figure:: ./validation/rtg/ux.png
+.. figure:: /validation/rtg/ux.png
    :align: center
    :figwidth: 40%
 
    :math:`x`-velocity at :math:`t=5e-4 \tau`. Solid red: :math:`32^3`, dashed green :math:`64^3`, dash-dotted blue: :math:`128^3`, black: reference solution (DINO).
 
-.. figure:: ./validation/rtg/yh2.png
+.. figure:: /validation/rtg/yh2.png
    :align: center
    :figwidth: 40%
 
    :math:`Y_{H_2}` at :math:`t=5e-4 \tau`. Solid red: :math:`32^3`, dashed green :math:`64^3`, dash-dotted blue: :math:`128^3`, black: reference solution (DINO).
 
-.. figure:: ./validation/rtg/hr.png
+.. figure:: /validation/rtg/hr.png
    :align: center
    :figwidth: 40%
 
    Heat release at :math:`t=5e-4 \tau`. Solid red: :math:`32^3`, dashed green :math:`64^3`, dash-dotted blue: :math:`128^3`, black: reference solution (DINO).
 
-.. figure:: ./validation/rtg/tmax.png
+.. figure:: /validation/rtg/tmax.png
    :align: center
    :figwidth: 40%
 
@@ -247,7 +247,7 @@ number of strain rates is to check the capability of PeleC to
 accurately reproduce the critical strain rate, known as the extinction
 limit.
 
-.. figure:: ./validation/cfdf/results.png
+.. figure:: /validation/cfdf/results.png
    :align: center
    :figwidth: 40%
 

@@ -27,14 +27,14 @@ length, :math:`L`, is 2cm. The simulations are performed until
 Density profiles in centerline
 ##############################
 
-.. image:: ./ebverification/C12/rho.png
+.. image:: /ebverification/C12/rho.png
    :height: 300pt
 
 
 :math:`L_2` error norm of density
 #################################
 
-.. image:: ./ebverification/C12/error.png
+.. image:: /ebverification/C12/error.png
    :height: 300pt
 
 .. note::
