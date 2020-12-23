@@ -121,7 +121,8 @@ pc_fill_bndry_grad_stencil(
       // For point m, we interpolate z=0,1,2 lines, to (y(m),0), (y(m),1) and
       // (y(m),2), and
       //  then interpolate along y=y(m) to (y(m),z(m))
-      amrex::Real cy[3], cz[3];
+      amrex::Real cy[3];
+      amrex::Real cz[3];
       for (int m = 0; m < 2; m++) {
         cy[0] = 0.5 * (y[m] - 1.0) * (y[m] - 2.0);
         cy[1] = -y[m] * (y[m] - 2.0);
@@ -337,7 +338,8 @@ pc_fix_div_and_redistribute(
       const int j = sv_ebg[L].iv[1];
       const int k = sv_ebg[L].iv[2];
       if (is_inside(i, j, k, lo, hi, 1)) {
-        amrex::Real sum_kappa = 0.0, sum_div = 0.0;
+        amrex::Real sum_kappa = 0.0;
+        amrex::Real sum_div = 0.0;
         for (int ii = -1; ii <= 1; ii++) {
           for (int jj = -1; jj <= 1; jj++) {
             for (int kk = -1; kk <= 1; kk++) {
@@ -520,13 +522,15 @@ pc_apply_eb_boundry_visc_flux_stencil(
       const amrex::Real ndota =
         norm[0] * alpha[0] + norm[1] * alpha[1] + norm[2] * alpha[2];
       amrex::Real t1[AMREX_SPACEDIM];
-      for (int idir = 0; idir < AMREX_SPACEDIM; idir++)
+      for (int idir = 0; idir < AMREX_SPACEDIM; idir++) {
         t1[idir] = alpha[idir] - ndota * norm[idir];
+      }
 
       const amrex::Real denom =
         1.0 / std::sqrt(t1[0] * t1[0] + t1[1] * t1[1] + t1[2] * t1[2]);
-      for (amrex::Real& idir : t1)
+      for (amrex::Real& idir : t1) {
         idir *= denom;
+      }
 
       amrex::Real t2[AMREX_SPACEDIM];
       t2[0] = norm[1] * t1[2] - norm[2] * t1[1];
@@ -574,13 +578,15 @@ pc_apply_eb_boundry_visc_flux_stencil(
 
       // Transform eb boundary velocities to coordinates aligned with EB
       amrex::Real bco[AMREX_SPACEDIM];
-      for (int idir = 0; idir < AMREX_SPACEDIM; idir++)
+      for (int idir = 0; idir < AMREX_SPACEDIM; idir++) {
         bco[idir] = bcval[idir * Nsten + L];
+      }
 
       amrex::Real bct[AMREX_SPACEDIM];
-      for (int idir = 0; idir < AMREX_SPACEDIM; idir++)
+      for (int idir = 0; idir < AMREX_SPACEDIM; idir++) {
         bct[idir] =
           Qt[idir][0] * bco[0] + Qt[idir][1] * bco[1] + Qt[idir][2] * bco[2];
+      }
 
       // Compute normal derivative (times eb area) using precomputed stencil
       amrex::Real sum[AMREX_SPACEDIM] = {0.0};
@@ -594,8 +600,9 @@ pc_apply_eb_boundry_visc_flux_stencil(
         }
       }
       amrex::Real dUtdn[AMREX_SPACEDIM];
-      for (int idir = 0; idir < AMREX_SPACEDIM; idir++)
+      for (int idir = 0; idir < AMREX_SPACEDIM; idir++) {
         dUtdn[idir] = sum[idir] + bct[idir] * sten[L].bcval_sten;
+      }
 
       amrex::Real tauDotN[AMREX_SPACEDIM];
       tauDotN[0] =
@@ -604,10 +611,11 @@ pc_apply_eb_boundry_visc_flux_stencil(
       tauDotN[1] = coeff(i, j, k, dComp_mu) * dUtdn[1];
       tauDotN[2] = coeff(i, j, k, dComp_mu) * dUtdn[2];
 
-      for (int idir = 0; idir < AMREX_SPACEDIM; idir++)
+      for (int idir = 0; idir < AMREX_SPACEDIM; idir++) {
         bcflux[idir * Nflux + L] = Qt[0][idir] * tauDotN[0] +
                                    Qt[1][idir] * tauDotN[1] +
                                    Qt[2][idir] * tauDotN[2];
+      }
     }
   });
 }

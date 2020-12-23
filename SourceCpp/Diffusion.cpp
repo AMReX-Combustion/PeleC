@@ -82,8 +82,9 @@ PeleC::getMOLSrcTerm(
   // amrex::Elixir flags_eli = flags.elixir();
   amrex::MultiFab* cost = nullptr;
 
-  if (do_mol_load_balance)
+  if (do_mol_load_balance) {
     cost = &(get_new_data(Work_Estimate_Type));
+  }
 
   amrex::EBFluxRegister* fr_as_crse = nullptr;
   if (do_reflux && level < parent->finestLevel()) {
@@ -159,8 +160,9 @@ PeleC::getMOLSrcTerm(
 
       BL_PROFILE_VAR_START(diff);
       int nqaux = NQAUX > 0 ? NQAUX : 1;
-      amrex::FArrayBox q(gbox, QVAR), qaux(gbox, nqaux),
-        coeff_cc(gbox, nCompTr);
+      amrex::FArrayBox q(gbox, QVAR);
+      amrex::FArrayBox qaux(gbox, nqaux);
+      amrex::FArrayBox coeff_cc(gbox, nCompTr);
       amrex::Elixir qeli = q.elixir();
       amrex::Elixir qauxeli = qaux.elixir();
       amrex::Elixir coefeli = coeff_cc.elixir();
@@ -458,10 +460,12 @@ PeleC::getMOLSrcTerm(
         sv_eb_flux[local_i].merge(eb_flux_thdlocal, 0, NVAR, v_eb_tile_mask);
       }
 
-      amrex::FArrayBox dm_as_fine, fab_drho_as_crse;
+      amrex::FArrayBox dm_as_fine;
+      amrex::FArrayBox fab_drho_as_crse;
       amrex::IArrayBox fab_rrflag_as_crse;
-      amrex::Elixir dm_as_fine_eli, fab_drho_as_crse_eli,
-        fab_rrflag_as_crse_eli;
+      amrex::Elixir dm_as_fine_eli;
+      amrex::Elixir fab_drho_as_crse_eli;
+      amrex::Elixir fab_rrflag_as_crse_eli;
       if (typ == amrex::FabType::singlevalued) {
         /* Interpolate fluxes from face centers to face centroids
          * Note that hybrid divergence and redistribution algorithms require
@@ -501,8 +505,9 @@ PeleC::getMOLSrcTerm(
 
         // TODO: Rework this for r-z, if applicable
         amrex::Real vol = 1;
-        for (int dir = 0; dir < AMREX_SPACEDIM; ++dir)
+        for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
           vol *= geom.CellSize()[dir];
+        }
 
         // Set weighting for redistribution
         auto const& W = vfrac.array(mfi);

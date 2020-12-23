@@ -337,8 +337,9 @@ PeleC::react_state(
     }
   }
 
-  if (ng > 0)
+  if (ng > 0) {
     S_new.FillBoundary(geom.periodicity());
+  }
 
   if (verbose > 1) {
     const int IOProc = amrex::ParallelDescriptor::IOProcessorNumber();
@@ -349,8 +350,9 @@ PeleC::react_state(
 #endif
       amrex::ParallelDescriptor::ReduceRealMax(run_time, IOProc);
 
-      if (amrex::ParallelDescriptor::IOProcessor())
+      if (amrex::ParallelDescriptor::IOProcessor()) {
         amrex::Print() << "PeleC::react_state() time = " << run_time << "\n";
+      }
 #ifdef AMREX_LAZY
     });
 #endif

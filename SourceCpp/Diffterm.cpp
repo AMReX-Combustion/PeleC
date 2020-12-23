@@ -34,7 +34,8 @@ pc_compute_diffusion_flux(
     BL_PROFILE("PeleC::diffusion_flux()");
     for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
       const amrex::Real delta = del[dir];
-      amrex::Real d1 = 0.0, d2 = 0.0;
+      amrex::Real d1 = 0.0;
+      amrex::Real d2 = 0.0;
       amrex::Box ebox = amrex::surroundingNodes(box, dir);
       if (dir == 0) {
         AMREX_D_TERM(d2 = 1.;, d1 = del[1];, d2 = del[2];);
@@ -70,8 +71,9 @@ pc_compute_diffusion_flux(
       amrex::ParallelFor(
         ebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
           amrex::Real c[dComp_lambda + 1];
-          for (int n = 0; n < dComp_lambda + 1; n++)
+          for (int n = 0; n < dComp_lambda + 1; n++) {
             pc_move_transcoefs_to_ec(i, j, k, n, coef, c, dir, do_harmonic);
+          }
           pc_diffusion_flux(
             i, j, k, q, c, tander, a[dir], flx[dir], delta, dir);
         });

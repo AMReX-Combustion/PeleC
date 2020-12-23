@@ -155,8 +155,9 @@ PeleC::restart(amrex::Amr& papa, istream& is, bool bReadSpecial)
     FullPathDiagFile += "/Diagnostics";
     DiagFile.open(FullPathDiagFile.c_str(), std::ios::in);
 
-    for (amrex::Real& i : material_lost_through_boundary_cumulative)
+    for (amrex::Real& i : material_lost_through_boundary_cumulative) {
       DiagFile >> i;
+    }
 
     DiagFile.close();
   }
@@ -207,8 +208,9 @@ PeleC::restart(amrex::Amr& papa, istream& is, bool bReadSpecial)
       amrex::FArrayBox bstate_fab;
       bstate_fab.readFrom(BodyFile);
       BodyFile.close();
-      if (bstate_fab.nComp() != NVAR)
+      if (bstate_fab.nComp() != NVAR) {
         amrex::Abort("Body state incompatible with checkpointed version");
+      }
       amrex::IntVect iv(bstate_fab.box().smallEnd());
       for (int n = 0; n < NVAR; ++n) {
         body_state[n] = bstate_fab(iv, n);
@@ -293,8 +295,9 @@ PeleC::checkPoint(
       FullPathDiagFile += "/Diagnostics";
       DiagFile.open(FullPathDiagFile.c_str(), std::ios::out);
 
-      for (amrex::Real i : material_lost_through_boundary_cumulative)
+      for (amrex::Real i : material_lost_through_boundary_cumulative) {
         DiagFile << std::setprecision(15) << i << std::endl;
+      }
 
       DiagFile.close();
     }
@@ -665,7 +668,10 @@ PeleC::writeBuildInfo(std::ostream& os)
   os << " PeleC Compile time variables: \n";
 
 #ifdef PELEC_USE_REACTIONS
-  int mm, kk, ii, nfit;
+  int mm;
+  int kk;
+  int ii;
+  int nfit;
   CKINDX(&mm, &kk, &ii, &nfit);
   os << std::setw(40) << std::left << "Number elements from chem cpp : " << mm
      << std::endl;
@@ -759,12 +765,15 @@ PeleC::writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how)
   // second component of pair is component # within the state_type
   //
   amrex::Vector<std::pair<int, int>> plot_var_map;
-  for (int typ = 0; typ < desc_lst.size(); typ++)
-    for (int comp = 0; comp < desc_lst[typ].nComp(); comp++)
+  for (int typ = 0; typ < desc_lst.size(); typ++) {
+    for (int comp = 0; comp < desc_lst[typ].nComp(); comp++) {
       if (
         amrex::Amr::isStatePlotVar(desc_lst[typ].name(comp)) &&
-        desc_lst[typ].getType() == amrex::IndexType::TheCellType())
+        desc_lst[typ].getType() == amrex::IndexType::TheCellType()) {
         plot_var_map.push_back(std::pair<int, int>(typ, comp));
+      }
+    }
+  }
 
   int num_derive = 0;
   std::list<std::string> derive_names;
@@ -800,8 +809,9 @@ PeleC::writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how)
     //
     os << thePlotFileType() << '\n';
 
-    if (n_data_items == 0)
+    if (n_data_items == 0) {
       amrex::Error("Must specify at least one valid data item to plot");
+    }
 
     os << n_data_items << '\n';
 
@@ -816,32 +826,39 @@ PeleC::writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how)
 
     for (const auto& derive_name : derive_names) {
       const amrex::DeriveRec* rec = derive_lst.get(derive_name);
-      for (int i = 0; i < rec->numDerive(); i++)
+      for (int i = 0; i < rec->numDerive(); i++) {
         os << rec->variableName(i) << '\n';
+      }
     }
 
     os << AMREX_SPACEDIM << '\n';
     os << parent->cumTime() << '\n';
     int f_lev = parent->finestLevel();
     os << f_lev << '\n';
-    for (int i = 0; i < AMREX_SPACEDIM; i++)
+    for (int i = 0; i < AMREX_SPACEDIM; i++) {
       os << amrex::DefaultGeometry().ProbLo(i) << ' ';
+    }
     os << '\n';
-    for (int i = 0; i < AMREX_SPACEDIM; i++)
+    for (int i = 0; i < AMREX_SPACEDIM; i++) {
       os << amrex::DefaultGeometry().ProbHi(i) << ' ';
+    }
     os << '\n';
-    for (int i = 0; i < f_lev; i++)
+    for (int i = 0; i < f_lev; i++) {
       os << parent->refRatio(i)[0] << ' ';
-    os << '\n';
-    for (int i = 0; i <= f_lev; i++)
-      os << parent->Geom(i).Domain() << ' ';
-    os << '\n';
-    for (int i = 0; i <= f_lev; i++)
-      os << parent->levelSteps(i) << ' ';
+    }
     os << '\n';
     for (int i = 0; i <= f_lev; i++) {
-      for (int k = 0; k < AMREX_SPACEDIM; k++)
+      os << parent->Geom(i).Domain() << ' ';
+    }
+    os << '\n';
+    for (int i = 0; i <= f_lev; i++) {
+      os << parent->levelSteps(i) << ' ';
+    }
+    os << '\n';
+    for (int i = 0; i <= f_lev; i++) {
+      for (int k = 0; k < AMREX_SPACEDIM; k++) {
         os << parent->Geom(i).CellSize()[k] << ' ';
+      }
       os << '\n';
     }
     os << (int)amrex::DefaultGeometry().Coord() << '\n';
@@ -860,15 +877,18 @@ PeleC::writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how)
   // Now for the full pathname of that directory.
   //
   std::string FullPath = dir;
-  if (!FullPath.empty() && FullPath[FullPath.size() - 1] != '/')
+  if (!FullPath.empty() && FullPath[FullPath.size() - 1] != '/') {
     FullPath += '/';
+  }
   FullPath += LevelStr;
   //
   // Only the I/O processor makes the directory if it doesn't already exist.
   //
-  if (amrex::ParallelDescriptor::IOProcessor())
-    if (!amrex::UtilCreateDirectory(FullPath, 0755))
+  if (amrex::ParallelDescriptor::IOProcessor()) {
+    if (!amrex::UtilCreateDirectory(FullPath, 0755)) {
       amrex::CreateDirectoryFailed(FullPath);
+    }
+  }
   //
   // Force other processors to wait till directory is built.
   //
@@ -881,8 +901,9 @@ PeleC::writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how)
     for (int i = 0; i < grids.size(); ++i) {
       amrex::RealBox gridloc =
         amrex::RealBox(grids[i], geom.CellSize(), geom.ProbLo());
-      for (int n = 0; n < AMREX_SPACEDIM; n++)
+      for (int n = 0; n < AMREX_SPACEDIM; n++) {
         os << gridloc.lo(n) << ' ' << gridloc.hi(n) << '\n';
+      }
     }
     //
     // The full relative pathname of the MultiFabs at this level.
@@ -991,12 +1012,15 @@ PeleC::writeSmallPlotFile(
   // second component of pair is component # within the state_type
   //
   amrex::Vector<std::pair<int, int>> plot_var_map;
-  for (int typ = 0; typ < desc_lst.size(); typ++)
-    for (int comp = 0; comp < desc_lst[typ].nComp(); comp++)
+  for (int typ = 0; typ < desc_lst.size(); typ++) {
+    for (int comp = 0; comp < desc_lst[typ].nComp(); comp++) {
       if (
         amrex::Amr::isStateSmallPlotVar(desc_lst[typ].name(comp)) &&
-        desc_lst[typ].getType() == amrex::IndexType::TheCellType())
+        desc_lst[typ].getType() == amrex::IndexType::TheCellType()) {
         plot_var_map.push_back(std::pair<int, int>(typ, comp));
+      }
+    }
+  }
 
   int n_data_items = plot_var_map.size();
 
@@ -1008,8 +1032,9 @@ PeleC::writeSmallPlotFile(
     //
     os << thePlotFileType() << '\n';
 
-    if (n_data_items == 0)
+    if (n_data_items == 0) {
       amrex::Error("Must specify at least one valid data item to plot");
+    }
 
     os << n_data_items << '\n';
 
@@ -1026,24 +1051,30 @@ PeleC::writeSmallPlotFile(
     os << parent->cumTime() << '\n';
     int f_lev = parent->finestLevel();
     os << f_lev << '\n';
-    for (int i = 0; i < AMREX_SPACEDIM; i++)
+    for (int i = 0; i < AMREX_SPACEDIM; i++) {
       os << amrex::DefaultGeometry().ProbLo(i) << ' ';
+    }
     os << '\n';
-    for (int i = 0; i < AMREX_SPACEDIM; i++)
+    for (int i = 0; i < AMREX_SPACEDIM; i++) {
       os << amrex::DefaultGeometry().ProbHi(i) << ' ';
+    }
     os << '\n';
-    for (int i = 0; i < f_lev; i++)
+    for (int i = 0; i < f_lev; i++) {
       os << parent->refRatio(i)[0] << ' ';
-    os << '\n';
-    for (int i = 0; i <= f_lev; i++)
-      os << parent->Geom(i).Domain() << ' ';
-    os << '\n';
-    for (int i = 0; i <= f_lev; i++)
-      os << parent->levelSteps(i) << ' ';
+    }
     os << '\n';
     for (int i = 0; i <= f_lev; i++) {
-      for (int k = 0; k < AMREX_SPACEDIM; k++)
+      os << parent->Geom(i).Domain() << ' ';
+    }
+    os << '\n';
+    for (int i = 0; i <= f_lev; i++) {
+      os << parent->levelSteps(i) << ' ';
+    }
+    os << '\n';
+    for (int i = 0; i <= f_lev; i++) {
+      for (int k = 0; k < AMREX_SPACEDIM; k++) {
         os << parent->Geom(i).CellSize()[k] << ' ';
+      }
       os << '\n';
     }
     os << (int)amrex::DefaultGeometry().Coord() << '\n';
@@ -1063,15 +1094,18 @@ PeleC::writeSmallPlotFile(
   // Now for the full pathname of that directory.
   //
   std::string FullPath = dir;
-  if (!FullPath.empty() && FullPath[FullPath.size() - 1] != '/')
+  if (!FullPath.empty() && FullPath[FullPath.size() - 1] != '/') {
     FullPath += '/';
+  }
   FullPath += LevelStr;
   //
   // Only the I/O processor makes the directory if it doesn't already exist.
   //
-  if (amrex::ParallelDescriptor::IOProcessor())
-    if (!amrex::UtilCreateDirectory(FullPath, 0755))
+  if (amrex::ParallelDescriptor::IOProcessor()) {
+    if (!amrex::UtilCreateDirectory(FullPath, 0755)) {
       amrex::CreateDirectoryFailed(FullPath);
+    }
+  }
   //
   // Force other processors to wait till directory is built.
   //
@@ -1084,8 +1118,9 @@ PeleC::writeSmallPlotFile(
     for (int i = 0; i < grids.size(); ++i) {
       amrex::RealBox gridloc =
         amrex::RealBox(grids[i], geom.CellSize(), geom.ProbLo());
-      for (int n = 0; n < AMREX_SPACEDIM; n++)
+      for (int n = 0; n < AMREX_SPACEDIM; n++) {
         os << gridloc.lo(n) << ' ' << gridloc.hi(n) << '\n';
+      }
     }
     //
     // The full relative pathname of the MultiFabs at this level.

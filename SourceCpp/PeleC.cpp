@@ -139,8 +139,9 @@ PeleC::read_params()
 {
   static bool read_params_done = false;
 
-  if (read_params_done)
+  if (read_params_done) {
     return;
+  }
 
   read_params_done = true;
 
@@ -158,7 +159,8 @@ PeleC::read_params()
   pp.getarr("lo_bc", lo_bc_char, 0, AMREX_SPACEDIM);
   pp.getarr("hi_bc", hi_bc_char, 0, AMREX_SPACEDIM);
 
-  amrex::Vector<int> lo_bc(AMREX_SPACEDIM), hi_bc(AMREX_SPACEDIM);
+  amrex::Vector<int> lo_bc(AMREX_SPACEDIM);
+  amrex::Vector<int> hi_bc(AMREX_SPACEDIM);
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
     if (lo_bc_char[dir] == "Interior") {
       lo_bc[dir] = 0;
@@ -536,8 +538,9 @@ PeleC::buildMetrics()
     geom.Domain(), geom.periodicity(), levmsk_covered, levmsk_notcovered,
     levmsk_physbnd, levmsk_interior);
 
-  if (level == 0)
+  if (level == 0) {
     setGridInfo();
+  }
 }
 
 void
@@ -781,8 +784,9 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 {
   BL_PROFILE("PeleC::estTimeStep()");
 
-  if (fixed_dt > 0.0)
+  if (fixed_dt > 0.0) {
     return fixed_dt;
+  }
 
   // set_amr_info(level, -1, -1, -1.0, -1.0);
 
@@ -967,8 +971,9 @@ PeleC::computeNewDt(
   // We are at the start of a coarse grid timecycle.
   // Compute the timesteps for the next iteration.
   //
-  if (level > 0)
+  if (level > 0) {
     return;
+  }
 
   amrex::Real dt_0 = 1.0e+100;
   int n_factor = 1;
@@ -1036,8 +1041,9 @@ PeleC::computeInitialDt(
   BL_PROFILE("PeleC::computeInitialDt()");
 
   // Grids have been constructed, compute dt for all levels.
-  if (level > 0)
+  if (level > 0) {
     return;
+  }
 
   amrex::Real dt_0 = 1.0e+100;
   int n_factor = 1;
@@ -1230,8 +1236,9 @@ void PeleC::post_init(amrex::Real /*stop_time*/)
   }
 #endif
 
-  if (level > 0)
+  if (level > 0) {
     return;
+  }
 
   //
   // Average data down from finer levels
@@ -1250,8 +1257,9 @@ void PeleC::post_init(amrex::Real /*stop_time*/)
   problem_post_init();
 
   int nstep = parent->levelSteps(0);
-  if (cumtime != 0.0)
+  if (cumtime != 0.0) {
     cumtime += dtlev;
+  }
 
   bool sum_int_test = false;
 
@@ -1362,8 +1370,9 @@ PeleC::avgDown()
 {
   BL_PROFILE("PeleC::avgDown()");
 
-  if (level == parent->finestLevel())
+  if (level == parent->finestLevel()) {
     return;
+  }
 
   avgDown(State_Type);
 
@@ -1493,8 +1502,9 @@ PeleC::avgDown(int state_indx)
 {
   BL_PROFILE("PeleC::avgDown(state_indx)");
 
-  if (level == parent->finestLevel())
+  if (level == parent->finestLevel()) {
     return;
+  }
 
   amrex::MultiFab& S_crse = get_new_data(state_indx);
   amrex::MultiFab& S_fine = getLevel(level + 1).get_new_data(state_indx);
@@ -1996,9 +2006,10 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
       amrex::ParallelDescriptor::ReduceRealSum(sum);
       if (
         amrex::ParallelDescriptor::IOProcessor() &&
-        amrex::Math::abs(sum - sum0) > 0)
+        amrex::Math::abs(sum - sum0) > 0) {
         amrex::Print() << "(rho E) added from reset terms                 : "
                        << sum - sum0 << " out of " << sum0 << std::endl;
+      }
 #ifdef AMREX_LAZY
     });
 #endif
@@ -2059,8 +2070,9 @@ PeleC::build_fine_mask()
   // Mask for zeroing covered cells
   AMREX_ASSERT(level > 0);
 
-  if (!fine_mask.empty())
+  if (!fine_mask.empty()) {
     return fine_mask;
+  }
 
   const amrex::BoxArray& cba = parent->boxArray(level - 1);
   const amrex::DistributionMapping& cdm = parent->DistributionMap(level - 1);

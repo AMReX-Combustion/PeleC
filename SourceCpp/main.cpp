@@ -91,7 +91,7 @@ main(int argc, char* argv[])
   time(&time_type);
   time_pointer = gmtime(&time_type);
 
-  if (amrex::ParallelDescriptor::IOProcessor())
+  if (amrex::ParallelDescriptor::IOProcessor()) {
     amrex::Print() << std::setfill('0') << "\nStarting run at " << std::setw(2)
                    << time_pointer->tm_hour << ":" << std::setw(2)
                    << time_pointer->tm_min << ":" << std::setw(2)
@@ -99,6 +99,7 @@ main(int argc, char* argv[])
                    << time_pointer->tm_year + 1900 << "-" << std::setw(2)
                    << time_pointer->tm_mon + 1 << "-" << std::setw(2)
                    << time_pointer->tm_mday << "." << std::endl;
+  }
 
   // Initialize random seed after we're running in parallel.
   auto* amrptr = new amrex::Amr;
@@ -153,7 +154,7 @@ main(int argc, char* argv[])
   time(&time_type);
   time_pointer = gmtime(&time_type);
 
-  if (amrex::ParallelDescriptor::IOProcessor())
+  if (amrex::ParallelDescriptor::IOProcessor()) {
     amrex::Print() << std::setfill('0') << "\nEnding run at " << std::setw(2)
                    << time_pointer->tm_hour << ":" << std::setw(2)
                    << time_pointer->tm_min << ":" << std::setw(2)
@@ -161,6 +162,7 @@ main(int argc, char* argv[])
                    << time_pointer->tm_year + 1900 << "-" << std::setw(2)
                    << time_pointer->tm_mon + 1 << "-" << std::setw(2)
                    << time_pointer->tm_mday << "." << std::endl;
+  }
 
   delete amrptr;
 

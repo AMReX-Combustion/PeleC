@@ -73,7 +73,8 @@ PeleC::do_mol_advance(
   // define sourceterm
   amrex::MultiFab molSrc(grids, dmap, NVAR, 0, amrex::MFInfo(), Factory());
 
-  amrex::MultiFab molSrc_old, molSrc_new;
+  amrex::MultiFab molSrc_old;
+  amrex::MultiFab molSrc_new;
   if (mol_iters > 1) {
     molSrc_old.define(grids, dmap, NVAR, 0, amrex::MFInfo(), Factory());
     molSrc_new.define(grids, dmap, NVAR, 0, amrex::MFInfo(), Factory());
@@ -113,8 +114,9 @@ PeleC::do_mol_advance(
     }
   }
 
-  if (mol_iters > 1)
+  if (mol_iters > 1) {
     amrex::MultiFab::Copy(molSrc_old, molSrc, 0, 0, NVAR, 0);
+  }
 
   // U^* = U^n + dt*S^n
   amrex::MultiFab::LinComb(S_new, 1.0, Sborder, 0, dt, molSrc, 0, 0, NVAR, 0);

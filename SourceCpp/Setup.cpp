@@ -216,17 +216,19 @@ PeleC::variableSetUp()
   // if (ParallelDescriptor::IOProcessor())
   //    std::cout << "\nTime in set_method_params: " << run_stop << '\n' ;
 
-  if (nscbc_adv == 1 && amrex::ParallelDescriptor::IOProcessor())
+  if (nscbc_adv == 1 && amrex::ParallelDescriptor::IOProcessor()) {
     amrex::Print() << "Using Ghost-Cells Navier-Stokes Characteristic BCs for "
                       "advection: nscbc_adv = "
                    << nscbc_adv << '\n'
                    << '\n';
+  }
 
-  if (nscbc_diff == 1 && amrex::ParallelDescriptor::IOProcessor())
+  if (nscbc_diff == 1 && amrex::ParallelDescriptor::IOProcessor()) {
     amrex::Print() << "Using Ghost-Cells Navier-Stokes Characteristic BCs for "
                       "diffusion: nscbc_diff = "
                    << nscbc_diff << '\n'
                    << '\n';
+  }
 
   // int coord_type = amrex::DefaultGeometry().Coord();
 
@@ -330,13 +332,15 @@ PeleC::variableSetUp()
     for (int i = 0; i < NUM_SPECIES; i++) {
       int j = 0;
       for (j = 0; j < len; j++) {
-        if (int_spec_names[i * len + j] == ' ')
+        if (int_spec_names[i * len + j] == ' ') {
           break;
+        }
       }
       const int strlen = j;
       char* char_spec_names = new char[strlen + 1];
-      for (j = 0; j < strlen; j++)
+      for (j = 0; j < strlen; j++) {
         char_spec_names[j] = int_spec_names[i * len + j];
+      }
       char_spec_names[j] = '\0';
       spec_names.push_back(std::string(char_spec_names));
       delete[] char_spec_names;
@@ -345,8 +349,9 @@ PeleC::variableSetUp()
 
   if (amrex::ParallelDescriptor::IOProcessor()) {
     amrex::Print() << NUM_SPECIES << " Species: " << std::endl;
-    for (int i = 0; i < NUM_SPECIES; i++)
+    for (int i = 0; i < NUM_SPECIES; i++) {
       amrex::Print() << spec_names[i] << ' ' << ' ';
+    }
     amrex::Print() << std::endl;
   }
 
@@ -367,16 +372,18 @@ PeleC::variableSetUp()
       get_aux_names(int_aux_names.dataPtr(),&i,&len);
     */
     char* char_aux_names = new char[len + 1];
-    for (int j = 0; j < len; j++)
+    for (int j = 0; j < len; j++) {
       char_aux_names[j] = int_aux_names[j];
+    }
     char_aux_names[len] = '\0';
     aux_names.push_back(std::string(char_aux_names));
     delete[] char_aux_names;
   }
   if (amrex::ParallelDescriptor::IOProcessor()) {
     amrex::Print() << NUM_AUX << " Auxiliary Variables: " << std::endl;
-    for (int i = 0; i < NUM_AUX; i++)
+    for (int i = 0; i < NUM_AUX; i++) {
       amrex::Print() << aux_names[i] << ' ' << ' ';
+    }
     amrex::Print() << std::endl;
   }
 

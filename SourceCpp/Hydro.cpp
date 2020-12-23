@@ -127,7 +127,9 @@ PeleC::construct_hydro_source(
         auto const& hyd_src = hydro_source.array(mfi);
 
         // Resize Temporary Fabs
-        amrex::FArrayBox q(qbx, QVAR), qaux(qbx, NQAUX), src_q(qbx, QVAR);
+        amrex::FArrayBox q(qbx, QVAR);
+        amrex::FArrayBox qaux(qbx, NQAUX);
+        amrex::FArrayBox src_q(qbx, QVAR);
         // Use Elixir Construct to steal the Fabs metadata
         amrex::Elixir qeli = q.elixir();
         amrex::Elixir qauxeli = qaux.elixir();
@@ -324,9 +326,10 @@ PeleC::construct_hydro_source(
     if (courno > 1.0) {
       amrex::Print() << "WARNING -- EFFECTIVE CFL AT THIS LEVEL " << level
                      << " IS " << courno << '\n';
-      if (hard_cfl_limit == 1)
+      if (hard_cfl_limit == 1) {
         amrex::Abort("CFL is too high at this level -- go back to a checkpoint "
                      "and restart with lower cfl number");
+      }
     }
   }
 }

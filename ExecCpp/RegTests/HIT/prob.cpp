@@ -97,7 +97,8 @@ amrex_probinit(
   ProbParm::k0 = 2.0 / ProbParm::lambda0;
 
   // Initial density, velocity, and material properties
-  amrex::Real cs, cp;
+  amrex::Real cs;
+  amrex::Real cp;
   amrex::Real massfrac[NUM_SPECIES] = {1.0};
   EOS::PYT2RE(
     ProbParm::p0, massfrac, ProbParm::T0, ProbParm::rho0, ProbParm::eint0);
@@ -192,8 +193,9 @@ amrex_probinit(
 
     // Make sure the search array is increasing
     if (not std::is_sorted(
-          ProbParm::v_xarray->begin(), ProbParm::v_xarray->end()))
+          ProbParm::v_xarray->begin(), ProbParm::v_xarray->end())) {
       amrex::Abort("Error: non ascending x-coordinate array.");
+    }
 
     // Get pointer to the data
     ProbParm::xinput = ProbParm::v_xinput->dataPtr();
