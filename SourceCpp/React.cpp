@@ -11,9 +11,7 @@ PeleC::react_state(
   bool react_init,
   amrex::MultiFab* aux_src)
 {
-  /*
-    Update I_R, and recompute S_new
-   */
+  // Update I_R, and recompute S_new
   BL_PROFILE("PeleC::react_state()");
 
   const amrex::Real strt_time = amrex::ParallelDescriptor::second();

@@ -116,11 +116,9 @@ pc_fill_bndry_grad_stencil(
 
       amrex::Real sten[3][3][3] = {{{0.0}}};
       // The two intersections, that are d(1) and d(2) away from the eb
-      // centroid, are both in
-      //  y-z planes, bounded in (0:2)x(0:2) in normalized coordinates
-      // For point m, we interpolate z=0,1,2 lines, to (y(m),0), (y(m),1) and
-      // (y(m),2), and
-      //  then interpolate along y=y(m) to (y(m),z(m))
+      // centroid, are both in y-z planes, bounded in (0:2)x(0:2) in normalized
+      // coordinates For point m, we interpolate z=0,1,2 lines, to (y(m),0),
+      // (y(m),1) and (y(m),2), and then interpolate along y=y(m) to (y(m),z(m))
       amrex::Real cy[3];
       amrex::Real cz[3];
       for (int m = 0; m < 2; m++) {

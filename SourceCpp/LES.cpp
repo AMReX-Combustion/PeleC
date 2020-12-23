@@ -91,11 +91,9 @@ PeleC::construct_new_les_source(
   getLESTerm(time, dt, *new_sources[les_src], flux_factor_new);
 }
 
-/**
- * Calculate the LES term by calling an SFS model
- * Across all conserved state components, compute the LES "source term"
- *    = -Div(LESFlux).
- **/
+// Calculate the LES term by calling an SFS model
+// Across all conserved state components, compute the LES "source term"
+//    = -Div(LESFlux).
 void
 PeleC::getLESTerm(
   amrex::Real time,
@@ -173,9 +171,7 @@ PeleC::getLESTerm(
   }
 }
 
-/**
- * Calculate the LES term using the Smagorinsky SFS model
- **/
+// Calculate the LES term using the Smagorinsky SFS model
 void
 PeleC::getSmagorinskyLESTerm(
   amrex::Real time,
@@ -359,9 +355,7 @@ PeleC::getSmagorinskyLESTerm(
 #endif // End of AMREX_SPACEDIM == 3
 }
 
-/**
- * Calculate the LES term using the dynamic Smagorinsky SFS model
- **/
+// Calculate the LES term using the dynamic Smagorinsky SFS model
 void
 PeleC::getDynamicSmagorinskyLESTerm(
   amrex::Real time,
@@ -714,8 +708,8 @@ PeleC::getDynamicSmagorinskyLESTerm(
             dt, device);
         }
       }
-    } // End of MFIter scope
-  }   // End of OMP scope
+    }
+  }
 #else
   amrex::Abort("LES only implemented in 3D for now");
 #endif // End of AMREX_SPACEDIM == 3

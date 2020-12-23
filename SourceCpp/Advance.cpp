@@ -7,16 +7,14 @@ amrex::Real
 PeleC::advance(
   amrex::Real time, amrex::Real dt, int amr_iteration, int amr_ncycle)
 {
-  /** the main driver for a single level implementing the time advance.
-
-         @param time the current simulation time
-         @param dt the timestep to advance (e.g., go from time to time + dt)
-         @param amr_iteration where we are in the current AMR subcycle.  Each
-                         level will take a number of steps to reach the
-                         final time of the coarser level below it.  This
-                         counter starts at 1
-         @param amr_ncycle  the number of subcycles at this level
-  */
+  // The main driver for a single level implementing the time advance.
+  //        @param time the current simulation time
+  //        @param dt the timestep to advance (e.g., go from time to time + dt)
+  //        @param amr_iteration where we are in the current AMR subcycle.  Each
+  //                        level will take a number of steps to reach the
+  //                        final time of the coarser level below it.  This
+  //                        counter starts at 1
+  //        @param amr_ncycle  the number of subcycles at this level
 
   BL_PROFILE("PeleC::advance()");
 
@@ -239,10 +237,9 @@ PeleC::setSprayGridInfo(
 
   // *** ghost_width ***  is used
   //   *) to set how many cells are used to hold ghost particles i.e copies of
-  //   particles
-  //      that live on (level-1) can affect the grid over all of the amr_ncycle
-  //      steps. We define ghost cells at the coarser level to cover all
-  //      iterations so we can't reduce this number as amr_iteration increases.
+  //   particles that live on (level-1) can affect the grid over all of the
+  //   amr_ncycle steps. We define ghost cells at the coarser level to cover all
+  //   iterations so we can't reduce this number as amr_iteration increases.
 
   ghost_width = 0;
   if (parent->subCycle() && parent->maxLevel() > 0)
@@ -286,11 +283,10 @@ PeleC::do_sdc_advance(
 
   amrex::Real dt_new = dt;
 
-  /** This routine will advance the old state data (called S_old here)
-      to the new time, for a single level.  The new data is called
-      S_new here.  The update includes reactions (if we are not doing
-      SDC), hydro, and the source terms.
-  */
+  // This routine will advance the old state data (called S_old here)
+  // to the new time, for a single level.  The new data is called
+  // S_new here.  The update includes reactions (if we are not doing
+  // SDC), hydro, and the source terms.
 
   initialize_sdc_advance(time, dt, amr_iteration, amr_ncycle);
 
@@ -322,10 +318,9 @@ PeleC::do_sdc_iteration(
   int sub_iteration,
   int sub_ncycle)
 {
-  /** This routine will advance the old state data (called S_old here)
-      to the new time, for a single level.  The new data is called
-      S_new here.  The update includes hydro, and the source terms.
-  */
+  // This routine will advance the old state data (called S_old here)
+  // to the new time, for a single level.  The new data is called
+  // S_new here.  The update includes hydro, and the source terms.
 
   BL_PROFILE("PeleC::do_sdc_iteration()");
 
@@ -381,31 +376,23 @@ PeleC::do_sdc_iteration(
 
   if (sub_iteration == 0) {
 #ifdef AMREX_PARTICLES
-    //
+
     // Compute drag terms from particles at old positions, move particles to new
-    // positions
-    //  based on old-time velocity field
-    //
+    // positions  based on old-time velocity field
     // TODO: Maybe move this mess into construct_old_source?
     if (do_spray_particles) {
       amrex::Gpu::LaunchSafeGuard lsg(true);
-      //
+
       // Setup ghost particles for use in finer levels. Note that ghost
       // particles that will be used by this level have already been created,
       // the particles being set here are only used by finer levels.
-      //
       int finest_level = parent->finestLevel();
 
-      //
       // Setup the virtual particles that particles on finer levels
-      //
-
       if (level < finest_level && use_virt_parts)
         setupVirtualParticles();
 
-      //
       // Check if I need to insert new particles
-      //
       amrex::Real cur_time = state[State_Type].curTime();
       int nstep = parent->levelSteps(0);
 
@@ -416,19 +403,15 @@ PeleC::do_sdc_iteration(
       if (level == finest_level)
         insertParts = theSprayPC()->insertParticles(cur_time, nstep, level);
 
-      //
       // Only redistribute if we injected or inserted particles
-      //
       if (injectParts || insertParts) {
         // TODO: Determine the number of ghost cells needed here
         int nGrow = 1;
         particleRedistribute(level, nGrow, 0);
       }
 
-      //
       // Make a copy of the particles on this level into ghost particles
       // for the finer level
-      //
       if (use_ghost_parts)
         setupGhostParticles(ghost_width);
 
@@ -439,9 +422,8 @@ PeleC::do_sdc_iteration(
           << "moveKickDrift ... updating particle positions and velocity\n";
 
       // We will make a temporary copy of the source term array inside
-      // moveKickDrift
-      //    and we are only going to use the spray force out to one ghost cell
-      //    so we need only define spray_force_old with one ghost cell
+      // moveKickDrift and we are only going to use the spray force out to one
+      // ghost cell so we need only define spray_force_old with one ghost cell
 
       AMREX_ASSERT(old_sources[spray_src]->nGrow() >= 1);
       old_sources[spray_src]->setVal(0.);
@@ -461,7 +443,7 @@ PeleC::do_sdc_iteration(
           Sborder, *old_sources[spray_src], level, dt, cur_time, true, false,
           tmp_src_width, true, where_width);
 
-      // Miiiight need all Ghosts
+      // Might need all Ghosts
       if (use_ghost_parts && theGhostPC() != 0)
         theGhostPC()->moveKickDrift(
           Sborder, *old_sources[spray_src], level, dt, cur_time, false, true,
@@ -484,8 +466,7 @@ PeleC::do_sdc_iteration(
     }
 
     // Get diffusion source separate from other sources, since it requires grow
-    // cells, and we
-    //  may want to reuse what we fill-patched for hydro
+    // cells, and we may want to reuse what we fill-patched for hydro
     if (do_diffuse) {
       if (verbose) {
         amrex::Print() << "... Computing diffusion terms at t^(n)" << std::endl;

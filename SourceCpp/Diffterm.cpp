@@ -1,14 +1,12 @@
 #include "Diffterm.H"
 
-/*
-    This file contains the driver for generating the diffusion fluxes, which are
-   then used to generate the diffusion flux divergence.
-    pc_compute_diffusion_flux utilizes functions from the pc_diffterm_3D
-   header: pc_move_transcoefs_to_ec -> Moves Cell Centered Transport
-   Coefficients to Edge Centers pc_compute_tangential_vel_derivs -> Computes
-   the Tangential Velocity Derivatives pc_diffusion_flux -> Computes the
-   diffusion flux per direction with the coefficients and velocity derivatives.
-*/
+// This file contains the driver for generating the diffusion fluxes, which are
+// then used to generate the diffusion flux divergence.
+// pc_compute_diffusion_flux utilizes functions from the pc_diffterm_3D
+// header: pc_move_transcoefs_to_ec -> Moves Cell Centered Transport
+// Coefficients to Edge Centers pc_compute_tangential_vel_derivs -> Computes
+// the Tangential Velocity Derivatives pc_diffusion_flux -> Computes the
+// diffusion flux per direction with the coefficients and velocity derivatives.
 
 void
 pc_compute_diffusion_flux(

@@ -2,13 +2,8 @@
 
 // EstDt routines
 namespace TimeStep {
-#if !defined(__CUDACC__) || (__CUDACC_VER_MAJOR__ != 9) || \
-  (__CUDACC_VER_MINOR__ != 2)
 AMREX_GPU_DEVICE_MANAGED amrex::Real max_dt =
   std::numeric_limits<amrex::Real>::max();
-#else
-AMREX_GPU_DEVICE_MANAGED amrex::Real max_dt = 1.e37;
-#endif
 } // namespace TimeStep
 
 AMREX_GPU_HOST_DEVICE

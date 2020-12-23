@@ -1,8 +1,6 @@
 #include "Hydro.H"
 
-/**
- *  Set up the source terms to go into the hydro.
- */
+// Set up the source terms to go into the hydro.
 void
 PeleC::construct_hydro_source(
   const amrex::MultiFab& S,
@@ -157,37 +155,37 @@ PeleC::construct_hydro_source(
 
         // Allocate fabs for bcMask. Note that we grow in the opposite direction
         // because the Riemann solver wants a face value in a ghost-cell
-#if 0 
-      for (int dir = 0; dir < AMREX_SPACEDIM ; dir++)  {
-        const Box& bxtmp = amrex::surroundingNodes(fbx,dir);
-        Box TestBox(bxtmp);
-        for(int d=0; d<AMREX_SPACEDIM; ++d) {
-          if (dir!=d) TestBox.grow(d,1);
-        }
-        bcMask[dir].resize(TestBox,1);
-        bcMask[dir].setVal(0);
-      }
-      
-      // Becase bcMask is read in the Riemann solver in any case,
-      // here we put physbc values in the appropriate faces for the non-nscbc case
-      set_bc_mask(lo, hi, domain_lo, domain_hi,
-                  AMREX_D_DECL(AMREX_TO_FORTRAN(bcMask[0]),
-	                       AMREX_TO_FORTRAN(bcMask[1]),
-                         AMREX_TO_FORTRAN(bcMask[2])));
+        /*
+              for (int dir = 0; dir < AMREX_SPACEDIM ; dir++)  {
+                const Box& bxtmp = amrex::surroundingNodes(fbx,dir);
+                Box TestBox(bxtmp);
+                for(int d=0; d<AMREX_SPACEDIM; ++d) {
+                  if (dir!=d) TestBox.grow(d,1);
+                }
+                bcMask[dir].resize(TestBox,1);
+                bcMask[dir].setVal(0);
+              }
 
-      if (nscbc_adv == 1)
-      {
-        impose_NSCBC(lo, hi, domain_lo, domain_hi,
-                     AMREX_TO_FORTRAN(*statein),
-                     AMREX_TO_FORTRAN(q.fab()),
-                     AMREX_TO_FORTRAN(qaux.fab()),
-                     AMREX_D_DECL(AMREX_TO_FORTRAN(bcMask[0]),
-                            AMREX_TO_FORTRAN(bcMask[1]),
-                            AMREX_TO_FORTRAN(bcMask[2])),
-                     &flag_nscbc_isAnyPerio, flag_nscbc_perio, 
-                     &time, dx, &dt);
-      }
-#endif
+              // Becase bcMask is read in the Riemann solver in any case,
+              // here we put physbc values in the appropriate faces for the
+           non-nscbc case set_bc_mask(lo, hi, domain_lo, domain_hi,
+                          AMREX_D_DECL(AMREX_TO_FORTRAN(bcMask[0]),
+                                 AMREX_TO_FORTRAN(bcMask[1]),
+                                 AMREX_TO_FORTRAN(bcMask[2])));
+
+              if (nscbc_adv == 1)
+              {
+                impose_NSCBC(lo, hi, domain_lo, domain_hi,
+                             AMREX_TO_FORTRAN(*statein),
+                             AMREX_TO_FORTRAN(q.fab()),
+                             AMREX_TO_FORTRAN(qaux.fab()),
+                             AMREX_D_DECL(AMREX_TO_FORTRAN(bcMask[0]),
+                                    AMREX_TO_FORTRAN(bcMask[1]),
+                                    AMREX_TO_FORTRAN(bcMask[2])),
+                             &flag_nscbc_isAnyPerio, flag_nscbc_perio,
+                             &time, dx, &dt);
+              }
+        */
         BL_PROFILE_VAR("PeleC::srctoprim()", srctop);
         const auto& src_in = sources_for_hydro.array(mfi);
         amrex::ParallelFor(
@@ -272,8 +270,8 @@ PeleC::construct_hydro_source(
           }
         }
         BL_PROFILE_VAR_STOP(crno);
-      } // MFIter loop
-    }   // end of OMP parallel region
+      }
+    }
 
     BL_PROFILE_VAR_STOP(PC_UMDRV);
 
@@ -359,7 +357,7 @@ pc_umdrv(
   amrex::Array4<amrex::Real> const& vol,
   amrex::Real /*cflLoc*/)
 {
-  //  Set Up for Hydro Flux Calculations
+  // Set Up for Hydro Flux Calculations
   auto const& bxg2 = grow(bx, 2);
   amrex::FArrayBox qec[AMREX_SPACEDIM];
   amrex::Elixir qec_eli[AMREX_SPACEDIM];
@@ -371,7 +369,7 @@ pc_umdrv(
   amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> qec_arr{
     {AMREX_D_DECL(qec[0].array(), qec[1].array(), qec[2].array())}};
 
-  //  Temporary FArrayBoxes
+  // Temporary FArrayBoxes
   amrex::FArrayBox divu(bxg2, 1);
   amrex::FArrayBox pdivu(bx, 1);
   amrex::Elixir divueli = divu.elixir();

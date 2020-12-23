@@ -38,7 +38,7 @@ bool PeleC::dump_old = false;
 int PeleC::verbose = 0;
 int PeleC::radius_grow = 1;
 amrex::BCRec PeleC::phys_bc;
-amrex::Real PeleC::frac_change = 1.e200;
+amrex::Real PeleC::frac_change = std::numeric_limits<amrex::Real>::max();
 int PeleC::Density = -1;
 int PeleC::Eden = -1;
 int PeleC::Eint = -1;
@@ -64,7 +64,8 @@ int PeleC::diffuse_temp = 0;
 int PeleC::diffuse_enth = 0;
 int PeleC::diffuse_spec = 0;
 int PeleC::diffuse_vel = 0;
-amrex::Real PeleC::diffuse_cutoff_density = -1.e200;
+amrex::Real PeleC::diffuse_cutoff_density =
+  -std::numeric_limits<amrex::Real>::max();
 bool PeleC::do_diffuse = false;
 
 #ifdef PELEC_USE_MASA
@@ -206,13 +207,9 @@ PeleC::read_params()
     phys_bc.setHi(dir, hi_bc[dir]);
   }
 
-  //
   // Check phys_bc against possible periodic geometry
   // if periodic, must have internal BC marked.
-  //
-  //
-  // Do idiot check.  Periodic means interior in those directions.
-  //
+  // Check, periodic means interior in those directions.
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
     if (amrex::DefaultGeometry().isPeriodic(dir)) {
       if (lo_bc[dir] != Interior && amrex::ParallelDescriptor::IOProcessor()) {
@@ -226,9 +223,7 @@ PeleC::read_params()
         amrex::Error();
       }
     } else {
-      //
-      // Do idiot check. If not periodic, should not be interior.
-      //
+      // If not periodic, should not be interior.
       if (lo_bc[dir] == Interior && amrex::ParallelDescriptor::IOProcessor()) {
         std::cerr << "PeleC::read_params:interior bc in direction " << dir
                   << " but not periodic\n";
@@ -552,14 +547,12 @@ PeleC::setTimeLevel(amrex::Real time, amrex::Real dt_old, amrex::Real dt_new)
 void
 PeleC::setGridInfo()
 {
-  /** Send refinement data to Fortran. We do it here
-    because now the grids have been initialized and
-    we need this data for setting up the problem.
-    Note that this routine will always get called
-    on level 0, even if we are doing a restart,
-    so it is safe to put this here.
-    */
-
+  // Send refinement data to Fortran. We do it here
+  // because now the grids have been initialized and
+  // we need this data for setting up the problem.
+  // Note that this routine will always get called
+  // on level 0, even if we are doing a restart,
+  // so it is safe to put this here.
   if (level == 0) {
     const int max_level = parent->maxLevel();
     const int nlevs = max_level + 1;
@@ -606,7 +599,7 @@ PeleC::setGridInfo()
       }
     }
 
-    // Don't need this in pure C++?
+    // Old fortran call
     // set_grid_info(max_level, dx_level, domlo_level, domhi_level);
   }
 }
@@ -704,9 +697,7 @@ PeleC::init(AmrLevel& old)
 
   auto* oldlev = (PeleC*)&old;
 
-  //
   // Create new grid data by fillpatching from old.
-  //
   amrex::Real dt_new = parent->dtLevel(level);
   amrex::Real cur_time = oldlev->state[State_Type].curTime();
   amrex::Real prev_time = oldlev->state[State_Type].prevTime();
@@ -738,10 +729,8 @@ PeleC::init(AmrLevel& old)
 void
 PeleC::init()
 {
-  /**
-     This version inits the data on a new level that did not
-     exist before regridding.
-  */
+  // This version inits the data on a new level that did not
+  // exist before regridding.
   BL_PROFILE("PeleC::init()");
 
   amrex::Real dt = parent->dtLevel(level);
@@ -967,10 +956,8 @@ PeleC::computeNewDt(
 {
   BL_PROFILE("PeleC::computeNewDt()");
 
-  //
   // We are at the start of a coarse grid timecycle.
   // Compute the timesteps for the next iteration.
-  //
   if (level > 0) {
     return;
   }
@@ -1047,7 +1034,7 @@ PeleC::computeInitialDt(
 
   amrex::Real dt_0 = 1.0e+100;
   int n_factor = 1;
-  /// TODO/DEBUG: This will need to change for optimal subcycling.
+  // TODO: This will need to change for optimal subcycling.
   for (int i = 0; i <= finest_level; i++) {
     dt_level[i] = getLevel(i).initialTimeStep();
     n_factor *= n_cycle[i];
@@ -1084,22 +1071,16 @@ PeleC::post_timestep(int
 #ifdef AMREX_PARTICLES
   const int ncycle = parent->nCycle(level);
   if (do_spray_particles) {
-    //
     // Remove virtual particles at this level if we have any.
-    //
     if (theVirtPC() != 0)
       removeVirtualParticles();
 
-    //
     // Remove Ghost particles on the final iteration
-    //
     if (iteration == ncycle)
       removeGhostParticles();
 
-    //
     // Sync up if we're level 0 or if we have particles that may have moved
     // off the next finest level and need to be added to our own level.
-    //
     if ((iteration < ncycle and level < finest_level) || level == 0) {
       // TODO: Determine how many ghost cells to use here
       int nGrow = iteration;
@@ -1112,9 +1093,8 @@ PeleC::post_timestep(int
     reflux();
 
     // We need to do this before anything else because refluxing changes the
-    // values of coarse cells
-    //    underneath fine grids with the assumption they'll be over-written by
-    //    averaging down
+    // values of coarse cells underneath fine grids with the assumption they'll
+    // be over-written by averaging down
     if (level < finest_level) {
       avgDown();
     }
@@ -1174,8 +1154,7 @@ PeleC::post_restart()
   // initialize the Godunov state array used in hydro -- we wait
   // until here so that ngroups is defined (if needed) in
   // rad_params_module
-  // if (do_hydro)
-  //{
+  // if (do_hydro) {
   //  init_godunov_indices();
   //}
 
@@ -1240,10 +1219,8 @@ void PeleC::post_init(amrex::Real /*stop_time*/)
     return;
   }
 
-  //
   // Average data down from finer levels
   // so that conserved data is consistent between levels.
-  //
   if (do_avg_down != 0) {
     int finest_level = parent->finestLevel();
     for (int k = finest_level - 1; k >= 0; k--) {
@@ -1251,9 +1228,7 @@ void PeleC::post_init(amrex::Real /*stop_time*/)
     }
   }
 
-  //
   // Allow the user to define their own post_init functions.
-  //
   problem_post_init();
 
   int nstep = parent->levelSteps(0);
@@ -1413,16 +1388,15 @@ amrex::Real
 PeleC::enforce_min_density(
   amrex::MultiFab& /*S_old*/, const amrex::MultiFab& S_new)
 {
-  /** This routine sets the density in S_new to be larger than the density
-     floor. Note that it will operate everywhere on S_new, including ghost
-     zones. S_old is present so that, after the hydro call, we know what the old
-     density was so that we have a reference for comparison. If you are calling
-     it elsewhere and there's no meaningful reference state, just pass in the
-     same amrex::MultiFab twice.
-      @return  The return value is the the negative fractional change in the
-     state that has the largest magnitude. If there is no reference state, this
-     is meaningless.
-  */
+  // This routine sets the density in S_new to be larger than the density
+  // floor. Note that it will operate everywhere on S_new, including ghost
+  // zones. S_old is present so that, after the hydro call, we know what the old
+  // density was so that we have a reference for comparison. If you are calling
+  // it elsewhere and there's no meaningful reference state, just pass in the
+  // same amrex::MultiFab twice.
+  //  @return  The return value is the the negative fractional change in the
+  // state that has the largest magnitude. If there is no reference state, this
+  // is meaningless.
 
   amrex::Real dens_change = 1.0;
   amrex::Real mass_added = 0.0; // cppcheck-suppress variableScope
@@ -1723,7 +1697,7 @@ PeleC::errorEst(
         if (idx >= 0) {
           // const std::string name = "Y("+flame_trac_name+")";
           // if (amrex::ParallelDescriptor::IOProcessor())
-          //  amrex::Print() << " Flame tracer will be " << name << '\n';
+          // amrex::Print() << " Flame tracer will be " << name << '\n';
 
           S_derData.setVal<amrex::RunOn::Device>(0.0);
           pc_derspectrac(
@@ -2113,7 +2087,7 @@ PeleC::build_interior_boundary_mask(int ng)
     }
   }
 
-  //  If we got here, we need to build a new one
+  // If we got here, we need to build a new one
   if (ib_mask.empty()) {
     ib_mask.resize(0);
   }

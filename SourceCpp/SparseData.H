@@ -11,10 +11,7 @@ getIndex(const int i, const int comp, const int size)
   return comp * size + i;
 }
 
-///
-/**
-   SparseData is a templated data holder defined over a vector of Cell objects.
-*/
+// SparseData is a templated data holder defined over a vector of Cell objects.
 template <class T, class Cell>
 class SparseData
 {
@@ -24,21 +21,15 @@ public:
 
   ~SparseData();
 
-  ///
-  /**
-     Defining constructor.  Specifies the irregular domain
-     and the number of data components per index. The
-     contents are uninitialized.  Calls full define function.
-  */
+  // Defining constructor.  Specifies the irregular domain
+  // and the number of data components per index. The
+  // contents are uninitialized.  Calls full define function.
   SparseData(const amrex::Gpu::DeviceVector<Cell>& region, int nComp);
 
-  ///
-  /**
-     Full define function.  Specifies the irregular domain and the
-     number of data components per index.  The contents
-     are uninitialized.  If it has previously been defined, the old definition
-     data is overwritten and lost.
-  */
+  // Full define function.  Specifies the irregular domain and the
+  // number of data components per index.  The contents
+  // are uninitialized.  If it has previously been defined, the old definition
+  // data is overwritten and lost.
   void define(const amrex::Gpu::DeviceVector<Cell>& region, int nComp);
 
   AMREX_FORCE_INLINE T* dataPtr(int comp = 0)

@@ -33,14 +33,11 @@ PeleC::init_eb(
   initialize_eb2_structs();
 }
 
-/**
- * Set up PeleC EB Datastructures from AMReX EB2 constructs
- *
- * At the end of this routine, the following structures are populated:
- *   - FabArray ebmask
- *  - MultiFAB vfrac
- *  - sv_eb_bndry_geom
- */
+// Set up PeleC EB Datastructures from AMReX EB2 constructs
+// At the end of this routine, the following structures are populated:
+//   - FabArray ebmask
+//  - MultiFAB vfrac
+//  - sv_eb_bndry_geom
 
 void
 PeleC::initialize_eb2_structs()
@@ -50,7 +47,7 @@ PeleC::initialize_eb2_structs()
 
   // NOTE: THIS NEEDS TO BE REPLACED WITH A FLAGFAB
 
-  //  1->regular, 0->irregular, -1->covered, 2->outside
+  // 1->regular, 0->irregular, -1->covered, 2->outside
   ebmask.define(grids, dmap, 1, 0);
 
   static_assert(
@@ -452,11 +449,7 @@ convertIntGG(int number)
   return ss.str();      // return a string with the contents of the stream
 }
 
-/**
- *
- * Sets up implicit function using EB2 infrastructure
- *
- **/
+// Sets up implicit function using EB2 infrastructure
 void
 initialize_EB2(
   const amrex::Geometry& geom,
@@ -613,7 +606,6 @@ initialize_EB2(
 
     // initalize all triangles with some dummy values
     // that fall outside of the domain
-    //
     const amrex::Real* problo;
     const amrex::Real* probhi;
     amrex::Real maxlen;

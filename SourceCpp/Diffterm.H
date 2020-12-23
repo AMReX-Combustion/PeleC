@@ -13,15 +13,15 @@
 #include "GradUtil.H"
 #include "Diffusion.H"
 
-/*This header file contains functions and declarations for diffterm in 3D for
-  PeleC GPU. As per the convention of AMReX, inlined device functions are
-  defined here. Where as non-inline host functions are declared here. */
+// This header file contains functions and declarations for diffterm in 3D for
+// PeleC GPU. As per the convention of AMReX, inlined device functions are
+// defined here. Where as non-inline host functions are declared here.
 
-/*The original Diffterm function passes too many arguments, which contribute to
-  kernel launch overhead. In order to combat this, we split some of the
-  computation up into separate Device functions which will then be launched by a
-  CPU function called pc_diffterm. pc_diffusion_flux calculates the
-  diffusion flux per diction. */
+// The original Diffterm function passes too many arguments, which contribute to
+// kernel launch overhead. In order to combat this, we split some of the
+// computation up into separate Device functions which will then be launched by
+// a CPU function called pc_diffterm. pc_diffusion_flux calculates the diffusion
+// flux per diction.
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
@@ -154,7 +154,7 @@ pc_diffusion_flux(
     flx(i, j, k, UFS + ns) *= a(i, j, k);
 }
 
-/* This function computes the flux divergence.  */
+// This function computes the flux divergence.
 AMREX_GPU_HOST_DEVICE
 AMREX_FORCE_INLINE
 void

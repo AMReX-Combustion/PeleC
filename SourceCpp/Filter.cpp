@@ -1,8 +1,6 @@
 #include <Filter.H>
 
-/**
- * Set the filter weights for the standard box filter
- **/
+// Set the filter weights for the standard box filter
 void
 Filter::set_box_weights()
 {
@@ -24,9 +22,7 @@ Filter::set_box_weights()
   }
 }
 
-/**
- * Set the filter weights for the standard gaussian filter
- **/
+// Set the filter weights for the standard gaussian filter
 void
 Filter::set_gaussian_weights()
 {
@@ -53,11 +49,9 @@ Filter::set_gaussian_weights()
   }
 }
 
-/**
- * Set the filter weights for the 3pt polynomial truncation
- * approximation of the box filter. See Eq. 26 in Sagaut & Grohens
- * (1999) Int. J. Num. Meth. Fluids.
- **/
+// Set the filter weights for the 3pt polynomial truncation
+// approximation of the box filter. See Eq. 26 in Sagaut & Grohens
+// (1999) Int. J. Num. Meth. Fluids.
 void
 Filter::set_box_3pt_approx_weights()
 {
@@ -72,11 +66,9 @@ Filter::set_box_3pt_approx_weights()
   _weights[2] = _weights[0];
 }
 
-/**
- * Set the filter weights for the 5pt polynomial truncation
- * approximation of the box filter. See Eq. 27 in Sagaut & Grohens
- * (1999) Int. J. Num. Meth. Fluids (though there are typos).
- **/
+// Set the filter weights for the 5pt polynomial truncation
+// approximation of the box filter. See Eq. 27 in Sagaut & Grohens
+// (1999) Int. J. Num. Meth. Fluids (though there are typos).
 void
 Filter::set_box_5pt_approx_weights()
 {
@@ -95,11 +87,9 @@ Filter::set_box_5pt_approx_weights()
   _weights[4] = _weights[0];
 }
 
-/**
- * Set the filter weights for the 3pt optimized approximation of the
- * box filter. See Table I in Sagaut & Grohens (1999)
- * Int. J. Num. Meth. Fluids.
- **/
+// Set the filter weights for the 3pt optimized approximation of the
+// box filter. See Table I in Sagaut & Grohens (1999)
+// Int. J. Num. Meth. Fluids.
 void
 Filter::set_box_3pt_optimized_approx_weights()
 {
@@ -164,11 +154,9 @@ Filter::set_box_3pt_optimized_approx_weights()
   _weights[2] = _weights[0];
 }
 
-/**
- * Set the filter weights for the 5pt optimized approximation of the
- * box filter. See Table I in Sagaut & Grohens (1999)
- * Int. J. Num. Meth. Fluids.
- **/
+// Set the filter weights for the 5pt optimized approximation of the
+// box filter. See Table I in Sagaut & Grohens (1999)
+// Int. J. Num. Meth. Fluids.
 void
 Filter::set_box_5pt_optimized_approx_weights()
 {
@@ -246,11 +234,9 @@ Filter::set_box_5pt_optimized_approx_weights()
   _weights[4] = _weights[0];
 }
 
-/**
- * Set the filter weights for the 5pt polynomial truncation
- * approximation of the gaussian filter. See Eq. 29 in Sagaut &
- * Grohens (1999) Int. J. Num. Meth. Fluids.
- **/
+// Set the filter weights for the 5pt polynomial truncation
+// approximation of the gaussian filter. See Eq. 29 in Sagaut &
+// Grohens (1999) Int. J. Num. Meth. Fluids.
 void
 Filter::set_gaussian_5pt_approx_weights()
 {
@@ -269,11 +255,9 @@ Filter::set_gaussian_5pt_approx_weights()
   _weights[4] = _weights[0];
 }
 
-/**
- * Set the filter weights for the 3pt optimized approximation of the
- * gaussian filter. See Table I in Sagaut & Grohens (1999)
- * Int. J. Num. Meth. Fluids.
- **/
+// Set the filter weights for the 3pt optimized approximation of the
+// gaussian filter. See Table I in Sagaut & Grohens (1999)
+// Int. J. Num. Meth. Fluids.
 void
 Filter::set_gaussian_3pt_optimized_approx_weights()
 {
@@ -338,11 +322,9 @@ Filter::set_gaussian_3pt_optimized_approx_weights()
   _weights[2] = _weights[0];
 }
 
-/**
- * Set the filter weights for the 5pt optimized approximation of the
- * gaussian filter. See Table I in Sagaut & Grohens (1999)
- * Int. J. Num. Meth. Fluids.
- **/
+// Set the filter weights for the 5pt optimized approximation of the
+// gaussian filter. See Table I in Sagaut & Grohens (1999)
+// Int. J. Num. Meth. Fluids.
 void
 Filter::set_gaussian_5pt_optimized_approx_weights()
 {
@@ -420,9 +402,7 @@ Filter::set_gaussian_5pt_optimized_approx_weights()
   _weights[4] = _weights[0];
 }
 
-/**
- * Run the filtering operation on a MultiFab
- **/
+// Run the filtering operation on a MultiFab
 void
 Filter::apply_filter(const amrex::MultiFab& in, amrex::MultiFab& out)
 {
@@ -449,9 +429,7 @@ Filter::apply_filter(
   }
 }
 
-/**
- * Run the filtering operation on a FAB
- **/
+// Run the filtering operation on a FAB
 void
 Filter::apply_filter(
   const amrex::Box& cbox, const amrex::FArrayBox& in, amrex::FArrayBox& out)

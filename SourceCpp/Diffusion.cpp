@@ -16,7 +16,8 @@ PeleC::getMOLSrcTerm(
     MOLSrcTerm.setVal(0, 0, NVAR, MOLSrcTerm.nGrow());
     return;
   }
-  /**
+
+  /*
      Across all conserved state components, compute the method of lines rhs
      = -Div(Flux).  The input state, S, contained the conserved variables, and
      is "fill patched" in the usual AMReX way, where values at Dirichlet
@@ -60,6 +61,7 @@ PeleC::getMOLSrcTerm(
      EB will need to be carefully considered before implementation for
      accelerators.
   */
+
   const int nCompTr = dComp_lambda + 1;
   const int do_harmonic = 1; // TODO: parmparse this
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx = geom.CellSizeArray();
@@ -179,40 +181,39 @@ PeleC::getMOLSrcTerm(
             pc_ctoprim(i, j, k, s, qar, qauxar);
           });
       }
-// TODO deal with NSCBC
-#if 0       
-      for (int dir = 0; dir < AMREX_SPACEDIM ; dir++)  {
-        const amrex::Box& bxtmp = amrex::surroundingNodes(vbox,dir);
-        amrex::Box TestBox(bxtmp);
-        for(int d=0; d<AMREX_SPACEDIM; ++d) {
-          if (dir!=d) TestBox.grow(d,1);
-        }
-        
-        bcMask[dir].resize(TestBox,1);
-        bcMask[dir].setVal(0);
-	    }
-      
-      // Becase bcMask is read in the Riemann solver in any case,
-      // here we put physbc values in the appropriate faces for the non-nscbc case
-      set_bc_mask(lo, hi, domain_lo, domain_hi,
-                  AMREX_D_DECL(AMREX_TO_FORTRAN(bcMask[0]),
-	                       AMREX_TO_FORTRAN(bcMask[1]),
-                         AMREX_TO_FORTRAN(bcMask[2])));
+      // TODO deal with NSCBC
+      /*
+            for (int dir = 0; dir < AMREX_SPACEDIM ; dir++)  {
+              const amrex::Box& bxtmp = amrex::surroundingNodes(vbox,dir);
+              amrex::Box TestBox(bxtmp);
+              for(int d=0; d<AMREX_SPACEDIM; ++d) {
+                if (dir!=d) TestBox.grow(d,1);
+              }
 
-      if (nscbc_diff == 1)
-      {
-        impose_NSCBC(lo, hi, domain_lo, domain_hi,
-                     AMREX_TO_FORTRAN(Sfab),
-                     AMREX_TO_FORTRAN(q.fab()),
-                     AMREX_TO_FORTRAN(qaux.fab()),
-                     AMREX_D_DECL(AMREX_TO_FORTRAN(bcMask[0]),
-                            AMREX_TO_FORTRAN(bcMask[1]),
-                            AMREX_TO_FORTRAN(bcMask[2])),
-                     &flag_nscbc_isAnyPerio, flag_nscbc_perio, 
-                     &time, dx, &dt);
-      }
-#endif
+              bcMask[dir].resize(TestBox,1);
+              bcMask[dir].setVal(0);
+            }
 
+            // Becase bcMask is read in the Riemann solver in any case,
+            // here we put physbc values in the appropriate faces for the
+         non-nscbc case set_bc_mask(lo, hi, domain_lo, domain_hi,
+                        AMREX_D_DECL(AMREX_TO_FORTRAN(bcMask[0]),
+                               AMREX_TO_FORTRAN(bcMask[1]),
+                               AMREX_TO_FORTRAN(bcMask[2])));
+
+            if (nscbc_diff == 1)
+            {
+              impose_NSCBC(lo, hi, domain_lo, domain_hi,
+                           AMREX_TO_FORTRAN(Sfab),
+                           AMREX_TO_FORTRAN(q.fab()),
+                           AMREX_TO_FORTRAN(qaux.fab()),
+                           AMREX_D_DECL(AMREX_TO_FORTRAN(bcMask[0]),
+                                  AMREX_TO_FORTRAN(bcMask[1]),
+                                  AMREX_TO_FORTRAN(bcMask[2])),
+                           &flag_nscbc_isAnyPerio, flag_nscbc_perio,
+                           &time, dx, &dt);
+            }
+      */
       // Compute transport coefficients, coincident with Q
       auto const& coe_cc = coeff_cc.array();
       {
@@ -274,8 +275,8 @@ PeleC::getMOLSrcTerm(
           });
       }
 
-      // Shut off unwanted diffusion after the fact
-      //    ick! Under normal conditions, you either have diffusion on all or
+      // Shut off unwanted diffusion after the fact.
+      //      Under normal conditions, you either have diffusion on all or
       //      none, so this shouldn't be done this way.  However, the regression
       //      test for diffusion works by diffusing only temperature through
       //      this process.  Ideally, we'd redo that test to diffuse a passive
@@ -302,9 +303,9 @@ PeleC::getMOLSrcTerm(
       }
 
 #ifdef PELEC_USE_EB
-      //  Set extensive flux at embedded boundary, potentially
-      //  non-zero only for heat flux on isothermal boundaries,
-      //  and momentum fluxes at no-slip walls
+      // Set extensive flux at embedded boundary, potentially
+      // non-zero only for heat flux on isothermal boundaries,
+      // and momentum fluxes at no-slip walls
       const int nFlux = sv_eb_flux.empty() ? 0 : sv_eb_flux[local_i].numPts();
       if (typ == amrex::FabType::singlevalued && Ncut > 0) {
         eb_flux_thdlocal.setVal(0); // Default to Neumann for all fields
@@ -339,14 +340,13 @@ PeleC::getMOLSrcTerm(
 
       BL_PROFILE_VAR_STOP(diff);
 
-      /* At this point flux_ec contains the diffusive fluxes in each direction
-         at face centers for the (potentially partially covered) grid-aligned
-         faces and eb_flux_thdlocal contains the flux for the cut faces. Before
-         computing hybrid divergence, comptue and add in the hydro fluxes.
-         Also, Dterm currently contains the divergence of the face-centered
-         diffusion fluxes.  Increment this with the divergence of the
-         face-centered hyperbloic fluxes.
-      */
+      // At this point flux_ec contains the diffusive fluxes in each direction
+      // at face centers for the (potentially partially covered) grid-aligned
+      // faces and eb_flux_thdlocal contains the flux for the cut faces. Before
+      // computing hybrid divergence, comptue and add in the hydro fluxes.
+      // Also, Dterm currently contains the divergence of the face-centered
+      // diffusion fluxes.  Increment this with the divergence of the
+      // face-centered hyperbloic fluxes.
       if (do_hydro && do_mol) {
         // amrex::FArrayBox flatn(cbox, 1);
         // amrex::Elixir flatn_eli;
@@ -467,13 +467,11 @@ PeleC::getMOLSrcTerm(
       amrex::Elixir fab_drho_as_crse_eli;
       amrex::Elixir fab_rrflag_as_crse_eli;
       if (typ == amrex::FabType::singlevalued) {
-        /* Interpolate fluxes from face centers to face centroids
-         * Note that hybrid divergence and redistribution algorithms require
-         * that we be able to compute the conservative divergence on 2 grow
-         * cells, so we need interpolated fluxes on 2 grow cells, and therefore
-         * we need face centered fluxes on 3.
-         */
-
+        // Interpolate fluxes from face centers to face centroids
+        // Note that hybrid divergence and redistribution algorithms require
+        // that we be able to compute the conservative divergence on 2 grow
+        // cells, so we need interpolated fluxes on 2 grow cells, and therefore
+        // we need face centered fluxes on 3.
         {
           BL_PROFILE("PeleC::pc_apply_face_stencil()");
           for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
@@ -500,8 +498,7 @@ PeleC::getMOLSrcTerm(
         //
         // Upon return:
         // div = kappa.(1/Vol) Div(FluxC.Area)  Vol = kappa.VOL,
-        // Area=aperture.AREA,
-        //                  defined over the valid box
+        // Area=aperture.AREA, defined over the valid box
 
         // TODO: Rework this for r-z, if applicable
         amrex::Real vol = 1;
@@ -646,6 +643,6 @@ PeleC::getMOLSrcTerm(
         (*cost)[mfi].plus<amrex::RunOn::Device>(wt, vbox);
       }
 #endif
-    } // End of MFIter scope
-  }   // End of OMP scope
-} // End of Function
+    }
+  }
+}

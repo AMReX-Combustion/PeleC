@@ -69,14 +69,12 @@ PeleC::restart(amrex::Amr& papa, istream& is, bool bReadSpecial)
 
   AMREX_ASSERT(input_version >= 0);
 
-  // also need to mod checkPoint function to store the new version in a text
+  // Also need to mod checkPoint function to store the new version in a text
   // file
   AmrLevel::restart(papa, is, bReadSpecial);
 
-  /*
-    Deal here with new state descriptor types added, with corresponding
-    input_version > 0, if applicable
-   */
+  // Deal here with new state descriptor types added, with corresponding
+  // input_version > 0, if applicable
   amrex::Vector<int> state_in_checkpoint(desc_lst.size(), 1);
   set_state_in_checkpoint(state_in_checkpoint);
   for (int i = 0; i < desc_lst.size(); ++i) {
@@ -162,29 +160,30 @@ PeleC::restart(amrex::Amr& papa, istream& is, bool bReadSpecial)
     DiagFile.close();
   }
 
-  /*Not implemented for CUDA
-      if (level == 0)
-      {
-    // get problem-specific stuff -- note all processors do this,
-    // eliminating the need for a broadcast
-    std::string dir = parent->theRestartFile();
+  /* Not implemented for CUDA
+        if (level == 0)
+        {
+      // get problem-specific stuff -- note all processors do this,
+      // eliminating the need for a broadcast
+      std::string dir = parent->theRestartFile();
 
-    char * dir_for_pass = new char[dir.size() + 1];
-    std::copy(dir.begin(), dir.end(), dir_for_pass);
-    dir_for_pass[dir.size()] = '\0';
+      char * dir_for_pass = new char[dir.size() + 1];
+      std::copy(dir.begin(), dir.end(), dir_for_pass);
+      dir_for_pass[dir.size()] = '\0';
 
-    int len = dir.size();
+      int len = dir.size();
 
-    Vector<int> int_dir_name(len);
-    for (int j = 0; j < len; j++)
-        int_dir_name[j] = (int) dir_for_pass[j];
+      Vector<int> int_dir_name(len);
+      for (int j = 0; j < len; j++)
+          int_dir_name[j] = (int) dir_for_pass[j];
 
-    AMREX_FORT_PROC_CALL(PROBLEM_RESTART,problem_restart)(int_dir_name.dataPtr(),
-    &len);
+      AMREX_FORT_PROC_CALL(PROBLEM_RESTART,problem_restart)(int_dir_name.dataPtr(),
+      &len);
 
-    delete [] dir_for_pass;
+      delete [] dir_for_pass;
 
-      }*/
+      }
+  */
 
   if (level > 0 && do_reflux) {
     flux_reg.define(
@@ -288,7 +287,6 @@ PeleC::checkPoint(
     }
 
     if (track_grid_losses) {
-
       // store diagnostic quantities
       std::ofstream DiagFile;
       std::string FullPathDiagFile = dir;
@@ -302,23 +300,24 @@ PeleC::checkPoint(
       DiagFile.close();
     }
 
-    /*Not implemented for CUDA{
-        // store any problem-specific stuff
-        char * dir_for_pass = new char[dir.size() + 1];
-        std::copy(dir.begin(), dir.end(), dir_for_pass);
-        dir_for_pass[dir.size()] = '\0';
+    /* Not implemented for CUDA{
+            // store any problem-specific stuff
+            char * dir_for_pass = new char[dir.size() + 1];
+            std::copy(dir.begin(), dir.end(), dir_for_pass);
+            dir_for_pass[dir.size()] = '\0';
 
-        int len = dir.size();
+            int len = dir.size();
 
-        Vector<int> int_dir_name(len);
-        for (int j = 0; j < len; j++)
-      int_dir_name[j] = (int) dir_for_pass[j];
+            Vector<int> int_dir_name(len);
+            for (int j = 0; j < len; j++)
+            int_dir_name[j] = (int) dir_for_pass[j];
 
-        AMREX_FORT_PROC_CALL(PROBLEM_CHECKPOINT,problem_checkpoint)(int_dir_name.dataPtr(),
-    &len);
+            AMREX_FORT_PROC_CALL(PROBLEM_CHECKPOINT,problem_checkpoint)(int_dir_name.dataPtr(),
+       &len);
 
-        delete [] dir_for_pass;
-    }*/
+            delete [] dir_for_pass;
+        }
+    */
   }
 
 #ifdef PELEC_USE_EB
@@ -568,22 +567,21 @@ PeleC::writeJobInfo(const std::string& dir)
               << std::setw(7) << "Z"
               << "\n";
   jobInfoFile << OtherLine;
-  /* Why is this here? It creates spec_name and deletes it?
-      int len = mlen;
-      amrex::Vector<int> int_spec_names(len * NUM_SPECIES);
-      CKSYMS(int_spec_names.dataPtr(),&len);
-      for (int i = 0; i < NUM_SPECIES; i++) {
-          int j = 0;
-          char* spec_name = new char[len];
-          for (j = 0; j < len; j++) {
-            spec_name[j] = int_spec_names[i*len + j];
-            if (spec_name[j] == ' ')
-              break;
-          }
-          spec_name[len] = '\0';
-          delete [] spec_name;
-      }
-  */
+  // Why is this here? It creates spec_name and deletes it?
+  //     int len = mlen;
+  //     amrex::Vector<int> int_spec_names(len * NUM_SPECIES);
+  //     CKSYMS(int_spec_names.dataPtr(),&len);
+  //     for (int i = 0; i < NUM_SPECIES; i++) {
+  //         int j = 0;
+  //         char* spec_name = new char[len];
+  //         for (j = 0; j < len; j++) {
+  //           spec_name[j] = int_spec_names[i*len + j];
+  //           if (spec_name[j] == ' ')
+  //             break;
+  //         }
+  //         spec_name[len] = '\0';
+  //         delete [] spec_name;
+  //     }
   jobInfoFile << "\n\n";
 
   // runtime parameters
@@ -595,13 +593,9 @@ PeleC::writeJobInfo(const std::string& dir)
   jobInfoFile.close();
 }
 
-/*
- * PeleC::writeBuildInfo
- * Similar to writeJobInfo, but the subset of information that makes sense
- * without an input file to enable --describe in format similar to CASTRO
- *
- */
-
+// PeleC::writeBuildInfo
+// Similar to writeJobInfo, but the subset of information that makes sense
+// without an input file to enable --describe in format similar to CASTRO
 void
 PeleC::writeBuildInfo(std::ostream& os)
 {
@@ -759,11 +753,9 @@ PeleC::writeBuildInfo(std::ostream& os)
 void
 PeleC::writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how)
 {
-  //
   // The list of indices of State to write to plotfile.
   // first component of pair is state_type,
   // second component of pair is component # within the state_type
-  //
   amrex::Vector<std::pair<int, int>> plot_var_map;
   for (int typ = 0; typ < desc_lst.size(); typ++) {
     for (int comp = 0; comp < desc_lst[typ].nComp(); comp++) {
@@ -804,9 +796,7 @@ PeleC::writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how)
   amrex::Real cur_time = state[State_Type].curTime();
 
   if (level == 0 && amrex::ParallelDescriptor::IOProcessor()) {
-    //
     // The first thing we write out is the plotfile type.
-    //
     os << thePlotFileType() << '\n';
 
     if (n_data_items == 0) {
@@ -815,9 +805,7 @@ PeleC::writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how)
 
     os << n_data_items << '\n';
 
-    //
     // Names of variables -- first state, then derived
-    //
     for (int i = 0; i < plot_var_map.size(); i++) {
       int typ = plot_var_map[i].first;
       int comp = plot_var_map[i].second;
@@ -866,32 +854,29 @@ PeleC::writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how)
 
     writeJobInfo(dir);
   }
+
   // Build the directory to hold the MultiFab at this level.
   // The name is relative to the directory containing the Header file.
-  //
   static const std::string BaseName = "/Cell";
   char buf[64];
   sprintf(buf, "Level_%d", level);
   std::string LevelStr = buf;
-  //
+
   // Now for the full pathname of that directory.
-  //
   std::string FullPath = dir;
   if (!FullPath.empty() && FullPath[FullPath.size() - 1] != '/') {
     FullPath += '/';
   }
   FullPath += LevelStr;
-  //
+
   // Only the I/O processor makes the directory if it doesn't already exist.
-  //
   if (amrex::ParallelDescriptor::IOProcessor()) {
     if (!amrex::UtilCreateDirectory(FullPath, 0755)) {
       amrex::CreateDirectoryFailed(FullPath);
     }
   }
-  //
+
   // Force other processors to wait till directory is built.
-  //
   amrex::ParallelDescriptor::Barrier();
 
   if (amrex::ParallelDescriptor::IOProcessor()) {
@@ -905,11 +890,10 @@ PeleC::writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how)
         os << gridloc.lo(n) << ' ' << gridloc.hi(n) << '\n';
       }
     }
-    //
+
     // The full relative pathname of the MultiFabs at this level.
     // The name is relative to the Header file containing this name.
     // It's the name that gets written into the Header.
-    //
     if (n_data_items > 0) {
       std::string PathNameInHeader = LevelStr;
       PathNameInHeader += BaseName;
@@ -922,7 +906,7 @@ PeleC::writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how)
     }
 #endif
   }
-  //
+
   // We combine all of the multifabs -- state, derived, etc -- into one
   // multifab -- plotMF.
   // NOTE: we are assuming that each state variable has one component,
@@ -931,9 +915,8 @@ PeleC::writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how)
   const int nGrow = 0;
   amrex::MultiFab plotMF(
     grids, dmap, n_data_items, nGrow, amrex::MFInfo(), Factory());
-  //
+
   // Cull data from state variables -- use no ghost cells.
-  //
   for (int i = 0; i < plot_var_map.size(); i++) {
     int typ = plot_var_map[i].first;
     int comp = plot_var_map[i].second;
@@ -941,9 +924,8 @@ PeleC::writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how)
     amrex::MultiFab::Copy(plotMF, *this_dat, comp, cnt, 1, nGrow);
     cnt++;
   }
-  //
+
   // Cull data from derived variables.
-  //
   if (!derive_names.empty()) {
     for (const auto& derive_name : derive_names) {
       const amrex::DeriveRec* rec = derive_lst.get(derive_name);
@@ -960,9 +942,7 @@ PeleC::writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how)
   // amrex::EB_set_covered(plotMF);
 #endif
 
-  //
   // Use the Full pathname when naming the MultiFab.
-  //
   std::string TheFullPath = FullPath;
   TheFullPath += BaseName;
   amrex::VisMF::Write(plotMF, TheFullPath, how, true);
@@ -986,8 +966,8 @@ PeleC::writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how)
         dir, "particles", is_checkpoint, real_comp_names, int_comp_names);
       if (level == 0) {
         if (do_spray_particles == 1 && write_spray_ascii_files == 1) {
-          // TODO: Would be nice to be able to use file_name_digits
-          // instead of doing this
+          // TODO: Would be nice to be able to use file_name_digits instead of
+          // doing this
           int strlen = dir.length();
           // Remove the ".temp" from the directory
           std::string dirout = dir.substr(0, strlen - 5);
@@ -1006,11 +986,9 @@ void
 PeleC::writeSmallPlotFile(
   const std::string& dir, ostream& os, amrex::VisMF::How how)
 {
-  //
   // The list of indices of State to write to plotfile.
   // first component of pair is state_type,
   // second component of pair is component # within the state_type
-  //
   amrex::Vector<std::pair<int, int>> plot_var_map;
   for (int typ = 0; typ < desc_lst.size(); typ++) {
     for (int comp = 0; comp < desc_lst[typ].nComp(); comp++) {
@@ -1027,9 +1005,7 @@ PeleC::writeSmallPlotFile(
   amrex::Real cur_time = state[State_Type].curTime();
 
   if (level == 0 && amrex::ParallelDescriptor::IOProcessor()) {
-    //
     // The first thing we write out is the plotfile type.
-    //
     os << thePlotFileType() << '\n';
 
     if (n_data_items == 0) {
@@ -1038,9 +1014,7 @@ PeleC::writeSmallPlotFile(
 
     os << n_data_items << '\n';
 
-    //
     // Names of variables -- first state, then derived
-    //
     for (int i = 0; i < plot_var_map.size(); i++) {
       int typ = plot_var_map[i].first;
       int comp = plot_var_map[i].second;
@@ -1083,32 +1057,29 @@ PeleC::writeSmallPlotFile(
     // job_info file with details about the run
     writeJobInfo(dir);
   }
+
   // Build the directory to hold the MultiFab at this level.
   // The name is relative to the directory containing the Header file.
-  //
   static const std::string BaseName = "/Cell";
   char buf[64];
   sprintf(buf, "Level_%d", level);
   std::string LevelStr = buf;
-  //
+
   // Now for the full pathname of that directory.
-  //
   std::string FullPath = dir;
   if (!FullPath.empty() && FullPath[FullPath.size() - 1] != '/') {
     FullPath += '/';
   }
   FullPath += LevelStr;
-  //
+
   // Only the I/O processor makes the directory if it doesn't already exist.
-  //
   if (amrex::ParallelDescriptor::IOProcessor()) {
     if (!amrex::UtilCreateDirectory(FullPath, 0755)) {
       amrex::CreateDirectoryFailed(FullPath);
     }
   }
-  //
+
   // Force other processors to wait till directory is built.
-  //
   amrex::ParallelDescriptor::Barrier();
 
   if (amrex::ParallelDescriptor::IOProcessor()) {
@@ -1122,11 +1093,10 @@ PeleC::writeSmallPlotFile(
         os << gridloc.lo(n) << ' ' << gridloc.hi(n) << '\n';
       }
     }
-    //
+
     // The full relative pathname of the MultiFabs at this level.
     // The name is relative to the Header file containing this name.
     // It's the name that gets written into the Header.
-    //
     if (n_data_items > 0) {
       std::string PathNameInHeader = LevelStr;
       PathNameInHeader += BaseName;
@@ -1134,7 +1104,7 @@ PeleC::writeSmallPlotFile(
     }
     os << vfraceps << '\n';
   }
-  //
+
   // We combine all of the multifabs -- state, derived, etc -- into one
   // multifab -- plotMF.
   // NOTE: we are assuming that each state variable has one component,
@@ -1143,9 +1113,8 @@ PeleC::writeSmallPlotFile(
   const int nGrow = 0;
   amrex::MultiFab plotMF(
     grids, dmap, n_data_items, nGrow, amrex::MFInfo(), Factory());
-  //
+
   // Cull data from state variables -- use no ghost cells.
-  //
   for (int i = 0; i < plot_var_map.size(); i++) {
     int typ = plot_var_map[i].first;
     int comp = plot_var_map[i].second;
@@ -1153,9 +1122,8 @@ PeleC::writeSmallPlotFile(
     amrex::MultiFab::Copy(plotMF, *this_dat, comp, cnt, 1, nGrow);
     cnt++;
   }
-  //
+
   // Use the Full pathname when naming the MultiFab.
-  //
   std::string TheFullPath = FullPath;
   TheFullPath += BaseName;
   amrex::VisMF::Write(plotMF, TheFullPath, how, true);
