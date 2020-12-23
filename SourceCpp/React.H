@@ -144,7 +144,7 @@ pc_expl_reactions(
   amrex::Real rhoydot_ext[NUM_SPECIES];
   for (int n = 0; n < NUM_SPECIES; n++)
     rhoydot_ext[n] = nr_src(i, j, k, UFS + n);
-    
+  
   // RK dts
   amrex::Real dt_rk = dt_react / nsteps_guess;
   const amrex::Real dt_min = dt_react / nsteps_max;
@@ -215,7 +215,7 @@ pc_expl_reactions(
         urk[URHO] += urk[UFS + n];
       rhoInv = 1.0 / urk[URHO];
       for (int n = 0; n < NUM_SPECIES; ++n) {
-	massfrac[n] = urk[UFS + n] * rhoInv;
+        massfrac[n] = urk[UFS + n] * rhoInv;
       }
       EOS::EY2T(rhoe_rk / urk[URHO], massfrac, urk[UTEMP]);
 
