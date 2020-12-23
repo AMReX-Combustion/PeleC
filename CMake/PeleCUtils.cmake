@@ -34,7 +34,7 @@ macro(init_code_checks)
       if(NP EQUAL 0)
         set(NP 1)
       endif()
-      add_custom_target(cppcheck
+      add_custom_target(cppcheck ALL
           COMMAND ${CMAKE_COMMAND} -E echo "Running cppcheck on project using ${NP} cores..."
           COMMAND ${CMAKE_COMMAND} -E make_directory cppcheck/cppcheck-wd
           # cppcheck ignores -isystem directories, so we change them to regular -I include directories (with no spaces either)
