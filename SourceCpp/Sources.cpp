@@ -81,7 +81,7 @@ PeleC::sum_of_sources(amrex::MultiFab& source)
     amrex::MultiFab::Add(source, *old_sources[src_list[n]], 0, 0, NVAR, ng);
   }
 
-  if (do_hydro) {
+  if (do_hydro != 0) {
     amrex::MultiFab::Add(source, hydro_source, 0, 0, NVAR, ng);
   }
 

@@ -20,7 +20,7 @@ PeleC::advance(
 
   int finest_level = parent->finestLevel();
 
-  if (level < finest_level && do_reflux) {
+  if (level < finest_level && (do_reflux != 0)) {
     getFluxReg(level + 1).reset();
 
     if (!amrex::DefaultGeometry().IsCartesian()) {
@@ -30,7 +30,7 @@ PeleC::advance(
   }
 
   amrex::Real dt_new;
-  if (do_mol) {
+  if (do_mol != 0) {
     dt_new = do_mol_advance(time, dt, amr_iteration, amr_ncycle);
   } else {
     dt_new = do_sdc_advance(time, dt, amr_iteration, amr_ncycle);
@@ -51,7 +51,7 @@ PeleC::do_mol_advance(
 
   for (int i = 0; i < num_state_type; ++i) {
 #ifdef PELEC_USE_REACTIONS
-    if (!(i == Reactions_Type && do_react)) {
+    if (!(i == Reactions_Type && (do_react != 0))) {
 #endif
       state[i].allocOldData();
       state[i].swapTimeLevels(dt);
@@ -88,7 +88,7 @@ PeleC::do_mol_advance(
 #endif
 
   // Compute S^{n} = MOLRhs(U^{n})
-  if (verbose) {
+  if (verbose != 0) {
     amrex::Print() << "... Computing MOL source term at t^{n} " << std::endl;
   }
   FillPatch(*this, Sborder, nGrowTr, time, State_Type, 0, NVAR);
@@ -130,7 +130,7 @@ PeleC::do_mol_advance(
   computeTemp(S_new, 0);
 
   // Compute S^{n+1} = MOLRhs(U^{n+1,*})
-  if (verbose) {
+  if (verbose != 0) {
     amrex::Print() << "... Computing MOL source term at t^{n+1} " << std::endl;
   }
   FillPatch(*this, Sborder, nGrowTr, time + dt, State_Type, 0, NVAR);
@@ -183,7 +183,7 @@ PeleC::do_mol_advance(
 #ifdef PELEC_USE_REACTIONS
   if (do_react == 1) {
     for (int mol_iter = 2; mol_iter <= mol_iters; ++mol_iter) {
-      if (verbose) {
+      if (verbose != 0) {
         amrex::Print() << "... Re-computing MOL source term at t^{n+1} (iter = "
                        << mol_iter << " of " << mol_iters << ")" << std::endl;
       }
@@ -335,7 +335,7 @@ PeleC::do_sdc_iteration(
   int nGrow_Sborder = 0;
   bool fill_Sborder = false;
 
-  if (do_hydro) {
+  if (do_hydro != 0) {
     fill_Sborder = true;
     nGrow_Sborder = NUM_GROW + nGrowF;
   } else if (do_diffuse) {
@@ -468,7 +468,7 @@ PeleC::do_sdc_iteration(
     // Get diffusion source separate from other sources, since it requires grow
     // cells, and we may want to reuse what we fill-patched for hydro
     if (do_diffuse) {
-      if (verbose) {
+      if (verbose != 0) {
         amrex::Print() << "... Computing diffusion terms at t^(n)" << std::endl;
       }
       AMREX_ASSERT(
@@ -486,7 +486,7 @@ PeleC::do_sdc_iteration(
   }
 
   // Construct hydro source, will use old and current iterate of new sources.
-  if (do_hydro) {
+  if (do_hydro != 0) {
     construct_hydro_source(
       Sborder, time, dt, amr_iteration, amr_ncycle, sub_iteration, sub_ncycle);
   }
@@ -500,7 +500,7 @@ PeleC::do_sdc_iteration(
   // Now update t_new sources (diffusion separate because it requires a fill
   // patch)
   if (do_diffuse) {
-    if (verbose) {
+    if (verbose != 0) {
       amrex::Print() << "... Computing diffusion terms at t^(n+1,"
                      << sub_iteration + 1 << ")" << std::endl;
     }
@@ -583,7 +583,7 @@ PeleC::construct_Snew(
     amrex::MultiFab::Saxpy(
       S_new, 0.5 * dt, *old_sources[src_list[n]], 0, 0, NVAR, ng);
   }
-  if (do_hydro) {
+  if (do_hydro != 0) {
     amrex::MultiFab::Saxpy(S_new, dt, hydro_source, 0, 0, NVAR, ng);
   }
 
@@ -611,7 +611,7 @@ PeleC::initialize_sdc_iteration(
   frac_change = 1;
 
   // Reset the grid loss tracking.
-  if (track_grid_losses) {
+  if (track_grid_losses != 0) {
     for (amrex::Real& i : material_lost_through_boundary_temp) {
       i = 0.0;
     }
@@ -665,7 +665,7 @@ PeleC::finalize_sdc_advance(
   BL_PROFILE("PeleC::finalize_sdc_advance()");
 
   // Add the material lost in this timestep to the cumulative losses.
-  if (track_grid_losses) {
+  if (track_grid_losses != 0) {
     amrex::ParallelDescriptor::ReduceRealSum(
       material_lost_through_boundary_temp, n_lost);
 

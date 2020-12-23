@@ -255,24 +255,25 @@ PeleC::read_params()
   pp.query("diffuse_vel", diffuse_vel);
   pp.query("diffuse_cutoff_density", diffuse_cutoff_density);
 
-  do_diffuse = diffuse_temp || diffuse_enth || diffuse_spec || diffuse_vel;
+  do_diffuse = (diffuse_temp != 0) || (diffuse_enth != 0) ||
+               (diffuse_spec != 0) || (diffuse_vel != 0);
 
   // sanity checks
   if (cfl <= 0.0 || cfl > 1.0) {
     amrex::Error("Invalid CFL factor; must be between zero and one.");
   }
 
-  if ((do_les or use_explicit_filter) and (AMREX_SPACEDIM != 3)) {
+  if (((do_les != 0) or (use_explicit_filter != 0)) and (AMREX_SPACEDIM != 3)) {
     amrex::Abort("Using LES/filtering currently requires 3d.");
   }
 
-  if (do_les) {
+  if (do_les != 0) {
     pp.query("les_model", les_model);
     pp.query("les_test_filter_type", les_test_filter_type);
     pp.query("les_test_filter_fgr", les_test_filter_fgr);
   }
 
-  if (use_explicit_filter) {
+  if (use_explicit_filter != 0) {
     pp.query("les_filter_type", les_filter_type);
     pp.query("les_filter_fgr", les_filter_fgr);
   }
@@ -397,7 +398,7 @@ PeleC::PeleC(
       grids, dmap, NVAR, newGrow, amrex::MFInfo(), Factory());
   }
 
-  if (do_hydro) {
+  if (do_hydro != 0) {
     Sborder.define(grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
   } else if (do_diffuse) {
     Sborder.define(grids, dmap, NVAR, nGrowTr, amrex::MFInfo(), Factory());
@@ -408,8 +409,8 @@ PeleC::PeleC(
   }
 #endif
 
-  if (!do_mol) {
-    if (do_hydro) {
+  if (do_mol == 0) {
+    if (do_hydro != 0) {
       hydro_source.define(
         grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
 
@@ -431,7 +432,7 @@ PeleC::PeleC(
     material_lost_through_boundary_temp[i] = 0.0;
   }
 
-  if (do_reflux && level > 0) {
+  if ((do_reflux != 0) && level > 0) {
     flux_reg.define(
       bl, papa.boxArray(level - 1), dm, papa.DistributionMap(level - 1),
       level_geom, papa.Geom(level - 1), papa.refRatio(level - 1), level, NVAR);
@@ -457,13 +458,13 @@ PeleC::PeleC(
   //}
 
   // initialize LES variables
-  if (do_les) {
+  if (do_les != 0) {
     init_les();
   }
 
   // initialize filters and variables
   nGrowF = 0;
-  if (use_explicit_filter) {
+  if (use_explicit_filter != 0) {
     init_filters();
   }
 }
@@ -638,7 +639,7 @@ PeleC::initData()
   }
 #endif
 
-  if (verbose) {
+  if (verbose != 0) {
     amrex::Print() << "Initializing the data at level " << level << std::endl;
   }
 
@@ -684,7 +685,7 @@ PeleC::initData()
   }
 #endif
 
-  if (verbose) {
+  if (verbose != 0) {
     amrex::Print() << "Done initializing level " << level << " data "
                    << std::endl;
   }
@@ -710,7 +711,7 @@ PeleC::init(AmrLevel& old)
 #ifdef PELEC_USE_REACTIONS
   amrex::MultiFab& React_new = get_new_data(Reactions_Type);
 
-  if (do_react) {
+  if (do_react != 0) {
     FillPatch(
       old, React_new, 0, cur_time, Reactions_Type, 0, React_new.nComp());
   } else {
@@ -797,7 +798,9 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
   amrex::Real estdt_vdif = max_dt_over_cfl;
   amrex::Real estdt_tdif = max_dt_over_cfl;
   amrex::Real estdt_edif = max_dt_over_cfl;
-  if (do_hydro || do_mol || diffuse_vel || diffuse_temp || diffuse_enth) {
+  if (
+    (do_hydro != 0) || (do_mol != 0) || (diffuse_vel != 0) ||
+    (diffuse_temp != 0) || (diffuse_enth != 0)) {
 
 #ifdef PELEC_USE_EB
     auto const& fact =
@@ -808,7 +811,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
     prefetchToDevice(stateMF); // This should accelerate the below operations.
     amrex::Real AMREX_D_DECL(dx1 = dx[0], dx2 = dx[1], dx3 = dx[2]);
 
-    if (do_hydro) {
+    if (do_hydro != 0) {
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
 #ifdef PELEC_USE_EB
@@ -832,7 +835,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
       estdt_hydro = amrex::min<amrex::Real>(estdt_hydro, dt);
     }
 
-    if (diffuse_vel) {
+    if (diffuse_vel != 0) {
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
 #ifdef PELEC_USE_EB
@@ -856,7 +859,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
       estdt_vdif = amrex::min<amrex::Real>(estdt_vdif, dt);
     }
 
-    if (diffuse_temp) {
+    if (diffuse_temp != 0) {
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
 #ifdef PELEC_USE_EB
@@ -880,7 +883,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
       estdt_tdif = amrex::min<amrex::Real>(estdt_tdif, dt);
     }
 
-    if (diffuse_enth) {
+    if (diffuse_enth != 0) {
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
 #ifdef PELEC_USE_EB
@@ -912,7 +915,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
     amrex::ParallelDescriptor::ReduceRealMin(estdt_hydro);
     estdt_hydro *= cfl;
 
-    if (verbose) {
+    if (verbose != 0) {
       amrex::Print() << "...estimated hydro-limited timestep at level " << level
                      << ": " << estdt_hydro << std::endl;
     }
@@ -935,7 +938,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
   }
 #endif
 
-  if (verbose) {
+  if (verbose != 0) {
     amrex::Print() << "PeleC::estTimeStep (" << limiter << "-limited) at level "
                    << level << ":  estdt = " << estdt << '\n';
   }
@@ -978,7 +981,7 @@ PeleC::computeNewDt(
     } else {
       // Limit dt's by change_max * old dt
       for (int i = 0; i <= finest_level; i++) {
-        if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
+        if ((verbose != 0) && amrex::ParallelDescriptor::IOProcessor()) {
           if (dt_min[i] > change_max * dt_level[i]) {
             amrex::Print() << "PeleC::compute_new_dt : limiting dt at level "
                            << i << '\n';
@@ -1089,7 +1092,7 @@ PeleC::post_timestep(int
   }
 #endif
 
-  if (do_reflux && level < finest_level) {
+  if ((do_reflux != 0) && level < finest_level) {
     reflux();
 
     // We need to do this before anything else because refluxing changes the
@@ -1159,13 +1162,13 @@ PeleC::post_restart()
   //}
 
   // initialize LES variables
-  if (do_les) {
+  if (do_les != 0) {
     init_les();
   }
 
   // initialize filters and variables
   nGrowF = 0;
-  if (use_explicit_filter) {
+  if (use_explicit_filter != 0) {
     init_filters();
   }
 
@@ -1323,7 +1326,7 @@ PeleC::reflux()
   }
 #endif
 
-  if (verbose) {
+  if (verbose != 0) {
     const int IOProc = amrex::ParallelDescriptor::IOProcessorNumber();
     amrex::Real end = amrex::ParallelDescriptor::second() - strt;
 
@@ -1440,7 +1443,7 @@ PeleC::enforce_min_density(
     //                        &dens_change, &verbose);
   }
 
-  if (print_energy_diagnostics) {
+  if (print_energy_diagnostics != 0) {
     amrex::Real foo[3] = {mass_added, eint_added, eden_added};
 
 #ifdef AMREX_LAZY
@@ -1758,25 +1761,25 @@ std::unique_ptr<amrex::MultiFab>
 PeleC::derive(const std::string& name, amrex::Real time, int ngrow)
 {
 
-  if ((do_les) && (name == "C_s2")) {
+  if (((do_les) != 0) && (name == "C_s2")) {
     std::unique_ptr<amrex::MultiFab> derive_dat(
       new amrex::MultiFab(grids, dmap, 1, 0));
     amrex::MultiFab::Copy(*derive_dat, LES_Coeffs, comp_Cs2, 0, 1, 0);
     return derive_dat;
   }
-  if ((do_les) && (name == "C_I")) {
+  if (((do_les) != 0) && (name == "C_I")) {
     std::unique_ptr<amrex::MultiFab> derive_dat(
       new amrex::MultiFab(grids, dmap, 1, 0));
     amrex::MultiFab::Copy(*derive_dat, LES_Coeffs, comp_CI, 0, 1, 0);
     return derive_dat;
   }
-  if ((do_les) && (les_model != 1) && (name == "Pr_T")) {
+  if (((do_les) != 0) && (les_model != 1) && (name == "Pr_T")) {
     std::unique_ptr<amrex::MultiFab> derive_dat(
       new amrex::MultiFab(grids, dmap, 1, 0));
     amrex::MultiFab::Copy(*derive_dat, LES_Coeffs, comp_PrT, 0, 1, 0);
     return derive_dat;
   }
-  if ((do_les) && (les_model == 1) && (name == "Pr_T")) {
+  if (((do_les) != 0) && (les_model == 1) && (name == "Pr_T")) {
     std::unique_ptr<amrex::MultiFab> derive_dat(
       new amrex::MultiFab(grids, dmap, 1, 0));
     amrex::MultiFab::Copy(*derive_dat, LES_Coeffs, comp_Cs2ovPrT, 0, 1, 0);
@@ -1895,7 +1898,7 @@ PeleC::init_filters()
   nGrowF = les_filter.get_filter_ngrow();
 
   // Add grow cells necessary for explicit filtering of source terms
-  if (do_hydro) {
+  if (do_hydro != 0) {
     Sborder.define(
       grids, dmap, NVAR, Sborder.nGrow() + nGrowF, amrex::MFInfo(), Factory());
     hydro_source.define(
@@ -1920,20 +1923,19 @@ PeleC::init_filters()
     geom.GetFaceArea(area[dir], dir);
   }
 }
+
 #ifdef PELEC_USE_MASA
 void
 PeleC::init_mms()
 {
   if (!mms_initialized) {
-    if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
+    if ((verbose != 0) && amrex::ParallelDescriptor::IOProcessor()) {
       amrex::Print() << "Initializing MMS" << std::endl;
     }
-#ifdef PELEC_USE_MASA
     masa_init("mms", masa_solution_name.c_str());
     masa_set_param("Cs", PeleC::Cs);
     masa_set_param("CI", PeleC::CI);
     masa_set_param("PrT", PeleC::PrT);
-#endif
     mms_initialized = true;
   }
 }
@@ -1944,7 +1946,7 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
 {
 #ifndef AMREX_USE_GPU
   amrex::Real sum0 = 0.0;
-  if (parent->finestLevel() == 0 && print_energy_diagnostics) {
+  if (parent->finestLevel() == 0 && (print_energy_diagnostics != 0)) {
     // Pass in the multifab and the component
     sum0 = volWgtSumMF(S_new, Eden, true);
   }
@@ -1970,7 +1972,7 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
   }
 
 #ifndef AMREX_USE_GPU
-  if (parent->finestLevel() == 0 && print_energy_diagnostics) {
+  if (parent->finestLevel() == 0 && (print_energy_diagnostics != 0)) {
     // Pass in the multifab and the component
     amrex::Real sum = volWgtSumMF(S_new, Eden, true);
 #ifdef AMREX_LAZY
