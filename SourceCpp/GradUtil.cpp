@@ -29,10 +29,14 @@ pc_compute_tangential_vel_derivs_eb(
       AMREX_D_TERM(i = sv_ebg[L].iv[0];, j = sv_ebg[L].iv[1];
                    , k = sv_ebg[L].iv[2];);
       if (is_inside(i, j, k, lo, hi)) {
-        const int jhip = j + flags(i, j, k).isConnected(0, 1, 0);
-        const int jhim = j - flags(i, j, k).isConnected(0, -1, 0);
-        const int jlop = j + flags(i - 1, j, k).isConnected(0, 1, 0);
-        const int jlom = j - flags(i - 1, j, k).isConnected(0, -1, 0);
+        const int jhip =
+          j + static_cast<int>(flags(i, j, k).isConnected(0, 1, 0));
+        const int jhim =
+          j - static_cast<int>(flags(i, j, k).isConnected(0, -1, 0));
+        const int jlop =
+          j + static_cast<int>(flags(i - 1, j, k).isConnected(0, 1, 0));
+        const int jlom =
+          j - static_cast<int>(flags(i - 1, j, k).isConnected(0, -1, 0));
         const amrex::Real wjhi = weights[jhip - jhim];
         const amrex::Real wjlo = weights[jlop - jlom];
         td(i, j, k, 0) =
@@ -49,10 +53,14 @@ pc_compute_tangential_vel_derivs_eb(
           ((q(i, jhip, k, QW) - q(i, jhim, k, QW)) * wjhi +
            (q(i - 1, jlop, k, QW) - q(i - 1, jlom, k, QW)) * wjlo);
 
-        const int khip = k + flags(i, j, k).isConnected(0, 0, 1);
-        const int khim = k - flags(i, j, k).isConnected(0, 0, -1);
-        const int klop = k + flags(i - 1, j, k).isConnected(0, 0, 1);
-        const int klom = k - flags(i - 1, j, k).isConnected(0, 0, -1);
+        const int khip =
+          k + static_cast<int>(flags(i, j, k).isConnected(0, 0, 1));
+        const int khim =
+          k - static_cast<int>(flags(i, j, k).isConnected(0, 0, -1));
+        const int klop =
+          k + static_cast<int>(flags(i - 1, j, k).isConnected(0, 0, 1));
+        const int klom =
+          k - static_cast<int>(flags(i - 1, j, k).isConnected(0, 0, -1));
         const amrex::Real wkhi = weights[khip - khim];
         const amrex::Real wklo = weights[klop - klom];
         td(i, j, k, 3) =
@@ -78,10 +86,14 @@ pc_compute_tangential_vel_derivs_eb(
       AMREX_D_TERM(i = sv_ebg[L].iv[0];, j = sv_ebg[L].iv[1];
                    , k = sv_ebg[L].iv[2];);
       if (is_inside(i, j, k, lo, hi)) {
-        const int ihip = i + flags(i, j, k).isConnected(1, 0, 0);
-        const int ihim = i - flags(i, j, k).isConnected(-1, 0, 0);
-        const int ilop = i + flags(i, j - 1, k).isConnected(1, 0, 0);
-        const int ilom = i - flags(i, j - 1, k).isConnected(-1, 0, 0);
+        const int ihip =
+          i + static_cast<int>(flags(i, j, k).isConnected(1, 0, 0));
+        const int ihim =
+          i - static_cast<int>(flags(i, j, k).isConnected(-1, 0, 0));
+        const int ilop =
+          i + static_cast<int>(flags(i, j - 1, k).isConnected(1, 0, 0));
+        const int ilom =
+          i - static_cast<int>(flags(i, j - 1, k).isConnected(-1, 0, 0));
         const amrex::Real wihi = weights[ihip - ihim];
         const amrex::Real wilo = weights[ilop - ilom];
         td(i, j, k, 0) =
@@ -98,10 +110,14 @@ pc_compute_tangential_vel_derivs_eb(
           ((q(ihip, j, k, QW) - q(ihim, j, k, QW)) * wihi +
            (q(ilop, j - 1, k, QW) - q(ilom, j - 1, k, QW)) * wilo);
 
-        const int khip = k + flags(i, j, k).isConnected(0, 0, 1);
-        const int khim = k - flags(i, j, k).isConnected(0, 0, -1);
-        const int klop = k + flags(i, j - 1, k).isConnected(0, 0, 1);
-        const int klom = k - flags(i, j - 1, k).isConnected(0, 0, -1);
+        const int khip =
+          k + static_cast<int>(flags(i, j, k).isConnected(0, 0, 1));
+        const int khim =
+          k - static_cast<int>(flags(i, j, k).isConnected(0, 0, -1));
+        const int klop =
+          k + static_cast<int>(flags(i, j - 1, k).isConnected(0, 0, 1));
+        const int klom =
+          k - static_cast<int>(flags(i, j - 1, k).isConnected(0, 0, -1));
         const amrex::Real wkhi = weights[khip - khim];
         const amrex::Real wklo = weights[klop - klom];
         td(i, j, k, 3) =
@@ -125,10 +141,14 @@ pc_compute_tangential_vel_derivs_eb(
       const int j = sv_ebg[L].iv[1];
       const int k = sv_ebg[L].iv[2];
       if (is_inside(i, j, k, lo, hi)) {
-        const int ihip = i + flags(i, j, k).isConnected(1, 0, 0);
-        const int ihim = i - flags(i, j, k).isConnected(-1, 0, 0);
-        const int ilop = i + flags(i, j, k - 1).isConnected(1, 0, 0);
-        const int ilom = i - flags(i, j, k - 1).isConnected(-1, 0, 0);
+        const int ihip =
+          i + static_cast<int>(flags(i, j, k).isConnected(1, 0, 0));
+        const int ihim =
+          i - static_cast<int>(flags(i, j, k).isConnected(-1, 0, 0));
+        const int ilop =
+          i + static_cast<int>(flags(i, j, k - 1).isConnected(1, 0, 0));
+        const int ilom =
+          i - static_cast<int>(flags(i, j, k - 1).isConnected(-1, 0, 0));
         const amrex::Real wihi = weights[ihip - ihim];
         const amrex::Real wilo = weights[ilop - ilom];
         td(i, j, k, 0) =
@@ -144,10 +164,14 @@ pc_compute_tangential_vel_derivs_eb(
           ((q(ihip, j, k, QW) - q(ihim, j, k, QW)) * wihi +
            (q(ilop, j, k - 1, QW) - q(ilom, j, k - 1, QW)) * wilo);
 
-        const int jhip = j + flags(i, j, k).isConnected(0, 1, 0);
-        const int jhim = j - flags(i, j, k).isConnected(0, -1, 0);
-        const int jlop = j + flags(i, j, k - 1).isConnected(0, 1, 0);
-        const int jlom = j - flags(i, j, k - 1).isConnected(0, -1, 0);
+        const int jhip =
+          j + static_cast<int>(flags(i, j, k).isConnected(0, 1, 0));
+        const int jhim =
+          j - static_cast<int>(flags(i, j, k).isConnected(0, -1, 0));
+        const int jlop =
+          j + static_cast<int>(flags(i, j, k - 1).isConnected(0, 1, 0));
+        const int jlom =
+          j - static_cast<int>(flags(i, j, k - 1).isConnected(0, -1, 0));
         const amrex::Real wjhi = weights[jhip - jhim];
         const amrex::Real wjlo = weights[jlop - jlom];
         td(i, j, k, 3) =

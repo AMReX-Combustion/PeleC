@@ -341,11 +341,12 @@ pc_fix_div_and_redistribute(
         for (int ii = -1; ii <= 1; ii++) {
           for (int jj = -1; jj <= 1; jj++) {
             for (int kk = -1; kk <= 1; kk++) {
-              sum_kappa += flags(i, j, k).isConnected(ii, jj, kk) *
-                           vf(i + ii, j + jj, k + kk);
-              sum_div += flags(i, j, k).isConnected(ii, jj, kk) *
-                         vf(i + ii, j + jj, k + kk) *
-                         DC(i + ii, j + jj, k + kk, n);
+              sum_kappa +=
+                static_cast<double>(flags(i, j, k).isConnected(ii, jj, kk)) *
+                vf(i + ii, j + jj, k + kk);
+              sum_div +=
+                static_cast<double>(flags(i, j, k).isConnected(ii, jj, kk)) *
+                vf(i + ii, j + jj, k + kk) * DC(i + ii, j + jj, k + kk, n);
             }
           }
         }
@@ -383,7 +384,8 @@ pc_fix_div_and_redistribute(
         for (int ii = -1; ii <= 1; ii++) {
           for (int jj = -1; jj <= 1; jj++) {
             for (int kk = -1; kk <= 1; kk++) {
-              int nbr = flags(i, j, k).isConnected(ii, jj, kk);
+              int nbr =
+                static_cast<int>(flags(i, j, k).isConnected(ii, jj, kk));
               if ((ii == 0) and (jj == 0) and (kk == 0)) {
                 nbr = 0;
               }
@@ -399,7 +401,8 @@ pc_fix_div_and_redistribute(
         for (int ii = -1; ii <= 1; ii++) {
           for (int jj = -1; jj <= 1; jj++) {
             for (int kk = -1; kk <= 1; kk++) {
-              int nbr = flags(i, j, k).isConnected(ii, jj, kk);
+              int nbr =
+                static_cast<int>(flags(i, j, k).isConnected(ii, jj, kk));
               if ((ii == 0) and (jj == 0) and (kk == 0)) {
                 nbr = 0;
               }
@@ -433,7 +436,7 @@ pc_fix_div_and_redistribute(
           as_fine_valid_cell = is_inside(i, j, k, lo, hi);
           as_fine_ghost_cell =
             (levmsk(i, j, k) ==
-             levmsk_notcovered); // not covered by other grids
+             static_cast<int>(levmsk_notcovered)); // not covered by other grids
         }
 
         for (int ii = -1; ii <= 1; ii++) {

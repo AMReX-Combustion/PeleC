@@ -109,14 +109,14 @@ PeleC::restart(amrex::Amr& papa, istream& is, bool bReadSpecial)
       grids, dmap, NVAR, newGrow, amrex::MFInfo(), Factory());
   }
 
-  if (do_hydro) {
+  if (do_hydro != 0) {
     Sborder.define(grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
   } else if (do_diffuse) {
     Sborder.define(grids, dmap, NVAR, nGrowTr, amrex::MFInfo(), Factory());
   }
 
-  if (!do_mol) {
-    if (do_hydro) {
+  if (do_mol == 0) {
+    if (do_hydro != 0) {
       hydro_source.define(grids, dmap, NVAR, 0, amrex::MFInfo(), Factory());
 
       // This array holds the sum of all source terms that affect the
@@ -145,7 +145,7 @@ PeleC::restart(amrex::Amr& papa, istream& is, bool bReadSpecial)
     amrex::Print() << "read CPU time: " << previousCPUTimeUsed << "\n";
   }
 
-  if (track_grid_losses && level == 0) {
+  if ((track_grid_losses != 0) && level == 0) {
 
     // get the current value of the diagnostic quantities
     std::ifstream DiagFile;
@@ -185,7 +185,7 @@ PeleC::restart(amrex::Amr& papa, istream& is, bool bReadSpecial)
       }
   */
 
-  if (level > 0 && do_reflux) {
+  if (level > 0 && (do_reflux != 0)) {
     flux_reg.define(
       grids, papa.boxArray(level - 1), dmap, papa.DistributionMap(level - 1),
       geom, papa.Geom(level - 1), papa.refRatio(level - 1), level, NVAR);
@@ -286,7 +286,7 @@ PeleC::checkPoint(
       CPUFile.close();
     }
 
-    if (track_grid_losses) {
+    if (track_grid_losses != 0) {
       // store diagnostic quantities
       std::ofstream DiagFile;
       std::string FullPathDiagFile = dir;

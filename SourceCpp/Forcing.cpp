@@ -17,7 +17,7 @@ PeleC::construct_old_forcing_source(amrex::Real time, amrex::Real dt)
 
   old_sources[forcing_src]->setVal(0.0);
 
-  if (!add_forcing_src) {
+  if (add_forcing_src == 0) {
     return;
   }
 
@@ -36,7 +36,7 @@ PeleC::construct_new_forcing_source(amrex::Real time, amrex::Real dt)
 
   new_sources[forcing_src]->setVal(0.0);
 
-  if (!add_forcing_src) {
+  if (add_forcing_src == 0) {
     return;
   }
 
