@@ -228,16 +228,19 @@ read_csv(
 
   // Read the file
   size_t nlines = 0;
-  std::string firstline, line;
+  std::string firstline;
+  std::string line;
   std::getline(iss, firstline); // skip header
-  while (getline(iss, line))
+  while (getline(iss, line)) {
     ++nlines;
+  }
 
   // Quick sanity check
-  if (nlines != nx * ny * nz)
+  if (nlines != nx * ny * nz) {
     amrex::Abort(
       "Number of lines in the input file (= " + std::to_string(nlines) +
       ") does not match the input resolution (=" + std::to_string(nx) + ")");
+  }
 
   // Read the data from the file
   iss.clear();

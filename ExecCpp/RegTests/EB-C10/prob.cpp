@@ -44,7 +44,8 @@ amrex_probinit(
 
   amrex::Real L = (probhi[0] - problo[0]);
 
-  amrex::Real cp = 0.0, cs = 0.0;
+  amrex::Real cp = 0.0;
+  amrex::Real cs = 0.0;
   ProbParm::massfrac[0] = 1.0;
 
   EOS::PYT2RE(

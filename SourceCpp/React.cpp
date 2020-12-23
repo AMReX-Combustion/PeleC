@@ -11,9 +11,7 @@ PeleC::react_state(
   bool react_init,
   amrex::MultiFab* aux_src)
 {
-  /*
-    Update I_R, and recompute S_new
-   */
+  // Update I_R, and recompute S_new
   BL_PROFILE("PeleC::react_state()");
 
   const amrex::Real strt_time = amrex::ParallelDescriptor::second();
@@ -337,8 +335,9 @@ PeleC::react_state(
     }
   }
 
-  if (ng > 0)
+  if (ng > 0) {
     S_new.FillBoundary(geom.periodicity());
+  }
 
   if (verbose > 1) {
     const int IOProc = amrex::ParallelDescriptor::IOProcessorNumber();
@@ -349,8 +348,9 @@ PeleC::react_state(
 #endif
       amrex::ParallelDescriptor::ReduceRealMax(run_time, IOProc);
 
-      if (amrex::ParallelDescriptor::IOProcessor())
+      if (amrex::ParallelDescriptor::IOProcessor()) {
         amrex::Print() << "PeleC::react_state() time = " << run_time << "\n";
+      }
 #ifdef AMREX_LAZY
     });
 #endif

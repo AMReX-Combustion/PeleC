@@ -406,14 +406,17 @@ pc_dermolefrac(
   auto spec = derfab.array();
 
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    amrex::Real mass[NUM_SPECIES], mole[NUM_SPECIES];
+    amrex::Real mass[NUM_SPECIES];
+    amrex::Real mole[NUM_SPECIES];
     const amrex::Real rhoInv = 1.0 / dat(i, j, k, URHO);
 
-    for (int n = 0; n < NUM_SPECIES; n++)
+    for (int n = 0; n < NUM_SPECIES; n++) {
       mass[n] = dat(i, j, k, UFS + n) * rhoInv;
+    }
     EOS::Y2X(mass, mole);
-    for (int n = 0; n < NUM_SPECIES; n++)
+    for (int n = 0; n < NUM_SPECIES; n++) {
       spec(i, j, k, UFS + n) = mole[n];
+    }
   });
 }
 
@@ -436,9 +439,11 @@ pc_dersoundspeed(
     const amrex::Real rho = dat(i, j, k, URHO);
     const amrex::Real rhoInv = 1.0 / rho;
     const amrex::Real T = dat(i, j, k, UTEMP);
-    amrex::Real massfrac[NUM_SPECIES], c;
-    for (int n = 0; n < NUM_SPECIES; ++n)
+    amrex::Real massfrac[NUM_SPECIES];
+    amrex::Real c;
+    for (int n = 0; n < NUM_SPECIES; ++n) {
       massfrac[n] = dat(i, j, k, UFS + n) * rhoInv;
+    }
     EOS::RTY2Cs(rho, T, massfrac, c);
     cfab(i, j, k) = c;
   });
@@ -485,9 +490,11 @@ pc_dermachnumber(
     const amrex::Real rho = dat(i, j, k, URHO);
     const amrex::Real rhoInv = 1.0 / rho;
     const amrex::Real T = dat(i, j, k, UTEMP);
-    amrex::Real massfrac[NUM_SPECIES], c;
-    for (int n = 0; n < NUM_SPECIES; ++n)
+    amrex::Real massfrac[NUM_SPECIES];
+    amrex::Real c;
+    for (int n = 0; n < NUM_SPECIES; ++n) {
       massfrac[n] = dat(i, j, k, UFS + n) * rhoInv;
+    }
     EOS::RTY2Cs(rho, T, massfrac, c);
     const amrex::Real datxsq = dat(i, j, k, UMX) * dat(i, j, k, UMX);
     const amrex::Real datysq = dat(i, j, k, UMY) * dat(i, j, k, UMY);
@@ -516,9 +523,11 @@ pc_derpres(
     const amrex::Real rhoInv = 1.0 / rho;
     amrex::Real T = dat(i, j, k, UTEMP);
     // amrex::Real e = dat(i, j, k, UEINT) * rhoInv;
-    amrex::Real p, massfrac[NUM_SPECIES];
-    for (int n = 0; n < NUM_SPECIES; ++n)
+    amrex::Real p;
+    amrex::Real massfrac[NUM_SPECIES];
+    for (int n = 0; n < NUM_SPECIES; ++n) {
       massfrac[n] = dat(i, j, k, UFS + n) * rhoInv;
+    }
     EOS::RTY2P(rho, T, massfrac, p);
     pfab(i, j, k) = p;
   });

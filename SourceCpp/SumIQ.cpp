@@ -7,8 +7,9 @@ PeleC::sum_integrated_quantities()
 {
   BL_PROFILE("PeleC::sum_integrated_quantities()");
 
-  if (verbose <= 0)
+  if (verbose <= 0) {
     return;
+  }
 
   bool local_flag = true;
 

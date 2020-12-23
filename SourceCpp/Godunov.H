@@ -460,7 +460,7 @@ pc_transy1(
   qm(i + 1, j, k, QREINT) = renewl - rhoekinl;
 }
 
-/* Transverse Correction for Predicted Z-states, using X-Flux */
+// Transverse Correction for Predicted Z-states, using X-Flux
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void

@@ -7,9 +7,9 @@
 #include "EB.H"
 #endif
 
-/*This header file contains functions and declarations for Gradient Utilities in
-  3D for PeleC GPU. As per the convention of AMReX, inlined functions are
-  defined here. Where as non-inline functions are declared here. */
+// This header file contains functions and declarations for Gradient Utilities
+// in 3D for PeleC GPU. As per the convention of AMReX, inlined functions are
+// defined here. Where as non-inline functions are declared here.
 
 namespace GradUtils {
 const int nCompTan = AMREX_D_PICK(0, 2, 6);
