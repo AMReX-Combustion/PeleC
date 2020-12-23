@@ -42,7 +42,7 @@ main(int argc, char* argv[])
   amrex::Initialize(argc, argv);
 
   // Save the inputs file name for later.
-  if (strchr(argv[1], '=') == nullptr) {
+  if (!strchr(argv[1], '=')) {
     inputs_name = argv[1];
   }
 
@@ -134,7 +134,7 @@ main(int argc, char* argv[])
 
   amrex::Real dRunTime2 = amrex::ParallelDescriptor::second();
 
-  while ((amrptr->okToContinue() != 0) &&
+  while (amrptr->okToContinue() &&
          (amrptr->levelSteps(0) < max_step || max_step < 0) &&
          (amrptr->cumTime() < stop_time || stop_time < 0.0)) {
     // Do a timestep

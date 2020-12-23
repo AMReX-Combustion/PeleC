@@ -183,7 +183,7 @@ amrex_probinit(
 void
 PeleC::problem_post_timestep()
 {
-  if ((verbose <= 0) || (do_mms == 0)) {
+  if ((verbose <= 0) || (!do_mms)) {
     return;
   }
 
@@ -329,7 +329,7 @@ void
 PeleC::problem_post_init()
 {
 
-  if ((verbose <= 0) || (do_mms == 0)) {
+  if ((verbose <= 0) || (!do_mms)) {
     return;
   }
 

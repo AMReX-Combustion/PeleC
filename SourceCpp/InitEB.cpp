@@ -201,10 +201,10 @@ PeleC::initialize_eb2_structs()
       sv_eb_flux[iLocal].define(sv_eb_bndry_grad_stencil[iLocal], NVAR);
       sv_eb_bcval[iLocal].define(sv_eb_bndry_grad_stencil[iLocal], QVAR);
 
-      if ((eb_isothermal != 0) && (diffuse_temp != 0 || diffuse_enth != 0)) {
+      if (eb_isothermal && (diffuse_temp != 0 || diffuse_enth != 0)) {
         sv_eb_bcval[iLocal].setVal(eb_boundary_T, QTEMP);
       }
-      if ((eb_noslip != 0) && diffuse_vel == 1) {
+      if (eb_noslip && diffuse_vel == 1) {
         sv_eb_bcval[iLocal].setVal(0, QU, AMREX_SPACEDIM);
       }
 

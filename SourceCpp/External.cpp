@@ -10,7 +10,7 @@ PeleC::construct_old_ext_source(amrex::Real time, amrex::Real dt)
 
   old_sources[ext_src]->setVal(0.0);
 
-  if (add_ext_src == 0) {
+  if (!add_ext_src) {
     return;
   }
 
@@ -29,7 +29,7 @@ PeleC::construct_new_ext_source(amrex::Real time, amrex::Real dt)
 
   new_sources[ext_src]->setVal(0.0);
 
-  if (add_ext_src == 0) {
+  if (!add_ext_src) {
     return;
   }
 
