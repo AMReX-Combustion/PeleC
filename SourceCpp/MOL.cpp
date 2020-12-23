@@ -41,9 +41,7 @@ pc_compute_hyp_mol_flux(
     setV(cbox, QVAR, dq, 0.0);
 
     // dimensional indexing
-    const amrex::GpuArray<const int, 3> bdim{
-      {static_cast<const int>(dir == 0), static_cast<const int>(dir == 1),
-       static_cast<const int>(dir == 2)}};
+    const amrex::GpuArray<const int, 3> bdim{{dir == 0, dir == 1, dir == 2}};
     const amrex::GpuArray<const int, 3> q_idx{
       {bdim[0] * QU + bdim[1] * QV + bdim[2] * QW,
        bdim[0] * QV + bdim[1] * QU + bdim[2] * QU,
@@ -242,8 +240,7 @@ pc_compute_hyp_mol_flux(
             for (int kk = -1; kk <= 1; kk++) {
 #endif
 #endif
-              int nbr =
-                static_cast<int>(flags(i, j, k).isConnected(ii, jj, kk));
+              int nbr = flags(i, j, k).isConnected(ii, jj, kk);
               if ((ii == 0) and (jj == 0) and (kk == 0)) {
                 nbr = 0;
               }

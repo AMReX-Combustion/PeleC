@@ -152,7 +152,7 @@ PeleC::variableSetUp()
   indxmap::init();
 
 #ifdef PELEC_USE_MASA
-  if (do_mms != 0) {
+  if (do_mms) {
     init_mms();
   }
 #endif
@@ -560,7 +560,7 @@ PeleC::variableSetUp()
 #endif
 
   // LES coefficients
-  if (do_les != 0) {
+  if (do_les) {
     derive_lst.add(
       "C_s2", amrex::IndexType::TheCellType(), 1, pc_dernull, the_same_box);
     derive_lst.addComponent("C_s2", desc_lst, State_Type, Density, 1);
@@ -576,7 +576,7 @@ PeleC::variableSetUp()
 
   // MMS derives
 #ifdef PELEC_USE_MASA
-  if (do_mms != 0) {
+  if (do_mms) {
     derive_lst.add(
       "rhommserror", amrex::IndexType::TheCellType(), 1, pc_derrhommserror,
       the_same_box);
@@ -617,7 +617,7 @@ PeleC::variableSetUp()
 void
 PeleC::set_active_sources()
 {
-  if (do_diffuse && (do_mol == 0)) {
+  if (do_diffuse && !do_mol) {
     src_list.push_back(diff_src);
   }
 
@@ -638,13 +638,13 @@ PeleC::set_active_sources()
 #endif
 
   // optional LES source
-  if (do_les != 0) {
+  if (do_les) {
     src_list.push_back(les_src);
   }
 
 #ifdef PELEC_USE_MASA
   // optional MMS source
-  if (do_mms != 0) {
+  if (do_mms) {
     src_list.push_back(mms_src);
   }
 #endif

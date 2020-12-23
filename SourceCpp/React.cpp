@@ -18,7 +18,7 @@ PeleC::react_state(
 
   AMREX_ASSERT(do_react == 1);
 
-  if ((verbose != 0) && amrex::ParallelDescriptor::IOProcessor()) {
+  if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
     if (react_init) {
       amrex::Print() << "... Initializing reactions, using interval dt = " << dt
                      << std::endl;
@@ -54,7 +54,7 @@ PeleC::react_state(
         amrex::MultiFab::Saxpy(
           non_react_src_tmp, 0.5, *old_sources[src_list[n]], 0, 0, NVAR, ng);
       }
-      if ((do_hydro != 0) && (do_mol == 0)) {
+      if (do_hydro && !do_mol) {
         amrex::MultiFab::Add(non_react_src_tmp, hydro_source, 0, 0, NVAR, ng);
       }
     } else {

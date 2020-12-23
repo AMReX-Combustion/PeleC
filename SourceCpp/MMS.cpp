@@ -47,14 +47,14 @@ PeleC::fill_mms_source(
   }
 
   if (mms_src_evaluated) {
-    if ((verbose != 0) && amrex::ParallelDescriptor::IOProcessor()) {
+    if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
       amrex::Print() << "... Reusing MMS source at time " << time << std::endl;
     }
     amrex::MultiFab::Copy(mms_src, mms_source, 0, 0, NVAR, ng);
     return;
   }
 
-  if ((verbose != 0) && amrex::ParallelDescriptor::IOProcessor()) {
+  if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
     amrex::Print() << "... Computing MMS source at time " << time << std::endl;
   }
 

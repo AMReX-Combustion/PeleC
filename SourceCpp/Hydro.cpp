@@ -11,14 +11,14 @@ PeleC::construct_hydro_source(
   int sub_iteration,
   int sub_ncycle)
 {
-  if (do_mol != 0) {
-    if ((verbose != 0) && amrex::ParallelDescriptor::IOProcessor()) {
+  if (do_mol) {
+    if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
       amrex::Print() << "... Zeroing Godunov-based hydro advance" << std::endl;
     }
     hydro_source.setVal(0);
   } else {
 
-    if ((verbose != 0) && amrex::ParallelDescriptor::IOProcessor()) {
+    if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
       amrex::Print() << "... Computing hydro advance" << std::endl;
     }
 
@@ -223,7 +223,7 @@ PeleC::construct_hydro_source(
         courno = amrex::max<amrex::Real>(courno, cflLoc);
 
         // Filter hydro source and fluxes here
-        if (use_explicit_filter != 0) {
+        if (use_explicit_filter) {
           for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
             const amrex::Box& bxtmp = amrex::surroundingNodes(bx, dir);
             amrex::FArrayBox filtered_flux(bxtmp, NVAR);
@@ -246,7 +246,7 @@ PeleC::construct_hydro_source(
             bx, hyd_src.nComp(), filtered_source_out.array(), hyd_src);
         }
 
-        if ((do_reflux != 0) && sub_iteration == sub_ncycle - 1) {
+        if (do_reflux && sub_iteration == sub_ncycle - 1) {
           if (level < finest_level) {
             getFluxReg(level + 1).CrseAdd(
               mfi, {{AMREX_D_DECL(&(flux[0]), &(flux[1]), &(flux[2]))}}, dxDp,
@@ -275,7 +275,7 @@ PeleC::construct_hydro_source(
 
     BL_PROFILE_VAR_STOP(PC_UMDRV);
 
-    if (track_grid_losses != 0) {
+    if (track_grid_losses) {
       material_lost_through_boundary_temp[0] += mass_lost;
       material_lost_through_boundary_temp[1] += xmom_lost;
       material_lost_through_boundary_temp[2] += ymom_lost;
@@ -286,7 +286,7 @@ PeleC::construct_hydro_source(
       material_lost_through_boundary_temp[7] += zang_lost;
     }
 
-    if (print_energy_diagnostics != 0) {
+    if (print_energy_diagnostics) {
       amrex::Real foo[5] = {
         E_added_flux, xmom_added_flux, ymom_added_flux, zmom_added_flux,
         mass_added_flux};
