@@ -102,8 +102,6 @@ if(PELEC_ENABLE_WERROR)
   message(STATUS "Enabling Werror.")
 endif()
 
-init_code_checks()
-
 message(STATUS "PELEC_PRECISION = ${PELEC_PRECISION}")
 if("${PELEC_PRECISION}" STREQUAL "SINGLE" AND PELEC_ENABLE_AMREX_EB)
   message(FATAL_ERROR "Single precision currently not allowed in AMReX with EB enabled")
@@ -111,6 +109,8 @@ endif()
 if("${PELEC_PRECISION}" STREQUAL "SINGLE" AND PELEC_ENABLE_MASA)
   message(FATAL_ERROR "Single precision currently not allowed in AMReX with MASA enabled")
 endif()
+
+init_code_checks()
 
 #Turn on rpath stuff
 include(SetRpath)
