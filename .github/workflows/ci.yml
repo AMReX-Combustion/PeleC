@@ -96,10 +96,10 @@ jobs:
           done
       - name: Build
         run: |
-          echo "::add-matcher::.github/problem-matchers/gcc.json"
           for DIM in 1 2 3; do \
             printf "\n-------- Building ${DIM}D --------\n"; \
-            cmake --build ${{runner.workspace}}/build-${DIM}d-${{matrix.os}} --parallel ${{env.NPROCS}}; \
+            cmake --build ${{runner.workspace}}/build-${DIM}d-${{matrix.os}} \
+              --parallel ${{env.NPROCS}} 2>> ${{runner.workspace}}/warnings.txt; \
           done
       - name: Test
         run: |
@@ -108,6 +108,11 @@ jobs:
             cd ${{runner.workspace}}/build-${DIM}d-${{matrix.os}}; \
             ctest -j ${{env.NPROCS}} -LE no-ci --output-on-failure; \
           done
+      - name: Report
+        run: |
+          echo "::add-matcher::.github/problem-matchers/gcc.json"
+          cat ${{runner.workspace}}/warnings.txt | egrep "warning:|error:" | sort | uniq -c | sort -nr | \
+            awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}'
   GNUmake:
     needs: Formatting
     runs-on: ubuntu-latest

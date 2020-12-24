@@ -47,7 +47,7 @@ void
 pc_fill_bndry_grad_stencil(
   const amrex::Box& bx,
   const amrex::Real dx,
-  const int /*Nebg*/,
+  const int Nebg,
   const EBBndryGeom* ebg,
   const int Nsten,
   EBBndrySten* grad_stencil)
