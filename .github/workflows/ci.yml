@@ -99,7 +99,7 @@ jobs:
           for DIM in 1 2 3; do \
             printf "\n-------- Building ${DIM}D --------\n"; \
             cmake --build ${{runner.workspace}}/build-${DIM}d-${{matrix.os}} \
-              --parallel ${{env.NPROCS}} 2>> ${{runner.workspace}}/warnings.txt; \
+              --parallel ${{env.NPROCS}} 2>&1 | tee -a ${{runner.workspace}}/build-output.txt; \
           done
       - name: Test
         run: |
@@ -111,7 +111,7 @@ jobs:
       - name: Report
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
-          cat ${{runner.workspace}}/warnings.txt | egrep "warning:|error:" | sort | uniq -c | sort -nr | \
+          cat ${{runner.workspace}}/build-output.txt | egrep "warning:|error:" | sort | uniq -c | sort -nr | \
             awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}'
   GNUmake:
     needs: Formatting
