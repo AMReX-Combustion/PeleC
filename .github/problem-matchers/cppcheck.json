@@ -2,7 +2,7 @@
      "__comment": "Modified from vscode-cpptools's Extension/package.json gcc rule",
      "problemMatcher": [
          {
-             "owner": "gcc-problem-matcher",
+             "owner": "cppcheck-problem-matcher",
              "pattern": [
                  {
                      "regexp": "^(.*):(\\d+):(\\d+):\\s+(?:fatal\\s+)?(error|performance|portability|style|warning):\\s+(.*)$",

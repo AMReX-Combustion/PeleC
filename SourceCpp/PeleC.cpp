@@ -1928,12 +1928,10 @@ PeleC::init_mms()
     if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
       amrex::Print() << "Initializing MMS" << std::endl;
     }
-#ifdef PELEC_USE_MASA
     masa_init("mms", masa_solution_name.c_str());
     masa_set_param("Cs", PeleC::Cs);
     masa_set_param("CI", PeleC::CI);
     masa_set_param("PrT", PeleC::PrT);
-#endif
     mms_initialized = true;
   }
 }
