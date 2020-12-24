@@ -24,8 +24,6 @@ main(int argc, char* argv[])
   // Use this to trap NaNs in C++
   // feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW);
 
-  int test;
-
   if (argc <= 1) {
     amrex::Abort("Error: no inputs file provided on command line.");
   }
