@@ -54,12 +54,6 @@ int PeleC::NumAdv = 0;
 int PeleC::FirstAdv = -1;
 int PeleC::NumSootVars = 0;
 int PeleC::FirstSootVar = -1;
-int PeleC::pstateVel = -1;
-int PeleC::pstateT = -1;
-int PeleC::pstateDia = -1;
-int PeleC::pstateRho = -1;
-int PeleC::pstateY = -1;
-int PeleC::pstateNum = 0;
 
 #include "pelec_defaults.H"
 

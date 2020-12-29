@@ -208,16 +208,6 @@ PeleC::variableSetUp()
 
   // NVAR = cnt;
 
-#ifdef AMREX_PARTICLES
-  // Set index locations for particle state vector
-  pstateVel = 0;
-  pstateT = pstateVel + AMREX_SPACEDIM;
-  pstateDia = pstateT + 1;
-  pstateRho = pstateDia + 1;
-  pstateY = pstateRho + 1;
-  pstateNum = pstateY + SPRAY_FUEL_NUM;
-#endif
-
   // const amrex::Real run_strt = amrex::ParallelDescriptor::second() ;
 
   // Real run_stop = ParallelDescriptor::second() - run_strt;

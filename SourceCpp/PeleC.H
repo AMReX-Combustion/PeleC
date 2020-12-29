@@ -602,9 +602,6 @@ public:
   /// Index locations for soot modeling components
   static int FirstSootVar, NumSootVars;
 
-  /// Index locations into particle state
-  static int pstateVel, pstateT, pstateDia, pstateRho, pstateY, pstateNum;
-
   //
   // This MultiFab is on the coarser level.  This is useful for the coarser
   // level to mask out the finer level.  We only build this when it is needed.
