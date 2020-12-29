@@ -102,6 +102,8 @@ PeleC::react_state(
       // TODO: Update here? Or just get reaction source?
       const int do_update = react_init ? 0 : 1;
 
+      const int captured_clean_react_massfrac = clean_react_massfrac;
+
 #ifdef PELEC_USE_EB
       const auto& flag_fab = flags[mfi];
       amrex::FabType typ = flag_fab.getType(bx);
@@ -130,7 +132,8 @@ PeleC::react_state(
             bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
               pc_expl_reactions(
                 i, j, k, sold_arr, snew_arr, nonrs_arr, I_R, dt, nsubsteps_min,
-                nsubsteps_max, nsubsteps_guess, errtol, do_update);
+                nsubsteps_max, nsubsteps_guess, errtol, do_update,
+                captured_clean_react_massfrac);
             });
         } else if (chem_integrator == 2) {
 #ifdef USE_SUNDIALS_PP
@@ -205,6 +208,12 @@ PeleC::react_state(
               }
               rY_in[offset * (NUM_SPECIES + 1) + NUM_SPECIES] =
                 sold_arr(i, j, k, UTEMP);
+
+              if (captured_clean_react_massfrac == 1) {
+                clip_normalize_rY(
+                  sold_arr(i, j, k, URHO), &rY_in[offset * (NUM_SPECIES + 1)]);
+              }
+
               re_in[offset] = rho_old * e_old;
               re_src_in[offset] = rhoedot_ext;
             });

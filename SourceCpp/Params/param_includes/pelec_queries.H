@@ -99,6 +99,7 @@ pp.query("adaptrk_nsubsteps_min", adaptrk_nsubsteps_min);
 pp.query("adaptrk_nsubsteps_max", adaptrk_nsubsteps_max);
 pp.query("adaptrk_nsubsteps_guess", adaptrk_nsubsteps_guess);
 pp.query("adaptrk_errtol", adaptrk_errtol);
+pp.query("clean_react_massfrac", clean_react_massfrac);
 pp.query("bndry_func_thread_safe", bndry_func_thread_safe);
 pp.query("print_energy_diagnostics", print_energy_diagnostics);
 pp.query("track_grid_losses", track_grid_losses);
