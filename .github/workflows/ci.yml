@@ -222,7 +222,7 @@ jobs:
           cat cppcheck-warnings.txt
   clang-tidy:
     needs: Formatting
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.6.0
@@ -233,12 +233,14 @@ jobs:
           submodules: true
       - name: Dependencies
         run: |
-          sudo apt-get install -y clang-tidy-9
-          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-9 100
+          sudo apt-get install -y clang-tidy-10
+          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-10 100
       - name: Configure
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
           cmake -B${{runner.workspace}}/build-clang-tidy \
+          -DCMAKE_CXX_COMPILER:STRING=clang++ \
+          -DCMAKE_C_COMPILER:STRING=clang \
           -DPELEC_ENABLE_MPI:BOOL=OFF \
           -DPELEC_ENABLE_TESTS:BOOL=ON \
           -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
