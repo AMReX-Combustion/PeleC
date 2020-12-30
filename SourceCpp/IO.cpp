@@ -461,7 +461,8 @@ PeleC::writeJobInfo(const std::string& dir)
 
   // Convert now to tm struct for local timezone
   tm* localtm = localtime(&now);
-  jobInfoFile << "output data / time: " << asctime(localtm);
+  jobInfoFile << "output data / time: "
+              << std::put_time(localtm, "%b %d %Y %H:%M:%S") << std::endl;
 
   std::string currentDir = amrex::FileSystem::CurrentPath();
   jobInfoFile << "output dir:         " << currentDir << "\n";
