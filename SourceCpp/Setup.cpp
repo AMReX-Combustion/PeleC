@@ -319,6 +319,7 @@ PeleC::variableSetUp()
   // Get the species names from the network model.
   {
     int len = 20;
+    // cppcheck-suppress knownArgument
     amrex::Vector<int> int_spec_names(len * NUM_SPECIES);
     CKSYMS(int_spec_names.dataPtr(), &len);
     for (int i = 0; i < NUM_SPECIES; i++) {

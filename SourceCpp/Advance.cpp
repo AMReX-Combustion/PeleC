@@ -65,6 +65,7 @@ PeleC::do_mol_advance(
   }
 
   // get old and new state
+  // cppcheck-suppress constVariable
   amrex::MultiFab& S_old = get_old_data(State_Type);
   amrex::MultiFab& S_new = get_new_data(State_Type);
 
@@ -79,7 +80,7 @@ PeleC::do_mol_advance(
   }
 
 #ifdef PELEC_USE_REACTIONS
-  amrex::MultiFab& I_R = get_new_data(Reactions_Type);
+  const amrex::MultiFab& I_R = get_new_data(Reactions_Type);
 #endif
 
 #ifdef PELEC_USE_EB
