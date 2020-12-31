@@ -18,6 +18,7 @@ void pc_dervelx(
   amrex::Real time,
   const int* bcrec,
   const int level);
+
 void pc_dervely(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -28,6 +29,7 @@ void pc_dervely(
   amrex::Real time,
   const int* bcrec,
   const int level);
+
 void pc_dervelz(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -38,6 +40,7 @@ void pc_dervelz(
   amrex::Real time,
   const int* bcrec,
   const int level);
+
 void pc_dermagvel(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -48,6 +51,7 @@ void pc_dermagvel(
   amrex::Real time,
   const int* bcrec,
   const int level);
+
 void pc_dermagmom(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -58,6 +62,7 @@ void pc_dermagmom(
   amrex::Real time,
   const int* bcrec,
   const int level);
+
 void pc_derkineng(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -68,6 +73,7 @@ void pc_derkineng(
   amrex::Real time,
   const int* bcrec,
   const int level);
+
 void pc_dereint1(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -78,6 +84,7 @@ void pc_dereint1(
   amrex::Real time,
   const int* bcrec,
   const int level);
+
 void pc_dereint2(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -88,6 +95,7 @@ void pc_dereint2(
   amrex::Real time,
   const int* bcrec,
   const int level);
+
 void pc_derlogden(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -98,6 +106,7 @@ void pc_derlogden(
   amrex::Real time,
   const int* bcrec,
   const int level);
+
 void pc_derspec(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -108,6 +117,7 @@ void pc_derspec(
   amrex::Real time,
   const int* bcrec,
   const int level);
+
 void pc_dermagvort(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -118,6 +128,7 @@ void pc_dermagvort(
   amrex::Real time,
   const int* bcrec,
   const int level);
+
 void pc_derdivu(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -128,6 +139,7 @@ void pc_derdivu(
   amrex::Real time,
   const int* bcrec,
   const int level);
+
 void pc_derenstrophy(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -138,6 +150,7 @@ void pc_derenstrophy(
   amrex::Real time,
   const int* bcrec,
   const int level);
+
 void pc_dernull(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -148,6 +161,7 @@ void pc_dernull(
   amrex::Real time,
   const int* bcrec,
   const int level);
+
 void pc_dermolefrac(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -158,6 +172,7 @@ void pc_dermolefrac(
   amrex::Real time,
   const int* bcrec,
   const int level);
+
 void pc_dersoundspeed(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -168,6 +183,7 @@ void pc_dersoundspeed(
   amrex::Real time,
   const int* bcrec,
   const int level);
+
 void pc_derentropy(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -178,6 +194,7 @@ void pc_derentropy(
   amrex::Real time,
   const int* bcrec,
   const int level);
+
 void pc_dermachnumber(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -188,6 +205,7 @@ void pc_dermachnumber(
   amrex::Real time,
   const int* bcrec,
   const int level);
+
 void pc_derpres(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -198,6 +216,7 @@ void pc_derpres(
   amrex::Real time,
   const int* bcrec,
   const int level);
+
 void pc_dertemp(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -208,6 +227,7 @@ void pc_dertemp(
   amrex::Real time,
   const int* bcrec,
   const int level);
+
 void pc_derspectrac(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -219,6 +239,7 @@ void pc_derspectrac(
   const int* bcrec,
   const int level,
   const int idx);
+
 void pc_derradialvel(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -241,6 +262,7 @@ void pc_derrhommserror(
   amrex::Real time,
   const int* bcrec,
   const int level);
+
 void pc_derummserror(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -251,6 +273,7 @@ void pc_derummserror(
   amrex::Real time,
   const int* bcrec,
   const int level);
+
 void pc_dervmmserror(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -261,6 +284,7 @@ void pc_dervmmserror(
   amrex::Real time,
   const int* bcrec,
   const int level);
+
 void pc_derwmmserror(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -271,6 +295,7 @@ void pc_derwmmserror(
   amrex::Real time,
   const int* bcrec,
   const int level);
+
 void pc_derpmmserror(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,

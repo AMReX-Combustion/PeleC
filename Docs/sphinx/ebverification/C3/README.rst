@@ -1,5 +1,5 @@
 C3. Zero dimensional ignition with embedded boundaries
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Case description
 ################
@@ -14,13 +14,13 @@ over time that characterizes ignition delay is shown in the second figure where 
 solution compares well with Cantera.
 
 The embedded boundary used in the zero dimensional ignition case
-#################
+################################################################
 
-.. image:: ./ebverification/C3/setup.png
+.. image:: /ebverification/C3/setup.png
    :height: 300pt
 
 Comparison of temperature transients between Cantera and PeleC
-##########################################
+##############################################################
 
-.. image:: ./ebverification/C3/zerod_compare.png
+.. image:: /ebverification/C3/zerod_compare.png
    :height: 300pt

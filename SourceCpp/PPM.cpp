@@ -84,8 +84,9 @@ trace_ppm(
     // amrex::Real rho = q_arr(i, j, k, QRHO);
 
     amrex::Real massfrac[NUM_SPECIES];
-    for (int species = 0; species < NUM_SPECIES; ++species)
+    for (int species = 0; species < NUM_SPECIES; ++species) {
       massfrac[species] = q_arr(i, j, k, species + QFS);
+    }
 
     amrex::Real cc = 0;
     EOS::RPY2Cs(q_arr(i, j, k, QRHO), q_arr(i, j, k, QPRES), massfrac, cc);
@@ -100,7 +101,7 @@ trace_ppm(
     // Calculate flattening in-place
     if (use_flattening == 1) {
       for (int dir_flat = 0; dir_flat < AMREX_SPACEDIM; dir_flat++) {
-        flat = amrex::min(flat, flatten(i, j, k, dir_flat, q_arr));
+        flat = amrex::min<amrex::Real>(flat, flatten(i, j, k, dir_flat, q_arr));
       }
     }
 
@@ -227,13 +228,16 @@ trace_ppm(
       amrex::Real p_ref = Im[QPRES][0];
       amrex::Real rhoe_g_ref = Im[QREINT][0];
 
-      rho_ref = amrex::max(rho_ref, SMALL_DENS);
+      rho_ref = amrex::max<amrex::Real>(
+        rho_ref, std::numeric_limits<amrex::Real>::min());
       amrex::Real rho_ref_inv = 1.0 / rho_ref;
-      p_ref = amrex::max(p_ref, SMALL_PRES);
+      p_ref =
+        amrex::max<amrex::Real>(p_ref, std::numeric_limits<amrex::Real>::min());
 
       amrex::Real massfrac_ref[NUM_SPECIES];
-      for (int species = 0; species < NUM_SPECIES; ++species)
+      for (int species = 0; species < NUM_SPECIES; ++species) {
         massfrac_ref[species] = Im[species + QFS][0];
+      }
 
       // For tracing
       amrex::Real cc_ref = 0;
@@ -281,13 +285,15 @@ trace_ppm(
       // The final interface states are just
       // q_s = q_ref - sum(l . dq) r
       // note that the a{mpz}right as defined above have the minus already
-      qp(i, j, k, QRHO) =
-        amrex::max(SMALL_DENS, rho_ref + alphap + alpham + alpha0r);
+      qp(i, j, k, QRHO) = amrex::max<amrex::Real>(
+        std::numeric_limits<amrex::Real>::min(),
+        rho_ref + alphap + alpham + alpha0r);
       qp(i, j, k, QUN) = un_ref + (alphap - alpham) * cc_ref * rho_ref_inv;
       // qp(i,j,k,QREINT) = rhoe_g_ref + (alphap + alpham)*h_g_ref +
       // alpha0e_g;
-      qp(i, j, k, QPRES) =
-        amrex::max(SMALL_PRES, p_ref + (alphap + alpham) * csq_ref);
+      qp(i, j, k, QPRES) = amrex::max<amrex::Real>(
+        std::numeric_limits<amrex::Real>::min(),
+        p_ref + (alphap + alpham) * csq_ref);
 
       // Transverse velocities -- there's no projection here, so we
       // don't need a reference state.  We only care about the state
@@ -302,8 +308,9 @@ trace_ppm(
       // This allows the (rho e) to take advantage of (pressure > small_pres)
       amrex::Real eint = 0;
       amrex::Real massfrac_p[NUM_SPECIES];
-      for (int species = 0; species < NUM_SPECIES; ++species)
+      for (int species = 0; species < NUM_SPECIES; ++species) {
         massfrac_p[species] = qp(i, j, k, species + QFS);
+      }
       EOS::RYP2E(qp(i, j, k, QRHO), massfrac_p, qp(i, j, k, QPRES), eint);
       qp(i, j, k, QREINT) = qp(i, j, k, QRHO) * eint;
     }
@@ -322,13 +329,16 @@ trace_ppm(
       amrex::Real p_ref = Ip[QPRES][2];
       amrex::Real rhoe_g_ref = Ip[QREINT][2];
 
-      rho_ref = amrex::max(rho_ref, SMALL_DENS);
+      rho_ref = amrex::max<amrex::Real>(
+        rho_ref, std::numeric_limits<amrex::Real>::min());
       amrex::Real rho_ref_inv = 1.0 / rho_ref;
-      p_ref = amrex::max(p_ref, SMALL_PRES);
+      p_ref =
+        amrex::max<amrex::Real>(p_ref, std::numeric_limits<amrex::Real>::min());
 
       amrex::Real massfrac_ref[NUM_SPECIES];
-      for (int species = 0; species < NUM_SPECIES; ++species)
+      for (int species = 0; species < NUM_SPECIES; ++species) {
         massfrac_ref[species] = Ip[species + QFS][2];
+      }
 
       // For tracing
       amrex::Real cc_ref = 0;
@@ -373,14 +383,16 @@ trace_ppm(
       // q_s = q_ref - sum (l . dq) r
       // note that the a{mpz}left as defined above have the minus already
       if (idir == 0) {
-        qm(i + 1, j, k, QRHO) =
-          amrex::max(SMALL_DENS, rho_ref + alphap + alpham + alpha0r);
+        qm(i + 1, j, k, QRHO) = amrex::max<amrex::Real>(
+          std::numeric_limits<amrex::Real>::min(),
+          rho_ref + alphap + alpham + alpha0r);
         qm(i + 1, j, k, QUN) =
           un_ref + (alphap - alpham) * cc_ref * rho_ref_inv;
         // qm(i+1,j,k,QREINT) = rhoe_g_ref + (alphap + alpham)*h_g_ref +
         // alpha0e_g;
-        qm(i + 1, j, k, QPRES) =
-          amrex::max(SMALL_PRES, p_ref + (alphap + alpham) * csq_ref);
+        qm(i + 1, j, k, QPRES) = amrex::max<amrex::Real>(
+          std::numeric_limits<amrex::Real>::min(),
+          p_ref + (alphap + alpham) * csq_ref);
 
         // transverse velocities
         qm(i + 1, j, k, QUT) = Ip[QUT][1] /*+ hdt * Ip_src[QUT][1]*/;
@@ -390,21 +402,24 @@ trace_ppm(
         // small_pres)
         amrex::Real eint = 0;
         amrex::Real massfrac_m[NUM_SPECIES];
-        for (int species = 0; species < NUM_SPECIES; ++species)
+        for (int species = 0; species < NUM_SPECIES; ++species) {
           massfrac_m[species] = qm(i + 1, j, k, species + QFS);
+        }
         EOS::RYP2E(
           qm(i + 1, j, k, QRHO), massfrac_m, qm(i + 1, j, k, QPRES), eint);
         qm(i + 1, j, k, QREINT) = qm(i + 1, j, k, QRHO) * eint;
 
       } else if (idir == 1) {
-        qm(i, j + 1, k, QRHO) =
-          amrex::max(SMALL_DENS, rho_ref + alphap + alpham + alpha0r);
+        qm(i, j + 1, k, QRHO) = amrex::max<amrex::Real>(
+          std::numeric_limits<amrex::Real>::min(),
+          rho_ref + alphap + alpham + alpha0r);
         qm(i, j + 1, k, QUN) =
           un_ref + (alphap - alpham) * cc_ref * rho_ref_inv;
         // qm(i,j+1,k,QREINT) = rhoe_g_ref + (alphap + alpham)*h_g_ref +
         // alpha0e_g;
-        qm(i, j + 1, k, QPRES) =
-          amrex::max(SMALL_PRES, p_ref + (alphap + alpham) * csq_ref);
+        qm(i, j + 1, k, QPRES) = amrex::max<amrex::Real>(
+          std::numeric_limits<amrex::Real>::min(),
+          p_ref + (alphap + alpham) * csq_ref);
 
         // transverse velocities
         qm(i, j + 1, k, QUT) = Ip[QUT][1] /*+ hdt * Ip_src[QUT][1]*/;
@@ -414,21 +429,24 @@ trace_ppm(
         // small_pres)
         amrex::Real eint = 0;
         amrex::Real massfrac_m[NUM_SPECIES];
-        for (int species = 0; species < NUM_SPECIES; ++species)
+        for (int species = 0; species < NUM_SPECIES; ++species) {
           massfrac_m[species] = qm(i, j + 1, k, species + QFS);
+        }
         EOS::RYP2E(
           qm(i, j + 1, k, QRHO), massfrac_m, qm(i, j + 1, k, QPRES), eint);
         qm(i, j + 1, k, QREINT) = qm(i, j + 1, k, QRHO) * eint;
 
       } else if (idir == 2) {
-        qm(i, j, k + 1, QRHO) =
-          amrex::max(SMALL_DENS, rho_ref + alphap + alpham + alpha0r);
+        qm(i, j, k + 1, QRHO) = amrex::max<amrex::Real>(
+          std::numeric_limits<amrex::Real>::min(),
+          rho_ref + alphap + alpham + alpha0r);
         qm(i, j, k + 1, QUN) =
           un_ref + (alphap - alpham) * cc_ref * rho_ref_inv;
         // qm(i,j,k+1,QREINT) = rhoe_g_ref + (alphap + alpham)*h_g_ref +
         // alpha0e_g;
-        qm(i, j, k + 1, QPRES) =
-          amrex::max(SMALL_PRES, p_ref + (alphap + alpham) * csq_ref);
+        qm(i, j, k + 1, QPRES) = amrex::max<amrex::Real>(
+          std::numeric_limits<amrex::Real>::min(),
+          p_ref + (alphap + alpham) * csq_ref);
 
         // transverse velocities
         qm(i, j, k + 1, QUT) = Ip[QUT][1] /*+ hdt * Ip_src[QUT][1]*/;
@@ -438,8 +456,9 @@ trace_ppm(
         // small_pres)
         amrex::Real eint = 0;
         amrex::Real massfrac_m[NUM_SPECIES];
-        for (int species = 0; species < NUM_SPECIES; ++species)
+        for (int species = 0; species < NUM_SPECIES; ++species) {
           massfrac_m[species] = qm(i, j, k + 1, species + QFS);
+        }
         EOS::RYP2E(
           qm(i, j, k + 1, QRHO), massfrac_m, qm(i, j, k + 1, QPRES), eint);
         qm(i, j, k + 1, QREINT) = qm(i, j, k + 1, QRHO) * eint;

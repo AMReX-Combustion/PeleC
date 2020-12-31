@@ -105,7 +105,9 @@ amrex_probinit(
                , ProbParm::L_z = probhi[2] - problo[2];)
 
   // Initial density, velocity, and material properties
-  amrex::Real eint, cs, cp;
+  amrex::Real eint;
+  amrex::Real cs;
+  amrex::Real cp;
   amrex::Real massfrac[NUM_SPECIES] = {1.0};
   EOS::PYT2RE(ProbParm::p0, massfrac, ProbParm::T0, ProbParm::rho0, eint);
   EOS::RTY2Cs(ProbParm::rho0, ProbParm::T0, massfrac, cs);
@@ -181,8 +183,9 @@ amrex_probinit(
 void
 PeleC::problem_post_timestep()
 {
-  if ((verbose <= 0) || (!do_mms))
+  if ((verbose <= 0) || (!do_mms)) {
     return;
+  }
 
   int finest_level = parent->finestLevel();
   amrex::Real time = state[State_Type].curTime();
@@ -326,8 +329,9 @@ void
 PeleC::problem_post_init()
 {
 
-  if ((verbose <= 0) || (!do_mms))
+  if ((verbose <= 0) || (!do_mms)) {
     return;
+  }
 
   amrex::Real time = state[State_Type].curTime();
 

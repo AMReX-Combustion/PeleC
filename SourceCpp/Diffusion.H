@@ -17,9 +17,9 @@
 #include "EB.H"
 #endif
 
-/*This header file contains functions and declarations for the diffusion portion
-  of PeleC GPU. As per the convention of AMReX, inlined functions are defined
-  here. Where as non-inline functions are declared here. */
+// This header file contains functions and declarations for the diffusion
+// portion of PeleC GPU. As per the convention of AMReX, inlined functions are
+// defined here. Where as non-inline functions are declared here.
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE

@@ -25,8 +25,9 @@ struct PCHypFillExtDir
     // const amrex::Real* prob_hi = geom.ProbHi();
     const amrex::Real* dx = geom.CellSize();
     const amrex::Real x[AMREX_SPACEDIM] = {AMREX_D_DECL(
-      prob_lo[0] + (iv[0] + 0.5) * dx[0], prob_lo[1] + (iv[1] + 0.5) * dx[1],
-      prob_lo[2] + (iv[2] + 0.5) * dx[2])};
+      prob_lo[0] + static_cast<amrex::Real>(iv[0] + 0.5) * dx[0],
+      prob_lo[1] + static_cast<amrex::Real>(iv[1] + 0.5) * dx[1],
+      prob_lo[2] + static_cast<amrex::Real>(iv[2] + 0.5) * dx[2])};
 
     const int* bc = bcr->data();
 
@@ -125,11 +126,10 @@ struct PCReactFillExtDir
 };
 
 namespace {
-static PCHypFillExtDir pc_hyp_fill_ext_dir;
-static PCReactFillExtDir pc_react_fill_ext_dir;
-static amrex::GpuBndryFuncFab<PCHypFillExtDir>
-  hyp_bndry_func(pc_hyp_fill_ext_dir);
-static amrex::GpuBndryFuncFab<PCReactFillExtDir>
+PCHypFillExtDir pc_hyp_fill_ext_dir;
+PCReactFillExtDir pc_react_fill_ext_dir;
+amrex::GpuBndryFuncFab<PCHypFillExtDir> hyp_bndry_func(pc_hyp_fill_ext_dir);
+amrex::GpuBndryFuncFab<PCReactFillExtDir>
   react_bndry_func(pc_react_fill_ext_dir);
 } // namespace
 

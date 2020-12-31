@@ -36,7 +36,7 @@ pc_rst_int_e(
     const amrex::Real ke = 0.5 * (Up * Up + Vp * Vp + Wp * Wp);
     const amrex::Real eden = S(i, j, k, UEDEN) * rhoInv;
     // const amrex::Real eos_state_rho = S(i, j, k, URHO);
-    const amrex::Real eos_state_T = SMALL_TEMP;
+    const amrex::Real eos_state_T = std::numeric_limits<amrex::Real>::min();
     amrex::Real eos_state_massfrac[NUM_SPECIES];
     amrex::Real eos_state_ei[NUM_SPECIES];
     EOS::T2Ei(eos_state_T, eos_state_ei);
@@ -48,8 +48,8 @@ pc_rst_int_e(
     const amrex::Real small_e = eos_state_e;
     if (eden < small_e) {
       if (S(i, j, k, UEINT) * rhoInv < small_e) {
-        const amrex::Real eos_state_T_loc =
-          amrex::max(S(i, j, k, UTEMP), SMALL_TEMP);
+        const amrex::Real eos_state_T_loc = amrex::max<amrex::Real>(
+          S(i, j, k, UTEMP), std::numeric_limits<amrex::Real>::min());
         EOS::T2Ei(eos_state_T_loc, eos_state_ei);
         eos_state_e = 0.0;
         for (int sp = 0; sp < NUM_SPECIES; sp++) {
@@ -61,14 +61,18 @@ pc_rst_int_e(
     } else {
       const amrex::Real rho_eint = S(i, j, k, UEDEN) - S(i, j, k, URHO) * ke;
       if (
-        (rho_eint > (S(i, j, k, URHO) * SMALL_E)) and
-        ((rho_eint - S(i, j, k, URHO) * SMALL_E) /
-         (S(i, j, k, UEDEN) - S(i, j, k, URHO) * SMALL_E)) > DUAL_ENERGY_ETA2) {
+        (rho_eint >
+         (S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min())) and
+        ((rho_eint -
+          S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min()) /
+         (S(i, j, k, UEDEN) -
+          S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min())) >
+          DUAL_ENERGY_ETA2) {
         S(i, j, k, UEINT) = rho_eint;
       }
       if (S(i, j, k, UEINT) * rhoInv < small_e) {
-        const amrex::Real eos_state_T_loc =
-          amrex::max(S(i, j, k, UTEMP), SMALL_TEMP);
+        const amrex::Real eos_state_T_loc = amrex::max<amrex::Real>(
+          S(i, j, k, UTEMP), std::numeric_limits<amrex::Real>::min());
         EOS::T2Ei(eos_state_T_loc, eos_state_ei);
         eos_state_e = 0.0;
         for (int sp = 0; sp < NUM_SPECIES; sp++) {
@@ -88,10 +92,14 @@ pc_rst_int_e(
     const amrex::Real Vp = S(i, j, k, UMY) * rhoInv;
     const amrex::Real Wp = S(i, j, k, UMZ) * rhoInv;
     const amrex::Real ke = 0.5 * (Up * Up + Vp * Vp + Wp * Wp);
-    if (S(i, j, k, UEDEN) < (S(i, j, k, URHO) * SMALL_E)) {
-      if (S(i, j, k, UEINT) < (S(i, j, k, URHO) * SMALL_E)) {
+    if (
+      S(i, j, k, UEDEN) <
+      (S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min())) {
+      if (
+        S(i, j, k, UEINT) <
+        (S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min())) {
         // const amrex::Real eos_state_rho = S(i, j, k, URHO);
-        const amrex::Real eos_state_T = SMALL_TEMP;
+        const amrex::Real eos_state_T = std::numeric_limits<amrex::Real>::min();
         amrex::Real eos_state_massfrac[NUM_SPECIES];
         amrex::Real eos_state_ei[NUM_SPECIES];
         EOS::T2Ei(eos_state_T, eos_state_ei);
@@ -106,17 +114,24 @@ pc_rst_int_e(
     } else {
       const amrex::Real rho_eint = S(i, j, k, UEDEN) - S(i, j, k, URHO) * ke;
       if (
-        (rho_eint > (S(i, j, k, URHO) * SMALL_E)) and
-        ((rho_eint - S(i, j, k, URHO) * SMALL_E) /
-         (S(i, j, k, UEDEN) - S(i, j, k, URHO) * SMALL_E)) > DUAL_ENERGY_ETA2) {
+        (rho_eint >
+         (S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min())) and
+        ((rho_eint -
+          S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min()) /
+         (S(i, j, k, UEDEN) -
+          S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min())) >
+          DUAL_ENERGY_ETA2) {
         S(i, j, k, UEINT) = rho_eint;
       } else if (
-        S(i, j, k, UEINT) > (S(i, j, k, URHO) * SMALL_E) and
+        S(i, j, k, UEINT) >
+          (S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min()) and
         (dual_energy_update_E_from_e == 1)) {
         S(i, j, k, UEDEN) = S(i, j, k, UEINT) + S(i, j, k, URHO) * ke;
-      } else if (S(i, j, k, UEINT) <= (S(i, j, k, URHO) * SMALL_E)) {
+      } else if (
+        S(i, j, k, UEINT) <=
+        (S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min())) {
         // const amrex::Real eos_state_rho = S(i, j, k, URHO);
-        const amrex::Real eos_state_T = SMALL_TEMP;
+        const amrex::Real eos_state_T = std::numeric_limits<amrex::Real>::min();
         amrex::Real eos_state_massfrac[NUM_SPECIES];
         amrex::Real eos_state_ei[NUM_SPECIES];
         EOS::T2Ei(eos_state_T, eos_state_ei);
@@ -132,7 +147,8 @@ pc_rst_int_e(
           amrex::Print()
             << ">>> Warning: PeleC_util.F90::reset_internal_energy "
             << " " << i << ", " << j << ", " << k << std::endl;
-          amrex::Print() << ">>> ... resetting neg. e from EOS using SMALL_TEMP"
+          amrex::Print() << ">>> ... resetting neg. e from EOS using
+        std::numeric_limits<amrex::Real>::min()"
                          << std::endl;
           amrex::Print() << ">>> ... from ',S(i,j,k,UEINT)/S(i,j,k,URHO),' to "
                          << std::endl;
@@ -174,7 +190,6 @@ read_binary(
   const size_t ncol,
   amrex::Vector<double>& data /*needs to be double*/)
 {
-
   std::ifstream infile(iname, std::ios::in | std::ios::binary);
   if (not infile.is_open()) {
     amrex::Abort("Unable to open input file " + iname);
@@ -213,16 +228,19 @@ read_csv(
 
   // Read the file
   size_t nlines = 0;
-  std::string firstline, line;
+  std::string firstline;
+  std::string line;
   std::getline(iss, firstline); // skip header
-  while (getline(iss, line))
+  while (getline(iss, line)) {
     ++nlines;
+  }
 
   // Quick sanity check
-  if (nlines != nx * ny * nz)
+  if (nlines != nx * ny * nz) {
     amrex::Abort(
       "Number of lines in the input file (= " + std::to_string(nlines) +
       ") does not match the input resolution (=" + std::to_string(nx) + ")");
+  }
 
   // Read the data from the file
   iss.clear();
@@ -257,7 +275,8 @@ locate(const amrex::Real* xtable, const int n, const amrex::Real& x, int& idxlo)
   if (x >= xtable[n - 1]) {
     idxlo = n - 1;
     return;
-  } else if (x <= xtable[0]) {
+  }
+  if (x <= xtable[0]) {
     idxlo = 0;
     return;
   }

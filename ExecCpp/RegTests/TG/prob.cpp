@@ -49,7 +49,9 @@ amrex_probinit(
   ProbParm::L_z = probhi[2] - problo[2];
 
   // Initial density, velocity, and material properties
-  amrex::Real eint, cs, cp;
+  amrex::Real eint;
+  amrex::Real cs;
+  amrex::Real cp;
   amrex::Real massfrac[NUM_SPECIES] = {1.0};
   EOS::PYT2RE(ProbParm::p0, massfrac, ProbParm::T0, ProbParm::rho0, eint);
   EOS::RTY2Cs(ProbParm::rho0, ProbParm::T0, massfrac, cs);

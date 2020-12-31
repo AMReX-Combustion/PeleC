@@ -6,7 +6,7 @@
 #include "AmrexTestEnv.H"
 
 // Necessary as it's used in other source files
-std::string inputs_name = "";
+std::string inputs_name;
 
 //! Global instance of the environment (for access in tests)
 pelec_tests::AmrexTestEnv* utest_env = nullptr;

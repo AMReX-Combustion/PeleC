@@ -11,17 +11,14 @@ using namespace amrex;
 
 namespace {
 bool virtual_particles_set = false;
-//
+
 // Containers for the real "active" Particles
-//
 SprayParticleContainer* SprayPC = 0;
-//
+
 // Container for temporary, virtual Particles
-//
 SprayParticleContainer* VirtPC = 0;
-//
+
 // Container for temporary, ghost Particles
-//
 SprayParticleContainer* GhostPC = 0;
 
 Gpu::HostVector<Real> sprayCritT;
@@ -32,6 +29,9 @@ Gpu::HostVector<Real> spraySigma;
 Gpu::HostVector<int> sprayIndxMap;
 amrex::Real parcelSize = 1.;
 SprayComps scomps;
+
+std::string particle_init_file;
+int particle_init_function = 1;
 
 void
 RemoveParticlesOnExit()
@@ -56,13 +56,6 @@ int PeleC::particle_heat_tran = 0;
 int PeleC::particle_mom_tran = 0;
 Vector<std::string> PeleC::sprayFuelNames;
 Real PeleC::sprayRefT;
-
-namespace {
-std::string particle_init_file;
-int particle_init_function = 1;
-std::string timestamp_dir;
-std::vector<int> timestamp_indices;
-} // namespace
 
 SprayParticleContainer*
 PeleC::theSprayPC()
@@ -90,7 +83,7 @@ PeleC::particleEstTimeStep(Real& est_dt)
   Real est_dt_particle = theSprayPC()->estTimestep(level, particle_cfl);
 
   if (est_dt_particle > 0)
-    est_dt = amrex::min(est_dt, est_dt_particle);
+    est_dt = amrex::min<amrex::Real>(est_dt, est_dt_particle);
 
   if (verbose && ParallelDescriptor::IOProcessor()) {
     if (est_dt_particle > 0) {
@@ -109,8 +102,8 @@ PeleC::readParticleParams()
 
   pp.query("do_spray_particles", do_spray_particles);
 
-  amrex::ParmParse ppp("particles");
-  //
+  ParmParse ppp("particles");
+
   // Control the verbosity of the Particle class
   ppp.query("v", particle_verbose);
 
@@ -154,53 +147,26 @@ PeleC::readParticleParams()
     sprayCp[i] = spraycp[i];
   }
 
-  //
   // Set the number of particles per parcel
-  //
   ppp.query("parcel_size", parcelSize);
 
   // Must use same reference temperature for all fuels
   // TODO: This means the reference temperature must be the same for all fuel
   // species
   ppp.get("fuel_ref_temp", sprayRefT);
-  //
+
   // Set if particle plot files should be written
-  //
   ppp.query("write_particle_plotfiles", write_particle_plotfiles);
-  //
+
   // Set if spray ascii files should be written
-  //
   ppp.query("write_spray_ascii_files", write_spray_ascii_files);
-  //
+
   // Used in initData() on startup to read in a file of particles.
-  //
   ppp.query("particle_init_file", particle_init_file);
-  //
+
   // Used in initData() on startup to set the particle field using the
   // SprayParticlesInitInsert.cpp problem specific function
-  //
   ppp.query("particle_init_function", particle_init_function);
-  //
-  // Used in post_restart() to read in a file of particles.
-  //
-  // This must be true the first time you try to restart from a checkpoint
-  // that was written with USE_PARTICLES=FALSE; i.e. one that doesn't have
-  // the particle checkpoint stuff (even if there are no active particles).
-  // Otherwise the code will fail when trying to read the checkpointed
-  // particles.
-  //
-  // ppp.query("restart_from_nonparticle_chkfile",
-  // restart_from_nonparticle_chkfile);
-  //
-  // The directory in which to store timestamp files.
-  //
-  //ppp.query("timestamp_dir", timestamp_dir);
-  //
-  // Only the I/O processor makes the directory if it doesn't already exist.
-  //
-//   if (ParallelDescriptor::IOProcessor())
-//     if (!amrex::UtilCreateDirectory(timestamp_dir, 0755))
-//       amrex::CreateDirectoryFailed(timestamp_dir);
 
   if (verbose && ParallelDescriptor::IOProcessor()) {
     amrex::Print() << "Spray fuel species " << sprayFuelNames[0];
@@ -209,9 +175,7 @@ PeleC::readParticleParams()
     amrex::Print() << std::endl;
     amrex::Print() << "Number of particles per parcel " << parcelSize << std::endl;
   }
-  //
   // Force other processors to wait till directory is built.
-  //
   ParallelDescriptor::Barrier();
 }
 
@@ -316,9 +280,7 @@ PeleC::removeGhostParticles()
     GhostPC->RemoveParticlesAtLevel(level);
 }
 
-/**
- * Create new particle data
- **/
+// Create new particle data
 void
 PeleC::createParticleData()
 {
@@ -335,9 +297,7 @@ PeleC::createParticleData()
                              spraySigma, sprayIndxMap, sprayRefT, scomps);
 }
 
-/**
- * Initialize the particles on the grid at level 0
- **/
+// Initialize the particles on the grid at level 0
 void
 PeleC::initParticles()
 {
@@ -346,9 +306,7 @@ PeleC::initParticles()
   if (level > 0)
     return;
 
-  //
   // Make sure to call RemoveParticlesOnExit() on exit.
-  //
   amrex::ExecOnFinalize(RemoveParticlesOnExit);
 
   if (do_spray_particles) {
@@ -373,9 +331,7 @@ PeleC::particlePostRestart(const std::string& restart_file, bool is_checkpoint)
     AMREX_ASSERT(SprayPC == 0);
     createParticleData();
 
-    //
     // Make sure to call RemoveParticlesOnExit() on exit.
-    //
     amrex::ExecOnFinalize(RemoveParticlesOnExit);
     {
       amrex::Gpu::LaunchSafeGuard lsg(true);
@@ -396,16 +352,12 @@ PeleC::particleMKD (const Real       time,
                     amrex::MultiFab& tmp_spray_source)
 {
   amrex::Gpu::LaunchSafeGuard lsg(true);
-  //
   // Setup ghost particles for use in finer levels. Note that ghost
   // particles that will be used by this level have already been created,
   // the particles being set here are only used by finer levels.
-  //
   int finest_level = parent->finestLevel();
 
-  //
   // Check if I need to insert new particles
-  //
   int nstep = parent->levelSteps(0);
 
   BL_PROFILE_VAR("SprayParticles::injectParticles()", INJECT_SPRAY);
@@ -413,23 +365,17 @@ PeleC::particleMKD (const Real       time,
     injectParticles(time, dt, nstep, level, finest_level);
   bool insertParts = theSprayPC()->
     insertParticles(time, dt, nstep, level, finest_level);
-  //
   // Only redistribute if we injected or inserted particles
-  //
   if (injectParts || insertParts)
     theSprayPC()->Redistribute(level);
   BL_PROFILE_VAR_STOP(INJECT_SPRAY);
 
-  //
   // Setup the virtual particles that represent particles on finer levels
-  //
   if (level < finest_level)
     setupVirtualParticles();
 
-  //
   // Make a copy of the particles on this level into ghost particles
   // for the finer level
-  //
   if (level < finest_level)
     setupGhostParticles(ghost_width);
 
@@ -440,9 +386,8 @@ PeleC::particleMKD (const Real       time,
       << "moveKickDrift ... updating particle positions and velocity\n";
 
   // We will make a temporary copy of the source term array inside
-  // moveKickDrift
-  //    and we are only going to use the spray force out to one ghost cell
-  //    so we need only define spray_force_old with one ghost cell
+  // moveKickDrift and we are only going to use the spray force out to one ghost cell 
+  // so we need only define spray_force_old with one ghost cell
 
   AMREX_ASSERT(old_sources[spray_src]->nGrow() >= 1);
 
@@ -520,10 +465,8 @@ PeleC::particleDerive(const std::string& name, Real time, int ngrow)
     MultiFab::Copy(*derive_dat, temp_dat, 0, 0, 1, 0);
     return derive_dat;
   } else if (theSprayPC() && name == "total_particle_count") {
-    amrex::Abort("Should not be called until it is updated");
-    //
+    Abort("Should not be called until it is updated");
     // We want the total particle count at this level or higher.
-    //
     std::unique_ptr<MultiFab> derive_dat =
       particleDerive("particle_count", time, ngrow);
 
@@ -581,18 +524,15 @@ PeleC::particle_redistribute(int lbase, bool init_part)
   int flev = parent->finestLevel();
   if (theSprayPC()) {
     amrex::Gpu::LaunchSafeGuard lsg(true);
-    //
+
     // If we are calling with init_part = true, then we want to force the
     // redistribute without checking whether the grids have changed.
-    //
     if (init_part) {
       theSprayPC()->Redistribute(lbase);
       return;
     }
 
-    //
     // These are usually the BoxArray and DMap from the last regridding.
-    //
     static Vector<BoxArray> ba;
     static Vector<DistributionMapping> dm;
 
@@ -621,13 +561,11 @@ PeleC::particle_redistribute(int lbase, bool init_part)
     }
 
     if (changed) {
-      //
       // We only need to call Redistribute if the BoxArrays or DistMaps have
       // changed.
       // We also only call it for particles >= lbase. This is
       // because if we called redistribute during a subcycle, there may be
       // particles not in the proper position on coarser levels.
-      //
       if (verbose && ParallelDescriptor::IOProcessor())
         amrex::Print() << "Calling redistribute because grid has changed "
                        << '\n';
@@ -637,9 +575,8 @@ PeleC::particle_redistribute(int lbase, bool init_part)
       } else {
         theSprayPC()->Redistribute(lbase, theSprayPC()->finestLevel(), 0);
       }
-      //
+
       // Use the new BoxArray and DistMap to define ba and dm for next time.
-      //
       for (int i = 0; i <= flev; i++) {
         ba[i] = parent->boxArray(i);
         dm[i] = parent->getLevel(i).get_new_data(0).DistributionMap();
@@ -684,8 +621,8 @@ PeleC::particleTimestamp(int ngrow)
     }
 
     if (!timestamp_indices.empty()) {
-      imax = *(
-        amrex::max_element(timestamp_indices.begin(), timestamp_indices.end()));
+      imax = *(amrex::max<amrex::Real> _element(
+        timestamp_indices.begin(), timestamp_indices.end()));
     }
   }
 

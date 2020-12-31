@@ -1,6 +1,3 @@
-#include <cstdio>
-
-#include <AMReX_LevelBld.H>
 #include <AMReX_ParmParse.H>
 #include <AMReX_buildInfo.H>
 
@@ -16,10 +13,8 @@ using namespace MASA;
 #include "prob.H"
 #include "chemistry_file.H"
 
-//
 // Components are:
-//  Interior, Inflow, Outflow,  Symmetry,     SlipWall,     NoSlipWall, UserBC
-//
+// Interior, Inflow, Outflow,  Symmetry,     SlipWall,     NoSlipWall, UserBC
 static int scalar_bc[] = {INT_DIR,      EXT_DIR,      FOEXTRAP, REFLECT_EVEN,
                           REFLECT_EVEN, REFLECT_EVEN, EXT_DIR};
 
@@ -162,9 +157,7 @@ PeleC::variableSetUp()
   }
 #endif
 
-  //
   // Set number of state variables and pointers to components
-  //
 
   int cnt = 0;
   Density = cnt++;
@@ -190,7 +183,7 @@ PeleC::variableSetUp()
 
   if (NUM_SPECIES > 0) {
     FirstSpec = cnt;
-    cnt += NUM_SPECIES;
+    cnt += NUM_SPECIES; // NOLINT
   }
 
   if (NUM_AUX > 0) {
@@ -209,25 +202,25 @@ PeleC::variableSetUp()
   // NVAR = cnt;
 
   // const amrex::Real run_strt = amrex::ParallelDescriptor::second() ;
-
   // Real run_stop = ParallelDescriptor::second() - run_strt;
-
   // ParallelDescriptor::ReduceRealMax(run_stop,ParallelDescriptor::IOProcessorNumber());
 
   // if (ParallelDescriptor::IOProcessor())
   //    std::cout << "\nTime in set_method_params: " << run_stop << '\n' ;
 
-  if (nscbc_adv == 1 && amrex::ParallelDescriptor::IOProcessor())
+  if (nscbc_adv == 1 && amrex::ParallelDescriptor::IOProcessor()) {
     amrex::Print() << "Using Ghost-Cells Navier-Stokes Characteristic BCs for "
                       "advection: nscbc_adv = "
                    << nscbc_adv << '\n'
                    << '\n';
+  }
 
-  if (nscbc_diff == 1 && amrex::ParallelDescriptor::IOProcessor())
+  if (nscbc_diff == 1 && amrex::ParallelDescriptor::IOProcessor()) {
     amrex::Print() << "Using Ghost-Cells Navier-Stokes Characteristic BCs for "
                       "diffusion: nscbc_diff = "
                    << nscbc_diff << '\n'
                    << '\n';
+  }
 
   // int coord_type = amrex::DefaultGeometry().Coord();
 
@@ -269,8 +262,8 @@ PeleC::variableSetUp()
     State_Type, amrex::IndexType::TheCellType(), amrex::StateDescriptor::Point,
     ngrow_state, NVAR, interp, state_data_extrap, store_in_checkpoint);
 
-  // Components 0:Numspec-1         are      rho.omega_i
-  // Component    NUM_SPECIES            is      rho.edot = (rho.eout-rho.ein)
+  // Components 0:Numspec-1 are rho.omega_i
+  // Component NUM_SPECIES is rho.edot = (rho.eout-rho.ein)
 #ifdef PELEC_USE_REACTIONS
   store_in_checkpoint = true;
   desc_lst.addDescriptor(
@@ -331,13 +324,15 @@ PeleC::variableSetUp()
     for (int i = 0; i < NUM_SPECIES; i++) {
       int j = 0;
       for (j = 0; j < len; j++) {
-        if (int_spec_names[i * len + j] == ' ')
+        if (int_spec_names[i * len + j] == ' ') {
           break;
+        }
       }
       const int strlen = j;
       char* char_spec_names = new char[strlen + 1];
-      for (j = 0; j < strlen; j++)
+      for (j = 0; j < strlen; j++) {
         char_spec_names[j] = int_spec_names[i * len + j];
+      }
       char_spec_names[j] = '\0';
       spec_names.push_back(std::string(char_spec_names));
       delete[] char_spec_names;
@@ -346,8 +341,9 @@ PeleC::variableSetUp()
 
   if (amrex::ParallelDescriptor::IOProcessor()) {
     amrex::Print() << NUM_SPECIES << " Species: " << std::endl;
-    for (int i = 0; i < NUM_SPECIES; i++)
+    for (int i = 0; i < NUM_SPECIES; i++) {
       amrex::Print() << spec_names[i] << ' ' << ' ';
+    }
     amrex::Print() << std::endl;
   }
 
@@ -362,22 +358,25 @@ PeleC::variableSetUp()
   for (int i = 0; i < NUM_AUX; i++) {
     int len = 20;
     amrex::Vector<int> int_aux_names(len);
-    /* Disabling for CUDA at the moment. Look at the species names to see how to
-      do this in C++. AUX stuff is usually 0 anyway.
-      // This call return the actual length of each string in "len"
-      get_aux_names(int_aux_names.dataPtr(),&i,&len);
-    */
+
+    // Disabling for CUDA at the moment. Look at the species names to see how to
+    // do this in C++. AUX stuff is usually 0 anyway.
+    // // This call return the actual length of each string in "len"
+    // get_aux_names(int_aux_names.dataPtr(),&i,&len);
+
     char* char_aux_names = new char[len + 1];
-    for (int j = 0; j < len; j++)
+    for (int j = 0; j < len; j++) {
       char_aux_names[j] = int_aux_names[j];
+    }
     char_aux_names[len] = '\0';
     aux_names.push_back(std::string(char_aux_names));
     delete[] char_aux_names;
   }
   if (amrex::ParallelDescriptor::IOProcessor()) {
     amrex::Print() << NUM_AUX << " Auxiliary Variables: " << std::endl;
-    for (int i = 0; i < NUM_AUX; i++)
+    for (int i = 0; i < NUM_AUX; i++) {
       amrex::Print() << aux_names[i] << ' ' << ' ';
+    }
     amrex::Print() << std::endl;
   }
 
@@ -439,92 +438,68 @@ PeleC::variableSetUp()
 
   num_state_type = desc_lst.size();
 
-  //
   // DEFINE DERIVED QUANTITIES
-  //
+
   // Pressure
-  //
   derive_lst.add(
     "pressure", amrex::IndexType::TheCellType(), 1, pc_derpres, the_same_box);
   derive_lst.addComponent("pressure", desc_lst, State_Type, Density, NVAR);
 
-  //
   // Kinetic energy
-  //
   derive_lst.add(
     "kineng", amrex::IndexType::TheCellType(), 1, pc_derkineng, the_same_box);
   derive_lst.addComponent("kineng", desc_lst, State_Type, Density, NVAR);
 
-  //
   // Enstrophy
-  //
   derive_lst.add(
     "enstrophy", amrex::IndexType::TheCellType(), 1, pc_derenstrophy,
     grow_box_by_one);
   derive_lst.addComponent("enstrophy", desc_lst, State_Type, Density, NVAR);
 
-  //
   // Sound speed (c)
-  //
   derive_lst.add(
     "soundspeed", amrex::IndexType::TheCellType(), 1, pc_dersoundspeed,
     the_same_box);
   derive_lst.addComponent("soundspeed", desc_lst, State_Type, Density, NVAR);
 
-  //
   // Mach number(M)
-  //
   derive_lst.add(
     "MachNumber", amrex::IndexType::TheCellType(), 1, pc_dermachnumber,
     the_same_box);
   derive_lst.addComponent("MachNumber", desc_lst, State_Type, Density, NVAR);
 
-  //
   // Entropy (S)
-  //
   derive_lst.add(
     "entropy", amrex::IndexType::TheCellType(), 1, pc_derentropy, the_same_box);
   derive_lst.addComponent("entropy", desc_lst, State_Type, Density, NVAR);
 
-  //
   // Vorticity
-  //
   derive_lst.add(
     "magvort", amrex::IndexType::TheCellType(), 1, pc_dermagvort,
     grow_box_by_one);
   derive_lst.addComponent("magvort", desc_lst, State_Type, Density, NVAR);
 
-  //
   // Div(u)
-  //
   derive_lst.add(
     "divu", amrex::IndexType::TheCellType(), 1, pc_derdivu, grow_box_by_one);
   derive_lst.addComponent("divu", desc_lst, State_Type, Density, NVAR);
 
-  //
   // Internal energy as derived from rho*E, part of the state
-  //
   derive_lst.add(
     "eint_E", amrex::IndexType::TheCellType(), 1, pc_dereint1, the_same_box);
   derive_lst.addComponent("eint_E", desc_lst, State_Type, Density, NVAR);
 
-  //
   // Internal energy as derived from rho*e, part of the state
-  //
   derive_lst.add(
     "eint_e", amrex::IndexType::TheCellType(), 1, pc_dereint2, the_same_box);
   derive_lst.addComponent("eint_e", desc_lst, State_Type, Density, NVAR);
 
-  //
   // Log(density)
-  //
   derive_lst.add(
     "logden", amrex::IndexType::TheCellType(), 1, pc_derlogden, the_same_box);
   derive_lst.addComponent("logden", desc_lst, State_Type, Density, NVAR);
 
-  //
   // Y from rhoY
-  //
   amrex::Vector<std::string> var_names_massfrac(NUM_SPECIES);
   for (int i = 0; i < NUM_SPECIES; i++) {
     var_names_massfrac[i] = "Y(" + spec_names[i] + ")";
@@ -535,10 +510,7 @@ PeleC::variableSetUp()
     var_names_massfrac, pc_derspec, the_same_box);
   derive_lst.addComponent("massfrac", desc_lst, State_Type, Density, NVAR);
 
-  //
   // Species mole fractions
-  //
-
   amrex::Vector<std::string> var_names_molefrac(NUM_SPECIES);
   for (int i = 0; i < NUM_SPECIES; i++) {
     var_names_molefrac[i] = "X(" + spec_names[i] + ")";
@@ -549,9 +521,7 @@ PeleC::variableSetUp()
     var_names_molefrac, pc_dermolefrac, the_same_box);
   derive_lst.addComponent("molefrac", desc_lst, State_Type, Density, NVAR);
 
-  //
   // Velocities
-  //
   derive_lst.add(
     "x_velocity", amrex::IndexType::TheCellType(), 1, pc_dervelx, the_same_box);
   derive_lst.addComponent("x_velocity", desc_lst, State_Type, Density, NVAR);
@@ -609,9 +579,7 @@ PeleC::variableSetUp()
 //   derive_lst.addComponent("particle_density", desc_lst, State_Type, Density, 1);
 #endif
 
-  //
   // LES coefficients
-  //
   if (do_les) {
     derive_lst.add(
       "C_s2", amrex::IndexType::TheCellType(), 1, pc_dernull, the_same_box);

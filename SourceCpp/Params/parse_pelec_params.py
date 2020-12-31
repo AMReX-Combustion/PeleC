@@ -105,7 +105,7 @@ class Param(object):
         # into PeleC.cpp
 
         if self.dtype == "int":
-            tstr = "int         {}::{}".format(self.cpp_class, self.cpp_var_name)
+            tstr = "int {}::{}".format(self.cpp_class, self.cpp_var_name)
         elif self.dtype == "Real":
             tstr = "amrex::Real {}::{}".format(self.cpp_class, self.cpp_var_name)
         elif self.dtype == "string":

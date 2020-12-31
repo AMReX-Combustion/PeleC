@@ -12,20 +12,20 @@ channel centerline.
 Density at t=0.1s
 #################
 
-.. image:: ./ebverification/C7/stube.png
+.. image:: /ebverification/C7/stube.png
    :height: 300pt
 
 Field profiles in the centerline at t=0.1s
 ##########################################
 
-.. image:: ./ebverification/C7/rho.png
-   :height: 300pt
+.. image:: /ebverification/C7/rho.png
+   :height: 3
 
-.. image:: ./ebverification/C7/p.png
-   :height: 300pt
+.. image:: /ebverification/C7/p.png
+   :height: 3
 
-.. image:: ./ebverification/C7/u.png
-   :height: 300pt
+.. image:: /ebverification/C7/u.png
+   :height: 3
 
-.. image:: ./ebverification/C7/temp.png
+.. image:: /ebverification/C7/temp.png
    :height: 300pt

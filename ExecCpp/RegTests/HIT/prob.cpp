@@ -1,7 +1,7 @@
 #include "prob.H"
 
 namespace ProbParm {
-std::string iname = "";
+std::string iname;
 AMREX_GPU_DEVICE_MANAGED bool binfmt = false;
 AMREX_GPU_DEVICE_MANAGED bool restart = false;
 AMREX_GPU_DEVICE_MANAGED amrex::Real lambda0 = 0.5;
@@ -97,7 +97,8 @@ amrex_probinit(
   ProbParm::k0 = 2.0 / ProbParm::lambda0;
 
   // Initial density, velocity, and material properties
-  amrex::Real cs, cp;
+  amrex::Real cs;
+  amrex::Real cp;
   amrex::Real massfrac[NUM_SPECIES] = {1.0};
   EOS::PYT2RE(
     ProbParm::p0, massfrac, ProbParm::T0, ProbParm::rho0, ProbParm::eint0);
@@ -144,10 +145,14 @@ amrex_probinit(
     amrex::Print() << "Skipping input file reading and assuming restart."
                    << std::endl;
   } else {
+#ifdef AMREX_USE_FLOAT
+    amrex::Abort("HIT cannot run in single precision at the moment.");
+#else
     const size_t nx = ProbParm::inres;
     const size_t ny = ProbParm::inres;
     const size_t nz = ProbParm::inres;
-    amrex::Vector<double> data(nx * ny * nz * 6); /* this needs to be double */
+    amrex::Vector<amrex::Real> data(
+      nx * ny * nz * 6); /* this needs to be double */
     if (ProbParm::binfmt) {
       read_binary(ProbParm::iname, nx, ny, nz, 6, data);
     } else {
@@ -188,8 +193,9 @@ amrex_probinit(
 
     // Make sure the search array is increasing
     if (not std::is_sorted(
-          ProbParm::v_xarray->begin(), ProbParm::v_xarray->end()))
+          ProbParm::v_xarray->begin(), ProbParm::v_xarray->end())) {
       amrex::Abort("Error: non ascending x-coordinate array.");
+    }
 
     // Get pointer to the data
     ProbParm::xinput = ProbParm::v_xinput->dataPtr();
@@ -202,6 +208,7 @@ amrex_probinit(
     // Dimensions of the input box.
     ProbParm::Linput =
       (*ProbParm::v_xarray)[nx - 1] + 0.5 * (*ProbParm::v_xdiff)[nx - 1];
+#endif
   }
 }
 }

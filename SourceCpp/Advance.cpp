@@ -1,5 +1,3 @@
-#include <cmath>
-
 #include "mechanism.h"
 
 #include "PeleC.H"
@@ -9,16 +7,14 @@ amrex::Real
 PeleC::advance(
   amrex::Real time, amrex::Real dt, int amr_iteration, int amr_ncycle)
 {
-  /** the main driver for a single level implementing the time advance.
-
-         @param time the current simulation time
-         @param dt the timestep to advance (e.g., go from time to time + dt)
-         @param amr_iteration where we are in the current AMR subcycle.  Each
-                         level will take a number of steps to reach the
-                         final time of the coarser level below it.  This
-                         counter starts at 1
-         @param amr_ncycle  the number of subcycles at this level
-  */
+  // The main driver for a single level implementing the time advance.
+  //        @param time the current simulation time
+  //        @param dt the timestep to advance (e.g., go from time to time + dt)
+  //        @param amr_iteration where we are in the current AMR subcycle.  Each
+  //                        level will take a number of steps to reach the
+  //                        final time of the coarser level below it.  This
+  //                        counter starts at 1
+  //        @param amr_ncycle  the number of subcycles at this level
 
   BL_PROFILE("PeleC::advance()");
 
@@ -75,7 +71,8 @@ PeleC::do_mol_advance(
   // define sourceterm
   amrex::MultiFab molSrc(grids, dmap, NVAR, 0, amrex::MFInfo(), Factory());
 
-  amrex::MultiFab molSrc_old, molSrc_new;
+  amrex::MultiFab molSrc_old;
+  amrex::MultiFab molSrc_new;
   if (mol_iters > 1) {
     molSrc_old.define(grids, dmap, NVAR, 0, amrex::MFInfo(), Factory());
     molSrc_new.define(grids, dmap, NVAR, 0, amrex::MFInfo(), Factory());
@@ -152,8 +149,9 @@ PeleC::do_mol_advance(
     }
   }
 
-  if (mol_iters > 1)
+  if (mol_iters > 1) {
     amrex::MultiFab::Copy(molSrc_old, molSrc, 0, 0, NVAR, 0);
+  }
 
   // U^* = U^n + dt*S^n
   amrex::MultiFab::LinComb(S_new, 1.0, Sborder, 0, dt, molSrc, 0, 0, NVAR, 0);
@@ -266,11 +264,10 @@ PeleC::do_sdc_advance(
 
   amrex::Real dt_new = dt;
 
-  /** This routine will advance the old state data (called S_old here)
-      to the new time, for a single level.  The new data is called
-      S_new here.  The update includes reactions (if we are not doing
-      SDC), hydro, and the source terms.
-  */
+  // This routine will advance the old state data (called S_old here)
+  // to the new time, for a single level.  The new data is called
+  // S_new here.  The update includes reactions (if we are not doing
+  // SDC), hydro, and the source terms.
 
   initialize_sdc_advance(time, dt, amr_iteration, amr_ncycle);
 
@@ -302,10 +299,9 @@ PeleC::do_sdc_iteration(
   int sub_iteration,
   int sub_ncycle)
 {
-  /** This routine will advance the old state data (called S_old here)
-      to the new time, for a single level.  The new data is called
-      S_new here.  The update includes hydro, and the source terms.
-  */
+  // This routine will advance the old state data (called S_old here)
+  // to the new time, for a single level.  The new data is called
+  // S_new here.  The update includes hydro, and the source terms.
 
   BL_PROFILE("PeleC::do_sdc_iteration()");
 
@@ -365,11 +361,8 @@ PeleC::do_sdc_iteration(
 #endif
   if (sub_iteration == 0) {
 #ifdef AMREX_PARTICLES
-    //
     // Compute drag terms from particles at old positions, move particles to new
-    // positions
-    //  based on old-time velocity field
-    //
+    // positions  based on old-time velocity field
     // TODO: Maybe move this mess into construct_old_source?
     if (do_spray_particles) {
       old_sources[spray_src]->setVal(0.);
@@ -377,7 +370,6 @@ PeleC::do_sdc_iteration(
         time, dt, ghost_width, spray_n_grow,
         tmp_src_width, where_width, tmp_spray_source);
     }
-
 #endif
 
     // Build other (neither spray nor diffusion) sources at t_old
@@ -395,8 +387,7 @@ PeleC::do_sdc_iteration(
     }
 
     // Get diffusion source separate from other sources, since it requires grow
-    // cells, and we
-    //  may want to reuse what we fill-patched for hydro
+    // cells, and we may want to reuse what we fill-patched for hydro
     if (do_diffuse) {
       if (verbose) {
         amrex::Print() << "... Computing diffusion terms at t^(n)" << std::endl;
@@ -537,8 +528,8 @@ PeleC::initialize_sdc_iteration(
 
   // Reset the grid loss tracking.
   if (track_grid_losses) {
-    for (int i = 0; i < n_lost; i++) {
-      material_lost_through_boundary_temp[i] = 0.0;
+    for (amrex::Real& i : material_lost_through_boundary_temp) {
+      i = 0.0;
     }
   }
 }

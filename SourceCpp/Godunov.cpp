@@ -100,18 +100,21 @@ pc_umeth_3D(
       bxg2, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
         amrex::Real slope[QVAR];
         // X slopes and interp
-        for (int n = 0; n < QVAR; ++n)
+        for (int n = 0; n < QVAR; ++n) {
           slope[n] = plm_slope(i, j, k, n, 0, q);
+        }
         pc_plm_x(i, j, k, qxmarr, qxparr, slope, q, qaux(i, j, k, QC), dx, dt);
 
         // Y slopes and interp
-        for (int n = 0; n < QVAR; n++)
+        for (int n = 0; n < QVAR; n++) {
           slope[n] = plm_slope(i, j, k, n, 1, q);
+        }
         pc_plm_y(i, j, k, qymarr, qyparr, slope, q, qaux(i, j, k, QC), dy, dt);
 
         // Z slopes and interp
-        for (int n = 0; n < QVAR; ++n)
+        for (int n = 0; n < QVAR; ++n) {
           slope[n] = plm_slope(i, j, k, n, 2, q);
+        }
         pc_plm_z(i, j, k, qzmarr, qzparr, slope, q, qaux(i, j, k, QC), dz, dt);
       });
   } else if (ppm_type == 1) {
@@ -212,8 +215,10 @@ pc_umeth_3D(
   amrex::FArrayBox fluxxz(txfxbx, NVAR);
   amrex::FArrayBox gdvxyfab(txfxbx, NGDNV);
   amrex::FArrayBox gdvxzfab(txfxbx, NGDNV);
-  amrex::Elixir fluxxyeli = fluxxy.elixir(), gdvxyeli = gdvxyfab.elixir();
-  amrex::Elixir fluxxzeli = fluxxz.elixir(), gdvxzeli = gdvxzfab.elixir();
+  amrex::Elixir fluxxyeli = fluxxy.elixir();
+  amrex::Elixir gdvxyeli = gdvxyfab.elixir();
+  amrex::Elixir fluxxzeli = fluxxz.elixir();
+  amrex::Elixir gdvxzeli = gdvxzfab.elixir();
 
   auto const& flxy = fluxxy.array();
   auto const& flxz = fluxxz.array();
@@ -244,8 +249,10 @@ pc_umeth_3D(
   amrex::FArrayBox qyxp(tybx, QVAR);
   amrex::FArrayBox qyzm(tybxm, QVAR);
   amrex::FArrayBox qyzp(tybx, QVAR);
-  amrex::Elixir qyxmeli = qyxm.elixir(), qyxpeli = qyxp.elixir();
-  amrex::Elixir qyzmeli = qyzm.elixir(), qyzpeli = qyzp.elixir();
+  amrex::Elixir qyxmeli = qyxm.elixir();
+  amrex::Elixir qyxpeli = qyxp.elixir();
+  amrex::Elixir qyzmeli = qyzm.elixir();
+  amrex::Elixir qyzpeli = qyzp.elixir();
   auto const& qmyx = qyxm.array();
   auto const& qpyx = qyxp.array();
   auto const& qmyz = qyzm.array();
@@ -269,8 +276,10 @@ pc_umeth_3D(
   amrex::FArrayBox fluxyz(tyfxbx, NVAR);
   amrex::FArrayBox gdvyxfab(tyfxbx, NGDNV);
   amrex::FArrayBox gdvyzfab(tyfxbx, NGDNV);
-  amrex::Elixir fluxyxeli = fluxyx.elixir(), gdvyxeli = gdvyxfab.elixir();
-  amrex::Elixir fluxyzeli = fluxyz.elixir(), gdvyzeli = gdvyzfab.elixir();
+  amrex::Elixir fluxyxeli = fluxyx.elixir();
+  amrex::Elixir gdvyxeli = gdvyxfab.elixir();
+  amrex::Elixir fluxyzeli = fluxyz.elixir();
+  amrex::Elixir gdvyzeli = gdvyzfab.elixir();
 
   auto const& flyx = fluxyx.array();
   auto const& flyz = fluxyz.array();
@@ -300,8 +309,10 @@ pc_umeth_3D(
   amrex::FArrayBox qzxp(tzbx, QVAR);
   amrex::FArrayBox qzym(tzbxm, QVAR);
   amrex::FArrayBox qzyp(tzbx, QVAR);
-  amrex::Elixir qzxmeli = qzxm.elixir(), qzxpeli = qzxp.elixir();
-  amrex::Elixir qzymeli = qzym.elixir(), qzypeli = qzyp.elixir();
+  amrex::Elixir qzxmeli = qzxm.elixir();
+  amrex::Elixir qzxpeli = qzxp.elixir();
+  amrex::Elixir qzymeli = qzym.elixir();
+  amrex::Elixir qzypeli = qzyp.elixir();
 
   auto const& qmzx = qzxm.array();
   auto const& qpzx = qzxp.array();
@@ -328,8 +339,10 @@ pc_umeth_3D(
   amrex::FArrayBox fluxzy(tzfxbx, NVAR);
   amrex::FArrayBox gdvzxfab(tzfxbx, NGDNV);
   amrex::FArrayBox gdvzyfab(tzfxbx, NGDNV);
-  amrex::Elixir fluxzxeli = fluxzx.elixir(), gdvzxeli = gdvzxfab.elixir();
-  amrex::Elixir fluxzyeli = fluxzy.elixir(), gdvzyeli = gdvzyfab.elixir();
+  amrex::Elixir fluxzxeli = fluxzx.elixir();
+  amrex::Elixir gdvzxeli = gdvzxfab.elixir();
+  amrex::Elixir fluxzyeli = fluxzy.elixir();
+  amrex::Elixir gdvzyeli = gdvzyfab.elixir();
 
   auto const& flzx = fluxzx.array();
   auto const& flzy = fluxzy.array();

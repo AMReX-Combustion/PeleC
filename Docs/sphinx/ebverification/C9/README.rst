@@ -30,14 +30,14 @@ time discretization errors.
 Acoustic pulse at :math:`t=0.000625s`
 #####################################
 
-.. image:: ./ebverification/C9/pulse.png
+.. image:: /ebverification/C9/pulse.png
    :height: 200pt
 
 
 Density profiles in the centerline at :math:`t=0.000625s`
 #########################################################
 
-.. image:: ./ebverification/C9/rho.png
+.. image:: /ebverification/C9/rho.png
    :height: 300pt
 
 :math:`L_2` error norm of density
@@ -52,7 +52,7 @@ where :math:`s^h` is the numerical solution, :math:`s^*` is the exact
 solution, and :math:`n_x` is the number of cells in the
 :math:`x`-direction.
 
-.. image:: ./ebverification/C9/error.png
+.. image:: /ebverification/C9/error.png
    :height: 300pt
 
 .. note::

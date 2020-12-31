@@ -20,7 +20,7 @@ AMREX_GPU_DEVICE_MANAGED amrex::Real* d_pmf_X = nullptr;
 AMREX_GPU_DEVICE_MANAGED amrex::Real* d_pmf_Y = nullptr;
 AMREX_GPU_DEVICE_MANAGED amrex::Real* d_fuel_state = nullptr;
 
-std::string pmf_datafile = "";
+std::string pmf_datafile;
 amrex::Vector<std::string> pmf_names;
 } // namespace ProbParm
 
@@ -37,21 +37,23 @@ checkQuotes(const std::string& str)
 {
   int count = 0;
   for (char c : str) {
-    if (c == '"')
+    if (c == '"') {
       count++;
+    }
   }
-  if ((count % 2) == 0)
-    return true;
-  else
-    return false;
+  return (count % 2) == 0;
 }
 
 void
 read_pmf(const std::string& myfile)
 {
-  std::string firstline, secondline, remaininglines;
-  unsigned int pos1, pos2;
-  int variable_count, line_count;
+  std::string firstline;
+  std::string secondline;
+  std::string remaininglines;
+  unsigned int pos1;
+  unsigned int pos2;
+  int variable_count;
+  int line_count;
 
   std::ifstream infile(myfile);
   const std::string memfile = read_pmf_file(infile);
@@ -59,8 +61,9 @@ read_pmf(const std::string& myfile)
   std::istringstream iss(memfile);
 
   std::getline(iss, firstline);
-  if (!checkQuotes(firstline))
+  if (!checkQuotes(firstline)) {
     amrex::Abort("PMF file variable quotes unbalanced");
+  }
   std::getline(iss, secondline);
   pos1 = 0;
   pos2 = 0;
@@ -118,8 +121,13 @@ read_pmf(const std::string& myfile)
 void
 init_bc()
 {
-  amrex::Real vt, ek, T, rho, e;
-  amrex::Real molefrac[NUM_SPECIES], massfrac[NUM_SPECIES];
+  amrex::Real vt;
+  amrex::Real ek;
+  amrex::Real T;
+  amrex::Real rho;
+  amrex::Real e;
+  amrex::Real molefrac[NUM_SPECIES];
+  amrex::Real massfrac[NUM_SPECIES];
   amrex::GpuArray<amrex::Real, NUM_SPECIES + 4> pmf_vals = {{0.0}};
 
   if (ProbParm::phi_in < 0) {
@@ -128,7 +136,7 @@ init_bc()
     pmf(yl, yr, pmf_vals);
     amrex::Real mysum = 0.0;
     for (int n = 0; n < NUM_SPECIES; n++) {
-      molefrac[n] = amrex::max(0.0, pmf_vals[3 + n]);
+      molefrac[n] = amrex::max<amrex::Real>(0.0, pmf_vals[3 + n]);
       mysum += molefrac[n];
     }
     molefrac[N2_ID] = 1.0 - (mysum - molefrac[N2_ID]);
@@ -136,8 +144,9 @@ init_bc()
     ProbParm::vn_in = pmf_vals[1];
   } else {
     const amrex::Real a = 0.5;
-    for (int n = 0; n < NUM_SPECIES; n++)
-      molefrac[n] = 0.0;
+    for (amrex::Real& n : molefrac) {
+      n = 0.0;
+    }
     molefrac[O2_ID] = 1.0 / (1.0 + ProbParm::phi_in / a + 0.79 / 0.21);
     molefrac[H2_ID] = ProbParm::phi_in * molefrac[O2_ID] / a;
     molefrac[N2_ID] = 1.0 - molefrac[H2_ID] - molefrac[O2_ID];

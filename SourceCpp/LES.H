@@ -216,9 +216,12 @@ pc_smagorinsky_sfs_term(
 
   // SFS turbulent diffusion
   const amrex::Real Uface[AMREX_SPACEDIM] = {
-    0.5 * (q(i, j, k, QU) + q(i - bdim[0], j - bdim[1], k - bdim[2], QU)),
-    0.5 * (q(i, j, k, QV) + q(i - bdim[0], j - bdim[1], k - bdim[2], QV)),
-    0.5 * (q(i, j, k, QW) + q(i - bdim[0], j - bdim[1], k - bdim[2], QW))};
+    static_cast<amrex::Real>(
+      0.5 * (q(i, j, k, QU) + q(i - bdim[0], j - bdim[1], k - bdim[2], QU))),
+    static_cast<amrex::Real>(
+      0.5 * (q(i, j, k, QV) + q(i - bdim[0], j - bdim[1], k - bdim[2], QV))),
+    static_cast<amrex::Real>(
+      0.5 * (q(i, j, k, QW) + q(i - bdim[0], j - bdim[1], k - bdim[2], QW)))};
   flx(i, j, k, UEDEN) =
     -sigmadx * Uface[0] - sigmady * Uface[1] - sigmadz * Uface[2];
 
@@ -334,7 +337,9 @@ pc_dynamic_smagorinsky_quantities(
   // (irrelevant for now as this is presently not allowed)
   const amrex::Real deltabar = fgr * (dx[0] + dx[1] + dx[2]) / 3.0;
   const amrex::Real dxinv[AMREX_SPACEDIM] = {
-    1.0 / dx[0], 1.0 / dx[1], 1.0 / dx[2]};
+    static_cast<amrex::Real>(1.0 / dx[0]),
+    static_cast<amrex::Real>(1.0 / dx[1]),
+    static_cast<amrex::Real>(1.0 / dx[2])};
 
   get_sfs_stresses_cc(
     i, j, k, q, dxinv, deltabar, alphaij(i, j, k, i00), alphaij(i, j, k, i01),
@@ -389,7 +394,9 @@ pc_dynamic_smagorinsky_coeffs(
   // (irrelevant for now as this is presently not allowed)
   const amrex::Real deltahat = fgr * (dx[0] + dx[1] + dx[2]) / 3.0;
   const amrex::Real dxinv[AMREX_SPACEDIM] = {
-    1.0 / dx[0], 1.0 / dx[1], 1.0 / dx[2]};
+    static_cast<amrex::Real>(1.0 / dx[0]),
+    static_cast<amrex::Real>(1.0 / dx[1]),
+    static_cast<amrex::Real>(1.0 / dx[2])};
 
   amrex::Real L[AMREX_SPACEDIM * AMREX_SPACEDIM],
     M[AMREX_SPACEDIM * AMREX_SPACEDIM], betaij[AMREX_SPACEDIM * AMREX_SPACEDIM],
@@ -442,12 +449,16 @@ pc_dynamic_smagorinsky_coeffs(
   const amrex::Real bma = beta - alpha(i, j, k);
 
   // Coefficients
-  coeff(i, j, k, comp_Cs2) = amrex::max(LM / (MM + SMALL), SMALL);
-  coeff(i, j, k, comp_CI) = amrex::max(Lkk / (bma + SMALL), SMALL);
-  coeff(i, j, k, comp_Cs2ovPrT) = amrex::max(KT / (TT + SMALL), SMALL);
+  coeff(i, j, k, comp_Cs2) =
+    amrex::max<amrex::Real>(LM / (MM + SMALL_NUM), SMALL_NUM);
+  coeff(i, j, k, comp_CI) =
+    amrex::max<amrex::Real>(Lkk / (bma + SMALL_NUM), SMALL_NUM);
+  coeff(i, j, k, comp_Cs2ovPrT) =
+    amrex::max<amrex::Real>(KT / (TT + SMALL_NUM), SMALL_NUM);
 
   // Limit CI to reasonable bounds
-  coeff(i, j, k, comp_CI) = amrex::min(coeff(i, j, k, comp_CI), 1.0);
+  coeff(i, j, k, comp_CI) =
+    amrex::min<amrex::Real>(coeff(i, j, k, comp_CI), 1.0);
 }
 
 AMREX_GPU_DEVICE
@@ -479,9 +490,12 @@ pc_dynamic_smagorinsky_sfs_term(
 
   // SFS turbulent diffusion
   const amrex::Real Uface[AMREX_SPACEDIM] = {
-    0.5 * (q(i, j, k, QU) + q(i - bdim[0], j - bdim[1], k - bdim[2], QU)),
-    0.5 * (q(i, j, k, QV) + q(i - bdim[0], j - bdim[1], k - bdim[2], QV)),
-    0.5 * (q(i, j, k, QW) + q(i - bdim[0], j - bdim[1], k - bdim[2], QW))};
+    static_cast<amrex::Real>(
+      0.5 * (q(i, j, k, QU) + q(i - bdim[0], j - bdim[1], k - bdim[2], QU))),
+    static_cast<amrex::Real>(
+      0.5 * (q(i, j, k, QV) + q(i - bdim[0], j - bdim[1], k - bdim[2], QV))),
+    static_cast<amrex::Real>(
+      0.5 * (q(i, j, k, QW) + q(i - bdim[0], j - bdim[1], k - bdim[2], QW)))};
   flx(i, j, k, UEDEN) =
     -sigmadx * Uface[0] - sigmady * Uface[1] - sigmadz * Uface[2];
 

@@ -27,13 +27,13 @@ jobs:
           - os: macos-latest
             install_deps: brew install open-mpi automake ninja
             comp: llvm
-            # GCC will have internal compiler error due to OOM with too many processes
             procs: $(sysctl -n hw.ncpu)
+            mpipreflags: -DMPIEXEC_PREFLAGS:STRING=--oversubscribe
           - os: ubuntu-latest
             install_deps: sudo apt-get install mpich libmpich-dev ninja-build
             comp: gnu
-            # GCC will have internal compiler error due to OOM with too many processes
             procs: $(nproc)
+            mpipreflags:
     steps:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.6.0
@@ -67,7 +67,7 @@ jobs:
           git clone --recursive https://github.com/manufactured-solutions/MASA.git ${{runner.workspace}}/deps/MASA
           cd ${{runner.workspace}}/deps/MASA
           ./bootstrap
-          ./configure CXX='mpicxx -std=c++11' CC=mpicc FC=mpifort --enable-fortran-interfaces \
+          ./configure CXX='mpicxx -std=c++11' CC=mpicc \
             METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" \
             --prefix="${{runner.workspace}}/deps/install/MASA"
           make -j ${{env.NPROCS}}
@@ -86,21 +86,26 @@ jobs:
             -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo \
             -DPELEC_DIM:STRING=${DIM} \
             -DPELEC_ENABLE_MPI:BOOL=ON \
+            ${{matrix.mpipreflags}} \
             -DPELEC_ENABLE_TESTS:BOOL=ON \
             -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
             -DPELEC_ENABLE_MASA:BOOL=ON \
             -DMASA_DIR:STRING=${{runner.workspace}}/deps/install/MASA \
             -DPELEC_ENABLE_ALL_WARNINGS:BOOL=${WARNINGS} \
-            -DPELEC_ENABLE_WERROR:BOOL=${WARNINGS} \
             ${{github.workspace}}; \
           done
       - name: Build
         run: |
-          echo "::add-matcher::.github/problem-matchers/gcc.json"
           for DIM in 1 2 3; do \
             printf "\n-------- Building ${DIM}D --------\n"; \
-            cmake --build ${{runner.workspace}}/build-${DIM}d-${{matrix.os}} -- -j ${{env.NPROCS}}; \
+            cmake --build ${{runner.workspace}}/build-${DIM}d-${{matrix.os}} \
+              --parallel ${{env.NPROCS}} 2>&1 | tee -a ${{runner.workspace}}/build-output.txt; \
           done
+      - name: Report
+        run: |
+          echo "::add-matcher::.github/problem-matchers/gcc.json"
+          cat ${{runner.workspace}}/build-output.txt | egrep "warning:|error:" | sort | uniq | sort -nr | \
+            awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}'
       - name: Test
         run: |
           for DIM in 1 2 3; do \
@@ -181,8 +186,8 @@ jobs:
             -DAMReX_CUDA_ARCH=Volta \
             ${{github.workspace}}
       - name: Build
-        run: cmake --build build-${{matrix.cuda_pkg}} -- -j ${{env.NPROCS}}
-  Lint:
+        run: cmake --build build-${{matrix.cuda_pkg}} --parallel ${{env.NPROCS}}
+  cppcheck:
     needs: Formatting
     runs-on: macos-latest
     steps:
@@ -197,38 +202,60 @@ jobs:
         run: brew install cppcheck
       - name: Configure
         run: |
-          echo "NPROCS=$(sysctl -n hw.ncpu)" >> $GITHUB_ENV
-          cmake \
-          -B${{runner.workspace}}/build-sa \
+          cmake -B${{runner.workspace}}/build-cppcheck \
           -DPELEC_ENABLE_MPI:BOOL=OFF \
           -DPELEC_ENABLE_TESTS:BOOL=ON \
           -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
           -DPELEC_ENABLE_MASA:BOOL=OFF \
-          -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON \
+          -DPELEC_ENABLE_CPPCHECK:BOOL=ON \
           ${{github.workspace}}
       - name: Check
-        working-directory: ${{runner.workspace}}/build-sa
+        working-directory: ${{runner.workspace}}/build-cppcheck
+        run: make cppcheck
+      - name: Full report
+        working-directory: ${{runner.workspace}}/build-cppcheck/cppcheck
+        run: cat cppcheck-full-report.txt
+      - name: Short report
+        working-directory: ${{runner.workspace}}/build-cppcheck
+        run: |
+          echo "::add-matcher::.github/problem-matchers/cppcheck.json"
+          cat cppcheck-warnings.txt
+  clang-tidy:
+    needs: Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.6.0
+        with:
+          access_token: ${{github.token}}
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Dependencies
+        run: |
+          sudo apt-get install -y clang-tidy-9
+          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-9 100
+      - name: Configure
+        run: |
+          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
+          cmake -B${{runner.workspace}}/build-clang-tidy \
+          -DPELEC_ENABLE_MPI:BOOL=OFF \
+          -DPELEC_ENABLE_TESTS:BOOL=ON \
+          -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
+          -DPELEC_ENABLE_MASA:BOOL=OFF \
+          -DPELEC_ENABLE_CLANG_TIDY:BOOL=ON \
+          ${{github.workspace}}
+      - name: Check
+        working-directory: ${{runner.workspace}}/build-clang-tidy
+        run: |
+          cmake --build . --parallel ${{env.NPROCS}} 2> clang-tidy-full-report.txt
+          cat clang-tidy-full-report.txt | grep "warning:" | grep -v "Submodules" | sort | uniq | sort -nr | \
+            awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > clang-tidy-warnings.txt
+      - name: Full report
+        working-directory: ${{runner.workspace}}/build-clang-tidy
+        run: cat clang-tidy-full-report.txt
+      - name: Short report
+        working-directory: ${{runner.workspace}}/build-clang-tidy
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
-          cppcheck --inline-suppr --suppress=unmatchedSuppression \
-            --std=c++14 --language=c++ --enable=all --project=compile_commands.json \
-            -j ${{env.NPROCS}} -i ${{github.workspace}}/Submodules/AMReX/Src \
-            -i ${{github.workspace}}/Submodules/GoogleTest --output-file=cppcheck.txt
-          #awk -v nlines=2 \
-          #   '/Submodules\/AMReX/ || /Submodules\/GoogleTest/ {for (i=0; i<nlines; i++) {getline}; next} 1' \
-          #   < cppcheck.txt > pelec-static-analysis.txt
-          # Ignore all submodules for now
-          # Might be wrong to assume cppcheck always reports issues using 3 lines
-          awk -v nlines=2 \
-              '/Submodules/ {for (i=0; i<nlines; i++) {getline}; next} 1' \
-              < cppcheck.txt > pelec-static-analysis.txt
-      - name: Report
-        working-directory: ${{runner.workspace}}/build-sa
-        run: |
-          # Might be wrong to assume cppcheck always reports issues using 3 lines
-          WARNINGS1=$(wc -l < pelec-static-analysis.txt | xargs echo -n)
-          WARNINGS2=$(bc <<< "$WARNINGS1/3")
-          printf "%s warnings\n" "${WARNINGS2}" >> pelec-static-analysis.txt
-          cat pelec-static-analysis.txt
-          # Just report for now and don't fail
-          #exit ${WARNINGS2}
+          cat clang-tidy-warnings.txt

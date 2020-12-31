@@ -15,6 +15,7 @@ const char* buildInfoGetGitHash(int i);
 
 namespace pelec_tests {
 
+// cppcheck-suppress missingOverride
 TEST(Configuration, Build)
 {
   const char* pc_git = amrex::buildInfoGetGitHash(1);
@@ -23,7 +24,8 @@ TEST(Configuration, Build)
                  << "AMReX SHA = " << amrex_git << std::endl;
 }
 
-TEST(Configuration, MPI) // cppcheck-suppress syntaxError
+// cppcheck-suppress missingOverride
+TEST(Configuration, MPI)
 {
 #ifdef AMREX_USE_MPI
   int nprocs = amrex::ParallelDescriptor::NProcs();
@@ -39,6 +41,7 @@ TEST(Configuration, MPI) // cppcheck-suppress syntaxError
 #endif
 }
 
+// cppcheck-suppress missingOverride
 TEST(Configuration, CUDA)
 {
 #ifdef AMREX_USE_CUDA

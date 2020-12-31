@@ -1,5 +1,5 @@
 C8. Multi-species shock tube in a rotated channel with AMR
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Case description
 ################
@@ -15,13 +15,13 @@ the embedded boundary, contact and shock discontinuities. The center-line densit
 compares well with data from literature.
 
 AMR mesh indicating refinement at embedded boundary, contact and shock discontinuities
-#################
+######################################################################################
 
-.. image:: ./ebverification/C8/ebmesh.png
+.. image:: /ebverification/C8/ebmesh.png
    :height: 300pt
 
 Field profiles in the centerline at t=0.2 L sqrt(rhoL/pL)
-##########################################
+#########################################################
 
-.. image:: ./ebverification/C8/density.png
+.. image:: /ebverification/C8/density.png
    :height: 300pt

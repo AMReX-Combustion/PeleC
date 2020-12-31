@@ -1,5 +1,3 @@
-#include <iomanip>
-
 #include "PeleC.H"
 
 amrex::Real
@@ -29,8 +27,9 @@ PeleC::sumDerive(const std::string& name, amrex::Real time, bool local)
     }
   }
 
-  if (!local)
+  if (!local) {
     amrex::ParallelDescriptor::ReduceRealSum(sum);
+  }
 
   return sum;
 }
@@ -58,8 +57,9 @@ PeleC::volWgtSum(
 
   sum = amrex::MultiFab::Dot(*mf, 0, volume, 0, 1, 0, local);
 
-  if (!local)
+  if (!local) {
     amrex::ParallelDescriptor::ReduceRealSum(sum);
+  }
 
   return sum;
 }
@@ -89,8 +89,9 @@ PeleC::volWgtSquaredSum(const std::string& name, amrex::Real time, bool local)
 #endif
   sum = amrex::MultiFab::Dot(*mf, 0, vol, 0, 1, 0, local);
 
-  if (!local)
+  if (!local) {
     amrex::ParallelDescriptor::ReduceRealSum(sum);
+  }
 
   return sum;
 }
@@ -125,8 +126,9 @@ PeleC ::volWgtSquaredSumDiff(int comp, amrex::Real /*time*/, bool local)
 #endif
   sum = amrex::MultiFab::Dot(diff, 0, vol, 0, 1, 0, local);
 
-  if (!local)
+  if (!local) {
     amrex::ParallelDescriptor::ReduceRealSum(sum);
+  }
 
   return sum;
 }
@@ -153,8 +155,9 @@ PeleC::volWgtSumMF(
 
   sum = amrex::MultiFab::Dot(vol, 0, volume, 0, 1, 0, local);
 
-  if (!local)
+  if (!local) {
     amrex::ParallelDescriptor::ReduceRealSum(sum);
+  }
 
   return sum;
 }

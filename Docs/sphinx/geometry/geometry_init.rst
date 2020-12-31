@@ -27,7 +27,7 @@ GeometryShop and Implicit Functions
 
 One of the greatest advantages of EB technology is that grid generation is robust and fast and can be done to any accuracy 
 as described by `Schwartz et al. <http://dx.doi.org/10.2140/camcos.2015.10.83>`_ The foundation class that AMReX uses for
-geometry generation is called :ref:`GeometryShop <geom>`. This class is used to initialize geometric information 
+geometry generation is called `GeometryShop`. This class is used to initialize geometric information 
 and associated connectivity graph stored in a distributed database class `EBIndexSpace`. 
 Historically, the `EBIndexSpace` database was developed to be used throughout a calculation. 
 Here, we use it only to populate datastructures that can be accessed efficiently in the patterns 
@@ -43,7 +43,7 @@ representative of the Pele motivating problem space.
 
    S(\mathbf{x}) = x^2 + y^2 + z^2 - R^2,
 
-the solution domain would be the interior of a sphere of radius :math:`R`. Reverse the sign of :math:`S` and the solution domain would be the exterior of the sphere. More details are available `here <https://amrex-codes.github.io/amrex/docs_html/EB.html?highlight=geometryshop#initializing-the-geometric-database>`_.
+the solution domain would be the interior of a sphere of radius :math:`R`. Reverse the sign of :math:`S` and the solution domain would be the exterior of the sphere. More details are available `here <https://amrex-codes.github.io/amrex/docs_html/EB.html?highlight=geometryshop#initializing-the-geometric-database>`__.
 
 Specifying basic geometries in input files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -96,7 +96,7 @@ Some of the relevant transformation handles in AMReX are:
 * *Extrusion*   - creates a 3D implicit function from a 2D function by translating along the z axis (see AMReX_EB2_IF_Extrusion.cpp)
 
 The user can copy the file "PeleC_init_eb.cpp" from the Source and add it to his/her test case after which a new geometry can be added in initialize_EB2 
-function. An example of adding a piston-bowl geometry (see :ref:`EB_pistonbowl`) 
+function. An example of adding a piston-bowl geometry
 that uses splines, cylinder, lathe and union transform, is shown below.
 
 
@@ -149,7 +149,7 @@ that uses splines, cylinder, lathe and union transform, is shown below.
     auto gshop = EB2::makeShop(PistonCylinder);
 
     
-.. _EB_pistonbowl:
+#.. _EB_pistonbowl:
 
 .. figure:: EB_PistonBowl.png
    :alt: EB Cell

@@ -1,3 +1,5 @@
+#include <memory>
+
 #include "EB.H"
 #include "prob.H"
 #include "Utilities.H"
@@ -31,14 +33,11 @@ PeleC::init_eb(
   initialize_eb2_structs();
 }
 
-/**
- * Set up PeleC EB Datastructures from AMReX EB2 constructs
- *
- * At the end of this routine, the following structures are populated:
- *   - FabArray ebmask
- *  - MultiFAB vfrac
- *  - sv_eb_bndry_geom
- */
+// Set up PeleC EB Datastructures from AMReX EB2 constructs
+// At the end of this routine, the following structures are populated:
+//   - FabArray ebmask
+//  - MultiFAB vfrac
+//  - sv_eb_bndry_geom
 
 void
 PeleC::initialize_eb2_structs()
@@ -48,7 +47,7 @@ PeleC::initialize_eb2_structs()
 
   // NOTE: THIS NEEDS TO BE REPLACED WITH A FLAGFAB
 
-  //  1->regular, 0->irregular, -1->covered, 2->outside
+  // 1->regular, 0->irregular, -1->covered, 2->outside
   ebmask.define(grids, dmap, 1, 0);
 
   static_assert(
@@ -124,18 +123,22 @@ PeleC::initialize_eb2_structs()
           });
           ivec++;
 
-          if (mfab.box().contains(bit()))
+          if (mfab.box().contains(bit())) {
             mfab(bit()) = 0;
+          }
         } else {
           if (flag.isRegular()) {
-            if (mfab.box().contains(bit()))
+            if (mfab.box().contains(bit())) {
               mfab(bit()) = 1;
+            }
           } else if (flag.isCovered()) {
-            if (mfab.box().contains(bit()))
+            if (mfab.box().contains(bit())) {
               mfab(bit()) = -1;
+            }
           } else {
-            if (mfab.box().contains(bit()))
+            if (mfab.box().contains(bit())) {
               mfab(bit()) = 2;
+            }
           }
         }
       }
@@ -223,8 +226,9 @@ PeleC::initialize_eb2_structs()
       dir, 1);
 
     for (int dir1 = 0; dir1 < AMREX_SPACEDIM; ++dir1) {
-      if (dir1 != dir)
+      if (dir1 != dir) {
         fbox[dir].grow(dir1, 1);
+      }
     }
 
 #ifdef _OPENMP
@@ -260,7 +264,8 @@ PeleC::initialize_eb2_structs()
             }
           },
           [=] AMREX_GPU_DEVICE(int const& r) noexcept {
-            amrex::Gpu::deviceReduceSum(dp, r);
+            amrex::Gpu::Handler handler;
+            amrex::Gpu::deviceReduceSum(dp, r, handler);
           });
         const int Nall_cut_faces = ds.dataValue();
 
@@ -334,8 +339,9 @@ PeleC::define_body_state()
 {
   BL_PROFILE("PeleC::define_body_state()");
 
-  if (!eb_in_domain)
+  if (!eb_in_domain) {
     return;
+  }
 
   // Scan over data and find a point in the fluid to use to
   // set computable values in cells outside the domain
@@ -384,8 +390,9 @@ PeleC::set_body_state(amrex::MultiFab& S)
 {
   BL_PROFILE("PeleC::set_body_state()");
 
-  if (!eb_in_domain)
+  if (!eb_in_domain) {
     return;
+  }
 
   if (!body_state_set) {
     define_body_state();
@@ -414,8 +421,9 @@ PeleC::zero_in_body(amrex::MultiFab& S) const
 {
   BL_PROFILE("PeleC::zero_in_body()");
 
-  if (!eb_in_domain)
+  if (!eb_in_domain) {
     return;
+  }
 
   amrex::GpuArray<amrex::Real, NVAR> zeros = {0.0};
   int covered_val = -1;
@@ -442,11 +450,7 @@ convertIntGG(int number)
   return ss.str();      // return a string with the contents of the stream
 }
 
-/**
- *
- * Sets up implicit function using EB2 infrastructure
- *
- **/
+// Sets up implicit function using EB2 infrastructure
 void
 initialize_EB2(
   const amrex::Geometry& geom,
@@ -506,7 +510,10 @@ initialize_EB2(
     amrex::EB2::PlaneIF farwall(
       {AMREX_D_DECL(fwl, 0., 0.)}, {AMREX_D_DECL(1., 0., 0.)});
 
-    amrex::Vector<amrex::Real> pl1pt, pl2pt, pl2nm, pl3pt;
+    amrex::Vector<amrex::Real> pl1pt;
+    amrex::Vector<amrex::Real> pl2pt;
+    amrex::Vector<amrex::Real> pl2nm;
+    amrex::Vector<amrex::Real> pl3pt;
     pp.getarr("ramp_plane1_point", pl1pt);
     pp.getarr("ramp_plane2_point", pl2pt);
     pp.getarr("ramp_plane2_normal", pl2nm);
@@ -517,7 +524,8 @@ initialize_EB2(
       amrex::EB2::PlaneIF({pl2pt[0], pl2pt[1], 0.}, {pl2nm[0], pl2nm[1], 0.}),
       amrex::EB2::PlaneIF({pl3pt[0], pl3pt[1], 0.}, {1., 0., 0.}));
 
-    amrex::Vector<amrex::Real> pipelo, pipehi;
+    amrex::Vector<amrex::Real> pipelo;
+    amrex::Vector<amrex::Real> pipehi;
     pp.getarr("pipe_lo", pipelo);
     pp.getarr("pipe_hi", pipehi);
 
@@ -555,7 +563,7 @@ initialize_EB2(
     amrex::Real radius;
     radius = 0.02;
 
-    bool has_fluid_inside = 0;
+    bool has_fluid_inside = false;
     amrex::EB2::SphereIF sf(radius, center, has_fluid_inside);
 
     amrex::EB2::CylinderIF cf1(0.04, 0.09, 0, {0.045, 0.0, 0.0}, true);
@@ -575,7 +583,7 @@ initialize_EB2(
     amrex::Real radius2;
     radius2 = 0.09;
 
-    bool has_fluid_inside2 = 1;
+    bool has_fluid_inside2 = true;
     amrex::EB2::SphereIF sf2(radius2, center2, has_fluid_inside2);
 
     auto polys = amrex::EB2::makeUnion(cf1, pipe, cf4, sf, sf2);
@@ -599,8 +607,8 @@ initialize_EB2(
 
     // initalize all triangles with some dummy values
     // that fall outside of the domain
-    //
-    const amrex::Real *problo, *probhi;
+    const amrex::Real* problo;
+    const amrex::Real* probhi;
     amrex::Real maxlen;
 
     problo = geom.ProbLo();
@@ -693,11 +701,10 @@ initialize_EB2(
       amrex::EB2::PlaneIF plane1(point1, norm1);
       amrex::EB2::PlaneIF plane2(point2, norm2);
 
-      impfunc_triangles[itri] = std::unique_ptr<amrex::EB2::IntersectionIF<
+      impfunc_triangles[itri] = std::make_unique<amrex::EB2::IntersectionIF<
         amrex::EB2::PlaneIF, amrex::EB2::PlaneIF, amrex::EB2::PlaneIF>>(
-        new amrex::EB2::IntersectionIF<
-          amrex::EB2::PlaneIF, amrex::EB2::PlaneIF, amrex::EB2::PlaneIF>(
-          plane0, plane1, plane2));
+
+        plane0, plane1, plane2);
     }
 
     auto alltri_IF = amrex::EB2::makeUnion(

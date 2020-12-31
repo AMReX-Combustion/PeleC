@@ -374,16 +374,19 @@ disable_shock_burning        int           0
 chem_integrator              int           1                  n
 
 #explict RK chemistry integrator options (minimum substeps)
-adaptrk_nsubsteps_min        int          20                  n
+adaptrk_nsubsteps_min        int           20                 n
 
 #explict RK chemistry integrator options (maximum substeps)
-adaptrk_nsubsteps_max        int          300                 n
+adaptrk_nsubsteps_max        int           300                n
 
 #explict RK chemistry integrator options (guess substeps)
-adaptrk_nsubsteps_guess      int          50                  n
+adaptrk_nsubsteps_guess      int           50                 n
 
 #explict RK chemistry integrator options (absolute error tol.)
 adaptrk_errtol               Real          1e-16              n
+
+#flag to clean the state for the reactions
+clean_react_massfrac         int           1                  n
 
 #-----------------------------------------------------------------------------
 # category: parallelization

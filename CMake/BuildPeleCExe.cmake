@@ -1,6 +1,11 @@
 function(build_pelec_exe pelec_exe_name)
 
   add_executable(${pelec_exe_name} "")
+
+  if(CLANG_TIDY_EXE)
+    set_target_properties(${pelec_exe_name} PROPERTIES CXX_CLANG_TIDY ${CLANG_TIDY_EXE})
+  endif()
+
   target_sources(${pelec_exe_name}
      PRIVATE
        prob_parm.H
@@ -16,7 +21,7 @@ function(build_pelec_exe pelec_exe_name)
   set(SRC_DIR ${CMAKE_SOURCE_DIR}/SourceCpp)
   set(BIN_DIR ${CMAKE_BINARY_DIR}/SourceCpp/${pelec_exe_name})
 
-  include(${CMAKE_SOURCE_DIR}/CMake/SetPeleCCompileFlags.cmake)
+  include(SetPeleCCompileFlags)
 
   add_subdirectory(${SRC_DIR}/Params ${BIN_DIR}/Params/${pelec_exe_name})
 
@@ -165,9 +170,7 @@ function(build_pelec_exe pelec_exe_name)
   if(PELEC_ENABLE_MASA)
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_MASA)
     target_sources(${pelec_exe_name} PRIVATE ${SRC_DIR}/MMS.cpp)
-    target_link_libraries(${pelec_exe_name} PRIVATE ${MASA_LIBRARY})
-    target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${MASA_INCLUDE_DIRS})
-    target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${MASA_MOD_DIRS})
+    target_link_libraries(${pelec_exe_name} PRIVATE MASA::MASA)
   endif()
 
   if(PELEC_ENABLE_MPI)

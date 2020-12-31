@@ -62,8 +62,9 @@ amrex_probinit(
 void
 PeleC::problem_post_timestep()
 {
-  if (verbose <= 0)
+  if (verbose <= 0) {
     return;
+  }
 
   int finest_level = parent->finestLevel();
   amrex::Real time = state[State_Type].curTime();
@@ -110,8 +111,9 @@ PeleC::problem_post_timestep()
 void
 PeleC::problem_post_init()
 {
-  if (verbose <= 0)
+  if (verbose <= 0) {
     return;
+  }
 
   amrex::Real time = state[State_Type].curTime();
 

@@ -1,5 +1,3 @@
-#include <AMReX_DistributionMapping.H>
-
 #include "PeleC.H"
 #include "React.H"
 #ifdef USE_SUNDIALS_PP
@@ -13,9 +11,7 @@ PeleC::react_state(
   bool react_init,
   amrex::MultiFab* aux_src)
 {
-  /*
-    Update I_R, and recompute S_new
-   */
+  // Update I_R, and recompute S_new
   BL_PROFILE("PeleC::react_state()");
 
   const amrex::Real strt_time = amrex::ParallelDescriptor::second();
@@ -37,7 +33,7 @@ PeleC::react_state(
 
   // Create a MultiFab with all of the non-reacting source terms.
   amrex::MultiFab non_react_src_tmp;
-  amrex::MultiFab* non_react_src = NULL;
+  amrex::MultiFab* non_react_src = nullptr;
 
   if (react_init) {
     non_react_src_tmp.define(grids, dmap, NVAR, ng, amrex::MFInfo(), Factory());
@@ -106,6 +102,8 @@ PeleC::react_state(
       // TODO: Update here? Or just get reaction source?
       const int do_update = react_init ? 0 : 1;
 
+      const int captured_clean_react_massfrac = clean_react_massfrac;
+
 #ifdef PELEC_USE_EB
       const auto& flag_fab = flags[mfi];
       amrex::FabType typ = flag_fab.getType(bx);
@@ -116,8 +114,8 @@ PeleC::react_state(
             0.0, vbox);
         }
         continue;
-      } else if (
-        typ == amrex::FabType::singlevalued || typ == amrex::FabType::regular)
+      }
+      if (typ == amrex::FabType::singlevalued || typ == amrex::FabType::regular)
 #endif
       {
         if (chem_integrator == 1) {
@@ -134,7 +132,8 @@ PeleC::react_state(
             bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
               pc_expl_reactions(
                 i, j, k, sold_arr, snew_arr, nonrs_arr, I_R, dt, nsubsteps_min,
-                nsubsteps_max, nsubsteps_guess, errtol, do_update);
+                nsubsteps_max, nsubsteps_guess, errtol, do_update,
+                captured_clean_react_massfrac);
             });
         } else if (chem_integrator == 2) {
 #ifdef USE_SUNDIALS_PP
@@ -209,6 +208,12 @@ PeleC::react_state(
               }
               rY_in[offset * (NUM_SPECIES + 1) + NUM_SPECIES] =
                 sold_arr(i, j, k, UTEMP);
+
+              if (captured_clean_react_massfrac == 1) {
+                clip_normalize_rY(
+                  sold_arr(i, j, k, URHO), &rY_in[offset * (NUM_SPECIES + 1)]);
+              }
+
               re_in[offset] = rho_old * e_old;
               re_src_in[offset] = rhoedot_ext;
             });
@@ -339,8 +344,9 @@ PeleC::react_state(
     }
   }
 
-  if (ng > 0)
+  if (ng > 0) {
     S_new.FillBoundary(geom.periodicity());
+  }
 
   if (verbose > 1) {
     const int IOProc = amrex::ParallelDescriptor::IOProcessorNumber();
@@ -351,8 +357,9 @@ PeleC::react_state(
 #endif
       amrex::ParallelDescriptor::ReduceRealMax(run_time, IOProc);
 
-      if (amrex::ParallelDescriptor::IOProcessor())
+      if (amrex::ParallelDescriptor::IOProcessor()) {
         amrex::Print() << "PeleC::react_state() time = " << run_time << "\n";
+      }
 #ifdef AMREX_LAZY
     });
 #endif

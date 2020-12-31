@@ -5,11 +5,13 @@ on:
     branches: [development]
     paths:
        - 'Docs/**'
+       - 'README.rst'
        - '.github/workflows/docs.yml'
   pull_request:
     branches: [development]
     paths:
        - 'Docs/**'
+       - 'README.rst'
        - '.github/workflows/docs.yml'
 
 jobs:
