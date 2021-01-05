@@ -133,7 +133,7 @@ PeleC::getMOLSrcTerm(
       amrex::FabType typ = flag_fab.getType(vbox);
       if (typ == amrex::FabType::covered) {
         setV(vbox, NVAR, MOLSrc, 0);
-        if (do_mol_load_balance) {
+        if (do_mol_load_balance && cost) {
           wt = (amrex::ParallelDescriptor::second() - wt) / vbox.d_numPts();
           (*cost)[mfi].plus<amrex::RunOn::Device>(wt, vbox);
         }
@@ -637,7 +637,7 @@ PeleC::getMOLSrcTerm(
       copy_array4(vbox, NVAR, Dterm, MOLSrc);
 
 #ifdef PELEC_USE_EB
-      if (do_mol_load_balance) {
+      if (do_mol_load_balance && cost) {
         amrex::Gpu::streamSynchronize();
         wt = (amrex::ParallelDescriptor::second() - wt) / vbox.d_numPts();
         (*cost)[mfi].plus<amrex::RunOn::Device>(wt, vbox);
