@@ -299,7 +299,6 @@ pc_fix_div_and_redistribute(
   const amrex::Real volinv = 1.0 / vol;
 
   for (int n = 0; n < nc; n++) {
-
     // Recompute conservative divergence, DC, on cut cells...need DC in 2 grow
     // cells for final result
     amrex::ParallelFor(Ncut, [=] AMREX_GPU_DEVICE(int L) {
@@ -384,7 +383,7 @@ pc_fix_div_and_redistribute(
           for (int jj = -1; jj <= 1; jj++) {
             for (int kk = -1; kk <= 1; kk++) {
               int nbr = flags(i, j, k).isConnected(ii, jj, kk);
-              if ((ii == 0) and (jj == 0) and (kk == 0)) {
+              if ((ii == 0) && (jj == 0) && (kk == 0)) {
                 nbr = 0;
               }
               if (vf(i + ii, j + jj, k + kk) < eb_small_vfrac) {
@@ -400,7 +399,7 @@ pc_fix_div_and_redistribute(
           for (int jj = -1; jj <= 1; jj++) {
             for (int kk = -1; kk <= 1; kk++) {
               int nbr = flags(i, j, k).isConnected(ii, jj, kk);
-              if ((ii == 0) and (jj == 0) and (kk == 0)) {
+              if ((ii == 0) && (jj == 0) && (kk == 0)) {
                 nbr = 0;
               }
               if (vf(i + ii, j + jj, k + kk) < eb_small_vfrac) {
@@ -420,7 +419,7 @@ pc_fix_div_and_redistribute(
         bool as_crse_covered_cell = false;
         if (as_crse) {
           as_crse_crse_cell =
-            is_inside(i, j, k, lo, hi) and
+            is_inside(i, j, k, lo, hi) &&
             (rr_flag_crse(i, j, k) == amrex_yafluxreg_crse_fine_boundary_cell);
           as_crse_covered_cell =
             rr_flag_crse(i, j, k) == amrex_yafluxreg_fine_cell;
@@ -440,7 +439,7 @@ pc_fix_div_and_redistribute(
           for (int jj = -1; jj <= 1; jj++) {
             for (int kk = -1; kk <= 1; kk++) {
               if (
-                ((ii != 0) || (jj != 0) || (kk != 0)) and
+                ((ii != 0) || (jj != 0) || (kk != 0)) &&
                 flags(i, j, k).isConnected(ii, jj, kk)) {
 
                 const int iii = i + ii;
@@ -452,27 +451,27 @@ pc_fix_div_and_redistribute(
                 const bool valid_dst_cell = is_inside(iii, jjj, kkk, lo, hi);
 
                 if (
-                  (as_crse_crse_cell) and
-                  (rr_flag_crse(iii, jjj, kkk) == amrex_yafluxreg_fine_cell) and
+                  (as_crse_crse_cell) &&
+                  (rr_flag_crse(iii, jjj, kkk) == amrex_yafluxreg_fine_cell) &&
                   (vf(i, j, k) > reredistribution_threshold)) {
                   rr_drho_crse(i, j, k, n) +=
                     dt * drho * (vf(iii, jjj, kkk) / vf(i, j, k));
                 }
 
                 if (
-                  (as_crse_covered_cell) and (valid_dst_cell) and
+                  (as_crse_covered_cell) && (valid_dst_cell) &&
                   (rr_flag_crse(iii, jjj, kkk) ==
-                   amrex_yafluxreg_crse_fine_boundary_cell) and
+                   amrex_yafluxreg_crse_fine_boundary_cell) &&
                   (vf(iii, jjj, kkk) > reredistribution_threshold)) {
                   // the recipient is a crse/fine boundary cell
                   rr_drho_crse(iii, jjj, kkk, n) -= dt * drho;
                 }
 
-                if ((as_fine_valid_cell) and (!valid_dst_cell)) {
+                if ((as_fine_valid_cell) && (!valid_dst_cell)) {
                   dm_as_fine(iii, jjj, kkk, n) += dt * drho * vf(iii, jjj, kkk);
                 }
 
-                if ((as_fine_ghost_cell) and (valid_dst_cell)) {
+                if ((as_fine_ghost_cell) && (valid_dst_cell)) {
                   dm_as_fine(i, j, k, n) -= dt * drho * vf(iii, jjj, kkk);
                 }
               }

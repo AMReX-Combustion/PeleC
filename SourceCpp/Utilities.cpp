@@ -62,7 +62,7 @@ pc_rst_int_e(
       const amrex::Real rho_eint = S(i, j, k, UEDEN) - S(i, j, k, URHO) * ke;
       if (
         (rho_eint >
-         (S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min())) and
+         (S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min())) &&
         ((rho_eint -
           S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min()) /
          (S(i, j, k, UEDEN) -
@@ -115,7 +115,7 @@ pc_rst_int_e(
       const amrex::Real rho_eint = S(i, j, k, UEDEN) - S(i, j, k, URHO) * ke;
       if (
         (rho_eint >
-         (S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min())) and
+         (S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min())) &&
         ((rho_eint -
           S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min()) /
          (S(i, j, k, UEDEN) -
@@ -124,7 +124,7 @@ pc_rst_int_e(
         S(i, j, k, UEINT) = rho_eint;
       } else if (
         S(i, j, k, UEINT) >
-          (S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min()) and
+          (S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min()) &&
         (dual_energy_update_E_from_e == 1)) {
         S(i, j, k, UEDEN) = S(i, j, k, UEINT) + S(i, j, k, URHO) * ke;
       } else if (
