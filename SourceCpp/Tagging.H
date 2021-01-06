@@ -120,7 +120,7 @@ tag_error_bounds(
   char tagval) noexcept
 {
   // Tag on regions inside bounds
-  if ((lbnd < field(i, j, k)) and (field(i, j, k) < ubnd)) {
+  if ((lbnd < field(i, j, k)) && (field(i, j, k) < ubnd)) {
     tag(i, j, k) = tagval;
   }
 }
