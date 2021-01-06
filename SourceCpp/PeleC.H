@@ -218,7 +218,6 @@ public:
   static int particle_heat_tran;
   static int particle_mom_tran;
   static amrex::Vector<std::string> sprayFuelNames;
-  static amrex::Real sprayRefT;
 #endif
 
   // Get problem metrics.

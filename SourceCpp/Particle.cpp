@@ -25,9 +25,12 @@ Gpu::HostVector<Real> sprayCritT;
 Gpu::HostVector<Real> sprayBoilT;
 Gpu::HostVector<Real> sprayCp;
 Gpu::HostVector<Real> sprayLatent;
-Gpu::HostVector<Real> spraySigma;
+Gpu::HostVector<Real> sprayMu;
 Gpu::HostVector<int> sprayIndxMap;
+amrex::Real sprayRefT = 300.;
 amrex::Real parcelSize = 1.;
+amrex::Real spraySigma = 22.; // Surface tension
+amrex::Real sprayTheta = 140.; // Contact angle
 SprayComps scomps;
 
 std::string particle_init_file;
@@ -55,7 +58,6 @@ int PeleC::particle_mass_tran = 0;
 int PeleC::particle_heat_tran = 0;
 int PeleC::particle_mom_tran = 0;
 Vector<std::string> PeleC::sprayFuelNames;
-Real PeleC::sprayRefT;
 
 SprayParticleContainer*
 PeleC::theSprayPC()
@@ -124,31 +126,34 @@ PeleC::readParticleParams()
   sprayBoilT.resize(nfuel);
   sprayLatent.resize(nfuel);
   sprayCp.resize(nfuel);
-  spraySigma.resize(nfuel);
+  sprayMu.resize(nfuel);
   sprayIndxMap.resize(nfuel);
   std::vector<std::string> fuel_names;
   std::vector<Real> crit_T;
   std::vector<Real> boil_T;
   std::vector<Real> latent;
   std::vector<Real> spraycp;
-  std::vector<Real> sigma(nfuel, 0.);
+  std::vector<Real> mu(nfuel, 0.);
   ppp.getarr("fuel_species", fuel_names);
   ppp.getarr("fuel_crit_temp", crit_T);
   ppp.getarr("fuel_boil_temp", boil_T);
   ppp.getarr("fuel_latent", latent);
   ppp.getarr("fuel_cp", spraycp);
-  ppp.queryarr("fuel_sigma", sigma);
+  ppp.queryarr("fuel_mu", mu);
   for (int i = 0; i != nfuel; ++i) {
     sprayFuelNames[i] = fuel_names[i];
     sprayCritT[i] = crit_T[i];
     sprayBoilT[i] = boil_T[i];
     sprayLatent[i] = latent[i];
-    spraySigma[i] = sigma[i];
+    sprayMu[i] = mu[i];
     sprayCp[i] = spraycp[i];
   }
 
   // Set the number of particles per parcel
   ppp.query("parcel_size", parcelSize);
+  // Set the fuel surface tension and contact angle
+  ppp.query("fuel_sigma", spraySigma);
+  ppp.query("fuel_theta", sprayTheta);
 
   // Must use same reference temperature for all fuels
   // TODO: This means the reference temperature must be the same for all fuel
@@ -284,17 +289,20 @@ PeleC::removeGhostParticles()
 void
 PeleC::createParticleData()
 {
-  SprayPC = new SprayParticleContainer(parent, &phys_bc, parcelSize);
+  SprayPC = new SprayParticleContainer(parent, &phys_bc);
   theSprayPC()->SetVerbose(particle_verbose);
-  VirtPC = new SprayParticleContainer(parent, &phys_bc, parcelSize);
-  GhostPC = new SprayParticleContainer(parent, &phys_bc, parcelSize);
+  VirtPC = new SprayParticleContainer(parent, &phys_bc);
+  GhostPC = new SprayParticleContainer(parent, &phys_bc);
   // Pass constant reference data and memory allocations to GPU
   theSprayPC()->buildFuelData(sprayCritT, sprayBoilT, sprayCp, sprayLatent,
-                              spraySigma, sprayIndxMap, sprayRefT, scomps);
+                              sprayMu, sprayIndxMap, scomps, parcelSize,
+                              sprayRefT, spraySigma, sprayTheta);
   theGhostPC()->buildFuelData(sprayCritT, sprayBoilT, sprayCp, sprayLatent,
-                              spraySigma, sprayIndxMap, sprayRefT, scomps);
+                              sprayMu, sprayIndxMap, scomps, parcelSize,
+                              sprayRefT, spraySigma, sprayTheta);
   theVirtPC()->buildFuelData(sprayCritT, sprayBoilT, sprayCp, sprayLatent,
-                             spraySigma, sprayIndxMap, sprayRefT, scomps);
+                             sprayMu, sprayIndxMap, scomps, parcelSize,
+                             sprayRefT, spraySigma, sprayTheta);
 }
 
 // Initialize the particles on the grid at level 0
