@@ -268,7 +268,7 @@ PeleC::read_params()
   }
   if (cfl > 0.3 && do_mol) amrex::Error("CFL must be <= 0.3 for MOL time-stepping");
 
-  if ((do_les or use_explicit_filter) and (AMREX_SPACEDIM != 3)) {
+  if ((do_les || use_explicit_filter) && (AMREX_SPACEDIM != 3)) {
     amrex::Abort("Using LES/filtering currently requires 3d.");
   }
 
@@ -333,7 +333,7 @@ PeleC::read_params()
 #endif
 
 #ifdef PELEC_USE_EB
-  if ((do_mol == 0) and (eb_in_domain)) {
+  if ((do_mol == 0) && (eb_in_domain)) {
     amrex::Abort("Must do_mol = 1 when using EB\n");
   }
 #endif
@@ -1099,7 +1099,7 @@ PeleC::post_timestep(int
 
     // Sync up if we're level 0 or if we have particles that may have moved
     // off the next finest level and need to be added to our own level.
-    if ((iteration < ncycle and level < finest_level) || level == 0) {
+    if ((iteration < ncycle && level < finest_level) || level == 0) {
       // TODO: Determine how many ghost cells to use here
       int nGrow = iteration;
       theSprayPC()->Redistribute(level, theSprayPC()->finestLevel(), nGrow);

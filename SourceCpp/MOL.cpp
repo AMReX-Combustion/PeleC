@@ -241,7 +241,7 @@ pc_compute_hyp_mol_flux(
 #endif
 #endif
               int nbr = flags(i, j, k).isConnected(ii, jj, kk);
-              if ((ii == 0) and (jj == 0) and (kk == 0)) {
+              if ((ii == 0) && (jj == 0) && (kk == 0)) {
                 nbr = 0;
               }
               sum_kappa += nbr * vfrac(i + ii, j + jj, k + kk);
