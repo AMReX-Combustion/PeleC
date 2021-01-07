@@ -465,7 +465,7 @@ Filter::apply_filter(
   auto qh = out.array();
   setC(box, nstart, ncnt, qh, 0.0);
   amrex::Gpu::DeviceVector<amrex::Real> weights(_weights.size());
-  amrex::Real* w = _weights.data();
+  amrex::Real* w = weights.data();
   amrex::Gpu::copy(
     amrex::Gpu::hostToDevice, _weights.begin(), _weights.end(),
     weights.begin());
