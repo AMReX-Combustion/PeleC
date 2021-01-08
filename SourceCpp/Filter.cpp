@@ -461,13 +461,14 @@ Filter::apply_filter(
   const int ncnt,
   const int /*ncomp*/)
 {
-
   const auto q = in.array();
   auto qh = out.array();
   setC(box, nstart, ncnt, qh, 0.0);
-  const amrex::AsyncArray<amrex::Real> weights(
-    _weights.data(), _weights.size());
-  const amrex::Real* w = weights.data();
+  amrex::Gpu::DeviceVector<amrex::Real> weights(_weights.size());
+  amrex::Real* w = weights.data();
+  amrex::Gpu::copy(
+    amrex::Gpu::hostToDevice, _weights.begin(), _weights.end(),
+    weights.begin());
 
   const int captured_ngrow = _ngrow;
   amrex::ParallelFor(

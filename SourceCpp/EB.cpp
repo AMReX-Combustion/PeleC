@@ -223,14 +223,14 @@ pc_apply_face_stencil(
   const auto hi = amrex::ubound(bx);
 
   for (int n = 0; n < nc; n++) {
-    amrex::Vector<amrex::Real> newval_vec(Nsten, 0.0);
-    amrex::AsyncArray<amrex::Real> newval(newval_vec.data(), newval_vec.size());
+    amrex::Gpu::DeviceVector<amrex::Real> newval(Nsten);
     amrex::Real* d_newval = newval.data();
 
     amrex::ParallelFor(Nsten, [=] AMREX_GPU_DEVICE(int L) {
       const int i = sten[L].iv[0];
       const int j = sten[L].iv[1];
       const int k = sten[L].iv[2];
+      d_newval[L] = 0.0;
       if (is_inside(i, j, k, lo, hi)) {
         if (dir == 0) {
           for (int t0 = 0; t0 < 3; t0++) {
@@ -323,12 +323,10 @@ pc_fix_div_and_redistribute(
     // Compute non-conservative and hybrid divergence, DNC and HD, and
     // redistribution mass dM in cut cells. Will need in 1 grow cells (see
     // below), so it depends on having a conservative div in 2 grow cells
-    amrex::Vector<amrex::Real> dM_vec(Ncut, 0.0);
-    amrex::Vector<amrex::Real> HD_vec(Ncut, 0.0);
-    amrex::AsyncArray<amrex::Real> h_dM(dM_vec.data(), dM_vec.size());
-    amrex::AsyncArray<amrex::Real> h_HD(HD_vec.data(), HD_vec.size());
-    amrex::Real* dM = h_dM.data();
-    amrex::Real* HD = h_HD.data();
+    amrex::Gpu::DeviceVector<amrex::Real> dM_vec(Ncut);
+    amrex::Gpu::DeviceVector<amrex::Real> HD_vec(Ncut);
+    amrex::Real* dM = dM_vec.data();
+    amrex::Real* HD = HD_vec.data();
     amrex::Gpu::synchronize();
     amrex::ParallelFor(Ncut, [=] AMREX_GPU_DEVICE(int L) {
       const int i = sv_ebg[L].iv[0];
