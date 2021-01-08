@@ -159,6 +159,11 @@ PeleC::readParticleParams()
   ppp.query("parcel_size", parcelSize);
   ppp.query("use_splash_model", splash_model);
   if (splash_model) {
+    if (!ppp.contains("fuel_sigma") || !ppp.contains("fuel_theta")) {
+      Print() << "fuel_sigma or fuel_theta must be set for splash model. "
+              << "Set use_splash_model = false to turn off splash model" << std::endl;
+      Abort();
+    }
     // Set the fuel surface tension and contact angle
     ppp.get("fuel_sigma", spraySigma);
     ppp.get("fuel_theta", sprayTheta);
