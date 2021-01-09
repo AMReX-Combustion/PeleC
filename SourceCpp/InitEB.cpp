@@ -288,28 +288,27 @@ PeleC::initialize_eb2_structs()
           }
         });
 
-// #ifdef AMREX_USE_GPU
-//         const int v_all_cut_faces_size = v_all_cut_faces.size();
-//         thrust::sort(
-//           thrust::device, v_all_cut_faces.data(),
-//           v_all_cut_faces.data() + v_all_cut_faces_size);
-//         amrex::IntVect* unique_result_end = thrust::unique(
-//           v_all_cut_faces.data(), v_all_cut_faces.data() + v_all_cut_faces_size,
-//           thrust::equal_to<amrex::IntVect>());
-//         const int count_result =
-//           thrust::count(v_all_cut_faces.data(), unique_result_end, 1);
-//         amrex::Gpu::DeviceVector<amrex::IntVect> v_cut_faces(count_result);
-//         amrex::IntVect* d_all_cut_faces = v_all_cut_faces.data();
-//         amrex::IntVect* d_cut_faces = v_cut_faces.data();
-//         amrex::ParallelFor(
-//           v_cut_faces.size(), [=] AMREX_GPU_DEVICE(int i) noexcept {
-//             d_cut_faces[i] = d_all_cut_faces[i];
-//           });
-// #else
+#ifdef AMREX_USE_GPU
+        const int v_all_cut_faces_size = v_all_cut_faces.size();
+        thrust::sort(
+          thrust::device, v_all_cut_faces.data(),
+          v_all_cut_faces.data() + v_all_cut_faces_size);
+        amrex::IntVect* unique_result_end = thrust::unique(
+          v_all_cut_faces.data(), v_all_cut_faces.data() + v_all_cut_faces_size,
+          thrust::equal_to<amrex::IntVect>());
+        const int count_result = thrust::distance(v_all_cut_faces.data(), unique_result_end);
+        amrex::Gpu::DeviceVector<amrex::IntVect> v_cut_faces(count_result);
+        amrex::IntVect* d_all_cut_faces = v_all_cut_faces.data();
+        amrex::IntVect* d_cut_faces = v_cut_faces.data();
+        amrex::ParallelFor(
+          v_cut_faces.size(), [=] AMREX_GPU_DEVICE(int i) noexcept {
+            d_cut_faces[i] = d_all_cut_faces[i];
+          });
+#else
         sort<amrex::Gpu::DeviceVector<amrex::IntVect>>(v_all_cut_faces);
         amrex::Gpu::DeviceVector<amrex::IntVect> v_cut_faces =
           unique<amrex::Gpu::DeviceVector<amrex::IntVect>>(v_all_cut_faces);
-//#endif
+#endif
 
         const int Nsten = v_cut_faces.size();
         if (Nsten > 0) {
