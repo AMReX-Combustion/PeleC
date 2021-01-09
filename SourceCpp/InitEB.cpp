@@ -160,15 +160,15 @@ PeleC::initialize_eb2_structs()
 
       // Fill in boundary gradient for cut cells in this grown tile
       const amrex::Real dx = geom.CellSize()[0];
-// #ifdef AMREX_USE_GPU
-//       const int sv_eb_bndry_geom_size = sv_eb_bndry_geom[iLocal].size();
-//       thrust::sort(
-//         thrust::device, sv_eb_bndry_geom[iLocal].data(),
-//         sv_eb_bndry_geom[iLocal].data() + sv_eb_bndry_geom_size,
-//         EBBndryGeomCmp());
-// #else
+#ifdef AMREX_USE_GPU
+      const int sv_eb_bndry_geom_size = sv_eb_bndry_geom[iLocal].size();
+      thrust::sort(
+        thrust::device, sv_eb_bndry_geom[iLocal].data(),
+        sv_eb_bndry_geom[iLocal].data() + sv_eb_bndry_geom_size,
+        EBBndryGeomCmp());
+#else
       sort<amrex::Gpu::DeviceVector<EBBndryGeom>>(sv_eb_bndry_geom[iLocal]);
-// #endif
+#endif
 
       if (bgs == 0) {
         pc_fill_bndry_grad_stencil(
