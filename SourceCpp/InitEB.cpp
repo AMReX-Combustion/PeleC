@@ -297,7 +297,7 @@ PeleC::initialize_eb2_structs()
           v_all_cut_faces.data(), v_all_cut_faces.data() + v_all_cut_faces_size,
           thrust::equal_to<amrex::IntVect>());
         const int count_result =
-          thrust::count(v_all_cut_faces.data(), unique_result_end, 1);
+          thrust::distance(v_all_cut_faces.data(), unique_result_end);
         amrex::Gpu::DeviceVector<amrex::IntVect> v_cut_faces(count_result);
         amrex::IntVect* d_all_cut_faces = v_all_cut_faces.data();
         amrex::IntVect* d_cut_faces = v_cut_faces.data();
