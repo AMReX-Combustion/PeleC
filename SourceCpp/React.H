@@ -175,7 +175,7 @@ pc_expl_reactions(
   while (updt_time < dt_react) {
     for (int n = 0; n < NVAR; n++) {
       urk_carryover[n] = urk[n];
-      urk_err[n] = errtol * 1e-2;
+      urk_err[n] = 0.0;
     }
     amrex::Real rhoe_carryover = rhoe_rk;
 
