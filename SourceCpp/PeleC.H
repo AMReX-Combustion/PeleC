@@ -534,6 +534,9 @@ public:
 #endif
   void avgDown();
   void avgDown(int state_indx);
+ 
+  // Parameters for using WENO in the PPM method
+  static int use_hybrid_weno;
 
 protected:
   amrex::iMultiFab level_mask;

@@ -95,7 +95,16 @@ trace_ppm(
 
     // do the parabolic reconstruction and compute the
     // integrals under the characteristic waves
-    amrex::Real s[5];
+
+    // Original PPM and Hybrid WENO/PPM do not have the same stencil size
+    int stencil_size;
+    if (PeleC::use_hybrid_weno){
+      stencil_size = 6; //TO DO change for weno7z
+    }else{
+      stencil_size = 5;
+    }
+
+    amrex::Real s[stencil_size];
 
     amrex::Real flat = 1.0;
     // Calculate flattening in-place
@@ -112,30 +121,50 @@ trace_ppm(
     amrex::Real Im[QVAR][3];
 
     for (int n = 0; n < QVAR; n++) {
+std::cout << "\n DEBUG DEBUG DEBUG  use_hybrid_weno = " << PeleC::use_hybrid_weno << " \n";
 
-      if (idir == 0) {
-        s[im2] = q_arr(i - 2, j, k, n);
-        s[im1] = q_arr(i - 1, j, k, n);
-        s[i0] = q_arr(i, j, k, n);
-        s[ip1] = q_arr(i + 1, j, k, n);
-        s[ip2] = q_arr(i + 2, j, k, n);
+      if (PeleC::use_hybrid_weno){
 
-      } else if (idir == 1) {
-        s[im2] = q_arr(i, j - 2, k, n);
-        s[im1] = q_arr(i, j - 1, k, n);
-        s[i0] = q_arr(i, j, k, n);
-        s[ip1] = q_arr(i, j + 1, k, n);
-        s[ip2] = q_arr(i, j + 2, k, n);
+        if (idir == 0) {
+          int idx_pos = -3;
+          for (int idx = 0; idx < stencil_size; idx++){
+            s[idx] = q_arr(i + idx_pos, j, k, n);
+            idx_pos++;
+          }       
 
-      } else {
-        s[im2] = q_arr(i, j, k - 2, n);
-        s[im1] = q_arr(i, j, k - 1, n);
-        s[i0] = q_arr(i, j, k, n);
-        s[ip1] = q_arr(i, j, k + 1, n);
-        s[ip2] = q_arr(i, j, k + 2, n);
+        } else if (idir == 1) {
+        } else {
+        }
+
+
+      }else{
+
+        if (idir == 0) {
+          s[im2] = q_arr(i - 2, j, k, n);
+          s[im1] = q_arr(i - 1, j, k, n);
+          s[i0] = q_arr(i, j, k, n);
+          s[ip1] = q_arr(i + 1, j, k, n);
+          s[ip2] = q_arr(i + 2, j, k, n);
+
+        } else if (idir == 1) {
+          s[im2] = q_arr(i, j - 2, k, n);
+          s[im1] = q_arr(i, j - 1, k, n);
+          s[i0] = q_arr(i, j, k, n);
+          s[ip1] = q_arr(i, j + 1, k, n);
+          s[ip2] = q_arr(i, j + 2, k, n);
+
+        } else {
+          s[im2] = q_arr(i, j, k - 2, n);
+          s[im1] = q_arr(i, j, k - 1, n);
+          s[i0] = q_arr(i, j, k, n);
+          s[ip1] = q_arr(i, j, k + 1, n);
+          s[ip2] = q_arr(i, j, k + 2, n);
+        }
+
+        ppm_reconstruct(s, flat, sm, sp);
+
       }
 
-      ppm_reconstruct(s, flat, sm, sp);
       ppm_int_profile(sm, sp, s[i0], un, cc, dtdx, Ip[n], Im[n]);
     }
 
