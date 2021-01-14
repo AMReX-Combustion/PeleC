@@ -57,6 +57,7 @@ endif()
 
 ########################### AMReX #####################################
 
+message(STATUS "AMReX Configure Section")
 set(AMREX_SUBMOD_LOCATION "${CMAKE_SOURCE_DIR}/Submodules/AMReX")
 include(SetAmrexOptions)
 list(APPEND CMAKE_MODULE_PATH "${AMREX_SUBMOD_LOCATION}/Tools/CMake")
@@ -66,9 +67,21 @@ endif()
 add_subdirectory(${AMREX_SUBMOD_LOCATION})
 include(SetAmrexCompileFlags)
 
+########################## SUNDIALS ###################################
+
+if(PELEC_ENABLE_SUNDIALS)
+  message(STATUS "SUNDIALS Configure Section")
+  set(SUNDIALS_SUBMOD_LOCATION "${CMAKE_SOURCE_DIR}/Submodules/sundials")
+  include(SetSundialsOptions)
+  #BUILD_TESTING is an old CMake keyword so don't clear it in sundials configure
+  set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+  add_subdirectory(${SUNDIALS_SUBMOD_LOCATION})
+endif()
+
 ########################### MASA #####################################
 
 if(PELEC_ENABLE_MASA)
+  message(STATUS "MASA Configure Section")
   set(CMAKE_PREFIX_PATH ${MASA_DIR} ${CMAKE_PREFIX_PATH})
   find_package(MASA QUIET REQUIRED)
   if(MASA_FOUND)
@@ -76,19 +89,10 @@ if(PELEC_ENABLE_MASA)
   endif()
 endif()
 
-########################## SUNDIALS ###################################
-
-if(PELEC_ENABLE_SUNDIALS)
-  set(CMAKE_PREFIX_PATH ${SUNDIALS_DIR} ${CMAKE_PREFIX_PATH})
-  find_package(SUNDIALS QUIET REQUIRED)
-  if(SUNDIALS_FOUND)
-    message(STATUS "Found SUNDIALS = ${SUNDIALS_DIR}")
-  endif()
-endif()
-
 ########################### PeleC #####################################
 
 if(PELEC_ENABLE_MPI)
+  message(STATUS "MPI Configure Section")
   find_package(MPI REQUIRED)
 endif()
 

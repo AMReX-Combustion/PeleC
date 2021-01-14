@@ -264,7 +264,7 @@ PeleC::initialize_eb2_structs()
             }
           },
           [=] AMREX_GPU_DEVICE(int const& r) noexcept {
-            amrex::Gpu::deviceReduceSum(dp, r);
+            amrex::Gpu::deviceReduceSum_full(dp, r);
           });
         const int Nall_cut_faces = ds.dataValue();
 

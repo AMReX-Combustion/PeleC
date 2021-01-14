@@ -29,8 +29,8 @@ using namespace MASA;
 #include "Utilities.H"
 #include "Tagging.H"
 #include "IndexDefines.H"
-#ifdef USE_SUNDIALS_PP
-#include <reactor.h>
+#if defined(PELEC_USE_REACTIONS) && defined(USE_SUNDIALS_PP)
+#include "reactor.h"
 #endif
 
 bool PeleC::signalStopJob = false;

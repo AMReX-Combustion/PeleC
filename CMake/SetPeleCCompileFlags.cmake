@@ -1,5 +1,5 @@
 if(PELEC_ENABLE_ALL_WARNINGS)
-  list(APPEND PELEC_CXX_FLAGS "-Wall" "-Wextra" "-pedantic")
+  list(APPEND PELEC_CXX_FLAGS "-Wall" "-Wextra" "-pedantic" "-Wno-unused-function")
   if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$")
     if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 7.0)
       list(APPEND PELEC_CXX_FLAGS "-faligned-new"
