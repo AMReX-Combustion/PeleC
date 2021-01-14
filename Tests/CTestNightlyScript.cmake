@@ -34,7 +34,11 @@ include(ProcessorCount)
 ProcessorCount(NP)
 message(STATUS "\nNumber of processors detected: ${NP}")
 set(CTEST_BUILD_FLAGS "-j${NP}")
-set(CTEST_PARALLEL_LEVEL ${NP})
+if(CTEST_DISABLE_OVERLAPPING_TESTS)
+  set(CTEST_PARALLEL_LEVEL 1)
+else()
+  set(CTEST_PARALLEL_LEVEL ${NP})
+endif()
 
 # Update Command
 set(CTEST_UPDATE_COMMAND "${CTEST_GIT_COMMAND}")
