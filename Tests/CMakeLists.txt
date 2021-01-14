@@ -24,7 +24,7 @@ function(add_test_r TEST_NAME TEST_EXE_DIR)
     # Set variables for respective binary and source directories for the test
     set(CURRENT_TEST_SOURCE_DIR ${CMAKE_SOURCE_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/tests/${TEST_NAME})
     set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/tests/${TEST_NAME})
-    set(CURRENT_TEST_EXE ${CMAKE_BINARY_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/pelec-${TEST_EXE_DIR})
+    set(CURRENT_TEST_EXE ${CMAKE_BINARY_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/PeleC-${TEST_EXE_DIR})
     # Gold files should be submodule organized by machine and compiler (these are output during configure)
     set(PLOT_GOLD ${FCOMPARE_GOLD_FILES_DIRECTORY}/${TEST_EXE_DIR}/tests/${TEST_NAME}/plt00010)
     # Test plot is currently expected to be after 10 steps
@@ -69,7 +69,7 @@ function(add_test_v1 TEST_NAME TEST_EXE_DIR)
     # Set variables for respective binary and source directories for the test
     set(CURRENT_TEST_SOURCE_DIR ${CMAKE_SOURCE_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/tests/${TEST_NAME})
     set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/tests/${TEST_NAME})
-    set(CURRENT_TEST_EXE ${CMAKE_BINARY_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/pelec-${TEST_EXE_DIR})
+    set(CURRENT_TEST_EXE ${CMAKE_BINARY_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/PeleC-${TEST_EXE_DIR})
     # Make working directory for test
     file(MAKE_DIRECTORY ${CURRENT_TEST_BINARY_DIR})
     # Gather all files in source directory for test
@@ -101,7 +101,7 @@ function(add_test_v2 TEST_NAME TEST_EXE_DIR LIST_OF_GRID_SIZES)
     # Set variables for respective binary and source directories for the test
     set(CURRENT_TEST_SOURCE_DIR ${CMAKE_SOURCE_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/tests/${TEST_NAME})
     set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/tests/${TEST_NAME})
-    set(CURRENT_TEST_EXE ${CMAKE_BINARY_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/pelec-${TEST_EXE_DIR})
+    set(CURRENT_TEST_EXE ${CMAKE_BINARY_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/PeleC-${TEST_EXE_DIR})
     # Get last item in resolution list so we can find out when we are on the last item in our loop
     list(GET LIST_OF_GRID_SIZES -1 LAST_GRID_SIZE_IN_LIST)
     # Create the commands to run for each resolution
@@ -160,7 +160,7 @@ endfunction(add_test_v2)
 # Standard unit test
 function(add_test_u TEST_NAME)
     set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/ExecCpp/UnitTests/tests/${TEST_NAME})
-    set(CURRENT_TEST_EXE ${CMAKE_BINARY_DIR}/ExecCpp/UnitTests/pelec_${TEST_NAME})
+    set(CURRENT_TEST_EXE ${CMAKE_BINARY_DIR}/ExecCpp/UnitTests/PeleC-UnitTests)
     # Make working directory for test
     file(MAKE_DIRECTORY ${CURRENT_TEST_BINARY_DIR})
     set(NP 1)
@@ -217,10 +217,14 @@ endif()
 if(PELEC_DIM GREATER 2)
   add_test_re(tg-3 TG)
   add_test_re(tg-4 TG)
+  add_test_re(sedov-1 Sedov)
+  add_test_re(zerod-1 zeroD)
   if(PELEC_ENABLE_AMREX_EB)
     add_test_re(eb-c3 EB-C3)
     add_test_re(eb-c7 EB-C7)
     add_test_re(eb-c8 EB-C8)
+    add_test_re(eb-bluffbody-1 EB-BluffBody)
+    add_test_re(eb-plane-1 EB-Plane)
   endif()
 endif()
 
@@ -246,7 +250,7 @@ endif()
 #=============================================================================
 # Unit tests
 #=============================================================================
-add_test_u(unit_tests)
+add_test_u(unit-tests)
 
 #=============================================================================
 # Performance tests

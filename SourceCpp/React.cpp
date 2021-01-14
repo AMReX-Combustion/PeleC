@@ -1,7 +1,7 @@
 #include "PeleC.H"
 #include "React.H"
 #ifdef USE_SUNDIALS_PP
-#include <reactor.h>
+#include "reactor.h"
 #endif
 
 void
