@@ -7,7 +7,7 @@ geometry.is_periodic = 1 1 1
 geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
 geometry.prob_lo     =   0.0  0.0  0.0
 geometry.prob_hi     =   1.0  1.0  1.0
-amr.n_cell           =   2    2    2
+amr.n_cell           =   8    8    8
 
 #pelec.Riemann    = 0     # 0: HLL,  1: JBB,  2: HLLC
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
@@ -42,8 +42,8 @@ amr.v              = 1       # verbosity in Amr.cpp
 amr.max_level       = 0       # maximum level number allowed
 amr.ref_ratio       = 2 2 2 2 # refinement ratio
 amr.regrid_int      = 2 2 2 2 # how often to regrid
-amr.blocking_factor = 2       # block factor in grid generation
-amr.max_grid_size   = 2
+amr.blocking_factor = 8       # block factor in grid generation
+amr.max_grid_size   = 8
 amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
 
 # CHECKPOINT FILES
