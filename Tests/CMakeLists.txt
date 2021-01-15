@@ -41,16 +41,16 @@ function(add_test_r TEST_NAME TEST_EXE_DIR)
     file(COPY ${TEST_FILES} DESTINATION "${CURRENT_TEST_BINARY_DIR}/")
     # Set some default runtime options for all tests in this category
     set(RUNTIME_OPTIONS "max_step=10 amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1 amrex.signal_handling=0")
-    # Use fcompare to test diffs in plots against gold files
-    if(PELEC_ENABLE_FCOMPARE_FOR_TESTS)
-      set(FCOMPARE_COMMAND "&& ${FCOMPARE} ${PLOT_GOLD} ${PLOT_TEST}")
-    endif()
     if(PELEC_ENABLE_MPI)
       set(NP 4)
       set(MPI_COMMANDS "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${MPIEXEC_PREFLAGS}")
     else()
       set(NP 1)
       unset(MPI_COMMANDS)
+    endif()
+    # Use fcompare to test diffs in plots against gold files
+    if(PELEC_ENABLE_FCOMPARE_FOR_TESTS)
+      set(FCOMPARE_COMMAND "&& ${MPI_COMMANDS} ${FCOMPARE} ${PLOT_GOLD} ${PLOT_TEST}")
     endif()
     # Add test and actual test commands to CTest database
     add_test(${TEST_NAME} sh -c "${MPI_COMMANDS} ${CURRENT_TEST_EXE} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i ${RUNTIME_OPTIONS} > ${TEST_NAME}.log ${FCOMPARE_COMMAND}")
