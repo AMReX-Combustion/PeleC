@@ -19,8 +19,7 @@ endif()
 # Functions for adding tests / Categories of tests
 #=============================================================================
 
-# Standard regression test
-function(add_test_r TEST_NAME TEST_EXE_DIR)
+macro(setup_test)
     # Set variables for respective binary and source directories for the test
     set(CURRENT_TEST_SOURCE_DIR ${CMAKE_SOURCE_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/tests/${TEST_NAME})
     set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/tests/${TEST_NAME})
@@ -39,23 +38,31 @@ function(add_test_r TEST_NAME TEST_EXE_DIR)
     file(GLOB TEST_FILES "${CURRENT_TEST_SOURCE_DIR}/*")
     # Copy files to test working directory
     file(COPY ${TEST_FILES} DESTINATION "${CURRENT_TEST_BINARY_DIR}/")
-    # Set some default runtime options for all tests in this category
-    set(RUNTIME_OPTIONS "max_step=10 amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1 amrex.signal_handling=0")
+    # Set some default runtime options for all tests
+    set(RUNTIME_OPTIONS "amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1 amrex.signal_handling=0")
     if(PELEC_ENABLE_MPI)
-      set(NP 4)
-      set(MPI_COMMANDS "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${MPIEXEC_PREFLAGS}")
+      if(PELEC_ENABLE_CUDA)
+        set(PELEC_NP 2) # 1 rank per GPU on Eagle
+      else()
+        set(PELEC_NP 4)
+      endif()
+      set(MPI_COMMANDS "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${PELEC_NP} ${MPIEXEC_PREFLAGS}")
     else()
-      set(NP 1)
+      set(PELEC_NP 1)
       unset(MPI_COMMANDS)
     endif()
     # Use fcompare to test diffs in plots against gold files
     if(PELEC_ENABLE_FCOMPARE_FOR_TESTS)
       set(FCOMPARE_COMMAND "&& ${MPI_COMMANDS} ${FCOMPARE} ${PLOT_GOLD} ${PLOT_TEST}")
     endif()
-    # Add test and actual test commands to CTest database
+endmacro(setup_test)
+
+# Standard regression test
+function(add_test_r TEST_NAME TEST_EXE_DIR)
+    setup_test()
+    set(RUNTIME_OPTIONS "max_step=10 ${RUNTIME_OPTIONS}")
     add_test(${TEST_NAME} sh -c "${MPI_COMMANDS} ${CURRENT_TEST_EXE} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i ${RUNTIME_OPTIONS} > ${TEST_NAME}.log ${FCOMPARE_COMMAND}")
-    # Set properties for test
-    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 10800 PROCESSORS ${NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "regression" ATTACHED_FILES_ON_FAIL "${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.log")
+    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 10800 PROCESSORS ${PELEC_NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "regression" ATTACHED_FILES_ON_FAIL "${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.log")
 endfunction(add_test_r)
 
 # Regression tests excluded from CI
@@ -66,53 +73,23 @@ endfunction(add_test_re)
 
 # Verification test with 1 resolution
 function(add_test_v1 TEST_NAME TEST_EXE_DIR)
-    # Set variables for respective binary and source directories for the test
-    set(CURRENT_TEST_SOURCE_DIR ${CMAKE_SOURCE_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/tests/${TEST_NAME})
-    set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/tests/${TEST_NAME})
-    set(CURRENT_TEST_EXE ${CMAKE_BINARY_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/PeleC-${TEST_EXE_DIR})
-    # Make working directory for test
-    file(MAKE_DIRECTORY ${CURRENT_TEST_BINARY_DIR})
-    # Gather all files in source directory for test
-    file(GLOB TEST_FILES "${CURRENT_TEST_SOURCE_DIR}/*")
-    # Copy files to test working directory
-    file(COPY ${TEST_FILES} DESTINATION "${CURRENT_TEST_BINARY_DIR}/")
-    # Get test options
-    if(PELEC_ENABLE_MPI)
-      set(NP 4)
-      set(MPI_COMMANDS "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${MPIEXEC_PREFLAGS}")
-    else()
-      set(NP 1)
-      unset(MPI_COMMANDS)
-    endif()
-    # Set some default runtime options for all tests in this category
-    set(RUNTIME_OPTIONS "amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1 amrex.signal_handling=0")
-    # Define our main run command
+    setup_test()
     set(RUN_COMMAND "rm mmslog datlog || true && ${MPI_COMMANDS} ${CURRENT_TEST_EXE} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i")
-    # Add test and actual test commands to CTest database
     add_test(${TEST_NAME} sh -c "${RUN_COMMAND} ${RUNTIME_OPTIONS} > ${TEST_NAME}.log && nosetests ${TEST_NAME}.py")
-    # Set properties for test
-    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 10800 PROCESSORS ${NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "verification" ATTACHED_FILES_ON_FAIL "${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.log")
+    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 10800 PROCESSORS ${PELEC_NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "verification" ATTACHED_FILES_ON_FAIL "${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.log")
 endfunction(add_test_v1)
 
 # Verification test with multiple resolutions (each test runs on maximum number of processes on node)
 function(add_test_v2 TEST_NAME TEST_EXE_DIR LIST_OF_GRID_SIZES)
-    # Make sure run command is cleared before we construct it
+    setup_test()
     unset(MASTER_RUN_COMMAND)
-    # Set variables for respective binary and source directories for the test
-    set(CURRENT_TEST_SOURCE_DIR ${CMAKE_SOURCE_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/tests/${TEST_NAME})
-    set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/tests/${TEST_NAME})
-    set(CURRENT_TEST_EXE ${CMAKE_BINARY_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/PeleC-${TEST_EXE_DIR})
     # Get last item in resolution list so we can find out when we are on the last item in our loop
     list(GET LIST_OF_GRID_SIZES -1 LAST_GRID_SIZE_IN_LIST)
     # Create the commands to run for each resolution
     foreach(GRID_SIZE IN LISTS LIST_OF_GRID_SIZES)
-      # Make working directory for test
       file(MAKE_DIRECTORY ${CURRENT_TEST_BINARY_DIR}/${GRID_SIZE})
-      # Gather all files in source directory for test
       file(GLOB TEST_FILES "${CURRENT_TEST_SOURCE_DIR}/*")
-      # Copy files to test working directory
       file(COPY ${TEST_FILES} DESTINATION "${CURRENT_TEST_BINARY_DIR}/${GRID_SIZE}/")
-      # Set number of cells at runtime according to dimension
       if(${PELEC_DIM} EQUAL 3)
         set(NCELLS "${GRID_SIZE} ${GRID_SIZE} ${GRID_SIZE}")
       elseif(${PELEC_DIM} EQUAL 2)
@@ -120,20 +97,9 @@ function(add_test_v2 TEST_NAME TEST_EXE_DIR LIST_OF_GRID_SIZES)
       elseif(${PELEC_DIM} EQUAL 1)
         set(NCELLS "${GRID_SIZE}")
       endif()
-      # Set the command to delete files from previous test runs in each resolution
       set(DELETE_PREVIOUS_FILES_COMMAND "rm mmslog datlog || true")
-      if(PELEC_ENABLE_MPI)
-        set(NP 4)
-        set(MPI_COMMANDS "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${MPIEXEC_PREFLAGS}")
-      else()
-        set(NP 1)
-        unset(MPI_COMMANDS)
-      endif()
-      # Set the run command for this resolution
       set(RUN_COMMAND_${GRID_SIZE} "${MPI_COMMANDS} ${CURRENT_TEST_EXE} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${GRID_SIZE}/${TEST_NAME}.i")
-      # Set some runtime options for each resolution
       set(RUNTIME_OPTIONS_${GRID_SIZE} "amrex.signal_handling=0 amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1 amr.n_cell=${NCELLS}")
-      # Construct our large run command with everything &&'d together
       string(APPEND MASTER_RUN_COMMAND "cd ${CURRENT_TEST_BINARY_DIR}/${GRID_SIZE}")
       string(APPEND MASTER_RUN_COMMAND " && ")
       string(APPEND MASTER_RUN_COMMAND "${DELETE_PREVIOUS_FILES_COMMAND}")
@@ -144,35 +110,28 @@ function(add_test_v2 TEST_NAME TEST_EXE_DIR LIST_OF_GRID_SIZES)
         string(APPEND MASTER_RUN_COMMAND " && ")
       endif()
     endforeach()
-    # Set list of images to be uploaded for verification
     set(IMAGES_TO_UPLOAD ${CURRENT_TEST_BINARY_DIR}/p_error.png ${CURRENT_TEST_BINARY_DIR}/rho_error.png ${CURRENT_TEST_BINARY_DIR}/u_error.png)
     if(${PELEC_DIM} EQUAL 3)
       list(APPEND IMAGES_TO_UPLOAD ${CURRENT_TEST_BINARY_DIR}/v_error.png ${CURRENT_TEST_BINARY_DIR}/w_error.png)
     elseif(${PELEC_DIM} EQUAL 2)
       list(APPEND IMAGES_TO_UPLOAD ${CURRENT_TEST_BINARY_DIR}/v_error.png)
     endif()
-    # Add test and actual test commands to CTest database (need to convert this to arrays for resolutions)
     add_test(${TEST_NAME} sh -c "${MASTER_RUN_COMMAND} && cd ${CURRENT_TEST_BINARY_DIR} && nosetests ${CMAKE_CURRENT_SOURCE_DIR}/test_second_order.py")
-    # Set properties for test and make sure test dependencies have run before this test will run
-    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 36000 PROCESSORS ${NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS "verification;no-ci" ATTACHED_FILES "${IMAGES_TO_UPLOAD}")
+    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 36000 PROCESSORS ${PELEC_NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS "verification;no-ci" ATTACHED_FILES "${IMAGES_TO_UPLOAD}")
 endfunction(add_test_v2)
 
 # Standard unit test
 function(add_test_u TEST_NAME)
-    set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/ExecCpp/UnitTests/tests/${TEST_NAME})
+    setup_test()
     set(CURRENT_TEST_EXE ${CMAKE_BINARY_DIR}/ExecCpp/UnitTests/PeleC-UnitTests)
-    # Make working directory for test
-    file(MAKE_DIRECTORY ${CURRENT_TEST_BINARY_DIR})
-    set(NP 1)
+    set(PELEC_NP 1)
     if(PELEC_ENABLE_MPI)
-      set(MPI_COMMANDS "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${MPIEXEC_PREFLAGS}")
+      set(MPI_COMMANDS "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${PELEC_NP} ${MPIEXEC_PREFLAGS}")
     else()
       unset(MPI_COMMANDS)
     endif()
-    # Add test and commands to CTest database
     add_test(${TEST_NAME} sh -c "${MPI_COMMANDS} ${CURRENT_TEST_EXE} ${MPIEXEC_POSTFLAGS}")
-    # Set properties for test
-    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 1800 PROCESSORS ${NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "unit")
+    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 1800 PROCESSORS ${PELEC_NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "unit")
 endfunction(add_test_u)
 
 #=============================================================================
