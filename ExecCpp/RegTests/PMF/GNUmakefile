@@ -1,6 +1,6 @@
 # AMReX
 DIM = 3
-COMP = llvm
+COMP = gnu
 PRECISION = DOUBLE
 
 # Profiling
