@@ -32,6 +32,7 @@ amrex::Real sprayRefT = 300.;
 amrex::Real parcelSize = 1.;
 amrex::Real spraySigma = -1.; // Surface tension
 amrex::Real sprayTheta = 140.; // Contact angle
+amrex::Real T_wall = -1.;
 SprayComps scomps;
 bool splash_model = true;
 

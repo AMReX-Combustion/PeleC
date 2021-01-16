@@ -26,7 +26,8 @@ pc_trans4dt(
   amrex::Real T,
   amrex::Real rho,
   amrex::Real massfrac[],
-  amrex::Real& D)
+  amrex::Real& D,
+  TransParm const* ltransp)
 {
   bool get_xi = false, get_mu = false, get_lam = false, get_Ddiag = false;
   amrex::Real dum1 = 0., dum2 = 0.;
@@ -35,12 +36,12 @@ pc_trans4dt(
     get_mu = true;
     transport(
       get_xi, get_mu, get_lam, get_Ddiag, T, rho, massfrac, nullptr, D, dum1,
-      dum2);
+      dum2, ltransp);
   } else if (which_trans == 1) {
     get_lam = true;
     transport(
       get_xi, get_mu, get_lam, get_Ddiag, T, rho, massfrac, nullptr, dum1, dum2,
-      D);
+      D, ltransp);
   }
 }
 
