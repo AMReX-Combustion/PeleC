@@ -21,7 +21,7 @@ ifneq ($(USE_MASA), TRUE)
 endif
 
 #sundials stuff
-ifeq ($(USE_REACTIONS), TRUE)
+ifeq ($(USE_REACT), TRUE)
   ifeq ($(USE_SUNDIALS_PP), TRUE)
     ifeq ($(USE_CVODE_PP), TRUE)
        USE_ARKODE_PP=FALSE
@@ -81,7 +81,7 @@ Bpack += $(CHEM_HOME)/Make.package
 Blocs += $(CHEM_HOME)
 
 #sundials stuff
-ifeq ($(USE_REACTIONS), TRUE)
+ifeq ($(USE_REACT), TRUE)
   ifeq ($(USE_SUNDIALS_PP), TRUE)
     Blocs += $(REACTIONS_HOME)/Fuego
     Bpack += $(REACTIONS_HOME)/Fuego/Make.package
