@@ -10,15 +10,9 @@ constexpr amrex::Real oneHalf=1.0/2.0;
 constexpr amrex::Real oneTwelve=1.0/12.0;
 
 
-// Compute the coefficients of a parabolic reconstruction of the data in a
-// zone. This uses the standard PPM limiters described in Colella & Woodward
-// (1984)
-//
-// @param s      Real[5] the state to be reconstructed in zones i-2, i-1, i,
-// i+1, i+2
-// @param flatn  The flattening coefficient
-// @param sm     The value of the parabola on the left edge of the zone
-// @param sp     The value of the parabola on the right edge of the zone
+// @param s      Stencils i-2, i-1, i, i+1, i+2
+// @param sm     The value of the interpolation on the left edge of the i cell
+// @param sp     The value of the interpolation on the right edge of the i cell
 AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE void
 weno_reconstruct(
   const amrex::Real* s,

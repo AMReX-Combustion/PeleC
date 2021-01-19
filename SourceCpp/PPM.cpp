@@ -1,5 +1,6 @@
 #include "Godunov.H"
 #include "PPM.H"
+#include "WENO.H"
 
 void
 trace_ppm(
@@ -99,7 +100,7 @@ trace_ppm(
     // Original PPM and Hybrid WENO/PPM do not have the same stencil size
     int stencil_size;
     if (PeleC::use_hybrid_weno){
-      stencil_size = 6; //TO DO change for weno7z
+      stencil_size = 5; //TO DO change for weno7z
     }else{
       stencil_size = 5;
     }
@@ -121,21 +122,31 @@ trace_ppm(
     amrex::Real Im[QVAR][3];
 
     for (int n = 0; n < QVAR; n++) {
-std::cout << "\n DEBUG DEBUG DEBUG  use_hybrid_weno = " << PeleC::use_hybrid_weno << " \n";
+//std::cout << "\n DEBUG DEBUG DEBUG  use_hybrid_weno = " << PeleC::use_hybrid_weno << " \n";
 
       if (PeleC::use_hybrid_weno){
 
         if (idir == 0) {
-          int idx_pos = -3;
+          int idx_pos = -2;
           for (int idx = 0; idx < stencil_size; idx++){
             s[idx] = q_arr(i + idx_pos, j, k, n);
             idx_pos++;
           }       
-
         } else if (idir == 1) {
+          int idx_pos = -2; 
+          for (int idx = 0; idx < stencil_size; idx++){
+            s[idx] = q_arr(i, j + idx_pos, k, n);
+            idx_pos++;
+          }
         } else {
+          int idx_pos = -2; 
+          for (int idx = 0; idx < stencil_size; idx++){
+            s[idx] = q_arr(i, j, k + idx_pos, n);
+            idx_pos++;
+          }
         }
 
+        weno_reconstruct(s, sm, sp);
 
       }else{
 
