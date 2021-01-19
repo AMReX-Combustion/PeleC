@@ -1,3 +1,5 @@
+.. _EB-C9:
+
 C9. Acoustic wave in cylindrical channel
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

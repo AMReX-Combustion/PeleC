@@ -1,3 +1,5 @@
+.. _EB-C8:
+
 C8. Multi-species shock tube in a rotated channel with AMR
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
