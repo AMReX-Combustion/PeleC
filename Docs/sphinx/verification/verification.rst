@@ -234,19 +234,19 @@ constant Smagorinsky Large Eddy Simulation model.
 
 - Density :math:`L_2` error norm:
 
-#.. image:: ./verification/les/rho_error.png
+.. image:: ./verification/les/rho_error.png
    :width: 300pt
 
 - Velocity (u, v, w) :math:`L_2` error norm:
 
-#.. image:: ./verification/les/u_error.png
+.. image:: ./verification/les/u_error.png
    :width: 300pt
-#.. image:: ./verification/les/v_error.png
+.. image:: ./verification/les/v_error.png
    :width: 300pt
-#.. image:: ./verification/les/w_error.png
+.. image:: ./verification/les/w_error.png
    :width: 300pt
 
 - Pressure :math:`L_2` error norm:
 
-#.. image:: ./verification/les/p_error.png
+.. image:: ./verification/les/p_error.png
    :width: 300pt
