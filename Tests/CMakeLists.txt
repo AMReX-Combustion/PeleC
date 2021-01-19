@@ -62,7 +62,7 @@ function(add_test_r TEST_NAME TEST_EXE_DIR)
     setup_test()
     set(RUNTIME_OPTIONS "max_step=10 ${RUNTIME_OPTIONS}")
     add_test(${TEST_NAME} sh -c "${MPI_COMMANDS} ${CURRENT_TEST_EXE} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i ${RUNTIME_OPTIONS} > ${TEST_NAME}.log ${FCOMPARE_COMMAND}")
-    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 10800 PROCESSORS ${PELEC_NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "regression" ATTACHED_FILES_ON_FAIL "${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.log")
+    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 7200 PROCESSORS ${PELEC_NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "regression" ATTACHED_FILES_ON_FAIL "${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.log")
 endfunction(add_test_r)
 
 # Regression tests excluded from CI
@@ -76,7 +76,7 @@ function(add_test_v1 TEST_NAME TEST_EXE_DIR)
     setup_test()
     set(RUN_COMMAND "rm mmslog datlog || true && ${MPI_COMMANDS} ${CURRENT_TEST_EXE} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.i")
     add_test(${TEST_NAME} sh -c "${RUN_COMMAND} ${RUNTIME_OPTIONS} > ${TEST_NAME}.log && nosetests ${TEST_NAME}.py")
-    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 10800 PROCESSORS ${PELEC_NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "verification" ATTACHED_FILES_ON_FAIL "${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.log")
+    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 7200 PROCESSORS ${PELEC_NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "verification" ATTACHED_FILES_ON_FAIL "${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.log")
 endfunction(add_test_v1)
 
 # Verification test with multiple resolutions (each test runs on maximum number of processes on node)
@@ -117,7 +117,7 @@ function(add_test_v2 TEST_NAME TEST_EXE_DIR LIST_OF_GRID_SIZES)
       list(APPEND IMAGES_TO_UPLOAD ${CURRENT_TEST_BINARY_DIR}/v_error.png)
     endif()
     add_test(${TEST_NAME} sh -c "${MASTER_RUN_COMMAND} && cd ${CURRENT_TEST_BINARY_DIR} && nosetests ${CMAKE_CURRENT_SOURCE_DIR}/test_second_order.py")
-    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 36000 PROCESSORS ${PELEC_NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS "verification;no-ci" ATTACHED_FILES "${IMAGES_TO_UPLOAD}")
+    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 14400 PROCESSORS ${PELEC_NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS "verification;no-ci" ATTACHED_FILES "${IMAGES_TO_UPLOAD}")
 endfunction(add_test_v2)
 
 # Standard unit test
@@ -196,14 +196,17 @@ if(PELEC_ENABLE_MASA AND (PELEC_DIM GREATER 2))
     add_test_v1(eb-symmetry EB-C1)
   endif()
 
-  # Create list of resolutions we want to test with; make sure to pass it as a string in quotes
-  set(LIST_OF_GRID_SIZES 8 12 16 20)
-  add_test_v2(cns-no-amr MMS "${LIST_OF_GRID_SIZES}")
-  add_test_v2(cns-no-amr-mol MMS "${LIST_OF_GRID_SIZES}")
-  #add_test_v3(cns-amr MMS "${LIST_OF_GRID_SIZES}") # This one takes a while with AMR
+  # Created an option to exclude these tests when using ASAN and UBSAN because they take too long
+  if(NOT PELEC_ENABLE_SANITIZE)
+    # Create list of resolutions we want to test with; make sure to pass it as a string in quotes
+    set(LIST_OF_GRID_SIZES 8 12 16 20)
+    add_test_v2(cns-no-amr MMS "${LIST_OF_GRID_SIZES}")
+    add_test_v2(cns-no-amr-mol MMS "${LIST_OF_GRID_SIZES}")
+    #add_test_v3(cns-amr MMS "${LIST_OF_GRID_SIZES}") # This one takes a while with AMR
 
-  set(LIST_OF_GRID_SIZES 8 12 16 24)
-  add_test_v2(cns-les-no-amr MMS "${LIST_OF_GRID_SIZES}")
+    set(LIST_OF_GRID_SIZES 8 12 16 24)
+    add_test_v2(cns-les-no-amr MMS "${LIST_OF_GRID_SIZES}")
+  endif()
 endif()
 
 #=============================================================================
