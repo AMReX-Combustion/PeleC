@@ -1,3 +1,5 @@
+.. _EB-C12:
+
 C12. Smooth periodic problem
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

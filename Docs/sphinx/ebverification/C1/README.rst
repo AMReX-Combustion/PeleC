@@ -1,3 +1,5 @@
+.. _EB-C1:
+
 C1. Method of manufactured solutions for EB
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
