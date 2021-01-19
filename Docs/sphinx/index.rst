@@ -14,7 +14,6 @@ PeleC
    LES
    VandV
    PelePhysics
-   ebverification/ebverification
    BoxlibBits
 
 
