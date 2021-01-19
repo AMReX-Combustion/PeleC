@@ -21,18 +21,16 @@ ifneq ($(USE_MASA), TRUE)
 endif
 
 #sundials stuff
-ifeq ($(USE_SUNDIALS_PP), TRUE)
-  ifeq ($(USE_CVODE_PP), TRUE)
-     USE_ARKODE_PP=FALSE
-     DEFINES += -DUSE_CVODE_PP
-   else
-     USE_ARKODE_PP=TRUE
+ifeq ($(USE_REACTIONS), TRUE)
+  ifeq ($(USE_SUNDIALS_PP), TRUE)
+    ifeq ($(USE_CVODE_PP), TRUE)
+       USE_ARKODE_PP=FALSE
+       DEFINES += -DUSE_CVODE_PP
+     else
+       USE_ARKODE_PP=TRUE
+    endif
+    include $(PELE_PHYSICS_HOME)/ThirdParty/Make.ThirdParty
   endif
-  ifeq ($(USE_CVODE_PP), TRUE)
-    USE_ARKODE_PP = FALSE
-  endif
-  DEFINES += -DUSE_CVODE_PP=$(USE_CVODE_PP)
-  include $(PELE_PHYSICS_HOME)/ThirdParty/Make.ThirdParty
 endif
 
 include $(AMREX_HOME)/Tools/GNUMake/Make.defs
@@ -83,9 +81,11 @@ Bpack += $(CHEM_HOME)/Make.package
 Blocs += $(CHEM_HOME)
 
 #sundials stuff
-ifeq ($(USE_SUNDIALS_PP), TRUE)
-  Blocs += $(REACTIONS_HOME)/Fuego
-  Bpack += $(REACTIONS_HOME)/Fuego/Make.package
+ifeq ($(USE_REACTIONS), TRUE)
+  ifeq ($(USE_SUNDIALS_PP), TRUE)
+    Blocs += $(REACTIONS_HOME)/Fuego
+    Bpack += $(REACTIONS_HOME)/Fuego/Make.package
+  endif
 endif
 
 # Transport

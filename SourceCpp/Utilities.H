@@ -274,8 +274,7 @@ unique(T input)
       }
     },
     [=] AMREX_GPU_DEVICE(int const& r) noexcept {
-      amrex::Gpu::Handler handler;
-      amrex::Gpu::deviceReduceSum(dp, r, handler);
+      amrex::Gpu::deviceReduceSum_full(dp, r);
     });
   const int Nunique = ds.dataValue() + 1;
 

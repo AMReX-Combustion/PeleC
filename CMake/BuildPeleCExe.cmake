@@ -84,7 +84,13 @@ function(build_pelec_exe pelec_exe_name)
       target_compile_definitions(${pelec_exe_name} PRIVATE USE_SUNDIALS_PP)
       target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/arkode/reactor.cpp
                                                ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/arkode/reactor.h)
-      target_link_libraries(${pelec_exe_name} PRIVATE SUNDIALS::arkode)
+      set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/arkode/reactor.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+      set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/arkode/reactor.h PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+      target_link_libraries(${pelec_exe_name} PRIVATE sundials_arkode)
+      if(PELEC_ENABLE_CUDA)
+        target_link_libraries(${pelec_exe_name} PRIVATE sundials_nveccuda)
+      endif()
+      target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE})
       target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/arkode)
     endif()
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_REACTIONS)
@@ -156,7 +162,7 @@ function(build_pelec_exe pelec_exe_name)
        ${SRC_DIR}/Utilities.cpp
   )
 
-  if(NOT "${pelec_exe_name}" STREQUAL "pelec_unit_tests")
+  if(NOT "${pelec_exe_name}" STREQUAL "PeleC-UnitTests")
     target_sources(${pelec_exe_name}
        PRIVATE
          ${SRC_DIR}/main.cpp
@@ -165,7 +171,7 @@ function(build_pelec_exe pelec_exe_name)
   
   include(AMReXBuildInfo)
   generate_buildinfo(${pelec_exe_name} ${CMAKE_SOURCE_DIR})
-  target_include_directories(${pelec_exe_name} PUBLIC ${AMREX_SUBMOD_LOCATION}/Tools/C_scripts)
+  target_include_directories(${pelec_exe_name} PRIVATE ${AMREX_SUBMOD_LOCATION}/Tools/C_scripts)
 
   if(PELEC_ENABLE_MASA)
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_MASA)
@@ -174,7 +180,7 @@ function(build_pelec_exe pelec_exe_name)
   endif()
 
   if(PELEC_ENABLE_MPI)
-    target_link_libraries(${pelec_exe_name} PUBLIC $<$<BOOL:${MPI_CXX_FOUND}>:MPI::MPI_CXX>)
+    target_link_libraries(${pelec_exe_name} PRIVATE $<$<BOOL:${MPI_CXX_FOUND}>:MPI::MPI_CXX>)
   endif()
 
   #PeleC include directories
@@ -182,7 +188,7 @@ function(build_pelec_exe pelec_exe_name)
   target_include_directories(${pelec_exe_name} PRIVATE ${CMAKE_BINARY_DIR})
 
   #Link to amrex library
-  target_link_libraries(${pelec_exe_name} PRIVATE amrex)
+  target_link_libraries(${pelec_exe_name} PRIVATE AMReX::amrex)
 
   if(PELEC_ENABLE_CUDA)
     set(pctargets "${pelec_exe_name}")
