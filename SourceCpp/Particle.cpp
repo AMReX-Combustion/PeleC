@@ -31,7 +31,6 @@ Gpu::HostVector<int> sprayIndxMap;
 amrex::Real sprayRefT = 300.;
 amrex::Real parcelSize = 1.;
 amrex::Real spraySigma = -1.; // Surface tension
-amrex::Real sprayTheta = 140.; // Contact angle
 amrex::Real T_wall = -1.;
 SprayComps scomps;
 bool splash_model = true;
@@ -160,14 +159,15 @@ PeleC::readParticleParams()
   ppp.query("parcel_size", parcelSize);
   ppp.query("use_splash_model", splash_model);
   if (splash_model) {
-    if (!ppp.contains("fuel_sigma") || !ppp.contains("fuel_theta")) {
-      Print() << "fuel_sigma or fuel_theta must be set for splash model. "
+    if (!ppp.contains("fuel_sigma") || !ppp.contains("wall_temp")) {
+      Print() << "fuel_sigma or wall_temp must be set for splash model. "
               << "Set use_splash_model = false to turn off splash model" << std::endl;
       Abort();
     }
     // Set the fuel surface tension and contact angle
     ppp.get("fuel_sigma", spraySigma);
-    ppp.get("fuel_theta", sprayTheta);
+    // TODO: Have this retrieved from proper boundary data during runtime
+    ppp.get("wall_temp", T_wall);
   }
 
   // Must use same reference temperature for all fuels
@@ -310,13 +310,13 @@ PeleC::createParticleData()
   // Pass constant reference data and memory allocations to GPU
   theSprayPC()->buildFuelData(sprayCritT, sprayBoilT, sprayCp, sprayLatent,
                               sprayRho, sprayMu, sprayIndxMap, scomps,
-                              parcelSize, sprayRefT, spraySigma, sprayTheta);
+                              parcelSize, sprayRefT, spraySigma, T_wall);
   theGhostPC()->buildFuelData(sprayCritT, sprayBoilT, sprayCp, sprayLatent,
                               sprayRho, sprayMu, sprayIndxMap, scomps,
-                              parcelSize, sprayRefT, spraySigma, sprayTheta);
+                              parcelSize, sprayRefT, spraySigma, T_wall);
   theVirtPC()->buildFuelData(sprayCritT, sprayBoilT, sprayCp, sprayLatent,
                              sprayRho, sprayMu, sprayIndxMap, scomps,
-                             parcelSize, sprayRefT, spraySigma, sprayTheta);
+                             parcelSize, sprayRefT, spraySigma, T_wall);
 }
 
 // Initialize the particles on the grid at level 0
