@@ -33,6 +33,10 @@ using namespace MASA;
 #include "reactor.h"
 #endif
 
+#ifdef PELEC_ENABLE_FPE_TRAP
+#include <fenv.h>
+#endif
+
 bool PeleC::signalStopJob = false;
 bool PeleC::dump_old = false;
 int PeleC::verbose = 0;
@@ -1928,11 +1932,31 @@ PeleC::init_mms()
     if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
       amrex::Print() << "Initializing MMS" << std::endl;
     }
+#ifdef PELEC_ENABLE_FPE_TRAP
+#if defined(__linux__)
+    int prev_fpe_excepts = fegetexcept();
+    fedisableexcept(prev_fpe_excepts);
+#elif defined(__APPLE__)
+    int prev_fpe_excepts = _MM_GET_EXCEPTION_MASK();
+    _MM_SET_EXCEPTION_MASK(prev_fpe_excepts);
+#endif
+#endif
     masa_init("mms", masa_solution_name.c_str());
     masa_set_param("Cs", PeleC::Cs);
     masa_set_param("CI", PeleC::CI);
     masa_set_param("PrT", PeleC::PrT);
     mms_initialized = true;
+#ifdef PELEC_ENABLE_FPE_TRAP
+#if defined(__linux__)
+    if (prev_fpe_excepts != 0) {
+        feenableexcept(prev_fpe_excepts);
+    }
+#elif defined(__APPLE__)
+    if (prev_fpe_excepts != 0u) {
+        _MM_SET_EXCEPTION_MASK(prev_fpe_excepts);
+    }
+#endif
+#endif
   }
 }
 #endif
