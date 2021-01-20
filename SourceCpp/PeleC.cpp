@@ -37,7 +37,7 @@ using namespace MASA;
 #if defined(__linux__)
 #include <cfenv>
 #elif defined(__APPLE__)
-#include <xmmintrin.h>
+#include <fenv.h>
 #endif
 #endif
 
@@ -1938,11 +1938,15 @@ PeleC::init_mms()
     }
 #ifdef PELEC_ENABLE_FPE_TRAP
 #if defined(__linux__)
-    int prev_fpe_excepts = fegetexcept();
+    unsigned int prev_fpe_excepts = fegetexcept();
     fedisableexcept(prev_fpe_excepts);
 #elif defined(__APPLE__)
-    int prev_fpe_excepts = _MM_GET_EXCEPTION_MASK();
-    _MM_SET_EXCEPTION_MASK(prev_fpe_excepts);
+    static fenv_t prev_fpe_excepts;
+    fegetenv(&prev_fpe_excepts);
+    static fenv_t new_fpe_excepts;
+    new_fpe_excepts.__control |= FE_ALL_EXCEPT;
+    new_fpe_excepts.__mxcsr |= FE_ALL_EXCEPT << 7;
+    fesetenv(&new_fpe_excepts);
 #endif
 #endif
     masa_init("mms", masa_solution_name.c_str());
@@ -1956,9 +1960,7 @@ PeleC::init_mms()
       feenableexcept(prev_fpe_excepts);
     }
 #elif defined(__APPLE__)
-    if (prev_fpe_excepts != 0u) {
-      _MM_SET_EXCEPTION_MASK(prev_fpe_excepts);
-    }
+    fesetenv(&prev_fpe_excepts);
 #endif
 #endif
   }
