@@ -22,6 +22,7 @@ option(PELEC_ENABLE_SUNDIALS "Enable SUNDIALS as ODE solver" OFF)
 option(PELEC_ENABLE_FCOMPARE "Enable building fcompare when not testing" OFF)
 option(PELEC_ENABLE_FCOMPARE_FOR_TESTS "Check test plots against gold files" OFF)
 option(PELEC_ENABLE_SANITIZE "Currently only disables certain long running MMS tests if set" OFF)
+option(PELEC_ENABLE_FPE_TRAP "Enable FPE trapping in tests" OFF)
 option(PELEC_ENABLE_TINY_PROFILE "Enable tiny profiler in AMReX" OFF)
 set(PELEC_PRECISION "DOUBLE" CACHE STRING "Floating point precision SINGLE or DOUBLE")
 
