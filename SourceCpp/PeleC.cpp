@@ -1949,11 +1949,11 @@ PeleC::init_mms()
 #ifdef PELEC_ENABLE_FPE_TRAP
 #if defined(__linux__)
     if (prev_fpe_excepts != 0) {
-        feenableexcept(prev_fpe_excepts);
+      feenableexcept(prev_fpe_excepts);
     }
 #elif defined(__APPLE__)
     if (prev_fpe_excepts != 0u) {
-        _MM_SET_EXCEPTION_MASK(prev_fpe_excepts);
+      _MM_SET_EXCEPTION_MASK(prev_fpe_excepts);
     }
 #endif
 #endif
