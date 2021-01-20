@@ -34,7 +34,11 @@ using namespace MASA;
 #endif
 
 #ifdef PELEC_ENABLE_FPE_TRAP
-#include <fenv.h>
+#if defined(__linux__)
+#include <cfenv>
+#elif defined(__APPLE__)
+#include <xmmintrin.h>
+#endif
 #endif
 
 bool PeleC::signalStopJob = false;
