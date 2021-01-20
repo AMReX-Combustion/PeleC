@@ -1,3 +1,5 @@
+.. _EB-C7:
+
 C7. Sod shock tube in rotated channel with AMR
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
