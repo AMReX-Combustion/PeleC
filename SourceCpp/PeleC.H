@@ -537,6 +537,7 @@ public:
  
   // Parameters for using WENO in the PPM method
   static int use_hybrid_weno;
+  static int weno_scheme;
 
 protected:
   amrex::iMultiFab level_mask;

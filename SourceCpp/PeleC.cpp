@@ -73,6 +73,7 @@ bool PeleC::mms_initialized = false;
 #endif
 
 int PeleC::use_hybrid_weno = 0;
+int PeleC::weno_scheme = 1; // 0 is WENO_5js, 1 is WENO_5Z, 2 is WENO_7z
 
 int PeleC::les_model = 0;
 int PeleC::les_filter_type = no_filter;
@@ -287,6 +288,7 @@ PeleC::read_params()
   }
 
   pp.query("use_hybrid_weno", use_hybrid_weno);
+  pp.query("weno_scheme", weno_scheme);
   if (ppm_type != 1 && use_hybrid_weno == 1) {
       amrex::Error("PeleC::ppm_type must be 1 (PPM) to use WENO method");
   }

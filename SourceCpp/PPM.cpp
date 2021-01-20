@@ -146,8 +146,13 @@ trace_ppm(
           }
         }
 
-        weno_reconstruct(s, sm, sp);
-
+        if ( PeleC::weno_scheme == 0 ){ 
+          weno_reconstruct_5js(s, sm, sp);
+        }else if ( PeleC::weno_scheme == 1 ){
+          weno_reconstruct_5z(s, sm, sp);
+        }else{
+          amrex::Abort("Error, use_hybrid_weno not known");
+        }
       }else{
 
         if (idir == 0) {
