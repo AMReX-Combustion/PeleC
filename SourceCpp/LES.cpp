@@ -188,7 +188,7 @@ PeleC::getSmagorinskyLESTerm(
     dx1 *= dx[dir];
   }
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dxD = {
-    {D_DECL(dx1, dx1, dx1)}};
+    {AMREX_D_DECL(dx1, dx1, dx1)}};
   const amrex::Real* dxDp = &(dxD[0]);
 
   amrex::MultiFab S(grids, dmap, NVAR, ngrow);
@@ -401,7 +401,7 @@ PeleC::getDynamicSmagorinskyLESTerm(
     dx1 *= dx[dir];
   }
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dxD = {
-    {D_DECL(dx1, dx1, dx1)}};
+    {AMREX_D_DECL(dx1, dx1, dx1)}};
   const amrex::Real* dxDp = &(dxD[0]);
 
   // 1. Get state variable data

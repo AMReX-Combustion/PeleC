@@ -549,9 +549,9 @@ PeleC::getMOLSrcTerm(
 
           if (fr_as_crse) {
             fr_as_crse->CrseAdd(
-              mfi, {D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dxD.data(),
-              dt, vfrac[mfi],
-              {D_DECL(
+              mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])},
+              dxD.data(), dt, vfrac[mfi],
+              {AMREX_D_DECL(
                 &((*areafrac[0])[mfi]), &((*areafrac[1])[mfi]),
                 &((*areafrac[2])[mfi]))},
               device);
@@ -564,9 +564,9 @@ PeleC::getMOLSrcTerm(
 
           if (fr_as_fine) {
             fr_as_fine->FineAdd(
-              mfi, {D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dxD.data(),
-              dt, vfrac[mfi],
-              {D_DECL(
+              mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])},
+              dxD.data(), dt, vfrac[mfi],
+              {AMREX_D_DECL(
                 &((*areafrac[0])[mfi]), &((*areafrac[1])[mfi]),
                 &((*areafrac[2])[mfi]))},
               dm_as_fine, device);

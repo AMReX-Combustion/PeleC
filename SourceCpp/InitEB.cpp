@@ -222,7 +222,8 @@ PeleC::initialize_eb2_structs()
 
     fbox[dir] = amrex::bdryLo(
       amrex::Box(
-        amrex::IntVect(D_DECL(0, 0, 0)), amrex::IntVect(D_DECL(0, 0, 0))),
+        amrex::IntVect(AMREX_D_DECL(0, 0, 0)),
+        amrex::IntVect(AMREX_D_DECL(0, 0, 0))),
       dir, 1);
 
     for (int dir1 = 0; dir1 < AMREX_SPACEDIM; ++dir1) {
