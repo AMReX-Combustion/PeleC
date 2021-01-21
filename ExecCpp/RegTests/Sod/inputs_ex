@@ -73,3 +73,7 @@ tagging.presserr = 3
 tagging.pressgrad = 0.01
 tagging.max_presserr_lev = 3
 tagging.max_pressgrad_lev = 3
+
+# EB
+eb2.geom_type = "all_regular"
+ebd.boundary_grad_stencil_type = 0
