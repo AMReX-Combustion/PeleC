@@ -67,7 +67,6 @@ int PeleC::pstateNum = 0;
 
 #include "pelec_defaults.H"
 
-int PeleC::nGrowTr = 4;
 int PeleC::diffuse_temp = 0;
 int PeleC::diffuse_enth = 0;
 int PeleC::diffuse_spec = 0;
@@ -408,7 +407,7 @@ PeleC::PeleC(
   if (do_hydro) {
     Sborder.define(grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
   } else if (do_diffuse) {
-    Sborder.define(grids, dmap, NVAR, nGrowTr, amrex::MFInfo(), Factory());
+    Sborder.define(grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
   }
 #ifdef AMREX_PARTICLES
   else if (do_spray_particles) {
@@ -430,7 +429,7 @@ PeleC::PeleC(
         grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
     }
   } else {
-    Sborder.define(grids, dmap, NVAR, nGrowTr, amrex::MFInfo(), Factory());
+    Sborder.define(grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
   }
 
   // Is this relevant for PeleC?

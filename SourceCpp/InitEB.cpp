@@ -236,7 +236,7 @@ PeleC::initialize_eb2_structs()
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
     for (amrex::MFIter mfi(vfrac, false); mfi.isValid(); ++mfi) {
-      const amrex::Box tbox = mfi.growntilebox(nGrowTr);
+      const amrex::Box tbox = mfi.growntilebox(NUM_GROW);
       const auto& flagfab = flags[mfi];
       amrex::FabType typ = flagfab.getType(tbox);
       int iLocal = mfi.LocalIndex();
