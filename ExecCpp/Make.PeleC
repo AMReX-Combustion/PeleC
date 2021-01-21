@@ -10,11 +10,6 @@ EBASE = PeleC
 # this list will be searched for runtime parameters
 EXTERN_CORE ?=
 
-# Ignore loops not vectorizing in amrex
-ifeq ($(COMP), llvm)
-  DEFINES += -Wno-pass-failed
-endif
-
 #Turn off all fortran in amrex
 ifneq ($(USE_MASA), TRUE)
   BL_NO_FORT = TRUE
