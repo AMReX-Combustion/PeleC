@@ -68,6 +68,7 @@ if(PELEC_ENABLE_CUDA)
   include(AMReX_SetupCUDA)
 endif()
 add_subdirectory(${AMREX_SUBMOD_LOCATION})
+include(SetAmrexCompileFlags)
 
 ########################## SUNDIALS ###################################
 
