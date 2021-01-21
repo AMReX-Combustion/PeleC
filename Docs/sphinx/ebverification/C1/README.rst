@@ -31,3 +31,25 @@ is performed around a sphere at a Re number and Mach number of 1.
 .. note::
    The first order convergence observed here is expected because the
    treatment of the EB surface is first order.
+
+
+Running study
+#############
+
+.. code-block:: bash
+
+   paren=`pwd`
+   pelec="${paren}/PeleC3d.gnu.MPI.ex"
+   mpi_ranks=36
+
+   res=( 8 16 32 64 )
+   for i in "${res[@]}"
+   do
+       rm -rf "${i}"
+       mkdir "${i}"
+       cd "${i}" || exit
+       cp "${paren}/inputs_3d" .
+       srun -n ${mpi_ranks} "${pelec}" inputs_3d amr.n_cell="${i} ${i} ${i}" > out
+       ls -1v *plt*/Header | tee movie.visit
+       cd "${paren}" || exit
+   done
