@@ -1936,6 +1936,7 @@ PeleC::init_mms()
     if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
       amrex::Print() << "Initializing MMS" << std::endl;
     }
+// Shut of FPE for MASA initialization because it has FPEs
 #ifdef PELEC_ENABLE_FPE_TRAP
 #if defined(__linux__)
     unsigned int prev_fpe_excepts = fegetexcept();
