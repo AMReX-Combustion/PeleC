@@ -59,13 +59,14 @@ pc_estdt_veldif(
 #ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
 #endif
+  TransParm const* ltp,
   AMREX_D_DECL(
     const amrex::Real& dx,
     const amrex::Real& dy,
     const amrex::Real& dz)) noexcept
 {
   amrex::Real dt = TimeStep::max_dt;
-  TransParm const* ltransp = trans_parm_g;
+
   amrex::Loop(bx, [=, &dt](int i, int j, int k) {
 #ifdef PELEC_USE_EB
     if (not flags(i, j, k).isCovered()) {
@@ -79,7 +80,7 @@ pc_estdt_veldif(
       amrex::Real T = u(i, j, k, UTEMP);
       amrex::Real D = 0.0;
       const int which_trans = 0;
-      pc_trans4dt(which_trans, T, rho, massfrac, D, ltransp);
+      pc_trans4dt(which_trans, T, rho, massfrac, D, ltp);
       D *= rhoInv;
       if (D == 0.0) {
         D = SMALL_NUM;
@@ -107,13 +108,14 @@ pc_estdt_tempdif(
 #ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
 #endif
+  TransParm const* ltp,
   AMREX_D_DECL(
     const amrex::Real& dx,
     const amrex::Real& dy,
     const amrex::Real& dz)) noexcept
 {
   amrex::Real dt = TimeStep::max_dt;
-  TransParm const* ltransp = trans_parm_g;
+
   amrex::Loop(bx, [=, &dt](int i, int j, int k) {
 #ifdef PELEC_USE_EB
     if (not flags(i, j, k).isCovered()) {
@@ -127,7 +129,7 @@ pc_estdt_tempdif(
       amrex::Real T = u(i, j, k, UTEMP);
       amrex::Real D = 0.0;
       const int which_trans = 1;
-      pc_trans4dt(which_trans, T, rho, massfrac, D, ltransp);
+      pc_trans4dt(which_trans, T, rho, massfrac, D, ltp);
       amrex::Real cv;
       EOS::TY2Cv(T, massfrac, cv);
       D *= rhoInv / cv;
@@ -157,13 +159,14 @@ pc_estdt_enthdif(
 #ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
 #endif
+  TransParm const* ltp,
   AMREX_D_DECL(
     const amrex::Real& dx,
     const amrex::Real& dy,
     const amrex::Real& dz)) noexcept
 {
   amrex::Real dt = TimeStep::max_dt;
-  TransParm const* ltransp = trans_parm_g;
+
   amrex::Loop(bx, [=, &dt](int i, int j, int k) {
 #ifdef PELEC_USE_EB
     if (not flags(i, j, k).isCovered()) {
@@ -179,7 +182,7 @@ pc_estdt_enthdif(
       EOS::TY2Cp(T, massfrac, cp);
       amrex::Real D;
       const int which_trans = 1;
-      pc_trans4dt(which_trans, T, rho, massfrac, D, ltransp);
+      pc_trans4dt(which_trans, T, rho, massfrac, D, ltp);
       D *= rhoInv / cp;
       AMREX_D_TERM(
         const amrex::Real dt1 = 0.5 * dx * dx / (AMREX_SPACEDIM * D);

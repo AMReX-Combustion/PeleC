@@ -817,6 +817,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 
     prefetchToDevice(stateMF); // This should accelerate the below operations.
     amrex::Real AMREX_D_DECL(dx1 = dx[0], dx2 = dx[1], dx3 = dx[2]);
+    TransParm const* ltp = trans_parm_g;
 
     if (do_hydro) {
       amrex::Real dt = amrex::ReduceMin(
@@ -861,6 +862,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 #ifdef PELEC_USE_EB
             flag_arr,
 #endif
+            ltp,
             AMREX_D_DECL(dx1, dx2, dx3));
         });
       estdt_vdif = amrex::min<amrex::Real>(estdt_vdif, dt);
@@ -885,6 +887,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 #ifdef PELEC_USE_EB
             flag_arr,
 #endif
+            ltp,
             AMREX_D_DECL(dx1, dx2, dx3));
         });
       estdt_tdif = amrex::min<amrex::Real>(estdt_tdif, dt);
@@ -909,6 +912,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 #ifdef PELEC_USE_EB
             flag_arr,
 #endif
+            ltp,
             AMREX_D_DECL(dx1, dx2, dx3));
         });
       estdt_edif = amrex::min<amrex::Real>(estdt_edif, dt);

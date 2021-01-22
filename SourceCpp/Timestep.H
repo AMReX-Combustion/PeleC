@@ -65,6 +65,7 @@ amrex::Real pc_estdt_veldif(
 #ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
 #endif
+  TransParm const* ltp,
   AMREX_D_DECL(
     const amrex::Real& dx,
     const amrex::Real& dy,
@@ -78,6 +79,7 @@ amrex::Real pc_estdt_tempdif(
 #ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
 #endif
+  TransParm const* ltp,
   AMREX_D_DECL(
     const amrex::Real& dx,
     const amrex::Real& dy,
@@ -91,6 +93,7 @@ amrex::Real pc_estdt_enthdif(
 #ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
 #endif
+  TransParm const* ltp,
   AMREX_D_DECL(
     const amrex::Real& dx,
     const amrex::Real& dy,
