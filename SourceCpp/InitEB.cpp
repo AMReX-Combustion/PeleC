@@ -222,7 +222,8 @@ PeleC::initialize_eb2_structs()
 
     fbox[dir] = amrex::bdryLo(
       amrex::Box(
-        amrex::IntVect(D_DECL(0, 0, 0)), amrex::IntVect(D_DECL(0, 0, 0))),
+        amrex::IntVect(AMREX_D_DECL(0, 0, 0)),
+        amrex::IntVect(AMREX_D_DECL(0, 0, 0))),
       dir, 1);
 
     for (int dir1 = 0; dir1 < AMREX_SPACEDIM; ++dir1) {
@@ -235,7 +236,7 @@ PeleC::initialize_eb2_structs()
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
     for (amrex::MFIter mfi(vfrac, false); mfi.isValid(); ++mfi) {
-      const amrex::Box tbox = mfi.growntilebox(nGrowTr);
+      const amrex::Box tbox = mfi.growntilebox(NUM_GROW);
       const auto& flagfab = flags[mfi];
       amrex::FabType typ = flagfab.getType(tbox);
       int iLocal = mfi.LocalIndex();
@@ -264,7 +265,7 @@ PeleC::initialize_eb2_structs()
             }
           },
           [=] AMREX_GPU_DEVICE(int const& r) noexcept {
-            amrex::Gpu::deviceReduceSum(dp, r);
+            amrex::Gpu::deviceReduceSum_full(dp, r);
           });
         const int Nall_cut_faces = ds.dataValue();
 

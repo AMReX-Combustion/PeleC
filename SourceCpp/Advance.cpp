@@ -92,7 +92,7 @@ PeleC::do_mol_advance(
   if (verbose) {
     amrex::Print() << "... Computing MOL source term at t^{n} " << std::endl;
   }
-  FillPatch(*this, Sborder, nGrowTr, time, State_Type, 0, NVAR);
+  FillPatch(*this, Sborder, NUM_GROW + nGrowF, time, State_Type, 0, NVAR);
   amrex::Real flux_factor = 0;
   getMOLSrcTerm(Sborder, molSrc, time, dt, flux_factor);
 
@@ -134,7 +134,7 @@ PeleC::do_mol_advance(
   if (verbose) {
     amrex::Print() << "... Computing MOL source term at t^{n+1} " << std::endl;
   }
-  FillPatch(*this, Sborder, nGrowTr, time + dt, State_Type, 0, NVAR);
+  FillPatch(*this, Sborder, NUM_GROW + nGrowF, time + dt, State_Type, 0, NVAR);
   flux_factor = mol_iters > 1 ? 0 : 1;
   getMOLSrcTerm(Sborder, molSrc, time, dt, flux_factor);
 
@@ -188,7 +188,8 @@ PeleC::do_mol_advance(
         amrex::Print() << "... Re-computing MOL source term at t^{n+1} (iter = "
                        << mol_iter << " of " << mol_iters << ")" << std::endl;
       }
-      FillPatch(*this, Sborder, nGrowTr, time + dt, State_Type, 0, NVAR);
+      FillPatch(
+        *this, Sborder, NUM_GROW + nGrowF, time + dt, State_Type, 0, NVAR);
       flux_factor = mol_iter == mol_iters ? 1 : 0;
       getMOLSrcTerm(Sborder, molSrc_new, time, dt, flux_factor);
 
@@ -505,7 +506,7 @@ PeleC::do_sdc_iteration(
       amrex::Print() << "... Computing diffusion terms at t^(n+1,"
                      << sub_iteration + 1 << ")" << std::endl;
     }
-    FillPatch(*this, Sborder, nGrowTr, time + dt, State_Type, 0, NVAR);
+    FillPatch(*this, Sborder, NUM_GROW, time + dt, State_Type, 0, NVAR);
     amrex::Real flux_factor_new = sub_iteration == sub_ncycle - 1 ? 0.5 : 0;
     getMOLSrcTerm(Sborder, *new_sources[diff_src], time, dt, flux_factor_new);
   }

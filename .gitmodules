@@ -10,3 +10,6 @@
 [submodule "Submodules/GoogleTest"]
 	path = Submodules/GoogleTest
 	url = https://github.com/google/googletest.git
+[submodule "Submodules/sundials"]
+	path = Submodules/sundials
+	url = https://github.com/LLNL/sundials.git

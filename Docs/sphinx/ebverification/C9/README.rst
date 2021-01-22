@@ -1,3 +1,5 @@
+.. _EB-C9:
+
 C9. Acoustic wave in cylindrical channel
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -59,3 +61,25 @@ solution, and :math:`n_x` is the number of cells in the
    The second order convergence observed here is expected for this
    test case as all relevant physics happen in the direction
    perpendicular to the EB surface.
+
+
+Running study
+#############
+
+.. code-block:: bash
+
+   paren=`pwd`
+   pelec="${paren}/PeleC3d.gnu.MPI.ex"
+   mpi_ranks=36
+
+   res=( 8 16 32 64 )
+   for i in "${res[@]}"
+   do
+       rm -rf "${i}"
+       mkdir "${i}"
+       cd "${i}" || exit
+       cp "${paren}/inputs_3d" .
+       srun -n ${mpi_ranks} "${pelec}" inputs_3d amr.n_cell="${i} ${i} ${i}" > out
+       ls -1v *plt*/Header | tee movie.visit
+       cd "${paren}" || exit
+   done

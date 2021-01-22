@@ -29,8 +29,16 @@ using namespace MASA;
 #include "Utilities.H"
 #include "Tagging.H"
 #include "IndexDefines.H"
-#ifdef USE_SUNDIALS_PP
-#include <reactor.h>
+#if defined(PELEC_USE_REACTIONS) && defined(USE_SUNDIALS_PP)
+#include "reactor.h"
+#endif
+
+#ifdef PELEC_ENABLE_FPE_TRAP
+#if defined(__linux__)
+#include <cfenv>
+#elif defined(__APPLE__)
+#include <fenv.h>
+#endif
 #endif
 
 bool PeleC::signalStopJob = false;
@@ -59,7 +67,6 @@ int PeleC::pstateNum = 0;
 
 #include "pelec_defaults.H"
 
-int PeleC::nGrowTr = 4;
 int PeleC::diffuse_temp = 0;
 int PeleC::diffuse_enth = 0;
 int PeleC::diffuse_spec = 0;
@@ -409,7 +416,7 @@ PeleC::PeleC(
   if (do_hydro) {
     Sborder.define(grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
   } else if (do_diffuse) {
-    Sborder.define(grids, dmap, NVAR, nGrowTr, amrex::MFInfo(), Factory());
+    Sborder.define(grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
   }
 #ifdef AMREX_PARTICLES
   else if (do_spray_particles) {
@@ -431,7 +438,7 @@ PeleC::PeleC(
         grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
     }
   } else {
-    Sborder.define(grids, dmap, NVAR, nGrowTr, amrex::MFInfo(), Factory());
+    Sborder.define(grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
   }
 
   // Is this relevant for PeleC?
@@ -1937,11 +1944,34 @@ PeleC::init_mms()
     if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
       amrex::Print() << "Initializing MMS" << std::endl;
     }
+// Shut of FPE for MASA initialization because it has FPEs
+#ifdef PELEC_ENABLE_FPE_TRAP
+#if defined(__linux__)
+    unsigned int prev_fpe_excepts = fegetexcept();
+    fedisableexcept(prev_fpe_excepts);
+#elif defined(__APPLE__)
+    static fenv_t prev_fpe_excepts;
+    fegetenv(&prev_fpe_excepts);
+    static fenv_t new_fpe_excepts;
+    new_fpe_excepts.__control |= FE_ALL_EXCEPT;
+    new_fpe_excepts.__mxcsr |= FE_ALL_EXCEPT << 7;
+    fesetenv(&new_fpe_excepts);
+#endif
+#endif
     masa_init("mms", masa_solution_name.c_str());
     masa_set_param("Cs", PeleC::Cs);
     masa_set_param("CI", PeleC::CI);
     masa_set_param("PrT", PeleC::PrT);
     mms_initialized = true;
+#ifdef PELEC_ENABLE_FPE_TRAP
+#if defined(__linux__)
+    if (prev_fpe_excepts != 0) {
+      feenableexcept(prev_fpe_excepts);
+    }
+#elif defined(__APPLE__)
+    fesetenv(&prev_fpe_excepts);
+#endif
+#endif
   }
 }
 #endif

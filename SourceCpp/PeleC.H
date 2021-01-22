@@ -686,8 +686,6 @@ protected:
   // problem-specific includes
 #include <Problem.H>
 
-  static int nGrowTr;
-
 #ifdef PELEC_USE_EB
 
   amrex::FabArray<amrex::BaseFab<int>> ebmask;
