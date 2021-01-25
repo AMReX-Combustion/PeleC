@@ -138,17 +138,16 @@ init_bc()
   vt = PeleC::prob_parm->vn_in;
   ek = 0.5 * (vt * vt);
 
-  (*PeleC::prob_parm->fuel_state)[URHO] = rho;
-  (*PeleC::prob_parm->fuel_state)[UMX] = 0.0;
-  (*PeleC::prob_parm->fuel_state)[UMY] = rho * vt;
-  (*PeleC::prob_parm->fuel_state)[UMZ] = 0.0;
-  (*PeleC::prob_parm->fuel_state)[UEINT] = rho * e;
-  (*PeleC::prob_parm->fuel_state)[UEDEN] = rho * (e + ek);
-  (*PeleC::prob_parm->fuel_state)[UTEMP] = T;
+  PeleC::prob_parm->fuel_state[URHO] = rho;
+  PeleC::prob_parm->fuel_state[UMX] = 0.0;
+  PeleC::prob_parm->fuel_state[UMY] = rho * vt;
+  PeleC::prob_parm->fuel_state[UMZ] = 0.0;
+  PeleC::prob_parm->fuel_state[UEINT] = rho * e;
+  PeleC::prob_parm->fuel_state[UEDEN] = rho * (e + ek);
+  PeleC::prob_parm->fuel_state[UTEMP] = T;
   for (int n = 0; n < NUM_SPECIES; n++) {
-    (*PeleC::prob_parm->fuel_state)[UFS + n - 1] = rho * massfrac[n];
+    PeleC::prob_parm->fuel_state[UFS + n - 1] = rho * massfrac[n];
   }
-  PeleC::prob_parm->d_fuel_state = PeleC::prob_parm->fuel_state->dataPtr();
 }
 
 void
@@ -156,14 +155,11 @@ pc_prob_close()
 {
   delete PeleC::prob_parm->pmf_X;
   delete PeleC::prob_parm->pmf_Y;
-  delete PeleC::prob_parm->fuel_state;
 
   PeleC::prob_parm->pmf_X = nullptr;
   PeleC::prob_parm->pmf_Y = nullptr;
-  PeleC::prob_parm->fuel_state = nullptr;
   PeleC::prob_parm->d_pmf_X = nullptr;
   PeleC::prob_parm->d_pmf_Y = nullptr;
-  PeleC::prob_parm->d_fuel_state = nullptr;
 }
 
 extern "C" {
@@ -191,8 +187,6 @@ amrex_probinit(
 
   PeleC::prob_parm->pmf_X = new amrex::Gpu::DeviceVector<amrex::Real>;
   PeleC::prob_parm->pmf_Y = new amrex::Gpu::DeviceVector<amrex::Real>;
-  PeleC::prob_parm->fuel_state = new amrex::Gpu::DeviceVector<amrex::Real>;
-  PeleC::prob_parm->fuel_state->resize(NVAR);
 
   read_pmf(pmf_datafile);
 

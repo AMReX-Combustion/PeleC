@@ -188,7 +188,7 @@ pc_initdata(
       state(i, j, k, UFS + n) = rho * massfrac[n];
   } else {
     for (int n = 0; n < NVAR; n++)
-      state(i, j, k, n) = prob_parm.d_fuel_state[n];
+      state(i, j, k, n) = prob_parm.fuel_state[n];
   }
 }
 

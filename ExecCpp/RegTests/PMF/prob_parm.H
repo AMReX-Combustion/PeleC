@@ -17,12 +17,11 @@ struct ProbParmDevice : amrex::Gpu::Managed
   unsigned int pmf_M = 0;
   int pmf_do_average = 0;
 
+  amrex::GpuArray<amrex::Real, NVAR> fuel_state = {{0.0}};
   amrex::Gpu::DeviceVector<amrex::Real>* pmf_X = nullptr;
   amrex::Gpu::DeviceVector<amrex::Real>* pmf_Y = nullptr;
-  amrex::Gpu::DeviceVector<amrex::Real>* fuel_state = nullptr;
   amrex::Real* d_pmf_X = nullptr;
   amrex::Real* d_pmf_Y = nullptr;
-  amrex::Real* d_fuel_state = nullptr;
 };
 
 #endif
