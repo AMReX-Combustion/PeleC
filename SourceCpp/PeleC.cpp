@@ -1433,7 +1433,7 @@ PeleC::enforce_min_density(
     }
 #endif
 
-    // Not enabled in CUDA
+    // Not enabled on the GPU
     // const auto& stateold = S_old[mfi];
     // auto& statenew = S_new[mfi];
     // const auto& vol = volume[mfi];
@@ -1835,16 +1835,14 @@ void
 PeleC::init_reactor()
 {
 #ifdef USE_SUNDIALS_PP
-  int reactor_type = 1;
-  int ode_ncells = 1;
-#ifdef AMREX_USE_CUDA
-  reactor_info(reactor_type, ode_ncells);
+#ifdef AMREX_USE_GPU
+  reactor_info(1, 1);
 #else
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
   {
-    reactor_init(reactor_type, ode_ncells);
+    reactor_init(1, 1);
   }
 #endif
 #endif

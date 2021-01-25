@@ -147,7 +147,8 @@ PeleC::react_state(
           amrex::Real current_time = 0.0;
 
           amrex::Vector<amrex::Real> h_rY_in(ncells * (NUM_SPECIES + 1));
-          amrex::Gpu::DeviceVector<amrex::Real> rY_in(ncells * (NUM_SPECIES + 1));
+          amrex::Gpu::DeviceVector<amrex::Real> rY_in(
+            ncells * (NUM_SPECIES + 1));
           amrex::Real* d_rY_in = rY_in.data();
           amrex::Vector<amrex::Real> h_rY_src_in(ncells * NUM_SPECIES);
           amrex::Gpu::DeviceVector<amrex::Real> rY_src_in(ncells * NUM_SPECIES);
@@ -206,7 +207,8 @@ PeleC::react_state(
 
               if (captured_clean_react_massfrac == 1) {
                 clip_normalize_rY(
-                  sold_arr(i, j, k, URHO), &d_rY_in[offset * (NUM_SPECIES + 1)]);
+                  sold_arr(i, j, k, URHO),
+                  &d_rY_in[offset * (NUM_SPECIES + 1)]);
               }
 
               d_re_in[offset] = rho_old * e_old;
@@ -215,10 +217,18 @@ PeleC::react_state(
 
           amrex::Gpu::streamSynchronize();
 
-          amrex::Gpu::copy(amrex::Gpu::deviceToHost, rY_in.begin(), rY_in.end(), h_rY_in.begin());
-          amrex::Gpu::copy(amrex::Gpu::deviceToHost, rY_src_in.begin(), rY_src_in.end(), h_rY_src_in.begin());
-          amrex::Gpu::copy(amrex::Gpu::deviceToHost, re_in.begin(), re_in.end(), h_re_in.begin());
-          amrex::Gpu::copy(amrex::Gpu::deviceToHost, re_src_in.begin(), re_src_in.end(), h_re_src_in.begin());
+          amrex::Gpu::copy(
+            amrex::Gpu::deviceToHost, rY_in.begin(), rY_in.end(),
+            h_rY_in.begin());
+          amrex::Gpu::copy(
+            amrex::Gpu::deviceToHost, rY_src_in.begin(), rY_src_in.end(),
+            h_rY_src_in.begin());
+          amrex::Gpu::copy(
+            amrex::Gpu::deviceToHost, re_in.begin(), re_in.end(),
+            h_re_in.begin());
+          amrex::Gpu::copy(
+            amrex::Gpu::deviceToHost, re_src_in.begin(), re_src_in.end(),
+            h_re_src_in.begin());
 
           chemintg_cost = 0.0;
           for (int i = 0; i < ncells; i += ode_ncells) {
@@ -226,8 +236,8 @@ PeleC::react_state(
 #ifdef AMREX_USE_GPU
             chemintg_cost += react(
               &h_rY_in[i * (NUM_SPECIES + 1)], &h_rY_src_in[i * NUM_SPECIES],
-              &h_re_in[i], &h_re_src_in[i], dt, current_time, 1,
-              ode_ncells, amrex::Gpu::gpuStream());
+              &h_re_in[i], &h_re_src_in[i], dt, current_time, 1, ode_ncells,
+              amrex::Gpu::gpuStream());
 #else
             chemintg_cost += react(
               &h_rY_in[i * (NUM_SPECIES + 1)], &h_rY_src_in[i * NUM_SPECIES],
@@ -236,10 +246,9 @@ PeleC::react_state(
           }
           chemintg_cost = chemintg_cost / ncells;
 
-          amrex::Gpu::copy(amrex::Gpu::hostToDevice, h_rY_in.begin(), h_rY_in.end(), rY_in.begin());
-          amrex::Gpu::copy(amrex::Gpu::hostToDevice, h_rY_src_in.begin(), h_rY_src_in.end(), rY_src_in.begin());
-          amrex::Gpu::copy(amrex::Gpu::hostToDevice, h_re_in.begin(), h_re_in.end(), re_in.begin());
-          amrex::Gpu::copy(amrex::Gpu::hostToDevice, h_re_src_in.begin(), h_re_src_in.end(), re_src_in.begin());
+          amrex::Gpu::copy(
+            amrex::Gpu::hostToDevice, h_rY_in.begin(), h_rY_in.end(),
+            rY_in.begin());
 
           // unpack data
           amrex::ParallelFor(
@@ -306,7 +315,7 @@ PeleC::react_state(
               for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
                 I_R(i, j, k, nsp) =
                   (d_rY_in[offset * (NUM_SPECIES + 1) + nsp] // new rhoy
-                   - sold_arr(i, j, k, UFS + nsp))         // old rhoy
+                   - sold_arr(i, j, k, UFS + nsp))           // old rhoy
                     / dt -
                   nonrs_arr(i, j, k, UFS + nsp);
               }

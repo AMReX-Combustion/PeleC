@@ -362,9 +362,9 @@ PeleC::variableSetUp()
     int len = 20;
     amrex::Vector<int> int_aux_names(len);
 
-    // Disabling for CUDA at the moment. Look at the species names to see how to
-    // do this in C++. AUX stuff is usually 0 anyway.
-    // // This call return the actual length of each string in "len"
+    // Disabling for the GPU at the moment. Look at the species names to see how
+    // to do this in C++. AUX stuff is usually 0 anyway. This call returns the
+    // actual length of each string in "len"
     // get_aux_names(int_aux_names.dataPtr(),&i,&len);
 
     char* char_aux_names = new char[len + 1];
