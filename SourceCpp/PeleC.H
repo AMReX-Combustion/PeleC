@@ -27,6 +27,7 @@
 
 #include "Filter.H"
 #include "IndexDefines.H"
+#include "prob_parm.H"
 
 using std::istream;
 using std::ostream;
@@ -534,6 +535,8 @@ public:
 #endif
   void avgDown();
   void avgDown(int state_indx);
+
+  static std::unique_ptr<ProbParmDevice> prob_parm;
 
 protected:
   amrex::iMultiFab level_mask;

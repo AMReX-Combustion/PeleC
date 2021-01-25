@@ -666,8 +666,10 @@ PeleC::initData()
     auto sfab = S_new.array(mfi);
     const auto geomdata = geom.data();
 
+    ProbParmDevice const* lprobparm = prob_parm.get();
+
     amrex::ParallelFor(box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      pc_initdata(i, j, k, sfab, geomdata);
+      pc_initdata(i, j, k, sfab, geomdata, *lprobparm);
       // Verify that the sum of (rho Y)_i = rho at every cell
       pc_check_initial_species(i, j, k, sfab);
     });

@@ -33,6 +33,7 @@ struct PCHypFillExtDir
 
     amrex::Real s_int[NVAR] = {0.0};
     amrex::Real s_ext[NVAR] = {0.0};
+    ProbParmDevice const* lprobparm = PeleC::prob_parm.get();
 
     // xlo and xhi
     int idir = 0;
@@ -41,7 +42,7 @@ struct PCHypFillExtDir
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
       }
-      bcnormal(x, s_int, s_ext, idir, +1, time, geom);
+      bcnormal(x, s_int, s_ext, idir, +1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
         dest(iv, n) = s_ext[n];
       }
@@ -52,7 +53,7 @@ struct PCHypFillExtDir
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
       }
-      bcnormal(x, s_int, s_ext, idir, -1, time, geom);
+      bcnormal(x, s_int, s_ext, idir, -1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
         dest(iv, n) = s_ext[n];
       }
@@ -65,7 +66,7 @@ struct PCHypFillExtDir
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
       }
-      bcnormal(x, s_int, s_ext, idir, +1, time, geom);
+      bcnormal(x, s_int, s_ext, idir, +1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
         dest(iv, n) = s_ext[n];
       }
@@ -76,7 +77,7 @@ struct PCHypFillExtDir
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
       }
-      bcnormal(x, s_int, s_ext, idir, -1, time, geom);
+      bcnormal(x, s_int, s_ext, idir, -1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
         dest(iv, n) = s_ext[n];
       }
@@ -88,7 +89,7 @@ struct PCHypFillExtDir
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(iv[0], iv[1], domlo[idir], n);
       }
-      bcnormal(x, s_int, s_ext, idir, +1, time, geom);
+      bcnormal(x, s_int, s_ext, idir, +1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
         dest(iv, n) = s_ext[n];
       }
@@ -98,7 +99,7 @@ struct PCHypFillExtDir
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(iv[0], iv[1], domhi[idir], n);
       }
-      bcnormal(x, s_int, s_ext, idir, -1, time, geom);
+      bcnormal(x, s_int, s_ext, idir, -1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
         dest(iv, n) = s_ext[n];
       }
