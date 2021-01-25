@@ -249,6 +249,7 @@ add_test_rv(eb-c11 EB-C11)
 add_test_rv(eb-c12 EB-C12)
 # add_test_r(eb-c14 EB-C14) # disable due to FPE in ghost cells
 add_test_r(eb-converging-nozzle EB-ConvergingNozzle)
+add_test_r(eb-inflowbc EB-InflowBC)
 if(PELE_DIM GREATER 2)
   add_test_r(shock-cylinder Sod) # can run in 2D but needs input file change
 endif()

@@ -130,9 +130,13 @@ void pc_compute_hyp_mol_flux(
   const amrex::Array4<amrex::EBCellFlag const>& flags);
 
 void pc_compute_hyp_mol_flux_eb(
+  amrex::Geometry const& geom,
   const amrex::Box& cbox,
   const amrex::Array4<const amrex::Real>& q,
+  const amrex::Array4<const amrex::Real>& qaux,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& dx,
+  const bool use_laxf_flux,
+  const amrex::Array4<const amrex::Real>& vfrac,
   const EBBndryGeom* ebg,
   const int Nebg,
   amrex::Real* ebflux,
