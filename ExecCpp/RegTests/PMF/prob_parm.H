@@ -18,8 +18,10 @@ struct ProbParmDevice : amrex::Gpu::Managed
   int pmf_do_average = 0;
 
   amrex::GpuArray<amrex::Real, NVAR> fuel_state = {{0.0}};
-  amrex::Gpu::DeviceVector<amrex::Real>* pmf_X = nullptr;
-  amrex::Gpu::DeviceVector<amrex::Real>* pmf_Y = nullptr;
+  amrex::Vector<amrex::Real> h_pmf_X;
+  amrex::Vector<amrex::Real> h_pmf_Y;
+  amrex::Gpu::DeviceVector<amrex::Real> pmf_X;
+  amrex::Gpu::DeviceVector<amrex::Real> pmf_Y;
   amrex::Real* d_pmf_X = nullptr;
   amrex::Real* d_pmf_Y = nullptr;
 };

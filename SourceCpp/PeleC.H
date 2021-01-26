@@ -29,9 +29,6 @@
 #include "IndexDefines.H"
 #include "prob_parm.H"
 
-using std::istream;
-using std::ostream;
-
 #define UserBC 6
 
 enum StateType {
@@ -94,8 +91,8 @@ public:
   virtual ~PeleC();
 
   // Restart from a checkpoint file.
-  virtual void
-  restart(amrex::Amr& papa, istream& is, bool bReadSpecial = false) override;
+  virtual void restart(
+    amrex::Amr& papa, std::istream& is, bool bReadSpecial = false) override;
 
   // This is called only when we restart from an old checkpoint.
   virtual void
@@ -112,9 +109,9 @@ public:
 
   // Write a plotfile to specified directory.
   virtual void writePlotFile(
-    const std::string& dir, ostream& os, amrex::VisMF::How how) override;
+    const std::string& dir, std::ostream& os, amrex::VisMF::How how) override;
   virtual void writeSmallPlotFile(
-    const std::string& dir, ostream& os, amrex::VisMF::How how) override;
+    const std::string& dir, std::ostream& os, amrex::VisMF::How how) override;
   void writeJobInfo(const std::string& dir);
   static void writeBuildInfo(std::ostream& os);
 

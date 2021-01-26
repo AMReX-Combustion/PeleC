@@ -76,8 +76,11 @@ read_pmf(const std::string& myfile)
 
   PeleC::prob_parm->pmf_N = line_count;
   PeleC::prob_parm->pmf_M = variable_count - 1;
-  PeleC::prob_parm->pmf_X->resize(PeleC::prob_parm->pmf_N);
-  PeleC::prob_parm->pmf_Y->resize(
+  PeleC::prob_parm->h_pmf_X.resize(PeleC::prob_parm->pmf_N);
+  PeleC::prob_parm->pmf_X.resize(PeleC::prob_parm->pmf_N);
+  PeleC::prob_parm->h_pmf_Y.resize(
+    PeleC::prob_parm->pmf_N * PeleC::prob_parm->pmf_M);
+  PeleC::prob_parm->pmf_Y.resize(
     PeleC::prob_parm->pmf_N * PeleC::prob_parm->pmf_M);
 
   iss.clear();
@@ -87,13 +90,20 @@ read_pmf(const std::string& myfile)
   for (unsigned int i = 0; i < PeleC::prob_parm->pmf_N; i++) {
     std::getline(iss, remaininglines);
     std::istringstream sinput(remaininglines);
-    sinput >> (*PeleC::prob_parm->pmf_X)[i];
+    sinput >> PeleC::prob_parm->h_pmf_X[i];
     for (unsigned int j = 0; j < PeleC::prob_parm->pmf_M; j++) {
-      sinput >> (*PeleC::prob_parm->pmf_Y)[j * PeleC::prob_parm->pmf_N + i];
+      sinput >> PeleC::prob_parm->h_pmf_Y[j * PeleC::prob_parm->pmf_N + i];
     }
   }
-  PeleC::prob_parm->d_pmf_X = PeleC::prob_parm->pmf_X->dataPtr();
-  PeleC::prob_parm->d_pmf_Y = PeleC::prob_parm->pmf_Y->dataPtr();
+
+  amrex::Gpu::copy(
+    amrex::Gpu::hostToDevice, PeleC::prob_parm->h_pmf_X.begin(),
+    PeleC::prob_parm->h_pmf_X.end(), PeleC::prob_parm->pmf_X.begin());
+  amrex::Gpu::copy(
+    amrex::Gpu::hostToDevice, PeleC::prob_parm->h_pmf_Y.begin(),
+    PeleC::prob_parm->h_pmf_Y.end(), PeleC::prob_parm->pmf_Y.begin());
+  PeleC::prob_parm->d_pmf_X = PeleC::prob_parm->pmf_X.data();
+  PeleC::prob_parm->d_pmf_Y = PeleC::prob_parm->pmf_Y.data();
 }
 
 void
@@ -153,11 +163,6 @@ init_bc()
 void
 pc_prob_close()
 {
-  delete PeleC::prob_parm->pmf_X;
-  delete PeleC::prob_parm->pmf_Y;
-
-  PeleC::prob_parm->pmf_X = nullptr;
-  PeleC::prob_parm->pmf_Y = nullptr;
   PeleC::prob_parm->d_pmf_X = nullptr;
   PeleC::prob_parm->d_pmf_Y = nullptr;
 }
@@ -184,9 +189,6 @@ amrex_probinit(
   PeleC::prob_parm->L[0] = probhi[0] - problo[0];
   PeleC::prob_parm->L[1] = probhi[1] - problo[1];
   PeleC::prob_parm->L[2] = probhi[2] - problo[2];
-
-  PeleC::prob_parm->pmf_X = new amrex::Gpu::DeviceVector<amrex::Real>;
-  PeleC::prob_parm->pmf_Y = new amrex::Gpu::DeviceVector<amrex::Real>;
 
   read_pmf(pmf_datafile);
 
