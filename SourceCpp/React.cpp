@@ -1,7 +1,7 @@
 #include "PeleC.H"
 #include "React.H"
 #ifdef USE_SUNDIALS_PP
-#include <reactor.h>
+#include "reactor.h"
 #endif
 
 void
@@ -165,7 +165,6 @@ PeleC::react_state(
           const auto len = amrex::length(bx);
           const auto lo = amrex::lbound(bx);
           const int ncells = len.x * len.y * len.z;
-          int reactor_type = 1;
           amrex::Real chemintg_cost;
           amrex::Real current_time = 0.0;
 
@@ -215,6 +214,7 @@ PeleC::react_state(
           amrex::Real* re_src_in;
 
 #ifdef AMREX_USE_CUDA
+          int reactor_type = 1;
           cudaError_t cuda_status = cudaSuccess;
           cudaMallocManaged(
             &rY_in, (NUM_SPECIES + 1) * ncells * sizeof(amrex::Real));

@@ -4,7 +4,7 @@
 #include "prob.H"
 #include "Utilities.H"
 
-#ifdef AMREX_USE_GPU
+#ifdef AMREX_USE_CUDA
 #include <thrust/unique.h>
 #include <thrust/sort.h>
 #include <thrust/execution_policy.h>
@@ -160,7 +160,7 @@ PeleC::initialize_eb2_structs()
 
       // Fill in boundary gradient for cut cells in this grown tile
       const amrex::Real dx = geom.CellSize()[0];
-#ifdef AMREX_USE_GPU
+#ifdef AMREX_USE_CUDA
       const int sv_eb_bndry_geom_size = sv_eb_bndry_geom[iLocal].size();
       thrust::sort(
         thrust::device, sv_eb_bndry_geom[iLocal].data(),
@@ -222,7 +222,8 @@ PeleC::initialize_eb2_structs()
 
     fbox[dir] = amrex::bdryLo(
       amrex::Box(
-        amrex::IntVect(D_DECL(0, 0, 0)), amrex::IntVect(D_DECL(0, 0, 0))),
+        amrex::IntVect(AMREX_D_DECL(0, 0, 0)),
+        amrex::IntVect(AMREX_D_DECL(0, 0, 0))),
       dir, 1);
 
     for (int dir1 = 0; dir1 < AMREX_SPACEDIM; ++dir1) {
@@ -235,7 +236,7 @@ PeleC::initialize_eb2_structs()
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
     for (amrex::MFIter mfi(vfrac, false); mfi.isValid(); ++mfi) {
-      const amrex::Box tbox = mfi.growntilebox(nGrowTr);
+      const amrex::Box tbox = mfi.growntilebox(NUM_GROW);
       const auto& flagfab = flags[mfi];
       amrex::FabType typ = flagfab.getType(tbox);
       int iLocal = mfi.LocalIndex();
@@ -264,7 +265,7 @@ PeleC::initialize_eb2_structs()
             }
           },
           [=] AMREX_GPU_DEVICE(int const& r) noexcept {
-            amrex::Gpu::deviceReduceSum(dp, r);
+            amrex::Gpu::deviceReduceSum_full(dp, r);
           });
         const int Nall_cut_faces = ds.dataValue();
 
@@ -288,7 +289,7 @@ PeleC::initialize_eb2_structs()
           }
         });
 
-#ifdef AMREX_USE_GPU
+#ifdef AMREX_USE_CUDA
         const int v_all_cut_faces_size = v_all_cut_faces.size();
         thrust::sort(
           thrust::device, v_all_cut_faces.data(),
@@ -297,7 +298,7 @@ PeleC::initialize_eb2_structs()
           v_all_cut_faces.data(), v_all_cut_faces.data() + v_all_cut_faces_size,
           thrust::equal_to<amrex::IntVect>());
         const int count_result =
-          thrust::count(v_all_cut_faces.data(), unique_result_end, 1);
+          thrust::distance(v_all_cut_faces.data(), unique_result_end);
         amrex::Gpu::DeviceVector<amrex::IntVect> v_cut_faces(count_result);
         amrex::IntVect* d_all_cut_faces = v_all_cut_faces.data();
         amrex::IntVect* d_cut_faces = v_cut_faces.data();

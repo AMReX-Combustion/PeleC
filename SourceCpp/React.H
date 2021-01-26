@@ -6,34 +6,6 @@
 #include "IndexDefines.H"
 #include "EOS.H"
 
-#ifndef AMREX_USE_GPU
-const amrex::Real alpha_rk64[6] = {
-  0.218150805229859,  // 3296351145737.0/15110423921029.0,
-  0.256702469801519,  // 1879360555526.0/ 7321162733569.0,
-  0.527402592007520,  // 10797097731880.0/20472212111779.0,
-  0.0484864267224467, // 754636544611.0/15563872110659.0,
-  1.24517071533530,   // 3260218886217.0/ 2618290685819.0,
-  0.412366034843237,  // 5069185909380.0/12292927838509.0
-};
-
-const amrex::Real beta_rk64[6] = {
-  -0.113554138044166,  // -1204558336989.0/10607789004752.0,
-  -0.215118587818400,  // -3028468927040.0/14078136890693.0,
-  -0.0510152146250577, // -455570672869.0/ 8930094212428.0,
-  -1.07992686223881,   // -17275898420483.0/15997285579755.0,
-  -0.248664241213447,  // -2453906524165.0/ 9868353053862.0,
-  0.0};
-
-const amrex::Real err_rk64[6] = {
-  -0.0554699315064507, // -530312978447.0/ 9560368366154.0,
-  0.158481845574980,   //  473021958881.0/ 2984707536468.0,
-  -0.0905918835751907, // -947229622805.0/10456009803779.0,
-  -0.219084567203338,  // -2921473878215.0/13334914072261.0,
-  0.164022338959433,   //  1519535112975.0/ 9264196100452.0,
-  0.0426421977505659   //  167623581683.0/ 3930932046784.0
-};
-#endif
-
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
@@ -77,24 +49,22 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 adapt_timestep(
-  const amrex::Real rk_err[],
+  const amrex::Real rk_err[NVAR],
   const amrex::Real dt_rk4max,
   amrex::Real& dt,
   const amrex::Real dt_rk4min,
   const amrex::Real tol)
 {
-  amrex::Real change_factor;
-  amrex::Real err = amrex::max<amrex::Real>(rk_err[0], rk_err[1]);
-  for (int n = 2; n < NVAR; n++)
-    err = amrex::max<amrex::Real>(rk_err[n], err);
+  amrex::Real err = amrex::Math::abs(rk_err[0]);
+  for (int n = 0; n < NVAR; n++)
+    err = amrex::max<amrex::Real>(amrex::Math::abs(rk_err[n]), err);
 
   if (err < tol) {
     err = amrex::max<amrex::Real>(err, tol * 1.e-4);
-    change_factor = std::sqrt(
-      std::sqrt(tol / err)); // sqrt sqrt is faster than pow(var, 0.25)
+    const amrex::Real change_factor = std::pow(tol / err, 0.25);
     dt = amrex::min<amrex::Real>(dt_rk4max, dt * change_factor);
   } else {
-    change_factor = std::pow(tol / err, 0.2);
+    const amrex::Real change_factor = std::pow(tol / err, 0.2);
     dt = amrex::max<amrex::Real>(dt_rk4min, dt * change_factor);
   }
 }
@@ -120,9 +90,6 @@ pc_expl_reactions(
   const int do_update,
   const int clean_react_massfrac)
 {
-#ifdef AMREX_USE_GPU
-  // having a global __constant__ variable is slower than having this in local
-  // memory.
   const amrex::Real alpha_rk64[6] = {
     0.218150805229859,  // 3296351145737.0/15110423921029.0,
     0.256702469801519,  // 1879360555526.0/ 7321162733569.0,
@@ -148,7 +115,6 @@ pc_expl_reactions(
     0.164022338959433,   //  1519535112975.0/ 9264196100452.0,
     0.0426421977505659   //  167623581683.0/ 3930932046784.0
   };
-#endif
 
   // compute rhoe_ext/rhoy_ext
 

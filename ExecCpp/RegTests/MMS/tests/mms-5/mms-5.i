@@ -8,7 +8,7 @@ geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
 geometry.prob_lo     =  -1.0 -1.0 -1.0
 geometry.prob_hi     =   1.0  1.0  1.0
 # use with single level
-amr.n_cell           =  8    8    8
+amr.n_cell           =  16  16  16
 
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall

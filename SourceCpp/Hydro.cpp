@@ -214,7 +214,7 @@ PeleC::construct_hydro_source(
           a{{AMREX_D_DECL(
             area[0].array(mfi), area[1].array(mfi), area[2].array(mfi))}};
         pc_umdrv(
-          is_finest_level, time, bx, domain_lo, domain_hi, phys_bc.lo(),
+          is_finest_level, time, fbx, domain_lo, domain_hi, phys_bc.lo(),
           phys_bc.hi(), s, hyd_src, qarr, qauxar, srcqarr, dx, dt, ppm_type,
           use_flattening, flx_arr, a, volume.array(mfi), cflLoc);
         BL_PROFILE_VAR_STOP(purm);

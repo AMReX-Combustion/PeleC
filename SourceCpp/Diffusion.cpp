@@ -152,7 +152,9 @@ PeleC::getMOLSrcTerm(
       int local_i = mfi.LocalIndex();
       int Ncut = (!eb_in_domain) ? 0 : sv_eb_bndry_grad_stencil[local_i].size();
       SparseData<amrex::Real, EBBndrySten> eb_flux_thdlocal;
-      eb_flux_thdlocal.define(sv_eb_bndry_grad_stencil[local_i], NVAR);
+      if (Ncut > 0) {
+        eb_flux_thdlocal.define(sv_eb_bndry_grad_stencil[local_i], NVAR);
+      }
       auto* d_sv_eb_bndry_geom =
         (Ncut > 0 ? sv_eb_bndry_geom[local_i].data() : nullptr);
 #endif
@@ -456,7 +458,7 @@ PeleC::getMOLSrcTerm(
           eb_tile_mask[icut] = 1;
         }
       });
-      if (typ == amrex::FabType::singlevalued) {
+      if (typ == amrex::FabType::singlevalued && Ncut > 0) {
         sv_eb_flux[local_i].merge(eb_flux_thdlocal, 0, NVAR, v_eb_tile_mask);
       }
 
@@ -547,9 +549,9 @@ PeleC::getMOLSrcTerm(
 
           if (fr_as_crse) {
             fr_as_crse->CrseAdd(
-              mfi, {D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dxD.data(),
-              dt, vfrac[mfi],
-              {D_DECL(
+              mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])},
+              dxD.data(), dt, vfrac[mfi],
+              {AMREX_D_DECL(
                 &((*areafrac[0])[mfi]), &((*areafrac[1])[mfi]),
                 &((*areafrac[2])[mfi]))},
               device);
@@ -562,9 +564,9 @@ PeleC::getMOLSrcTerm(
 
           if (fr_as_fine) {
             fr_as_fine->FineAdd(
-              mfi, {D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dxD.data(),
-              dt, vfrac[mfi],
-              {D_DECL(
+              mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])},
+              dxD.data(), dt, vfrac[mfi],
+              {AMREX_D_DECL(
                 &((*areafrac[0])[mfi]), &((*areafrac[1])[mfi]),
                 &((*areafrac[2])[mfi]))},
               dm_as_fine, device);

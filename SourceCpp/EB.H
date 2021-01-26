@@ -38,9 +38,9 @@ is_inside(
   const amrex::Dim3 hi,
   const int ng)
 {
-  return (i >= lo.x - ng and i <= hi.x + ng) and
-         (j >= lo.y - ng and j <= hi.y + ng) and
-         (k >= lo.z - ng and k <= hi.z + ng);
+  return (i >= lo.x - ng && i <= hi.x + ng) &&
+         (j >= lo.y - ng && j <= hi.y + ng) &&
+         (k >= lo.z - ng && k <= hi.z + ng);
 }
 
 AMREX_GPU_DEVICE
@@ -67,7 +67,7 @@ argmax(const amrex::Real array[AMREX_SPACEDIM])
     if (max_num == array[i])
       return i;
   }
-  return -1;
+  return 0;
 }
 
 AMREX_GPU_DEVICE

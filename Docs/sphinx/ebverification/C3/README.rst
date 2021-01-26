@@ -1,3 +1,5 @@
+.. _EB-C3:
+
 C3. Zero dimensional ignition with embedded boundaries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

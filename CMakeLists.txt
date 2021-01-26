@@ -16,11 +16,14 @@ option(PELEC_ENABLE_ALL_WARNINGS "Enable all compiler warnings" ON)
 option(PELEC_ENABLE_CLANG_TIDY "Enable clang-tidy analysis" OFF)
 option(PELEC_ENABLE_CPPCHECK "Enable cppcheck analysis" OFF)
 option(PELEC_ENABLE_WERROR "Treat compiler warnings as errors" OFF)
-option(PELEC_ENABLE_TESTS "Enable regression and unit tests" OFF)
 option(PELEC_ENABLE_MASA "Enable tests that require MASA" OFF)
 option(PELEC_ENABLE_SUNDIALS "Enable SUNDIALS as ODE solver" OFF)
 option(PELEC_ENABLE_FCOMPARE "Enable building fcompare when not testing" OFF)
+option(PELEC_ENABLE_TESTS "Enable regression and unit tests" OFF)
 option(PELEC_ENABLE_FCOMPARE_FOR_TESTS "Check test plots against gold files" OFF)
+option(PELEC_ENABLE_SANITIZE_FOR_TESTS "Currently only disables certain long running MMS tests if set" OFF)
+option(PELEC_ENABLE_FPE_TRAP_FOR_TESTS "Enable FPE trapping in tests" ON)
+option(PELEC_ENABLE_TINY_PROFILE "Enable tiny profiler in AMReX" OFF)
 set(PELEC_PRECISION "DOUBLE" CACHE STRING "Floating point precision SINGLE or DOUBLE")
 
 #Options for performance
@@ -57,6 +60,7 @@ endif()
 
 ########################### AMReX #####################################
 
+message(STATUS "AMReX Configure Section")
 set(AMREX_SUBMOD_LOCATION "${CMAKE_SOURCE_DIR}/Submodules/AMReX")
 include(SetAmrexOptions)
 list(APPEND CMAKE_MODULE_PATH "${AMREX_SUBMOD_LOCATION}/Tools/CMake")
@@ -66,9 +70,21 @@ endif()
 add_subdirectory(${AMREX_SUBMOD_LOCATION})
 include(SetAmrexCompileFlags)
 
+########################## SUNDIALS ###################################
+
+if(PELEC_ENABLE_SUNDIALS)
+  message(STATUS "SUNDIALS Configure Section")
+  set(SUNDIALS_SUBMOD_LOCATION "${CMAKE_SOURCE_DIR}/Submodules/sundials")
+  include(SetSundialsOptions)
+  #BUILD_TESTING is an old CMake keyword so don't clear it in sundials configure
+  set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+  add_subdirectory(${SUNDIALS_SUBMOD_LOCATION})
+endif()
+
 ########################### MASA #####################################
 
 if(PELEC_ENABLE_MASA)
+  message(STATUS "MASA Configure Section")
   set(CMAKE_PREFIX_PATH ${MASA_DIR} ${CMAKE_PREFIX_PATH})
   find_package(MASA QUIET REQUIRED)
   if(MASA_FOUND)
@@ -76,19 +92,10 @@ if(PELEC_ENABLE_MASA)
   endif()
 endif()
 
-########################## SUNDIALS ###################################
-
-if(PELEC_ENABLE_SUNDIALS)
-  set(CMAKE_PREFIX_PATH ${SUNDIALS_DIR} ${CMAKE_PREFIX_PATH})
-  find_package(SUNDIALS QUIET REQUIRED)
-  if(SUNDIALS_FOUND)
-    message(STATUS "Found SUNDIALS = ${SUNDIALS_DIR}")
-  endif()
-endif()
-
 ########################### PeleC #####################################
 
 if(PELEC_ENABLE_MPI)
+  message(STATUS "MPI Configure Section")
   find_package(MPI REQUIRED)
 endif()
 
