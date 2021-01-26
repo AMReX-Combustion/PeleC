@@ -18,11 +18,15 @@ PeleC::react_state(
 
   AMREX_ASSERT(do_react == 1);
 
-  if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
-    if (react_init) {
+  if (verbose && amrex::ParallelDescriptor::IOProcessor()) 
+  {
+    if (react_init) 
+    {
       amrex::Print() << "... Initializing reactions, using interval dt = " << dt
                      << std::endl;
-    } else {
+    } 
+    else 
+    {
       amrex::Print() << "... Computing reactions for dt = " << dt << std::endl;
     }
   }
@@ -35,29 +39,39 @@ PeleC::react_state(
   amrex::MultiFab non_react_src_tmp;
   amrex::MultiFab* non_react_src = nullptr;
 
-  if (react_init) {
+  if (react_init) 
+  {
     non_react_src_tmp.define(grids, dmap, NVAR, ng, amrex::MFInfo(), Factory());
     non_react_src_tmp.setVal(0);
     non_react_src = &non_react_src_tmp;
-  } else {
+  } 
+  else 
+  {
     // Only do this if we are not at the first step
     // Build non-reacting source term, and an S_new that does not include
     // reactions
-    if (aux_src == nullptr) {
+    if (aux_src == nullptr) 
+    {
       non_react_src_tmp.define(
         grids, dmap, NVAR, ng, amrex::MFInfo(), Factory());
       non_react_src_tmp.setVal(0);
       non_react_src = &non_react_src_tmp;
-      for (int n = 0; n < src_list.size(); ++n) {
+      
+      for (int n = 0; n < src_list.size(); ++n) 
+      {
         amrex::MultiFab::Saxpy(
           non_react_src_tmp, 0.5, *new_sources[src_list[n]], 0, 0, NVAR, ng);
         amrex::MultiFab::Saxpy(
           non_react_src_tmp, 0.5, *old_sources[src_list[n]], 0, 0, NVAR, ng);
       }
-      if (do_hydro && !do_mol) {
+      
+      if (do_hydro && !do_mol) 
+      {
         amrex::MultiFab::Add(non_react_src_tmp, hydro_source, 0, 0, NVAR, ng);
       }
-    } else {
+    } 
+    else 
+    {
       // in MOL update all non-reacting sources
       // are passed into auxillary sources
       non_react_src = aux_src;
@@ -75,26 +89,28 @@ PeleC::react_state(
   prefetchToDevice(react_src);
 
 #ifdef CVODE_BOXINTEG
-  amrex::MultiFab Stemp(grids, dmap, NUM_SPECIES+2, 0);
-  amrex::MultiFab extsrc_rY(grids,dmap,NUM_SPECIES,0);
-  amrex::MultiFab extsrc_rE(grids,dmap,1,0);
+  amrex::MultiFab Stemp(grids, dmap, NUM_SPECIES + 2, 0);
+  amrex::MultiFab extsrc_rY(grids, dmap, NUM_SPECIES, 0);
+  amrex::MultiFab extsrc_rE(grids, dmap, 1, 0);
 
-  amrex::iMultiFab dummyMask(grids,dmap,1,0);
-  amrex::MultiFab fctCount(grids,dmap,1,0);
+  amrex::iMultiFab dummyMask(grids, dmap, 1, 0);
+  amrex::MultiFab fctCount(grids, dmap, 1, 0);
   dummyMask.setVal(1);
 
-  if(!react_init) {
-      STemp.copy(S_old,UFS,0,NUM_SPECIES);
-      STemp.copy(S_old,UEINT,NUM_SPECIES,1);
-      STemp.copy(S_old,UTEMP,NUM_SPECIES+1,1);
-  } else {
-      STemp.copy(S_new,UFS,0,NUM_SPECIES);
-      STemp.copy(S_new,UEINT,NUM_SPECIES,1);
-      STemp.copy(S_new,UTEMP,NUM_SPECIES+1,1);
+  if (!react_init) 
+  {
+    STemp.copy(S_old, UFS, 0, NUM_SPECIES);
+    STemp.copy(S_old, UEINT, NUM_SPECIES, 1);
+    STemp.copy(S_old, UTEMP, NUM_SPECIES + 1, 1);
+  } 
+  else 
+  {
+    STemp.copy(S_new, UFS, 0, NUM_SPECIES);
+    STemp.copy(S_new, UEINT, NUM_SPECIES, 1);
+    STemp.copy(S_new, UTEMP, NUM_SPECIES + 1, 1);
   }
-  extsrc_rY.copy(non_react_src,UFS,0,NUM_SPECIES);
+  extsrc_rY.copy(non_react_src, UFS, 0, NUM_SPECIES);
 #endif
-
 
 #ifdef PELEC_USE_EB
   auto const& fact =
@@ -107,7 +123,8 @@ PeleC::react_state(
 #endif
   {
     for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
-         ++mfi) {
+         ++mfi) 
+    {
 
       const amrex::Box& bx = mfi.growntilebox(ng);
 
@@ -129,8 +146,10 @@ PeleC::react_state(
 #ifdef PELEC_USE_EB
       const auto& flag_fab = flags[mfi];
       amrex::FabType typ = flag_fab.getType(bx);
-      if (typ == amrex::FabType::covered) {
-        if (do_react_load_balance) {
+      if (typ == amrex::FabType::covered) 
+      {
+        if (do_react_load_balance) 
+        {
           const amrex::Box vbox = mfi.tilebox();
           get_new_data(Work_Estimate_Type)[mfi].plus<amrex::RunOn::Device>(
             0.0, vbox);
@@ -140,7 +159,9 @@ PeleC::react_state(
       if (typ == amrex::FabType::singlevalued || typ == amrex::FabType::regular)
 #endif
       {
-        if (chem_integrator == 1) {
+        
+        if (chem_integrator == 1) 
+        {
           // for rk64 we set minimum, maximum and guess
           // number of sub-iterations
           const int nsubsteps_min = adaptrk_nsubsteps_min;
@@ -157,7 +178,10 @@ PeleC::react_state(
                 nsubsteps_max, nsubsteps_guess, errtol, do_update,
                 captured_clean_react_massfrac);
             });
-        } else if (chem_integrator == 2) {
+        } 
+        
+        else if (chem_integrator == 2) 
+        {
 #ifdef USE_SUNDIALS_PP
           amrex::Real wt =
             amrex::ParallelDescriptor::second(); // timing for each fab
@@ -170,16 +194,17 @@ PeleC::react_state(
 
 #ifdef CVODE_BOXINTEG
 
-          auto const& rhoY    = STemp.array(mfi);
-          auto const& T       = STemp.array(mfi,NUM_SPECIES);
-          auto const& rhoE    = STemp.array(mfi,NUM_SPECIES+1);
-          auto const& frcExt  = extsrc_rY.array(mfi);
-          auto const& frcEExt = extsrc_rE.array(mfi); 
-          auto const& mask    = dummyMask.array(mfi);
-          auto const& fc      = fctCount.array(mfi);
+          auto const& rhoY = STemp.array(mfi);
+          auto const& T = STemp.array(mfi, NUM_SPECIES);
+          auto const& rhoE = STemp.array(mfi, NUM_SPECIES + 1);
+          auto const& frcExt = extsrc_rY.array(mfi);
+          auto const& frcEExt = extsrc_rE.array(mfi);
+          auto const& mask = dummyMask.array(mfi);
+          auto const& fc = fctCount.array(mfi);
 
           amrex::ParallelFor(
-            bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+            bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
+            {
               // work on old state
               amrex::Real rhou = sold_arr(i, j, k, UMX);
               amrex::Real rhov = sold_arr(i, j, k, UMY);
@@ -199,13 +224,13 @@ PeleC::react_state(
               rhow = snew_arr(i, j, k, UMZ);
               rhoInv = 1.0 / snew_arr(i, j, k, URHO);
 
-              amrex::Real frcEext(i,j,k) =
+              amrex::Real frcEext(i, j, k) =
                 (snew_arr(i, j, k, UEDEN) // new total energy
                  - 0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) *
                      rhoInv // new KE
                  - rho_old * e_old) /
                 dt;
-          });
+            });
 
 #else
           amrex::Real* rY_in;
@@ -233,7 +258,8 @@ PeleC::react_state(
           int ode_ncells = 1;
 #endif
           amrex::ParallelFor(
-            bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+            bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
+            {
               // work on old state
               amrex::Real rhou = sold_arr(i, j, k, UMX);
               amrex::Real rhov = sold_arr(i, j, k, UMY);
@@ -284,22 +310,16 @@ PeleC::react_state(
 #ifdef AMREX_USE_CUDA
           cuda_status = cudaStreamSynchronize(amrex::Gpu::gpuStream());
 #endif
- 
+
 #ifdef CVODE_BOXINTEG
 
 #ifdef AMREX_USE_CUDA
-          react(bx,
-                rhoY, frcExt, T,
-                rhoE, frcEExt,
-                fc, mask,
-                dt, current_time,
-                reactor_type, Gpu::gpuStream());
+          react(
+            bx, rhoY, frcExt, T, rhoE, frcEExt, fc, mask, dt, current_time,
+            reactor_type, Gpu::gpuStream());
 #else
-          react(box,
-                  rhoY, frcExt, T,
-                  rhoE, frcEExt,
-                  fc, mask,
-                  dt, current_time);
+          react(
+            box, rhoY, frcExt, T, rhoE, frcEExt, fc, mask, dt, current_time);
 #endif
 #else
           chemintg_cost = 0.0;
@@ -321,7 +341,8 @@ PeleC::react_state(
 
           // unpack data
           amrex::ParallelFor(
-            bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+            bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
+            {
               // work on old state
               amrex::Real rhou = sold_arr(i, j, k, UMX);
               amrex::Real rhov = sold_arr(i, j, k, UMY);
@@ -358,21 +379,41 @@ PeleC::react_state(
               amrex::Real rhonew = 0.;
               int offset =
                 (k - lo.z) * len.x * len.y + (j - lo.y) * len.x + (i - lo.x);
-              for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
+
+#ifdef CVODE_BOXINTEG
+              for (int nsp = 0; nsp < NUM_SPECIES; nsp++) 
+              {
+                rhonew += rhoY(i,j,k,nsp);
+              }
+#else
+              for (int nsp = 0; nsp < NUM_SPECIES; nsp++) 
+              {
                 rhonew += rY_in[offset * (NUM_SPECIES + 1) + nsp];
               }
+#endif
 
-              if (do_update) {
+              if (do_update) 
+              {
                 snew_arr(i, j, k, URHO) = rhonew;
                 snew_arr(i, j, k, UMX) = umnew;
                 snew_arr(i, j, k, UMY) = vmnew;
                 snew_arr(i, j, k, UMZ) = wmnew;
-                for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
+
+#ifdef CVODE_BOXINTEG
+                for (int nsp = 0; nsp < NUM_SPECIES; nsp++) 
+                {
+                  snew_arr(i, j, k, UFS + nsp) = rhoY(i,j,k,nsp);
+                }
+                snew_arr(i, j, k, UTEMP) = T(i,j,k);
+#else
+                for (int nsp = 0; nsp < NUM_SPECIES; nsp++) 
+                {
                   snew_arr(i, j, k, UFS + nsp) =
                     rY_in[offset * (NUM_SPECIES + 1) + nsp];
                 }
                 snew_arr(i, j, k, UTEMP) =
                   rY_in[offset * (NUM_SPECIES + 1) + NUM_SPECIES];
+#endif
 
                 snew_arr(i, j, k, UEINT) = rho_old * e_old + dt * rhoedot_ext;
                 snew_arr(i, j, k, UEDEN) =
@@ -381,13 +422,26 @@ PeleC::react_state(
                     rhonew;
               }
 
-              for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
+#ifdef CVODE_BOXINTEG
+              for (int nsp = 0; nsp < NUM_SPECIES; nsp++) 
+              {
+                I_R(i, j, k, nsp) =
+                  rhoY(i,j,k,nsp)                          // new rhoy
+                   - sold_arr(i, j, k, UFS + nsp))         // old rhoy
+                    / dt -
+                  nonrs_arr(i, j, k, UFS + nsp);
+              }
+#else
+              for (int nsp = 0; nsp < NUM_SPECIES; nsp++) 
+              {
                 I_R(i, j, k, nsp) =
                   (rY_in[offset * (NUM_SPECIES + 1) + nsp] // new rhoy
                    - sold_arr(i, j, k, UFS + nsp))         // old rhoy
                     / dt -
                   nonrs_arr(i, j, k, UFS + nsp);
               }
+#endif
+
               I_R(i, j, k, NUM_SPECIES) =
                 (rho_old * e_old + dt * rhoedot_ext // new internal energy
                  + 0.5 * (umnew * umnew + vmnew * vmnew + wmnew * wmnew) /
