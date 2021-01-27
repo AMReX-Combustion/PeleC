@@ -847,6 +847,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
     }
 
     if (diffuse_vel) {
+      TransParm const* ltransparm = trans_parm_g;
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
 #ifdef PELEC_USE_EB
@@ -865,12 +866,13 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 #ifdef PELEC_USE_EB
             flag_arr,
 #endif
-            AMREX_D_DECL(dx1, dx2, dx3));
+            AMREX_D_DECL(dx1, dx2, dx3), ltransparm);
         });
       estdt_vdif = amrex::min<amrex::Real>(estdt_vdif, dt);
     }
 
     if (diffuse_temp) {
+      TransParm const* ltransparm = trans_parm_g;
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
 #ifdef PELEC_USE_EB
@@ -889,12 +891,13 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 #ifdef PELEC_USE_EB
             flag_arr,
 #endif
-            AMREX_D_DECL(dx1, dx2, dx3));
+            AMREX_D_DECL(dx1, dx2, dx3), ltransparm);
         });
       estdt_tdif = amrex::min<amrex::Real>(estdt_tdif, dt);
     }
 
     if (diffuse_enth) {
+      TransParm const* ltransparm = trans_parm_g;
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
 #ifdef PELEC_USE_EB
@@ -913,7 +916,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 #ifdef PELEC_USE_EB
             flag_arr,
 #endif
-            AMREX_D_DECL(dx1, dx2, dx3));
+            AMREX_D_DECL(dx1, dx2, dx3), ltransparm);
         });
       estdt_edif = amrex::min<amrex::Real>(estdt_edif, dt);
     }

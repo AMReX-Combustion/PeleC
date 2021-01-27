@@ -26,7 +26,8 @@ pc_trans4dt(
   amrex::Real T,
   amrex::Real rho,
   amrex::Real massfrac[],
-  amrex::Real& D)
+  amrex::Real& D,
+  TransParm const* trans_parm)
 {
   bool get_xi = false, get_mu = false, get_lam = false, get_Ddiag = false;
   amrex::Real dum1 = 0., dum2 = 0.;
@@ -35,12 +36,12 @@ pc_trans4dt(
     get_mu = true;
     transport(
       get_xi, get_mu, get_lam, get_Ddiag, T, rho, massfrac, nullptr, D, dum1,
-      dum2);
+      dum2, trans_parm);
   } else if (which_trans == 1) {
     get_lam = true;
     transport(
       get_xi, get_mu, get_lam, get_Ddiag, T, rho, massfrac, nullptr, dum1, dum2,
-      D);
+      D, trans_parm);
   }
 }
 
@@ -65,9 +66,8 @@ amrex::Real pc_estdt_veldif(
   const amrex::Array4<const amrex::EBCellFlag>& flags,
 #endif
   AMREX_D_DECL(
-    const amrex::Real& dx,
-    const amrex::Real& dy,
-    const amrex::Real& dz)) noexcept;
+    const amrex::Real& dx, const amrex::Real& dy, const amrex::Real& dz),
+  TransParm const* trans_parm) noexcept;
 
 // Diffusion Temperature
 AMREX_GPU_DEVICE
@@ -78,9 +78,8 @@ amrex::Real pc_estdt_tempdif(
   const amrex::Array4<const amrex::EBCellFlag>& flags,
 #endif
   AMREX_D_DECL(
-    const amrex::Real& dx,
-    const amrex::Real& dy,
-    const amrex::Real& dz)) noexcept;
+    const amrex::Real& dx, const amrex::Real& dy, const amrex::Real& dz),
+  TransParm const* trans_parm) noexcept;
 
 // Diffusion Enthalpy
 AMREX_GPU_DEVICE
@@ -91,8 +90,7 @@ amrex::Real pc_estdt_enthdif(
   const amrex::Array4<const amrex::EBCellFlag>& flags,
 #endif
   AMREX_D_DECL(
-    const amrex::Real& dx,
-    const amrex::Real& dy,
-    const amrex::Real& dz)) noexcept;
+    const amrex::Real& dx, const amrex::Real& dy, const amrex::Real& dz),
+  TransParm const* trans_parm) noexcept;
 
 #endif
