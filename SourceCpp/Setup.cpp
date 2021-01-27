@@ -325,28 +325,7 @@ PeleC::variableSetUp()
   }
 
   // Get the species names from the network model.
-  {
-    int len = 20;
-    // cppcheck-suppress knownArgument
-    amrex::Vector<int> int_spec_names(len * NUM_SPECIES);
-    CKSYMS(int_spec_names.dataPtr(), &len);
-    for (int i = 0; i < NUM_SPECIES; i++) {
-      int j = 0;
-      for (j = 0; j < len; j++) {
-        if (int_spec_names[i * len + j] == ' ') {
-          break;
-        }
-      }
-      const int strlen = j;
-      char* char_spec_names = new char[strlen + 1];
-      for (j = 0; j < strlen; j++) {
-        char_spec_names[j] = int_spec_names[i * len + j];
-      }
-      char_spec_names[j] = '\0';
-      spec_names.push_back(std::string(char_spec_names));
-      delete[] char_spec_names;
-    }
-  }
+  CKSYMS_STR(spec_names);
 
   if (amrex::ParallelDescriptor::IOProcessor()) {
     amrex::Print() << NUM_SPECIES << " Species: " << std::endl;
