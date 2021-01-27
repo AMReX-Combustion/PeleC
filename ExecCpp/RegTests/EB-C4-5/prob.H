@@ -24,7 +24,8 @@ pc_initdata(
   int j,
   int k,
   amrex::Array4<amrex::Real> const& state,
-  amrex::GeometryData const& /*geomdata*/)
+  amrex::GeometryData const& /*geomdata*/,
+  ProbParmDevice const& /*prob_parm*/)
 {
   // Set the state
   state(i, j, k, URHO) = ProbParm::rho_init;
@@ -48,7 +49,8 @@ bcnormal(
   const int /*idir*/,
   const int /*sgn*/,
   const amrex::Real /*time*/,
-  amrex::GeometryData const& /*geomdata*/)
+  amrex::GeometryData const& /*geomdata*/,
+  ProbParmDevice const& /*prob_parm*/)
 {
 }
 

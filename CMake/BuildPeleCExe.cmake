@@ -29,7 +29,6 @@ function(build_pelec_exe pelec_exe_name)
   target_sources(${pelec_exe_name} PRIVATE
                  ${PELEC_TRANSPORT_DIR}/Transport.H
                  ${PELEC_TRANSPORT_DIR}/Transport.cpp
-                 ${PELEC_TRANSPORT_DIR}/TransportParams.cpp
                  ${PELEC_TRANSPORT_DIR}/TransportParams.H)
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELEC_TRANSPORT_DIR})
 
