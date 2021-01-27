@@ -123,6 +123,10 @@ ebInitialized(bool eb_init_val)
 void
 PeleC::variableCleanUp()
 {
+  prob_parm.reset();
+
+  derive_lst.clear();
+
   desc_lst.clear();
 
   transport_close();
