@@ -22,4 +22,9 @@ struct ProbParmDevice : amrex::Gpu::Managed
   amrex::Real rho0 = 0.0;
   amrex::Real v0 = 0.0;
 };
+
+struct ProbParmHost : amrex::Gpu::Managed
+{
+};
+
 #endif

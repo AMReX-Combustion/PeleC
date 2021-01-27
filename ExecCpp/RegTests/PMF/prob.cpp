@@ -165,8 +165,6 @@ init_bc()
 void
 pc_prob_close()
 {
-  PeleC::prob_parm_device->d_pmf_X = nullptr;
-  PeleC::prob_parm_device->d_pmf_Y = nullptr;
 }
 
 extern "C" {
