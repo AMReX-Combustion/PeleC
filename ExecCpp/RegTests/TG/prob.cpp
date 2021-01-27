@@ -70,9 +70,6 @@ amrex_probinit(
   trans_parm.const_conductivity =
     trans_parm.const_viscosity * cp / PeleC::prob_parm_device->prandtl;
 
-  /* GPU */
-  // trans_parm_g = (TransParm *)
-  // amrex::The_Device_Arena()->alloc(sizeof(trans_parm));
 #ifdef AMREX_USE_GPU
   amrex::Gpu::htod_memcpy(trans_parm_g, &trans_parm, sizeof(trans_parm));
 #else

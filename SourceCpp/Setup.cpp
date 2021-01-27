@@ -324,7 +324,10 @@ PeleC::variableSetUp()
     name[cnt] = std::string(buf);
   }
 
-  // Get the species names from the network model.
+  // Get the species names from the network model
+  // Set it for Null mechanism let it be overwritten for others
+  spec_names.resize(1);
+  spec_names[0] = "Null";
   CKSYMS_STR(spec_names);
 
   if (amrex::ParallelDescriptor::IOProcessor()) {
