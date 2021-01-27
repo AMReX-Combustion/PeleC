@@ -123,7 +123,8 @@ ebInitialized(bool eb_init_val)
 void
 PeleC::variableCleanUp()
 {
-  prob_parm.reset();
+  prob_parm_device.reset();
+  prob_parm_host.reset();
 
   derive_lst.clear();
 
@@ -670,7 +671,7 @@ PeleC::initData()
     auto sfab = S_new.array(mfi);
     const auto geomdata = geom.data();
 
-    ProbParmDevice const* lprobparm = prob_parm.get();
+    ProbParmDevice const* lprobparm = prob_parm_device.get();
 
     amrex::ParallelFor(box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       pc_initdata(i, j, k, sfab, geomdata, *lprobparm);

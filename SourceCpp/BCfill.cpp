@@ -145,7 +145,7 @@ pc_bcfill_hyp(
   const int bcomp,
   const int scomp)
 {
-  ProbParmDevice const* lprobparm = PeleC::prob_parm.get();
+  ProbParmDevice const* lprobparm = PeleC::prob_parm_device.get();
   amrex::GpuBndryFuncFab<PCHypFillExtDir> hyp_bndry_func(
     PCHypFillExtDir{lprobparm});
   hyp_bndry_func(bx, data, dcomp, numcomp, geom, time, bcr, bcomp, scomp);

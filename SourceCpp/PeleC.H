@@ -533,7 +533,8 @@ public:
   void avgDown();
   void avgDown(int state_indx);
 
-  static std::unique_ptr<ProbParmDevice> prob_parm;
+  static std::unique_ptr<ProbParmDevice> prob_parm_device;
+  static std::unique_ptr<ProbParmHost> prob_parm_host;
 
 protected:
   amrex::iMultiFab level_mask;

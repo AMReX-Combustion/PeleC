@@ -13,7 +13,8 @@ using namespace MASA;
 #include "prob.H"
 #include "chemistry_file.H"
 
-std::unique_ptr<ProbParmDevice> PeleC::prob_parm;
+std::unique_ptr<ProbParmDevice> PeleC::prob_parm_device;
+std::unique_ptr<ProbParmHost> PeleC::prob_parm_host;
 
 // Components are:
 // Interior, Inflow, Outflow,  Symmetry,     SlipWall,     NoSlipWall, UserBC
@@ -137,7 +138,8 @@ PeleC::variableSetUp()
 
   AMREX_ASSERT(desc_lst.size() == 0);
 
-  prob_parm.reset(new ProbParmDevice{});
+  prob_parm_device.reset(new ProbParmDevice{});
+  prob_parm_host.reset(new ProbParmHost{});
 
   // Get options, set phys_bc
   read_params();
