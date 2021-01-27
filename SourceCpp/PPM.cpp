@@ -99,7 +99,7 @@ trace_ppm(
 
     // Original PPM and Hybrid WENO/PPM do not have the same stencil size
     int stencil_size;
-    if ( PeleC::weno_scheme == 2 ){ // For 7th order WENO
+    if ( PeleC::use_hybrid_weno && PeleC::weno_scheme == 2 ){ // For 7th order WENO
       stencil_size = 7; 
     }else{
       stencil_size = 5;
@@ -186,7 +186,9 @@ trace_ppm(
 
       }
 
-      ppm_int_profile(sm, sp, s[i0], un, cc, dtdx, Ip[n], Im[n]);
+      int idx = 2;
+      if ( PeleC::use_hybrid_weno && PeleC::weno_scheme == 2 ){idx=3;}
+      ppm_int_profile(sm, sp, s[idx], un, cc, dtdx, Ip[n], Im[n]);
     }
 
     // PeleC does source term tracing in pc_transx, pc_transy, and

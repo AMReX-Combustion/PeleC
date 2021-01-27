@@ -79,7 +79,7 @@ weno_reconstruct_5z(
   amrex::Real& sp)
 {
 
-  int wenop = 1;
+  int wenop = 2;
   amrex::Real eps = 1.0e-40;
 
   amrex::Real vl[3];
@@ -142,7 +142,7 @@ weno_reconstruct_7z(
   amrex::Real& sp)
 {
 
-  amrex::Real  wenop = 2;
+  int wenop = 2;
   amrex::Real eps = 1.0e-40;
 
   amrex::Real vl[4];
@@ -157,13 +157,6 @@ weno_reconstruct_7z(
   weno7_face_wghts_1[1]  = 12./35.;
   weno7_face_wghts_1[2]  = 18./35.;
   weno7_face_wghts_1[3]  =  4./35.; 
-
-
-//amrex::Print() << "\n DEBUG DEBUG S \n";
-//amrex::Print() << s[0] << " " << s[1] << " " << s[2] << " " << s[3] << "\n"; 
-//amrex::Print() << s[4] << " " << s[5] << " " << s[6] <<  "\n";              
-
-
 
   beta[3] = s[0]*(547.0*s[0] - 3882.0*s[1] + 4642.0*s[2] - 1854.0*s[3]) + 
             s[1]*(7043.0*s[1] - 17246.0*s[2] + 7042.0*s[3]) + 
@@ -183,18 +176,10 @@ weno_reconstruct_7z(
 
   tau = abs(beta[3] - beta[0]);
 
-//amrex::Print() << "\n DEBUG DEBUG VL beta 1 \n";
-//amrex::Print() << beta[3] << " " << beta[2] << " " << beta[1] << " " << beta[0] << "\n"; 
-//amrex::Print() << tau << "\n";
-
   beta[3] = 1.0 + pow(tau / (eps+beta[3]),wenop);
   beta[2] = 1.0 + pow(tau / (eps+beta[2]),wenop);
   beta[1] = 1.0 + pow(tau / (eps+beta[1]),wenop);
   beta[0] = 1.0 + pow(tau / (eps+beta[0]),wenop);
-
-//amrex::Print() << "\n DEBUG DEBUG VL beta 2 \n";
-//amrex::Print() << beta[3] << " " << beta[2] << " " << beta[1] << " " << beta[0] << "\n";
-
 
   alpha[3] = weno7_face_wghts_1[0] *  beta[3];
   alpha[2] = weno7_face_wghts_1[1] *  beta[2];
@@ -230,19 +215,10 @@ weno_reconstruct_7z(
 
   tau = abs(beta[3] - beta[0]);
 
-//amrex::Print() << "\n DEBUG DEBUG VR beta 1 \n";
-//amrex::Print() << beta[3] << " " << beta[2] << " " << beta[1] << " " << beta[0] << "\n";
-//amrex::Print() << tau << "\n";
-
   beta[3] = 1.0 + pow(tau / (eps+beta[3]),wenop);
   beta[2] = 1.0 + pow(tau / (eps+beta[2]),wenop);
   beta[1] = 1.0 + pow(tau / (eps+beta[1]),wenop);
   beta[0] = 1.0 + pow(tau / (eps+beta[0]),wenop);
-
-//amrex::Print() << "\n DEBUG DEBUG VR beta 2 \n";
-//amrex::Print() << beta[3] << " " << beta[2] << " " << beta[1] << " " << beta[0] << "\n";
-
-
 
   alpha[3] = weno7_face_wghts_1[0] *  beta[3];
   alpha[2] = weno7_face_wghts_1[1] *  beta[2];
@@ -255,8 +231,8 @@ weno_reconstruct_7z(
   vr[1] = -1.0*s[4] + 7.0*s[3] + 7.0*s[2] - 1.0*s[1];
   vr[0] = 3.0*s[3] + 13.0*s[2] - 5.0*s[1] + 1.0*s[0];  
 
-  sm = oneTwelve*alpha1*(alpha[3]*vl[3] + alpha[2]*vl[2] 
-                       + alpha[1]*vl[1] + alpha[0]*vl[0]);
+  sm = oneTwelve*alpha1*(alpha[3]*vr[3] + alpha[2]*vr[2] 
+                       + alpha[1]*vr[1] + alpha[0]*vr[0]);
 
 
 }
