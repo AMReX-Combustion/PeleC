@@ -18,7 +18,7 @@ namespace TimeStep {
 extern AMREX_GPU_DEVICE_MANAGED amrex::Real max_dt;
 } // namespace TimeStep
 
-AMREX_GPU_HOST_DEVICE
+AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 pc_trans4dt(
@@ -44,7 +44,7 @@ pc_trans4dt(
   }
 }
 
-AMREX_GPU_HOST_DEVICE
+AMREX_GPU_DEVICE
 amrex::Real pc_estdt_hydro(
   const amrex::Box& bx,
   const amrex::Array4<const amrex::Real>& u,
@@ -57,7 +57,7 @@ amrex::Real pc_estdt_hydro(
     const amrex::Real& dz)) noexcept;
 
 // Diffusion Velocity
-AMREX_GPU_HOST_DEVICE
+AMREX_GPU_DEVICE
 amrex::Real pc_estdt_veldif(
   const amrex::Box& bx,
   const amrex::Array4<const amrex::Real>& u,
@@ -70,7 +70,7 @@ amrex::Real pc_estdt_veldif(
     const amrex::Real& dz)) noexcept;
 
 // Diffusion Temperature
-AMREX_GPU_HOST_DEVICE
+AMREX_GPU_DEVICE
 amrex::Real pc_estdt_tempdif(
   const amrex::Box& bx,
   const amrex::Array4<const amrex::Real>& u,
@@ -83,7 +83,7 @@ amrex::Real pc_estdt_tempdif(
     const amrex::Real& dz)) noexcept;
 
 // Diffusion Enthalpy
-AMREX_GPU_HOST_DEVICE
+AMREX_GPU_DEVICE
 amrex::Real pc_estdt_enthdif(
   const amrex::Box& bx,
   const amrex::Array4<const amrex::Real>& u,

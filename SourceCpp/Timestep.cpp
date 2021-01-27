@@ -6,7 +6,7 @@ AMREX_GPU_DEVICE_MANAGED amrex::Real max_dt =
   std::numeric_limits<amrex::Real>::max();
 } // namespace TimeStep
 
-AMREX_GPU_HOST_DEVICE
+AMREX_GPU_DEVICE
 amrex::Real
 pc_estdt_hydro(
   const amrex::Box& bx,
@@ -51,7 +51,7 @@ pc_estdt_hydro(
 }
 
 // Diffusion Velocity
-AMREX_GPU_HOST_DEVICE
+AMREX_GPU_DEVICE
 amrex::Real
 pc_estdt_veldif(
   const amrex::Box& bx,
@@ -99,7 +99,7 @@ pc_estdt_veldif(
 }
 
 // Diffusion Temperature
-AMREX_GPU_HOST_DEVICE
+AMREX_GPU_DEVICE
 amrex::Real
 pc_estdt_tempdif(
   const amrex::Box& bx,
@@ -149,7 +149,7 @@ pc_estdt_tempdif(
 }
 
 // Diffusion Enthalpy
-AMREX_GPU_HOST_DEVICE
+AMREX_GPU_DEVICE
 amrex::Real
 pc_estdt_enthdif(
   const amrex::Box& bx,

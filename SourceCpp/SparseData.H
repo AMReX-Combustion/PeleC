@@ -3,7 +3,7 @@
 
 #include <AMReX_Vector.H>
 
-AMREX_GPU_HOST_DEVICE
+AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 int
 getIndex(const int i, const int comp, const int size)

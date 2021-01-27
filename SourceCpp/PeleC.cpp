@@ -829,7 +829,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
         flags,
 #endif
         0,
-        [=] AMREX_GPU_HOST_DEVICE(
+        [=] AMREX_GPU_DEVICE(
           amrex::Box const& bx, const amrex::Array4<const amrex::Real>& fab_arr
 #ifdef PELEC_USE_EB
           ,
@@ -853,7 +853,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
         flags,
 #endif
         0,
-        [=] AMREX_GPU_HOST_DEVICE(
+        [=] AMREX_GPU_DEVICE(
           amrex::Box const& bx, const amrex::Array4<const amrex::Real>& fab_arr
 #ifdef PELEC_USE_EB
           ,
@@ -877,7 +877,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
         flags,
 #endif
         0,
-        [=] AMREX_GPU_HOST_DEVICE(
+        [=] AMREX_GPU_DEVICE(
           amrex::Box const& bx, const amrex::Array4<const amrex::Real>& fab_arr
 #ifdef PELEC_USE_EB
           ,
@@ -901,7 +901,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
         flags,
 #endif
         0,
-        [=] AMREX_GPU_HOST_DEVICE(
+        [=] AMREX_GPU_DEVICE(
           amrex::Box const& bx, const amrex::Array4<const amrex::Real>& fab_arr
 #ifdef PELEC_USE_EB
           ,

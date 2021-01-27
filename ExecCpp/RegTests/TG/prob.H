@@ -92,7 +92,7 @@ bcnormal(
 
 struct MyProbTagStruct
 {
-  AMREX_GPU_HOST_DEVICE
+  AMREX_GPU_DEVICE
   AMREX_FORCE_INLINE
   static void set_problem_tags(
     const int /*i*/,
