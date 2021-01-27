@@ -10,6 +10,8 @@ constexpr amrex::Real oneHalf=1.0/2.0;
 constexpr amrex::Real oneTwelve=1.0/12.0;
 
 
+// WENO 5 JS (Original Jiang GS, Shu CW. Efficient Implementation of Weighted ENO Schemes.
+//             J. Comput. Phys. 1996; 126(1): 202–228. doi: 10.1006/jcph.1996.0130)
 // @param s      Stencils i-2, i-1, i, i+1, i+2
 // @param sm     The value of the interpolation on the left edge of the i cell
 // @param sp     The value of the interpolation on the right edge of the i cell
@@ -71,7 +73,12 @@ weno_reconstruct_5js(
 
 }
 
-
+// WENO 5 Z (Borges R, Carmona M, Costa B, Don WS. An improved weighted 
+//           essentially non-oscillatory scheme for hyperbolic conservation laws.
+//           J. Comput. Phys. 2008; 227(6): 3191–3211. doi: 10.1016/j.jcp.2007.11.038.)
+// @param s      Stencils i-2, i-1, i, i+1, i+2
+// @param sm     The value of the interpolation on the left edge of the i cell
+// @param sp     The value of the interpolation on the right edge of the i cell
 AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE void
 weno_reconstruct_5z(
   const amrex::Real* s,
@@ -135,6 +142,14 @@ weno_reconstruct_5z(
 
 }
 
+
+// WENO 7 Z (Balsara DS, ShuCW. Monotonicity Preserving Weighted Essentially
+//           Non-oscillatory Schemes with Increasingly High Order of Accuracy.
+//           J. Comput. Phys. 2000; 160(2): 405 - 452. 
+//           doi: https://doi.org/10.1006/jcph.2000.6443)
+// @param s      Stencils i-3, i-2, i-1, i, i+1, i+2, i+3
+// @param sm     The value of the interpolation on the left edge of the i cell
+// @param sp     The value of the interpolation on the right edge of the i cell
 AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE void
 weno_reconstruct_7z(
   const amrex::Real* s,
@@ -236,5 +251,66 @@ weno_reconstruct_7z(
 
 
 }
+
+// WENO 3 Z 
+// @param s      Stencils i-1, i, i+1
+// @param sm     The value of the interpolation on the left edge of the i cell
+// @param sp     The value of the interpolation on the right edge of the i cell
+AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE void
+weno_reconstruct_3z(
+  const amrex::Real* s,
+  amrex::Real& sm,
+  amrex::Real& sp)
+{
+  
+  int wenop = 2;
+  amrex::Real eps = 1.0e-40;
+  
+  amrex::Real vl[2];
+  amrex::Real vr[2];
+  amrex::Real beta[2];
+  amrex::Real alpha[2];
+  amrex::Real alpha1;
+  amrex::Real tau;
+  
+  beta[1] = pow(s[0] - s[1],2); 
+  beta[0] = pow(s[1] - s[2],2);
+ 
+  tau = abs(beta[1] - beta[0]);
+ 
+  beta[1] = 1.0 + pow(tau / (eps+beta[1]),wenop);
+  beta[0] = 1.0 + pow(tau / (eps+beta[0]),wenop);
+  
+  alpha[1] = 2.0*beta[1];
+  alpha[0] = 1.0*beta[0];
+  alpha1 = 1.0/( alpha[1] + alpha[0]);
+  
+  vl[1] =    -s[0] + 3.0*s[1];
+  vl[0] =     s[1] +     s[2];
+  
+  sp = oneHalf*alpha1*( alpha[1]*vl[1] + alpha[0]*vl[0]);
+  
+  //-----------------------------------------------------------
+  
+  beta[1] = pow(s[2] - s[1],2);
+  beta[0] = pow(s[1] - s[0],2);
+
+  tau = abs(beta[1] - beta[0]);
+
+  beta[1] = 1.0 + pow(tau / (eps+beta[1]),wenop);
+  beta[0] = 1.0 + pow(tau / (eps+beta[0]),wenop);
+
+  alpha[1] = 2.0*beta[1];
+  alpha[0] = 1.0*beta[0];
+  alpha1 = 1.0/( alpha[1] + alpha[0]);
+
+  vr[1] =   3.0*s[1]  -   s[2];
+  vr[0] =       s[0]  +   s[1];
+
+  sm = oneHalf*alpha1*( alpha[1]*vr[1] + alpha[0]*vr[0]);
+
+   
+}
+
 
 #endif

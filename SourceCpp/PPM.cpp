@@ -101,6 +101,8 @@ trace_ppm(
     int stencil_size;
     if ( PeleC::use_hybrid_weno && PeleC::weno_scheme == 2 ){ // For 7th order WENO
       stencil_size = 7; 
+    } else if ( PeleC::use_hybrid_weno && PeleC::weno_scheme == 3 ){ // For 7th order WENO
+      stencil_size = 3;
     }else{
       stencil_size = 5;
     }
@@ -128,6 +130,8 @@ trace_ppm(
         int idx_pos; 
         if ( PeleC::weno_scheme == 2 ){ // For 7th order WENO
           idx_pos = -3;  
+        } else if ( PeleC::weno_scheme == 3 ){ // For 3rd order WENO
+          idx_pos = -1;
         } else {
           idx_pos = -2;
         } 
@@ -155,6 +159,8 @@ trace_ppm(
           weno_reconstruct_5z(s, sm, sp);
         }else if ( PeleC::weno_scheme == 2 ){
           weno_reconstruct_7z(s, sm, sp);
+        }else if ( PeleC::weno_scheme == 3 ){
+          weno_reconstruct_3z(s, sm, sp);
         }else{
           amrex::Abort("Error, use_hybrid_weno not known");
         }
@@ -187,8 +193,10 @@ trace_ppm(
       }
 
       int idx = 2;
-      if ( PeleC::use_hybrid_weno && PeleC::weno_scheme == 2 ){idx=3;}
+      if ( PeleC::use_hybrid_weno && PeleC::weno_scheme == 2 ){idx=3;} // For WENO 7
+      if ( PeleC::use_hybrid_weno && PeleC::weno_scheme == 3 ){idx=1;} // For WENO 3
       ppm_int_profile(sm, sp, s[idx], un, cc, dtdx, Ip[n], Im[n]);
+
     }
 
     // PeleC does source term tracing in pc_transx, pc_transy, and
