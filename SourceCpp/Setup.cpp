@@ -1,5 +1,6 @@
 #include <AMReX_ParmParse.H>
 #include <AMReX_buildInfo.H>
+#include <memory>
 
 #ifdef PELEC_USE_MASA
 #include <masa.h>
@@ -143,8 +144,8 @@ PeleC::variableSetUp()
 
   AMREX_ASSERT(desc_lst.size() == 0);
 
-  prob_parm_device.reset(new ProbParmDevice{});
-  prob_parm_host.reset(new ProbParmHost{});
+  prob_parm_device = std::make_unique<ProbParmDevice>();
+  prob_parm_host = std::make_unique<ProbParmHost>();
 
   // Get options, set phys_bc
   read_params();
