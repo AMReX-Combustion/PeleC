@@ -46,27 +46,29 @@ amrex_probinit(
 {
 
   // Parse params
-  amrex::ParmParse pp("prob");
-  pp.query("reynolds", ProbParm::reynolds);
-  pp.query("mach", ProbParm::mach);
-  pp.query("prandtl", ProbParm::prandtl);
-  pp.query("rho_x_fact", ProbParm::rho_x_fact);
-  pp.query("rho_y_fact", ProbParm::rho_y_fact);
-  pp.query("rho_z_fact", ProbParm::rho_z_fact);
-  pp.query("u_0_fact", ProbParm::u_0_fact);
-  pp.query("v_0_fact", ProbParm::v_0_fact);
-  pp.query("w_0_fact", ProbParm::w_0_fact);
-  pp.query("u_r_fact", ProbParm::u_r_fact);
-  pp.query("v_r_fact", ProbParm::v_r_fact);
-  pp.query("w_r_fact", ProbParm::w_r_fact);
-  pp.query("p_r_fact", ProbParm::p_r_fact);
-  pp.query("a_rhox", ProbParm::a_rhox);
-  pp.query("a_rhoy", ProbParm::a_rhoy);
-  pp.query("a_rhoz", ProbParm::a_rhoz);
-  pp.query("a_ux", ProbParm::a_ur);
-  pp.query("a_ux", ProbParm::a_vr);
-  pp.query("a_ux", ProbParm::a_wr);
-  pp.query("a_ux", ProbParm::a_pr);
+  {
+    amrex::ParmParse pp("prob");
+    pp.query("reynolds", ProbParm::reynolds);
+    pp.query("mach", ProbParm::mach);
+    pp.query("prandtl", ProbParm::prandtl);
+    pp.query("rho_x_fact", ProbParm::rho_x_fact);
+    pp.query("rho_y_fact", ProbParm::rho_y_fact);
+    pp.query("rho_z_fact", ProbParm::rho_z_fact);
+    pp.query("u_0_fact", ProbParm::u_0_fact);
+    pp.query("v_0_fact", ProbParm::v_0_fact);
+    pp.query("w_0_fact", ProbParm::w_0_fact);
+    pp.query("u_r_fact", ProbParm::u_r_fact);
+    pp.query("v_r_fact", ProbParm::v_r_fact);
+    pp.query("w_r_fact", ProbParm::w_r_fact);
+    pp.query("p_r_fact", ProbParm::p_r_fact);
+    pp.query("a_rhox", ProbParm::a_rhox);
+    pp.query("a_rhoy", ProbParm::a_rhoy);
+    pp.query("a_rhoz", ProbParm::a_rhoz);
+    pp.query("a_ux", ProbParm::a_ur);
+    pp.query("a_ux", ProbParm::a_vr);
+    pp.query("a_ux", ProbParm::a_wr);
+    pp.query("a_ux", ProbParm::a_pr);
+  }
 
   // Define the length scale
   ProbParm::L_x = probhi[0] - problo[0];
@@ -83,13 +85,37 @@ amrex_probinit(
   EOS::TY2Cp(ProbParm::T0, massfrac, cp);
 
   ProbParm::u0 = ProbParm::mach * cs;
-  transport_params::const_bulk_viscosity =
+
+  TransParm trans_parm;
+
+  // Default
+  trans_parm.const_viscosity = 0.0;
+  trans_parm.const_bulk_viscosity = 0.0;
+  trans_parm.const_conductivity = 0.0;
+  trans_parm.const_diffusivity = 0.0;
+
+  // User-specified
+  {
+    amrex::ParmParse pp("transport");
+    pp.query("const_viscosity", trans_parm.const_viscosity);
+    pp.query("const_bulk_viscosity", trans_parm.const_bulk_viscosity);
+    pp.query("const_conductivity", trans_parm.const_conductivity);
+    pp.query("const_diffusivity", trans_parm.const_diffusivity);
+  }
+
+  trans_parm.const_bulk_viscosity =
     ProbParm::rho0 * ProbParm::u0 * ProbParm::L_x / ProbParm::reynolds;
-  transport_params::const_diffusivity = 0.0;
-  transport_params::const_viscosity =
+  trans_parm.const_diffusivity = 0.0;
+  trans_parm.const_viscosity =
     ProbParm::rho0 * ProbParm::u0 * ProbParm::L_x / ProbParm::reynolds;
-  transport_params::const_conductivity =
-    transport_params::const_viscosity * cp / ProbParm::prandtl;
+  trans_parm.const_conductivity =
+    trans_parm.const_viscosity * cp / ProbParm::prandtl;
+
+#ifdef AMREX_USE_GPU
+  amrex::Gpu::htod_memcpy(trans_parm_g, &trans_parm, sizeof(trans_parm));
+#else
+  std::memcpy(trans_parm_g, &trans_parm, sizeof(trans_parm));
+#endif
 
   // clang-format off
   // MASA parameters for the following functions
@@ -101,10 +127,10 @@ amrex_probinit(
   // clang-format on
   masa_set_param("L", ProbParm::L_x);
   masa_set_param("R", EOS::RU / EOS::AIRMW);
-  masa_set_param("k", transport_params::const_conductivity);
+  masa_set_param("k", trans_parm.const_conductivity);
   masa_set_param("Gamma", EOS::gamma);
-  masa_set_param("mu", transport_params::const_viscosity);
-  masa_set_param("mu_bulk", transport_params::const_bulk_viscosity);
+  masa_set_param("mu", trans_parm.const_viscosity);
+  masa_set_param("mu_bulk", trans_parm.const_bulk_viscosity);
   masa_set_param("rho_0", ProbParm::rho0);
   masa_set_param("rho_x", ProbParm::rho_x_fact * ProbParm::rho0);
   masa_set_param("rho_y", ProbParm::rho_y_fact);

@@ -24,7 +24,7 @@ constexpr int ip2 = 4;
 // @param flatn  The flattening coefficient
 // @param sm     The value of the parabola on the left edge of the zone
 // @param sp     The value of the parabola on the right edge of the zone
-AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE void
+AMREX_GPU_DEVICE AMREX_FORCE_INLINE void
 ppm_reconstruct(
   const amrex::Real* s,
   const amrex::Real flatn,
@@ -133,7 +133,7 @@ ppm_reconstruct(
 //              the 3 waves from the right zone edge
 // @param Im    amrex::Real[3], the integrals under the parabola over
 //              the 3 waves from the left zone edge
-AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE void
+AMREX_GPU_DEVICE AMREX_FORCE_INLINE void
 ppm_int_profile(
   const amrex::Real sm,
   const amrex::Real sp,
@@ -204,7 +204,7 @@ ppm_int_profile(
 // @param dtdx  dt/dx (timestep / cell width)
 // @param Ip    integral under the parabola from the right zone edge
 // @param Im    integral under the parabola from the left zone edge
-AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE void
+AMREX_GPU_DEVICE AMREX_FORCE_INLINE void
 ppm_int_profile_single(
   const amrex::Real sm,
   const amrex::Real sp,

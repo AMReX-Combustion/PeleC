@@ -210,18 +210,18 @@ void read_csv(
   const size_t nz,
   amrex::Vector<amrex::Real>& data);
 
-AMREX_GPU_HOST_DEVICE
+AMREX_GPU_DEVICE
 void locate(
   const amrex::Real* xtable, const int n, const amrex::Real& x, int& idxlo);
 
-template <typename T>
-AMREX_GPU_DEVICE AMREX_FORCE_INLINE void
+/* This was manually inlined to avoid unique_ptr somehow finding it and
+segfaulting template <typename T> AMREX_GPU_DEVICE AMREX_FORCE_INLINE void
 swap(T* x, T* y)
 {
   T temp = *x;
   *x = *y;
   *y = temp;
-}
+}*/
 
 template <typename T>
 void
@@ -234,7 +234,10 @@ sort(T& vec)
     for (int i = 0; i < vec_size - 1; i++) {
       for (int j = 0; j < vec_size - i - 1; j++) {
         if (d_vec[j + 1] < d_vec[j]) {
-          swap<typename T::value_type>(&d_vec[j], &d_vec[j + 1]);
+          // swap<typename T::value_type>(&d_vec[j], &d_vec[j + 1]);
+          typename T::value_type temp = d_vec[j];
+          d_vec[j] = d_vec[j + 1];
+          d_vec[j + 1] = temp;
         }
       }
     }

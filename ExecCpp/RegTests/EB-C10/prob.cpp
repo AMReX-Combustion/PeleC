@@ -32,15 +32,19 @@ amrex_probinit(
   const amrex_real* probhi)
 {
   // Parse params
-  amrex::ParmParse pp("prob");
-  pp.query("p", ProbParm::p);
-  pp.query("T", ProbParm::T);
-  pp.query("Re", ProbParm::Re);
-  pp.query("Ma", ProbParm::Ma);
-  pp.query("Pr", ProbParm::Pr);
+  {
+    amrex::ParmParse pp("prob");
+    pp.query("p", ProbParm::p);
+    pp.query("T", ProbParm::T);
+    pp.query("Re", ProbParm::Re);
+    pp.query("Ma", ProbParm::Ma);
+    pp.query("Pr", ProbParm::Pr);
+  }
 
-  amrex::ParmParse ppeb("eb2");
-  ppeb.query("cylinder_radius", ProbParm::radius);
+  {
+    amrex::ParmParse pp("eb2");
+    pp.query("cylinder_radius", ProbParm::radius);
+  }
 
   amrex::Real L = (probhi[0] - problo[0]);
 
@@ -57,14 +61,37 @@ amrex_probinit(
   ProbParm::umax = ProbParm::Ma * cs;
   ProbParm::uavg = 0.5 * ProbParm::umax;
 
-  transport_params::const_bulk_viscosity = 0.0;
-  transport_params::const_diffusivity = 0.0;
-  transport_params::const_viscosity =
-    ProbParm::rho * ProbParm::umax * L / ProbParm::Re;
-  transport_params::const_conductivity =
-    transport_params::const_viscosity * cp / ProbParm::Pr;
+  TransParm trans_parm;
 
-  ProbParm::G = ProbParm::umax * 4 * transport_params::const_viscosity /
+  // Default
+  trans_parm.const_viscosity = 0.0;
+  trans_parm.const_bulk_viscosity = 0.0;
+  trans_parm.const_conductivity = 0.0;
+  trans_parm.const_diffusivity = 0.0;
+
+  // User-specified
+  {
+    amrex::ParmParse pp("transport");
+    pp.query("const_viscosity", trans_parm.const_viscosity);
+    pp.query("const_bulk_viscosity", trans_parm.const_bulk_viscosity);
+    pp.query("const_conductivity", trans_parm.const_conductivity);
+    pp.query("const_diffusivity", trans_parm.const_diffusivity);
+  }
+
+  trans_parm.const_bulk_viscosity = 0.0;
+  trans_parm.const_diffusivity = 0.0;
+  trans_parm.const_viscosity =
+    ProbParm::rho * ProbParm::umax * L / ProbParm::Re;
+  trans_parm.const_conductivity =
+    trans_parm.const_viscosity * cp / ProbParm::Pr;
+
+#ifdef AMREX_USE_GPU
+  amrex::Gpu::htod_memcpy(trans_parm_g, &trans_parm, sizeof(trans_parm));
+#else
+  std::memcpy(trans_parm_g, &trans_parm, sizeof(trans_parm));
+#endif
+
+  ProbParm::G = ProbParm::umax * 4 * trans_parm.const_viscosity /
                 (ProbParm::radius * ProbParm::radius);
   ProbParm::dpdx = -ProbParm::G;
 
@@ -76,10 +103,10 @@ amrex_probinit(
   amrex::Print(ofs).SetPrecision(17)
     << L << "," << ProbParm::rho << "," << ProbParm::umax << "," << ProbParm::p
     << "," << ProbParm::T << "," << EOS::gamma << ","
-    << transport_params::const_viscosity << ","
-    << transport_params::const_conductivity << "," << ProbParm::Re << ","
-    << ProbParm::Ma << "," << ProbParm::Pr << "," << ProbParm::dpdx << ","
-    << ProbParm::G << "," << ProbParm::radius << std::endl;
+    << trans_parm.const_viscosity << "," << trans_parm.const_conductivity << ","
+    << ProbParm::Re << "," << ProbParm::Ma << "," << ProbParm::Pr << ","
+    << ProbParm::dpdx << "," << ProbParm::G << "," << ProbParm::radius
+    << std::endl;
   ofs.close();
 }
 }

@@ -23,7 +23,8 @@ pc_initdata(
   int j,
   int k,
   amrex::Array4<amrex::Real> const& state,
-  amrex::GeometryData const& geomdata)
+  amrex::GeometryData const& geomdata,
+  ProbParmDevice const& /*prob_parm*/)
 {
   // Geometry
   const amrex::Real* prob_lo = geomdata.ProbLo();
@@ -59,7 +60,8 @@ bcnormal(
   const int idir,
   const int sgn,
   const amrex::Real /*time*/,
-  amrex::GeometryData const& geomdata)
+  amrex::GeometryData const& geomdata,
+  ProbParmDevice const& /*prob_parm*/)
 {
   if (idir == 0) {
     amrex::Real rho = 0.0, u = 0.0, v = 0.0, w = 0.0, eint = 0.0, T = 0.0;

@@ -56,11 +56,7 @@ prob.pmf_datafile = "LiDryer_H2_p1_phi0_4000tu0300.dat"
 tagging.max_ftracerr_lev = 4
 tagging.ftracerr = 150.e-6
 
-extern.new_Jacobian_each_cell = 0
-
-amr.derive_plot_vars = magvort density xmom ymom zmom eden Temp pressure x_velocity y_velocity z_velocity
-pelec.plot_rhoy = 0
-pelec.plot_massfrac = 1
+#amr.derive_plot_vars = ALL
 pelec.do_react = 1
 pelec.diffuse_temp=1
 pelec.diffuse_enth=1

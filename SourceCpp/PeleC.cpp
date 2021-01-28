@@ -123,6 +123,11 @@ ebInitialized(bool eb_init_val)
 void
 PeleC::variableCleanUp()
 {
+  prob_parm_device.reset();
+  prob_parm_host.reset();
+
+  derive_lst.clear();
+
   desc_lst.clear();
 
   transport_close();
@@ -666,8 +671,10 @@ PeleC::initData()
     auto sfab = S_new.array(mfi);
     const auto geomdata = geom.data();
 
+    ProbParmDevice const* lprobparm = prob_parm_device.get();
+
     amrex::ParallelFor(box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      pc_initdata(i, j, k, sfab, geomdata);
+      pc_initdata(i, j, k, sfab, geomdata, *lprobparm);
       // Verify that the sum of (rho Y)_i = rho at every cell
       pc_check_initial_species(i, j, k, sfab);
     });
@@ -822,7 +829,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
         flags,
 #endif
         0,
-        [=] AMREX_GPU_HOST_DEVICE(
+        [=] AMREX_GPU_DEVICE(
           amrex::Box const& bx, const amrex::Array4<const amrex::Real>& fab_arr
 #ifdef PELEC_USE_EB
           ,
@@ -840,13 +847,14 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
     }
 
     if (diffuse_vel) {
+      TransParm const* ltransparm = trans_parm_g;
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
 #ifdef PELEC_USE_EB
         flags,
 #endif
         0,
-        [=] AMREX_GPU_HOST_DEVICE(
+        [=] AMREX_GPU_DEVICE(
           amrex::Box const& bx, const amrex::Array4<const amrex::Real>& fab_arr
 #ifdef PELEC_USE_EB
           ,
@@ -858,19 +866,20 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 #ifdef PELEC_USE_EB
             flag_arr,
 #endif
-            AMREX_D_DECL(dx1, dx2, dx3));
+            AMREX_D_DECL(dx1, dx2, dx3), ltransparm);
         });
       estdt_vdif = amrex::min<amrex::Real>(estdt_vdif, dt);
     }
 
     if (diffuse_temp) {
+      TransParm const* ltransparm = trans_parm_g;
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
 #ifdef PELEC_USE_EB
         flags,
 #endif
         0,
-        [=] AMREX_GPU_HOST_DEVICE(
+        [=] AMREX_GPU_DEVICE(
           amrex::Box const& bx, const amrex::Array4<const amrex::Real>& fab_arr
 #ifdef PELEC_USE_EB
           ,
@@ -882,19 +891,20 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 #ifdef PELEC_USE_EB
             flag_arr,
 #endif
-            AMREX_D_DECL(dx1, dx2, dx3));
+            AMREX_D_DECL(dx1, dx2, dx3), ltransparm);
         });
       estdt_tdif = amrex::min<amrex::Real>(estdt_tdif, dt);
     }
 
     if (diffuse_enth) {
+      TransParm const* ltransparm = trans_parm_g;
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
 #ifdef PELEC_USE_EB
         flags,
 #endif
         0,
-        [=] AMREX_GPU_HOST_DEVICE(
+        [=] AMREX_GPU_DEVICE(
           amrex::Box const& bx, const amrex::Array4<const amrex::Real>& fab_arr
 #ifdef PELEC_USE_EB
           ,
@@ -906,7 +916,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 #ifdef PELEC_USE_EB
             flag_arr,
 #endif
-            AMREX_D_DECL(dx1, dx2, dx3));
+            AMREX_D_DECL(dx1, dx2, dx3), ltransparm);
         });
       estdt_edif = amrex::min<amrex::Real>(estdt_edif, dt);
     }

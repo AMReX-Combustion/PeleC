@@ -3,28 +3,31 @@
 
 #include <AMReX_REAL.H>
 #include <AMReX_GpuQualifiers.H>
+#include <AMReX_GpuMemory.H>
 
-namespace ProbParm {
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real pamb;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real phi_in;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real T_in;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real vn_in;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real pertmag;
-extern AMREX_GPU_DEVICE_MANAGED amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> L;
-extern AMREX_GPU_DEVICE_MANAGED unsigned int pmf_N;
-extern AMREX_GPU_DEVICE_MANAGED unsigned int pmf_M;
-extern AMREX_GPU_DEVICE_MANAGED bool pmf_do_average;
+struct ProbParmDevice : amrex::Gpu::Managed
+{
+  amrex::Real pamb = 1013250.0 * 100.0;
+  amrex::Real phi_in = -0.2;
+  amrex::Real T_in = 298.0;
+  amrex::Real vn_in = 0.2;
+  amrex::Real pertmag = 0.0;
+  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> L = {{1.0}};
+  unsigned int pmf_N = 0;
+  unsigned int pmf_M = 0;
+  int pmf_do_average = 0;
 
-extern amrex::Gpu::ManagedVector<amrex::Real>* pmf_X;
-extern amrex::Gpu::ManagedVector<amrex::Real>* pmf_Y;
-extern amrex::Gpu::ManagedVector<amrex::Real>* fuel_state;
+  amrex::GpuArray<amrex::Real, NVAR> fuel_state = {{0.0}};
+  amrex::Real* d_pmf_X = nullptr;
+  amrex::Real* d_pmf_Y = nullptr;
+};
 
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real* d_pmf_X;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real* d_pmf_Y;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real* d_fuel_state;
-
-extern std::string pmf_datafile;
-extern amrex::Vector<std::string> pmf_names;
-} // namespace ProbParm
+struct ProbParmHost : amrex::Gpu::Managed
+{
+  amrex::Vector<amrex::Real> h_pmf_X;
+  amrex::Vector<amrex::Real> h_pmf_Y;
+  amrex::Gpu::DeviceVector<amrex::Real> pmf_X;
+  amrex::Gpu::DeviceVector<amrex::Real> pmf_Y;
+};
 
 #endif
