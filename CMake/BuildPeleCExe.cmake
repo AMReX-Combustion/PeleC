@@ -203,6 +203,7 @@ function(build_pelec_exe pelec_exe_name)
       set_source_files_properties(${PELEC_SOURCES} PROPERTIES LANGUAGE CUDA)
     endforeach()
     set_target_properties(${pelec_exe_name} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+    target_compile_options(${pelec_exe_name} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xptxas --disable-optimizer-constants>)
   endif()
  
   #Define what we want to be installed during a make install 
