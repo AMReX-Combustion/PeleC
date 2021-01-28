@@ -5,6 +5,7 @@ PeleC
 `PeleC` is an adaptive-mesh compressible hydrodynamics code for reacting
 flows.
 
+`Documentation <https://amrex-combustion.github.io/PeleC/>`_ | `Nightly Test Results <https://my.cdash.org/index.php?project=PeleC>`_
 
 A Note on the Current Status of PeleC Development
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

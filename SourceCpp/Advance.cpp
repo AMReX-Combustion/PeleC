@@ -92,7 +92,7 @@ PeleC::do_mol_advance(
   if (verbose) {
     amrex::Print() << "... Computing MOL source term at t^{n} " << std::endl;
   }
-  int nGrow_Sborder = nGrowTr;
+  int nGrow_Sborder = NUM_GROW + nGrowF;
 #ifdef AMREX_PARTICLES
   int ghost_width = 0;
   int where_width = 0;
@@ -234,7 +234,8 @@ PeleC::do_mol_advance(
         amrex::Print() << "... Re-computing MOL source term at t^{n+1} (iter = "
                        << mol_iter << " of " << mol_iters << ")" << std::endl;
       }
-      FillPatch(*this, Sborder, nGrow_Sborder, time + dt, State_Type, 0, NVAR);
+      FillPatch(
+        *this, Sborder, nGrow_Sborder, time + dt, State_Type, 0, NVAR);
       flux_factor = mol_iter == mol_iters ? 1 : 0;
       getMOLSrcTerm(Sborder, molSrc_new, time, dt, flux_factor);
 
@@ -426,7 +427,7 @@ PeleC::do_sdc_iteration(
       amrex::Print() << "... Computing diffusion terms at t^(n+1,"
                      << sub_iteration + 1 << ")" << std::endl;
     }
-    int nGrowDiff = nGrowTr;
+    int nGrowDiff = NUM_GROW;
 #ifdef AMREX_PARTICLES
     if (do_spray_particles && level > 0) {
       int maxref = parent->MaxRefRatio(level - 1);

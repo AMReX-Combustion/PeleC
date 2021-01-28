@@ -85,12 +85,12 @@ public:
       break;
 
     } // end switch
-  };
+  }
 
   // Default destructor
-  ~Filter(){};
+  ~Filter() {}
 
-  int get_filter_ngrow() { return _ngrow; };
+  int get_filter_ngrow() { return _ngrow; }
 
   void apply_filter(const amrex::MultiFab& in, amrex::MultiFab& out);
 

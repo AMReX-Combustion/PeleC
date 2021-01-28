@@ -106,7 +106,7 @@ PeleC::restart(amrex::Amr& papa, istream& is, bool bReadSpecial)
   if (do_hydro) {
     Sborder.define(grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
   } else if (do_diffuse) {
-    Sborder.define(grids, dmap, NVAR, nGrowTr, amrex::MFInfo(), Factory());
+    Sborder.define(grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
   }
 
   if (!do_mol) {
