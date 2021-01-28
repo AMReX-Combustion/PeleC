@@ -89,7 +89,7 @@ PeleC::react_state(
   prefetchToDevice(react_src);
 
 #ifdef CVODE_BOXINTEG
-  amrex::MultiFab Stemp(grids, dmap, NUM_SPECIES + 2, 0);
+  amrex::MultiFab STemp(grids, dmap, NUM_SPECIES + 2, 0);
   amrex::MultiFab extsrc_rY(grids, dmap, NUM_SPECIES, 0);
   amrex::MultiFab extsrc_rE(grids, dmap, 1, 0);
 
@@ -172,7 +172,8 @@ PeleC::react_state(
           const amrex::Real errtol = adaptrk_errtol;
 
           amrex::ParallelFor(
-            bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+            bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
+            {
               pc_expl_reactions(
                 i, j, k, sold_arr, snew_arr, nonrs_arr, I_R, dt, nsubsteps_min,
                 nsubsteps_max, nsubsteps_guess, errtol, do_update,
@@ -230,6 +231,12 @@ PeleC::react_state(
                      rhoInv // new KE
                  - rho_old * e_old) /
                 dt;
+              
+              if (captured_clean_react_massfrac == 1) 
+              {
+                clip_normalize_rYarr(i,j,k,sold_arr,rhoY);
+              }
+               
             });
 
 #else
