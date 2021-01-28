@@ -6,6 +6,11 @@
 using namespace MASA;
 #endif
 
+#if defined(PELEC_USE_REACTIONS) && defined(AMREX_USE_GPU) && \
+  defined(USE_SUNDIALS_PP)
+#include <AMReX_SUNMemory.H>
+#endif
+
 #include "mechanism.h"
 #include "PeleC.H"
 #include "Derive.H"
@@ -149,6 +154,9 @@ PeleC::variableSetUp()
   init_transport();
 
 #ifdef PELEC_USE_REACTIONS
+#if defined(AMREX_USE_GPU) && defined(USE_SUNDIALS_PP)
+  amrex::sundials::MemoryHelper::Initialize();
+#endif
   // Initialize the reactor
   if (do_react == 1) {
     init_reactor();
