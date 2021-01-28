@@ -50,7 +50,7 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void clip_normalize_rYarr(const int i, const int j, const int k, 
         amrex::Array4<const amrex::Real> const& s,
-        amrex::Array4<const amrex::Real> const& rhoY)
+        amrex::Array4<amrex::Real> const& rhoY)
 {
 
   amrex::Real Y[NUM_SPECIES];
@@ -64,7 +64,7 @@ void clip_normalize_rYarr(const int i, const int j, const int k,
 
   for (int n = 0; n < NUM_SPECIES; n++) 
   {
-    rhoY(i,j,k,n) = Y[n] * rho;
+    rhoY(i,j,k,n) = Y[n] * s(i,j,k,URHO);
   }
 }
 
