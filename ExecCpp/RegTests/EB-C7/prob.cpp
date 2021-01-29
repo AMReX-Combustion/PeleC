@@ -1,20 +1,5 @@
 #include "prob.H"
 
-namespace ProbParm {
-AMREX_GPU_DEVICE_MANAGED amrex::Real pl = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real rhol = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real Tl = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real eintl = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real pr = 0.1;
-AMREX_GPU_DEVICE_MANAGED amrex::Real rhor = 0.125;
-AMREX_GPU_DEVICE_MANAGED amrex::Real eintr = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real Tr = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real angle = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real L = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::GpuArray<amrex::Real, NUM_SPECIES> massfrac = {
-  1.0};
-} // namespace ProbParm
-
 void
 pc_prob_close()
 {

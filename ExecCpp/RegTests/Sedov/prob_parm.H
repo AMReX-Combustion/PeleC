@@ -7,12 +7,12 @@
 
 struct ProbParmDevice : amrex::Gpu::Managed
 {
-  AMREX_GPU_DEVICE_MANAGED amrex::Real p_ambient;
-  AMREX_GPU_DEVICE_MANAGED amrex::Real dens_ambient;
-  AMREX_GPU_DEVICE_MANAGED amrex::Real exp_energy;
-  AMREX_GPU_DEVICE_MANAGED amrex::Real r_init;
-  AMREX_GPU_DEVICE_MANAGED int nsub;
-  AMREX_GPU_DEVICE_MANAGED amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> split;
+   amrex::Real p_ambient;
+   amrex::Real dens_ambient;
+   amrex::Real exp_energy;
+   amrex::Real r_init;
+   int nsub;
+   amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> split;
 };
 
 struct ProbParmHost : amrex::Gpu::Managed

@@ -1,35 +1,5 @@
 #include "prob.H"
 
-namespace ProbParm {
-AMREX_GPU_DEVICE_MANAGED amrex::Real reynolds = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real mach = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real prandtl = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real rho_x_fact = 0.1;
-AMREX_GPU_DEVICE_MANAGED amrex::Real rho_y_fact = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real rho_z_fact = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real u_0_fact = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real v_0_fact = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real w_0_fact = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real u_r_fact = 0.1;
-AMREX_GPU_DEVICE_MANAGED amrex::Real v_r_fact = 0.1;
-AMREX_GPU_DEVICE_MANAGED amrex::Real w_r_fact = 0.1;
-AMREX_GPU_DEVICE_MANAGED amrex::Real p_r_fact = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real a_rhox = 2.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real a_rhoy = 2.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real a_rhoz = 2.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real a_ur = 2.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real a_vr = 2.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real a_wr = 2.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real a_pr = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real L_x = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real L_y = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real L_z = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real p0 = 1.013e6; // [erg cm^-3]
-AMREX_GPU_DEVICE_MANAGED amrex::Real T0 = 300.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real rho0 = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real u0 = 0.0;
-} // namespace ProbParm
-
 void
 pc_prob_close()
 {

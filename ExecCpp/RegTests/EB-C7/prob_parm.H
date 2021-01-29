@@ -7,6 +7,18 @@
 
 struct ProbParmDevice : amrex::Gpu::Managed
 {
+   amrex::Real pl = 1.0;
+   amrex::Real rhol = 1.0;
+   amrex::Real Tl = 0.0;
+   amrex::Real eintl = 0.0;
+   amrex::Real pr = 0.1;
+   amrex::Real rhor = 0.125;
+   amrex::Real eintr = 0.0;
+   amrex::Real Tr = 0.0;
+   amrex::Real angle = 0.0;
+   amrex::Real L = 0.0;
+   amrex::GpuArray<amrex::Real, NUM_SPECIES> massfrac =
+    {1.0};
 };
 
 struct ProbParmHost : amrex::Gpu::Managed
