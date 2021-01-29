@@ -175,6 +175,17 @@ amrex_probinit(
     }
 
     // Get pointer to the data
+    PeleC::prob_parm_host->xinput.resize(
+      PeleC::prob_parm_host->h_xinput.size());
+    PeleC::prob_parm_host->uinput.resize(
+      PeleC::prob_parm_host->h_uinput.size());
+    PeleC::prob_parm_host->vinput.resize(
+      PeleC::prob_parm_host->h_vinput.size());
+    PeleC::prob_parm_host->winput.resize(
+      PeleC::prob_parm_host->h_winput.size());
+    PeleC::prob_parm_host->xarray.resize(
+      PeleC::prob_parm_host->h_xarray.size());
+    PeleC::prob_parm_host->xdiff.resize(PeleC::prob_parm_host->h_xdiff.size());
     amrex::Gpu::copy(
       amrex::Gpu::hostToDevice, PeleC::prob_parm_host->h_xinput.begin(),
       PeleC::prob_parm_host->h_xinput.end(),
