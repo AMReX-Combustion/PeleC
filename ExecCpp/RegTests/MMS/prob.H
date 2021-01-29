@@ -87,7 +87,7 @@ bcnormal(
   const int /*sgn*/,
   const amrex::Real /*time*/,
   amrex::GeometryData const& /*geomdata*/,
-  ProbParmDevice const& prob_parm)
+  ProbParmDevice const&  /*prob_parm*/)
 {
   amrex::Real x0 = 0.0, x1 = 0.0, x2 = 0.0;
 

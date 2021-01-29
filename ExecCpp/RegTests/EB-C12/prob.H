@@ -38,8 +38,8 @@ pc_initdata(
   const amrex::Real rho = prob_parm.rho0 + prob_parm.A * sin(M_PI * x);
 
   amrex::Real T = 0, eint = 0;
-  EOS::RYP2T(rho, prob_parm.massfrac.begin(), prob_parm.p0, T);
-  EOS::RYP2E(rho, prob_parm.massfrac.begin(), prob_parm.p0, eint);
+  EOS::RYP2T(rho, prob_parm.massfrac.arr, prob_parm.p0, T);
+  EOS::RYP2E(rho, prob_parm.massfrac.arr, prob_parm.p0, eint);
 
   state(i, j, k, URHO) = rho;
   state(i, j, k, UMX) = rho * prob_parm.u0;
@@ -63,7 +63,7 @@ bcnormal(
   const int /*sgn*/,
   const amrex::Real /*time*/,
   amrex::GeometryData const& /*geomdata*/,
-  ProbParmDevice const& prob_parm)
+  ProbParmDevice const&  /*prob_parm*/)
 {
 }
 
