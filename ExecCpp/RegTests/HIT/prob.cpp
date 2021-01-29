@@ -3,25 +3,6 @@
 void
 pc_prob_close()
 {
-  delete PeleC::prob_parm_device->v_xinput;
-  delete PeleC::prob_parm_device->v_uinput;
-  delete PeleC::prob_parm_device->v_vinput;
-  delete PeleC::prob_parm_device->v_winput;
-  delete PeleC::prob_parm_device->v_xarray;
-  delete PeleC::prob_parm_device->v_xdiff;
-
-  PeleC::prob_parm_device->v_xinput = nullptr;
-  PeleC::prob_parm_device->v_uinput = nullptr;
-  PeleC::prob_parm_device->v_vinput = nullptr;
-  PeleC::prob_parm_device->v_winput = nullptr;
-  PeleC::prob_parm_device->v_xarray = nullptr;
-  PeleC::prob_parm_device->v_xdiff = nullptr;
-  PeleC::prob_parm_device->xinput = nullptr;
-  PeleC::prob_parm_device->uinput = nullptr;
-  PeleC::prob_parm_device->vinput = nullptr;
-  PeleC::prob_parm_device->winput = nullptr;
-  PeleC::prob_parm_device->xarray = nullptr;
-  PeleC::prob_parm_device->xdiff = nullptr;
 }
 
 extern "C" {
@@ -157,76 +138,79 @@ amrex_probinit(
     }
 
     // Extract position and velocities
-    PeleC::prob_parm_device->v_uinput =
-      new amrex::Gpu::ManagedVector<amrex::Real>;
-    PeleC::prob_parm_device->v_vinput =
-      new amrex::Gpu::ManagedVector<amrex::Real>;
-    PeleC::prob_parm_device->v_winput =
-      new amrex::Gpu::ManagedVector<amrex::Real>;
-    PeleC::prob_parm_device->v_xarray =
-      new amrex::Gpu::ManagedVector<amrex::Real>;
-    PeleC::prob_parm_device->v_xinput =
-      new amrex::Gpu::ManagedVector<amrex::Real>;
-    PeleC::prob_parm_device->v_xdiff =
-      new amrex::Gpu::ManagedVector<amrex::Real>;
-    PeleC::prob_parm_device->v_xinput->resize(nx * ny * nz);
-    PeleC::prob_parm_device->v_uinput->resize(nx * ny * nz);
-    PeleC::prob_parm_device->v_vinput->resize(nx * ny * nz);
-    PeleC::prob_parm_device->v_winput->resize(nx * ny * nz);
-    for (unsigned long i = 0; i < PeleC::prob_parm_device->v_xinput->size();
-         i++) {
-      (*PeleC::prob_parm_device->v_xinput)[i] = data[0 + i * 6];
-      (*PeleC::prob_parm_device->v_uinput)[i] =
-        data[3 + i * 6] * PeleC::prob_parm_device->urms0 /
-        PeleC::prob_parm_device->uin_norm;
-      (*PeleC::prob_parm_device->v_vinput)[i] =
-        data[4 + i * 6] * PeleC::prob_parm_device->urms0 /
-        PeleC::prob_parm_device->uin_norm;
-      (*PeleC::prob_parm_device->v_winput)[i] =
-        data[5 + i * 6] * PeleC::prob_parm_device->urms0 /
-        PeleC::prob_parm_device->uin_norm;
+    PeleC::prob_parm_host->h_xinput.resize(nx * ny * nz);
+    PeleC::prob_parm_host->h_uinput.resize(nx * ny * nz);
+    PeleC::prob_parm_host->h_vinput.resize(nx * ny * nz);
+    PeleC::prob_parm_host->h_winput.resize(nx * ny * nz);
+    for (long i = 0; i < PeleC::prob_parm_host->h_xinput.size(); i++) {
+      PeleC::prob_parm_host->h_xinput[i] = data[0 + i * 6];
+      PeleC::prob_parm_host->h_uinput[i] = data[3 + i * 6] *
+                                           PeleC::prob_parm_device->urms0 /
+                                           PeleC::prob_parm_device->uin_norm;
+      PeleC::prob_parm_host->h_vinput[i] = data[4 + i * 6] *
+                                           PeleC::prob_parm_device->urms0 /
+                                           PeleC::prob_parm_device->uin_norm;
+      PeleC::prob_parm_host->h_winput[i] = data[5 + i * 6] *
+                                           PeleC::prob_parm_device->urms0 /
+                                           PeleC::prob_parm_device->uin_norm;
     }
 
     // Get the xarray table and the differences.
-    PeleC::prob_parm_device->v_xarray->resize(nx);
-    for (unsigned long i = 0; i < PeleC::prob_parm_device->v_xarray->size();
-         i++) {
-      (*PeleC::prob_parm_device->v_xarray)[i] =
-        (*PeleC::prob_parm_device->v_xinput)[i];
+    PeleC::prob_parm_host->h_xarray.resize(nx);
+    for (long i = 0; i < PeleC::prob_parm_host->h_xarray.size(); i++) {
+      PeleC::prob_parm_host->h_xarray[i] = PeleC::prob_parm_host->h_xinput[i];
     }
-    PeleC::prob_parm_device->v_xdiff->resize(nx);
+    PeleC::prob_parm_host->h_xdiff.resize(nx);
     std::adjacent_difference(
-      PeleC::prob_parm_device->v_xarray->begin(),
-      PeleC::prob_parm_device->v_xarray->end(),
-      PeleC::prob_parm_device->v_xdiff->begin());
-    (*PeleC::prob_parm_device->v_xdiff)[0] =
-      (*PeleC::prob_parm_device->v_xdiff)[1];
+      PeleC::prob_parm_host->h_xarray.begin(),
+      PeleC::prob_parm_host->h_xarray.end(),
+      PeleC::prob_parm_host->h_xdiff.begin());
+    PeleC::prob_parm_host->h_xdiff[0] = PeleC::prob_parm_host->h_xdiff[1];
 
     // Make sure the search array is increasing
     if (not std::is_sorted(
-          PeleC::prob_parm_device->v_xarray->begin(),
-          PeleC::prob_parm_device->v_xarray->end())) {
+          PeleC::prob_parm_host->h_xarray.begin(),
+          PeleC::prob_parm_host->h_xarray.end())) {
       amrex::Abort("Error: non ascending x-coordinate array.");
     }
 
     // Get pointer to the data
-    PeleC::prob_parm_device->xinput =
-      PeleC::prob_parm_device->v_xinput->dataPtr();
-    PeleC::prob_parm_device->uinput =
-      PeleC::prob_parm_device->v_uinput->dataPtr();
-    PeleC::prob_parm_device->vinput =
-      PeleC::prob_parm_device->v_vinput->dataPtr();
-    PeleC::prob_parm_device->winput =
-      PeleC::prob_parm_device->v_winput->dataPtr();
-    PeleC::prob_parm_device->xarray =
-      PeleC::prob_parm_device->v_xarray->dataPtr();
-    PeleC::prob_parm_device->xdiff =
-      PeleC::prob_parm_device->v_xdiff->dataPtr();
+    amrex::Gpu::copy(
+      amrex::Gpu::hostToDevice, PeleC::prob_parm_host->h_xinput.begin(),
+      PeleC::prob_parm_host->h_xinput.end(),
+      PeleC::prob_parm_host->xinput.begin());
+    amrex::Gpu::copy(
+      amrex::Gpu::hostToDevice, PeleC::prob_parm_host->h_uinput.begin(),
+      PeleC::prob_parm_host->h_uinput.end(),
+      PeleC::prob_parm_host->uinput.begin());
+    amrex::Gpu::copy(
+      amrex::Gpu::hostToDevice, PeleC::prob_parm_host->h_vinput.begin(),
+      PeleC::prob_parm_host->h_vinput.end(),
+      PeleC::prob_parm_host->vinput.begin());
+    amrex::Gpu::copy(
+      amrex::Gpu::hostToDevice, PeleC::prob_parm_host->h_winput.begin(),
+      PeleC::prob_parm_host->h_winput.end(),
+      PeleC::prob_parm_host->winput.begin());
+    amrex::Gpu::copy(
+      amrex::Gpu::hostToDevice, PeleC::prob_parm_host->h_xarray.begin(),
+      PeleC::prob_parm_host->h_xarray.end(),
+      PeleC::prob_parm_host->xarray.begin());
+    amrex::Gpu::copy(
+      amrex::Gpu::hostToDevice, PeleC::prob_parm_host->h_xdiff.begin(),
+      PeleC::prob_parm_host->h_xdiff.end(),
+      PeleC::prob_parm_host->xdiff.begin());
+
+    PeleC::prob_parm_device->d_xinput = PeleC::prob_parm_host->xinput.data();
+    PeleC::prob_parm_device->d_uinput = PeleC::prob_parm_host->uinput.data();
+    PeleC::prob_parm_device->d_vinput = PeleC::prob_parm_host->vinput.data();
+    PeleC::prob_parm_device->d_winput = PeleC::prob_parm_host->winput.data();
+    PeleC::prob_parm_device->d_xarray = PeleC::prob_parm_host->xarray.data();
+    PeleC::prob_parm_device->d_xdiff = PeleC::prob_parm_host->xdiff.data();
 
     // Dimensions of the input box.
     PeleC::prob_parm_device->Linput =
-      (*PeleC::prob_parm_device->v_xarray)[nx - 1] +
-      0.5 * (*PeleC::prob_parm_device->v_xdiff)[nx - 1];
+      PeleC::prob_parm_host->h_xarray[nx - 1] +
+      0.5 * PeleC::prob_parm_host->h_xdiff[nx - 1];
 #endif
   }
 }

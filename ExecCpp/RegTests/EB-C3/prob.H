@@ -52,7 +52,7 @@ bcnormal(
   const int /*sgn*/,
   const amrex::Real /*time*/,
   amrex::GeometryData const& /*geomdata*/,
-  ProbParmDevice const&  /*prob_parm*/)
+  ProbParmDevice const& /*prob_parm*/)
 {
 }
 

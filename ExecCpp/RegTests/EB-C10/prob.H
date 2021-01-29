@@ -38,7 +38,11 @@ pc_initdata(
 
   const amrex::Real p = prob_parm.dpdx * x + prob_parm.p;
   amrex::Real rho = 0.0, eint = 0.0;
-  EOS::PYT2RE(p, prob_parm.massfrac.begin(), prob_parm.T, rho, eint);
+  amrex::Real massfrac[NUM_SPECIES] = {0.0};
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    massfrac[n] = prob_parm.massfrac[n];
+  }
+  EOS::PYT2RE(p, massfrac, prob_parm.T, rho, eint);
 
   state(i, j, k, URHO) = rho;
   state(i, j, k, UMX) = rho * prob_parm.uavg;
@@ -67,11 +71,15 @@ bcnormal(
 {
   if (idir == 0) {
     amrex::Real rho = 0.0, u = 0.0, v = 0.0, w = 0.0, eint = 0.0, T = 0.0;
+    amrex::Real massfrac[NUM_SPECIES] = {0.0};
+    for (int n = 0; n < NUM_SPECIES; n++) {
+      massfrac[n] = prob_parm.massfrac[n];
+    }
 
     if (sgn == 1) {
       const amrex::Real p = prob_parm.dpdx * x[0] + prob_parm.p;
       T = prob_parm.T;
-      EOS::PYT2RE(p, prob_parm.massfrac.begin(), T, rho, eint);
+      EOS::PYT2RE(p, massfrac, T, rho, eint);
 
       u = s_inter[UMX] / s_inter[URHO];
       v = s_inter[UMY] / s_inter[URHO];
@@ -91,8 +99,8 @@ bcnormal(
       const amrex::Real w_inter = s_inter[UMZ] / rho_inter;
       const amrex::Real T_inter = s_inter[UTEMP];
       amrex::Real p_inter = 0.0, cs_inter = 0.0;
-      EOS::RTY2P(rho_inter, T_inter, prob_parm.massfrac.begin(), p_inter);
-      EOS::RTY2Cs(rho_inter, T_inter, prob_parm.massfrac.begin(), cs_inter);
+      EOS::RTY2P(rho_inter, T_inter, massfrac, p_inter);
+      EOS::RTY2Cs(rho_inter, T_inter, massfrac, cs_inter);
 
       // Boundary state (point b)
       const amrex::Real xb = prob_hi[0];
@@ -107,8 +115,8 @@ bcnormal(
       rho = (rhob - rho_inter) / (xb - xd) * (x[0] - xd) + rho_inter;
       const amrex::Real p = (pb - p_inter) / (xb - xd) * (x[0] - xd) + p_inter;
 
-      EOS::RYP2E(rho, prob_parm.massfrac.begin(), p, eint);
-      EOS::EY2T(eint, prob_parm.massfrac.begin(), T);
+      EOS::RYP2E(rho, massfrac, p, eint);
+      EOS::EY2T(eint, massfrac, T);
 
       u = (ub - u_inter) / (xb - xd) * (x[0] - xd) + u_inter;
       v = (vb - v_inter) / (xb - xd) * (x[0] - xd) + v_inter;

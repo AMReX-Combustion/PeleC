@@ -60,10 +60,10 @@ pc_initdata(
   amrex::Real slp[3] = {0.0};
   for (int cnt = 0; cnt < 3; cnt++) {
     mod[cnt] = std::fmod(x[cnt], prob_parm.Linput);
-    locate(prob_parm.xarray, prob_parm.inres, mod[cnt], idx[cnt]);
+    locate(prob_parm.d_xarray, prob_parm.inres, mod[cnt], idx[cnt]);
     idxp1[cnt] = (idx[cnt] + 1) % prob_parm.inres;
     slp[cnt] =
-      (mod[cnt] - prob_parm.xarray[idx[cnt]]) / prob_parm.xdiff[idx[cnt]];
+      (mod[cnt] - prob_parm.d_xarray[idx[cnt]]) / prob_parm.d_xdiff[idx[cnt]];
   }
 
   const amrex::Real f0 = (1 - slp[0]) * (1 - slp[1]) * (1 - slp[2]);
@@ -76,78 +76,78 @@ pc_initdata(
   const amrex::Real f7 = slp[0] * slp[1] * slp[2];
 
   uinterp[0] =
-    prob_parm.uinput
+    prob_parm.d_uinput
         [idx[0] + prob_parm.inres * (idx[1] + prob_parm.inres * idx[2])] *
       f0 +
-    prob_parm.uinput
+    prob_parm.d_uinput
         [idxp1[0] + prob_parm.inres * (idx[1] + prob_parm.inres * idx[2])] *
       f1 +
-    prob_parm.uinput
+    prob_parm.d_uinput
         [idx[0] + prob_parm.inres * (idxp1[1] + prob_parm.inres * idx[2])] *
       f2 +
-    prob_parm.uinput
+    prob_parm.d_uinput
         [idx[0] + prob_parm.inres * (idx[1] + prob_parm.inres * idxp1[2])] *
       f3 +
-    prob_parm.uinput
+    prob_parm.d_uinput
         [idxp1[0] + prob_parm.inres * (idx[1] + prob_parm.inres * idxp1[2])] *
       f4 +
-    prob_parm.uinput
+    prob_parm.d_uinput
         [idx[0] + prob_parm.inres * (idxp1[1] + prob_parm.inres * idxp1[2])] *
       f5 +
-    prob_parm.uinput
+    prob_parm.d_uinput
         [idxp1[0] + prob_parm.inres * (idxp1[1] + prob_parm.inres * idx[2])] *
       f6 +
-    prob_parm.uinput
+    prob_parm.d_uinput
         [idxp1[0] + prob_parm.inres * (idxp1[1] + prob_parm.inres * idxp1[2])] *
       f7;
   uinterp[1] =
-    prob_parm.vinput
+    prob_parm.d_vinput
         [idx[0] + prob_parm.inres * (idx[1] + prob_parm.inres * idx[2])] *
       f0 +
-    prob_parm.vinput
+    prob_parm.d_vinput
         [idxp1[0] + prob_parm.inres * (idx[1] + prob_parm.inres * idx[2])] *
       f1 +
-    prob_parm.vinput
+    prob_parm.d_vinput
         [idx[0] + prob_parm.inres * (idxp1[1] + prob_parm.inres * idx[2])] *
       f2 +
-    prob_parm.vinput
+    prob_parm.d_vinput
         [idx[0] + prob_parm.inres * (idx[1] + prob_parm.inres * idxp1[2])] *
       f3 +
-    prob_parm.vinput
+    prob_parm.d_vinput
         [idxp1[0] + prob_parm.inres * (idx[1] + prob_parm.inres * idxp1[2])] *
       f4 +
-    prob_parm.vinput
+    prob_parm.d_vinput
         [idx[0] + prob_parm.inres * (idxp1[1] + prob_parm.inres * idxp1[2])] *
       f5 +
-    prob_parm.vinput
+    prob_parm.d_vinput
         [idxp1[0] + prob_parm.inres * (idxp1[1] + prob_parm.inres * idx[2])] *
       f6 +
-    prob_parm.vinput
+    prob_parm.d_vinput
         [idxp1[0] + prob_parm.inres * (idxp1[1] + prob_parm.inres * idxp1[2])] *
       f7;
   uinterp[2] =
-    prob_parm.winput
+    prob_parm.d_winput
         [idx[0] + prob_parm.inres * (idx[1] + prob_parm.inres * idx[2])] *
       f0 +
-    prob_parm.winput
+    prob_parm.d_winput
         [idxp1[0] + prob_parm.inres * (idx[1] + prob_parm.inres * idx[2])] *
       f1 +
-    prob_parm.winput
+    prob_parm.d_winput
         [idx[0] + prob_parm.inres * (idxp1[1] + prob_parm.inres * idx[2])] *
       f2 +
-    prob_parm.winput
+    prob_parm.d_winput
         [idx[0] + prob_parm.inres * (idx[1] + prob_parm.inres * idxp1[2])] *
       f3 +
-    prob_parm.winput
+    prob_parm.d_winput
         [idxp1[0] + prob_parm.inres * (idx[1] + prob_parm.inres * idxp1[2])] *
       f4 +
-    prob_parm.winput
+    prob_parm.d_winput
         [idx[0] + prob_parm.inres * (idxp1[1] + prob_parm.inres * idxp1[2])] *
       f5 +
-    prob_parm.winput
+    prob_parm.d_winput
         [idxp1[0] + prob_parm.inres * (idxp1[1] + prob_parm.inres * idx[2])] *
       f6 +
-    prob_parm.winput
+    prob_parm.d_winput
         [idxp1[0] + prob_parm.inres * (idxp1[1] + prob_parm.inres * idxp1[2])] *
       f7;
 
@@ -173,7 +173,7 @@ bcnormal(
   const int /*sgn*/,
   const amrex::Real /*time*/,
   amrex::GeometryData const& /*geomdata*/,
-  ProbParmDevice const& prob_parm)
+  ProbParmDevice const& /*prob_parm*/)
 {
 }
 

@@ -45,8 +45,12 @@ pc_initdata(
   const amrex::Real u_p = prob_parm.cs * rho_p / prob_parm.rho;
 
   amrex::Real T, eint = 0.0;
-  EOS::RYP2E(rho, prob_parm.massfrac.begin(), p, eint);
-  EOS::RYP2T(rho, prob_parm.massfrac.begin(), p, T);
+  amrex::Real massfrac[NUM_SPECIES] = {0.0};
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    massfrac[n] = prob_parm.massfrac[n];
+  }
+  EOS::RYP2E(rho, massfrac, p, eint);
+  EOS::RYP2T(rho, massfrac, p, T);
 
   state(i, j, k, URHO) = rho;
   state(i, j, k, UMX) = rho * u_p;
@@ -70,7 +74,7 @@ bcnormal(
   const int /*sgn*/,
   const amrex::Real /*time*/,
   amrex::GeometryData const& /*geomdata*/,
-  ProbParmDevice const&  /*prob_parm*/)
+  ProbParmDevice const& /*prob_parm*/)
 {
 }
 
@@ -110,13 +114,15 @@ struct MyProbDeriveStruct
     const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx =
       geomdata.CellSizeArray();
 
+    ProbParmDevice const* prob_parm = PeleC::prob_parm_device.get();
+
     amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
       const amrex::Real rho_exact =
-        prob_parm.rho +
-        prob_parm.alpha * std::exp(
-                            -((x - prob_parm.cs * time) / prob_parm.sigma) *
-                            ((x - prob_parm.cs * time) / prob_parm.sigma));
+        prob_parm->rho +
+        prob_parm->alpha * std::exp(
+                             -((x - prob_parm->cs * time) / prob_parm->sigma) *
+                             ((x - prob_parm->cs * time) / prob_parm->sigma));
       arr(i, j, k, 0) = dat(i, j, k, URHO) - rho_exact;
     });
   }
