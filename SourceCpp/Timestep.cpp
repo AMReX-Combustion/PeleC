@@ -6,7 +6,7 @@ AMREX_GPU_DEVICE_MANAGED amrex::Real max_dt =
   std::numeric_limits<amrex::Real>::max();
 } // namespace TimeStep
 
-AMREX_GPU_HOST_DEVICE
+AMREX_GPU_DEVICE
 amrex::Real
 pc_estdt_hydro(
   const amrex::Box& bx,
@@ -51,7 +51,7 @@ pc_estdt_hydro(
 }
 
 // Diffusion Velocity
-AMREX_GPU_HOST_DEVICE
+AMREX_GPU_DEVICE
 amrex::Real
 pc_estdt_veldif(
   const amrex::Box& bx,
@@ -60,9 +60,8 @@ pc_estdt_veldif(
   const amrex::Array4<const amrex::EBCellFlag>& flags,
 #endif
   AMREX_D_DECL(
-    const amrex::Real& dx,
-    const amrex::Real& dy,
-    const amrex::Real& dz)) noexcept
+    const amrex::Real& dx, const amrex::Real& dy, const amrex::Real& dz),
+  TransParm const* trans_parm) noexcept
 {
   amrex::Real dt = TimeStep::max_dt;
 
@@ -79,7 +78,7 @@ pc_estdt_veldif(
       amrex::Real T = u(i, j, k, UTEMP);
       amrex::Real D = 0.0;
       const int which_trans = 0;
-      pc_trans4dt(which_trans, T, rho, massfrac, D);
+      pc_trans4dt(which_trans, T, rho, massfrac, D, trans_parm);
       D *= rhoInv;
       if (D == 0.0) {
         D = SMALL_NUM;
@@ -99,7 +98,7 @@ pc_estdt_veldif(
 }
 
 // Diffusion Temperature
-AMREX_GPU_HOST_DEVICE
+AMREX_GPU_DEVICE
 amrex::Real
 pc_estdt_tempdif(
   const amrex::Box& bx,
@@ -108,9 +107,8 @@ pc_estdt_tempdif(
   const amrex::Array4<const amrex::EBCellFlag>& flags,
 #endif
   AMREX_D_DECL(
-    const amrex::Real& dx,
-    const amrex::Real& dy,
-    const amrex::Real& dz)) noexcept
+    const amrex::Real& dx, const amrex::Real& dy, const amrex::Real& dz),
+  TransParm const* trans_parm) noexcept
 {
   amrex::Real dt = TimeStep::max_dt;
 
@@ -127,7 +125,7 @@ pc_estdt_tempdif(
       amrex::Real T = u(i, j, k, UTEMP);
       amrex::Real D = 0.0;
       const int which_trans = 1;
-      pc_trans4dt(which_trans, T, rho, massfrac, D);
+      pc_trans4dt(which_trans, T, rho, massfrac, D, trans_parm);
       amrex::Real cv;
       EOS::TY2Cv(T, massfrac, cv);
       D *= rhoInv / cv;
@@ -149,7 +147,7 @@ pc_estdt_tempdif(
 }
 
 // Diffusion Enthalpy
-AMREX_GPU_HOST_DEVICE
+AMREX_GPU_DEVICE
 amrex::Real
 pc_estdt_enthdif(
   const amrex::Box& bx,
@@ -158,9 +156,8 @@ pc_estdt_enthdif(
   const amrex::Array4<const amrex::EBCellFlag>& flags,
 #endif
   AMREX_D_DECL(
-    const amrex::Real& dx,
-    const amrex::Real& dy,
-    const amrex::Real& dz)) noexcept
+    const amrex::Real& dx, const amrex::Real& dy, const amrex::Real& dz),
+  TransParm const* trans_parm) noexcept
 {
   amrex::Real dt = TimeStep::max_dt;
 
@@ -179,7 +176,7 @@ pc_estdt_enthdif(
       EOS::TY2Cp(T, massfrac, cp);
       amrex::Real D;
       const int which_trans = 1;
-      pc_trans4dt(which_trans, T, rho, massfrac, D);
+      pc_trans4dt(which_trans, T, rho, massfrac, D, trans_parm);
       D *= rhoInv / cp;
       AMREX_D_TERM(
         const amrex::Real dt1 = 0.5 * dx * dx / (AMREX_SPACEDIM * D);

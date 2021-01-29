@@ -30,7 +30,8 @@ pc_initdata(
   int j,
   int k,
   amrex::Array4<amrex::Real> const& state,
-  amrex::GeometryData const& geomdata)
+  amrex::GeometryData const& geomdata,
+  ProbParmDevice const& /*prob_parm*/)
 {
   // Geometry
   const amrex::Real* prob_lo = geomdata.ProbLo();
@@ -76,7 +77,8 @@ bcnormal(
   const int /*idir*/,
   const int /*sgn*/,
   const amrex::Real /*time*/,
-  amrex::GeometryData const& /*geomdata*/)
+  amrex::GeometryData const& /*geomdata*/,
+  ProbParmDevice const& /*prob_parm*/)
 {
   const amrex::Real rho = masa_eval_3d_exact_rho(x[0], x[1], x[2]);
   const amrex::Real u[3] = {

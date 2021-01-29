@@ -83,7 +83,7 @@ extern AMREX_GPU_DEVICE_MANAGED int upassMap[NPASSIVE];
 
 void init();
 
-AMREX_GPU_HOST_DEVICE
+AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 int
 qpass_map(const int i)
@@ -91,7 +91,7 @@ qpass_map(const int i)
   return qpassMap[i];
 }
 
-AMREX_GPU_HOST_DEVICE
+AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 int
 upass_map(const int i)

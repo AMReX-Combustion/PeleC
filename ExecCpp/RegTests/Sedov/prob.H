@@ -25,7 +25,8 @@ pc_initdata(
   int j,
   int k,
   amrex::Array4<amrex::Real> const& state,
-  amrex::GeometryData const& geomdata)
+  amrex::GeometryData const& geomdata,
+  ProbParmDevice const& /*prob_parm*/)
 {
   // Set explosion pressure -- we will convert the point-explosion energy into
   // a corresponding pressure distributed throughout the perturbed volume
@@ -121,7 +122,8 @@ bcnormal(
   const int /*idir*/,
   const int /*sgn*/,
   const amrex::Real /*time*/,
-  amrex::GeometryData const& /*geomdata*/)
+  amrex::GeometryData const& /*geomdata*/,
+  ProbParmDevice const& /*prob_parm*/)
 {
   for (int n = 0; n < NVAR; n++) {
     s_ext[n] = s_int[n];
