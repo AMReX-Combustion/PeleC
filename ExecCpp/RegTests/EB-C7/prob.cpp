@@ -31,34 +31,34 @@ amrex_probinit(
 {
   // Parse params
   amrex::ParmParse pp("prob");
-  pp.query("pl", ProbParm::pl);
-  pp.query("rhol", ProbParm::rhol);
-  pp.query("pr", ProbParm::pr);
-  pp.query("rhor", ProbParm::rhor);
-  pp.query("angle", ProbParm::angle);
+  pp.query("pl", PeleC::prob_parm_device->pl);
+  pp.query("rhol", PeleC::prob_parm_device->rhol);
+  pp.query("pr", PeleC::prob_parm_device->pr);
+  pp.query("rhor", PeleC::prob_parm_device->rhor);
+  pp.query("angle", PeleC::prob_parm_device->angle);
 
-  ProbParm::L = (probhi[0] - problo[0]);
+  PeleC::prob_parm_device->L = (probhi[0] - problo[0]);
 
-  ProbParm::massfrac[0] = 1.0;
-
-  EOS::RYP2T(
-    ProbParm::rhol, ProbParm::massfrac.begin(), ProbParm::pl, ProbParm::Tl);
-  EOS::RYP2E(
-    ProbParm::rhol, ProbParm::massfrac.begin(), ProbParm::pl, ProbParm::eintl);
+  PeleC::prob_parm_device->massfrac[0] = 1.0;
 
   EOS::RYP2T(
-    ProbParm::rhor, ProbParm::massfrac.begin(), ProbParm::pr, ProbParm::Tr);
+    PeleC::prob_parm_device->rhol, PeleC::prob_parm_device->massfrac.begin(), PeleC::prob_parm_device->pl, PeleC::prob_parm_device->Tl);
   EOS::RYP2E(
-    ProbParm::rhor, ProbParm::massfrac.begin(), ProbParm::pr, ProbParm::eintr);
+    PeleC::prob_parm_device->rhol, PeleC::prob_parm_device->massfrac.begin(), PeleC::prob_parm_device->pl, PeleC::prob_parm_device->eintl);
+
+  EOS::RYP2T(
+    PeleC::prob_parm_device->rhor, PeleC::prob_parm_device->massfrac.begin(), PeleC::prob_parm_device->pr, PeleC::prob_parm_device->Tr);
+  EOS::RYP2E(
+    PeleC::prob_parm_device->rhor, PeleC::prob_parm_device->massfrac.begin(), PeleC::prob_parm_device->pr, PeleC::prob_parm_device->eintr);
 
   // Output IC
   std::ofstream ofs("ic.txt", std::ofstream::out);
   amrex::Print(ofs) << "L, rhol, pl, Tl, rhor, pr, Tr, gamma, angle"
                     << std::endl;
   amrex::Print(ofs).SetPrecision(17)
-    << ProbParm::L << "," << ProbParm::rhol << "," << ProbParm::pl << ","
-    << ProbParm::Tl << "," << ProbParm::rhor << "," << ProbParm::pr << ","
-    << ProbParm::Tr << "," << EOS::gamma << "," << ProbParm::angle << std::endl;
+    << PeleC::prob_parm_device->L << "," << PeleC::prob_parm_device->rhol << "," << PeleC::prob_parm_device->pl << ","
+    << PeleC::prob_parm_device->Tl << "," << PeleC::prob_parm_device->rhor << "," << PeleC::prob_parm_device->pr << ","
+    << PeleC::prob_parm_device->Tr << "," << EOS::gamma << "," << PeleC::prob_parm_device->angle << std::endl;
   ofs.close();
 }
 }

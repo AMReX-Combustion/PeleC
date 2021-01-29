@@ -7,6 +7,8 @@
 #include <AMReX_FArrayBox.H>
 #include <AMReX_REAL.H>
 #include <AMReX_GpuMemory.H>
+#include <AMReX_REAL.H>
+#include <AMReX_GpuMemory.H>
 
 #include "mechanism.h"
 
@@ -52,7 +54,7 @@ bcnormal(
   const int /*sgn*/,
   const amrex::Real /*time*/,
   amrex::GeometryData const& /*geomdata*/,
-  ProbParmDevice const& /*prob_parm*/)
+  ProbParmDevice const& prob_parm)
 {
 }
 

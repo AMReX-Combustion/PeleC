@@ -29,31 +29,31 @@ amrex_probinit(
 {
   // Parse params
   amrex::ParmParse pp("prob");
-  pp.query("rho", ProbParm::rho);
-  pp.query("p", ProbParm::p);
-  pp.query("alpha", ProbParm::alpha);
-  pp.query("sigma", ProbParm::sigma);
+  pp.query("rho", PeleC::prob_parm_device->rho);
+  pp.query("p", PeleC::prob_parm_device->p);
+  pp.query("alpha", PeleC::prob_parm_device->alpha);
+  pp.query("sigma", PeleC::prob_parm_device->sigma);
 
   amrex::ParmParse ppeb("eb2");
-  ppeb.query("cylinder_radius", ProbParm::radius);
+  ppeb.query("cylinder_radius", PeleC::prob_parm_device->radius);
 
-  ProbParm::L = (probhi[0] - problo[0]);
+  PeleC::prob_parm_device->L = (probhi[0] - problo[0]);
 
-  ProbParm::massfrac[0] = 1.0;
+  PeleC::prob_parm_device->massfrac[0] = 1.0;
 
   EOS::RYP2T(
-    ProbParm::rho, ProbParm::massfrac.begin(), ProbParm::p, ProbParm::T);
+    PeleC::prob_parm_device->rho, PeleC::prob_parm_device->massfrac.begin(), PeleC::prob_parm_device->p, PeleC::prob_parm_device->T);
   EOS::RPY2Cs(
-    ProbParm::rho, ProbParm::p, ProbParm::massfrac.begin(), ProbParm::cs);
+    PeleC::prob_parm_device->rho, PeleC::prob_parm_device->p, PeleC::prob_parm_device->massfrac.begin(), PeleC::prob_parm_device->cs);
 
   // Output IC
   std::ofstream ofs("ic.txt", std::ofstream::out);
   amrex::Print(ofs) << "L, rho, p, T, gamma, cs, radius, alpha, sigma"
                     << std::endl;
   amrex::Print(ofs).SetPrecision(17)
-    << ProbParm::L << "," << ProbParm::rho << "," << ProbParm::p << ","
-    << ProbParm::T << "," << EOS::gamma << "," << ProbParm::cs << ","
-    << ProbParm::radius << "," << ProbParm::alpha << "," << ProbParm::sigma
+    << PeleC::prob_parm_device->L << "," << PeleC::prob_parm_device->rho << "," << PeleC::prob_parm_device->p << ","
+    << PeleC::prob_parm_device->T << "," << EOS::gamma << "," << PeleC::prob_parm_device->cs << ","
+    << PeleC::prob_parm_device->radius << "," << PeleC::prob_parm_device->alpha << "," << PeleC::prob_parm_device->sigma
     << std::endl;
   ofs.close();
 }

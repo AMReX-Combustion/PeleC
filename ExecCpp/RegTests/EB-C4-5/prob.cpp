@@ -25,14 +25,14 @@ amrex_probinit(
 {
   // Parse params
   amrex::ParmParse pp("prob");
-  pp.query("p_init", ProbParm::p_init);
-  pp.query("T_init", ProbParm::T_init);
+  pp.query("p_init", PeleC::prob_parm_device->p_init);
+  pp.query("T_init", PeleC::prob_parm_device->T_init);
 
   // Initial values
-  ProbParm::massfrac[0] = 1.0;
+  PeleC::prob_parm_device->massfrac[0] = 1.0;
   EOS::PYT2RE(
-    ProbParm::p_init, ProbParm::massfrac.begin(), ProbParm::T_init,
-    ProbParm::rho_init, ProbParm::e_init);
+    PeleC::prob_parm_device->p_init, PeleC::prob_parm_device->massfrac.begin(), PeleC::prob_parm_device->T_init,
+    PeleC::prob_parm_device->rho_init, PeleC::prob_parm_device->e_init);
 }
 }
 

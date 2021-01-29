@@ -34,32 +34,32 @@ amrex_probinit(
   // Parse params
   {
     amrex::ParmParse pp("prob");
-    pp.query("p", ProbParm::p);
-    pp.query("T", ProbParm::T);
-    pp.query("Re", ProbParm::Re);
-    pp.query("Ma", ProbParm::Ma);
-    pp.query("Pr", ProbParm::Pr);
+    pp.query("p", PeleC::prob_parm_device->p);
+    pp.query("T", PeleC::prob_parm_device->T);
+    pp.query("Re", PeleC::prob_parm_device->Re);
+    pp.query("Ma", PeleC::prob_parm_device->Ma);
+    pp.query("Pr", PeleC::prob_parm_device->Pr);
   }
 
   {
     amrex::ParmParse pp("eb2");
-    pp.query("cylinder_radius", ProbParm::radius);
+    pp.query("cylinder_radius", PeleC::prob_parm_device->radius);
   }
 
   amrex::Real L = (probhi[0] - problo[0]);
 
   amrex::Real cp = 0.0;
   amrex::Real cs = 0.0;
-  ProbParm::massfrac[0] = 1.0;
+  PeleC::prob_parm_device->massfrac[0] = 1.0;
 
   EOS::PYT2RE(
-    ProbParm::p, ProbParm::massfrac.begin(), ProbParm::T, ProbParm::rho,
-    ProbParm::eint);
-  EOS::RTY2Cs(ProbParm::rho, ProbParm::T, ProbParm::massfrac.begin(), cs);
-  EOS::TY2Cp(ProbParm::T, ProbParm::massfrac.begin(), cp);
+    PeleC::prob_parm_device->p, PeleC::prob_parm_device->massfrac.begin(), PeleC::prob_parm_device->T, PeleC::prob_parm_device->rho,
+    PeleC::prob_parm_device->eint);
+  EOS::RTY2Cs(PeleC::prob_parm_device->rho, PeleC::prob_parm_device->T, PeleC::prob_parm_device->massfrac.begin(), cs);
+  EOS::TY2Cp(PeleC::prob_parm_device->T, PeleC::prob_parm_device->massfrac.begin(), cp);
 
-  ProbParm::umax = ProbParm::Ma * cs;
-  ProbParm::uavg = 0.5 * ProbParm::umax;
+  PeleC::prob_parm_device->umax = PeleC::prob_parm_device->Ma * cs;
+  PeleC::prob_parm_device->uavg = 0.5 * PeleC::prob_parm_device->umax;
 
   TransParm trans_parm;
 
@@ -81,9 +81,9 @@ amrex_probinit(
   trans_parm.const_bulk_viscosity = 0.0;
   trans_parm.const_diffusivity = 0.0;
   trans_parm.const_viscosity =
-    ProbParm::rho * ProbParm::umax * L / ProbParm::Re;
+    PeleC::prob_parm_device->rho * PeleC::prob_parm_device->umax * L / PeleC::prob_parm_device->Re;
   trans_parm.const_conductivity =
-    trans_parm.const_viscosity * cp / ProbParm::Pr;
+    trans_parm.const_viscosity * cp / PeleC::prob_parm_device->Pr;
 
 #ifdef AMREX_USE_GPU
   amrex::Gpu::htod_memcpy(trans_parm_g, &trans_parm, sizeof(trans_parm));
@@ -91,9 +91,9 @@ amrex_probinit(
   std::memcpy(trans_parm_g, &trans_parm, sizeof(trans_parm));
 #endif
 
-  ProbParm::G = ProbParm::umax * 4 * trans_parm.const_viscosity /
-                (ProbParm::radius * ProbParm::radius);
-  ProbParm::dpdx = -ProbParm::G;
+  PeleC::prob_parm_device->G = PeleC::prob_parm_device->umax * 4 * trans_parm.const_viscosity /
+                (PeleC::prob_parm_device->radius * PeleC::prob_parm_device->radius);
+  PeleC::prob_parm_device->dpdx = -PeleC::prob_parm_device->G;
 
   // Output IC
   std::ofstream ofs("ic.txt", std::ofstream::out);
@@ -101,11 +101,11 @@ amrex_probinit(
     << "L, rho, umax, p, T, gamma, mu, k, Re, Ma, Pr, dpdx, G, radius"
     << std::endl;
   amrex::Print(ofs).SetPrecision(17)
-    << L << "," << ProbParm::rho << "," << ProbParm::umax << "," << ProbParm::p
-    << "," << ProbParm::T << "," << EOS::gamma << ","
+    << L << "," << PeleC::prob_parm_device->rho << "," << PeleC::prob_parm_device->umax << "," << PeleC::prob_parm_device->p
+    << "," << PeleC::prob_parm_device->T << "," << EOS::gamma << ","
     << trans_parm.const_viscosity << "," << trans_parm.const_conductivity << ","
-    << ProbParm::Re << "," << ProbParm::Ma << "," << ProbParm::Pr << ","
-    << ProbParm::dpdx << "," << ProbParm::G << "," << ProbParm::radius
+    << PeleC::prob_parm_device->Re << "," << PeleC::prob_parm_device->Ma << "," << PeleC::prob_parm_device->Pr << ","
+    << PeleC::prob_parm_device->dpdx << "," << PeleC::prob_parm_device->G << "," << PeleC::prob_parm_device->radius
     << std::endl;
   ofs.close();
 }
