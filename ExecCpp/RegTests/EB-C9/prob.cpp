@@ -1,18 +1,5 @@
 #include "prob.H"
 
-namespace ProbParm {
-AMREX_GPU_DEVICE_MANAGED amrex::Real alpha = 1e-6;
-AMREX_GPU_DEVICE_MANAGED amrex::Real sigma = 10.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real p = 100000.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real rho = 0.0014;
-AMREX_GPU_DEVICE_MANAGED amrex::Real T = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real cs = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real radius = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real L = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::GpuArray<amrex::Real, NUM_SPECIES> massfrac = {
-  1.0};
-} // namespace ProbParm
-
 void
 pc_prob_close()
 {
@@ -42,19 +29,22 @@ amrex_probinit(
   PeleC::prob_parm_device->massfrac[0] = 1.0;
 
   EOS::RYP2T(
-    PeleC::prob_parm_device->rho, PeleC::prob_parm_device->massfrac.begin(), PeleC::prob_parm_device->p, PeleC::prob_parm_device->T);
+    PeleC::prob_parm_device->rho, PeleC::prob_parm_device->massfrac.begin(),
+    PeleC::prob_parm_device->p, PeleC::prob_parm_device->T);
   EOS::RPY2Cs(
-    PeleC::prob_parm_device->rho, PeleC::prob_parm_device->p, PeleC::prob_parm_device->massfrac.begin(), PeleC::prob_parm_device->cs);
+    PeleC::prob_parm_device->rho, PeleC::prob_parm_device->p,
+    PeleC::prob_parm_device->massfrac.begin(), PeleC::prob_parm_device->cs);
 
   // Output IC
   std::ofstream ofs("ic.txt", std::ofstream::out);
   amrex::Print(ofs) << "L, rho, p, T, gamma, cs, radius, alpha, sigma"
                     << std::endl;
   amrex::Print(ofs).SetPrecision(17)
-    << PeleC::prob_parm_device->L << "," << PeleC::prob_parm_device->rho << "," << PeleC::prob_parm_device->p << ","
-    << PeleC::prob_parm_device->T << "," << EOS::gamma << "," << PeleC::prob_parm_device->cs << ","
-    << PeleC::prob_parm_device->radius << "," << PeleC::prob_parm_device->alpha << "," << PeleC::prob_parm_device->sigma
-    << std::endl;
+    << PeleC::prob_parm_device->L << "," << PeleC::prob_parm_device->rho << ","
+    << PeleC::prob_parm_device->p << "," << PeleC::prob_parm_device->T << ","
+    << EOS::gamma << "," << PeleC::prob_parm_device->cs << ","
+    << PeleC::prob_parm_device->radius << "," << PeleC::prob_parm_device->alpha
+    << "," << PeleC::prob_parm_device->sigma << std::endl;
   ofs.close();
 }
 }

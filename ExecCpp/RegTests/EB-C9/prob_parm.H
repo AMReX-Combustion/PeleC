@@ -7,23 +7,20 @@
 
 struct ProbParmDevice : amrex::Gpu::Managed
 {
+  AMREX_GPU_DEVICE_MANAGED amrex::Real alpha = 1e-6;
+  AMREX_GPU_DEVICE_MANAGED amrex::Real sigma = 10.0;
+  AMREX_GPU_DEVICE_MANAGED amrex::Real p = 100000.0;
+  AMREX_GPU_DEVICE_MANAGED amrex::Real rho = 0.0014;
+  AMREX_GPU_DEVICE_MANAGED amrex::Real T = 0.0;
+  AMREX_GPU_DEVICE_MANAGED amrex::Real cs = 0.0;
+  AMREX_GPU_DEVICE_MANAGED amrex::Real radius = 0.0;
+  AMREX_GPU_DEVICE_MANAGED amrex::Real L = 0.0;
+  AMREX_GPU_DEVICE_MANAGED amrex::GpuArray<amrex::Real, NUM_SPECIES> massfrac =
+    {1.0};
 };
 
 struct ProbParmHost : amrex::Gpu::Managed
 {
 };
-
-namespace ProbParm {
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real alpha;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real sigma;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real p;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real T;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real rho;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real cs;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real radius;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real L;
-extern AMREX_GPU_DEVICE_MANAGED amrex::GpuArray<amrex::Real, NUM_SPECIES>
-  massfrac;
-} // namespace ProbParm
 
 #endif

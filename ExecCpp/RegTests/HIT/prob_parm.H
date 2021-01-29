@@ -7,47 +7,43 @@
 
 struct ProbParmDevice : amrex::Gpu::Managed
 {
+  std::string iname;
+  AMREX_GPU_DEVICE_MANAGED bool binfmt = false;
+  AMREX_GPU_DEVICE_MANAGED bool restart = false;
+  AMREX_GPU_DEVICE_MANAGED amrex::Real lambda0 = 0.5;
+  AMREX_GPU_DEVICE_MANAGED amrex::Real reynolds_lambda0 = 100.0;
+  AMREX_GPU_DEVICE_MANAGED amrex::Real mach_t0 = 0.1;
+  AMREX_GPU_DEVICE_MANAGED amrex::Real prandtl = 0.71;
+  AMREX_GPU_DEVICE_MANAGED int inres = 0;
+  AMREX_GPU_DEVICE_MANAGED amrex::Real uin_norm = 1.0;
+  AMREX_GPU_DEVICE_MANAGED amrex::Real L_x = 0.0;
+  AMREX_GPU_DEVICE_MANAGED amrex::Real L_y = 0.0;
+  AMREX_GPU_DEVICE_MANAGED amrex::Real L_z = 0.0;
+  AMREX_GPU_DEVICE_MANAGED amrex::Real Linput = 0.0;
+  AMREX_GPU_DEVICE_MANAGED amrex::Real k0 = 0.0;
+  AMREX_GPU_DEVICE_MANAGED amrex::Real rho0 = 0.0;
+  AMREX_GPU_DEVICE_MANAGED amrex::Real urms0 = 0.0;
+  AMREX_GPU_DEVICE_MANAGED amrex::Real tau = 0.0;
+  AMREX_GPU_DEVICE_MANAGED amrex::Real p0 = 1.013e6; // [erg cm^-3]
+  AMREX_GPU_DEVICE_MANAGED amrex::Real T0 = 300.0;
+  AMREX_GPU_DEVICE_MANAGED amrex::Real eint0 = 0.0;
+  amrex::Gpu::ManagedVector<amrex::Real>* v_xinput = nullptr;
+  amrex::Gpu::ManagedVector<amrex::Real>* v_uinput = nullptr;
+  amrex::Gpu::ManagedVector<amrex::Real>* v_vinput = nullptr;
+  amrex::Gpu::ManagedVector<amrex::Real>* v_winput = nullptr;
+  amrex::Gpu::ManagedVector<amrex::Real>* v_xarray = nullptr;
+  amrex::Gpu::ManagedVector<amrex::Real>* v_xdiff = nullptr;
+
+  AMREX_GPU_DEVICE_MANAGED amrex::Real* xinput = nullptr;
+  AMREX_GPU_DEVICE_MANAGED amrex::Real* uinput = nullptr;
+  AMREX_GPU_DEVICE_MANAGED amrex::Real* vinput = nullptr;
+  AMREX_GPU_DEVICE_MANAGED amrex::Real* winput = nullptr;
+  AMREX_GPU_DEVICE_MANAGED amrex::Real* xarray = nullptr;
+  AMREX_GPU_DEVICE_MANAGED amrex::Real* xdiff = nullptr;
 };
 
 struct ProbParmHost : amrex::Gpu::Managed
 {
 };
-
-namespace ProbParm {
-extern std::string iname;
-extern AMREX_GPU_DEVICE_MANAGED bool binfmt;
-extern AMREX_GPU_DEVICE_MANAGED bool restart;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real lambda0;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real reynolds_lambda0;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real mach_t0;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real prandtl;
-extern AMREX_GPU_DEVICE_MANAGED int inres;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real uin_norm;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real L_x;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real L_y;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real L_z;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real Linput;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real k0;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real rho0;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real urms0;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real tau;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real p0;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real T0;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real eint0;
-
-extern amrex::Gpu::ManagedVector<amrex::Real>* v_xinput;
-extern amrex::Gpu::ManagedVector<amrex::Real>* v_uinput;
-extern amrex::Gpu::ManagedVector<amrex::Real>* v_vinput;
-extern amrex::Gpu::ManagedVector<amrex::Real>* v_winput;
-extern amrex::Gpu::ManagedVector<amrex::Real>* v_xarray;
-extern amrex::Gpu::ManagedVector<amrex::Real>* v_xdiff;
-
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real* xinput;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real* uinput;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real* vinput;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real* winput;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real* xarray;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real* xdiff;
-} // namespace ProbParm
 
 #endif

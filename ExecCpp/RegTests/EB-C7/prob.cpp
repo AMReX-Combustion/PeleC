@@ -42,23 +42,29 @@ amrex_probinit(
   PeleC::prob_parm_device->massfrac[0] = 1.0;
 
   EOS::RYP2T(
-    PeleC::prob_parm_device->rhol, PeleC::prob_parm_device->massfrac.begin(), PeleC::prob_parm_device->pl, PeleC::prob_parm_device->Tl);
+    PeleC::prob_parm_device->rhol, PeleC::prob_parm_device->massfrac.begin(),
+    PeleC::prob_parm_device->pl, PeleC::prob_parm_device->Tl);
   EOS::RYP2E(
-    PeleC::prob_parm_device->rhol, PeleC::prob_parm_device->massfrac.begin(), PeleC::prob_parm_device->pl, PeleC::prob_parm_device->eintl);
+    PeleC::prob_parm_device->rhol, PeleC::prob_parm_device->massfrac.begin(),
+    PeleC::prob_parm_device->pl, PeleC::prob_parm_device->eintl);
 
   EOS::RYP2T(
-    PeleC::prob_parm_device->rhor, PeleC::prob_parm_device->massfrac.begin(), PeleC::prob_parm_device->pr, PeleC::prob_parm_device->Tr);
+    PeleC::prob_parm_device->rhor, PeleC::prob_parm_device->massfrac.begin(),
+    PeleC::prob_parm_device->pr, PeleC::prob_parm_device->Tr);
   EOS::RYP2E(
-    PeleC::prob_parm_device->rhor, PeleC::prob_parm_device->massfrac.begin(), PeleC::prob_parm_device->pr, PeleC::prob_parm_device->eintr);
+    PeleC::prob_parm_device->rhor, PeleC::prob_parm_device->massfrac.begin(),
+    PeleC::prob_parm_device->pr, PeleC::prob_parm_device->eintr);
 
   // Output IC
   std::ofstream ofs("ic.txt", std::ofstream::out);
   amrex::Print(ofs) << "L, rhol, pl, Tl, rhor, pr, Tr, gamma, angle"
                     << std::endl;
   amrex::Print(ofs).SetPrecision(17)
-    << PeleC::prob_parm_device->L << "," << PeleC::prob_parm_device->rhol << "," << PeleC::prob_parm_device->pl << ","
-    << PeleC::prob_parm_device->Tl << "," << PeleC::prob_parm_device->rhor << "," << PeleC::prob_parm_device->pr << ","
-    << PeleC::prob_parm_device->Tr << "," << EOS::gamma << "," << PeleC::prob_parm_device->angle << std::endl;
+    << PeleC::prob_parm_device->L << "," << PeleC::prob_parm_device->rhol << ","
+    << PeleC::prob_parm_device->pl << "," << PeleC::prob_parm_device->Tl << ","
+    << PeleC::prob_parm_device->rhor << "," << PeleC::prob_parm_device->pr
+    << "," << PeleC::prob_parm_device->Tr << "," << EOS::gamma << ","
+    << PeleC::prob_parm_device->angle << std::endl;
   ofs.close();
 }
 }

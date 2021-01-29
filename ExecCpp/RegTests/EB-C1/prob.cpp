@@ -80,8 +80,11 @@ amrex_probinit(
   amrex::Real cs;
   amrex::Real cp;
   amrex::Real massfrac[NUM_SPECIES] = {1.0};
-  EOS::PYT2RE(PeleC::prob_parm_device->p0, massfrac, PeleC::prob_parm_device->T0, PeleC::prob_parm_device->rho0, eint);
-  EOS::RTY2Cs(PeleC::prob_parm_device->rho0, PeleC::prob_parm_device->T0, massfrac, cs);
+  EOS::PYT2RE(
+    PeleC::prob_parm_device->p0, massfrac, PeleC::prob_parm_device->T0,
+    PeleC::prob_parm_device->rho0, eint);
+  EOS::RTY2Cs(
+    PeleC::prob_parm_device->rho0, PeleC::prob_parm_device->T0, massfrac, cs);
   EOS::TY2Cp(PeleC::prob_parm_device->T0, massfrac, cp);
 
   PeleC::prob_parm_device->u0 = PeleC::prob_parm_device->mach * cs;
@@ -104,10 +107,12 @@ amrex_probinit(
   }
 
   trans_parm.const_bulk_viscosity =
-    PeleC::prob_parm_device->rho0 * PeleC::prob_parm_device->u0 * PeleC::prob_parm_device->L_x / PeleC::prob_parm_device->reynolds;
+    PeleC::prob_parm_device->rho0 * PeleC::prob_parm_device->u0 *
+    PeleC::prob_parm_device->L_x / PeleC::prob_parm_device->reynolds;
   trans_parm.const_diffusivity = 0.0;
   trans_parm.const_viscosity =
-    PeleC::prob_parm_device->rho0 * PeleC::prob_parm_device->u0 * PeleC::prob_parm_device->L_x / PeleC::prob_parm_device->reynolds;
+    PeleC::prob_parm_device->rho0 * PeleC::prob_parm_device->u0 *
+    PeleC::prob_parm_device->L_x / PeleC::prob_parm_device->reynolds;
   trans_parm.const_conductivity =
     trans_parm.const_viscosity * cp / PeleC::prob_parm_device->prandtl;
 
@@ -132,17 +137,26 @@ amrex_probinit(
   masa_set_param("mu", trans_parm.const_viscosity);
   masa_set_param("mu_bulk", trans_parm.const_bulk_viscosity);
   masa_set_param("rho_0", PeleC::prob_parm_device->rho0);
-  masa_set_param("rho_x", PeleC::prob_parm_device->rho_x_fact * PeleC::prob_parm_device->rho0);
+  masa_set_param(
+    "rho_x",
+    PeleC::prob_parm_device->rho_x_fact * PeleC::prob_parm_device->rho0);
   masa_set_param("rho_y", PeleC::prob_parm_device->rho_y_fact);
   masa_set_param("rho_z", PeleC::prob_parm_device->rho_z_fact);
-  masa_set_param("u_0", PeleC::prob_parm_device->u_0_fact * PeleC::prob_parm_device->u0);
-  masa_set_param("v_0", PeleC::prob_parm_device->v_0_fact * PeleC::prob_parm_device->u0);
-  masa_set_param("w_0", PeleC::prob_parm_device->w_0_fact * PeleC::prob_parm_device->u0);
+  masa_set_param(
+    "u_0", PeleC::prob_parm_device->u_0_fact * PeleC::prob_parm_device->u0);
+  masa_set_param(
+    "v_0", PeleC::prob_parm_device->v_0_fact * PeleC::prob_parm_device->u0);
+  masa_set_param(
+    "w_0", PeleC::prob_parm_device->w_0_fact * PeleC::prob_parm_device->u0);
   masa_set_param("p_0", PeleC::prob_parm_device->p0);
-  masa_set_param("u_r", PeleC::prob_parm_device->u_r_fact * PeleC::prob_parm_device->u0);
-  masa_set_param("v_r", PeleC::prob_parm_device->v_r_fact * PeleC::prob_parm_device->u0);
-  masa_set_param("w_r", PeleC::prob_parm_device->w_r_fact * PeleC::prob_parm_device->u0);
-  masa_set_param("p_r", PeleC::prob_parm_device->p_r_fact * PeleC::prob_parm_device->p0);
+  masa_set_param(
+    "u_r", PeleC::prob_parm_device->u_r_fact * PeleC::prob_parm_device->u0);
+  masa_set_param(
+    "v_r", PeleC::prob_parm_device->v_r_fact * PeleC::prob_parm_device->u0);
+  masa_set_param(
+    "w_r", PeleC::prob_parm_device->w_r_fact * PeleC::prob_parm_device->u0);
+  masa_set_param(
+    "p_r", PeleC::prob_parm_device->p_r_fact * PeleC::prob_parm_device->p0);
   masa_set_param("a_rhox", PeleC::prob_parm_device->a_rhox);
   masa_set_param("a_rhoy", PeleC::prob_parm_device->a_rhoy);
   masa_set_param("a_rhoz", PeleC::prob_parm_device->a_rhoz);

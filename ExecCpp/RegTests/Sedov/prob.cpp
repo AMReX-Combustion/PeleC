@@ -1,13 +1,5 @@
 #include "prob.H"
 
-namespace ProbParm {
-AMREX_GPU_DEVICE_MANAGED amrex::Real p_ambient;
-AMREX_GPU_DEVICE_MANAGED amrex::Real dens_ambient;
-AMREX_GPU_DEVICE_MANAGED amrex::Real exp_energy;
-AMREX_GPU_DEVICE_MANAGED amrex::Real r_init;
-AMREX_GPU_DEVICE_MANAGED int nsub;
-} // namespace ProbParm
-
 void
 pc_prob_close()
 {

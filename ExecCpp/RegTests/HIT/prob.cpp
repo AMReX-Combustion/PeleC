@@ -1,42 +1,5 @@
 #include "prob.H"
 
-namespace ProbParm {
-std::string iname;
-AMREX_GPU_DEVICE_MANAGED bool binfmt = false;
-AMREX_GPU_DEVICE_MANAGED bool restart = false;
-AMREX_GPU_DEVICE_MANAGED amrex::Real lambda0 = 0.5;
-AMREX_GPU_DEVICE_MANAGED amrex::Real reynolds_lambda0 = 100.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real mach_t0 = 0.1;
-AMREX_GPU_DEVICE_MANAGED amrex::Real prandtl = 0.71;
-AMREX_GPU_DEVICE_MANAGED int inres = 0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real uin_norm = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real L_x = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real L_y = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real L_z = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real Linput = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real k0 = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real rho0 = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real urms0 = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real tau = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real p0 = 1.013e6; // [erg cm^-3]
-AMREX_GPU_DEVICE_MANAGED amrex::Real T0 = 300.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real eint0 = 0.0;
-amrex::Gpu::ManagedVector<amrex::Real>* v_xinput = nullptr;
-amrex::Gpu::ManagedVector<amrex::Real>* v_uinput = nullptr;
-amrex::Gpu::ManagedVector<amrex::Real>* v_vinput = nullptr;
-amrex::Gpu::ManagedVector<amrex::Real>* v_winput = nullptr;
-amrex::Gpu::ManagedVector<amrex::Real>* v_xarray = nullptr;
-amrex::Gpu::ManagedVector<amrex::Real>* v_xdiff = nullptr;
-
-AMREX_GPU_DEVICE_MANAGED amrex::Real* xinput = nullptr;
-AMREX_GPU_DEVICE_MANAGED amrex::Real* uinput = nullptr;
-AMREX_GPU_DEVICE_MANAGED amrex::Real* vinput = nullptr;
-AMREX_GPU_DEVICE_MANAGED amrex::Real* winput = nullptr;
-AMREX_GPU_DEVICE_MANAGED amrex::Real* xarray = nullptr;
-AMREX_GPU_DEVICE_MANAGED amrex::Real* xdiff = nullptr;
-
-} // namespace ProbParm
-
 void
 pc_prob_close()
 {
@@ -105,12 +68,16 @@ amrex_probinit(
   amrex::Real cp;
   amrex::Real massfrac[NUM_SPECIES] = {1.0};
   EOS::PYT2RE(
-    PeleC::prob_parm_device->p0, massfrac, PeleC::prob_parm_device->T0, PeleC::prob_parm_device->rho0, PeleC::prob_parm_device->eint0);
-  EOS::RTY2Cs(PeleC::prob_parm_device->rho0, PeleC::prob_parm_device->T0, massfrac, cs);
+    PeleC::prob_parm_device->p0, massfrac, PeleC::prob_parm_device->T0,
+    PeleC::prob_parm_device->rho0, PeleC::prob_parm_device->eint0);
+  EOS::RTY2Cs(
+    PeleC::prob_parm_device->rho0, PeleC::prob_parm_device->T0, massfrac, cs);
   EOS::TY2Cp(PeleC::prob_parm_device->T0, massfrac, cp);
 
-  PeleC::prob_parm_device->urms0 = PeleC::prob_parm_device->mach_t0 * cs / sqrt(3.0);
-  PeleC::prob_parm_device->tau = PeleC::prob_parm_device->lambda0 / PeleC::prob_parm_device->urms0;
+  PeleC::prob_parm_device->urms0 =
+    PeleC::prob_parm_device->mach_t0 * cs / sqrt(3.0);
+  PeleC::prob_parm_device->tau =
+    PeleC::prob_parm_device->lambda0 / PeleC::prob_parm_device->urms0;
 
   TransParm trans_parm;
 
@@ -131,8 +98,10 @@ amrex_probinit(
 
   trans_parm.const_bulk_viscosity = 0.0;
   trans_parm.const_diffusivity = 0.0;
-  trans_parm.const_viscosity = PeleC::prob_parm_device->rho0 * PeleC::prob_parm_device->urms0 *
-                               PeleC::prob_parm_device->lambda0 / PeleC::prob_parm_device->reynolds_lambda0;
+  trans_parm.const_viscosity = PeleC::prob_parm_device->rho0 *
+                               PeleC::prob_parm_device->urms0 *
+                               PeleC::prob_parm_device->lambda0 /
+                               PeleC::prob_parm_device->reynolds_lambda0;
   trans_parm.const_conductivity =
     trans_parm.const_viscosity * cp / PeleC::prob_parm_device->prandtl;
 
@@ -149,11 +118,14 @@ amrex_probinit(
        "Mach, Prandtl, u0, v0, w0, forcing"
     << std::endl;
   amrex::Print(ofs).SetPrecision(17)
-    << PeleC::prob_parm_device->lambda0 << "," << PeleC::prob_parm_device->k0 << "," << PeleC::prob_parm_device->rho0 << ","
-    << PeleC::prob_parm_device->urms0 << "," << PeleC::prob_parm_device->tau << "," << PeleC::prob_parm_device->p0 << ","
-    << PeleC::prob_parm_device->T0 << "," << EOS::gamma << "," << trans_parm.const_viscosity
-    << "," << trans_parm.const_conductivity << "," << cs << ","
-    << PeleC::prob_parm_device->reynolds_lambda0 << "," << PeleC::prob_parm_device->mach_t0 << ","
+    << PeleC::prob_parm_device->lambda0 << "," << PeleC::prob_parm_device->k0
+    << "," << PeleC::prob_parm_device->rho0 << ","
+    << PeleC::prob_parm_device->urms0 << "," << PeleC::prob_parm_device->tau
+    << "," << PeleC::prob_parm_device->p0 << "," << PeleC::prob_parm_device->T0
+    << "," << EOS::gamma << "," << trans_parm.const_viscosity << ","
+    << trans_parm.const_conductivity << "," << cs << ","
+    << PeleC::prob_parm_device->reynolds_lambda0 << ","
+    << PeleC::prob_parm_device->mach_t0 << ","
     << PeleC::prob_parm_device->prandtl << "," << forcing_params::u0 << ","
     << forcing_params::v0 << "," << forcing_params::w0 << ","
     << forcing_params::forcing << std::endl;
@@ -185,54 +157,76 @@ amrex_probinit(
     }
 
     // Extract position and velocities
-    PeleC::prob_parm_device->v_uinput = new amrex::Gpu::ManagedVector<amrex::Real>;
-    PeleC::prob_parm_device->v_vinput = new amrex::Gpu::ManagedVector<amrex::Real>;
-    PeleC::prob_parm_device->v_winput = new amrex::Gpu::ManagedVector<amrex::Real>;
-    PeleC::prob_parm_device->v_xarray = new amrex::Gpu::ManagedVector<amrex::Real>;
-    PeleC::prob_parm_device->v_xinput = new amrex::Gpu::ManagedVector<amrex::Real>;
-    PeleC::prob_parm_device->v_xdiff = new amrex::Gpu::ManagedVector<amrex::Real>;
+    PeleC::prob_parm_device->v_uinput =
+      new amrex::Gpu::ManagedVector<amrex::Real>;
+    PeleC::prob_parm_device->v_vinput =
+      new amrex::Gpu::ManagedVector<amrex::Real>;
+    PeleC::prob_parm_device->v_winput =
+      new amrex::Gpu::ManagedVector<amrex::Real>;
+    PeleC::prob_parm_device->v_xarray =
+      new amrex::Gpu::ManagedVector<amrex::Real>;
+    PeleC::prob_parm_device->v_xinput =
+      new amrex::Gpu::ManagedVector<amrex::Real>;
+    PeleC::prob_parm_device->v_xdiff =
+      new amrex::Gpu::ManagedVector<amrex::Real>;
     PeleC::prob_parm_device->v_xinput->resize(nx * ny * nz);
     PeleC::prob_parm_device->v_uinput->resize(nx * ny * nz);
     PeleC::prob_parm_device->v_vinput->resize(nx * ny * nz);
     PeleC::prob_parm_device->v_winput->resize(nx * ny * nz);
-    for (unsigned long i = 0; i < PeleC::prob_parm_device->v_xinput->size(); i++) {
+    for (unsigned long i = 0; i < PeleC::prob_parm_device->v_xinput->size();
+         i++) {
       (*PeleC::prob_parm_device->v_xinput)[i] = data[0 + i * 6];
       (*PeleC::prob_parm_device->v_uinput)[i] =
-        data[3 + i * 6] * PeleC::prob_parm_device->urms0 / PeleC::prob_parm_device->uin_norm;
+        data[3 + i * 6] * PeleC::prob_parm_device->urms0 /
+        PeleC::prob_parm_device->uin_norm;
       (*PeleC::prob_parm_device->v_vinput)[i] =
-        data[4 + i * 6] * PeleC::prob_parm_device->urms0 / PeleC::prob_parm_device->uin_norm;
+        data[4 + i * 6] * PeleC::prob_parm_device->urms0 /
+        PeleC::prob_parm_device->uin_norm;
       (*PeleC::prob_parm_device->v_winput)[i] =
-        data[5 + i * 6] * PeleC::prob_parm_device->urms0 / PeleC::prob_parm_device->uin_norm;
+        data[5 + i * 6] * PeleC::prob_parm_device->urms0 /
+        PeleC::prob_parm_device->uin_norm;
     }
 
     // Get the xarray table and the differences.
     PeleC::prob_parm_device->v_xarray->resize(nx);
-    for (unsigned long i = 0; i < PeleC::prob_parm_device->v_xarray->size(); i++) {
-      (*PeleC::prob_parm_device->v_xarray)[i] = (*PeleC::prob_parm_device->v_xinput)[i];
+    for (unsigned long i = 0; i < PeleC::prob_parm_device->v_xarray->size();
+         i++) {
+      (*PeleC::prob_parm_device->v_xarray)[i] =
+        (*PeleC::prob_parm_device->v_xinput)[i];
     }
     PeleC::prob_parm_device->v_xdiff->resize(nx);
     std::adjacent_difference(
-      PeleC::prob_parm_device->v_xarray->begin(), PeleC::prob_parm_device->v_xarray->end(),
+      PeleC::prob_parm_device->v_xarray->begin(),
+      PeleC::prob_parm_device->v_xarray->end(),
       PeleC::prob_parm_device->v_xdiff->begin());
-    (*PeleC::prob_parm_device->v_xdiff)[0] = (*PeleC::prob_parm_device->v_xdiff)[1];
+    (*PeleC::prob_parm_device->v_xdiff)[0] =
+      (*PeleC::prob_parm_device->v_xdiff)[1];
 
     // Make sure the search array is increasing
     if (not std::is_sorted(
-          PeleC::prob_parm_device->v_xarray->begin(), PeleC::prob_parm_device->v_xarray->end())) {
+          PeleC::prob_parm_device->v_xarray->begin(),
+          PeleC::prob_parm_device->v_xarray->end())) {
       amrex::Abort("Error: non ascending x-coordinate array.");
     }
 
     // Get pointer to the data
-    PeleC::prob_parm_device->xinput = PeleC::prob_parm_device->v_xinput->dataPtr();
-    PeleC::prob_parm_device->uinput = PeleC::prob_parm_device->v_uinput->dataPtr();
-    PeleC::prob_parm_device->vinput = PeleC::prob_parm_device->v_vinput->dataPtr();
-    PeleC::prob_parm_device->winput = PeleC::prob_parm_device->v_winput->dataPtr();
-    PeleC::prob_parm_device->xarray = PeleC::prob_parm_device->v_xarray->dataPtr();
-    PeleC::prob_parm_device->xdiff = PeleC::prob_parm_device->v_xdiff->dataPtr();
+    PeleC::prob_parm_device->xinput =
+      PeleC::prob_parm_device->v_xinput->dataPtr();
+    PeleC::prob_parm_device->uinput =
+      PeleC::prob_parm_device->v_uinput->dataPtr();
+    PeleC::prob_parm_device->vinput =
+      PeleC::prob_parm_device->v_vinput->dataPtr();
+    PeleC::prob_parm_device->winput =
+      PeleC::prob_parm_device->v_winput->dataPtr();
+    PeleC::prob_parm_device->xarray =
+      PeleC::prob_parm_device->v_xarray->dataPtr();
+    PeleC::prob_parm_device->xdiff =
+      PeleC::prob_parm_device->v_xdiff->dataPtr();
 
     // Dimensions of the input box.
     PeleC::prob_parm_device->Linput =
-      (*PeleC::prob_parm_device->v_xarray)[nx - 1] + 0.5 * (*PeleC::prob_parm_device->v_xdiff)[nx - 1];
+      (*PeleC::prob_parm_device->v_xarray)[nx - 1] +
+      0.5 * (*PeleC::prob_parm_device->v_xdiff)[nx - 1];
 #endif
   }
 }

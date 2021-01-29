@@ -39,8 +39,9 @@ amrex_probinit(
   PeleC::prob_parm_device->massfrac[O2_ID] = PeleC::prob_parm_device->Y_init_O2;
   PeleC::prob_parm_device->massfrac[N2_ID] = PeleC::prob_parm_device->Y_init_N2;
   EOS::PYT2RE(
-    PeleC::prob_parm_device->p_init, PeleC::prob_parm_device->massfrac.begin(), PeleC::prob_parm_device->T_init,
-    PeleC::prob_parm_device->rho_init, PeleC::prob_parm_device->e_init);
+    PeleC::prob_parm_device->p_init, PeleC::prob_parm_device->massfrac.begin(),
+    PeleC::prob_parm_device->T_init, PeleC::prob_parm_device->rho_init,
+    PeleC::prob_parm_device->e_init);
 }
 }
 

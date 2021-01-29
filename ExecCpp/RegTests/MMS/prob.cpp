@@ -1,51 +1,5 @@
 #include "prob.H"
 
-namespace ProbParm {
-AMREX_GPU_DEVICE_MANAGED amrex::Real reynolds = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real mach = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real prandtl = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real rho_x_fact = 0.1;
-AMREX_GPU_DEVICE_MANAGED amrex::Real rho_y_fact = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real rho_z_fact = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real u_0_fact = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real u_x_fact = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real u_y_fact = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real u_z_fact = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real v_0_fact = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real v_x_fact = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real v_y_fact = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real v_z_fact = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real w_0_fact = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real w_x_fact = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real w_y_fact = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real w_z_fact = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real p_x_fact = 0.2;
-AMREX_GPU_DEVICE_MANAGED amrex::Real p_y_fact = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real p_z_fact = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real a_rhox = 2.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real a_rhoy = 4.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real a_rhoz = 6.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real a_ux = 2.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real a_uy = 4.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real a_uz = 6.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real a_vx = 4.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real a_vy = 2.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real a_vz = 6.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real a_wx = 6.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real a_wy = 4.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real a_wz = 2.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real a_px = 6.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real a_py = 2.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real a_pz = 4.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real L_x = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real L_y = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real L_z = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real p0 = 1.013e6; // [erg cm^-3]
-AMREX_GPU_DEVICE_MANAGED amrex::Real T0 = 300.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real rho0 = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real u0 = 0.0;
-} // namespace ProbParm
-
 void
 pc_prob_close()
 {
@@ -111,8 +65,11 @@ amrex_probinit(
   amrex::Real cs;
   amrex::Real cp;
   amrex::Real massfrac[NUM_SPECIES] = {1.0};
-  EOS::PYT2RE(PeleC::prob_parm_device->p0, massfrac, PeleC::prob_parm_device->T0, PeleC::prob_parm_device->rho0, eint);
-  EOS::RTY2Cs(PeleC::prob_parm_device->rho0, PeleC::prob_parm_device->T0, massfrac, cs);
+  EOS::PYT2RE(
+    PeleC::prob_parm_device->p0, massfrac, PeleC::prob_parm_device->T0,
+    PeleC::prob_parm_device->rho0, eint);
+  EOS::RTY2Cs(
+    PeleC::prob_parm_device->rho0, PeleC::prob_parm_device->T0, massfrac, cs);
   EOS::TY2Cp(PeleC::prob_parm_device->T0, massfrac, cp);
 
   PeleC::prob_parm_device->u0 = PeleC::prob_parm_device->mach * cs;
@@ -135,10 +92,12 @@ amrex_probinit(
   }
 
   trans_parm.const_bulk_viscosity =
-    PeleC::prob_parm_device->rho0 * PeleC::prob_parm_device->u0 * PeleC::prob_parm_device->L_x / PeleC::prob_parm_device->reynolds;
+    PeleC::prob_parm_device->rho0 * PeleC::prob_parm_device->u0 *
+    PeleC::prob_parm_device->L_x / PeleC::prob_parm_device->reynolds;
   trans_parm.const_diffusivity = 0.0;
   trans_parm.const_viscosity =
-    PeleC::prob_parm_device->rho0 * PeleC::prob_parm_device->u0 * PeleC::prob_parm_device->L_x / PeleC::prob_parm_device->reynolds;
+    PeleC::prob_parm_device->rho0 * PeleC::prob_parm_device->u0 *
+    PeleC::prob_parm_device->L_x / PeleC::prob_parm_device->reynolds;
   trans_parm.const_conductivity =
     trans_parm.const_viscosity * cp / PeleC::prob_parm_device->prandtl;
 
@@ -163,23 +122,32 @@ amrex_probinit(
   masa_set_param("mu", trans_parm.const_viscosity);
   masa_set_param("mu_bulk", trans_parm.const_bulk_viscosity);
   masa_set_param("rho_0", PeleC::prob_parm_device->rho0);
-  masa_set_param("rho_x", PeleC::prob_parm_device->rho_x_fact * PeleC::prob_parm_device->rho0);
+  masa_set_param(
+    "rho_x",
+    PeleC::prob_parm_device->rho_x_fact * PeleC::prob_parm_device->rho0);
   masa_set_param("rho_y", PeleC::prob_parm_device->rho_y_fact);
   masa_set_param("rho_z", PeleC::prob_parm_device->rho_z_fact);
-  masa_set_param("u_0", PeleC::prob_parm_device->u_0_fact * PeleC::prob_parm_device->u0);
-  masa_set_param("u_x", PeleC::prob_parm_device->u_x_fact * PeleC::prob_parm_device->u0);
+  masa_set_param(
+    "u_0", PeleC::prob_parm_device->u_0_fact * PeleC::prob_parm_device->u0);
+  masa_set_param(
+    "u_x", PeleC::prob_parm_device->u_x_fact * PeleC::prob_parm_device->u0);
   masa_set_param("u_y", PeleC::prob_parm_device->u_y_fact);
   masa_set_param("u_z", PeleC::prob_parm_device->u_z_fact);
-  masa_set_param("v_0", PeleC::prob_parm_device->v_0_fact * PeleC::prob_parm_device->u0);
+  masa_set_param(
+    "v_0", PeleC::prob_parm_device->v_0_fact * PeleC::prob_parm_device->u0);
   masa_set_param("v_x", PeleC::prob_parm_device->v_x_fact);
-  masa_set_param("v_y", PeleC::prob_parm_device->v_y_fact * PeleC::prob_parm_device->u0);
+  masa_set_param(
+    "v_y", PeleC::prob_parm_device->v_y_fact * PeleC::prob_parm_device->u0);
   masa_set_param("v_z", PeleC::prob_parm_device->v_z_fact);
-  masa_set_param("w_0", PeleC::prob_parm_device->w_0_fact * PeleC::prob_parm_device->u0);
+  masa_set_param(
+    "w_0", PeleC::prob_parm_device->w_0_fact * PeleC::prob_parm_device->u0);
   masa_set_param("w_x", PeleC::prob_parm_device->w_x_fact);
   masa_set_param("w_y", PeleC::prob_parm_device->w_y_fact);
-  masa_set_param("w_z", PeleC::prob_parm_device->w_z_fact * PeleC::prob_parm_device->u0);
+  masa_set_param(
+    "w_z", PeleC::prob_parm_device->w_z_fact * PeleC::prob_parm_device->u0);
   masa_set_param("p_0", PeleC::prob_parm_device->p0);
-  masa_set_param("p_x", PeleC::prob_parm_device->p_x_fact * PeleC::prob_parm_device->p0);
+  masa_set_param(
+    "p_x", PeleC::prob_parm_device->p_x_fact * PeleC::prob_parm_device->p0);
   masa_set_param("p_y", PeleC::prob_parm_device->p_y_fact);
   masa_set_param("p_z", PeleC::prob_parm_device->p_z_fact);
   masa_set_param("a_rhox", PeleC::prob_parm_device->a_rhox);

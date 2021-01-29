@@ -1,18 +1,5 @@
 #include "prob.H"
 
-namespace ProbParm {
-AMREX_GPU_DEVICE_MANAGED amrex::Real p = 1013250.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real T = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real rho = 0.00116;
-AMREX_GPU_DEVICE_MANAGED amrex::Real eint = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real vx_in = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real vy_in = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real Re_L = 2500.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real Pr = 0.7;
-AMREX_GPU_DEVICE_MANAGED amrex::GpuArray<amrex::Real, NUM_SPECIES> massfrac = {
-  1.0};
-} // namespace ProbParm
-
 void
 pc_prob_close()
 {
@@ -43,9 +30,13 @@ amrex_probinit(
   amrex::Real cp = 0.0;
   PeleC::prob_parm_device->massfrac[0] = 1.0;
   EOS::RYP2E(
-    PeleC::prob_parm_device->rho, PeleC::prob_parm_device->massfrac.begin(), PeleC::prob_parm_device->p, PeleC::prob_parm_device->eint);
-  EOS::EY2T(PeleC::prob_parm_device->eint, PeleC::prob_parm_device->massfrac.begin(), PeleC::prob_parm_device->T);
-  EOS::TY2Cp(PeleC::prob_parm_device->T, PeleC::prob_parm_device->massfrac.begin(), cp);
+    PeleC::prob_parm_device->rho, PeleC::prob_parm_device->massfrac.begin(),
+    PeleC::prob_parm_device->p, PeleC::prob_parm_device->eint);
+  EOS::EY2T(
+    PeleC::prob_parm_device->eint, PeleC::prob_parm_device->massfrac.begin(),
+    PeleC::prob_parm_device->T);
+  EOS::TY2Cp(
+    PeleC::prob_parm_device->T, PeleC::prob_parm_device->massfrac.begin(), cp);
 
   TransParm trans_parm;
 
@@ -66,8 +57,9 @@ amrex_probinit(
 
   trans_parm.const_bulk_viscosity = 0.0;
   trans_parm.const_diffusivity = 0.0;
-  trans_parm.const_viscosity =
-    PeleC::prob_parm_device->rho * PeleC::prob_parm_device->vx_in * L / PeleC::prob_parm_device->Re_L;
+  trans_parm.const_viscosity = PeleC::prob_parm_device->rho *
+                               PeleC::prob_parm_device->vx_in * L /
+                               PeleC::prob_parm_device->Re_L;
   trans_parm.const_conductivity =
     trans_parm.const_viscosity * cp / PeleC::prob_parm_device->Pr;
 
