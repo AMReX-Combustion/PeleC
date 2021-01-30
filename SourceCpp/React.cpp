@@ -32,6 +32,7 @@ PeleC::react_state(
   }
 
   amrex::MultiFab& S_new = get_new_data(State_Type);
+  amrex::MultiFab& S_old = get_old_data(State_Type);
   const int ng = S_new.nGrow();
   prefetchToDevice(S_new);
 
@@ -77,7 +78,6 @@ PeleC::react_state(
       non_react_src = aux_src;
     }
 
-    amrex::MultiFab& S_old = get_old_data(State_Type);
 
     // S_new = S_old + dt*(non reacting source terms)
     amrex::MultiFab::Copy(S_new, S_old, 0, 0, NVAR, ng);
@@ -100,16 +100,16 @@ PeleC::react_state(
   if (!react_init) 
   {
     STemp.copy(S_old, UFS, 0, NUM_SPECIES);
-    STemp.copy(S_old, UEINT, NUM_SPECIES, 1);
-    STemp.copy(S_old, UTEMP, NUM_SPECIES + 1, 1);
+    STemp.copy(S_old, UTEMP, NUM_SPECIES, 1);
+    STemp.copy(S_old, UEINT, NUM_SPECIES + 1, 1);
   } 
   else 
   {
     STemp.copy(S_new, UFS, 0, NUM_SPECIES);
-    STemp.copy(S_new, UEINT, NUM_SPECIES, 1);
-    STemp.copy(S_new, UTEMP, NUM_SPECIES + 1, 1);
+    STemp.copy(S_new, UTEMP, NUM_SPECIES, 1);
+    STemp.copy(S_new, UEINT, NUM_SPECIES + 1, 1);
   }
-  extsrc_rY.copy(non_react_src, UFS, 0, NUM_SPECIES);
+  extsrc_rY.copy(*non_react_src, UFS, 0, NUM_SPECIES);
 #endif
 
 #ifdef PELEC_USE_EB
@@ -130,7 +130,7 @@ PeleC::react_state(
 
       // old state or the state at t=0
       auto const& sold_arr =
-        react_init ? S_new.array(mfi) : get_old_data(State_Type).array(mfi);
+        react_init ? S_new.array(mfi) : S_old.array(mfi);
 
       // new state
       auto const& snew_arr = S_new.array(mfi);
@@ -225,7 +225,7 @@ PeleC::react_state(
               rhow = snew_arr(i, j, k, UMZ);
               rhoInv = 1.0 / snew_arr(i, j, k, URHO);
 
-              amrex::Real frcEext(i, j, k) =
+              frcEExt(i, j, k) =
                 (snew_arr(i, j, k, UEDEN) // new total energy
                  - 0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) *
                      rhoInv // new KE
@@ -321,16 +321,15 @@ PeleC::react_state(
 #ifdef CVODE_BOXINTEG
 
 #ifdef AMREX_USE_CUDA
-          react(
-            bx, rhoY, frcExt, T, rhoE, frcEExt, fc, mask, dt, current_time,
+          react(bx, rhoY, frcExt, T, rhoE, frcEExt, fc, mask, dt, current_time,
             reactor_type, Gpu::gpuStream());
 #else
-          react(
-            box, rhoY, frcExt, T, rhoE, frcEExt, fc, mask, dt, current_time);
+          react(bx, rhoY, frcExt, T, rhoE, frcEExt, fc, mask, dt, current_time);
 #endif
 #else
           chemintg_cost = 0.0;
-          for (int i = 0; i < ncells; i += ode_ncells) {
+          for (int i = 0; i < ncells; i += ode_ncells) 
+          {
 
 #ifdef AMREX_USE_CUDA
             chemintg_cost += react(
@@ -433,7 +432,7 @@ PeleC::react_state(
               for (int nsp = 0; nsp < NUM_SPECIES; nsp++) 
               {
                 I_R(i, j, k, nsp) =
-                  rhoY(i,j,k,nsp)                          // new rhoy
+                  (rhoY(i,j,k,nsp)                          // new rhoy
                    - sold_arr(i, j, k, UFS + nsp))         // old rhoy
                     / dt -
                   nonrs_arr(i, j, k, UFS + nsp);
@@ -458,6 +457,7 @@ PeleC::react_state(
                 nonrs_arr(i, j, k, UEDEN);
             });
 
+#ifndef CVODE_BOXINTEG
 #ifdef AMREX_USE_CUDA
           cudaFree(rY_in);
           cudaFree(rY_src_in);
@@ -468,6 +468,7 @@ PeleC::react_state(
           delete[] rY_src_in;
           delete[] re_in;
           delete[] re_src_in;
+#endif
 #endif
           wt = (amrex::ParallelDescriptor::second() - wt) / bx.d_numPts();
 
