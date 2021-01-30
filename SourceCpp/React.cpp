@@ -193,6 +193,11 @@ PeleC::react_state(
           amrex::Real chemintg_cost;
           amrex::Real current_time = 0.0;
 
+#ifdef AMREX_USE_CUDA          
+          cudaError_t cuda_status = cudaSuccess;
+          int reactor_type = 1;
+#endif
+
 #ifdef CVODE_BOXINTEG
 
           auto const& rhoY = STemp.array(mfi);
@@ -246,8 +251,6 @@ PeleC::react_state(
           amrex::Real* re_src_in;
 
 #ifdef AMREX_USE_CUDA
-          int reactor_type = 1;
-          cudaError_t cuda_status = cudaSuccess;
           cudaMallocManaged(
             &rY_in, (NUM_SPECIES + 1) * ncells * sizeof(amrex::Real));
           cudaMallocManaged(
@@ -319,10 +322,9 @@ PeleC::react_state(
 #endif
 
 #ifdef CVODE_BOXINTEG
-
 #ifdef AMREX_USE_CUDA
           react(bx, rhoY, frcExt, T, rhoE, frcEExt, fc, mask, dt, current_time,
-            reactor_type, Gpu::gpuStream());
+            reactor_type, amrex::Gpu::gpuStream());
 #else
           react(bx, rhoY, frcExt, T, rhoE, frcEExt, fc, mask, dt, current_time);
 #endif
