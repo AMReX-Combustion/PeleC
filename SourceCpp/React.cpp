@@ -220,28 +220,26 @@ PeleC::react_state(
             });
 
 #else
-          amrex::Real* rY_in;
-          amrex::Real* rY_src_in;
-          amrex::Real* re_in;
-          amrex::Real* re_src_in;
+          amrex::Vector<amrex::Real> h_rY_in(ncells * (NUM_SPECIES + 1));
+          amrex::Gpu::DeviceVector<amrex::Real> rY_in(
+            ncells * (NUM_SPECIES + 1));
+          amrex::Real* d_rY_in = rY_in.data();
+          amrex::Vector<amrex::Real> h_rY_src_in(ncells * NUM_SPECIES);
+          amrex::Gpu::DeviceVector<amrex::Real> rY_src_in(ncells * NUM_SPECIES);
+          amrex::Real* d_rY_src_in = rY_src_in.data();
+          amrex::Vector<amrex::Real> h_re_in(ncells);
+          amrex::Gpu::DeviceVector<amrex::Real> re_in(ncells);
+          amrex::Real* d_re_in = re_in.data();
+          amrex::Vector<amrex::Real> h_re_src_in(ncells);
+          amrex::Gpu::DeviceVector<amrex::Real> re_src_in(ncells);
+          amrex::Real* d_re_src_in = re_src_in.data();
 
-#ifdef AMREX_USE_CUDA
-          cudaMallocManaged(
-            &rY_in, (NUM_SPECIES + 1) * ncells * sizeof(amrex::Real));
-          cudaMallocManaged(
-            &rY_src_in, NUM_SPECIES * ncells * sizeof(amrex::Real));
-          cudaMallocManaged(&re_in, ncells * sizeof(amrex::Real));
-          cudaMallocManaged(&re_src_in, ncells * sizeof(amrex::Real));
-
+#ifdef AMREX_USE_GPU
           int ode_ncells = ncells;
 #else
-          rY_in = new amrex::Real[ncells * (NUM_SPECIES + 1)];
-          rY_src_in = new amrex::Real[ncells * (NUM_SPECIES)];
-          re_in = new amrex::Real[ncells];
-          re_src_in = new amrex::Real[ncells];
-
           int ode_ncells = 1;
 #endif
+
           amrex::ParallelFor(
             bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
               // work on old state
@@ -273,21 +271,22 @@ PeleC::react_state(
               int offset =
                 (k - lo.z) * len.x * len.y + (j - lo.y) * len.x + (i - lo.x);
               for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
-                rY_in[offset * (NUM_SPECIES + 1) + nsp] =
+                d_rY_in[offset * (NUM_SPECIES + 1) + nsp] =
                   sold_arr(i, j, k, UFS + nsp);
-                rY_src_in[offset * NUM_SPECIES + nsp] =
+                d_rY_src_in[offset * NUM_SPECIES + nsp] =
                   nonrs_arr(i, j, k, UFS + nsp);
               }
-              rY_in[offset * (NUM_SPECIES + 1) + NUM_SPECIES] =
+              d_rY_in[offset * (NUM_SPECIES + 1) + NUM_SPECIES] =
                 sold_arr(i, j, k, UTEMP);
 
               if (captured_clean_react_massfrac == 1) {
                 clip_normalize_rY(
-                  sold_arr(i, j, k, URHO), &rY_in[offset * (NUM_SPECIES + 1)]);
+                  sold_arr(i, j, k, URHO),
+                  &d_rY_in[offset * (NUM_SPECIES + 1)]);
               }
 
-              re_in[offset] = rho_old * e_old;
-              re_src_in[offset] = rhoedot_ext;
+              d_re_in[offset] = rho_old * e_old;
+              d_re_src_in[offset] = rhoedot_ext;
             });
 #endif
 
@@ -304,22 +303,41 @@ PeleC::react_state(
           react(bx, rhoY, frcExt, T, rhoE, frcEExt, fc, mask, dt, current_time);
 #endif
 #else
+          amrex::Gpu::streamSynchronize();
+
+          amrex::Gpu::copy(
+            amrex::Gpu::deviceToHost, rY_in.begin(), rY_in.end(),
+            h_rY_in.begin());
+          amrex::Gpu::copy(
+            amrex::Gpu::deviceToHost, rY_src_in.begin(), rY_src_in.end(),
+            h_rY_src_in.begin());
+          amrex::Gpu::copy(
+            amrex::Gpu::deviceToHost, re_in.begin(), re_in.end(),
+            h_re_in.begin());
+          amrex::Gpu::copy(
+            amrex::Gpu::deviceToHost, re_src_in.begin(), re_src_in.end(),
+            h_re_src_in.begin());
+
           chemintg_cost = 0.0;
           for (int i = 0; i < ncells; i += ode_ncells) {
 
-#ifdef AMREX_USE_CUDA
+#ifdef AMREX_USE_GPU
             chemintg_cost += react(
-              rY_in + i * (NUM_SPECIES + 1), rY_src_in + i * NUM_SPECIES,
-              re_in + i, re_src_in + i, dt, current_time, reactor_type,
-              ode_ncells, amrex::Gpu::gpuStream());
+              &h_rY_in[i * (NUM_SPECIES + 1)], &h_rY_src_in[i * NUM_SPECIES],
+              &h_re_in[i], &h_re_src_in[i], dt, current_time, 1, ode_ncells,
+              amrex::Gpu::gpuStream());
 #else
             chemintg_cost += react(
-              rY_in + i * (NUM_SPECIES + 1), rY_src_in + i * NUM_SPECIES,
-              re_in + i, re_src_in + i, dt, current_time);
+              &h_rY_in[i * (NUM_SPECIES + 1)], &h_rY_src_in[i * NUM_SPECIES],
+              &h_re_in[i], &h_re_src_in[i], dt, current_time);
 #endif
           }
           chemintg_cost = chemintg_cost / ncells;
 #endif
+
+          amrex::Gpu::copy(
+            amrex::Gpu::hostToDevice, h_rY_in.begin(), h_rY_in.end(),
+            rY_in.begin());
 
           // unpack data
           amrex::ParallelFor(
@@ -365,12 +383,16 @@ PeleC::react_state(
 
 #ifdef CVODE_BOXINTEG
               for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
+<<<<<<< HEAD
                 rhonew += rhoY(i, j, k, nsp);
               }
 #else
               for (int nsp = 0; nsp < NUM_SPECIES; nsp++) 
               {
                 rhonew += rY_in[offset * (NUM_SPECIES + 1) + nsp];
+=======
+                rhonew += d_rY_in[offset * (NUM_SPECIES + 1) + nsp];
+>>>>>>> development
               }
 #endif
 
@@ -389,11 +411,15 @@ PeleC::react_state(
                 for (int nsp = 0; nsp < NUM_SPECIES; nsp++) 
                 {
                   snew_arr(i, j, k, UFS + nsp) =
-                    rY_in[offset * (NUM_SPECIES + 1) + nsp];
+                    d_rY_in[offset * (NUM_SPECIES + 1) + nsp];
                 }
                 snew_arr(i, j, k, UTEMP) =
+<<<<<<< HEAD
                   rY_in[offset * (NUM_SPECIES + 1) + NUM_SPECIES];
 #endif
+=======
+                  d_rY_in[offset * (NUM_SPECIES + 1) + NUM_SPECIES];
+>>>>>>> development
 
                 snew_arr(i, j, k, UEINT) = rho_old * e_old + dt * rhoedot_ext;
                 snew_arr(i, j, k, UEDEN) =
@@ -413,8 +439,8 @@ PeleC::react_state(
               for (int nsp = 0; nsp < NUM_SPECIES; nsp++) 
               {
                 I_R(i, j, k, nsp) =
-                  (rY_in[offset * (NUM_SPECIES + 1) + nsp] // new rhoy
-                   - sold_arr(i, j, k, UFS + nsp))         // old rhoy
+                  (d_rY_in[offset * (NUM_SPECIES + 1) + nsp] // new rhoy
+                   - sold_arr(i, j, k, UFS + nsp))           // old rhoy
                     / dt -
                   nonrs_arr(i, j, k, UFS + nsp);
               }
@@ -429,6 +455,7 @@ PeleC::react_state(
                 nonrs_arr(i, j, k, UEDEN);
             });
 
+<<<<<<< HEAD
 #ifndef CVODE_BOXINTEG
 #ifdef AMREX_USE_CUDA
           cudaFree(rY_in);
@@ -442,6 +469,8 @@ PeleC::react_state(
           delete[] re_src_in;
 #endif
 #endif
+=======
+>>>>>>> development
           wt = (amrex::ParallelDescriptor::second() - wt) / bx.d_numPts();
 
           if (do_react_load_balance) {

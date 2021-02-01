@@ -160,7 +160,7 @@ PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
     DiagFile.close();
   }
 
-  /* Not implemented for CUDA
+  /* Not implemented for GPU
         if (level == 0)
         {
       // get problem-specific stuff -- note all processors do this,
@@ -300,7 +300,7 @@ PeleC::checkPoint(
       DiagFile.close();
     }
 
-    /* Not implemented for CUDA{
+    /* Not implemented for GPU{
             // store any problem-specific stuff
             char * dir_for_pass = new char[dir.size() + 1];
             std::copy(dir.begin(), dir.end(), dir_for_pass);
