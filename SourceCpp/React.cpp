@@ -28,7 +28,6 @@ PeleC::react_state(
   }
 
   amrex::MultiFab& S_new = get_new_data(State_Type);
-  amrex::MultiFab& S_old = get_old_data(State_Type);
   const int ng = S_new.nGrow();
   prefetchToDevice(S_new);
 
@@ -67,6 +66,7 @@ PeleC::react_state(
     }
 
     // S_new = S_old + dt*(non reacting source terms)
+    amrex::MultiFab& S_old = get_old_data(State_Type);
     amrex::MultiFab::Copy(S_new, S_old, 0, 0, NVAR, ng);
     amrex::MultiFab::Saxpy(S_new, dt, *non_react_src, 0, 0, NVAR, ng);
   }
@@ -85,6 +85,7 @@ PeleC::react_state(
   dummyMask.setVal(1);
 
   if (!react_init) {
+    amrex::MultiFab& S_old = get_old_data(State_Type);
     STemp.copy(S_old, UFS, 0, NUM_SPECIES);
     STemp.copy(S_old, UTEMP, NUM_SPECIES, 1);
     STemp.copy(S_old, UEINT, NUM_SPECIES + 1, 1);
@@ -112,7 +113,8 @@ PeleC::react_state(
       const amrex::Box& bx = mfi.growntilebox(ng);
 
       // old state or the state at t=0
-      auto const& sold_arr = react_init ? S_new.array(mfi) : S_old.array(mfi);
+      auto const& sold_arr = react_init ? S_new.array(mfi) : 
+          get_old_data(State_Type).array(mfi);
 
       // new state
       auto const& snew_arr = S_new.array(mfi);
