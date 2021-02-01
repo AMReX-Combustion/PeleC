@@ -17,7 +17,7 @@ amrex_probinit(
   // Parse params
   {
     amrex::ParmParse pp("prob");
-    pp.query("iname", PeleC::prob_parm_device->iname);
+    pp.query("iname", PeleC::prob_parm_host->iname);
     pp.query("binfmt", PeleC::prob_parm_device->binfmt);
     pp.query("restart", PeleC::prob_parm_device->restart);
     pp.query("lambda0", PeleC::prob_parm_device->lambda0);
@@ -132,9 +132,9 @@ amrex_probinit(
     amrex::Vector<amrex::Real> data(
       nx * ny * nz * 6); /* this needs to be double */
     if (PeleC::prob_parm_device->binfmt) {
-      read_binary(PeleC::prob_parm_device->iname, nx, ny, nz, 6, data);
+      read_binary(PeleC::prob_parm_host->iname, nx, ny, nz, 6, data);
     } else {
-      read_csv(PeleC::prob_parm_device->iname, nx, ny, nz, data);
+      read_csv(PeleC::prob_parm_host->iname, nx, ny, nz, data);
     }
 
     // Extract position and velocities

@@ -21,14 +21,14 @@ amrex_probinit(
   pp.query("p_r", PeleC::prob_parm_device->p_r);
   pp.query("rho_r", PeleC::prob_parm_device->rho_r);
   pp.query("angle", PeleC::prob_parm_device->angle);
-  pp.get("left_gas", PeleC::prob_parm_device->gasL);
-  pp.get("right_gas", PeleC::prob_parm_device->gasR);
+  pp.get("left_gas", PeleC::prob_parm_host->gasL);
+  pp.get("right_gas", PeleC::prob_parm_host->gasR);
 
   PeleC::prob_parm_device->L =
     (probhi[0] - problo[0]) /
     cos(M_PI / 180.0 * PeleC::prob_parm_device->angle);
 
-  if (PeleC::prob_parm_device->gasL == "N2") {
+  if (PeleC::prob_parm_host->gasL == "N2") {
     PeleC::prob_parm_device->left_gas_id = N2_ID;
     PeleC::prob_parm_device->right_gas_id = HE_ID;
   } else {

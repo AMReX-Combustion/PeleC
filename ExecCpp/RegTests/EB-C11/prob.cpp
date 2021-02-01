@@ -24,14 +24,14 @@ amrex_probinit(
   pp.query("rho_r", PeleC::prob_parm_device->rho_r);
   pp.query("frac", PeleC::prob_parm_device->frac);
   pp.query("idir", PeleC::prob_parm_device->idir);
-  pp.get("left_gas", PeleC::prob_parm_device->gasL);
-  pp.get("right_gas", PeleC::prob_parm_device->gasR);
+  pp.get("left_gas", PeleC::prob_parm_host->gasL);
+  pp.get("right_gas", PeleC::prob_parm_host->gasR);
 
   for (int idir = 0; idir < AMREX_SPACEDIM; idir++) {
     PeleC::prob_parm_device->split[idir] = 0.5;
   }
 
-  if (PeleC::prob_parm_device->gasL == "N2") {
+  if (PeleC::prob_parm_host->gasL == "N2") {
     PeleC::prob_parm_device->left_gas_id = N2_ID;
     PeleC::prob_parm_device->right_gas_id = HE_ID;
   } else {
