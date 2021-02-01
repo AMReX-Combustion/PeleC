@@ -113,8 +113,8 @@ PeleC::react_state(
       const amrex::Box& bx = mfi.growntilebox(ng);
 
       // old state or the state at t=0
-      auto const& sold_arr = react_init ? S_new.array(mfi) : 
-          get_old_data(State_Type).array(mfi);
+      auto const& sold_arr =
+        react_init ? S_new.array(mfi) : get_old_data(State_Type).array(mfi);
 
       // new state
       auto const& snew_arr = S_new.array(mfi);
@@ -383,16 +383,12 @@ PeleC::react_state(
 
 #ifdef CVODE_BOXINTEG
               for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
-<<<<<<< HEAD
                 rhonew += rhoY(i, j, k, nsp);
               }
 #else
               for (int nsp = 0; nsp < NUM_SPECIES; nsp++) 
               {
-                rhonew += rY_in[offset * (NUM_SPECIES + 1) + nsp];
-=======
                 rhonew += d_rY_in[offset * (NUM_SPECIES + 1) + nsp];
->>>>>>> development
               }
 #endif
 
@@ -414,12 +410,8 @@ PeleC::react_state(
                     d_rY_in[offset * (NUM_SPECIES + 1) + nsp];
                 }
                 snew_arr(i, j, k, UTEMP) =
-<<<<<<< HEAD
-                  rY_in[offset * (NUM_SPECIES + 1) + NUM_SPECIES];
-#endif
-=======
                   d_rY_in[offset * (NUM_SPECIES + 1) + NUM_SPECIES];
->>>>>>> development
+#endif
 
                 snew_arr(i, j, k, UEINT) = rho_old * e_old + dt * rhoedot_ext;
                 snew_arr(i, j, k, UEDEN) =
@@ -455,22 +447,6 @@ PeleC::react_state(
                 nonrs_arr(i, j, k, UEDEN);
             });
 
-<<<<<<< HEAD
-#ifndef CVODE_BOXINTEG
-#ifdef AMREX_USE_CUDA
-          cudaFree(rY_in);
-          cudaFree(rY_src_in);
-          cudaFree(re_in);
-          cudaFree(re_src_in);
-#else
-          delete[] rY_in;
-          delete[] rY_src_in;
-          delete[] re_in;
-          delete[] re_src_in;
-#endif
-#endif
-=======
->>>>>>> development
           wt = (amrex::ParallelDescriptor::second() - wt) / bx.d_numPts();
 
           if (do_react_load_balance) {
