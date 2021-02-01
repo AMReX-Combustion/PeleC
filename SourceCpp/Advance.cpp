@@ -80,7 +80,9 @@ PeleC::do_mol_advance(
   }
 
 #ifdef PELEC_USE_REACTIONS
-  get_new_data(Reactions_Type).setVal(0);
+  if (do_react == 0) {
+    get_new_data(Reactions_Type).setVal(0);
+  }
   const amrex::MultiFab& I_R = get_new_data(Reactions_Type);
 #endif
 
