@@ -7,7 +7,6 @@
 
 struct ProbParmDevice : amrex::Gpu::Managed
 {
-  std::string iname;
   bool binfmt = false;
   bool restart = false;
   amrex::Real lambda0 = 0.5;
@@ -37,6 +36,7 @@ struct ProbParmDevice : amrex::Gpu::Managed
 
 struct ProbParmHost : amrex::Gpu::Managed
 {
+  std::string iname;
   amrex::Vector<amrex::Real> h_xinput;
   amrex::Vector<amrex::Real> h_uinput;
   amrex::Vector<amrex::Real> h_vinput;

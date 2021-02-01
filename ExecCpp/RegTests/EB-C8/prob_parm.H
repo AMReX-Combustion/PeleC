@@ -19,12 +19,12 @@ struct ProbParmDevice : amrex::Gpu::Managed
   amrex::Real L = 0.0;
   int left_gas_id = N2_ID;
   int right_gas_id = HE_ID;
-  std::string gasL = "N2";
-  std::string gasR = "HE";
 };
 
 struct ProbParmHost : amrex::Gpu::Managed
 {
+  std::string gasL = "N2";
+  std::string gasR = "HE";
 };
 
 #endif
