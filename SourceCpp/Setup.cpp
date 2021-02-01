@@ -158,6 +158,16 @@ PeleC::variableSetUp()
 #if defined(AMREX_USE_GPU) && defined(USE_SUNDIALS_PP)
   amrex::sundials::MemoryHelper::Initialize();
 #endif
+
+#ifdef USE_SUNDIALS_PP
+#ifdef CVODE_BOXINTEG
+  amrex::Print() << "Using sundials chemistry integrator with boxes\n";
+#else
+  amrex::Print()
+    << "Using sundials chemistry integrator with flattened arrays\n";
+#endif
+#endif
+
   // Initialize the reactor
   if (do_react == 1) {
     init_reactor();
