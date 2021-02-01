@@ -5,6 +5,8 @@
 #include <AMReX_ParmParse.H>
 #include <AMReX_Geometry.H>
 #include <AMReX_FArrayBox.H>
+#include <AMReX_REAL.H>
+#include <AMReX_GpuMemory.H>
 
 #ifdef PELEC_USE_MASA
 #include <masa.h>
