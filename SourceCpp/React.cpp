@@ -226,6 +226,13 @@ PeleC::react_state(
               rhov = snew_arr(i, j, k, UMY);
               rhow = snew_arr(i, j, k, UMZ);
               rhoInv = 1.0 / snew_arr(i, j, k, URHO);
+              
+              amrex::Real rhoedot_ext =
+                (snew_arr(i, j, k, UEDEN) // new total energy
+                 - 0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) *
+                     rhoInv // new KE
+                 - rho_old * e_old) /
+                dt;
 
               if (captured_chem_integrator == 2) {
                 int offset =
@@ -247,14 +254,10 @@ PeleC::react_state(
                 d_re_in[offset] = rho_old * e_old;
                 d_re_src_in[offset] = rhoedot_ext;
               } 
-              else {
+              else 
+              {
 
-                frcEExt(i, j, k) =
-                  (snew_arr(i, j, k, UEDEN) // new total energy
-                   - 0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) *
-                       rhoInv // new KE
-                   - rho_old * e_old) /
-                  dt;
+                frcEExt(i, j, k) = rhoedot_ext;
 
                 if (captured_clean_react_massfrac == 1) {
                   clip_normalize_rYarr(i, j, k, sold_arr, rhoY);
@@ -297,12 +300,12 @@ PeleC::react_state(
 #endif
             }
             chemintg_cost = chemintg_cost / ncells;
-#endif
 
             amrex::Gpu::copy(
               amrex::Gpu::hostToDevice, h_rY_in.begin(), h_rY_in.end(),
               rY_in.begin());
-          } else {
+          } 
+          else {
 #ifdef AMREX_USE_GPU
             react(
               bx, rhoY, frcExt, T, rhoE, frcEExt, fc, mask, dt, current_time,
@@ -352,16 +355,20 @@ PeleC::react_state(
               int offset =
                 (k - lo.z) * len.x * len.y + (j - lo.y) * len.x + (i - lo.x);
 
-              if (captured_chem_integrator == 3) {
-                for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
-                  rhonew += rhoY(i, j, k, nsp);
-                }
-              } else {
-                for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
+              if (captured_chem_integrator == 2) 
+              {
+                for (int nsp = 0; nsp < NUM_SPECIES; nsp++) 
+                {
                   rhonew += d_rY_in[offset * (NUM_SPECIES + 1) + nsp];
                 }
+              } 
+              else 
+              {
+                for (int nsp = 0; nsp < NUM_SPECIES; nsp++) 
+                {
+                  rhonew += rhoY(i, j, k, nsp);
+                }
               }
-#endif
 
               if (do_update) {
                 snew_arr(i, j, k, URHO) = rhonew;
@@ -369,18 +376,23 @@ PeleC::react_state(
                 snew_arr(i, j, k, UMY) = vmnew;
                 snew_arr(i, j, k, UMZ) = wmnew;
 
-                if (captured_chem_integrator == 3) {
-                  for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
-                    snew_arr(i, j, k, UFS + nsp) = rhoY(i, j, k, nsp);
-                  }
-                  snew_arr(i, j, k, UTEMP) = T(i, j, k);
-                } else {
-                  for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
-                    snew_arr(i, j, k, UFS + nsp) =
+                if (captured_chem_integrator == 2) 
+                {
+                  for (int nsp = 0; nsp < NUM_SPECIES; nsp++) 
+                  {
+                    snew_arr(i, j, k, UFS + nsp) = 
                       d_rY_in[offset * (NUM_SPECIES + 1) + nsp];
                   }
                   snew_arr(i, j, k, UTEMP) =
                     d_rY_in[offset * (NUM_SPECIES + 1) + NUM_SPECIES];
+                } 
+                else 
+                {
+                  for (int nsp = 0; nsp < NUM_SPECIES; nsp++) 
+                  {
+                    snew_arr(i, j, k, UFS + nsp) = rhoY(i, j, k, nsp);
+                  }
+                  snew_arr(i, j, k, UTEMP) = T(i, j, k);
                 }
 
                 snew_arr(i, j, k, UEINT) = rho_old * e_old + dt * rhoedot_ext;
@@ -390,16 +402,21 @@ PeleC::react_state(
                     rhonew;
               }
 
-              if (chem_integrator == 2) {
-                for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
+              if (chem_integrator == 2) 
+              {
+                for (int nsp = 0; nsp < NUM_SPECIES; nsp++) 
+                {
                   I_R(i, j, k, nsp) =
                     (d_rY_in[offset * (NUM_SPECIES + 1) + nsp] // new rhoy
                      - sold_arr(i, j, k, UFS + nsp))           // old rhoy
                       / dt -
                     nonrs_arr(i, j, k, UFS + nsp);
                 }
-              } else {
-                for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
+              } 
+              else 
+              {
+                for (int nsp = 0; nsp < NUM_SPECIES; nsp++) 
+                {
                   I_R(i, j, k, nsp) =
                     (rhoY(i, j, k, nsp)              // new rhoy
                      - sold_arr(i, j, k, UFS + nsp)) // old rhoy
