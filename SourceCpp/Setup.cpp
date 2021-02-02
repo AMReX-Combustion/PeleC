@@ -160,12 +160,12 @@ PeleC::variableSetUp()
 #endif
 
 #ifdef USE_SUNDIALS_PP
-#ifdef CVODE_BOXINTEG
-  amrex::Print() << "Using sundials chemistry integrator with boxes\n";
-#else
-  amrex::Print()
-    << "Using sundials chemistry integrator with flattened arrays\n";
-#endif
+  if (chem_integrator == 3) {
+    amrex::Print() << "Using sundials chemistry integrator with boxes\n";
+  } else {
+    amrex::Print()
+      << "Using sundials chemistry integrator with flattened arrays\n";
+  }
 #endif
 
   // Initialize the reactor
