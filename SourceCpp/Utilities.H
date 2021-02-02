@@ -19,6 +19,7 @@ void pc_rst_int_e(
   const int allow_small_energy,
   const int allow_negative_energy,
   const int dual_energy_update_E_from_e,
+  const amrex::Real dual_energy_eta2,
   const int verbose);
 
 AMREX_GPU_DEVICE
@@ -76,7 +77,7 @@ pc_ctoprim(
   qa(i, j, k, QDPDE) = dpde;
   qa(i, j, k, QGAMC) = gam1;
   qa(i, j, k, QC) = cs;
-  qa(i, j, k, QCSML) = amrex::max<amrex::Real>(SMALL_NUM, SMALL_NUM * cs);
+  qa(i, j, k, QCSML) = amrex::max<amrex::Real>(constants::small_num, constants::small_num * cs);
   qa(i, j, k, QRSPEC) = EOS::RU / wbar;
 }
 

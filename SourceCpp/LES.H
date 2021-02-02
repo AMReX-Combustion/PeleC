@@ -450,11 +450,11 @@ pc_dynamic_smagorinsky_coeffs(
 
   // Coefficients
   coeff(i, j, k, comp_Cs2) =
-    amrex::max<amrex::Real>(LM / (MM + SMALL_NUM), SMALL_NUM);
+    amrex::max<amrex::Real>(LM / (MM + constants::small_num), constants::small_num);
   coeff(i, j, k, comp_CI) =
-    amrex::max<amrex::Real>(Lkk / (bma + SMALL_NUM), SMALL_NUM);
+    amrex::max<amrex::Real>(Lkk / (bma + constants::small_num), constants::small_num);
   coeff(i, j, k, comp_Cs2ovPrT) =
-    amrex::max<amrex::Real>(KT / (TT + SMALL_NUM), SMALL_NUM);
+    amrex::max<amrex::Real>(KT / (TT + constants::small_num), constants::small_num);
 
   // Limit CI to reasonable bounds
   coeff(i, j, k, comp_CI) =

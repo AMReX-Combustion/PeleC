@@ -14,10 +14,6 @@
 
 // EstDt routines
 
-namespace TimeStep {
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real max_dt;
-} // namespace TimeStep
-
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void

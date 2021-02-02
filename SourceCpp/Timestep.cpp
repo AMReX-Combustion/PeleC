@@ -1,10 +1,6 @@
 #include "Timestep.H"
 
 // EstDt routines
-namespace TimeStep {
-AMREX_GPU_DEVICE_MANAGED amrex::Real max_dt =
-  std::numeric_limits<amrex::Real>::max();
-} // namespace TimeStep
 
 AMREX_GPU_DEVICE
 amrex::Real
@@ -19,7 +15,7 @@ pc_estdt_hydro(
     const amrex::Real& dy,
     const amrex::Real& dz)) noexcept
 {
-  amrex::Real dt = TimeStep::max_dt;
+  amrex::Real dt = std::numeric_limits<amrex::Real>::max();
 
   amrex::Loop(bx, [=, &dt](int i, int j, int k) {
 #ifdef PELEC_USE_EB
@@ -63,7 +59,7 @@ pc_estdt_veldif(
     const amrex::Real& dx, const amrex::Real& dy, const amrex::Real& dz),
   TransParm const* trans_parm) noexcept
 {
-  amrex::Real dt = TimeStep::max_dt;
+  amrex::Real dt = std::numeric_limits<amrex::Real>::max();
 
   amrex::Loop(bx, [=, &dt](int i, int j, int k) {
 #ifdef PELEC_USE_EB
@@ -81,7 +77,7 @@ pc_estdt_veldif(
       pc_trans4dt(which_trans, T, rho, massfrac, D, trans_parm);
       D *= rhoInv;
       if (D == 0.0) {
-        D = SMALL_NUM;
+        D = constants::small_num;
       }
       AMREX_D_TERM(
         const amrex::Real dt1 = 0.5 * dx * dx / (AMREX_SPACEDIM * D);
@@ -110,7 +106,7 @@ pc_estdt_tempdif(
     const amrex::Real& dx, const amrex::Real& dy, const amrex::Real& dz),
   TransParm const* trans_parm) noexcept
 {
-  amrex::Real dt = TimeStep::max_dt;
+  amrex::Real dt = std::numeric_limits<amrex::Real>::max();
 
   amrex::Loop(bx, [=, &dt](int i, int j, int k) {
 #ifdef PELEC_USE_EB
@@ -130,7 +126,7 @@ pc_estdt_tempdif(
       EOS::TY2Cv(T, massfrac, cv);
       D *= rhoInv / cv;
       if (D == 0.0) {
-        D = SMALL_NUM;
+        D = constants::small_num;
       }
       AMREX_D_TERM(
         const amrex::Real dt1 = 0.5 * dx * dx / (AMREX_SPACEDIM * D);
@@ -159,7 +155,7 @@ pc_estdt_enthdif(
     const amrex::Real& dx, const amrex::Real& dy, const amrex::Real& dz),
   TransParm const* trans_parm) noexcept
 {
-  amrex::Real dt = TimeStep::max_dt;
+  amrex::Real dt = std::numeric_limits<amrex::Real>::max();
 
   amrex::Loop(bx, [=, &dt](int i, int j, int k) {
 #ifdef PELEC_USE_EB
