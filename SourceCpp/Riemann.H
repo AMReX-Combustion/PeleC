@@ -79,7 +79,7 @@ riemann(
 
   mask =
     amrex::Math::abs(ustar) <
-      constants::smallu * 0.5 * (amrex::Math::abs(ul) + amrex::Math::abs(ur)) ||
+    constants::smallu() * 0.5 * (amrex::Math::abs(ul) + amrex::Math::abs(ur)) ||
     ustar == 0.0;
   ustar = mask ? 0.0 : ustar;
   ro = mask ? 0.5 * (rl + rr) : ro;
@@ -125,7 +125,7 @@ riemann(
   spin = mask ? spin : ushock;
 
   const amrex::Real scr =
-    (spout == spin) ? constants::small_num * cav : spout - spin;
+    (spout == spin) ? constants::small_num() * cav : spout - spin;
   const amrex::Real frac = amrex::max<amrex::Real>(
     0.0, amrex::min<amrex::Real>(1.0, (1.0 + (spout + spin) / scr) * 0.5));
 

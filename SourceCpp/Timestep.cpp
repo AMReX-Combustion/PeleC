@@ -77,7 +77,7 @@ pc_estdt_veldif(
       pc_trans4dt(which_trans, T, rho, massfrac, D, trans_parm);
       D *= rhoInv;
       if (D == 0.0) {
-        D = constants::small_num;
+        D = constants::small_num();
       }
       AMREX_D_TERM(
         const amrex::Real dt1 = 0.5 * dx * dx / (AMREX_SPACEDIM * D);
@@ -126,7 +126,7 @@ pc_estdt_tempdif(
       EOS::TY2Cv(T, massfrac, cv);
       D *= rhoInv / cv;
       if (D == 0.0) {
-        D = constants::small_num;
+        D = constants::small_num();
       }
       AMREX_D_TERM(
         const amrex::Real dt1 = 0.5 * dx * dx / (AMREX_SPACEDIM * D);

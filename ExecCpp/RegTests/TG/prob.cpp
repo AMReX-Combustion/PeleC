@@ -27,7 +27,7 @@ amrex_probinit(
   }
 
   // Define the length scale
-  PeleC::prob_parm_device->L = 1.0 / constants::PI;
+  PeleC::prob_parm_device->L = 1.0 / constants::PI();
   PeleC::prob_parm_device->L_x = probhi[0] - problo[0];
   PeleC::prob_parm_device->L_y = probhi[1] - problo[1];
   PeleC::prob_parm_device->L_z = probhi[2] - problo[2];
