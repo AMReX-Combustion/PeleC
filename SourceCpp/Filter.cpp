@@ -39,7 +39,7 @@ Filter::set_gaussian_weights()
     // equivalent to: std::sqrt(gamma / (PI * _fgr * _fgr)) * std::exp((-gamma
     // * (i-_ngrow) * (i-_ngrow)) / (_fgr * _fgr));
     _weights[i] =
-      1.0 / (std::sqrt(2.0 * PI) * sigma) *
+      1.0 / (std::sqrt(2.0 * constants::PI()) * sigma) *
       std::exp((-(i - _ngrow) * (i - _ngrow)) / (2 * sigma * sigma));
   }
   // normalize to ensure it all sums to one

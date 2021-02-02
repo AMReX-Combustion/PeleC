@@ -100,6 +100,10 @@ function(build_pelec_exe pelec_exe_name)
                    ${SRC_DIR}/React.H
                    ${SRC_DIR}/React.cpp)
   endif()
+
+  if(PELEC_ENABLE_FORCING)
+    target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_FORCING)
+  endif()
   
   if(PELEC_ENABLE_EB)
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_EB)

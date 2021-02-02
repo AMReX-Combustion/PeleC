@@ -326,8 +326,6 @@ public:
   void construct_new_forcing_source(amrex::Real time, amrex::Real dt);
 
   static void fill_forcing_source(
-    amrex::Real time,
-    amrex::Real dt,
     const amrex::MultiFab& state_old,
     const amrex::MultiFab& state_new,
     amrex::MultiFab& forcing_src,

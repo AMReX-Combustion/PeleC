@@ -2005,6 +2005,7 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
   const auto captured_allow_negative_energy = allow_negative_energy;
   const auto captured_dual_energy_update_E_from_e = dual_energy_update_E_from_e;
   const auto captured_verbose = verbose;
+  const auto captured_dual_energy_eta2 = dual_energy_eta2;
   for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
        ++mfi) {
     const amrex::Box& bx = mfi.growntilebox(ng);
@@ -2013,7 +2014,7 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
       pc_rst_int_e(
         i, j, k, sarr, captured_allow_small_energy,
         captured_allow_negative_energy, captured_dual_energy_update_E_from_e,
-        captured_verbose);
+        captured_dual_energy_eta2, captured_verbose);
     });
   }
 
