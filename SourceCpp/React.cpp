@@ -128,7 +128,6 @@ PeleC::react_state(
       const int do_update = react_init ? 0 : 1;
 
       const int captured_clean_react_massfrac = clean_react_massfrac;
-      const int captured_chem_integrator = chem_integrator;
 
 #ifdef PELEC_USE_EB
       const auto& flag_fab = flags[mfi];
@@ -164,10 +163,11 @@ PeleC::react_state(
             });
         }
 
-        else if (chem_integrator == 2 or chem_integrator == 3) {
+        else if (chem_integrator == 2 || chem_integrator == 3) {
 #ifdef USE_SUNDIALS_PP
           amrex::Real wt =
             amrex::ParallelDescriptor::second(); // timing for each fab
+          const int captured_chem_integrator = chem_integrator;
 
           const auto len = amrex::length(bx);
           const auto lo = amrex::lbound(bx);
@@ -176,7 +176,6 @@ PeleC::react_state(
           amrex::Real current_time = 0.0;
 
 #ifdef AMREX_USE_GPU
-          cudaError_t cuda_status = cudaSuccess;
           int reactor_type = 1;
           int ode_ncells = ncells;
 #else
@@ -263,13 +262,9 @@ PeleC::react_state(
               }
             });
 
-#ifdef AMREX_USE_GPU
-          cuda_status = cudaStreamSynchronize(amrex::Gpu::gpuStream());
-#endif
-
           if (chem_integrator == 2) {
-            amrex::Gpu::streamSynchronize();
 
+            amrex::Gpu::streamSynchronize();
             amrex::Gpu::copy(
               amrex::Gpu::deviceToHost, rY_in.begin(), rY_in.end(),
               h_rY_in.begin());
