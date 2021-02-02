@@ -1,9 +1,15 @@
 #include <AMReX_ParmParse.H>
 #include <AMReX_buildInfo.H>
+#include <memory>
 
 #ifdef PELEC_USE_MASA
 #include <masa.h>
 using namespace MASA;
+#endif
+
+#if defined(PELEC_USE_REACTIONS) && defined(AMREX_USE_GPU) && \
+  defined(USE_SUNDIALS_PP)
+#include <AMReX_SUNMemory.H>
 #endif
 
 #include "mechanism.h"
@@ -12,6 +18,9 @@ using namespace MASA;
 #include "IndexDefines.H"
 #include "prob.H"
 #include "chemistry_file.H"
+
+std::unique_ptr<ProbParmDevice> PeleC::prob_parm_device;
+std::unique_ptr<ProbParmHost> PeleC::prob_parm_host;
 
 // Components are:
 // Interior, Inflow, Outflow,  Symmetry,     SlipWall,     NoSlipWall, UserBC
@@ -135,6 +144,9 @@ PeleC::variableSetUp()
 
   AMREX_ASSERT(desc_lst.size() == 0);
 
+  prob_parm_device = std::make_unique<ProbParmDevice>();
+  prob_parm_host = std::make_unique<ProbParmHost>();
+
   // Get options, set phys_bc
   read_params();
 
@@ -143,6 +155,9 @@ PeleC::variableSetUp()
   init_transport();
 
 #ifdef PELEC_USE_REACTIONS
+#if defined(AMREX_USE_GPU) && defined(USE_SUNDIALS_PP)
+  amrex::sundials::MemoryHelper::Initialize();
+#endif
   // Initialize the reactor
   if (do_react == 1) {
     init_reactor();
@@ -316,8 +331,11 @@ PeleC::variableSetUp()
     name[cnt] = std::string(buf);
   }
 
-  // Get the species names from the network model.
-  EOS::speciesNames(spec_names);
+  // Get the species names from the network model
+  // Set it for Null mechanism let it be overwritten for others
+  spec_names.resize(1);
+  spec_names[0] = "Null";
+  CKSYMS_STR(spec_names);
 
   if (amrex::ParallelDescriptor::IOProcessor()) {
     amrex::Print() << NUM_SPECIES << " Species: " << std::endl;
@@ -339,9 +357,9 @@ PeleC::variableSetUp()
     int len = 20;
     amrex::Vector<int> int_aux_names(len);
 
-    // Disabling for CUDA at the moment. Look at the species names to see how to
-    // do this in C++. AUX stuff is usually 0 anyway.
-    // // This call return the actual length of each string in "len"
+    // Disabling for the GPU at the moment. Look at the species names to see how
+    // to do this in C++. AUX stuff is usually 0 anyway. This call returns the
+    // actual length of each string in "len"
     // get_aux_names(int_aux_names.dataPtr(),&i,&len);
 
     char* char_aux_names = new char[len + 1];

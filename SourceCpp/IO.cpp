@@ -43,7 +43,7 @@ amrex::Real vfraceps = 0.000001;
 // I/O routines for PeleC
 
 void
-PeleC::restart(amrex::Amr& papa, istream& is, bool bReadSpecial)
+PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
 {
   // Let's check PeleC checkpoint version first;
   // trying to read from checkpoint; if nonexisting, set it to 0.
@@ -152,7 +152,7 @@ PeleC::restart(amrex::Amr& papa, istream& is, bool bReadSpecial)
     DiagFile.close();
   }
 
-  /* Not implemented for CUDA
+  /* Not implemented for GPU
         if (level == 0)
         {
       // get problem-specific stuff -- note all processors do this,
@@ -281,7 +281,7 @@ PeleC::checkPoint(
       DiagFile.close();
     }
 
-    /* Not implemented for CUDA{
+    /* Not implemented for GPU{
             // store any problem-specific stuff
             char * dir_for_pass = new char[dir.size() + 1];
             std::copy(dir.begin(), dir.end(), dir_for_pass);
@@ -746,7 +746,8 @@ PeleC::writeBuildInfo(std::ostream& os)
 }
 
 void
-PeleC::writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how)
+PeleC::writePlotFile(
+  const std::string& dir, std::ostream& os, amrex::VisMF::How how)
 {
   // The list of indices of State to write to plotfile.
   // first component of pair is state_type,
@@ -952,7 +953,7 @@ PeleC::writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how)
 
 void
 PeleC::writeSmallPlotFile(
-  const std::string& dir, ostream& os, amrex::VisMF::How how)
+  const std::string& dir, std::ostream& os, amrex::VisMF::How how)
 {
   // The list of indices of State to write to plotfile.
   // first component of pair is state_type,

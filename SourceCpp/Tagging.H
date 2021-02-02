@@ -37,7 +37,7 @@ extern AMREX_GPU_DEVICE_MANAGED amrex::Real vfracerr;
 extern AMREX_GPU_DEVICE_MANAGED int max_vfracerr_lev;
 } // namespace TaggingParm
 
-AMREX_GPU_HOST_DEVICE
+AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 tag_error(
@@ -55,7 +55,7 @@ tag_error(
   }
 }
 
-AMREX_GPU_HOST_DEVICE
+AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 tag_graderror(
@@ -88,7 +88,7 @@ tag_graderror(
   }
 }
 
-AMREX_GPU_HOST_DEVICE
+AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 tag_abserror(
@@ -106,7 +106,7 @@ tag_abserror(
   }
 }
 
-AMREX_GPU_HOST_DEVICE
+AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 tag_error_bounds(
@@ -127,7 +127,7 @@ tag_error_bounds(
 
 struct EmptyProbTagStruct
 {
-  AMREX_GPU_HOST_DEVICE
+  AMREX_GPU_DEVICE
   AMREX_FORCE_INLINE
   static void set_problem_tags(
     const int /*i*/,
@@ -145,7 +145,7 @@ struct EmptyProbTagStruct
 };
 
 template <typename ProbTagStruct, typename... Args>
-AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE void
+AMREX_GPU_DEVICE AMREX_FORCE_INLINE void
 set_problem_tags(Args&&... args)
 {
   ProbTagStruct::set_problem_tags(std::forward<Args>(args)...);

@@ -61,43 +61,45 @@ amrex_probinit(
   const amrex_real* probhi)
 {
   // Parse params
-  amrex::ParmParse pp("prob");
-  pp.query("reynolds", ProbParm::reynolds);
-  pp.query("mach", ProbParm::mach);
-  pp.query("prandtl", ProbParm::prandtl);
-  pp.query("rho_x_fact", ProbParm::rho_x_fact);
-  pp.query("rho_y_fact", ProbParm::rho_y_fact);
-  pp.query("rho_z_fact", ProbParm::rho_z_fact);
-  pp.query("u_0_fact", ProbParm::u_0_fact);
-  pp.query("u_x_fact", ProbParm::u_x_fact);
-  pp.query("u_y_fact", ProbParm::u_y_fact);
-  pp.query("u_z_fact", ProbParm::u_z_fact);
-  pp.query("v_0_fact", ProbParm::v_0_fact);
-  pp.query("v_x_fact", ProbParm::v_x_fact);
-  pp.query("v_y_fact", ProbParm::v_y_fact);
-  pp.query("v_z_fact", ProbParm::v_z_fact);
-  pp.query("w_0_fact", ProbParm::w_0_fact);
-  pp.query("w_x_fact", ProbParm::w_x_fact);
-  pp.query("w_y_fact", ProbParm::w_y_fact);
-  pp.query("w_z_fact", ProbParm::w_z_fact);
-  pp.query("p_x_fact", ProbParm::p_x_fact);
-  pp.query("p_y_fact", ProbParm::p_y_fact);
-  pp.query("p_z_fact", ProbParm::p_z_fact);
-  pp.query("a_rhox", ProbParm::a_rhox);
-  pp.query("a_rhoy", ProbParm::a_rhoy);
-  pp.query("a_rhoz", ProbParm::a_rhoz);
-  pp.query("a_ux", ProbParm::a_ux);
-  pp.query("a_uy", ProbParm::a_uy);
-  pp.query("a_uz", ProbParm::a_uz);
-  pp.query("a_vx", ProbParm::a_vx);
-  pp.query("a_vy", ProbParm::a_vy);
-  pp.query("a_vz", ProbParm::a_vz);
-  pp.query("a_wx", ProbParm::a_wx);
-  pp.query("a_wy", ProbParm::a_wy);
-  pp.query("a_wz", ProbParm::a_wz);
-  pp.query("a_px", ProbParm::a_px);
-  pp.query("a_py", ProbParm::a_py);
-  pp.query("a_pz", ProbParm::a_pz);
+  {
+    amrex::ParmParse pp("prob");
+    pp.query("reynolds", ProbParm::reynolds);
+    pp.query("mach", ProbParm::mach);
+    pp.query("prandtl", ProbParm::prandtl);
+    pp.query("rho_x_fact", ProbParm::rho_x_fact);
+    pp.query("rho_y_fact", ProbParm::rho_y_fact);
+    pp.query("rho_z_fact", ProbParm::rho_z_fact);
+    pp.query("u_0_fact", ProbParm::u_0_fact);
+    pp.query("u_x_fact", ProbParm::u_x_fact);
+    pp.query("u_y_fact", ProbParm::u_y_fact);
+    pp.query("u_z_fact", ProbParm::u_z_fact);
+    pp.query("v_0_fact", ProbParm::v_0_fact);
+    pp.query("v_x_fact", ProbParm::v_x_fact);
+    pp.query("v_y_fact", ProbParm::v_y_fact);
+    pp.query("v_z_fact", ProbParm::v_z_fact);
+    pp.query("w_0_fact", ProbParm::w_0_fact);
+    pp.query("w_x_fact", ProbParm::w_x_fact);
+    pp.query("w_y_fact", ProbParm::w_y_fact);
+    pp.query("w_z_fact", ProbParm::w_z_fact);
+    pp.query("p_x_fact", ProbParm::p_x_fact);
+    pp.query("p_y_fact", ProbParm::p_y_fact);
+    pp.query("p_z_fact", ProbParm::p_z_fact);
+    pp.query("a_rhox", ProbParm::a_rhox);
+    pp.query("a_rhoy", ProbParm::a_rhoy);
+    pp.query("a_rhoz", ProbParm::a_rhoz);
+    pp.query("a_ux", ProbParm::a_ux);
+    pp.query("a_uy", ProbParm::a_uy);
+    pp.query("a_uz", ProbParm::a_uz);
+    pp.query("a_vx", ProbParm::a_vx);
+    pp.query("a_vy", ProbParm::a_vy);
+    pp.query("a_vz", ProbParm::a_vz);
+    pp.query("a_wx", ProbParm::a_wx);
+    pp.query("a_wy", ProbParm::a_wy);
+    pp.query("a_wz", ProbParm::a_wz);
+    pp.query("a_px", ProbParm::a_px);
+    pp.query("a_py", ProbParm::a_py);
+    pp.query("a_pz", ProbParm::a_pz);
+  }
 
   // Define the length scale
   AMREX_D_TERM(ProbParm::L_x = probhi[0] - problo[0];
@@ -114,13 +116,37 @@ amrex_probinit(
   EOS::TY2Cp(ProbParm::T0, massfrac, cp);
 
   ProbParm::u0 = ProbParm::mach * cs;
-  transport_params::const_bulk_viscosity =
+
+  TransParm trans_parm;
+
+  // Default
+  trans_parm.const_viscosity = 0.0;
+  trans_parm.const_bulk_viscosity = 0.0;
+  trans_parm.const_conductivity = 0.0;
+  trans_parm.const_diffusivity = 0.0;
+
+  // User-specified
+  {
+    amrex::ParmParse pp("transport");
+    pp.query("const_viscosity", trans_parm.const_viscosity);
+    pp.query("const_bulk_viscosity", trans_parm.const_bulk_viscosity);
+    pp.query("const_conductivity", trans_parm.const_conductivity);
+    pp.query("const_diffusivity", trans_parm.const_diffusivity);
+  }
+
+  trans_parm.const_bulk_viscosity =
     ProbParm::rho0 * ProbParm::u0 * ProbParm::L_x / ProbParm::reynolds;
-  transport_params::const_diffusivity = 0.0;
-  transport_params::const_viscosity =
+  trans_parm.const_diffusivity = 0.0;
+  trans_parm.const_viscosity =
     ProbParm::rho0 * ProbParm::u0 * ProbParm::L_x / ProbParm::reynolds;
-  transport_params::const_conductivity =
-    transport_params::const_viscosity * cp / ProbParm::prandtl;
+  trans_parm.const_conductivity =
+    trans_parm.const_viscosity * cp / ProbParm::prandtl;
+
+#ifdef AMREX_USE_GPU
+  amrex::Gpu::htod_memcpy(trans_parm_g, &trans_parm, sizeof(trans_parm));
+#else
+  std::memcpy(trans_parm_g, &trans_parm, sizeof(trans_parm));
+#endif
 
   // clang-format off
   // MASA parameters for the following functions
@@ -132,10 +158,10 @@ amrex_probinit(
   // clang-format on
   masa_set_param("L", ProbParm::L_x);
   masa_set_param("R", EOS::RU / EOS::AIRMW);
-  masa_set_param("k", transport_params::const_conductivity);
+  masa_set_param("k", trans_parm.const_conductivity);
   masa_set_param("Gamma", EOS::gamma);
-  masa_set_param("mu", transport_params::const_viscosity);
-  masa_set_param("mu_bulk", transport_params::const_bulk_viscosity);
+  masa_set_param("mu", trans_parm.const_viscosity);
+  masa_set_param("mu_bulk", trans_parm.const_bulk_viscosity);
   masa_set_param("rho_0", ProbParm::rho0);
   masa_set_param("rho_x", ProbParm::rho_x_fact * ProbParm::rho0);
   masa_set_param("rho_y", ProbParm::rho_y_fact);

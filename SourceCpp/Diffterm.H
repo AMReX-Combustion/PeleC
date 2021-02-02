@@ -155,7 +155,7 @@ pc_diffusion_flux(
 }
 
 // This function computes the flux divergence.
-AMREX_GPU_HOST_DEVICE
+AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 pc_flux_div(

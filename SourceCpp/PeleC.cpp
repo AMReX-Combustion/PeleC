@@ -127,6 +127,10 @@ PeleC::variableCleanUp()
   delete soot_model;
   soot_model = nullptr;
 #endif
+  prob_parm_device.reset();
+  prob_parm_host.reset();
+
+  derive_lst.clear();
 
   desc_lst.clear();
 
@@ -678,8 +682,10 @@ PeleC::initData()
     auto sfab = S_new.array(mfi);
     const auto geomdata = geom.data();
 
+    ProbParmDevice const* lprobparm = prob_parm_device.get();
+
     amrex::ParallelFor(box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      pc_initdata(i, j, k, sfab, geomdata);
+      pc_initdata(i, j, k, sfab, geomdata, *lprobparm);
       // Verify that the sum of (rho Y)_i = rho at every cell
       pc_check_initial_species(i, j, k, sfab);
     });
@@ -824,7 +830,6 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 
     prefetchToDevice(stateMF); // This should accelerate the below operations.
     amrex::Real AMREX_D_DECL(dx1 = dx[0], dx2 = dx[1], dx3 = dx[2]);
-    TransParm const* ltp = trans_parm_g;
 
     if (do_hydro) {
       amrex::Real dt = amrex::ReduceMin(
@@ -833,7 +838,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
         flags,
 #endif
         0,
-        [=] AMREX_GPU_HOST_DEVICE(
+        [=] AMREX_GPU_DEVICE(
           amrex::Box const& bx, const amrex::Array4<const amrex::Real>& fab_arr
 #ifdef PELEC_USE_EB
           ,
@@ -851,13 +856,14 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
     }
 
     if (diffuse_vel) {
+      TransParm const* ltransparm = trans_parm_g;
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
 #ifdef PELEC_USE_EB
         flags,
 #endif
         0,
-        [=] AMREX_GPU_HOST_DEVICE(
+        [=] AMREX_GPU_DEVICE(
           amrex::Box const& bx, const amrex::Array4<const amrex::Real>& fab_arr
 #ifdef PELEC_USE_EB
           ,
@@ -869,20 +875,20 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 #ifdef PELEC_USE_EB
             flag_arr,
 #endif
-            ltp,
-            AMREX_D_DECL(dx1, dx2, dx3));
+            AMREX_D_DECL(dx1, dx2, dx3), ltransparm);
         });
       estdt_vdif = amrex::min<amrex::Real>(estdt_vdif, dt);
     }
 
     if (diffuse_temp) {
+      TransParm const* ltransparm = trans_parm_g;
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
 #ifdef PELEC_USE_EB
         flags,
 #endif
         0,
-        [=] AMREX_GPU_HOST_DEVICE(
+        [=] AMREX_GPU_DEVICE(
           amrex::Box const& bx, const amrex::Array4<const amrex::Real>& fab_arr
 #ifdef PELEC_USE_EB
           ,
@@ -894,20 +900,20 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 #ifdef PELEC_USE_EB
             flag_arr,
 #endif
-            ltp,
-            AMREX_D_DECL(dx1, dx2, dx3));
+            AMREX_D_DECL(dx1, dx2, dx3), ltransparm);
         });
       estdt_tdif = amrex::min<amrex::Real>(estdt_tdif, dt);
     }
 
     if (diffuse_enth) {
+      TransParm const* ltransparm = trans_parm_g;
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
 #ifdef PELEC_USE_EB
         flags,
 #endif
         0,
-        [=] AMREX_GPU_HOST_DEVICE(
+        [=] AMREX_GPU_DEVICE(
           amrex::Box const& bx, const amrex::Array4<const amrex::Real>& fab_arr
 #ifdef PELEC_USE_EB
           ,
@@ -919,8 +925,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 #ifdef PELEC_USE_EB
             flag_arr,
 #endif
-            ltp,
-            AMREX_D_DECL(dx1, dx2, dx3));
+            AMREX_D_DECL(dx1, dx2, dx3), ltransparm);
         });
       estdt_edif = amrex::min<amrex::Real>(estdt_edif, dt);
     }
@@ -1453,7 +1458,7 @@ PeleC::enforce_min_density(
     }
 #endif
 
-    // Not enabled in CUDA
+    // Not enabled on the GPU
     // const auto& stateold = S_old[mfi];
     // auto& statenew = S_new[mfi];
     // const auto& vol = volume[mfi];
@@ -1851,16 +1856,14 @@ void
 PeleC::init_reactor()
 {
 #ifdef USE_SUNDIALS_PP
-  int reactor_type = 1;
-  int ode_ncells = 1;
-#ifdef AMREX_USE_CUDA
-  reactor_info(reactor_type, ode_ncells);
+#ifdef AMREX_USE_GPU
+  reactor_info(1, 1);
 #else
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
   {
-    reactor_init(reactor_type, ode_ncells);
+    reactor_init(1, 1);
   }
 #endif
 #endif

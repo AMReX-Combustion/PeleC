@@ -191,7 +191,7 @@ if(PELEC_DIM GREATER 2)
   add_test_re(zerod-1 zeroD)
   if(PELEC_ENABLE_AMREX_EB)
     add_test_re(eb-c3 EB-C3)
-    if(PELEC_ENABLE_FPE_TRAP_FOR_TESTS)
+    if(PELEC_ENABLE_FPE_TRAP_FOR_TESTS AND NOT PELEC_ENABLE_CUDA)
       add_test_rf(eb-c7 EB-C7) # This test exposes an EB issue not yet solved
     else()
       add_test_re(eb-c7 EB-C7)

@@ -71,22 +71,26 @@ amrex_probinit(
   const amrex_real* probhi)
 {
   // Parse params
-  amrex::ParmParse pp("prob");
-  pp.query("iname", ProbParm::iname);
-  pp.query("binfmt", ProbParm::binfmt);
-  pp.query("restart", ProbParm::restart);
-  pp.query("lambda0", ProbParm::lambda0);
-  pp.query("reynolds_lambda0", ProbParm::reynolds_lambda0);
-  pp.query("mach_t0", ProbParm::mach_t0);
-  pp.query("prandtl", ProbParm::prandtl);
-  pp.query("inres", ProbParm::inres);
-  pp.query("uin_norm", ProbParm::uin_norm);
+  {
+    amrex::ParmParse pp("prob");
+    pp.query("iname", ProbParm::iname);
+    pp.query("binfmt", ProbParm::binfmt);
+    pp.query("restart", ProbParm::restart);
+    pp.query("lambda0", ProbParm::lambda0);
+    pp.query("reynolds_lambda0", ProbParm::reynolds_lambda0);
+    pp.query("mach_t0", ProbParm::mach_t0);
+    pp.query("prandtl", ProbParm::prandtl);
+    pp.query("inres", ProbParm::inres);
+    pp.query("uin_norm", ProbParm::uin_norm);
+  }
 
-  amrex::ParmParse ppf("forcing");
-  ppf.query("u0", forcing_params::u0);
-  ppf.query("v0", forcing_params::v0);
-  ppf.query("w0", forcing_params::w0);
-  ppf.query("forcing", forcing_params::forcing);
+  {
+    amrex::ParmParse pp("forcing");
+    pp.query("u0", forcing_params::u0);
+    pp.query("v0", forcing_params::v0);
+    pp.query("w0", forcing_params::w0);
+    pp.query("forcing", forcing_params::forcing);
+  }
 
   // Define the length scale
   ProbParm::L_x = probhi[0] - problo[0];
@@ -108,13 +112,35 @@ amrex_probinit(
   ProbParm::urms0 = ProbParm::mach_t0 * cs / sqrt(3.0);
   ProbParm::tau = ProbParm::lambda0 / ProbParm::urms0;
 
-  transport_params::const_bulk_viscosity = 0.0;
-  transport_params::const_diffusivity = 0.0;
-  transport_params::const_viscosity = ProbParm::rho0 * ProbParm::urms0 *
-                                      ProbParm::lambda0 /
-                                      ProbParm::reynolds_lambda0;
-  transport_params::const_conductivity =
-    transport_params::const_viscosity * cp / ProbParm::prandtl;
+  TransParm trans_parm;
+
+  // Default
+  trans_parm.const_viscosity = 0.0;
+  trans_parm.const_bulk_viscosity = 0.0;
+  trans_parm.const_conductivity = 0.0;
+  trans_parm.const_diffusivity = 0.0;
+
+  // User-specified
+  {
+    amrex::ParmParse pp("transport");
+    pp.query("const_viscosity", trans_parm.const_viscosity);
+    pp.query("const_bulk_viscosity", trans_parm.const_bulk_viscosity);
+    pp.query("const_conductivity", trans_parm.const_conductivity);
+    pp.query("const_diffusivity", trans_parm.const_diffusivity);
+  }
+
+  trans_parm.const_bulk_viscosity = 0.0;
+  trans_parm.const_diffusivity = 0.0;
+  trans_parm.const_viscosity = ProbParm::rho0 * ProbParm::urms0 *
+                               ProbParm::lambda0 / ProbParm::reynolds_lambda0;
+  trans_parm.const_conductivity =
+    trans_parm.const_viscosity * cp / ProbParm::prandtl;
+
+#ifdef AMREX_USE_GPU
+  amrex::Gpu::htod_memcpy(trans_parm_g, &trans_parm, sizeof(trans_parm));
+#else
+  std::memcpy(trans_parm_g, &trans_parm, sizeof(trans_parm));
+#endif
 
   // Output IC
   std::ofstream ofs("ic.txt", std::ofstream::out);
@@ -125,9 +151,8 @@ amrex_probinit(
   amrex::Print(ofs).SetPrecision(17)
     << ProbParm::lambda0 << "," << ProbParm::k0 << "," << ProbParm::rho0 << ","
     << ProbParm::urms0 << "," << ProbParm::tau << "," << ProbParm::p0 << ","
-    << ProbParm::T0 << "," << EOS::gamma << ","
-    << transport_params::const_viscosity << ","
-    << transport_params::const_conductivity << "," << cs << ","
+    << ProbParm::T0 << "," << EOS::gamma << "," << trans_parm.const_viscosity
+    << "," << trans_parm.const_conductivity << "," << cs << ","
     << ProbParm::reynolds_lambda0 << "," << ProbParm::mach_t0 << ","
     << ProbParm::prandtl << "," << forcing_params::u0 << ","
     << forcing_params::v0 << "," << forcing_params::w0 << ","

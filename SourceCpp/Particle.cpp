@@ -334,7 +334,8 @@ PeleC::initParticles()
     if (!particle_init_file.empty()) {
       theSprayPC()->InitFromAsciiFile(particle_init_file, NSR_SPR + NAR_SPR);
     } else if (particle_init_function > 0) {
-      theSprayPC()->InitSprayParticles();
+      ProbParmHost const* lprobparm = prob_parm_host.get();
+      theSprayPC()->InitSprayParticles(*lprobparm);
     }
   }
 }
@@ -378,11 +379,13 @@ PeleC::particleMKD (const Real       time,
   // Check if I need to insert new particles
   int nstep = parent->levelSteps(0);
 
+  ProbParmHost const* lprobparm = prob_parm_host.get();
+
   BL_PROFILE_VAR("SprayParticles::injectParticles()", INJECT_SPRAY);
   bool injectParts = theSprayPC()->
-    injectParticles(time, dt, nstep, level, finest_level);
+    injectParticles(time, dt, nstep, level, finest_level, *lprobparm);
   bool insertParts = theSprayPC()->
-    insertParticles(time, dt, nstep, level, finest_level);
+    insertParticles(time, dt, nstep, level, finest_level, *lprobparm);
   // Only redistribute if we injected or inserted particles
   if (injectParts || insertParts)
     theSprayPC()->Redistribute(level);
