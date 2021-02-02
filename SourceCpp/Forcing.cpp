@@ -2,7 +2,7 @@
 #include "Forcing.H"
 
 void
-PeleC::construct_old_forcing_source(amrex::Real /*time*/, amrex::Real /*dt*/)
+  PeleC::construct_old_forcing_source(amrex::Real /*time*/, amrex::Real /*dt*/)
 {
   const amrex::MultiFab& S_old = get_old_data(State_Type);
 
@@ -20,7 +20,7 @@ PeleC::construct_old_forcing_source(amrex::Real /*time*/, amrex::Real /*dt*/)
 }
 
 void
-PeleC::construct_new_forcing_source(amrex::Real /*time*/, amrex::Real /*dt*/)
+  PeleC::construct_new_forcing_source(amrex::Real /*time*/, amrex::Real /*dt*/)
 {
   const amrex::MultiFab& S_old = get_old_data(State_Type);
   const amrex::MultiFab& S_new = get_new_data(State_Type);
@@ -82,16 +82,15 @@ PeleC::fill_forcing_source(
     w0 = lpp->forcing_w0;
     force = lpp->forcing_force;
 #endif
-    
+
     // Evaluate the linear forcing term
     amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      src(i, j, k, UMX) = force * sarr(i, j, k, URHO) *
-                          (sarr(i, j, k, UMX) - u0);
-      src(i, j, k, UMY) = force * sarr(i, j, k, URHO) *
-                          (sarr(i, j, k, UMY) - v0);
-      src(i, j, k, UMZ) = force * sarr(i, j, k, URHO) *
-                          (sarr(i, j, k, UMZ) - w0);
+      src(i, j, k, UMX) =
+        force * sarr(i, j, k, URHO) * (sarr(i, j, k, UMX) - u0);
+      src(i, j, k, UMY) =
+        force * sarr(i, j, k, URHO) * (sarr(i, j, k, UMY) - v0);
+      src(i, j, k, UMZ) =
+        force * sarr(i, j, k, URHO) * (sarr(i, j, k, UMZ) - w0);
     });
   }
-
 }

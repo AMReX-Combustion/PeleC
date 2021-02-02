@@ -107,8 +107,10 @@ amrex_probinit(
     << trans_parm.const_conductivity << "," << cs << ","
     << PeleC::prob_parm_device->reynolds_lambda0 << ","
     << PeleC::prob_parm_device->mach_t0 << ","
-    << PeleC::prob_parm_device->prandtl << "," << PeleC::prob_parm_device->forcing_u0 << ","
-    << PeleC::prob_parm_device->forcing_v0 << "," << PeleC::prob_parm_device->forcing_w0 << ","
+    << PeleC::prob_parm_device->prandtl << ","
+    << PeleC::prob_parm_device->forcing_u0 << ","
+    << PeleC::prob_parm_device->forcing_v0 << ","
+    << PeleC::prob_parm_device->forcing_w0 << ","
     << PeleC::prob_parm_device->forcing_force << std::endl;
   ofs.close();
 

@@ -154,16 +154,20 @@ pc_initdata(
     amrex::GpuArray<amrex::Real, NUM_SPECIES + 4> pmf_vals = {{0.0}};
     amrex::Real pert = 0.0;
     if (prob_parm.pertmag > 0.0) {
-      pert = prob_parm.pertmag *
-             (1.0 * std::sin(2 * constants::PI * 4 * x / prob_parm.L[0]) *
-                std::sin(2 * constants::PI * 5 * y / prob_parm.L[1]) +
-              1.023 * std::sin(2 * constants::PI * 2 * (x - 0.4598) / prob_parm.L[0]) *
-                std::sin(2 * constants::PI * 4 * (y - 0.53765) / prob_parm.L[1]) +
-              0.945 * std::sin(2 * constants::PI * 3 * (x - 0.712435) / prob_parm.L[0]) *
-                std::sin(2 * constants::PI * 3 * (y - 2.137) / prob_parm.L[1]) +
-              1.017 * std::sin(2 * constants::PI * 5 * (x - 0.33) / prob_parm.L[0]) *
-                std::sin(2 * constants::PI * 6 * (y - 1.8) / prob_parm.L[1]) +
-              0.982 * std::sin(2 * constants::PI * 5 * (x - 1.4234) / prob_parm.L[0]));
+      pert =
+        prob_parm.pertmag *
+        (1.0 * std::sin(2 * constants::PI * 4 * x / prob_parm.L[0]) *
+           std::sin(2 * constants::PI * 5 * y / prob_parm.L[1]) +
+         1.023 *
+           std::sin(2 * constants::PI * 2 * (x - 0.4598) / prob_parm.L[0]) *
+           std::sin(2 * constants::PI * 4 * (y - 0.53765) / prob_parm.L[1]) +
+         0.945 *
+           std::sin(2 * constants::PI * 3 * (x - 0.712435) / prob_parm.L[0]) *
+           std::sin(2 * constants::PI * 3 * (y - 2.137) / prob_parm.L[1]) +
+         1.017 * std::sin(2 * constants::PI * 5 * (x - 0.33) / prob_parm.L[0]) *
+           std::sin(2 * constants::PI * 6 * (y - 1.8) / prob_parm.L[1]) +
+         0.982 *
+           std::sin(2 * constants::PI * 5 * (x - 1.4234) / prob_parm.L[0]));
     }
     pmf(z + pert, z + pert, pmf_vals, prob_parm);
     amrex::Real molefrac[NUM_SPECIES] = {0.0};
