@@ -21,6 +21,7 @@ using namespace MASA;
 
 std::unique_ptr<ProbParmDevice> PeleC::prob_parm_device;
 std::unique_ptr<ProbParmHost> PeleC::prob_parm_host;
+std::unique_ptr<TaggingParm> PeleC::tagging_parm;
 
 // Components are:
 // Interior, Inflow, Outflow,  Symmetry,     SlipWall,     NoSlipWall, UserBC
@@ -146,6 +147,7 @@ PeleC::variableSetUp()
 
   prob_parm_device = std::make_unique<ProbParmDevice>();
   prob_parm_host = std::make_unique<ProbParmHost>();
+  tagging_parm = std::make_unique<TaggingParm>();
 
   // Get options, set phys_bc
   read_params();
