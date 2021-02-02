@@ -78,8 +78,8 @@ riemann(
   }
 
   mask =
-    amrex::Math::abs(ustar) <
-    constants::smallu() * 0.5 * (amrex::Math::abs(ul) + amrex::Math::abs(ur)) ||
+    amrex::Math::abs(ustar) < constants::smallu() * 0.5 *
+                                (amrex::Math::abs(ul) + amrex::Math::abs(ur)) ||
     ustar == 0.0;
   ustar = mask ? 0.0 : ustar;
   ro = mask ? 0.5 * (rl + rr) : ro;

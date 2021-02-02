@@ -164,7 +164,8 @@ pc_initdata(
          0.945 *
            std::sin(2 * constants::PI() * 3 * (x - 0.712435) / prob_parm.L[0]) *
            std::sin(2 * constants::PI() * 3 * (y - 2.137) / prob_parm.L[1]) +
-         1.017 * std::sin(2 * constants::PI() * 5 * (x - 0.33) / prob_parm.L[0]) *
+         1.017 *
+           std::sin(2 * constants::PI() * 5 * (x - 0.33) / prob_parm.L[0]) *
            std::sin(2 * constants::PI() * 6 * (y - 1.8) / prob_parm.L[1]) +
          0.982 *
            std::sin(2 * constants::PI() * 5 * (x - 1.4234) / prob_parm.L[0]));
