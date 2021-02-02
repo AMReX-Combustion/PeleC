@@ -37,6 +37,10 @@ ifeq ($(USE_REACT), TRUE)
   DEFINES += -DPELEC_USE_REACTIONS
 endif
 
+ifeq ($(USE_FORCING), TRUE)
+  DEFINES += -DPELEC_USE_FORCING
+endif
+
 ifeq ($(USE_EB), TRUE)
   DEFINES += -DPELEC_USE_EB
   ifneq ($(DIM), 3)

@@ -1,13 +1,6 @@
 #include "PeleC.H"
 #include "Forcing.H"
 
-namespace forcing_params {
-AMREX_GPU_DEVICE_MANAGED amrex::Real u0 = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real v0 = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real w0 = 0.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real forcing = 0.0;
-} // namespace forcing_params
-
 void
 PeleC::construct_old_forcing_source(amrex::Real time, amrex::Real dt)
 {
@@ -56,8 +49,7 @@ PeleC::fill_forcing_source(
   amrex::MultiFab& forcing_src,
   int ng)
 {
-  // const amrex::Real* dx = geom.CellSize();
-  // const amrex::Real* prob_lo = geom.ProbLo();
+#ifdef PELEC_USE_FORCING
 
 #ifdef PELEC_USE_EB
   auto const& fact =
@@ -65,14 +57,14 @@ PeleC::fill_forcing_source(
   auto const& flags = fact.getMultiEBCellFlagFab();
 #endif
 
+  ProbParmDevice const* lpp = PeleC::prob_parm_device.get();
+
 #ifdef _OPENMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
   for (amrex::MFIter mfi(forcing_src, amrex::TilingIfNotGPU()); mfi.isValid();
        ++mfi) {
     const amrex::Box& bx = mfi.growntilebox(ng);
-    // amrex::RealBox gridloc =
-    // amrex::RealBox(grids[mfi.index()], geom.CellSize(), geom.ProbLo());
 
 #ifdef PELEC_USE_EB
     const auto& flag_fab = flags[mfi];
@@ -87,12 +79,13 @@ PeleC::fill_forcing_source(
 
     // Evaluate the linear forcing term
     amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      src(i, j, k, UMX) = forcing_params::forcing * sarr(i, j, k, URHO) *
-                          (sarr(i, j, k, UMX) - forcing_params::u0);
-      src(i, j, k, UMY) = forcing_params::forcing * sarr(i, j, k, URHO) *
-                          (sarr(i, j, k, UMY) - forcing_params::v0);
-      src(i, j, k, UMZ) = forcing_params::forcing * sarr(i, j, k, URHO) *
-                          (sarr(i, j, k, UMZ) - forcing_params::w0);
+      src(i, j, k, UMX) = lpp->forcing_force * sarr(i, j, k, URHO) *
+                          (sarr(i, j, k, UMX) - lpp->forcing_u0);
+      src(i, j, k, UMY) = lpp->forcing_force * sarr(i, j, k, URHO) *
+                          (sarr(i, j, k, UMY) - lpp->forcing_v0);
+      src(i, j, k, UMZ) = lpp->forcing_force * sarr(i, j, k, URHO) *
+                          (sarr(i, j, k, UMZ) - lpp->forcing_w0);
     });
   }
+#endif
 }

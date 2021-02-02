@@ -151,9 +151,9 @@ pc_initdata(
         [idxp1[0] + prob_parm.inres * (idxp1[1] + prob_parm.inres * idxp1[2])] *
       f7;
 
-  u[0] = uinterp[0] + forcing_params::u0;
-  u[1] = uinterp[1] + forcing_params::v0;
-  u[2] = uinterp[2] + forcing_params::w0;
+  u[0] = uinterp[0] + prob_parm.forcing_u0;
+  u[1] = uinterp[1] + prob_parm.forcing_v0;
+  u[2] = uinterp[2] + prob_parm.forcing_w0;
   state(i, j, k, UMX) = prob_parm.rho0 * u[0];
   state(i, j, k, UMY) = prob_parm.rho0 * u[1];
   state(i, j, k, UMZ) = prob_parm.rho0 * u[2];

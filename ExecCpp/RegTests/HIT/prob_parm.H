@@ -32,6 +32,10 @@ struct ProbParmDevice : amrex::Gpu::Managed
   amrex::Real* d_winput = nullptr;
   amrex::Real* d_xarray = nullptr;
   amrex::Real* d_xdiff = nullptr;
+  amrex::Real forcing_u0 = 0.0;
+  amrex::Real forcing_v0 = 0.0;
+  amrex::Real forcing_w0 = 0.0;
+  amrex::Real forcing_force = 0.0;
 };
 
 struct ProbParmHost : amrex::Gpu::Managed

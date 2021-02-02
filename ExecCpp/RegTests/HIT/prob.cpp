@@ -30,10 +30,10 @@ amrex_probinit(
 
   {
     amrex::ParmParse pp("forcing");
-    pp.query("u0", forcing_params::u0);
-    pp.query("v0", forcing_params::v0);
-    pp.query("w0", forcing_params::w0);
-    pp.query("forcing", forcing_params::forcing);
+    pp.query("u0", PeleC::prob_parm_device->forcing_u0);
+    pp.query("v0", PeleC::prob_parm_device->forcing_v0);
+    pp.query("w0", PeleC::prob_parm_device->forcing_w0);
+    pp.query("forcing", PeleC::prob_parm_device->forcing_force);
   }
 
   // Define the length scale
@@ -107,9 +107,9 @@ amrex_probinit(
     << trans_parm.const_conductivity << "," << cs << ","
     << PeleC::prob_parm_device->reynolds_lambda0 << ","
     << PeleC::prob_parm_device->mach_t0 << ","
-    << PeleC::prob_parm_device->prandtl << "," << forcing_params::u0 << ","
-    << forcing_params::v0 << "," << forcing_params::w0 << ","
-    << forcing_params::forcing << std::endl;
+    << PeleC::prob_parm_device->prandtl << "," << PeleC::prob_parm_device->forcing_u0 << ","
+    << PeleC::prob_parm_device->forcing_v0 << "," << PeleC::prob_parm_device->forcing_w0 << ","
+    << PeleC::prob_parm_device->forcing_force << std::endl;
   ofs.close();
 
   // Load velocity fields from file. Assume data set ordered in Fortran
