@@ -799,6 +799,12 @@ initialize_EB2(
     auto gshop = amrex::EB2::makeShop(pipe);
 
     amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
+  } else if (geom_type == "sco2-combustor") {
+#ifdef sCO2Combustor
+    EBsCO2Combustor(geom, max_level);
+#else
+    amrex::Abort("sco2-combustor geom_type not supported");
+#endif
   } else {
     amrex::EB2::Build(geom, max_level, max_level);
   }
