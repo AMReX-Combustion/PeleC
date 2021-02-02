@@ -26,6 +26,7 @@
 #endif
 
 #include "Filter.H"
+#include "Tagging.H"
 #include "IndexDefines.H"
 #include "prob_parm.H"
 
@@ -535,6 +536,7 @@ public:
 
   static std::unique_ptr<ProbParmDevice> prob_parm_device;
   static std::unique_ptr<ProbParmHost> prob_parm_host;
+  static std::unique_ptr<TaggingParm> tagging_parm;
 
 protected:
   amrex::iMultiFab level_mask;
