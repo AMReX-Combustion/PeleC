@@ -126,6 +126,7 @@ PeleC::variableCleanUp()
   prob_parm_device.reset();
   prob_parm_host.reset();
   tagging_parm.reset();
+  pass_map.reset();
 
   derive_lst.clear();
 

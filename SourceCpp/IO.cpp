@@ -254,7 +254,7 @@ PeleC::checkPoint(
   real_comp_names[pstateT] = "temperature";
   real_comp_names[pstateDia] = "diam";
   real_comp_names[pstateRho] = "density";
-  for (int sp = 0; sp != SPRAY_FUEL_NUM; ++sp) {
+  for (int sp = 0; sp < SPRAY_FUEL_NUM; ++sp) {
     real_comp_names[pstateY + sp] = "spray_mf_" + PeleC::sprayFuelNames[sp];
   }
   amrex::Vector<std::string> int_comp_names;
@@ -960,7 +960,7 @@ PeleC::writePlotFile(
     real_comp_names[pstateT] = "temperature";
     real_comp_names[pstateDia] = "diam";
     real_comp_names[pstateRho] = "density";
-    for (int sp = 0; sp != SPRAY_FUEL_NUM; ++sp) {
+    for (int sp = 0; sp < SPRAY_FUEL_NUM; ++sp) {
       real_comp_names[pstateY + sp] = "spray_mf_" + PeleC::sprayFuelNames[sp];
     }
     amrex::Vector<std::string> int_comp_names;

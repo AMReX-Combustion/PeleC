@@ -535,6 +535,7 @@ public:
   static std::unique_ptr<ProbParmDevice> prob_parm_device;
   static std::unique_ptr<ProbParmHost> prob_parm_host;
   static std::unique_ptr<TaggingParm> tagging_parm;
+  static std::unique_ptr<PassMap> pass_map;
 
 protected:
   amrex::iMultiFab level_mask;

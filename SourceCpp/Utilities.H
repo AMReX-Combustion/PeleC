@@ -31,7 +31,8 @@ pc_ctoprim(
   const int k,
   amrex::Array4<const amrex::Real> const& u,
   amrex::Array4<amrex::Real> const& q,
-  amrex::Array4<amrex::Real> const& qa)
+  amrex::Array4<amrex::Real> const& qa,
+  PassMap const& pmap)
 {
   const amrex::Real rho = u(i, j, k, URHO);
   const amrex::Real rhoinv = 1.0 / rho;
@@ -44,8 +45,8 @@ pc_ctoprim(
   q(i, j, k, QV) = vy;
   q(i, j, k, QW) = vz;
   for (int ipassive = 0; ipassive < NPASSIVE; ++ipassive) {
-    const int n = indxmap::upass_map(ipassive);
-    const int nq = indxmap::qpass_map(ipassive);
+    const int n = pmap.upassMap[ipassive];
+    const int nq = pmap.qpassMap[ipassive];
     q(i, j, k, nq) = u(i, j, k, n) / rho;
   }
 
