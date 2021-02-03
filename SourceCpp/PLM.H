@@ -85,7 +85,8 @@ pc_plm_x(
   amrex::Real const cc,
   // amrex::Array4<const amrex::Real> const& dloga,
   amrex::Real const dx,
-  amrex::Real const dt)
+  amrex::Real const dt,
+  PassMap const& pmap)
 {
   amrex::Real e[3];
   amrex::Real dtdx = dt / dx;
@@ -193,7 +194,7 @@ pc_plm_x(
   qm(i + 1, j, k, QREINT) = rhoe_ref + (apleft + amleft) * enth * cs + azeleft;
   // Upwind the passive variables
   for (int ipassive = 0; ipassive < NPASSIVE; ++ipassive) {
-    int n = indxmap::qpass_map(ipassive);
+    int n = pmap.qpassMap[ipassive];
     // Right state
     u = q(i, j, k, QU);
     amrex::Real spzero;
@@ -220,7 +221,8 @@ pc_plm_y(
   amrex::Array4<const amrex::Real> const& q,
   amrex::Real const cc,
   amrex::Real const dy,
-  amrex::Real const dt)
+  amrex::Real const dt,
+  PassMap const& pmap)
 {
   amrex::Real e[3];
   amrex::Real dtdy = dt / dy;
@@ -328,7 +330,7 @@ pc_plm_y(
 
   // Upwind the passive variables
   for (int ipassive = 0; ipassive < NPASSIVE; ++ipassive) {
-    int n = indxmap::qpass_map(ipassive);
+    int n = pmap.qpassMap[ipassive];
     // Right state
     v = q(i, j, k, QV);
     amrex::Real spzero;
@@ -355,7 +357,8 @@ pc_plm_z(
   amrex::Array4<const amrex::Real> const& q,
   amrex::Real const cc,
   amrex::Real const dz,
-  amrex::Real const dt)
+  amrex::Real const dt,
+  PassMap const& pmap)
 {
   amrex::Real e[3];
   amrex::Real dtdz = dt / dz;
@@ -463,7 +466,7 @@ pc_plm_z(
 
   // Upwind the passive variables
   for (int ipassive = 0; ipassive < NPASSIVE; ++ipassive) {
-    int n = indxmap::qpass_map(ipassive);
+    int n = pmap.qpassMap[ipassive];
     // Right state
     w = q(i, j, k, QW);
     amrex::Real spzero;
@@ -495,7 +498,8 @@ pc_transx(
   amrex::Array4<const amrex::Real> const& qint,
   amrex::Array4<const amrex::Real> const& a1,
   amrex::Array4<const amrex::Real> const& vol,
-  const amrex::Real hdt)
+  const amrex::Real hdt,
+  PassMap const& pmap)
 {
   const amrex::Real flxrho = hdt *
                              (a1(i + 1, j, k) * flxx(i + 1, j, k, URHO) -
@@ -519,8 +523,8 @@ pc_transx(
   const amrex::Real c = qa(i, j, k, QGAMC);
   // Update passive variables
   for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    const int n = indxmap::upass_map(ipass);
-    const int nqp = indxmap::qpass_map(ipass);
+    const int n = pmap.upassMap[ipass];
+    const int nqp = pmap.qpassMap[ipass];
     const amrex::Real srcpass = srcQ(i, j, k, nqp);
     const amrex::Real compn = hdt *
                               (a1(i + 1, j, k) * flxx(i + 1, j, k, n) -
@@ -624,7 +628,8 @@ pc_transy(
   amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
   const amrex::Real hdt,
-  const amrex::Real cdtdy)
+  const amrex::Real cdtdy,
+  PassMap const& pmap)
 {
   const amrex::Real flxrho =
     cdtdy * (flxy(i, j + 1, k, URHO) - flxy(i, j, k, URHO));
@@ -641,8 +646,8 @@ pc_transy(
 
   // Update passive variables
   for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    const int n = indxmap::upass_map(ipass);
-    const int nqp = indxmap::qpass_map(ipass);
+    const int n = pmap.upassMap[ipass];
+    const int nqp = pmap.qpassMap[ipass];
     const amrex::Real srcpass = srcQ(i, j, k, nqp);
     const amrex::Real compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
     amrex::Real rr = qxp(i, j, k, QRHO);
