@@ -74,4 +74,4 @@ eb2.use_eb2 = 1
 eb2.geom_type = "all_regular"
 ebd.boundary_grad_stencil_type = 0
 
-pelec.chem_integrator=1
+pelec.chem_integrator=2

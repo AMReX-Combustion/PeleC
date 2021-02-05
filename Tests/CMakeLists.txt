@@ -185,6 +185,8 @@ endif()
 
 # Not run in CI
 if(PELEC_DIM GREATER 2)
+  add_test_re(pmf-2 PMF)
+  add_test_re(pmf-3 PMF)
   add_test_re(tg-3 TG)
   add_test_re(tg-4 TG)
   add_test_re(sedov-1 Sedov)
