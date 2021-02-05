@@ -124,8 +124,8 @@ PeleC::readParticleParams()
   std::vector<Real> spraycp;
   std::vector<Real> latent;
   std::vector<Real> sprayrho;
-  std::vector<Real> mu(nfuel, 0.);
-  std::vector<Real> lambda(nfuel, 0.);
+  std::vector<Real> mu(nfuel, -1.);
+  std::vector<Real> lambda(nfuel, -1.);
   ppp.getarr("fuel_species", fuel_names);
   ppp.getarr("fuel_crit_temp", crit_T);
   ppp.getarr("fuel_boil_temp", boil_T);
@@ -149,9 +149,11 @@ PeleC::readParticleParams()
   ppp.query("parcel_size", parcelSize);
   ppp.query("use_splash_model", splash_model);
   if (splash_model) {
-    if (!ppp.contains("fuel_sigma") || !ppp.contains("wall_temp")) {
-      Print() << "fuel_sigma and wall_temp must be set for splash model. "
-              << "Set use_splash_model = false to turn off splash model" << std::endl;
+    if (!ppp.contains("fuel_sigma") || !ppp.contains("wall_temp") ||
+        mu[0] < 0. || lambda[0] < 0.) {
+      Print() << "particles.fuel_sigma, wall_temp, fuel_mu, and fuel_lambda "
+              << "must be set for splash model. Set use_splash_model = false "
+              << "to turn off splash model" << std::endl;
       Abort();
     }
     // Set the fuel surface tension and contact angle
