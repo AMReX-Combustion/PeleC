@@ -24,7 +24,7 @@ riemann(
   const amrex::Real spr[NUM_SPECIES],
   const amrex::Real gamcr,
   const int bc_test_val,
-  const amrex::Real csmall,
+  const amrex::Real /*csmall*/,
   const amrex::Real cav,
   amrex::Real& ustar,
   amrex::Real& uflx_rho,
@@ -39,7 +39,7 @@ riemann(
   amrex::Real& qint_gdpres,
   amrex::Real& qint_gdgame)
 {
-  const amrex::Real wsmall = std::numeric_limits<amrex::Real>::min() * csmall;
+  const amrex::Real wsmall = std::numeric_limits<amrex::Real>::min();
 
   amrex::Real gdnv_state_rho = rl;
   amrex::Real gdnv_state_p = pl;

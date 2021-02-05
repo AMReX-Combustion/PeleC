@@ -53,9 +53,17 @@ pc_ctoprim(
   const amrex::Real e = (u(i, j, k, UEDEN) - kineng) * rhoinv;
   amrex::Real T = u(i, j, k, UTEMP);
   amrex::Real massfrac[NUM_SPECIES];
-  //    amrex::Real aux[NUM_AUX];
-  for (int sp = 0; sp < NUM_SPECIES; ++sp)
+  for (int sp = 0; sp < NUM_SPECIES; ++sp) {
+    if (
+      (-1e-4 * std::numeric_limits<amrex::Real>::epsilon() <
+       q(i, j, k, sp + QFS)) &&
+      (q(i, j, k, sp + QFS) <
+       1e-4 * std::numeric_limits<amrex::Real>::epsilon())) {
+      q(i, j, k, sp + QFS) = 0.0;
+    }
     massfrac[sp] = q(i, j, k, sp + QFS);
+  }
+  //    amrex::Real aux[NUM_AUX];
   //    for(int ax = 0; ax < NUM_AUX; ++ax) aux[ax] = q(i,j,k,ax+QFX);
   amrex::Real dpdr_e, dpde, gam1, cs, wbar, p;
 
