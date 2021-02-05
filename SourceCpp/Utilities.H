@@ -19,6 +19,7 @@ void pc_rst_int_e(
   const int allow_small_energy,
   const int allow_negative_energy,
   const int dual_energy_update_E_from_e,
+  const amrex::Real dual_energy_eta2,
   const int verbose);
 
 AMREX_GPU_DEVICE
@@ -30,7 +31,8 @@ pc_ctoprim(
   const int k,
   amrex::Array4<const amrex::Real> const& u,
   amrex::Array4<amrex::Real> const& q,
-  amrex::Array4<amrex::Real> const& qa)
+  amrex::Array4<amrex::Real> const& qa,
+  PassMap const& pmap)
 {
   const amrex::Real rho = u(i, j, k, URHO);
   const amrex::Real rhoinv = 1.0 / rho;
@@ -42,24 +44,32 @@ pc_ctoprim(
   q(i, j, k, QU) = vx;
   q(i, j, k, QV) = vy;
   q(i, j, k, QW) = vz;
-  for (int ip = 0; ip < NPASSIVE; ++ip) {
-    const int n = indxmap::upass_map(ip);
-    const int nq = indxmap::qpass_map(ip);
-    q(i, j, k, nq) = u(i, j, k, n) * rhoinv;
+  for (int ipassive = 0; ipassive < NPASSIVE; ++ipassive) {
+    const int n = pmap.upassMap[ipassive];
+    const int nq = pmap.qpassMap[ipassive];
+    q(i, j, k, nq) = u(i, j, k, n) / rho;
   }
   // Handle passive variables that are not per unit mass
-  for (int ip = NPASSIVE; ip < NPASSIVE + NPASSNM; ++ip) {
-    const int n = indxmap::upass_map(ip);
-    const int nq = indxmap::qpass_map(ip);
+  for (int ipassive = NPASSIVE; ipassive < NPASSIVE + NPASSNM; ++ipassive) {
+    const int n = pmap.upassMap[ipassive];
+    const int nq = pmap.qpassMap[ipassive];
     q(i, j, k, nq) = u(i, j, k, n);
   }
 
   const amrex::Real e = (u(i, j, k, UEDEN) - kineng) * rhoinv;
   amrex::Real T = u(i, j, k, UTEMP);
   amrex::Real massfrac[NUM_SPECIES];
-  //    amrex::Real aux[NUM_AUX];
-  for (int sp = 0; sp < NUM_SPECIES; ++sp)
+  for (int sp = 0; sp < NUM_SPECIES; ++sp) {
+    if (
+      (-1e-4 * std::numeric_limits<amrex::Real>::epsilon() <
+       q(i, j, k, sp + QFS)) &&
+      (q(i, j, k, sp + QFS) <
+       1e-4 * std::numeric_limits<amrex::Real>::epsilon())) {
+      q(i, j, k, sp + QFS) = 0.0;
+    }
     massfrac[sp] = q(i, j, k, sp + QFS);
+  }
+  //    amrex::Real aux[NUM_AUX];
   //    for(int ax = 0; ax < NUM_AUX; ++ax) aux[ax] = q(i,j,k,ax+QFX);
   amrex::Real dpdr_e, dpde, gam1, cs, wbar, p;
 
@@ -82,7 +92,8 @@ pc_ctoprim(
   qa(i, j, k, QDPDE) = dpde;
   qa(i, j, k, QGAMC) = gam1;
   qa(i, j, k, QC) = cs;
-  qa(i, j, k, QCSML) = amrex::max<amrex::Real>(SMALL_NUM, SMALL_NUM * cs);
+  qa(i, j, k, QCSML) = amrex::max<amrex::Real>(
+    constants::small_num(), constants::small_num() * cs);
   qa(i, j, k, QRSPEC) = EOS::RU / wbar;
 }
 

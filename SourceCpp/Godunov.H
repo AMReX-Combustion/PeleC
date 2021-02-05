@@ -112,7 +112,8 @@ pc_cmpflx(
   amrex::Array4<amrex::Real> const& q,
   amrex::Array4<const amrex::Real> const& qa,
   // amrex::Array4<const int> const& bcMask,
-  const int dir)
+  const int dir,
+  PassMap const& pmap)
 {
   amrex::Real cav, ustar;
   amrex::Real spl[NUM_SPECIES];
@@ -206,8 +207,8 @@ pc_cmpflx(
 
   amrex::Real flxrho = flx(i, j, k, URHO);
   for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    int n = indxmap::upass_map(ipass);
-    int nqp = indxmap::qpass_map(ipass);
+    int n = pmap.upassMap[ipass];
+    int nqp = pmap.qpassMap[ipass];
     if (ustar > 0.0)
       flx(i, j, k, n) = flxrho * ql(i, j, k, nqp);
     else if (ustar < 0.0)
@@ -217,8 +218,8 @@ pc_cmpflx(
   }
   // Passive variables where U = Q, F = u Q instead of F = rho u Q
   for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
-    int n = indxmap::upass_map(ipass);
-    int nqp = indxmap::qpass_map(ipass);
+    int n = pmap.upassMap[ipass];
+    int nqp = pmap.qpassMap[ipass];
     if (ustar > 0.0)
       flx(i, j, k, n) = q(i, j, k, GU) * ql(i, j, k, nqp);
     else if (ustar < 0.0)
@@ -243,7 +244,8 @@ pc_transx1(
   amrex::Array4<const amrex::Real> const& flxx,
   amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
-  const amrex::Real cdtdx)
+  const amrex::Real cdtdx,
+  PassMap const& pmap)
 {
   const amrex::Real flxrho =
     cdtdx * (flxx(i + 1, j, k, URHO) - flxx(i, j, k, URHO));
@@ -258,8 +260,8 @@ pc_transx1(
   amrex::Real c = qa(i, j, k, QGAMC);
   // Update passive variables
   for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    const int n = indxmap::upass_map(ipass);
-    const int nqp = indxmap::qpass_map(ipass);
+    const int n = pmap.upassMap[ipass];
+    const int nqp = pmap.qpassMap[ipass];
     amrex::Real compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n));
     amrex::Real rr = qyp(i, j, k, QRHO);
     amrex::Real rrnew = rr - flxrho;
@@ -273,8 +275,8 @@ pc_transx1(
   }
   // Update passive variables that are not per unit mass
   for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
-    int n = indxmap::upass_map(ipass);
-    int nqp = indxmap::qpass_map(ipass);
+    int n = pmap.upassMap[ipass];
+    int nqp = pmap.qpassMap[ipass];
     amrex::Real compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n));
     amrex::Real compo = qyp(i, j, k, nqp) - compn;
     qp(i, j, k, nqp) = compo;
@@ -374,7 +376,8 @@ pc_transy1(
   amrex::Array4<const amrex::Real> const& flxy,
   amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
-  const amrex::Real cdtdy)
+  const amrex::Real cdtdy,
+  PassMap const& pmap)
 {
   const amrex::Real flxrho =
     cdtdy * (flxy(i, j + 1, k, URHO) - flxy(i, j, k, URHO));
@@ -389,8 +392,8 @@ pc_transy1(
   const amrex::Real c = qa(i, j, k, QGAMC);
   // -  Update Passive Variables
   for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    const int n = indxmap::upass_map(ipass);
-    const int nqp = indxmap::qpass_map(ipass);
+    const int n = pmap.upassMap[ipass];
+    const int nqp = pmap.qpassMap[ipass];
     const amrex::Real compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
     amrex::Real rr = qxp(i, j, k, QRHO);
     amrex::Real rrnew = rr - flxrho;
@@ -404,8 +407,8 @@ pc_transy1(
   }
   // -  Update Passive Variables that aren't per unit mass
   for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
-    int n = indxmap::upass_map(ipass);
-    int nqp = indxmap::qpass_map(ipass);
+    int n = pmap.upassMap[ipass];
+    int nqp = pmap.qpassMap[ipass];
     amrex::Real compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
     amrex::Real compo = qxp(i, j, k, nqp) - compn;
     qp(i, j, k, nqp) = compo;
@@ -508,7 +511,8 @@ pc_transx2(
   amrex::Array4<const amrex::Real> const& flxx,
   amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
-  const amrex::Real cdtdx)
+  const amrex::Real cdtdx,
+  PassMap const& pmap)
 {
   const amrex::Real flxrho =
     cdtdx * (flxx(i + 1, j, k, URHO) - flxx(i, j, k, URHO));
@@ -523,8 +527,8 @@ pc_transx2(
   const amrex::Real c = qa(i, j, k, QGAMC);
   // -  Update Passive Variables
   for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    const int n = indxmap::upass_map(ipass);
-    const int nqp = indxmap::qpass_map(ipass);
+    const int n = pmap.upassMap[ipass];
+    const int nqp = pmap.qpassMap[ipass];
     const amrex::Real compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n));
     amrex::Real rr = qzp(i, j, k, QRHO);
     amrex::Real rrnew = rr - flxrho;
@@ -538,8 +542,8 @@ pc_transx2(
   }
   // -  Update Passive Variables that aren't per unit mass
   for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
-    int n = indxmap::upass_map(ipass);
-    int nqp = indxmap::qpass_map(ipass);
+    int n = pmap.upassMap[ipass];
+    int nqp = pmap.qpassMap[ipass];
     amrex::Real compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n));
     amrex::Real compo = qzp(i, j, k, nqp) - compn;
     qp(i, j, k, nqp) = compo;
@@ -639,7 +643,8 @@ pc_transy2(
   amrex::Array4<const amrex::Real> const& flxy,
   amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
-  const amrex::Real cdtdy)
+  const amrex::Real cdtdy,
+  PassMap const& pmap)
 {
   const amrex::Real flxrho =
     cdtdy * (flxy(i, j + 1, k, URHO) - flxy(i, j, k, URHO));
@@ -654,8 +659,8 @@ pc_transy2(
   const amrex::Real c = qa(i, j, k, QGAMC);
   // -  Update Passive Variables
   for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    const int n = indxmap::upass_map(ipass);
-    const int nqp = indxmap::qpass_map(ipass);
+    const int n = pmap.upassMap[ipass];
+    const int nqp = pmap.qpassMap[ipass];
     const amrex::Real compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
     amrex::Real rr = qzp(i, j, k, QRHO);
     amrex::Real rrnew = rr - flxrho;
@@ -668,8 +673,8 @@ pc_transy2(
     qm(i, j, k + 1, nqp) = compo / rrnew;
   }
   for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
-    int n = indxmap::upass_map(ipass);
-    int nqp = indxmap::qpass_map(ipass);
+    int n = pmap.upassMap[ipass];
+    int nqp = pmap.qpassMap[ipass];
     amrex::Real compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
     amrex::Real compo = qzp(i, j, k, nqp) - compn;
     qp(i, j, k, nqp) = compo;
@@ -769,7 +774,8 @@ pc_transz1(
   amrex::Array4<const amrex::Real> const& flxz,
   amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
-  const amrex::Real cdtdz)
+  const amrex::Real cdtdz,
+  PassMap const& pmap)
 {
   const amrex::Real flxrho =
     cdtdz * (flxz(i, j, k + 1, URHO) - flxz(i, j, k, URHO));
@@ -784,8 +790,8 @@ pc_transz1(
   const amrex::Real c = qa(i, j, k, QGAMC);
   // -  Update Passive Variables
   for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    const int n = indxmap::upass_map(ipass);
-    const int nqp = indxmap::qpass_map(ipass);
+    const int n = pmap.upassMap[ipass];
+    const int nqp = pmap.qpassMap[ipass];
     const amrex::Real compn = cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
     amrex::Real rr = qxp(i, j, k, QRHO);
     amrex::Real rrnew = rr - flxrho;
@@ -798,8 +804,8 @@ pc_transz1(
     qm(i + 1, j, k, nqp) = compo / rrnew;
   }
   for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
-    int n = indxmap::upass_map(ipass);
-    int nqp = indxmap::qpass_map(ipass);
+    int n = pmap.upassMap[ipass];
+    int nqp = pmap.qpassMap[ipass];
     amrex::Real compn = cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
     amrex::Real compo = qxp(i, j, k, nqp) - compn;
     qp(i, j, k, nqp) = compo;
@@ -902,7 +908,8 @@ pc_transz2(
   amrex::Array4<const amrex::Real> const& flxz,
   amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
-  const amrex::Real cdtdz)
+  const amrex::Real cdtdz,
+  PassMap const& pmap)
 {
   const amrex::Real flxrho =
     cdtdz * (flxz(i, j, k + 1, URHO) - flxz(i, j, k, URHO));
@@ -917,8 +924,8 @@ pc_transz2(
   const amrex::Real c = qa(i, j, k, QGAMC);
   // Update passive variables
   for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    const int n = indxmap::upass_map(ipass);
-    const int nqp = indxmap::qpass_map(ipass);
+    const int n = pmap.upassMap[ipass];
+    const int nqp = pmap.qpassMap[ipass];
     const amrex::Real compn = cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
     amrex::Real rr = qyp(i, j, k, QRHO);
     amrex::Real rrnew = rr - flxrho;
@@ -931,8 +938,8 @@ pc_transz2(
     qm(i, j + 1, k, nqp) = compo / rrnew;
   }
   for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
-    int n = indxmap::upass_map(ipass);
-    int nqp = indxmap::qpass_map(ipass);
+    int n = pmap.upassMap[ipass];
+    int nqp = pmap.qpassMap[ipass];
     amrex::Real compn = cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
     amrex::Real compo = qyp(i, j, k, nqp) - compn;
     qp(i, j, k, nqp) = compo;
@@ -1037,7 +1044,8 @@ pc_transxy(
   amrex::Array4<const amrex::Real> const& srcq,
   const amrex::Real hdt,
   const amrex::Real cdtdx,
-  const amrex::Real cdtdy)
+  const amrex::Real cdtdy,
+  PassMap const& pmap)
 {
   const amrex::Real flxrho =
     cdtdx * (flxx(i + 1, j, k, URHO) - flxx(i, j, k, URHO)) +
@@ -1068,8 +1076,8 @@ pc_transxy(
   const amrex::Real rrnewl = rrl - flxrho;
   const amrex::Real rrnewr = rrr - flxrho;
   for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    const int n = indxmap::upass_map(ipass);
-    const int nqp = indxmap::qpass_map(ipass);
+    const int n = pmap.upassMap[ipass];
+    const int nqp = pmap.qpassMap[ipass];
     const amrex::Real srcpass = srcq(i, j, k, nqp);
     const amrex::Real compn =
       cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n)) +
@@ -1082,8 +1090,8 @@ pc_transxy(
     qm(i, j, k + 1, nqp) = compo / rrnewl + hdt * srcpass;
   }
   for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
-    int n = indxmap::upass_map(ipass);
-    int nqp = indxmap::qpass_map(ipass);
+    int n = pmap.upassMap[ipass];
+    int nqp = pmap.qpassMap[ipass];
     amrex::Real srcpass = srcq(i, j, k, nqp);
     amrex::Real compn =
       cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n)) +
@@ -1184,7 +1192,8 @@ pc_transxz(
   amrex::Array4<const amrex::Real> const& srcq,
   const amrex::Real hdt,
   const amrex::Real cdtdx,
-  const amrex::Real cdtdz)
+  const amrex::Real cdtdz,
+  PassMap const& pmap)
 {
   const amrex::Real flxrho =
     cdtdx * (flxx(i + 1, j, k, URHO) - flxx(i, j, k, URHO)) +
@@ -1215,8 +1224,8 @@ pc_transxz(
   const amrex::Real rrnewl = rrl - flxrho;
   const amrex::Real rrnewr = rrr - flxrho;
   for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    const int n = indxmap::upass_map(ipass);
-    const int nqp = indxmap::qpass_map(ipass);
+    const int n = pmap.upassMap[ipass];
+    const int nqp = pmap.qpassMap[ipass];
     const amrex::Real srcpass = srcq(i, j, k, nqp);
     const amrex::Real compn =
       cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n)) +
@@ -1229,8 +1238,8 @@ pc_transxz(
     qm(i, j + 1, k, nqp) = compo / rrnewl + hdt * srcpass;
   }
   for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
-    int n = indxmap::upass_map(ipass);
-    int nqp = indxmap::qpass_map(ipass);
+    int n = pmap.upassMap[ipass];
+    int nqp = pmap.qpassMap[ipass];
     amrex::Real srcpass = srcq(i, j, k, nqp);
     amrex::Real compn =
       cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n)) +
@@ -1331,7 +1340,8 @@ pc_transyz(
   amrex::Array4<const amrex::Real> const& srcq,
   const amrex::Real hdt,
   const amrex::Real cdtdy,
-  const amrex::Real cdtdz)
+  const amrex::Real cdtdz,
+  PassMap const& pmap)
 {
   const amrex::Real flxrho =
     cdtdy * (flxy(i, j + 1, k, URHO) - flxy(i, j, k, URHO)) +
@@ -1363,8 +1373,8 @@ pc_transyz(
   const amrex::Real rrnewr = rrr - flxrho;
 
   for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    const int n = indxmap::upass_map(ipass);
-    const int nqp = indxmap::qpass_map(ipass);
+    const int n = pmap.upassMap[ipass];
+    const int nqp = pmap.qpassMap[ipass];
     const amrex::Real srcpass = srcq(i, j, k, nqp);
     const amrex::Real compn =
       cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n)) +
@@ -1377,8 +1387,8 @@ pc_transyz(
     qm(i + 1, j, k, nqp) = compo / rrnewl + hdt * srcpass;
   }
   for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
-    int n = indxmap::upass_map(ipass);
-    int nqp = indxmap::qpass_map(ipass);
+    int n = pmap.upassMap[ipass];
+    int nqp = pmap.qpassMap[ipass];
     amrex::Real srcpass = srcq(i, j, k, nqp);
     amrex::Real compn =
       cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n)) +

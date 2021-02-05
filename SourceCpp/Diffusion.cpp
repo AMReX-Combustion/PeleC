@@ -121,9 +121,9 @@ PeleC::getMOLSrcTerm(
          ++mfi) {
       const amrex::Box vbox = mfi.tilebox();
 #ifdef PELEC_USE_EB
-      int ng = NUM_GROW;
+      int ng = NUM_GROW + nGrowF;
 #else
-      int ng = NUM_GROW - 2;
+      int ng = NUM_GROW - 2 + nGrowF;
 #endif
       const amrex::Box gbox = amrex::grow(vbox, ng);
       const amrex::Box cbox = amrex::grow(vbox, ng - 1);
@@ -181,9 +181,10 @@ PeleC::getMOLSrcTerm(
       // required for D term
       {
         BL_PROFILE("PeleC::ctoprim()");
+        PassMap const* lpmap = pass_map.get();
         amrex::ParallelFor(
           gbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            pc_ctoprim(i, j, k, s, qar, qauxar);
+            pc_ctoprim(i, j, k, s, qar, qauxar, *lpmap);
           });
       }
       // TODO deal with NSCBC

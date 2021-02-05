@@ -30,6 +30,7 @@
 #endif
 
 #include "Filter.H"
+#include "Tagging.H"
 #include "IndexDefines.H"
 #include "prob_parm.H"
 
@@ -78,6 +79,7 @@ grow_box_by_one(const amrex::Box& b)
 }
 */
 
+// Forward declarations
 #ifdef AMREX_PARTICLES
 class SprayParticleContainer;
 #endif
@@ -355,8 +357,6 @@ public:
   void construct_new_forcing_source(amrex::Real time, amrex::Real dt);
 
   static void fill_forcing_source(
-    amrex::Real time,
-    amrex::Real dt,
     const amrex::MultiFab& state_old,
     const amrex::MultiFab& state_new,
     amrex::MultiFab& forcing_src,
@@ -578,6 +578,8 @@ public:
 
   static std::unique_ptr<ProbParmDevice> prob_parm_device;
   static std::unique_ptr<ProbParmHost> prob_parm_host;
+  static std::unique_ptr<TaggingParm> tagging_parm;
+  static std::unique_ptr<PassMap> pass_map;
 
 protected:
   amrex::iMultiFab level_mask;

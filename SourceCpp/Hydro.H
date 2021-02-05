@@ -17,7 +17,8 @@ pc_srctoprim(
   amrex::Array4<const amrex::Real> const& q,
   amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& src,
-  amrex::Array4<amrex::Real> const& srcq)
+  amrex::Array4<amrex::Real> const& srcq,
+  PassMap const& pmap)
 {
   // Local loading Vars ==> Load once from global memory use multiple times
   const amrex::Real srcrho = src(i, j, k, URHO);
@@ -41,13 +42,13 @@ pc_srctoprim(
     qa(i, j, k, QDPDR) * srcrho;
 
   for (int ip = 0; ip < NPASSIVE; ++ip) {
-    const int n = indxmap::upass_map(ip);
-    const int nq = indxmap::qpass_map(ip);
+    const int n = pmap.upassMap[ip];
+    const int nq = pmap.qpassMap[ip];
     srcq(i, j, k, nq) = (src(i, j, k, n) - q(i, j, k, nq) * srcrho) * rhoinv;
   }
   for (int ip = NPASSIVE; ip < NPASSIVE + NPASSNM; ++ip) {
-    const int n = indxmap::upass_map(ip);
-    const int nq = indxmap::qpass_map(ip);
+    const int n = pmap.upassMap[ip];
+    const int nq = pmap.qpassMap[ip];
     srcq(i, j, k, nq) = src(i, j, k, n);
   }
 }

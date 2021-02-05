@@ -77,9 +77,10 @@ PeleC::fill_soot_source (amrex::Real      time,
     // required for D term
     {
       BL_PROFILE("PeleC::ctoprim()");
+      PassMap const* lpmap = pass_map.get();
       amrex::ParallelFor(
         bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-          pc_ctoprim(i, j, k, s_arr, q_arr, qaux_arr);
+          pc_ctoprim(i, j, k, s_arr, q_arr, qaux_arr, *lpmap);
         });
     }
 
@@ -93,10 +94,12 @@ PeleC::fill_soot_source (amrex::Real      time,
       auto const& coe_xi = coeff_cc.array(dComp_xi);
       auto const& coe_lambda = coeff_cc.array(dComp_lambda);
       BL_PROFILE("PeleC::get_transport_coeffs()");
+      // Get Transport coefs on GPU.
+        TransParm const* ltransparm = trans_parm_g;
       amrex::launch(bx, [=] AMREX_GPU_DEVICE(amrex::Box const& tbx) {
         get_transport_coeffs(
           tbx, qar_yin, qar_Tin, qar_rhoin, coe_rhoD, coe_mu, coe_xi,
-          coe_lambda);
+          coe_lambda, ltransparm);
         });
     }
     auto const& soot_arr = soot_fab.array();

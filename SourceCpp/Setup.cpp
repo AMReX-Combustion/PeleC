@@ -21,6 +21,8 @@ using namespace MASA;
 
 std::unique_ptr<ProbParmDevice> PeleC::prob_parm_device;
 std::unique_ptr<ProbParmHost> PeleC::prob_parm_host;
+std::unique_ptr<TaggingParm> PeleC::tagging_parm;
+std::unique_ptr<PassMap> PeleC::pass_map;
 
 // Components are:
 // Interior, Inflow, Outflow,  Symmetry,     SlipWall,     NoSlipWall, UserBC
@@ -146,6 +148,8 @@ PeleC::variableSetUp()
 
   prob_parm_device = std::make_unique<ProbParmDevice>();
   prob_parm_host = std::make_unique<ProbParmHost>();
+  tagging_parm = std::make_unique<TaggingParm>();
+  pass_map = std::make_unique<PassMap>();
 
   // Get options, set phys_bc
   read_params();
@@ -158,13 +162,23 @@ PeleC::variableSetUp()
 #if defined(AMREX_USE_GPU) && defined(USE_SUNDIALS_PP)
   amrex::sundials::MemoryHelper::Initialize();
 #endif
+
+#ifdef USE_SUNDIALS_PP
+  if (chem_integrator == 3) {
+    amrex::Print() << "Using sundials chemistry integrator with boxes\n";
+  } else {
+    amrex::Print()
+      << "Using sundials chemistry integrator with flattened arrays\n";
+  }
+#endif
+
   // Initialize the reactor
   if (do_react == 1) {
     init_reactor();
   }
 #endif
 
-  indxmap::init();
+  init_pass_map(pass_map);
 
 #ifdef PELEC_USE_MASA
   if (do_mms) {

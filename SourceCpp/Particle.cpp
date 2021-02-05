@@ -134,7 +134,7 @@ PeleC::readParticleParams()
   ppp.getarr("fuel_rho", sprayrho);
   ppp.queryarr("fuel_mu", mu);
   ppp.queryarr("fuel_lambda", lambda);
-  for (int i = 0; i != nfuel; ++i) {
+  for (int i = 0; i < nfuel; ++i) {
     sprayFuelNames[i] = fuel_names[i];
     sprayData.critT[i] = crit_T[i];
     sprayData.boilT[i] = boil_T[i];
@@ -185,7 +185,7 @@ PeleC::readParticleParams()
 
   if (verbose && ParallelDescriptor::IOProcessor()) {
     amrex::Print() << "Spray fuel species " << sprayFuelNames[0];
-    for (int i = 1; i != SPRAY_FUEL_NUM; ++i)
+    for (int i = 1; i < SPRAY_FUEL_NUM; ++i)
       amrex::Print() << ", " << sprayFuelNames[i];
     amrex::Print() << std::endl;
     amrex::Print() << "Number of particles per parcel " << parcelSize << std::endl;
@@ -203,8 +203,8 @@ PeleC::defineParticles()
     amrex::Abort("Cannot have more spray fuel species than fluid species");
   }
 #ifdef PELEC_EOS_FUEGO
-  for (int i = 0; i != SPRAY_FUEL_NUM; ++i) {
-    for (int ns = 0; ns != NUM_SPECIES; ++ns) {
+  for (int i = 0; i < SPRAY_FUEL_NUM; ++i) {
+    for (int ns = 0; ns < NUM_SPECIES; ++ns) {
       std::string gas_spec = spec_names[ns];
       if (gas_spec == sprayFuelNames[i]) {
         sprayData.indx[i] = ns;
@@ -217,13 +217,12 @@ PeleC::defineParticles()
     }
   }
 #else
-  for (int ns = 0; ns != SPRAY_FUEL_NUM; ++ns) {
+  for (int ns = 0; ns < SPRAY_FUEL_NUM; ++ns)
     sprayData.indx[ns] = 0;
-  }
 #endif
   amrex::Vector<Real> fuelEnth(NUM_SPECIES);
   EOS::T2Hi(sprayData.ref_T, fuelEnth.data());
-  for (int ns = 0; ns != SPRAY_FUEL_NUM; ++ns) {
+  for (int ns = 0; ns < SPRAY_FUEL_NUM; ++ns) {
     const int fspec = sprayData.indx[ns];
     sprayData.latent[ns] -= fuelEnth[fspec];
   }

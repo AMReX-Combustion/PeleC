@@ -138,9 +138,10 @@ PeleC::construct_hydro_source(
         auto const& srcqarr = src_q.array();
 
         BL_PROFILE_VAR("PeleC::ctoprim()", ctop);
+        PassMap const* lpmap = pass_map.get();
         amrex::ParallelFor(
           qbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            pc_ctoprim(i, j, k, s, qarr, qauxar);
+            pc_ctoprim(i, j, k, s, qarr, qauxar, *lpmap);
           });
         BL_PROFILE_VAR_STOP(ctop);
 
@@ -190,7 +191,7 @@ PeleC::construct_hydro_source(
         const auto& src_in = sources_for_hydro.array(mfi);
         amrex::ParallelFor(
           qbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            pc_srctoprim(i, j, k, qarr, qauxar, src_in, srcqarr);
+            pc_srctoprim(i, j, k, qarr, qauxar, src_in, srcqarr, *lpmap);
           });
         BL_PROFILE_VAR_STOP(srctop);
 

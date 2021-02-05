@@ -26,6 +26,7 @@ pc_rst_int_e(
   const int allow_small_energy,
   const int allow_negative_energy,
   const int dual_energy_update_E_from_e,
+  const amrex::Real dual_energy_eta2,
   const int /*verbose*/)
 {
   if (allow_small_energy == 0) {
@@ -67,7 +68,7 @@ pc_rst_int_e(
           S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min()) /
          (S(i, j, k, UEDEN) -
           S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min())) >
-          DUAL_ENERGY_ETA2) {
+          dual_energy_eta2) {
         S(i, j, k, UEINT) = rho_eint;
       }
       if (S(i, j, k, UEINT) * rhoInv < small_e) {
@@ -120,7 +121,7 @@ pc_rst_int_e(
           S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min()) /
          (S(i, j, k, UEDEN) -
           S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min())) >
-          DUAL_ENERGY_ETA2) {
+          dual_energy_eta2) {
         S(i, j, k, UEINT) = rho_eint;
       } else if (
         S(i, j, k, UEINT) >

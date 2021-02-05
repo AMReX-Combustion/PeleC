@@ -44,6 +44,30 @@ clip_normalize_rY(const amrex::Real rho, amrex::Real* rY)
   }
 }
 
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+clip_normalize_rYarr(
+  const int i,
+  const int j,
+  const int k,
+  amrex::Array4<const amrex::Real> const& s,
+  amrex::Array4<amrex::Real> const& rhoY)
+{
+
+  amrex::Real Y[NUM_SPECIES];
+  const amrex::Real rhoInv = 1.0 / s(i, j, k, URHO);
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    Y[n] = rhoY(i, j, k, n) * rhoInv;
+  }
+
+  clip_normalize_Y(Y);
+
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    rhoY(i, j, k, n) = Y[n] * s(i, j, k, URHO);
+  }
+}
+
 // Timestep adapter
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
