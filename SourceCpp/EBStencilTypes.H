@@ -36,6 +36,7 @@ struct EBBndryGeom
   amrex::Real eb_vfrac;
   amrex::IntVect iv;
 
+  AMREX_GPU_DEVICE
   bool operator<(const EBBndryGeom& rhs) const { return iv < rhs.iv; }
 };
 
