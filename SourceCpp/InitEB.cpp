@@ -4,7 +4,7 @@
 #include "prob.H"
 #include "Utilities.H"
 
-#ifdef AMREX_USE_CUDA
+#if defined(AMREX_USE_CUDA) || defined(AMREX_USE_HIP)
 #include <thrust/unique.h>
 #include <thrust/sort.h>
 #include <thrust/execution_policy.h>
@@ -160,7 +160,7 @@ PeleC::initialize_eb2_structs()
 
       // Fill in boundary gradient for cut cells in this grown tile
       const amrex::Real dx = geom.CellSize()[0];
-#ifdef AMREX_USE_CUDA
+#if defined(AMREX_USE_CUDA) || defined(AMREX_USE_HIP)
       const int sv_eb_bndry_geom_size = sv_eb_bndry_geom[iLocal].size();
       thrust::sort(
         thrust::device, sv_eb_bndry_geom[iLocal].data(),
@@ -289,7 +289,7 @@ PeleC::initialize_eb2_structs()
           }
         });
 
-#ifdef AMREX_USE_CUDA
+#if defined(AMREX_USE_CUDA) || defined(AMREX_USE_HIP)
         const int v_all_cut_faces_size = v_all_cut_faces.size();
         thrust::sort(
           thrust::device, v_all_cut_faces.data(),
