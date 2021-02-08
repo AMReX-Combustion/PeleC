@@ -25,6 +25,10 @@
 #include <SprayParticles.H>
 #endif
 
+#ifdef SOOT_MODEL
+#include <SootModel.H>
+#endif
+
 #include "Filter.H"
 #include "Tagging.H"
 #include "IndexDefines.H"
@@ -52,6 +56,9 @@ enum sources {
 #endif
   diff_src,
   les_src,
+#ifdef SOOT_MODEL
+  soot_src,
+#endif
 #ifdef PELEC_USE_MASA
   mms_src,
 #endif
@@ -71,6 +78,11 @@ grow_box_by_one(const amrex::Box& b)
   return amrex::grow(b, 1);
 }
 */
+
+// Forward declarations
+#ifdef AMREX_PARTICLES
+class SprayParticleContainer;
+#endif
 
 // AmrLevel-derived class for hyperbolic conservation equations for stellar
 // media
@@ -135,7 +147,11 @@ public:
 
   // Initialize particle locations and velocities (and strengths if relevant)
   void initParticles();
-
+  //
+  // Create relevant particle data
+  //
+  void createParticleData();
+  //
   // Timestamp particles
   void particleTimestamp(int ngrow);
 
@@ -147,9 +163,35 @@ public:
     const std::string& restart_file, bool is_checkpoint = true);
 
   // Redistribute
-  virtual void particleRedistribute(
-    int lbase = 0, int nGrow = 0, int local = 0, bool init_part = false);
+  //
+  virtual void
+  particle_redistribute(int lbase = 0, bool init_part = false) override;
 
+  //
+  // Setup ghost and virtual particles and do moveKickDrift
+  //
+  void particleMKD(
+    const Real time,
+    const Real dt,
+    const int ghost_width,
+    const int spray_n_grow,
+    const int tmp_src_width,
+    const int where_width,
+    amrex::MultiFab& tmp_spray_source);
+
+  //
+  // Do the moveKick for active and ghost particles
+  //
+  void particleMK(
+    const Real time,
+    const Real dt,
+    const int spray_n_grow,
+    const int tmp_src_width,
+    const int amr_iteration,
+    const int amr_ncycle,
+    amrex::MultiFab& tmp_spray_source);
+
+  //
   // Setup virtual particles if necessary
   void setupVirtualParticles();
 
@@ -178,19 +220,10 @@ public:
   // Should we write particle ascii files?
   static int write_spray_ascii_files;
 
-  void setSprayGridInfo(
-    const int amr_iteration,
-    const int amr_ncycle,
-    int& ghost_width,
-    int& where_width,
-    int& spray_n_grow,
-    int& tmp_src_width);
-
   static int particle_mass_tran;
   static int particle_heat_tran;
   static int particle_mom_tran;
   static amrex::Vector<std::string> sprayFuelNames;
-  static amrex::Real sprayRefT;
 #endif
 
   // Get problem metrics.
@@ -330,6 +363,19 @@ public:
     const amrex::MultiFab& state_new,
     amrex::MultiFab& forcing_src,
     int ng);
+
+#ifdef SOOT_MODEL
+  void construct_old_soot_source(amrex::Real time, amrex::Real dt);
+
+  void construct_new_soot_source(amrex::Real time, amrex::Real dt);
+
+  void fill_soot_source(
+    amrex::Real time,
+    amrex::Real dt,
+    amrex::MultiFab& state,
+    amrex::MultiFab& soot_src,
+    int ng);
+#endif
 
 #ifdef PELEC_USE_MASA
   void construct_old_mms_source(amrex::Real time);
@@ -493,8 +539,8 @@ public:
   static int FirstSpec;
   static int FirstAux;
 
-  /// Index locations into particle state
-  static int pstateVel, pstateT, pstateDia, pstateRho, pstateY, pstateNum;
+  /// Index locations for soot modeling components
+  static int FirstSootVar, NumSootVars;
 
   // This MultiFab is on the coarser level.  This is useful for the coarser
   // level to mask out the finer level.  We only build this when it is needed.
@@ -673,6 +719,10 @@ protected:
   static SprayParticleContainer* theSprayPC();
   static SprayParticleContainer* theVirtPC();
   static SprayParticleContainer* theGhostPC();
+#endif
+
+#ifdef SOOT_MODEL
+  static std::unique_ptr<SootModel> soot_model;
 #endif
 
   static int num_state_type;

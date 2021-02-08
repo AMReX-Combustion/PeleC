@@ -26,6 +26,8 @@ pp.query("nscbc_adv", nscbc_adv);
 pp.query("nscbc_diff", nscbc_diff);
 pp.query("add_ext_src", add_ext_src);
 pp.query("add_forcing_src", add_forcing_src);
+pp.query("add_soot_src", add_soot_src);
+pp.query("plot_soot", plot_soot);
 pp.query("hybrid_hydro", hybrid_hydro);
 pp.query("ppm_type", ppm_type);
 pp.query("weno_variant", weno_variant);

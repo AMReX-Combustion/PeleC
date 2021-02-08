@@ -117,11 +117,14 @@ PeleC::getMOLSrcTerm(
     // }
     // const int* domain_lo = geom.Domain().loVect();
     // const int* domain_hi = geom.Domain().hiVect();
-
     for (amrex::MFIter mfi(MOLSrcTerm, amrex::TilingIfNotGPU()); mfi.isValid();
          ++mfi) {
       const amrex::Box vbox = mfi.tilebox();
-      int ng = S.nGrow();
+#ifdef PELEC_USE_EB
+      int ng = NUM_GROW + nGrowF;
+#else
+      int ng = NUM_GROW - 2 + nGrowF;
+#endif
       const amrex::Box gbox = amrex::grow(vbox, ng);
       const amrex::Box cbox = amrex::grow(vbox, ng - 1);
       auto const& MOLSrc = MOLSrcTerm.array(mfi);

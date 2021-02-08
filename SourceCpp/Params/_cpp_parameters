@@ -85,6 +85,12 @@ add_ext_src                  int           0
 # if true, define an additional forcing term
 add_forcing_src              int           0
 
+# if true, define an additional soot term
+add_soot_src                 int           1
+
+# if true, plot soot variable data
+plot_soot                    int           1
+
 # whether to use the hybrid advection scheme that updates
 # z-angular momentum, cylindrical momentum, and azimuthal
 # momentum (3D only)

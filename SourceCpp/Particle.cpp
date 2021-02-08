@@ -21,11 +21,16 @@ SprayParticleContainer* VirtPC = 0;
 // Container for temporary, ghost Particles
 SprayParticleContainer* GhostPC = 0;
 
-Gpu::HostVector<Real> sprayCritT;
-Gpu::HostVector<Real> sprayBoilT;
-Gpu::HostVector<Real> sprayCp;
-Gpu::HostVector<Real> sprayLatent;
-Gpu::HostVector<int> sprayIndxMap;
+SprayData sprayData;
+amrex::Real sprayRefT = 300.;
+amrex::Real parcelSize = 1.;
+amrex::Real spraySigma = -1.; // Surface tension
+amrex::Real T_wall = -1.;
+SprayComps scomps;
+bool splash_model = true;
+
+std::string particle_init_file;
+int particle_init_function = 1;
 
 void
 RemoveParticlesOnExit()
@@ -41,7 +46,7 @@ RemoveParticlesOnExit()
 
 int PeleC::do_spray_particles = 0;
 int PeleC::particle_verbose = 0;
-Real PeleC::particle_cfl = 0.4;
+Real PeleC::particle_cfl = 0.5;
 
 int PeleC::write_particle_plotfiles = 1;
 int PeleC::write_spray_ascii_files = 1;
@@ -49,14 +54,6 @@ int PeleC::particle_mass_tran = 0;
 int PeleC::particle_heat_tran = 0;
 int PeleC::particle_mom_tran = 0;
 Vector<std::string> PeleC::sprayFuelNames;
-Real PeleC::sprayRefT;
-
-namespace {
-std::string particle_init_file;
-int particle_init_uniform = 0;
-std::string timestamp_dir;
-std::vector<int> timestamp_indices;
-} // namespace
 
 SprayParticleContainer*
 PeleC::theSprayPC()
@@ -79,6 +76,8 @@ PeleC::theGhostPC()
 void
 PeleC::particleEstTimeStep(Real& est_dt)
 {
+  if (!do_spray_particles)
+    return;
   BL_PROFILE("PeleC::particleEstTimeStep()");
   Real est_dt_particle = theSprayPC()->estTimestep(level, particle_cfl);
 
@@ -112,37 +111,60 @@ PeleC::readParticleParams()
   ppp.get("mom_transfer", particle_mom_tran);
   ppp.query("particle_cfl", particle_cfl);
   if (particle_cfl > 0.5)
-    Abort("particle_cfl must be <= 0.5");
+    amrex::Abort("particle_cfl must be <= 0.5");
   // Number of fuel species in spray droplets
   // Must match the number specified at compile time
   const int nfuel = ppp.countval("fuel_species");
-  if (nfuel != SPRAY_FUEL_NUM) {
-    Abort("Number of fuel species in input file must match SPRAY_FUEL_NUM");
-  }
+  if (nfuel != SPRAY_FUEL_NUM)
+    amrex::Abort(
+      "Number of fuel species in input file must match SPRAY_FUEL_NUM");
 
   sprayFuelNames.assign(nfuel, "");
-  sprayCritT.resize(nfuel);
-  sprayBoilT.resize(nfuel);
-  sprayLatent.resize(nfuel);
-  sprayCp.resize(nfuel);
-  sprayIndxMap.resize(nfuel);
   std::vector<std::string> fuel_names;
   std::vector<Real> crit_T;
   std::vector<Real> boil_T;
-  std::vector<Real> latent;
   std::vector<Real> spraycp;
+  std::vector<Real> latent;
+  std::vector<Real> sprayrho;
+  std::vector<Real> mu(nfuel, -1.);
+  std::vector<Real> lambda(nfuel, -1.);
   ppp.getarr("fuel_species", fuel_names);
   ppp.getarr("fuel_crit_temp", crit_T);
   ppp.getarr("fuel_boil_temp", boil_T);
-  ppp.getarr("fuel_latent", latent);
   ppp.getarr("fuel_cp", spraycp);
+  ppp.getarr("fuel_latent", latent);
+  ppp.getarr("fuel_rho", sprayrho);
+  ppp.queryarr("fuel_mu", mu);
+  ppp.queryarr("fuel_lambda", lambda);
   for (int i = 0; i < nfuel; ++i) {
     sprayFuelNames[i] = fuel_names[i];
-    sprayCritT[i] = crit_T[i];
-    sprayBoilT[i] = boil_T[i];
-    sprayLatent[i] = latent[i];
-    sprayCp[i] = spraycp[i];
+    sprayData.critT[i] = crit_T[i];
+    sprayData.boilT[i] = boil_T[i];
+    sprayData.cp[i] = spraycp[i];
+    sprayData.latent[i] = latent[i];
+    sprayData.rho[i] = sprayrho[i];
+    sprayData.mu[i] = mu[i];
+    sprayData.lambda[i] = lambda[i];
   }
+
+  // Set the number of particles per parcel
+  ppp.query("parcel_size", parcelSize);
+  ppp.query("use_splash_model", splash_model);
+  if (splash_model) {
+    if (
+      !ppp.contains("fuel_sigma") || !ppp.contains("wall_temp") || mu[0] < 0. ||
+      lambda[0] < 0.) {
+      Print() << "particles.fuel_sigma, wall_temp, fuel_mu, and fuel_lambda "
+              << "must be set for splash model. Set use_splash_model = false "
+              << "to turn off splash model" << std::endl;
+      Abort();
+    }
+    // Set the fuel surface tension and contact angle
+    ppp.get("fuel_sigma", spraySigma);
+    // TODO: Have this retrieved from proper boundary data during runtime
+    ppp.get("wall_temp", T_wall);
+  }
+
   // Must use same reference temperature for all fuels
   // TODO: This means the reference temperature must be the same for all fuel
   // species
@@ -157,28 +179,21 @@ PeleC::readParticleParams()
   // Used in initData() on startup to read in a file of particles.
   ppp.query("particle_init_file", particle_init_file);
 
-  // Used in initData() on startup to set a uniform particle field
-  ppp.query("particle_init_uniform", particle_init_uniform);
+  // Used in initData() on startup to set the particle field using the
+  // SprayParticlesInitInsert.cpp problem specific function
+  ppp.query("particle_init_function", particle_init_function);
+  sprayData.num_ppp = parcelSize;
+  sprayData.ref_T = sprayRefT;
+  sprayData.sigma = spraySigma;
 
-  // Used in post_restart() to read in a file of particles.
-
-  // This must be true the first time you try to restart from a checkpoint
-  // that was written with USE_PARTICLES=FALSE; i.e. one that doesn't have
-  // the particle checkpoint stuff (even if there are no active particles).
-  // Otherwise the code will fail when trying to read the checkpointed
-  // particles.
-
-  // ppp.query("restart_from_nonparticle_chkfile",
-  // restart_from_nonparticle_chkfile);
-
-  // The directory in which to store timestamp files.
-  ppp.query("timestamp_dir", timestamp_dir);
-
-  // Only the I/O processor makes the directory if it doesn't already exist.
-  if (ParallelDescriptor::IOProcessor())
-    if (!amrex::UtilCreateDirectory(timestamp_dir, 0755))
-      amrex::CreateDirectoryFailed(timestamp_dir);
-
+  if (verbose && ParallelDescriptor::IOProcessor()) {
+    amrex::Print() << "Spray fuel species " << sprayFuelNames[0];
+    for (int i = 1; i < SPRAY_FUEL_NUM; ++i)
+      amrex::Print() << ", " << sprayFuelNames[i];
+    amrex::Print() << std::endl;
+    amrex::Print() << "Number of particles per parcel " << parcelSize
+                   << std::endl;
+  }
   // Force other processors to wait till directory is built.
   ParallelDescriptor::Barrier();
 }
@@ -189,27 +204,40 @@ PeleC::defineParticles()
   // There must be at least as many fuel species in the spray as
   // there are species in the fluid
   if (SPRAY_FUEL_NUM > NUM_SPECIES) {
-    Abort("Cannot have more spray fuel species than fluid species");
+    amrex::Abort("Cannot have more spray fuel species than fluid species");
   }
 #ifdef PELEC_EOS_FUEGO
   for (int i = 0; i < SPRAY_FUEL_NUM; ++i) {
     for (int ns = 0; ns < NUM_SPECIES; ++ns) {
       std::string gas_spec = spec_names[ns];
       if (gas_spec == sprayFuelNames[i]) {
-        sprayIndxMap[i] = ns;
+        sprayData.indx[i] = ns;
       }
     }
-    if (sprayIndxMap[i] < 0) {
-      Print() << "Fuel " << sprayFuelNames[i] << " not found in species list"
-              << std::endl;
-      Abort();
+    if (sprayData.indx[i] < 0) {
+      amrex::Print() << "Fuel " << sprayFuelNames[i]
+                     << " not found in species list" << std::endl;
+      amrex::Abort();
     }
   }
 #else
-  for (int ns = 0; ns < SPRAY_FUEL_NUM; ++ns) {
-    sprayIndxMap[ns] = 0;
-  }
+  for (int ns = 0; ns < SPRAY_FUEL_NUM; ++ns)
+    sprayData.indx[ns] = 0;
 #endif
+  amrex::Vector<Real> fuelEnth(NUM_SPECIES);
+  EOS::T2Hi(sprayData.ref_T, fuelEnth.data());
+  for (int ns = 0; ns < SPRAY_FUEL_NUM; ++ns) {
+    const int fspec = sprayData.indx[ns];
+    sprayData.latent[ns] -= fuelEnth[fspec];
+  }
+  scomps.heat_tran = PeleC::particle_heat_tran;
+  scomps.mass_tran = PeleC::particle_mass_tran;
+  scomps.mom_tran = PeleC::particle_mom_tran;
+  scomps.rhoIndx = PeleC::Density;
+  scomps.momIndx = PeleC::Xmom;
+  scomps.engIndx = PeleC::Eden;
+  scomps.utempIndx = PeleC::Temp;
+  scomps.specIndx = PeleC::FirstSpec;
 }
 
 void
@@ -218,8 +246,12 @@ PeleC::setupVirtualParticles()
   BL_PROFILE("PeleC::setupVirtualParticles()");
   amrex::Gpu::LaunchSafeGuard lsg(true);
   if (PeleC::theSprayPC() != 0 && !virtual_particles_set) {
-    SprayParticleContainer::AoS virts;
     if (level < parent->finestLevel()) {
+#ifdef USE_SPRAY_SOA
+      SprayParticleContainer::ParticleTileType virts;
+#else
+      SprayParticleContainer::AoS virts;
+#endif
       ((PeleC*)&parent->getLevel(level + 1))->setupVirtualParticles();
       PeleC::theVirtPC()->CreateVirtualParticles(level + 1, virts);
       PeleC::theVirtPC()->AddParticlesAtLevel(virts, level);
@@ -248,7 +280,11 @@ PeleC::setupGhostParticles(int ngrow)
   AMREX_ASSERT(level < parent->finestLevel());
   amrex::Gpu::LaunchSafeGuard lsg(true);
   if (PeleC::theSprayPC() != 0) {
+#ifdef USE_SPRAY_SOA
+    SprayParticleContainer::ParticleTileType ghosts;
+#else
     SprayParticleContainer::AoS ghosts;
+#endif
     PeleC::theSprayPC()->CreateGhostParticles(level, ngrow, ghosts);
     PeleC::theGhostPC()->AddParticlesAtLevel(ghosts, level + 1, ngrow);
   }
@@ -261,6 +297,19 @@ PeleC::removeGhostParticles()
   amrex::Gpu::LaunchSafeGuard lsg(true);
   if (GhostPC != 0)
     GhostPC->RemoveParticlesAtLevel(level);
+}
+
+// Create new particle data
+void
+PeleC::createParticleData()
+{
+  SprayPC = new SprayParticleContainer(
+    parent, &phys_bc, sprayData, scomps, parcelSize, T_wall);
+  theSprayPC()->SetVerbose(particle_verbose);
+  VirtPC = new SprayParticleContainer(
+    parent, &phys_bc, sprayData, scomps, parcelSize, T_wall);
+  GhostPC = new SprayParticleContainer(
+    parent, &phys_bc, sprayData, scomps, parcelSize, T_wall);
 }
 
 // Initialize the particles on the grid at level 0
@@ -277,33 +326,13 @@ PeleC::initParticles()
 
   if (do_spray_particles) {
     AMREX_ASSERT(theSprayPC() == 0);
-    // Whether we need to use ghost and virtual particles
-    bool gvParticles = false;
-    if (parent->subCycle()) {
-      gvParticles = true;
-    }
-
-    SprayPC = new SprayParticleContainer(parent, &phys_bc);
-    theSprayPC()->SetVerbose(particle_verbose);
-
-    if (gvParticles) {
-      VirtPC = new SprayParticleContainer(parent, &phys_bc);
-      GhostPC = new SprayParticleContainer(parent, &phys_bc);
-    }
-    // Pass constant reference data and memory allocations to GPU
-    theSprayPC()->buildFuelData(
-      sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
-    if (gvParticles) {
-      theGhostPC()->buildFuelData(
-        sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
-      theVirtPC()->buildFuelData(
-        sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
-    }
+    createParticleData();
 
     if (!particle_init_file.empty()) {
       theSprayPC()->InitFromAsciiFile(particle_init_file, NSR_SPR + NAR_SPR);
-    } else if (particle_init_uniform > 0) {
-      theSprayPC()->InitParticlesUniform(this, level, particle_init_uniform);
+    } else if (particle_init_function > 0) {
+      ProbParmHost const* lprobparm = prob_parm_host.get();
+      theSprayPC()->InitSprayParticles(*lprobparm);
     }
   }
 }
@@ -311,26 +340,12 @@ PeleC::initParticles()
 void
 PeleC::particlePostRestart(const std::string& restart_file, bool is_checkpoint)
 {
-  amrex::Gpu::setLaunchRegion(false);
   if (level > 0)
     return;
 
   if (do_spray_particles) {
     AMREX_ASSERT(SprayPC == 0);
-
-    SprayPC = new SprayParticleContainer(parent, &phys_bc);
-    theSprayPC()->SetVerbose(particle_verbose);
-    theSprayPC()->buildFuelData(
-      sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
-
-    if (parent->subCycle()) {
-      VirtPC = new SprayParticleContainer(parent, &phys_bc);
-      GhostPC = new SprayParticleContainer(parent, &phys_bc);
-      theGhostPC()->buildFuelData(
-        sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
-      theVirtPC()->buildFuelData(
-        sprayCritT, sprayBoilT, sprayCp, sprayLatent, sprayIndxMap, sprayRefT);
-    }
+    createParticleData();
 
     // Make sure to call RemoveParticlesOnExit() on exit.
     amrex::ExecOnFinalize(RemoveParticlesOnExit);
@@ -343,6 +358,111 @@ PeleC::particlePostRestart(const std::string& restart_file, bool is_checkpoint)
   }
 }
 
+void
+PeleC::particleMKD(
+  const Real time,
+  const Real dt,
+  const int ghost_width,
+  const int spray_n_grow,
+  const int tmp_src_width,
+  const int where_width,
+  amrex::MultiFab& tmp_spray_source)
+{
+  amrex::Gpu::LaunchSafeGuard lsg(true);
+  // Setup ghost particles for use in finer levels. Note that ghost
+  // particles that will be used by this level have already been created,
+  // the particles being set here are only used by finer levels.
+  int finest_level = parent->finestLevel();
+
+  // Check if I need to insert new particles
+  int nstep = parent->levelSteps(0);
+
+  ProbParmHost const* lprobparm = prob_parm_host.get();
+
+  BL_PROFILE_VAR("SprayParticles::injectParticles()", INJECT_SPRAY);
+  bool injectParts = theSprayPC()->injectParticles(
+    time, dt, nstep, level, finest_level, *lprobparm);
+  bool insertParts = theSprayPC()->insertParticles(
+    time, dt, nstep, level, finest_level, *lprobparm);
+  // Only redistribute if we injected or inserted particles
+  if (injectParts || insertParts)
+    theSprayPC()->Redistribute(level);
+  BL_PROFILE_VAR_STOP(INJECT_SPRAY);
+
+  // Setup the virtual particles that represent particles on finer levels
+  if (level < finest_level)
+    setupVirtualParticles();
+
+  // Make a copy of the particles on this level into ghost particles
+  // for the finer level
+  if (level < finest_level)
+    setupGhostParticles(ghost_width);
+
+  // Advance the particle velocities to the half-time and the positions to
+  // the new time
+  if (particle_verbose)
+    amrex::Print()
+      << "moveKickDrift ... updating particle positions and velocity\n";
+
+  // We will make a temporary copy of the source term array inside
+  // moveKickDrift and we are only going to use the spray force out to one ghost
+  // cell so we need only define spray_force_old with one ghost cell
+
+  AMREX_ASSERT(old_sources[spray_src]->nGrow() >= 1);
+
+  // Do the valid particles themselves
+  theSprayPC()->moveKickDrift(
+    Sborder, tmp_spray_source, level, dt, time,
+    false, // not virtual particles
+    false, // not ghost particles
+    spray_n_grow, tmp_src_width,
+    true, // Move the particles
+    where_width);
+
+  // Only need the coarsest virtual particles here.
+  if (level < finest_level)
+    theVirtPC()->moveKickDrift(
+      Sborder, tmp_spray_source, level, dt, time, true, false, spray_n_grow,
+      tmp_src_width, true, where_width);
+
+  // Miiiight need all Ghosts
+  if (theGhostPC() != 0 && level != 0)
+    theGhostPC()->moveKickDrift(
+      Sborder, tmp_spray_source, level, dt, time, false, true, spray_n_grow,
+      tmp_src_width, true, where_width);
+  // Must call transfer source after moveKick and moveKickDrift
+  // on all particle types
+  theSprayPC()->transferSource(
+    tmp_src_width, level, tmp_spray_source, *old_sources[spray_src]);
+}
+
+void
+PeleC::particleMK(
+  const Real time,
+  const Real dt,
+  const int spray_n_grow,
+  const int tmp_src_width,
+  const int amr_iteration,
+  const int amr_ncycle,
+  amrex::MultiFab& tmp_spray_source)
+{
+  theSprayPC()->moveKick(
+    Sborder, tmp_spray_source, level, dt, time, false, false, spray_n_grow,
+    tmp_src_width);
+
+  if (level < parent->finestLevel())
+    theVirtPC()->moveKick(
+      Sborder, tmp_spray_source, level, dt, time, true, false, spray_n_grow,
+      tmp_src_width);
+
+  if (theGhostPC() != 0 && level != 0)
+    theGhostPC()->moveKick(
+      Sborder, tmp_spray_source, level, dt, time, false, true, spray_n_grow,
+      tmp_src_width);
+  theSprayPC()->transferSource(
+    tmp_src_width, level, tmp_spray_source, *new_sources[spray_src]);
+}
+
 // TODO: This has not been checked or updated, use with caution
 std::unique_ptr<MultiFab>
 PeleC::particleDerive(const std::string& name, Real time, int ngrow)
@@ -350,7 +470,7 @@ PeleC::particleDerive(const std::string& name, Real time, int ngrow)
   BL_PROFILE("PeleC::particleDerive()");
 
   if (theSprayPC() && name == "particle_count") {
-    Abort("Should not be called until it is updated");
+    amrex::Abort("Should not be called until it is updated");
     std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids, dmap, 1, 0));
     MultiFab temp_dat(grids, dmap, 1, 0);
     temp_dat.setVal(0);
@@ -359,7 +479,6 @@ PeleC::particleDerive(const std::string& name, Real time, int ngrow)
     return derive_dat;
   } else if (theSprayPC() && name == "total_particle_count") {
     Abort("Should not be called until it is updated");
-
     // We want the total particle count at this level or higher.
     std::unique_ptr<MultiFab> derive_dat =
       particleDerive("particle_count", time, ngrow);
@@ -411,9 +530,11 @@ PeleC::particleDerive(const std::string& name, Real time, int ngrow)
 }
 
 void
-PeleC::particleRedistribute(int lbase, int nGrow, int local, bool init_part)
+PeleC::particle_redistribute(int lbase, bool init_part)
 {
-  BL_PROFILE("PeleC::particleRedistribute()");
+  if (!do_spray_particles)
+    return;
+  BL_PROFILE("PeleC::particle_redistribute()");
   int flev = parent->finestLevel();
   if (theSprayPC()) {
     amrex::Gpu::LaunchSafeGuard lsg(true);
@@ -464,9 +585,9 @@ PeleC::particleRedistribute(int lbase, int nGrow, int local, bool init_part)
                        << '\n';
       if (flev == 0) {
         // Do a local redistribute
-        theSprayPC()->Redistribute(lbase, -1, nGrow, true);
+        theSprayPC()->Redistribute(lbase, theSprayPC()->finestLevel(), 0, 1);
       } else {
-        theSprayPC()->Redistribute(lbase, -1, nGrow, false);
+        theSprayPC()->Redistribute(lbase, theSprayPC()->finestLevel(), 0);
       }
 
       // Use the new BoxArray and DistMap to define ba and dm for next time.

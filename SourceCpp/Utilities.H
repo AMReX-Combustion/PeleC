@@ -49,6 +49,12 @@ pc_ctoprim(
     const int nq = pmap.qpassMap[ipassive];
     q(i, j, k, nq) = u(i, j, k, n) / rho;
   }
+  // Handle passive variables that are not per unit mass
+  for (int ipassive = NPASSIVE; ipassive < NPASSIVE + NPASSNM; ++ipassive) {
+    const int n = pmap.upassMap[ipassive];
+    const int nq = pmap.qpassMap[ipassive];
+    q(i, j, k, nq) = u(i, j, k, n);
+  }
 
   const amrex::Real e = (u(i, j, k, UEDEN) - kineng) * rhoinv;
   amrex::Real T = u(i, j, k, UTEMP);

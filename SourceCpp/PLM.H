@@ -193,7 +193,7 @@ pc_plm_x(
     qm(i + 1, j, k, QPRES), std::numeric_limits<amrex::Real>::min());
   qm(i + 1, j, k, QREINT) = rhoe_ref + (apleft + amleft) * enth * cs + azeleft;
   // Upwind the passive variables
-  for (int ipassive = 0; ipassive < NPASSIVE; ++ipassive) {
+  for (int ipassive = 0; ipassive < NPASSIVE + NPASSNM; ++ipassive) {
     int n = pmap.qpassMap[ipassive];
     // Right state
     u = q(i, j, k, QU);
@@ -329,7 +329,7 @@ pc_plm_y(
   qm(i, j + 1, k, QREINT) = rhoe_ref + (apleft + amleft) * enth * cs + azeleft;
 
   // Upwind the passive variables
-  for (int ipassive = 0; ipassive < NPASSIVE; ++ipassive) {
+  for (int ipassive = 0; ipassive < NPASSIVE + NPASSNM; ++ipassive) {
     int n = pmap.qpassMap[ipassive];
     // Right state
     v = q(i, j, k, QV);
@@ -465,7 +465,7 @@ pc_plm_z(
   qm(i, j, k + 1, QREINT) = rhoe_ref + (apleft + amleft) * enth * cs + azeleft;
 
   // Upwind the passive variables
-  for (int ipassive = 0; ipassive < NPASSIVE; ++ipassive) {
+  for (int ipassive = 0; ipassive < NPASSIVE + NPASSNM; ++ipassive) {
     int n = pmap.qpassMap[ipassive];
     // Right state
     w = q(i, j, k, QW);
@@ -539,6 +539,21 @@ pc_transx(
     rrnew = rr - flxrho;
     compo = rr * qym(i, j + 1, k, nqp) - compn;
     qm(i, j + 1, k, nqp) = compo / rrnew + hdt * srcpass;
+  }
+  // Update passive variables that aren't per unit mass
+  for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
+    int n = pmap.upassMap[ipass];
+    int nqp = pmap.qpassMap[ipass];
+    amrex::Real srcpass = srcQ(i, j, k, nqp);
+    amrex::Real compn = hdt *
+                        (a1(i + 1, j, k) * flxx(i + 1, j, k, n) -
+                         a1(i, j, k) * flxx(i, j, k, n)) /
+                        vol(i, j, k);
+    amrex::Real compo = qyp(i, j, k, nqp) - compn;
+    qp(i, j, k, nqp) = compo + hdt * srcpass;
+
+    compo = qym(i, j + 1, k, nqp) - compn;
+    qm(i, j + 1, k, nqp) = compo + hdt * srcpass;
   }
 
   const amrex::Real pggp = qint(i + 1, j, k, GDPRES);
@@ -659,6 +674,18 @@ pc_transy(
     rrnew = rr - flxrho;
     compo = rr * qxm(i + 1, j, k, nqp) - compn;
     qm(i + 1, j, k, nqp) = compo / rrnew + hdt * srcpass;
+  }
+  // Update passive variables that aren't per unit mass
+  for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
+    int n = pmap.upassMap[ipass];
+    int nqp = pmap.qpassMap[ipass];
+    amrex::Real srcpass = srcQ(i, j, k, nqp);
+    amrex::Real compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
+    amrex::Real compo = qxp(i, j, k, nqp) - compn;
+    qp(i, j, k, nqp) = compo + hdt * srcpass;
+
+    compo = qxm(i + 1, j, k, nqp) - compn;
+    qm(i + 1, j, k, nqp) = compo + hdt * srcpass;
   }
 
   // Update hydro vars

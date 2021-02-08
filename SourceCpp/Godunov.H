@@ -216,6 +216,18 @@ pc_cmpflx(
     else
       flx(i, j, k, n) = flxrho * 0.50 * (ql(i, j, k, nqp) + qr(i, j, k, nqp));
   }
+  // Passive variables where U = Q, F = u Q instead of F = rho u Q
+  for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
+    int n = pmap.upassMap[ipass];
+    int nqp = pmap.qpassMap[ipass];
+    if (ustar > 0.0)
+      flx(i, j, k, n) = q(i, j, k, GU) * ql(i, j, k, nqp);
+    else if (ustar < 0.0)
+      flx(i, j, k, n) = q(i, j, k, GU) * qr(i, j, k, nqp);
+    else
+      flx(i, j, k, n) =
+        q(i, j, k, GU) * 0.50 * (ql(i, j, k, nqp) + qr(i, j, k, nqp));
+  }
 }
 
 // First Transverse Correction for Predicted Y-states, using X-Flux
@@ -261,6 +273,17 @@ pc_transx1(
     rrnew = rr - flxrho;
     compo = rr * qym(i, j + 1, k, nqp) - compn;
     qm(i, j + 1, k, nqp) = compo / rrnew;
+  }
+  // Update passive variables that are not per unit mass
+  for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
+    int n = pmap.upassMap[ipass];
+    int nqp = pmap.qpassMap[ipass];
+    amrex::Real compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n));
+    amrex::Real compo = qyp(i, j, k, nqp) - compn;
+    qp(i, j, k, nqp) = compo;
+
+    compo = qym(i, j + 1, k, nqp) - compn;
+    qm(i, j + 1, k, nqp) = compo;
   }
   // Update hydro vars
 
@@ -382,6 +405,17 @@ pc_transy1(
     rrnew = rr - flxrho;
     compo = rr * qxm(i + 1, j, k, nqp) - compn;
     qm(i + 1, j, k, nqp) = compo / rrnew;
+  }
+  // -  Update Passive Variables that aren't per unit mass
+  for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
+    int n = pmap.upassMap[ipass];
+    int nqp = pmap.qpassMap[ipass];
+    amrex::Real compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
+    amrex::Real compo = qxp(i, j, k, nqp) - compn;
+    qp(i, j, k, nqp) = compo;
+
+    compo = qxm(i + 1, j, k, nqp) - compn;
+    qm(i + 1, j, k, nqp) = compo;
   }
 
   //- Update hydro vars -
@@ -507,6 +541,17 @@ pc_transx2(
     compo = rr * qzm(i, j, k + 1, nqp) - compn;
     qm(i, j, k + 1, nqp) = compo / rrnew;
   }
+  // -  Update Passive Variables that aren't per unit mass
+  for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
+    int n = pmap.upassMap[ipass];
+    int nqp = pmap.qpassMap[ipass];
+    amrex::Real compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n));
+    amrex::Real compo = qzp(i, j, k, nqp) - compn;
+    qp(i, j, k, nqp) = compo;
+
+    compo = qzm(i, j, k + 1, nqp) - compn;
+    qm(i, j, k + 1, nqp) = compo;
+  }
   //- Update hydro vars -
 
   const amrex::Real pggp = qint(i + 1, j, k, GDPRES);
@@ -628,6 +673,16 @@ pc_transy2(
     compo = rr * qzm(i, j, k + 1, nqp) - compn;
     qm(i, j, k + 1, nqp) = compo / rrnew;
   }
+  for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
+    int n = pmap.upassMap[ipass];
+    int nqp = pmap.qpassMap[ipass];
+    amrex::Real compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
+    amrex::Real compo = qzp(i, j, k, nqp) - compn;
+    qp(i, j, k, nqp) = compo;
+
+    compo = qzm(i, j, k + 1, nqp) - compn;
+    qm(i, j, k + 1, nqp) = compo;
+  }
   //- Update hydro vars -
 
   const amrex::Real pggp = qint(i, j + 1, k, GDPRES);
@@ -748,6 +803,16 @@ pc_transz1(
     rrnew = rr - flxrho;
     compo = rr * qxm(i + 1, j, k, nqp) - compn;
     qm(i + 1, j, k, nqp) = compo / rrnew;
+  }
+  for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
+    int n = pmap.upassMap[ipass];
+    int nqp = pmap.qpassMap[ipass];
+    amrex::Real compn = cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
+    amrex::Real compo = qxp(i, j, k, nqp) - compn;
+    qp(i, j, k, nqp) = compo;
+
+    compo = qxm(i + 1, j, k, nqp) - compn;
+    qm(i + 1, j, k, nqp) = compo;
   }
 
   //- Update hydro vars -
@@ -872,6 +937,16 @@ pc_transz2(
     rrnew = rr - flxrho;
     compo = rr * qym(i, j + 1, k, nqp) - compn;
     qm(i, j + 1, k, nqp) = compo / rrnew;
+  }
+  for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
+    int n = pmap.upassMap[ipass];
+    int nqp = pmap.qpassMap[ipass];
+    amrex::Real compn = cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
+    amrex::Real compo = qyp(i, j, k, nqp) - compn;
+    qp(i, j, k, nqp) = compo;
+
+    compo = qym(i, j + 1, k, nqp) - compn;
+    qm(i, j + 1, k, nqp) = compo;
   }
 
   // Update hydro vars
@@ -1015,6 +1090,19 @@ pc_transxy(
     compo = rrl * qzm(i, j, k + 1, nqp) - compn;
     qm(i, j, k + 1, nqp) = compo / rrnewl + hdt * srcpass;
   }
+  for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
+    int n = pmap.upassMap[ipass];
+    int nqp = pmap.qpassMap[ipass];
+    amrex::Real srcpass = srcq(i, j, k, nqp);
+    amrex::Real compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n)) +
+                        cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
+    // qp
+    amrex::Real compo = qzp(i, j, k, nqp) - compn;
+    qp(i, j, k, nqp) = compo + hdt * srcpass;
+    // qm
+    compo = qzm(i, j, k + 1, nqp) - compn;
+    qm(i, j, k + 1, nqp) = compo + hdt * srcpass;
+  }
 
   // Update hydro vars
   const amrex::Real pggpx = qx(i + 1, j, k, GDPRES);
@@ -1148,6 +1236,19 @@ pc_transxz(
     // qm
     compo = rrl * qym(i, j + 1, k, nqp) - compn;
     qm(i, j + 1, k, nqp) = compo / rrnewl + hdt * srcpass;
+  }
+  for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
+    int n = pmap.upassMap[ipass];
+    int nqp = pmap.qpassMap[ipass];
+    amrex::Real srcpass = srcq(i, j, k, nqp);
+    amrex::Real compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n)) +
+                        cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
+    // qp
+    amrex::Real compo = qyp(i, j, k, nqp) - compn;
+    qp(i, j, k, nqp) = compo + hdt * srcpass;
+    // qm
+    compo = qym(i, j + 1, k, nqp) - compn;
+    qm(i, j + 1, k, nqp) = compo + hdt * srcpass;
   }
 
   // Update hydro vars
@@ -1283,6 +1384,19 @@ pc_transyz(
     // qm
     compo = rrl * qxm(i + 1, j, k, nqp) - compn;
     qm(i + 1, j, k, nqp) = compo / rrnewl + hdt * srcpass;
+  }
+  for (int ipass = NPASSIVE; ipass < NPASSIVE + NPASSNM; ++ipass) {
+    int n = pmap.upassMap[ipass];
+    int nqp = pmap.qpassMap[ipass];
+    amrex::Real srcpass = srcq(i, j, k, nqp);
+    amrex::Real compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n)) +
+                        cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
+    // qp
+    amrex::Real compo = qxp(i, j, k, nqp) - compn;
+    qp(i, j, k, nqp) = compo + hdt * srcpass;
+    // qm
+    compo = qxm(i + 1, j, k, nqp) - compn;
+    qm(i + 1, j, k, nqp) = compo + hdt * srcpass;
   }
 
   // Update hydro vars

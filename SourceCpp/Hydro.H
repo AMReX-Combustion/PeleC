@@ -46,6 +46,11 @@ pc_srctoprim(
     const int nq = pmap.qpassMap[ip];
     srcq(i, j, k, nq) = (src(i, j, k, n) - q(i, j, k, nq) * srcrho) * rhoinv;
   }
+  for (int ip = NPASSIVE; ip < NPASSIVE + NPASSNM; ++ip) {
+    const int n = pmap.upassMap[ip];
+    const int nq = pmap.qpassMap[ip];
+    srcq(i, j, k, nq) = src(i, j, k, n);
+  }
 }
 
 AMREX_GPU_DEVICE

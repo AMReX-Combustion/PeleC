@@ -58,12 +58,8 @@ int PeleC::FirstSpec = -1;
 int PeleC::FirstAux = -1;
 int PeleC::NumAdv = 0;
 int PeleC::FirstAdv = -1;
-int PeleC::pstateVel = -1;
-int PeleC::pstateT = -1;
-int PeleC::pstateDia = -1;
-int PeleC::pstateRho = -1;
-int PeleC::pstateY = -1;
-int PeleC::pstateNum = 0;
+int PeleC::NumSootVars = 0;
+int PeleC::FirstSootVar = -1;
 
 #include "pelec_defaults.H"
 
@@ -123,6 +119,9 @@ ebInitialized(bool eb_init_val)
 void
 PeleC::variableCleanUp()
 {
+#ifdef SOOT_MODEL
+  soot_model.reset();
+#endif
   prob_parm_device.reset();
   prob_parm_host.reset();
   tagging_parm.reset();
@@ -275,6 +274,8 @@ PeleC::read_params()
   if (cfl <= 0.0 || cfl > 1.0) {
     amrex::Error("Invalid CFL factor; must be between zero and one.");
   }
+  if (cfl > 0.3 && do_mol)
+    amrex::Error("CFL must be <= 0.3 for MOL time-stepping");
 
   if ((do_les || use_explicit_filter) && (AMREX_SPACEDIM != 3)) {
     amrex::Abort("Using LES/filtering currently requires 3d.");
@@ -334,6 +335,10 @@ PeleC::read_params()
 
 #ifdef AMREX_PARTICLES
   readParticleParams();
+#endif
+
+#ifdef SOOT_MODEL
+  soot_model->readSootParams();
 #endif
 
 #ifdef PELEC_USE_EB
@@ -399,26 +404,30 @@ PeleC::PeleC(
   for (int n = 0; n < src_list.size(); ++n) {
     int oldGrow = NUM_GROW;
     int newGrow = S_new.nGrow();
-#ifdef AMREX_PARTICLES
-    if (src_list[n] == spray_src) {
-      oldGrow = 1;
-      newGrow = amrex::max<amrex::Real>(1, newGrow);
-    }
-#endif
     old_sources[src_list[n]] = std::make_unique<amrex::MultiFab>(
       grids, dmap, NVAR, oldGrow, amrex::MFInfo(), Factory());
     new_sources[src_list[n]] = std::make_unique<amrex::MultiFab>(
       grids, dmap, NVAR, newGrow, amrex::MFInfo(), Factory());
   }
 
+  int nGrowS = NUM_GROW;
+#ifdef AMREX_PARTICLES
+  if (level > 0 && do_spray_particles) {
+    int cRefRatio = papa.MaxRefRatio(level - 1);
+    if (cRefRatio > 4)
+      amrex::Abort("Spray particles not supported for ref_ratio > 4");
+    else if (cRefRatio > 2)
+      nGrowS += 3;
+  }
+#endif
   if (do_hydro) {
-    Sborder.define(grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
+    Sborder.define(grids, dmap, NVAR, nGrowS, amrex::MFInfo(), Factory());
   } else if (do_diffuse) {
     Sborder.define(grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
   }
 #ifdef AMREX_PARTICLES
   else if (do_spray_particles) {
-    Sborder.define(grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
+    Sborder.define(grids, dmap, NVAR, nGrowS, amrex::MFInfo(), Factory());
   }
 #endif
 
@@ -435,8 +444,6 @@ PeleC::PeleC(
       sources_for_hydro.define(
         grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
     }
-  } else {
-    Sborder.define(grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
   }
 
   // Is this relevant for PeleC?
@@ -694,9 +701,7 @@ PeleC::initData()
   if (level == 0) {
     initParticles();
   } else {
-    // TODO: Determine how many ghost cells to use here
-    int nGrow = 0;
-    particleRedistribute(level - 1, nGrow, 0, false);
+    particle_redistribute(level - 1);
   }
 #endif
 
@@ -942,6 +947,14 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
       estdt = estdt_hydro;
     }
   }
+
+#ifdef SOOT_MODEL
+  amrex::Real estdt_soot = soot_model->estSootTimeStep();
+  if (estdt_soot < estdt) {
+    limiter = "soot";
+    estdt = estdt_soot;
+  }
+#endif
 
 #ifdef AMREX_PARTICLES
   amrex::Real estdt_particle = max_dt;
@@ -1212,9 +1225,7 @@ PeleC::post_regrid(
 
 #ifdef AMREX_PARTICLES
   if (do_spray_particles && theSprayPC() != 0 && level == lbase) {
-    // TODO: Determine how many ghost cells to use here
-    int nGrow = 0;
-    particleRedistribute(lbase);
+    particle_redistribute(lbase);
   }
 #endif
 }
@@ -1826,11 +1837,7 @@ PeleC::derive(const std::string& name, amrex::Real time, int ngrow)
   }
 #endif
 
-#ifdef AMREX_PARTICLES
-  return particleDerive(name, time, ngrow);
-#else
   return AmrLevel::derive(name, time, ngrow);
-#endif
 }
 
 void

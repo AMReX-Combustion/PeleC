@@ -22,4 +22,11 @@ init_pass_map(std::unique_ptr<PassMap>& pmap)
     pmap->qpassMap[curMapIndx] = i + QFX;
     curMapIndx++;
   }
+#ifdef SOOT_MODEL
+  for (int i = 0; i != NUM_SOOT_VARS; ++i) {
+    pmap->upassMap[curMapIndx] = i + UFSOOT;
+    pmap->qpassMap[curMapIndx] = i + QFSOOT;
+    curMapIndx++;
+  }
+#endif
 }

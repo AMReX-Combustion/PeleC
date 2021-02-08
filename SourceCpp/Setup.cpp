@@ -23,6 +23,9 @@ std::unique_ptr<ProbParmDevice> PeleC::prob_parm_device;
 std::unique_ptr<ProbParmHost> PeleC::prob_parm_host;
 std::unique_ptr<TaggingParm> PeleC::tagging_parm;
 std::unique_ptr<PassMap> PeleC::pass_map;
+#ifdef SOOT_MODEL
+std::unique_ptr<SootModel> PeleC::soot_model;
+#endif
 
 // Components are:
 // Interior, Inflow, Outflow,  Symmetry,     SlipWall,     NoSlipWall, UserBC
@@ -151,6 +154,10 @@ PeleC::variableSetUp()
   tagging_parm = std::make_unique<TaggingParm>();
   pass_map = std::make_unique<PassMap>();
 
+#ifdef SOOT_MODEL
+  soot_model = std::make_unique<SootModel>();
+#endif
+
   // Get options, set phys_bc
   read_params();
 
@@ -220,16 +227,12 @@ PeleC::variableSetUp()
     cnt += NUM_AUX;
   }
 
-  // NVAR = cnt;
-
-#ifdef AMREX_PARTICLES
-  // Set index locations for particle state vector
-  pstateVel = 0;
-  pstateT = pstateVel + AMREX_SPACEDIM;
-  pstateDia = pstateT + 1;
-  pstateRho = pstateDia + 1;
-  pstateY = pstateRho + 1;
-  pstateNum = pstateY + SPRAY_FUEL_NUM;
+#ifdef SOOT_MODEL
+  // Set number of soot variables to be equal to the number of moments
+  // plus a variable for the weight of the delta function
+  NumSootVars = NUM_SOOT_MOMENTS + 1;
+  FirstSootVar = cnt;
+  cnt += NumSootVars;
 #endif
 
   // const amrex::Real run_strt = amrex::ParallelDescriptor::second() ;
@@ -401,6 +404,23 @@ PeleC::variableSetUp()
     name[cnt] = "rho_" + aux_names[i];
   }
 
+#ifdef SOOT_MODEL
+  // Set the soot model names
+  if (ParallelDescriptor::IOProcessor()) {
+    amrex::Print() << NumSootVars << " Soot Variables: " << std::endl;
+    for (int i = 0; i < NumSootVars; ++i)
+      amrex::Print() << soot_model->sootVariableName(i) << ' ' << ' ';
+    amrex::Print() << std::endl;
+  }
+
+  for (int i = 0; i < NumSootVars; ++i) {
+    cnt++;
+    set_scalar_bc(bc, phys_bc);
+    bcs[cnt] = bc;
+    name[cnt] = soot_model->sootVariableName(i);
+  }
+#endif
+
   amrex::StateDescriptor::BndryFunc bndryfunc1(pc_bcfill_hyp);
   bndryfunc1.setRunOnGPU(true);
 
@@ -550,25 +570,9 @@ PeleC::variableSetUp()
     "vfrac", amrex::IndexType::TheCellType(), 1, pc_dermagvel, the_same_box);
 #endif
 
-#ifdef AMREX_PARTICLES
-  // We want a derived type that corresponds to the number of particles
-  // in each cell.  We only intend to use it in plotfiles for debugging
-  // purposes. We'll actually set the values in writePlotFile().
-  derive_lst.add(
-    "particle_count", amrex::IndexType::TheCellType(), 1, pc_dernull,
-    the_same_box);
-  derive_lst.addComponent("particle_count", desc_lst, State_Type, Density, 1);
-
-  derive_lst.add(
-    "total_particle_count", amrex::IndexType::TheCellType(), 1, pc_dernull,
-    the_same_box);
-  derive_lst.addComponent(
-    "total_particle_count", desc_lst, State_Type, Density, 1);
-
-  derive_lst.add(
-    "particle_density", amrex::IndexType::TheCellType(), 1, pc_dernull,
-    the_same_box);
-  derive_lst.addComponent("particle_density", desc_lst, State_Type, Density, 1);
+#ifdef SOOT_MODEL
+  // Add soot variables
+  soot_model->addSootDerivePlotVars(derive_lst, desc_lst);
 #endif
 
   // LES coefficients
@@ -619,6 +623,10 @@ PeleC::variableSetUp()
   // Problem-specific derives
   add_problem_derives<ProblemDerives>(derive_lst, desc_lst);
 
+#ifdef SOOT_MODEL
+  soot_model->define();
+#endif
+
   // Set list of active sources
   set_active_sources();
 #ifdef AMREX_PARTICLES
@@ -642,6 +650,12 @@ PeleC::set_active_sources()
   if (add_forcing_src == 1) {
     src_list.push_back(forcing_src);
   }
+
+#ifdef SOOT_MODEL
+  if (add_soot_src == 1) {
+    src_list.push_back(soot_src);
+  }
+#endif
 
 #ifdef AMREX_PARTICLES
   if (do_spray_particles) {

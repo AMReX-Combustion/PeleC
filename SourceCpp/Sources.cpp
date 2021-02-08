@@ -27,6 +27,12 @@ PeleC::construct_old_source(
     construct_old_forcing_source(time, dt);
     break;
 
+#ifdef SOOT_MODEL
+  case soot_src:
+    construct_old_soot_source(time, dt);
+    break;
+#endif
+
 #ifdef PELEC_USE_MASA
   case mms_src:
     construct_old_mms_source(time);
@@ -60,6 +66,12 @@ PeleC::construct_new_source(
   case forcing_src:
     construct_new_forcing_source(time, dt);
     break;
+
+#ifdef SOOT_MODEL
+  case soot_src:
+    construct_new_soot_source(time, dt);
+    break;
+#endif
 
 #ifdef PELEC_USE_MASA
   case mms_src:
