@@ -100,12 +100,11 @@ trace_ppm(
     // integrals under the characteristic waves
 
     // Original PPM and Hybrid WENO/PPM do not have the same stencil size
-      amrex::Real s_weno7[7];
-      amrex::Real s_weno3[3];
-      amrex::Real s_weno5[5];
+    amrex::Real s_weno7[7];
+    amrex::Real s_weno3[3];
+    amrex::Real s_weno5[5];
 
-
-   amrex::Real s[5];
+    amrex::Real s[5];
 
     amrex::Real flat = 1.0;
     // Calculate flattening in-place
@@ -123,6 +122,7 @@ trace_ppm(
 
     for (int n = 0; n < QVAR; n++) {
 
+      // WENO 5 JS or Z
       if ( (use_hybrid_weno && weno_scheme == 0) || (use_hybrid_weno && weno_scheme == 1)){
 
         if (idir == 0) {
@@ -154,6 +154,7 @@ trace_ppm(
         }
         ppm_int_profile(sm, sp, s_weno5[2], un, cc, dtdx, Ip[n], Im[n]);
 
+     // WENO 7 Z
       } else if (use_hybrid_weno && weno_scheme == 2){
      
        if (idir == 0) {
@@ -187,6 +188,7 @@ trace_ppm(
         weno_reconstruct_7z(s_weno7, sm, sp);
         ppm_int_profile(sm, sp, s_weno7[3], un, cc, dtdx, Ip[n], Im[n]);
 
+      // WENO 3 Z
       } else if (use_hybrid_weno && weno_scheme == 3){
 
        if (idir == 0) {
@@ -208,6 +210,7 @@ trace_ppm(
         weno_reconstruct_3z(s_weno3, sm, sp);
         ppm_int_profile(sm, sp, s_weno3[1], un, cc, dtdx, Ip[n], Im[n]);
 
+      // ORIGINAL PPM
       }else{
 
         if (idir == 0) {
