@@ -29,7 +29,6 @@ function(build_pelec_exe pelec_exe_name)
   target_sources(${pelec_exe_name} PRIVATE
                  ${PELEC_TRANSPORT_DIR}/Transport.H
                  ${PELEC_TRANSPORT_DIR}/Transport.cpp
-                 ${PELEC_TRANSPORT_DIR}/TransportParams.cpp
                  ${PELEC_TRANSPORT_DIR}/TransportParams.H)
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELEC_TRANSPORT_DIR})
 
@@ -83,20 +82,27 @@ function(build_pelec_exe pelec_exe_name)
       endif()
       target_compile_definitions(${pelec_exe_name} PRIVATE USE_SUNDIALS_PP)
       target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/arkode/reactor.cpp
-                                               ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/arkode/reactor.h)
+                                               ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/arkode/reactor.h
+                                               ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/AMREX_misc.H)
       set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/arkode/reactor.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
       set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/arkode/reactor.h PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
       target_link_libraries(${pelec_exe_name} PRIVATE sundials_arkode)
-      if(PELEC_ENABLE_CUDA)
-        target_link_libraries(${pelec_exe_name} PRIVATE sundials_nveccuda)
-      endif()
       target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE})
       target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/arkode)
+      if(PELEC_ENABLE_CUDA)
+        target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/AMReX_SUNMemory.cpp
+                                                 ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/AMReX_SUNMemory.H)
+        target_link_libraries(${pelec_exe_name} PRIVATE sundials_nveccuda)
+      endif()
     endif()
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_REACTIONS)
     target_sources(${pelec_exe_name} PRIVATE
                    ${SRC_DIR}/React.H
                    ${SRC_DIR}/React.cpp)
+  endif()
+
+  if(PELEC_ENABLE_FORCING)
+    target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_FORCING)
   endif()
   
   if(PELEC_ENABLE_EB)
@@ -157,7 +163,6 @@ function(build_pelec_exe pelec_exe_name)
        ${SRC_DIR}/Tagging.H
        ${SRC_DIR}/Tagging.cpp
        ${SRC_DIR}/Timestep.H
-       ${SRC_DIR}/Timestep.cpp
        ${SRC_DIR}/Utilities.H
        ${SRC_DIR}/Utilities.cpp
   )
@@ -201,6 +206,7 @@ function(build_pelec_exe pelec_exe_name)
       set_source_files_properties(${PELEC_SOURCES} PROPERTIES LANGUAGE CUDA)
     endforeach()
     set_target_properties(${pelec_exe_name} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+    target_compile_options(${pelec_exe_name} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xptxas --disable-optimizer-constants>)
   endif()
  
   #Define what we want to be installed during a make install 

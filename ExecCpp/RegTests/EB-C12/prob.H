@@ -3,6 +3,8 @@
 
 #include <AMReX_Geometry.H>
 #include <AMReX_FArrayBox.H>
+#include <AMReX_REAL.H>
+#include <AMReX_GpuMemory.H>
 
 #include "mechanism.h"
 
@@ -22,7 +24,8 @@ pc_initdata(
   int j,
   int k,
   amrex::Array4<amrex::Real> const& state,
-  amrex::GeometryData const& geomdata)
+  amrex::GeometryData const& geomdata,
+  ProbParmDevice const& prob_parm)
 {
   // Geometry
   const amrex::Real* prob_lo = geomdata.ProbLo();
@@ -32,21 +35,26 @@ pc_initdata(
   // const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
   // const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];
 
-  const amrex::Real rho = ProbParm::rho0 + ProbParm::A * sin(M_PI * x);
+  const amrex::Real rho = prob_parm.rho0 + prob_parm.A * sin(M_PI * x);
 
   amrex::Real T = 0, eint = 0;
-  EOS::RYP2T(rho, ProbParm::massfrac.begin(), ProbParm::p0, T);
-  EOS::RYP2E(rho, ProbParm::massfrac.begin(), ProbParm::p0, eint);
+
+  amrex::Real massfrac[NUM_SPECIES] = {0.0};
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    massfrac[n] = prob_parm.massfrac[n];
+  }
+  EOS::RYP2T(rho, massfrac, prob_parm.p0, T);
+  EOS::RYP2E(rho, massfrac, prob_parm.p0, eint);
 
   state(i, j, k, URHO) = rho;
-  state(i, j, k, UMX) = rho * ProbParm::u0;
+  state(i, j, k, UMX) = rho * prob_parm.u0;
   state(i, j, k, UMY) = 0.0;
   state(i, j, k, UMZ) = 0.0;
   state(i, j, k, UEINT) = rho * eint;
-  state(i, j, k, UEDEN) = rho * (eint + 0.5 * ProbParm::u0 * ProbParm::u0);
+  state(i, j, k, UEDEN) = rho * (eint + 0.5 * prob_parm.u0 * prob_parm.u0);
   state(i, j, k, UTEMP) = T;
   for (int n = 0; n < NUM_SPECIES; n++)
-    state(i, j, k, UFS + n) = rho * ProbParm::massfrac[n];
+    state(i, j, k, UFS + n) = rho * prob_parm.massfrac[n];
 }
 
 AMREX_GPU_DEVICE
@@ -59,7 +67,8 @@ bcnormal(
   const int /*idir*/,
   const int /*sgn*/,
   const amrex::Real /*time*/,
-  amrex::GeometryData const& /*geomdata*/)
+  amrex::GeometryData const& /*geomdata*/,
+  ProbParmDevice const& /*prob_parm*/)
 {
 }
 

@@ -26,10 +26,9 @@
 #endif
 
 #include "Filter.H"
+#include "Tagging.H"
 #include "IndexDefines.H"
-
-using std::istream;
-using std::ostream;
+#include "prob_parm.H"
 
 #define UserBC 6
 
@@ -93,8 +92,8 @@ public:
   virtual ~PeleC();
 
   // Restart from a checkpoint file.
-  virtual void
-  restart(amrex::Amr& papa, istream& is, bool bReadSpecial = false) override;
+  virtual void restart(
+    amrex::Amr& papa, std::istream& is, bool bReadSpecial = false) override;
 
   // This is called only when we restart from an old checkpoint.
   virtual void
@@ -111,9 +110,9 @@ public:
 
   // Write a plotfile to specified directory.
   virtual void writePlotFile(
-    const std::string& dir, ostream& os, amrex::VisMF::How how) override;
+    const std::string& dir, std::ostream& os, amrex::VisMF::How how) override;
   virtual void writeSmallPlotFile(
-    const std::string& dir, ostream& os, amrex::VisMF::How how) override;
+    const std::string& dir, std::ostream& os, amrex::VisMF::How how) override;
   void writeJobInfo(const std::string& dir);
   static void writeBuildInfo(std::ostream& os);
 
@@ -327,8 +326,6 @@ public:
   void construct_new_forcing_source(amrex::Real time, amrex::Real dt);
 
   static void fill_forcing_source(
-    amrex::Real time,
-    amrex::Real dt,
     const amrex::MultiFab& state_old,
     const amrex::MultiFab& state_new,
     amrex::MultiFab& forcing_src,
@@ -538,6 +535,11 @@ public:
   // Parameters for using WENO in the PPM method
   static int use_hybrid_weno;
   static int weno_scheme;
+
+  static std::unique_ptr<ProbParmDevice> prob_parm_device;
+  static std::unique_ptr<ProbParmHost> prob_parm_host;
+  static std::unique_ptr<TaggingParm> tagging_parm;
+  static std::unique_ptr<PassMap> pass_map;
 
 protected:
   amrex::iMultiFab level_mask;

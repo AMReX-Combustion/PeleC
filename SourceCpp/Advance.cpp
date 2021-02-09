@@ -80,6 +80,9 @@ PeleC::do_mol_advance(
   }
 
 #ifdef PELEC_USE_REACTIONS
+  if (do_react == 0) {
+    get_new_data(Reactions_Type).setVal(0.0);
+  }
   const amrex::MultiFab& I_R = get_new_data(Reactions_Type);
 #endif
 
@@ -193,7 +196,7 @@ PeleC::do_mol_advance(
       flux_factor = mol_iter == mol_iters ? 1 : 0;
       getMOLSrcTerm(Sborder, molSrc_new, time, dt, flux_factor);
 
-      // F_{AD} = (1/2)(S_old + S_new)
+      // F_{AD} = (1/2)(molSrc_old + molSrc_new)
       amrex::MultiFab::LinComb(
         molSrc, 0.5, molSrc_old, 0, 0.5, molSrc_new, 0, 0, NVAR, 0);
 

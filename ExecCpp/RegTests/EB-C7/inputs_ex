@@ -94,3 +94,5 @@ extruded_triangles.tri_1_point_0 = -20.0 -11.431535329954588 0.0
 extruded_triangles.tri_1_point_1 = 22.0 12.817175976009688 0.0
 extruded_triangles.tri_1_point_2 = -20.0 20.0 0.0
 ebd.boundary_grad_stencil_type = 0
+
+pelec.eb_small_vfrac = 0.015

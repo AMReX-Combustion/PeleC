@@ -3,14 +3,19 @@
 
 #include <AMReX_REAL.H>
 #include <AMReX_GpuQualifiers.H>
+#include <AMReX_GpuMemory.H>
 
-namespace ProbParm {
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real p_init;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real T_init;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real rho_init;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real e_init;
-extern AMREX_GPU_DEVICE_MANAGED amrex::GpuArray<amrex::Real, NUM_SPECIES>
-  massfrac;
-} // namespace ProbParm
+struct ProbParmDevice : amrex::Gpu::Managed
+{
+  amrex::Real p_init = 1013250.0; // 1 atm
+  amrex::Real T_init = 940.0;
+  amrex::Real rho_init = 0.0;
+  amrex::Real e_init = 0.0;
+  amrex::GpuArray<amrex::Real, NUM_SPECIES> massfrac = {0.0};
+};
+
+struct ProbParmHost : amrex::Gpu::Managed
+{
+};
 
 #endif

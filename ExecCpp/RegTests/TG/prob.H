@@ -5,6 +5,10 @@
 #include <AMReX_ParmParse.H>
 #include <AMReX_Geometry.H>
 #include <AMReX_FArrayBox.H>
+#include <AMReX_REAL.H>
+#include <AMReX_GpuMemory.H>
+#include <AMReX_REAL.H>
+#include <AMReX_GpuMemory.H>
 
 #include "mechanism.h"
 
@@ -25,9 +29,9 @@ pc_initdata(
   int j,
   int k,
   amrex::Array4<amrex::Real> const& state,
-  amrex::GeometryData const& geomdata)
+  amrex::GeometryData const& geomdata,
+  ProbParmDevice const& prob_parm)
 {
-
   // Geometry
   const amrex::Real* prob_lo = geomdata.ProbLo();
   // const amrex::Real* prob_hi = geomdata.ProbHi();
@@ -41,24 +45,24 @@ pc_initdata(
 
   // TG functions
   amrex::Real u[3] = {0.0};
-  u[0] = ProbParm::v0 * sin(ProbParm::omega_x * x / ProbParm::L) *
-         cos(ProbParm::omega_y * y / ProbParm::L) *
-         cos(ProbParm::omega_z * z / ProbParm::L);
-  u[1] = -ProbParm::v0 * cos(ProbParm::omega_x * x / ProbParm::L) *
-         sin(ProbParm::omega_y * y / ProbParm::L) *
-         cos(ProbParm::omega_z * z / ProbParm::L);
-  if (ProbParm::convecting) {
-    u[0] += ProbParm::v0;
-    u[1] += ProbParm::v0;
+  u[0] = prob_parm.v0 * sin(prob_parm.omega_x * x / prob_parm.L) *
+         cos(prob_parm.omega_y * y / prob_parm.L) *
+         cos(prob_parm.omega_z * z / prob_parm.L);
+  u[1] = -prob_parm.v0 * cos(prob_parm.omega_x * x / prob_parm.L) *
+         sin(prob_parm.omega_y * y / prob_parm.L) *
+         cos(prob_parm.omega_z * z / prob_parm.L);
+  if (prob_parm.convecting) {
+    u[0] += prob_parm.v0;
+    u[1] += prob_parm.v0;
   }
   const amrex::Real p =
-    ProbParm::p0 + ProbParm::rho0 * ProbParm::v0 * ProbParm::v0 / 16.0 *
-                     (cos(2.0 * ProbParm::omega_x * x / ProbParm::L) +
-                      cos(2.0 * ProbParm::omega_y * y / ProbParm::L)) *
-                     (cos(2.0 * ProbParm::omega_z * z / ProbParm::L) + 2.0);
+    prob_parm.p0 + prob_parm.rho0 * prob_parm.v0 * prob_parm.v0 / 16.0 *
+                     (cos(2.0 * prob_parm.omega_x * x / prob_parm.L) +
+                      cos(2.0 * prob_parm.omega_y * y / prob_parm.L)) *
+                     (cos(2.0 * prob_parm.omega_z * z / prob_parm.L) + 2.0);
   amrex::Real rho, eint;
   amrex::Real massfrac[NUM_SPECIES] = {1.0};
-  EOS::PYT2RE(p, massfrac, ProbParm::T0, rho, eint);
+  EOS::PYT2RE(p, massfrac, prob_parm.T0, rho, eint);
 
   // Set the state
   state(i, j, k, URHO) = rho;
@@ -68,7 +72,7 @@ pc_initdata(
   state(i, j, k, UEINT) = rho * eint;
   state(i, j, k, UEDEN) =
     rho * (eint + 0.5 * (u[0] * u[0] + u[1] * u[1] + u[2] * u[2]));
-  state(i, j, k, UTEMP) = ProbParm::T0;
+  state(i, j, k, UTEMP) = prob_parm.T0;
   for (int n = 0; n < NUM_SPECIES; n++)
     state(i, j, k, UFS + n) = rho * massfrac[n];
 }
@@ -83,13 +87,14 @@ bcnormal(
   const int /*idir*/,
   const int /*sgn*/,
   const amrex::Real /*time*/,
-  amrex::GeometryData const& /*geomdata*/)
+  amrex::GeometryData const& /*geomdata*/,
+  ProbParmDevice const& /*prob_parm*/)
 {
 }
 
 struct MyProbTagStruct
 {
-  AMREX_GPU_HOST_DEVICE
+  AMREX_GPU_DEVICE
   AMREX_FORCE_INLINE
   static void set_problem_tags(
     const int /*i*/,

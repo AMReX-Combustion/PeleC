@@ -5,6 +5,8 @@
 #include <AMReX_ParmParse.H>
 #include <AMReX_Geometry.H>
 #include <AMReX_FArrayBox.H>
+#include <AMReX_REAL.H>
+#include <AMReX_GpuMemory.H>
 
 #ifdef PELEC_USE_MASA
 #include <masa.h>
@@ -30,7 +32,8 @@ pc_initdata(
   int j,
   int k,
   amrex::Array4<amrex::Real> const& state,
-  amrex::GeometryData const& geomdata)
+  amrex::GeometryData const& geomdata,
+  ProbParmDevice const& /*prob_parm*/)
 {
   // Geometry
   const amrex::Real* prob_lo = geomdata.ProbLo();
@@ -83,7 +86,8 @@ bcnormal(
   const int /*idir*/,
   const int /*sgn*/,
   const amrex::Real /*time*/,
-  amrex::GeometryData const& /*geomdata*/)
+  amrex::GeometryData const& /*geomdata*/,
+  ProbParmDevice const& /*prob_parm*/)
 {
   amrex::Real x0 = 0.0, x1 = 0.0, x2 = 0.0;
 

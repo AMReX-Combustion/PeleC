@@ -1,14 +1,5 @@
 #include "prob.H"
 
-namespace ProbParm {
-AMREX_GPU_DEVICE_MANAGED amrex::Real p0 = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real rho0 = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real u0 = 1.0;
-AMREX_GPU_DEVICE_MANAGED amrex::Real A = 0.2;
-AMREX_GPU_DEVICE_MANAGED amrex::GpuArray<amrex::Real, NUM_SPECIES> massfrac = {
-  1.0};
-} // namespace ProbParm
-
 void
 pc_prob_close()
 {
@@ -23,7 +14,7 @@ amrex_probinit(
   const amrex_real* /*problo*/,
   const amrex_real* /*probhi*/)
 {
-  ProbParm::massfrac[0] = 1.0;
+  PeleC::prob_parm_device->massfrac[0] = 1.0;
 }
 }
 

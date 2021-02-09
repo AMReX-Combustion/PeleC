@@ -4,40 +4,41 @@
 #include <AMReX_FArrayBox.H>
 #include <AMReX_TagBox.H>
 
-namespace TaggingParm {
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real denerr;
-extern AMREX_GPU_DEVICE_MANAGED int max_denerr_lev;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real dengrad;
-extern AMREX_GPU_DEVICE_MANAGED int max_dengrad_lev;
+struct TaggingParm
+{
+  amrex::Real denerr = 1.0e10;
+  int max_denerr_lev = 10;
+  amrex::Real dengrad = 1.0e10;
+  int max_dengrad_lev = 10;
 
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real presserr;
-extern AMREX_GPU_DEVICE_MANAGED int max_presserr_lev;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real pressgrad;
-extern AMREX_GPU_DEVICE_MANAGED int max_pressgrad_lev;
+  amrex::Real presserr = 1.0e10;
+  int max_presserr_lev = 10;
+  amrex::Real pressgrad = 1.0e10;
+  int max_pressgrad_lev = 10;
 
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real velerr;
-extern AMREX_GPU_DEVICE_MANAGED int max_velerr_lev;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real velgrad;
-extern AMREX_GPU_DEVICE_MANAGED int max_velgrad_lev;
+  amrex::Real velerr = 1.0e10;
+  int max_velerr_lev = 10;
+  amrex::Real velgrad = 1.0e10;
+  int max_velgrad_lev = 10;
 
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real vorterr;
-extern AMREX_GPU_DEVICE_MANAGED int max_vorterr_lev;
+  amrex::Real vorterr = 1.0e10;
+  int max_vorterr_lev = 10;
 
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real temperr;
-extern AMREX_GPU_DEVICE_MANAGED int max_temperr_lev;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real tempgrad;
-extern AMREX_GPU_DEVICE_MANAGED int max_tempgrad_lev;
+  amrex::Real temperr = 1.0e10;
+  int max_temperr_lev = 10;
+  amrex::Real tempgrad = 1.0e10;
+  int max_tempgrad_lev = 10;
 
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real ftracerr;
-extern AMREX_GPU_DEVICE_MANAGED int max_ftracerr_lev;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real ftracgrad;
-extern AMREX_GPU_DEVICE_MANAGED int max_ftracgrad_lev;
+  amrex::Real ftracerr = 1.0e10;
+  int max_ftracerr_lev = 10;
+  amrex::Real ftracgrad = 1.0e10;
+  int max_ftracgrad_lev = 10;
 
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real vfracerr;
-extern AMREX_GPU_DEVICE_MANAGED int max_vfracerr_lev;
-} // namespace TaggingParm
+  amrex::Real vfracerr = 1.0e10;
+  int max_vfracerr_lev = 10;
+};
 
-AMREX_GPU_HOST_DEVICE
+AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 tag_error(
@@ -55,7 +56,7 @@ tag_error(
   }
 }
 
-AMREX_GPU_HOST_DEVICE
+AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 tag_graderror(
@@ -88,7 +89,7 @@ tag_graderror(
   }
 }
 
-AMREX_GPU_HOST_DEVICE
+AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 tag_abserror(
@@ -106,7 +107,7 @@ tag_abserror(
   }
 }
 
-AMREX_GPU_HOST_DEVICE
+AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 tag_error_bounds(
@@ -127,7 +128,7 @@ tag_error_bounds(
 
 struct EmptyProbTagStruct
 {
-  AMREX_GPU_HOST_DEVICE
+  AMREX_GPU_DEVICE
   AMREX_FORCE_INLINE
   static void set_problem_tags(
     const int /*i*/,
@@ -145,7 +146,7 @@ struct EmptyProbTagStruct
 };
 
 template <typename ProbTagStruct, typename... Args>
-AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE void
+AMREX_GPU_DEVICE AMREX_FORCE_INLINE void
 set_problem_tags(Args&&... args)
 {
   ProbTagStruct::set_problem_tags(std::forward<Args>(args)...);

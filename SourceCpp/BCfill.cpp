@@ -7,6 +7,14 @@
 
 struct PCHypFillExtDir
 {
+  ProbParmDevice const* lprobparm;
+
+  AMREX_GPU_HOST
+  constexpr PCHypFillExtDir(ProbParmDevice const* d_prob_parm)
+    : lprobparm(d_prob_parm)
+  {
+  }
+
   AMREX_GPU_DEVICE
   void operator()(
     const amrex::IntVect& iv,
@@ -41,7 +49,7 @@ struct PCHypFillExtDir
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
       }
-      bcnormal(x, s_int, s_ext, idir, +1, time, geom);
+      bcnormal(x, s_int, s_ext, idir, +1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
         dest(iv, n) = s_ext[n];
       }
@@ -52,7 +60,7 @@ struct PCHypFillExtDir
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
       }
-      bcnormal(x, s_int, s_ext, idir, -1, time, geom);
+      bcnormal(x, s_int, s_ext, idir, -1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
         dest(iv, n) = s_ext[n];
       }
@@ -65,7 +73,7 @@ struct PCHypFillExtDir
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
       }
-      bcnormal(x, s_int, s_ext, idir, +1, time, geom);
+      bcnormal(x, s_int, s_ext, idir, +1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
         dest(iv, n) = s_ext[n];
       }
@@ -76,7 +84,7 @@ struct PCHypFillExtDir
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
       }
-      bcnormal(x, s_int, s_ext, idir, -1, time, geom);
+      bcnormal(x, s_int, s_ext, idir, -1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
         dest(iv, n) = s_ext[n];
       }
@@ -88,7 +96,7 @@ struct PCHypFillExtDir
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(iv[0], iv[1], domlo[idir], n);
       }
-      bcnormal(x, s_int, s_ext, idir, +1, time, geom);
+      bcnormal(x, s_int, s_ext, idir, +1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
         dest(iv, n) = s_ext[n];
       }
@@ -98,7 +106,7 @@ struct PCHypFillExtDir
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(iv[0], iv[1], domhi[idir], n);
       }
-      bcnormal(x, s_int, s_ext, idir, -1, time, geom);
+      bcnormal(x, s_int, s_ext, idir, -1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
         dest(iv, n) = s_ext[n];
       }
@@ -125,14 +133,6 @@ struct PCReactFillExtDir
   }
 };
 
-namespace {
-PCHypFillExtDir pc_hyp_fill_ext_dir;
-PCReactFillExtDir pc_react_fill_ext_dir;
-amrex::GpuBndryFuncFab<PCHypFillExtDir> hyp_bndry_func(pc_hyp_fill_ext_dir);
-amrex::GpuBndryFuncFab<PCReactFillExtDir>
-  react_bndry_func(pc_react_fill_ext_dir);
-} // namespace
-
 void
 pc_bcfill_hyp(
   amrex::Box const& bx,
@@ -145,6 +145,9 @@ pc_bcfill_hyp(
   const int bcomp,
   const int scomp)
 {
+  ProbParmDevice const* lprobparm = PeleC::prob_parm_device.get();
+  amrex::GpuBndryFuncFab<PCHypFillExtDir> hyp_bndry_func(
+    PCHypFillExtDir{lprobparm});
   hyp_bndry_func(bx, data, dcomp, numcomp, geom, time, bcr, bcomp, scomp);
 }
 
@@ -161,6 +164,8 @@ pc_reactfill_hyp(
   const int bcomp,
   const int scomp)
 {
+  amrex::GpuBndryFuncFab<PCReactFillExtDir> react_bndry_func(
+    PCReactFillExtDir{});
   react_bndry_func(bx, data, dcomp, numcomp, geom, time, bcr, bcomp, scomp);
 }
 #endif

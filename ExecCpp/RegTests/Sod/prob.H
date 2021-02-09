@@ -5,6 +5,10 @@
 #include <AMReX_ParmParse.H>
 #include <AMReX_Geometry.H>
 #include <AMReX_FArrayBox.H>
+#include <AMReX_REAL.H>
+#include <AMReX_GpuMemory.H>
+#include <AMReX_REAL.H>
+#include <AMReX_GpuMemory.H>
 
 #include "mechanism.h"
 
@@ -25,9 +29,9 @@ pc_initdata(
   int j,
   int k,
   amrex::Array4<amrex::Real> const& state,
-  amrex::GeometryData const& geomdata)
+  amrex::GeometryData const& geomdata,
+  ProbParmDevice const& prob_parm)
 {
-
   // Geometry
   const amrex::Real* prob_lo = geomdata.ProbLo();
   // const amrex::Real* prob_hi = geomdata.ProbHi();
@@ -40,71 +44,71 @@ pc_initdata(
 #endif
 
   // Set the states
-  if (ProbParm::idir == 1) {
-    if (x <= ProbParm::split[0]) {
-      state(i, j, k, URHO) = ProbParm::rho_l;
-      state(i, j, k, UMX) = ProbParm::rho_l * ProbParm::u_l;
+  if (prob_parm.idir == 1) {
+    if (x <= prob_parm.split[0]) {
+      state(i, j, k, URHO) = prob_parm.rho_l;
+      state(i, j, k, UMX) = prob_parm.rho_l * prob_parm.u_l;
       state(i, j, k, UMY) = 0.0;
       state(i, j, k, UMZ) = 0.0;
-      state(i, j, k, UEDEN) = ProbParm::rhoe_l + 0.5 * ProbParm::rho_l *
-                                                   ProbParm::u_l *
-                                                   ProbParm::u_l;
-      state(i, j, k, UEINT) = ProbParm::rhoe_l;
-      state(i, j, k, UTEMP) = ProbParm::T_l;
+      state(i, j, k, UEDEN) = prob_parm.rhoe_l + 0.5 * prob_parm.rho_l *
+                                                   prob_parm.u_l *
+                                                   prob_parm.u_l;
+      state(i, j, k, UEINT) = prob_parm.rhoe_l;
+      state(i, j, k, UTEMP) = prob_parm.T_l;
     } else {
-      state(i, j, k, URHO) = ProbParm::rho_r;
-      state(i, j, k, UMX) = ProbParm::rho_r * ProbParm::u_r;
+      state(i, j, k, URHO) = prob_parm.rho_r;
+      state(i, j, k, UMX) = prob_parm.rho_r * prob_parm.u_r;
       state(i, j, k, UMY) = 0.0;
       state(i, j, k, UMZ) = 0.0;
-      state(i, j, k, UEDEN) = ProbParm::rhoe_r + 0.5 * ProbParm::rho_r *
-                                                   ProbParm::u_r *
-                                                   ProbParm::u_r;
-      state(i, j, k, UEINT) = ProbParm::rhoe_r;
-      state(i, j, k, UTEMP) = ProbParm::T_r;
+      state(i, j, k, UEDEN) = prob_parm.rhoe_r + 0.5 * prob_parm.rho_r *
+                                                   prob_parm.u_r *
+                                                   prob_parm.u_r;
+      state(i, j, k, UEINT) = prob_parm.rhoe_r;
+      state(i, j, k, UTEMP) = prob_parm.T_r;
     }
-  } else if (ProbParm::idir == 2) {
-    if (y <= ProbParm::split[1]) {
-      state(i, j, k, URHO) = ProbParm::rho_l;
+  } else if (prob_parm.idir == 2) {
+    if (y <= prob_parm.split[1]) {
+      state(i, j, k, URHO) = prob_parm.rho_l;
       state(i, j, k, UMX) = 0.0;
-      state(i, j, k, UMY) = ProbParm::rho_l * ProbParm::u_l;
+      state(i, j, k, UMY) = prob_parm.rho_l * prob_parm.u_l;
       state(i, j, k, UMZ) = 0.0;
-      state(i, j, k, UEDEN) = ProbParm::rhoe_l + 0.5 * ProbParm::rho_l *
-                                                   ProbParm::u_l *
-                                                   ProbParm::u_l;
-      state(i, j, k, UEINT) = ProbParm::rhoe_l;
-      state(i, j, k, UTEMP) = ProbParm::T_l;
+      state(i, j, k, UEDEN) = prob_parm.rhoe_l + 0.5 * prob_parm.rho_l *
+                                                   prob_parm.u_l *
+                                                   prob_parm.u_l;
+      state(i, j, k, UEINT) = prob_parm.rhoe_l;
+      state(i, j, k, UTEMP) = prob_parm.T_l;
     } else {
-      state(i, j, k, URHO) = ProbParm::rho_r;
+      state(i, j, k, URHO) = prob_parm.rho_r;
       state(i, j, k, UMX) = 0.0;
-      state(i, j, k, UMY) = ProbParm::rho_r * ProbParm::u_r;
+      state(i, j, k, UMY) = prob_parm.rho_r * prob_parm.u_r;
       state(i, j, k, UMZ) = 0.0;
-      state(i, j, k, UEDEN) = ProbParm::rhoe_r + 0.5 * ProbParm::rho_r *
-                                                   ProbParm::u_r *
-                                                   ProbParm::u_r;
-      state(i, j, k, UEINT) = ProbParm::rhoe_r;
-      state(i, j, k, UTEMP) = ProbParm::T_r;
+      state(i, j, k, UEDEN) = prob_parm.rhoe_r + 0.5 * prob_parm.rho_r *
+                                                   prob_parm.u_r *
+                                                   prob_parm.u_r;
+      state(i, j, k, UEINT) = prob_parm.rhoe_r;
+      state(i, j, k, UTEMP) = prob_parm.T_r;
     }
-  } else if (ProbParm::idir == 3) {
-    if (z <= ProbParm::split[2]) {
-      state(i, j, k, URHO) = ProbParm::rho_l;
+  } else if (prob_parm.idir == 3) {
+    if (z <= prob_parm.split[2]) {
+      state(i, j, k, URHO) = prob_parm.rho_l;
       state(i, j, k, UMX) = 0.0;
       state(i, j, k, UMY) = 0.0;
-      state(i, j, k, UMZ) = ProbParm::rho_l * ProbParm::u_l;
-      state(i, j, k, UEDEN) = ProbParm::rhoe_l + 0.5 * ProbParm::rho_l *
-                                                   ProbParm::u_l *
-                                                   ProbParm::u_l;
-      state(i, j, k, UEINT) = ProbParm::rhoe_l;
-      state(i, j, k, UTEMP) = ProbParm::T_l;
+      state(i, j, k, UMZ) = prob_parm.rho_l * prob_parm.u_l;
+      state(i, j, k, UEDEN) = prob_parm.rhoe_l + 0.5 * prob_parm.rho_l *
+                                                   prob_parm.u_l *
+                                                   prob_parm.u_l;
+      state(i, j, k, UEINT) = prob_parm.rhoe_l;
+      state(i, j, k, UTEMP) = prob_parm.T_l;
     } else {
-      state(i, j, k, URHO) = ProbParm::rho_r;
+      state(i, j, k, URHO) = prob_parm.rho_r;
       state(i, j, k, UMX) = 0.0;
       state(i, j, k, UMY) = 0.0;
-      state(i, j, k, UMZ) = ProbParm::rho_r * ProbParm::u_r;
-      state(i, j, k, UEDEN) = ProbParm::rhoe_r + 0.5 * ProbParm::rho_r *
-                                                   ProbParm::u_r *
-                                                   ProbParm::u_r;
-      state(i, j, k, UEINT) = ProbParm::rhoe_r;
-      state(i, j, k, UTEMP) = ProbParm::T_r;
+      state(i, j, k, UMZ) = prob_parm.rho_r * prob_parm.u_r;
+      state(i, j, k, UEDEN) = prob_parm.rhoe_r + 0.5 * prob_parm.rho_r *
+                                                   prob_parm.u_r *
+                                                   prob_parm.u_r;
+      state(i, j, k, UEINT) = prob_parm.rhoe_r;
+      state(i, j, k, UTEMP) = prob_parm.T_r;
     }
   } else {
     amrex::Abort("invalid idir");
@@ -124,7 +128,8 @@ bcnormal(
   const int /*idir*/,
   const int /*sgn*/,
   const amrex::Real /*time*/,
-  amrex::GeometryData const& /*geomdata*/)
+  amrex::GeometryData const& /*geomdata*/,
+  ProbParmDevice const& /*prob_parm*/)
 {
   for (int n = 0; n < NVAR; n++) {
     s_ext[n] = s_int[n];

@@ -3,18 +3,23 @@
 
 #include <AMReX_REAL.H>
 #include <AMReX_GpuQualifiers.H>
+#include <AMReX_GpuMemory.H>
 
-namespace ProbParm {
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real p;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real T;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real rho;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real eint;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real vx_in;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real vy_in;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real Re_L;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real Pr;
-extern AMREX_GPU_DEVICE_MANAGED amrex::GpuArray<amrex::Real, NUM_SPECIES>
-  massfrac;
-} // namespace ProbParm
+struct ProbParmDevice : amrex::Gpu::Managed
+{
+  amrex::Real p = 1013250.0;
+  amrex::Real T = 0.0;
+  amrex::Real rho = 0.00116;
+  amrex::Real eint = 0.0;
+  amrex::Real vx_in = 0.0;
+  amrex::Real vy_in = 0.0;
+  amrex::Real Re_L = 2500.0;
+  amrex::Real Pr = 0.7;
+  amrex::GpuArray<amrex::Real, NUM_SPECIES> massfrac = {1.0};
+};
+
+struct ProbParmHost : amrex::Gpu::Managed
+{
+};
 
 #endif

@@ -178,9 +178,10 @@ PeleC::getMOLSrcTerm(
       // required for D term
       {
         BL_PROFILE("PeleC::ctoprim()");
+        PassMap const* lpmap = pass_map.get();
         amrex::ParallelFor(
           gbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            pc_ctoprim(i, j, k, s, qar, qauxar);
+            pc_ctoprim(i, j, k, s, qar, qauxar, *lpmap);
           });
       }
       // TODO deal with NSCBC
@@ -228,10 +229,11 @@ PeleC::getMOLSrcTerm(
         auto const& coe_lambda = coeff_cc.array(dComp_lambda);
         BL_PROFILE("PeleC::get_transport_coeffs()");
         // Get Transport coefs on GPU.
+        TransParm const* ltransparm = trans_parm_g;
         amrex::launch(gbox, [=] AMREX_GPU_DEVICE(amrex::Box const& tbx) {
           get_transport_coeffs(
             tbx, qar_yin, qar_Tin, qar_rhoin, coe_rhoD, coe_mu, coe_xi,
-            coe_lambda);
+            coe_lambda, ltransparm);
         });
       }
 

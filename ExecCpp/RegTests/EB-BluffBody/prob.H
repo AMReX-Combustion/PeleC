@@ -3,6 +3,8 @@
 
 #include <AMReX_Geometry.H>
 #include <AMReX_FArrayBox.H>
+#include <AMReX_REAL.H>
+#include <AMReX_GpuMemory.H>
 
 #include "mechanism.h"
 
@@ -23,7 +25,8 @@ pc_initdata(
   int j,
   int k,
   amrex::Array4<amrex::Real> const& state,
-  amrex::GeometryData const& /*geomdata*/)
+  amrex::GeometryData const& /*geomdata*/,
+  ProbParmDevice const& prob_parm)
 {
   // Geometry
   // const amrex::Real* prob_lo = geomdata.ProbLo();
@@ -33,18 +36,18 @@ pc_initdata(
   // const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
   // const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];
 
-  state(i, j, k, URHO) = ProbParm::rho;
-  state(i, j, k, UMX) = ProbParm::rho * ProbParm::vx_in;
-  state(i, j, k, UMY) = ProbParm::rho * ProbParm::vy_in;
+  state(i, j, k, URHO) = prob_parm.rho;
+  state(i, j, k, UMX) = prob_parm.rho * prob_parm.vx_in;
+  state(i, j, k, UMY) = prob_parm.rho * prob_parm.vy_in;
   state(i, j, k, UMZ) = 0.0;
-  state(i, j, k, UEINT) = ProbParm::rho * ProbParm::eint;
+  state(i, j, k, UEINT) = prob_parm.rho * prob_parm.eint;
   state(i, j, k, UEDEN) =
-    ProbParm::rho *
-    (ProbParm::eint + 0.5 * (ProbParm::vx_in * ProbParm::vx_in +
-                             ProbParm::vy_in * ProbParm::vy_in));
-  state(i, j, k, UTEMP) = ProbParm::T;
+    prob_parm.rho *
+    (prob_parm.eint + 0.5 * (prob_parm.vx_in * prob_parm.vx_in +
+                             prob_parm.vy_in * prob_parm.vy_in));
+  state(i, j, k, UTEMP) = prob_parm.T;
   for (int n = 0; n < NUM_SPECIES; n++)
-    state(i, j, k, UFS + n) = ProbParm::rho * ProbParm::massfrac[n];
+    state(i, j, k, UFS + n) = prob_parm.rho * prob_parm.massfrac[n];
 }
 
 AMREX_GPU_DEVICE
@@ -57,19 +60,20 @@ bcnormal(
   const int /*idir*/,
   const int /*sgn*/,
   const amrex::Real /*time*/,
-  amrex::GeometryData const& /*geomdata*/)
+  amrex::GeometryData const& /*geomdata*/,
+  ProbParmDevice const& prob_parm)
 {
-  s_ext[URHO] = ProbParm::rho;
-  s_ext[UMX] = ProbParm::rho * ProbParm::vx_in;
-  s_ext[UMY] = ProbParm::rho * ProbParm::vy_in;
+  s_ext[URHO] = prob_parm.rho;
+  s_ext[UMX] = prob_parm.rho * prob_parm.vx_in;
+  s_ext[UMY] = prob_parm.rho * prob_parm.vy_in;
   s_ext[UMZ] = 0.0;
-  s_ext[UEINT] = ProbParm::rho * ProbParm::eint;
-  s_ext[UEDEN] = ProbParm::rho *
-                 (ProbParm::eint + 0.5 * (ProbParm::vx_in * ProbParm::vx_in +
-                                          ProbParm::vy_in * ProbParm::vy_in));
-  s_ext[UTEMP] = ProbParm::T;
+  s_ext[UEINT] = prob_parm.rho * prob_parm.eint;
+  s_ext[UEDEN] = prob_parm.rho *
+                 (prob_parm.eint + 0.5 * (prob_parm.vx_in * prob_parm.vx_in +
+                                          prob_parm.vy_in * prob_parm.vy_in));
+  s_ext[UTEMP] = prob_parm.T;
   for (int n = 0; n < NUM_SPECIES; n++)
-    s_ext[UFS + n] = ProbParm::rho * ProbParm::massfrac[n];
+    s_ext[UFS + n] = prob_parm.rho * prob_parm.massfrac[n];
 }
 
 void pc_prob_close();

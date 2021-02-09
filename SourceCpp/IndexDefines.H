@@ -3,6 +3,7 @@
 
 #include <AMReX_REAL.H>
 #include <AMReX_Arena.H>
+#include <AMReX_GpuMemory.H>
 #include "mechanism.h"
 
 #define URHO 0
@@ -76,28 +77,12 @@
 // This value was hardcoded to 4 in get_method_params in the old Fortran code
 #define NUM_GROW 4
 
-namespace indxmap {
-
-extern AMREX_GPU_DEVICE_MANAGED int qpassMap[NPASSIVE];
-extern AMREX_GPU_DEVICE_MANAGED int upassMap[NPASSIVE];
-
-void init();
-
-AMREX_GPU_HOST_DEVICE
-AMREX_FORCE_INLINE
-int
-qpass_map(const int i)
+struct PassMap : amrex::Gpu::Managed
 {
-  return qpassMap[i];
-}
+  amrex::GpuArray<int, NPASSIVE> upassMap = {{0}};
+  amrex::GpuArray<int, NPASSIVE> qpassMap = {{0}};
+};
 
-AMREX_GPU_HOST_DEVICE
-AMREX_FORCE_INLINE
-int
-upass_map(const int i)
-{
-  return upassMap[i];
-}
-} // namespace indxmap
+void init_pass_map(std::unique_ptr<PassMap>& pmap);
 
 #endif

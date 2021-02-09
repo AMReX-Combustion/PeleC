@@ -3,20 +3,25 @@
 
 #include <AMReX_REAL.H>
 #include <AMReX_GpuQualifiers.H>
+#include <AMReX_GpuMemory.H>
 
-namespace ProbParm {
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real pl;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real rhol;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real Tl;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real eintl;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real pr;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real rhor;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real Tr;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real eintr;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real angle;
-extern AMREX_GPU_DEVICE_MANAGED amrex::Real L;
-extern AMREX_GPU_DEVICE_MANAGED amrex::GpuArray<amrex::Real, NUM_SPECIES>
-  massfrac;
-} // namespace ProbParm
+struct ProbParmDevice : amrex::Gpu::Managed
+{
+  amrex::Real pl = 1.0;
+  amrex::Real rhol = 1.0;
+  amrex::Real Tl = 0.0;
+  amrex::Real eintl = 0.0;
+  amrex::Real pr = 0.1;
+  amrex::Real rhor = 0.125;
+  amrex::Real eintr = 0.0;
+  amrex::Real Tr = 0.0;
+  amrex::Real angle = 0.0;
+  amrex::Real L = 0.0;
+  amrex::GpuArray<amrex::Real, NUM_SPECIES> massfrac = {1.0};
+};
+
+struct ProbParmHost : amrex::Gpu::Managed
+{
+};
 
 #endif

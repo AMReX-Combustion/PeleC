@@ -191,14 +191,14 @@ if(PELEC_DIM GREATER 2)
   add_test_re(zerod-1 zeroD)
   if(PELEC_ENABLE_AMREX_EB)
     add_test_re(eb-c3 EB-C3)
-    if(PELEC_ENABLE_FPE_TRAP_FOR_TESTS)
-      add_test_rf(eb-c7 EB-C7) # This test exposes an EB issue not yet solved
-    else()
-      add_test_re(eb-c7 EB-C7)
-    endif()
+    add_test_re(eb-c7 EB-C7)
     add_test_re(eb-c8 EB-C8)
     add_test_re(eb-bluffbody-1 EB-BluffBody)
     add_test_re(eb-plane-1 EB-Plane)
+  endif()
+  if(PELEC_ENABLE_SUNDIALS)
+    add_test_re(pmf-2 PMF)
+    add_test_re(pmf-3 PMF)
   endif()
 endif()
 
@@ -214,13 +214,11 @@ if(PELEC_ENABLE_MASA AND (PELEC_DIM GREATER 2))
   # Created an option to exclude these tests when using ASAN and UBSAN because they take too long
   if(NOT PELEC_ENABLE_SANITIZE_FOR_TESTS)
     # Create list of resolutions we want to test with; make sure to pass it as a string in quotes
-    set(LIST_OF_GRID_SIZES 8 12 16 20)
+    set(LIST_OF_GRID_SIZES 12 16 24)
     add_test_v2(cns-no-amr MMS "${LIST_OF_GRID_SIZES}")
     add_test_v2(cns-no-amr-mol MMS "${LIST_OF_GRID_SIZES}")
-    #add_test_v3(cns-amr MMS "${LIST_OF_GRID_SIZES}") # This one takes a while with AMR
-
-    set(LIST_OF_GRID_SIZES 8 12 16 24)
     add_test_v2(cns-les-no-amr MMS "${LIST_OF_GRID_SIZES}")
+    #add_test_v3(cns-amr MMS "${LIST_OF_GRID_SIZES}") # This one takes a while with AMR
   endif()
 endif()
 

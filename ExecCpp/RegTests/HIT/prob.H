@@ -4,6 +4,8 @@
 #include <AMReX_Print.H>
 #include <AMReX_Geometry.H>
 #include <AMReX_FArrayBox.H>
+#include <AMReX_REAL.H>
+#include <AMReX_GpuMemory.H>
 #include <AMReX_ParmParse.H>
 
 #include "mechanism.h"
@@ -26,7 +28,8 @@ pc_initdata(
   int j,
   int k,
   amrex::Array4<amrex::Real> const& state,
-  amrex::GeometryData const& geomdata)
+  amrex::GeometryData const& geomdata,
+  ProbParmDevice const& prob_parm)
 {
 
   // Geometry
@@ -39,12 +42,12 @@ pc_initdata(
     prob_lo[2] + static_cast<amrex::Real>(k + 0.5) * dx[2]};
 
   // Uniform density, temperature, pressure (internal energy)
-  state(i, j, k, URHO) = ProbParm::rho0;
-  state(i, j, k, UEINT) = ProbParm::rho0 * ProbParm::eint0;
-  state(i, j, k, UTEMP) = ProbParm::T0;
+  state(i, j, k, URHO) = prob_parm.rho0;
+  state(i, j, k, UEINT) = prob_parm.rho0 * prob_parm.eint0;
+  state(i, j, k, UTEMP) = prob_parm.T0;
   amrex::Real massfrac[NUM_SPECIES] = {1.0};
   for (int n = 0; n < NUM_SPECIES; n++)
-    state(i, j, k, UFS + n) = ProbParm::rho0 * massfrac[n];
+    state(i, j, k, UFS + n) = prob_parm.rho0 * massfrac[n];
 
   // Fill in the velocities and energy.
   amrex::Real u[3] = {0.0};
@@ -56,11 +59,11 @@ pc_initdata(
   int idxp1[3] = {0};
   amrex::Real slp[3] = {0.0};
   for (int cnt = 0; cnt < 3; cnt++) {
-    mod[cnt] = std::fmod(x[cnt], ProbParm::Linput);
-    locate(ProbParm::xarray, ProbParm::inres, mod[cnt], idx[cnt]);
-    idxp1[cnt] = (idx[cnt] + 1) % ProbParm::inres;
+    mod[cnt] = std::fmod(x[cnt], prob_parm.Linput);
+    locate(prob_parm.d_xarray, prob_parm.inres, mod[cnt], idx[cnt]);
+    idxp1[cnt] = (idx[cnt] + 1) % prob_parm.inres;
     slp[cnt] =
-      (mod[cnt] - ProbParm::xarray[idx[cnt]]) / ProbParm::xdiff[idx[cnt]];
+      (mod[cnt] - prob_parm.d_xarray[idx[cnt]]) / prob_parm.d_xdiff[idx[cnt]];
   }
 
   const amrex::Real f0 = (1 - slp[0]) * (1 - slp[1]) * (1 - slp[2]);
@@ -73,90 +76,90 @@ pc_initdata(
   const amrex::Real f7 = slp[0] * slp[1] * slp[2];
 
   uinterp[0] =
-    ProbParm::uinput
-        [idx[0] + ProbParm::inres * (idx[1] + ProbParm::inres * idx[2])] *
+    prob_parm.d_uinput
+        [idx[0] + prob_parm.inres * (idx[1] + prob_parm.inres * idx[2])] *
       f0 +
-    ProbParm::uinput
-        [idxp1[0] + ProbParm::inres * (idx[1] + ProbParm::inres * idx[2])] *
+    prob_parm.d_uinput
+        [idxp1[0] + prob_parm.inres * (idx[1] + prob_parm.inres * idx[2])] *
       f1 +
-    ProbParm::uinput
-        [idx[0] + ProbParm::inres * (idxp1[1] + ProbParm::inres * idx[2])] *
+    prob_parm.d_uinput
+        [idx[0] + prob_parm.inres * (idxp1[1] + prob_parm.inres * idx[2])] *
       f2 +
-    ProbParm::uinput
-        [idx[0] + ProbParm::inres * (idx[1] + ProbParm::inres * idxp1[2])] *
+    prob_parm.d_uinput
+        [idx[0] + prob_parm.inres * (idx[1] + prob_parm.inres * idxp1[2])] *
       f3 +
-    ProbParm::uinput
-        [idxp1[0] + ProbParm::inres * (idx[1] + ProbParm::inres * idxp1[2])] *
+    prob_parm.d_uinput
+        [idxp1[0] + prob_parm.inres * (idx[1] + prob_parm.inres * idxp1[2])] *
       f4 +
-    ProbParm::uinput
-        [idx[0] + ProbParm::inres * (idxp1[1] + ProbParm::inres * idxp1[2])] *
+    prob_parm.d_uinput
+        [idx[0] + prob_parm.inres * (idxp1[1] + prob_parm.inres * idxp1[2])] *
       f5 +
-    ProbParm::uinput
-        [idxp1[0] + ProbParm::inres * (idxp1[1] + ProbParm::inres * idx[2])] *
+    prob_parm.d_uinput
+        [idxp1[0] + prob_parm.inres * (idxp1[1] + prob_parm.inres * idx[2])] *
       f6 +
-    ProbParm::uinput
-        [idxp1[0] + ProbParm::inres * (idxp1[1] + ProbParm::inres * idxp1[2])] *
+    prob_parm.d_uinput
+        [idxp1[0] + prob_parm.inres * (idxp1[1] + prob_parm.inres * idxp1[2])] *
       f7;
   uinterp[1] =
-    ProbParm::vinput
-        [idx[0] + ProbParm::inres * (idx[1] + ProbParm::inres * idx[2])] *
+    prob_parm.d_vinput
+        [idx[0] + prob_parm.inres * (idx[1] + prob_parm.inres * idx[2])] *
       f0 +
-    ProbParm::vinput
-        [idxp1[0] + ProbParm::inres * (idx[1] + ProbParm::inres * idx[2])] *
+    prob_parm.d_vinput
+        [idxp1[0] + prob_parm.inres * (idx[1] + prob_parm.inres * idx[2])] *
       f1 +
-    ProbParm::vinput
-        [idx[0] + ProbParm::inres * (idxp1[1] + ProbParm::inres * idx[2])] *
+    prob_parm.d_vinput
+        [idx[0] + prob_parm.inres * (idxp1[1] + prob_parm.inres * idx[2])] *
       f2 +
-    ProbParm::vinput
-        [idx[0] + ProbParm::inres * (idx[1] + ProbParm::inres * idxp1[2])] *
+    prob_parm.d_vinput
+        [idx[0] + prob_parm.inres * (idx[1] + prob_parm.inres * idxp1[2])] *
       f3 +
-    ProbParm::vinput
-        [idxp1[0] + ProbParm::inres * (idx[1] + ProbParm::inres * idxp1[2])] *
+    prob_parm.d_vinput
+        [idxp1[0] + prob_parm.inres * (idx[1] + prob_parm.inres * idxp1[2])] *
       f4 +
-    ProbParm::vinput
-        [idx[0] + ProbParm::inres * (idxp1[1] + ProbParm::inres * idxp1[2])] *
+    prob_parm.d_vinput
+        [idx[0] + prob_parm.inres * (idxp1[1] + prob_parm.inres * idxp1[2])] *
       f5 +
-    ProbParm::vinput
-        [idxp1[0] + ProbParm::inres * (idxp1[1] + ProbParm::inres * idx[2])] *
+    prob_parm.d_vinput
+        [idxp1[0] + prob_parm.inres * (idxp1[1] + prob_parm.inres * idx[2])] *
       f6 +
-    ProbParm::vinput
-        [idxp1[0] + ProbParm::inres * (idxp1[1] + ProbParm::inres * idxp1[2])] *
+    prob_parm.d_vinput
+        [idxp1[0] + prob_parm.inres * (idxp1[1] + prob_parm.inres * idxp1[2])] *
       f7;
   uinterp[2] =
-    ProbParm::winput
-        [idx[0] + ProbParm::inres * (idx[1] + ProbParm::inres * idx[2])] *
+    prob_parm.d_winput
+        [idx[0] + prob_parm.inres * (idx[1] + prob_parm.inres * idx[2])] *
       f0 +
-    ProbParm::winput
-        [idxp1[0] + ProbParm::inres * (idx[1] + ProbParm::inres * idx[2])] *
+    prob_parm.d_winput
+        [idxp1[0] + prob_parm.inres * (idx[1] + prob_parm.inres * idx[2])] *
       f1 +
-    ProbParm::winput
-        [idx[0] + ProbParm::inres * (idxp1[1] + ProbParm::inres * idx[2])] *
+    prob_parm.d_winput
+        [idx[0] + prob_parm.inres * (idxp1[1] + prob_parm.inres * idx[2])] *
       f2 +
-    ProbParm::winput
-        [idx[0] + ProbParm::inres * (idx[1] + ProbParm::inres * idxp1[2])] *
+    prob_parm.d_winput
+        [idx[0] + prob_parm.inres * (idx[1] + prob_parm.inres * idxp1[2])] *
       f3 +
-    ProbParm::winput
-        [idxp1[0] + ProbParm::inres * (idx[1] + ProbParm::inres * idxp1[2])] *
+    prob_parm.d_winput
+        [idxp1[0] + prob_parm.inres * (idx[1] + prob_parm.inres * idxp1[2])] *
       f4 +
-    ProbParm::winput
-        [idx[0] + ProbParm::inres * (idxp1[1] + ProbParm::inres * idxp1[2])] *
+    prob_parm.d_winput
+        [idx[0] + prob_parm.inres * (idxp1[1] + prob_parm.inres * idxp1[2])] *
       f5 +
-    ProbParm::winput
-        [idxp1[0] + ProbParm::inres * (idxp1[1] + ProbParm::inres * idx[2])] *
+    prob_parm.d_winput
+        [idxp1[0] + prob_parm.inres * (idxp1[1] + prob_parm.inres * idx[2])] *
       f6 +
-    ProbParm::winput
-        [idxp1[0] + ProbParm::inres * (idxp1[1] + ProbParm::inres * idxp1[2])] *
+    prob_parm.d_winput
+        [idxp1[0] + prob_parm.inres * (idxp1[1] + prob_parm.inres * idxp1[2])] *
       f7;
 
-  u[0] = uinterp[0] + forcing_params::u0;
-  u[1] = uinterp[1] + forcing_params::v0;
-  u[2] = uinterp[2] + forcing_params::w0;
-  state(i, j, k, UMX) = ProbParm::rho0 * u[0];
-  state(i, j, k, UMY) = ProbParm::rho0 * u[1];
-  state(i, j, k, UMZ) = ProbParm::rho0 * u[2];
+  u[0] = uinterp[0] + prob_parm.forcing_u0;
+  u[1] = uinterp[1] + prob_parm.forcing_v0;
+  u[2] = uinterp[2] + prob_parm.forcing_w0;
+  state(i, j, k, UMX) = prob_parm.rho0 * u[0];
+  state(i, j, k, UMY) = prob_parm.rho0 * u[1];
+  state(i, j, k, UMZ) = prob_parm.rho0 * u[2];
   state(i, j, k, UEDEN) =
-    ProbParm::rho0 *
-    (ProbParm::eint0 + 0.5 * (u[0] * u[0] + u[1] * u[1] + u[2] * u[2]));
+    prob_parm.rho0 *
+    (prob_parm.eint0 + 0.5 * (u[0] * u[0] + u[1] * u[1] + u[2] * u[2]));
 }
 
 AMREX_GPU_DEVICE
@@ -169,7 +172,8 @@ bcnormal(
   const int /*idir*/,
   const int /*sgn*/,
   const amrex::Real /*time*/,
-  amrex::GeometryData const& /*geomdata*/)
+  amrex::GeometryData const& /*geomdata*/,
+  ProbParmDevice const& /*prob_parm*/)
 {
 }
 

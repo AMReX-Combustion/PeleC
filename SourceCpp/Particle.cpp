@@ -136,7 +136,7 @@ PeleC::readParticleParams()
   ppp.getarr("fuel_boil_temp", boil_T);
   ppp.getarr("fuel_latent", latent);
   ppp.getarr("fuel_cp", spraycp);
-  for (int i = 0; i != nfuel; ++i) {
+  for (int i = 0; i < nfuel; ++i) {
     sprayFuelNames[i] = fuel_names[i];
     sprayCritT[i] = crit_T[i];
     sprayBoilT[i] = boil_T[i];
@@ -192,8 +192,8 @@ PeleC::defineParticles()
     Abort("Cannot have more spray fuel species than fluid species");
   }
 #ifdef PELEC_EOS_FUEGO
-  for (int i = 0; i != SPRAY_FUEL_NUM; ++i) {
-    for (int ns = 0; ns != NUM_SPECIES; ++ns) {
+  for (int i = 0; i < SPRAY_FUEL_NUM; ++i) {
+    for (int ns = 0; ns < NUM_SPECIES; ++ns) {
       std::string gas_spec = spec_names[ns];
       if (gas_spec == sprayFuelNames[i]) {
         sprayIndxMap[i] = ns;
@@ -206,7 +206,7 @@ PeleC::defineParticles()
     }
   }
 #else
-  for (int ns = 0; ns != SPRAY_FUEL_NUM; ++ns) {
+  for (int ns = 0; ns < SPRAY_FUEL_NUM; ++ns) {
     sprayIndxMap[ns] = 0;
   }
 #endif

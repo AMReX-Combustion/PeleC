@@ -25,6 +25,7 @@ THREAD_SANITIZER = FALSE
 
 # PeleC
 USE_REACT = FALSE
+USE_FORCING = TRUE
 USE_EB = FALSE
 Eos_dir := GammaLaw
 Transport_dir := Constant
