@@ -13,7 +13,9 @@ trace_ppm(
   const amrex::Box& vbx,
   const amrex::Real dt,
   const amrex::Real* dx,
-  const int use_flattening)
+  const int use_flattening,
+  const int use_hybrid_weno,
+  const int weno_scheme)
 {
 
   // here, lo and hi are the range we loop over -- this can include ghost cells
@@ -98,16 +100,12 @@ trace_ppm(
     // integrals under the characteristic waves
 
     // Original PPM and Hybrid WENO/PPM do not have the same stencil size
-    int stencil_size;
-    if ( PeleC::use_hybrid_weno && PeleC::weno_scheme == 2 ){ // For 7th order WENO
-      stencil_size = 7; 
-    } else if ( PeleC::use_hybrid_weno && PeleC::weno_scheme == 3 ){ // For 7th order WENO
-      stencil_size = 3;
-    }else{
-      stencil_size = 5;
-    }
+      amrex::Real s_weno7[7];
+      amrex::Real s_weno3[3];
+      amrex::Real s_weno5[5];
 
-    amrex::Real s[stencil_size];
+
+   amrex::Real s[5];
 
     amrex::Real flat = 1.0;
     // Calculate flattening in-place
@@ -125,45 +123,91 @@ trace_ppm(
 
     for (int n = 0; n < QVAR; n++) {
 
-      if (PeleC::use_hybrid_weno){
-
-        int idx_pos; 
-        if ( PeleC::weno_scheme == 2 ){ // For 7th order WENO
-          idx_pos = -3;  
-        } else if ( PeleC::weno_scheme == 3 ){ // For 3rd order WENO
-          idx_pos = -1;
-        } else {
-          idx_pos = -2;
-        } 
+      if ( (use_hybrid_weno && weno_scheme == 0) || (use_hybrid_weno && weno_scheme == 1)){
 
         if (idir == 0) {
-          for (int idx = 0; idx < stencil_size; idx++){
-            s[idx] = q_arr(i + idx_pos, j, k, n);
-            idx_pos++;
-          }       
+          s_weno5[0] = q_arr(i - 2, j, k, n);
+          s_weno5[1] = q_arr(i - 1, j, k, n);
+          s_weno5[2] = q_arr(i, j, k, n);
+          s_weno5[3] = q_arr(i + 1, j, k, n);
+          s_weno5[4] = q_arr(i + 2, j, k, n);
+
         } else if (idir == 1) {
-          for (int idx = 0; idx < stencil_size; idx++){
-            s[idx] = q_arr(i, j + idx_pos, k, n);
-            idx_pos++;
-          }
+          s_weno5[0] = q_arr(i, j - 2, k, n);
+          s_weno5[1] = q_arr(i, j - 1, k, n);
+          s_weno5[2] = q_arr(i, j, k, n);
+          s_weno5[3] = q_arr(i, j + 1, k, n);
+          s_weno5[4] = q_arr(i, j + 2, k, n);
+
         } else {
-          for (int idx = 0; idx < stencil_size; idx++){
-            s[idx] = q_arr(i, j, k + idx_pos, n);
-            idx_pos++;
-          }
+          s_weno5[0] = q_arr(i, j, k - 2, n);
+          s_weno5[1] = q_arr(i, j, k - 1, n);
+          s_weno5[2] = q_arr(i, j, k, n);
+          s_weno5[3] = q_arr(i, j, k + 1, n);
+          s_weno5[4] = q_arr(i, j, k + 2, n);
         }
 
-        if ( PeleC::weno_scheme == 0 ){ 
-          weno_reconstruct_5js(s, sm, sp);
-        }else if ( PeleC::weno_scheme == 1 ){
-          weno_reconstruct_5z(s, sm, sp);
-        }else if ( PeleC::weno_scheme == 2 ){
-          weno_reconstruct_7z(s, sm, sp);
-        }else if ( PeleC::weno_scheme == 3 ){
-          weno_reconstruct_3z(s, sm, sp);
-        }else{
-          amrex::Abort("Error, use_hybrid_weno not known");
+        if ( weno_scheme == 0 ){
+          weno_reconstruct_5js(s_weno5, sm, sp);
+        }else if ( weno_scheme == 1 ){
+          weno_reconstruct_5z(s_weno5, sm, sp);
         }
+        ppm_int_profile(sm, sp, s[2], un, cc, dtdx, Ip[n], Im[n]);
+
+      } else if (use_hybrid_weno && weno_scheme == 2){
+     
+       if (idir == 0) {
+          s_weno7[0] = q_arr(i - 3, j, k, n);
+          s_weno7[1] = q_arr(i - 2, j, k, n);
+          s_weno7[2] = q_arr(i - 1, j, k, n);
+          s_weno7[3] = q_arr(i, j, k, n);
+          s_weno7[4] = q_arr(i + 1, j, k, n);
+          s_weno7[5] = q_arr(i + 2, j, k, n);
+          s_weno7[6] = q_arr(i + 3, j, k, n);
+
+        } else if (idir == 1) {
+          s_weno7[0] = q_arr(i, j - 3, k, n);
+          s_weno7[1] = q_arr(i, j - 2, k, n);
+          s_weno7[2] = q_arr(i, j - 1, k, n);
+          s_weno7[3] = q_arr(i, j, k, n);
+          s_weno7[4] = q_arr(i, j + 1, k, n);
+          s_weno7[5] = q_arr(i, j + 2, k, n);
+          s_weno7[6] = q_arr(i, j + 3, k, n);
+
+        } else {
+          s_weno7[0] = q_arr(i, j, k - 3, n);
+          s_weno7[1] = q_arr(i, j, k - 2, n);
+          s_weno7[2] = q_arr(i, j, k - 1, n);
+          s_weno7[3] = q_arr(i, j, k, n);
+          s_weno7[4] = q_arr(i, j, k + 1, n);
+          s_weno7[5] = q_arr(i, j, k + 2, n);
+          s_weno7[6] = q_arr(i, j, k + 3, n);
+        }
+
+        weno_reconstruct_7z(s_weno7, sm, sp);
+        ppm_int_profile(sm, sp, s[3], un, cc, dtdx, Ip[n], Im[n]);
+
+      } else if (use_hybrid_weno && weno_scheme == 3){
+
+       if (idir == 0) {
+          s_weno3[0] = q_arr(i - 1, j, k, n);
+          s_weno3[1] = q_arr(i, j, k, n);
+          s_weno3[2] = q_arr(i + 1, j, k, n);
+
+        } else if (idir == 1) {
+          s_weno3[0] = q_arr(i, j - 1, k, n);
+          s_weno3[1] = q_arr(i, j, k, n);
+          s_weno3[2] = q_arr(i, j + 1, k, n);
+
+        } else {
+          s_weno3[0] = q_arr(i, j, k - 1, n);
+          s_weno3[1] = q_arr(i, j, k, n);
+          s_weno3[2] = q_arr(i, j, k + 1, n);
+        }
+
+        weno_reconstruct_3z(s_weno3, sm, sp);
+        ppm_int_profile(sm, sp, s[1], un, cc, dtdx, Ip[n], Im[n]);
+
       }else{
 
         if (idir == 0) {
@@ -189,13 +233,9 @@ trace_ppm(
         }
 
         ppm_reconstruct(s, flat, sm, sp);
+        ppm_int_profile(sm, sp, s[2], un, cc, dtdx, Ip[n], Im[n]);
 
       }
-
-      int idx = 2;
-      if ( PeleC::use_hybrid_weno && PeleC::weno_scheme == 2 ){idx=3;} // For WENO 7
-      if ( PeleC::use_hybrid_weno && PeleC::weno_scheme == 3 ){idx=1;} // For WENO 3
-      ppm_int_profile(sm, sp, s[idx], un, cc, dtdx, Ip[n], Im[n]);
 
     }
 
