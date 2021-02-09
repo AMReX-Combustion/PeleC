@@ -28,7 +28,6 @@ static int add_ext_src;
 static int add_forcing_src;
 static int hybrid_hydro;
 static int ppm_type;
-static int weno_variant;
 static int ppm_trace_sources;
 static int ppm_temp_fix;
 static int ppm_predict_gammae;

@@ -28,7 +28,6 @@ pp.query("add_ext_src", add_ext_src);
 pp.query("add_forcing_src", add_forcing_src);
 pp.query("hybrid_hydro", hybrid_hydro);
 pp.query("ppm_type", ppm_type);
-pp.query("weno_variant", weno_variant);
 pp.query("ppm_trace_sources", ppm_trace_sources);
 pp.query("ppm_temp_fix", ppm_temp_fix);
 pp.query("ppm_predict_gammae", ppm_predict_gammae);
