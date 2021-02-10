@@ -142,6 +142,7 @@ PeleC::readParticleParams()
     sprayData.boilT[i] = boil_T[i];
     sprayData.cp[i] = spraycp[i];
     sprayData.latent[i] = latent[i];
+    sprayData.ref_latent[i] = latent[i];
     sprayData.rho[i] = sprayrho[i];
     sprayData.mu[i] = mu[i];
     sprayData.lambda[i] = lambda[i];
