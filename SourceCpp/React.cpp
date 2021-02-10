@@ -172,15 +172,8 @@ PeleC::react_state(
           const auto len = amrex::length(bx);
           const auto lo = amrex::lbound(bx);
           const int ncells = len.x * len.y * len.z;
-          amrex::Real chemintg_cost;
           amrex::Real current_time = 0.0;
 
-#ifdef AMREX_USE_GPU
-          int reactor_type = 1;
-          int ode_ncells = ncells;
-#else
-          int ode_ncells = 1;
-#endif
           // for flattened array integration
           amrex::Vector<amrex::Real> h_rY_in(ncells * (NUM_SPECIES + 1));
           amrex::Gpu::DeviceVector<amrex::Real> rY_in(
@@ -278,7 +271,12 @@ PeleC::react_state(
               amrex::Gpu::deviceToHost, re_src_in.begin(), re_src_in.end(),
               h_re_src_in.begin());
 
-            chemintg_cost = 0.0;
+#ifdef AMREX_USE_GPU
+            int ode_ncells = ncells;
+#else
+            int ode_ncells = 1;
+#endif
+            amrex::Real chemintg_cost = 0.0;
             for (int i = 0; i < ncells; i += ode_ncells) {
 
 #ifdef AMREX_USE_GPU
@@ -300,8 +298,8 @@ PeleC::react_state(
           } else {
 #ifdef AMREX_USE_GPU
             react(
-              bx, rhoY, frcExt, T, rhoE, frcEExt, fc, mask, dt, current_time,
-              reactor_type, amrex::Gpu::gpuStream());
+              bx, rhoY, frcExt, T, rhoE, frcEExt, fc, mask, dt, current_time, 1,
+              amrex::Gpu::gpuStream());
 #else
             react(
               bx, rhoY, frcExt, T, rhoE, frcEExt, fc, mask, dt, current_time);

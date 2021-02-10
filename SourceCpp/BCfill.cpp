@@ -10,7 +10,7 @@ struct PCHypFillExtDir
   ProbParmDevice const* lprobparm;
 
   AMREX_GPU_HOST
-  constexpr PCHypFillExtDir(ProbParmDevice const* d_prob_parm)
+  constexpr explicit PCHypFillExtDir(ProbParmDevice const* d_prob_parm)
     : lprobparm(d_prob_parm)
   {
   }
