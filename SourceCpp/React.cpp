@@ -297,9 +297,10 @@ PeleC::react_state(
               rY_in.begin());
           } else {
 #ifdef AMREX_USE_GPU
+            const int reactor_type = 1;
             react(
-              bx, rhoY, frcExt, T, rhoE, frcEExt, fc, mask, dt, current_time, 1,
-              amrex::Gpu::gpuStream());
+              bx, rhoY, frcExt, T, rhoE, frcEExt, fc, mask, dt, current_time,
+              reactor_type, amrex::Gpu::gpuStream());
 #else
             react(
               bx, rhoY, frcExt, T, rhoE, frcEExt, fc, mask, dt, current_time);
