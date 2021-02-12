@@ -238,10 +238,10 @@ PeleC::checkPoint(
 
 #ifdef AMREX_PARTICLES
   bool is_checkpoint = true;
-  if (PeleC::theSprayPC() && do_spray_particles) {
+  if (PeleC::theSprayPC() != nullptr && do_spray_particles) {
     int write_ascii = 0; // Not for checkpoints
     PeleC::theSprayPC()->SprayParticleIO(
-      level, is_checkpoint, write_ascii, dir, PeleC::sprayFuelNames);
+      level, is_checkpoint, write_ascii, dir, PeleC::spray_fuel_names);
   }
 #endif
 
@@ -769,20 +769,8 @@ PeleC::writePlotFile(
 
   for (const auto& it : dlist) {
     if (amrex::Amr::isDerivePlotVar(it.name())) {
-#ifdef AMREX_PARTICLES
-      if (
-        it.name() == "particle_count" || it.name() == "total_particle_count" ||
-        it.name() == "particle_density") {
-        if (PeleC::theSprayPC()) {
-          derive_names.push_back(it.name());
-          num_derive++;
-        }
-      } else
-#endif
-      {
-        derive_names.push_back(it.name());
-        num_derive += it.numDerive();
-      }
+      derive_names.push_back(it.name());
+      num_derive += it.numDerive();
     }
   }
 
@@ -943,10 +931,10 @@ PeleC::writePlotFile(
   amrex::VisMF::Write(plotMF, TheFullPath, how, true);
 #ifdef AMREX_PARTICLES
   bool is_checkpoint = false;
-  if (PeleC::theSprayPC()) {
+  if (PeleC::theSprayPC() != nullptr) {
     PeleC::theSprayPC()->SprayParticleIO(
       level, is_checkpoint, write_spray_ascii_files, dir,
-      PeleC::sprayFuelNames);
+      PeleC::spray_fuel_names);
   }
 #endif
 }

@@ -147,13 +147,9 @@ public:
 
   // Initialize particle locations and velocities (and strengths if relevant)
   void initParticles();
-  //
+
   // Create relevant particle data
-  //
   void createParticleData();
-  //
-  // Timestamp particles
-  void particleTimestamp(int ngrow);
 
   // Default verbosity of Particle class
   static int particle_verbose;
@@ -163,13 +159,10 @@ public:
     const std::string& restart_file, bool is_checkpoint = true);
 
   // Redistribute
-  //
   virtual void
   particle_redistribute(int lbase = 0, bool init_part = false) override;
 
-  //
   // Setup ghost and virtual particles and do moveKickDrift
-  //
   void particleMKD(
     const Real time,
     const Real dt,
@@ -179,9 +172,7 @@ public:
     const int where_width,
     amrex::MultiFab& tmp_spray_source);
 
-  //
   // Do the moveKick for active and ghost particles
-  //
   void particleMK(
     const Real time,
     const Real dt,
@@ -191,7 +182,6 @@ public:
     const int amr_ncycle,
     amrex::MultiFab& tmp_spray_source);
 
-  //
   // Setup virtual particles if necessary
   void setupVirtualParticles();
 
@@ -207,10 +197,6 @@ public:
   // Time step control based on particles
   void particleEstTimeStep(amrex::Real& est_dt);
 
-  // Derived quantities associated with particles
-  std::unique_ptr<amrex::MultiFab>
-  particleDerive(const std::string& name, amrex::Real time, int ngrow);
-
   // Default cfl of particles in Particle class
   static amrex::Real particle_cfl;
 
@@ -223,7 +209,7 @@ public:
   static int particle_mass_tran;
   static int particle_heat_tran;
   static int particle_mom_tran;
-  static amrex::Vector<std::string> sprayFuelNames;
+  static amrex::Vector<std::string> spray_fuel_names;
 #endif
 
   // Get problem metrics.
