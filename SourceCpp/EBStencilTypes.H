@@ -36,10 +36,11 @@ struct EBBndryGeom
   amrex::Real eb_vfrac;
   amrex::IntVect iv;
 
+  AMREX_GPU_DEVICE
   bool operator<(const EBBndryGeom& rhs) const { return iv < rhs.iv; }
 };
 
-#ifdef AMREX_USE_CUDA
+#if defined(AMREX_USE_CUDA) || defined(AMREX_USE_HIP)
 // Comparison operator for thrust sort
 struct EBBndryGeomCmp
 {

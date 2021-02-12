@@ -181,13 +181,11 @@ pc_expl_reactions(
   amrex::Real updt_time = 0.0;
 
   amrex::Real urk[NVAR];
-  amrex::Real urk_carryover[NVAR] = {};
   for (int n = 0; n < NVAR; ++n)
     urk[n] = sold(i, j, k, n);
   if (clean_react_massfrac == 1) {
     clip_normalize_rY(urk[URHO], &urk[UFS]);
   }
-  amrex::Real urk_err[NVAR] = {};
 
   // using rho instead of rho_old for
   // being consistent with rho update inside
@@ -197,24 +195,24 @@ pc_expl_reactions(
   // Do RK time-stepping
   // int steps = 0;
   while (updt_time < dt_react) {
+    amrex::Real urk_err[NVAR] = {0.0};
+    amrex::Real urk_carryover[NVAR];
     for (int n = 0; n < NVAR; n++) {
       urk_carryover[n] = urk[n];
-      urk_err[n] = 0.0;
     }
     amrex::Real rhoe_carryover = rhoe_rk;
 
-    amrex::Real wdot[NUM_SPECIES] = {};
-    amrex::Real massfrac[NUM_SPECIES] = {};
-    amrex::Real ei[NUM_SPECIES] = {};
     for (int stage = 0; stage < 6; stage++) {
       rhoInv = 1.0 / urk[URHO];
+      amrex::Real massfrac[NUM_SPECIES];
       for (int n = 0; n < NUM_SPECIES; ++n) {
         massfrac[n] = urk[UFS + n] * rhoInv;
       }
 
+      amrex::Real wdot[NUM_SPECIES];
       EOS::RTY2WDOT(urk[URHO], urk[UTEMP], massfrac, wdot);
 
-      amrex::Real Temp_rk;
+      amrex::Real Temp_rk = urk[UTEMP];
       EOS::EY2T(rhoe_rk / urk[URHO], massfrac, Temp_rk);
 
       for (int n = 0; n < NUM_SPECIES; ++n)
@@ -225,6 +223,7 @@ pc_expl_reactions(
       EOS::TY2Cv(urk[UTEMP], massfrac, cv);
 
       // get species internal energies
+      amrex::Real ei[NUM_SPECIES];
       EOS::T2Ei(Temp_rk, ei);
 
       // update temperature eqn source term

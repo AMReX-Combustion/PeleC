@@ -14,7 +14,6 @@ CEXE_sources += Setup.cpp
 CEXE_sources += main.cpp
 CEXE_sources += SumIQ.cpp
 CEXE_sources += SumUtils.cpp
-CEXE_sources += Timestep.cpp
 CEXE_sources += IndexDefines.cpp
 CEXE_sources += Tagging.cpp
 CEXE_sources += Diffterm.cpp

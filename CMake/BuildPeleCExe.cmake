@@ -163,7 +163,6 @@ function(build_pelec_exe pelec_exe_name)
        ${SRC_DIR}/Tagging.H
        ${SRC_DIR}/Tagging.cpp
        ${SRC_DIR}/Timestep.H
-       ${SRC_DIR}/Timestep.cpp
        ${SRC_DIR}/Utilities.H
        ${SRC_DIR}/Utilities.cpp
   )
