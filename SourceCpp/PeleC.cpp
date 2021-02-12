@@ -689,6 +689,12 @@ PeleC::initData()
       // Verify that the sum of (rho Y)_i = rho at every cell
       pc_check_initial_species(i, j, k, sfab);
     });
+#ifdef SOOT_MODEL
+    SootData const* soot_data = soot_model->getSootData();
+    amrex::ParallelFor(box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      pc_initsootdata(i, j, k, sfab, geomdata, *lprobparm, *soot_data);
+    });
+#endif
   }
 
   enforce_consistent_e(S_new);

@@ -333,7 +333,8 @@ PeleC::initParticles()
       theSprayPC()->InitFromAsciiFile(particle_init_file, NSR_SPR + NAR_SPR);
     } else if (particle_init_function > 0) {
       ProbParmHost const* lprobparm = prob_parm_host.get();
-      theSprayPC()->InitSprayParticles(*lprobparm);
+      ProbParmDevice const* lprobparm = prob_parm_device.get();
+      theSprayPC()->InitSprayParticles(*lprobparm, *lprobparm_d);
     }
   }
 }
@@ -379,14 +380,13 @@ PeleC::particleMKD(
   int nstep = parent->levelSteps(0);
 
   ProbParmHost const* lprobparm = prob_parm_host.get();
+  ProbParmDevice const* lprobparm_d = prob_parm_device.get();
 
   BL_PROFILE_VAR("SprayParticles::injectParticles()", INJECT_SPRAY);
   bool injectParts = theSprayPC()->injectParticles(
-    time, dt, nstep, level, finest_level, *lprobparm);
-  bool insertParts = theSprayPC()->insertParticles(
-    time, dt, nstep, level, finest_level, *lprobparm);
+    time, dt, nstep, level, finest_level, *lprobparm, *lprobparm_d);
   // Only redistribute if we injected or inserted particles
-  if (injectParts || insertParts)
+  if (injectParts)
     theSprayPC()->Redistribute(level);
   BL_PROFILE_VAR_STOP(INJECT_SPRAY);
 

@@ -109,7 +109,7 @@ PeleC::fill_soot_source(
   amrex::ReduceData<amrex::Real> reduce_data(reduce_op);
   using ReduceTuple = typename decltype(reduce_data)::Type;
   amrex::Real soot_dt = std::numeric_limits<amrex::Real>::max();
-  SootData sd = soot_model->getSootData();
+  SootData const* sd = soot_model->getSootData();
   for (MFIter mfi(soot_src, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
     const amrex::Box& bx = mfi.growntilebox(ng);
     amrex::FArrayBox& Sfab = state[mfi];
@@ -136,7 +136,7 @@ PeleC::fill_soot_source(
           for (int n = 0; n != NUM_SOOT_VARS; ++n)
             moments[n] = s_arr(i, j, k, UFSOOT + n);
           // Convert moments to mol, clip moments, and convert back to CGS
-          sd.momConvClipConv(moments);
+          sd->momConvClipConv(moments);
           // Limit time step based only on positive moment sources
           for (int n = 0; n != NUM_SOOT_VARS; ++n) {
             int indx = UFSOOT + n;
