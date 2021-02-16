@@ -351,6 +351,8 @@ public:
     int ng);
 
 #ifdef SOOT_MODEL
+  static void setSootIndx();
+
   void construct_old_soot_source(amrex::Real time, amrex::Real dt);
 
   void construct_new_soot_source(amrex::Real time, amrex::Real dt);

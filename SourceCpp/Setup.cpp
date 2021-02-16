@@ -420,18 +420,7 @@ PeleC::variableSetUp()
     name[cnt] = soot_model->sootVariableName(i);
   }
   // Set soot indices
-  {
-    SootComps sc;
-    sc.qRhoIndx = QRHO;
-    sc.qTempIndx = QTEMP;
-    sc.qSpecIndx = QFS;
-    sc.qSootIndx = QFSOOT;
-    sc.rhoIndx = URHO;
-    sc.engIndx = UEDEN;
-    sc.specIndx = UFS;
-    sc.sootIndx = UFSOOT;
-    soot_model->setIndices(sc);
-  }
+  PeleC::setSootIndx();
 #endif
 
   amrex::StateDescriptor::BndryFunc bndryfunc1(pc_bcfill_hyp);

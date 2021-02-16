@@ -3,6 +3,21 @@
 #include <Transport.H>
 
 void
+PeleC::setSootIndx()
+{
+  SootComps sc;
+  sc.qRhoIndx = QRHO;
+  sc.qTempIndx = QTEMP;
+  sc.qSpecIndx = QFS;
+  sc.qSootIndx = QFSOOT;
+  sc.rhoIndx = URHO;
+  sc.engIndx = UEDEN;
+  sc.specIndx = UFS;
+  sc.sootIndx = UFSOOT;
+  soot_model->setIndices(sc);
+}
+
+void
 PeleC::construct_old_soot_source(amrex::Real time, amrex::Real dt)
 {
   old_sources[soot_src]->setVal(0.0);
@@ -66,13 +81,13 @@ PeleC::fill_soot_source(
     amrex::FArrayBox& soot_fab = soot_src[mfi];
     auto const& s_arr = Sfab.array();
     const int nqaux = NQAUX > 0 ? NQAUX : 1;
-    amrex::FArrayBox coeff_cc(bx, nCompTr), q(bx, QVAR), qaux(bx, nqaux);
+    amrex::FArrayBox mu_cc(bx, 1), q(bx, QVAR), qaux(bx, nqaux);
     amrex::Elixir qeli = q.elixir();
     amrex::Elixir qauxeli = qaux.elixir();
-    amrex::Elixir coeff_eli = coeff_cc.elixir();
+    amrex::Elixir mu_eli = mu_cc.elixir();
     auto const& q_arr = q.array();
     auto const& qaux_arr = qaux.array();
-    auto const& coeff_arr = coeff_cc.array();
+    auto const& mu_arr = mu_cc.array();
 
     // Get primitives, Q, including (Y, T, p, rho) from conserved state
     // required for D term
@@ -90,21 +105,29 @@ PeleC::fill_soot_source(
       auto const& qar_yin = q.array(QFS);
       auto const& qar_Tin = q.array(QTEMP);
       auto const& qar_rhoin = q.array(QRHO);
-      auto const& coe_rhoD = coeff_cc.array(dComp_rhoD);
-      auto const& coe_mu = coeff_cc.array(dComp_mu);
-      auto const& coe_xi = coeff_cc.array(dComp_xi);
-      auto const& coe_lambda = coeff_cc.array(dComp_lambda);
+      bool get_xi = false;
+      bool get_mu = true;
+      bool get_lam = false;
+      bool get_diag = false;
       BL_PROFILE("PeleC::get_transport_coeffs()");
       // Get Transport coefs on GPU.
       TransParm const* ltransparm = trans_parm_g;
-      amrex::launch(bx, [=] AMREX_GPU_DEVICE(amrex::Box const& tbx) {
-        get_transport_coeffs(
-          tbx, qar_yin, qar_Tin, qar_rhoin, coe_rhoD, coe_mu, coe_xi,
-          coe_lambda, ltransparm);
-      });
+      amrex::ParallelFor(
+        bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+          Real T = qar_Tin(i, j, k);
+          Real rho = qar_rhoin(i, j, k);
+          GpuArray<Real, NUM_SPECIES> Y;
+          for (int n = 0; n < NUM_SPECIES; ++n) {
+            Y[n] = qar_yin(i, j, k, n);
+          }
+          Real* diag = nullptr;
+          Real mu, xi, lam;
+          transport(get_xi, get_mu, get_lam, get_diag, T, rho, Y.data(), diag, mu, xi, lam, ltransparm);
+          mu_arr(i, j, k) = mu;
+        });
     }
     auto const& soot_arr = soot_fab.array();
-    soot_model->addSootSourceTerm(bx, q_arr, coeff_arr, soot_arr, time, dt);
+    soot_model->addSootSourceTerm(bx, q_arr, mu_arr, soot_arr, time, dt);
   }
   amrex::ReduceOps<amrex::ReduceOpMin> reduce_op;
   amrex::ReduceData<amrex::Real> reduce_data(reduce_op);
