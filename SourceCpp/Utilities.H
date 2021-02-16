@@ -478,9 +478,15 @@ unique(T input)
         *r += 1;
       }
     },
+#ifdef AMREX_USE_DPCPP
+    [=] AMREX_GPU_DEVICE(int const& r, amrex::Gpu::Handler const& h) noexcept {
+      amrex::Gpu::deviceReduceSum_full(dp, r, h);
+    });
+#else
     [=] AMREX_GPU_DEVICE(int const& r) noexcept {
       amrex::Gpu::deviceReduceSum_full(dp, r);
     });
+#endif
   const int Nunique = ds.dataValue() + 1;
 
   // allocate the memory
