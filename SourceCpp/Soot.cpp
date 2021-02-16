@@ -38,6 +38,7 @@ PeleC::fill_soot_source(
   amrex::MultiFab& soot_src,
   int ng)
 {
+  BL_PROFILE("PeleC::fill_soot_source()");
   const int nCompTr = dComp_lambda + 1;
   const amrex::Real* dx = geom.CellSize();
   const amrex::Real* prob_lo = geom.ProbLo();
