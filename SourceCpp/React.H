@@ -193,6 +193,9 @@ pc_expl_reactions(
   amrex::Real rhoe_rk = rho * e_old;
 
   // Do RK time-stepping
+  //   Integration based on temperature for ideal EOS, energy for nonideal EOS
+  //   the latter is simpler and may be preferred for ideal EOS if error scaling
+  //   can be made more robust
   // int steps = 0;
   while (updt_time < dt_react) {
     amrex::Real urk_err[NVAR] = {0.0};
@@ -212,11 +215,52 @@ pc_expl_reactions(
       amrex::Real wdot[NUM_SPECIES];
       EOS::RTY2WDOT(urk[URHO], urk[UTEMP], massfrac, wdot);
 
-      amrex::Real Temp_rk = urk[UTEMP];
-      EOS::EY2T(rhoe_rk / urk[URHO], massfrac, Temp_rk);
-
       for (int n = 0; n < NUM_SPECIES; ++n)
         wdot[n] += rhoydot_ext[n];
+
+#ifdef PELEPHYSICS_NONIDEAL_EOS
+
+      // ================== Update urk_err ===================
+      // Species
+      for (int n = 0; n < NUM_SPECIES; ++n)
+        urk_err[UFS + n] += err_rk64[stage] * dt_rk * wdot[n];
+      // Temperature
+      urk_err[UEDEN] += err_rk64[stage] * dt_rk * rhoedot_ext;
+
+      // ================== Update Stage solution ===================
+      // Species
+      for (int n = 0; n < NUM_SPECIES; ++n) {
+        urk[UFS + n] =
+          urk_carryover[UFS + n] + alpha_rk64[stage] * dt_rk * wdot[n];
+      }
+      // update energy
+      rhoe_rk = rhoe_carryover + alpha_rk64[stage] * dt_rk * rhoedot_ext;
+
+      // ================== Update urk_carryover ===========================
+      // Species
+      for (int n = 0; n < NUM_SPECIES; ++n) {
+        urk_carryover[UFS + n] =
+          urk[UFS + n] + beta_rk64[stage] * dt_rk * wdot[n];
+      }
+      // update energy
+      rhoe_carryover = rhoe_rk + beta_rk64[stage] * dt_rk * rhoedot_ext;
+
+      // ================= Update urk[rho] =========================
+      urk[URHO] = 0.0;
+      for (int n = 0; n < NUM_SPECIES; ++n)
+        urk[URHO] += urk[UFS + n];
+
+      // ================= Update urk[temp] =========================
+      rhoInv = 1.0 / urk[URHO];
+      for (int n = 0; n < NUM_SPECIES; ++n) {
+        massfrac[n] = urk[UFS + n] * rhoInv;
+      }
+      EOS::REY2T(urk[URHO], rhoe_rk / urk[URHO], massfrac, urk[UTEMP]);
+
+#else // IDEAL EOS
+
+      amrex::Real Temp_rk = urk[UTEMP];
+      EOS::EY2T(rhoe_rk / urk[URHO], massfrac, Temp_rk);
 
       // get mixture specific heat
       amrex::Real cv;
@@ -265,6 +309,8 @@ pc_expl_reactions(
       urk[URHO] = 0.0;
       for (int n = 0; n < NUM_SPECIES; ++n)
         urk[URHO] += urk[UFS + n];
+
+#endif // EOS conditional
 
       // ================ Adapt Time step! ========================
     } // end rk stages

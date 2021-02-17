@@ -134,10 +134,17 @@ pc_compute_hyp_mol_flux(
         for (int n = 0; n < NUM_SPECIES; n++) {
           spl[n] = qtempl[R_Y + n];
         }
+#ifdef PELEPHYSICS_NONIDEAL_EOS
+        EOS::RYP2T(eos_state_rho, spl, eos_state_p, eos_state_T);
+        EOS::RTY2E(eos_state_rho, eos_state_T, spl, eos_state_e);
+        EOS::RTY2G(eos_state_rho, eos_state_T, spl, eos_state_gamma);
+        EOS::RTY2Cs(eos_state_rho, eos_state_T, spl, eos_state_cs);
+#else
         EOS::RYP2T(eos_state_rho, spl, eos_state_p, eos_state_T);
         EOS::RYP2E(eos_state_rho, spl, eos_state_p, eos_state_e);
         EOS::TY2G(eos_state_T, spl, eos_state_gamma);
         EOS::RPY2Cs(eos_state_rho, eos_state_p, spl, eos_state_cs);
+#endif
         const amrex::Real rhoe_l = eos_state_rho * eos_state_e;
         const amrex::Real gamc_l = eos_state_gamma;
 
@@ -147,10 +154,17 @@ pc_compute_hyp_mol_flux(
         for (int n = 0; n < NUM_SPECIES; n++) {
           spr[n] = qtempr[R_Y + n];
         }
+#ifdef PELEPHYSICS_NONIDEAL_EOS
+        EOS::RYP2T(eos_state_rho, spr, eos_state_p, eos_state_T);
+        EOS::RTY2E(eos_state_rho, eos_state_T, spr, eos_state_e);
+        EOS::RTY2G(eos_state_rho, eos_state_T, spr, eos_state_gamma);
+        EOS::RTY2Cs(eos_state_rho, eos_state_T, spr, eos_state_cs);
+#else
         EOS::RYP2T(eos_state_rho, spr, eos_state_p, eos_state_T);
         EOS::RYP2E(eos_state_rho, spr, eos_state_p, eos_state_e);
         EOS::TY2G(eos_state_T, spr, eos_state_gamma);
         EOS::RPY2Cs(eos_state_rho, eos_state_p, spr, eos_state_cs);
+#endif
         const amrex::Real rhoe_r = eos_state_rho * eos_state_e;
         const amrex::Real gamc_r = eos_state_gamma;
 
@@ -315,12 +329,21 @@ pc_compute_hyp_mol_flux(
       for (int n = 0; n < NUM_SPECIES; n++) {
         spl[n] = qtempl[R_Y + n];
       }
+#ifdef PELEPHYSICS_NONIDEAL_EOS
+      amrex::Real eos_state_T;
+      EOS::RYP2T(eos_state_rho, spl, eos_state_p, eos_state_T);
+      amrex::Real eos_state_e;
+      EOS::RTY2E(eos_state_rho, eos_state_T, spl, eos_state_e);
+      rhoe_l = eos_state_rho * eos_state_e;
+      EOS::RTY2G(eos_state_rho, eos_state_T, spl, gamc_l);
+#else
       amrex::Real eos_state_e;
       EOS::RYP2E(eos_state_rho, spl, eos_state_p, eos_state_e);
       rhoe_l = eos_state_rho * eos_state_e;
       amrex::Real eos_state_T;
       EOS::RYP2T(eos_state_rho, spl, eos_state_p, eos_state_T);
       EOS::TY2G(eos_state_T, spl, gamc_l);
+#endif
     }
 
     if (is_inside(i, j, k, lo, hi, nextra - 1)) {
