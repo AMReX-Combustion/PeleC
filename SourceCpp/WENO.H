@@ -15,7 +15,7 @@ constexpr amrex::Real oneTwelve=1.0/12.0;
 // @param s      Stencils i-2, i-1, i, i+1, i+2
 // @param sm     The value of the interpolation on the left edge of the i cell
 // @param sp     The value of the interpolation on the right edge of the i cell
-AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE void
+AMREX_GPU_DEVICE AMREX_FORCE_INLINE void
 weno_reconstruct_5js(
   const amrex::Real* s,
   amrex::Real& sm,
