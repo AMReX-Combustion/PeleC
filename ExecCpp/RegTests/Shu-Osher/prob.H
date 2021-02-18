@@ -30,7 +30,6 @@ pc_initdata(
   amrex::GeometryData const& geomdata,
   ProbParmDevice const& prob_parm)
 {
-
   // Geometry
   const amrex::Real* prob_lo = geomdata.ProbLo();
   // const amrex::Real* prob_hi = geomdata.ProbHi();
@@ -58,7 +57,7 @@ pc_initdata(
       state(i, j, k, UEINT) = prob_parm.rhoe_l;
       state(i, j, k, UTEMP) = prob_parm.T_l;
     } else {
-      state(i, j, k, URHO) = prob_parm.rho_r_base + 
+      state(i, j, k, URHO) = prob_parm.rho_r_base +
                              prob_parm.rho_r_amp * sin(prob_parm.rho_r_osc * x);
       state(i, j, k, UMX) = state(i, j, k, URHO) * prob_parm.u_r;
       state(i, j, k, UMY) = 0.0;
@@ -67,9 +66,9 @@ pc_initdata(
       EOS::RYP2E(state(i, j, k, URHO), massfrac, prob_parm.p_r, e_r);
       EOS::EY2T(e_r, massfrac, state(i, j, k, UTEMP));
       state(i, j, k, UEINT) = state(i, j, k, URHO) * e_r;
-      state(i, j, k, UEDEN) = state(i, j, k, UEINT) + 0.5 * state(i, j, k, URHO) *
-                                                   prob_parm.u_r *
-                                                   prob_parm.u_r;
+      state(i, j, k, UEDEN) =
+        state(i, j, k, UEINT) +
+        0.5 * state(i, j, k, URHO) * prob_parm.u_r * prob_parm.u_r;
     }
   } else if (prob_parm.idir == 2) {
     if (y <= prob_parm.split[1]) {
@@ -83,18 +82,18 @@ pc_initdata(
       state(i, j, k, UEINT) = prob_parm.rhoe_l;
       state(i, j, k, UTEMP) = prob_parm.T_l;
     } else {
-      state(i, j, k, URHO) = prob_parm.rho_r_base + 
+      state(i, j, k, URHO) = prob_parm.rho_r_base +
                              prob_parm.rho_r_amp * sin(prob_parm.rho_r_osc * x);
       state(i, j, k, UMX) = 0.0;
       state(i, j, k, UMY) = state(i, j, k, URHO) * prob_parm.u_r;
       state(i, j, k, UMZ) = 0.0;
 
-      EOS::RYP2E(state(i, j, k, URHO), massfrac, prob_parm.p_r, e_r);      
+      EOS::RYP2E(state(i, j, k, URHO), massfrac, prob_parm.p_r, e_r);
       EOS::EY2T(e_r, massfrac, state(i, j, k, UTEMP));
       state(i, j, k, UEINT) = state(i, j, k, URHO) * e_r;
-      state(i, j, k, UEDEN) = state(i, j, k, UEINT) + 0.5 * state(i, j, k, URHO) *
-                                                   prob_parm.u_r *
-                                                   prob_parm.u_r;
+      state(i, j, k, UEDEN) =
+        state(i, j, k, UEINT) +
+        0.5 * state(i, j, k, URHO) * prob_parm.u_r * prob_parm.u_r;
     }
   } else if (prob_parm.idir == 3) {
     if (z <= prob_parm.split[2]) {
@@ -108,7 +107,7 @@ pc_initdata(
       state(i, j, k, UEINT) = prob_parm.rhoe_l;
       state(i, j, k, UTEMP) = prob_parm.T_l;
     } else {
-      state(i, j, k, URHO) = prob_parm.rho_r_base +                       
+      state(i, j, k, URHO) = prob_parm.rho_r_base +
                              prob_parm.rho_r_amp * sin(prob_parm.rho_r_osc * x);
       state(i, j, k, UMX) = 0.0;
       state(i, j, k, UMY) = 0.0;
@@ -117,9 +116,9 @@ pc_initdata(
       EOS::RYP2E(state(i, j, k, URHO), massfrac, prob_parm.p_r, e_r);
       EOS::EY2T(e_r, massfrac, state(i, j, k, UTEMP));
       state(i, j, k, UEINT) = state(i, j, k, URHO) * e_r;
-      state(i, j, k, UEDEN) = state(i, j, k, UEINT) + 0.5 * state(i, j, k, URHO) *
-                                                   prob_parm.u_r *
-                                                   prob_parm.u_r;
+      state(i, j, k, UEDEN) =
+        state(i, j, k, UEINT) +
+        0.5 * state(i, j, k, URHO) * prob_parm.u_r * prob_parm.u_r;
     }
   } else {
     amrex::Abort("invalid idir");

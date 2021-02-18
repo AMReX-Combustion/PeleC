@@ -304,7 +304,7 @@ PeleC::read_params()
   pp.query("use_hybrid_weno", use_hybrid_weno);
   pp.query("weno_scheme", weno_scheme);
   if (ppm_type != 1 && use_hybrid_weno == 1) {
-      amrex::Error("PeleC::ppm_type must be 1 (PPM) to use WENO method");
+    amrex::Error("PeleC::ppm_type must be 1 (PPM) to use WENO method");
   }
 
   // for the moment, ppm_type = 0 does not support ppm_trace_sources --
