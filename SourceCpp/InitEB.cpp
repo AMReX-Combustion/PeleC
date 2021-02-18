@@ -264,9 +264,16 @@ PeleC::initialize_eb2_structs()
               }
             }
           },
+#ifdef AMREX_USE_DPCPP
+          [=] AMREX_GPU_DEVICE(
+            int const& r, amrex::Gpu::Handler const& h) noexcept {
+            amrex::Gpu::deviceReduceSum_full(dp, r, h);
+          });
+#else
           [=] AMREX_GPU_DEVICE(int const& r) noexcept {
             amrex::Gpu::deviceReduceSum_full(dp, r);
           });
+#endif
         const int Nall_cut_faces = ds.dataValue();
 
         amrex::Gpu::DeviceVector<amrex::IntVect> v_all_cut_faces(

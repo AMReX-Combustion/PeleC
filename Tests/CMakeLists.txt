@@ -58,7 +58,10 @@ macro(setup_test)
     endif()
     # Use fcompare to test diffs in plots against gold files
     if(PELEC_ENABLE_FCOMPARE_FOR_TESTS)
-      set(FCOMPARE_COMMAND "&& ${MPI_COMMANDS} ${FCOMPARE} ${PLOT_GOLD} ${PLOT_TEST}")
+      if(PELEC_ENABLE_CUDA)
+        set(FCOMPARE_TOLERANCE "-r 1e-12 --abs_tol 1.0e-12")
+      endif()
+      set(FCOMPARE_COMMAND "&& ${MPI_COMMANDS} ${FCOMPARE} ${FCOMPARE_TOLERANCE} ${PLOT_GOLD} ${PLOT_TEST}")
     endif()
 endmacro(setup_test)
 
