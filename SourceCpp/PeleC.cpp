@@ -80,7 +80,7 @@ bool PeleC::mms_initialized = false;
 #endif
 
 int PeleC::use_hybrid_weno = 0;
-int PeleC::weno_scheme = 1; // 0 is WENO_5js, 1 is WENO_5Z, 2 is WENO_7z
+int PeleC::weno_scheme = 1;
 
 int PeleC::les_model = 0;
 int PeleC::les_filter_type = no_filter;
