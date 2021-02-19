@@ -129,13 +129,19 @@ pc_umeth_3D(
     // transverse terms here.
 
     int idir = 0;
-    trace_ppm(bxg1, idir, q, srcQ, qxmarr, qxparr, bx, dt, del, use_flattening);
+    trace_ppm(
+      bxg1, idir, q, srcQ, qxmarr, qxparr, bx, dt, del, use_flattening,
+      PeleC::use_hybrid_weno, PeleC::weno_scheme);
 
     idir = 1;
-    trace_ppm(bxg1, idir, q, srcQ, qymarr, qyparr, bx, dt, del, use_flattening);
+    trace_ppm(
+      bxg1, idir, q, srcQ, qymarr, qyparr, bx, dt, del, use_flattening,
+      PeleC::use_hybrid_weno, PeleC::weno_scheme);
 
     idir = 2;
-    trace_ppm(bxg1, idir, q, srcQ, qzmarr, qzparr, bx, dt, del, use_flattening);
+    trace_ppm(
+      bxg1, idir, q, srcQ, qzmarr, qzparr, bx, dt, del, use_flattening,
+      PeleC::use_hybrid_weno, PeleC::weno_scheme);
 
   } else {
     amrex::Error("PeleC::ppm_type must be 0 (PLM) or 1 (PPM)");

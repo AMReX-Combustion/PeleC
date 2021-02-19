@@ -94,15 +94,7 @@ hybrid_hydro                 int           0
 # 0: piecewise linear;
 # 1: classic Colella \& Woodward ppm;
 # 2: extrema-preserving ppm (deprecated in C++)
-# 3: Hybrid WENO-PPM (deprecated in C++)
 ppm_type                     int           0
-
-# For Hybrid WENO-PPM (ppm_type=3), which kind of WENO reconstruction method at faces?
-# 0 : Classical 5th-order JS method (quite dissipative)
-# 1 : WENO-Z 5th-order (more robust than JS)
-# 2 : WENO-Z 3rd-order (dissipative)
-# 3 : WENO-Z 7th-order (good spectral properties but may be unstable with strong shocks)
-weno_variant                 int           1
 
 # to we reconstruct and trace under the parabolas of the source
 # terms to the velocity

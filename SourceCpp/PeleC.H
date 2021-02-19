@@ -532,6 +532,10 @@ public:
   void avgDown();
   void avgDown(int state_indx);
 
+  // Parameters for using WENO in the PPM method
+  static int use_hybrid_weno;
+  static int weno_scheme;
+
   static std::unique_ptr<ProbParmDevice> prob_parm_device;
   static std::unique_ptr<ProbParmHost> prob_parm_host;
   static std::unique_ptr<TaggingParm> tagging_parm;
