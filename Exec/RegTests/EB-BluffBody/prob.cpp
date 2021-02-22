@@ -29,16 +29,17 @@ amrex_probinit(
 
   amrex::Real cp = 0.0;
   PeleC::prob_parm_device->massfrac[0] = 1.0;
-  EOS::RYP2E(
+  auto eos = pele::physics::PhysicsType::eos();
+  eos.RYP2E(
     PeleC::prob_parm_device->rho, PeleC::prob_parm_device->massfrac.begin(),
     PeleC::prob_parm_device->p, PeleC::prob_parm_device->eint);
-  EOS::EY2T(
+  eos.EY2T(
     PeleC::prob_parm_device->eint, PeleC::prob_parm_device->massfrac.begin(),
     PeleC::prob_parm_device->T);
-  EOS::TY2Cp(
+  eos.TY2Cp(
     PeleC::prob_parm_device->T, PeleC::prob_parm_device->massfrac.begin(), cp);
 
-  TransParm trans_parm;
+  pele::physics::transport::TransParm trans_parm;
 
   // Default
   trans_parm.const_viscosity = 0.0;
@@ -66,7 +67,8 @@ amrex_probinit(
 #ifdef AMREX_USE_GPU
   amrex::Gpu::htod_memcpy(trans_parm_g, &trans_parm, sizeof(trans_parm));
 #else
-  std::memcpy(trans_parm_g, &trans_parm, sizeof(trans_parm));
+  std::memcpy(
+    pele::physics::transport::trans_parm_g, &trans_parm, sizeof(trans_parm));
 #endif
 }
 }

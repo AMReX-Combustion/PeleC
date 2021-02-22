@@ -4,7 +4,7 @@
 #include <AMReX_FArrayBox.H>
 
 #include "IndexDefines.H"
-#include "EOS.H"
+#include "PelePhysics.H"
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
@@ -213,7 +213,8 @@ pc_expl_reactions(
       }
 
       amrex::Real wdot[NUM_SPECIES];
-      EOS::RTY2WDOT(urk[URHO], urk[UTEMP], massfrac, wdot);
+      auto eos = pele::physics::PhysicsType::eos();
+      eos.RTY2WDOT(urk[URHO], urk[UTEMP], massfrac, wdot);
 
       for (int n = 0; n < NUM_SPECIES; ++n)
         wdot[n] += rhoydot_ext[n];
@@ -260,15 +261,15 @@ pc_expl_reactions(
 #else // IDEAL EOS
 
       amrex::Real Temp_rk = urk[UTEMP];
-      EOS::EY2T(rhoe_rk / urk[URHO], massfrac, Temp_rk);
+      eos.EY2T(rhoe_rk / urk[URHO], massfrac, Temp_rk);
 
       // get mixture specific heat
       amrex::Real cv;
-      EOS::TY2Cv(urk[UTEMP], massfrac, cv);
+      eos.TY2Cv(urk[UTEMP], massfrac, cv);
 
       // get species internal energies
       amrex::Real ei[NUM_SPECIES];
-      EOS::T2Ei(Temp_rk, ei);
+      eos.T2Ei(Temp_rk, ei);
 
       // update temperature eqn source term
       amrex::Real tempsrc = rhoedot_ext;

@@ -6,7 +6,7 @@
 
 #include "Constants.H"
 #include "IndexDefines.H"
-#include "EOS.H"
+#include "PelePhysics.H"
 #include "Riemann.H"
 
 constexpr int im2 = 0;

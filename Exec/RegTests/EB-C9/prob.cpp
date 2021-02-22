@@ -28,10 +28,11 @@ amrex_probinit(
 
   PeleC::prob_parm_device->massfrac[0] = 1.0;
 
-  EOS::RYP2T(
+  auto eos = pele::physics::PhysicsType::eos();
+  eos.RYP2T(
     PeleC::prob_parm_device->rho, PeleC::prob_parm_device->massfrac.begin(),
     PeleC::prob_parm_device->p, PeleC::prob_parm_device->T);
-  EOS::RPY2Cs(
+  eos.RPY2Cs(
     PeleC::prob_parm_device->rho, PeleC::prob_parm_device->p,
     PeleC::prob_parm_device->massfrac.begin(), PeleC::prob_parm_device->cs);
 
@@ -42,7 +43,7 @@ amrex_probinit(
   amrex::Print(ofs).SetPrecision(17)
     << PeleC::prob_parm_device->L << "," << PeleC::prob_parm_device->rho << ","
     << PeleC::prob_parm_device->p << "," << PeleC::prob_parm_device->T << ","
-    << EOS::gamma << "," << PeleC::prob_parm_device->cs << ","
+    << eos.gamma << "," << PeleC::prob_parm_device->cs << ","
     << PeleC::prob_parm_device->radius << "," << PeleC::prob_parm_device->alpha
     << "," << PeleC::prob_parm_device->sigma << std::endl;
   ofs.close();

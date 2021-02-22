@@ -25,18 +25,26 @@ function(build_pelec_exe pelec_exe_name)
 
   add_subdirectory(${SRC_DIR}/Params ${BIN_DIR}/Params/${pelec_exe_name})
 
+  target_include_directories(${pelec_exe_name} SYSTEM PRIVATE "${PELE_PHYSICS_SRC_DIR}/Source")
+
   set(PELEC_TRANSPORT_DIR "${PELE_PHYSICS_SRC_DIR}/Transport/${PELEC_TRANSPORT_MODEL}")
   target_sources(${pelec_exe_name} PRIVATE
                  ${PELEC_TRANSPORT_DIR}/Transport.H
                  ${PELEC_TRANSPORT_DIR}/Transport.cpp
                  ${PELEC_TRANSPORT_DIR}/TransportParams.H)
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELEC_TRANSPORT_DIR})
+  if("${PELEC_TRANSPORT_MODEL}" STREQUAL "Simple") # FIXME mhdf better way?
+    target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_SIMPLE)
+  endif()
 
   set(PELEC_EOS_DIR "${PELE_PHYSICS_SRC_DIR}/Eos/${PELEC_EOS_MODEL}")
   target_sources(${pelec_exe_name} PRIVATE
                  ${PELEC_EOS_DIR}/EOS.cpp
                  ${PELEC_EOS_DIR}/EOS.H)
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELEC_EOS_DIR})
+  if("${PELEC_EOS_MODEL}" STREQUAL "Fuego") # FIXME mhdf better way?
+    target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_FUEGO)
+  endif()
 
   set(PELEC_MECHANISM_DIR "${PELE_PHYSICS_SRC_DIR}/Support/Fuego/Mechanism/Models/${PELEC_CHEMISTRY_MODEL}")
   target_sources(${pelec_exe_name} PRIVATE

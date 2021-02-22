@@ -140,10 +140,12 @@ pc_compute_hyp_mol_flux(
         EOS::RTY2G(eos_state_rho, eos_state_T, spl, eos_state_gamma);
         EOS::RTY2Cs(eos_state_rho, eos_state_T, spl, eos_state_cs);
 #else
-        EOS::RYP2T(eos_state_rho, spl, eos_state_p, eos_state_T);
-        EOS::RYP2E(eos_state_rho, spl, eos_state_p, eos_state_e);
-        EOS::TY2G(eos_state_T, spl, eos_state_gamma);
-        EOS::RPY2Cs(eos_state_rho, eos_state_p, spl, eos_state_cs);
+        auto eos = pele::physics::PhysicsType::eos();
+        auto constants = pele::physics::Constants::RU;
+        eos.RYP2T(eos_state_rho, spl, eos_state_p, eos_state_T);
+        eos.RYP2E(eos_state_rho, spl, eos_state_p, eos_state_e);
+        eos.TY2G(eos_state_T, spl, eos_state_gamma);
+        eos.RPY2Cs(eos_state_rho, eos_state_p, spl, eos_state_cs);
 #endif
         const amrex::Real rhoe_l = eos_state_rho * eos_state_e;
         const amrex::Real gamc_l = eos_state_gamma;
@@ -160,10 +162,10 @@ pc_compute_hyp_mol_flux(
         EOS::RTY2G(eos_state_rho, eos_state_T, spr, eos_state_gamma);
         EOS::RTY2Cs(eos_state_rho, eos_state_T, spr, eos_state_cs);
 #else
-        EOS::RYP2T(eos_state_rho, spr, eos_state_p, eos_state_T);
-        EOS::RYP2E(eos_state_rho, spr, eos_state_p, eos_state_e);
-        EOS::TY2G(eos_state_T, spr, eos_state_gamma);
-        EOS::RPY2Cs(eos_state_rho, eos_state_p, spr, eos_state_cs);
+        eos.RYP2T(eos_state_rho, spr, eos_state_p, eos_state_T);
+        eos.RYP2E(eos_state_rho, spr, eos_state_p, eos_state_e);
+        eos.TY2G(eos_state_T, spr, eos_state_gamma);
+        eos.RPY2Cs(eos_state_rho, eos_state_p, spr, eos_state_cs);
 #endif
         const amrex::Real rhoe_r = eos_state_rho * eos_state_e;
         const amrex::Real gamc_r = eos_state_gamma;
@@ -236,6 +238,7 @@ pc_compute_hyp_mol_flux(
     for (amrex::Real& dir : ebnorm) {
       dir /= ebnorm_mag;
     }
+    auto eos = pele::physics::PhysicsType::eos();
     if (is_inside(i, j, k, lo, hi, nextra)) {
       if (vfrac(i, j, k) < captured_eb_small_vfrac) {
         amrex::Real sum_kappa = 0.0;
@@ -338,11 +341,11 @@ pc_compute_hyp_mol_flux(
       EOS::RTY2G(eos_state_rho, eos_state_T, spl, gamc_l);
 #else
       amrex::Real eos_state_e;
-      EOS::RYP2E(eos_state_rho, spl, eos_state_p, eos_state_e);
+      eos.RYP2E(eos_state_rho, spl, eos_state_p, eos_state_e);
       rhoe_l = eos_state_rho * eos_state_e;
       amrex::Real eos_state_T;
-      EOS::RYP2T(eos_state_rho, spl, eos_state_p, eos_state_T);
-      EOS::TY2G(eos_state_T, spl, gamc_l);
+      eos.RYP2T(eos_state_rho, spl, eos_state_p, eos_state_T);
+      eos.TY2G(eos_state_T, spl, gamc_l);
 #endif
     }
 

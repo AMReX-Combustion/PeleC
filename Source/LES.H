@@ -6,7 +6,7 @@
 #include "Diffusion.H"
 #include "Diffterm.H"
 #include "GradUtil.H"
-#include "EOS.H"
+#include "PelePhysics.H"
 #include "Filter.H"
 
 #ifdef _OPENMP
@@ -235,7 +235,8 @@ pc_smagorinsky_sfs_term(
                          q(i - bdim[0], j - bdim[1], k - bdim[2], QFS + n));
   }
   amrex::Real cp;
-  EOS::TY2Cp(T, massfrac, cp);
+  auto eos = pele::physics::PhysicsType::eos();
+  eos.TY2Cp(T, massfrac, cp);
   flx(i, j, k, UEDEN) = flx(i, j, k, UEDEN) - cp * Cs2 / PrT * flux_T;
 
   // Scale fluxes by area
@@ -509,7 +510,8 @@ pc_dynamic_smagorinsky_sfs_term(
                          q(i - bdim[0], j - bdim[1], k - bdim[2], QFS + n));
   }
   amrex::Real cp;
-  EOS::TY2Cp(T, massfrac, cp);
+  auto eos = pele::physics::PhysicsType::eos();
+  eos.TY2Cp(T, massfrac, cp);
   flx(i, j, k, UEDEN) =
     flx(i, j, k, UEDEN) - cp * coeff(i, j, k, comp_Cs2ovPrT) * flux_T(i, j, k);
 

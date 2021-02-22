@@ -39,31 +39,32 @@ amrex_probinit(
   amrex::Real massfrac[NUM_SPECIES] = {0.0};
   massfrac[0] = 1.0;
 
+  auto eos = pele::physics::PhysicsType::eos();
   if (PeleC::prob_parm_device->use_Tinit) {
-    EOS::RTY2P(
+    eos.RTY2P(
       PeleC::prob_parm_device->rho_l, PeleC::prob_parm_device->T_l, massfrac,
       PeleC::prob_parm_device->p_l);
-    EOS::RYP2E(
+    eos.RYP2E(
       PeleC::prob_parm_device->rho_l, massfrac, PeleC::prob_parm_device->p_l,
       e_l);
     PeleC::prob_parm_device->rhoe_l = PeleC::prob_parm_device->rho_l * e_l;
-    EOS::RTY2P(
+    eos.RTY2P(
       PeleC::prob_parm_device->rho_r, PeleC::prob_parm_device->T_r, massfrac,
       PeleC::prob_parm_device->p_r);
-    EOS::RYP2E(
+    eos.RYP2E(
       PeleC::prob_parm_device->rho_r, massfrac, PeleC::prob_parm_device->p_r,
       e_r);
     PeleC::prob_parm_device->rhoe_r = PeleC::prob_parm_device->rho_r * e_r;
   } else {
-    EOS::RYP2E(
+    eos.RYP2E(
       PeleC::prob_parm_device->rho_l, massfrac, PeleC::prob_parm_device->p_l,
       e_l);
-    EOS::EY2T(e_l, massfrac, PeleC::prob_parm_device->T_l);
+    eos.EY2T(e_l, massfrac, PeleC::prob_parm_device->T_l);
     PeleC::prob_parm_device->rhoe_l = PeleC::prob_parm_device->rho_l * e_l;
-    EOS::RYP2E(
+    eos.RYP2E(
       PeleC::prob_parm_device->rho_r, massfrac, PeleC::prob_parm_device->p_r,
       e_r);
-    EOS::EY2T(e_r, massfrac, PeleC::prob_parm_device->T_r);
+    eos.EY2T(e_r, massfrac, PeleC::prob_parm_device->T_r);
     PeleC::prob_parm_device->rhoe_r = PeleC::prob_parm_device->rho_r * e_r;
   }
 }

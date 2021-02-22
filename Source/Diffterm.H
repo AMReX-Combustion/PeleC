@@ -8,7 +8,7 @@
 
 #include "IndexDefines.H"
 #include "EBStencilTypes.H"
-#include "EOS.H"
+#include "PelePhysics.H"
 #include "Utilities.H"
 #include "GradUtil.H"
 #include "Diffusion.H"
@@ -44,6 +44,9 @@ pc_diffusion_flux(
   const int km = k - bdim[2];
   const amrex::Real dxinv = 1.0 / delta;
   amrex::Real taux = 0.0, tauy = 0.0, tauz = 0.0;
+
+  auto eos = pele::physics::PhysicsType::eos();
+
   if (dir == 0) {
     AMREX_D_TERM(
       const amrex::Real dudx = dxinv * (q(i, j, k, QU) - q(im, jm, km, QU));
@@ -114,11 +117,11 @@ pc_diffusion_flux(
   for (int ns = 0; ns < NUM_SPECIES; ++ns) {
     mass1[ns] = q(i, j, k, ns + QFS);
   }
-  EOS::Y2X(mass1, mole1);
+  eos.Y2X(mass1, mole1);
   for (int ns = 0; ns < NUM_SPECIES; ++ns) {
     mass2[ns] = q(im, jm, km, ns + QFS);
   }
-  EOS::Y2X(mass2, mole2);
+  eos.Y2X(mass2, mole2);
 
 #ifdef PELEPHYSICS_NONIDEAL_EOS
   // Compute species and enthalpy fluxes accounting for nonideal EOS
@@ -168,9 +171,9 @@ pc_diffusion_flux(
   // Compute species and enthalpy fluxes for ideal EOS
   // Get species/enthalpy diffusion, compute correction vel
   amrex::Real T = q(i, j, k, QTEMP);
-  EOS::T2Hi(T, hi1);
+  eos.T2Hi(T, hi1);
   T = q(im, jm, km, QTEMP);
-  EOS::T2Hi(T, hi2);
+  eos.T2Hi(T, hi2);
   amrex::Real Vc = 0.0;
   const amrex::Real dlnp =
     dpdx / (0.5 * (q(i, j, k, QPRES) + q(im, jm, km, QPRES)));

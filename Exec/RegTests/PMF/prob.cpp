@@ -144,8 +144,9 @@ init_bc()
   }
   const amrex::Real p = PeleC::prob_parm_device->pamb;
 
-  EOS::X2Y(molefrac, massfrac);
-  EOS::PYT2RE(p, massfrac, T, rho, e);
+  auto eos = pele::physics::PhysicsType::eos();
+  eos.X2Y(molefrac, massfrac);
+  eos.PYT2RE(p, massfrac, T, rho, e);
 
   vt = PeleC::prob_parm_device->vn_in;
   ek = 0.5 * (vt * vt);

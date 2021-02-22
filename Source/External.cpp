@@ -13,6 +13,7 @@ PeleC::construct_old_ext_source(amrex::Real time, amrex::Real dt)
   if (!add_ext_src) {
     return;
   }
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx = geom.CellSizeArray();
 
   fill_ext_source(time, dt, S_old, S_old, *old_sources[ext_src], ng);
 
@@ -49,8 +50,9 @@ PeleC::fill_ext_source(
   amrex::MultiFab& ext_src,
   int ng)
 {
-  // const amrex::Real* dx = geom.CellSize();
-  // const amrex::Real* prob_lo = geom.ProbLo();
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx = geom.CellSizeArray();
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_lo =
+    geom.ProbLoArray();
 
 #ifdef PELEC_USE_EB
   auto const& fact =
@@ -77,10 +79,24 @@ PeleC::fill_ext_source(
     // auto const& Sn = state_new.array(mfi);
     auto const& Farr = ext_src.array(mfi);
 
+    ProbParmDevice const* pp = PeleC::prob_parm_device.get();
     // Evaluate the external source
     amrex::ParallelFor(
       bx, NVAR, [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
-        Farr(i, j, k, n) = 0.0;
+        const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
+        const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
+        const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];
+        const amrex::Real rad = std::sqrt((x - 10) * (x - 10) + y * y + z * z);
+        if (rad < 0.5) {
+          const amrex::Real rho = 0.0013;
+          const amrex::Real uin = 1000.0;
+          const amrex::Real area = dx[1] * dx[2];
+          const amrex::Real vol = dx[0] * dx[1] * dx[2];
+          const amrex::Real mdot = rho * uin * area;
+          Farr(i, j, k, URHO) = mdot / vol;
+          Farr(i, j, k, UMX) = mdot * uin / vol;
+          Farr(i, j, k, UEDEN) = mdot * uin * uin / vol;
+        }
       });
   }
 }

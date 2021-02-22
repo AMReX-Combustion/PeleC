@@ -11,11 +11,10 @@
 #include "PeleC.H"
 #include "IndexDefines.H"
 #include "Constants.H"
-#include "EOS.H"
+#include "PelePhysics.H"
 #include "Tagging.H"
 #include "ProblemDerive.H"
 #include "prob_parm.H"
-#include "Transport.H"
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
@@ -42,7 +41,8 @@ pc_initdata(
   for (int n = 0; n < NUM_SPECIES; n++) {
     massfrac[n] = prob_parm.massfrac[n];
   }
-  EOS::PYT2RE(p, massfrac, prob_parm.T, rho, eint);
+  auto eos = pele::physics::PhysicsType::eos();
+  eos.PYT2RE(p, massfrac, prob_parm.T, rho, eint);
 
   state(i, j, k, URHO) = rho;
   state(i, j, k, UMX) = rho * prob_parm.uavg;
@@ -75,11 +75,12 @@ bcnormal(
     for (int n = 0; n < NUM_SPECIES; n++) {
       massfrac[n] = prob_parm.massfrac[n];
     }
+    auto eos = pele::physics::PhysicsType::eos();
 
     if (sgn == 1) {
       const amrex::Real p = prob_parm.dpdx * x[0] + prob_parm.p;
       T = prob_parm.T;
-      EOS::PYT2RE(p, massfrac, T, rho, eint);
+      eos.PYT2RE(p, massfrac, T, rho, eint);
 
       u = s_inter[UMX] / s_inter[URHO];
       v = s_inter[UMY] / s_inter[URHO];
@@ -99,8 +100,8 @@ bcnormal(
       const amrex::Real w_inter = s_inter[UMZ] / rho_inter;
       const amrex::Real T_inter = s_inter[UTEMP];
       amrex::Real p_inter = 0.0, cs_inter = 0.0;
-      EOS::RTY2P(rho_inter, T_inter, massfrac, p_inter);
-      EOS::RTY2Cs(rho_inter, T_inter, massfrac, cs_inter);
+      eos.RTY2P(rho_inter, T_inter, massfrac, p_inter);
+      eos.RTY2Cs(rho_inter, T_inter, massfrac, cs_inter);
 
       // Boundary state (point b)
       const amrex::Real xb = prob_hi[0];
@@ -115,8 +116,8 @@ bcnormal(
       rho = (rhob - rho_inter) / (xb - xd) * (x[0] - xd) + rho_inter;
       const amrex::Real p = (pb - p_inter) / (xb - xd) * (x[0] - xd) + p_inter;
 
-      EOS::RYP2E(rho, massfrac, p, eint);
-      EOS::EY2T(eint, massfrac, T);
+      eos.RYP2E(rho, massfrac, p, eint);
+      eos.EY2T(eint, massfrac, T);
 
       u = (ub - u_inter) / (xb - xd) * (x[0] - xd) + u_inter;
       v = (vb - v_inter) / (xb - xd) * (x[0] - xd) + v_inter;

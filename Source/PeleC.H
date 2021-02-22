@@ -313,7 +313,7 @@ public:
 
   void construct_new_ext_source(amrex::Real time, amrex::Real dt);
 
-  static void fill_ext_source(
+  void fill_ext_source(
     amrex::Real time,
     amrex::Real dt,
     const amrex::MultiFab& state_old,
@@ -569,8 +569,6 @@ protected:
   static void init_reactor();
   static void close_reactor();
 #endif
-
-  static void init_transport();
 
   void init_les();
   void init_filters();

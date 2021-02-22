@@ -9,7 +9,7 @@
 
 #include "PeleC.H"
 #include "IndexDefines.H"
-#include "EOS.H"
+#include "PelePhysics.H"
 #include "Tagging.H"
 #include "ProblemDerive.H"
 #include "prob_parm.H"
@@ -179,10 +179,11 @@ pc_initdata(
     amrex::Real u[3] = {0.0};
     u[AMREX_SPACEDIM - 1] = pmf_vals[1];
     amrex::Real massfrac[NUM_SPECIES] = {0.0};
-    EOS::X2Y(molefrac, massfrac);
+    auto eos = pele::physics::PhysicsType::eos();
+    eos.X2Y(molefrac, massfrac);
     amrex::Real rho = 0.0;
     amrex::Real energy = 0.0;
-    EOS::PYT2RE(pres, massfrac, T, rho, energy);
+    eos.PYT2RE(pres, massfrac, T, rho, energy);
     state(i, j, k, URHO) = rho;
     state(i, j, k, UMX) = rho * u[0];
     state(i, j, k, UMY) = rho * u[1];
@@ -220,6 +221,7 @@ bcnormal(
   amrex::Real massfrac[NUM_SPECIES] = {0.0};
   amrex::Real /* pert, */ rho, energy, T, pres;
 
+  auto eos = pele::physics::PhysicsType::eos();
   if (sgn == -1) {
     pmf(prob_hi[idir], prob_hi[idir], pmf_vals, prob_parm);
     for (int n = 0; n < NUM_SPECIES; n++)
@@ -230,8 +232,8 @@ bcnormal(
     u[1] = 0.0;
     u[2] = 0.0;
     u[AMREX_SPACEDIM - 1] = pmf_vals[1];
-    EOS::X2Y(molefrac, massfrac);
-    EOS::PYT2RE(pres, massfrac, T, rho, energy);
+    eos.X2Y(molefrac, massfrac);
+    eos.PYT2RE(pres, massfrac, T, rho, energy);
     s_ext[URHO] = rho;
     s_ext[UMX] = rho * u[0];
     s_ext[UMY] = rho * u[1];
@@ -253,8 +255,8 @@ bcnormal(
     u[1] = 0.0;
     u[2] = 0.0;
     u[AMREX_SPACEDIM - 1] = pmf_vals[1];
-    EOS::X2Y(molefrac, massfrac);
-    EOS::PYT2RE(pres, massfrac, T, rho, energy);
+    eos.X2Y(molefrac, massfrac);
+    eos.PYT2RE(pres, massfrac, T, rho, energy);
     s_ext[URHO] = rho;
     s_ext[UMX] = rho * u[0];
     s_ext[UMY] = rho * u[1];
