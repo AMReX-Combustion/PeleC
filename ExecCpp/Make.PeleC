@@ -53,10 +53,13 @@ all: $(executable)
 	@echo SUCCESS
 
 # EOS
-ifeq ($(Eos_dir),$(filter $(Eos_dir),Fuego))
-  EOS_HOME = $(PELE_PHYSICS_HOME)/Eos/Fuego
+ifdef Eos_dir
+  EOS_HOME = $(PELE_PHYSICS_HOME)/Eos/$(strip $(Eos_dir))
 else
   EOS_HOME = $(PELE_PHYSICS_HOME)/Eos/GammaLaw
+endif
+ifeq ($(Eos_dir),$(filter $(Eos_dir),Soave-Redlich-Kwong))
+  DEFINES += -DPELEPHYSICS_NONIDEAL_EOS
 endif
 EXTERN_CORE       += $(EOS_HOME)
 INCLUDE_LOCATIONS += $(EOS_HOME)
