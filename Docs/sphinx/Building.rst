@@ -24,7 +24,7 @@ Using the GNU Make build system involves first setting environment variables for
    export PELE_PHYSICS_HOME=${PELEC_HOME}/Submodules/PelePhysics
 
 
-Then one edits the ``GNUMakefile`` in any of the examples in the ``ExecCpp`` directory and uses the ``make`` command to build the executable.
+Then one edits the ``GNUMakefile`` in any of the examples in the ``Exec`` directory and uses the ``make`` command to build the executable.
 
 CMake
 ~~~~~

@@ -27,9 +27,8 @@ THREAD_SANITIZER = FALSE
 USE_REACT = TRUE
 USE_EB = FALSE
 Eos_dir := Fuego
-Chemistry_Model := LiDryer
+Chemistry_Model := Davis
 Transport_dir := Simple
-USE_SUNDIALS_PP = FALSE
 
 # GNU Make
 Bpack := ./Make.package

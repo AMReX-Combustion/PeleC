@@ -24,7 +24,7 @@ The PeleC directory structure is as shown below:
 
   * sphinx
 
-* **ExecCpp** - regression tests and various capability demonstrations
+* **Exec** - regression tests and various capability demonstrations
   
   * :ref:`Regression Tests<VandV>`
 
@@ -70,7 +70,7 @@ A list of available data in the Pele group can be found in PeleC/Source/param_in
 
 **prob_parm.H** -- Something about prob_parm.H
 
-**GNUMakefile** -- In addition to setting options to build profiling, debugging, MPI, OpenMP, Compiler toolchain options, the chemical mechanism, transport model, equation of state model, and use of EB are set here for compile time selection. The GNUMakefile includes the ``Make.PeleC`` file from the `ExecCpp` directory that contains build configuration common across the examples.
+**GNUMakefile** -- In addition to setting options to build profiling, debugging, MPI, OpenMP, Compiler toolchain options, the chemical mechanism, transport model, equation of state model, and use of EB are set here for compile time selection. The GNUMakefile includes the ``Make.PeleC`` file from the `Exec` directory that contains build configuration common across the examples.
 
 
 .. toctree::

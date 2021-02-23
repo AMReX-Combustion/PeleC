@@ -1,74 +1,55 @@
-#ifndef _EBStencilTypes_H
-#define _EBStencilTypes_H
+#ifndef _EBStencilTypes_H_
+#define _EBStencilTypes_H_
 
 #include <AMReX_REAL.H>
 #include <AMReX_IntVect.H>
 
-#ifndef BL_LANG_FORT
-
-static amrex::Box stencil_volume_box(amrex::IntVect(D_DECL(-1,-1,-1)),
-                                     amrex::IntVect(D_DECL(+1,+1,+1)));
-
-#if BL_SPACEDIM == 2
+static amrex::Box stencil_volume_box(
+  amrex::IntVect(AMREX_D_DECL(-1, -1, -1)),
+  amrex::IntVect(AMREX_D_DECL(+1, +1, +1)));
 
 struct VolSten
 {
-    amrex::Real val[3][3];
-    amrex::IntVect iv;
+  amrex::Real val[3][3][3];
+  amrex::IntVect iv;
 };
 
 struct FaceSten
 {
-    amrex::Real val[3];
-    amrex::IntVect iv;
+  amrex::Real val[3][3];
+  amrex::IntVect iv;
 };
 
 struct EBBndrySten
 {
-    amrex::Real val[3][3];
-    amrex::Real bcval_sten;
-    amrex::IntVect iv;
-    amrex::IntVect iv_base;
+  amrex::Real val[3][3][3];
+  amrex::Real bcval_sten;
+  amrex::IntVect iv;
+  amrex::IntVect iv_base;
 };
-
-#elif BL_SPACEDIM == 3
-
-struct VolSten
-{
-    amrex::Real val[3][3][3];
-    amrex::IntVect iv;
-};
-
-struct FaceSten
-{
-    amrex::Real val[3][3];
-    amrex::IntVect iv;
-};
-
-struct EBBndrySten
-{
-    amrex::Real val[3][3][3];
-    amrex::Real bcval_sten;
-    amrex::IntVect iv;
-    amrex::IntVect iv_base;
-};
-
-#endif
 
 struct EBBndryGeom
 {
-  amrex::Real eb_normal[BL_SPACEDIM];
-  amrex::Real eb_centroid[BL_SPACEDIM];
+  amrex::Real eb_normal[AMREX_SPACEDIM];
+  amrex::Real eb_centroid[AMREX_SPACEDIM];
   amrex::Real eb_area;
   amrex::Real eb_vfrac;
   amrex::IntVect iv;
 
-  bool operator<(const EBBndryGeom& rhs) const {
-    return iv <rhs.iv;
-  }
-
+  AMREX_GPU_DEVICE
+  bool operator<(const EBBndryGeom& rhs) const { return iv < rhs.iv; }
 };
 
+#if defined(AMREX_USE_CUDA) || defined(AMREX_USE_HIP)
+// Comparison operator for thrust sort
+struct EBBndryGeomCmp
+{
+  AMREX_GPU_DEVICE
+  bool operator()(const EBBndryGeom& a, const EBBndryGeom& b)
+  {
+    return a.iv < b.iv;
+  }
+};
 #endif
 
 #endif

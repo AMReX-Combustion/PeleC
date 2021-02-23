@@ -1,4 +1,0 @@
-CEXE_headers += pelec_params.H
-CEXE_headers += pelec_queries.H
-CEXE_headers += pelec_defaults.H
-

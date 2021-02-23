@@ -21,9 +21,9 @@ endif()
 
 macro(setup_test)
     # Set variables for respective binary and source directories for the test
-    set(CURRENT_TEST_SOURCE_DIR ${CMAKE_SOURCE_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/tests/${TEST_NAME})
-    set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/tests/${TEST_NAME})
-    set(CURRENT_TEST_EXE ${CMAKE_BINARY_DIR}/ExecCpp/RegTests/${TEST_EXE_DIR}/PeleC-${TEST_EXE_DIR})
+    set(CURRENT_TEST_SOURCE_DIR ${CMAKE_SOURCE_DIR}/Exec/RegTests/${TEST_EXE_DIR}/tests/${TEST_NAME})
+    set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/Exec/RegTests/${TEST_EXE_DIR}/tests/${TEST_NAME})
+    set(CURRENT_TEST_EXE ${CMAKE_BINARY_DIR}/Exec/RegTests/${TEST_EXE_DIR}/PeleC-${TEST_EXE_DIR})
     # Gold files should be submodule organized by machine and compiler (these are output during configure)
     set(PLOT_GOLD ${FCOMPARE_GOLD_FILES_DIRECTORY}/${TEST_EXE_DIR}/tests/${TEST_NAME}/plt00010)
     # Test plot is currently expected to be after 10 steps
@@ -137,7 +137,7 @@ endfunction(add_test_v2)
 # Standard unit test
 function(add_test_u TEST_NAME)
     setup_test()
-    set(CURRENT_TEST_EXE ${CMAKE_BINARY_DIR}/ExecCpp/UnitTests/PeleC-UnitTests)
+    set(CURRENT_TEST_EXE ${CMAKE_BINARY_DIR}/Exec/UnitTests/PeleC-UnitTests)
     set(PELEC_NP 1)
     if(PELEC_ENABLE_MPI)
       set(MPI_COMMANDS "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${PELEC_NP} ${MPIEXEC_PREFLAGS}")
