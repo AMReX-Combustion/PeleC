@@ -48,6 +48,7 @@ CEXE_headers += Filter.H
 CEXE_headers += Riemann.H
 CEXE_headers += Forcing.H
 CEXE_headers += LES.H
+CEXE_headers += WENO.H
 
 #Source file logic
 ifeq ($(USE_EB), TRUE)
