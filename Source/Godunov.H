@@ -19,6 +19,11 @@ flatten(
   amrex::Array4<const amrex::Real> const& q)
 {
   const int bdim[3] = {dir == 0, dir == 1, dir == 2};
+
+  if ((!q.contains(i + 3 * bdim[0], j + 3 * bdim[1], k + 3 * bdim[2]) ||
+       !q.contains(i - 3 * bdim[0], j - 3 * bdim[1], k - 3 * bdim[2]))) {
+    return 1.0;
+  }
   const int n = QPRES;
   // Parameters from uflatten
   const amrex::Real small_pres = 1.e-200;
