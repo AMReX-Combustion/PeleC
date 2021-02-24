@@ -1,34 +1,46 @@
-PRECISION  = DOUBLE
-PROFILE    = FALSE
-USE_EB     = FALSE
-DEBUG      = FALSE
+# AMReX
+DIM = 3
+COMP = gnu
+PRECISION = DOUBLE
 
-DIM        = 3
+# Profiling
+PROFILE = FALSE
+TINY_PROFILE = FALSE
+COMM_PROFILE = FALSE
+TRACE_PROFILE = FALSE
+MEM_PROFILE = FALSE
+USE_GPROF = FALSE
 
-COMP	   = gcc
+# Performance
+USE_MPI = FALSE
+USE_OMP = FALSE
+USE_CUDA = FALSE
+USE_HIP = FALSE
+USE_DPCPP = FALSE
 
-USE_MPI    = FALSE
-USE_OMP    = FALSE
+# Debugging
+DEBUG = FALSE
+FSANITIZER = FALSE
+THREAD_SANITIZER = FALSE
 
-Eos_dir     := GammaLaw
+# PeleC
+USE_REACT = FALSE
+USE_EB  = FALSE
+Eos_dir := GammaLaw
 Transport_dir := Constant
 Chemistry_Model := Null
 
 # MASA
-USE_MASA   = TRUE
+USE_MASA = TRUE
 ifeq ($(USE_MASA), TRUE)
-INCLUDE_LOCATIONS += ${MASA_HOME}/include ${MASA_HOME}/lib
-LIBRARY_LOCATIONS += ${MASA_HOME}/lib
-LIBRARIES += -Wl,-rpath,${MASA_HOME}/lib -lmasa -lfmasa
-DEFINES += -DUSE_MASA -DDO_PROBLEM_POST_TIMESTEP -DDO_PROBLEM_POST_INIT
+  INCLUDE_LOCATIONS += ${MASA_HOME}/include ${MASA_HOME}/lib
+  LIBRARY_LOCATIONS += ${MASA_HOME}/lib
+  LIBRARIES += -Wl,-rpath,${MASA_HOME}/lib -lmasa -lfmasa
+  DEFINES += -DPELEC_USE_MASA
 endif
 
-Bpack   := ./Make.package
-
-# define the location of the PELE top directory
-PELEC_HOME    := ../../..
+# GNU Make
+Bpack := ./Make.package
+Blocs := .
+PELEC_HOME := ../../..
 include $(PELEC_HOME)/Exec/Make.PeleC
-
-ifeq ($(DEBUG), TRUE)
-DEFINES += -DDEBUG
-endif

@@ -12,7 +12,7 @@ MEM_PROFILE = FALSE
 USE_GPROF = FALSE
 
 # Performance
-USE_MPI = FALSE
+USE_MPI = TRUE
 USE_OMP = FALSE
 USE_CUDA = FALSE
 USE_HIP = FALSE
@@ -25,11 +25,10 @@ THREAD_SANITIZER = FALSE
 
 # PeleC
 USE_REACT = TRUE
-USE_EB = FALSE
+USE_EB = TRUE
 Eos_dir := Fuego
-Chemistry_Model := LiDryer
+Chemistry_Model := Davis
 Transport_dir := Simple
-USE_SUNDIALS_PP = FALSE
 
 # GNU Make
 Bpack := ./Make.package

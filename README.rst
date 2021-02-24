@@ -7,11 +7,6 @@ flows.
 
 `Documentation <https://amrex-combustion.github.io/PeleC/>`_ | `Nightly Test Results <https://my.cdash.org/index.php?project=PeleC>`_
 
-A Note on the Current Status of PeleC Development
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Please be aware that kernels previously written in Fortran in PeleC have been recently ported to C++ to allow for execution on GPUs. These new kernels are located in directories marked ``*Cpp``. The Fortran kernels are currently preserved in this repo using the original directory organization, as all functionality has not yet been ported to C++ and GPUs. However, development in Fortran will not continue and any future development should be done entirely in C++ and with the ability to execute the code within AMReX's GPU framework. The Fortran kernels will be phased out at a future date. This is done in order to run portably using CPUS, CUDA, HIP, and DPC++ programming model backends in the future.
-
 Getting Started
 ~~~~~~~~~~~~~~~
 
@@ -22,7 +17,7 @@ To build `PeleC` and run a sample 3D flame problem:
 1. One can have PeleC use the default submodules for AMReX and PelePhysics in its own repo by simply performing: ::
 
     git clone --recursive git@github.com:AMReX-Combustion/PeleC.git
-    cd PeleC/ExecCpp/RegTests/PMF
+    cd PeleC/Exec/RegTests/PMF
     make
     ./Pele3d.xxx.yyy.ex inputs_ex
 
@@ -45,7 +40,7 @@ Alternatively, one can set environment variables to use AMReX and PelePhysics re
 
 4. Move to an example build folder, build an executable, run a test case: ::
 
-    cd ${PELEC_HOME}/ExecCpp/RegTests/PMF
+    cd ${PELEC_HOME}/Exec/RegTests/PMF
     make
     ./Pele3d.xxx.yyy.ex inputs_ex
 
@@ -91,7 +86,7 @@ To add a new feature to PeleC, the procedure is:
 
 3c. To easily format all source files before commit, use the following command: ::
 
-    find SourceCpp ExecCpp \( -name "*.cpp" -o -name "*.H" \) -exec clang-format -i {} +
+    find Source Exec \( -name "*.cpp" -o -name "*.H" \) -exec clang-format -i {} +
 
 4. Push feature branch to PeleC repository: ::
 

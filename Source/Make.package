@@ -1,51 +1,73 @@
 #C++ files
-CEXE_sources += Filter.cpp
 CEXE_sources += PeleC.cpp
-CEXE_sources += PeleC_advance.cpp
-CEXE_sources += PeleCBld.cpp
-CEXE_sources += PeleC_bcfill.cpp
-CEXE_sources += PeleC_external.cpp
-CEXE_sources += PeleC_forcing.cpp
-CEXE_sources += PeleC_hydro.cpp
-CEXE_sources += PeleC_init_eb.cpp
-CEXE_sources += PeleC_io.cpp 
-CEXE_sources += PeleC_les.cpp
-CEXE_sources += PeleC_MOL.cpp
-CEXE_sources += PeleC_sources.cpp
-CEXE_sources += PeleC_setup.cpp
-CEXE_sources += Prob.cpp
+CEXE_sources += Advance.cpp
+CEXE_sources += Derive.cpp
+CEXE_sources += Bld.cpp
+CEXE_sources += BCfill.cpp
+CEXE_sources += Hydro.cpp
+CEXE_sources += Godunov.cpp
+CEXE_sources += PPM.cpp
+CEXE_sources += GradUtil.cpp
+CEXE_sources += IO.cpp 
+CEXE_sources += Sources.cpp
+CEXE_sources += Setup.cpp
 CEXE_sources += main.cpp
-CEXE_sources += sum_integrated_quantities.cpp
-CEXE_sources += sum_utils.cpp
+CEXE_sources += SumIQ.cpp
+CEXE_sources += SumUtils.cpp
+CEXE_sources += IndexDefines.cpp
+CEXE_sources += Tagging.cpp
+CEXE_sources += Diffterm.cpp
+CEXE_sources += Diffusion.cpp
+CEXE_sources += Utilities.cpp
+CEXE_sources += Transport.cpp
+CEXE_sources += MOL.cpp
+CEXE_sources += Filter.cpp
+CEXE_sources += External.cpp
+CEXE_sources += Forcing.cpp
+CEXE_sources += LES.cpp
 
 #C++ headers
 CEXE_headers += PeleC.H
-CEXE_headers += PeleC_io.H
+CEXE_headers += IO.H
 CEXE_headers += Problem.H
-CEXE_headers += Problem_Derives.H
-FEXE_headers += Problem_Derive_F.H
-FEXE_headers += PeleC_F.H
-FEXE_headers += Problem_F.H
-FEXE_headers += PeleC_error_F.H
-FEXE_headers += Filter_F.H
+CEXE_headers += ProblemDerive.H
+CEXE_headers += Constants.H
+CEXE_headers += Hydro.H
+CEXE_headers += Timestep.H
+CEXE_headers += IndexDefines.H
+CEXE_headers += Diffterm.H
+CEXE_headers += Diffusion.H
+CEXE_headers += GradUtil.H
+CEXE_headers += Godunov.H
+CEXE_headers += PLM.H
+CEXE_headers += PPM.H
+CEXE_headers += Utilities.H
+CEXE_headers += Transport.H
+CEXE_headers += MOL.H
 CEXE_headers += Filter.H
+CEXE_headers += Riemann.H
+CEXE_headers += Forcing.H
+CEXE_headers += LES.H
+CEXE_headers += WENO.H
 
 #Source file logic
-ifeq ($(USE_REACT), TRUE)
-  CEXE_sources += PeleC_react.cpp
+ifeq ($(USE_EB), TRUE)
+  CEXE_sources += EB.cpp
+  CEXE_sources += InitEB.cpp
+  CEXE_headers += EB.H
+  CEXE_headers += SparseData.H
+  CEXE_headers += EBStencilTypes.H
 endif
 
 ifeq ($(USE_PARTICLES), TRUE)
-  CEXE_sources += PeleCParticles.cpp
+  CEXE_sources += Particle.cpp
+endif
+
+ifeq ($(USE_REACT), TRUE)
+  CEXE_sources += React.cpp
+  CEXE_headers += React.H
 endif
 
 ifeq ($(USE_MASA), TRUE)
-  CEXE_sources += PeleC_mms.cpp
-endif
-
-ifeq ($(USE_EB), TRUE)
-  F90EXE_sources += EBStencilTypes_mod.F90
-  CEXE_sources += PeleC_test_normal.cpp
-  CEXE_headers += EBStencilTypes.H
-  CEXE_headers += SparseData.H
+  CEXE_sources += MMS.cpp
 endif

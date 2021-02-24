@@ -24,12 +24,21 @@ FSANITIZER = FALSE
 THREAD_SANITIZER = FALSE
 
 # PeleC
-USE_REACT = TRUE
-USE_EB = FALSE
-Eos_dir := Fuego
-Chemistry_Model := LiDryer
-Transport_dir := Simple
 USE_SUNDIALS_PP = FALSE
+USE_REACT = FALSE
+USE_EB = TRUE
+Eos_dir := GammaLaw
+Chemistry_Model := Null
+Transport_dir := Constant
+
+# MASA
+USE_MASA = TRUE
+ifeq ($(USE_MASA), TRUE)
+  INCLUDE_LOCATIONS += ${MASA_HOME}/include ${MASA_HOME}/lib
+  LIBRARY_LOCATIONS += ${MASA_HOME}/lib
+  LIBRARIES += -Wl,-rpath,${MASA_HOME}/lib -lmasa -lfmasa
+  DEFINES += -DPELEC_USE_MASA
+endif
 
 # GNU Make
 Bpack := ./Make.package

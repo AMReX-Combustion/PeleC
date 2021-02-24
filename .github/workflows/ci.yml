@@ -13,7 +13,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: DoozyX/clang-format-lint-action@v0.11
       with:
-        source: './SourceCpp ./ExecCpp'
+        source: './Source ./Exec'
         exclude: '.'
         extensions: 'H,h,cpp'
         clangFormatVersion: 11
@@ -129,16 +129,16 @@ jobs:
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
           printf "CC=gcc-8\nCXX=g++-8\nFC=gfortran-8\nF90=gfortran-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
       - name: PMF debug make
-        working-directory: ./ExecCpp/RegTests/PMF
+        working-directory: ./Exec/RegTests/PMF
         run: make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE
       - name: PMF debug test
-        working-directory: ./ExecCpp/RegTests/PMF
+        working-directory: ./Exec/RegTests/PMF
         run: ./PeleC3d.gnu.DEBUG.ex tests/pmf-1/pmf-1.i max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
       - name: EB debug build
-        working-directory: ./ExecCpp/RegTests/EB-C10
+        working-directory: ./Exec/RegTests/EB-C10
         run: make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE
       - name: EB debug test
-        working-directory: ./ExecCpp/RegTests/EB-C10
+        working-directory: ./Exec/RegTests/EB-C10
         run: ./PeleC3d.gnu.DEBUG.ex tests/eb-c10/eb-c10.i max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
   CUDA:
     needs: Formatting

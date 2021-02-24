@@ -123,7 +123,7 @@ init_code_checks()
 include(SetRpath)
 
 #Build pelec executables and link to amrex library
-add_subdirectory(ExecCpp)
+add_subdirectory(Exec)
 
 if(PELEC_ENABLE_TESTS)
   enable_testing()
