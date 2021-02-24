@@ -63,6 +63,7 @@ pc_umeth_3D(
   // X data
   int cdir = 0;
   const amrex::Box& xmbx = growHi(bxg2, cdir, 1);
+  const amrex::Box& xflxbx = surroundingNodes(grow(bxg2, cdir, -1), cdir);
   amrex::FArrayBox qxm(xmbx, QVAR);
   amrex::FArrayBox qxp(bxg2, QVAR);
   amrex::Elixir qxmeli = qxm.elixir();
@@ -72,8 +73,8 @@ pc_umeth_3D(
 
   // Y data
   cdir = 1;
-  const amrex::Box& yflxbx = surroundingNodes(grow(bxg2, cdir, -1), cdir);
   const amrex::Box& ymbx = growHi(bxg2, cdir, 1);
+  const amrex::Box& yflxbx = surroundingNodes(grow(bxg2, cdir, -1), cdir);
   amrex::FArrayBox qym(ymbx, QVAR);
   amrex::FArrayBox qyp(bxg2, QVAR);
   amrex::Elixir qymeli = qym.elixir();
@@ -130,17 +131,17 @@ pc_umeth_3D(
 
     int idir = 0;
     trace_ppm(
-      bxg1, idir, q, srcQ, qxmarr, qxparr, bx, dt, del, use_flattening,
+      bxg2, idir, q, srcQ, qxmarr, qxparr, bxg2, dt, del, use_flattening,
       PeleC::use_hybrid_weno, PeleC::weno_scheme);
 
     idir = 1;
     trace_ppm(
-      bxg1, idir, q, srcQ, qymarr, qyparr, bx, dt, del, use_flattening,
+      bxg2, idir, q, srcQ, qymarr, qyparr, bxg2, dt, del, use_flattening,
       PeleC::use_hybrid_weno, PeleC::weno_scheme);
 
     idir = 2;
     trace_ppm(
-      bxg1, idir, q, srcQ, qzmarr, qzparr, bx, dt, del, use_flattening,
+      bxg2, idir, q, srcQ, qzmarr, qzparr, bxg2, dt, del, use_flattening,
       PeleC::use_hybrid_weno, PeleC::weno_scheme);
 
   } else {
@@ -150,7 +151,6 @@ pc_umeth_3D(
   // These are the first flux estimates as per the corner-transport-upwind
   // method X initial fluxes
   cdir = 0;
-  const amrex::Box& xflxbx = surroundingNodes(grow(bxg2, cdir, -1), cdir);
   amrex::FArrayBox fx(xflxbx, NVAR);
   amrex::Elixir fxeli = fx.elixir();
   auto const& fxarr = fx.array();

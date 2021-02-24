@@ -36,7 +36,7 @@ pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
 
 # DIAGNOSTICS & VERBOSITY
 pelec.sum_interval   = 1       # timesteps between computing mass
-pelec.v              = 1       # verbosity in Castro.cpp
+pelec.v              = 1       # verbosity in PeleC.cpp
 amr.v                = 1       # verbosity in Amr.cpp
 amr.data_log         = datlog mmslog
 #amr.grid_log        = grdlog  # name of grid logging file

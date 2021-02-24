@@ -32,7 +32,7 @@ pelec.change_max     = 1.05    # scale back initial timestep
 
 # DIAGNOSTICS & VERBOSITY
 pelec.sum_interval   = 1       # timesteps between computing mass
-pelec.v              = 1       # verbosity in Castro.cpp
+pelec.v              = 1       # verbosity in PeleC.cpp
 amr.v                = 1       # verbosity in Amr.cpp
 amr.data_log         = datlog
 
