@@ -167,12 +167,8 @@ pc_estdt_tempdif(
       const int which_trans = 1;
       pc_trans4dt(which_trans, T, rho, massfrac, D, trans_parm);
       amrex::Real cv;
-#ifdef PELEPHYSICS_NONIDEAL_EOS
-      EOS::RTY2Cv(rho, T, massfrac, cv);
-#else
       auto eos = pele::physics::PhysicsType::eos();
-      eos.TY2Cv(T, massfrac, cv);
-#endif
+      eos.RTY2Cv(rho, T, massfrac, cv);
       D *= rhoInv / cv;
       if (D == 0.0) {
         D = constants::small_num();
@@ -219,12 +215,8 @@ pc_estdt_enthdif(
       }
       amrex::Real T = u(i, j, k, UTEMP);
       amrex::Real cp;
-#ifdef PELEPHYSICS_NONIDEAL_EOS
-      EOS::RTY2Cp(rho, T, massfrac, cp);
-#else
       auto eos = pele::physics::PhysicsType::eos();
-      eos.TY2Cp(T, massfrac, cp);
-#endif
+      eos.RTY2Cp(rho, T, massfrac, cp);
       amrex::Real D;
       const int which_trans = 1;
       pc_trans4dt(which_trans, T, rho, massfrac, D, trans_parm);

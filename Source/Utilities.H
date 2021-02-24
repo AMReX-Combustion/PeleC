@@ -19,13 +19,9 @@ pc_cmpTemp(
   for (int n = 0; n < NUM_SPECIES; ++n) {
     massfrac[n] = S(i, j, k, UFS + n) * rhoInv;
   }
-#ifdef PELEPHYSICS_NONIDEAL_EOS
   amrex::Real rho = S(i, j, k, URHO);
-  EOS::REY2T(rho, e, massfrac, T);
-#else
   auto eos = pele::physics::PhysicsType::eos();
-  eos.EY2T(e, massfrac, T);
-#endif
+  eos.REY2T(rho, e, massfrac, T);
   S(i, j, k, UTEMP) = T;
 }
 
@@ -43,8 +39,7 @@ pc_rst_int_e(
   const amrex::Real dual_energy_eta2,
   const int /*verbose*/)
 {
-  // not supported for nonideal EOS
-#ifdef PELEPHSYICS_NONIDEAL_EOS
+#ifdef PELEPHYSICS_NONIDEAL_EOS
   if (allow_small_energy == 0 || allow_negative_energy == 0) {
     amrex::Error("Small/negative energy must be allowed for nonideal EOS");
   }
@@ -242,20 +237,11 @@ pc_ctoprim(
 
   // Are all these EOS calls needed? Seems fairly convoluted.
   eos.Y2WBAR(massfrac, wbar);
-#ifdef PELEPHYSICS_NONIDEAL_EOS
-  EOS::REY2T(rho, e, massfrac, T);
-  EOS::RTY2P(rho, T, massfrac, p);
-  EOS::RTY2Cs(rho, T, massfrac, cs);
-  EOS::RTY2G(rho, T, massfrac, gam1);
-  EOS::RTY2dpde_dpdre(rho, T, massfrac, dpde, dpdr_e);
-#else
-  eos.EY2T(e, massfrac, T);
+  eos.REY2T(rho, e, massfrac, T);
   eos.RTY2P(rho, T, massfrac, p);
   eos.RTY2Cs(rho, T, massfrac, cs);
-  eos.TY2G(T, massfrac, gam1);
-  eos.RPE2dpdr_e(rho, p, e, dpdr_e);
-  eos.RG2dpde(rho, gam1, dpde);
-#endif
+  eos.RTY2G(rho, T, massfrac, gam1);
+  eos.RTY2dpde_dpdre(rho, T, massfrac, dpde, dpdr_e);
 
   q(i, j, k, QTEMP) = T;
   q(i, j, k, QREINT) = e * rho;
