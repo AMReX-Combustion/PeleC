@@ -134,7 +134,8 @@ PeleC::variableCleanUp()
 
   desc_lst.clear();
 
-  pele::physics::transport::close();
+  pele::physics::transport::CloseTransport<
+    pele::physics::PhysicsType::eos_type>()();
 
   pele::physics::eos::close();
 

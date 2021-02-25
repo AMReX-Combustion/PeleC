@@ -156,7 +156,8 @@ PeleC::variableSetUp()
 
   pele::physics::eos::init();
 
-  pele::physics::transport::init();
+  pele::physics::transport::InitTransport<
+    pele::physics::PhysicsType::eos_type>()();
 
 #ifdef PELEC_USE_REACTIONS
 #if defined(AMREX_USE_GPU) && defined(USE_SUNDIALS_PP)
