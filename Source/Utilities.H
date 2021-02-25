@@ -39,7 +39,7 @@ pc_rst_int_e(
   const amrex::Real dual_energy_eta2,
   const int /*verbose*/)
 {
-#ifdef PELEPHYSICS_NONIDEAL_EOS
+#ifdef PELEC_USE_SRK
   if (allow_small_energy == 0 || allow_negative_energy == 0) {
     amrex::Error("Small/negative energy must be allowed for nonideal EOS");
   }

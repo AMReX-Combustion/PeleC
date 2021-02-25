@@ -45,6 +45,9 @@ function(build_pelec_exe pelec_exe_name)
   if("${PELEC_EOS_MODEL}" STREQUAL "Fuego") # FIXME mhdf better way?
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_FUEGO)
   endif()
+  if("${PELEC_EOS_MODEL}" STREQUAL "Soave-Redlich-Kwong") # FIXME mhdf better way?
+    target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_SRK)
+  endif()
 
   set(PELEC_MECHANISM_DIR "${PELE_PHYSICS_SRC_DIR}/Support/Fuego/Mechanism/Models/${PELEC_CHEMISTRY_MODEL}")
   target_sources(${pelec_exe_name} PRIVATE
