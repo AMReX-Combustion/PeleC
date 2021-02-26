@@ -52,6 +52,14 @@ all: $(executable)
 	$(SILENT) $(RM) AMReX_buildInfo.cpp
 	@echo SUCCESS
 
+# PelePhysics
+PP_SRC_HOME = $(PELE_PHYSICS_HOME)/Source
+EXTERN_CORE       += $(PP_SRC_HOME)
+INCLUDE_LOCATIONS += $(PP_SRC_HOME)
+VPATH_LOCATIONS   += $(PP_SRC_HOME)
+Bpack             += $(PP_SRC_HOME)/Make.package
+Blocs             += $(PP_SRC_HOME)
+
 # EOS
 ifdef Eos_dir
   EOS_HOME = $(PELE_PHYSICS_HOME)/Eos/$(strip $(Eos_dir))
