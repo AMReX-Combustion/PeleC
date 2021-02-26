@@ -65,7 +65,8 @@ amrex_probinit(
     trans_parm.const_viscosity * cp / PeleC::prob_parm_device->Pr;
 
 #ifdef AMREX_USE_GPU
-  amrex::Gpu::htod_memcpy(trans_parm_g, &trans_parm, sizeof(trans_parm));
+  amrex::Gpu::htod_memcpy(
+    pele::physics::transport::trans_parm_g, &trans_parm, sizeof(trans_parm));
 #else
   std::memcpy(
     pele::physics::transport::trans_parm_g, &trans_parm, sizeof(trans_parm));

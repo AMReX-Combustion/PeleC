@@ -26,6 +26,7 @@
 template <typename EOSType>
 struct SpeciesEnergyFlux
 {
+  AMREX_GPU_HOST_DEVICE
   void operator()(
     const int i,
     const int j,
@@ -89,6 +90,7 @@ struct SpeciesEnergyFlux
 template <>
 struct SpeciesEnergyFlux<pele::physics::eos::SRK>
 {
+  AMREX_GPU_HOST_DEVICE
   void operator()(
     const int i,
     const int j,
