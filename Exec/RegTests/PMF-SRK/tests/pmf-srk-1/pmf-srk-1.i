@@ -47,7 +47,7 @@ amr.plot_file         = plt     # root name of plotfile
 amr.plot_int          = 10   # number of timesteps between plotfiles
 
 # PROBLEM PARAMETERS
-prob.pamb = 101325000.0
+prob.pamb = 1013250.0
 prob.phi_in = -0.5
 prob.pertmag = 0.005
 prob.pmf_datafile = "LiDryer_H2_p1_phi0_4000tu0300.dat"
