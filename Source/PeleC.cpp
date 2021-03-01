@@ -137,8 +137,6 @@ PeleC::variableCleanUp()
   pele::physics::transport::CloseTransport<
     pele::physics::PhysicsType::eos_type>()();
 
-  pele::physics::eos::close();
-
 #ifdef PELEC_USE_REACTIONS
   if (do_react == 1) {
     close_reactor();

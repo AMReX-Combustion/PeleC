@@ -154,8 +154,6 @@ PeleC::variableSetUp()
   // Get options, set phys_bc
   read_params();
 
-  pele::physics::eos::init();
-
   pele::physics::transport::InitTransport<
     pele::physics::PhysicsType::eos_type>()();
 
