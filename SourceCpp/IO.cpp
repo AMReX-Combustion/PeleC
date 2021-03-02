@@ -358,13 +358,22 @@ PeleC::setPlotVariables()
 #ifdef SOOT_MODEL
   if (plot_soot && add_soot_src) {
     for (int i = 0; i < NumSootVars; i++) {
-      parent->addStatePlotVar(desc_lst[State_Type].name(FirstSootVar + i));
+      amrex::Amr::addStatePlotVar(desc_lst[State_Type].name(FirstSootVar + i));
     }
   } else {
     for (int i = 0; i < NumSootVars; i++) {
-      parent->deleteStatePlotVar(desc_lst[State_Type].name(FirstSootVar + i));
+      amrex::Amr::deleteStatePlotVar(desc_lst[State_Type].name(FirstSootVar + i));
     }
   }
+#ifdef PELEC_USE_REACTIONS
+  int plot_reactions = 1;
+  pp.query("plot_reactions", plot_reactions);
+  if (plot_reactions == 0) {
+    for (int i = 0; i < NUM_SPECIES + 1; i++) {
+      amrex::Amr::deleteStatePlotVar(desc_lst[Reactions_Type].name(i));
+    }
+  }
+#endif
 #endif
 
   bool plot_massfrac = false;

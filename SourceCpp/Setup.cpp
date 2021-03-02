@@ -573,8 +573,9 @@ PeleC::variableSetUp()
 #endif
 
 #ifdef SOOT_MODEL
-  // Add soot variables
-  soot_model->addSootDerivePlotVars(derive_lst, desc_lst);
+  if (add_soot_src == 1) {
+    soot_model->addSootDerivePlotVars(derive_lst, desc_lst, Density, UFSOOT);
+  }
 #endif
 
   // LES coefficients
