@@ -362,7 +362,8 @@ PeleC::setPlotVariables()
     }
   } else {
     for (int i = 0; i < NumSootVars; i++) {
-      amrex::Amr::deleteStatePlotVar(desc_lst[State_Type].name(FirstSootVar + i));
+      amrex::Amr::deleteStatePlotVar(
+        desc_lst[State_Type].name(FirstSootVar + i));
     }
   }
 #ifdef PELEC_USE_REACTIONS

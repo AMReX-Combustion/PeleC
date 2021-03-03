@@ -122,7 +122,9 @@ PeleC::fill_soot_source(
           }
           Real* diag = nullptr;
           Real mu, xi, lam;
-          transport(get_xi, get_mu, get_lam, get_diag, T, rho, Y.data(), diag, mu, xi, lam, ltransparm);
+          transport(
+            get_xi, get_mu, get_lam, get_diag, T, rho, Y.data(), diag, mu, xi,
+            lam, ltransparm);
           mu_arr(i, j, k) = mu;
         });
     }
