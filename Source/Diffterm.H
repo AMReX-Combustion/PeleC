@@ -172,6 +172,11 @@ struct SpeciesEnergyFlux<pele::physics::eos::SRK>
 };
 #endif
 
+struct FluxTypes
+{
+  using SpeciesEnergyFluxType = SpeciesEnergyFlux<pele::physics::EosType>;
+};
+
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
@@ -256,8 +261,7 @@ pc_diffusion_flux(
             -tauz * (q(i, j, k, QW) + q(im, jm, km, QW)))) -
     coef[dComp_lambda] * (dxinv * (q(i, j, k, QTEMP) - q(im, jm, km, QTEMP)));
 
-  SpeciesEnergyFlux<pele::physics::PhysicsType::eos_type>()(
-    i, j, k, im, jm, km, dxinv, coef, q, flx);
+  FluxTypes::SpeciesEnergyFluxType()(i, j, k, im, jm, km, dxinv, coef, q, flx);
 
   // Scale by area
   AMREX_D_TERM(flx(i, j, k, UMX) *= a(i, j, k);
