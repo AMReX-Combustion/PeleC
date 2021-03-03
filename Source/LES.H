@@ -234,7 +234,7 @@ pc_smagorinsky_sfs_term(
     massfrac[n] = 0.5 * (q(i, j, k, QFS + n) +
                          q(i - bdim[0], j - bdim[1], k - bdim[2], QFS + n));
   }
-  amrex::Real cp;
+  amrex::Real cp = 0.0;
   auto eos = pele::physics::PhysicsType::eos();
   eos.TY2Cp(T, massfrac, cp);
   flx(i, j, k, UEDEN) = flx(i, j, k, UEDEN) - cp * Cs2 / PrT * flux_T;
@@ -509,7 +509,7 @@ pc_dynamic_smagorinsky_sfs_term(
     massfrac[n] = 0.5 * (q(i, j, k, QFS + n) +
                          q(i - bdim[0], j - bdim[1], k - bdim[2], QFS + n));
   }
-  amrex::Real cp;
+  amrex::Real cp = 0.0;
   auto eos = pele::physics::PhysicsType::eos();
   eos.TY2Cp(T, massfrac, cp);
   flx(i, j, k, UEDEN) =
