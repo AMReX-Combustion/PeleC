@@ -93,11 +93,10 @@ method can be selected with ``weno_variant``:
 
 * ``weno_variant = 0`` is the classical 5th order WENO-JS of Jiang and Shu [JCP 1996].
 * ``weno_variant = 1`` is the 5th order WENO-Z method of Borges et al. [JCP 2008].
-* ``weno_variant = 2`` is the 3rd order WENO-Z.
-* ``weno_variant = 3`` is the 7th order WENO-Z.
+* ``weno_variant = 2`` is the 7th order WENO-Z.
+* ``weno_variant = 3`` is the 3rd order WENO-Z.
 
 By default, ``weno_variant = 1`` is selected.
-
 
 
 System of primitive variables

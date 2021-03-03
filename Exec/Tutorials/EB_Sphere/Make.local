@@ -1,9 +1,0 @@
-# These need to be added to AMReX build system, in a way that overrides the AMReX defaults
-# e.g. by modifying Tools/GNUMake/comps/intel.mak
-# Recorded here so that they are present in this tag since they are not in the git tag this 
-# version of PeleC used
-
-CXXFLAGS += -g -O3 -ipo -qopt-report=2 -qopt-report-phase=vec,ipo -qopt-report-file=myopt.txt
-CFLAGS   += -g -O3 -ipo -qopt-report=2 -qopt-report-phase=vec,ipo -qopt-report-file=myopt.txt
-FFLAGS   += -g -O3 -ipo -qopt-report=2 -qopt-report-phase=vec,ipo -qopt-report-file=myopt.txt
-F90FLAGS += -g -O3 -ipo -qopt-report=2 -qopt-report-phase=vec,ipo -qopt-report-file=myopt.txt

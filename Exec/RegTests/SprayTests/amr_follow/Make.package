@@ -1,6 +1,0 @@
-f90EXE_sources += probdata.f90
-F90EXE_sources += bc_fill_nd.F90
-F90EXE_sources += particle_tagging_nd.F90
-CEXE_sources += SprayParticlesInitInsert.cpp
-BOXLIB_BASE=EXE
-

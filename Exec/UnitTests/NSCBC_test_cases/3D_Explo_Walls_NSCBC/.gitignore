@@ -1,9 +1,0 @@
-*.rg_0_rl_0
-/datlog
-plt*
-*.EXE
-*.gnu.MPI.ex
-*.0
-/AMReX_buildInfo.cpp
-/output.dat
-/extern.f90

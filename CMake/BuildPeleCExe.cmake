@@ -18,8 +18,8 @@ function(build_pelec_exe pelec_exe_name)
   set(PELE_PHYSICS_SRC_DIR ${CMAKE_SOURCE_DIR}/Submodules/PelePhysics)
   set(PELE_PHYSICS_BIN_DIR ${CMAKE_BINARY_DIR}/Submodules/PelePhysics/${pelec_exe_name})
 
-  set(SRC_DIR ${CMAKE_SOURCE_DIR}/SourceCpp)
-  set(BIN_DIR ${CMAKE_BINARY_DIR}/SourceCpp/${pelec_exe_name})
+  set(SRC_DIR ${CMAKE_SOURCE_DIR}/Source)
+  set(BIN_DIR ${CMAKE_BINARY_DIR}/Source/${pelec_exe_name})
 
   include(SetPeleCCompileFlags)
 
@@ -165,6 +165,7 @@ function(build_pelec_exe pelec_exe_name)
        ${SRC_DIR}/Timestep.H
        ${SRC_DIR}/Utilities.H
        ${SRC_DIR}/Utilities.cpp
+       ${SRC_DIR}/WENO.H
   )
 
   if(NOT "${pelec_exe_name}" STREQUAL "PeleC-UnitTests")
