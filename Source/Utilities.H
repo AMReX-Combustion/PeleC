@@ -54,7 +54,7 @@ pc_rst_int_e(
     const amrex::Real eden = S(i, j, k, UEDEN) * rhoInv;
     // const amrex::Real eos_state_rho = S(i, j, k, URHO);
     const amrex::Real eos_state_T = std::numeric_limits<amrex::Real>::min();
-    amrex::Real eos_state_massfrac[NUM_SPECIES];
+    amrex::Real eos_state_massfrac[NUM_SPECIES] = {0.0};
     amrex::Real eos_state_ei[NUM_SPECIES] = {0.0};
     eos.T2Ei(eos_state_T, eos_state_ei);
     amrex::Real eos_state_e = 0.0;
@@ -117,8 +117,8 @@ pc_rst_int_e(
         (S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min())) {
         // const amrex::Real eos_state_rho = S(i, j, k, URHO);
         const amrex::Real eos_state_T = std::numeric_limits<amrex::Real>::min();
-        amrex::Real eos_state_massfrac[NUM_SPECIES];
-        amrex::Real eos_state_ei[NUM_SPECIES];
+        amrex::Real eos_state_massfrac[NUM_SPECIES] = {0.0};
+        amrex::Real eos_state_ei[NUM_SPECIES] = {0.0};
         eos.T2Ei(eos_state_T, eos_state_ei);
         amrex::Real eos_state_e = 0.0;
         for (int sp = 0; sp < NUM_SPECIES; sp++) {
@@ -149,8 +149,8 @@ pc_rst_int_e(
         (S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min())) {
         // const amrex::Real eos_state_rho = S(i, j, k, URHO);
         const amrex::Real eos_state_T = std::numeric_limits<amrex::Real>::min();
-        amrex::Real eos_state_massfrac[NUM_SPECIES];
-        amrex::Real eos_state_ei[NUM_SPECIES];
+        amrex::Real eos_state_massfrac[NUM_SPECIES] = {0.0};
+        amrex::Real eos_state_ei[NUM_SPECIES] = {0.0};
         eos.T2Ei(eos_state_T, eos_state_ei);
         amrex::Real eos_state_e = 0.0;
         for (int sp = 0; sp < NUM_SPECIES; sp++) {
