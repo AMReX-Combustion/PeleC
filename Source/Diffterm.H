@@ -103,7 +103,7 @@ struct SpeciesEnergyFlux<pele::physics::eos::SRK>
     const amrex::Array4<const amrex::Real>& q,
     const amrex::Array4<amrex::Real>& flx)
   {
-    auto eos = pele::physics::PhysicsType::eos();
+    pele::physics::eos::SRK eos;
 
     // Get massfrac, molefrac, enthalpy
     amrex::Real mass1[NUM_SPECIES], mass2[NUM_SPECIES];
