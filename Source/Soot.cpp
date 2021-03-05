@@ -138,10 +138,8 @@ PeleC::fill_soot_source(
   SootData const* sd = soot_model->getSootData();
   for (MFIter mfi(soot_src, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
     const amrex::Box& bx = mfi.growntilebox(ng);
-    amrex::FArrayBox& Sfab = state[mfi];
-    const amrex::FArrayBox& soot_fab = soot_src[mfi];
-    auto const& s_arr = Sfab.array();
-    auto const& soot_arr = soot_fab.array();
+    auto const& s_arr = state.const_array(mfi);
+    auto const& soot_arr = soot_src.const_array(mfi);
     {
       BL_PROFILE("PeleC::retrieveSootTimeStep()");
       reduce_op.eval(
@@ -152,23 +150,17 @@ PeleC::fill_soot_source(
             soot_arr(i, j, k, UEDEN) / s_arr(i, j, k, UEDEN);
           amrex::Real max_rate =
             amrex::max(std::abs(rho_rate), std::abs(eng_rate));
-          for (int n = 0; n != NUM_SPECIES; ++n) {
+          for (int n = 0; n < NUM_SPECIES; ++n) {
             int indx = UFS + n;
             amrex::Real cur_rate =
               soot_arr(i, j, k, indx) / (s_arr(i, j, k, indx) + 1.E-12);
             max_rate = amrex::max(max_rate, std::abs(cur_rate));
           }
-          amrex::Real moments[NUM_SOOT_VARS];
-          for (int n = 0; n != NUM_SOOT_VARS; ++n)
-            moments[n] = s_arr(i, j, k, UFSOOT + n);
-          // Convert moments to mol, clip moments, and convert back to CGS
-          sd->momConvClipConv(moments);
           // Limit time step based only on positive moment sources
-          for (int n = 0; n != NUM_SOOT_VARS; ++n) {
+          for (int n = 0; n < NUM_SOOT_VARS; ++n) {
             int indx = UFSOOT + n;
-            s_arr(i, j, k, indx) = moments[n];
             max_rate =
-              amrex::max(max_rate, -soot_arr(i, j, k, indx) / moments[n]);
+              amrex::max(max_rate, -soot_arr(i, j, k, indx) / s_arr(i, j, k, indx));
           }
           return 1. / max_rate;
         });
@@ -177,5 +169,6 @@ PeleC::fill_soot_source(
       soot_dt = amrex::min(soot_dt, ldt_cpu);
     }
   }
+  ParallelDescriptor::ReduceRealMin(soot_dt);
   soot_model->setTimeStep(soot_dt);
 }

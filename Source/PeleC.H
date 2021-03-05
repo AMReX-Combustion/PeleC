@@ -575,6 +575,10 @@ public:
   static std::unique_ptr<TaggingParm> tagging_parm;
   static std::unique_ptr<PassMap> pass_map;
 
+#ifdef SOOT_MODEL
+  static std::unique_ptr<SootModel> soot_model;
+#endif
+
 protected:
   amrex::iMultiFab level_mask;
 #ifdef PELEC_USE_EB
@@ -711,10 +715,6 @@ protected:
   static SprayParticleContainer* theSprayPC();
   static SprayParticleContainer* theVirtPC();
   static SprayParticleContainer* theGhostPC();
-#endif
-
-#ifdef SOOT_MODEL
-  static std::unique_ptr<SootModel> soot_model;
 #endif
 
   static int num_state_type;
