@@ -22,8 +22,9 @@ pmf(
   amrex::Real xlo,
   amrex::Real xhi,
   amrex::GpuArray<amrex::Real, NUM_SPECIES + 4>& y_vector,
-  ProbParmDevice const& prob_parm)
+  const ProbParmDevice& prob_parm)
 {
+  std::cout << "pmf\n";
   if (prob_parm.pmf_do_average) {
     int lo_loside = 0;
     int lo_hiside = 0;
@@ -144,6 +145,7 @@ pc_initdata(
   amrex::GeometryData const& geomdata,
   ProbParmDevice const& prob_parm)
 {
+  std::cout << "pc_initdata\n";
   if (prob_parm.phi_in < 0.0) {
     const amrex::Real* prob_lo = geomdata.ProbLo();
     // const amrex::Real* prob_hi = geomdata.ProbHi();
@@ -213,6 +215,7 @@ bcnormal(
   amrex::GeometryData const& geomdata,
   ProbParmDevice const& prob_parm)
 {
+  std::cout << "bcnormal\n";
   const amrex::Real* prob_lo = geomdata.ProbLo();
   const amrex::Real* prob_hi = geomdata.ProbHi();
   amrex::GpuArray<amrex::Real, NUM_SPECIES + 4> pmf_vals = {{0.0}};

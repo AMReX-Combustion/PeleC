@@ -123,34 +123,6 @@ ebInitialized(bool eb_init_val)
 #endif
 
 void
-PeleC::variableCleanUp()
-{
-  prob_parm_device.reset();
-  prob_parm_host.reset();
-  tagging_parm.reset();
-  pass_map.reset();
-
-  derive_lst.clear();
-
-  desc_lst.clear();
-
-  pele::physics::transport::CloseTransport<
-    pele::physics::PhysicsType::eos_type>()();
-
-#ifdef PELEC_USE_REACTIONS
-  if (do_react == 1) {
-    close_reactor();
-  }
-#endif
-
-  clear_prob();
-
-#ifdef PELEC_USE_EB
-  eb_initialized = false;
-#endif
-}
-
-void
 PeleC::read_params()
 {
   static bool read_params_done = false;
@@ -680,7 +652,7 @@ PeleC::initData()
     auto sfab = S_new.array(mfi);
     const auto geomdata = geom.data();
 
-    ProbParmDevice const* lprobparm = prob_parm_device.get();
+    const ProbParmDevice* lprobparm = h_prob_parm_device;
 
     amrex::ParallelFor(box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       pc_initdata(i, j, k, sfab, geomdata, *lprobparm);
