@@ -153,6 +153,7 @@ PeleC::variableSetUp()
   h_prob_parm_device = new ProbParmDevice{};
   tagging_parm = new TaggingParm{};
   h_pass_map = new PassMap{};
+  std::cout << "alloc\n";
   d_prob_parm_device =
     (ProbParmDevice*)amrex::The_Arena()->alloc(sizeof(ProbParmDevice));
   d_pass_map = (PassMap*)amrex::The_Arena()->alloc(sizeof(PassMap));
@@ -188,7 +189,7 @@ PeleC::variableSetUp()
 #ifdef AMREX_USE_GPU
   amrex::Gpu::htod_memcpy(d_pass_map, h_pass_map, sizeof(PassMap));
 #else
-  d_pass_map = h_pass_map;
+  std::memcpy(d_pass_map, h_pass_map, sizeof(PassMap));
 #endif
 
 #ifdef PELEC_USE_MASA
@@ -642,13 +643,6 @@ PeleC::variableSetUp()
 void
 PeleC::variableCleanUp()
 {
-  delete prob_parm_host;
-  delete tagging_parm;
-  delete h_prob_parm_device;
-  delete h_pass_map;
-  amrex::The_Arena()->free(d_prob_parm_device);
-  amrex::The_Arena()->free(d_pass_map);
-
   derive_lst.clear();
 
   desc_lst.clear();
@@ -668,6 +662,14 @@ PeleC::variableCleanUp()
 #ifdef PELEC_USE_EB
   eb_initialized = false;
 #endif
+
+  delete prob_parm_host;
+  delete tagging_parm;
+  delete h_prob_parm_device;
+  delete h_pass_map;
+  std::cout << "dealloc\n";
+  amrex::The_Arena()->free(d_prob_parm_device);
+  amrex::The_Arena()->free(d_pass_map);
 }
 
 void

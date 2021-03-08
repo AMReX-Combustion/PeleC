@@ -23,7 +23,6 @@ checkQuotes(const std::string& str)
 void
 read_pmf(const std::string& myfile)
 {
-  std::cout << "read_pmf\n";
   std::string firstline;
   std::string secondline;
   std::string remaininglines;
@@ -113,7 +112,6 @@ read_pmf(const std::string& myfile)
 void
 init_bc()
 {
-  std::cout << "init_bc\n";
   amrex::Real vt;
   amrex::Real ek;
   amrex::Real T;
@@ -181,7 +179,6 @@ amrex_probinit(
   const amrex_real* problo,
   const amrex_real* probhi)
 {
-  std::cout << "amrex_probinit\n";
   std::string pmf_datafile;
 
   amrex::ParmParse pp("prob");
@@ -205,7 +202,9 @@ amrex_probinit(
     PeleC::d_prob_parm_device, PeleC::h_prob_parm_device,
     sizeof(ProbParmDevice));
 #else
-  PeleC::d_prob_parm_device = PeleC::h_prob_parm_device;
+  std::memcpy(
+    PeleC::d_prob_parm_device, PeleC::h_prob_parm_device,
+    sizeof(ProbParmDevice));
 #endif
 }
 }
