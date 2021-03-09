@@ -13,9 +13,9 @@
 #include "PeleC.H"
 #include "IndexDefines.H"
 #include "Constants.H"
-#include "EOS.H"
+#include "PelePhysics.H"
 #include "Tagging.H"
-#include "Transport.H"
+
 #include "ProblemDerive.H"
 #include "prob_parm.H"
 
@@ -45,6 +45,7 @@ pc_initdata(
 #endif
 
   // Set the states
+  auto eos = pele::physics::PhysicsType::eos();
   if (prob_parm.idir == 1) {
     if (x <= prob_parm.split[0]) {
       state(i, j, k, URHO) = prob_parm.rho_l;
@@ -63,8 +64,8 @@ pc_initdata(
       state(i, j, k, UMY) = 0.0;
       state(i, j, k, UMZ) = 0.0;
 
-      EOS::RYP2E(state(i, j, k, URHO), massfrac, prob_parm.p_r, e_r);
-      EOS::EY2T(e_r, massfrac, state(i, j, k, UTEMP));
+      eos.RYP2E(state(i, j, k, URHO), massfrac, prob_parm.p_r, e_r);
+      eos.EY2T(e_r, massfrac, state(i, j, k, UTEMP));
       state(i, j, k, UEINT) = state(i, j, k, URHO) * e_r;
       state(i, j, k, UEDEN) =
         state(i, j, k, UEINT) +
@@ -88,8 +89,8 @@ pc_initdata(
       state(i, j, k, UMY) = state(i, j, k, URHO) * prob_parm.u_r;
       state(i, j, k, UMZ) = 0.0;
 
-      EOS::RYP2E(state(i, j, k, URHO), massfrac, prob_parm.p_r, e_r);
-      EOS::EY2T(e_r, massfrac, state(i, j, k, UTEMP));
+      eos.RYP2E(state(i, j, k, URHO), massfrac, prob_parm.p_r, e_r);
+      eos.EY2T(e_r, massfrac, state(i, j, k, UTEMP));
       state(i, j, k, UEINT) = state(i, j, k, URHO) * e_r;
       state(i, j, k, UEDEN) =
         state(i, j, k, UEINT) +
@@ -113,8 +114,8 @@ pc_initdata(
       state(i, j, k, UMY) = 0.0;
       state(i, j, k, UMZ) = state(i, j, k, URHO) * prob_parm.u_r;
 
-      EOS::RYP2E(state(i, j, k, URHO), massfrac, prob_parm.p_r, e_r);
-      EOS::EY2T(e_r, massfrac, state(i, j, k, UTEMP));
+      eos.RYP2E(state(i, j, k, URHO), massfrac, prob_parm.p_r, e_r);
+      eos.EY2T(e_r, massfrac, state(i, j, k, UTEMP));
       state(i, j, k, UEINT) = state(i, j, k, URHO) * e_r;
       state(i, j, k, UEDEN) =
         state(i, j, k, UEINT) +

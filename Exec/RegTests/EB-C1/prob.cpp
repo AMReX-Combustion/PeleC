@@ -50,16 +50,17 @@ amrex_probinit(
   amrex::Real cs;
   amrex::Real cp;
   amrex::Real massfrac[NUM_SPECIES] = {1.0};
-  EOS::PYT2RE(
+  auto eos = pele::physics::PhysicsType::eos();
+  eos.PYT2RE(
     PeleC::prob_parm_device->p0, massfrac, PeleC::prob_parm_device->T0,
     PeleC::prob_parm_device->rho0, eint);
-  EOS::RTY2Cs(
+  eos.RTY2Cs(
     PeleC::prob_parm_device->rho0, PeleC::prob_parm_device->T0, massfrac, cs);
-  EOS::TY2Cp(PeleC::prob_parm_device->T0, massfrac, cp);
+  eos.TY2Cp(PeleC::prob_parm_device->T0, massfrac, cp);
 
   PeleC::prob_parm_device->u0 = PeleC::prob_parm_device->mach * cs;
 
-  TransParm trans_parm;
+  pele::physics::transport::TransParm trans_parm;
 
   // Default
   trans_parm.const_viscosity = 0.0;
@@ -87,9 +88,11 @@ amrex_probinit(
     trans_parm.const_viscosity * cp / PeleC::prob_parm_device->prandtl;
 
 #ifdef AMREX_USE_GPU
-  amrex::Gpu::htod_memcpy(trans_parm_g, &trans_parm, sizeof(trans_parm));
+  amrex::Gpu::htod_memcpy(
+    pele::physics::transport::trans_parm_g, &trans_parm, sizeof(trans_parm));
 #else
-  std::memcpy(trans_parm_g, &trans_parm, sizeof(trans_parm));
+  std::memcpy(
+    pele::physics::transport::trans_parm_g, &trans_parm, sizeof(trans_parm));
 #endif
 
   // clang-format off
@@ -101,9 +104,10 @@ amrex_probinit(
   // p = p_0 + p_r * cos(a_px * PI * r / L)
   // clang-format on
   masa_set_param("L", PeleC::prob_parm_device->L_x);
-  masa_set_param("R", EOS::RU / EOS::AIRMW);
+  masa_set_param(
+    "R", pele::physics::Constants::RU / pele::physics::Constants::AIRMW);
   masa_set_param("k", trans_parm.const_conductivity);
-  masa_set_param("Gamma", EOS::gamma);
+  masa_set_param("Gamma", eos.gamma);
   masa_set_param("mu", trans_parm.const_viscosity);
   masa_set_param("mu_bulk", trans_parm.const_bulk_viscosity);
   masa_set_param("rho_0", PeleC::prob_parm_device->rho0);

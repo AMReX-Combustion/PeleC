@@ -8,7 +8,7 @@
 
 #include "Constants.H"
 #include "IndexDefines.H"
-#include "EOS.H"
+#include "PelePhysics.H"
 #include "Riemann.H"
 
 // This header file contains functions and declarations for the 3D hydro portion

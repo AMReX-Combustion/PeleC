@@ -1,6 +1,6 @@
 #include "mechanism.h"
 
-#include "EOS.H"
+#include "PelePhysics.H"
 #include "Derive.H"
 #include "IndexDefines.H"
 
@@ -413,7 +413,8 @@ pc_dermolefrac(
     for (int n = 0; n < NUM_SPECIES; n++) {
       mass[n] = dat(i, j, k, UFS + n) * rhoInv;
     }
-    EOS::Y2X(mass, mole);
+    auto eos = pele::physics::PhysicsType::eos();
+    eos.Y2X(mass, mole);
     for (int n = 0; n < NUM_SPECIES; n++) {
       spec(i, j, k, UFS + n) = mole[n];
     }
@@ -444,7 +445,8 @@ pc_dersoundspeed(
     for (int n = 0; n < NUM_SPECIES; ++n) {
       massfrac[n] = dat(i, j, k, UFS + n) * rhoInv;
     }
-    EOS::RTY2Cs(rho, T, massfrac, c);
+    auto eos = pele::physics::PhysicsType::eos();
+    eos.RTY2Cs(rho, T, massfrac, c);
     cfab(i, j, k) = c;
   });
 }
@@ -466,7 +468,8 @@ pc_derentropy(
 
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     amrex::Real s;
-    EOS::S(s);
+    auto eos = pele::physics::PhysicsType::eos();
+    eos.S(s);
     sfab(i, j, k) = s;
   });
 }
@@ -495,7 +498,8 @@ pc_dermachnumber(
     for (int n = 0; n < NUM_SPECIES; ++n) {
       massfrac[n] = dat(i, j, k, UFS + n) * rhoInv;
     }
-    EOS::RTY2Cs(rho, T, massfrac, c);
+    auto eos = pele::physics::PhysicsType::eos();
+    eos.RTY2Cs(rho, T, massfrac, c);
     const amrex::Real datxsq = dat(i, j, k, UMX) * dat(i, j, k, UMX);
     const amrex::Real datysq = dat(i, j, k, UMY) * dat(i, j, k, UMY);
     const amrex::Real datzsq = dat(i, j, k, UMZ) * dat(i, j, k, UMZ);
@@ -528,7 +532,8 @@ pc_derpres(
     for (int n = 0; n < NUM_SPECIES; ++n) {
       massfrac[n] = dat(i, j, k, UFS + n) * rhoInv;
     }
-    EOS::RTY2P(rho, T, massfrac, p);
+    auto eos = pele::physics::PhysicsType::eos();
+    eos.RTY2P(rho, T, massfrac, p);
     pfab(i, j, k) = p;
   });
 }
@@ -766,6 +771,7 @@ pc_derpmmserror(
     const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
     const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];
 
+    auto eos = pele::physics::PhysicsType::eos();
     const amrex::Real rho = dat(i, j, k, URHO);
     const amrex::Real rhoinv = 1.0 / rho;
     amrex::Real eint = dat(i, j, k, UEINT) * rhoinv;
@@ -776,7 +782,7 @@ pc_derpmmserror(
     }
 
     amrex::Real pdat;
-    EOS::RYET2P(rho, massfrac, eint, T, pdat);
+    eos.RYET2P(rho, massfrac, eint, T, pdat);
     const amrex::Real p = masa_eval_3d_exact_p(x, y, z);
     pmmserror(i, j, k) = pdat - p;
   });

@@ -85,13 +85,15 @@ trace_ppm(
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // amrex::Real rho = q_arr(i, j, k, QRHO);
 
+    auto eos = pele::physics::PhysicsType::eos();
+
     amrex::Real massfrac[NUM_SPECIES];
     for (int species = 0; species < NUM_SPECIES; ++species) {
       massfrac[species] = q_arr(i, j, k, species + QFS);
     }
 
     amrex::Real cc = 0;
-    EOS::RPY2Cs(q_arr(i, j, k, QRHO), q_arr(i, j, k, QPRES), massfrac, cc);
+    eos.RPY2Cs(q_arr(i, j, k, QRHO), q_arr(i, j, k, QPRES), massfrac, cc);
 
     amrex::Real un = q_arr(i, j, k, QUN);
 
@@ -324,7 +326,7 @@ trace_ppm(
 
       // For tracing
       amrex::Real cc_ref = 0;
-      EOS::RPY2Cs(rho_ref, p_ref, massfrac_ref, cc_ref);
+      eos.RPY2Cs(rho_ref, p_ref, massfrac_ref, cc_ref);
       amrex::Real csq_ref = cc_ref * cc_ref;
       amrex::Real cc_ref_inv = 1.0 / cc_ref;
       amrex::Real h_g_ref = (p_ref + rhoe_g_ref) * rho_ref_inv;
@@ -394,7 +396,7 @@ trace_ppm(
       for (int species = 0; species < NUM_SPECIES; ++species) {
         massfrac_p[species] = qp(i, j, k, species + QFS);
       }
-      EOS::RYP2E(qp(i, j, k, QRHO), massfrac_p, qp(i, j, k, QPRES), eint);
+      eos.RYP2E(qp(i, j, k, QRHO), massfrac_p, qp(i, j, k, QPRES), eint);
       qp(i, j, k, QREINT) = qp(i, j, k, QRHO) * eint;
     }
 
@@ -424,7 +426,7 @@ trace_ppm(
 
       // For tracing
       amrex::Real cc_ref = 0;
-      EOS::RPY2Cs(rho_ref, p_ref, massfrac_ref, cc_ref);
+      eos.RPY2Cs(rho_ref, p_ref, massfrac_ref, cc_ref);
       amrex::Real csq_ref = cc_ref * cc_ref;
       amrex::Real cc_ref_inv = 1.0 / cc_ref;
       amrex::Real h_g_ref = (p_ref + rhoe_g_ref) * rho_ref_inv;
@@ -487,7 +489,7 @@ trace_ppm(
         for (int species = 0; species < NUM_SPECIES; ++species) {
           massfrac_m[species] = qm(i + 1, j, k, species + QFS);
         }
-        EOS::RYP2E(
+        eos.RYP2E(
           qm(i + 1, j, k, QRHO), massfrac_m, qm(i + 1, j, k, QPRES), eint);
         qm(i + 1, j, k, QREINT) = qm(i + 1, j, k, QRHO) * eint;
 
@@ -514,7 +516,7 @@ trace_ppm(
         for (int species = 0; species < NUM_SPECIES; ++species) {
           massfrac_m[species] = qm(i, j + 1, k, species + QFS);
         }
-        EOS::RYP2E(
+        eos.RYP2E(
           qm(i, j + 1, k, QRHO), massfrac_m, qm(i, j + 1, k, QPRES), eint);
         qm(i, j + 1, k, QREINT) = qm(i, j + 1, k, QRHO) * eint;
 
@@ -541,7 +543,7 @@ trace_ppm(
         for (int species = 0; species < NUM_SPECIES; ++species) {
           massfrac_m[species] = qm(i, j, k + 1, species + QFS);
         }
-        EOS::RYP2E(
+        eos.RYP2E(
           qm(i, j, k + 1, QRHO), massfrac_m, qm(i, j, k + 1, QPRES), eint);
         qm(i, j, k + 1, QREINT) = qm(i, j, k + 1, QRHO) * eint;
       }

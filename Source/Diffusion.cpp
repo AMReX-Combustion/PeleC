@@ -232,9 +232,11 @@ PeleC::getMOLSrcTerm(
         auto const& coe_lambda = coeff_cc.array(dComp_lambda);
         BL_PROFILE("PeleC::get_transport_coeffs()");
         // Get Transport coefs on GPU.
-        TransParm const* ltransparm = trans_parm_g;
+        pele::physics::transport::TransParm const* ltransparm =
+          pele::physics::transport::trans_parm_g;
         amrex::launch(gbox, [=] AMREX_GPU_DEVICE(amrex::Box const& tbx) {
-          get_transport_coeffs(
+          auto trans = pele::physics::PhysicsType::transport();
+          trans.get_transport_coeffs(
             tbx, qar_yin, qar_Tin, qar_rhoin, coe_rhoD, coe_mu, coe_xi,
             coe_lambda, ltransparm);
         });

@@ -608,8 +608,6 @@ protected:
   static void close_reactor();
 #endif
 
-  static void init_transport();
-
   void init_les();
   void init_filters();
 

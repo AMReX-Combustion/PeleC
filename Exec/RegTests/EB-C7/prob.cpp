@@ -26,17 +26,18 @@ amrex_probinit(
 
   PeleC::prob_parm_device->massfrac[0] = 1.0;
 
-  EOS::RYP2T(
+  auto eos = pele::physics::PhysicsType::eos();
+  eos.RYP2T(
     PeleC::prob_parm_device->rhol, PeleC::prob_parm_device->massfrac.begin(),
     PeleC::prob_parm_device->pl, PeleC::prob_parm_device->Tl);
-  EOS::RYP2E(
+  eos.RYP2E(
     PeleC::prob_parm_device->rhol, PeleC::prob_parm_device->massfrac.begin(),
     PeleC::prob_parm_device->pl, PeleC::prob_parm_device->eintl);
 
-  EOS::RYP2T(
+  eos.RYP2T(
     PeleC::prob_parm_device->rhor, PeleC::prob_parm_device->massfrac.begin(),
     PeleC::prob_parm_device->pr, PeleC::prob_parm_device->Tr);
-  EOS::RYP2E(
+  eos.RYP2E(
     PeleC::prob_parm_device->rhor, PeleC::prob_parm_device->massfrac.begin(),
     PeleC::prob_parm_device->pr, PeleC::prob_parm_device->eintr);
 
@@ -48,7 +49,7 @@ amrex_probinit(
     << PeleC::prob_parm_device->L << "," << PeleC::prob_parm_device->rhol << ","
     << PeleC::prob_parm_device->pl << "," << PeleC::prob_parm_device->Tl << ","
     << PeleC::prob_parm_device->rhor << "," << PeleC::prob_parm_device->pr
-    << "," << PeleC::prob_parm_device->Tr << "," << EOS::gamma << ","
+    << "," << PeleC::prob_parm_device->Tr << "," << eos.gamma << ","
     << PeleC::prob_parm_device->angle << std::endl;
   ofs.close();
 }
