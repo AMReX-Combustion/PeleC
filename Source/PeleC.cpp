@@ -652,7 +652,7 @@ PeleC::initData()
     auto sfab = S_new.array(mfi);
     const auto geomdata = geom.data();
 
-    const ProbParmDevice* lprobparm = h_prob_parm_device;
+    const ProbParmDevice* lprobparm = d_prob_parm_device;
 
     amrex::ParallelFor(box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       pc_initdata(i, j, k, sfab, geomdata, *lprobparm);
