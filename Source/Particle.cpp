@@ -222,7 +222,8 @@ PeleC::defineParticles()
     sprayData.indx[ns] = 0;
 #endif
   amrex::Vector<Real> fuelEnth(NUM_SPECIES);
-  EOS::T2Hi(sprayData.ref_T, fuelEnth.data());
+  auto eos = pele::physics::PhysicsType::eos();
+  eos.T2Hi(sprayData.ref_T, fuelEnth.data());
   for (int ns = 0; ns < SPRAY_FUEL_NUM; ++ns) {
     const int fspec = sprayData.indx[ns];
     sprayData.latent[ns] -= fuelEnth[fspec];

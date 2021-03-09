@@ -111,9 +111,11 @@ PeleC::fill_soot_source(
       bool get_diag = false;
       BL_PROFILE("PeleC::get_transport_coeffs()");
       // Get Transport coefs on GPU.
-      TransParm const* ltransparm = trans_parm_g;
+      pele::physics::transport::TransParm const* ltransparm =
+        pele::physics::transport::trans_parm_g;
       amrex::ParallelFor(
         bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+          auto trans = pele::physics::PhysicsType::transport();
           Real T = qar_Tin(i, j, k);
           Real rho = qar_rhoin(i, j, k);
           GpuArray<Real, NUM_SPECIES> Y;
@@ -122,7 +124,7 @@ PeleC::fill_soot_source(
           }
           Real* diag = nullptr;
           Real mu, xi, lam;
-          transport(
+          trans.transport(
             get_xi, get_mu, get_lam, get_diag, T, rho, Y.data(), diag, mu, xi,
             lam, ltransparm);
           mu_arr(i, j, k) = mu;
