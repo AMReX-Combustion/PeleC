@@ -647,9 +647,8 @@ PeleC::variableCleanUp()
 
   desc_lst.clear();
 
-  transport_close();
-
-  EOS::close();
+  pele::physics::transport::CloseTransport<
+    pele::physics::PhysicsType::eos_type>()();
 
 #ifdef PELEC_USE_REACTIONS
   if (do_react == 1) {
