@@ -38,6 +38,7 @@ struct ProbParmDevice
 
 struct ProbParmHost
 {
+  ProbParmHost() {}
 };
 
 #endif

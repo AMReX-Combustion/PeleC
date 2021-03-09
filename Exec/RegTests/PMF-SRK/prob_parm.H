@@ -28,6 +28,7 @@ struct ProbParmHost
   amrex::Vector<amrex::Real> h_pmf_Y;
   amrex::Gpu::DeviceVector<amrex::Real> pmf_X;
   amrex::Gpu::DeviceVector<amrex::Real> pmf_Y;
+  ProbParmHost() : pmf_X(0), pmf_Y(0) {}
 };
 
 #endif
