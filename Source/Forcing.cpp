@@ -76,10 +76,10 @@ PeleC::fill_forcing_source(
     amrex::Real w0 = 0.0;
     amrex::Real force = 0.0;
 #ifdef PELEC_USE_FORCING
-    u0 = PeleC::h_prob_parm_device.forcing_u0;
-    v0 = PeleC::h_prob_parm_device.forcing_v0;
-    w0 = PeleC::h_prob_parm_device.forcing_w0;
-    force = PeleC::h_prob_parm_device.forcing_force;
+    u0 = PeleC::h_prob_parm_device->forcing_u0;
+    v0 = PeleC::h_prob_parm_device->forcing_v0;
+    w0 = PeleC::h_prob_parm_device->forcing_w0;
+    force = PeleC::h_prob_parm_device->forcing_force;
 #endif
 
     // Evaluate the linear forcing term

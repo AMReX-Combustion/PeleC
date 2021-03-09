@@ -5,7 +5,7 @@
 #include <AMReX_GpuQualifiers.H>
 #include <AMReX_GpuMemory.H>
 
-struct ProbParmDevice : amrex::Gpu::Managed
+struct ProbParmDevice
 {
   bool binfmt = false;
   bool restart = false;
