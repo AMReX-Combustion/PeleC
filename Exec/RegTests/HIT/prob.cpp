@@ -230,15 +230,6 @@ amrex_probinit(
       0.5 * PeleC::prob_parm_host->h_xdiff[nx - 1];
 #endif
   }
-#ifdef AMREX_USE_GPU
-  amrex::Gpu::htod_memcpy(
-    PeleC::d_prob_parm_device, PeleC::h_prob_parm_device,
-    sizeof(ProbParmDevice));
-#else
-  std::memcpy(
-    PeleC::d_prob_parm_device, PeleC::h_prob_parm_device,
-    sizeof(ProbParmDevice));
-#endif
 }
 }
 

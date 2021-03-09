@@ -153,7 +153,6 @@ PeleC::variableSetUp()
   h_prob_parm_device = new ProbParmDevice{};
   tagging_parm = new TaggingParm{};
   h_pass_map = new PassMap{};
-  std::cout << "alloc\n";
   d_prob_parm_device =
     (ProbParmDevice*)amrex::The_Arena()->alloc(sizeof(ProbParmDevice));
   d_pass_map = (PassMap*)amrex::The_Arena()->alloc(sizeof(PassMap));
@@ -249,7 +248,7 @@ PeleC::variableSetUp()
   // ParallelDescriptor::ReduceRealMax(run_stop,ParallelDescriptor::IOProcessorNumber());
 
   // if (ParallelDescriptor::IOProcessor())
-  //    std::cout << "\nTime in set_method_params: " << run_stop << '\n' ;
+  //    amrex::Print() << "\nTime in set_method_params: " << run_stop << '\n' ;
 
   // if (nscbc_adv == 1 && amrex::ParallelDescriptor::IOProcessor()) {
   //  amrex::Print() << "Using Ghost-Cells Navier-Stokes Characteristic BCs for
@@ -666,7 +665,6 @@ PeleC::variableCleanUp()
   delete tagging_parm;
   delete h_prob_parm_device;
   delete h_pass_map;
-  std::cout << "dealloc\n";
   amrex::The_Arena()->free(d_prob_parm_device);
   amrex::The_Arena()->free(d_pass_map);
 }

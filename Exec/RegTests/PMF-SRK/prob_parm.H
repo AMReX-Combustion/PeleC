@@ -5,7 +5,7 @@
 #include <AMReX_GpuQualifiers.H>
 #include <AMReX_GpuMemory.H>
 
-struct ProbParmDevice : amrex::Gpu::Managed
+struct ProbParmDevice
 {
   amrex::Real pamb = 1013250.0 * 100.0;
   amrex::Real phi_in = -0.2;
@@ -22,7 +22,7 @@ struct ProbParmDevice : amrex::Gpu::Managed
   amrex::Real* d_pmf_Y = nullptr;
 };
 
-struct ProbParmHost : amrex::Gpu::Managed
+struct ProbParmHost
 {
   amrex::Vector<amrex::Real> h_pmf_X;
   amrex::Vector<amrex::Real> h_pmf_Y;

@@ -196,16 +196,6 @@ amrex_probinit(
   read_pmf(pmf_datafile);
 
   init_bc();
-
-#ifdef AMREX_USE_GPU
-  amrex::Gpu::htod_memcpy(
-    PeleC::d_prob_parm_device, PeleC::h_prob_parm_device,
-    sizeof(ProbParmDevice));
-#else
-  std::memcpy(
-    PeleC::d_prob_parm_device, PeleC::h_prob_parm_device,
-    sizeof(ProbParmDevice));
-#endif
 }
 }
 

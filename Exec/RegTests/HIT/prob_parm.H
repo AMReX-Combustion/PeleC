@@ -38,7 +38,7 @@ struct ProbParmDevice
   amrex::Real forcing_force = 0.0;
 };
 
-struct ProbParmHost : amrex::Gpu::Managed
+struct ProbParmHost
 {
   std::string iname;
   amrex::Vector<amrex::Real> h_xinput;

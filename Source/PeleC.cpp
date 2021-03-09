@@ -611,6 +611,17 @@ PeleC::initData()
 {
   BL_PROFILE("PeleC::initData()");
 
+  // Copy problem parameter structs to device
+#ifdef AMREX_USE_GPU
+  amrex::Gpu::htod_memcpy(
+    PeleC::d_prob_parm_device, PeleC::h_prob_parm_device,
+    sizeof(ProbParmDevice));
+#else
+  std::memcpy(
+    PeleC::d_prob_parm_device, PeleC::h_prob_parm_device,
+    sizeof(ProbParmDevice));
+#endif
+
   // int ns = NVAR;
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx = geom.CellSizeArray();
   amrex::MultiFab& S_new = get_new_data(State_Type);

@@ -5,7 +5,7 @@
 #include <AMReX_GpuQualifiers.H>
 #include <AMReX_GpuMemory.H>
 
-struct ProbParmDevice : amrex::Gpu::Managed
+struct ProbParmDevice
 {
   amrex::Real pl = 1.0;
   amrex::Real rhol = 1.0;
@@ -20,7 +20,7 @@ struct ProbParmDevice : amrex::Gpu::Managed
   amrex::GpuArray<amrex::Real, NUM_SPECIES> massfrac = {1.0};
 };
 
-struct ProbParmHost : amrex::Gpu::Managed
+struct ProbParmHost
 {
 };
 

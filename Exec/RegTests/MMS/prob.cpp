@@ -17,48 +17,48 @@ amrex_probinit(
   // Parse params
   {
     amrex::ParmParse pp("prob");
-    pp.query("reynolds", PeleC::prob_parm_device->reynolds);
-    pp.query("mach", PeleC::prob_parm_device->mach);
-    pp.query("prandtl", PeleC::prob_parm_device->prandtl);
-    pp.query("rho_x_fact", PeleC::prob_parm_device->rho_x_fact);
-    pp.query("rho_y_fact", PeleC::prob_parm_device->rho_y_fact);
-    pp.query("rho_z_fact", PeleC::prob_parm_device->rho_z_fact);
-    pp.query("u_0_fact", PeleC::prob_parm_device->u_0_fact);
-    pp.query("u_x_fact", PeleC::prob_parm_device->u_x_fact);
-    pp.query("u_y_fact", PeleC::prob_parm_device->u_y_fact);
-    pp.query("u_z_fact", PeleC::prob_parm_device->u_z_fact);
-    pp.query("v_0_fact", PeleC::prob_parm_device->v_0_fact);
-    pp.query("v_x_fact", PeleC::prob_parm_device->v_x_fact);
-    pp.query("v_y_fact", PeleC::prob_parm_device->v_y_fact);
-    pp.query("v_z_fact", PeleC::prob_parm_device->v_z_fact);
-    pp.query("w_0_fact", PeleC::prob_parm_device->w_0_fact);
-    pp.query("w_x_fact", PeleC::prob_parm_device->w_x_fact);
-    pp.query("w_y_fact", PeleC::prob_parm_device->w_y_fact);
-    pp.query("w_z_fact", PeleC::prob_parm_device->w_z_fact);
-    pp.query("p_x_fact", PeleC::prob_parm_device->p_x_fact);
-    pp.query("p_y_fact", PeleC::prob_parm_device->p_y_fact);
-    pp.query("p_z_fact", PeleC::prob_parm_device->p_z_fact);
-    pp.query("a_rhox", PeleC::prob_parm_device->a_rhox);
-    pp.query("a_rhoy", PeleC::prob_parm_device->a_rhoy);
-    pp.query("a_rhoz", PeleC::prob_parm_device->a_rhoz);
-    pp.query("a_ux", PeleC::prob_parm_device->a_ux);
-    pp.query("a_uy", PeleC::prob_parm_device->a_uy);
-    pp.query("a_uz", PeleC::prob_parm_device->a_uz);
-    pp.query("a_vx", PeleC::prob_parm_device->a_vx);
-    pp.query("a_vy", PeleC::prob_parm_device->a_vy);
-    pp.query("a_vz", PeleC::prob_parm_device->a_vz);
-    pp.query("a_wx", PeleC::prob_parm_device->a_wx);
-    pp.query("a_wy", PeleC::prob_parm_device->a_wy);
-    pp.query("a_wz", PeleC::prob_parm_device->a_wz);
-    pp.query("a_px", PeleC::prob_parm_device->a_px);
-    pp.query("a_py", PeleC::prob_parm_device->a_py);
-    pp.query("a_pz", PeleC::prob_parm_device->a_pz);
+    pp.query("reynolds", PeleC::h_prob_parm_device->reynolds);
+    pp.query("mach", PeleC::h_prob_parm_device->mach);
+    pp.query("prandtl", PeleC::h_prob_parm_device->prandtl);
+    pp.query("rho_x_fact", PeleC::h_prob_parm_device->rho_x_fact);
+    pp.query("rho_y_fact", PeleC::h_prob_parm_device->rho_y_fact);
+    pp.query("rho_z_fact", PeleC::h_prob_parm_device->rho_z_fact);
+    pp.query("u_0_fact", PeleC::h_prob_parm_device->u_0_fact);
+    pp.query("u_x_fact", PeleC::h_prob_parm_device->u_x_fact);
+    pp.query("u_y_fact", PeleC::h_prob_parm_device->u_y_fact);
+    pp.query("u_z_fact", PeleC::h_prob_parm_device->u_z_fact);
+    pp.query("v_0_fact", PeleC::h_prob_parm_device->v_0_fact);
+    pp.query("v_x_fact", PeleC::h_prob_parm_device->v_x_fact);
+    pp.query("v_y_fact", PeleC::h_prob_parm_device->v_y_fact);
+    pp.query("v_z_fact", PeleC::h_prob_parm_device->v_z_fact);
+    pp.query("w_0_fact", PeleC::h_prob_parm_device->w_0_fact);
+    pp.query("w_x_fact", PeleC::h_prob_parm_device->w_x_fact);
+    pp.query("w_y_fact", PeleC::h_prob_parm_device->w_y_fact);
+    pp.query("w_z_fact", PeleC::h_prob_parm_device->w_z_fact);
+    pp.query("p_x_fact", PeleC::h_prob_parm_device->p_x_fact);
+    pp.query("p_y_fact", PeleC::h_prob_parm_device->p_y_fact);
+    pp.query("p_z_fact", PeleC::h_prob_parm_device->p_z_fact);
+    pp.query("a_rhox", PeleC::h_prob_parm_device->a_rhox);
+    pp.query("a_rhoy", PeleC::h_prob_parm_device->a_rhoy);
+    pp.query("a_rhoz", PeleC::h_prob_parm_device->a_rhoz);
+    pp.query("a_ux", PeleC::h_prob_parm_device->a_ux);
+    pp.query("a_uy", PeleC::h_prob_parm_device->a_uy);
+    pp.query("a_uz", PeleC::h_prob_parm_device->a_uz);
+    pp.query("a_vx", PeleC::h_prob_parm_device->a_vx);
+    pp.query("a_vy", PeleC::h_prob_parm_device->a_vy);
+    pp.query("a_vz", PeleC::h_prob_parm_device->a_vz);
+    pp.query("a_wx", PeleC::h_prob_parm_device->a_wx);
+    pp.query("a_wy", PeleC::h_prob_parm_device->a_wy);
+    pp.query("a_wz", PeleC::h_prob_parm_device->a_wz);
+    pp.query("a_px", PeleC::h_prob_parm_device->a_px);
+    pp.query("a_py", PeleC::h_prob_parm_device->a_py);
+    pp.query("a_pz", PeleC::h_prob_parm_device->a_pz);
   }
 
   // Define the length scale
-  AMREX_D_TERM(PeleC::prob_parm_device->L_x = probhi[0] - problo[0];
-               , PeleC::prob_parm_device->L_y = probhi[1] - problo[1];
-               , PeleC::prob_parm_device->L_z = probhi[2] - problo[2];)
+  AMREX_D_TERM(PeleC::h_prob_parm_device->L_x = probhi[0] - problo[0];
+               , PeleC::h_prob_parm_device->L_y = probhi[1] - problo[1];
+               , PeleC::h_prob_parm_device->L_z = probhi[2] - problo[2];)
 
   // Initial density, velocity, and material properties
   amrex::Real eint;
@@ -67,13 +67,14 @@ amrex_probinit(
   amrex::Real massfrac[NUM_SPECIES] = {1.0};
   auto eos = pele::physics::PhysicsType::eos();
   eos.PYT2RE(
-    PeleC::prob_parm_device->p0, massfrac, PeleC::prob_parm_device->T0,
-    PeleC::prob_parm_device->rho0, eint);
+    PeleC::h_prob_parm_device->p0, massfrac, PeleC::h_prob_parm_device->T0,
+    PeleC::h_prob_parm_device->rho0, eint);
   eos.RTY2Cs(
-    PeleC::prob_parm_device->rho0, PeleC::prob_parm_device->T0, massfrac, cs);
-  eos.TY2Cp(PeleC::prob_parm_device->T0, massfrac, cp);
+    PeleC::h_prob_parm_device->rho0, PeleC::h_prob_parm_device->T0, massfrac,
+    cs);
+  eos.TY2Cp(PeleC::h_prob_parm_device->T0, massfrac, cp);
 
-  PeleC::prob_parm_device->u0 = PeleC::prob_parm_device->mach * cs;
+  PeleC::h_prob_parm_device->u0 = PeleC::h_prob_parm_device->mach * cs;
 
   pele::physics::transport::TransParm trans_parm;
 
@@ -93,14 +94,14 @@ amrex_probinit(
   }
 
   trans_parm.const_bulk_viscosity =
-    PeleC::prob_parm_device->rho0 * PeleC::prob_parm_device->u0 *
-    PeleC::prob_parm_device->L_x / PeleC::prob_parm_device->reynolds;
+    PeleC::h_prob_parm_device->rho0 * PeleC::h_prob_parm_device->u0 *
+    PeleC::h_prob_parm_device->L_x / PeleC::h_prob_parm_device->reynolds;
   trans_parm.const_diffusivity = 0.0;
   trans_parm.const_viscosity =
-    PeleC::prob_parm_device->rho0 * PeleC::prob_parm_device->u0 *
-    PeleC::prob_parm_device->L_x / PeleC::prob_parm_device->reynolds;
+    PeleC::h_prob_parm_device->rho0 * PeleC::h_prob_parm_device->u0 *
+    PeleC::h_prob_parm_device->L_x / PeleC::h_prob_parm_device->reynolds;
   trans_parm.const_conductivity =
-    trans_parm.const_viscosity * cp / PeleC::prob_parm_device->prandtl;
+    trans_parm.const_viscosity * cp / PeleC::h_prob_parm_device->prandtl;
 
 #ifdef AMREX_USE_GPU
   amrex::Gpu::htod_memcpy(
@@ -118,57 +119,57 @@ amrex_probinit(
   // w = w_0 + w_x * cos(a_wx * PI * x / L) * w_y * cos(a_wy * PI * y / L) * w_z * cos(a_wz * PI * z / L);
   // p = p_0 + p_x * cos(a_px * PI * x / L) * p_y * cos(a_py * PI * y / L) * p_z * cos(a_pz * PI * z / L);
   // clang-format on
-  masa_set_param("L", PeleC::prob_parm_device->L_x);
+  masa_set_param("L", PeleC::h_prob_parm_device->L_x);
   masa_set_param(
     "R", pele::physics::Constants::RU / pele::physics::Constants::AIRMW);
   masa_set_param("k", trans_parm.const_conductivity);
   masa_set_param("Gamma", eos.gamma);
   masa_set_param("mu", trans_parm.const_viscosity);
   masa_set_param("mu_bulk", trans_parm.const_bulk_viscosity);
-  masa_set_param("rho_0", PeleC::prob_parm_device->rho0);
+  masa_set_param("rho_0", PeleC::h_prob_parm_device->rho0);
   masa_set_param(
     "rho_x",
-    PeleC::prob_parm_device->rho_x_fact * PeleC::prob_parm_device->rho0);
-  masa_set_param("rho_y", PeleC::prob_parm_device->rho_y_fact);
-  masa_set_param("rho_z", PeleC::prob_parm_device->rho_z_fact);
+    PeleC::h_prob_parm_device->rho_x_fact * PeleC::h_prob_parm_device->rho0);
+  masa_set_param("rho_y", PeleC::h_prob_parm_device->rho_y_fact);
+  masa_set_param("rho_z", PeleC::h_prob_parm_device->rho_z_fact);
   masa_set_param(
-    "u_0", PeleC::prob_parm_device->u_0_fact * PeleC::prob_parm_device->u0);
+    "u_0", PeleC::h_prob_parm_device->u_0_fact * PeleC::h_prob_parm_device->u0);
   masa_set_param(
-    "u_x", PeleC::prob_parm_device->u_x_fact * PeleC::prob_parm_device->u0);
-  masa_set_param("u_y", PeleC::prob_parm_device->u_y_fact);
-  masa_set_param("u_z", PeleC::prob_parm_device->u_z_fact);
+    "u_x", PeleC::h_prob_parm_device->u_x_fact * PeleC::h_prob_parm_device->u0);
+  masa_set_param("u_y", PeleC::h_prob_parm_device->u_y_fact);
+  masa_set_param("u_z", PeleC::h_prob_parm_device->u_z_fact);
   masa_set_param(
-    "v_0", PeleC::prob_parm_device->v_0_fact * PeleC::prob_parm_device->u0);
-  masa_set_param("v_x", PeleC::prob_parm_device->v_x_fact);
+    "v_0", PeleC::h_prob_parm_device->v_0_fact * PeleC::h_prob_parm_device->u0);
+  masa_set_param("v_x", PeleC::h_prob_parm_device->v_x_fact);
   masa_set_param(
-    "v_y", PeleC::prob_parm_device->v_y_fact * PeleC::prob_parm_device->u0);
-  masa_set_param("v_z", PeleC::prob_parm_device->v_z_fact);
+    "v_y", PeleC::h_prob_parm_device->v_y_fact * PeleC::h_prob_parm_device->u0);
+  masa_set_param("v_z", PeleC::h_prob_parm_device->v_z_fact);
   masa_set_param(
-    "w_0", PeleC::prob_parm_device->w_0_fact * PeleC::prob_parm_device->u0);
-  masa_set_param("w_x", PeleC::prob_parm_device->w_x_fact);
-  masa_set_param("w_y", PeleC::prob_parm_device->w_y_fact);
+    "w_0", PeleC::h_prob_parm_device->w_0_fact * PeleC::h_prob_parm_device->u0);
+  masa_set_param("w_x", PeleC::h_prob_parm_device->w_x_fact);
+  masa_set_param("w_y", PeleC::h_prob_parm_device->w_y_fact);
   masa_set_param(
-    "w_z", PeleC::prob_parm_device->w_z_fact * PeleC::prob_parm_device->u0);
-  masa_set_param("p_0", PeleC::prob_parm_device->p0);
+    "w_z", PeleC::h_prob_parm_device->w_z_fact * PeleC::h_prob_parm_device->u0);
+  masa_set_param("p_0", PeleC::h_prob_parm_device->p0);
   masa_set_param(
-    "p_x", PeleC::prob_parm_device->p_x_fact * PeleC::prob_parm_device->p0);
-  masa_set_param("p_y", PeleC::prob_parm_device->p_y_fact);
-  masa_set_param("p_z", PeleC::prob_parm_device->p_z_fact);
-  masa_set_param("a_rhox", PeleC::prob_parm_device->a_rhox);
-  masa_set_param("a_rhoy", PeleC::prob_parm_device->a_rhoy);
-  masa_set_param("a_rhoz", PeleC::prob_parm_device->a_rhoz);
-  masa_set_param("a_ux", PeleC::prob_parm_device->a_ux);
-  masa_set_param("a_uy", PeleC::prob_parm_device->a_uy);
-  masa_set_param("a_uz", PeleC::prob_parm_device->a_uz);
-  masa_set_param("a_vx", PeleC::prob_parm_device->a_vx);
-  masa_set_param("a_vy", PeleC::prob_parm_device->a_vy);
-  masa_set_param("a_vz", PeleC::prob_parm_device->a_vz);
-  masa_set_param("a_wx", PeleC::prob_parm_device->a_wx);
-  masa_set_param("a_wy", PeleC::prob_parm_device->a_wy);
-  masa_set_param("a_wz", PeleC::prob_parm_device->a_wz);
-  masa_set_param("a_px", PeleC::prob_parm_device->a_px);
-  masa_set_param("a_py", PeleC::prob_parm_device->a_py);
-  masa_set_param("a_pz", PeleC::prob_parm_device->a_pz);
+    "p_x", PeleC::h_prob_parm_device->p_x_fact * PeleC::h_prob_parm_device->p0);
+  masa_set_param("p_y", PeleC::h_prob_parm_device->p_y_fact);
+  masa_set_param("p_z", PeleC::h_prob_parm_device->p_z_fact);
+  masa_set_param("a_rhox", PeleC::h_prob_parm_device->a_rhox);
+  masa_set_param("a_rhoy", PeleC::h_prob_parm_device->a_rhoy);
+  masa_set_param("a_rhoz", PeleC::h_prob_parm_device->a_rhoz);
+  masa_set_param("a_ux", PeleC::h_prob_parm_device->a_ux);
+  masa_set_param("a_uy", PeleC::h_prob_parm_device->a_uy);
+  masa_set_param("a_uz", PeleC::h_prob_parm_device->a_uz);
+  masa_set_param("a_vx", PeleC::h_prob_parm_device->a_vx);
+  masa_set_param("a_vy", PeleC::h_prob_parm_device->a_vy);
+  masa_set_param("a_vz", PeleC::h_prob_parm_device->a_vz);
+  masa_set_param("a_wx", PeleC::h_prob_parm_device->a_wx);
+  masa_set_param("a_wy", PeleC::h_prob_parm_device->a_wy);
+  masa_set_param("a_wz", PeleC::h_prob_parm_device->a_wz);
+  masa_set_param("a_px", PeleC::h_prob_parm_device->a_px);
+  masa_set_param("a_py", PeleC::h_prob_parm_device->a_py);
+  masa_set_param("a_pz", PeleC::h_prob_parm_device->a_pz);
 
   // Display and check
   if (amrex::ParallelDescriptor::IOProcessor()) {

@@ -16,36 +16,37 @@ amrex_probinit(
 {
   // Parse params
   amrex::ParmParse pp("prob");
-  pp.query("rho", PeleC::prob_parm_device->rho);
-  pp.query("p", PeleC::prob_parm_device->p);
-  pp.query("alpha", PeleC::prob_parm_device->alpha);
-  pp.query("sigma", PeleC::prob_parm_device->sigma);
+  pp.query("rho", PeleC::h_prob_parm_device->rho);
+  pp.query("p", PeleC::h_prob_parm_device->p);
+  pp.query("alpha", PeleC::h_prob_parm_device->alpha);
+  pp.query("sigma", PeleC::h_prob_parm_device->sigma);
 
   amrex::ParmParse ppeb("eb2");
-  ppeb.query("cylinder_radius", PeleC::prob_parm_device->radius);
+  ppeb.query("cylinder_radius", PeleC::h_prob_parm_device->radius);
 
-  PeleC::prob_parm_device->L = (probhi[0] - problo[0]);
+  PeleC::h_prob_parm_device->L = (probhi[0] - problo[0]);
 
-  PeleC::prob_parm_device->massfrac[0] = 1.0;
+  PeleC::h_prob_parm_device->massfrac[0] = 1.0;
 
   auto eos = pele::physics::PhysicsType::eos();
   eos.RYP2T(
-    PeleC::prob_parm_device->rho, PeleC::prob_parm_device->massfrac.begin(),
-    PeleC::prob_parm_device->p, PeleC::prob_parm_device->T);
+    PeleC::h_prob_parm_device->rho, PeleC::h_prob_parm_device->massfrac.begin(),
+    PeleC::h_prob_parm_device->p, PeleC::h_prob_parm_device->T);
   eos.RPY2Cs(
-    PeleC::prob_parm_device->rho, PeleC::prob_parm_device->p,
-    PeleC::prob_parm_device->massfrac.begin(), PeleC::prob_parm_device->cs);
+    PeleC::h_prob_parm_device->rho, PeleC::h_prob_parm_device->p,
+    PeleC::h_prob_parm_device->massfrac.begin(), PeleC::h_prob_parm_device->cs);
 
   // Output IC
   std::ofstream ofs("ic.txt", std::ofstream::out);
   amrex::Print(ofs) << "L, rho, p, T, gamma, cs, radius, alpha, sigma"
                     << std::endl;
   amrex::Print(ofs).SetPrecision(17)
-    << PeleC::prob_parm_device->L << "," << PeleC::prob_parm_device->rho << ","
-    << PeleC::prob_parm_device->p << "," << PeleC::prob_parm_device->T << ","
-    << eos.gamma << "," << PeleC::prob_parm_device->cs << ","
-    << PeleC::prob_parm_device->radius << "," << PeleC::prob_parm_device->alpha
-    << "," << PeleC::prob_parm_device->sigma << std::endl;
+    << PeleC::h_prob_parm_device->L << "," << PeleC::h_prob_parm_device->rho
+    << "," << PeleC::h_prob_parm_device->p << ","
+    << PeleC::h_prob_parm_device->T << "," << eos.gamma << ","
+    << PeleC::h_prob_parm_device->cs << "," << PeleC::h_prob_parm_device->radius
+    << "," << PeleC::h_prob_parm_device->alpha << ","
+    << PeleC::h_prob_parm_device->sigma << std::endl;
   ofs.close();
 }
 }
