@@ -13,8 +13,8 @@
 #include "PeleC.H"
 #include "IndexDefines.H"
 #include "Constants.H"
-#include "EOS.H"
-#include "Transport.H"
+#include "PelePhysics.H"
+
 #include "Tagging.H"
 #include "ProblemDerive.H"
 #include "prob_parm.H"
@@ -49,8 +49,9 @@ pc_initdata(
   for (int n = 0; n < NUM_SPECIES; n++) {
     massfrac[n] = prob_parm.massfrac[n];
   }
-  EOS::RYP2E(rho, massfrac, p, eint);
-  EOS::RYP2T(rho, massfrac, p, T);
+  auto eos = pele::physics::PhysicsType::eos();
+  eos.RYP2E(rho, massfrac, p, eint);
+  eos.RYP2T(rho, massfrac, p, T);
 
   state(i, j, k, URHO) = rho;
   state(i, j, k, UMX) = rho * u_p;

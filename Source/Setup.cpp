@@ -154,9 +154,8 @@ PeleC::variableSetUp()
   // Get options, set phys_bc
   read_params();
 
-  EOS::init();
-
-  init_transport();
+  pele::physics::transport::InitTransport<
+    pele::physics::PhysicsType::eos_type>()();
 
 #ifdef PELEC_USE_REACTIONS
 #if defined(AMREX_USE_GPU) && defined(USE_SUNDIALS_PP)

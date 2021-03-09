@@ -8,8 +8,8 @@
 #include "Diffterm.H"
 #include "IndexDefines.H"
 #include "PeleC.H"
-#include "EOS.H"
 #include "Riemann.H"
+#include "PelePhysics.H"
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE

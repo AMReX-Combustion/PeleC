@@ -4,7 +4,7 @@
 #include <AMReX_FArrayBox.H>
 #include "Constants.H"
 #include "IndexDefines.H"
-#include "EOS.H"
+#include "PelePhysics.H"
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
@@ -19,12 +19,9 @@ pc_cmpTemp(
   for (int n = 0; n < NUM_SPECIES; ++n) {
     massfrac[n] = S(i, j, k, UFS + n) * rhoInv;
   }
-#ifdef PELEPHYSICS_NONIDEAL_EOS
   amrex::Real rho = S(i, j, k, URHO);
-  EOS::REY2T(rho, e, massfrac, T);
-#else
-  EOS::EY2T(e, massfrac, T);
-#endif
+  auto eos = pele::physics::PhysicsType::eos();
+  eos.REY2T(rho, e, massfrac, T);
   S(i, j, k, UTEMP) = T;
 }
 
@@ -42,12 +39,12 @@ pc_rst_int_e(
   const amrex::Real dual_energy_eta2,
   const int /*verbose*/)
 {
-  // not supported for nonideal EOS
-#ifdef PELEPHSYICS_NONIDEAL_EOS
+#ifdef PELEC_USE_SRK
   if (allow_small_energy == 0 || allow_negative_energy == 0) {
     amrex::Error("Small/negative energy must be allowed for nonideal EOS");
   }
 #endif
+  auto eos = pele::physics::PhysicsType::eos();
   if (allow_small_energy == 0) {
     const amrex::Real rhoInv = 1.0 / S(i, j, k, URHO);
     const amrex::Real Up = S(i, j, k, UMX) * rhoInv;
@@ -57,9 +54,9 @@ pc_rst_int_e(
     const amrex::Real eden = S(i, j, k, UEDEN) * rhoInv;
     // const amrex::Real eos_state_rho = S(i, j, k, URHO);
     const amrex::Real eos_state_T = std::numeric_limits<amrex::Real>::min();
-    amrex::Real eos_state_massfrac[NUM_SPECIES];
-    amrex::Real eos_state_ei[NUM_SPECIES];
-    EOS::T2Ei(eos_state_T, eos_state_ei);
+    amrex::Real eos_state_massfrac[NUM_SPECIES] = {0.0};
+    amrex::Real eos_state_ei[NUM_SPECIES] = {0.0};
+    eos.T2Ei(eos_state_T, eos_state_ei);
     amrex::Real eos_state_e = 0.0;
     for (int sp = 0; sp < NUM_SPECIES; sp++) {
       eos_state_massfrac[sp] = S(i, j, k, sp + UFS) * rhoInv;
@@ -70,7 +67,7 @@ pc_rst_int_e(
       if (S(i, j, k, UEINT) * rhoInv < small_e) {
         const amrex::Real eos_state_T_loc = amrex::max<amrex::Real>(
           S(i, j, k, UTEMP), std::numeric_limits<amrex::Real>::min());
-        EOS::T2Ei(eos_state_T_loc, eos_state_ei);
+        eos.T2Ei(eos_state_T_loc, eos_state_ei);
         eos_state_e = 0.0;
         for (int sp = 0; sp < NUM_SPECIES; sp++) {
           eos_state_e += eos_state_massfrac[sp] * eos_state_ei[sp];
@@ -93,7 +90,7 @@ pc_rst_int_e(
       if (S(i, j, k, UEINT) * rhoInv < small_e) {
         const amrex::Real eos_state_T_loc = amrex::max<amrex::Real>(
           S(i, j, k, UTEMP), std::numeric_limits<amrex::Real>::min());
-        EOS::T2Ei(eos_state_T_loc, eos_state_ei);
+        eos.T2Ei(eos_state_T_loc, eos_state_ei);
         eos_state_e = 0.0;
         for (int sp = 0; sp < NUM_SPECIES; sp++) {
           eos_state_e += eos_state_massfrac[sp] * eos_state_ei[sp];
@@ -120,9 +117,9 @@ pc_rst_int_e(
         (S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min())) {
         // const amrex::Real eos_state_rho = S(i, j, k, URHO);
         const amrex::Real eos_state_T = std::numeric_limits<amrex::Real>::min();
-        amrex::Real eos_state_massfrac[NUM_SPECIES];
-        amrex::Real eos_state_ei[NUM_SPECIES];
-        EOS::T2Ei(eos_state_T, eos_state_ei);
+        amrex::Real eos_state_massfrac[NUM_SPECIES] = {0.0};
+        amrex::Real eos_state_ei[NUM_SPECIES] = {0.0};
+        eos.T2Ei(eos_state_T, eos_state_ei);
         amrex::Real eos_state_e = 0.0;
         for (int sp = 0; sp < NUM_SPECIES; sp++) {
           eos_state_massfrac[sp] = S(i, j, k, sp + UFS) * rhoInv;
@@ -152,9 +149,9 @@ pc_rst_int_e(
         (S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min())) {
         // const amrex::Real eos_state_rho = S(i, j, k, URHO);
         const amrex::Real eos_state_T = std::numeric_limits<amrex::Real>::min();
-        amrex::Real eos_state_massfrac[NUM_SPECIES];
-        amrex::Real eos_state_ei[NUM_SPECIES];
-        EOS::T2Ei(eos_state_T, eos_state_ei);
+        amrex::Real eos_state_massfrac[NUM_SPECIES] = {0.0};
+        amrex::Real eos_state_ei[NUM_SPECIES] = {0.0};
+        eos.T2Ei(eos_state_T, eos_state_ei);
         amrex::Real eos_state_e = 0.0;
         for (int sp = 0; sp < NUM_SPECIES; sp++) {
           eos_state_massfrac[sp] = S(i, j, k, sp + UFS) * rhoInv;
@@ -204,6 +201,7 @@ pc_ctoprim(
   amrex::Array4<amrex::Real> const& qa,
   PassMap const& pmap)
 {
+  auto eos = pele::physics::PhysicsType::eos();
   const amrex::Real rho = u(i, j, k, URHO);
   const amrex::Real rhoinv = 1.0 / rho;
   const amrex::Real vx = u(i, j, k, UMX) * rhoinv;
@@ -238,21 +236,12 @@ pc_ctoprim(
   amrex::Real dpdr_e, dpde, gam1, cs, wbar, p;
 
   // Are all these EOS calls needed? Seems fairly convoluted.
-  EOS::Y2WBAR(massfrac, wbar);
-#ifdef PELEPHYSICS_NONIDEAL_EOS
-  EOS::REY2T(rho, e, massfrac, T);
-  EOS::RTY2P(rho, T, massfrac, p);
-  EOS::RTY2Cs(rho, T, massfrac, cs);
-  EOS::RTY2G(rho, T, massfrac, gam1);
-  EOS::RTY2dpde_dpdre(rho, T, massfrac, dpde, dpdr_e);
-#else
-  EOS::EY2T(e, massfrac, T);
-  EOS::RTY2P(rho, T, massfrac, p);
-  EOS::RTY2Cs(rho, T, massfrac, cs);
-  EOS::TY2G(T, massfrac, gam1);
-  EOS::RPE2dpdr_e(rho, p, e, dpdr_e);
-  EOS::RG2dpde(rho, gam1, dpde);
-#endif
+  eos.Y2WBAR(massfrac, wbar);
+  eos.REY2T(rho, e, massfrac, T);
+  eos.RTY2P(rho, T, massfrac, p);
+  eos.RTY2Cs(rho, T, massfrac, cs);
+  eos.RTY2G(rho, T, massfrac, gam1);
+  eos.RTY2dpde_dpdre(rho, T, massfrac, dpde, dpdr_e);
 
   q(i, j, k, QTEMP) = T;
   q(i, j, k, QREINT) = e * rho;
@@ -266,7 +255,7 @@ pc_ctoprim(
   qa(i, j, k, QC) = cs;
   qa(i, j, k, QCSML) = amrex::max<amrex::Real>(
     constants::small_num(), constants::small_num() * cs);
-  qa(i, j, k, QRSPEC) = EOS::RU / wbar;
+  qa(i, j, k, QRSPEC) = pele::physics::Constants::RU / wbar;
 }
 
 AMREX_GPU_DEVICE

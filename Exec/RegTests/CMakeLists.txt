@@ -1,6 +1,7 @@
 add_subdirectory(HIT)
 add_subdirectory(MultiSpecSod)
 add_subdirectory(PMF)
+add_subdirectory(PMF-SRK)
 add_subdirectory(Sedov)
 add_subdirectory(Shu-Osher)
 add_subdirectory(Sod)

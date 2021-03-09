@@ -11,11 +11,10 @@
 #include "PeleC.H"
 #include "IndexDefines.H"
 #include "Constants.H"
-#include "EOS.H"
+#include "PelePhysics.H"
 #include "Tagging.H"
 #include "ProblemDerive.H"
 #include "prob_parm.H"
-#include "Transport.H"
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE

@@ -43,16 +43,17 @@ amrex_probinit(
   massfrac_l[PeleC::prob_parm_device->left_gas_id] = 1.0;
   massfrac_r[PeleC::prob_parm_device->right_gas_id] = 1.0;
 
-  EOS::RYP2E(
+  auto eos = pele::physics::PhysicsType::eos();
+  eos.RYP2E(
     PeleC::prob_parm_device->rho_l, massfrac_l, PeleC::prob_parm_device->p_l,
     e_l);
-  EOS::EY2T(e_l, massfrac_l, PeleC::prob_parm_device->T_l);
+  eos.EY2T(e_l, massfrac_l, PeleC::prob_parm_device->T_l);
   PeleC::prob_parm_device->rhoe_l = PeleC::prob_parm_device->rho_l * e_l;
 
-  EOS::RYP2E(
+  eos.RYP2E(
     PeleC::prob_parm_device->rho_r, massfrac_r, PeleC::prob_parm_device->p_r,
     e_r);
-  EOS::EY2T(e_r, massfrac_r, PeleC::prob_parm_device->T_r);
+  eos.EY2T(e_r, massfrac_r, PeleC::prob_parm_device->T_r);
   PeleC::prob_parm_device->rhoe_r = PeleC::prob_parm_device->rho_r * e_r;
 }
 }

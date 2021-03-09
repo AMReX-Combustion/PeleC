@@ -7,10 +7,9 @@
 #include <AMReX_EBCellFlag.H>
 #endif
 
-#include "EOS.H"
+#include "PelePhysics.H"
 #include "IndexDefines.H"
 #include "Constants.H"
-#include "Transport.H"
 
 // EstDt routines
 
@@ -23,19 +22,21 @@ pc_trans4dt(
   amrex::Real rho,
   amrex::Real massfrac[],
   amrex::Real& D,
-  TransParm const* trans_parm)
+  pele::physics::transport::TransParm const* trans_parm)
 {
   bool get_xi = false, get_mu = false, get_lam = false, get_Ddiag = false;
   amrex::Real dum1 = 0., dum2 = 0.;
 
   if (which_trans == 0) {
     get_mu = true;
-    transport(
+    auto trans = pele::physics::PhysicsType::transport();
+    trans.transport(
       get_xi, get_mu, get_lam, get_Ddiag, T, rho, massfrac, nullptr, D, dum1,
       dum2, trans_parm);
   } else if (which_trans == 1) {
     get_lam = true;
-    transport(
+    auto trans = pele::physics::PhysicsType::transport();
+    trans.transport(
       get_xi, get_mu, get_lam, get_Ddiag, T, rho, massfrac, nullptr, dum1, dum2,
       D, trans_parm);
   }
@@ -69,7 +70,8 @@ pc_estdt_hydro(
       for (int n = 0; n < NUM_SPECIES; ++n) {
         massfrac[n] = u(i, j, k, UFS + n) * rhoInv;
       }
-      EOS::RTY2Cs(rho, T, massfrac, c);
+      auto eos = pele::physics::PhysicsType::eos();
+      eos.RTY2Cs(rho, T, massfrac, c);
       AMREX_D_TERM(const amrex::Real ux = u(i, j, k, UMX) * rhoInv;
                    const amrex::Real dt1 = dx / (c + amrex::Math::abs(ux));
                    dt = amrex::min<amrex::Real>(dt, dt1);
@@ -98,7 +100,7 @@ pc_estdt_veldif(
 #endif
   AMREX_D_DECL(
     const amrex::Real& dx, const amrex::Real& dy, const amrex::Real& dz),
-  TransParm const* trans_parm) noexcept
+  pele::physics::transport::TransParm const* trans_parm) noexcept
 {
   amrex::Real dt = std::numeric_limits<amrex::Real>::max();
 
@@ -146,7 +148,7 @@ pc_estdt_tempdif(
 #endif
   AMREX_D_DECL(
     const amrex::Real& dx, const amrex::Real& dy, const amrex::Real& dz),
-  TransParm const* trans_parm) noexcept
+  pele::physics::transport::TransParm const* trans_parm) noexcept
 {
   amrex::Real dt = std::numeric_limits<amrex::Real>::max();
 
@@ -165,11 +167,8 @@ pc_estdt_tempdif(
       const int which_trans = 1;
       pc_trans4dt(which_trans, T, rho, massfrac, D, trans_parm);
       amrex::Real cv;
-#ifdef PELEPHYSICS_NONIDEAL_EOS
-      EOS::RTY2Cv(rho, T, massfrac, cv);
-#else
-      EOS::TY2Cv(T, massfrac, cv);
-#endif
+      auto eos = pele::physics::PhysicsType::eos();
+      eos.RTY2Cv(rho, T, massfrac, cv);
       D *= rhoInv / cv;
       if (D == 0.0) {
         D = constants::small_num();
@@ -200,7 +199,7 @@ pc_estdt_enthdif(
 #endif
   AMREX_D_DECL(
     const amrex::Real& dx, const amrex::Real& dy, const amrex::Real& dz),
-  TransParm const* trans_parm) noexcept
+  pele::physics::transport::TransParm const* trans_parm) noexcept
 {
   amrex::Real dt = std::numeric_limits<amrex::Real>::max();
 
@@ -216,11 +215,8 @@ pc_estdt_enthdif(
       }
       amrex::Real T = u(i, j, k, UTEMP);
       amrex::Real cp;
-#ifdef PELEPHYSICS_NONIDEAL_EOS
-      EOS::RTY2Cp(rho, T, massfrac, cp);
-#else
-      EOS::TY2Cp(T, massfrac, cp);
-#endif
+      auto eos = pele::physics::PhysicsType::eos();
+      eos.RTY2Cp(rho, T, massfrac, cp);
       amrex::Real D;
       const int which_trans = 1;
       pc_trans4dt(which_trans, T, rho, massfrac, D, trans_parm);

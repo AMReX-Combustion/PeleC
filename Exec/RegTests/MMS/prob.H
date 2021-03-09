@@ -17,9 +17,9 @@ using namespace MASA;
 
 #include "PeleC.H"
 #include "IndexDefines.H"
-#include "EOS.H"
+#include "PelePhysics.H"
 #include "Tagging.H"
-#include "Transport.H"
+
 #include "Constants.H"
 #include "ProblemDerive.H"
 #include "prob_parm.H"
@@ -59,8 +59,9 @@ pc_initdata(
   amrex::Real massfrac[NUM_SPECIES] = {1.0};
 
   amrex::Real eint, T;
-  EOS::RYP2E(rho, massfrac, p, eint);
-  EOS::EY2T(eint, massfrac, T);
+  auto eos = pele::physics::PhysicsType::eos();
+  eos.RYP2E(rho, massfrac, p, eint);
+  eos.EY2T(eint, massfrac, T);
 
   // Set the state
   state(i, j, k, URHO) = rho;
@@ -106,8 +107,9 @@ bcnormal(
   amrex::Real massfrac[NUM_SPECIES] = {1.0};
 
   amrex::Real eint, T;
-  EOS::RYP2E(rho, massfrac, p, eint);
-  EOS::EY2T(eint, massfrac, T);
+  auto eos = pele::physics::PhysicsType::eos();
+  eos.RYP2E(rho, massfrac, p, eint);
+  eos.EY2T(eint, massfrac, T);
 
   // Set the external state
   s_ext[URHO] = rho;

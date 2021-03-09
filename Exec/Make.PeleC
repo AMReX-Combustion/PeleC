@@ -52,12 +52,20 @@ all: $(executable)
 	$(SILENT) $(RM) AMReX_buildInfo.cpp
 	@echo SUCCESS
 
+# PelePhysics
+PP_SRC_HOME = $(PELE_PHYSICS_HOME)/Source
+EXTERN_CORE       += $(PP_SRC_HOME)
+INCLUDE_LOCATIONS += $(PP_SRC_HOME)
+VPATH_LOCATIONS   += $(PP_SRC_HOME)
+Bpack             += $(PP_SRC_HOME)/Make.package
+Blocs             += $(PP_SRC_HOME)
+
 # EOS
 ifdef Eos_dir
   EOS_HOME = $(PELE_PHYSICS_HOME)/Eos/$(strip $(Eos_dir))
 endif
 ifeq ($(Eos_dir),$(filter $(Eos_dir),Soave-Redlich-Kwong))
-   DEFINES += -DPELEPHYSICS_NONIDEAL_EOS
+   DEFINES += -DPELEC_USE_SRK
 endif
 EXTERN_CORE       += $(EOS_HOME)
 INCLUDE_LOCATIONS += $(EOS_HOME)

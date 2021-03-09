@@ -21,7 +21,8 @@ amrex_probinit(
 
   // Initial values
   PeleC::prob_parm_device->massfrac[0] = 1.0;
-  EOS::PYT2RE(
+  auto eos = pele::physics::PhysicsType::eos();
+  eos.PYT2RE(
     PeleC::prob_parm_device->p_init, PeleC::prob_parm_device->massfrac.begin(),
     PeleC::prob_parm_device->T_init, PeleC::prob_parm_device->rho_init,
     PeleC::prob_parm_device->e_init);

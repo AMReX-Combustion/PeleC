@@ -3,7 +3,7 @@
 
 #include "PeleC.H"
 #include "IndexDefines.H"
-#include "EOS.H"
+#include "PelePhysics.H"
 #include "Utilities.H"
 #include "Godunov.H"
 
