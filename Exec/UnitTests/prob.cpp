@@ -1,8 +1,5 @@
 #include "prob.H"
 
-namespace ProbParm {
-} // namespace ProbParm
-
 void
 pc_prob_close()
 {
