@@ -22,7 +22,7 @@ pmf(
   amrex::Real xlo,
   amrex::Real xhi,
   amrex::GpuArray<amrex::Real, NUM_SPECIES + 4>& y_vector,
-  ProbParmDevice const& prob_parm)
+  const ProbParmDevice& prob_parm)
 {
   if (prob_parm.pmf_do_average) {
     int lo_loside = 0;

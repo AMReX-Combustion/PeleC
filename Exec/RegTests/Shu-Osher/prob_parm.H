@@ -5,7 +5,7 @@
 #include <AMReX_GpuQualifiers.H>
 #include <AMReX_GpuMemory.H>
 
-struct ProbParmDevice : amrex::Gpu::Managed
+struct ProbParmDevice
 {
   amrex::Real p_l = 10.33333;   // left pressure (erg/cc)
   amrex::Real u_l = 2.629369;   // left velocity (cm/s)
@@ -24,7 +24,8 @@ struct ProbParmDevice : amrex::Gpu::Managed
   amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> split;
 };
 
-struct ProbParmHost : amrex::Gpu::Managed
+struct ProbParmHost
 {
+  ProbParmHost() {}
 };
 #endif

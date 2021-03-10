@@ -5,7 +5,7 @@
 #include <AMReX_GpuQualifiers.H>
 #include <AMReX_GpuMemory.H>
 
-struct ProbParmDevice : amrex::Gpu::Managed
+struct ProbParmDevice
 {
   amrex::Real p_ambient;
   amrex::Real dens_ambient;
@@ -15,7 +15,8 @@ struct ProbParmDevice : amrex::Gpu::Managed
   amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> split;
 };
 
-struct ProbParmHost : amrex::Gpu::Managed
+struct ProbParmHost
 {
+  ProbParmHost() {}
 };
 #endif

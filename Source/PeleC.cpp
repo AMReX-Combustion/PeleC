@@ -123,34 +123,6 @@ ebInitialized(bool eb_init_val)
 #endif
 
 void
-PeleC::variableCleanUp()
-{
-  prob_parm_device.reset();
-  prob_parm_host.reset();
-  tagging_parm.reset();
-  pass_map.reset();
-
-  derive_lst.clear();
-
-  desc_lst.clear();
-
-  pele::physics::transport::CloseTransport<
-    pele::physics::PhysicsType::eos_type>()();
-
-#ifdef PELEC_USE_REACTIONS
-  if (do_react == 1) {
-    close_reactor();
-  }
-#endif
-
-  clear_prob();
-
-#ifdef PELEC_USE_EB
-  eb_initialized = false;
-#endif
-}
-
-void
 PeleC::read_params()
 {
   static bool read_params_done = false;
@@ -639,6 +611,17 @@ PeleC::initData()
 {
   BL_PROFILE("PeleC::initData()");
 
+  // Copy problem parameter structs to device
+#ifdef AMREX_USE_GPU
+  amrex::Gpu::htod_memcpy(
+    PeleC::d_prob_parm_device, PeleC::h_prob_parm_device,
+    sizeof(ProbParmDevice));
+#else
+  std::memcpy(
+    PeleC::d_prob_parm_device, PeleC::h_prob_parm_device,
+    sizeof(ProbParmDevice));
+#endif
+
   // int ns = NVAR;
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx = geom.CellSizeArray();
   amrex::MultiFab& S_new = get_new_data(State_Type);
@@ -680,7 +663,7 @@ PeleC::initData()
     auto sfab = S_new.array(mfi);
     const auto geomdata = geom.data();
 
-    ProbParmDevice const* lprobparm = prob_parm_device.get();
+    const ProbParmDevice* lprobparm = d_prob_parm_device;
 
     amrex::ParallelFor(box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       pc_initdata(i, j, k, sfab, geomdata, *lprobparm);

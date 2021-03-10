@@ -18,31 +18,31 @@ amrex_probinit(
   {
     amrex::ParmParse pp("prob");
     pp.query("iname", PeleC::prob_parm_host->iname);
-    pp.query("binfmt", PeleC::prob_parm_device->binfmt);
-    pp.query("restart", PeleC::prob_parm_device->restart);
-    pp.query("lambda0", PeleC::prob_parm_device->lambda0);
-    pp.query("reynolds_lambda0", PeleC::prob_parm_device->reynolds_lambda0);
-    pp.query("mach_t0", PeleC::prob_parm_device->mach_t0);
-    pp.query("prandtl", PeleC::prob_parm_device->prandtl);
-    pp.query("inres", PeleC::prob_parm_device->inres);
-    pp.query("uin_norm", PeleC::prob_parm_device->uin_norm);
+    pp.query("binfmt", PeleC::h_prob_parm_device->binfmt);
+    pp.query("restart", PeleC::h_prob_parm_device->restart);
+    pp.query("lambda0", PeleC::h_prob_parm_device->lambda0);
+    pp.query("reynolds_lambda0", PeleC::h_prob_parm_device->reynolds_lambda0);
+    pp.query("mach_t0", PeleC::h_prob_parm_device->mach_t0);
+    pp.query("prandtl", PeleC::h_prob_parm_device->prandtl);
+    pp.query("inres", PeleC::h_prob_parm_device->inres);
+    pp.query("uin_norm", PeleC::h_prob_parm_device->uin_norm);
   }
 
   {
     amrex::ParmParse pp("forcing");
-    pp.query("u0", PeleC::prob_parm_device->forcing_u0);
-    pp.query("v0", PeleC::prob_parm_device->forcing_v0);
-    pp.query("w0", PeleC::prob_parm_device->forcing_w0);
-    pp.query("forcing", PeleC::prob_parm_device->forcing_force);
+    pp.query("u0", PeleC::h_prob_parm_device->forcing_u0);
+    pp.query("v0", PeleC::h_prob_parm_device->forcing_v0);
+    pp.query("w0", PeleC::h_prob_parm_device->forcing_w0);
+    pp.query("forcing", PeleC::h_prob_parm_device->forcing_force);
   }
 
   // Define the length scale
-  PeleC::prob_parm_device->L_x = probhi[0] - problo[0];
-  PeleC::prob_parm_device->L_y = probhi[1] - problo[1];
-  PeleC::prob_parm_device->L_z = probhi[2] - problo[2];
+  PeleC::h_prob_parm_device->L_x = probhi[0] - problo[0];
+  PeleC::h_prob_parm_device->L_y = probhi[1] - problo[1];
+  PeleC::h_prob_parm_device->L_z = probhi[2] - problo[2];
 
   // Wavelength associated to Taylor length scale
-  PeleC::prob_parm_device->k0 = 2.0 / PeleC::prob_parm_device->lambda0;
+  PeleC::h_prob_parm_device->k0 = 2.0 / PeleC::h_prob_parm_device->lambda0;
 
   // Initial density, velocity, and material properties
   amrex::Real cs;
@@ -50,16 +50,17 @@ amrex_probinit(
   amrex::Real massfrac[NUM_SPECIES] = {1.0};
   auto eos = pele::physics::PhysicsType::eos();
   eos.PYT2RE(
-    PeleC::prob_parm_device->p0, massfrac, PeleC::prob_parm_device->T0,
-    PeleC::prob_parm_device->rho0, PeleC::prob_parm_device->eint0);
+    PeleC::h_prob_parm_device->p0, massfrac, PeleC::h_prob_parm_device->T0,
+    PeleC::h_prob_parm_device->rho0, PeleC::h_prob_parm_device->eint0);
   eos.RTY2Cs(
-    PeleC::prob_parm_device->rho0, PeleC::prob_parm_device->T0, massfrac, cs);
-  eos.TY2Cp(PeleC::prob_parm_device->T0, massfrac, cp);
+    PeleC::h_prob_parm_device->rho0, PeleC::h_prob_parm_device->T0, massfrac,
+    cs);
+  eos.TY2Cp(PeleC::h_prob_parm_device->T0, massfrac, cp);
 
-  PeleC::prob_parm_device->urms0 =
-    PeleC::prob_parm_device->mach_t0 * cs / sqrt(3.0);
-  PeleC::prob_parm_device->tau =
-    PeleC::prob_parm_device->lambda0 / PeleC::prob_parm_device->urms0;
+  PeleC::h_prob_parm_device->urms0 =
+    PeleC::h_prob_parm_device->mach_t0 * cs / sqrt(3.0);
+  PeleC::h_prob_parm_device->tau =
+    PeleC::h_prob_parm_device->lambda0 / PeleC::h_prob_parm_device->urms0;
 
   pele::physics::transport::TransParm trans_parm;
 
@@ -80,12 +81,12 @@ amrex_probinit(
 
   trans_parm.const_bulk_viscosity = 0.0;
   trans_parm.const_diffusivity = 0.0;
-  trans_parm.const_viscosity = PeleC::prob_parm_device->rho0 *
-                               PeleC::prob_parm_device->urms0 *
-                               PeleC::prob_parm_device->lambda0 /
-                               PeleC::prob_parm_device->reynolds_lambda0;
+  trans_parm.const_viscosity = PeleC::h_prob_parm_device->rho0 *
+                               PeleC::h_prob_parm_device->urms0 *
+                               PeleC::h_prob_parm_device->lambda0 /
+                               PeleC::h_prob_parm_device->reynolds_lambda0;
   trans_parm.const_conductivity =
-    trans_parm.const_viscosity * cp / PeleC::prob_parm_device->prandtl;
+    trans_parm.const_viscosity * cp / PeleC::h_prob_parm_device->prandtl;
 
 #ifdef AMREX_USE_GPU
   amrex::Gpu::htod_memcpy(
@@ -102,19 +103,19 @@ amrex_probinit(
        "Mach, Prandtl, u0, v0, w0, forcing"
     << std::endl;
   amrex::Print(ofs).SetPrecision(17)
-    << PeleC::prob_parm_device->lambda0 << "," << PeleC::prob_parm_device->k0
-    << "," << PeleC::prob_parm_device->rho0 << ","
-    << PeleC::prob_parm_device->urms0 << "," << PeleC::prob_parm_device->tau
-    << "," << PeleC::prob_parm_device->p0 << "," << PeleC::prob_parm_device->T0
-    << "," << eos.gamma << "," << trans_parm.const_viscosity << ","
-    << trans_parm.const_conductivity << "," << cs << ","
-    << PeleC::prob_parm_device->reynolds_lambda0 << ","
-    << PeleC::prob_parm_device->mach_t0 << ","
-    << PeleC::prob_parm_device->prandtl << ","
-    << PeleC::prob_parm_device->forcing_u0 << ","
-    << PeleC::prob_parm_device->forcing_v0 << ","
-    << PeleC::prob_parm_device->forcing_w0 << ","
-    << PeleC::prob_parm_device->forcing_force << std::endl;
+    << PeleC::h_prob_parm_device->lambda0 << ","
+    << PeleC::h_prob_parm_device->k0 << "," << PeleC::h_prob_parm_device->rho0
+    << "," << PeleC::h_prob_parm_device->urms0 << ","
+    << PeleC::h_prob_parm_device->tau << "," << PeleC::h_prob_parm_device->p0
+    << "," << PeleC::h_prob_parm_device->T0 << "," << eos.gamma << ","
+    << trans_parm.const_viscosity << "," << trans_parm.const_conductivity << ","
+    << cs << "," << PeleC::h_prob_parm_device->reynolds_lambda0 << ","
+    << PeleC::h_prob_parm_device->mach_t0 << ","
+    << PeleC::h_prob_parm_device->prandtl << ","
+    << PeleC::h_prob_parm_device->forcing_u0 << ","
+    << PeleC::h_prob_parm_device->forcing_v0 << ","
+    << PeleC::h_prob_parm_device->forcing_w0 << ","
+    << PeleC::h_prob_parm_device->forcing_force << std::endl;
   ofs.close();
 
   // Load velocity fields from file. Assume data set ordered in Fortran
@@ -124,19 +125,19 @@ amrex_probinit(
   // the input data is a periodic cube. If the input cube is smaller
   // than our domain size, the cube will be repeated throughout the
   // domain (hence the mod operations in the interpolation).
-  if (PeleC::prob_parm_device->restart) {
+  if (PeleC::h_prob_parm_device->restart) {
     amrex::Print() << "Skipping input file reading and assuming restart."
                    << std::endl;
   } else {
 #ifdef AMREX_USE_FLOAT
     amrex::Abort("HIT cannot run in single precision at the moment.");
 #else
-    const size_t nx = PeleC::prob_parm_device->inres;
-    const size_t ny = PeleC::prob_parm_device->inres;
-    const size_t nz = PeleC::prob_parm_device->inres;
+    const size_t nx = PeleC::h_prob_parm_device->inres;
+    const size_t ny = PeleC::h_prob_parm_device->inres;
+    const size_t nz = PeleC::h_prob_parm_device->inres;
     amrex::Vector<amrex::Real> data(
       nx * ny * nz * 6); /* this needs to be double */
-    if (PeleC::prob_parm_device->binfmt) {
+    if (PeleC::h_prob_parm_device->binfmt) {
       read_binary(PeleC::prob_parm_host->iname, nx, ny, nz, 6, data);
     } else {
       read_csv(PeleC::prob_parm_host->iname, nx, ny, nz, data);
@@ -150,14 +151,14 @@ amrex_probinit(
     for (long i = 0; i < PeleC::prob_parm_host->h_xinput.size(); i++) {
       PeleC::prob_parm_host->h_xinput[i] = data[0 + i * 6];
       PeleC::prob_parm_host->h_uinput[i] = data[3 + i * 6] *
-                                           PeleC::prob_parm_device->urms0 /
-                                           PeleC::prob_parm_device->uin_norm;
+                                           PeleC::h_prob_parm_device->urms0 /
+                                           PeleC::h_prob_parm_device->uin_norm;
       PeleC::prob_parm_host->h_vinput[i] = data[4 + i * 6] *
-                                           PeleC::prob_parm_device->urms0 /
-                                           PeleC::prob_parm_device->uin_norm;
+                                           PeleC::h_prob_parm_device->urms0 /
+                                           PeleC::h_prob_parm_device->uin_norm;
       PeleC::prob_parm_host->h_winput[i] = data[5 + i * 6] *
-                                           PeleC::prob_parm_device->urms0 /
-                                           PeleC::prob_parm_device->uin_norm;
+                                           PeleC::h_prob_parm_device->urms0 /
+                                           PeleC::h_prob_parm_device->uin_norm;
     }
 
     // Get the xarray table and the differences.
@@ -216,15 +217,15 @@ amrex_probinit(
       PeleC::prob_parm_host->h_xdiff.end(),
       PeleC::prob_parm_host->xdiff.begin());
 
-    PeleC::prob_parm_device->d_xinput = PeleC::prob_parm_host->xinput.data();
-    PeleC::prob_parm_device->d_uinput = PeleC::prob_parm_host->uinput.data();
-    PeleC::prob_parm_device->d_vinput = PeleC::prob_parm_host->vinput.data();
-    PeleC::prob_parm_device->d_winput = PeleC::prob_parm_host->winput.data();
-    PeleC::prob_parm_device->d_xarray = PeleC::prob_parm_host->xarray.data();
-    PeleC::prob_parm_device->d_xdiff = PeleC::prob_parm_host->xdiff.data();
+    PeleC::h_prob_parm_device->d_xinput = PeleC::prob_parm_host->xinput.data();
+    PeleC::h_prob_parm_device->d_uinput = PeleC::prob_parm_host->uinput.data();
+    PeleC::h_prob_parm_device->d_vinput = PeleC::prob_parm_host->vinput.data();
+    PeleC::h_prob_parm_device->d_winput = PeleC::prob_parm_host->winput.data();
+    PeleC::h_prob_parm_device->d_xarray = PeleC::prob_parm_host->xarray.data();
+    PeleC::h_prob_parm_device->d_xdiff = PeleC::prob_parm_host->xdiff.data();
 
     // Dimensions of the input box.
-    PeleC::prob_parm_device->Linput =
+    PeleC::h_prob_parm_device->Linput =
       PeleC::prob_parm_host->h_xarray[nx - 1] +
       0.5 * PeleC::prob_parm_host->h_xdiff[nx - 1];
 #endif

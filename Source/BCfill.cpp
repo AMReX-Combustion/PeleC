@@ -10,7 +10,7 @@ struct PCHypFillExtDir
   ProbParmDevice const* lprobparm;
 
   AMREX_GPU_HOST
-  constexpr explicit PCHypFillExtDir(ProbParmDevice const* d_prob_parm)
+  constexpr explicit PCHypFillExtDir(const ProbParmDevice* d_prob_parm)
     : lprobparm(d_prob_parm)
   {
   }
@@ -145,7 +145,7 @@ pc_bcfill_hyp(
   const int bcomp,
   const int scomp)
 {
-  ProbParmDevice const* lprobparm = PeleC::prob_parm_device.get();
+  const ProbParmDevice* lprobparm = PeleC::d_prob_parm_device;
   amrex::GpuBndryFuncFab<PCHypFillExtDir> hyp_bndry_func(
     PCHypFillExtDir{lprobparm});
   hyp_bndry_func(bx, data, dcomp, numcomp, geom, time, bcr, bcomp, scomp);

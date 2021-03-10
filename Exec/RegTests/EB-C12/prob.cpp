@@ -14,7 +14,7 @@ amrex_probinit(
   const amrex_real* /*problo*/,
   const amrex_real* /*probhi*/)
 {
-  PeleC::prob_parm_device->massfrac[0] = 1.0;
+  PeleC::h_prob_parm_device->massfrac[0] = 1.0;
 }
 }
 
