@@ -960,14 +960,6 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
     }
   }
 
-#ifdef SOOT_MODEL
-  amrex::Real estdt_soot = soot_model->estSootTimeStep();
-  if (estdt_soot < estdt) {
-    limiter = "soot";
-    estdt = estdt_soot;
-  }
-#endif
-
 #ifdef AMREX_PARTICLES
   amrex::Real estdt_particle = max_dt;
   if (do_spray_particles) {
