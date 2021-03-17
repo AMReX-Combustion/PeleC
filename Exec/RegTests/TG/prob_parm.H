@@ -4,7 +4,7 @@
 #include <AMReX_REAL.H>
 #include <AMReX_GpuMemory.H>
 
-struct ProbParmDevice : amrex::Gpu::Managed
+struct ProbParmDevice
 {
   amrex::Real reynolds = 1600.0;
   amrex::Real mach = 0.1;
@@ -23,8 +23,9 @@ struct ProbParmDevice : amrex::Gpu::Managed
   amrex::Real v0 = 0.0;
 };
 
-struct ProbParmHost : amrex::Gpu::Managed
+struct ProbParmHost
 {
+  ProbParmHost() {}
 };
 
 #endif

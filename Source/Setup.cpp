@@ -12,6 +12,7 @@ using namespace MASA;
 #include <AMReX_SUNMemory.H>
 #endif
 
+#include "Transport.H"
 #include "mechanism.h"
 #include "PeleC.H"
 #include "Derive.H"
@@ -19,12 +20,14 @@ using namespace MASA;
 #include "prob.H"
 #include "chemistry_file.H"
 
-std::unique_ptr<ProbParmDevice> PeleC::prob_parm_device;
-std::unique_ptr<ProbParmHost> PeleC::prob_parm_host;
-std::unique_ptr<TaggingParm> PeleC::tagging_parm;
-std::unique_ptr<PassMap> PeleC::pass_map;
+ProbParmDevice* PeleC::d_prob_parm_device = nullptr;
+ProbParmDevice* PeleC::h_prob_parm_device = nullptr;
+ProbParmHost* PeleC::prob_parm_host = nullptr;
+TaggingParm* PeleC::tagging_parm = nullptr;
+PassMap* PeleC::d_pass_map = nullptr;
+PassMap* PeleC::h_pass_map = nullptr;
 #ifdef SOOT_MODEL
-std::unique_ptr<SootModel> PeleC::soot_model;
+SootModel* PeleC::soot_model = nullptr;
 #endif
 
 // Components are:
@@ -149,13 +152,16 @@ PeleC::variableSetUp()
 
   AMREX_ASSERT(desc_lst.size() == 0);
 
-  prob_parm_device = std::make_unique<ProbParmDevice>();
-  prob_parm_host = std::make_unique<ProbParmHost>();
-  tagging_parm = std::make_unique<TaggingParm>();
-  pass_map = std::make_unique<PassMap>();
+  prob_parm_host = new ProbParmHost{};
+  h_prob_parm_device = new ProbParmDevice{};
+  tagging_parm = new TaggingParm{};
+  h_pass_map = new PassMap{};
+  d_prob_parm_device =
+    (ProbParmDevice*)amrex::The_Arena()->alloc(sizeof(ProbParmDevice));
+  d_pass_map = (PassMap*)amrex::The_Arena()->alloc(sizeof(PassMap));
 
 #ifdef SOOT_MODEL
-  soot_model = std::make_unique<SootModel>();
+  soot_model = new SootModel{};
 #endif
 
   // Get options, set phys_bc
@@ -184,7 +190,13 @@ PeleC::variableSetUp()
   }
 #endif
 
-  init_pass_map(pass_map);
+  init_pass_map(h_pass_map);
+
+#ifdef AMREX_USE_GPU
+  amrex::Gpu::htod_memcpy(d_pass_map, h_pass_map, sizeof(PassMap));
+#else
+  std::memcpy(d_pass_map, h_pass_map, sizeof(PassMap));
+#endif
 
 #ifdef PELEC_USE_MASA
   if (do_mms) {
@@ -239,21 +251,23 @@ PeleC::variableSetUp()
   // ParallelDescriptor::ReduceRealMax(run_stop,ParallelDescriptor::IOProcessorNumber());
 
   // if (ParallelDescriptor::IOProcessor())
-  //    std::cout << "\nTime in set_method_params: " << run_stop << '\n' ;
+  //    amrex::Print() << "\nTime in set_method_params: " << run_stop << '\n' ;
 
-  if (nscbc_adv == 1 && amrex::ParallelDescriptor::IOProcessor()) {
-    amrex::Print() << "Using Ghost-Cells Navier-Stokes Characteristic BCs for "
-                      "advection: nscbc_adv = "
-                   << nscbc_adv << '\n'
-                   << '\n';
-  }
+  // if (nscbc_adv == 1 && amrex::ParallelDescriptor::IOProcessor()) {
+  //  amrex::Print() << "Using Ghost-Cells Navier-Stokes Characteristic BCs for
+  //  "
+  //                    "advection: nscbc_adv = "
+  //                 << nscbc_adv << '\n'
+  //                 << '\n';
+  //}
 
-  if (nscbc_diff == 1 && amrex::ParallelDescriptor::IOProcessor()) {
-    amrex::Print() << "Using Ghost-Cells Navier-Stokes Characteristic BCs for "
-                      "diffusion: nscbc_diff = "
-                   << nscbc_diff << '\n'
-                   << '\n';
-  }
+  // if (nscbc_diff == 1 && amrex::ParallelDescriptor::IOProcessor()) {
+  //  amrex::Print() << "Using Ghost-Cells Navier-Stokes Characteristic BCs for
+  //  "
+  //                    "diffusion: nscbc_diff = "
+  //                 << nscbc_diff << '\n'
+  //                 << '\n';
+  //}
 
   // int coord_type = amrex::DefaultGeometry().Coord();
 
@@ -634,6 +648,40 @@ PeleC::variableSetUp()
 #ifdef AMREX_PARTICLES
   defineParticles();
 #endif
+}
+
+void
+PeleC::variableCleanUp()
+{
+  derive_lst.clear();
+
+  desc_lst.clear();
+
+  pele::physics::transport::CloseTransport<
+    pele::physics::PhysicsType::eos_type>()();
+
+#ifdef PELEC_USE_REACTIONS
+  if (do_react == 1) {
+    close_reactor();
+  }
+#endif
+
+  clear_prob();
+
+#ifdef PELEC_USE_EB
+  eb_initialized = false;
+#endif
+
+#ifdef SOOT_MODEL
+  delete soot_model;
+#endif
+
+  delete prob_parm_host;
+  delete tagging_parm;
+  delete h_prob_parm_device;
+  delete h_pass_map;
+  amrex::The_Arena()->free(d_prob_parm_device);
+  amrex::The_Arena()->free(d_pass_map);
 }
 
 void

@@ -1,7 +1,7 @@
 #include "IndexDefines.H"
 
 void
-init_pass_map(std::unique_ptr<PassMap>& pmap)
+init_pass_map(PassMap* pmap)
 {
   AMREX_D_PICK(
     pmap->upassMap[0] = UMY; pmap->qpassMap[0] = QV; pmap->upassMap[1] = UMZ;

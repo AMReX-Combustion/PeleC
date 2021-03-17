@@ -16,16 +16,17 @@ amrex_probinit(
 {
   // Parse params
   amrex::ParmParse pp("prob");
-  pp.query("p_init", PeleC::prob_parm_device->p_init);
-  pp.query("T_init", PeleC::prob_parm_device->T_init);
+  pp.query("p_init", PeleC::h_prob_parm_device->p_init);
+  pp.query("T_init", PeleC::h_prob_parm_device->T_init);
 
   // Initial values
-  PeleC::prob_parm_device->massfrac[0] = 1.0;
+  PeleC::h_prob_parm_device->massfrac[0] = 1.0;
   auto eos = pele::physics::PhysicsType::eos();
   eos.PYT2RE(
-    PeleC::prob_parm_device->p_init, PeleC::prob_parm_device->massfrac.begin(),
-    PeleC::prob_parm_device->T_init, PeleC::prob_parm_device->rho_init,
-    PeleC::prob_parm_device->e_init);
+    PeleC::h_prob_parm_device->p_init,
+    PeleC::h_prob_parm_device->massfrac.begin(),
+    PeleC::h_prob_parm_device->T_init, PeleC::h_prob_parm_device->rho_init,
+    PeleC::h_prob_parm_device->e_init);
 }
 }
 

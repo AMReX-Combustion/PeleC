@@ -115,7 +115,7 @@ struct MyProbDeriveStruct
     const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx =
       geomdata.CellSizeArray();
 
-    ProbParmDevice const* prob_parm = PeleC::prob_parm_device.get();
+    ProbParmDevice const* prob_parm = PeleC::d_prob_parm_device;
 
     amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];

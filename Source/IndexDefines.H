@@ -90,12 +90,12 @@
 // This value was hardcoded to 4 in get_method_params in the old Fortran code
 #define NUM_GROW 4
 
-struct PassMap : amrex::Gpu::Managed
+struct PassMap
 {
   amrex::GpuArray<int, NPASSIVE + NPASSNM> upassMap = {{0}};
   amrex::GpuArray<int, NPASSIVE + NPASSNM> qpassMap = {{0}};
 };
 
-void init_pass_map(std::unique_ptr<PassMap>& pmap);
+void init_pass_map(PassMap* pmap);
 
 #endif

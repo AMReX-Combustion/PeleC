@@ -93,7 +93,7 @@ pc_umeth_3D(
   auto const& qzmarr = qzm.array();
   auto const& qzparr = qzp.array();
 
-  PassMap const* lpmap = PeleC::pass_map.get();
+  const PassMap* lpmap = PeleC::d_pass_map;
 
   // Put the PLM and slopes in the same kernel launch to avoid unnecessary
   // launch overhead Pelec_Slope_* are SIMD as well as PeleC_plm_* which loop
@@ -533,7 +533,7 @@ pc_umeth_2D(
   auto const& qymarr = qym.array();
   auto const& qyparr = qyp.array();
 
-  PassMap const* lpmap = PeleC::pass_map.get();
+  const PassMap* lpmap = PeleC::d_pass_map;
   amrex::ParallelFor(
     xslpbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       amrex::Real slope[QVAR];

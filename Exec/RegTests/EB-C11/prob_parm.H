@@ -5,7 +5,7 @@
 #include <AMReX_GpuQualifiers.H>
 #include <AMReX_GpuMemory.H>
 
-struct ProbParmDevice : amrex::Gpu::Managed
+struct ProbParmDevice
 {
   amrex::Real p_l = 1.0;   // left pressure (erg/cc)
   amrex::Real u_l = 0.0;   // left velocity (cm/s)
@@ -24,10 +24,11 @@ struct ProbParmDevice : amrex::Gpu::Managed
   int right_gas_id = HE_ID;
 };
 
-struct ProbParmHost : amrex::Gpu::Managed
+struct ProbParmHost
 {
   std::string gasL = "N2";
   std::string gasR = "HE";
+  ProbParmHost() {}
 };
 
 #endif

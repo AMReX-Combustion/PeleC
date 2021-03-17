@@ -570,13 +570,15 @@ public:
   static int use_hybrid_weno;
   static int weno_scheme;
 
-  static std::unique_ptr<ProbParmDevice> prob_parm_device;
-  static std::unique_ptr<ProbParmHost> prob_parm_host;
-  static std::unique_ptr<TaggingParm> tagging_parm;
-  static std::unique_ptr<PassMap> pass_map;
+  static ProbParmDevice* h_prob_parm_device;
+  static ProbParmDevice* d_prob_parm_device;
+  static ProbParmHost* prob_parm_host;
+  static TaggingParm* tagging_parm;
+  static PassMap* h_pass_map;
+  static PassMap* d_pass_map;
 
 #ifdef SOOT_MODEL
-  static std::unique_ptr<SootModel> soot_model;
+  static SootModel* soot_model;
 #endif
 
 protected:

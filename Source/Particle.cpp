@@ -329,8 +329,8 @@ PeleC::initParticles()
     if (!particle_init_file.empty()) {
       theSprayPC()->InitFromAsciiFile(particle_init_file, NSR_SPR + NAR_SPR);
     } else if (particle_init_function > 0) {
-      ProbParmHost const* lprobparm = prob_parm_host.get();
-      ProbParmDevice const* lprobparm_d = prob_parm_device.get();
+      const ProbParmHost* lprobparm = prob_parm_host;
+      const ProbParmDevice* lprobparm_d = h_prob_parm_device;
       theSprayPC()->InitSprayParticles(*lprobparm, *lprobparm_d);
     }
   }
@@ -376,8 +376,8 @@ PeleC::particleMKD(
   // Check if I need to insert new particles
   int nstep = parent->levelSteps(0);
 
-  ProbParmHost const* lprobparm = prob_parm_host.get();
-  ProbParmDevice const* lprobparm_d = prob_parm_device.get();
+  const ProbParmHost* lprobparm = prob_parm_host;
+  const ProbParmDevice* lprobparm_d = h_prob_parm_device;
 
   BL_PROFILE_VAR("SprayParticles::injectParticles()", INJECT_SPRAY);
   bool injectParts = theSprayPC()->injectParticles(
