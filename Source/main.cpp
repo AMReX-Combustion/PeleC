@@ -18,6 +18,8 @@ void
 initialize_EB2(const amrex::Geometry& geom, int required_level, int max_level);
 #endif
 
+amrex::LevelBld* getLevelBld();
+
 int
 main(int argc, char* argv[])
 {
@@ -102,7 +104,7 @@ main(int argc, char* argv[])
   }
 
   // Initialize random seed after we're running in parallel.
-  auto* amrptr = new amrex::Amr;
+  auto* amrptr = new amrex::Amr(getLevelBld());
 
 #if defined(AMREX_USE_EB) && !defined(PELEC_USE_EB)
   amrex::Print() << "Initializing EB2 as all_regular because AMReX has EB "
