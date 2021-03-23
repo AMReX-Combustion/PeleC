@@ -158,8 +158,8 @@ weno_reconstruct_7z(const amrex::Real* s, amrex::Real& sm, amrex::Real& sp)
   amrex::Real vr[4];
   amrex::Real beta[4];
   amrex::Real alpha[4];
-  const amrex::Real weno7_face_wghts_1[4] = {
-    1.0 / 35.0, 12.0 / 35.0, 18.0 / 35.0, 4.0 / 35.0};
+  const amrex::Real weno7_face_wghts_1[4] = {1.0 / 35.0, 12.0 / 35.0,
+                                             18.0 / 35.0, 4.0 / 35.0};
 
   beta[3] =
     s[0] * (547.0 * s[0] - 3882.0 * s[1] + 4642.0 * s[2] - 1854.0 * s[3]) +
