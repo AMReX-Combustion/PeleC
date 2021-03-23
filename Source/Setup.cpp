@@ -169,14 +169,20 @@ PeleC::variableSetUp()
   amrex::sundials::MemoryHelper::Initialize();
 #endif
 
+  if (chem_integrator == 1) {
+    amrex::Print() << "Using built-in RK64 chemistry integrator\n";
+  }
 #ifdef USE_SUNDIALS_PP
-  if (chem_integrator == 3) {
-    amrex::Print() << "Using sundials chemistry integrator with boxes\n";
-  } else {
+  else if (chem_integrator == 2) {
     amrex::Print()
       << "Using sundials chemistry integrator with flattened arrays\n";
+  } else if (chem_integrator == 3) {
+    amrex::Print() << "Using sundials chemistry integrator with boxes\n";
   }
 #endif
+  else {
+    amrex::Abort("Invalid chem_integrator choice.");
+  }
 
   // Initialize the reactor
   if (do_react == 1) {
