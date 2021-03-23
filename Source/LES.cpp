@@ -213,7 +213,6 @@ PeleC::getSmagorinskyLESTerm(
       const amrex::Box gbox = amrex::grow(vbox, ngrow);
       const amrex::Box cbox = amrex::grow(vbox, ngrow - 1);
 
-      const int captured_clean_massfrac = clean_massfrac;
       // const amrex::Box& dbox = geom.Domain();
 
 #ifdef PELEC_USE_EB
@@ -241,6 +240,7 @@ PeleC::getSmagorinskyLESTerm(
       {
         BL_PROFILE("PeleC::ctoprim()");
         const PassMap* lpmap = d_pass_map;
+        const int captured_clean_massfrac = clean_massfrac;
         amrex::ParallelFor(
           gbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
             pc_ctoprim(
@@ -438,7 +438,6 @@ PeleC::getDynamicSmagorinskyLESTerm(
       const amrex::Box g3box = amrex::grow(vbox, nGrowC + 1);
       const amrex::Box g4box = amrex::grow(vbox, 1);
       const amrex::Box cbox = amrex::grow(vbox, 0);
-      const int captured_clean_massfrac = clean_massfrac;
       // const amrex::Box& dbox = geom.Domain();
 
 #ifdef PELEC_USE_EB
@@ -466,6 +465,7 @@ PeleC::getDynamicSmagorinskyLESTerm(
       {
         BL_PROFILE("PeleC::ctoprim()");
         const PassMap* lpmap = d_pass_map;
+        const int captured_clean_massfrac = clean_massfrac;
         amrex::ParallelFor(
           g0box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
             pc_ctoprim(

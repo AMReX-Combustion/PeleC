@@ -112,7 +112,6 @@ PeleC::construct_hydro_source(
         const amrex::Box& fbx = amrex::grow(bx, nGrowF);
         // const int* lo = bx.loVect();
         // const int* hi = bx.hiVect();
-        const int captured_clean_massfrac = clean_massfrac;
 
         amrex::GpuArray<amrex::FArrayBox, AMREX_SPACEDIM> flux;
         amrex::Elixir flux_eli[AMREX_SPACEDIM];
@@ -140,6 +139,7 @@ PeleC::construct_hydro_source(
 
         BL_PROFILE_VAR("PeleC::ctoprim()", ctop);
         const PassMap* lpmap = d_pass_map;
+        const int captured_clean_massfrac = clean_massfrac;
         amrex::ParallelFor(
           qbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
             pc_ctoprim(
