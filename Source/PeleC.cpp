@@ -1171,6 +1171,17 @@ PeleC::post_restart()
 {
   BL_PROFILE("PeleC::post_restart()");
 
+  // Copy problem parameter structs to device
+#ifdef AMREX_USE_GPU
+  amrex::Gpu::htod_memcpy(
+    PeleC::d_prob_parm_device, PeleC::h_prob_parm_device,
+    sizeof(ProbParmDevice));
+#else
+  std::memcpy(
+    PeleC::d_prob_parm_device, PeleC::h_prob_parm_device,
+    sizeof(ProbParmDevice));
+#endif
+
   // amrex::Real cur_time = state[State_Type].curTime();
 
 #ifdef AMREX_PARTICLES
