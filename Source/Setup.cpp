@@ -153,9 +153,10 @@ PeleC::variableSetUp()
   h_prob_parm_device = new ProbParmDevice{};
   tagging_parm = new TaggingParm{};
   h_pass_map = new PassMap{};
-  d_prob_parm_device =
-    (ProbParmDevice*)amrex::The_Arena()->alloc(sizeof(ProbParmDevice));
-  d_pass_map = (PassMap*)amrex::The_Arena()->alloc(sizeof(PassMap));
+  d_prob_parm_device = static_cast<ProbParmDevice*>(
+    amrex::The_Arena()->alloc(sizeof(ProbParmDevice)));
+  d_pass_map =
+    static_cast<PassMap*>(amrex::The_Arena()->alloc(sizeof(PassMap)));
 
   // Get options, set phys_bc
   read_params();
