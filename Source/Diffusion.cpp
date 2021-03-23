@@ -126,7 +126,6 @@ PeleC::getMOLSrcTerm(
       const amrex::Box cbox = amrex::grow(vbox, ng - 1);
       auto const& MOLSrc = MOLSrcTerm.array(mfi);
 
-
 #ifdef PELEC_USE_EB
       amrex::Real wt = amrex::ParallelDescriptor::second();
       const auto& flag_fab = flags[mfi];
