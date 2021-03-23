@@ -262,7 +262,7 @@ pc_ctoprim(
   amrex::Array4<amrex::Real> const& q,
   amrex::Array4<amrex::Real> const& qa,
   PassMap const& pmap,
-  const int clean_massfrac = 1)
+  const int clean_massfrac)
 {
   auto eos = pele::physics::PhysicsType::eos();
   const amrex::Real rho = u(i, j, k, URHO);
