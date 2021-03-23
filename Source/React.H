@@ -112,7 +112,7 @@ pc_expl_reactions(
   const int nsteps_guess,
   const amrex::Real errtol,
   const int do_update,
-  const int clean_react_massfrac)
+  const int clean_massfrac)
 {
   const amrex::Real alpha_rk64[6] = {
     0.218150805229859,  // 3296351145737.0/15110423921029.0,
@@ -183,7 +183,7 @@ pc_expl_reactions(
   amrex::Real urk[NVAR];
   for (int n = 0; n < NVAR; ++n)
     urk[n] = sold(i, j, k, n);
-  if (clean_react_massfrac == 1) {
+  if (clean_massfrac == 1) {
     clip_normalize_rY(urk[URHO], &urk[UFS]);
   }
 

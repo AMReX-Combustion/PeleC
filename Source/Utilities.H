@@ -5,6 +5,7 @@
 #include "Constants.H"
 #include "IndexDefines.H"
 #include "PelePhysics.H"
+#include "React.H"
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
@@ -199,7 +200,7 @@ pc_ctoprim(
   amrex::Array4<const amrex::Real> const& u,
   amrex::Array4<amrex::Real> const& q,
   amrex::Array4<amrex::Real> const& qa,
-  PassMap const& pmap)
+  PassMap const& pmap,const int clean_massfrac=1)
 {
   auto eos = pele::physics::PhysicsType::eos();
   const amrex::Real rho = u(i, j, k, URHO);
@@ -231,6 +232,12 @@ pc_ctoprim(
     }
     massfrac[sp] = q(i, j, k, sp + QFS);
   }
+
+  if(clean_massfrac==1)
+  {
+     clip_normalize_Y(massfrac);
+  }
+
   //    amrex::Real aux[NUM_AUX];
   //    for(int ax = 0; ax < NUM_AUX; ++ax) aux[ax] = q(i,j,k,ax+QFX);
   amrex::Real dpdr_e, dpde, gam1, cs, wbar, p;
