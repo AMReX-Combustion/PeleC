@@ -507,9 +507,9 @@ pc_apply_eb_boundry_visc_flux_stencil(
         ebg[L].eb_normal[0] * ebg[L].eb_normal[0] +
         ebg[L].eb_normal[1] * ebg[L].eb_normal[1] +
         ebg[L].eb_normal[2] * ebg[L].eb_normal[2]);
-      const amrex::Real norm[AMREX_SPACEDIM] = {ebg[L].eb_normal[0] / Nmag,
-                                                ebg[L].eb_normal[1] / Nmag,
-                                                ebg[L].eb_normal[2] / Nmag};
+      const amrex::Real norm[AMREX_SPACEDIM] = {
+        ebg[L].eb_normal[0] / Nmag, ebg[L].eb_normal[1] / Nmag,
+        ebg[L].eb_normal[2] / Nmag};
       amrex::Real alpha[AMREX_SPACEDIM] = {0.0};
       int c[AMREX_SPACEDIM] = {0};
       idxsort(norm, c);
