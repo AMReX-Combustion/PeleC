@@ -2,9 +2,9 @@ name: PeleC-CI
 
 on:
   push:
-    branches: [development]
+    branches: [ctoprim_fix]
   pull_request:
-    branches: [development]
+    branches: [ctoprim_fix]
 
 jobs:
   Formatting:
