@@ -125,7 +125,7 @@ PeleC::getMOLSrcTerm(
       const amrex::Box gbox = amrex::grow(vbox, ng);
       const amrex::Box cbox = amrex::grow(vbox, ng - 1);
       auto const& MOLSrc = MOLSrcTerm.array(mfi);
-      
+
       const int captured_clean_massfrac = clean_massfrac;
 
 #ifdef PELEC_USE_EB
@@ -183,7 +183,8 @@ PeleC::getMOLSrcTerm(
         PassMap const* lpmap = d_pass_map;
         amrex::ParallelFor(
           gbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            pc_ctoprim(i, j, k, s, qar, qauxar, *lpmap, captured_clean_massfrac);
+            pc_ctoprim(
+              i, j, k, s, qar, qauxar, *lpmap, captured_clean_massfrac);
           });
       }
       // TODO deal with NSCBC

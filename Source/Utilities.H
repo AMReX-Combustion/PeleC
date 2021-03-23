@@ -200,7 +200,8 @@ pc_ctoprim(
   amrex::Array4<const amrex::Real> const& u,
   amrex::Array4<amrex::Real> const& q,
   amrex::Array4<amrex::Real> const& qa,
-  PassMap const& pmap,const int clean_massfrac=1)
+  PassMap const& pmap,
+  const int clean_massfrac = 1)
 {
   auto eos = pele::physics::PhysicsType::eos();
   const amrex::Real rho = u(i, j, k, URHO);
@@ -233,9 +234,8 @@ pc_ctoprim(
     massfrac[sp] = q(i, j, k, sp + QFS);
   }
 
-  if(clean_massfrac==1)
-  {
-     clip_normalize_Y(massfrac);
+  if (clean_massfrac == 1) {
+    clip_normalize_Y(massfrac);
   }
 
   //    amrex::Real aux[NUM_AUX];
