@@ -376,17 +376,6 @@ PeleC::particleMKD(
   // Check if I need to insert new particles
   int nstep = parent->levelSteps(0);
 
-  const ProbParmHost* lprobparm = prob_parm_host;
-  const ProbParmDevice* lprobparm_d = h_prob_parm_device;
-
-  BL_PROFILE_VAR("SprayParticles::injectParticles()", INJECT_SPRAY);
-  bool injectParts = theSprayPC()->injectParticles(
-    time, dt, nstep, level, finest_level, *lprobparm, *lprobparm_d);
-  // Only redistribute if we injected or inserted particles
-  if (injectParts)
-    theSprayPC()->Redistribute(level);
-  BL_PROFILE_VAR_STOP(INJECT_SPRAY);
-
   // Setup the virtual particles that represent particles on finer levels
   if (level < finest_level)
     setupVirtualParticles();

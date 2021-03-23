@@ -1095,9 +1095,22 @@ PeleC::post_timestep(int
     if (iteration == ncycle)
       removeGhostParticles();
 
+    // Do particle injection
+    int nstep = parent->levelSteps(0);
+    amrex::Real dtlev = parent->dtLevel(0);
+    amrex::Real cumtime = parent->cumTime() + dtlev;
+    const ProbParmHost* lprobparm = prob_parm_host;
+    const ProbParmDevice* lprobparm_d = h_prob_parm_device;
+    BL_PROFILE_VAR("SprayParticles::injectParticles()", INJECT_SPRAY);
+    bool injectParts = theSprayPC()->injectParticles(
+      cumtime, dtlev, nstep, level, finest_level, *lprobparm, *lprobparm_d);
+    BL_PROFILE_VAR_STOP(INJECT_SPRAY);
     // Sync up if we're level 0 or if we have particles that may have moved
-    // off the next finest level and need to be added to our own level.
-    if ((iteration < ncycle && level < finest_level) || level == 0) {
+    // off the next finest level and need to be added to our own level, or
+    // if we injected particles
+    if (
+      (iteration < ncycle && level < finest_level) || level == 0 ||
+      injectParts) {
       // TODO: Determine how many ghost cells to use here
       int nGrow = iteration;
       theSprayPC()->Redistribute(level, theSprayPC()->finestLevel(), nGrow);
