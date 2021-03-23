@@ -551,7 +551,7 @@ PeleC::getDynamicSmagorinskyLESTerm(
           g2box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
             pc_ctoprim(
               i, j, k, filtered_S_ar, filtered_Q_ar, filtered_Qaux_ar, *lpmap,
-              clean_massfrac);
+              captured_clean_massfrac);
           });
       }
       test_filter.apply_filter(g3box, K, filtered_K);
