@@ -106,7 +106,7 @@ jobs:
       - name: Report
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
-          cat ${{runner.workspace}}/build-output.txt | egrep "warning:|error:" | sort | uniq | sort -nr | \
+          cat ${{runner.workspace}}/build-output.txt | egrep "warning:|error:" | sort | uniq | \
             awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}'
       - name: Test
         run: |
@@ -254,7 +254,7 @@ jobs:
         working-directory: ${{runner.workspace}}/build-clang-tidy
         run: |
           cmake --build . --parallel ${{env.NPROCS}} 2> clang-tidy-full-report.txt
-          cat clang-tidy-full-report.txt | grep "warning:" | grep -v "Submodules" | sort | uniq | sort -nr | \
+          cat clang-tidy-full-report.txt | grep "warning:" | grep -v "Submodules" | sort | uniq | \
             awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > clang-tidy-warnings.txt
       - name: Full report
         working-directory: ${{runner.workspace}}/build-clang-tidy
