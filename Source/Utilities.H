@@ -9,6 +9,68 @@
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
+clip_normalize_Y(amrex::Real* Y)
+{
+
+  // Clip
+  amrex::Real sum = 0.0;
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    Y[n] = amrex::max(amrex::min(Y[n], 1.0), 0.0);
+    sum += Y[n];
+  }
+
+  // Normalize
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    Y[n] /= sum;
+  }
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+clip_normalize_rY(const amrex::Real rho, amrex::Real* rY)
+{
+
+  amrex::Real Y[NUM_SPECIES];
+  const amrex::Real rhoInv = 1.0 / rho;
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    Y[n] = rY[n] * rhoInv;
+  }
+
+  clip_normalize_Y(Y);
+
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    rY[n] = Y[n] * rho;
+  }
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+clip_normalize_rYarr(
+  const int i,
+  const int j,
+  const int k,
+  amrex::Array4<const amrex::Real> const& s,
+  amrex::Array4<amrex::Real> const& rhoY)
+{
+
+  amrex::Real Y[NUM_SPECIES];
+  const amrex::Real rhoInv = 1.0 / s(i, j, k, URHO);
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    Y[n] = rhoY(i, j, k, n) * rhoInv;
+  }
+
+  clip_normalize_Y(Y);
+
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    rhoY(i, j, k, n) = Y[n] * s(i, j, k, URHO);
+  }
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
 pc_cmpTemp(
   const int i, const int j, const int k, amrex::Array4<amrex::Real> const& S)
 {
@@ -199,7 +261,8 @@ pc_ctoprim(
   amrex::Array4<const amrex::Real> const& u,
   amrex::Array4<amrex::Real> const& q,
   amrex::Array4<amrex::Real> const& qa,
-  PassMap const& pmap)
+  PassMap const& pmap,
+  const int clean_massfrac)
 {
   auto eos = pele::physics::PhysicsType::eos();
   const amrex::Real rho = u(i, j, k, URHO);
@@ -231,6 +294,11 @@ pc_ctoprim(
     }
     massfrac[sp] = q(i, j, k, sp + QFS);
   }
+
+  if (clean_massfrac == 1) {
+    clip_normalize_Y(massfrac);
+  }
+
   //    amrex::Real aux[NUM_AUX];
   //    for(int ax = 0; ax < NUM_AUX; ++ax) aux[ax] = q(i,j,k,ax+QFX);
   amrex::Real dpdr_e, dpde, gam1, cs, wbar, p;

@@ -102,7 +102,7 @@ int PeleC::adaptrk_nsubsteps_min = 20;
 int PeleC::adaptrk_nsubsteps_max = 300;
 int PeleC::adaptrk_nsubsteps_guess = 50;
 amrex::Real PeleC::adaptrk_errtol = 1e-12;
-int PeleC::clean_react_massfrac = 1;
+int PeleC::clean_massfrac = 1;
 int PeleC::bndry_func_thread_safe = 1;
 #ifdef AMREX_DEBUG
 int PeleC::print_energy_diagnostics = 1;

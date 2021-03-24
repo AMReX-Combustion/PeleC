@@ -98,7 +98,7 @@ static int adaptrk_nsubsteps_min;
 static int adaptrk_nsubsteps_max;
 static int adaptrk_nsubsteps_guess;
 static amrex::Real adaptrk_errtol;
-static int clean_react_massfrac;
+static int clean_massfrac;
 static int bndry_func_thread_safe;
 static int print_energy_diagnostics;
 static int track_grid_losses;

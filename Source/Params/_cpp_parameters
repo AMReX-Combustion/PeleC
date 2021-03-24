@@ -371,8 +371,8 @@ adaptrk_nsubsteps_guess      int           50                 n
 #explict RK chemistry integrator options (absolute error tol.)
 adaptrk_errtol               Real          1e-12              n
 
-#flag to clean the state for the reactions
-clean_react_massfrac         int           1                  n
+#flag to clean massfractions before react/diffuse/convect
+clean_massfrac         int           1                  n
 
 #-----------------------------------------------------------------------------
 # category: parallelization
