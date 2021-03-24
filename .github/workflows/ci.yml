@@ -93,7 +93,7 @@ jobs:
             -DMASA_DIR:STRING=${{runner.workspace}}/deps/install/MASA \
             -DPELEC_ENABLE_ALL_WARNINGS:BOOL=${WARNINGS} \
             ${{github.workspace}}; \
-            if [ $? -ne 0 ]; then exit; fi \
+            if [ $? -ne 0 ]; then exit 1; fi \
           done)
       - name: Build
         run: |
@@ -101,7 +101,7 @@ jobs:
             printf "\n-------- Building ${DIM}D --------\n"; \
             cmake --build ${{runner.workspace}}/build-${DIM}d-${{matrix.os}} \
               --parallel ${{env.NPROCS}} 2>&1 | tee -a ${{runner.workspace}}/build-output.txt; \
-            if [ $? -ne 0 ]; then exit; fi \
+            if [ $? -ne 0 ]; then exit 1; fi \
           done)
       - name: Report
         run: |
@@ -114,7 +114,7 @@ jobs:
             printf "\n-------- Testing ${DIM}D --------\n"; \
             cd ${{runner.workspace}}/build-${DIM}d-${{matrix.os}}; \
             ctest -j ${{env.NPROCS}} -LE no-ci --output-on-failure; \
-            if [ $? -ne 0 ]; then exit; fi \
+            if [ $? -ne 0 ]; then exit 1; fi \
           done)
   GNUmake:
     needs: Formatting
