@@ -127,7 +127,7 @@ PeleC::react_state(
       // TODO: Update here? Or just get reaction source?
       const int do_update = react_init ? 0 : 1;
 
-      const int captured_clean_react_massfrac = clean_react_massfrac;
+      const int captured_clean_massfrac = clean_massfrac;
 
 #ifdef PELEC_USE_EB
       const auto& flag_fab = flags[mfi];
@@ -159,7 +159,7 @@ PeleC::react_state(
               pc_expl_reactions(
                 i, j, k, sold_arr, snew_arr, nonrs_arr, I_R, dt, nsubsteps_min,
                 nsubsteps_max, nsubsteps_guess, errtol, do_update,
-                captured_clean_react_massfrac);
+                captured_clean_massfrac);
             });
         }
 
@@ -238,7 +238,7 @@ PeleC::react_state(
                 d_rY_in[offset * (NUM_SPECIES + 1) + NUM_SPECIES] =
                   sold_arr(i, j, k, UTEMP);
 
-                if (captured_clean_react_massfrac == 1) {
+                if (captured_clean_massfrac == 1) {
                   clip_normalize_rY(
                     sold_arr(i, j, k, URHO),
                     &d_rY_in[offset * (NUM_SPECIES + 1)]);
@@ -249,7 +249,7 @@ PeleC::react_state(
 
                 frcEExt(i, j, k) = rhoedot_ext;
 
-                if (captured_clean_react_massfrac == 1) {
+                if (captured_clean_massfrac == 1) {
                   clip_normalize_rYarr(i, j, k, sold_arr, rhoY);
                 }
               }
@@ -423,7 +423,7 @@ PeleC::react_state(
             "chem_integrator=2,3 which requires Sundials to be enabled");
 #endif
         } else {
-          amrex::Abort("chem_integrator must be equal to 1,2 or 3");
+          amrex::Abort("chem_integrator must be equal to 1, 2, or 3");
         }
       }
     }

@@ -182,9 +182,11 @@ PeleC::getMOLSrcTerm(
       {
         BL_PROFILE("PeleC::ctoprim()");
         PassMap const* lpmap = d_pass_map;
+        const int captured_clean_massfrac = clean_massfrac;
         amrex::ParallelFor(
           gbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            pc_ctoprim(i, j, k, s, qar, qauxar, *lpmap);
+            pc_ctoprim(
+              i, j, k, s, qar, qauxar, *lpmap, captured_clean_massfrac);
           });
       }
       // TODO deal with NSCBC

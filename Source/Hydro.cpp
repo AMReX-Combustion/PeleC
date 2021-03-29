@@ -139,9 +139,11 @@ PeleC::construct_hydro_source(
 
         BL_PROFILE_VAR("PeleC::ctoprim()", ctop);
         const PassMap* lpmap = d_pass_map;
+        const int captured_clean_massfrac = clean_massfrac;
         amrex::ParallelFor(
           qbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            pc_ctoprim(i, j, k, s, qarr, qauxar, *lpmap);
+            pc_ctoprim(
+              i, j, k, s, qarr, qauxar, *lpmap, captured_clean_massfrac);
           });
         BL_PROFILE_VAR_STOP(ctop);
 

@@ -6,68 +6,6 @@
 #include "IndexDefines.H"
 #include "PelePhysics.H"
 
-AMREX_GPU_DEVICE
-AMREX_FORCE_INLINE
-void
-clip_normalize_Y(amrex::Real* Y)
-{
-
-  // Clip
-  amrex::Real sum = 0.0;
-  for (int n = 0; n < NUM_SPECIES; n++) {
-    Y[n] = amrex::max(amrex::min(Y[n], 1.0), 0.0);
-    sum += Y[n];
-  }
-
-  // Normalize
-  for (int n = 0; n < NUM_SPECIES; n++) {
-    Y[n] /= sum;
-  }
-}
-
-AMREX_GPU_DEVICE
-AMREX_FORCE_INLINE
-void
-clip_normalize_rY(const amrex::Real rho, amrex::Real* rY)
-{
-
-  amrex::Real Y[NUM_SPECIES];
-  const amrex::Real rhoInv = 1.0 / rho;
-  for (int n = 0; n < NUM_SPECIES; n++) {
-    Y[n] = rY[n] * rhoInv;
-  }
-
-  clip_normalize_Y(Y);
-
-  for (int n = 0; n < NUM_SPECIES; n++) {
-    rY[n] = Y[n] * rho;
-  }
-}
-
-AMREX_GPU_DEVICE
-AMREX_FORCE_INLINE
-void
-clip_normalize_rYarr(
-  const int i,
-  const int j,
-  const int k,
-  amrex::Array4<const amrex::Real> const& s,
-  amrex::Array4<amrex::Real> const& rhoY)
-{
-
-  amrex::Real Y[NUM_SPECIES];
-  const amrex::Real rhoInv = 1.0 / s(i, j, k, URHO);
-  for (int n = 0; n < NUM_SPECIES; n++) {
-    Y[n] = rhoY(i, j, k, n) * rhoInv;
-  }
-
-  clip_normalize_Y(Y);
-
-  for (int n = 0; n < NUM_SPECIES; n++) {
-    rhoY(i, j, k, n) = Y[n] * s(i, j, k, URHO);
-  }
-}
-
 // Timestep adapter
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
@@ -112,7 +50,7 @@ pc_expl_reactions(
   const int nsteps_guess,
   const amrex::Real errtol,
   const int do_update,
-  const int clean_react_massfrac)
+  const int clean_massfrac)
 {
   const amrex::Real alpha_rk64[6] = {
     0.218150805229859,  // 3296351145737.0/15110423921029.0,
@@ -183,7 +121,7 @@ pc_expl_reactions(
   amrex::Real urk[NVAR];
   for (int n = 0; n < NVAR; ++n)
     urk[n] = sold(i, j, k, n);
-  if (clean_react_massfrac == 1) {
+  if (clean_massfrac == 1) {
     clip_normalize_rY(urk[URHO], &urk[UFS]);
   }
 

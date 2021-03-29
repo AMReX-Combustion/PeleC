@@ -44,7 +44,7 @@ macro(init_code_checks)
           # Currently we filter analysis from submodules after cppcheck has run
           #COMMAND awk -v nlines=2 "/Submodules\/AMReX/ || /Submodules\/GoogleTest/ {for (i=0; i<nlines; i++) {getline}; next} 1" < cppcheck/cppcheck-full-report.txt > cppcheck/cppcheck-short-report.txt
           COMMAND awk -v nlines=2 "/Submodules/ {for (i=0; i<nlines; i++) {getline}; next} 1" < cppcheck/cppcheck-full-report.txt > cppcheck/cppcheck-short-report.txt
-          COMMAND cat cppcheck/cppcheck-short-report.txt | egrep "information:|error:|performance:|portability:|style:|warning:" | sort | uniq | sort -nr > cppcheck-warnings.txt
+          COMMAND cat cppcheck/cppcheck-short-report.txt | egrep "information:|error:|performance:|portability:|style:|warning:" | sort | uniq > cppcheck-warnings.txt
           COMMAND printf "Warnings: " >> cppcheck-warnings.txt
           COMMAND cat cppcheck-warnings.txt | awk "END{print NR-1}" >> cppcheck-warnings.txt
           COMMENT "Run cppcheck on project compile_commands.json"

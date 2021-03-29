@@ -212,6 +212,7 @@ PeleC::getSmagorinskyLESTerm(
       const amrex::Box vbox = mfi.tilebox();
       const amrex::Box gbox = amrex::grow(vbox, ngrow);
       const amrex::Box cbox = amrex::grow(vbox, ngrow - 1);
+
       // const amrex::Box& dbox = geom.Domain();
 
 #ifdef PELEC_USE_EB
@@ -239,9 +240,11 @@ PeleC::getSmagorinskyLESTerm(
       {
         BL_PROFILE("PeleC::ctoprim()");
         const PassMap* lpmap = d_pass_map;
+        const int captured_clean_massfrac = clean_massfrac;
         amrex::ParallelFor(
           gbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            pc_ctoprim(i, j, k, s, q_ar, qauxar, *lpmap);
+            pc_ctoprim(
+              i, j, k, s, q_ar, qauxar, *lpmap, captured_clean_massfrac);
           });
       }
 
@@ -462,9 +465,11 @@ PeleC::getDynamicSmagorinskyLESTerm(
       {
         BL_PROFILE("PeleC::ctoprim()");
         const PassMap* lpmap = d_pass_map;
+        const int captured_clean_massfrac = clean_massfrac;
         amrex::ParallelFor(
           g0box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            pc_ctoprim(i, j, k, s, q_ar, qauxar, *lpmap);
+            pc_ctoprim(
+              i, j, k, s, q_ar, qauxar, *lpmap, captured_clean_massfrac);
           });
       }
 
@@ -541,10 +546,12 @@ PeleC::getDynamicSmagorinskyLESTerm(
       {
         BL_PROFILE("PeleC::ctoprim()");
         const PassMap* lpmap = d_pass_map;
+        const int captured_clean_massfrac = clean_massfrac;
         amrex::ParallelFor(
           g2box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
             pc_ctoprim(
-              i, j, k, filtered_S_ar, filtered_Q_ar, filtered_Qaux_ar, *lpmap);
+              i, j, k, filtered_S_ar, filtered_Q_ar, filtered_Qaux_ar, *lpmap,
+              captured_clean_massfrac);
           });
       }
       test_filter.apply_filter(g3box, K, filtered_K);
