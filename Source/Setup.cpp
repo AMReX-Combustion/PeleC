@@ -153,9 +153,10 @@ PeleC::variableSetUp()
   h_prob_parm_device = new ProbParmDevice{};
   tagging_parm = new TaggingParm{};
   h_pass_map = new PassMap{};
-  d_prob_parm_device =
-    (ProbParmDevice*)amrex::The_Arena()->alloc(sizeof(ProbParmDevice));
-  d_pass_map = (PassMap*)amrex::The_Arena()->alloc(sizeof(PassMap));
+  d_prob_parm_device = static_cast<ProbParmDevice*>(
+    amrex::The_Arena()->alloc(sizeof(ProbParmDevice)));
+  d_pass_map =
+    static_cast<PassMap*>(amrex::The_Arena()->alloc(sizeof(PassMap)));
 
   // Get options, set phys_bc
   read_params();
@@ -168,14 +169,20 @@ PeleC::variableSetUp()
   amrex::sundials::MemoryHelper::Initialize();
 #endif
 
+  if (chem_integrator == 1) {
+    amrex::Print() << "Using built-in RK64 chemistry integrator\n";
+  }
 #ifdef USE_SUNDIALS_PP
-  if (chem_integrator == 3) {
-    amrex::Print() << "Using sundials chemistry integrator with boxes\n";
-  } else {
+  else if (chem_integrator == 2) {
     amrex::Print()
       << "Using sundials chemistry integrator with flattened arrays\n";
+  } else if (chem_integrator == 3) {
+    amrex::Print() << "Using sundials chemistry integrator with boxes\n";
   }
 #endif
+  else {
+    amrex::Abort("Invalid chem_integrator choice.");
+  }
 
   // Initialize the reactor
   if (do_react == 1) {

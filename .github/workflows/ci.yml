@@ -77,7 +77,7 @@ jobs:
           pip install nose numpy pandas
       - name: Configure
         run: |
-          for DIM in 1 2 3; do \
+          (for DIM in 1 2 3; do \
             if [ "${DIM}" != '3' ]; then WARNINGS=OFF; else WARNINGS=ON; fi; \
             printf "\n-------- Configuring ${DIM}D --------\n"; \
             cmake -G Ninja \
@@ -93,26 +93,29 @@ jobs:
             -DMASA_DIR:STRING=${{runner.workspace}}/deps/install/MASA \
             -DPELEC_ENABLE_ALL_WARNINGS:BOOL=${WARNINGS} \
             ${{github.workspace}}; \
-          done
+            if [ $? -ne 0 ]; then exit 1; fi \
+          done)
       - name: Build
         run: |
-          for DIM in 1 2 3; do \
+          (for DIM in 1 2 3; do \
             printf "\n-------- Building ${DIM}D --------\n"; \
             cmake --build ${{runner.workspace}}/build-${DIM}d-${{matrix.os}} \
               --parallel ${{env.NPROCS}} 2>&1 | tee -a ${{runner.workspace}}/build-output.txt; \
-          done
+            if [ ${PIPESTATUS[0]} -ne 0 ]; then exit 1; fi \
+          done)
       - name: Report
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
-          cat ${{runner.workspace}}/build-output.txt | egrep "warning:|error:" | sort | uniq | sort -nr | \
+          cat ${{runner.workspace}}/build-output.txt | egrep "warning:|error:" | sort | uniq | \
             awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}'
       - name: Test
         run: |
-          for DIM in 1 2 3; do \
+          (for DIM in 1 2 3; do \
             printf "\n-------- Testing ${DIM}D --------\n"; \
             cd ${{runner.workspace}}/build-${DIM}d-${{matrix.os}}; \
             ctest -j ${{env.NPROCS}} -LE no-ci --output-on-failure; \
-          done
+            if [ $? -ne 0 ]; then exit 1; fi \
+          done)
   GNUmake:
     needs: Formatting
     runs-on: ubuntu-latest
@@ -251,7 +254,7 @@ jobs:
         working-directory: ${{runner.workspace}}/build-clang-tidy
         run: |
           cmake --build . --parallel ${{env.NPROCS}} 2> clang-tidy-full-report.txt
-          cat clang-tidy-full-report.txt | grep "warning:" | grep -v "Submodules" | sort | uniq | sort -nr | \
+          cat clang-tidy-full-report.txt | grep "warning:" | grep -v "Submodules" | sort | uniq | \
             awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > clang-tidy-warnings.txt
       - name: Full report
         working-directory: ${{runner.workspace}}/build-clang-tidy

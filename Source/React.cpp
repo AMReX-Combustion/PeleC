@@ -423,7 +423,7 @@ PeleC::react_state(
             "chem_integrator=2,3 which requires Sundials to be enabled");
 #endif
         } else {
-          amrex::Abort("chem_integrator must be equal to 1,2 or 3");
+          amrex::Abort("chem_integrator must be equal to 1, 2, or 3");
         }
       }
     }
