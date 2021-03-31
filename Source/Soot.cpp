@@ -94,9 +94,11 @@ PeleC::fill_soot_source(
     {
       BL_PROFILE("PeleC::ctoprim()");
       PassMap const* lpmap = d_pass_map;
+      const int captured_clean_massfrac = clean_massfrac;
       amrex::ParallelFor(
         bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-          pc_ctoprim(i, j, k, s_arr, q_arr, qaux_arr, *lpmap);
+          pc_ctoprim(
+            i, j, k, s_arr, q_arr, qaux_arr, *lpmap, captured_clean_massfrac);
         });
     }
 
