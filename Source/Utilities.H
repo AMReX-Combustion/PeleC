@@ -303,6 +303,10 @@ pc_ctoprim(
 
   if (clean_massfrac == 1) {
     clip_normalize_Y(massfrac);
+
+    for (int sp = 0; sp < NUM_SPECIES; ++sp) {
+      q(i, j, k, sp + QFS) = massfrac[sp];
+    }
   }
 
   //    amrex::Real aux[NUM_AUX];
