@@ -130,7 +130,7 @@ jobs:
       - name: Setup
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
-          printf "CC=gcc-8\nCXX=g++-8\nFC=gfortran-8\nF90=gfortran-8" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
+          printf "CC=gcc-10\nCXX=g++-10\nFC=gfortran-10\nF90=gfortran-10" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
       - name: PMF debug make
         working-directory: ./Exec/RegTests/PMF
         run: make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE
@@ -192,7 +192,7 @@ jobs:
         run: cmake --build build-${{matrix.cuda_pkg}} --parallel ${{env.NPROCS}}
   cppcheck:
     needs: Formatting
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.6.0
@@ -225,7 +225,7 @@ jobs:
           cat cppcheck-warnings.txt
   clang-tidy:
     needs: Formatting
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.6.0
