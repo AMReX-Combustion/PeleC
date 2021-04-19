@@ -65,13 +65,9 @@ amrex_probinit(
   trans_parm.const_conductivity =
     trans_parm.const_viscosity * cp / PeleC::h_prob_parm_device->Pr;
 
-#ifdef AMREX_USE_GPU
-  amrex::Gpu::htod_memcpy(
-    pele::physics::transport::trans_parm_g, &trans_parm, sizeof(trans_parm));
-#else
-  std::memcpy(
-    pele::physics::transport::trans_parm_g, &trans_parm, sizeof(trans_parm));
-#endif
+  amrex::Gpu::copy(
+    amrex::Gpu::hostToDevice, &trans_parm, &trans_parm + 1,
+    pele::physics::transport::trans_parm_g);
 }
 }
 
