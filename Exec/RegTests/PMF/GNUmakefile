@@ -1,6 +1,6 @@
 # AMReX
 DIM = 3
-COMP = llvm
+COMP = gnu
 PRECISION = DOUBLE
 
 # Profiling
@@ -31,9 +31,6 @@ USE_MASA = FALSE
 Eos_dir := Fuego
 Chemistry_Model := LiDryer
 Transport_dir := Simple
-
-#USE_HDF5  = FALSE
-#HDF5_HOME = /Users/jrood/spack/opt/spack/darwin-catalina-x86_64/apple-clang-11.0.3/hdf5-1.10.4-nb5dk5var5kf7kbeekh6rt3dfytbdf2f
 
 # GNU Make
 Bpack := ./Make.package
