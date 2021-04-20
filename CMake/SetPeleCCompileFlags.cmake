@@ -9,7 +9,7 @@ if(PELEC_ENABLE_ALL_WARNINGS)
                                   "-Wshadow"
                                   "-Woverloaded-virtual")
       if(CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|AppleClang)$")
-        list(APPEND PELEC_CXX_FLAGS "-Wno-pass-failed")
+        list(APPEND PELEC_CXX_FLAGS "-Wno-pass-failed" "-Wno-c++17-extensions")
       endif()
     endif()
   endif()
