@@ -192,11 +192,8 @@ PeleC::variableSetUp()
 
   init_pass_map(h_pass_map);
 
-#ifdef AMREX_USE_GPU
-  amrex::Gpu::htod_memcpy(d_pass_map, h_pass_map, sizeof(PassMap));
-#else
-  std::memcpy(d_pass_map, h_pass_map, sizeof(PassMap));
-#endif
+  amrex::Gpu::copy(
+    amrex::Gpu::hostToDevice, h_pass_map, h_pass_map + 1, d_pass_map);
 
 #ifdef PELEC_USE_MASA
   if (do_mms) {
