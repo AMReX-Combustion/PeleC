@@ -236,7 +236,7 @@ PeleC::initialize_eb2_structs()
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
     for (amrex::MFIter mfi(vfrac, false); mfi.isValid(); ++mfi) {
-      const amrex::Box tbox = mfi.growntilebox(NUM_GROW);
+      const amrex::Box tbox = mfi.growntilebox(numGrow());
       const auto& flagfab = flags[mfi];
       amrex::FabType typ = flagfab.getType(tbox);
       int iLocal = mfi.LocalIndex();
@@ -806,6 +806,23 @@ initialize_EB2(
     auto gshop = amrex::EB2::makeShop(pipe);
 
     amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
+  } else if (geom_type == "quarter-circle") {
+
+    int max_coarsening_level =
+      max_level; // Because there are no mg solvers here
+
+    amrex::Real r_inner = 1.0;
+    amrex::Real r_outer = 2.0;
+    ppeb2.query("r_inner", r_inner);
+    ppeb2.query("r_outer", r_outer);
+
+    amrex::EB2::CylinderIF inner(r_inner, 10, 2, {0, 0, 0}, false);
+    amrex::EB2::CylinderIF outer(r_outer, 10, 2, {0, 0, 0}, true);
+
+    auto polys = amrex::EB2::makeUnion(inner, outer);
+    auto gshop = amrex::EB2::makeShop(polys);
+    amrex::EB2::Build(
+      gshop, geom, max_coarsening_level, max_coarsening_level, 4, false);
   } else if (geom_type == "sco2-combustor") {
 #ifdef sCO2Combustor
     EBsCO2Combustor(geom, max_level);

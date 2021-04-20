@@ -22,7 +22,7 @@ PeleC::construct_hydro_source(
       amrex::Print() << "... Computing hydro advance" << std::endl;
     }
 
-    AMREX_ASSERT(S.nGrow() == NUM_GROW + nGrowF);
+    AMREX_ASSERT(S.nGrow() == numGrow() + nGrowF);
     sources_for_hydro.setVal(0.0);
     int ng = 0; // TODO: This is currently the largest ngrow of the source
                 // data...maybe this needs fixing?
@@ -108,7 +108,7 @@ PeleC::construct_hydro_source(
            ++mfi) {
 
         const amrex::Box& bx = mfi.tilebox();
-        const amrex::Box& qbx = amrex::grow(bx, NUM_GROW + nGrowF);
+        const amrex::Box& qbx = amrex::grow(bx, numGrow() + nGrowF);
         const amrex::Box& fbx = amrex::grow(bx, nGrowF);
         // const int* lo = bx.loVect();
         // const int* hi = bx.hiVect();
@@ -290,9 +290,8 @@ PeleC::construct_hydro_source(
     }
 
     if (print_energy_diagnostics) {
-      amrex::Real foo[5] = {
-        E_added_flux, xmom_added_flux, ymom_added_flux, zmom_added_flux,
-        mass_added_flux};
+      amrex::Real foo[5] = {E_added_flux, xmom_added_flux, ymom_added_flux,
+                            zmom_added_flux, mass_added_flux};
 
 #ifdef AMREX_LAZY
       Lazy::QueueReduction([=]() mutable {

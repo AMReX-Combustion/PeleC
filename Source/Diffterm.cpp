@@ -15,7 +15,7 @@ pc_compute_diffusion_flux(
   const amrex::Array4<const amrex::Real>& coef,
   const amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
-    a,
+    area,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> del,
   const int do_harmonic
 #ifdef PELEC_USE_EB
@@ -75,7 +75,7 @@ pc_compute_diffusion_flux(
             pc_move_transcoefs_to_ec(i, j, k, n, coef, c, dir, do_harmonic);
           }
           pc_diffusion_flux(
-            i, j, k, q, c, tander, a[dir], flx[dir], delta, dir);
+            i, j, k, q, c, tander, area[dir], flx[dir], delta, dir);
         });
     }
   }

@@ -71,6 +71,7 @@ static amrex::Real eb_boundary_T;
 static int eb_isothermal;
 static int eb_noslip;
 static amrex::Real eb_small_vfrac;
+static std::string redistribution_type;
 static int do_mms;
 static std::string masa_solution_name;
 static amrex::Real fixed_dt;

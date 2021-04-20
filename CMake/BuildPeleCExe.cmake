@@ -129,6 +129,11 @@ function(build_pelec_exe pelec_exe_name)
   
   target_sources(${pelec_exe_name}
      PRIVATE
+       ${SRC_DIR}/Redistribution/iamr_create_itracker_3d.cpp
+       ${SRC_DIR}/Redistribution/iamr_merge_redistribute.cpp
+       ${SRC_DIR}/Redistribution/iamr_redistribution.H
+       ${SRC_DIR}/Redistribution/iamr_redistribution.cpp
+       ${SRC_DIR}/Redistribution/iamr_state_redistribute.cpp
        ${SRC_DIR}/Advance.cpp
        ${SRC_DIR}/BCfill.cpp
        ${SRC_DIR}/Bld.cpp
@@ -205,6 +210,7 @@ function(build_pelec_exe pelec_exe_name)
 
   #PeleC include directories
   target_include_directories(${pelec_exe_name} PRIVATE ${SRC_DIR})
+  target_include_directories(${pelec_exe_name} PRIVATE ${SRC_DIR}/Redistribution)
   target_include_directories(${pelec_exe_name} PRIVATE ${CMAKE_BINARY_DIR})
 
   #Link to amrex library
