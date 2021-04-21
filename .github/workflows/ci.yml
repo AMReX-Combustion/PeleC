@@ -106,8 +106,11 @@ jobs:
       - name: Report
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
-          cat ${{runner.workspace}}/build-output.txt | egrep "warning:|error:" | sort | uniq | \
-            awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}'
+          egrep "warning:|error:" ${{runner.workspace}}/build-output.txt | sort | uniq | \
+            awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > ${{runner.workspace}}/build-output-warnings.txt
+          cat ${{runner.workspace}}/build-output-warnings.txt
+          export return=$(tail -n 1 ${{runner.workspace}}/build-output-warnings.txt | awk '{print $2}')
+          exit ${return}
       - name: Test
         run: |
           (for DIM in 1 2 3; do \
@@ -223,6 +226,8 @@ jobs:
         run: |
           echo "::add-matcher::.github/problem-matchers/cppcheck.json"
           cat cppcheck-warnings.txt
+          export return=$(tail -n 1 cppcheck-warnings.txt | awk '{print $2}')
+          exit ${return}
   clang-tidy:
     needs: Formatting
     runs-on: ubuntu-latest
@@ -264,6 +269,8 @@ jobs:
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
           cat clang-tidy-warnings.txt
+          export return=$(tail -n 1 clang-tidy-warnings.txt | awk '{print $2}')
+          exit ${return}
   HIP:
     needs: Formatting
     runs-on: ubuntu-latest
