@@ -180,7 +180,7 @@ amrex_probinit(
   const amrex_real* probhi)
 {
   std::string pmf_datafile;
-  int warning = 0;
+
   amrex::ParmParse pp("prob");
   pp.query("pamb", PeleC::h_prob_parm_device->pamb);
   pp.query("phi_in", PeleC::h_prob_parm_device->phi_in);
