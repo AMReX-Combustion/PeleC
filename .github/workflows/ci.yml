@@ -105,9 +105,11 @@ jobs:
           done)
       - name: Report
         run: |
+          export return=$(tail -n 1 ${{runner.workspace}}/build-output.txt | awk '{print $2}')
           echo "::add-matcher::.github/problem-matchers/gcc.json"
           cat ${{runner.workspace}}/build-output.txt | egrep "warning:|error:" | sort | uniq | \
             awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}'
+          exit ${return}
       - name: Test
         run: |
           (for DIM in 1 2 3; do \
@@ -221,8 +223,10 @@ jobs:
       - name: Short report
         working-directory: ${{runner.workspace}}/build-cppcheck
         run: |
+          export return=$(tail -n 1 cppcheck-warnings.txt | awk '{print $2}')
           echo "::add-matcher::.github/problem-matchers/cppcheck.json"
           cat cppcheck-warnings.txt
+          exit ${return}
   clang-tidy:
     needs: Formatting
     runs-on: ubuntu-latest
@@ -262,5 +266,7 @@ jobs:
       - name: Short report
         working-directory: ${{runner.workspace}}/build-clang-tidy
         run: |
+          export return=$(tail -n 1 clang-tidy-warnings.txt | awk '{print $2}')
           echo "::add-matcher::.github/problem-matchers/gcc.json"
           cat clang-tidy-warnings.txt
+          exit ${return}
