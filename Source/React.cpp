@@ -1,7 +1,11 @@
 #include "PeleC.H"
 #include "React.H"
 #ifdef USE_SUNDIALS_PP
-#include "reactor.h"
+#ifdef AMREX_USE_GPU
+#include "reactor_arkode_gpu.h"
+#else
+#include "reactor_arkode_cpu.h"
+#endif
 #endif
 
 void

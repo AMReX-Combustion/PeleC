@@ -29,7 +29,11 @@ using namespace MASA;
 #include "Tagging.H"
 #include "IndexDefines.H"
 #if defined(PELEC_USE_REACTIONS) && defined(USE_SUNDIALS_PP)
-#include "reactor.h"
+#ifdef AMREX_USE_GPU
+#include "reactor_arkode_gpu.h"
+#else
+#include "reactor_arkode_cpu.h"
+#endif
 #endif
 
 #ifdef PELEC_ENABLE_FPE_TRAP

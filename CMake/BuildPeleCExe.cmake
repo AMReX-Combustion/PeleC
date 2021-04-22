@@ -92,24 +92,21 @@ function(build_pelec_exe pelec_exe_name)
   if(PELEC_ENABLE_REACTIONS)
     if(PELEC_ENABLE_SUNDIALS)
       if(PELEC_ENABLE_CUDA)
-        set(DEVICE GPU)
-      else()
-        set(DEVICE CPU)
-      endif()
-      target_compile_definitions(${pelec_exe_name} PRIVATE USE_SUNDIALS_PP)
-      target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/arkode/reactor.cpp
-                                               ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/arkode/reactor.h
-                                               ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/AMREX_misc.H)
-      set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/arkode/reactor.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-      set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/arkode/reactor.h PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-      target_link_libraries(${pelec_exe_name} PRIVATE sundials_arkode)
-      target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE})
-      target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/arkode)
-      if(PELEC_ENABLE_CUDA)
-        target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/AMReX_SUNMemory.cpp
-                                                 ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/AMReX_SUNMemory.H)
+        set(DEVICE gpu)
+        target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/AMReX_SUNMemory.cpp
+                                                 ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/AMReX_SUNMemory.H)
         target_link_libraries(${pelec_exe_name} PRIVATE sundials_nveccuda)
+      else()
+        set(DEVICE cpu)
       endif()
+      target_compile_definitions(${pelec_exe_name} PRIVATE USE_SUNDIALS_PP USE_ARKODE_PP)
+      target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/reactor_arkode_${DEVICE}.cpp
+                                               ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/reactor_arkode_${DEVICE}.h
+                                               ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/AMREX_misc.H)
+      set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/reactor_arkode_${DEVICE}.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+      set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/reactor_arkode_${DEVICE}.h PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+      target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego)
+      target_link_libraries(${pelec_exe_name} PRIVATE sundials_arkode)
     endif()
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_REACTIONS)
     target_sources(${pelec_exe_name} PRIVATE
