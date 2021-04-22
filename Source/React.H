@@ -5,6 +5,14 @@
 
 #include "IndexDefines.H"
 #include "PelePhysics.H"
+#include "PeleC.H"
+#ifdef USE_SUNDIALS_PP
+#ifdef AMREX_USE_GPU
+#include "reactor_arkode_gpu.h"
+#else
+#include "reactor_arkode_cpu.h"
+#endif
+#endif
 
 // Timestep adapter
 AMREX_GPU_DEVICE
