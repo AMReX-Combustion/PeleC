@@ -139,7 +139,6 @@ PeleC::react_state(
       if (typ == amrex::FabType::singlevalued || typ == amrex::FabType::regular)
 #endif
       {
-
         if (chem_integrator == 1) {
           // for rk64 we set minimum, maximum and guess
           // number of sub-iterations
@@ -157,35 +156,16 @@ PeleC::react_state(
                 nsubsteps_max, nsubsteps_guess, errtol, do_update,
                 captured_clean_massfrac);
             });
-        }
-
-        else if (chem_integrator == 2 || chem_integrator == 3) {
+        } else if (chem_integrator == 2) {
 #ifdef USE_SUNDIALS_PP
           amrex::Real wt =
             amrex::ParallelDescriptor::second(); // timing for each fab
-          const int captured_chem_integrator = chem_integrator;
 
-          const auto len = amrex::length(bx);
-          const auto lo = amrex::lbound(bx);
-          const int ncells = len.x * len.y * len.z;
+          //const auto len = amrex::length(bx);
+          //const auto lo = amrex::lbound(bx);
+          //const int ncells = len.x * len.y * len.z;
           amrex::Real current_time = 0.0;
 
-          // for flattened array integration
-          amrex::Vector<amrex::Real> h_rY_in(ncells * (NUM_SPECIES + 1));
-          amrex::Gpu::DeviceVector<amrex::Real> rY_in(
-            ncells * (NUM_SPECIES + 1));
-          amrex::Real* d_rY_in = rY_in.data();
-          amrex::Vector<amrex::Real> h_rY_src_in(ncells * NUM_SPECIES);
-          amrex::Gpu::DeviceVector<amrex::Real> rY_src_in(ncells * NUM_SPECIES);
-          amrex::Real* d_rY_src_in = rY_src_in.data();
-          amrex::Vector<amrex::Real> h_re_in(ncells);
-          amrex::Gpu::DeviceVector<amrex::Real> re_in(ncells);
-          amrex::Real* d_re_in = re_in.data();
-          amrex::Vector<amrex::Real> h_re_src_in(ncells);
-          amrex::Gpu::DeviceVector<amrex::Real> re_src_in(ncells);
-          amrex::Real* d_re_src_in = re_src_in.data();
-
-          // for box integration
           auto const& rhoY = STemp.array(mfi);
           auto const& T = STemp.array(mfi, NUM_SPECIES);
           auto const& rhoE = STemp.array(mfi, NUM_SPECIES + 1);
@@ -222,86 +202,20 @@ PeleC::react_state(
                  - rho_old * e_old) /
                 dt;
 
-              if (captured_chem_integrator == 2) {
-                int offset =
-                  (k - lo.z) * len.x * len.y + (j - lo.y) * len.x + (i - lo.x);
-                for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
-                  d_rY_in[offset * (NUM_SPECIES + 1) + nsp] =
-                    sold_arr(i, j, k, UFS + nsp);
-                  d_rY_src_in[offset * NUM_SPECIES + nsp] =
-                    nonrs_arr(i, j, k, UFS + nsp);
-                }
-                d_rY_in[offset * (NUM_SPECIES + 1) + NUM_SPECIES] =
-                  sold_arr(i, j, k, UTEMP);
-
-                if (captured_clean_massfrac == 1) {
-                  clip_normalize_rY(
-                    sold_arr(i, j, k, URHO),
-                    &d_rY_in[offset * (NUM_SPECIES + 1)]);
-                }
-                d_re_in[offset] = rho_old * e_old;
-                d_re_src_in[offset] = rhoedot_ext;
-              } else {
-
-                frcEExt(i, j, k) = rhoedot_ext;
-
-                if (captured_clean_massfrac == 1) {
-                  clip_normalize_rYarr(i, j, k, sold_arr, rhoY);
-                }
+              frcEExt(i, j, k) = rhoedot_ext;
+              if (captured_clean_massfrac == 1) {
+                clip_normalize_rYarr(i, j, k, sold_arr, rhoY);
               }
             });
 
-          if (chem_integrator == 2) {
-
-            amrex::Gpu::streamSynchronize();
-            amrex::Gpu::copy(
-              amrex::Gpu::deviceToHost, rY_in.begin(), rY_in.end(),
-              h_rY_in.begin());
-            amrex::Gpu::copy(
-              amrex::Gpu::deviceToHost, rY_src_in.begin(), rY_src_in.end(),
-              h_rY_src_in.begin());
-            amrex::Gpu::copy(
-              amrex::Gpu::deviceToHost, re_in.begin(), re_in.end(),
-              h_re_in.begin());
-            amrex::Gpu::copy(
-              amrex::Gpu::deviceToHost, re_src_in.begin(), re_src_in.end(),
-              h_re_src_in.begin());
-
 #ifdef AMREX_USE_GPU
-            int ode_ncells = ncells;
+          const int reactor_type = 1;
+          react(
+            bx, rhoY, frcExt, T, rhoE, frcEExt, fc, mask, dt, current_time,
+            reactor_type, amrex::Gpu::gpuStream());
 #else
-            int ode_ncells = 1;
+          react(bx, rhoY, frcExt, T, rhoE, frcEExt, fc, mask, dt, current_time);
 #endif
-            amrex::Real chemintg_cost = 0.0;
-            for (int i = 0; i < ncells; i += ode_ncells) {
-
-#ifdef AMREX_USE_GPU
-              chemintg_cost += react(
-                &h_rY_in[i * (NUM_SPECIES + 1)], &h_rY_src_in[i * NUM_SPECIES],
-                &h_re_in[i], &h_re_src_in[i], dt, current_time, 1, ode_ncells,
-                amrex::Gpu::gpuStream());
-#else
-              chemintg_cost += react(
-                &h_rY_in[i * (NUM_SPECIES + 1)], &h_rY_src_in[i * NUM_SPECIES],
-                &h_re_in[i], &h_re_src_in[i], dt, current_time);
-#endif
-            }
-            chemintg_cost = chemintg_cost / ncells;
-
-            amrex::Gpu::copy(
-              amrex::Gpu::hostToDevice, h_rY_in.begin(), h_rY_in.end(),
-              rY_in.begin());
-          } else {
-#ifdef AMREX_USE_GPU
-            const int reactor_type = 1;
-            react(
-              bx, rhoY, frcExt, T, rhoE, frcEExt, fc, mask, dt, current_time,
-              reactor_type, amrex::Gpu::gpuStream());
-#else
-            react(
-              bx, rhoY, frcExt, T, rhoE, frcEExt, fc, mask, dt, current_time);
-#endif
-          }
 
           // unpack data
           amrex::ParallelFor(
@@ -340,17 +254,11 @@ PeleC::react_state(
 
               // get new rho
               amrex::Real rhonew = 0.;
-              int offset =
-                (k - lo.z) * len.x * len.y + (j - lo.y) * len.x + (i - lo.x);
+              //int offset =
+              //  (k - lo.z) * len.x * len.y + (j - lo.y) * len.x + (i - lo.x);
 
-              if (captured_chem_integrator == 2) {
-                for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
-                  rhonew += d_rY_in[offset * (NUM_SPECIES + 1) + nsp];
-                }
-              } else {
-                for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
-                  rhonew += rhoY(i, j, k, nsp);
-                }
+              for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
+                rhonew += rhoY(i, j, k, nsp);
               }
 
               if (do_update) {
@@ -359,19 +267,10 @@ PeleC::react_state(
                 snew_arr(i, j, k, UMY) = vmnew;
                 snew_arr(i, j, k, UMZ) = wmnew;
 
-                if (captured_chem_integrator == 2) {
-                  for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
-                    snew_arr(i, j, k, UFS + nsp) =
-                      d_rY_in[offset * (NUM_SPECIES + 1) + nsp];
-                  }
-                  snew_arr(i, j, k, UTEMP) =
-                    d_rY_in[offset * (NUM_SPECIES + 1) + NUM_SPECIES];
-                } else {
-                  for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
-                    snew_arr(i, j, k, UFS + nsp) = rhoY(i, j, k, nsp);
-                  }
-                  snew_arr(i, j, k, UTEMP) = T(i, j, k);
+                for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
+                  snew_arr(i, j, k, UFS + nsp) = rhoY(i, j, k, nsp);
                 }
+                snew_arr(i, j, k, UTEMP) = T(i, j, k);
 
                 snew_arr(i, j, k, UEINT) = rho_old * e_old + dt * rhoedot_ext;
                 snew_arr(i, j, k, UEDEN) =
@@ -380,22 +279,11 @@ PeleC::react_state(
                     rhonew;
               }
 
-              if (captured_chem_integrator == 2) {
-                for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
-                  I_R(i, j, k, nsp) =
-                    (d_rY_in[offset * (NUM_SPECIES + 1) + nsp] // new rhoy
-                     - sold_arr(i, j, k, UFS + nsp))           // old rhoy
-                      / dt -
-                    nonrs_arr(i, j, k, UFS + nsp);
-                }
-              } else {
-                for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
-                  I_R(i, j, k, nsp) =
-                    (rhoY(i, j, k, nsp)              // new rhoy
-                     - sold_arr(i, j, k, UFS + nsp)) // old rhoy
-                      / dt -
-                    nonrs_arr(i, j, k, UFS + nsp);
-                }
+              for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
+                I_R(i, j, k, nsp) = (rhoY(i, j, k, nsp)              // new rhoy
+                                     - sold_arr(i, j, k, UFS + nsp)) // old rhoy
+                                      / dt -
+                                    nonrs_arr(i, j, k, UFS + nsp);
               }
 
               I_R(i, j, k, NUM_SPECIES) =
@@ -416,10 +304,10 @@ PeleC::react_state(
           }
 #else
           amrex::Abort(
-            "chem_integrator=2,3 which requires Sundials to be enabled");
+            "chem_integrator=2 which requires Sundials to be enabled");
 #endif
         } else {
-          amrex::Abort("chem_integrator must be equal to 1, 2, or 3");
+          amrex::Abort("chem_integrator must be equal to 1 or 2");
         }
 
         // update heat release

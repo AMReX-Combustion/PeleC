@@ -1853,16 +1853,12 @@ void
 PeleC::init_reactor()
 {
 #ifdef USE_SUNDIALS_PP
-#ifdef AMREX_USE_GPU
-  reactor_info(1, 1);
-#else
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
   {
     reactor_init(1, 1);
   }
-#endif
 #endif
 }
 
