@@ -80,7 +80,7 @@ PeleC::react_state(
   amrex::MultiFab fctCount(grids, dmap, 1, 0);
   dummyMask.setVal(1);
 
-  if (chem_integrator == 3) {
+  if (chem_integrator == 2) {
     if (!react_init) {
       amrex::MultiFab& S_old = get_old_data(State_Type);
       STemp.copy(S_old, UFS, 0, NUM_SPECIES);
