@@ -618,15 +618,9 @@ PeleC::initData()
   BL_PROFILE("PeleC::initData()");
 
   // Copy problem parameter structs to device
-#ifdef AMREX_USE_GPU
-  amrex::Gpu::htod_memcpy(
-    PeleC::d_prob_parm_device, PeleC::h_prob_parm_device,
-    sizeof(ProbParmDevice));
-#else
-  std::memcpy(
-    PeleC::d_prob_parm_device, PeleC::h_prob_parm_device,
-    sizeof(ProbParmDevice));
-#endif
+  amrex::Gpu::copy(
+    amrex::Gpu::hostToDevice, PeleC::h_prob_parm_device,
+    PeleC::h_prob_parm_device + 1, PeleC::d_prob_parm_device);
 
   // int ns = NVAR;
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx = geom.CellSizeArray();
@@ -1172,15 +1166,9 @@ PeleC::post_restart()
   BL_PROFILE("PeleC::post_restart()");
 
   // Copy problem parameter structs to device
-#ifdef AMREX_USE_GPU
-  amrex::Gpu::htod_memcpy(
-    PeleC::d_prob_parm_device, PeleC::h_prob_parm_device,
-    sizeof(ProbParmDevice));
-#else
-  std::memcpy(
-    PeleC::d_prob_parm_device, PeleC::h_prob_parm_device,
-    sizeof(ProbParmDevice));
-#endif
+  amrex::Gpu::copy(
+    amrex::Gpu::hostToDevice, PeleC::h_prob_parm_device,
+    PeleC::h_prob_parm_device + 1, PeleC::d_prob_parm_device);
 
   // amrex::Real cur_time = state[State_Type].curTime();
 
