@@ -134,5 +134,16 @@ PeleC::fill_soot_source(
     }
     auto const& soot_arr = soot_fab.array();
     soot_model->addSootSourceTerm(bx, q_arr, mu_arr, soot_arr, time, dt);
+    SootData* sd = soot_model->getSootData_d();
+    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      GpuArray<Real, NUM_SOOT_MOMENTS + 1> moments;
+      for (int mom = 0; mom < NUM_SOOT_MOMENTS + 1; ++mom) {
+        moments[mom] = s_arr(i, j, k, UFSOOT + mom);
+      }
+      sd->momConvClipConv(moments.data());
+      for (int mom = 0; mom < NUM_SOOT_MOMENTS + 1; ++mom) {
+        s_arr(i, j, k, UFSOOT + mom) = moments[mom];
+      }
+    });
   }
 }
