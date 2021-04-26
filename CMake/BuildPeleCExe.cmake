@@ -99,7 +99,7 @@ function(build_pelec_exe pelec_exe_name)
       target_compile_definitions(${pelec_exe_name} PRIVATE USE_SUNDIALS_PP USE_ARKODE_PP)
       target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/reactor_arkode.cpp
                                                ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/reactor_arkode.h
-                                               ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/AMREX_misc.H)
+                                               ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/reactor_utilities.H)
       set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/reactor_arkode.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
       set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/reactor_arkode.h PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
       target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego)

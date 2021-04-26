@@ -161,9 +161,6 @@ PeleC::react_state(
           amrex::Real wt =
             amrex::ParallelDescriptor::second(); // timing for each fab
 
-          //const auto len = amrex::length(bx);
-          //const auto lo = amrex::lbound(bx);
-          //const int ncells = len.x * len.y * len.z;
           amrex::Real current_time = 0.0;
 
           auto const& rhoY = STemp.array(mfi);
@@ -208,14 +205,15 @@ PeleC::react_state(
               }
             });
 
-#ifdef AMREX_USE_GPU
           const int reactor_type = 1;
           react(
             bx, rhoY, frcExt, T, rhoE, frcEExt, fc, mask, dt, current_time,
-            reactor_type, amrex::Gpu::gpuStream());
-#else
-          react(bx, rhoY, frcExt, T, rhoE, frcEExt, fc, mask, dt, current_time);
+            reactor_type
+#ifdef AMREX_USE_GPU
+            ,
+            amrex::Gpu::gpuStream()
 #endif
+          );
 
           // unpack data
           amrex::ParallelFor(
@@ -253,9 +251,7 @@ PeleC::react_state(
                 sold_arr(i, j, k, UMZ) + dt * nonrs_arr(i, j, k, UMZ);
 
               // get new rho
-              amrex::Real rhonew = 0.;
-              //int offset =
-              //  (k - lo.z) * len.x * len.y + (j - lo.y) * len.x + (i - lo.x);
+              amrex::Real rhonew = 0.0;
 
               for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
                 rhonew += rhoY(i, j, k, nsp);
