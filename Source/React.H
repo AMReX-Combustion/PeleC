@@ -8,7 +8,7 @@
 #include "PeleC.H"
 
 #ifdef USE_SUNDIALS_PP
-#include "reactor_arkode.h"
+#include "reactor.H"
 #endif
 
 // Timestep adapter

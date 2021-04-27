@@ -80,19 +80,17 @@ PeleC::react_state(
   amrex::MultiFab fctCount(grids, dmap, 1, 0);
   dummyMask.setVal(1);
 
-  if (chem_integrator == 2) {
-    if (!react_init) {
-      amrex::MultiFab& S_old = get_old_data(State_Type);
-      STemp.copy(S_old, UFS, 0, NUM_SPECIES);
-      STemp.copy(S_old, UTEMP, NUM_SPECIES, 1);
-      STemp.copy(S_old, UEINT, NUM_SPECIES + 1, 1);
-    } else {
-      STemp.copy(S_new, UFS, 0, NUM_SPECIES);
-      STemp.copy(S_new, UTEMP, NUM_SPECIES, 1);
-      STemp.copy(S_new, UEINT, NUM_SPECIES + 1, 1);
-    }
-    extsrc_rY.copy(*non_react_src, UFS, 0, NUM_SPECIES);
+  if (!react_init) {
+    amrex::MultiFab& S_old = get_old_data(State_Type);
+    STemp.copy(S_old, UFS, 0, NUM_SPECIES);
+    STemp.copy(S_old, UTEMP, NUM_SPECIES, 1);
+    STemp.copy(S_old, UEINT, NUM_SPECIES + 1, 1);
+  } else {
+    STemp.copy(S_new, UFS, 0, NUM_SPECIES);
+    STemp.copy(S_new, UTEMP, NUM_SPECIES, 1);
+    STemp.copy(S_new, UEINT, NUM_SPECIES + 1, 1);
   }
+  extsrc_rY.copy(*non_react_src, UFS, 0, NUM_SPECIES);
 #endif
 
 #ifdef PELEC_USE_EB
