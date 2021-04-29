@@ -129,7 +129,7 @@ function(build_pelec_exe pelec_exe_name)
   
   target_sources(${pelec_exe_name}
      PRIVATE
-       ${SRC_DIR}/Redistribution/iamr_create_itracker_3d.cpp
+       ${SRC_DIR}/Redistribution/iamr_create_itracker_${PELEC_DIM}d.cpp
        ${SRC_DIR}/Redistribution/iamr_merge_redistribute.cpp
        ${SRC_DIR}/Redistribution/iamr_redistribution.H
        ${SRC_DIR}/Redistribution/iamr_redistribution.cpp
