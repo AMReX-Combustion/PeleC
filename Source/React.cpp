@@ -431,8 +431,20 @@ PeleC::react_state(
           bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
             I_R(i, j, k, NUM_SPECIES + 1) = 0.0;
             auto eos = pele::physics::PhysicsType::eos();
+
             amrex::Real hi[NUM_SPECIES] = {0.0};
+
+#ifndef PELEC_USE_SRK
             eos.T2Hi(snew_arr(i, j, k, UTEMP), hi);
+#else
+            amrex::Real Yspec[NUM_SPECIES] = {0.0};
+            for(int nsp=0;nsp<NUM_SPECIES;nsp++)
+            {
+                Yspec[nsp]=snew_arr(i, j, k, UFS+nsp)/snew_arr(i, j, k, URHO);
+            }
+            eos.RTY2Hi(snew_arr(i,j,k,URHO), snew_arr(i,j,k,UTEMP), Yspec, hi);
+#endif
+
             for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
               I_R(i, j, k, NUM_SPECIES + 1) -= hi[nsp] * I_R(i, j, k, nsp);
             }
