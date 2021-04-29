@@ -245,8 +245,8 @@ Redistribution::StateRedistribute ( Box const& bx, int ncomp,
         {
             for (int n = 0; n < ncomp; n++)
             {
-                const auto& slopes_eb = amrex_lim_slopes_eb(i,j,k,n,soln_hat,cent_hat,
-                                                            AMREX_D_DECL(fcx,fcy,fcz), flag);
+                const auto& slopes_eb = amrex_lim_slopes_eb(i,j,k,n,soln_hat,cent_hat,vfrac,
+                                                            AMREX_D_DECL(fcx,fcy,fcz),flag,max_order);
 
                 U_out(i,j,k,n) +=soln_hat(i,j,k,n);
                 AMREX_D_TERM(U_out(i,j,k,n) += slopes_eb[0] * (ccent(i,j,k,0)-cent_hat(i,j,k,0));,
@@ -261,10 +261,11 @@ Redistribution::StateRedistribute ( Box const& bx, int ncomp,
     {
         if (vfrac(i,j,k) > 0.0)
         {
+            int max_order = 2;
             for (int n = 0; n < ncomp; n++)
             {
-                const auto& slopes_eb = amrex_lim_slopes_eb(i,j,k,n,soln_hat,cent_hat,
-                                                            AMREX_D_DECL(fcx,fcy,fcz), flag);
+                const auto& slopes_eb = amrex_lim_slopes_eb(i,j,k,n,soln_hat,cent_hat,vfrac,
+                                                            AMREX_D_DECL(fcx,fcy,fcz),flag,max_order);
 
                 // This loops over the neighbors of (i,j,k), and doesn't include (i,j,k) itself
                 for (int i_nbor = 1; i_nbor <= itracker(i,j,k,0); i_nbor++)
