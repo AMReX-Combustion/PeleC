@@ -112,10 +112,10 @@ bcnormal(
     eos.RYP2T(rho, massfrac, p, T);
     eos.RTY2E(rho, T, massfrac, eint);
 
-    const amrex::Real u =
-      prob_parm.c_s * prob_parm.mach * prob_parm.r_inner / rad * std::sin(theta);
-    const amrex::Real v =
-      -prob_parm.c_s * prob_parm.mach * prob_parm.r_inner / rad * std::cos(theta);
+    const amrex::Real u = prob_parm.c_s * prob_parm.mach * prob_parm.r_inner /
+                          rad * std::sin(theta);
+    const amrex::Real v = -prob_parm.c_s * prob_parm.mach * prob_parm.r_inner /
+                          rad * std::cos(theta);
     const amrex::Real w = 0.0;
 
     s_ext[URHO] = rho;

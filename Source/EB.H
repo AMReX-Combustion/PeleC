@@ -143,13 +143,13 @@ void pc_apply_face_stencil(
 void pc_eb_div(
   const amrex::Box&,
   const amrex::Real,
-  const int ,
+  const int,
   const EBBndryGeom*,
   const int,
   const amrex::Array4<const amrex::Real>&,
   const amrex::Array4<const amrex::Real>&,
   const amrex::Array4<const amrex::Real>&,
-  const amrex::Real* ,
+  const amrex::Real*,
   const amrex::Array4<const amrex::Real>&,
   const amrex::Array4<amrex::Real>&);
 
