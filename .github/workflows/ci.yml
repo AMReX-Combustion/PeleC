@@ -2,9 +2,9 @@ name: PeleC-CI
 
 on:
   push:
-    branches: [development]
+    branches: [hari/addheatrelease]
   pull_request:
-    branches: [development]
+    branches: [hari/addheatrelease]
 
 jobs:
   Formatting:
