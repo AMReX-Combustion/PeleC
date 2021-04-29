@@ -316,14 +316,14 @@ PeleC::variableSetUp()
   store_in_checkpoint = true;
   desc_lst.addDescriptor(
     Reactions_Type, amrex::IndexType::TheCellType(),
-    amrex::StateDescriptor::Point, 0, NUM_SPECIES + 1, interp,
+    amrex::StateDescriptor::Point, 0, NUM_SPECIES + 2, interp,
     state_data_extrap, store_in_checkpoint);
 #endif
 
   amrex::Vector<amrex::BCRec> bcs(NVAR);
   amrex::Vector<std::string> name(NVAR);
-  amrex::Vector<amrex::BCRec> react_bcs(NUM_SPECIES + 1);
-  amrex::Vector<std::string> react_name(NUM_SPECIES + 1);
+  amrex::Vector<amrex::BCRec> react_bcs(NUM_SPECIES + 2);
+  amrex::Vector<std::string> react_name(NUM_SPECIES + 2);
 
   amrex::BCRec bc;
   cnt = 0;
@@ -430,8 +430,10 @@ PeleC::variableSetUp()
     react_name[i] = "rho_omega_" + spec_names[i];
   }
   set_react_src_bc(bc, phys_bc);
-  react_bcs[NUM_SPECIES] = bc;
-  react_name[NUM_SPECIES] = "rhoe_dot";
+  react_bcs[NUM_SPECIES]    = bc;
+  react_name[NUM_SPECIES]   = "rhoe_dot";
+  react_bcs[NUM_SPECIES+1]  = bc;
+  react_name[NUM_SPECIES+1] = "heatRelease";
 
   amrex::StateDescriptor::BndryFunc bndryfunc2(pc_reactfill_hyp);
   bndryfunc2.setRunOnGPU(true);
@@ -512,6 +514,7 @@ PeleC::variableSetUp()
   derive_lst.add(
     "logden", amrex::IndexType::TheCellType(), 1, pc_derlogden, the_same_box);
   derive_lst.addComponent("logden", desc_lst, State_Type, Density, NVAR);
+  
 
   // Y from rhoY
   amrex::Vector<std::string> var_names_massfrac(NUM_SPECIES);
@@ -560,7 +563,7 @@ PeleC::variableSetUp()
   derive_lst.add(
     "magmom", amrex::IndexType::TheCellType(), 1, pc_dermagmom, the_same_box);
   derive_lst.addComponent("magmom", desc_lst, State_Type, Density, NVAR);
-
+  
 #ifdef PELEC_USE_EB
   // A dummy
   derive_lst.add(
