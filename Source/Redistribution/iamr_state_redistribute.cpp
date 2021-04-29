@@ -243,6 +243,7 @@ Redistribution::StateRedistribute ( Box const& bx, int ncomp,
     {
         if (vfrac(i,j,k) > 0.0)
         {
+            int max_order = 2;
             for (int n = 0; n < ncomp; n++)
             {
                 const auto& slopes_eb = amrex_lim_slopes_eb(i,j,k,n,soln_hat,cent_hat,vfrac,
