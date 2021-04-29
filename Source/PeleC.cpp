@@ -2192,6 +2192,11 @@ PeleC::InitialRedistribution()
     return;
   }
 
+  if (redistribution_type == "MergeRedist") {
+    amrex::Abort(
+      "MergeRedist is unsupported. Check with IAMR if that has been fixed");
+  }
+
   // Initial data are set at new time step
   amrex::MultiFab& S_new = get_new_data(State_Type);
   amrex::MultiFab tmp(
