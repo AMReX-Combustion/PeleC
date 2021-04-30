@@ -98,8 +98,6 @@ PeleC::getMOLSrcTerm(
     fr_as_fine = &getFluxReg(level);
   }
 
-  const bool as_crse = (fr_as_crse != nullptr);
-  const bool as_fine = (fr_as_fine != nullptr);
 #endif
 
 #ifdef _OPENMP
@@ -521,11 +519,6 @@ PeleC::getMOLSrcTerm(
         fab_rrflag_as_crse.resize(amrex::Box::TheUnitBox());
         fab_rrflag_as_crse_eli = fab_rrflag_as_crse.elixir();
         {
-          amrex::FArrayBox* p_drho_as_crse =
-            (fr_as_crse) ? fr_as_crse->getCrseData(mfi) : &fab_drho_as_crse;
-          const amrex::IArrayBox* p_rrflag_as_crse =
-            (fr_as_crse) ? fr_as_crse->getCrseFlag(mfi) : &fab_rrflag_as_crse;
-
           if (fr_as_fine) {
             dm_as_fine.resize(amrex::grow(vbox, 1), NVAR);
             dm_as_fine_eli = dm_as_fine.elixir();

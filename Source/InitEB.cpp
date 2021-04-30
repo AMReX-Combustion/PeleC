@@ -808,9 +808,6 @@ initialize_EB2(
     amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
   } else if (geom_type == "quarter-circle") {
 
-    int max_coarsening_level =
-      max_level; // Because there are no mg solvers here
-
     amrex::Real r_inner = 1.0;
     amrex::Real r_outer = 2.0;
     ppeb2.query("r_inner", r_inner);
