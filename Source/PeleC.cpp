@@ -2242,7 +2242,6 @@ PeleC::InitialRedistribution()
         AMREX_D_DECL(apx, apy, apz), vfrac.const_array(mfi),
         AMREX_D_DECL(fcx, fcy, fcz), ccc, geom, redistribution_type);
     }
-    amrex::Gpu::streamSynchronize();
   }
   set_body_state(S_new);
 }
