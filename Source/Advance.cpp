@@ -111,12 +111,12 @@ PeleC::do_mol_advance(
       level, finest_level, amr_ncycle, amr_iteration, finer_ref, ghost_width,
       where_width, spray_n_grow, tmp_src_width);
     nGrow_Sborder = std::max(nGrow_Sborder, spray_n_grow);
-  }
-  if (Sborder.nGrow() < nGrow_Sborder) {
-    std::string abortStr = "Sborder has " + std::to_string(Sborder.nGrow()) +
-                           " ghost cells, but needs " +
-                           std::to_string(nGrow_Sborder);
-    amrex::Abort(abortStr);
+    if (Sborder.nGrow() < nGrow_Sborder) {
+      std::string abortStr = "Sborder has " + std::to_string(Sborder.nGrow()) +
+                             " ghost cells, but needs " +
+                             std::to_string(nGrow_Sborder);
+      amrex::Abort(abortStr);
+    }
   }
 #endif
   FillPatch(*this, Sborder, nGrow_Sborder, time, State_Type, 0, NVAR);
