@@ -292,14 +292,8 @@ Redistribution::StateRedistribute ( Box const& bx, int ncomp,
     amrex::ParallelFor(bx,ncomp,
     [=] AMREX_GPU_DEVICE (int i, int j, int k, int n) noexcept
     {
-        if (!flag(i,j,k).isCovered())
-        {
-            U_out(i,j,k,n) /= nrs(i,j,k);
-        }
-        else
-        {
-            U_out(i,j,k,n) = 1.e40;
-        }
+        const bool mask = flag(i,j,k).isCovered();
+        U_out(i,j,k,n) = (!mask) * (U_out(i,j,k,n) / nrs(i,j,k)) + (mask) * 1.e40;
     });
 
 #if 0
