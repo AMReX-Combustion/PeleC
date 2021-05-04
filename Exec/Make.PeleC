@@ -1,6 +1,7 @@
 PELEC_HOME        ?= ../
 PELE_PHYSICS_HOME ?= $(PELEC_HOME)/Submodules/PelePhysics
 AMREX_HOME        ?= $(PELEC_HOME)/Submodules/AMReX
+PELEMP_HOME       ?= $(PELEC_HOME)/Submodule/PeleMP
 
 TOP := $(PELEC_HOME)
 
@@ -122,8 +123,8 @@ ifeq ($(USE_PARTICLES), TRUE)
   ifeq ($(USE_SPRAY_SOA), TRUE)
     DEFINES+=-DUSE_SPRAY_SOA
   endif
-  Bpack   += $(PELEC_MP_HOME)/Source/PP_Spray/Make.package
-  Blocs   += $(PELEC_MP_HOME)/Source/PP_Spray
+  Bpack   += $(PELEMP_HOME)/Source/PP_Spray/Make.package
+  Blocs   += $(PELEMP_HOME)/Source/PP_Spray
 endif
 
 ifeq ($(USE_SOOT), TRUE)
@@ -133,8 +134,8 @@ ifeq ($(USE_SOOT), TRUE)
     endif
   DEFINES+=-DSOOT_MODEL
   DEFINES+=-DNUM_SOOT_MOMENTS=$(NUM_SOOT_MOMENTS)
-  Bpack   += $(PELEC_MP_HOME)/Source/Soot_Models/Make.package
-  Blocs   += $(PELEC_MP_HOME)/Source/Soot_Models
+  Bpack   += $(PELEMP_HOME)/Source/Soot_Models/Make.package
+  Blocs   += $(PELEMP_HOME)/Source/Soot_Models
 endif
 
 Bpack += $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir)/Make.package)
