@@ -316,14 +316,14 @@ PeleC::variableSetUp()
   store_in_checkpoint = true;
   desc_lst.addDescriptor(
     Reactions_Type, amrex::IndexType::TheCellType(),
-    amrex::StateDescriptor::Point, 0, NUM_SPECIES + 1, interp,
+    amrex::StateDescriptor::Point, 0, NUM_SPECIES + 2, interp,
     state_data_extrap, store_in_checkpoint);
 #endif
 
   amrex::Vector<amrex::BCRec> bcs(NVAR);
   amrex::Vector<std::string> name(NVAR);
-  amrex::Vector<amrex::BCRec> react_bcs(NUM_SPECIES + 1);
-  amrex::Vector<std::string> react_name(NUM_SPECIES + 1);
+  amrex::Vector<amrex::BCRec> react_bcs(NUM_SPECIES + 2);
+  amrex::Vector<std::string> react_name(NUM_SPECIES + 2);
 
   amrex::BCRec bc;
   cnt = 0;
@@ -432,6 +432,8 @@ PeleC::variableSetUp()
   set_react_src_bc(bc, phys_bc);
   react_bcs[NUM_SPECIES] = bc;
   react_name[NUM_SPECIES] = "rhoe_dot";
+  react_bcs[NUM_SPECIES + 1] = bc;
+  react_name[NUM_SPECIES + 1] = "heatRelease";
 
   amrex::StateDescriptor::BndryFunc bndryfunc2(pc_reactfill_hyp);
   bndryfunc2.setRunOnGPU(true);
