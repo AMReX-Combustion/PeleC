@@ -9,6 +9,7 @@
 
 #ifdef PELEC_USE_EB
 #include <AMReX_EBMultiFabUtil.H>
+#include "iamr_redistribution.H"
 #endif
 
 #ifdef AMREX_PARTICLES
@@ -376,7 +377,7 @@ PeleC::PeleC(
   amrex::MultiFab& S_new = get_new_data(State_Type);
 
   for (int n = 0; n < src_list.size(); ++n) {
-    int oldGrow = NUM_GROW;
+    int oldGrow = numGrow();
     int newGrow = S_new.nGrow();
 #ifdef AMREX_PARTICLES
     if (src_list[n] == spray_src) {
@@ -391,20 +392,20 @@ PeleC::PeleC(
   }
 
   if (do_hydro) {
-    Sborder.define(grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
+    Sborder.define(grids, dmap, NVAR, numGrow(), amrex::MFInfo(), Factory());
   } else if (do_diffuse) {
-    Sborder.define(grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
+    Sborder.define(grids, dmap, NVAR, numGrow(), amrex::MFInfo(), Factory());
   }
 #ifdef AMREX_PARTICLES
   else if (do_spray_particles) {
-    Sborder.define(grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
+    Sborder.define(grids, dmap, NVAR, numGrow(), amrex::MFInfo(), Factory());
   }
 #endif
 
   if (!do_mol) {
     if (do_hydro) {
       hydro_source.define(
-        grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
+        grids, dmap, NVAR, numGrow(), amrex::MFInfo(), Factory());
 
       // This array holds the sum of all source terms that affect the
       // hydrodynamics. If we are doing the source term predictor, we'll also
@@ -412,10 +413,10 @@ PeleC::PeleC(
       // sources, so that we can compute the time derivative of the source
       // terms.
       sources_for_hydro.define(
-        grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
+        grids, dmap, NVAR, numGrow(), amrex::MFInfo(), Factory());
     }
   } else {
-    Sborder.define(grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
+    Sborder.define(grids, dmap, NVAR, numGrow(), amrex::MFInfo(), Factory());
   }
 
   // Is this relevant for PeleC?
@@ -500,23 +501,23 @@ PeleC::buildMetrics()
 
   volume.clear();
   volume.define(
-    grids, dmap, 1, NUM_GROW, amrex::MFInfo(), amrex::FArrayBoxFactory());
+    grids, dmap, 1, numGrow(), amrex::MFInfo(), amrex::FArrayBoxFactory());
   geom.GetVolume(volume);
 
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
     area[dir].clear();
     area[dir].define(
-      getEdgeBoxArray(dir), dmap, 1, NUM_GROW, amrex::MFInfo(),
+      getEdgeBoxArray(dir), dmap, 1, numGrow(), amrex::MFInfo(),
       amrex::FArrayBoxFactory());
     geom.GetFaceArea(area[dir], dir);
   }
 
 #ifdef PELEC_USE_EB
   vfrac.clear();
-  vfrac.define(grids, dmap, 1, NUM_GROW, amrex::MFInfo(), Factory());
+  vfrac.define(grids, dmap, 1, numGrow(), amrex::MFInfo(), Factory());
   const auto& ebfactory =
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(Factory());
-  amrex::MultiFab::Copy(vfrac, ebfactory.getVolFrac(), 0, 0, 1, NUM_GROW);
+  amrex::MultiFab::Copy(vfrac, ebfactory.getVolFrac(), 0, 0, 1, numGrow());
   areafrac = ebfactory.getAreaFrac();
 #endif
 
@@ -672,6 +673,7 @@ PeleC::initData()
 
 #ifdef PELEC_USE_EB
   set_body_state(S_new);
+  InitialRedistribution();
 #endif
 
 #ifdef AMREX_PARTICLES
@@ -1925,14 +1927,14 @@ PeleC::init_filters()
 
   volume.clear();
   volume.define(
-    grids, dmap, 1, NUM_GROW + nGrowF, amrex::MFInfo(),
+    grids, dmap, 1, numGrow() + nGrowF, amrex::MFInfo(),
     amrex::FArrayBoxFactory());
   geom.GetVolume(volume);
 
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
     area[dir].clear();
     area[dir].define(
-      getEdgeBoxArray(dir), dmap, 1, NUM_GROW + nGrowF, amrex::MFInfo(),
+      getEdgeBoxArray(dir), dmap, 1, numGrow() + nGrowF, amrex::MFInfo(),
       amrex::FArrayBoxFactory());
     geom.GetFaceArea(area[dir], dir);
   }
@@ -2176,3 +2178,71 @@ PeleC::clean_state(const amrex::MultiFab& S, amrex::MultiFab& S_old)
 
   return frac_change_t;
 }
+
+#ifdef PELEC_USE_EB
+void
+PeleC::InitialRedistribution()
+{
+
+  // Next we must redistribute the initial solution if we are going to use
+  // MergeRedist or StateRedist redistribution schemes
+  if (
+    (redistribution_type != "StateRedist") &&
+    (redistribution_type != "MergeRedist")) {
+    return;
+  }
+
+  if (redistribution_type == "MergeRedist") {
+    amrex::Abort(
+      "MergeRedist is unsupported. Check with IAMR if that has been fixed");
+  }
+
+  // Initial data are set at new time step
+  amrex::MultiFab& S_new = get_new_data(State_Type);
+  amrex::MultiFab tmp(
+    grids, dmap, S_new.nComp(), numGrow(), amrex::MFInfo(), Factory());
+
+  amrex::MultiFab::Copy(tmp, S_new, 0, 0, S_new.nComp(), S_new.nGrow());
+  const amrex::Real time = state[State_Type].curTime();
+  FillPatch(*this, tmp, numGrow(), time, State_Type, 0, S_new.nComp());
+  EB_set_covered(tmp, 0.0);
+
+  for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
+       ++mfi) {
+    const amrex::Box& bx = mfi.validbox();
+
+    auto const& fact =
+      dynamic_cast<amrex::EBFArrayBoxFactory const&>(S_new.Factory());
+
+    auto const& flags = fact.getMultiEBCellFlagFab()[mfi];
+    amrex::Array4<const amrex::EBCellFlag> const& flag_arr =
+      flags.const_array();
+
+    if (
+      (flags.getType(amrex::grow(bx, 1)) != amrex::FabType::covered) &&
+      (flags.getType(amrex::grow(bx, 1)) != amrex::FabType::regular)) {
+      if (verbose) {
+        amrex::Print() << "Doing initial redistribution... " << std::endl;
+      }
+      amrex::Array4<const amrex::Real> AMREX_D_DECL(fcx, fcy, fcz), ccc,
+        AMREX_D_DECL(apx, apy, apz);
+
+      AMREX_D_TERM(fcx = fact.getFaceCent()[0]->const_array(mfi);
+                   , fcy = fact.getFaceCent()[1]->const_array(mfi);
+                   , fcz = fact.getFaceCent()[2]->const_array(mfi););
+
+      ccc = fact.getCentroid().const_array(mfi);
+
+      AMREX_D_TERM(apx = fact.getAreaFrac()[0]->const_array(mfi);
+                   , apy = fact.getAreaFrac()[1]->const_array(mfi);
+                   , apz = fact.getAreaFrac()[2]->const_array(mfi););
+
+      Redistribution::ApplyToInitialData(
+        bx, NVAR, S_new.array(mfi), tmp.array(mfi), flag_arr,
+        AMREX_D_DECL(apx, apy, apz), vfrac.const_array(mfi),
+        AMREX_D_DECL(fcx, fcy, fcz), ccc, geom, redistribution_type);
+    }
+  }
+  set_body_state(S_new);
+}
+#endif

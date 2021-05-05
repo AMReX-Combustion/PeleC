@@ -74,9 +74,6 @@
 
 #define NPASSIVE NUM_SPECIES + NUM_ADV + NUM_AUX + 3 - AMREX_SPACEDIM
 
-// This value was hardcoded to 4 in get_method_params in the old Fortran code
-#define NUM_GROW 4
-
 struct PassMap
 {
   amrex::GpuArray<int, NPASSIVE> upassMap = {{0}};

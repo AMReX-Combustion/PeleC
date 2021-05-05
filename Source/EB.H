@@ -140,29 +140,17 @@ void pc_apply_face_stencil(
   const int,
   const amrex::Array4<amrex::Real>&);
 
-void pc_fix_div_and_redistribute(
+void pc_eb_div(
   const amrex::Box&,
   const amrex::Real,
-  const amrex::Real,
   const int,
-  const amrex::Real,
-  const bool,
   const EBBndryGeom*,
   const int,
-  const amrex::Array4<amrex::EBCellFlag const>&,
   const amrex::Array4<const amrex::Real>&,
   const amrex::Array4<const amrex::Real>&,
   const amrex::Array4<const amrex::Real>&,
   const amrex::Real*,
-  const int,
   const amrex::Array4<const amrex::Real>&,
-  const amrex::Array4<const amrex::Real>&,
-  const bool,
-  const bool,
-  const amrex::Array4<const int>&,
-  const amrex::Array4<const int>&,
-  const amrex::Array4<amrex::Real>&,
-  const amrex::Array4<amrex::Real>&,
   const amrex::Array4<amrex::Real>&);
 
 void pc_apply_eb_boundry_visc_flux_stencil(

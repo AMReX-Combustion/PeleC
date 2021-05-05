@@ -7,7 +7,7 @@ pc_compute_hyp_mol_flux(
   const amrex::Array4<const amrex::Real>& qaux,
   const amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
-    a,
+    area,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>
 #ifdef PELEC_USE_EB
     del
@@ -160,11 +160,11 @@ pc_compute_hyp_mol_flux(
         amrex::Real flux_tmp[NVAR] = {0.0};
         amrex::Real ustar = 0.0;
 
-        amrex::Real tmp0;
-        amrex::Real tmp1;
-        amrex::Real tmp2;
-        amrex::Real tmp3;
-        amrex::Real tmp4;
+        amrex::Real tmp0 = 0.0;
+        amrex::Real tmp1 = 0.0;
+        amrex::Real tmp2 = 0.0;
+        amrex::Real tmp3 = 0.0;
+        amrex::Real tmp4 = 0.0;
         riemann(
           qtempl[R_RHO], qtempl[R_UN], qtempl[R_UT1], qtempl[R_UT2],
           qtempl[R_P], rhoe_l, spl, gamc_l, qtempr[R_RHO], qtempr[R_UN],
@@ -191,7 +191,7 @@ pc_compute_hyp_mol_flux(
         }
 
         for (int ivar = 0; ivar < NVAR; ivar++) {
-          flx[dir](i, j, k, ivar) += flux_tmp[ivar] * a[dir](i, j, k);
+          flx[dir](i, j, k, ivar) += flux_tmp[ivar] * area[dir](i, j, k);
         }
       });
   }
@@ -328,11 +328,11 @@ pc_compute_hyp_mol_flux(
     }
 
     if (is_inside(i, j, k, lo, hi, nextra - 1)) {
-      amrex::Real tmp0;
-      amrex::Real tmp1;
-      amrex::Real tmp2;
-      amrex::Real tmp3;
-      amrex::Real tmp4;
+      amrex::Real tmp0 = 0.0;
+      amrex::Real tmp1 = 0.0;
+      amrex::Real tmp2 = 0.0;
+      amrex::Real tmp3 = 0.0;
+      amrex::Real tmp4 = 0.0;
       amrex::Real ustar = 0.0;
       riemann(
         qtempl[R_RHO], qtempl[R_UN], qtempl[R_UT1], qtempl[R_UT2], qtempl[R_P],
