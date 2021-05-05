@@ -119,7 +119,7 @@ advanced a single time step, which we refer to as re-redistribution. Specificall
     because the correct distributed mass has to come from the left-coarse-real-cell.
 
 The re-redistribution is implemented as a book-keeping step where the mass distributed are stored during MOL divergence calculation and given to the coarse and fine flux registers to reflux at 
-the end of each time step. The re-redistribution is performed everytime the reflux function is called in post_timestep. More details regarding re-redistribution are 
+the end of each time step. The re-redistribution is performed every time the reflux function is called in post_timestep. More details regarding re-redistribution are 
 presented in `Pember et al. <https://www.sciencedirect.com/science/article/pii/S0021999185711655>`_. 
 
 
