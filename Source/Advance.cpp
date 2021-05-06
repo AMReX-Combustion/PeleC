@@ -127,7 +127,7 @@ PeleC::do_mol_advance(
   // We must make a temporary spray source term to ensure number of ghost
   // cells are correct
   amrex::MultiFab tmp_spray_source(
-    grids, dmap, NVAR, tmp_src_width, amrex::MFInfo(), Factory());
+    grids, dmap, num_spray_src, tmp_src_width, amrex::MFInfo(), Factory());
   tmp_spray_source.setVal(0.);
   if (do_spray_particles) {
     old_sources[spray_src]->setVal(0.);
@@ -363,7 +363,7 @@ PeleC::do_sdc_iteration(
   // We must make a temporary spray source term to ensure number of ghost
   // cells are correct
   amrex::MultiFab tmp_spray_source(
-    grids, dmap, NVAR, tmp_src_width, amrex::MFInfo(), Factory());
+    grids, dmap, num_spray_src, tmp_src_width, amrex::MFInfo(), Factory());
   tmp_spray_source.setVal(0.);
 #endif
   if (sub_iteration == 0) {

@@ -200,6 +200,9 @@ public:
   // Default cfl of particles in Particle class
   static amrex::Real particle_cfl;
 
+  // Number of source terms in temporary spray data
+  static int num_spray_src;
+
   // Should we write particles into plotfiles?
   static int write_particle_plotfiles;
 

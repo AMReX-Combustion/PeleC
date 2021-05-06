@@ -22,6 +22,11 @@ amrex::Real spray_ref_temp = 300.;
 amrex::Real parcel_size = 1.;
 amrex::Real spray_sigma = -1.; // Surface tension
 amrex::Real wall_temp = -1.;
+// Indices for spray source MultiFab
+int sprayRhoSrcIndx = 0;
+int sprayMomSrcIndx = 1;
+int sprayEngSrcIndx = 1 + AMREX_SPACEDIM;
+int spraySpecSrcIndx = 2 + AMREX_SPACEDIM;
 SprayComps scomps;
 bool splash_model = true;
 
@@ -46,6 +51,8 @@ Real PeleC::particle_cfl = 0.5;
 
 int PeleC::write_particle_plotfiles = 1;
 int PeleC::write_spray_ascii_files = 1;
+// momentum + density + fuel species + energy
+int PeleC::num_spray_src = AMREX_SPACEDIM + 2 + SPRAY_FUEL_NUM;
 int PeleC::particle_mass_tran = 0;
 int PeleC::particle_heat_tran = 0;
 int PeleC::particle_mom_tran = 0;
@@ -236,6 +243,10 @@ PeleC::defineParticles()
   scomps.engIndx = PeleC::Eden;
   scomps.utempIndx = PeleC::Temp;
   scomps.specIndx = PeleC::FirstSpec;
+  scomps.rhoSrcIndx = sprayRhoSrcIndx;
+  scomps.momSrcIndx = sprayMomSrcIndx;
+  scomps.specSrcIndx = spraySpecSrcIndx;
+  scomps.engSrcIndx = sprayEngSrcIndx;
 }
 
 void
