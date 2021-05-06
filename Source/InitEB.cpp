@@ -54,7 +54,6 @@ PeleC::initialize_eb2_structs()
     std::is_standard_layout<EBBndryGeom>::value,
     "EBBndryGeom is not standard layout");
 
-  const amrex::MultiFab* volfrac;
   const amrex::MultiCutFab* bndrycent;
   std::array<const amrex::MultiCutFab*, AMREX_SPACEDIM> eb2areafrac;
   std::array<const amrex::MultiCutFab*, AMREX_SPACEDIM> facecent;
@@ -63,12 +62,12 @@ PeleC::initialize_eb2_structs()
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(Factory());
 
   // These are the data sources
-  volfrac = &(ebfactory.getVolFrac());
+  vfrac.clear();
+  vfrac.define(grids, dmap, 1, numGrow(), amrex::MFInfo(), Factory());
+  amrex::MultiFab::Copy(vfrac, ebfactory.getVolFrac(), 0, 0, 1, numGrow());
   bndrycent = &(ebfactory.getBndryCent());
   eb2areafrac = ebfactory.getAreaFrac();
   facecent = ebfactory.getFaceCent();
-
-  vfrac.copy(*volfrac);
 
   // First pass over fabs to fill sparse per cut-cell ebg structures
   sv_eb_bndry_geom.resize(vfrac.local_size());
