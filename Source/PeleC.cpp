@@ -2198,6 +2198,10 @@ PeleC::InitialRedistribution()
       "MergeRedist is unsupported. Check with IAMR if that has been fixed");
   }
 
+  if (verbose) {
+    amrex::Print() << "Doing initial redistribution... " << std::endl;
+  }
+
   // Initial data are set at new time step
   amrex::MultiFab& S_new = get_new_data(State_Type);
   amrex::MultiFab tmp(
@@ -2222,9 +2226,6 @@ PeleC::InitialRedistribution()
     if (
       (flags.getType(amrex::grow(bx, 1)) != amrex::FabType::covered) &&
       (flags.getType(amrex::grow(bx, 1)) != amrex::FabType::regular)) {
-      if (verbose) {
-        amrex::Print() << "Doing initial redistribution... " << std::endl;
-      }
       amrex::Array4<const amrex::Real> AMREX_D_DECL(fcx, fcy, fcz), ccc,
         AMREX_D_DECL(apx, apy, apz);
 
