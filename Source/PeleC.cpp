@@ -5,7 +5,6 @@
 
 #include <AMReX_Vector.H>
 #include <AMReX_TagBox.H>
-#include <AMReX_ParmParse.H>
 
 #ifdef PELEC_USE_EB
 #include <AMReX_EBMultiFabUtil.H>
@@ -88,9 +87,9 @@ int PeleC::les_filter_fgr = 1;
 int PeleC::les_test_filter_type = box_3pt_optimized_approx;
 int PeleC::les_test_filter_fgr = 2;
 
+bool PeleC::eb_in_domain = false;
 #ifdef PELEC_USE_EB
 bool PeleC::eb_initialized = false;
-bool PeleC::eb_in_domain = false;
 bool PeleC::body_state_set = false;
 amrex::GpuArray<amrex::Real, NVAR> PeleC::body_state;
 #endif
@@ -368,6 +367,8 @@ PeleC::PeleC(
     mms_src_evaluated(false)
 #endif
 {
+  eb_in_domain = ebInDomain();
+
   buildMetrics();
 
 #ifdef PELEC_USE_EB
@@ -2187,8 +2188,8 @@ PeleC::InitialRedistribution()
   // Next we must redistribute the initial solution if we are going to use
   // MergeRedist or StateRedist redistribution schemes
   if (
-    (redistribution_type != "StateRedist") &&
-    (redistribution_type != "MergeRedist")) {
+    (eb_in_domain) && ((redistribution_type != "StateRedist") &&
+                       (redistribution_type != "MergeRedist"))) {
     return;
   }
 
