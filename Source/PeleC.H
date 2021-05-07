@@ -754,7 +754,7 @@ PeleC::numGrow()
   int ng = 4;
   if (
     (eb_in_domain) && ((redistribution_type == "StateRedist") ||
-                       (redistribution_type == "MergeRedst"))) {
+                       (redistribution_type == "MergeRedist"))) {
     ng += 1;
   }
   return ng;
