@@ -504,7 +504,7 @@ public:
   amrex::MultiFab& build_fine_mask();
 
   static bool eb_in_domain;
-  AMREX_FORCE_INLINE bool ebInDomain();
+  bool ebInDomain();
 
 #ifdef PELEC_USE_EB
 

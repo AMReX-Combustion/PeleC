@@ -107,7 +107,7 @@ amrex::Real PeleC::previousCPUTimeUsed = 0.0;
 amrex::Real PeleC::startCPUTime = 0.0;
 int PeleC::num_state_type = 0;
 
-AMREX_FORCE_INLINE bool
+bool
 PeleC::ebInDomain()
 {
   amrex::ParmParse pp("eb2");
