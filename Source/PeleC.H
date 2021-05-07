@@ -4,6 +4,7 @@
 #include <AMReX_BC_TYPES.H>
 #include <AMReX_AmrLevel.H>
 #include <AMReX_iMultiFab.H>
+#include <AMReX_ParmParse.H>
 
 #ifdef PELEC_USE_EB
 #include <AMReX_EBFArrayBox.H>
@@ -504,7 +505,13 @@ public:
   amrex::MultiFab& build_fine_mask();
 
   static bool eb_in_domain;
-  bool ebInDomain();
+  AMREX_FORCE_INLINE static bool ebInDomain()
+  {
+    amrex::ParmParse pp("eb2");
+    std::string geom_type("all_regular");
+    pp.query("geom_type", geom_type);
+    return (geom_type != "all_regular");
+  }
 
 #ifdef PELEC_USE_EB
 

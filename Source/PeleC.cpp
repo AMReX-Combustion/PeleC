@@ -5,7 +5,6 @@
 
 #include <AMReX_Vector.H>
 #include <AMReX_TagBox.H>
-#include <AMReX_ParmParse.H>
 
 #ifdef PELEC_USE_EB
 #include <AMReX_EBMultiFabUtil.H>
@@ -106,15 +105,6 @@ amrex::Vector<int> PeleC::src_list;
 amrex::Real PeleC::previousCPUTimeUsed = 0.0;
 amrex::Real PeleC::startCPUTime = 0.0;
 int PeleC::num_state_type = 0;
-
-bool
-PeleC::ebInDomain()
-{
-  amrex::ParmParse pp("eb2");
-  std::string geom_type("all_regular");
-  pp.query("geom_type", geom_type);
-  return (geom_type != "all_regular");
-}
 
 #ifdef PELEC_USE_EB
 static bool eb_initialized = false;
