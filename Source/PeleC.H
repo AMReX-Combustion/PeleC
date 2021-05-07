@@ -504,6 +504,7 @@ public:
   amrex::MultiFab& build_fine_mask();
 
   static bool eb_in_domain;
+  static bool ebInDomain();
 #ifdef PELEC_USE_EB
 
   amrex::EBFluxRegister flux_reg;

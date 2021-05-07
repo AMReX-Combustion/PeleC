@@ -107,6 +107,18 @@ amrex::Real PeleC::previousCPUTimeUsed = 0.0;
 amrex::Real PeleC::startCPUTime = 0.0;
 int PeleC::num_state_type = 0;
 
+inline bool
+PeleC::ebInDomain()
+{
+  amrex::ParmParse pp("eb2");
+  std::string geom_type("all_regular");
+  pp.query("geom_type", geom_type);
+  if (geom_type != "all_regular") {
+    return true;
+  }
+  return false;
+}
+
 #ifdef PELEC_USE_EB
 static bool eb_initialized = false;
 
@@ -368,6 +380,8 @@ PeleC::PeleC(
     mms_src_evaluated(false)
 #endif
 {
+  eb_in_domain = ebInDomain();
+
   buildMetrics();
 
 #ifdef PELEC_USE_EB
