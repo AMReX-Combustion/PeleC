@@ -113,10 +113,7 @@ PeleC::ebInDomain()
   amrex::ParmParse pp("eb2");
   std::string geom_type("all_regular");
   pp.query("geom_type", geom_type);
-  if (geom_type != "all_regular") {
-    return true;
-  }
-  return false;
+  return (geom_type != "all_regular");
 }
 
 #ifdef PELEC_USE_EB
