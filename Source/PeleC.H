@@ -504,16 +504,7 @@ public:
   amrex::MultiFab& build_fine_mask();
 
   static bool eb_in_domain;
-  AMREX_FORCE_INLINE bool ebInDomain()
-  {
-    amrex::ParmParse pp("eb2");
-    std::string geom_type("all_regular");
-    pp.query("geom_type", geom_type);
-    if (geom_type != "all_regular") {
-      return true;
-    }
-    return false;
-  }
+  AMREX_FORCE_INLINE bool ebInDomain();
 
 #ifdef PELEC_USE_EB
 
