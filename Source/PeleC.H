@@ -503,8 +503,8 @@ public:
   amrex::MultiFab fine_mask;
   amrex::MultiFab& build_fine_mask();
 
-#ifdef PELEC_USE_EB
   static bool eb_in_domain;
+#ifdef PELEC_USE_EB
 
   amrex::EBFluxRegister flux_reg;
 
@@ -753,8 +753,8 @@ PeleC::numGrow()
 {
   int ng = 4;
   if (
-    (redistribution_type == "StateRedist") ||
-    (redistribution_type == "MergeRedist")) {
+    (eb_in_domain) && ((redistribution_type == "StateRedist") ||
+                       (redistribution_type == "MergeRedst"))) {
     ng += 1;
   }
   return ng;
