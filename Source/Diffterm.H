@@ -187,7 +187,7 @@ pc_diffusion_flux(
   const amrex::Array4<const amrex::Real>& q,
   const amrex::Real coef[],
   const amrex::Array4<const amrex::Real>& td,
-  const amrex::Array4<const amrex::Real>& a,
+  const amrex::Array4<const amrex::Real>& area,
   const amrex::Array4<amrex::Real>& flx,
   const amrex::Real delta,
   const int dir)
@@ -264,12 +264,12 @@ pc_diffusion_flux(
   FluxTypes::SpeciesEnergyFluxType()(i, j, k, im, jm, km, dxinv, coef, q, flx);
 
   // Scale by area
-  AMREX_D_TERM(flx(i, j, k, UMX) *= a(i, j, k);
-               , flx(i, j, k, UMY) *= a(i, j, k);
-               , flx(i, j, k, UMZ) *= a(i, j, k););
-  flx(i, j, k, UEDEN) *= a(i, j, k);
+  AMREX_D_TERM(flx(i, j, k, UMX) *= area(i, j, k);
+               , flx(i, j, k, UMY) *= area(i, j, k);
+               , flx(i, j, k, UMZ) *= area(i, j, k););
+  flx(i, j, k, UEDEN) *= area(i, j, k);
   for (int ns = 0; ns < NUM_SPECIES; ++ns)
-    flx(i, j, k, UFS + ns) *= a(i, j, k);
+    flx(i, j, k, UFS + ns) *= area(i, j, k);
 }
 
 // This function computes the flux divergence.
@@ -301,7 +301,7 @@ void pc_compute_diffusion_flux(
   const amrex::Array4<const amrex::Real>& coef,
   const amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
-    a,
+    area,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> del,
   const int do_harmonic
 #ifdef PELEC_USE_EB

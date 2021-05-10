@@ -1,0 +1,6 @@
+CEXE_sources += iamr_create_itracker_$(DIM)d.cpp
+CEXE_sources += iamr_merge_redistribute.cpp
+CEXE_sources += iamr_state_redistribute.cpp
+CEXE_sources += iamr_redistribution.cpp
+
+CEXE_headers += iamr_redistribution.H

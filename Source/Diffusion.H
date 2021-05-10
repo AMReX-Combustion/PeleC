@@ -14,6 +14,7 @@
 #include "MOL.H"
 #ifdef PELEC_USE_EB
 #include "EB.H"
+#include "iamr_redistribution.H"
 #endif
 
 // This header file contains functions and declarations for the diffusion

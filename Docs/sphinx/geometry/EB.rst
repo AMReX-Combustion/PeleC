@@ -70,9 +70,9 @@ The geometry components in AMReX are used in PeleC to implement a time-explicit 
 
 where :math:`F` is the intensive flux of :math:`S` through the faces that bound the cell.
 
-Hybrid Divergence and Redistribution
--------------------------------------
-.. _HybDiv:
+Redistribution
+--------------
+.. _Redist:
 
 A straightforward implemention of the finite-volume advance of intensive conserved fields is numerically unstable (this is the well-known "small cell issue") due to presence of 
 the fluid cell volume in the denominator of the conservative divergence (:math:`(DC)_l`):
@@ -80,71 +80,22 @@ the fluid cell volume in the denominator of the conservative divergence (:math:`
 .. math::
   (DC)_l = \frac{1}{V_l} \sum_{k_l} \left( F_k \cdot n_k A_k \right),
 
-where :math:`k_l` is the number of regular and cut faces surrounding cell :math:`l` and :math:`F_k` is the intensive flux at the centroid of face :math:`k`.  An alternative update takes the so-called "non-conservative" form, constructed using a weighted average of the conservative updates of neighboring cells:
+where :math:`k_l` is the number of regular and cut faces surrounding cell :math:`l` and :math:`F_k` is the intensive flux at the centroid of face :math:`k`.
 
-.. math::
-  (DNC)_l = \frac{1}{\sum_{n_l}N_n V_l} \sum_{n_l}N_n V_n (DC)_n,
+There are a number of ways to deal with this "small cell issue" and the reader is referred to the relevant discussion in `Berger, Marsha, and Andrew Giuliani. "A state redistribution algorithm for finite volume schemes on cut cell meshes." Journal of Computational Physics 428 (2021): 109820 <https://doi.org/10.1016/j.jcp.2020.109820>`_. PeleC supports the different types of redistributions described in the paper with the keyword ``pelec.redistribution_type``, which can have the following values:
 
-where :math:`n_l` is the number of cells in the `neighborhood` of cut cell :math:`l`. :math:`N_n` takes the value of 0 or 1 depending if cell :math:`n` is connected to cell :math:`l`. While this update is numerically stable, it does not discretely conserve the field quantities.  In PeleC, we use a hybrid update strategy, a weighted average of the two that is numerically stable and "maximally conservative" locally, without violating CFL constraints based on the regular cells:
+* ``"NoRedist"``: no redistribution
+* ``"FluxRedist"``: flux redistribution
+* ``"MergeRedist"``: merge redistribution
+* ``"StateRedist"``: state redistribution (default)
 
-.. math::
-  (HD)_l = v_l(DC)_l + (1-v_l)(DNC)_l.
-
-In order to maintain global conservation, the mass difference (we call the product of each conserved variable and cell volume as "mass") between the hybrid divergence and conservative divergence is a correction that is distributed to neighboring cells at each timestep:
-
-.. math::
-  \Delta_l^n = \frac{v_l(1-v_l)\left[(DC)_l - (DNC)_l\right]N_l^n W_l^n v_n^l}{\sum_{n_l}N_l^nW_l^nv_l^n}
-
-In PeleC, this neighborhood is obtained by the AMReX function `get_neighbors`, which identifies all cells within a single step in each coordinate direction that is connected to cell :math:`l`. Two adjacent cells may be not connected if there is an embedded boundary section between them.
-
-The redistribution is applied as:
-
-.. math::
-  (HD)_n^l = (HD)_n^l +  \frac{\Delta_l^n}{v_n^l},
-
-and the hybrid divergence is integrated using RK2. 
-
-The weights for redistribution :math:`W_l^n` can be set to any field in PeleC. We have found that setting the weights to the cell volumes is effective, while pure density weighting sometimes leads to stability issues when several very small cells share a neighborhood such as in a geometry corner.
-
-This procedure is implemented in the `pc_fix_div_and_redistribute` routine that performs four steps:
-
- #. Recompute conservative divergence, DC, on cut cells...need DC in 2 grow cells for    final result
- #. Compute non-conservative and hybrid divergence, DNC and HD, and redistribution mass  dM in cut cells. We will need this in 1 grow cells (see below), so it depends on     having a conservative div in 2 grow cells
- #. Now that we finished computing HD and dM everywhere, it is safe to increment DC to   hold HD
- #.  Redistribute dM - THIS REQUIRES THAT DC BE GOOD IN 1 GROW CELL
-
-
-
-    
-
-.. highlight:: c++
-
-::
-
-   pc_fix_div_and_redistribute(BL_TO_FORTRAN_BOX(vbox),
-                               sv_eb_bndry_geom[local_i].data(), &Ncut,
-                               BL_TO_FORTRAN_ANYD(flag_fab),
-                               D_DECL(BL_TO_FORTRAN_ANYD(flux_ec[0]),
-                                      BL_TO_FORTRAN_ANYD(flux_ec[1]),
-                                      BL_TO_FORTRAN_ANYD(flux_ec[2])),
-                               sv_eb_flux[local_i].dataPtr(), &Nflux,
-                               BL_TO_FORTRAN_ANYD(Dterm),
-                               BL_TO_FORTRAN_N_ANYD(W, wComp),
-                               BL_TO_FORTRAN_ANYD(vfrac[mfi]),
-                               &VOL, &NUM_STATE,
-                               &as_crse,
-                               BL_TO_FORTRAN_ANYD(*p_drho_as_crse),
-                               BL_TO_FORTRAN_ANYD(*p_rrflag_as_crse),
-                               &as_fine,
-                               BL_TO_FORTRAN_ANYD(dm_as_fine),
-
-
-
-The arguments are the edge centered flux in the [x,y,z]-directions on the [x,y,z] faces, the array of geometry information for the cut cells for this FAB, the flux through the cut faces, and the hybrid divergence. 
 
 Re-redistribution
 -----------------
 
+.. note::
+   This used to be supported when PeleC had it's own redistribution procedure. This is no longer the case now that we use the redistribution procedure highlighted above. This section is kept for historical purposes.
+   
 .. _eb_re_redist:
 
 .. figure:: EB_re_redist.png
@@ -153,7 +104,7 @@ Re-redistribution
 
    \(a) an example situation with an EB spanning a coarse-fine boundary, (b) same situation as seen by the coarse level and (c) same situation as seen by the fine level. The cells with the dotted lines are ghost cells.
 
-The redistribution of mass with the use of hybrid divergence method (see section :ref:`Hybrid divergence<HybDiv>`) leads 
+The redistribution of mass with the use of hybrid divergence method leads 
 to an accounting problem at coarse-fine interfaces that have an EB passing through them, as shown in :ref:`re-redistribution figure<eb_re_redist>` (a). 
 The correct strategy will be to redistribute mass from the coarse mesh on the left side to the fine mesh on the right and vice-versa, when divergence is evaluated on the fly. 
 This strategy is difficult to implement directly into the current algorithmic framework, because flux/residual calculation and time advance are done separately at 
@@ -168,7 +119,7 @@ advanced a single time step, which we refer to as re-redistribution. Specificall
     because the correct distributed mass has to come from the left-coarse-real-cell.
 
 The re-redistribution is implemented as a book-keeping step where the mass distributed are stored during MOL divergence calculation and given to the coarse and fine flux registers to reflux at 
-the end of each time step. The re-redistribution is performed everytime the reflux function is called in post_timestep. More details regarding re-redistribuion are 
+the end of each time step. The re-redistribution is performed every time the reflux function is called in post_timestep. More details regarding re-redistribution are 
 presented in `Pember et al. <https://www.sciencedirect.com/science/article/pii/S0021999185711655>`_. 
 
 
@@ -269,7 +220,7 @@ Other similar routines incldue:
 * pc_apply_face_stencil
 * pc_apply_eb_boundry_flux_stencil
 * pc_apply_eb_boundry_visc_flux_stencil
-* pc_fix_div_and_redistribute
+* pc_eb_div
 
 .. include:: /geometry/geometry_init.rst
 

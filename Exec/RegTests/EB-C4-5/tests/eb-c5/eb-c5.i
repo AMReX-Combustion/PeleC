@@ -4,7 +4,7 @@ max_step = 10000
 stop_time = 3e-2
 
 # PROBLEM SIZE & GEOMETRY
-geometry.is_periodic =  0   0  0
+geometry.is_periodic =  0   0  1
 geometry.coord_sys   =  0       # 0 => cart
 geometry.prob_lo     =  0    0    0 
 
@@ -16,8 +16,8 @@ amr.n_cell           =   16     16    16
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 
-pelec.lo_bc       =  "FOExtrap" "FOExtrap" "FOExtrap"
-pelec.hi_bc       =  "FOExtrap" "FOExtrap" "FOExtrap"
+pelec.lo_bc       =  "FOExtrap" "FOExtrap" "Interior"
+pelec.hi_bc       =  "FOExtrap" "FOExtrap" "Interior"
 
 # Problem setup
 pelec.eb_boundary_T = 1000.

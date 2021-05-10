@@ -86,10 +86,6 @@
 // Number of passive variables that are not per unit mass, U = Q instead of U =
 // rho Q
 #define NPASSNM NUM_SOOT_VARS
-
-// This value was hardcoded to 4 in get_method_params in the old Fortran code
-#define NUM_GROW 4
-
 struct PassMap
 {
   amrex::GpuArray<int, NPASSIVE + NPASSNM> upassMap = {{0}};

@@ -95,7 +95,7 @@ PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
   amrex::MultiFab& S_new = get_new_data(State_Type);
 
   for (int n = 0; n < src_list.size(); ++n) {
-    int oldGrow = NUM_GROW;
+    int oldGrow = numGrow();
     int newGrow = S_new.nGrow();
     old_sources[src_list[n]] = std::make_unique<amrex::MultiFab>(
       grids, dmap, NVAR, oldGrow, amrex::MFInfo(), Factory());
@@ -104,9 +104,9 @@ PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
   }
 
   if (do_hydro) {
-    Sborder.define(grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
+    Sborder.define(grids, dmap, NVAR, numGrow(), amrex::MFInfo(), Factory());
   } else if (do_diffuse) {
-    Sborder.define(grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
+    Sborder.define(grids, dmap, NVAR, numGrow(), amrex::MFInfo(), Factory());
   }
 
   if (!do_mol) {
@@ -119,8 +119,10 @@ PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
       // sources, so that we can compute the time derivative of the source
       // terms.
       sources_for_hydro.define(
-        grids, dmap, NVAR, NUM_GROW, amrex::MFInfo(), Factory());
+        grids, dmap, NVAR, numGrow(), amrex::MFInfo(), Factory());
     }
+  } else {
+    Sborder.define(grids, dmap, NVAR, numGrow(), amrex::MFInfo(), Factory());
   }
 
   // get the elapsed CPU time to now;

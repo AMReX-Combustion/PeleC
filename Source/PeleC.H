@@ -640,6 +640,8 @@ protected:
   static amrex::Real
   clean_state(const amrex::MultiFab& S, amrex::MultiFab& S_old);
 
+  void InitialRedistribution();
+
   void buildMetrics();
 
   // integrate derived quantities over domain
@@ -790,7 +792,13 @@ AMREX_FORCE_INLINE
 int
 PeleC::numGrow()
 {
-  return NUM_GROW;
+  int ng = 4;
+  if (
+    (redistribution_type == "StateRedist") ||
+    (redistribution_type == "MergeRedist")) {
+    ng += 1;
+  }
+  return ng;
 }
 
 AMREX_FORCE_INLINE

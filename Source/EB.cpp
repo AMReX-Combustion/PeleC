@@ -269,30 +269,18 @@ pc_apply_face_stencil(
 }
 
 void
-pc_fix_div_and_redistribute(
+pc_eb_div(
   const amrex::Box& bx,
   const amrex::Real vol,
-  const amrex::Real dt,
   const int nc,
-  const amrex::Real eb_small_vfrac,
-  const bool levmsk_notcovered,
   const EBBndryGeom* sv_ebg,
   const int Ncut,
-  const amrex::Array4<amrex::EBCellFlag const>& flags,
   const amrex::Array4<const amrex::Real>& f0,
   const amrex::Array4<const amrex::Real>& f1,
   const amrex::Array4<const amrex::Real>& f2,
   const amrex::Real* ebflux,
-  const int /*nebflux*/,
   const amrex::Array4<const amrex::Real>& vf,
-  const amrex::Array4<const amrex::Real>& W,
-  const bool as_crse,
-  const bool as_fine,
-  const amrex::Array4<const int>& levmsk,
-  const amrex::Array4<const int>& rr_flag_crse,
-  const amrex::Array4<amrex::Real>& DC,
-  const amrex::Array4<amrex::Real>& rr_drho_crse,
-  const amrex::Array4<amrex::Real>& dm_as_fine)
+  const amrex::Array4<amrex::Real>& DC)
 {
   const auto lo = amrex::lbound(bx);
   const auto hi = amrex::ubound(bx);
@@ -317,165 +305,6 @@ pc_fix_div_and_redistribute(
           -(f0(i + 1, j, k, n) - f0(i, j, k, n) + f1(i, j + 1, k, n) -
             f1(i, j, k, n) + f2(i, j, k + 1, n) - f2(i, j, k, n) + tmp) *
           volinv * kappa_inv;
-      }
-    });
-
-    // Compute non-conservative and hybrid divergence, DNC and HD, and
-    // redistribution mass dM in cut cells. Will need in 1 grow cells (see
-    // below), so it depends on having a conservative div in 2 grow cells
-    amrex::Gpu::DeviceVector<amrex::Real> dM_vec(Ncut);
-    amrex::Gpu::DeviceVector<amrex::Real> HD_vec(Ncut);
-    amrex::Real* dM = dM_vec.data();
-    amrex::Real* HD = HD_vec.data();
-    amrex::Gpu::synchronize();
-    amrex::ParallelFor(Ncut, [=] AMREX_GPU_DEVICE(int L) {
-      const int i = sv_ebg[L].iv[0];
-      const int j = sv_ebg[L].iv[1];
-      const int k = sv_ebg[L].iv[2];
-      if (is_inside(i, j, k, lo, hi, 1)) {
-        amrex::Real sum_kappa = 0.0;
-        amrex::Real sum_div = 0.0;
-        for (int ii = -1; ii <= 1; ii++) {
-          for (int jj = -1; jj <= 1; jj++) {
-            for (int kk = -1; kk <= 1; kk++) {
-              sum_kappa += flags(i, j, k).isConnected(ii, jj, kk) *
-                           vf(i + ii, j + jj, k + kk);
-              sum_div += flags(i, j, k).isConnected(ii, jj, kk) *
-                         vf(i + ii, j + jj, k + kk) *
-                         DC(i + ii, j + jj, k + kk, n);
-            }
-          }
-        }
-        const amrex::Real DNC = sum_div / sum_kappa;
-        if (sv_ebg[L].eb_vfrac < eb_small_vfrac) {
-          dM[L] = vf(i, j, k) * DC(i, j, k, n);
-          HD[L] = 0.0;
-        } else {
-          dM[L] = vf(i, j, k) * (1.0 - vf(i, j, k)) * (DC(i, j, k, n) - DNC);
-          HD[L] = vf(i, j, k) * DC(i, j, k, n) + (1.0 - vf(i, j, k)) * DNC;
-        }
-      }
-    });
-
-    // Now that we finished computing HD and dM everywhere, it is safe to
-    // increment DC to hold HD
-    amrex::ParallelFor(Ncut, [=] AMREX_GPU_DEVICE(int L) {
-      const int i = sv_ebg[L].iv[0];
-      const int j = sv_ebg[L].iv[1];
-      const int k = sv_ebg[L].iv[2];
-      if (is_inside(i, j, k, lo, hi, 1)) {
-        DC(i, j, k, n) = HD[L];
-      }
-    });
-
-    // Redistribute dM - THIS REQUIRES THAT DC BE GOOD IN 1 GROW CELL
-    const amrex::Real reredistribution_threshold =
-      amrex_eb_get_reredistribution_threshold();
-    amrex::ParallelFor(Ncut, [=] AMREX_GPU_DEVICE(int L) {
-      const int i = sv_ebg[L].iv[0];
-      const int j = sv_ebg[L].iv[1];
-      const int k = sv_ebg[L].iv[2];
-      if (is_inside(i, j, k, lo, hi, 1)) {
-        amrex::Real sum_kappa = 0.0;
-        for (int ii = -1; ii <= 1; ii++) {
-          for (int jj = -1; jj <= 1; jj++) {
-            for (int kk = -1; kk <= 1; kk++) {
-              int nbr = flags(i, j, k).isConnected(ii, jj, kk);
-              if ((ii == 0) && (jj == 0) && (kk == 0)) {
-                nbr = 0;
-              }
-              if (vf(i + ii, j + jj, k + kk) < eb_small_vfrac) {
-                nbr = 0;
-              }
-              sum_kappa +=
-                nbr * vf(i + ii, j + jj, k + kk) * W(i + ii, j + jj, k + kk);
-            }
-          }
-        }
-        const amrex::Real sum_kappa_inv = 1.0 / sum_kappa;
-        for (int ii = -1; ii <= 1; ii++) {
-          for (int jj = -1; jj <= 1; jj++) {
-            for (int kk = -1; kk <= 1; kk++) {
-              int nbr = flags(i, j, k).isConnected(ii, jj, kk);
-              if ((ii == 0) && (jj == 0) && (kk == 0)) {
-                nbr = 0;
-              }
-              if (vf(i + ii, j + jj, k + kk) < eb_small_vfrac) {
-                nbr = 0;
-              }
-              amrex::Gpu::Atomic::Add(
-                &DC(i + ii, j + jj, k + kk, n),
-                dM[L] * nbr * W(i + ii, j + jj, k + kk) * sum_kappa_inv);
-              // DC(i + ii, j + jj, k + kk, n) += dM[L] * nbr * W(i + ii, j +
-              // jj, k + kk) * sum_kappa_inv;
-            }
-          }
-        }
-
-        // re redistribution book keeping
-        bool as_crse_crse_cell = false;
-        bool as_crse_covered_cell = false;
-        if (as_crse) {
-          as_crse_crse_cell =
-            is_inside(i, j, k, lo, hi) &&
-            (rr_flag_crse(i, j, k) == amrex_yafluxreg_crse_fine_boundary_cell);
-          as_crse_covered_cell =
-            rr_flag_crse(i, j, k) == amrex_yafluxreg_fine_cell;
-        }
-
-        bool as_fine_valid_cell = false; // valid cells near box boundary
-        bool as_fine_ghost_cell =
-          false; // ghost cells just outside valid region
-        if (as_fine) {
-          as_fine_valid_cell = is_inside(i, j, k, lo, hi);
-          as_fine_ghost_cell =
-            (levmsk(i, j, k) ==
-             levmsk_notcovered); // not covered by other grids
-        }
-
-        for (int ii = -1; ii <= 1; ii++) {
-          for (int jj = -1; jj <= 1; jj++) {
-            for (int kk = -1; kk <= 1; kk++) {
-              if (
-                ((ii != 0) || (jj != 0) || (kk != 0)) &&
-                flags(i, j, k).isConnected(ii, jj, kk)) {
-
-                const int iii = i + ii;
-                const int jjj = j + jj;
-                const int kkk = k + kk;
-
-                const amrex::Real drho =
-                  dM[L] * sum_kappa_inv * W(iii, jjj, kkk);
-                const bool valid_dst_cell = is_inside(iii, jjj, kkk, lo, hi);
-
-                if (
-                  (as_crse_crse_cell) &&
-                  (rr_flag_crse(iii, jjj, kkk) == amrex_yafluxreg_fine_cell) &&
-                  (vf(i, j, k) > reredistribution_threshold)) {
-                  rr_drho_crse(i, j, k, n) +=
-                    dt * drho * (vf(iii, jjj, kkk) / vf(i, j, k));
-                }
-
-                if (
-                  (as_crse_covered_cell) && (valid_dst_cell) &&
-                  (rr_flag_crse(iii, jjj, kkk) ==
-                   amrex_yafluxreg_crse_fine_boundary_cell) &&
-                  (vf(iii, jjj, kkk) > reredistribution_threshold)) {
-                  // the recipient is a crse/fine boundary cell
-                  rr_drho_crse(iii, jjj, kkk, n) -= dt * drho;
-                }
-
-                if ((as_fine_valid_cell) && (!valid_dst_cell)) {
-                  dm_as_fine(iii, jjj, kkk, n) += dt * drho * vf(iii, jjj, kkk);
-                }
-
-                if ((as_fine_ghost_cell) && (valid_dst_cell)) {
-                  dm_as_fine(i, j, k, n) -= dt * drho * vf(iii, jjj, kkk);
-                }
-              }
-            }
-          }
-        }
       }
     });
   }
