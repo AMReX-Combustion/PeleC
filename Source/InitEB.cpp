@@ -22,12 +22,8 @@ PeleC::init_eb(
   const amrex::BoxArray& /*ba*/,
   const amrex::DistributionMapping& /*dm*/)
 {
-  amrex::ParmParse pp("eb2");
-  std::string geom_type("all_regular");
-  pp.query("geom_type", geom_type);
-  if (geom_type != "all_regular") {
-    eb_in_domain = true;
-  }
+
+  eb_in_domain = ebInDomain();
 
   // Build the geometry information; this is done for each new set of grids
   initialize_eb2_structs();
