@@ -17,7 +17,9 @@ Redistribution::MakeITracker ( Box const& bx,
                                Geometry const& lev_geom,
                                std::string redist_type)
 {
+#if 0
     bool debug_print = false;
+#endif
 
     const Box domain = lev_geom.Domain();
 
@@ -203,11 +205,11 @@ Redistribution::MakeITracker ( Box const& bx,
                itracker(i,j,k,0) += 1;
 
                // (i+ioff,j+joff,k+koff) is in the nbhd of (i,j,k)
-               int ioff = imap[itracker(i,j,k,2)];
-               int joff = jmap[itracker(i,j,k,2)];
-               int koff = kmap[itracker(i,j,k,2)];
+               int ioff_l = imap[itracker(i,j,k,2)];
+               int joff_l = jmap[itracker(i,j,k,2)];
+               int koff_l = kmap[itracker(i,j,k,2)];
 
-               sum_vol += vfrac(i+ioff,j+joff,k+koff);
+               sum_vol += vfrac(i+ioff_l,j+joff_l,k+koff_l);
 #if 0
                if (debug_print)
                    amrex::Print() << "Cell " << IntVect(i,j,k) << " with volfrac " << vfrac(i,j,k) <<
