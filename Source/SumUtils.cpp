@@ -10,7 +10,7 @@ PeleC::sumDerive(const std::string& name, amrex::Real time, bool local)
   amrex::Real sum = 0.0;
   auto mf = derive(name, time, 0);
 
-  AMREX_ASSERT(!(mf == 0));
+  AMREX_ASSERT(!(mf == nullptr));
 
   if (level < parent->finestLevel()) {
     const amrex::MultiFab& mask = getLevel(level + 1).build_fine_mask();
@@ -44,7 +44,7 @@ PeleC::volWgtSum(
   // const amrex::Real* dx = geom.CellSize();
   auto mf = derive(name, time, 0);
 
-  AMREX_ASSERT(mf != 0);
+  AMREX_ASSERT(mf != nullptr);
 
   if (level < parent->finestLevel() && finemask) {
     const amrex::MultiFab& mask = getLevel(level + 1).build_fine_mask();
@@ -73,7 +73,7 @@ PeleC::volWgtSquaredSum(const std::string& name, amrex::Real time, bool local)
   // const amrex::Real* dx = geom.CellSize();
   auto mf = derive(name, time, 0);
 
-  AMREX_ASSERT(mf != 0);
+  AMREX_ASSERT(mf != nullptr);
 
   if (level < parent->finestLevel()) {
     const amrex::MultiFab& mask = getLevel(level + 1).build_fine_mask();
