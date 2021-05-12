@@ -92,8 +92,8 @@ function(build_pelec_exe pelec_exe_name)
   if(PELEC_ENABLE_REACTIONS)
     if(PELEC_ENABLE_SUNDIALS)
       if(PELEC_ENABLE_CUDA)
-        target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/AMReX_SUNMemory.cpp
-                                                 ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/AMReX_SUNMemory.H)
+        target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/AMReX_SUNMemory.cpp
+                                                 ${PELE_PHYSICS_SRC_DIR}/Reactions/AMReX_SUNMemory.H)
         target_link_libraries(${pelec_exe_name} PRIVATE sundials_nveccuda)
       endif()
       target_compile_definitions(${pelec_exe_name} PRIVATE USE_SUNDIALS_PP USE_ARKODE_PP)
