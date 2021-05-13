@@ -45,17 +45,16 @@ RemoveParticlesOnExit()
 }
 } // namespace
 
-int PeleC::do_spray_particles = 0;
+int PeleC::do_spray_particles = 1;
 int PeleC::particle_verbose = 0;
 Real PeleC::particle_cfl = 0.5;
 
-int PeleC::write_particle_plotfiles = 1;
-int PeleC::write_spray_ascii_files = 1;
+int PeleC::write_spray_ascii_files = 0;
 // momentum + density + fuel species + energy
 int PeleC::num_spray_src = AMREX_SPACEDIM + 2 + SPRAY_FUEL_NUM;
-int PeleC::particle_mass_tran = 0;
-int PeleC::particle_heat_tran = 0;
-int PeleC::particle_mom_tran = 0;
+int PeleC::particle_mass_tran = 1;
+int PeleC::particle_heat_tran = 1;
+int PeleC::particle_mom_tran = 1;
 Vector<std::string> PeleC::spray_fuel_names;
 
 SprayParticleContainer*
@@ -112,9 +111,9 @@ PeleC::readParticleParams()
   ppp.get("mass_transfer", particle_mass_tran);
   ppp.get("heat_transfer", particle_heat_tran);
   ppp.get("mom_transfer", particle_mom_tran);
-  ppp.query("particle_cfl", particle_cfl);
+  ppp.query("cfl", particle_cfl);
   if (particle_cfl > 0.5)
-    amrex::Abort("particle_cfl must be <= 0.5");
+    amrex::Abort("particles.cfl must be <= 0.5");
   // Number of fuel species in spray droplets
   // Must match the number specified at compile time
   const int nfuel = ppp.countval("fuel_species");
@@ -174,18 +173,17 @@ PeleC::readParticleParams()
   // species
   ppp.get("fuel_ref_temp", spray_ref_temp);
 
-  // Set if particle plot files should be written
-  ppp.query("write_particle_plotfiles", write_particle_plotfiles);
-
   // Set if spray ascii files should be written
   ppp.query("write_spray_ascii_files", write_spray_ascii_files);
 
   // Used in initData() on startup to read in a file of particles.
-  ppp.query("particle_init_file", particle_init_file);
+  ppp.query("init_file", particle_init_file);
 
   // Used in initData() on startup to set the particle field using the
   // SprayParticlesInitInsert.cpp problem specific function
-  ppp.query("particle_init_function", particle_init_function);
+  ppp.query("init_function", particle_init_function);
+
+  // Set the data for the liquid fuel and spray droplets
   sprayData.num_ppp = parcel_size;
   sprayData.ref_T = spray_ref_temp;
   sprayData.sigma = spray_sigma;
@@ -343,6 +341,8 @@ PeleC::initParticles()
       const ProbParmHost* lprobparm = prob_parm_host;
       const ProbParmDevice* lprobparm_d = h_prob_parm_device;
       theSprayPC()->InitSprayParticles(*lprobparm, *lprobparm_d);
+    } else {
+      Abort("Must initialize spray particles with particles.init_function or particles.init_file");
     }
   }
 }

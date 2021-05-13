@@ -204,9 +204,6 @@ public:
   // Number of source terms in temporary spray data
   static int num_spray_src;
 
-  // Should we write particles into plotfiles?
-  static int write_particle_plotfiles;
-
   // Should we write particle ascii files?
   static int write_spray_ascii_files;
 
