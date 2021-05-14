@@ -13,12 +13,11 @@ using namespace MASA;
 #endif
 
 #include "Transport.H"
-#include "mechanism.h"
+#include "mechanism.H"
 #include "PeleC.H"
 #include "Derive.H"
 #include "IndexDefines.H"
 #include "prob.H"
-#include "chemistry_file.H"
 
 ProbParmDevice* PeleC::d_prob_parm_device = nullptr;
 ProbParmDevice* PeleC::h_prob_parm_device = nullptr;
