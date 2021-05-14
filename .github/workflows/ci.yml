@@ -271,40 +271,40 @@ jobs:
           cat clang-tidy-warnings.txt
           export return=$(tail -n 1 clang-tidy-warnings.txt | awk '{print $2}')
           exit ${return}
-  HIP:
-    needs: Formatting
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.6.0
-        with:
-          access_token: ${{github.token}}
-      - uses: actions/checkout@v2
-        with:
-          submodules: true
-      - name: Dependencies
-        run: |
-          export DEBIAN_FRONTEND=noninteractive
-          wget -q -O - http://repo.radeon.com/rocm/rocm.gpg.key | sudo apt-key add -
-          echo 'deb [arch=amd64] http://repo.radeon.com/rocm/apt/debian/ xenial main' | sudo tee /etc/apt/sources.list.d/rocm.list
-          sudo apt-get update
-          sudo apt-get install -y rocm-dev rocm-libs
-      - name: Configure
-        run: |
-          echo 'export PATH=$PATH:/opt/rocm/bin:/opt/rocm/profiler/bin:/opt/rocm/opencl/bin' | sudo tee -a /etc/profile.d/rocm.sh
-          source /etc/profile.d/rocm.sh
-          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
-          cmake -B${{runner.workspace}}/build-hip \
-          -DCMAKE_CXX_COMPILER:STRING=$(which hipcc) \
-          -DCMAKE_C_COMPILER:STRING=$(which clang) \
-          -DPELEC_ENABLE_MPI:BOOL=OFF \
-          -DPELEC_ENABLE_HIP:BOOL=ON \
-          -DPELEC_ENABLE_TESTS:BOOL=ON \
-          -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
-          -DPELEC_ENABLE_MASA:BOOL=OFF \
-          -DAMReX_AMD_ARCH="gfx906,gfx908" \
-          ${{github.workspace}}
-      - name: Build
-        working-directory: ${{runner.workspace}}/build-hip
-        run: |
-          cmake --build . --parallel ${{env.NPROCS}}
+  #HIP:
+  #  needs: Formatting
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #    - name: Cancel previous runs
+  #      uses: styfle/cancel-workflow-action@0.6.0
+  #      with:
+  #        access_token: ${{github.token}}
+  #    - uses: actions/checkout@v2
+  #      with:
+  #        submodules: true
+  #    - name: Dependencies
+  #      run: |
+  #        export DEBIAN_FRONTEND=noninteractive
+  #        wget -q -O - http://repo.radeon.com/rocm/rocm.gpg.key | sudo apt-key add -
+  #        echo 'deb [arch=amd64] http://repo.radeon.com/rocm/apt/debian/ xenial main' | sudo tee /etc/apt/sources.list.d/rocm.list
+  #        sudo apt-get update
+  #        sudo apt-get install -y rocm-dev rocm-libs
+  #    - name: Configure
+  #      run: |
+  #        echo 'export PATH=$PATH:/opt/rocm/bin:/opt/rocm/profiler/bin:/opt/rocm/opencl/bin' | sudo tee -a /etc/profile.d/rocm.sh
+  #        source /etc/profile.d/rocm.sh
+  #        echo "NPROCS=$(nproc)" >> $GITHUB_ENV
+  #        cmake -B${{runner.workspace}}/build-hip \
+  #        -DCMAKE_CXX_COMPILER:STRING=$(which hipcc) \
+  #        -DCMAKE_C_COMPILER:STRING=$(which clang) \
+  #        -DPELEC_ENABLE_MPI:BOOL=OFF \
+  #        -DPELEC_ENABLE_HIP:BOOL=ON \
+  #        -DPELEC_ENABLE_TESTS:BOOL=ON \
+  #        -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
+  #        -DPELEC_ENABLE_MASA:BOOL=OFF \
+  #        -DAMReX_AMD_ARCH="gfx906,gfx908" \
+  #        ${{github.workspace}}
+  #    - name: Build
+  #      working-directory: ${{runner.workspace}}/build-hip
+  #      run: |
+  #        cmake --build . --parallel ${{env.NPROCS}}
