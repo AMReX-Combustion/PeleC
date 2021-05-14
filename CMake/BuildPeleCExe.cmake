@@ -60,13 +60,15 @@ function(build_pelec_exe pelec_exe_name)
   separate_arguments(MY_CXX_FLAGS)
   set_source_files_properties(${PELEC_MECHANISM_DIR}/mechanism.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
   set_source_files_properties(${PELEC_MECHANISM_DIR}/mechanism.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-  set_source_files_properties(${SRC_DIR}/Redistribution/iamr_create_itracker_${PELEC_DIM}d.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-  set_source_files_properties(${SRC_DIR}/Redistribution/iamr_merge_redistribute.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-  set_source_files_properties(${SRC_DIR}/Redistribution/iamr_redistribution.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-  set_source_files_properties(${SRC_DIR}/Redistribution/iamr_redistribution.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-  set_source_files_properties(${SRC_DIR}/Redistribution/iamr_state_redistribute.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELEC_MECHANISM_DIR})
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELE_PHYSICS_SRC_DIR}/Support/Fuego/Evaluation)
+
+  if(PELEC_ENABLE_EB)
+    set_source_files_properties(${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_create_itracker_${PELEC_DIM}d.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+    set_source_files_properties(${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_redistribution.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+    set_source_files_properties(${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_redistribution.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+    set_source_files_properties(${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_state_redistribute.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+  endif()
   
   if(PELEC_ENABLE_REACTIONS)
     if(PELEC_ENABLE_SUNDIALS)
@@ -99,16 +101,16 @@ function(build_pelec_exe pelec_exe_name)
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_EB)
     target_sources(${pelec_exe_name}
                    PRIVATE
+                   ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_create_itracker_${PELEC_DIM}d.cpp
+                   ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_redistribution.H
+                   ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_redistribution.cpp
+                   ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_state_redistribute.cpp
                    ${SRC_DIR}/EB.H
                    ${SRC_DIR}/EB.cpp
                    ${SRC_DIR}/InitEB.cpp
                    ${SRC_DIR}/SparseData.H
-                   ${SRC_DIR}/EBStencilTypes.H
-                   ${SRC_DIR}/Redistribution/iamr_create_itracker_${PELEC_DIM}d.cpp
-                   ${SRC_DIR}/Redistribution/iamr_merge_redistribute.cpp
-                   ${SRC_DIR}/Redistribution/iamr_redistribution.H
-                   ${SRC_DIR}/Redistribution/iamr_redistribution.cpp
-                   ${SRC_DIR}/Redistribution/iamr_state_redistribute.cpp)
+                   ${SRC_DIR}/EBStencilTypes.H)
+     target_include_directories(${pelec_exe_name} PRIVATE ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution)
   endif()
   
   target_sources(${pelec_exe_name}
@@ -189,7 +191,6 @@ function(build_pelec_exe pelec_exe_name)
 
   #PeleC include directories
   target_include_directories(${pelec_exe_name} PRIVATE ${SRC_DIR})
-  target_include_directories(${pelec_exe_name} PRIVATE ${SRC_DIR}/Redistribution)
   target_include_directories(${pelec_exe_name} PRIVATE ${CMAKE_BINARY_DIR})
 
   #Link to amrex library

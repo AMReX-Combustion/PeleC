@@ -70,6 +70,11 @@ endif()
 add_subdirectory(${AMREX_SUBMOD_LOCATION})
 include(SetAmrexCompileFlags)
 
+########################### AMReX-Hydro ###############################
+
+message(STATUS "AMReX-Hydro Configure Section")
+set(AMREX_HYDRO_SUBMOD_LOCATION "${CMAKE_SOURCE_DIR}/Submodules/AMReX-Hydro")
+
 ########################## SUNDIALS ###################################
 
 if(PELEC_ENABLE_SUNDIALS)

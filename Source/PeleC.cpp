@@ -2190,8 +2190,8 @@ PeleC::InitialRedistribution()
   }
 
   if (redistribution_type == "MergeRedist") {
-    amrex::Abort(
-      "MergeRedist is unsupported. Check with IAMR if that has been fixed");
+    amrex::Abort("MergeRedist is unsupported. Check with AMReX-Hydro if that "
+                 "has been fixed");
   }
 
   if (verbose) {
