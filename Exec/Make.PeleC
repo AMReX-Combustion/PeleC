@@ -16,27 +16,10 @@ ifneq ($(USE_MASA), TRUE)
   BL_NO_FORT = TRUE
 endif
 
-#sundials stuff
-ifeq ($(USE_REACT), TRUE)
-  ifeq ($(USE_SUNDIALS_PP), TRUE)
-    ifeq ($(USE_CVODE_PP), TRUE)
-       USE_ARKODE_PP=FALSE
-       DEFINES += -DUSE_CVODE_PP
-     else
-       USE_ARKODE_PP=TRUE
-    endif
-    include $(PELE_PHYSICS_HOME)/ThirdParty/Make.ThirdParty
-  endif
-endif
-
 include $(AMREX_HOME)/Tools/GNUMake/Make.defs
 
 # PeleC uses a coarse grained OMP approach
 DEFINES += -DCRSEGRNDOMP
-
-ifeq ($(USE_REACT), TRUE)
-  DEFINES += -DPELEC_USE_REACTIONS
-endif
 
 ifeq ($(USE_FORCING), TRUE)
   DEFINES += -DPELEC_USE_FORCING
@@ -62,9 +45,7 @@ Bpack             += $(PP_SRC_HOME)/Make.package
 Blocs             += $(PP_SRC_HOME)
 
 # EOS
-ifdef Eos_dir
-  EOS_HOME = $(PELE_PHYSICS_HOME)/Eos/$(strip $(Eos_dir))
-endif
+EOS_HOME = $(PELE_PHYSICS_HOME)/Eos/$(strip $(Eos_dir))
 ifeq ($(Eos_dir),$(filter $(Eos_dir),Soave-Redlich-Kwong))
    DEFINES += -DPELEC_USE_SRK
 endif
@@ -75,10 +56,34 @@ Bpack             += $(EOS_HOME)/Make.package
 Blocs             += $(EOS_HOME)
 
 # Reactions
-REACTIONS_HOME     = $(PELE_PHYSICS_HOME)/Reactions
-EXTERN_CORE       += $(REACTIONS_HOME)
-INCLUDE_LOCATIONS += $(REACTIONS_HOME)
-VPATH_LOCATIONS   += $(REACTIONS_HOME)
+ifeq ($(USE_REACT), TRUE)
+  REACTIONS_HOME = $(PELE_PHYSICS_HOME)/Reactions
+  EXTERN_CORE       += $(REACTIONS_HOME)
+  INCLUDE_LOCATIONS += $(REACTIONS_HOME)
+  VPATH_LOCATIONS   += $(REACTIONS_HOME)
+  DEFINES += -DPELEC_USE_REACTIONS
+  Bpack += $(REACTIONS_HOME)/Make.package
+  Blocs += $(REACTIONS_HOME)
+  ifeq ($(Reactor_dir), arkode)
+      USE_SUNDIALS_PP = TRUE
+      USE_ARKODE_PP = TRUE
+      DEFINES += -DUSE_ARKODE_PP
+      Bpack += $(REACTIONS_HOME)/$(Reactor_dir)/Make.package
+      Blocs += $(REACTIONS_HOME)/$(Reactor_dir)
+  endif
+  ifeq ($(Reactor_dir), cvode)
+      USE_SUNDIALS_PP = TRUE
+      USE_CVODE_PP = TRUE
+      DEFINES += -DUSE_CVODE_PP
+      Bpack += $(REACTIONS_HOME)/$(Reactor_dir)/Make.package
+      Blocs += $(REACTIONS_HOME)/$(Reactor_dir)
+  endif
+  ifeq ($(USE_SUNDIALS_PP), TRUE)
+      DEFINES += -DUSE_SUNDIALS_PP
+      include $(PELE_PHYSICS_HOME)/ThirdParty/Make.ThirdParty
+  endif
+endif
+
 ifdef Chemistry_Model
   USE_FUEGO = TRUE
   DEFINES += -DPELEC_EOS_FUEGO
@@ -89,21 +94,8 @@ VPATH_LOCATIONS += $(CHEM_HOME)
 Bpack += $(CHEM_HOME)/Make.package
 Blocs += $(CHEM_HOME)
 
-#sundials stuff
-ifeq ($(USE_REACT), TRUE)
-  ifeq ($(USE_SUNDIALS_PP), TRUE)
-    Blocs += $(REACTIONS_HOME)/Fuego
-    Bpack += $(REACTIONS_HOME)/Fuego/Make.package
-  endif
-endif
-
 # Transport
-ifeq ($(Transport_dir), Simple)
-  TRANSPORT_HOME = $(PELE_PHYSICS_HOME)/Transport/Simple
-endif
-ifeq ($(Transport_dir), Constant)
-  TRANSPORT_HOME = $(PELE_PHYSICS_HOME)/Transport/Constant
-endif
+TRANSPORT_HOME = $(PELE_PHYSICS_HOME)/Transport/$(Transport_dir)
 EXTERN_CORE       += $(TRANSPORT_HOME)
 INCLUDE_LOCATIONS += $(TRANSPORT_HOME)
 VPATH_LOCATIONS   += $(TRANSPORT_HOME)

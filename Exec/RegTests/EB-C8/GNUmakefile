@@ -25,6 +25,7 @@ THREAD_SANITIZER = FALSE
 
 # PeleC
 USE_REACT = TRUE
+Reactor_dir := rk64
 USE_EB = TRUE
 Eos_dir := Fuego
 Chemistry_Model := Davis

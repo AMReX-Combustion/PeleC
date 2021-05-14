@@ -8,7 +8,7 @@
 #include <AMReX_GpuMemory.H>
 #include <AMReX_ParmParse.H>
 
-#include "mechanism.h"
+#include "mechanism.H"
 
 #include "PeleC.H"
 #include "IndexDefines.H"

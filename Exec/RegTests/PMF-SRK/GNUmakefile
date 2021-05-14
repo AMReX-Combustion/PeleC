@@ -25,7 +25,7 @@ THREAD_SANITIZER = FALSE
 
 # PeleC
 USE_REACT = TRUE
-USE_SUNDIALS_PP = FALSE
+Reactor_dir := rk64
 USE_EB = FALSE
 USE_MASA = FALSE
 Eos_dir := Soave-Redlich-Kwong

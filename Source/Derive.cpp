@@ -1,4 +1,4 @@
-#include "mechanism.h"
+#include "mechanism.H"
 
 #include "PelePhysics.H"
 #include "Derive.H"
