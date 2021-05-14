@@ -51,9 +51,8 @@ function(build_pelec_exe pelec_exe_name)
 
   set(PELEC_MECHANISM_DIR "${PELE_PHYSICS_SRC_DIR}/Support/Fuego/Mechanism/Models/${PELEC_CHEMISTRY_MODEL}")
   target_sources(${pelec_exe_name} PRIVATE
-                 ${PELEC_MECHANISM_DIR}/chemistry_file.H
                  ${PELEC_MECHANISM_DIR}/mechanism.cpp
-                 ${PELEC_MECHANISM_DIR}/mechanism.h)
+                 ${PELEC_MECHANISM_DIR}/mechanism.H)
   # Avoid warnings from mechanism.cpp for now
   if(NOT PELEC_ENABLE_CUDA)
     if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$")
@@ -79,7 +78,6 @@ function(build_pelec_exe pelec_exe_name)
   endif()
   separate_arguments(MY_CXX_FLAGS)
   set_source_files_properties(${PELEC_MECHANISM_DIR}/mechanism.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-  set_source_files_properties(${PELEC_MECHANISM_DIR}/chemistry_file.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
   set_source_files_properties(${PELEC_MECHANISM_DIR}/mechanism.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
   set_source_files_properties(${SRC_DIR}/Redistribution/iamr_create_itracker_${PELEC_DIM}d.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
   set_source_files_properties(${SRC_DIR}/Redistribution/iamr_merge_redistribute.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
