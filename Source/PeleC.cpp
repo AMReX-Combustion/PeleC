@@ -8,7 +8,7 @@
 
 #ifdef PELEC_USE_EB
 #include <AMReX_EBMultiFabUtil.H>
-#include "iamr_redistribution.H"
+#include "hydro_redistribution.H"
 #endif
 
 #ifdef AMREX_PARTICLES
@@ -2238,7 +2238,7 @@ PeleC::InitialRedistribution()
       Redistribution::ApplyToInitialData(
         bx, NVAR, S_new.array(mfi), tmp.array(mfi), flag_arr,
         AMREX_D_DECL(apx, apy, apz), vfrac.const_array(mfi),
-        AMREX_D_DECL(fcx, fcy, fcz), ccc, geom, redistribution_type);
+        AMREX_D_DECL(fcx, fcy, fcz), ccc, &phys_bc, geom, redistribution_type);
     }
   }
   set_body_state(S_new);

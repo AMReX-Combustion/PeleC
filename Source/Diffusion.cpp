@@ -650,7 +650,8 @@ PeleC::getMOLSrcTerm(
         Redistribution::Apply(
           vbox, S.nComp(), Dterm, Dterm_tmp, S.const_array(mfi), scratch,
           flag_arr, AMREX_D_DECL(apx, apy, apz), vfrac.const_array(mfi),
-          AMREX_D_DECL(fcx, fcy, fcz), ccc, geom, dt, redistribution_type);
+          AMREX_D_DECL(fcx, fcy, fcz), ccc, &phys_bc, geom, dt,
+          redistribution_type);
 
         // Make sure div is zero in covered cells
         amrex::ParallelFor(
