@@ -251,7 +251,6 @@ void
 PeleC::setupVirtualParticles()
 {
   BL_PROFILE("PeleC::setupVirtualParticles()");
-  amrex::Gpu::LaunchSafeGuard lsg(true);
   if (PeleC::theSprayPC() != nullptr && !virtual_particles_set) {
     if (level < parent->finestLevel()) {
 #ifdef USE_SPRAY_SOA
@@ -273,8 +272,6 @@ PeleC::setupVirtualParticles()
 void
 PeleC::removeVirtualParticles()
 {
-  BL_PROFILE("PeleC::removeVirtualParticles()");
-  amrex::Gpu::LaunchSafeGuard lsg(true);
   if (VirtPC != nullptr)
     VirtPC->RemoveParticlesAtLevel(level);
   virtual_particles_set = false;
@@ -285,7 +282,6 @@ PeleC::setupGhostParticles(int ngrow)
 {
   BL_PROFILE("PeleC::setupGhostParticles()");
   AMREX_ASSERT(level < parent->finestLevel());
-  amrex::Gpu::LaunchSafeGuard lsg(true);
   if (PeleC::theSprayPC() != nullptr) {
 #ifdef USE_SPRAY_SOA
     SprayParticleContainer::ParticleTileType ghosts;
@@ -300,8 +296,6 @@ PeleC::setupGhostParticles(int ngrow)
 void
 PeleC::removeGhostParticles()
 {
-  BL_PROFILE("PeleC::removeGhostParticles()");
-  amrex::Gpu::LaunchSafeGuard lsg(true);
   if (GhostPC != nullptr)
     GhostPC->RemoveParticlesAtLevel(level);
 }
@@ -360,7 +354,6 @@ PeleC::particlePostRestart(const std::string& restart_file, bool is_checkpoint)
     // Make sure to call RemoveParticlesOnExit() on exit.
     amrex::ExecOnFinalize(RemoveParticlesOnExit);
     {
-      amrex::Gpu::LaunchSafeGuard lsg(true);
       theSprayPC()->Restart(
         parent->theRestartFile(), "particles", is_checkpoint);
       amrex::Gpu::Device::streamSynchronize();
@@ -378,7 +371,6 @@ PeleC::particleMKD(
   const int where_width,
   amrex::MultiFab& tmp_spray_source)
 {
-  amrex::Gpu::LaunchSafeGuard lsg(true);
   // Setup ghost particles for use in finer levels. Note that ghost
   // particles that will be used by this level have already been created,
   // the particles being set here are only used by finer levels.
@@ -469,8 +461,6 @@ PeleC::particle_redistribute(int lbase, bool init_part)
   BL_PROFILE("PeleC::particle_redistribute()");
   int flev = parent->finestLevel();
   if (theSprayPC()) {
-    amrex::Gpu::LaunchSafeGuard lsg(true);
-
     // If we are calling with init_part = true, then we want to force the
     // redistribute without checking whether the grids have changed.
     if (init_part) {

@@ -1262,6 +1262,18 @@ void PeleC::post_init(amrex::Real /*stop_time*/)
   // Allow the user to define their own post_init functions.
   problem_post_init();
 
+#ifdef AMREX_PARTICLES
+  if (do_spray_particles) {
+    const ProbParmHost* lprobparm = prob_parm_host;
+    const ProbParmDevice* lprobparm_d = h_prob_parm_device;
+    BL_PROFILE_VAR("SprayParticles::injectParticles()", INJECT_SPRAY);
+    bool injectParts = theSprayPC()->injectParticles(
+      cumtime, dtlev, 0, level, parent->finestLevel(), *lprobparm, *lprobparm_d);
+    BL_PROFILE_VAR_STOP(INJECT_SPRAY);
+    if (injectPart) theSprayPC()->Redistribute(level, theSprayPC()->finestLevel(), 0);
+  }
+#endif
+
   int nstep = parent->levelSteps(0);
   if (cumtime != 0.0) {
     cumtime += dtlev;
