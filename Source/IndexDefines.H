@@ -4,7 +4,7 @@
 #include <AMReX_REAL.H>
 #include <AMReX_Arena.H>
 #include <AMReX_GpuMemory.H>
-#include "mechanism.h"
+#include "mechanism.H"
 
 #define URHO 0
 #define UMX 1

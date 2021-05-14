@@ -15,10 +15,7 @@
 #include <AMReX_EBMultiFabUtil.H>
 #endif
 
-#ifdef PELEC_USE_REACTIONS
-#include "chemistry_file.H"
-#endif
-#include "mechanism.h"
+#include "mechanism.H"
 
 #include "PeleC.H"
 #include "IO.H"

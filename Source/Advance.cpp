@@ -1,4 +1,4 @@
-#include "mechanism.h"
+#include "mechanism.H"
 
 #include "PeleC.H"
 #include "IndexDefines.H"

@@ -24,8 +24,8 @@ FSANITIZER = FALSE
 THREAD_SANITIZER = FALSE
 
 # PeleC
-USE_SUNDIALS_PP = FALSE
 USE_REACT = TRUE
+Reactor_dir := rk64
 USE_EB = TRUE
 Eos_dir := Fuego
 Chemistry_Model := LiDryer

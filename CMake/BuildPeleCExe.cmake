@@ -51,9 +51,8 @@ function(build_pelec_exe pelec_exe_name)
 
   set(PELEC_MECHANISM_DIR "${PELE_PHYSICS_SRC_DIR}/Support/Fuego/Mechanism/Models/${PELEC_CHEMISTRY_MODEL}")
   target_sources(${pelec_exe_name} PRIVATE
-                 ${PELEC_MECHANISM_DIR}/chemistry_file.H
                  ${PELEC_MECHANISM_DIR}/mechanism.cpp
-                 ${PELEC_MECHANISM_DIR}/mechanism.h)
+                 ${PELEC_MECHANISM_DIR}/mechanism.H)
   # Avoid warnings from mechanism.cpp for now
   if(NOT PELEC_ENABLE_CUDA)
     if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$")
@@ -79,7 +78,6 @@ function(build_pelec_exe pelec_exe_name)
   endif()
   separate_arguments(MY_CXX_FLAGS)
   set_source_files_properties(${PELEC_MECHANISM_DIR}/mechanism.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-  set_source_files_properties(${PELEC_MECHANISM_DIR}/chemistry_file.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
   set_source_files_properties(${PELEC_MECHANISM_DIR}/mechanism.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
   set_source_files_properties(${SRC_DIR}/Redistribution/iamr_create_itracker_${PELEC_DIM}d.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
   set_source_files_properties(${SRC_DIR}/Redistribution/iamr_merge_redistribute.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
@@ -92,24 +90,19 @@ function(build_pelec_exe pelec_exe_name)
   if(PELEC_ENABLE_REACTIONS)
     if(PELEC_ENABLE_SUNDIALS)
       if(PELEC_ENABLE_CUDA)
-        set(DEVICE GPU)
-      else()
-        set(DEVICE CPU)
-      endif()
-      target_compile_definitions(${pelec_exe_name} PRIVATE USE_SUNDIALS_PP)
-      target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/arkode/reactor.cpp
-                                               ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/arkode/reactor.h
-                                               ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/AMREX_misc.H)
-      set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/arkode/reactor.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-      set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/arkode/reactor.h PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-      target_link_libraries(${pelec_exe_name} PRIVATE sundials_arkode)
-      target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE})
-      target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/arkode)
-      if(PELEC_ENABLE_CUDA)
-        target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/AMReX_SUNMemory.cpp
-                                                 ${PELE_PHYSICS_SRC_DIR}/Reactions/Fuego/${DEVICE}/AMReX_SUNMemory.H)
+        target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/AMReX_SUNMemory.cpp
+                                                 ${PELE_PHYSICS_SRC_DIR}/Reactions/AMReX_SUNMemory.H)
         target_link_libraries(${pelec_exe_name} PRIVATE sundials_nveccuda)
       endif()
+      target_compile_definitions(${pelec_exe_name} PRIVATE USE_SUNDIALS_PP USE_ARKODE_PP)
+      target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/arkode/reactor.cpp
+                                               ${PELE_PHYSICS_SRC_DIR}/Reactions/arkode/reactor.H
+                                               ${PELE_PHYSICS_SRC_DIR}/Reactions/reactor_utilities.H)
+      set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/arkode/reactor.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+      set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/arkode/reactor.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+      target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions)
+      target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/arkode)
+      target_link_libraries(${pelec_exe_name} PRIVATE sundials_arkode)
     endif()
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_REACTIONS)
     target_sources(${pelec_exe_name} PRIVATE

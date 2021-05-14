@@ -204,7 +204,6 @@ if(PELEC_DIM GREATER 2)
   endif()
   if(PELEC_ENABLE_SUNDIALS)
     add_test_re(pmf-2 PMF)
-    add_test_re(pmf-3 PMF)
   endif()
 endif()
 

@@ -29,7 +29,7 @@ using namespace MASA;
 #include "Tagging.H"
 #include "IndexDefines.H"
 #if defined(PELEC_USE_REACTIONS) && defined(USE_SUNDIALS_PP)
-#include "reactor.h"
+#include "reactor.H"
 #endif
 
 #ifdef PELEC_ENABLE_FPE_TRAP
@@ -1878,16 +1878,12 @@ void
 PeleC::init_reactor()
 {
 #ifdef USE_SUNDIALS_PP
-#ifdef AMREX_USE_GPU
-  reactor_info(1, 1);
-#else
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
   {
     reactor_init(1, 1);
   }
-#endif
 #endif
 }
 
