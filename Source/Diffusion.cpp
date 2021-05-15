@@ -119,9 +119,9 @@ PeleC::getMOLSrcTerm(
          ++mfi) {
       const amrex::Box vbox = mfi.tilebox();
 #ifdef PELEC_USE_EB
-      int ng = NUM_GROW + nGrowF;
+      int ng = numGrow() + nGrowF;
 #else
-      int ng = NUM_GROW - 2 + nGrowF;
+      int ng = numGrow() - 2 + nGrowF;
 #endif
       const amrex::Box gbox = amrex::grow(vbox, ng);
       const amrex::Box cbox = amrex::grow(vbox, ng - 1);

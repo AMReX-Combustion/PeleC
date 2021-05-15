@@ -1270,7 +1270,7 @@ void PeleC::post_init(amrex::Real /*stop_time*/)
     bool injectParts = theSprayPC()->injectParticles(
       cumtime, dtlev, 0, level, parent->finestLevel(), *lprobparm, *lprobparm_d);
     BL_PROFILE_VAR_STOP(INJECT_SPRAY);
-    if (injectPart) theSprayPC()->Redistribute(level, theSprayPC()->finestLevel(), 0);
+    if (injectParts) theSprayPC()->Redistribute(level, theSprayPC()->finestLevel(), 0);
   }
 #endif
 
