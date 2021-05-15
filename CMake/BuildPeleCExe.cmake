@@ -53,28 +53,9 @@ function(build_pelec_exe pelec_exe_name)
   target_sources(${pelec_exe_name} PRIVATE
                  ${PELEC_MECHANISM_DIR}/mechanism.cpp
                  ${PELEC_MECHANISM_DIR}/mechanism.H)
-  # Avoid warnings from mechanism.cpp for now
-  if(NOT PELEC_ENABLE_CUDA)
-    if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$")
-      if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 7.0)
-        list(APPEND MY_CXX_FLAGS "-Wno-unreachable-code"
-                                 "-Wno-null-dereference"
-                                 "-Wno-float-conversion"
-                                 "-Wno-shadow"
-                                 "-Wno-overloaded-virtual")
-      endif()
-      if(CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|AppleClang)$")
-        list(APPEND MY_CXX_FLAGS "-Wno-unused-variable")
-        list(APPEND MY_CXX_FLAGS "-Wno-unused-parameter")
-        list(APPEND MY_CXX_FLAGS "-Wno-vla-extension")
-        list(APPEND MY_CXX_FLAGS "-Wno-zero-length-array")
-      elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        list(APPEND MY_CXX_FLAGS "-Wno-unused-variable")
-        list(APPEND MY_CXX_FLAGS "-Wno-unused-parameter")
-        list(APPEND MY_CXX_FLAGS "-Wno-vla")
-        list(APPEND MY_CXX_FLAGS "-Wno-pedantic")
-      endif()
-    endif()
+  # Avoid warnings from certain files
+  if((NOT PELEC_ENABLE_CUDA) AND (CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$"))
+    list(APPEND MY_CXX_FLAGS "-w")
   endif()
   separate_arguments(MY_CXX_FLAGS)
   set_source_files_properties(${PELEC_MECHANISM_DIR}/mechanism.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
@@ -122,16 +103,16 @@ function(build_pelec_exe pelec_exe_name)
                    ${SRC_DIR}/EB.cpp
                    ${SRC_DIR}/InitEB.cpp
                    ${SRC_DIR}/SparseData.H
-                   ${SRC_DIR}/EBStencilTypes.H)
+                   ${SRC_DIR}/EBStencilTypes.H
+                   ${SRC_DIR}/Redistribution/iamr_create_itracker_${PELEC_DIM}d.cpp
+                   ${SRC_DIR}/Redistribution/iamr_merge_redistribute.cpp
+                   ${SRC_DIR}/Redistribution/iamr_redistribution.H
+                   ${SRC_DIR}/Redistribution/iamr_redistribution.cpp
+                   ${SRC_DIR}/Redistribution/iamr_state_redistribute.cpp)
   endif()
   
   target_sources(${pelec_exe_name}
      PRIVATE
-       ${SRC_DIR}/Redistribution/iamr_create_itracker_${PELEC_DIM}d.cpp
-       ${SRC_DIR}/Redistribution/iamr_merge_redistribute.cpp
-       ${SRC_DIR}/Redistribution/iamr_redistribution.H
-       ${SRC_DIR}/Redistribution/iamr_redistribution.cpp
-       ${SRC_DIR}/Redistribution/iamr_state_redistribute.cpp
        ${SRC_DIR}/Advance.cpp
        ${SRC_DIR}/BCfill.cpp
        ${SRC_DIR}/Bld.cpp
