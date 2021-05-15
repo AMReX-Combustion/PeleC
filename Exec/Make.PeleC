@@ -67,19 +67,16 @@ ifeq ($(USE_REACT), TRUE)
   ifeq ($(Reactor_dir), arkode)
       USE_SUNDIALS_PP = TRUE
       USE_ARKODE_PP = TRUE
-      DEFINES += -DUSE_ARKODE_PP
       Bpack += $(REACTIONS_HOME)/$(Reactor_dir)/Make.package
       Blocs += $(REACTIONS_HOME)/$(Reactor_dir)
   endif
   ifeq ($(Reactor_dir), cvode)
       USE_SUNDIALS_PP = TRUE
       USE_CVODE_PP = TRUE
-      DEFINES += -DUSE_CVODE_PP
       Bpack += $(REACTIONS_HOME)/$(Reactor_dir)/Make.package
       Blocs += $(REACTIONS_HOME)/$(Reactor_dir)
   endif
   ifeq ($(USE_SUNDIALS_PP), TRUE)
-      DEFINES += -DUSE_SUNDIALS_PP
       include $(PELE_PHYSICS_HOME)/ThirdParty/Make.ThirdParty
   endif
 endif
