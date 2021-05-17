@@ -2180,6 +2180,7 @@ PeleC::clean_state(const amrex::MultiFab& S, amrex::MultiFab& S_old)
 void
 PeleC::InitialRedistribution()
 {
+  BL_PROFILE("PeleC::InitialRedistribution()");
 
   // Next we must redistribute the initial solution if we are going to use
   // MergeRedist or StateRedist redistribution schemes
