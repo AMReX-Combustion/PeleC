@@ -74,8 +74,12 @@ include(SetAmrexCompileFlags)
 
 if(PELEC_ENABLE_SUNDIALS)
   message(STATUS "SUNDIALS Configure Section")
+  if(NOT (PELEC_SUNDIALS_INTEGRATOR MATCHES "^(arkode|cvode)$"))
+    set(PELEC_SUNDIALS_INTEGRATOR arkode)
+  endif()
   set(SUNDIALS_SUBMOD_LOCATION "${CMAKE_SOURCE_DIR}/Submodules/sundials")
   include(SetSundialsOptions)
+  message(STATUS "SUNDIALS Integrator = ${PELEC_SUNDIALS_INTEGRATOR}")
   #BUILD_TESTING is an old CMake keyword so don't clear it in sundials configure
   set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
   add_subdirectory(${SUNDIALS_SUBMOD_LOCATION})

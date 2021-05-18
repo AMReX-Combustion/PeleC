@@ -82,15 +82,18 @@ PeleC::react_state(
 
   if (!react_init) {
     amrex::MultiFab& S_old = get_old_data(State_Type);
-    STemp.copy(S_old, UFS, 0, NUM_SPECIES);
-    STemp.copy(S_old, UTEMP, NUM_SPECIES, 1);
-    STemp.copy(S_old, UEINT, NUM_SPECIES + 1, 1);
+    amrex::MultiFab::Copy(STemp, S_old, UFS, 0, NUM_SPECIES, STemp.nGrow());
+    amrex::MultiFab::Copy(STemp, S_old, UTEMP, NUM_SPECIES, 1, STemp.nGrow());
+    amrex::MultiFab::Copy(
+      STemp, S_old, UEINT, NUM_SPECIES + 1, 1, STemp.nGrow());
   } else {
-    STemp.copy(S_new, UFS, 0, NUM_SPECIES);
-    STemp.copy(S_new, UTEMP, NUM_SPECIES, 1);
-    STemp.copy(S_new, UEINT, NUM_SPECIES + 1, 1);
+    amrex::MultiFab::Copy(STemp, S_new, UFS, 0, NUM_SPECIES, STemp.nGrow());
+    amrex::MultiFab::Copy(STemp, S_new, UTEMP, NUM_SPECIES, 1, STemp.nGrow());
+    amrex::MultiFab::Copy(
+      STemp, S_new, UEINT, NUM_SPECIES + 1, 1, STemp.nGrow());
   }
-  extsrc_rY.copy(*non_react_src, UFS, 0, NUM_SPECIES);
+  amrex::MultiFab::Copy(
+    extsrc_rY, *non_react_src, UFS, 0, NUM_SPECIES, STemp.nGrow());
 #endif
 
 #ifdef PELEC_USE_EB

@@ -53,28 +53,9 @@ function(build_pelec_exe pelec_exe_name)
   target_sources(${pelec_exe_name} PRIVATE
                  ${PELEC_MECHANISM_DIR}/mechanism.cpp
                  ${PELEC_MECHANISM_DIR}/mechanism.H)
-  # Avoid warnings from mechanism.cpp for now
-  if(NOT PELEC_ENABLE_CUDA)
-    if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$")
-      if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 7.0)
-        list(APPEND MY_CXX_FLAGS "-Wno-unreachable-code"
-                                 "-Wno-null-dereference"
-                                 "-Wno-float-conversion"
-                                 "-Wno-shadow"
-                                 "-Wno-overloaded-virtual")
-      endif()
-      if(CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|AppleClang)$")
-        list(APPEND MY_CXX_FLAGS "-Wno-unused-variable")
-        list(APPEND MY_CXX_FLAGS "-Wno-unused-parameter")
-        list(APPEND MY_CXX_FLAGS "-Wno-vla-extension")
-        list(APPEND MY_CXX_FLAGS "-Wno-zero-length-array")
-      elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        list(APPEND MY_CXX_FLAGS "-Wno-unused-variable")
-        list(APPEND MY_CXX_FLAGS "-Wno-unused-parameter")
-        list(APPEND MY_CXX_FLAGS "-Wno-vla")
-        list(APPEND MY_CXX_FLAGS "-Wno-pedantic")
-      endif()
-    endif()
+  # Avoid warnings from certain files
+  if((NOT PELEC_ENABLE_CUDA) AND (CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$"))
+    list(APPEND MY_CXX_FLAGS "-w")
   endif()
   separate_arguments(MY_CXX_FLAGS)
   set_source_files_properties(${PELEC_MECHANISM_DIR}/mechanism.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
@@ -88,26 +69,32 @@ function(build_pelec_exe pelec_exe_name)
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELE_PHYSICS_SRC_DIR}/Support/Fuego/Evaluation)
   
   if(PELEC_ENABLE_REACTIONS)
-    if(PELEC_ENABLE_SUNDIALS)
-      if(PELEC_ENABLE_CUDA)
-        target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/AMReX_SUNMemory.cpp
-                                                 ${PELE_PHYSICS_SRC_DIR}/Reactions/AMReX_SUNMemory.H)
-        target_link_libraries(${pelec_exe_name} PRIVATE sundials_nveccuda)
-      endif()
-      target_compile_definitions(${pelec_exe_name} PRIVATE USE_SUNDIALS_PP USE_ARKODE_PP)
-      target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/arkode/reactor.cpp
-                                               ${PELE_PHYSICS_SRC_DIR}/Reactions/arkode/reactor.H
-                                               ${PELE_PHYSICS_SRC_DIR}/Reactions/reactor_utilities.H)
-      set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/arkode/reactor.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-      set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/arkode/reactor.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-      target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions)
-      target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/arkode)
-      target_link_libraries(${pelec_exe_name} PRIVATE sundials_arkode)
-    endif()
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_REACTIONS)
     target_sources(${pelec_exe_name} PRIVATE
                    ${SRC_DIR}/React.H
                    ${SRC_DIR}/React.cpp)
+    if(PELEC_ENABLE_SUNDIALS)
+      target_compile_definitions(${pelec_exe_name} PRIVATE USE_SUNDIALS_PP)
+      if(PELEC_SUNDIALS_INTEGRATOR STREQUAL "arkode")
+        target_compile_definitions(${pelec_exe_name} PRIVATE USE_ARKODE_PP)
+      endif()
+      target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor.cpp
+                                               ${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor.H
+                                               ${PELE_PHYSICS_SRC_DIR}/Reactions/reactor_utilities.H)
+      set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+      set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+      target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions)
+      target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR})
+      target_link_libraries(${pelec_exe_name} PRIVATE sundials_${PELEC_SUNDIALS_INTEGRATOR})
+      if(PELEC_ENABLE_CUDA)
+        target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/AMReX_SUNMemory.cpp
+                                                 ${PELE_PHYSICS_SRC_DIR}/Reactions/AMReX_SUNMemory.H)
+        target_link_libraries(${pelec_exe_name} PRIVATE sundials_nveccuda)
+        if(PELEC_SUNDIALS_INTEGRATOR STREQUAL "cvode")
+          target_link_libraries(${pelec_exe_name} PRIVATE sundials_sunlinsolcusolversp sundials_sunmatrixcusparse)
+        endif()
+      endif()
+    endif()
   endif()
 
   if(PELEC_ENABLE_FORCING)
@@ -122,16 +109,16 @@ function(build_pelec_exe pelec_exe_name)
                    ${SRC_DIR}/EB.cpp
                    ${SRC_DIR}/InitEB.cpp
                    ${SRC_DIR}/SparseData.H
-                   ${SRC_DIR}/EBStencilTypes.H)
+                   ${SRC_DIR}/EBStencilTypes.H
+                   ${SRC_DIR}/Redistribution/iamr_create_itracker_${PELEC_DIM}d.cpp
+                   ${SRC_DIR}/Redistribution/iamr_merge_redistribute.cpp
+                   ${SRC_DIR}/Redistribution/iamr_redistribution.H
+                   ${SRC_DIR}/Redistribution/iamr_redistribution.cpp
+                   ${SRC_DIR}/Redistribution/iamr_state_redistribute.cpp)
   endif()
   
   target_sources(${pelec_exe_name}
      PRIVATE
-       ${SRC_DIR}/Redistribution/iamr_create_itracker_${PELEC_DIM}d.cpp
-       ${SRC_DIR}/Redistribution/iamr_merge_redistribute.cpp
-       ${SRC_DIR}/Redistribution/iamr_redistribution.H
-       ${SRC_DIR}/Redistribution/iamr_redistribution.cpp
-       ${SRC_DIR}/Redistribution/iamr_state_redistribute.cpp
        ${SRC_DIR}/Advance.cpp
        ${SRC_DIR}/BCfill.cpp
        ${SRC_DIR}/Bld.cpp
