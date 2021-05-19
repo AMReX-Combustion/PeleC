@@ -647,11 +647,14 @@ PeleC::getMOLSrcTerm(
         copy_array4(Dfab.box(), NVAR, Dterm, Dterm_tmp);
 
         auto flag_arr = flags.const_array(mfi);
-        Redistribution::Apply(
-          vbox, S.nComp(), Dterm, Dterm_tmp, S.const_array(mfi), scratch,
-          flag_arr, AMREX_D_DECL(apx, apy, apz), vfrac.const_array(mfi),
-          AMREX_D_DECL(fcx, fcy, fcz), ccc, geom, dt, redistribution_type);
-
+        {
+          BL_PROFILE("Redistribution::Apply()");
+          Redistribution::Apply(
+            vbox, S.nComp(), Dterm, Dterm_tmp, S.const_array(mfi), scratch,
+            flag_arr, AMREX_D_DECL(apx, apy, apz), vfrac.const_array(mfi),
+            AMREX_D_DECL(fcx, fcy, fcz), ccc, &phys_bc, geom, dt,
+            redistribution_type);
+        }
         // Make sure div is zero in covered cells
         amrex::ParallelFor(
           vbox, S.nComp(),
