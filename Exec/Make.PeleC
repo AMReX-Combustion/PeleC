@@ -1,6 +1,7 @@
 PELEC_HOME        ?= ../
 PELE_PHYSICS_HOME ?= $(PELEC_HOME)/Submodules/PelePhysics
 AMREX_HOME        ?= $(PELEC_HOME)/Submodules/AMReX
+AMREX_HYDRO_HOME  ?= $(PELEC_HOME)/Submodules/AMReX-Hydro
 PELEMP_HOME       ?= $(PELEC_HOME)/Submodules/PeleMP
 
 TOP := $(PELEC_HOME)
@@ -99,11 +100,13 @@ VPATH_LOCATIONS   += $(TRANSPORT_HOME)
 Bpack             += $(TRANSPORT_HOME)/Make.package
 Blocs             += $(TRANSPORT_HOME)
 
-Bdirs := Source Source/Params/param_includes Source/Redistribution
+Bdirs := Source Source/Params/param_includes
 
 Pdirs := Base Amr Boundary AmrCore
 ifeq ($(USE_EB), TRUE)
   Pdirs += EB
+  Bpack += $(AMREX_HYDRO_HOME)/Redistribution/Make.package
+  Blocs += $(AMREX_HYDRO_HOME)/Redistribution
 endif
 
 ifeq ($(USE_PARTICLES), TRUE)

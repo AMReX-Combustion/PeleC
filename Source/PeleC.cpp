@@ -8,7 +8,7 @@
 
 #ifdef PELEC_USE_EB
 #include <AMReX_EBMultiFabUtil.H>
-#include "iamr_redistribution.H"
+#include "hydro_redistribution.H"
 #endif
 
 #ifdef AMREX_PARTICLES
@@ -2205,6 +2205,7 @@ PeleC::clean_state(const amrex::MultiFab& S, amrex::MultiFab& S_old)
 void
 PeleC::InitialRedistribution()
 {
+  BL_PROFILE("PeleC::InitialRedistribution()");
 
   // Next we must redistribute the initial solution if we are going to use
   // MergeRedist or StateRedist redistribution schemes
@@ -2215,8 +2216,8 @@ PeleC::InitialRedistribution()
   }
 
   if (redistribution_type == "MergeRedist") {
-    amrex::Abort(
-      "MergeRedist is unsupported. Check with IAMR if that has been fixed");
+    amrex::Abort("MergeRedist is unsupported. Check with AMReX-Hydro if that "
+                 "has been fixed");
   }
 
   if (verbose) {
@@ -2263,7 +2264,7 @@ PeleC::InitialRedistribution()
       Redistribution::ApplyToInitialData(
         bx, NVAR, S_new.array(mfi), tmp.array(mfi), flag_arr,
         AMREX_D_DECL(apx, apy, apz), vfrac.const_array(mfi),
-        AMREX_D_DECL(fcx, fcy, fcz), ccc, geom, redistribution_type);
+        AMREX_D_DECL(fcx, fcy, fcz), ccc, &phys_bc, geom, redistribution_type);
     }
   }
   set_body_state(S_new);
