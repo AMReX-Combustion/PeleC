@@ -6,6 +6,22 @@
 #include "IndexDefines.H"
 #include "PelePhysics.H"
 
+template <class T>
+amrex::Gpu::DeviceVector<T>
+convertToDeviceVector(amrex::Vector<T> v)
+{
+  int ncomp = v.size();
+  amrex::Gpu::DeviceVector<T> v_d(ncomp);
+#ifdef AMREX_USE_GPU
+  amrex::Gpu::htod_memcpy
+#else
+  std::memcpy
+#endif
+    (v_d.data(), v.data(), sizeof(T) * ncomp);
+
+  return v_d;
+};
+
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
