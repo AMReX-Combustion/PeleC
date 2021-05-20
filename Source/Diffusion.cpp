@@ -76,7 +76,9 @@ PeleC::getMOLSrcTerm(
   // Grab the BCs
   const amrex::StateDescriptor* desc = state[State_Type].descriptor();
   const auto& bcs = desc->getBCs();
-  amrex::Gpu::DeviceVector<amrex::BCRec> d_bcs = convertToDeviceVector(bcs);
+  amrex::Gpu::DeviceVector<amrex::BCRec> d_bcs(desc->nComp());
+  amrex::Gpu::copy(
+    amrex::Gpu::hostToDevice, bcs.begin(), bcs.end(), d_bcs.begin());
 
   // Fetch some gpu arrays
   prefetchToDevice(S);

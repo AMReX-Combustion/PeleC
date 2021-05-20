@@ -2211,8 +2211,9 @@ PeleC::InitialRedistribution()
 
   const amrex::StateDescriptor* desc = state[State_Type].descriptor();
   const auto& bcs = desc->getBCs();
-  const amrex::Gpu::DeviceVector<amrex::BCRec>& d_bcs =
-    convertToDeviceVector(bcs);
+  amrex::Gpu::DeviceVector<amrex::BCRec> d_bcs(desc->nComp());
+  amrex::Gpu::copy(
+    amrex::Gpu::hostToDevice, bcs.begin(), bcs.end(), d_bcs.begin());
 
   for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
        ++mfi) {
