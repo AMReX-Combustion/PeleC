@@ -44,18 +44,6 @@ is_inside(
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
-bool
-is_inside(
-  AMREX_D_DECL(const int i, const int j, const int k),
-  const amrex::Dim3 lo,
-  const amrex::Dim3 hi,
-  const int ng = 0)
-{
-  return is_inside(amrex::IntVect{AMREX_D_DECL(i, j, k)}, lo, hi, ng);
-}
-
-AMREX_GPU_DEVICE
-AMREX_FORCE_INLINE
 int
 argmax(const amrex::Real array[AMREX_SPACEDIM])
 {
