@@ -31,29 +31,27 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 bool
 is_inside(
-  const int i,
-  const int j,
-  const int k,
+  amrex::IntVect iv,
   const amrex::Dim3 lo,
   const amrex::Dim3 hi,
-  const int ng)
+  const int ng = 0)
 {
-  return (i >= lo.x - ng && i <= hi.x + ng) &&
-         (j >= lo.y - ng && j <= hi.y + ng) &&
-         (k >= lo.z - ng && k <= hi.z + ng);
+  return AMREX_D_TERM(
+    (iv[0] >= lo.x - ng && iv[0] <= hi.x + ng),
+    &&(iv[1] >= lo.y - ng && iv[1] <= hi.y + ng),
+    &&(iv[2] >= lo.z - ng && iv[2] <= hi.z + ng));
 }
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 bool
 is_inside(
-  const int i,
-  const int j,
-  const int k,
+  AMREX_D_DECL(const int i, const int j, const int k),
   const amrex::Dim3 lo,
-  const amrex::Dim3 hi)
+  const amrex::Dim3 hi,
+  const int ng = 0)
 {
-  return is_inside(i, j, k, lo, hi, 0);
+  return is_inside(amrex::IntVect{AMREX_D_DECL(i, j, k)}, lo, hi, ng);
 }
 
 AMREX_GPU_DEVICE
@@ -146,9 +144,10 @@ void pc_eb_div(
   const int,
   const EBBndryGeom*,
   const int,
-  const amrex::Array4<const amrex::Real>&,
-  const amrex::Array4<const amrex::Real>&,
-  const amrex::Array4<const amrex::Real>&,
+  AMREX_D_DECL(
+    const amrex::Array4<const amrex::Real>&,
+    const amrex::Array4<const amrex::Real>&,
+    const amrex::Array4<const amrex::Real>&),
   const amrex::Real*,
   const amrex::Array4<const amrex::Real>&,
   const amrex::Array4<amrex::Real>&);

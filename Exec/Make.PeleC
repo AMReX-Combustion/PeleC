@@ -28,9 +28,6 @@ endif
 
 ifeq ($(USE_EB), TRUE)
   DEFINES += -DPELEC_USE_EB
-  ifneq ($(DIM), 3)
-    $(error EB requires 3D)
-  endif
 endif
 
 all: $(executable) 

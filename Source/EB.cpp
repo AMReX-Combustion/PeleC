@@ -14,31 +14,33 @@ pc_fill_sv_ebg(
   const auto lo = amrex::lbound(bx);
   const auto hi = amrex::ubound(bx);
   amrex::ParallelFor(Nebg, [=] AMREX_GPU_DEVICE(int L) {
-    const int i = ebg[L].iv[0];
-    const int j = ebg[L].iv[1];
-    const int k = ebg[L].iv[2];
-    if (is_inside(i, j, k, lo, hi)) {
-      const amrex::Real axm = apx(i, j, k);
-      const amrex::Real axp = apx(i + 1, j, k);
-      const amrex::Real aym = apy(i, j, k);
-      const amrex::Real ayp = apy(i, j + 1, k);
-      const amrex::Real azm = apz(i, j, k);
-      const amrex::Real azp = apz(i, j, k + 1);
-      const amrex::Real apnorm = std::sqrt(
-        (axm - axp) * (axm - axp) + (aym - ayp) * (aym - ayp) +
-        (azm - azp) * (azm - azp));
+    const amrex::IntVect iv =
+      amrex::IntVect{AMREX_D_DECL(ebg[L].iv[0], ebg[L].iv[1], ebg[L].iv[2])};
+    if (is_inside(iv, lo, hi)) {
+      const amrex::Real axm = apx(iv);
+      const amrex::Real axp = apx(iv + amrex::IntVect::TheDimensionVector(0));
+      const amrex::Real aym = apy(iv);
+      const amrex::Real ayp = apy(iv + amrex::IntVect::TheDimensionVector(1));
+#if AMREX_SPACEDIM > 2
+      const amrex::Real azm = apz(iv);
+      const amrex::Real azp = apz(iv + amrex::IntVect::TheDimensionVector(2));
+#endif
+      const amrex::Real apnorm = std::sqrt(AMREX_D_TERM(
+        (axm - axp) * (axm - axp), +(aym - ayp) * (aym - ayp),
+        +(azm - azp) * (azm - azp)));
       if (apnorm == 0.0) {
         amrex::Abort("pc_fill_sv_ebg: zero apnorm");
       }
       const amrex::Real apnorminv = -1.0 / apnorm;
-      ebg[L].eb_normal[0] = (axm - axp) * apnorminv; // pointing to the wall
-      ebg[L].eb_normal[1] = (aym - ayp) * apnorminv;
-      ebg[L].eb_normal[2] = (azm - azp) * apnorminv;
+      // pointing to the wall
+      AMREX_D_TERM(ebg[L].eb_normal[0] = (axm - axp) * apnorminv;
+                   , ebg[L].eb_normal[1] = (aym - ayp) * apnorminv;
+                   , ebg[L].eb_normal[2] = (azm - azp) * apnorminv;)
       ebg[L].eb_area = apnorm;
-      ebg[L].eb_centroid[0] = bcent(i, j, k, 0);
-      ebg[L].eb_centroid[1] = bcent(i, j, k, 1);
-      ebg[L].eb_centroid[2] = bcent(i, j, k, 2);
-      ebg[L].eb_vfrac = vfrac(i, j, k);
+      AMREX_D_TERM(ebg[L].eb_centroid[0] = bcent(iv, 0);
+                   , ebg[L].eb_centroid[1] = bcent(iv, 1);
+                   , ebg[L].eb_centroid[2] = bcent(iv, 2);)
+      ebg[L].eb_vfrac = vfrac(iv);
     }
   });
 }
@@ -58,10 +60,9 @@ pc_fill_bndry_grad_stencil(
   const amrex::Real fac = area / dx;
 
   amrex::ParallelFor(Nsten, [=] AMREX_GPU_DEVICE(int L) {
-    const int i = ebg[L].iv[0];
-    const int j = ebg[L].iv[1];
-    const int k = ebg[L].iv[2];
-    if (is_inside(i, j, k, lo, hi)) {
+    const amrex::IntVect iv =
+      amrex::IntVect{AMREX_D_DECL(ebg[L].iv[0], ebg[L].iv[1], ebg[L].iv[2])};
+    if (is_inside(iv, lo, hi)) {
       const amrex::Real n[AMREX_SPACEDIM] = {AMREX_D_DECL(
         ebg[L].eb_normal[0], ebg[L].eb_normal[1], ebg[L].eb_normal[2])};
 
@@ -186,25 +187,24 @@ pc_fill_flux_interp_stencil(
   const auto lo = amrex::lbound(bx);
   const auto hi = amrex::ubound(bx);
   amrex::ParallelFor(Nsten, [=] AMREX_GPU_DEVICE(int L) {
-    const int i = sten[L].iv[0];
-    const int j = sten[L].iv[1];
-    const int k = sten[L].iv[2];
-    if (is_inside(i, j, k, lo, hi)) {
+    const amrex::IntVect iv =
+      amrex::IntVect{AMREX_D_DECL(sten[L].iv[0], sten[L].iv[1], sten[L].iv[2])};
+    if (is_inside(iv, lo, hi)) {
       for (auto& ii : sten[L].val) {
         for (amrex::Real& jj : ii) {
           jj = 0.0;
         }
       }
-      const amrex::Real ct0 = fc(i, j, k, 0);
-      const amrex::Real ct1 = fc(i, j, k, 1);
+      const amrex::Real ct0 = fc(iv, 0);
+      const amrex::Real ct1 = fc(iv, 1);
       const int t0n = (int)amrex::Math::copysign(1.0, ct0);
       const int t1n = (int)amrex::Math::copysign(1.0, ct1);
       const amrex::Real act0 = amrex::Math::abs(ct0);
       const amrex::Real act1 = amrex::Math::abs(ct1);
-      sten[L].val[1][1] = fa(i, j, k) * (1.0 - act0) * (1.0 - act1);
-      sten[L].val[1][t0n + 1] = fa(i, j, k) * act0 * (1.0 - act1);
-      sten[L].val[t1n + 1][1] = fa(i, j, k) * (1.0 - act0) * act1;
-      sten[L].val[t1n + 1][t0n + 1] = fa(i, j, k) * act0 * act1;
+      sten[L].val[1][1] = fa(iv) * (1.0 - act0) * (1.0 - act1);
+      sten[L].val[1][t0n + 1] = fa(iv) * act0 * (1.0 - act1);
+      sten[L].val[t1n + 1][1] = fa(iv) * (1.0 - act0) * act1;
+      sten[L].val[t1n + 1][t0n + 1] = fa(iv) * act0 * act1;
     }
   });
 }
@@ -227,30 +227,32 @@ pc_apply_face_stencil(
     amrex::Real* d_newval = newval.data();
 
     amrex::ParallelFor(Nsten, [=] AMREX_GPU_DEVICE(int L) {
-      const int i = sten[L].iv[0];
-      const int j = sten[L].iv[1];
-      const int k = sten[L].iv[2];
+      const amrex::IntVect iv = amrex::IntVect{
+        AMREX_D_DECL(sten[L].iv[0], sten[L].iv[1], sten[L].iv[2])};
       d_newval[L] = 0.0;
-      if (is_inside(i, j, k, lo, hi)) {
+      if (is_inside(iv, lo, hi)) {
         if (dir == 0) {
           for (int t0 = 0; t0 < 3; t0++) {
             for (int t1 = 0; t1 < 3; t1++) {
-              d_newval[L] +=
-                sten[L].val[t1][t0] * vout(i, j - 1 + t0, k - 1 + t1, n);
+              const amrex::IntVect ivd = amrex::IntVect{
+                AMREX_D_DECL(iv[0], iv[1] - 1 + t0, iv[2] - 1 + t1)};
+              d_newval[L] += sten[L].val[t1][t0] * vout(ivd, n);
             }
           }
         } else if (dir == 1) {
           for (int t0 = 0; t0 < 3; t0++) {
             for (int t1 = 0; t1 < 3; t1++) {
-              d_newval[L] +=
-                sten[L].val[t1][t0] * vout(i - 1 + t0, j, k - 1 + t1, n);
+              const amrex::IntVect ivd = amrex::IntVect{
+                AMREX_D_DECL(iv[0] - 1 + t0, iv[1], iv[2] - 1 + t1)};
+              d_newval[L] += sten[L].val[t1][t0] * vout(ivd, n);
             }
           }
         } else if (dir == 2) {
           for (int t0 = 0; t0 < 3; t0++) {
             for (int t1 = 0; t1 < 3; t1++) {
-              d_newval[L] +=
-                sten[L].val[t1][t0] * vout(i - 1 + t0, j - 1 + t1, k, n);
+              const amrex::IntVect ivd = amrex::IntVect{
+                AMREX_D_DECL(iv[0] - 1 + t0, iv[1] - 1 + t1, iv[2])};
+              d_newval[L] += sten[L].val[t1][t0] * vout(ivd, n);
             }
           }
         }
@@ -258,11 +260,10 @@ pc_apply_face_stencil(
     });
 
     amrex::ParallelFor(Nsten, [=] AMREX_GPU_DEVICE(int L) {
-      const int i = sten[L].iv[0];
-      const int j = sten[L].iv[1];
-      const int k = sten[L].iv[2];
-      if (is_inside(i, j, k, lo, hi)) {
-        vout(i, j, k, n) = d_newval[L];
+      const amrex::IntVect iv = amrex::IntVect{
+        AMREX_D_DECL(sten[L].iv[0], sten[L].iv[1], sten[L].iv[2])};
+      if (is_inside(iv, lo, hi)) {
+        vout(iv, n) = d_newval[L];
       }
     });
   }
@@ -275,9 +276,10 @@ pc_eb_div(
   const int nc,
   const EBBndryGeom* sv_ebg,
   const int Ncut,
-  const amrex::Array4<const amrex::Real>& f0,
-  const amrex::Array4<const amrex::Real>& f1,
-  const amrex::Array4<const amrex::Real>& f2,
+  AMREX_D_DECL(
+    const amrex::Array4<const amrex::Real>& f0,
+    const amrex::Array4<const amrex::Real>& f1,
+    const amrex::Array4<const amrex::Real>& f2),
   const amrex::Real* ebflux,
   const amrex::Array4<const amrex::Real>& vf,
   const amrex::Array4<amrex::Real>& DC)
@@ -290,20 +292,22 @@ pc_eb_div(
     // Recompute conservative divergence, DC, on cut cells...need DC in 2 grow
     // cells for final result
     amrex::ParallelFor(Ncut, [=] AMREX_GPU_DEVICE(int L) {
-      const int i = sv_ebg[L].iv[0];
-      const int j = sv_ebg[L].iv[1];
-      const int k = sv_ebg[L].iv[2];
-      if (is_inside(i, j, k, lo, hi, 2)) {
+      const amrex::IntVect iv = amrex::IntVect{
+        AMREX_D_DECL(sv_ebg[L].iv[0], sv_ebg[L].iv[1], sv_ebg[L].iv[2])};
+      if (is_inside(iv, lo, hi, 2)) {
         const amrex::Real kappa_inv =
-          1.0 / amrex::max<amrex::Real>(vf(i, j, k), 1.0e-12);
+          1.0 / amrex::max<amrex::Real>(vf(iv), 1.0e-12);
         amrex::Real tmp;
 #ifdef _OPENMP
 #pragma omp atomic read
 #endif
         tmp = ebflux[n * Ncut + L];
-        DC(i, j, k, n) =
-          -(f0(i + 1, j, k, n) - f0(i, j, k, n) + f1(i, j + 1, k, n) -
-            f1(i, j, k, n) + f2(i, j, k + 1, n) - f2(i, j, k, n) + tmp) *
+        DC(iv, n) =
+          -(AMREX_D_TERM(
+              f0(iv + amrex::IntVect::TheDimensionVector(0), n) - f0(iv, n),
+              +f1(iv + amrex::IntVect::TheDimensionVector(1), n) - f1(iv, n),
+              +f2(iv + amrex::IntVect::TheDimensionVector(2), n) - f2(iv, n)) +
+            tmp) *
           volinv * kappa_inv;
       }
     });
@@ -328,49 +332,45 @@ pc_apply_eb_boundry_visc_flux_stencil(
   const auto hi = amrex::ubound(bx);
 
   amrex::ParallelFor(Nsten, [=] AMREX_GPU_DEVICE(int L) {
-    const int i = sten[L].iv[0];
-    const int j = sten[L].iv[1];
-    const int k = sten[L].iv[2];
-    if (is_inside(i, j, k, lo, hi)) {
-      const amrex::Real Nmag = std::sqrt(
-        ebg[L].eb_normal[0] * ebg[L].eb_normal[0] +
-        ebg[L].eb_normal[1] * ebg[L].eb_normal[1] +
-        ebg[L].eb_normal[2] * ebg[L].eb_normal[2]);
-      const amrex::Real norm[AMREX_SPACEDIM] = {
+    const amrex::IntVect iv =
+      amrex::IntVect{AMREX_D_DECL(sten[L].iv[0], sten[L].iv[1], sten[L].iv[2])};
+
+    if (is_inside(iv, lo, hi)) {
+      const amrex::Real Nmag = std::sqrt(AMREX_D_TERM(
+        ebg[L].eb_normal[0] * ebg[L].eb_normal[0],
+        +ebg[L].eb_normal[1] * ebg[L].eb_normal[1],
+        +ebg[L].eb_normal[2] * ebg[L].eb_normal[2]));
+      const amrex::Real norm[AMREX_SPACEDIM] = {AMREX_D_DECL(
         ebg[L].eb_normal[0] / Nmag, ebg[L].eb_normal[1] / Nmag,
-        ebg[L].eb_normal[2] / Nmag};
+        ebg[L].eb_normal[2] / Nmag)};
       amrex::Real alpha[AMREX_SPACEDIM] = {0.0};
       int c[AMREX_SPACEDIM] = {0};
       idxsort(norm, c);
       alpha[c[2]] = 1.0;
-      const amrex::Real ndota =
-        norm[0] * alpha[0] + norm[1] * alpha[1] + norm[2] * alpha[2];
+      const amrex::Real ndota = AMREX_D_TERM(
+        norm[0] * alpha[0], +norm[1] * alpha[1], +norm[2] * alpha[2]);
       amrex::Real t1[AMREX_SPACEDIM];
       for (int idir = 0; idir < AMREX_SPACEDIM; idir++) {
         t1[idir] = alpha[idir] - ndota * norm[idir];
       }
 
       const amrex::Real denom =
-        1.0 / std::sqrt(t1[0] * t1[0] + t1[1] * t1[1] + t1[2] * t1[2]);
+        1.0 /
+        std::sqrt(AMREX_D_TERM(t1[0] * t1[0], +t1[1] * t1[1], +t1[2] * t1[2]));
       for (amrex::Real& idir : t1) {
         idir *= denom;
       }
 
-      amrex::Real t2[AMREX_SPACEDIM];
-      t2[0] = norm[1] * t1[2] - norm[2] * t1[1];
-      t2[1] = norm[2] * t1[0] - norm[0] * t1[2];
-      t2[2] = norm[0] * t1[1] - norm[1] * t1[0];
+      const amrex::Real t2[AMREX_SPACEDIM] = {AMREX_D_DECL(
+        norm[1] * t1[2] - norm[2] * t1[1], norm[2] * t1[0] - norm[0] * t1[2],
+        norm[0] * t1[1] - norm[1] * t1[0])};
 
       amrex::Real Qt[AMREX_SPACEDIM][AMREX_SPACEDIM];
-      Qt[0][0] = norm[0];
-      Qt[0][1] = norm[1];
-      Qt[0][2] = norm[2];
-      Qt[1][0] = t1[0];
-      Qt[1][1] = t1[1];
-      Qt[1][2] = t1[2];
-      Qt[2][0] = t2[0];
-      Qt[2][1] = t2[1];
-      Qt[2][2] = t2[2];
+      for (int idir = 0; idir < AMREX_SPACEDIM; idir++) {
+        Qt[0][idir] = norm[idir];
+        Qt[1][idir] = t1[idir];
+        Qt[2][idir] = t2[idir];
+      }
 
       // Transform velocities at stencil points to coordinates aligned with EB
       amrex::Real Uo[AMREX_SPACEDIM][AMREX_SPACEDIM][AMREX_SPACEDIM]
@@ -430,10 +430,9 @@ pc_apply_eb_boundry_visc_flux_stencil(
 
       amrex::Real tauDotN[AMREX_SPACEDIM];
       tauDotN[0] =
-        ((4.0 / 3.0) * coeff(i, j, k, dComp_mu) + coeff(i, j, k, dComp_xi)) *
-        dUtdn[0];
-      tauDotN[1] = coeff(i, j, k, dComp_mu) * dUtdn[1];
-      tauDotN[2] = coeff(i, j, k, dComp_mu) * dUtdn[2];
+        ((4.0 / 3.0) * coeff(iv, dComp_mu) + coeff(iv, dComp_xi)) * dUtdn[0];
+      tauDotN[1] = coeff(iv, dComp_mu) * dUtdn[1];
+      tauDotN[2] = coeff(iv, dComp_mu) * dUtdn[2];
 
       for (int idir = 0; idir < AMREX_SPACEDIM; idir++) {
         bcflux[idir * Nflux + L] = Qt[0][idir] * tauDotN[0] +
@@ -463,24 +462,23 @@ pc_apply_eb_boundry_flux_stencil(
   const auto hi = amrex::ubound(bx);
 
   amrex::ParallelFor(Nsten, [=] AMREX_GPU_DEVICE(int L) {
-    const int i = sten[L].iv[0];
-    const int j = sten[L].iv[1];
-    const int k = sten[L].iv[2];
-    if (is_inside(i, j, k, lo, hi)) {
+    const amrex::IntVect iv =
+      amrex::IntVect{AMREX_D_DECL(sten[L].iv[0], sten[L].iv[1], sten[L].iv[2])};
+    if (is_inside(iv, lo, hi)) {
       for (int n = 0; n < nc; n++) {
         amrex::Real sum = 0.0;
         for (int ii = 0; ii < 3; ii++) {
           for (int jj = 0; jj < 3; jj++) {
             for (int kk = 0; kk < 3; kk++) {
-              sum += sten[L].val[kk][jj][ii] *
-                     s(sten[L].iv_base[0] + ii, sten[L].iv_base[1] + jj,
-                       sten[L].iv_base[2] + kk, scomp + n);
+              const amrex::IntVect ivp = amrex::IntVect(AMREX_D_DECL(
+                sten[L].iv_base[0] + ii, sten[L].iv_base[1] + jj,
+                sten[L].iv_base[2] + kk));
+              sum += sten[L].val[kk][jj][ii] * s(ivp, scomp + n);
             }
           }
         }
         bcflux[n * Nflux + L] =
-          D(i, j, k, Dcomp + n) *
-          (bcval[n * Nsten + L] * sten[L].bcval_sten + sum);
+          D(iv, Dcomp + n) * (bcval[n * Nsten + L] * sten[L].bcval_sten + sum);
       }
     }
   });

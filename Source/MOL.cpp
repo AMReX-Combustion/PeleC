@@ -204,9 +204,8 @@ pc_compute_hyp_mol_flux(
 
   const amrex::Real captured_eb_small_vfrac = eb_small_vfrac;
   amrex::ParallelFor(nebflux, [=] AMREX_GPU_DEVICE(int L) {
-    const int i = ebg[L].iv[0];
-    const int j = ebg[L].iv[1];
-    const int k = ebg[L].iv[2];
+    AMREX_D_TERM(const int i = ebg[L].iv[0];, const int j = ebg[L].iv[1];
+                 , const int k = ebg[L].iv[2];)
     amrex::Real qtempl[5 + NUM_SPECIES] = {0.0};
     amrex::Real qtempr[5 + NUM_SPECIES] = {0.0};
     amrex::Real cavg = 0.0;
@@ -217,14 +216,15 @@ pc_compute_hyp_mol_flux(
     amrex::Real flux_tmp[NVAR] = {0.0};
     amrex::Real ebnorm[AMREX_SPACEDIM] = {AMREX_D_DECL(
       ebg[L].eb_normal[0], ebg[L].eb_normal[1], ebg[L].eb_normal[2])};
-    const amrex::Real ebnorm_mag = std::sqrt(
-      ebnorm[0] * ebnorm[0] + ebnorm[1] * ebnorm[1] + ebnorm[2] * ebnorm[2]);
+    const amrex::Real ebnorm_mag = std::sqrt(AMREX_D_TERM(
+      ebnorm[0] * ebnorm[0], +ebnorm[1] * ebnorm[1], +ebnorm[2] * ebnorm[2]));
     for (amrex::Real& dir : ebnorm) {
       dir /= ebnorm_mag;
     }
     auto eos = pele::physics::PhysicsType::eos();
-    if (is_inside(i, j, k, lo, hi, nextra)) {
-      if (vfrac(i, j, k) < captured_eb_small_vfrac) {
+    const amrex::IntVect iv = amrex::IntVect{AMREX_D_DECL(i, j, k)};
+    if (is_inside(iv, lo, hi, nextra)) {
+      if (vfrac(iv) < captured_eb_small_vfrac) {
         amrex::Real sum_kappa = 0.0;
         amrex::Real sum_nbrs_qc = 0.0;
         amrex::Real sum_nbrs_qcsmall = 0.0;
@@ -241,28 +241,22 @@ pc_compute_hyp_mol_flux(
             for (int kk = -1; kk <= 1; kk++) {
 #endif
 #endif
-              int nbr = flags(i, j, k).isConnected(ii, jj, kk);
-              if ((ii == 0) && (jj == 0) && (kk == 0)) {
+              int nbr = flags(iv).isConnected(iv);
+              if (AMREX_D_TERM((ii == 0), &&(jj == 0), &&(kk == 0))) {
                 nbr = 0;
               }
-              sum_kappa += nbr * vfrac(i + ii, j + jj, k + kk);
-              sum_nbrs_qc += nbr * vfrac(i + ii, j + jj, k + kk) *
-                             qaux(i + ii, j + jj, k + kk, QC);
-              sum_nbrs_qcsmall += nbr * vfrac(i + ii, j + jj, k + kk) *
-                                  qaux(i + ii, j + jj, k + kk, QCSML);
-              sum_nbrs_qu += nbr * vfrac(i + ii, j + jj, k + kk) *
-                             q(i + ii, j + jj, k + kk, QU);
-              sum_nbrs_qv += nbr * vfrac(i + ii, j + jj, k + kk) *
-                             q(i + ii, j + jj, k + kk, QV);
-              sum_nbrs_qw += nbr * vfrac(i + ii, j + jj, k + kk) *
-                             q(i + ii, j + jj, k + kk, QW);
-              sum_nbrs_qp += nbr * vfrac(i + ii, j + jj, k + kk) *
-                             q(i + ii, j + jj, k + kk, QPRES);
-              sum_nbrs_qr += nbr * vfrac(i + ii, j + jj, k + kk) *
-                             q(i + ii, j + jj, k + kk, QRHO);
+              const amrex::IntVect ivp =
+                amrex::IntVect{AMREX_D_DECL(i + ii, j + jj, k + kk)};
+              sum_kappa += nbr * vfrac(ivp);
+              sum_nbrs_qc += nbr * vfrac(ivp) * qaux(ivp, QC);
+              sum_nbrs_qcsmall += nbr * vfrac(ivp) * qaux(ivp, QCSML);
+              sum_nbrs_qu += nbr * vfrac(ivp) * q(ivp, QU);
+              sum_nbrs_qv += nbr * vfrac(ivp) * q(ivp, QV);
+              sum_nbrs_qw += nbr * vfrac(ivp) * q(ivp, QW);
+              sum_nbrs_qp += nbr * vfrac(ivp) * q(ivp, QPRES);
+              sum_nbrs_qr += nbr * vfrac(ivp) * q(ivp, QRHO);
               for (int n = 0; n < NUM_SPECIES; n++) {
-                sum_nbrs_sp[n] += nbr * vfrac(i + ii, j + jj, k + kk) *
-                                  q(i + ii, j + jj, k + kk, QFS + n);
+                sum_nbrs_sp[n] += nbr * vfrac(ivp) * q(ivp, QFS + n);
               }
 #if AMREX_SPACEDIM > 1
 #if AMREX_SPACEDIM == 3
@@ -292,19 +286,19 @@ pc_compute_hyp_mol_flux(
 
       } else {
         // Assume left state is the cell centered state - normal velocity
-        qtempl[R_UN] =
-          -(q(i, j, k, QU) * ebnorm[0] + q(i, j, k, QV) * ebnorm[1] +
-            q(i, j, k, QW) * ebnorm[2]);
+        qtempl[R_UN] = -(AMREX_D_TERM(
+          q(iv, QU) * ebnorm[0], +q(iv, QV) * ebnorm[1],
+          +q(iv, QW) * ebnorm[2]));
         qtempl[R_UT1] = 0.0;
         qtempl[R_UT2] = 0.0;
-        qtempl[R_P] = q(i, j, k, QPRES);
-        qtempl[R_RHO] = q(i, j, k, QRHO);
+        qtempl[R_P] = q(iv, QPRES);
+        qtempl[R_RHO] = q(iv, QRHO);
         for (int n = 0; n < NUM_SPECIES; n++) {
-          qtempl[R_Y + n] = q(i, j, k, QFS + n);
+          qtempl[R_Y + n] = q(iv, QFS + n);
         }
-        cavg = qaux(i, j, k, QC);
-        csmall = qaux(i, j, k, QCSML);
-        // cspeed = qaux(i, j, k, QC);
+        cavg = qaux(iv, QC);
+        csmall = qaux(iv, QCSML);
+        // cspeed = qaux(iv, QC);
 
         // Flip the velocity about the normal for the right state - will use
         // left  state for remainder of right state
@@ -324,7 +318,7 @@ pc_compute_hyp_mol_flux(
       eos.RTY2G(eos_state_rho, eos_state_T, spl, gamc_l);
     }
 
-    if (is_inside(i, j, k, lo, hi, nextra - 1)) {
+    if (is_inside(iv, lo, hi, nextra - 1)) {
       amrex::Real tmp0 = 0.0;
       amrex::Real tmp1 = 0.0;
       amrex::Real tmp2 = 0.0;
