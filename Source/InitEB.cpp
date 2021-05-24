@@ -140,9 +140,10 @@ PeleC::initialize_eb2_structs()
       // Now fill the sv_eb_bndry_geom
       auto const& vfrac_arr = vfrac.array(mfi);
       auto const& bndrycent_arr = bndrycent->array(mfi);
-      auto const& eb2areafrac_arr_0 = eb2areafrac[0]->array(mfi);
-      auto const& eb2areafrac_arr_1 = eb2areafrac[1]->array(mfi);
-      auto const& eb2areafrac_arr_2 = eb2areafrac[2]->array(mfi);
+      AMREX_D_TERM(auto const& eb2areafrac_arr_0 = eb2areafrac[0]->array(mfi);
+                   , auto const& eb2areafrac_arr_1 = eb2areafrac[1]->array(mfi);
+                   ,
+                   auto const& eb2areafrac_arr_2 = eb2areafrac[2]->array(mfi);)
       pc_fill_sv_ebg(
         tbox, Ncut, vfrac_arr, bndrycent_arr,
         AMREX_D_DECL(eb2areafrac_arr_0, eb2areafrac_arr_1, eb2areafrac_arr_2),
@@ -518,10 +519,14 @@ initialize_EB2(
     pp.getarr("ramp_plane2_normal", pl2nm);
     pp.getarr("ramp_plane3_point", pl3pt);
 
-    auto ramp = amrex::EB2::makeIntersection(
-      amrex::EB2::PlaneIF({pl1pt[0], pl1pt[1], 0.}, {0., -1., 0.}),
-      amrex::EB2::PlaneIF({pl2pt[0], pl2pt[1], 0.}, {pl2nm[0], pl2nm[1], 0.}),
-      amrex::EB2::PlaneIF({pl3pt[0], pl3pt[1], 0.}, {1., 0., 0.}));
+    amrex::EB2::PlaneIF r0(
+      {AMREX_D_DECL(pl1pt[0], pl1pt[1], 0.)}, {AMREX_D_DECL(0., -1., 0.)});
+    amrex::EB2::PlaneIF r1(
+      {AMREX_D_DECL(pl2pt[0], pl2pt[1], 0.)},
+      {AMREX_D_DECL(pl2nm[0], pl2nm[1], 0.)});
+    amrex::EB2::PlaneIF r2(
+      {AMREX_D_DECL(pl3pt[0], pl3pt[1], 0.)}, {AMREX_D_DECL(1., 0., 0.)});
+    auto ramp = amrex::EB2::makeIntersection(r0, r1, r2);
 
     amrex::Vector<amrex::Real> pipelo;
     amrex::Vector<amrex::Real> pipehi;
@@ -529,7 +534,8 @@ initialize_EB2(
     pp.getarr("pipe_hi", pipehi);
 
     amrex::EB2::BoxIF pipe(
-      {pipelo[0], pipelo[1], -1.}, {pipehi[0], pipehi[1], 1.}, false);
+      {AMREX_D_DECL(pipelo[0], pipelo[1], -1.)},
+      {AMREX_D_DECL(pipehi[0], pipehi[1], 1.)}, false);
 
     // where does plane 1 and plane 2 intersect?
     amrex::Real k2 = amrex::Math::abs(pl2nm[0] / pl2nm[1]);
@@ -539,14 +545,15 @@ initialize_EB2(
     amrex::Real dycut =
       4. * (1. + max_coarsening_level) * std::min(dx, k2 * dx);
     amrex::EB2::BoxIF flat_corner(
-      {pl3pt[0], 0., -1.}, {1.e10, secty + dycut, 1.}, false);
+      {AMREX_D_DECL(pl3pt[0], 0., -1.)},
+      {AMREX_D_DECL(1.e10, secty + dycut, 1.)}, false);
 
     auto polys = amrex::EB2::makeUnion(farwall, ramp, pipe, flat_corner);
 
     amrex::Real lenx = amrex::DefaultGeometry().ProbLength(0);
     amrex::Real leny = amrex::DefaultGeometry().ProbLength(1);
     auto pr = amrex::EB2::translate(
-      amrex::EB2::lathe(polys), {lenx * 0.5, leny * 0.5, 0.});
+      amrex::EB2::lathe(polys), {AMREX_D_DECL(lenx * 0.5, leny * 0.5, 0.)});
 
     auto gshop = amrex::EB2::makeShop(pr);
     amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
@@ -565,14 +572,15 @@ initialize_EB2(
     bool has_fluid_inside = false;
     amrex::EB2::SphereIF sf(radius, center, has_fluid_inside);
 
-    amrex::EB2::CylinderIF cf1(0.04, 0.09, 0, {0.045, 0.0, 0.0}, true);
+    amrex::EB2::CylinderIF cf1(
+      0.04, 0.09, 0, {AMREX_D_DECL(0.045, 0.0, 0.0)}, true);
     amrex::EB2::CylinderIF cf2(
-      0.04, 0.125, 0, {-0.0125 - 0.02, 0.0, 0.0}, false);
+      0.04, 0.125, 0, {AMREX_D_DECL(-0.0125 - 0.02, 0.0, 0.0)}, false);
     amrex::EB2::CylinderIF cf3(
-      0.03, 0.125, 0, {-0.0125 - 0.02, 0.0, 0.0}, false);
+      0.03, 0.125, 0, {AMREX_D_DECL(-0.0125 - 0.02, 0.0, 0.0)}, false);
     auto pipe = amrex::EB2::makeDifference(cf2, cf3);
     amrex::EB2::CylinderIF cf4(
-      0.03, 0.10, 0, {-0.0125 - 0.02, 0.0, 0.0}, false);
+      0.03, 0.10, 0, {AMREX_D_DECL(-0.0125 - 0.02, 0.0, 0.0)}, false);
 
     amrex::RealArray center2;
     center2[0] = 0.0;
@@ -635,7 +643,8 @@ initialize_EB2(
     pp.get("num_tri", num_tri);
 
     for (int itri = 0; itri < num_tri; itri++) {
-      amrex::Array<amrex::Real, AMREX_SPACEDIM> point{0.0, 0.0, 0.0};
+      amrex::Array<amrex::Real, AMREX_SPACEDIM> point{
+        AMREX_D_DECL(0.0, 0.0, 0.0)};
 
       for (int ipt = 0; ipt < npts_in_tri; ipt++) {
         std::string pointstr =
@@ -794,7 +803,8 @@ initialize_EB2(
 
     // amrex::EB2::GeometryShop<amrex::EB2::PlaneIF> gshop(pf);
 
-    amrex::EB2::BoxIF pipe({-1.0, 0.25, -1.}, {1.5, 0.5, 1.}, false);
+    amrex::EB2::BoxIF pipe(
+      {AMREX_D_DECL(-1.0, 0.25, -1.)}, {AMREX_D_DECL(1.5, 0.5, 1.)}, false);
     auto gshop = amrex::EB2::makeShop(pipe);
 
     amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
@@ -805,8 +815,9 @@ initialize_EB2(
     ppeb2.query("r_inner", r_inner);
     ppeb2.query("r_outer", r_outer);
 
-    amrex::EB2::CylinderIF inner(r_inner, 10, 2, {0, 0, 0}, false);
-    amrex::EB2::CylinderIF outer(r_outer, 10, 2, {0, 0, 0}, true);
+    amrex::EB2::CylinderIF inner(
+      r_inner, 10, 2, {AMREX_D_DECL(0, 0, 0)}, false);
+    amrex::EB2::CylinderIF outer(r_outer, 10, 2, {AMREX_D_DECL(0, 0, 0)}, true);
 
     auto polys = amrex::EB2::makeUnion(inner, outer);
     auto gshop = amrex::EB2::makeShop(polys);

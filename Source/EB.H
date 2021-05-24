@@ -108,9 +108,10 @@ void pc_fill_sv_ebg(
   const int,
   const amrex::Array4<const amrex::Real>&,
   const amrex::Array4<const amrex::Real>&,
-  const amrex::Array4<const amrex::Real>&,
-  const amrex::Array4<const amrex::Real>&,
-  const amrex::Array4<const amrex::Real>&,
+  AMREX_D_DECL(
+    const amrex::Array4<const amrex::Real>&,
+    const amrex::Array4<const amrex::Real>&,
+    const amrex::Array4<const amrex::Real>&),
   EBBndryGeom*);
 
 void pc_fill_bndry_grad_stencil(

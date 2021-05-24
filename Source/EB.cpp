@@ -6,9 +6,10 @@ pc_fill_sv_ebg(
   const int Nebg,
   const amrex::Array4<const amrex::Real>& vfrac,
   const amrex::Array4<const amrex::Real>& bcent,
-  const amrex::Array4<const amrex::Real>& apx,
-  const amrex::Array4<const amrex::Real>& apy,
-  const amrex::Array4<const amrex::Real>& apz,
+  AMREX_D_DECL(
+    const amrex::Array4<const amrex::Real>& apx,
+    const amrex::Array4<const amrex::Real>& apy,
+    const amrex::Array4<const amrex::Real>& apz),
   EBBndryGeom* ebg)
 {
   const auto lo = amrex::lbound(bx);
@@ -469,12 +470,18 @@ pc_apply_eb_boundry_flux_stencil(
         amrex::Real sum = 0.0;
         for (int ii = 0; ii < 3; ii++) {
           for (int jj = 0; jj < 3; jj++) {
+#if AMREX_SPACEDIM > 2
             for (int kk = 0; kk < 3; kk++) {
+#else
+              const int kk = 0;
+#endif
               const amrex::IntVect ivp = amrex::IntVect(AMREX_D_DECL(
                 sten[L].iv_base[0] + ii, sten[L].iv_base[1] + jj,
                 sten[L].iv_base[2] + kk));
               sum += sten[L].val[kk][jj][ii] * s(ivp, scomp + n);
+#if AMREX_SPACEDIM > 2
             }
+#endif
           }
         }
         bcflux[n * Nflux + L] =
