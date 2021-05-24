@@ -2234,6 +2234,12 @@ PeleC::InitialRedistribution()
   FillPatch(*this, tmp, numGrow(), time, State_Type, 0, S_new.nComp());
   EB_set_covered(tmp, 0.0);
 
+  const amrex::StateDescriptor* desc = state[State_Type].descriptor();
+  const auto& bcs = desc->getBCs();
+  amrex::Gpu::DeviceVector<amrex::BCRec> d_bcs(desc->nComp());
+  amrex::Gpu::copy(
+    amrex::Gpu::hostToDevice, bcs.begin(), bcs.end(), d_bcs.begin());
+
   for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
        ++mfi) {
     const amrex::Box& bx = mfi.validbox();
@@ -2264,7 +2270,8 @@ PeleC::InitialRedistribution()
       Redistribution::ApplyToInitialData(
         bx, NVAR, S_new.array(mfi), tmp.array(mfi), flag_arr,
         AMREX_D_DECL(apx, apy, apz), vfrac.const_array(mfi),
-        AMREX_D_DECL(fcx, fcy, fcz), ccc, &phys_bc, geom, redistribution_type);
+        AMREX_D_DECL(fcx, fcy, fcz), ccc, d_bcs.dataPtr(), geom,
+        redistribution_type);
     }
   }
   set_body_state(S_new);

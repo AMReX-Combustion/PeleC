@@ -73,6 +73,13 @@ PeleC::getMOLSrcTerm(
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dxD = {
     {AMREX_D_DECL(dx1, dx1, dx1)}};
 
+  // Grab the BCs
+  const amrex::StateDescriptor* desc = state[State_Type].descriptor();
+  const auto& bcs = desc->getBCs();
+  amrex::Gpu::DeviceVector<amrex::BCRec> d_bcs(desc->nComp());
+  amrex::Gpu::copy(
+    amrex::Gpu::hostToDevice, bcs.begin(), bcs.end(), d_bcs.begin());
+
   // Fetch some gpu arrays
   prefetchToDevice(S);
   prefetchToDevice(MOLSrcTerm);
@@ -655,7 +662,7 @@ PeleC::getMOLSrcTerm(
           Redistribution::Apply(
             vbox, S.nComp(), Dterm, Dterm_tmp, S.const_array(mfi), scratch,
             flag_arr, AMREX_D_DECL(apx, apy, apz), vfrac.const_array(mfi),
-            AMREX_D_DECL(fcx, fcy, fcz), ccc, &phys_bc, geom, dt,
+            AMREX_D_DECL(fcx, fcy, fcz), ccc, d_bcs.dataPtr(), geom, dt,
             redistribution_type);
         }
         // Make sure div is zero in covered cells
