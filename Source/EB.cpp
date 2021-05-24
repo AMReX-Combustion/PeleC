@@ -376,15 +376,16 @@ pc_apply_eb_boundry_visc_flux_stencil(
         idir *= denom;
       }
 
+#if AMREX_SPACEDIM > 2
       const amrex::Real t2[AMREX_SPACEDIM] = {AMREX_D_DECL(
         norm[1] * t1[2] - norm[2] * t1[1], norm[2] * t1[0] - norm[0] * t1[2],
         norm[0] * t1[1] - norm[1] * t1[0])};
+#endif
 
       amrex::Real Qt[AMREX_SPACEDIM][AMREX_SPACEDIM];
       for (int idir = 0; idir < AMREX_SPACEDIM; idir++) {
-        Qt[0][idir] = norm[idir];
-        Qt[1][idir] = t1[idir];
-        Qt[2][idir] = t2[idir];
+        AMREX_D_TERM(Qt[0][idir] = norm[idir];, Qt[1][idir] = t1[idir];
+                     , Qt[2][idir] = t2[idir];)
       }
 
       // Transform velocities at stencil points to coordinates aligned with EB
@@ -432,8 +433,8 @@ pc_apply_eb_boundry_visc_flux_stencil(
 
       amrex::Real bct[AMREX_SPACEDIM];
       for (int idir = 0; idir < AMREX_SPACEDIM; idir++) {
-        bct[idir] =
-          Qt[idir][0] * bco[0] + Qt[idir][1] * bco[1] + Qt[idir][2] * bco[2];
+        bct[idir] = AMREX_D_TERM(
+          Qt[idir][0] * bco[0], +Qt[idir][1] * bco[1], +Qt[idir][2] * bco[2]);
       }
 
       // Compute normal derivative (times eb area) using precomputed stencil
@@ -457,16 +458,14 @@ pc_apply_eb_boundry_visc_flux_stencil(
         dUtdn[idir] = sum[idir] + bct[idir] * sten[L].bcval_sten;
       }
 
-      amrex::Real tauDotN[AMREX_SPACEDIM];
-      tauDotN[0] =
-        ((4.0 / 3.0) * coeff(iv, dComp_mu) + coeff(iv, dComp_xi)) * dUtdn[0];
-      tauDotN[1] = coeff(iv, dComp_mu) * dUtdn[1];
-      tauDotN[2] = coeff(iv, dComp_mu) * dUtdn[2];
+      const amrex::Real tauDotN[AMREX_SPACEDIM] = {AMREX_D_DECL(
+        ((4.0 / 3.0) * coeff(iv, dComp_mu) + coeff(iv, dComp_xi)) * dUtdn[0],
+        coeff(iv, dComp_mu) * dUtdn[1], coeff(iv, dComp_mu) * dUtdn[2])};
 
       for (int idir = 0; idir < AMREX_SPACEDIM; idir++) {
-        bcflux[idir * Nflux + L] = Qt[0][idir] * tauDotN[0] +
-                                   Qt[1][idir] * tauDotN[1] +
-                                   Qt[2][idir] * tauDotN[2];
+        bcflux[idir * Nflux + L] = AMREX_D_TERM(
+          Qt[0][idir] * tauDotN[0], +Qt[1][idir] * tauDotN[1],
+          +Qt[2][idir] * tauDotN[2]);
       }
     }
   });
