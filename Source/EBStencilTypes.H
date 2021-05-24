@@ -10,19 +10,19 @@ static amrex::Box stencil_volume_box(
 
 struct VolSten
 {
-  amrex::Real val[3][3][3];
+  amrex::Real val AMREX_D_TERM([3], [3], [3]);
   amrex::IntVect iv;
 };
 
 struct FaceSten
 {
-  amrex::Real val[3][3];
+  amrex::Real val AMREX_D_TERM(, [3], [3]);
   amrex::IntVect iv;
 };
 
 struct EBBndrySten
 {
-  amrex::Real val[3][3][3];
+  amrex::Real val AMREX_D_TERM([3], [3], [3]);
   amrex::Real bcval_sten;
   amrex::IntVect iv;
   amrex::IntVect iv_base;
