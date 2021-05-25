@@ -309,3 +309,45 @@ jobs:
         working-directory: ${{runner.workspace}}/build-hip
         run: |
           cmake --build . --parallel ${{env.NPROCS}}
+  DPCPP:
+    needs: Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.6.0
+        with:
+          access_token: ${{github.token}}
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Dependencies
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          sudo wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+          sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+          echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libopenmpi-dev intel-oneapi-dpcpp-cpp-compiler intel-oneapi-mkl-devel
+      - name: Configure
+        run: |
+          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
+          set +e
+          source /opt/intel/oneapi/setvars.sh
+          set -e
+          cmake -B${{runner.workspace}}/build-dpcpp \
+            -DCMAKE_CXX_COMPILER_ID="Clang" \
+            -DCMAKE_CXX_COMPILER_VERSION=12.0 \
+            -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT=17 \
+            -DCMAKE_CXX_COMPILER=$(which dpcpp) \
+            -DCMAKE_C_COMPILER=$(which clang) \
+            -DPELEC_ENABLE_MPI:BOOL=OFF \
+            -DPELEC_ENABLE_MASA:BOOL=OFF \
+            -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
+            -DPELEC_ENABLE_TESTS:BOOL=ON \
+            -DPELEC_ENABLE_DPCPP:BOOL=ON \
+            ${{github.workspace}}
+      - name: Build
+        working-directory: ${{runner.workspace}}/build-dpcpp
+        run: |
+          cmake --build . --parallel ${{env.NPROCS}}
+
