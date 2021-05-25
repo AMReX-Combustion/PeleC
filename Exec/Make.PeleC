@@ -28,6 +28,9 @@ endif
 
 ifeq ($(USE_EB), TRUE)
   DEFINES += -DPELEC_USE_EB
+  ifeq ($(DIM), 1)
+    $(error EB is not supported in 1D)
+  endif
 endif
 
 all: $(executable) 
