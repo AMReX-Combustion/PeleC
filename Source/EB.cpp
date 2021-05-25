@@ -193,6 +193,11 @@ pc_fill_bndry_grad_stencil(
 
 void
 pc_fill_flux_interp_stencil(
+#if AMREX_SPACEDIM == 2
+  const int dir,
+#else
+  const int /*dir*/,
+#endif
   const amrex::Box& bx,
   const amrex::Box /*fbx*/,
   const int Nsten,
@@ -209,13 +214,17 @@ pc_fill_flux_interp_stencil(
       for (amrex::Real& jj : sten[L].val) {
         jj = 0.0;
       }
+      const amrex::Real ct = fc(iv, dir == 0 ? 1 : 0);
+      const int tn = (int)amrex::Math::copysign(1.0, ct);
+      const amrex::Real act = amrex::Math::abs(ct);
+      sten[L].val[1] = fa(iv) * (1.0 - act);
+      sten[L].val[tn + 1] = fa(iv) * act;
 #elif AMREX_SPACEDIM == 3
       for (auto& ii : sten[L].val) {
         for (amrex::Real& jj : ii) {
           jj = 0.0;
         }
       }
-#endif
       const amrex::Real ct0 = fc(iv, 0);
       const amrex::Real ct1 = fc(iv, 1);
       const int t0n = (int)amrex::Math::copysign(1.0, ct0);
@@ -226,6 +235,7 @@ pc_fill_flux_interp_stencil(
       sten[L].val[1][t0n + 1] = fa(iv) * act0 * (1.0 - act1);
       sten[L].val[t1n + 1][1] = fa(iv) * (1.0 - act0) * act1;
       sten[L].val[t1n + 1][t0n + 1] = fa(iv) * act0 * act1;
+#endif
     }
   });
 }
@@ -253,28 +263,41 @@ pc_apply_face_stencil(
       if (is_inside(iv, lo, hi)) {
         if (dir == 0) {
           for (int t0 = 0; t0 < 3; t0++) {
+#if AMREX_SPACEDIM > 2
             for (int t1 = 0; t1 < 3; t1++) {
+#endif
               const amrex::IntVect ivd = amrex::IntVect{
                 AMREX_D_DECL(iv[0], iv[1] - 1 + t0, iv[2] - 1 + t1)};
-              d_newval[L] += sten[L].val[t1][t0] * vout(ivd, n);
+              d_newval[L] +=
+                sten[L].val PELEC_D_TERM_REVERSE([t1], [t0], ) * vout(ivd, n);
+#if AMREX_SPACEDIM > 2
             }
+#endif
           }
         } else if (dir == 1) {
           for (int t0 = 0; t0 < 3; t0++) {
+#if AMREX_SPACEDIM > 2
             for (int t1 = 0; t1 < 3; t1++) {
+#endif
               const amrex::IntVect ivd = amrex::IntVect{
                 AMREX_D_DECL(iv[0] - 1 + t0, iv[1], iv[2] - 1 + t1)};
-              d_newval[L] += sten[L].val[t1][t0] * vout(ivd, n);
+              d_newval[L] +=
+                sten[L].val PELEC_D_TERM_REVERSE([t1], [t0], ) * vout(ivd, n);
+#if AMREX_SPACEDIM > 2
             }
+#endif
           }
         } else if (dir == 2) {
+#if AMREX_SPACEDIM > 2
           for (int t0 = 0; t0 < 3; t0++) {
             for (int t1 = 0; t1 < 3; t1++) {
               const amrex::IntVect ivd = amrex::IntVect{
                 AMREX_D_DECL(iv[0] - 1 + t0, iv[1] - 1 + t1, iv[2])};
-              d_newval[L] += sten[L].val[t1][t0] * vout(ivd, n);
+              d_newval[L] +=
+                sten[L].val PELEC_D_TERM_REVERSE([t1], [t0], ) * vout(ivd, n);
             }
           }
+#endif
         }
       }
     });

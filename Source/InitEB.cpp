@@ -324,7 +324,7 @@ PeleC::initialize_eb2_structs()
             });
 
           pc_fill_flux_interp_stencil(
-            tbox, fbox[dir], Nsten, facecent_arr, afrac_arr,
+            dir, tbox, fbox[dir], Nsten, facecent_arr, afrac_arr,
             flux_interp_stencil[dir][iLocal].data());
         }
       } else {
