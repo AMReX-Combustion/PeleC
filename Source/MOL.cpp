@@ -79,7 +79,8 @@ pc_compute_hyp_mol_flux(
           q(ii, jj, kk, QPRES) +
           0.5 * (dq(ii, jj, kk, 0) + dq(ii, jj, kk, 1)) * qaux(ii, jj, kk, QC);
         qtempl[R_UT1] = q(ii, jj, kk, q_idx[1]) + 0.5 * dq(ii, jj, kk, 2);
-        qtempl[R_UT2] = q(ii, jj, kk, q_idx[2]) + 0.5 * dq(ii, jj, kk, 3);
+        qtempl[R_UT2] = AMREX_D_PICK(
+          0.0, 0.0, q(ii, jj, kk, q_idx[2]) + 0.5 * dq(ii, jj, kk, 3));
         qtempl[R_RHO] = 0.0;
         for (int n = 0; n < NUM_SPECIES; n++) {
           qtempl[R_Y + n] = q(ii, jj, kk, QFS + n) * q(ii, jj, kk, QRHO) +
@@ -102,7 +103,8 @@ pc_compute_hyp_mol_flux(
                                             (dq(i, j, k, 0) + dq(i, j, k, 1)) *
                                             qaux(i, j, k, QC);
         qtempr[R_UT1] = q(i, j, k, q_idx[1]) - 0.5 * dq(i, j, k, 2);
-        qtempr[R_UT2] = q(i, j, k, q_idx[2]) - 0.5 * dq(i, j, k, 3);
+        qtempr[R_UT2] =
+          AMREX_D_PICK(0.0, 0.0, q(i, j, k, q_idx[2]) - 0.5 * dq(i, j, k, 3));
         qtempr[R_RHO] = 0.0;
         for (int n = 0; n < NUM_SPECIES; n++) {
           qtempr[R_Y + n] =
