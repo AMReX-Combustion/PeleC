@@ -193,11 +193,6 @@ pc_fill_bndry_grad_stencil(
 
 void
 pc_fill_flux_interp_stencil(
-#if AMREX_SPACEDIM == 2
-  const int dir,
-#else
-  const int /*dir*/,
-#endif
   const amrex::Box& bx,
   const amrex::Box /*fbx*/,
   const int Nsten,
@@ -214,7 +209,7 @@ pc_fill_flux_interp_stencil(
       for (amrex::Real& jj : sten[L].val) {
         jj = 0.0;
       }
-      const amrex::Real ct = fc(iv, dir == 0 ? 1 : 0);
+      const amrex::Real ct = fc(iv, 0);
       const int tn = (int)amrex::Math::copysign(1.0, ct);
       const amrex::Real act = amrex::Math::abs(ct);
       sten[L].val[1] = fa(iv) * (1.0 - act);
@@ -384,7 +379,7 @@ pc_apply_eb_boundry_visc_flux_stencil(
       amrex::Real alpha[AMREX_SPACEDIM] = {0.0};
       int c[AMREX_SPACEDIM] = {0};
       idxsort(norm, c);
-      alpha[c[2]] = 1.0;
+      alpha[c[AMREX_D_PICK(0, 1, 2)]] = 1.0;
       const amrex::Real ndota = AMREX_D_TERM(
         norm[0] * alpha[0], +norm[1] * alpha[1], +norm[2] * alpha[2]);
       amrex::Real t1[AMREX_SPACEDIM];
@@ -412,8 +407,7 @@ pc_apply_eb_boundry_visc_flux_stencil(
       }
 
       // Transform velocities at stencil points to coordinates aligned with EB
-      amrex::Real Uo AMREX_D_TERM(
-        [AMREX_SPACEDIM], [AMREX_SPACEDIM], [AMREX_SPACEDIM])[AMREX_SPACEDIM];
+      amrex::Real Uo AMREX_D_TERM([3], [3], [3])[AMREX_SPACEDIM];
       for (int ii = 0; ii < 3; ii++) {
         for (int jj = 0; jj < 3; jj++) {
 #if AMREX_SPACEDIM > 2
@@ -429,8 +423,7 @@ pc_apply_eb_boundry_visc_flux_stencil(
 #endif
         }
       }
-      amrex::Real Ut AMREX_D_TERM(
-        [AMREX_SPACEDIM], [AMREX_SPACEDIM], [AMREX_SPACEDIM])[AMREX_SPACEDIM];
+      amrex::Real Ut AMREX_D_TERM([3], [3], [3])[AMREX_SPACEDIM];
       for (int ii = 0; ii < 3; ii++) {
         for (int jj = 0; jj < 3; jj++) {
 #if AMREX_SPACEDIM > 2

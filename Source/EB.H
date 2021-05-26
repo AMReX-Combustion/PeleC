@@ -111,7 +111,6 @@ void pc_fill_bndry_grad_stencil(
   EBBndrySten*);
 
 void pc_fill_flux_interp_stencil(
-  const int,
   const amrex::Box&,
   const amrex::Box,
   const int,

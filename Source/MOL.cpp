@@ -266,8 +266,9 @@ pc_compute_hyp_mol_flux(
 #endif
         }
         qtempl[R_UN] = 0.0;
-        qtempl[R_UN] -= (sum_nbrs_qu * ebnorm[0] + sum_nbrs_qv * ebnorm[1] +
-                         sum_nbrs_qw * ebnorm[2]) /
+        qtempl[R_UN] -= (AMREX_D_TERM(
+                          sum_nbrs_qu * ebnorm[0], +sum_nbrs_qv * ebnorm[1],
+                          +sum_nbrs_qw * ebnorm[2])) /
                         sum_kappa;
         qtempl[R_UT1] = 0.0;
         qtempl[R_UT2] = 0.0;
@@ -333,9 +334,10 @@ pc_compute_hyp_mol_flux(
         flux_tmp[UMZ], flux_tmp[UEDEN], flux_tmp[UEINT], tmp0, tmp1, tmp2, tmp3,
         tmp4);
 
-      flux_tmp[UMY] = -flux_tmp[UMX] * ebnorm[1];
-      flux_tmp[UMZ] = -flux_tmp[UMX] * ebnorm[2];
-      flux_tmp[UMX] = -flux_tmp[UMX] * ebnorm[0];
+      const amrex::Real tmp_flx_umx = flux_tmp[UMX];
+      AMREX_D_TERM(flux_tmp[UMX] = -tmp_flx_umx * ebnorm[0];
+                   , flux_tmp[UMY] = -tmp_flx_umx * ebnorm[1];
+                   , flux_tmp[UMZ] = -tmp_flx_umx * ebnorm[2];)
 
       // Compute species flux like passive scalar from intermediate state
       for (int n = 0; n < NUM_SPECIES; n++) {
