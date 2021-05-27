@@ -339,7 +339,7 @@ jobs:
             -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT=17 \
             -DCMAKE_CXX_COMPILER=$(which dpcpp) \
             -DCMAKE_C_COMPILER=$(which clang) \
-            -DPELEC_ENABLE_MPI:BOOL=OFF \
+            -DPELEC_ENABLE_MPI:BOOL=ON \
             -DPELEC_ENABLE_MASA:BOOL=OFF \
             -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
             -DPELEC_ENABLE_TESTS:BOOL=ON \
