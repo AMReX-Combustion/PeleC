@@ -312,6 +312,7 @@ jobs:
   DPCPP:
     needs: Formatting
     runs-on: ubuntu-latest
+    env: {CXXFLAGS: "-fno-operator-names"}
     steps:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.6.0
@@ -325,7 +326,7 @@ jobs:
           wget -q -O - https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB | sudo apt-key add -
           echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends build-essential intel-oneapi-dpcpp-cpp-compiler intel-oneapi-mkl-devel g++ gfortran
+          sudo apt-get install -y --no-install-recommends build-essential intel-oneapi-dpcpp-cpp-compiler intel-oneapi-mkl-devel g++ gfortran libopenmpi-dev openmpi-bin
       - name: Configure
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
@@ -333,10 +334,12 @@ jobs:
           source /opt/intel/oneapi/setvars.sh
           set -e
           cmake -B${{runner.workspace}}/build-dpcpp \
+            -DCMAKE_CXX_COMPILER_ID="Clang" \
+            -DCMAKE_CXX_COMPILER_VERSION=12.0 \
             -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT=17 \
             -DCMAKE_CXX_COMPILER=$(which dpcpp) \
             -DCMAKE_C_COMPILER=$(which clang) \
-            -DPELEC_ENABLE_MPI:BOOL=OFF \
+            -DPELEC_ENABLE_MPI:BOOL=ON \
             -DPELEC_ENABLE_MASA:BOOL=OFF \
             -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
             -DPELEC_ENABLE_TESTS:BOOL=ON \
