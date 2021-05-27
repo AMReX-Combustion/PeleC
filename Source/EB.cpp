@@ -136,12 +136,16 @@ pc_fill_bndry_grad_stencil(
         cz[2] = 0.5 * z[m] * (z[m] - 1.0);
 #endif
 
+#if AMREX_SPACEDIM > 2
         for (int kk = 0; kk < 3; kk++) {
+#endif
           for (int jj = 0; jj < 3; jj++) {
             sten AMREX_D_TERM([m + 1], [jj], [kk]) =
               AMREX_D_TERM(1.0, *cy[jj], *cz[kk]);
           }
+#if AMREX_SPACEDIM > 2
         }
+#endif
       }
 
       for (int jj = 0; jj < 3; jj++) {
@@ -161,13 +165,17 @@ pc_fill_bndry_grad_stencil(
       int ivl[AMREX_SPACEDIM] = {0};
       for (int ii = 0; ii < 3; ii++) {
         for (int jj = 0; jj < 3; jj++) {
+#if AMREX_SPACEDIM > 2
           for (int kk = 0; kk < 3; kk++) {
+#endif
             AMREX_D_TERM(ivl[c[0]] = ii * s[0] + ivs[c[0]] - baseiv[c[0]];
                          , ivl[c[1]] = jj * s[1] + ivs[c[1]] - baseiv[c[1]];
                          , ivl[c[2]] = kk * s[2] + ivs[c[2]] - baseiv[c[2]];)
             tsten AMREX_D_TERM([ivl[0]], [ivl[1]], [ivl[2]]) =
               sten AMREX_D_TERM([ii], [jj], [kk]);
+#if AMREX_SPACEDIM > 2
           }
+#endif
         }
       }
 
@@ -376,6 +384,10 @@ pc_apply_eb_boundry_visc_flux_stencil(
       const amrex::Real norm[AMREX_SPACEDIM] = {AMREX_D_DECL(
         ebg[L].eb_normal[0] / Nmag, ebg[L].eb_normal[1] / Nmag,
         ebg[L].eb_normal[2] / Nmag)};
+
+#if AMREX_SPACEDIM == 2
+      const amrex::Real t1[AMREX_SPACEDIM] = {-norm[1], norm[0]};
+#elif AMREX_SPACEDIM == 3
       amrex::Real alpha[AMREX_SPACEDIM] = {0.0};
       int c[AMREX_SPACEDIM] = {0};
       idxsort(norm, c);
@@ -394,7 +406,6 @@ pc_apply_eb_boundry_visc_flux_stencil(
         idir *= denom;
       }
 
-#if AMREX_SPACEDIM > 2
       const amrex::Real t2[AMREX_SPACEDIM] = {AMREX_D_DECL(
         norm[1] * t1[2] - norm[2] * t1[1], norm[2] * t1[0] - norm[0] * t1[2],
         norm[0] * t1[1] - norm[1] * t1[0])};
