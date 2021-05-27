@@ -158,6 +158,7 @@ PeleC::variableSetUp()
     static_cast<PassMap*>(amrex::The_Arena()->alloc(sizeof(PassMap)));
 
   // Get options, set phys_bc
+  eb_in_domain = ebInDomain();
   read_params();
 
   pele::physics::transport::InitTransport<
