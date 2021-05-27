@@ -287,7 +287,7 @@ jobs:
           export DEBIAN_FRONTEND=noninteractive
           wget -q -O - http://repo.radeon.com/rocm/rocm.gpg.key | sudo apt-key add -
           #Use HIP 4.1.1 until 4.2 is fixed
-          echo 'deb [arch=amd64] http://repo.radeon.com/rocm/apt/4.1.1/ xenial main'  | sudo tee /etc/apt/sources.list.d/rocm.list
+          echo 'deb [arch=amd64] http://repo.radeon.com/rocm/apt/4.1.1/ xenial main' | sudo tee /etc/apt/sources.list.d/rocm.list
           sudo apt-get update
           sudo apt-get install -y rocm-dev rocm-libs
       - name: Configure
@@ -325,7 +325,7 @@ jobs:
           wget -q -O - https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB | sudo apt-key add -
           echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends build-essential intel-oneapi-dpcpp-cpp-compiler intel-oneapi-mkl-devel
+          sudo apt-get install -y --no-install-recommends build-essential intel-oneapi-dpcpp-cpp-compiler intel-oneapi-mkl-devel g++ gfortran
       - name: Configure
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
