@@ -188,7 +188,7 @@ pc_fill_bndry_grad_stencil(
           for (int kk = 0; kk < 3; kk++) {
 #endif
             grad_stencil[L].val PELEC_D_TERM_REVERSE([kk], [jj], [dir]) =
-              fac * ebg[L].eb_area * AMREX_D_TERM(tsten[dir], [jj], [kk]);
+              fac * ebg[L].eb_area * tsten AMREX_D_TERM([dir], [jj], [kk]);
 #if AMREX_SPACEDIM > 2
           }
 #endif
