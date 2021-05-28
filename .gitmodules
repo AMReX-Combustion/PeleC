@@ -15,4 +15,4 @@
 	url = https://github.com/LLNL/sundials.git
 [submodule "Submodules/AMReX-Hydro"]
 	path = Submodules/AMReX-Hydro
-	url = https://github.com/marchdf/AMReX-Hydro.git
+	url = https://github.com/AMReX-Codes/AMReX-Hydro.git
