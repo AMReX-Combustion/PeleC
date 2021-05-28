@@ -110,6 +110,7 @@ function(build_pelec_exe pelec_exe_name)
                    ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_create_itracker_${PELEC_DIM}d.cpp
                    ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_redistribution.H
                    ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_redistribution.cpp
+                   ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_state_utils.cpp
                    ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_state_redistribute.cpp
                    ${SRC_DIR}/EB.H
                    ${SRC_DIR}/EB.cpp
