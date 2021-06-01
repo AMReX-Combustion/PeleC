@@ -183,12 +183,14 @@ pc_fill_bndry_grad_stencil(
         grad_stencil[L].iv[dir] = ebg[L].iv[dir];
         // Shift base down, if required;
         grad_stencil[L].iv_base[dir] = baseiv[dir] + sh[dir];
+      }
+      for (int ii = 0; ii < 3; ii++) {
         for (int jj = 0; jj < 3; jj++) {
 #if AMREX_SPACEDIM > 2
           for (int kk = 0; kk < 3; kk++) {
 #endif
-            grad_stencil[L].val PELEC_D_TERM_REVERSE([kk], [jj], [dir]) =
-              fac * ebg[L].eb_area * tsten AMREX_D_TERM([dir], [jj], [kk]);
+            grad_stencil[L].val PELEC_D_TERM_REVERSE([kk], [jj], [ii]) =
+              fac * ebg[L].eb_area * tsten AMREX_D_TERM([ii], [jj], [kk]);
 #if AMREX_SPACEDIM > 2
           }
 #endif
