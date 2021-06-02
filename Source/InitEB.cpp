@@ -719,10 +719,14 @@ initialize_EB2(
       *impfunc_triangles[0], *impfunc_triangles[1], *impfunc_triangles[2],
       *impfunc_triangles[3], *impfunc_triangles[4]);
 
+#if AMREX_SPACEDIM > 2
     auto alltri_extrude_IF =
       amrex::EB2::extrude(alltri_IF, AMREX_SPACEDIM - 1); // along z
-
     auto gshop = amrex::EB2::makeShop(alltri_extrude_IF);
+#else
+    auto gshop = amrex::EB2::makeShop(alltri_IF);
+#endif
+
     amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
   } else if (geom_type == "Line-Piston-Cylinder") {
 #ifdef LinePistonCylinder
