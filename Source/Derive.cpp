@@ -640,7 +640,7 @@ pc_dercp(
     auto eos = pele::physics::PhysicsType::eos();
     amrex::Real cp = 0.0;
     eos.RTY2Cp(dat(i, j, k, URHO), dat(i, j, k, UTEMP), mass, cp);
-    cp_arr(i, j, k, 1) = cp;
+    cp_arr(i, j, k) = cp;
   });
 }
 
@@ -669,7 +669,7 @@ pc_dercv(
     auto eos = pele::physics::PhysicsType::eos();
     amrex::Real cv = 0.0;
     eos.RTY2Cv(dat(i, j, k, URHO), dat(i, j, k, UTEMP), mass, cv);
-    cv_arr(i, j, k, 1) = cv;
+    cv_arr(i, j, k) = cv;
   });
 }
 

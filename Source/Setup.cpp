@@ -592,11 +592,11 @@ PeleC::variableSetUp()
 
   derive_lst.add(
     "cp", amrex::IndexType::TheCellType(), 1, pc_dercp, the_same_box);
-  derive_lst.addComponent("cp", desc_lst, State_Type, Density, 1);
+  derive_lst.addComponent("cp", desc_lst, State_Type, Density, NVAR);
 
   derive_lst.add(
     "cv", amrex::IndexType::TheCellType(), 1, pc_dercv, the_same_box);
-  derive_lst.addComponent("cv", desc_lst, State_Type, Density, 1);
+  derive_lst.addComponent("cv", desc_lst, State_Type, Density, NVAR);
 
   // LES coefficients
   if (do_les) {
