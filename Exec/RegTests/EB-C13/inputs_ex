@@ -90,4 +90,3 @@ ebd.boundary_grad_stencil_type = 0
 eb2.geom_type = "quarter-circle"
 eb2.r_inner = 1.0
 eb2.r_outer = 1.384
-pelec.eb_small_vfrac = 0.0
