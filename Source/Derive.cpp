@@ -615,6 +615,64 @@ pc_derradialvel(
   });
 }
 
+void
+pc_dercp(
+  const amrex::Box& bx,
+  amrex::FArrayBox& derfab,
+  int /*dcomp*/,
+  int /*ncomp*/,
+  const amrex::FArrayBox& datfab,
+  const amrex::Geometry& /*geomdata*/,
+  amrex::Real /*time*/,
+  const int* /*bcrec*/,
+  int /*level*/)
+{
+  auto const dat = datfab.array();
+  auto cp_arr = derfab.array();
+
+  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    amrex::Real mass[NUM_SPECIES];
+    const amrex::Real rhoInv = 1.0 / dat(i, j, k, URHO);
+
+    for (int n = 0; n < NUM_SPECIES; n++) {
+      mass[n] = dat(i, j, k, UFS + n) * rhoInv;
+    }
+    auto eos = pele::physics::PhysicsType::eos();
+    amrex::Real cp = 0.0;
+    eos.RTY2Cp(dat(i, j, k, URHO), dat(i, j, k, UTEMP), mass, cp);
+    cp_arr(i, j, k, 1) = cp;
+  });
+}
+
+void
+pc_dercv(
+  const amrex::Box& bx,
+  amrex::FArrayBox& derfab,
+  int /*dcomp*/,
+  int /*ncomp*/,
+  const amrex::FArrayBox& datfab,
+  const amrex::Geometry& /*geomdata*/,
+  amrex::Real /*time*/,
+  const int* /*bcrec*/,
+  int /*level*/)
+{
+  auto const dat = datfab.array();
+  auto cv_arr = derfab.array();
+
+  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    amrex::Real mass[NUM_SPECIES];
+    const amrex::Real rhoInv = 1.0 / dat(i, j, k, URHO);
+
+    for (int n = 0; n < NUM_SPECIES; n++) {
+      mass[n] = dat(i, j, k, UFS + n) * rhoInv;
+    }
+    auto eos = pele::physics::PhysicsType::eos();
+    amrex::Real cv = 0.0;
+    eos.RTY2Cv(dat(i, j, k, URHO), dat(i, j, k, UTEMP), mass, cv);
+    cv_arr(i, j, k, 1) = cv;
+  });
+}
+
 #ifdef PELEC_USE_MASA
 void
 pc_derrhommserror(
