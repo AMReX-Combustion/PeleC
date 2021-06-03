@@ -9,8 +9,8 @@ geometry.coord_sys   =  0       # 0 => cart
 geometry.prob_lo     =  0   0.0  0.0
 #geometry.prob_hi     =  7.5 3.75 0.1171875
 #amr.n_cell           =  512 256 8
-geometry.prob_hi     =  7.5 3.75 0.46875
-amr.n_cell           =  128 64 8
+geometry.prob_hi     =  7.5 3.75 1.875
+amr.n_cell           =  32 16 8
 
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
