@@ -22,9 +22,6 @@ PeleC::init_eb(
   const amrex::BoxArray& /*ba*/,
   const amrex::DistributionMapping& /*dm*/)
 {
-
-  eb_in_domain = ebInDomain();
-
   // Build the geometry information; this is done for each new set of grids
   initialize_eb2_structs();
 }

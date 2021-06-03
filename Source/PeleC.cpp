@@ -371,8 +371,6 @@ PeleC::PeleC(
     mms_src_evaluated(false)
 #endif
 {
-  eb_in_domain = ebInDomain();
-
   buildMetrics();
 
 #ifdef PELEC_USE_EB

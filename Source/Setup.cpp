@@ -165,6 +165,7 @@ PeleC::variableSetUp()
 #endif
 
   // Get options, set phys_bc
+  eb_in_domain = ebInDomain();
   read_params();
 
   pele::physics::transport::InitTransport<

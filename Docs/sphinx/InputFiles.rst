@@ -19,7 +19,7 @@ Also, any entry that can be specified in the inputs file can also be specified o
 The available options are divided into groups: those that control primarily AMReX are prefaced with `amr.` while those that are specific to Pele are prefaced with `pelec.`.
 
 A typical input file looks something like the example below; a full list of Pele-specific input parameters are in `PeleC/Source/_cpp_parameters`. 
-These parameters, once read, are available in the `PeleC` object for use from c++ and are also copied to the module `prob_params_module` for use in FORTRAN. 
+These parameters, once read, are available in the `PeleC` object for use from c++.
 
 ::
 
@@ -84,7 +84,7 @@ These parameters, once read, are available in the `PeleC` object for use from c+
     #------------------------
     
     pelec.do_hydro = 1               # enable hyperbolic term
-    pelec.do_mol_AD = 1              # use method of lines (MOL)
+    pelec.do_mol = 1                 # use method of lines (MOL)
     pelec.do_react = 0               # enable chemical reactions
     pelec.ppm_type = 2               # piecewise parabolic reconstruction type
     pelec.allow_negative_energy = 0  # flag to allow negative internal energy
@@ -123,7 +123,16 @@ These parameters, once read, are available in the `PeleC` object for use from c+
     #specify species name as flame tracer for 
     #refinement purposes
     pelec.flame_trac_name = HO2
-    
+
+
+    #------------------------
+    # TAGGING
+    #------------------------
+    tagging.denerr = 3             # density value
+    tagging.dengrad = 0.01         # gradient of density value
+    tagging.max_denerr_lev = 3     # maximum level at which to use density for tagging
+    tagging.max_dengrad_lev = 3    # maximum level at which to use density gradient for tagging
+
     #------------------------
     # CHECKPOINT FILES
     #------------------------
@@ -143,8 +152,6 @@ These parameters, once read, are available in the `PeleC` object for use from c+
     #pick which all derived variables to plot
     amr.derive_plot_vars  = pressure x_velocity y_velocity
     
-    # probin filename that has tagging and other namelists
-    amr.probin_file = probin 
     # ---------------------------------------------------------------
     
     # ---------------------------------------------------------------
