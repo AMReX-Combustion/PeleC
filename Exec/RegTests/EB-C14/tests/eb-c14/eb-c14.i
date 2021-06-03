@@ -4,18 +4,20 @@ stop_time = 1.6e-5
 #stop_time = 0.0034 # 1 flowthroughs (1 flowthrough = L / umax)
 
 # PROBLEM SIZE & GEOMETRY
-geometry.is_periodic =  0  0
+geometry.is_periodic =  0  0  0
 geometry.coord_sys   =  0       # 0 => cart
-geometry.prob_lo     =  0   0.0
-geometry.prob_hi     =  7.5 3.75
-amr.n_cell           =  512 256
+geometry.prob_lo     =  0   0.0  0.0
+#geometry.prob_hi     =  7.5 3.75 0.1171875
+#amr.n_cell           =  512 256 8
+geometry.prob_hi     =  7.5 3.75 0.46875
+amr.n_cell           =  128 64 8
 
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 
-pelec.lo_bc       =  "FOExtrap" "NoSlipWall"
-pelec.hi_bc       =  "FOExtrap" "FOExtrap"
+pelec.lo_bc       =  "FOExtrap" "NoSlipWall" "FOExtrap"
+pelec.hi_bc       =  "FOExtrap" "FOExtrap"   "FOExtrap"
 
 # Problem setup
 pelec.eb_boundary_T = 300.
