@@ -124,7 +124,6 @@ pc_compute_hyp_mol_flux(
         amrex::Real eos_state_rho;
         amrex::Real eos_state_p;
         amrex::Real eos_state_e;
-        amrex::Real eos_state_cs;
         amrex::Real eos_state_gamma;
         amrex::Real eos_state_T;
 
@@ -138,7 +137,6 @@ pc_compute_hyp_mol_flux(
         eos.RYP2T(eos_state_rho, spl, eos_state_p, eos_state_T);
         eos.RTY2E(eos_state_rho, eos_state_T, spl, eos_state_e);
         eos.RTY2G(eos_state_rho, eos_state_T, spl, eos_state_gamma);
-        eos.RTY2Cs(eos_state_rho, eos_state_T, spl, eos_state_cs);
 
         const amrex::Real rhoe_l = eos_state_rho * eos_state_e;
         const amrex::Real gamc_l = eos_state_gamma;
@@ -152,7 +150,6 @@ pc_compute_hyp_mol_flux(
         eos.RYP2T(eos_state_rho, spr, eos_state_p, eos_state_T);
         eos.RTY2E(eos_state_rho, eos_state_T, spr, eos_state_e);
         eos.RTY2G(eos_state_rho, eos_state_T, spr, eos_state_gamma);
-        eos.RTY2Cs(eos_state_rho, eos_state_T, spr, eos_state_cs);
 
         const amrex::Real rhoe_r = eos_state_rho * eos_state_e;
         const amrex::Real gamc_r = eos_state_gamma;
