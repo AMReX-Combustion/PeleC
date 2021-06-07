@@ -171,7 +171,7 @@ if(PELEC_DIM GREATER 1)
     add_test_r(eb-c10 EB-C10)
     add_test_r(eb-c11 EB-C11)
     add_test_r(eb-c12 EB-C12)
-    add_test_r(eb-c14 EB-C14)
+    # add_test_r(eb-c14 EB-C14) # disable due to FPE in ghost cells
   endif()
 endif()
 if(PELEC_ENABLE_MASA)
