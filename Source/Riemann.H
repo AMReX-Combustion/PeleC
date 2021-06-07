@@ -50,16 +50,12 @@ riemann(
     gdnv_state_massfrac[n] = spl[n];
   }
   amrex::Real gdnv_state_cs;
-  eos.RPY2Cs(gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, gdnv_state_cs);
-  // const amrex::Real csl = gdnv_state_cs;
 
   gdnv_state_rho = rr;
   gdnv_state_p = pr;
   for (int n = 0; n < NUM_SPECIES; n++) {
     gdnv_state_massfrac[n] = spr[n];
   }
-  eos.RPY2Cs(gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, gdnv_state_cs);
-  // const amrex::Real csr = gdnv_state_cs;
 
   const amrex::Real wl = amrex::max<amrex::Real>(
     wsmall, std::sqrt(amrex::Math::abs(gamcl * pl * rl)));
