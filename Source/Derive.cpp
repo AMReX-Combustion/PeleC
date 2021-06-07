@@ -246,9 +246,9 @@ pc_dermagvort(
   // Convert momentum to velocity.
   amrex::ParallelFor(gbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     const amrex::Real rhoInv = 1.0 / dat(i, j, k, URHO);
-    larr(i, j, k, 0) = dat(i, j, k, UMX) * rhoInv;
-    larr(i, j, k, 1) = dat(i, j, k, UMY) * rhoInv;
-    larr(i, j, k, 2) = dat(i, j, k, UMZ) * rhoInv;
+    AMREX_D_TERM(larr(i, j, k, 0) = dat(i, j, k, UMX) * rhoInv;
+                 , larr(i, j, k, 1) = dat(i, j, k, UMY) * rhoInv;
+                 , larr(i, j, k, 2) = dat(i, j, k, UMZ) * rhoInv;)
   });
 
   AMREX_D_TERM(const amrex::Real dx = geomdata.CellSize(0);
@@ -257,7 +257,7 @@ pc_dermagvort(
 
   // Calculate vorticity.
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    AMREX_D_TERM(vort(i, j, k) = 0.;
+    AMREX_D_TERM(vort(i, j, k) = 0.0 * dx;
                  , const amrex::Real vx =
                      0.5 * (larr(i + 1, j, k, 1) - larr(i - 1, j, k, 1)) / dx;
                  const amrex::Real uy =
@@ -350,7 +350,7 @@ pc_derenstrophy(
 
   // Calculate enstrophy.
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    AMREX_D_TERM(enstrophy(i, j, k) = 0.;
+    AMREX_D_TERM(enstrophy(i, j, k) = 0.0 * dx;
                  , const amrex::Real vx =
                      0.5 * (larr(i + 1, j, k, 1) - larr(i - 1, j, k, 1)) / dx;
                  const amrex::Real uy =

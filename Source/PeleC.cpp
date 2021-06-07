@@ -617,7 +617,6 @@ PeleC::initData()
     PeleC::h_prob_parm_device + 1, PeleC::d_prob_parm_device);
 
   // int ns = NVAR;
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx = geom.CellSizeArray();
   amrex::MultiFab& S_new = get_new_data(State_Type);
   // amrex::Real cur_time = state[State_Type].curTime();
 
@@ -625,6 +624,7 @@ PeleC::initData()
 
 #if AMREX_SPACEDIM > 1
   // make sure dx = dy = dz -- that's all we guarantee to support
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx = geom.CellSizeArray();
   const amrex::Real small = 1.e-13;
   if (
     amrex::max<amrex::Real>(AMREX_D_DECL(

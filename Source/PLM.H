@@ -107,10 +107,7 @@ pc_plm_x(
   amrex::Real alphap = 0.5 * (dp / (rho * cc) + du) * rho / cc;
   amrex::Real alpha0r = drho - dp / cs;
   amrex::Real alpha0e = drhoe - dp * enth;
-  amrex::Real alpha0v = dv;
-#if AMREX_SPACEDIM == 3
-  amrex::Real alpha0w = dw;
-#endif
+  AMREX_D_TERM(, amrex::Real alpha0v = dv;, amrex::Real alpha0w = dw;)
 
   e[0] = u - cc;
   e[1] = u;
@@ -140,12 +137,12 @@ pc_plm_x(
                          (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0r;
   amrex::Real azeright = 0.25 * dtdx * (e[0] - e[1]) *
                          (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0e;
-  amrex::Real azv1rght = 0.25 * dtdx * (e[0] - e[1]) *
-                         (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0v;
-#if AMREX_SPACEDIM == 3
-  amrex::Real azw1rght = 0.25 * dtdx * (e[0] - e[1]) *
-                         (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0w;
-#endif
+  AMREX_D_TERM(, amrex::Real azv1rght =
+                   0.25 * dtdx * (e[0] - e[1]) *
+                   (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0v;
+               , amrex::Real azw1rght =
+                   0.25 * dtdx * (e[0] - e[1]) *
+                   (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0w;)
 
   qp(i, j, k, QRHO) = rho_ref + apright + amright + azrright;
   qp(i, j, k, QRHO) = amrex::max<amrex::Real>(
@@ -181,12 +178,12 @@ pc_plm_x(
                         (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0r;
   amrex::Real azeleft = 0.25 * dtdx * (e[2] - e[1]) *
                         (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0e;
-  amrex::Real azv1left = 0.25 * dtdx * (e[2] - e[1]) *
-                         (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0v;
-#if AMREX_SPACEDIM == 3
-  amrex::Real azw1left = 0.25 * dtdx * (e[2] - e[1]) *
-                         (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0w;
-#endif
+  AMREX_D_TERM(, amrex::Real azv1left =
+                   0.25 * dtdx * (e[2] - e[1]) *
+                   (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0v;
+               , amrex::Real azw1left =
+                   0.25 * dtdx * (e[2] - e[1]) *
+                   (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0w;)
   qm(i + 1, j, k, QRHO) = rho_ref + apleft + amleft + azrleft;
   qm(i + 1, j, k, QRHO) = amrex::max<amrex::Real>(
     qm(i + 1, j, k, QRHO), std::numeric_limits<amrex::Real>::min());
@@ -214,6 +211,7 @@ pc_plm_x(
   }
 }
 
+#if AMREX_SPACEDIM > 1
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
@@ -491,6 +489,7 @@ pc_plm_z(
     qm(i, j, k + 1, n) = q(i, j, k, n) + acmpbot;
   }
 }
+#endif
 
 // Corrects the left and right Y-states with the X-Flux
 AMREX_GPU_DEVICE
@@ -741,5 +740,4 @@ pc_transy(
     pnewl + hdt * srcp, std::numeric_limits<amrex::Real>::min());
   qm(i + 1, j, k, QREINT) = renewl - rhoekinl + hdt * srce;
 }
-
 #endif
