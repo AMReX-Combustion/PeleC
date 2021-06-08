@@ -19,7 +19,7 @@ read_binary(
   amrex::Vector<double>& data /*needs to be double*/)
 {
   std::ifstream infile(iname, std::ios::in | std::ios::binary);
-  if (not infile.is_open()) {
+  if (!infile.is_open()) {
     amrex::Abort("Unable to open input file " + iname);
   }
 
@@ -48,7 +48,7 @@ read_csv(
 {
   std::ifstream infile(iname, std::ios::in);
   const std::string memfile = read_file(infile);
-  if (not infile.is_open()) {
+  if (!infile.is_open()) {
     amrex::Abort("Unable to open input file " + iname);
   }
   infile.close();
