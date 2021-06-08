@@ -246,9 +246,9 @@ pc_dermagvort(
   // Convert momentum to velocity.
   amrex::ParallelFor(gbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     const amrex::Real rhoInv = 1.0 / dat(i, j, k, URHO);
-    larr(i, j, k, 0) = dat(i, j, k, UMX) * rhoInv;
-    larr(i, j, k, 1) = dat(i, j, k, UMY) * rhoInv;
-    larr(i, j, k, 2) = dat(i, j, k, UMZ) * rhoInv;
+    AMREX_D_TERM(larr(i, j, k, 0) = dat(i, j, k, UMX) * rhoInv;
+                 , larr(i, j, k, 1) = dat(i, j, k, UMY) * rhoInv;
+                 , larr(i, j, k, 2) = dat(i, j, k, UMZ) * rhoInv;)
   });
 
   AMREX_D_TERM(const amrex::Real dx = geomdata.CellSize(0);
@@ -257,7 +257,7 @@ pc_dermagvort(
 
   // Calculate vorticity.
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    AMREX_D_TERM(vort(i, j, k) = 0.;
+    AMREX_D_TERM(vort(i, j, k) = 0.0 * dx;
                  , const amrex::Real vx =
                      0.5 * (larr(i + 1, j, k, 1) - larr(i - 1, j, k, 1)) / dx;
                  const amrex::Real uy =
@@ -350,7 +350,7 @@ pc_derenstrophy(
 
   // Calculate enstrophy.
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    AMREX_D_TERM(enstrophy(i, j, k) = 0.;
+    AMREX_D_TERM(enstrophy(i, j, k) = 0.0 * dx;
                  , const amrex::Real vx =
                      0.5 * (larr(i + 1, j, k, 1) - larr(i - 1, j, k, 1)) / dx;
                  const amrex::Real uy =
@@ -600,18 +600,20 @@ pc_derradialvel(
     geomdata.ProbHiArray();
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx =
     geomdata.CellSizeArray();
-  const amrex::Real centerx = 0.5 * (prob_lo[0] + prob_hi[0]);
-  const amrex::Real centery = 0.5 * (prob_lo[1] + prob_hi[1]);
-  const amrex::Real centerz = 0.5 * (prob_lo[2] + prob_hi[2]);
+  AMREX_D_TERM(const amrex::Real centerx = 0.5 * (prob_lo[0] + prob_hi[0]);
+               , const amrex::Real centery = 0.5 * (prob_lo[1] + prob_hi[1]);
+               , const amrex::Real centerz = 0.5 * (prob_lo[2] + prob_hi[2]));
 
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0] - centerx;
-    const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1] - centery;
-    const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2] - centerz;
-    const amrex::Real r = sqrt(x * x + y * y + z * z);
-    rvel(i, j, k) =
-      (dat(i, j, k, UMX) * x + dat(i, j, k, UMY) * y + dat(i, j, k, UMZ) * z) /
-      (dat(i, j, k, URHO) * r);
+    AMREX_D_TERM(
+      const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0] - centerx;
+      , const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1] - centery;
+      , const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2] - centerz;)
+    const amrex::Real r = sqrt(AMREX_D_TERM(x * x, +y * y, +z * z));
+    rvel(i, j, k) = (AMREX_D_TERM(
+                      dat(i, j, k, UMX) * x, +dat(i, j, k, UMY) * y,
+                      +dat(i, j, k, UMZ) * z)) /
+                    (dat(i, j, k, URHO) * r);
   });
 }
 
@@ -691,8 +693,6 @@ pc_derrhommserror(
 
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_lo =
     geomdata.ProbLoArray();
-  // const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_hi =
-  // geomdata.ProbHiArray();
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx =
     geomdata.CellSizeArray();
 

@@ -93,24 +93,21 @@ pc_plm_x(
   // amrex::Real cc = qa(i,j,k,QC);
   amrex::Real cs = cc * cc;
   amrex::Real rho = q(i, j, k, QRHO);
-  amrex::Real u = q(i, j, k, QU);
-  amrex::Real v = q(i, j, k, QV);
-  amrex::Real w = q(i, j, k, QW);
+  AMREX_D_TERM(amrex::Real u = q(i, j, k, QU);, amrex::Real v = q(i, j, k, QV);
+               , amrex::Real w = q(i, j, k, QW);)
   amrex::Real p = q(i, j, k, QPRES);
   amrex::Real rhoe = q(i, j, k, QREINT);
   amrex::Real enth = ((rhoe + p) / rho) / cs;
   amrex::Real drho = slope[QRHO];
-  amrex::Real du = slope[QU];
-  amrex::Real dv = slope[QV];
-  amrex::Real dw = slope[QW];
+  AMREX_D_TERM(amrex::Real du = slope[QU];, amrex::Real dv = slope[QV];
+               , amrex::Real dw = slope[QW];)
   amrex::Real dp = slope[QPRES];
   amrex::Real drhoe = slope[QREINT];
   amrex::Real alpham = 0.5 * (dp / (rho * cc) - du) * rho / cc;
   amrex::Real alphap = 0.5 * (dp / (rho * cc) + du) * rho / cc;
   amrex::Real alpha0r = drho - dp / cs;
   amrex::Real alpha0e = drhoe - dp * enth;
-  amrex::Real alpha0v = dv;
-  amrex::Real alpha0w = dw;
+  AMREX_D_TERM(, amrex::Real alpha0v = dv;, amrex::Real alpha0w = dw;)
 
   e[0] = u - cc;
   e[1] = u;
@@ -118,12 +115,13 @@ pc_plm_x(
   //  Construct the right state on the i-1/2 interface
   amrex::Real rho_ref =
     rho - 0.5 * (1.0 + dtdx * amrex::min<amrex::Real>(e[0], 0.0)) * drho;
-  amrex::Real u_ref =
-    u - 0.5 * (1.0 + dtdx * amrex::min<amrex::Real>(e[0], 0.0)) * du;
-  amrex::Real v_ref =
-    v - 0.5 * (1.0 + dtdx * amrex::min<amrex::Real>(e[0], 0.0)) * dv;
-  amrex::Real w_ref =
-    w - 0.5 * (1.0 + dtdx * amrex::min<amrex::Real>(e[0], 0.0)) * dw;
+  AMREX_D_TERM(
+    amrex::Real u_ref =
+      u - 0.5 * (1.0 + dtdx * amrex::min<amrex::Real>(e[0], 0.0)) * du;
+    , amrex::Real v_ref =
+        v - 0.5 * (1.0 + dtdx * amrex::min<amrex::Real>(e[0], 0.0)) * dv;
+    , amrex::Real w_ref =
+        w - 0.5 * (1.0 + dtdx * amrex::min<amrex::Real>(e[0], 0.0)) * dw);
   amrex::Real p_ref =
     p - 0.5 * (1.0 + dtdx * amrex::min<amrex::Real>(e[0], 0.0)) * dp;
   amrex::Real rhoe_ref =
@@ -139,10 +137,12 @@ pc_plm_x(
                          (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0r;
   amrex::Real azeright = 0.25 * dtdx * (e[0] - e[1]) *
                          (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0e;
-  amrex::Real azv1rght = 0.25 * dtdx * (e[0] - e[1]) *
-                         (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0v;
-  amrex::Real azw1rght = 0.25 * dtdx * (e[0] - e[1]) *
-                         (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0w;
+  AMREX_D_TERM(, amrex::Real azv1rght =
+                   0.25 * dtdx * (e[0] - e[1]) *
+                   (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0v;
+               , amrex::Real azw1rght =
+                   0.25 * dtdx * (e[0] - e[1]) *
+                   (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0w;)
 
   qp(i, j, k, QRHO) = rho_ref + apright + amright + azrright;
   qp(i, j, k, QRHO) = amrex::max<amrex::Real>(
@@ -160,9 +160,10 @@ pc_plm_x(
 
   rho_ref =
     rho + 0.5 * (1.0 - dtdx * amrex::max<amrex::Real>(e[2], 0.0)) * drho;
-  u_ref = u + 0.5 * (1.0 - dtdx * amrex::max<amrex::Real>(e[2], 0.0)) * du;
-  v_ref = v + 0.5 * (1.0 - dtdx * amrex::max<amrex::Real>(e[2], 0.0)) * dv;
-  w_ref = w + 0.5 * (1.0 - dtdx * amrex::max<amrex::Real>(e[2], 0.0)) * dw;
+  AMREX_D_TERM(
+    u_ref = u + 0.5 * (1.0 - dtdx * amrex::max<amrex::Real>(e[2], 0.0)) * du;
+    , v_ref = v + 0.5 * (1.0 - dtdx * amrex::max<amrex::Real>(e[2], 0.0)) * dv;
+    , w_ref = w + 0.5 * (1.0 - dtdx * amrex::max<amrex::Real>(e[2], 0.0)) * dw;)
   p_ref = p + 0.5 * (1.0 - dtdx * amrex::max<amrex::Real>(e[2], 0.0)) * dp;
   rhoe_ref =
     rhoe + 0.5 * (1.0 - dtdx * amrex::max<amrex::Real>(e[2], 0.0)) * drhoe;
@@ -177,10 +178,12 @@ pc_plm_x(
                         (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0r;
   amrex::Real azeleft = 0.25 * dtdx * (e[2] - e[1]) *
                         (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0e;
-  amrex::Real azv1left = 0.25 * dtdx * (e[2] - e[1]) *
-                         (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0v;
-  amrex::Real azw1left = 0.25 * dtdx * (e[2] - e[1]) *
-                         (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0w;
+  AMREX_D_TERM(, amrex::Real azv1left =
+                   0.25 * dtdx * (e[2] - e[1]) *
+                   (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0v;
+               , amrex::Real azw1left =
+                   0.25 * dtdx * (e[2] - e[1]) *
+                   (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0w;)
   qm(i + 1, j, k, QRHO) = rho_ref + apleft + amleft + azrleft;
   qm(i + 1, j, k, QRHO) = amrex::max<amrex::Real>(
     qm(i + 1, j, k, QRHO), std::numeric_limits<amrex::Real>::min());
@@ -208,6 +211,7 @@ pc_plm_x(
   }
 }
 
+#if AMREX_SPACEDIM > 1
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
@@ -228,16 +232,14 @@ pc_plm_y(
   amrex::Real dtdy = dt / dy;
   amrex::Real cs = cc * cc;
   amrex::Real rho = q(i, j, k, QRHO);
-  amrex::Real u = q(i, j, k, QU);
-  amrex::Real v = q(i, j, k, QV);
-  amrex::Real w = q(i, j, k, QW);
+  AMREX_D_TERM(amrex::Real u = q(i, j, k, QU);, amrex::Real v = q(i, j, k, QV);
+               , amrex::Real w = q(i, j, k, QW);)
   amrex::Real p = q(i, j, k, QPRES);
   amrex::Real rhoe = q(i, j, k, QREINT);
   amrex::Real enth = ((rhoe + p) / rho) / cs;
   amrex::Real drho = slope[QRHO];
-  amrex::Real du = slope[QU];
-  amrex::Real dv = slope[QV];
-  amrex::Real dw = slope[QW];
+  AMREX_D_TERM(amrex::Real du = slope[QU];, amrex::Real dv = slope[QV];
+               , amrex::Real dw = slope[QW];)
   amrex::Real dp = slope[QPRES];
   amrex::Real drhoe = slope[QREINT];
   amrex::Real alpham = 0.5 * (dp / (rho * cc) - dv) * rho / cc;
@@ -245,7 +247,9 @@ pc_plm_y(
   amrex::Real alpha0r = drho - dp / cs;
   amrex::Real alpha0e = drhoe - dp * enth;
   amrex::Real alpha0u = du;
+#if AMREX_SPACEDIM == 3
   amrex::Real alpha0w = dw;
+#endif
 
   e[0] = v - cc;
   e[1] = v;
@@ -253,12 +257,13 @@ pc_plm_y(
   // Construct the "right" state on the j-1/2 interface
   amrex::Real rho_ref =
     rho - 0.5 * (1.0 + dtdy * amrex::min<amrex::Real>(e[0], 0.0)) * drho;
-  amrex::Real u_ref =
-    u - 0.5 * (1.0 + dtdy * amrex::min<amrex::Real>(e[0], 0.0)) * du;
-  amrex::Real v_ref =
-    v - 0.5 * (1.0 + dtdy * amrex::min<amrex::Real>(e[0], 0.0)) * dv;
-  amrex::Real w_ref =
-    w - 0.5 * (1.0 + dtdy * amrex::min<amrex::Real>(e[0], 0.0)) * dw;
+  AMREX_D_TERM(
+    amrex::Real u_ref =
+      u - 0.5 * (1.0 + dtdy * amrex::min<amrex::Real>(e[0], 0.0)) * du;
+    , amrex::Real v_ref =
+        v - 0.5 * (1.0 + dtdy * amrex::min<amrex::Real>(e[0], 0.0)) * dv;
+    , amrex::Real w_ref =
+        w - 0.5 * (1.0 + dtdy * amrex::min<amrex::Real>(e[0], 0.0)) * dw;)
   amrex::Real p_ref =
     p - 0.5 * (1.0 + dtdy * amrex::min<amrex::Real>(e[0], 0.0)) * dp;
   amrex::Real rhoe_ref =
@@ -276,8 +281,10 @@ pc_plm_y(
                          (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0e;
   amrex::Real azu1rght = 0.25 * dtdy * (e[0] - e[1]) *
                          (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0u;
+#if AMREX_SPACEDIM == 3
   amrex::Real azw1rght = 0.25 * dtdy * (e[0] - e[1]) *
                          (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0w;
+#endif
 
   qp(i, j, k, QRHO) = rho_ref + apright + amright + azrright;
   qp(i, j, k, QRHO) = amrex::max<amrex::Real>(
@@ -294,9 +301,10 @@ pc_plm_y(
 
   rho_ref =
     rho + 0.5 * (1.0 - dtdy * amrex::max<amrex::Real>(e[2], 0.0)) * drho;
-  u_ref = u + 0.5 * (1.0 - dtdy * amrex::max<amrex::Real>(e[2], 0.0)) * du;
-  v_ref = v + 0.5 * (1.0 - dtdy * amrex::max<amrex::Real>(e[2], 0.0)) * dv;
-  w_ref = w + 0.5 * (1.0 - dtdy * amrex::max<amrex::Real>(e[2], 0.0)) * dw;
+  AMREX_D_TERM(
+    u_ref = u + 0.5 * (1.0 - dtdy * amrex::max<amrex::Real>(e[2], 0.0)) * du;
+    , v_ref = v + 0.5 * (1.0 - dtdy * amrex::max<amrex::Real>(e[2], 0.0)) * dv;
+    , w_ref = w + 0.5 * (1.0 - dtdy * amrex::max<amrex::Real>(e[2], 0.0)) * dw;)
   p_ref = p + 0.5 * (1.0 - dtdy * amrex::max<amrex::Real>(e[2], 0.0)) * dp;
   rhoe_ref =
     rhoe + 0.5 * (1.0 - dtdy * amrex::max<amrex::Real>(e[2], 0.0)) * drhoe;
@@ -313,8 +321,10 @@ pc_plm_y(
                         (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0e;
   amrex::Real azu1left = 0.25 * dtdy * (e[2] - e[1]) *
                          (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0u;
+#if AMREX_SPACEDIM == 3
   amrex::Real azw1left = 0.25 * dtdy * (e[2] - e[1]) *
                          (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0w;
+#endif
 
   qm(i, j + 1, k, QRHO) = rho_ref + apleft + amleft + azrleft;
   qm(i, j + 1, k, QRHO) = amrex::max<amrex::Real>(
@@ -479,6 +489,7 @@ pc_plm_z(
     qm(i, j, k + 1, n) = q(i, j, k, n) + acmpbot;
   }
 }
+#endif
 
 // Corrects the left and right Y-states with the X-Flux
 AMREX_GPU_DEVICE
@@ -729,5 +740,4 @@ pc_transy(
     pnewl + hdt * srcp, std::numeric_limits<amrex::Real>::min());
   qm(i + 1, j, k, QREINT) = renewl - rhoekinl + hdt * srce;
 }
-
 #endif

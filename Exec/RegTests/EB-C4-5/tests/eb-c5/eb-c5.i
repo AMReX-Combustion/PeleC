@@ -22,7 +22,6 @@ pelec.hi_bc       =  "FOExtrap" "FOExtrap" "Interior"
 # Problem setup
 pelec.eb_boundary_T = 1000.
 pelec.eb_isothermal = 1
-pelec.eb_small_vfrac = 0.0
 
 # WHICH PHYSICS
 pelec.do_hydro = 0

@@ -11,8 +11,8 @@ amrex_probinit(
   const int* /*init*/,
   const int* /*name*/,
   const int* /*namelen*/,
-  const amrex_real* problo,
-  const amrex_real* probhi)
+  const amrex_real* /*problo*/,
+  const amrex_real* /*probhi*/)
 {
   // Parse params
   {

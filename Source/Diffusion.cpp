@@ -553,11 +553,11 @@ PeleC::getMOLSrcTerm(
                 &((*areafrac[0])[mfi]), &((*areafrac[1])[mfi]),
                 &((*areafrac[2])[mfi]))},
               device);
-            if (AMREX_SPACEDIM <= 2) {
-              amrex::Print()
-                << "WARNING:Re redistribution crseadd for EB not tested "
-                   "in 2D\n";
-            }
+            // if (AMREX_SPACEDIM <= 2) {
+            //   amrex::Print()
+            //     << "WARNING:Re redistribution crseadd for EB not tested "
+            //        "in 2D\n";
+            // }
           }
 
           if (fr_as_fine) {
@@ -569,11 +569,11 @@ PeleC::getMOLSrcTerm(
                 &((*areafrac[2])[mfi]))},
               dm_as_fine, device);
 
-            if (AMREX_SPACEDIM <= 2) {
-              amrex::Print()
-                << "WARNING:Re redistribution fineadd for EB not tested "
-                   "in 2D\n";
-            }
+            // if (AMREX_SPACEDIM <= 2) {
+            //   amrex::Print()
+            //     << "WARNING:Re redistribution fineadd for EB not tested "
+            //        "in 2D\n";
+            // }
           }
         }
       } else if (typ != amrex::FabType::regular) { // Single valued if loop
