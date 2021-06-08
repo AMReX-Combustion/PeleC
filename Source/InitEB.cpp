@@ -254,7 +254,8 @@ PeleC::initialize_eb2_structs()
               }
             }
             return r;
-          });
+          },
+          1);
 
         amrex::Gpu::DeviceVector<amrex::IntVect> v_all_cut_faces(
           Nall_cut_faces);
