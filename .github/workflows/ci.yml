@@ -292,9 +292,9 @@ jobs:
           sudo apt-get install -y rocm-dev rocm-libs
       - name: Configure
         run: |
+          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
           echo 'export PATH=$PATH:/opt/rocm/bin:/opt/rocm/profiler/bin:/opt/rocm/opencl/bin' | sudo tee -a /etc/profile.d/rocm.sh
           source /etc/profile.d/rocm.sh
-          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
           cmake -B${{runner.workspace}}/build-hip \
           -DCMAKE_CXX_COMPILER:STRING=$(which hipcc) \
           -DCMAKE_C_COMPILER:STRING=$(which clang) \
@@ -308,6 +308,8 @@ jobs:
       - name: Build
         working-directory: ${{runner.workspace}}/build-hip
         run: |
+          echo 'export PATH=$PATH:/opt/rocm/bin:/opt/rocm/profiler/bin:/opt/rocm/opencl/bin' | sudo tee -a /etc/profile.d/rocm.sh
+          source /etc/profile.d/rocm.sh
           cmake --build . --parallel ${{env.NPROCS}}
   DPCPP:
     needs: Formatting
@@ -332,7 +334,6 @@ jobs:
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
           set +e
           source /opt/intel/oneapi/setvars.sh
-          export LD_LIBRARY_PATH=/opt/intel/oneapi/compiler/2021.2.0/linux/compiler/lib/intel64_lin:${LD_LIBRARY_PATH}
           set -e
           cmake -B${{runner.workspace}}/build-dpcpp \
             -DCMAKE_CXX_COMPILER_ID="Clang" \
@@ -349,5 +350,8 @@ jobs:
       - name: Build
         working-directory: ${{runner.workspace}}/build-dpcpp
         run: |
+          set +e
+          source /opt/intel/oneapi/setvars.sh
+          set -e
           cmake --build . --parallel ${{env.NPROCS}}
 
