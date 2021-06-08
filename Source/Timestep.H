@@ -60,7 +60,7 @@ pc_estdt_hydro(
 
   amrex::Loop(bx, [=, &dt](int i, int j, int k) {
 #ifdef PELEC_USE_EB
-    if (not flags(i, j, k).isCovered()) {
+    if (!flags(i, j, k).isCovered()) {
 #endif
       const amrex::Real rho = u(i, j, k, URHO);
       const amrex::Real rhoInv = 1.0 / rho;
@@ -106,7 +106,7 @@ pc_estdt_veldif(
 
   amrex::Loop(bx, [=, &dt](int i, int j, int k) {
 #ifdef PELEC_USE_EB
-    if (not flags(i, j, k).isCovered()) {
+    if (!flags(i, j, k).isCovered()) {
 #endif
       const amrex::Real rho = u(i, j, k, URHO);
       const amrex::Real rhoInv = 1.0 / rho;
@@ -154,7 +154,7 @@ pc_estdt_tempdif(
 
   amrex::Loop(bx, [=, &dt](int i, int j, int k) {
 #ifdef PELEC_USE_EB
-    if (not flags(i, j, k).isCovered()) {
+    if (!flags(i, j, k).isCovered()) {
 #endif
       const amrex::Real rho = u(i, j, k, URHO);
       const amrex::Real rhoInv = 1.0 / rho;
@@ -205,7 +205,7 @@ pc_estdt_enthdif(
 
   amrex::Loop(bx, [=, &dt](int i, int j, int k) {
 #ifdef PELEC_USE_EB
-    if (not flags(i, j, k).isCovered()) {
+    if (!flags(i, j, k).isCovered()) {
 #endif
       const amrex::Real rho = u(i, j, k, URHO);
       const amrex::Real rhoInv = 1.0 / rho;
