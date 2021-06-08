@@ -242,31 +242,19 @@ PeleC::initialize_eb2_structs()
         // This used to be an std::set for cut_faces (it ensured
         // sorting and uniqueness)
         EBBndryGeom* d_sv_eb_bndry_geom = sv_eb_bndry_geom[iLocal].data();
-        amrex::Gpu::LaunchSafeGuard lsg(true);
-        amrex::Gpu::DeviceScalar<int> ds(0);
-        int* dp = ds.dataPtr();
-        amrex::VecReduce(
-          sv_eb_bndry_geom[iLocal].size(), 0,
-          [=] AMREX_GPU_DEVICE(int i, int* r) noexcept {
+        const int Nall_cut_faces = amrex::Reduce::Sum(
+          sv_eb_bndry_geom[iLocal].size(),
+          [=] AMREX_GPU_DEVICE(int i) noexcept -> int {
+            int r = 0;
             const amrex::IntVect& iv = d_sv_eb_bndry_geom[i].iv;
             for (int iside = 0; iside <= 1; iside++) {
               const amrex::IntVect iv_face = iv + iside * amrex::BASISV(dir);
               if (afrac_arr(iv_face) < 1.0) {
-                *r += 1;
+                r++;
               }
             }
-          },
-#ifdef AMREX_USE_DPCPP
-          [=] AMREX_GPU_DEVICE(
-            int const& r, amrex::Gpu::Handler const& h) noexcept {
-            amrex::Gpu::deviceReduceSum_full(dp, r, h);
+            return r;
           });
-#else
-          [=] AMREX_GPU_DEVICE(int const& r) noexcept {
-            amrex::Gpu::deviceReduceSum_full(dp, r);
-          });
-#endif
-        const int Nall_cut_faces = ds.dataValue();
 
         amrex::Gpu::DeviceVector<amrex::IntVect> v_all_cut_faces(
           Nall_cut_faces);
