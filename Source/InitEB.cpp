@@ -235,7 +235,6 @@ PeleC::initialize_eb2_structs()
 
       if (typ == amrex::FabType::regular || typ == amrex::FabType::covered) {
       } else if (typ == amrex::FabType::singlevalued) {
-        // const amrex::Box ebox = amrex::Box(tbox).surroundingNodes(dir);
         const auto afrac_arr = (*eb2areafrac[dir])[mfi].array();
         const auto facecent_arr = (*facecent[dir])[mfi].array();
 
@@ -254,8 +253,7 @@ PeleC::initialize_eb2_structs()
               }
             }
             return r;
-          },
-          1);
+          });
 
         amrex::Gpu::DeviceVector<amrex::IntVect> v_all_cut_faces(
           Nall_cut_faces);
