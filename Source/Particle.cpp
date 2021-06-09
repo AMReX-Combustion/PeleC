@@ -53,7 +53,6 @@ int PeleC::write_spray_ascii_files = 0;
 // momentum + density + fuel species + energy
 int PeleC::num_spray_src = AMREX_SPACEDIM + 2 + SPRAY_FUEL_NUM;
 int PeleC::particle_mass_tran = 1;
-int PeleC::particle_heat_tran = 1;
 int PeleC::particle_mom_tran = 1;
 Vector<std::string> PeleC::spray_fuel_names;
 
@@ -109,7 +108,6 @@ PeleC::readParticleParams()
   ppp.query("v", particle_verbose);
 
   ppp.get("mass_transfer", particle_mass_tran);
-  ppp.get("heat_transfer", particle_heat_tran);
   ppp.get("mom_transfer", particle_mom_tran);
   ppp.query("cfl", particle_cfl);
   if (particle_cfl > 0.5)
@@ -233,7 +231,6 @@ PeleC::defineParticles()
     const int fspec = sprayData.indx[ns];
     sprayData.latent[ns] -= fuelEnth[fspec];
   }
-  scomps.heat_tran = PeleC::particle_heat_tran;
   scomps.mass_tran = PeleC::particle_mass_tran;
   scomps.mom_tran = PeleC::particle_mom_tran;
   scomps.rhoIndx = PeleC::Density;

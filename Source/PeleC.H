@@ -208,7 +208,6 @@ public:
   static int write_spray_ascii_files;
 
   static int particle_mass_tran;
-  static int particle_heat_tran;
   static int particle_mom_tran;
   static amrex::Vector<std::string> spray_fuel_names;
 #endif
