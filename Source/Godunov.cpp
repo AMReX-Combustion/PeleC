@@ -491,7 +491,6 @@ pc_umeth_2D(
   const int ppm_type,
   const int use_flattening)
 {
-  const int use_flattening_loc = use_flattening;
   amrex::Real const dx = del[0];
   amrex::Real const dy = del[1];
   amrex::Real const hdtdy = 0.5 * dt / dy;
@@ -512,10 +511,10 @@ pc_umeth_2D(
 
   // X data
   int cdir = 0;
-  const amrex::Box& xslpbx = grow(bxg1, cdir, 1);
-  const amrex::Box& xmbx = growHi(xslpbx, cdir, 1);
+  const amrex::Box& xmbx = growHi(bxg2, cdir, 1);
+  const amrex::Box& xflxbx = surroundingNodes(grow(bxg2, cdir, -1), cdir);
   amrex::FArrayBox qxm(xmbx, QVAR);
-  amrex::FArrayBox qxp(xslpbx, QVAR);
+  amrex::FArrayBox qxp(bxg2, QVAR);
   amrex::Elixir qxmeli = qxm.elixir();
   amrex::Elixir qxpeli = qxp.elixir();
   auto const& qxmarr = qxm.array();
@@ -523,41 +522,54 @@ pc_umeth_2D(
 
   // Y data
   cdir = 1;
-  const amrex::Box& yflxbx = surroundingNodes(bxg1, cdir);
-  const amrex::Box& yslpbx = grow(bxg1, cdir, 1);
-  const amrex::Box& ymbx = growHi(yslpbx, cdir, 1);
+  const amrex::Box& ymbx = growHi(bxg2, cdir, 1);
+  const amrex::Box& yflxbx = surroundingNodes(grow(bxg2, cdir, -1), cdir);
   amrex::FArrayBox qym(ymbx, QVAR);
-  amrex::FArrayBox qyp(yslpbx, QVAR);
+  amrex::FArrayBox qyp(bxg2, QVAR);
   amrex::Elixir qymeli = qym.elixir();
   amrex::Elixir qypeli = qyp.elixir();
   auto const& qymarr = qym.array();
   auto const& qyparr = qyp.array();
 
   const PassMap* lpmap = PeleC::d_pass_map;
-  amrex::ParallelFor(
-    xslpbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      amrex::Real slope[QVAR];
-      // X slopes and interp
-      for (int n = 0; n < QVAR; ++n)
-        slope[n] = plm_slope(i, j, k, n, 0, q);
-      pc_plm_x(
-        i, j, k, qxmarr, qxparr, slope, q, qaux(i, j, k, QC), dx, dt, *lpmap);
-    });
+  if (ppm_type == 0) {
+    amrex::ParallelFor(
+      bxg2, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+        amrex::Real slope[QVAR];
+        // X slopes and interp
+        for (int n = 0; n < QVAR; ++n)
+          slope[n] = plm_slope(i, j, k, n, 0, q);
+        pc_plm_x(
+          i, j, k, qxmarr, qxparr, slope, q, qaux(i, j, k, QC), dx, dt, *lpmap);
 
-  amrex::ParallelFor(
-    yslpbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      amrex::Real slope[QVAR];
-      // Y slopes and interp
-      for (int n = 0; n < QVAR; n++)
-        slope[n] = plm_slope(i, j, k, n, 1, q);
-      pc_plm_y(
-        i, j, k, qymarr, qyparr, slope, q, qaux(i, j, k, QC), dy, dt, *lpmap);
-    });
+        // Y slopes and interp
+        for (int n = 0; n < QVAR; n++)
+          slope[n] = plm_slope(i, j, k, n, 1, q);
+        pc_plm_y(
+          i, j, k, qymarr, qyparr, slope, q, qaux(i, j, k, QC), dy, dt, *lpmap);
+      });
+  } else if (ppm_type == 1) {
+    // Compute the normal interface states by reconstructing
+    // the primitive variables using the piecewise parabolic method
+    // and doing characteristic tracing.  We do not apply the
+    // transverse terms here.
 
+    int idir = 0;
+    trace_ppm(
+      bxg2, idir, q, srcQ, qxmarr, qxparr, bxg2, dt, del, use_flattening,
+      PeleC::use_hybrid_weno, PeleC::weno_scheme);
+
+    idir = 1;
+    trace_ppm(
+      bxg2, idir, q, srcQ, qymarr, qyparr, bxg2, dt, del, use_flattening,
+      PeleC::use_hybrid_weno, PeleC::weno_scheme);
+
+  } else {
+    amrex::Error("PeleC::ppm_type must be 0 (PLM) or 1 (PPM)");
+  }
   // These are the first flux estimates as per the corner-transport-upwind
   // method X initial fluxes
   cdir = 0;
-  const amrex::Box& xflxbx = surroundingNodes(bxg1, cdir);
   amrex::FArrayBox fx(xflxbx, NVAR);
   amrex::Elixir fxeli = fx.elixir();
   auto const& fxarr = fx.array();

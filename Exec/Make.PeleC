@@ -28,8 +28,8 @@ endif
 
 ifeq ($(USE_EB), TRUE)
   DEFINES += -DPELEC_USE_EB
-  ifneq ($(DIM), 3)
-    $(error EB requires 3D)
+  ifeq ($(DIM), 1)
+    $(error EB is not supported in 1D)
   endif
 endif
 
