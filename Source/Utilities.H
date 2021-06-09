@@ -547,7 +547,7 @@ unique(T input)
   }
 
   // count the number of uniques
-  const int Nunique = amrex::Reduce::Sum(
+  const int Nunique = amrex::Reduce::Sum<int>(
     input.size() - 1,
     [=] AMREX_GPU_DEVICE(int i) noexcept -> int {
       return (d_input[i] != d_input[i + 1]);

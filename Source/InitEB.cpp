@@ -241,7 +241,7 @@ PeleC::initialize_eb2_structs()
         // This used to be an std::set for cut_faces (it ensured
         // sorting and uniqueness)
         EBBndryGeom* d_sv_eb_bndry_geom = sv_eb_bndry_geom[iLocal].data();
-        const int Nall_cut_faces = amrex::Reduce::Sum(
+        const int Nall_cut_faces = amrex::Reduce::Sum<int>(
           sv_eb_bndry_geom[iLocal].size(),
           [=] AMREX_GPU_DEVICE(int i) noexcept -> int {
             int r = 0;
