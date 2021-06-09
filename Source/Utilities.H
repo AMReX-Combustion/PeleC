@@ -502,16 +502,6 @@ locate(const amrex::Real* xtable, const int n, const amrex::Real& x, int& idxlo)
   }
 }
 
-// This was manually inlined to avoid unique_ptr somehow finding it and
-// segfaulting
-// template <typename T> AMREX_GPU_DEVICE AMREX_FORCE_INLINE void
-// swap(T* x, T* y)
-//{
-//  T temp = *x;
-//  *x = *y;
-//  *y = temp;
-//}
-
 template <typename T>
 void
 sort(T& vec)
