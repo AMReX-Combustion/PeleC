@@ -502,15 +502,6 @@ locate(const amrex::Real* xtable, const int n, const amrex::Real& x, int& idxlo)
   }
 }
 
-/* This was manually inlined to avoid unique_ptr somehow finding it and
-segfaulting template <typename T> AMREX_GPU_DEVICE AMREX_FORCE_INLINE void
-swap(T* x, T* y)
-{
-  T temp = *x;
-  *x = *y;
-  *y = temp;
-}*/
-
 template <typename T>
 void
 sort(T& vec)
@@ -538,7 +529,6 @@ template <typename T>
 T
 unique(T input)
 {
-
   typename T::value_type* d_input = input.data();
   const int input_size = input.size();
   if (input_size == 0) {
@@ -547,27 +537,12 @@ unique(T input)
   }
 
   // count the number of uniques
-  int init_val = 0;
-  amrex::Gpu::LaunchSafeGuard lsg(true);
-  amrex::Gpu::DeviceScalar<int> ds(init_val);
-  int* dp = ds.dataPtr();
-  amrex::VecReduce(
-    input.size() - 1, init_val,
-    [=] AMREX_GPU_DEVICE(int i, int* r) noexcept {
-      if (d_input[i] != d_input[i + 1]) {
-        *r += 1;
-      }
+  const int Nunique = amrex::Reduce::Sum<int>(
+    input.size() - 1,
+    [=] AMREX_GPU_DEVICE(int i) noexcept -> int {
+      return (d_input[i] != d_input[i + 1]);
     },
-#ifdef AMREX_USE_DPCPP
-    [=] AMREX_GPU_DEVICE(int const& r, amrex::Gpu::Handler const& h) noexcept {
-      amrex::Gpu::deviceReduceSum_full(dp, r, h);
-    });
-#else
-    [=] AMREX_GPU_DEVICE(int const& r) noexcept {
-      amrex::Gpu::deviceReduceSum_full(dp, r);
-    });
-#endif
-  const int Nunique = ds.dataValue() + 1;
+    1);
 
   // allocate the memory
   T output(Nunique);
