@@ -287,14 +287,14 @@ jobs:
           export DEBIAN_FRONTEND=noninteractive
           wget -q -O - http://repo.radeon.com/rocm/rocm.gpg.key | sudo apt-key add -
           #Use HIP 4.1.1 until 4.2 is fixed
-          echo 'deb [arch=amd64] http://repo.radeon.com/rocm/apt/4.1.1/ xenial main'  | sudo tee /etc/apt/sources.list.d/rocm.list
+          echo 'deb [arch=amd64] http://repo.radeon.com/rocm/apt/4.1.1/ xenial main' | sudo tee /etc/apt/sources.list.d/rocm.list
           sudo apt-get update
           sudo apt-get install -y rocm-dev rocm-libs
       - name: Configure
         run: |
+          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
           echo 'export PATH=$PATH:/opt/rocm/bin:/opt/rocm/profiler/bin:/opt/rocm/opencl/bin' | sudo tee -a /etc/profile.d/rocm.sh
           source /etc/profile.d/rocm.sh
-          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
           cmake -B${{runner.workspace}}/build-hip \
           -DCMAKE_CXX_COMPILER:STRING=$(which hipcc) \
           -DCMAKE_C_COMPILER:STRING=$(which clang) \
@@ -308,4 +308,49 @@ jobs:
       - name: Build
         working-directory: ${{runner.workspace}}/build-hip
         run: |
+          echo 'export PATH=$PATH:/opt/rocm/bin:/opt/rocm/profiler/bin:/opt/rocm/opencl/bin' | sudo tee -a /etc/profile.d/rocm.sh
+          source /etc/profile.d/rocm.sh
           cmake --build . --parallel ${{env.NPROCS}}
+  DPCPP:
+    needs: Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.6.0
+        with:
+          access_token: ${{github.token}}
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Dependencies
+        run: |
+          wget -q -O - https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB | sudo apt-key add -
+          echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends build-essential g++ gfortran intel-oneapi-dpcpp-cpp-compiler intel-oneapi-mkl-devel
+      - name: Configure
+        run: |
+          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
+          set +e
+          source /opt/intel/oneapi/setvars.sh
+          set -e
+          cmake -B${{runner.workspace}}/build-dpcpp \
+            -DCMAKE_CXX_COMPILER_ID="Clang" \
+            -DCMAKE_CXX_COMPILER_VERSION=12.0 \
+            -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT=17 \
+            -DCMAKE_CXX_COMPILER=$(which dpcpp) \
+            -DCMAKE_C_COMPILER=$(which clang) \
+            -DPELEC_ENABLE_MPI:BOOL=OFF \
+            -DPELEC_ENABLE_MASA:BOOL=OFF \
+            -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
+            -DPELEC_ENABLE_TESTS:BOOL=ON \
+            -DPELEC_ENABLE_DPCPP:BOOL=ON \
+            ${{github.workspace}}
+      - name: Build
+        working-directory: ${{runner.workspace}}/build-dpcpp
+        run: |
+          set +e
+          source /opt/intel/oneapi/setvars.sh
+          set -e
+          cmake --build . --parallel ${{env.NPROCS}}
+
