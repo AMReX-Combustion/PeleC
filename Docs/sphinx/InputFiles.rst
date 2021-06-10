@@ -173,3 +173,31 @@ These parameters, once read, are available in the `PeleC` object for use from c+
     eb2.sphere_has_fluid_inside = 0
     
     # ---------------------------------------------------------------
+
+Tagging criteria
+~~~~~~~~~~~~~~~~
+
+Tagging criteria are used to inform the refinement of flow features. They are added the input file using the `tagging` keyword (see the input file above). The following convention is used
+
+- `*err`: tag cell for refinement when the value of the field exceeds this threshold value, i.e. :math:`f_{i,j,k} \geq v`, where :math:`f_{i,j,k}` is the field in cell :math:`(i,j,k)` and :math:`v` is the threshold.
+- `*grad`: tag cell for refinement when the maximum difference of the field exceeds this threshold value, i.e.
+
+.. math::
+   \max(&|f_{i+1,j,k} - f_{i,j,k}|, |f_{i,j,k} - f_{i-1,j,k}|,\\
+   &|f_{i,j+1,k} - f_{i,j,k}|, |f_{i,j,k} - f_{i,j-1,k}|,\\
+   &|f_{i,j,k+1} - f_{i,j,k}|, |f_{i,j,k} - f_{i,j,k-1}|) \geq v
+
+- `max_*_level`: maximum level for use of this tag (beyond this level, this tag will not be used for refinement).
+
+The default values for tagging are defined in :code:`struct TaggingParm` in the `Tagging.H` file. Currently, the code supports tagging on density, pressure, velocity, vorticity, temperature, and volume fraction.
+
+Additionally, tagging is supported for a user-specified species which can function as a "flame tracer" using the keyword `ftrac` and selecting the species with `pelec.flame_trac_name`. For example, the following text in the input file would tag cells for refinement where the HO2 mass fraction exceeded :math:`150 \times 10^{-6}` up to a maximum of 4 levels of refinement:
+
+::
+
+   pelec.flame_trac_name= HO2
+   tagging.max_ftracerr_lev = 4
+   tagging.ftracerr = 150.e-6
+
+Users can specify their own tagging criteria in the `prob.H` of their case. An example of this is provided in the Taylor-Green regression test.
+   
