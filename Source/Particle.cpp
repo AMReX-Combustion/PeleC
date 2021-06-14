@@ -57,10 +57,8 @@ int PeleC::particle_mom_tran = 1;
 Vector<std::string> PeleC::spray_fuel_names;
 
 void
-getPSatCoef(Real* psat_coef,
-            ParmParse& ppp,
-            std::string fuel_name,
-            const int spf)
+getPSatCoef(
+  Real* psat_coef, ParmParse& ppp, std::string fuel_name, const int spf)
 {
   std::string psat_read = fuel_name + "_psat";
   std::vector<Real> inp_coef(4);
@@ -133,16 +131,16 @@ PeleC::readParticleParams()
     amrex::Abort(
       "Number of fuel species in input file must match SPRAY_FUEL_NUM");
 
+  std::vector<std::string> fuel_names;
+  std::vector<Real> crit_T;
+  std::vector<Real> boil_T;
+  std::vector<Real> spraycp;
+  std::vector<Real> latent;
+  std::vector<Real> sprayrho;
+  std::vector<Real> mu(nfuel, -1.);
+  std::vector<Real> lambda(nfuel, -1.);
   if (particle_mass_tran) {
     spray_fuel_names.assign(nfuel, "");
-    std::vector<std::string> fuel_names;
-    std::vector<Real> crit_T;
-    std::vector<Real> boil_T;
-    std::vector<Real> spraycp;
-    std::vector<Real> latent;
-    std::vector<Real> sprayrho;
-    std::vector<Real> mu(nfuel, -1.);
-    std::vector<Real> lambda(nfuel, -1.);
     ppp.getarr("fuel_species", fuel_names);
     ppp.getarr("fuel_crit_temp", crit_T);
     ppp.getarr("fuel_boil_temp", boil_T);
@@ -350,7 +348,8 @@ PeleC::initParticles()
       const ProbParmDevice* lprobparm_d = h_prob_parm_device;
       theSprayPC()->InitSprayParticles(*lprobparm, *lprobparm_d);
     } else {
-      Abort("Must initialize spray particles with particles.init_function or particles.init_file");
+      Abort("Must initialize spray particles with particles.init_function or "
+            "particles.init_file");
     }
   }
 }
