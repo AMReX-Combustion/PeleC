@@ -4,7 +4,7 @@ AMREX_HOME        ?= $(PELEC_HOME)/Submodules/AMReX
 AMREX_HYDRO_HOME  ?= $(PELEC_HOME)/Submodules/AMReX-Hydro
 PELEMP_HOME       ?= $(PELEC_HOME)/Submodules/PeleMP
 
-TOP := $(PELEC_HOME)
+TOP ?= $(PELEC_HOME)
 
 EBASE = PeleC
 
@@ -100,7 +100,7 @@ VPATH_LOCATIONS   += $(TRANSPORT_HOME)
 Bpack             += $(TRANSPORT_HOME)/Make.package
 Blocs             += $(TRANSPORT_HOME)
 
-Bdirs := Source Source/Params/param_includes
+Bdirs := $(PELEC_HOME)/Source $(PELEC_HOME)/Source/Params/param_includes
 
 Pdirs := Base Amr Boundary AmrCore
 ifeq ($(USE_EB), TRUE)
@@ -133,8 +133,8 @@ endif
 Bpack += $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir)/Make.package)
 Blocs += $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir))
 
-Bpack += $(foreach dir, $(Bdirs), $(TOP)/$(dir)/Make.package)
-Blocs += $(foreach dir, $(Bdirs), $(TOP)/$(dir))
+Bpack += $(foreach dir, $(Bdirs), $(dir)/Make.package)
+Blocs += $(foreach dir, $(Bdirs), $(dir))
 
 $(info $${Blocs} is [${Blocs}])
 

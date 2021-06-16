@@ -170,7 +170,7 @@ amrex_probinit(
     PeleC::prob_parm_host->h_xdiff[0] = PeleC::prob_parm_host->h_xdiff[1];
 
     // Make sure the search array is increasing
-    if (not std::is_sorted(
+    if (!std::is_sorted(
           PeleC::prob_parm_host->h_xarray.begin(),
           PeleC::prob_parm_host->h_xarray.end())) {
       amrex::Abort("Error: non ascending x-coordinate array.");

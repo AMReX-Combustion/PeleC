@@ -244,6 +244,10 @@ PeleC::read_params()
   if (cfl <= 0.0 || cfl > 1.0) {
     amrex::Error("Invalid CFL factor; must be between zero and one.");
   }
+  if ((do_hydro == 1) && (do_mol == 1) && (cfl > 0.3)) {
+    amrex::Print() << "WARNING -- CFL should be <= 0.3 when using MOL hydro."
+                   << std::endl;
+  }
 
   if (cfl > 0.3 && do_mol) {
     amrex::Error("CFL must be <= 0.3 for MOL time-stepping");
@@ -1649,7 +1653,7 @@ PeleC::errorEst(
         const amrex::Real captured_velerr = tagging_parm->velerr;
         amrex::ParallelFor(
           tilebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            tag_error(i, j, k, tag_arr, S_derarr, captured_velerr, tagval);
+            tag_abserror(i, j, k, tag_arr, S_derarr, captured_velerr, tagval);
           });
       }
       if (level < tagging_parm->max_velgrad_lev) {
@@ -1669,7 +1673,7 @@ PeleC::errorEst(
         const amrex::Real captured_velerr = tagging_parm->velerr;
         amrex::ParallelFor(
           tilebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            tag_error(i, j, k, tag_arr, S_derarr, captured_velerr, tagval);
+            tag_abserror(i, j, k, tag_arr, S_derarr, captured_velerr, tagval);
           });
       }
       if (level < tagging_parm->max_velgrad_lev) {
@@ -1689,7 +1693,7 @@ PeleC::errorEst(
         const amrex::Real captured_velerr = tagging_parm->velerr;
         amrex::ParallelFor(
           tilebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            tag_error(i, j, k, tag_arr, S_derarr, captured_velerr, tagval);
+            tag_abserror(i, j, k, tag_arr, S_derarr, captured_velerr, tagval);
           });
       }
       if (level < tagging_parm->max_velgrad_lev) {
