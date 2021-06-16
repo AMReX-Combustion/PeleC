@@ -30,7 +30,7 @@ jobs:
             procs: $(sysctl -n hw.ncpu)
             mpipreflags: -DMPIEXEC_PREFLAGS:STRING=--oversubscribe
           - os: ubuntu-latest
-            install_deps: sudo apt-get install mpich libmpich-dev ninja-build
+            install_deps: sudo apt-get update && sudo apt-get install mpich libmpich-dev ninja-build
             comp: gnu
             procs: $(nproc)
             mpipreflags:
@@ -152,15 +152,10 @@ jobs:
     name: CUDA v${{matrix.cuda_ver}}
     strategy:
       matrix:
-        #cuda_pkg: [11-1, 10-2]
-        cuda_pkg: [11-1]
+        cuda_pkg: [11-2]
         include:
-          - cuda_ver: "11.1"
-            cuda_pkg: 11-1
-            cuda_extra: libcurand-dev-11-1 cuda-cupti-dev-11-1
-          #- cuda_ver: "10.2"
-          #  cuda_pkg: 10-2
-          #  cuda_extra: cuda-curand-dev-10-2 cuda-cupti-dev-10-2
+          - cuda_ver: "11.2"
+            cuda_pkg: 11-2
     steps:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.6.0
@@ -174,12 +169,12 @@ jobs:
           export DEBIAN_FRONTEND=noninteractive
           wget -q -O - https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub | sudo apt-key add -
           echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /" | sudo tee /etc/apt/sources.list.d/cuda.list
-          echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /" | sudo tee /etc/apt/sources.list.d/nvidia-ml.list
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-              libopenmpi-dev cuda-command-line-tools-${{matrix.cuda_pkg}} \
+              cuda-command-line-tools-${{matrix.cuda_pkg}} \
               cuda-compiler-${{matrix.cuda_pkg}} cuda-minimal-build-${{matrix.cuda_pkg}} \
-              cuda-nvml-dev-${{matrix.cuda_pkg}} cuda-nvtx-${{matrix.cuda_pkg}} ${{matrix.cuda_extra}}
+              cuda-nvml-dev-${{matrix.cuda_pkg}} cuda-nvtx-${{matrix.cuda_pkg}} \
+              libcurand-dev-${{matrix.cuda_pkg}} cuda-cupti-dev-${{matrix.cuda_pkg}}
       - name: Configure
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
@@ -205,7 +200,9 @@ jobs:
         with:
           submodules: true
       - name: Dependencies
-        run: sudo apt-get install -y cppcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cppcheck
       - name: Configure
         run: |
           cmake -B${{runner.workspace}}/build-cppcheck \
@@ -241,6 +238,7 @@ jobs:
           submodules: true
       - name: Dependencies
         run: |
+          sudo apt-get update
           sudo apt-get install -y clang-tidy-10
           sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-10 100
       - name: Configure
