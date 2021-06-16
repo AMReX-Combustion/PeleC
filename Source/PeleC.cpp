@@ -248,8 +248,9 @@ PeleC::read_params()
   if (cfl <= 0.0 || cfl > 1.0) {
     amrex::Error("Invalid CFL factor; must be between zero and one.");
   }
-  if((do_hydro == 1) && (do_mol == 1) && (cfl > 0.3)){
-    amrex::Print() << "WARNING -- CFL should be <= 0.3 when using MOL hydro." << std::endl;
+  if ((do_hydro == 1) && (do_mol == 1) && (cfl > 0.3)) {
+    amrex::Print() << "WARNING -- CFL should be <= 0.3 when using MOL hydro."
+                   << std::endl;
   }
 
   if ((do_les || use_explicit_filter) && (AMREX_SPACEDIM != 3)) {
