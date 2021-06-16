@@ -30,7 +30,7 @@ jobs:
             procs: $(sysctl -n hw.ncpu)
             mpipreflags: -DMPIEXEC_PREFLAGS:STRING=--oversubscribe
           - os: ubuntu-latest
-            install_deps: sudo apt-get install mpich libmpich-dev ninja-build
+            install_deps: sudo apt-get update && sudo apt-get install mpich libmpich-dev ninja-build
             comp: gnu
             procs: $(nproc)
             mpipreflags:
@@ -200,7 +200,9 @@ jobs:
         with:
           submodules: true
       - name: Dependencies
-        run: sudo apt-get install -y cppcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cppcheck
       - name: Configure
         run: |
           cmake -B${{runner.workspace}}/build-cppcheck \
@@ -236,6 +238,7 @@ jobs:
           submodules: true
       - name: Dependencies
         run: |
+          sudo apt-get update
           sudo apt-get install -y clang-tidy-10
           sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-10 100
       - name: Configure
