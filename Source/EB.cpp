@@ -46,7 +46,7 @@ pc_fill_sv_ebg(
 }
 
 void
-pc_fill_bndry_grad_stencil(
+pc_fill_bndry_grad_stencil_interp2(
   const amrex::Box& bx,
   const amrex::Real dx,
   const int /*Nebg*/,
@@ -540,6 +540,8 @@ pc_apply_eb_boundry_flux_stencil(
         }
         bcflux[n * Nflux + L] =
           D(iv, Dcomp + n) * (bcval[n * Nsten + L] * sten[L].bcval_sten + sum);
+
+        //amrex::Print()<<L<<"\t"<<bcflux[n*Nflux+L]<<"\n";
       }
     }
   });

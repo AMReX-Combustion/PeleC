@@ -1,6 +1,7 @@
 #include <memory>
 
 #include "EB.H"
+#include "EBLeastSquares.H"
 #include "prob.H"
 #include "Utilities.H"
 
@@ -164,27 +165,15 @@ PeleC::initialize_eb2_structs()
 #endif
 
       if (bgs == 0) {
-        pc_fill_bndry_grad_stencil(
+        pc_fill_bndry_grad_stencil_interp2(
           tbox, dx, Ncut, sv_eb_bndry_geom[iLocal].data(), Ncut,
           sv_eb_bndry_grad_stencil[iLocal].data());
       } else if (bgs == 1) {
-        amrex::Print() << "This gradient stencil type WIP and not functional!"
-                       << bgs << std::endl;
-        amrex::Abort();
-        // pc_fill_bndry_grad_stencil_amrex(AMREX_TO_FORTRAN_BOX(tbox),
-        //                                 sv_eb_bndry_geom[iLocal].data(),
-        //                                 &Ncut,
-        //                                 sv_eb_bndry_grad_stencil[iLocal].data(),
-        //                                 &Ncut, &dx);
-      } else if (bgs == 2) {
-        amrex::Print() << "This gradient stencil type WIP and not functional!"
-                       << bgs << std::endl;
-        amrex::Abort();
-        // pc_fill_bndry_grad_stencil_ls(AMREX_TO_FORTRAN_BOX(tbox),
-        //                              sv_eb_bndry_geom[iLocal].data(), &Ncut,
-        //                              sv_eb_bndry_grad_stencil[iLocal].data(),
-        //                              &Ncut, &dx);
-      } else {
+        pc_fill_bndry_grad_stencil_ls(
+          tbox, dx, Ncut, sv_eb_bndry_geom[iLocal].data(), Ncut,
+          sv_eb_bndry_grad_stencil[iLocal].data());
+      } 
+      else {
         amrex::Print()
           << "Unknown or unspecified boundary gradient stencil type:" << bgs
           << std::endl;

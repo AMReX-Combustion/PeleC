@@ -74,6 +74,16 @@
 
 #define NPASSIVE NUM_SPECIES + NUM_ADV + NUM_AUX + 3 - AMREX_SPACEDIM
 
+#if AMREX_SPACEDIM == 1
+#define NLSPTS 1
+#elif AMREX_SPACEDIM == 2
+#define NLSPTS AMREX_SPACEDIM*AMREX_SPACEDIM-1
+#elif AMREX_SPACEDIM == 3
+#define NLSPTS AMREX_SPACEDIM*AMREX_SPACEDIM*AMREX_SPACEDIM-1
+#endif
+
+#define NEL_TRIMAT 6
+
 struct PassMap
 {
   amrex::GpuArray<int, NPASSIVE> upassMap = {{0}};
