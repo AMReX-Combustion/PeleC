@@ -71,6 +71,7 @@ pc_fill_bndry_grad_stencil_ls(
   const int /*Nebg*/,
   const EBBndryGeom* ebg,
   const int Nsten,
+  const amrex::Array4<amrex::EBCellFlag const>& flags,
   EBBndrySten* grad_stencil)
 {
   
@@ -81,13 +82,16 @@ pc_fill_bndry_grad_stencil_ls(
   const amrex::Real area = std::pow(dx, AMREX_SPACEDIM - 1);
   const amrex::Real fac = area / dx;
 
+  amrex::Print()<<"box lo:"<<lo.x<<"\t"<<lo.y<<"\t"<<lo.z<<"\n";
+  amrex::Print()<<"box hi:"<<hi.x<<"\t"<<hi.y<<"\t"<<hi.z<<"\n";
+
   amrex::ParallelFor(Nsten, [=] AMREX_GPU_DEVICE(int L) 
   {
     if (is_inside(ebg[L].iv, lo, hi)) 
     {
         const amrex::Real n[AMREX_SPACEDIM] = {AMREX_D_DECL(
         ebg[L].eb_normal[0], ebg[L].eb_normal[1], ebg[L].eb_normal[2])};
-      
+
         amrex::Real centcoord[AMREX_SPACEDIM] = {AMREX_D_DECL(
         ebg[L].eb_centroid[0], ebg[L].eb_centroid[1],
         ebg[L].eb_centroid[2])};
@@ -101,6 +105,11 @@ pc_fill_bndry_grad_stencil_ls(
         ivs[1] + (int)amrex::Math::copysign(1.0, n[1]) - 1,
         ivs[2] + (int)amrex::Math::copysign(1.0, n[2]) - 1)};
 
+        amrex::Print()<<"ivs:"<<ivs[0]<<"\t"<<ivs[1]<<"\t"<<ivs[2]<<"\n";
+        amrex::Print()<<"normals:"<<n[0]<<"\t"<<n[1]<<"\t"<<n[2]<<"\n";
+        amrex::Print()<<"centcoord:"<<centcoord[0]<<"\t"<<centcoord[1]<<"\t"<<centcoord[2]<<"\n";
+        amrex::Print()<<"baseiv:"<<baseiv[0]<<"\t"<<baseiv[1]<<"\t"<<baseiv[2]<<"\n";
+        amrex::Print()<<"eb_area/vfrac:"<<ebg[L].eb_area<<"\t"<<ebg[L].eb_vfrac<<"\n";
 
         //set iv and iv_base
         for (int dir = 0; dir < AMREX_SPACEDIM; dir++) 
@@ -126,7 +135,8 @@ pc_fill_bndry_grad_stencil_ls(
                 int global_j=baseiv[1]+jj;
                 int global_k=baseiv[2]+kk;
 
-                if(!(global_i==ivs[0] && global_j==ivs[1] && global_k==ivs[2]))
+                if(!(global_i==ivs[0] && global_j==ivs[1] && global_k==ivs[2]) && 
+                        !flags(global_i,global_j,global_k).isCovered())
                 {
                     xi[0]=global_i-ivs[0];
                     xi[1]=global_j-ivs[1];
@@ -140,9 +150,15 @@ pc_fill_bndry_grad_stencil_ls(
             }
           }
         }
+        amrex::Print()<<"iter:"<<iter<<"\n";
 
-        get_qmat(delta_x_i,delta_y_i,delta_z_i,NLSPTS,qmat);
-        get_weightvec(delta_x_i,delta_y_i,delta_z_i,NLSPTS,qmat,wvec);
+        if(iter<3)
+        {
+                amrex::Print()<<"iter:"<<iter<<"\n";
+        }
+
+        get_qmat(delta_x_i,delta_y_i,delta_z_i,iter,qmat);
+        get_weightvec(delta_x_i,delta_y_i,delta_z_i,iter,qmat,wvec);
 
 
         iter=0;
@@ -157,7 +173,8 @@ pc_fill_bndry_grad_stencil_ls(
                     int global_j=baseiv[1]+jj;
                     int global_k=baseiv[2]+kk;
                 
-                    if(!(global_i==ivs[0] && global_j==ivs[1] && global_k==ivs[2]))
+                    if(!(global_i==ivs[0] && global_j==ivs[1] && global_k==ivs[2]) &&
+                            !flags(global_i,global_j,global_k).isCovered())
                     {
                         grad_stencil[L].val PELEC_D_TERM_REVERSE([kk], [jj], [ii]) =
                         -fac * ebg[L].eb_area * (wvec[iter][0]*n[0]

@@ -85,6 +85,8 @@ PeleC::initialize_eb2_structs()
     const amrex::Box tbox = mfi.growntilebox();
     const amrex::EBCellFlagFab& flagfab = flags[mfi];
 
+    amrex::Print()<<"grown tbox:"<<tbox<<"\n";
+
     amrex::FabType typ = flagfab.getType(tbox);
     int iLocal = mfi.LocalIndex();
 
@@ -170,7 +172,7 @@ PeleC::initialize_eb2_structs()
           sv_eb_bndry_grad_stencil[iLocal].data());
       } else if (bgs == 1) {
         pc_fill_bndry_grad_stencil_ls(
-          tbox, dx, Ncut, sv_eb_bndry_geom[iLocal].data(), Ncut,
+          tbox, dx, Ncut, sv_eb_bndry_geom[iLocal].data(), Ncut,flags.array(mfi),
           sv_eb_bndry_grad_stencil[iLocal].data());
       } 
       else {
