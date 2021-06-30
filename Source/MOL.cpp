@@ -120,41 +120,16 @@ pc_compute_hyp_mol_flux(
 
         const amrex::Real cavg =
           0.5 * (qaux(i, j, k, QC) + qaux(ii, jj, kk, QC));
-        const amrex::Real csmall = amrex::min<amrex::Real>(
-          qaux(i, j, k, QCSML), qaux(ii, jj, kk, QCSML));
 
-        amrex::Real eos_state_rho;
-        amrex::Real eos_state_p;
-        amrex::Real eos_state_e;
-        amrex::Real eos_state_gamma;
-        amrex::Real eos_state_T;
-
-        eos_state_rho = qtempl[R_RHO];
-        eos_state_p = qtempl[R_P];
         amrex::Real spl[NUM_SPECIES];
         for (int n = 0; n < NUM_SPECIES; n++) {
           spl[n] = qtempl[R_Y + n];
         }
-        auto eos = pele::physics::PhysicsType::eos();
-        eos.RYP2T(eos_state_rho, spl, eos_state_p, eos_state_T);
-        eos.RTY2E(eos_state_rho, eos_state_T, spl, eos_state_e);
-        eos.RTY2G(eos_state_rho, eos_state_T, spl, eos_state_gamma);
 
-        const amrex::Real rhoe_l = eos_state_rho * eos_state_e;
-        const amrex::Real gamc_l = eos_state_gamma;
-
-        eos_state_rho = qtempr[R_RHO];
-        eos_state_p = qtempr[R_P];
         amrex::Real spr[NUM_SPECIES];
         for (int n = 0; n < NUM_SPECIES; n++) {
           spr[n] = qtempr[R_Y + n];
         }
-        eos.RYP2T(eos_state_rho, spr, eos_state_p, eos_state_T);
-        eos.RTY2E(eos_state_rho, eos_state_T, spr, eos_state_e);
-        eos.RTY2G(eos_state_rho, eos_state_T, spr, eos_state_gamma);
-
-        const amrex::Real rhoe_r = eos_state_rho * eos_state_e;
-        const amrex::Real gamc_r = eos_state_gamma;
 
         amrex::Real flux_tmp[NVAR] = {0.0};
         amrex::Real ustar = 0.0;
@@ -166,11 +141,11 @@ pc_compute_hyp_mol_flux(
         amrex::Real tmp4 = 0.0;
         riemann(
           qtempl[R_RHO], qtempl[R_UN], qtempl[R_UT1], qtempl[R_UT2],
-          qtempl[R_P], rhoe_l, spl, gamc_l, qtempr[R_RHO], qtempr[R_UN],
-          qtempr[R_UT1], qtempr[R_UT2], qtempr[R_P], rhoe_r, spr, gamc_r,
-          bc_test_val, csmall, cavg, ustar, flux_tmp[URHO], flux_tmp[f_idx[0]],
-          flux_tmp[f_idx[1]], flux_tmp[f_idx[2]], flux_tmp[UEDEN],
-          flux_tmp[UEINT], tmp0, tmp1, tmp2, tmp3, tmp4);
+          qtempl[R_P], spl, qtempr[R_RHO], qtempr[R_UN], qtempr[R_UT1],
+          qtempr[R_UT2], qtempr[R_P], spr, bc_test_val, cavg, ustar,
+          flux_tmp[URHO], flux_tmp[f_idx[0]], flux_tmp[f_idx[1]],
+          flux_tmp[f_idx[2]], flux_tmp[UEDEN], flux_tmp[UEINT], tmp0, tmp1,
+          tmp2, tmp3, tmp4);
 
         for (int n = 0; n < NUM_SPECIES; n++) {
           flux_tmp[UFS + n] = (ustar > 0.0) ? flux_tmp[URHO] * qtempl[R_Y + n]
@@ -211,9 +186,6 @@ pc_compute_hyp_mol_flux(
     amrex::Real qtempl[5 + NUM_SPECIES] = {0.0};
     amrex::Real qtempr[5 + NUM_SPECIES] = {0.0};
     amrex::Real cavg = 0.0;
-    amrex::Real csmall = 0.0;
-    amrex::Real /*cspeed = 0.0,*/ rhoe_l = 0.0;
-    amrex::Real gamc_l = 0.0;
     amrex::Real spl[NUM_SPECIES] = {0.0};
     amrex::Real flux_tmp[NVAR] = {0.0};
     amrex::Real ebnorm[AMREX_SPACEDIM] = {AMREX_D_DECL(
@@ -223,13 +195,11 @@ pc_compute_hyp_mol_flux(
     for (amrex::Real& dir : ebnorm) {
       dir /= ebnorm_mag;
     }
-    auto eos = pele::physics::PhysicsType::eos();
     const amrex::IntVect iv = amrex::IntVect{AMREX_D_DECL(i, j, k)};
     if (is_inside(iv, lo, hi, nextra)) {
       if (vfrac(iv) < captured_eb_small_vfrac) {
         amrex::Real sum_kappa = 0.0;
         amrex::Real sum_nbrs_qc = 0.0;
-        amrex::Real sum_nbrs_qcsmall = 0.0;
         amrex::Real sum_nbrs_qu = 0.0;
         amrex::Real sum_nbrs_qv = 0.0;
         amrex::Real sum_nbrs_qw = 0.0;
@@ -251,7 +221,6 @@ pc_compute_hyp_mol_flux(
                 amrex::IntVect{AMREX_D_DECL(i + ii, j + jj, k + kk)};
               sum_kappa += nbr * vfrac(ivp);
               sum_nbrs_qc += nbr * vfrac(ivp) * qaux(ivp, QC);
-              sum_nbrs_qcsmall += nbr * vfrac(ivp) * qaux(ivp, QCSML);
               sum_nbrs_qu += nbr * vfrac(ivp) * q(ivp, QU);
               sum_nbrs_qv += nbr * vfrac(ivp) * q(ivp, QV);
               sum_nbrs_qw += nbr * vfrac(ivp) * q(ivp, QW);
@@ -280,8 +249,6 @@ pc_compute_hyp_mol_flux(
           qtempl[R_Y + n] = sum_nbrs_sp[n] / sum_kappa;
         }
         cavg = sum_nbrs_qc / sum_kappa;
-        csmall = sum_nbrs_qcsmall / sum_kappa;
-        // cspeed = cavg;
 
         // Flip the velocity about the normal for the right state - will use
         // left state for remainder of right state
@@ -300,25 +267,15 @@ pc_compute_hyp_mol_flux(
           qtempl[R_Y + n] = q(iv, QFS + n);
         }
         cavg = qaux(iv, QC);
-        csmall = qaux(iv, QCSML);
-        // cspeed = qaux(iv, QC);
 
         // Flip the velocity about the normal for the right state - will use
         // left  state for remainder of right state
         qtempr[R_UN] = -1.0 * qtempl[R_UN];
       }
 
-      amrex::Real eos_state_rho = qtempl[R_RHO];
-      amrex::Real eos_state_p = qtempl[R_P];
       for (int n = 0; n < NUM_SPECIES; n++) {
         spl[n] = qtempl[R_Y + n];
       }
-      amrex::Real eos_state_T;
-      eos.RYP2T(eos_state_rho, spl, eos_state_p, eos_state_T);
-      amrex::Real eos_state_e;
-      eos.RTY2E(eos_state_rho, eos_state_T, spl, eos_state_e);
-      rhoe_l = eos_state_rho * eos_state_e;
-      eos.RTY2G(eos_state_rho, eos_state_T, spl, gamc_l);
     }
 
     if (is_inside(iv, lo, hi, nextra - 1)) {
@@ -330,11 +287,10 @@ pc_compute_hyp_mol_flux(
       amrex::Real ustar = 0.0;
       riemann(
         qtempl[R_RHO], qtempl[R_UN], qtempl[R_UT1], qtempl[R_UT2], qtempl[R_P],
-        rhoe_l, spl, gamc_l, qtempl[R_RHO], qtempr[R_UN], qtempl[R_UT1],
-        qtempl[R_UT2], qtempl[R_P], rhoe_l, spl, gamc_l, bc_test_val, csmall,
-        cavg, ustar, flux_tmp[URHO], flux_tmp[UMX], flux_tmp[UMY],
-        flux_tmp[UMZ], flux_tmp[UEDEN], flux_tmp[UEINT], tmp0, tmp1, tmp2, tmp3,
-        tmp4);
+        spl, qtempl[R_RHO], qtempr[R_UN], qtempl[R_UT1], qtempl[R_UT2],
+        qtempl[R_P], spl, bc_test_val, cavg, ustar, flux_tmp[URHO],
+        flux_tmp[UMX], flux_tmp[UMY], flux_tmp[UMZ], flux_tmp[UEDEN],
+        flux_tmp[UEINT], tmp0, tmp1, tmp2, tmp3, tmp4);
 
       const amrex::Real tmp_flx_umx = flux_tmp[UMX];
       AMREX_D_TERM(flux_tmp[UMX] = -tmp_flx_umx * ebnorm[0];
