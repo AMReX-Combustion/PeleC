@@ -554,7 +554,8 @@ pc_apply_eb_boundry_flux_stencil(
         bcflux[n * Nflux + L] =
           D(iv, Dcomp + n) * (bcval[n * Nsten + L] * sten[L].bcval_sten + sum);
 
-        //amrex::Print()<<"L,bcflux:"<<L<<"\t"<<D(iv,Dcomp+n)<<"\t"<<bcflux[n*Nflux+L]<<"\n";
+        //amrex::Print()<<"L,gradT,T:"<<L<<
+         //   "\t"<<(bcval[n * Nsten + L] * sten[L].bcval_sten + sum)<<"\t"<<bcval[n * Nsten + L]<<"\n";
       }
     }
   });
