@@ -80,12 +80,11 @@ void get_weightvec(AMREX_D_DECL(amrex::Real delta_x_i[NLSPTS],amrex::Real delta_
         alpha_ij_3=(delta_z_i[i]-r23/r22*delta_y_i[i]+beta*delta_x_i[i])/(r33*r33);
 #endif
 
-
-        wvec[i][0]=alpha_ij_1 - r12/r11*alpha_ij_2 + beta*alpha_ij_3;
-
 #if AMREX_SPACEDIM == 2
+        wvec[i][0]=alpha_ij_1 - r12/r11*alpha_ij_2;
         wvec[i][1]=alpha_ij_2;
 #else
+        wvec[i][0]=alpha_ij_1 - r12/r11*alpha_ij_2 + beta*alpha_ij_3;
         wvec[i][1]=alpha_ij_2 - r23/r22*alpha_ij_3;
         wvec[i][2]=alpha_ij_3;
 #endif
