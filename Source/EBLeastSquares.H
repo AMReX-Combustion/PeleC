@@ -1,65 +1,95 @@
 #include "EB.H"
 
 AMREX_GPU_DEVICE
-void get_qmat(amrex::Real delta_x_i[NLSPTS],amrex::Real delta_y_i[NLSPTS],
-        amrex::Real delta_z_i[NLSPTS],int N,amrex::Real qmat[NEL_TRIMAT])
+void get_qmat(AMREX_D_DECL(amrex::Real delta_x_i[NLSPTS],amrex::Real delta_y_i[NLSPTS],
+        amrex::Real delta_z_i[NLSPTS]),int N,amrex::Real qmat[NEL_TRIMAT])
 {
     amrex::Real r11=0.0;
     amrex::Real r12=0.0;
     amrex::Real r22=0.0;
+ 
+#if AMREX_SPACEDIM > 2
     amrex::Real r13=0.0;
     amrex::Real r23=0.0;
     amrex::Real r33=0.0;
+#endif
 
     for(int i=0;i<N;i++)
     {
         r11 += pow(delta_x_i[i],2.0);
         r12 += delta_x_i[i]*delta_y_i[i];
         r22 += pow(delta_y_i[i],2.0);
+
+#if AMREX_SPACEDIM > 2
         r13 += delta_x_i[i]*delta_z_i[i];
         r23 += delta_y_i[i]*delta_z_i[i];
         r33 += pow(delta_z_i[i],2.0);
+#endif
+
     }
 
     r11=sqrt(r11);
     r12=r12/r11;
     r22=sqrt(r22-r12*r12);
+
+#if AMREX_SPACEDIM > 2
     r13=r13/r11;
     r23=r23/r22-r12*r13/r22;
     r33=sqrt(r33-r13*r13-r23*r23);
+#endif
 
     qmat[0]=r11;
     qmat[1]=r12;
     qmat[2]=r22;
+
+#if AMREX_SPACEDIM > 2
     qmat[3]=r13;
     qmat[4]=r23;
     qmat[5]=r33;
+#endif
 }
 
 AMREX_GPU_DEVICE
-void get_weightvec(amrex::Real delta_x_i[NLSPTS],amrex::Real delta_y_i[NLSPTS],
-        amrex::Real delta_z_i[NLSPTS],int N,amrex::Real qmat[NEL_TRIMAT],amrex::Real wvec[NLSPTS][AMREX_SPACEDIM])
+void get_weightvec(AMREX_D_DECL(amrex::Real delta_x_i[NLSPTS],amrex::Real delta_y_i[NLSPTS],
+        amrex::Real delta_z_i[NLSPTS]),
+        int N,amrex::Real qmat[NEL_TRIMAT],amrex::Real wvec[NLSPTS][AMREX_SPACEDIM])
 {
     amrex::Real r11=qmat[0];
     amrex::Real r12=qmat[1];
     amrex::Real r22=qmat[2];
+
+#if AMREX_SPACEDIM > 2
     amrex::Real r13=qmat[3];
     amrex::Real r23=qmat[4];
     amrex::Real r33=qmat[5];
+#endif
 
-    amrex::Real alpha_ij_1,alpha_ij_2,alpha_ij_3,beta;
+    amrex::Real alpha_ij_1,alpha_ij_2;
 
-    beta=(r12*r23-r13*r22)/(r11*r22);
+#if AMREX_SPACEDIM > 2
+    amrex::Real alpha_ij_3;
+    amrex::Real beta=(r12*r23-r13*r22)/(r11*r22);
+#endif
 
     for(int i=0;i<N;i++)
     {
         alpha_ij_1=delta_x_i[i]/(r11*r11);
         alpha_ij_2=(delta_y_i[i]-r12/r11*delta_x_i[i])/(r22*r22);
+
+#if AMREX_SPACEDIM > 2
         alpha_ij_3=(delta_z_i[i]-r23/r22*delta_y_i[i]+beta*delta_x_i[i])/(r33*r33);
+#endif
+
 
         wvec[i][0]=alpha_ij_1 - r12/r11*alpha_ij_2 + beta*alpha_ij_3;
+
+#if AMREX_SPACEDIM == 2
+        wvec[i][1]=alpha_ij_2;
+#else
         wvec[i][1]=alpha_ij_2 - r23/r22*alpha_ij_3;
         wvec[i][2]=alpha_ij_3;
+#endif
+
     }
 
 }
@@ -117,7 +147,7 @@ pc_fill_bndry_grad_stencil_ls(
         }
 
         //do not include self cell
-        amrex::Real delta_x_i[NLSPTS],delta_y_i[NLSPTS],delta_z_i[NLSPTS];
+        amrex::Real AMREX_D_DECL(delta_x_i[NLSPTS],delta_y_i[NLSPTS],delta_z_i[NLSPTS]);
         amrex::Real qmat[NEL_TRIMAT],wvec[NLSPTS][AMREX_SPACEDIM];
         amrex::Real xi[AMREX_SPACEDIM];
       
@@ -132,31 +162,35 @@ pc_fill_bndry_grad_stencil_ls(
              for (int kk = 0; kk < 3; kk++) 
              {
 #endif
-                int global_i=baseiv[0]+ii;
-                int global_j=baseiv[1]+jj;
-                int global_k=baseiv[2]+kk;
-
-                sten_iv[0]=global_i;
-                sten_iv[1]=global_j;
-                sten_iv[2]=global_k;
+                AMREX_D_TERM(
+                sten_iv[0]=baseiv[0]+ii;,
+                sten_iv[1]=baseiv[1]+jj;,
+                sten_iv[2]=baseiv[2]+kk;)
 
                 if(is_inside(sten_iv, lo, hi))
                 {
 
-                    if(!(global_i==ivs[0] && global_j==ivs[1] && global_k==ivs[2])
-                        && flags(global_i,global_j,global_k).isRegular())
-                    {
-                        xi[0]=global_i-ivs[0];
-                        xi[1]=global_j-ivs[1];
-                        xi[2]=global_k-ivs[2];
+                    if(!(AMREX_D_TERM(sten_iv[0]==ivs[0],&& sten_iv[1]==ivs[1],&& sten_iv[2]==ivs[2]))
 
-                        delta_x_i[iter]  = (xi[0]-centcoord[0]);
-                        delta_y_i[iter]  = (xi[1]-centcoord[1]);
-                        delta_z_i[iter]  = (xi[2]-centcoord[2]);
+                        && flags(AMREX_D_DECL(sten_iv[0],sten_iv[1],sten_iv[2])).isRegular())
+                    {
+                        AMREX_D_TERM(
+                        xi[0]=sten_iv[0]-ivs[0];,
+                        xi[1]=sten_iv[1]-ivs[1];,
+                        xi[2]=sten_iv[2]-ivs[2];)
+
+                        AMREX_D_TERM(
+                        delta_x_i[iter]  = (xi[0]-centcoord[0]);,
+                        delta_y_i[iter]  = (xi[1]-centcoord[1]);,
+                        delta_z_i[iter]  = (xi[2]-centcoord[2]);)
+
                         iter++;
                     }
                 }
+
+#if AMREX_SPACEDIM > 2
              }
+#endif
            }
         }
         //amrex::Print()<<"iter:"<<iter<<"\n";
@@ -166,16 +200,18 @@ pc_fill_bndry_grad_stencil_ls(
             //amrex::Print()<<delta_x_i[npt]<<"\t"<<delta_y_i[npt]<<"\t"<<delta_z_i[npt]<<"\n";
         }
 
-        if(iter>3)
+        if(iter >= AMREX_SPACEDIM)
         {
 
-            get_qmat(delta_x_i,delta_y_i,delta_z_i,iter,qmat);
+            get_qmat(AMREX_D_DECL(delta_x_i,delta_y_i,delta_z_i),iter,qmat);
+            
             for(int npt=0;npt<NEL_TRIMAT;npt++)
             {
                 //amrex::Print()<<qmat[npt]<<"\t";
             }
             //amrex::Print()<<"\n";
-            get_weightvec(delta_x_i,delta_y_i,delta_z_i,iter,qmat,wvec);
+            get_weightvec(AMREX_D_DECL(delta_x_i,delta_y_i,delta_z_i),iter,qmat,wvec);
+
             for(int npt=0;npt<iter;npt++)
             {
                 //amrex::Print()<<wvec[npt][0]<<"\t"<<wvec[npt][1]<<"\t"<<wvec[npt][2]<<"\n";
@@ -188,26 +224,26 @@ pc_fill_bndry_grad_stencil_ls(
             {
                 for (int jj = 0; jj < 3; jj++) 
                 {
+#if AMREX_SPACEDIM > 2
                     for (int kk = 0; kk < 3; kk++) 
                     {
-                        int global_i=baseiv[0]+ii;
-                        int global_j=baseiv[1]+jj;
-                        int global_k=baseiv[2]+kk;
-
-                        sten_iv[0]=global_i;
-                        sten_iv[1]=global_j;
-                        sten_iv[2]=global_k;
+#endif
+                        AMREX_D_TERM(
+                        sten_iv[0]=baseiv[0]+ii;,
+                        sten_iv[1]=baseiv[1]+jj;,
+                        sten_iv[2]=baseiv[2]+kk;
+                        )
 
                         if(is_inside(sten_iv, lo, hi))
                         {
 
-                            if(!(global_i==ivs[0] && global_j==ivs[1] && global_k==ivs[2])
-                                    && flags(global_i,global_j,global_k).isRegular())
+                            if(!(AMREX_D_TERM(sten_iv[0]==ivs[0],&& sten_iv[1]==ivs[1],&& sten_iv[2]==ivs[2]))
+                            && flags(AMREX_D_DECL(sten_iv[0],sten_iv[1],sten_iv[2])).isRegular())
                             {
                                 grad_stencil[L].val PELEC_D_TERM_REVERSE([kk], [jj], [ii]) =
-                                    fac * ebg[L].eb_area * (wvec[iter][0]*n[0]
-                                            +wvec[iter][1]*n[1]
-                                            +wvec[iter][2]*n[2]);
+                                    fac * ebg[L].eb_area * (AMREX_D_TERM(wvec[iter][0]*n[0],
+                                                           +wvec[iter][1]*n[1],
+                                                           +wvec[iter][2]*n[2]));
                                 selfweight += grad_stencil[L].val PELEC_D_TERM_REVERSE([kk], [jj], [ii]);
                                 iter++;
                             }
@@ -220,7 +256,9 @@ pc_fill_bndry_grad_stencil_ls(
                         {
                             grad_stencil[L].val PELEC_D_TERM_REVERSE([kk], [jj], [ii]) = 0.0;
                         }
+#if AMREX_SPACEDIM > 2
                     }
+#endif
                 }
             }
             grad_stencil[L].bcval_sten = -selfweight;
@@ -233,11 +271,15 @@ pc_fill_bndry_grad_stencil_ls(
             {
                 for (int jj = 0; jj < 3; jj++) 
                 {
+#if AMREX_SPACEDIM > 2
                     for (int kk = 0; kk < 3; kk++) 
                     {
+#endif
                         grad_stencil[L].val PELEC_D_TERM_REVERSE([kk], [jj], [ii]) = 0.0;
 
+#if AMREX_SPACEDIM > 2
                     }
+#endif
                 }
             } 
         }
