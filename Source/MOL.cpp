@@ -182,7 +182,6 @@ pc_compute_hyp_mol_flux(
   amrex::ParallelFor(nebflux, [=] AMREX_GPU_DEVICE(int L) {
     const amrex::IntVect& iv = ebg[L].iv;
     if (is_inside(iv, lo, hi, nextra - 1)) {
-      amrex::Real flux_tmp[NVAR] = {0.0};
       amrex::Real ebnorm[AMREX_SPACEDIM] = {AMREX_D_DECL(
         ebg[L].eb_normal[0], ebg[L].eb_normal[1], ebg[L].eb_normal[2])};
       const amrex::Real ebnorm_mag = std::sqrt(AMREX_D_TERM(
@@ -190,21 +189,11 @@ pc_compute_hyp_mol_flux(
       for (amrex::Real& dir : ebnorm) {
         dir /= ebnorm_mag;
       }
-      amrex::Real sp[NUM_SPECIES] = {0.0};
-      for (int n = 0; n < NUM_SPECIES; n++) {
-        sp[n] = q(iv, QFS + n);
-      }
 
-      flux_tmp[URHO] = 0.0;
-      AMREX_D_TERM(flux_tmp[UMX] = q(iv, QPRES) * ebnorm[0];
-                   , flux_tmp[UMY] = q(iv, QPRES) * ebnorm[1];
-                   , flux_tmp[UMZ] = q(iv, QPRES) * ebnorm[2];)
-      flux_tmp[UEDEN] = 0.0;
-
-      // Compute species flux like passive scalar from intermediate state
-      for (int n = 0; n < NUM_SPECIES; n++) {
-        flux_tmp[UFS + n] = flux_tmp[URHO] * sp[n];
-      }
+      amrex::Real flux_tmp[NVAR] = {0.0};
+      AMREX_D_TERM(flux_tmp[UMX] = -q(iv, QPRES) * ebnorm[0];
+                   , flux_tmp[UMY] = -q(iv, QPRES) * ebnorm[1];
+                   , flux_tmp[UMZ] = -q(iv, QPRES) * ebnorm[2];)
 
       // Copy result into ebflux vector. Being a bit chicken here and only
       // copy values where ebg % iv is within box
