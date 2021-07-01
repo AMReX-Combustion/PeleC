@@ -16,8 +16,6 @@ pc_compute_hyp_mol_flux(
   const int plm_iorder
 #ifdef PELEC_USE_EB
   ,
-  const amrex::Real eb_small_vfrac,
-  const amrex::Array4<const amrex::Real>& vfrac,
   const amrex::Array4<amrex::EBCellFlag const>& flags,
   const EBBndryGeom* ebg,
   const int /*Nebg*/,
