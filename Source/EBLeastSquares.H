@@ -132,13 +132,6 @@ pc_fill_bndry_grad_stencil_ls(
         ivs[1] + (int)amrex::Math::copysign(1.0, n[1]) - 1,
         ivs[2] + (int)amrex::Math::copysign(1.0, n[2]) - 1)};
 
-        //amrex::Print()<<"L:"<<L<<"\n";
-        //amrex::Print()<<"ivs:"<<ivs[0]<<"\t"<<ivs[1]<<"\t"<<ivs[2]<<"\n";
-        //amrex::Print()<<"normals:"<<n[0]<<"\t"<<n[1]<<"\t"<<n[2]<<"\n";
-        //amrex::Print()<<"centcoord:"<<centcoord[0]<<"\t"<<centcoord[1]<<"\t"<<centcoord[2]<<"\n";
-        //amrex::Print()<<"baseiv:"<<baseiv[0]<<"\t"<<baseiv[1]<<"\t"<<baseiv[2]<<"\n";
-        //amrex::Print()<<"eb_area/vfrac:"<<ebg[L].eb_area<<"\t"<<ebg[L].eb_vfrac<<"\n";
-
         //set iv and iv_base
         for (int dir = 0; dir < AMREX_SPACEDIM; dir++) 
         {
@@ -193,30 +186,12 @@ pc_fill_bndry_grad_stencil_ls(
 #endif
            }
         }
-        //amrex::Print()<<"iter:"<<iter<<"\n";
-
-        for(int npt=0;npt<iter;npt++)
-        {
-            //amrex::Print()<<delta_x_i[npt]<<"\t"<<delta_y_i[npt]<<"\t"<<delta_z_i[npt]<<"\n";
-        }
 
         if(iter >= AMREX_SPACEDIM)
         {
 
             get_qmat(AMREX_D_DECL(delta_x_i,delta_y_i,delta_z_i),iter,qmat);
-            
-            for(int npt=0;npt<NEL_TRIMAT;npt++)
-            {
-                //amrex::Print()<<qmat[npt]<<"\t";
-            }
-            //amrex::Print()<<"\n";
             get_weightvec(AMREX_D_DECL(delta_x_i,delta_y_i,delta_z_i),iter,qmat,wvec);
-
-            for(int npt=0;npt<iter;npt++)
-            {
-                //amrex::Print()<<wvec[npt][0]<<"\t"<<wvec[npt][1]<<"\t"<<wvec[npt][2]<<"\n";
-            }
-
 
             iter=0;
             amrex::Real selfweight=0.0;
@@ -265,7 +240,6 @@ pc_fill_bndry_grad_stencil_ls(
         }
         else
         {
-            //amrex::Print()<<"under-determined iter:"<<iter<<"\n";
             grad_stencil[L].bcval_sten = 0.0;
             for (int ii = 0; ii < 3; ii++) 
             {

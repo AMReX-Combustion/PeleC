@@ -82,8 +82,6 @@ pc_fill_bndry_grad_stencil_interp2(
         ivs[1] + (int)amrex::Math::copysign(1.0, n[1]) - 1,
         ivs[2] + (int)amrex::Math::copysign(1.0, n[2]) - 1)};
 
-      //amrex::Print()<<"baseiv:"<<baseiv[0]<<"\t"<<baseiv[1]<<"\t"<<baseiv[2]<<"\n";
-
       const amrex::Real x[2] = {1.0, 2.0};
       amrex::Real y[2] = {
         b[1] + (x[0] - b[0]) * amrex::Math::abs(n[c[1]] / n[c[0]]),
@@ -186,10 +184,6 @@ pc_fill_bndry_grad_stencil_interp2(
         // Shift base down, if required;
         grad_stencil[L].iv_base[dir] = baseiv[dir] + sh[dir];
       }
-
-      //amrex::Print()<<"iv_base:"<<grad_stencil[L].iv_base[0]
-          //<<"\t"<<grad_stencil[L].iv_base[1]<<
-          //"\t"<<grad_stencil[L].iv_base[2]<<"\n";
 
       for (int ii = 0; ii < 3; ii++) {
         for (int jj = 0; jj < 3; jj++) {
@@ -525,15 +519,9 @@ pc_apply_eb_boundry_flux_stencil(
   const auto lo = amrex::lbound(bx);
   const auto hi = amrex::ubound(bx);
 
-  //amrex::Print()<<"bx:"<<bx<<"\n";
-
   amrex::ParallelFor(Nsten, [=] AMREX_GPU_DEVICE(int L) {
     const amrex::IntVect iv = sten[L].iv;
-    //amrex::Print()<<"iv:"<<sten[L].iv[0]<<"\t"<<sten[L].iv[1]<<"\t"<<sten[L].iv[2]<<"\n";
-    //amrex::Print()<<"baseiv:"<<sten[L].iv_base[0]<<"\t"<<sten[L].iv_base[1]<<"\t"<<sten[L].iv_base[2]<<"\n";
     if (is_inside(iv, lo, hi)) {
-    //amrex::Print()<<"iv inside:"<<sten[L].iv[0]<<"\t"<<sten[L].iv[1]<<"\t"<<sten[L].iv[2]<<"\n";
-    //amrex::Print()<<"baseiv inside:"<<sten[L].iv_base[0]<<"\t"<<sten[L].iv_base[1]<<"\t"<<sten[L].iv_base[2]<<"\n";
       for (int n = 0; n < nc; n++) {
         amrex::Real sum = 0.0;
         for (int ii = 0; ii < 3; ii++) {
@@ -553,9 +541,6 @@ pc_apply_eb_boundry_flux_stencil(
         }
         bcflux[n * Nflux + L] =
           D(iv, Dcomp + n) * (bcval[n * Nsten + L] * sten[L].bcval_sten + sum);
-
-        amrex::Print()<<"L,gradT,T:"<<L<<
-           "\t"<<(bcval[n * Nsten + L] * sten[L].bcval_sten + sum)<<"\t"<<bcval[n * Nsten + L]<<"\n";
       }
     }
   });
