@@ -171,7 +171,7 @@ pc_fill_bndry_grad_stencil_ls(
 
                     if(!(AMREX_D_TERM(sten_iv[0]==ivs[0],&& sten_iv[1]==ivs[1],&& sten_iv[2]==ivs[2]))
 
-                        && flags(AMREX_D_DECL(sten_iv[0],sten_iv[1],sten_iv[2])).isRegular())
+                        && flags(sten_iv).isRegular())
                     {
                         AMREX_D_TERM(
                         xi[0]=sten_iv[0]-ivs[0];,
@@ -237,7 +237,7 @@ pc_fill_bndry_grad_stencil_ls(
                         {
 
                             if(!(AMREX_D_TERM(sten_iv[0]==ivs[0],&& sten_iv[1]==ivs[1],&& sten_iv[2]==ivs[2]))
-                            && flags(AMREX_D_DECL(sten_iv[0],sten_iv[1],sten_iv[2])).isRegular())
+                            && flags(sten_iv).isRegular())
                             {
                                 grad_stencil[L].val PELEC_D_TERM_REVERSE([kk], [jj], [ii]) =
                                     fac * ebg[L].eb_area * (AMREX_D_TERM(wvec[iter][0]*n[0],
