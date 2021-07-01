@@ -4,6 +4,7 @@ AMREX_GPU_DEVICE
 void get_qmat(AMREX_D_DECL(amrex::Real delta_x_i[NLSPTS],amrex::Real delta_y_i[NLSPTS],
         amrex::Real delta_z_i[NLSPTS]),int N,amrex::Real qmat[NEL_TRIMAT])
 {
+    const amrex::Real eps = std::numeric_limits<amrex::Real>::min();
     amrex::Real r11=0.0;
     amrex::Real r12=0.0;
     amrex::Real r22=0.0;
@@ -28,14 +29,14 @@ void get_qmat(AMREX_D_DECL(amrex::Real delta_x_i[NLSPTS],amrex::Real delta_y_i[N
 
     }
 
-    r11=sqrt(r11);
+    r11=sqrt(r11)+eps; //eps added to prevent division issues
     r12=r12/r11;
-    r22=sqrt(r22-r12*r12);
+    r22=sqrt(r22-r12*r12)+eps;
 
 #if AMREX_SPACEDIM > 2
     r13=r13/r11;
     r23=r23/r22-r12*r13/r22;
-    r33=sqrt(r33-r13*r13-r23*r23);
+    r33=sqrt(r33-r13*r13-r23*r23)+eps;
 #endif
 
     qmat[0]=r11;
