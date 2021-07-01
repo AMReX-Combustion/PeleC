@@ -12,19 +12,14 @@ riemann(
   const amrex::Real vl,
   const amrex::Real v2l,
   const amrex::Real pl,
-  const amrex::Real /*rel*/,
   const amrex::Real spl[NUM_SPECIES],
-  const amrex::Real gamcl,
   const amrex::Real rr,
   const amrex::Real ur,
   const amrex::Real vr,
   const amrex::Real v2r,
   const amrex::Real pr,
-  const amrex::Real /*rer*/,
   const amrex::Real spr[NUM_SPECIES],
-  const amrex::Real gamcr,
   const int bc_test_val,
-  const amrex::Real /*csmall*/,
   const amrex::Real cav,
   amrex::Real& ustar,
   amrex::Real& uflx_rho,
@@ -43,24 +38,21 @@ riemann(
 
   auto eos = pele::physics::PhysicsType::eos();
 
-  amrex::Real gdnv_state_rho = rl;
-  amrex::Real gdnv_state_p = pl;
   amrex::Real gdnv_state_massfrac[NUM_SPECIES];
   for (int n = 0; n < NUM_SPECIES; n++) {
     gdnv_state_massfrac[n] = spl[n];
   }
-  amrex::Real gdnv_state_cs;
+  amrex::Real cl = 0.0;
+  eos.RPY2Cs(rl, pl, gdnv_state_massfrac, cl);
 
-  gdnv_state_rho = rr;
-  gdnv_state_p = pr;
   for (int n = 0; n < NUM_SPECIES; n++) {
     gdnv_state_massfrac[n] = spr[n];
   }
+  amrex::Real cr = 0.0;
+  eos.RPY2Cs(rr, pr, gdnv_state_massfrac, cr);
 
-  const amrex::Real wl = amrex::max<amrex::Real>(
-    wsmall, std::sqrt(amrex::Math::abs(gamcl * pl * rl)));
-  const amrex::Real wr = amrex::max<amrex::Real>(
-    wsmall, std::sqrt(amrex::Math::abs(gamcr * pr * rr)));
+  const amrex::Real wl = amrex::max<amrex::Real>(wsmall, cl * rl);
+  const amrex::Real wr = amrex::max<amrex::Real>(wsmall, cr * rr);
   const amrex::Real pstar = amrex::max<amrex::Real>(
     std::numeric_limits<amrex::Real>::min(),
     ((wr * pl + wl * pr) + wl * wr * (ul - ur)) / (wl + wr));
@@ -87,16 +79,16 @@ riemann(
     sp[n] = mask ? 0.5 * (spl[n] + spr[n]) : sp[n];
   }
 
-  gdnv_state_rho = ro;
-  gdnv_state_p = po;
+  amrex::Real gdnv_state_rho = ro;
+  amrex::Real gdnv_state_p = po;
   for (int n = 0; n < NUM_SPECIES; n++) {
     gdnv_state_massfrac[n] = sp[n];
   }
   amrex::Real gdnv_state_e;
   eos.RYP2E(gdnv_state_rho, gdnv_state_massfrac, gdnv_state_p, gdnv_state_e);
   const amrex::Real reo = gdnv_state_rho * gdnv_state_e;
-  eos.RPY2Cs(gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, gdnv_state_cs);
-  const amrex::Real co = gdnv_state_cs;
+  amrex::Real co;
+  eos.RPY2Cs(gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, co);
 
   const amrex::Real drho = (pstar - po) / (co * co);
   const amrex::Real rstar =
@@ -109,8 +101,8 @@ riemann(
   }
   eos.RYP2E(gdnv_state_rho, gdnv_state_massfrac, gdnv_state_p, gdnv_state_e);
   const amrex::Real estar = gdnv_state_rho * gdnv_state_e;
-  eos.RPY2Cs(gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, gdnv_state_cs);
-  const amrex::Real cstar = gdnv_state_cs;
+  amrex::Real cstar;
+  eos.RPY2Cs(gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, cstar);
 
   const amrex::Real sgnm = amrex::Math::copysign(1.0, ustar);
 
