@@ -4,7 +4,10 @@ AMREX_GPU_DEVICE
 void get_qmat(AMREX_D_DECL(amrex::Real delta_x_i[NLSPTS],amrex::Real delta_y_i[NLSPTS],
         amrex::Real delta_z_i[NLSPTS]),int N,amrex::Real qmat[NEL_TRIMAT])
 {
-    const amrex::Real eps = std::numeric_limits<amrex::Real>::min();
+
+    //note: all distances are non-dimensional ~ 1, does not depend on dx
+    //therefore this choice of eps is good
+    const amrex::Real eps = 1e-10; 
     amrex::Real r11=0.0;
     amrex::Real r12=0.0;
     amrex::Real r22=0.0;
@@ -165,7 +168,7 @@ pc_fill_bndry_grad_stencil_ls(
 
                     if(!(AMREX_D_TERM(sten_iv[0]==ivs[0],&& sten_iv[1]==ivs[1],&& sten_iv[2]==ivs[2]))
 
-                        && flags(sten_iv).isRegular())
+                        && !flags(sten_iv).isCovered())
                     {
                         AMREX_D_TERM(
                         xi[0]=sten_iv[0]-ivs[0];,
@@ -187,11 +190,16 @@ pc_fill_bndry_grad_stencil_ls(
            }
         }
 
-        if(iter >= AMREX_SPACEDIM)
+        if(iter > AMREX_SPACEDIM)
         {
 
             get_qmat(AMREX_D_DECL(delta_x_i,delta_y_i,delta_z_i),iter,qmat);
             get_weightvec(AMREX_D_DECL(delta_x_i,delta_y_i,delta_z_i),iter,qmat,wvec);
+
+            /*for(int npt=0;npt<iter;npt++)
+            {
+                amrex::Print()<<"npt,iter,wvec:"<<npt<<"\t"<<iter<<"\t"<<wvec[npt][0]<<"\t"<<wvec[npt][1]<<"\n";
+            }*/
 
             iter=0;
             amrex::Real selfweight=0.0;
@@ -213,7 +221,8 @@ pc_fill_bndry_grad_stencil_ls(
                         {
 
                             if(!(AMREX_D_TERM(sten_iv[0]==ivs[0],&& sten_iv[1]==ivs[1],&& sten_iv[2]==ivs[2]))
-                            && flags(sten_iv).isRegular())
+
+                            && !flags(sten_iv).isCovered())
                             {
                                 grad_stencil[L].val PELEC_D_TERM_REVERSE([kk], [jj], [ii]) =
                                     fac * ebg[L].eb_area * (AMREX_D_TERM(wvec[iter][0]*n[0],
