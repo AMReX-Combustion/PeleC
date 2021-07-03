@@ -166,11 +166,11 @@ PeleC::initialize_eb2_structs()
       sort<amrex::Gpu::DeviceVector<EBBndryGeom>>(sv_eb_bndry_geom[iLocal]);
 #endif
 
-      if (bgs == 0) {
+      if (bgs == 1) {
         pc_fill_bndry_grad_stencil_interp2(
           tbox, dx, Ncut, sv_eb_bndry_geom[iLocal].data(), Ncut,
           sv_eb_bndry_grad_stencil[iLocal].data());
-      } else if (bgs == 1) {
+      } else if (bgs == 0) {
         pc_fill_bndry_grad_stencil_ls(
           tbox, dx, Ncut, sv_eb_bndry_geom[iLocal].data(), Ncut,flags.array(mfi),
           sv_eb_bndry_grad_stencil[iLocal].data());
