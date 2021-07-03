@@ -75,7 +75,7 @@
 #define NPASSIVE NUM_SPECIES + NUM_ADV + NUM_AUX + 3 - AMREX_SPACEDIM
 
 #if AMREX_SPACEDIM == 1
-//hopefully we wont do EB in 1D
+// hopefully we wont do EB in 1D
 #define NLSPTS 1
 #define NEL_TRIMAT 1
 
@@ -90,7 +90,6 @@
 #define NEL_TRIMAT 6
 
 #endif
-
 
 struct PassMap
 {
