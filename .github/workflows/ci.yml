@@ -2,9 +2,9 @@ name: PeleC-CI
 
 on:
   push:
-    branches: [development]
+      branches: [hari/least-squares]
   pull_request:
-    branches: [development]
+      branches: [hari/least-squares]
 
 jobs:
   Formatting:
