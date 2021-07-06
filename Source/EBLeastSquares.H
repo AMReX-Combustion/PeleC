@@ -29,7 +29,7 @@
 // the turbulence models, Green’s theorem"
 
 //"I guess the upshot from Anderson and Bonhaus's statement is that
-// least-squares is robust and more accurate on stretched wierd grids but may
+// least-squares is robust and more accurate on stretched weird grids but may
 // not
 // be necassarily more accurate than Green-Gauss on nicer grids": HARI S
 
