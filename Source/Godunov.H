@@ -123,7 +123,7 @@ pc_cmpflx(
   amrex::Real cav, ustar;
   amrex::Real spl[NUM_SPECIES];
   amrex::Real spr[NUM_SPECIES];
-  amrex::Real ul, ur, vl, vr, v2l, v2r, rel, rer, gamcl, gamcr;
+  amrex::Real ul, ur, vl, vr, v2l, v2r;
   int idx;
   int IU, IV, IV2;
   int GU, GV, GV2;
@@ -135,8 +135,6 @@ pc_cmpflx(
     GU = GDU;
     GV = GDV;
     GV2 = GDW;
-    gamcl = qa(i - 1, j, k, QGAMC);
-    gamcr = qa(i, j, k, QGAMC);
     cav = 0.5 * (qa(i, j, k, QC) + qa(i - 1, j, k, QC));
     f_idx[0] = UMX;
     f_idx[1] = UMY;
@@ -148,8 +146,6 @@ pc_cmpflx(
     GU = GDV;
     GV = GDU;
     GV2 = GDW;
-    gamcl = qa(i, j - 1, k, QGAMC);
-    gamcr = qa(i, j, k, QGAMC);
     cav = 0.5 * (qa(i, j, k, QC) + qa(i, j - 1, k, QC));
     f_idx[0] = UMY;
     f_idx[1] = UMX;
@@ -161,8 +157,6 @@ pc_cmpflx(
     GU = GDW;
     GV = GDU;
     GV2 = GDV;
-    gamcl = qa(i, j, k - 1, QGAMC);
-    gamcr = qa(i, j, k, QGAMC);
     cav = 0.5 * (qa(i, j, k, QC) + qa(i, j, k - 1, QC));
     f_idx[0] = UMZ;
     f_idx[1] = UMX;
@@ -176,12 +170,10 @@ pc_cmpflx(
   ul = ql(i, j, k, IU);
   vl = ql(i, j, k, IV);
   v2l = ql(i, j, k, IV2);
-  rel = ql(i, j, k, QREINT);
 
   ur = qr(i, j, k, IU);
   vr = qr(i, j, k, IV);
   v2r = qr(i, j, k, IV2);
-  rer = qr(i, j, k, QREINT);
 
   // Outflow Hack
   if (dir == 2)
@@ -192,23 +184,21 @@ pc_cmpflx(
     ul = ur;
     vl = vr;
     v2l = v2r;
-    rel = rer;
   }
   if (bchi == Outflow && idx == domhi + 1) {
     ur = ul;
     vr = vl;
     v2r = v2l;
-    rer = rel;
   }
 
   const int bc_test_val = 1;
   riemann(
-    ql(i, j, k, QRHO), ul, vl, v2l, ql(i, j, k, QPRES), rel, spl, gamcl,
-    qr(i, j, k, QRHO), ur, vr, v2r, qr(i, j, k, QPRES), rer, spr, gamcr,
-    bc_test_val, qa(i, j, k, QCSML), cav, ustar, flx(i, j, k, URHO),
-    flx(i, j, k, f_idx[0]), flx(i, j, k, f_idx[1]), flx(i, j, k, f_idx[2]),
-    flx(i, j, k, UEDEN), flx(i, j, k, UEINT), q(i, j, k, GU), q(i, j, k, GV),
-    q(i, j, k, GV2), q(i, j, k, GDPRES), q(i, j, k, GDGAME));
+    ql(i, j, k, QRHO), ul, vl, v2l, ql(i, j, k, QPRES), spl, qr(i, j, k, QRHO),
+    ur, vr, v2r, qr(i, j, k, QPRES), spr, bc_test_val, cav, ustar,
+    flx(i, j, k, URHO), flx(i, j, k, f_idx[0]), flx(i, j, k, f_idx[1]),
+    flx(i, j, k, f_idx[2]), flx(i, j, k, UEDEN), flx(i, j, k, UEINT),
+    q(i, j, k, GU), q(i, j, k, GV), q(i, j, k, GV2), q(i, j, k, GDPRES),
+    q(i, j, k, GDGAME));
 
   amrex::Real flxrho = flx(i, j, k, URHO);
   for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
