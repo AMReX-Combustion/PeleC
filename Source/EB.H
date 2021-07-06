@@ -108,6 +108,7 @@ void pc_fill_bndry_grad_stencil_ls(
   const int,
   const EBBndryGeom*,
   const int,
+  const amrex::Array4<amrex::EBCellFlag const>& flags,
   EBBndrySten*);
 
 void pc_fill_bndry_grad_stencil_quadratic(
