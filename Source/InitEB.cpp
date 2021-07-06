@@ -93,8 +93,6 @@ PeleC::initialize_eb2_structs()
     const amrex::Box tbox = mfi.growntilebox();
     const amrex::EBCellFlagFab& flagfab = flags[mfi];
 
-    // amrex::Print()<<"grown tbox:"<<tbox<<"\n";
-
     amrex::FabType typ = flagfab.getType(tbox);
     int iLocal = mfi.LocalIndex();
 
