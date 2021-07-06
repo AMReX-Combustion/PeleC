@@ -20,16 +20,17 @@
 // the unweighted formulation is far superior to either inverse distance
 // weighting or the use of gradients calculated with Green’s theorem. It was
 // found, however, that for computing the actual values of gradients, inverse
-// distance weighting and Greens theorem give very similar results, both of which
-// are more accurate than unweighted least squares. Their failure to accurately
-// reproduce surrounding data via equation 18 is attributable to the flawed
-// assumption of linearly varying data. Therefore, for reconstructing data on
-// boundaries of control volumes, the unweighted least squares procedure is used.
-// When actual gradients are required, as in the production terms for the
-// turbulence models, Green’s theorem"
+// distance weighting and Greens theorem give very similar results, both of
+// which are more accurate than unweighted least squares. Their failure to
+// accurately reproduce surrounding data via equation 18 is attributable to the
+// flawed assumption of linearly varying data. Therefore, for reconstructing
+// data on boundaries of control volumes, the unweighted least squares procedure
+// is used. When actual gradients are required, as in the production terms for
+// the turbulence models, Green’s theorem"
 
 //"I guess the upshot from Anderson and Bonhaus's statement is that
-//least-squares is robust and more accurate on stretched wierd grids but may not
+// least-squares is robust and more accurate on stretched wierd grids but may
+// not
 // be necassarily more accurate than Green-Gauss on nicer grids": HARI S
 
 AMREX_GPU_DEVICE
