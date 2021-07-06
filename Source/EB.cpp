@@ -45,8 +45,28 @@ pc_fill_sv_ebg(
   });
 }
 
+
+//see Johansen and Collela paper
+//Johansen, H., & Colella, P. (1998). A Cartesian grid embedded boundary method 
+//for Poisson's equation on irregular domains. 
+//Journal of Computational Physics, 147(1), 60-85
+//
+//Johansen and Collela also say 
+//"By constructing the gradients in this fashion, we impose one more constraint on 
+//the discretization of the domain: the interpolation stencil must 
+//not reach into cells with zero volume. For the
+//quadratic gradient stencil, this may imply certain constraints on the 
+//discretization of the domain.
+//However, the fact that a zero-volume cell is within two rows of another partial 
+//cell would indicate that the local boundary is substantially under-resolved. 
+//Such domains are more appropriately
+//treated with adaptive mesh refinement"
+//
+//"which means that there is a chance that this stencil may 
+//dip into covered cells":Hari S
+
 void
-pc_fill_bndry_grad_stencil_interp2(
+pc_fill_bndry_grad_stencil_quadratic(
   const amrex::Box& bx,
   const amrex::Real dx,
   const int /*Nebg*/,

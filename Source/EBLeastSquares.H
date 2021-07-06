@@ -1,5 +1,39 @@
 #include "EB.H"
 
+//This least-squares procedure is adapted from what is 
+//done in unstructured grid codes
+//see pages 162-164 in chapter 
+//"Spatial discretization: unstructured finite volume schemes" 
+//Blazek's text book 
+//(Computational Fluid Dynamics: Principles and Applications)
+//
+//The QR decomposition procedure is also described in 
+//Anderson, W. K., & Bonhaus, D. L. (1994). An implicit upwind algorithm for 
+//computing turbulent flows on unstructured grids. 
+//Computers & Fluids, 23(1), 1-21.
+//
+
+//Anderson and Bonhaus also go on to say in their paper that
+
+//"Numerical experiments have been conducted which indicate that for
+//reconstructing nonlinear data on highly stretched meshes using equation 18, 
+//the unweighted formulation is far superior to either inverse distance 
+//weighting or the use of gradients calculated with Green’s theorem. It was found,
+//however, that for computing the actual values of gradients, inverse distance 
+//weighting and Greens theorem give very similar results, both of which are 
+//more accurate than unweighted least squares. Their failure to accurately reproduce
+//surrounding data via equation 18 is attributable to the flawed assumption 
+//of linearly varying data. Therefore, for reconstructing data on boundaries of 
+//control volumes, the unweighted least squares procedure is used. When actual
+//gradients are required, as in the production terms for the turbulence 
+//models, Green’s theorem"
+
+
+
+//"I guess the upshot from Anderson and Bonhaus's statement is that least-squares is
+//robust and more accurate on stretched wierd grids but 
+//may not be necassarily more accurate than Green-Gauss on nicer grids": HARI S
+
 AMREX_GPU_DEVICE
 void
 get_qmat(

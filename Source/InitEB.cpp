@@ -76,11 +76,12 @@ PeleC::initialize_eb2_structs()
 
   int bgs = -1;
   pp.get("boundary_grad_stencil_type", bgs);
-
+  
   if (bgs == 0)
-    amrex::Print() << "using least-squares stencil\n";
+    amrex::Print() << "using quadratic stencil\n";
+
   if (bgs == 1)
-    amrex::Print() << "using interp2 stencil\n";
+    amrex::Print() << "using least-squares stencil\n";
 
 #ifdef _OPENMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
@@ -171,11 +172,11 @@ PeleC::initialize_eb2_structs()
       sort<amrex::Gpu::DeviceVector<EBBndryGeom>>(sv_eb_bndry_geom[iLocal]);
 #endif
 
-      if (bgs == 1) {
-        pc_fill_bndry_grad_stencil_interp2(
+      if (bgs == 0) {
+        pc_fill_bndry_grad_stencil_quadratic(
           tbox, dx, Ncut, sv_eb_bndry_geom[iLocal].data(), Ncut,
           sv_eb_bndry_grad_stencil[iLocal].data());
-      } else if (bgs == 0) {
+      } else if (bgs == 1) {
         pc_fill_bndry_grad_stencil_ls(
           tbox, dx, Ncut, sv_eb_bndry_geom[iLocal].data(), Ncut,
           flags.array(mfi), sv_eb_bndry_grad_stencil[iLocal].data());
