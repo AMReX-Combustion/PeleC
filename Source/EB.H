@@ -110,7 +110,7 @@ void pc_fill_bndry_grad_stencil_ls(
   const int,
   EBBndrySten*);
 
-void pc_fill_bndry_grad_stencil_interp2(
+void pc_fill_bndry_grad_stencil_quadratic(
   const amrex::Box&,
   const amrex::Real,
   const int,
