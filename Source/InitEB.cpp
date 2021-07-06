@@ -77,11 +77,11 @@ PeleC::initialize_eb2_structs()
   int bgs = -1;
   pp.get("boundary_grad_stencil_type", bgs);
 
-  if (bgs == 0){
+  if (bgs == 0) {
     amrex::Print() << "using quadratic stencil\n";
   }
 
-  if (bgs == 1){
+  if (bgs == 1) {
     amrex::Print() << "using least-squares stencil\n";
   }
 
