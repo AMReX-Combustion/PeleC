@@ -74,15 +74,19 @@ PeleC::initialize_eb2_structs()
   // Boundary stencil option: 0 = original, 1 = amrex way, 2 = least squares
   amrex::ParmParse pp("ebd");
 
-  int bgs = -1;
-  pp.get("boundary_grad_stencil_type", bgs);
+  int bgs = 0;
+  pp.query("boundary_grad_stencil_type", bgs);
 
   if (bgs == 0) {
-    amrex::Print() << "using quadratic stencil\n";
+    amrex::Print() << "Using quadratic stencil\n";
   }
 
-  if (bgs == 1) {
-    amrex::Print() << "using least-squares stencil\n";
+  else if (bgs == 1) {
+    amrex::Print() << "Using least-squares stencil\n";
+  } else {
+    amrex::Print() << "Unknown or unspecified boundary gradient stencil type:"
+                   << bgs << std::endl;
+    amrex::Abort();
   }
 
 #ifdef _OPENMP

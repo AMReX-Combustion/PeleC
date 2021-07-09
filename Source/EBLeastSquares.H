@@ -34,6 +34,7 @@
 // be necassarily more accurate than Green-Gauss on nicer grids": HARI S
 
 AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
 void
 get_qmat(
   AMREX_D_DECL(
@@ -91,6 +92,7 @@ get_qmat(
 }
 
 AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
 void
 get_weightvec(
   AMREX_D_DECL(
