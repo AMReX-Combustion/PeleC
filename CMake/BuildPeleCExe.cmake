@@ -113,7 +113,6 @@ function(build_pelec_exe pelec_exe_name)
                    ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_state_utils.cpp
                    ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_state_redistribute.cpp
                    ${SRC_DIR}/EB.H
-                   ${SRC_DIR}/EBLeastSquares.H
                    ${SRC_DIR}/EB.cpp
                    ${SRC_DIR}/InitEB.cpp
                    ${SRC_DIR}/SparseData.H

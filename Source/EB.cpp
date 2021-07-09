@@ -251,7 +251,6 @@ pc_fill_bndry_grad_stencil_quadratic(
 // not be necassarily more accurate than Green-Gauss or even quadratic Johansen
 // on nicer grids": Hari S
 
-
 void
 pc_fill_bndry_grad_stencil_ls(
   const amrex::Box& bx,

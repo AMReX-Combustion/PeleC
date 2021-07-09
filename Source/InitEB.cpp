@@ -1,7 +1,6 @@
 #include <memory>
 
 #include "EB.H"
-#include "EBLeastSquares.H"
 #include "prob.H"
 #include "Utilities.H"
 

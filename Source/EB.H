@@ -91,7 +91,7 @@ pc_set_body_state(
   }
 }
 
-//least-squares specific functions
+// least-squares specific functions
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
