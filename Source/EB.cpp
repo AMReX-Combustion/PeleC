@@ -311,13 +311,11 @@ pc_fill_bndry_grad_stencil_ls(
                          , sten_iv[2] = baseiv[2] + kk;)
 
             if (is_inside(sten_iv, lo, hi)) {
-
               if (
                 !(AMREX_D_TERM(
                   sten_iv[0] == ivs[0], &&sten_iv[1] == ivs[1],
-                  &&sten_iv[2] == ivs[2]))
-
-                && !flags(sten_iv).isCovered()) {
+                  &&sten_iv[2] == ivs[2])) &&
+                !flags(sten_iv).isCovered()) {
                 AMREX_D_TERM(xi[0] = sten_iv[0] - ivs[0];
                              , xi[1] = sten_iv[1] - ivs[1];
                              , xi[2] = sten_iv[2] - ivs[2];)
@@ -354,13 +352,11 @@ pc_fill_bndry_grad_stencil_ls(
                            , sten_iv[2] = baseiv[2] + kk;)
 
               if (is_inside(sten_iv, lo, hi)) {
-
                 if (
                   !(AMREX_D_TERM(
                     sten_iv[0] == ivs[0], &&sten_iv[1] == ivs[1],
-                    &&sten_iv[2] == ivs[2]))
-
-                  && !flags(sten_iv).isCovered()) {
+                    &&sten_iv[2] == ivs[2])) &&
+                  !flags(sten_iv).isCovered()) {
                   grad_stencil[L].val PELEC_D_TERM_REVERSE([kk], [jj], [ii]) =
                     fac * ebg[L].eb_area *
                     (AMREX_D_TERM(
@@ -385,11 +381,8 @@ pc_fill_bndry_grad_stencil_ls(
         grad_stencil[L].bcval_sten = -selfweight;
       } else {
         grad_stencil[L].bcval_sten = 0.0;
-
         for (int ii = 0; ii < 3; ii++) {
-
           for (int jj = 0; jj < 3; jj++) {
-
 #if AMREX_SPACEDIM > 2
             for (int kk = 0; kk < 3; kk++) { // NOLINT
 #endif

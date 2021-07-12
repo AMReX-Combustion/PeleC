@@ -78,9 +78,7 @@ PeleC::initialize_eb2_structs()
 
   if (bgs == 0) {
     amrex::Print() << "Using quadratic stencil\n";
-  }
-
-  else if (bgs == 1) {
+  } else if (bgs == 1) {
     amrex::Print() << "Using least-squares stencil\n";
   } else {
     amrex::Print() << "Unknown or unspecified boundary gradient stencil type:"
