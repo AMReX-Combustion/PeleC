@@ -391,8 +391,7 @@ pc_fill_bndry_grad_stencil_ls(
           for (int jj = 0; jj < 3; jj++) {
 
 #if AMREX_SPACEDIM > 2
-            for (int kk = 0; kk < 3; kk++) {
-            //NOLINT
+            for (int kk = 0; kk < 3; kk++) { // NOLINT
 #endif
               grad_stencil[L].val PELEC_D_TERM_REVERSE([kk], [jj], [ii]) = 0.0;
 
