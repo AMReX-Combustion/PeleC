@@ -387,7 +387,9 @@ pc_fill_bndry_grad_stencil_ls(
         grad_stencil[L].bcval_sten = 0.0;
 
         for (int ii = 0; ii < 3; ii++) {
+
           for (int jj = 0; jj < 3; jj++) {
+
 #if AMREX_SPACEDIM > 2
             for (int kk = 0; kk < 3; kk++) { //NOLINT
 #endif
