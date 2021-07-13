@@ -86,6 +86,24 @@
 // Number of passive variables that are not per unit mass, U = Q instead of U =
 // rho Q
 #define NPASSNM NUM_SOOT_VARS
+
+#if AMREX_SPACEDIM == 1
+// hopefully we wont do EB in 1D
+#define NLSPTS 1
+#define NEL_TRIMAT 1
+
+#elif AMREX_SPACEDIM == 2
+
+#define NLSPTS 8
+#define NEL_TRIMAT 3
+
+#elif AMREX_SPACEDIM == 3
+
+#define NLSPTS 26
+#define NEL_TRIMAT 6
+
+#endif
+
 struct PassMap
 {
   amrex::GpuArray<int, NPASSIVE + NPASSNM> upassMap = {{0}};

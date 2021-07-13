@@ -91,6 +91,115 @@ pc_set_body_state(
   }
 }
 
+// least-squares specific functions
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+get_qmat(
+  AMREX_D_DECL(
+    amrex::Real delta_x_i[NLSPTS],
+    amrex::Real delta_y_i[NLSPTS],
+    amrex::Real delta_z_i[NLSPTS]),
+  int N,
+  amrex::Real qmat[NEL_TRIMAT])
+{
+
+  // note: all distances are non-dimensional ~ 1, does not depend on dx
+  // therefore this choice of eps is good
+  const amrex::Real eps = 1e-10;
+  amrex::Real r11 = 0.0;
+  amrex::Real r12 = 0.0;
+  amrex::Real r22 = 0.0;
+
+#if AMREX_SPACEDIM > 2
+  amrex::Real r13 = 0.0;
+  amrex::Real r23 = 0.0;
+  amrex::Real r33 = 0.0;
+#endif
+
+  for (int i = 0; i < N; i++) {
+    r11 += pow(delta_x_i[i], 2.0);
+    r12 += delta_x_i[i] * delta_y_i[i];
+    r22 += pow(delta_y_i[i], 2.0);
+
+#if AMREX_SPACEDIM > 2
+    r13 += delta_x_i[i] * delta_z_i[i];
+    r23 += delta_y_i[i] * delta_z_i[i];
+    r33 += pow(delta_z_i[i], 2.0);
+#endif
+  }
+
+  r11 = sqrt(r11) + eps; // eps added to prevent division issues
+  r12 = r12 / r11;
+  r22 = sqrt(r22 - r12 * r12) + eps;
+
+#if AMREX_SPACEDIM > 2
+  r13 = r13 / r11;
+  r23 = r23 / r22 - r12 * r13 / r22;
+  r33 = sqrt(r33 - r13 * r13 - r23 * r23) + eps;
+#endif
+
+  qmat[0] = r11;
+  qmat[1] = r12;
+  qmat[2] = r22;
+
+#if AMREX_SPACEDIM > 2
+  qmat[3] = r13;
+  qmat[4] = r23;
+  qmat[5] = r33;
+#endif
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+get_weightvec(
+  AMREX_D_DECL(
+    amrex::Real delta_x_i[NLSPTS],
+    amrex::Real delta_y_i[NLSPTS],
+    amrex::Real delta_z_i[NLSPTS]),
+  int N,
+  amrex::Real qmat[NEL_TRIMAT],
+  amrex::Real wvec[NLSPTS][AMREX_SPACEDIM])
+{
+  amrex::Real r11 = qmat[0];
+  amrex::Real r12 = qmat[1];
+  amrex::Real r22 = qmat[2];
+
+#if AMREX_SPACEDIM > 2
+  amrex::Real r13 = qmat[3];
+  amrex::Real r23 = qmat[4];
+  amrex::Real r33 = qmat[5];
+#endif
+
+  amrex::Real alpha_ij_1, alpha_ij_2;
+
+#if AMREX_SPACEDIM > 2
+  amrex::Real alpha_ij_3;
+  amrex::Real beta = (r12 * r23 - r13 * r22) / (r11 * r22);
+#endif
+
+  for (int i = 0; i < N; i++) {
+    alpha_ij_1 = delta_x_i[i] / (r11 * r11);
+    alpha_ij_2 = (delta_y_i[i] - r12 / r11 * delta_x_i[i]) / (r22 * r22);
+
+#if AMREX_SPACEDIM > 2
+    alpha_ij_3 =
+      (delta_z_i[i] - r23 / r22 * delta_y_i[i] + beta * delta_x_i[i]) /
+      (r33 * r33);
+#endif
+
+#if AMREX_SPACEDIM == 2
+    wvec[i][0] = alpha_ij_1 - r12 / r11 * alpha_ij_2;
+    wvec[i][1] = alpha_ij_2;
+#else
+    wvec[i][0] = alpha_ij_1 - r12 / r11 * alpha_ij_2 + beta * alpha_ij_3;
+    wvec[i][1] = alpha_ij_2 - r23 / r22 * alpha_ij_3;
+    wvec[i][2] = alpha_ij_3;
+#endif
+  }
+}
+
 void pc_fill_sv_ebg(
   const amrex::Box&,
   const int,
@@ -102,7 +211,16 @@ void pc_fill_sv_ebg(
     const amrex::Array4<const amrex::Real>&),
   EBBndryGeom*);
 
-void pc_fill_bndry_grad_stencil(
+void pc_fill_bndry_grad_stencil_ls(
+  const amrex::Box&,
+  const amrex::Real,
+  const int,
+  const EBBndryGeom*,
+  const int,
+  const amrex::Array4<amrex::EBCellFlag const>& flags,
+  EBBndrySten*);
+
+void pc_fill_bndry_grad_stencil_quadratic(
   const amrex::Box&,
   const amrex::Real,
   const int,

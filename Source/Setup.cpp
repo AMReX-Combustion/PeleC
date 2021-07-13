@@ -181,10 +181,7 @@ PeleC::variableSetUp()
   }
 #ifdef USE_SUNDIALS_PP
   else if (chem_integrator == 2) {
-    amrex::Print()
-      << "Using sundials chemistry integrator with flattened arrays\n";
-  } else if (chem_integrator == 3) {
-    amrex::Print() << "Using sundials chemistry integrator with boxes\n";
+    amrex::Print() << "Using sundials chemistry integrator\n";
   }
 #endif
   else {

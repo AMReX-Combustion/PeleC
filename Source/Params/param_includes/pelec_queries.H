@@ -72,7 +72,6 @@ pp.query("PrT", PrT);
 pp.query("eb_boundary_T", eb_boundary_T);
 pp.query("eb_isothermal", eb_isothermal);
 pp.query("eb_noslip", eb_noslip);
-pp.query("eb_small_vfrac", eb_small_vfrac);
 pp.query("redistribution_type", redistribution_type);
 pp.query("do_mms", do_mms);
 pp.query("masa_solution_name", masa_solution_name);

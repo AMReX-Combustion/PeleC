@@ -73,8 +73,18 @@ PeleC::initialize_eb2_structs()
   // Boundary stencil option: 0 = original, 1 = amrex way, 2 = least squares
   amrex::ParmParse pp("ebd");
 
-  int bgs = -1;
-  pp.get("boundary_grad_stencil_type", bgs);
+  int bgs = 0;
+  pp.query("boundary_grad_stencil_type", bgs);
+
+  if (bgs == 0) {
+    amrex::Print() << "Using quadratic stencil\n";
+  } else if (bgs == 1) {
+    amrex::Print() << "Using least-squares stencil\n";
+  } else {
+    amrex::Print() << "Unknown or unspecified boundary gradient stencil type:"
+                   << bgs << std::endl;
+    amrex::Abort();
+  }
 
 #ifdef _OPENMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
@@ -164,26 +174,13 @@ PeleC::initialize_eb2_structs()
 #endif
 
       if (bgs == 0) {
-        pc_fill_bndry_grad_stencil(
+        pc_fill_bndry_grad_stencil_quadratic(
           tbox, dx, Ncut, sv_eb_bndry_geom[iLocal].data(), Ncut,
           sv_eb_bndry_grad_stencil[iLocal].data());
       } else if (bgs == 1) {
-        amrex::Print() << "This gradient stencil type WIP and not functional!"
-                       << bgs << std::endl;
-        amrex::Abort();
-        // pc_fill_bndry_grad_stencil_amrex(AMREX_TO_FORTRAN_BOX(tbox),
-        //                                 sv_eb_bndry_geom[iLocal].data(),
-        //                                 &Ncut,
-        //                                 sv_eb_bndry_grad_stencil[iLocal].data(),
-        //                                 &Ncut, &dx);
-      } else if (bgs == 2) {
-        amrex::Print() << "This gradient stencil type WIP and not functional!"
-                       << bgs << std::endl;
-        amrex::Abort();
-        // pc_fill_bndry_grad_stencil_ls(AMREX_TO_FORTRAN_BOX(tbox),
-        //                              sv_eb_bndry_geom[iLocal].data(), &Ncut,
-        //                              sv_eb_bndry_grad_stencil[iLocal].data(),
-        //                              &Ncut, &dx);
+        pc_fill_bndry_grad_stencil_ls(
+          tbox, dx, Ncut, sv_eb_bndry_geom[iLocal].data(), Ncut,
+          flags.array(mfi), sv_eb_bndry_grad_stencil[iLocal].data());
       } else {
         amrex::Print()
           << "Unknown or unspecified boundary gradient stencil type:" << bgs
