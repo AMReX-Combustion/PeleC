@@ -66,8 +66,6 @@ pc_umeth_3D(
   const amrex::Box& xflxbx = surroundingNodes(grow(bxg2, cdir, -1), cdir);
   amrex::FArrayBox qxm(xmbx, QVAR);
   amrex::FArrayBox qxp(bxg2, QVAR);
-  amrex::Elixir qxmeli = qxm.elixir();
-  amrex::Elixir qxpeli = qxp.elixir();
   auto const& qxmarr = qxm.array();
   auto const& qxparr = qxp.array();
 
@@ -77,8 +75,6 @@ pc_umeth_3D(
   const amrex::Box& yflxbx = surroundingNodes(grow(bxg2, cdir, -1), cdir);
   amrex::FArrayBox qym(ymbx, QVAR);
   amrex::FArrayBox qyp(bxg2, QVAR);
-  amrex::Elixir qymeli = qym.elixir();
-  amrex::Elixir qypeli = qyp.elixir();
   auto const& qymarr = qym.array();
   auto const& qyparr = qyp.array();
 
@@ -88,8 +84,6 @@ pc_umeth_3D(
   const amrex::Box& zflxbx = surroundingNodes(grow(bxg2, cdir, -1), cdir);
   amrex::FArrayBox qzm(zmbx, QVAR);
   amrex::FArrayBox qzp(bxg2, QVAR);
-  amrex::Elixir qzmeli = qzm.elixir();
-  amrex::Elixir qzpeli = qzp.elixir();
   auto const& qzmarr = qzm.array();
   auto const& qzparr = qzp.array();
 
@@ -152,10 +146,8 @@ pc_umeth_3D(
   // method X initial fluxes
   cdir = 0;
   amrex::FArrayBox fx(xflxbx, NVAR);
-  amrex::Elixir fxeli = fx.elixir();
   auto const& fxarr = fx.array();
   amrex::FArrayBox qgdx(xflxbx, NGDNV);
-  amrex::Elixir qgdxeli = qgdx.elixir();
   auto const& gdtempx = qgdx.array();
   amrex::ParallelFor(
     xflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -167,10 +159,8 @@ pc_umeth_3D(
   // Y initial fluxes
   cdir = 1;
   amrex::FArrayBox fy(yflxbx, NVAR);
-  amrex::Elixir fyeli = fy.elixir();
   auto const& fyarr = fy.array();
   amrex::FArrayBox qgdy(yflxbx, NGDNV);
-  amrex::Elixir qgdyeli = qgdy.elixir();
   auto const& gdtempy = qgdy.array();
   amrex::ParallelFor(
     yflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -182,10 +172,8 @@ pc_umeth_3D(
   // Z initial fluxes
   cdir = 2;
   amrex::FArrayBox fz(zflxbx, NVAR);
-  amrex::Elixir fzeli = fz.elixir();
   auto const& fzarr = fz.array();
   amrex::FArrayBox qgdz(zflxbx, NGDNV);
-  amrex::Elixir qgdzeli = qgdz.elixir();
   auto const& gdtempz = qgdz.array();
   amrex::ParallelFor(
     zflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -199,16 +187,12 @@ pc_umeth_3D(
   const amrex::Box& txbx = grow(bxg1, cdir, 1);
   const amrex::Box& txbxm = growHi(txbx, cdir, 1);
   amrex::FArrayBox qxym(txbxm, QVAR);
-  amrex::Elixir qxymeli = qxym.elixir();
   amrex::FArrayBox qxyp(txbx, QVAR);
-  amrex::Elixir qxypeli = qxyp.elixir();
   auto const& qmxy = qxym.array();
   auto const& qpxy = qxyp.array();
 
   amrex::FArrayBox qxzm(txbxm, QVAR);
-  amrex::Elixir qxzmeli = qxzm.elixir();
   amrex::FArrayBox qxzp(txbx, QVAR);
-  amrex::Elixir qxzpeli = qxzp.elixir();
   auto const& qmxz = qxzm.array();
   auto const& qpxz = qxzp.array();
 
@@ -226,10 +210,6 @@ pc_umeth_3D(
   amrex::FArrayBox fluxxz(txfxbx, NVAR);
   amrex::FArrayBox gdvxyfab(txfxbx, NGDNV);
   amrex::FArrayBox gdvxzfab(txfxbx, NGDNV);
-  amrex::Elixir fluxxyeli = fluxxy.elixir();
-  amrex::Elixir gdvxyeli = gdvxyfab.elixir();
-  amrex::Elixir fluxxzeli = fluxxz.elixir();
-  amrex::Elixir gdvxzeli = gdvxzfab.elixir();
 
   auto const& flxy = fluxxy.array();
   auto const& flxz = fluxxz.array();
@@ -262,10 +242,6 @@ pc_umeth_3D(
   amrex::FArrayBox qyxp(tybx, QVAR);
   amrex::FArrayBox qyzm(tybxm, QVAR);
   amrex::FArrayBox qyzp(tybx, QVAR);
-  amrex::Elixir qyxmeli = qyxm.elixir();
-  amrex::Elixir qyxpeli = qyxp.elixir();
-  amrex::Elixir qyzmeli = qyzm.elixir();
-  amrex::Elixir qyzpeli = qyzp.elixir();
   auto const& qmyx = qyxm.array();
   auto const& qpyx = qyxp.array();
   auto const& qmyz = qyzm.array();
@@ -289,10 +265,6 @@ pc_umeth_3D(
   amrex::FArrayBox fluxyz(tyfxbx, NVAR);
   amrex::FArrayBox gdvyxfab(tyfxbx, NGDNV);
   amrex::FArrayBox gdvyzfab(tyfxbx, NGDNV);
-  amrex::Elixir fluxyxeli = fluxyx.elixir();
-  amrex::Elixir gdvyxeli = gdvyxfab.elixir();
-  amrex::Elixir fluxyzeli = fluxyz.elixir();
-  amrex::Elixir gdvyzeli = gdvyzfab.elixir();
 
   auto const& flyx = fluxyx.array();
   auto const& flyz = fluxyz.array();
@@ -324,10 +296,6 @@ pc_umeth_3D(
   amrex::FArrayBox qzxp(tzbx, QVAR);
   amrex::FArrayBox qzym(tzbxm, QVAR);
   amrex::FArrayBox qzyp(tzbx, QVAR);
-  amrex::Elixir qzxmeli = qzxm.elixir();
-  amrex::Elixir qzxpeli = qzxp.elixir();
-  amrex::Elixir qzymeli = qzym.elixir();
-  amrex::Elixir qzypeli = qzyp.elixir();
 
   auto const& qmzx = qzxm.array();
   auto const& qpzx = qzxp.array();
@@ -354,10 +322,6 @@ pc_umeth_3D(
   amrex::FArrayBox fluxzy(tzfxbx, NVAR);
   amrex::FArrayBox gdvzxfab(tzfxbx, NGDNV);
   amrex::FArrayBox gdvzyfab(tzfxbx, NGDNV);
-  amrex::Elixir fluxzxeli = fluxzx.elixir();
-  amrex::Elixir gdvzxeli = gdvzxfab.elixir();
-  amrex::Elixir fluxzyeli = fluxzy.elixir();
-  amrex::Elixir gdvzyeli = gdvzyfab.elixir();
 
   auto const& flzx = fluxzx.array();
   auto const& flzy = fluxzy.array();
@@ -384,8 +348,6 @@ pc_umeth_3D(
   // Temp Fabs for Final Fluxes
   amrex::FArrayBox qmfab(bxg2, QVAR);
   amrex::FArrayBox qpfab(bxg1, QVAR);
-  amrex::Elixir qmeli = qmfab.elixir();
-  amrex::Elixir qpeli = qpfab.elixir();
   auto const& qm = qmfab.array();
   auto const& qp = qpfab.array();
 
@@ -515,8 +477,6 @@ pc_umeth_2D(
   const amrex::Box& xflxbx = surroundingNodes(grow(bxg2, cdir, -1), cdir);
   amrex::FArrayBox qxm(xmbx, QVAR);
   amrex::FArrayBox qxp(bxg2, QVAR);
-  amrex::Elixir qxmeli = qxm.elixir();
-  amrex::Elixir qxpeli = qxp.elixir();
   auto const& qxmarr = qxm.array();
   auto const& qxparr = qxp.array();
 
@@ -526,8 +486,6 @@ pc_umeth_2D(
   const amrex::Box& yflxbx = surroundingNodes(grow(bxg2, cdir, -1), cdir);
   amrex::FArrayBox qym(ymbx, QVAR);
   amrex::FArrayBox qyp(bxg2, QVAR);
-  amrex::Elixir qymeli = qym.elixir();
-  amrex::Elixir qypeli = qyp.elixir();
   auto const& qymarr = qym.array();
   auto const& qyparr = qyp.array();
 
@@ -571,10 +529,8 @@ pc_umeth_2D(
   // method X initial fluxes
   cdir = 0;
   amrex::FArrayBox fx(xflxbx, NVAR);
-  amrex::Elixir fxeli = fx.elixir();
   auto const& fxarr = fx.array();
   amrex::FArrayBox qgdx(bxg2, NGDNV);
-  amrex::Elixir qgdxeli = qgdx.elixir();
   auto const& gdtemp = qgdx.array();
   amrex::ParallelFor(
     xflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -586,7 +542,6 @@ pc_umeth_2D(
   // Y initial fluxes
   cdir = 1;
   amrex::FArrayBox fy(yflxbx, NVAR);
-  amrex::Elixir fyeli = fy.elixir();
   auto const& fyarr = fy.array();
   amrex::ParallelFor(
     yflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -599,9 +554,7 @@ pc_umeth_2D(
   cdir = 0;
   const amrex::Box& tybx = grow(bx, cdir, 1);
   amrex::FArrayBox qm(bxg2, QVAR);
-  amrex::Elixir qmeli = qm.elixir();
   amrex::FArrayBox qp(bxg1, QVAR);
-  amrex::Elixir qpeli = qp.elixir();
   auto const& qmarr = qm.array();
   auto const& qparr = qp.array();
 

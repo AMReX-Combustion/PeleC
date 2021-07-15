@@ -240,7 +240,6 @@ pc_dermagvort(
   const amrex::Box& gbx = amrex::grow(bx, 1);
 
   amrex::FArrayBox local(gbx, 3);
-  amrex::Elixir local_eli = local.elixir();
   auto larr = local.array();
 
   // Convert momentum to velocity.
@@ -333,7 +332,6 @@ pc_derenstrophy(
   const amrex::Box& gbx = amrex::grow(bx, 1);
 
   amrex::FArrayBox local(gbx, 3);
-  amrex::Elixir local_eli = local.elixir();
   auto larr = local.array();
 
   // Convert momentum to velocity.

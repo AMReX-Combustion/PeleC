@@ -34,7 +34,6 @@ pc_compute_hyp_mol_flux(
 
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
     amrex::FArrayBox dq_fab(cbox, QVAR);
-    amrex::Elixir dq_fab_eli = dq_fab.elixir();
     auto const& dq = dq_fab.array();
     setV(cbox, QVAR, dq, 0.0);
 
