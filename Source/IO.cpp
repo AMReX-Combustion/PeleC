@@ -321,7 +321,7 @@ PeleC::checkPoint(
   if (current_version > 0) {
     if (amrex::ParallelDescriptor::IOProcessor() && eb_in_domain) {
       amrex::IntVect iv(AMREX_D_DECL(0, 0, 0));
-      amrex::FArrayBox bstate_fab(amrex::Box(iv, iv), NVAR);
+      amrex::FArrayBox bstate_fab(amrex::Box(iv, iv), NVAR, amrex::The_Async_Arena);
       for (int n = 0; n < NVAR; ++n) {
         bstate_fab(iv, n) = body_state[n];
       }

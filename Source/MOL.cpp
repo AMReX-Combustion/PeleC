@@ -33,7 +33,7 @@ pc_compute_hyp_mol_flux(
   const int bc_test_val = 1;
 
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-    amrex::FArrayBox dq_fab(cbox, QVAR);
+    amrex::FArrayBox dq_fab(cbox, QVAR, amrex::The_Async_Arena);
     auto const& dq = dq_fab.array();
     setV(cbox, QVAR, dq, 0.0);
 

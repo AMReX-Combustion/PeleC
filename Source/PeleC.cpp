@@ -1571,7 +1571,7 @@ PeleC::errorEst(
       const auto vfrac_arr = vfrac.array(mfi);
 #endif
 
-      amrex::FArrayBox S_derData(datbox, 1);
+      amrex::FArrayBox S_derData(datbox, 1, amrex::The_Async_Arena);
       auto S_derarr = S_derData.array();
       const int ncp = S_derData.nComp();
       const int* bc = bcs[0].data();
