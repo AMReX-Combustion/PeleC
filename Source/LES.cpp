@@ -235,10 +235,8 @@ PeleC::getSmagorinskyLESTerm(
 
       auto const& s = S.array(mfi);
       int nqaux = NQAUX > 0 ? NQAUX : 1;
-      amrex::FArrayBox q(gbox, QVAR);
-      amrex::FArrayBox qaux(gbox, nqaux);
-      amrex::Elixir qeli = q.elixir();
-      amrex::Elixir qauxeli = qaux.elixir();
+      amrex::FArrayBox q(gbox, QVAR, amrex::The_Async_Arena());
+      amrex::FArrayBox qaux(gbox, nqaux, amrex::The_Async_Arena());
       auto const& q_ar = q.array();
       auto const& qauxar = qaux.array();
 
@@ -257,7 +255,6 @@ PeleC::getSmagorinskyLESTerm(
 
       // Get the tangential derivatives
       amrex::FArrayBox tander_ec[AMREX_SPACEDIM];
-      amrex::Elixir tander_eli[AMREX_SPACEDIM];
       const amrex::Box eboxes[AMREX_SPACEDIM] = {AMREX_D_DECL(
         amrex::surroundingNodes(cbox, 0), amrex::surroundingNodes(cbox, 1),
         amrex::surroundingNodes(cbox, 2))};
@@ -267,8 +264,8 @@ PeleC::getSmagorinskyLESTerm(
         amrex::Real d1;
         amrex::Real d2;
         for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-          tander_ec[dir].resize(eboxes[dir], GradUtils::nCompTan);
-          tander_eli[dir] = tander_ec[dir].elixir();
+          tander_ec[dir].resize(
+            eboxes[dir], GradUtils::nCompTan, amrex::The_Async_Arena());
           tanders[dir] = tander_ec[dir].array();
           setV(eboxes[dir], GradUtils::nCompTan, tanders[dir], 0);
           if (dir == 0) {
@@ -291,15 +288,13 @@ PeleC::getSmagorinskyLESTerm(
 
       // Compute extensive LES fluxes, F.A
       amrex::FArrayBox flux_ec[AMREX_SPACEDIM];
-      amrex::Elixir flux_eli[AMREX_SPACEDIM];
       const amrex::GpuArray<
         const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
         a{{AMREX_D_DECL(
           area[0].array(mfi), area[1].array(mfi), area[2].array(mfi))}};
       amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx;
       for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-        flux_ec[dir].resize(eboxes[dir], NVAR);
-        flux_eli[dir] = flux_ec[0].elixir();
+        flux_ec[dir].resize(eboxes[dir], NVAR, amrex::The_Async_Arena());
         flx[dir] = flux_ec[dir].array();
         setV(eboxes[dir], NVAR, flx[dir], 0);
       }
@@ -465,10 +460,8 @@ PeleC::getDynamicSmagorinskyLESTerm(
 
       auto const& s = S.array(mfi);
       int nqaux = NQAUX > 0 ? NQAUX : 1;
-      amrex::FArrayBox q(g0box, QVAR);
-      amrex::FArrayBox qaux(g0box, nqaux);
-      amrex::Elixir qeli = q.elixir();
-      amrex::Elixir qauxeli = qaux.elixir();
+      amrex::FArrayBox q(g0box, QVAR, amrex::The_Async_Arena());
+      amrex::FArrayBox qaux(g0box, nqaux, amrex::The_Async_Arena());
       auto const& q_ar = q.array();
       auto const& qauxar = qaux.array();
 
@@ -490,21 +483,12 @@ PeleC::getDynamicSmagorinskyLESTerm(
       // them at the test filter level. All are located at cell centers.
       const int upper_triangle_n =
         static_cast<int>(0.5 * AMREX_SPACEDIM * (AMREX_SPACEDIM + 1));
-      amrex::FArrayBox K;
-      amrex::FArrayBox RUT;
-      amrex::FArrayBox alphaij;
-      amrex::FArrayBox alpha;
-      amrex::FArrayBox flux_T;
-      K.resize(g1box, upper_triangle_n);
-      RUT.resize(g1box, AMREX_SPACEDIM);
-      alphaij.resize(g1box, AMREX_SPACEDIM * AMREX_SPACEDIM);
-      alpha.resize(g1box, 1);
-      flux_T.resize(g1box, AMREX_SPACEDIM);
-      amrex::Elixir K_eli = K.elixir();
-      amrex::Elixir RUT_eli = RUT.elixir();
-      amrex::Elixir alphaij_eli = alphaij.elixir();
-      amrex::Elixir alpha_eli = alpha.elixir();
-      amrex::Elixir flux_T_eli = flux_T.elixir();
+      amrex::FArrayBox K(g1box, upper_triangle_n, amrex::The_Async_Arena());
+      amrex::FArrayBox RUT(g1box, AMREX_SPACEDIM, amrex::The_Async_Arena());
+      amrex::FArrayBox alphaij(
+        g1box, AMREX_SPACEDIM * AMREX_SPACEDIM, amrex::The_Async_Arena());
+      amrex::FArrayBox alpha(g1box, 1, amrex::The_Async_Arena());
+      amrex::FArrayBox flux_T(g1box, AMREX_SPACEDIM, amrex::The_Async_Arena());
 
       auto const& K_ar = K.array();
       auto const& RUT_ar = RUT.array();
@@ -524,30 +508,19 @@ PeleC::getDynamicSmagorinskyLESTerm(
 
       // 3. Filter the state variables and the derived quantities at the
       // test filter level - still at cell centers
-      amrex::FArrayBox filtered_S;
-      amrex::FArrayBox filtered_Q;
-      amrex::FArrayBox filtered_Qaux;
-      amrex::FArrayBox filtered_K;
-      amrex::FArrayBox filtered_RUT;
-      amrex::FArrayBox filtered_alphaij;
-      amrex::FArrayBox filtered_alpha;
-      amrex::FArrayBox filtered_flux_T;
-      filtered_S.resize(g2box, NVAR);
-      filtered_Q.resize(g2box, QVAR);
-      filtered_Qaux.resize(g2box, NQAUX > 0 ? NQAUX : 1);
-      filtered_K.resize(g3box, upper_triangle_n);
-      filtered_RUT.resize(g3box, AMREX_SPACEDIM);
-      filtered_alphaij.resize(g3box, AMREX_SPACEDIM * AMREX_SPACEDIM);
-      filtered_alpha.resize(g3box, 1);
-      filtered_flux_T.resize(g3box, AMREX_SPACEDIM);
-      amrex::Elixir filtered_S_eli = filtered_S.elixir();
-      amrex::Elixir filtered_Q_eli = filtered_Q.elixir();
-      amrex::Elixir filtered_Qaux_eli = filtered_Qaux.elixir();
-      amrex::Elixir filtered_K_eli = filtered_K.elixir();
-      amrex::Elixir filtered_RUT_eli = filtered_RUT.elixir();
-      amrex::Elixir filtered_alphaij_eli = filtered_alphaij.elixir();
-      amrex::Elixir filtered_alpha_eli = filtered_alpha.elixir();
-      amrex::Elixir filtered_flux_T_eli = filtered_flux_T.elixir();
+      amrex::FArrayBox filtered_S(g2box, NVAR, amrex::The_Async_Arena());
+      amrex::FArrayBox filtered_Q(g2box, QVAR, amrex::The_Async_Arena());
+      amrex::FArrayBox filtered_Qaux(
+        g2box, NQAUX > 0 ? NQAUX : 1, amrex::The_Async_Arena());
+      amrex::FArrayBox filtered_K(
+        g3box, upper_triangle_n, amrex::The_Async_Arena());
+      amrex::FArrayBox filtered_RUT(
+        g3box, AMREX_SPACEDIM, amrex::The_Async_Arena());
+      amrex::FArrayBox filtered_alphaij(
+        g3box, AMREX_SPACEDIM * AMREX_SPACEDIM, amrex::The_Async_Arena());
+      amrex::FArrayBox filtered_alpha(g3box, 1, amrex::The_Async_Arena());
+      amrex::FArrayBox filtered_flux_T(
+        g3box, AMREX_SPACEDIM, amrex::The_Async_Arena());
 
       auto const& filtered_S_ar = filtered_S.array();
       auto const& filtered_Q_ar = filtered_Q.array();
@@ -575,9 +548,7 @@ PeleC::getDynamicSmagorinskyLESTerm(
       // 4. Calculate the dynamic Smagorinsky coefficients - still at cell
       // centers
       int do_harmonic = 1;
-      amrex::FArrayBox coeff_cc;
-      coeff_cc.resize(g3box, nCompC);
-      amrex::Elixir coeff_cc_eli = coeff_cc.elixir();
+      amrex::FArrayBox coeff_cc(g3box, nCompC, amrex::The_Async_Arena());
       auto const& coeff_cc_ar = coeff_cc.array();
       auto const& filtered_K_ar = filtered_K.array();
       auto const& filtered_RUT_ar = filtered_RUT.array();
@@ -611,10 +582,6 @@ PeleC::getDynamicSmagorinskyLESTerm(
       amrex::FArrayBox alphaij_ec[AMREX_SPACEDIM];
       amrex::FArrayBox alpha_ec[AMREX_SPACEDIM];
       amrex::FArrayBox flux_T_ec[AMREX_SPACEDIM];
-      amrex::Elixir coeff_ec_eli[AMREX_SPACEDIM];
-      amrex::Elixir alphaij_ec_eli[AMREX_SPACEDIM];
-      amrex::Elixir alpha_ec_eli[AMREX_SPACEDIM];
-      amrex::Elixir flux_T_ec_eli[AMREX_SPACEDIM];
       amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> coeff_ec_arr;
       amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM>
         alphaij_ec_arr;
@@ -622,18 +589,15 @@ PeleC::getDynamicSmagorinskyLESTerm(
       amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flux_T_ec_arr;
 
       for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-        coeff_ec[dir].resize(eboxes[dir], nCompC);
-        alphaij_ec[dir].resize(eboxes[dir], AMREX_SPACEDIM);
-        alpha_ec[dir].resize(eboxes[dir], 1);
-        flux_T_ec[dir].resize(eboxes[dir], 1);
+        coeff_ec[dir].resize(eboxes[dir], nCompC, amrex::The_Async_Arena());
+        alphaij_ec[dir].resize(
+          eboxes[dir], AMREX_SPACEDIM, amrex::The_Async_Arena());
+        alpha_ec[dir].resize(eboxes[dir], 1, amrex::The_Async_Arena());
+        flux_T_ec[dir].resize(eboxes[dir], 1, amrex::The_Async_Arena());
         coeff_ec_arr[dir] = coeff_ec[dir].array();
         alphaij_ec_arr[dir] = alphaij_ec[dir].array();
         alpha_ec_arr[dir] = alpha_ec[dir].array();
         flux_T_ec_arr[dir] = flux_T_ec[dir].array();
-        coeff_ec_eli[dir] = coeff_ec[dir].elixir();
-        alphaij_ec_eli[dir] = alphaij_ec[dir].elixir();
-        alpha_ec_eli[dir] = alpha_ec[dir].elixir();
-        flux_T_ec_eli[dir] = flux_T_ec[dir].elixir();
         amrex::ParallelFor(
           eboxes[dir], [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
             amrex::Real c[nCompC] = {0.0};
@@ -666,15 +630,13 @@ PeleC::getDynamicSmagorinskyLESTerm(
       // Compute the fluxes at the faces: all values passed are at faces
       // except for Q, V, and Lterm
       amrex::FArrayBox flux_ec[AMREX_SPACEDIM];
-      amrex::Elixir flux_eli[AMREX_SPACEDIM];
       const amrex::GpuArray<
         const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
         a{{AMREX_D_DECL(
           area[0].array(mfi), area[1].array(mfi), area[2].array(mfi))}};
       amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx;
       for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-        flux_ec[dir].resize(eboxes[dir], NVAR);
-        flux_eli[dir] = flux_ec[dir].elixir();
+        flux_ec[dir].resize(eboxes[dir], NVAR, amrex::The_Async_Arena());
         flx[dir] = flux_ec[dir].array();
         setV(eboxes[dir], NVAR, flx[dir], 0);
       }

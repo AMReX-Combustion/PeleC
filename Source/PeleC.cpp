@@ -1566,14 +1566,12 @@ PeleC::errorEst(
       const auto Sfab = S_data.array(mfi);
       auto tag_arr = tags.array(mfi);
       const auto datbox = S_data[mfi].box();
-      amrex::Elixir S_data_mfi_eli = S_data[mfi].elixir();
 
 #ifdef PELEC_USE_EB
       const auto vfrac_arr = vfrac.array(mfi);
 #endif
 
-      amrex::FArrayBox S_derData(datbox, 1);
-      amrex::Elixir S_derData_eli = S_derData.elixir();
+      amrex::FArrayBox S_derData(datbox, 1, amrex::The_Async_Arena());
       auto S_derarr = S_derData.array();
       const int ncp = S_derData.nComp();
       const int* bc = bcs[0].data();
@@ -1775,8 +1773,6 @@ PeleC::errorEst(
 
       // Now update the tags in the TagBox.
       // tag_arr.tags(itags, tilebox);
-      // rho_eli.clear();
-      // temp_eli.clear();
     }
   }
 }
