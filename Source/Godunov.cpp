@@ -229,11 +229,6 @@ pc_umeth_3D(
         *lpmap);
     });
 
-  qxymeli.clear();
-  qxypeli.clear();
-  qxzmeli.clear();
-  qxzpeli.clear();
-
   // Y interface corrections
   cdir = 1;
   const amrex::Box& tybx = grow(bxg1, cdir, 1);
@@ -255,9 +250,6 @@ pc_umeth_3D(
     pc_transz2(
       i, j, k, qmyz, qpyz, qymarr, qyparr, fzarr, qaux, gdtempz, cdtdz, *lpmap);
   });
-
-  fzeli.clear();
-  qgdzeli.clear();
 
   // Riemann problem Y|X Y|Z
   const amrex::Box& tyfxbx = surroundingNodes(bxg1, cdir);
@@ -283,11 +275,6 @@ pc_umeth_3D(
         *lpmap);
     });
 
-  qyxmeli.clear();
-  qyxpeli.clear();
-  qyzmeli.clear();
-  qyzpeli.clear();
-
   // Z interface corrections
   cdir = 2;
   const amrex::Box& tzbx = grow(bxg1, cdir, 1);
@@ -310,11 +297,6 @@ pc_umeth_3D(
     pc_transy2(
       i, j, k, qmzy, qpzy, qzmarr, qzparr, fyarr, qaux, gdtempy, cdtdy, *lpmap);
   });
-
-  fxeli.clear();
-  fyeli.clear();
-  qgdxeli.clear();
-  qgdyeli.clear();
 
   // Riemann problem Z|X Z|Y
   const amrex::Box& tzfxbx = surroundingNodes(bxg1, cdir);
@@ -340,11 +322,6 @@ pc_umeth_3D(
         *lpmap);
     });
 
-  qzxmeli.clear();
-  qzxpeli.clear();
-  qzymeli.clear();
-  qzypeli.clear();
-
   // Temp Fabs for Final Fluxes
   amrex::FArrayBox qmfab(bxg2, QVAR, amrex::The_Async_Arena);
   amrex::FArrayBox qpfab(bxg1, QVAR, amrex::The_Async_Arena);
@@ -361,12 +338,6 @@ pc_umeth_3D(
       hdtdy, hdtdz, *lpmap);
   });
 
-  fluxzyeli.clear();
-  gdvzyeli.clear();
-  gdvyzeli.clear();
-  fluxyzeli.clear();
-  qxmeli.clear();
-  qxpeli.clear();
   // Final X flux
   amrex::ParallelFor(xfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_cmpflx(
@@ -383,12 +354,6 @@ pc_umeth_3D(
       hdtdx, hdtdz, *lpmap);
   });
 
-  fluxzxeli.clear();
-  gdvzxeli.clear();
-  gdvxzeli.clear();
-  fluxxzeli.clear();
-  qymeli.clear();
-  qypeli.clear();
   // Final Y flux
   amrex::ParallelFor(yfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_cmpflx(
@@ -405,20 +370,12 @@ pc_umeth_3D(
       hdtdx, hdtdy, *lpmap);
   });
 
-  gdvyxeli.clear();
-  fluxyxeli.clear();
-  gdvxyeli.clear();
-  fluxxyeli.clear();
-  qzmeli.clear();
-  qzpeli.clear();
   // Final Z flux
   amrex::ParallelFor(zfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_cmpflx(
       i, j, k, bclz, bchz, dlz, dhz, qm, qp, flx3, q3, qaux, cdir, *lpmap);
   });
 
-  qmeli.clear();
-  qpeli.clear();
   // Construct p div{U}
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_pdivu(
@@ -564,9 +521,6 @@ pc_umeth_2D(
       *lpmap);
   });
 
-  fyeli.clear();
-  qxmeli.clear();
-  qxpeli.clear();
   const amrex::Box& xfxbx = surroundingNodes(bx, cdir);
 
   // Final Riemann problem X
@@ -585,9 +539,6 @@ pc_umeth_2D(
       i, j, k, qmarr, qparr, qymarr, qyparr, fxarr, srcQ, qaux, gdtemp, a1, vol,
       hdt, *lpmap);
   });
-  fxeli.clear();
-  qymeli.clear();
-  qypeli.clear();
 
   // Final Riemann problem Y
   const amrex::Box& yfxbx = surroundingNodes(bx, cdir);

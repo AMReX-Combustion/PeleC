@@ -1773,8 +1773,6 @@ PeleC::errorEst(
 
       // Now update the tags in the TagBox.
       // tag_arr.tags(itags, tilebox);
-      // rho_eli.clear();
-      // temp_eli.clear();
     }
   }
 }

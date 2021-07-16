@@ -386,9 +386,6 @@ pc_umdrv(
     a[2], pdivuarr, vol, dx, dt, ppm_type, use_flattening);
 #endif
   BL_PROFILE_VAR_STOP(umeth);
-  for (auto& dir : qec_eli) {
-    dir.clear();
-  }
 
   // divu
   AMREX_D_TERM(const amrex::Real dx0 = dx[0];, const amrex::Real dx1 = dx[1];
