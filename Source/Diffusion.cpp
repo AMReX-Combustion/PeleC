@@ -167,9 +167,9 @@ PeleC::getMOLSrcTerm(
 
       BL_PROFILE_VAR_START(diff);
       int nqaux = NQAUX > 0 ? NQAUX : 1;
-      amrex::FArrayBox q(gbox, QVAR, amrex::The_Async_Arena);
-      amrex::FArrayBox qaux(gbox, nqaux, amrex::The_Async_Arena);
-      amrex::FArrayBox coeff_cc(gbox, nCompTr, amrex::The_Async_Arena);
+      amrex::FArrayBox q(gbox, QVAR, amrex::The_Async_Arena());
+      amrex::FArrayBox qaux(gbox, nqaux, amrex::The_Async_Arena());
+      amrex::FArrayBox coeff_cc(gbox, nCompTr, amrex::The_Async_Arena());
       auto const& sar = S.array(mfi);
       auto const& qar = q.array();
       auto const& qauxar = qaux.array();
@@ -256,7 +256,7 @@ PeleC::getMOLSrcTerm(
         setV(eboxes[dir], NVAR, flx[dir], 0);
       }
 
-      amrex::FArrayBox Dfab(cbox, NVAR, amrex::The_Async_Arena);
+      amrex::FArrayBox Dfab(cbox, NVAR, amrex::The_Async_Arena());
       auto const& Dterm = Dfab.array();
       setV(cbox, NVAR, Dterm, 0.0);
 
@@ -627,11 +627,12 @@ PeleC::getMOLSrcTerm(
                      , auto fcz = fact.getFaceCent()[2]->const_array(mfi););
         auto ccc = fact.getCentroid().const_array(mfi);
 
-        amrex::FArrayBox tmpfab(Dfab.box(), S.nComp(), amrex::The_Async_Arena);
+        amrex::FArrayBox tmpfab(
+          Dfab.box(), S.nComp(), amrex::The_Async_Arena());
         amrex::Array4<amrex::Real> scratch = tmpfab.array();
 
         amrex::FArrayBox Dterm_tmpfab(
-          Dfab.box(), S.nComp(), amrex::The_Async_Arena);
+          Dfab.box(), S.nComp(), amrex::The_Async_Arena());
         amrex::Array4<amrex::Real> Dterm_tmp = Dterm_tmpfab.array();
         copy_array4(Dfab.box(), NVAR, Dterm, Dterm_tmp);
 

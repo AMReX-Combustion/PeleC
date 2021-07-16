@@ -123,9 +123,9 @@ PeleC::construct_hydro_source(
         auto const& hyd_src = hydro_source.array(mfi);
 
         // Resize Temporary Fabs
-        amrex::FArrayBox q(qbx, QVAR, amrex::The_Async_Arena);
-        amrex::FArrayBox qaux(qbx, NQAUX, amrex::The_Async_Arena);
-        amrex::FArrayBox src_q(qbx, QVAR, amrex::The_Async_Arena);
+        amrex::FArrayBox q(qbx, QVAR, amrex::The_Async_Arena());
+        amrex::FArrayBox qaux(qbx, NQAUX, amrex::The_Async_Arena());
+        amrex::FArrayBox src_q(qbx, QVAR, amrex::The_Async_Arena());
         // Use Elixir Construct to steal the Fabs metadata
         // Get Arrays to pass to the gpu.
         auto const& qarr = q.array();
@@ -193,7 +193,7 @@ PeleC::construct_hydro_source(
         BL_PROFILE_VAR_STOP(srctop);
 
         amrex::FArrayBox pradial(
-          amrex::Box::TheUnitBox(), 1, amrex::The_Async_Arena);
+          amrex::Box::TheUnitBox(), 1, amrex::The_Async_Arena());
         if (!amrex::DefaultGeometry().IsCartesian()) {
           pradial.resize(
             amrex::surroundingNodes(bx, 0), 1, amrex::The_Async_Arena());
@@ -225,7 +225,8 @@ PeleC::construct_hydro_source(
         if (use_explicit_filter) {
           for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
             const amrex::Box& bxtmp = amrex::surroundingNodes(bx, dir);
-            amrex::FArrayBox filtered_flux(bxtmp, NVAR, amrex::The_Async_Arena);
+            amrex::FArrayBox filtered_flux(
+              bxtmp, NVAR, amrex::The_Async_Arena());
             les_filter.apply_filter(
               bxtmp, flux[dir], filtered_flux, Density, NVAR);
 
@@ -235,7 +236,7 @@ PeleC::construct_hydro_source(
           }
 
           amrex::FArrayBox filtered_source_out(
-            bx, NVAR, amrex::The_Async_Arena);
+            bx, NVAR, amrex::The_Async_Arena());
           les_filter.apply_filter(
             bx, hydro_source[mfi], filtered_source_out, Density, NVAR);
 
@@ -366,8 +367,8 @@ pc_umdrv(
     {AMREX_D_DECL(qec[0].array(), qec[1].array(), qec[2].array())}};
 
   // Temporary FArrayBoxes
-  amrex::FArrayBox divu(bxg2, 1, amrex::The_Async_Arena);
-  amrex::FArrayBox pdivu(bx, 1, amrex::The_Async_Arena);
+  amrex::FArrayBox divu(bxg2, 1, amrex::The_Async_Arena());
+  amrex::FArrayBox pdivu(bx, 1, amrex::The_Async_Arena());
   auto const& divarr = divu.array();
   auto const& pdivuarr = pdivu.array();
 

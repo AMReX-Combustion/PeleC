@@ -235,8 +235,8 @@ PeleC::getSmagorinskyLESTerm(
 
       auto const& s = S.array(mfi);
       int nqaux = NQAUX > 0 ? NQAUX : 1;
-      amrex::FArrayBox q(gbox, QVAR, amrex::The_Async_Arena);
-      amrex::FArrayBox qaux(gbox, nqaux, amrex::The_Async_Arena);
+      amrex::FArrayBox q(gbox, QVAR, amrex::The_Async_Arena());
+      amrex::FArrayBox qaux(gbox, nqaux, amrex::The_Async_Arena());
       auto const& q_ar = q.array();
       auto const& qauxar = qaux.array();
 
