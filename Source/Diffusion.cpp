@@ -195,7 +195,7 @@ PeleC::getMOLSrcTerm(
                 if (dir!=d) TestBox.grow(d,1);
               }
 
-              bcMask[dir].resize(TestBox,1);
+              bcMask[dir].resize(TestBox,1, amrex::The_Async_Arena());
               bcMask[dir].setVal(0);
             }
 
@@ -251,7 +251,7 @@ PeleC::getMOLSrcTerm(
         area_arr{{AMREX_D_DECL(
           area[0].array(mfi), area[1].array(mfi), area[2].array(mfi))}};
       for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-        flux_ec[dir].resize(eboxes[dir], NVAR);
+        flux_ec[dir].resize(eboxes[dir], NVAR, amrex::The_Async_Arena());
         flx[dir] = flux_ec[dir].array();
         setV(eboxes[dir], NVAR, flx[dir], 0);
       }
@@ -353,7 +353,7 @@ PeleC::getMOLSrcTerm(
       // diffusion fluxes.  Increment this with the divergence of the
       // face-centered hyperbloic fluxes.
       if (do_hydro && do_mol) {
-        // amrex::FArrayBox flatn(cbox, 1);
+        // amrex::FArrayBox flatn(cbox, 1, amrex::The_Async_Arena());
         // flatn.setVal(1.0); // Set flattening to 1.0
 
         // save off the diffusion source term and fluxes (don't want to filter
@@ -363,7 +363,8 @@ PeleC::getMOLSrcTerm(
           diffusion_flux_arr;
         if (use_explicit_filter) {
           for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-            diffusion_flux[dir].resize(flux_ec[dir].box(), NVAR);
+            diffusion_flux[dir].resize(
+              flux_ec[dir].box(), NVAR, amrex::The_Async_Arena());
             diffusion_flux_arr[dir] = diffusion_flux[dir].array();
             copy_array4(
               flux_ec[dir].box(), flux_ec[dir].nComp(), flx[dir],
@@ -396,7 +397,8 @@ PeleC::getMOLSrcTerm(
           amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM>
             hydro_flux_arr;
           for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-            hydro_flux[dir].resize(flux_ec[dir].box(), NVAR);
+            hydro_flux[dir].resize(
+              flux_ec[dir].box(), NVAR, amrex::The_Async_Arena());
             hydro_flux_arr[dir] = hydro_flux[dir].array();
             lincomb_array4(
               flux_ec[dir].box(), Density, NVAR, flx[dir],
@@ -407,8 +409,8 @@ PeleC::getMOLSrcTerm(
           const amrex::Box fbox = amrex::grow(cbox, -nGrowF);
           for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
             const amrex::Box& bxtmp = amrex::surroundingNodes(fbox, dir);
-            amrex::FArrayBox filtered_hydro_flux;
-            filtered_hydro_flux.resize(bxtmp, NVAR);
+            amrex::FArrayBox filtered_hydro_flux(
+              bxtmp, NVAR, amrex::The_Async_Arena());
             les_filter.apply_filter(
               bxtmp, hydro_flux[dir], filtered_hydro_flux, Density, NVAR);
 
@@ -500,12 +502,16 @@ PeleC::getMOLSrcTerm(
           vol *= geom.CellSize()[dir];
         }
 
-        dm_as_fine.resize(amrex::Box::TheUnitBox(), NVAR);
-        fab_drho_as_crse.resize(amrex::Box::TheUnitBox(), NVAR);
-        fab_rrflag_as_crse.resize(amrex::Box::TheUnitBox());
+        dm_as_fine.resize(
+          amrex::Box::TheUnitBox(), NVAR, amrex::The_Async_Arena());
+        fab_drho_as_crse.resize(
+          amrex::Box::TheUnitBox(), NVAR, amrex::The_Async_Arena());
+        fab_rrflag_as_crse.resize(
+          amrex::Box::TheUnitBox(), 1, amrex::The_Async_Arena());
         {
           if (fr_as_fine) {
-            dm_as_fine.resize(amrex::grow(vbox, 1), NVAR);
+            dm_as_fine.resize(
+              amrex::grow(vbox, 1), NVAR, amrex::The_Async_Arena());
             dm_as_fine.setVal<amrex::RunOn::Device>(0.0);
           }
           if (Ncut > 0) {
@@ -624,7 +630,8 @@ PeleC::getMOLSrcTerm(
         amrex::FArrayBox tmpfab(Dfab.box(), S.nComp(), amrex::The_Async_Arena);
         amrex::Array4<amrex::Real> scratch = tmpfab.array();
 
-        amrex::FArrayBox Dterm_tmpfab(Dfab.box(), S.nComp(), amrex::The_Async_Arena);
+        amrex::FArrayBox Dterm_tmpfab(
+          Dfab.box(), S.nComp(), amrex::The_Async_Arena);
         amrex::Array4<amrex::Real> Dterm_tmp = Dterm_tmpfab.array();
         copy_array4(Dfab.box(), NVAR, Dterm, Dterm_tmp);
 

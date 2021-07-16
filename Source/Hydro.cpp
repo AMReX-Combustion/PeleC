@@ -116,7 +116,7 @@ PeleC::construct_hydro_source(
         amrex::GpuArray<amrex::FArrayBox, AMREX_SPACEDIM> flux;
         for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
           const amrex::Box& efbx = surroundingNodes(fbx, dir);
-          flux[dir].resize(efbx, NVAR);
+          flux[dir].resize(efbx, NVAR, amrex::The_Async_Arena());
         }
 
         auto const& s = S.array(mfi);
@@ -160,7 +160,7 @@ PeleC::construct_hydro_source(
                 for(int d=0; d<AMREX_SPACEDIM; ++d) {
                   if (dir!=d) TestBox.grow(d,1);
                 }
-                bcMask[dir].resize(TestBox,1);
+                bcMask[dir].resize(TestBox,1, amrex::The_Async_Arena());
                 bcMask[dir].setVal(0);
               }
 
@@ -192,9 +192,11 @@ PeleC::construct_hydro_source(
           });
         BL_PROFILE_VAR_STOP(srctop);
 
-        amrex::FArrayBox pradial(amrex::Box::TheUnitBox(), 1, amrex::The_Async_Arena);
+        amrex::FArrayBox pradial(
+          amrex::Box::TheUnitBox(), 1, amrex::The_Async_Arena);
         if (!amrex::DefaultGeometry().IsCartesian()) {
-          pradial.resize(amrex::surroundingNodes(bx, 0), 1);
+          pradial.resize(
+            amrex::surroundingNodes(bx, 0), 1, amrex::The_Async_Arena());
         }
 
 #ifdef AMREX_USE_GPU
@@ -232,7 +234,8 @@ PeleC::construct_hydro_source(
               bxtmp, flux[dir].nComp(), filtered_flux.array(), flx_arr[dir]);
           }
 
-          amrex::FArrayBox filtered_source_out(bx, NVAR, amrex::The_Async_Arena);
+          amrex::FArrayBox filtered_source_out(
+            bx, NVAR, amrex::The_Async_Arena);
           les_filter.apply_filter(
             bx, hydro_source[mfi], filtered_source_out, Density, NVAR);
 
@@ -357,7 +360,7 @@ pc_umdrv(
   amrex::FArrayBox qec[AMREX_SPACEDIM];
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
     const amrex::Box eboxes = amrex::surroundingNodes(bxg2, dir);
-    qec[dir].resize(eboxes, NGDNV);
+    qec[dir].resize(eboxes, NGDNV, amrex::The_Async_Arena());
   }
   amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> qec_arr{
     {AMREX_D_DECL(qec[0].array(), qec[1].array(), qec[2].array())}};
