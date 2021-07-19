@@ -77,12 +77,8 @@ function(build_pelec_exe pelec_exe_name)
                    ${SRC_DIR}/React.cpp)
     if(PELEC_ENABLE_SUNDIALS)
       target_compile_definitions(${pelec_exe_name} PRIVATE USE_SUNDIALS_PP)
-      if(PELEC_SUNDIALS_INTEGRATOR STREQUAL "arkode")
-        target_compile_definitions(${pelec_exe_name} PRIVATE USE_ARKODE_PP)
-      endif()
       target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor.cpp
-                                               ${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor.H
-                                               ${PELE_PHYSICS_SRC_DIR}/Reactions/reactor_utilities.H)
+                                               ${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor.H)
       set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
       set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
       target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions)
