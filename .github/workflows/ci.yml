@@ -286,28 +286,32 @@ jobs:
           wget -q -O - http://repo.radeon.com/rocm/rocm.gpg.key | sudo apt-key add -
           #Use HIP 4.1.1 until 4.2 is fixed
           echo 'deb [arch=amd64] http://repo.radeon.com/rocm/apt/4.1.1/ xenial main' | sudo tee /etc/apt/sources.list.d/rocm.list
+          echo 'export PATH=$PATH:/opt/rocm/bin:/opt/rocm/profiler/bin:/opt/rocm/opencl/bin' | sudo tee -a /etc/profile.d/rocm.sh
           sudo apt-get update
-          sudo apt-get install -y rocm-dev rocm-libs
+          sudo apt-get install -y --no-install-recommends build-essential rocm-dev roctracer-dev rocprofiler-dev rocrand rocprim
       - name: Configure
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
-          echo 'export PATH=$PATH:/opt/rocm/bin:/opt/rocm/profiler/bin:/opt/rocm/opencl/bin' | sudo tee -a /etc/profile.d/rocm.sh
           source /etc/profile.d/rocm.sh
+          export PATH=/opt/rocm-4.1.1/llvm/bin:$PATH
+          hipcc --version
+          which clang
+          which clang++
           cmake -B${{runner.workspace}}/build-hip \
-          -DCMAKE_CXX_COMPILER:STRING=$(which hipcc) \
+          -DCMAKE_CXX_COMPILER:STRING=$(which clang++) \
           -DCMAKE_C_COMPILER:STRING=$(which clang) \
           -DPELEC_ENABLE_MPI:BOOL=OFF \
           -DPELEC_ENABLE_HIP:BOOL=ON \
           -DPELEC_ENABLE_TESTS:BOOL=ON \
           -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
           -DPELEC_ENABLE_MASA:BOOL=OFF \
-          -DAMReX_AMD_ARCH="gfx906,gfx908" \
+          -DAMReX_AMD_ARCH=gfx908 \
           ${{github.workspace}}
       - name: Build
         working-directory: ${{runner.workspace}}/build-hip
         run: |
-          echo 'export PATH=$PATH:/opt/rocm/bin:/opt/rocm/profiler/bin:/opt/rocm/opencl/bin' | sudo tee -a /etc/profile.d/rocm.sh
           source /etc/profile.d/rocm.sh
+          export PATH=/opt/rocm-4.1.1/llvm/bin:$PATH
           cmake --build . --parallel ${{env.NPROCS}}
   DPCPP:
     needs: Formatting
@@ -333,9 +337,6 @@ jobs:
           source /opt/intel/oneapi/setvars.sh
           set -e
           cmake -B${{runner.workspace}}/build-dpcpp \
-            -DCMAKE_CXX_COMPILER_ID="Clang" \
-            -DCMAKE_CXX_COMPILER_VERSION=12.0 \
-            -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT=17 \
             -DCMAKE_CXX_COMPILER=$(which dpcpp) \
             -DCMAKE_C_COMPILER=$(which clang) \
             -DPELEC_ENABLE_MPI:BOOL=OFF \
