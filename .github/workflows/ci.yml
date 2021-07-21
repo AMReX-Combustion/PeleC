@@ -298,7 +298,7 @@ jobs:
           which clang
           which clang++
           cmake -B${{runner.workspace}}/build-hip \
-          -DCMAKE_CXX_COMPILER:STRING=$(which clang++) \
+          -DCMAKE_CXX_COMPILER:STRING=$(which hipcc) \
           -DCMAKE_C_COMPILER:STRING=$(which clang) \
           -DPELEC_ENABLE_MPI:BOOL=OFF \
           -DPELEC_ENABLE_HIP:BOOL=ON \
