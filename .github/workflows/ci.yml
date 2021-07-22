@@ -300,6 +300,9 @@ jobs:
           cmake -B${{runner.workspace}}/build-hip \
           -DCMAKE_CXX_COMPILER:STRING=$(which hipcc) \
           -DCMAKE_C_COMPILER:STRING=$(which clang) \
+          -DCMAKE_CXX_COMPILER_ID=Clang \
+          -DCMAKE_CXX_COMPILER_VERSION=12.0 \
+          -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT=17 \
           -DPELEC_ENABLE_MPI:BOOL=OFF \
           -DPELEC_ENABLE_HIP:BOOL=ON \
           -DPELEC_ENABLE_TESTS:BOOL=ON \
