@@ -3,6 +3,7 @@
 
 #include <AMReX_FArrayBox.H>
 #include <AMReX_TagBox.H>
+#include "prob_parm.H"
 
 struct TaggingParm
 {
@@ -140,7 +141,8 @@ struct EmptyProbTagStruct
     const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> /*dx*/,
     const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> /*prob_lo*/,
     const amrex::Real /*time*/,
-    const int /*level*/) noexcept
+    const int /*level*/,
+    ProbParmDevice const& d_prob_parm_device) noexcept
   {
   }
 };

@@ -46,7 +46,8 @@ struct MyProbTagStruct
     const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> /*dx*/,
     const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> /*prob_lo*/,
     const amrex::Real /*time*/,
-    const int /*level*/) noexcept
+    const int /*level*/,
+    ProbParmDevice const& d_prob_parm_device) noexcept
   {
     // could do problem specific tagging here
   }
