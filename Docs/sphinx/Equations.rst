@@ -36,9 +36,11 @@ PeleC advances the following set of fully compressible equations for the conserv
 
 
 Here :math:`\rho, \mathbf{u}, T`, and :math:`p` are the density, velocity,
-temperature and pressure, respectively, and :math:`E
+temperature and pressure, respectively. :math:`E
 = e + \mathbf{u} \cdot \mathbf{u} / 2` is the total energy with :math:`e` representing the
-internal energy.  :math:`Y_k` is the mass fraction of the :math:`k^{\rm th}` species,
+internal energy, which is defined as in the CHEMKIN standard to include both sensible
+and chemical energy (species heats of formation) and is conserved across chemical reactions.
+:math:`Y_k` is the mass fraction of the :math:`k^{\rm th}` species,
 with associated production rate, :math:`\dot\omega_k`.  Here :math:`\mathbf{g}` is the gravitational vector, and
 :math:`S_{{\rm ext},\rho}, \mathbf{S}_{{\rm ext},\rho\mathbf{u}}`, etc., are user-specified
 source terms.  :math:`A_k` is an advected quantity, i.e., a tracer.  Also
