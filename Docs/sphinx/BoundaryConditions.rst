@@ -10,7 +10,7 @@
 Boundary Conditions
 -------------------
 
-PeleC manages boundary conditions in a form consistent with many AMReX codes. Ghost cell data are updated over an AMR level during a ``FillPatch`` operation and fluxes are then computed over the entire box without specifically recognizing boundary cells. The Fortran routine ``pc_hypfill`` in ``bc_fill_nd.F90`` is called to set state data at physical boundaries for this purpose.  A generic boundary filler function, ``filcc_nd``, is supplied to fill standard boundary condition types that do not require user input, including:
+PeleC manages boundary conditions in a form consistent with many AMReX codes. Ghost cell data are updated over an AMR level during a ``FillPatch`` operation and fluxes are then computed over the entire box without specifically recognizing boundary cells. A generic boundary filler function fills standard boundary condition types that do not require user input, including:
 
 * *Interior* - Copy-in-intersect in index space (same as periodic boundary conditions). Periodic boundaries are set in the PeleC inputs file
 * *Symmetry* - All conserved quantities and the tangential momentum component are reflected from interior cells without 
@@ -20,7 +20,11 @@ PeleC manages boundary conditions in a form consistent with many AMReX codes. Gh
 * *SlipWall*  - SlipWall is identical to Symmetry
 * *FOExtrap* - First-order extrapolation: the value in the ghost-cells are a copy of the last interior cell.
 
-More complex boundary conditions require user input that is prescribed explicitly.  In the code, all types are formally handled in ``pc_hypfill``; ``filcc_nd`` is called first to handle all the above types.  Boundaries identified as ``UserBC`` in the inputs will be tagged as ``EXT_DIR`` in ``pc_hypfill`` and will be ignored by ``filcc_nd``.  Users will then fill the Dirichlet boundary values, typically by calling the helper function, ``bcnormal``. The indirection here is not required, but is recommended for reasons discussed below.
+More complex boundary conditions require user input that is prescribed explicitly. Boundaries identified as ``UserBC`` or ``Hard`` in the inputs will be tagged as ``EXT_DIR`` in ``pc_hypfill``.  Users will then fill the Dirichlet boundary values, typically by calling the helper function, ``bcnormal``.
+
+.. warning::
+
+   This following is currently deprecated as the GS-NSCBC boundary condition has not been ported from Fortran to C++.
 
 If a user wants to set an ``Inflow`` or an ``Outflow`` boundary condition for a subsonic problem, it might be tempting to directly impose target values in the boundary filler function (for ``Inflow``), or to perform a simple extrapolation (for ``Outflow``).  However, this approach would fail to correctly respect the flow of information along solution characteristics - the system would be ill-posed and would lead to unphysical behavior.  In this situation, the solution at the boundary should properly account for the flow of information from both inside and outside the computational domain. There are a number of approaches to do this numerically, each with its own set of assumptions about how the system couples to the external environment, and each having an impact on the resulting solution.
 A well-known approach to this problem is the Navier-Stokes Characteristic Boundary Conditions
