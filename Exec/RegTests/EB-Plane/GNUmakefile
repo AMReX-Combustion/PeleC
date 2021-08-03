@@ -25,8 +25,8 @@ THREAD_SANITIZER = FALSE
 
 # PeleC
 USE_EB = TRUE
-Eos_dir := GammaLaw
-Transport_dir := Constant
+Eos_Model := GammaLaw
+Transport_Model := Constant
 Chemistry_Model := Null
 
 # GNU Make

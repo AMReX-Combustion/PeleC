@@ -46,9 +46,15 @@ Bpack             += $(PP_SRC_HOME)/Make.package
 Blocs             += $(PP_SRC_HOME)
 
 # EOS
-EOS_HOME = $(PELE_PHYSICS_HOME)/Eos/$(strip $(Eos_dir))
-ifeq ($(Eos_dir),$(filter $(Eos_dir),Soave-Redlich-Kwong))
-   DEFINES += -DPELEC_USE_SRK
+EOS_HOME = $(PELE_PHYSICS_HOME)/Eos/
+ifeq ($(Eos_Model),$(filter $(Eos_Model),GammaLaw))
+   DEFINES += -DUSE_GAMMALAW_EOS
+endif
+ifeq ($(Eos_Model),$(filter $(Eos_Model),Fuego))
+   DEFINES += -DUSE_FUEGO_EOS
+endif
+ifeq ($(Eos_Model),$(filter $(Eos_Model),Soave-Redlich-Kwong))
+   DEFINES += -DUSE_SRK_EOS
 endif
 EXTERN_CORE       += $(EOS_HOME)
 INCLUDE_LOCATIONS += $(EOS_HOME)
@@ -84,8 +90,6 @@ ifeq ($(USE_REACT), TRUE)
 endif
 
 ifdef Chemistry_Model
-  USE_FUEGO = TRUE
-  DEFINES += -DPELEC_EOS_FUEGO
   CHEM_HOME = $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism/Models/$(Chemistry_Model)
   Blocs += $(PELE_PHYSICS_HOME)/Support/Fuego/Evaluation
 endif
@@ -94,7 +98,16 @@ Bpack += $(CHEM_HOME)/Make.package
 Blocs += $(CHEM_HOME)
 
 # Transport
-TRANSPORT_HOME = $(PELE_PHYSICS_HOME)/Transport/$(Transport_dir)
+TRANSPORT_HOME = $(PELE_PHYSICS_HOME)/Transport
+ifeq ($(Transport_Model),$(filter $(Transport_Model),Constant))
+   DEFINES += -DUSE_CONSTANT_TRANSPORT
+endif
+ifeq ($(Transport_Model),$(filter $(Transport_Model),Simple))
+   DEFINES += -DUSE_SIMPLE_TRANSPORT
+endif
+ifeq ($(Transport_Model),$(filter $(Transport_Model),Sutherland))
+   DEFINES += -DUSE_SUTHERLAND_TRANSPORT
+endif
 EXTERN_CORE       += $(TRANSPORT_HOME)
 INCLUDE_LOCATIONS += $(TRANSPORT_HOME)
 VPATH_LOCATIONS   += $(TRANSPORT_HOME)

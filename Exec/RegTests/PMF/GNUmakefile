@@ -28,9 +28,9 @@ USE_REACT = TRUE
 Reactor_dir := rk64
 USE_EB = FALSE
 USE_MASA = FALSE
-Eos_dir := Fuego
+Eos_Model := Fuego
 Chemistry_Model := LiDryer
-Transport_dir := Simple
+Transport_Model := Simple
 
 # GNU Make
 Bpack := ./Make.package
