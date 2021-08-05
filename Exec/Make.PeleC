@@ -76,6 +76,7 @@ ifeq ($(USE_REACT), TRUE)
       USE_CVODE_PP = TRUE
       Bpack += $(REACTIONS_HOME)/$(Reactor_dir)/Make.package
       Blocs += $(REACTIONS_HOME)/$(Reactor_dir)
+      DEFINES += -DCOMPILE_JACOBIAN
   endif
   ifeq ($(USE_SUNDIALS_PP), TRUE)
       include $(PELE_PHYSICS_HOME)/ThirdParty/Make.ThirdParty

@@ -33,7 +33,7 @@ function(build_pelec_exe pelec_exe_name)
                  ${PELEC_TRANSPORT_DIR}/Transport.cpp
                  ${PELEC_TRANSPORT_DIR}/TransportParams.H)
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELEC_TRANSPORT_DIR})
-  if("${PELEC_TRANSPORT_MODEL}" STREQUAL "Simple") # FIXME mhdf better way?
+  if("${PELEC_TRANSPORT_MODEL}" STREQUAL "Simple")
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_SIMPLE)
   endif()
 
@@ -42,10 +42,10 @@ function(build_pelec_exe pelec_exe_name)
                  ${PELEC_EOS_DIR}/EOS.cpp
                  ${PELEC_EOS_DIR}/EOS.H)
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELEC_EOS_DIR})
-  if("${PELEC_EOS_MODEL}" STREQUAL "Fuego") # FIXME mhdf better way?
+  if("${PELEC_EOS_MODEL}" STREQUAL "Fuego")
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_FUEGO)
   endif()
-  if("${PELEC_EOS_MODEL}" STREQUAL "Soave-Redlich-Kwong") # FIXME mhdf better way?
+  if("${PELEC_EOS_MODEL}" STREQUAL "Soave-Redlich-Kwong")
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_SRK)
   endif()
 
@@ -77,10 +77,25 @@ function(build_pelec_exe pelec_exe_name)
                    ${SRC_DIR}/React.cpp)
     if(PELEC_ENABLE_SUNDIALS)
       target_compile_definitions(${pelec_exe_name} PRIVATE USE_SUNDIALS_PP)
-      target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor.cpp
-                                               ${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor.H)
-      set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-      set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+      target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/reactor.cpp
+                                               ${PELE_PHYSICS_SRC_DIR}/Reactions/reactor.H
+                                               ${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor_utils.H)
+      if("${PELEC_SUNDIALS_INTEGRATOR}" STREQUAL "arkode")
+          target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor_${PELEC_SUNDIALS_INTEGRATOR}.cpp)
+          set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor_${PELEC_SUNDIALS_INTEGRATOR}.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+      elseif("${PELEC_SUNDIALS_INTEGRATOR}" STREQUAL "cvode")
+        target_compile_definitions(${pelec_exe_name} PRIVATE COMPILE_JACOBIAN)
+        if(PELEC_ENABLE_CUDA)
+          target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor_${PELEC_SUNDIALS_INTEGRATOR}_GPU.cpp)
+          set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor_${PELEC_SUNDIALS_INTEGRATOR}_GPU.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+        else()
+          target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor_${PELEC_SUNDIALS_INTEGRATOR}_CPU.cpp)
+          set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor_${PELEC_SUNDIALS_INTEGRATOR}_CPU.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+        endif()
+      endif()
+      set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/reactor.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+      set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/reactor.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+      set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor_utils.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
       target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions)
       target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR})
       target_link_libraries(${pelec_exe_name} PRIVATE sundials_${PELEC_SUNDIALS_INTEGRATOR})
