@@ -216,6 +216,8 @@ PeleC::react_state(
 #endif
           );
 
+          amrex::Gpu::Device::streamSynchronize();
+
           // unpack data
           amrex::ParallelFor(
             bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {

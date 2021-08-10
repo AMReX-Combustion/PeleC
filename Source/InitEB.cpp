@@ -77,12 +77,12 @@ PeleC::initialize_eb2_structs()
   pp.query("boundary_grad_stencil_type", bgs);
 
   if (bgs == 0) {
-    amrex::Print() << "Using quadratic stencil\n";
+    amrex::Print() << "Using quadratic stencil for the EB gradient\n";
   } else if (bgs == 1) {
-    amrex::Print() << "Using least-squares stencil\n";
+    amrex::Print() << "Using least-squares stencil for the EB gradient\n";
   } else {
-    amrex::Print() << "Unknown or unspecified boundary gradient stencil type:"
-                   << bgs << std::endl;
+    amrex::Print() << "Unknown or unspecified EB gradient stencil type:" << bgs
+                   << std::endl;
     amrex::Abort();
   }
 

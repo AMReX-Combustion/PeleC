@@ -378,7 +378,7 @@ adaptrk_nsubsteps_guess      int           50                 n
 adaptrk_errtol               Real          1e-12              n
 
 #flag to clean massfractions before react/diffuse/convect
-clean_massfrac         int           1                  n
+clean_massfrac         int           0                  n
 
 #-----------------------------------------------------------------------------
 # category: parallelization

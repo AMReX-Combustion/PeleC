@@ -648,6 +648,9 @@ PeleC::getMOLSrcTerm(
         auto ccc = fact.getCentroid().const_array(mfi);
 
         amrex::FArrayBox tmpfab(Dfab.box(), S.nComp());
+        if (redistribution_type == "FluxRedist") {
+          tmpfab.setVal<amrex::RunOn::Device>(1.0);
+        }
         amrex::Elixir tmpeli = tmpfab.elixir();
         amrex::Array4<amrex::Real> scratch = tmpfab.array();
 

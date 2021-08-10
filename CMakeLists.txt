@@ -1,7 +1,7 @@
 ############################ BASE ######################################
 
 cmake_minimum_required (VERSION 3.14 FATAL_ERROR)
-project(PeleC CXX C)
+project(PeleC CXX)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
 include(CMakePackageConfigHelpers)
@@ -105,7 +105,7 @@ endif()
 
 if(PELEC_ENABLE_MPI)
   message(STATUS "MPI Configure Section")
-  find_package(MPI REQUIRED)
+  find_package(MPI REQUIRED CXX)
 endif()
 
 # General information about machine, compiler, and build type

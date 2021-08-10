@@ -1791,6 +1791,7 @@ PeleC::errorEst(
 #endif
 
       // Problem specific tagging
+      const ProbParmDevice* lprobparm = d_prob_parm_device;
       const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx =
         geom.CellSizeArray();
       const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_lo =
@@ -1799,7 +1800,8 @@ PeleC::errorEst(
       amrex::ParallelFor(
         tilebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
           set_problem_tags<ProblemTags>(
-            i, j, k, tag_arr, Sfab, tagval, dx, prob_lo, time, captured_level);
+            i, j, k, tag_arr, Sfab, tagval, dx, prob_lo, time, captured_level,
+            *lprobparm);
         });
 
       // Now update the tags in the TagBox.
@@ -2017,21 +2019,26 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
 #ifdef _OPENMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
-  const auto captured_allow_small_energy = allow_small_energy;
-  const auto captured_allow_negative_energy = allow_negative_energy;
-  const auto captured_dual_energy_update_E_from_e = dual_energy_update_E_from_e;
-  const auto captured_verbose = verbose;
-  const auto captured_dual_energy_eta2 = dual_energy_eta2;
-  for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
-       ++mfi) {
-    const amrex::Box& bx = mfi.growntilebox(ng);
-    const auto& sarr = S_new.array(mfi);
-    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      pc_rst_int_e(
-        i, j, k, sarr, captured_allow_small_energy,
-        captured_allow_negative_energy, captured_dual_energy_update_E_from_e,
-        captured_dual_energy_eta2, captured_verbose);
-    });
+  {
+    const auto captured_allow_small_energy = allow_small_energy;
+    const auto captured_allow_negative_energy = allow_negative_energy;
+    const auto captured_dual_energy_update_E_from_e =
+      dual_energy_update_E_from_e;
+    const auto captured_verbose = verbose;
+    const auto captured_dual_energy_eta2 = dual_energy_eta2;
+    for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
+         ++mfi) {
+      const amrex::Box& bx = mfi.growntilebox(ng);
+      const auto& sarr = S_new.array(mfi);
+      amrex::ParallelFor(
+        bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+          pc_rst_int_e(
+            i, j, k, sarr, captured_allow_small_energy,
+            captured_allow_negative_energy,
+            captured_dual_energy_update_E_from_e, captured_dual_energy_eta2,
+            captured_verbose);
+        });
+    }
   }
 
 #ifndef AMREX_USE_GPU
