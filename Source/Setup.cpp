@@ -156,13 +156,11 @@ PeleC::variableSetUp()
     amrex::The_Arena()->alloc(sizeof(ProbParmDevice)));
   d_pass_map =
     static_cast<PassMap*>(amrex::The_Arena()->alloc(sizeof(PassMap)));
+  trans_parms.allocate();
 
   // Get options, set phys_bc
   eb_in_domain = ebInDomain();
   read_params();
-
-  pele::physics::transport::InitTransport<
-    pele::physics::PhysicsType::eos_type>()();
 
 #ifdef PELEC_USE_REACTIONS
 #if defined(AMREX_USE_GPU) && defined(USE_SUNDIALS_PP)
@@ -657,9 +655,6 @@ PeleC::variableCleanUp()
 
   desc_lst.clear();
 
-  pele::physics::transport::CloseTransport<
-    pele::physics::PhysicsType::eos_type>()();
-
 #ifdef PELEC_USE_REACTIONS
   if (do_react == 1) {
     close_reactor();
@@ -678,6 +673,7 @@ PeleC::variableCleanUp()
   delete h_pass_map;
   amrex::The_Arena()->free(d_prob_parm_device);
   amrex::The_Arena()->free(d_pass_map);
+  trans_parms.deallocate();
 }
 
 void

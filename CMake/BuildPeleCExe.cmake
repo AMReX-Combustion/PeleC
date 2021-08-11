@@ -27,26 +27,42 @@ function(build_pelec_exe pelec_exe_name)
 
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE "${PELE_PHYSICS_SRC_DIR}/Source")
 
-  set(PELEC_TRANSPORT_DIR "${PELE_PHYSICS_SRC_DIR}/Transport/${PELEC_TRANSPORT_MODEL}")
+  set(PELEC_TRANSPORT_DIR "${PELE_PHYSICS_SRC_DIR}/Transport")
   target_sources(${pelec_exe_name} PRIVATE
                  ${PELEC_TRANSPORT_DIR}/Transport.H
                  ${PELEC_TRANSPORT_DIR}/Transport.cpp
-                 ${PELEC_TRANSPORT_DIR}/TransportParams.H)
+                 ${PELEC_TRANSPORT_DIR}/TransportParams.H
+                 ${PELEC_TRANSPORT_DIR}/TransportTypes.H
+                 ${PELEC_TRANSPORT_DIR}/Constant.H
+                 ${PELEC_TRANSPORT_DIR}/Simple.H
+                 ${PELEC_TRANSPORT_DIR}/Sutherland.H)
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELEC_TRANSPORT_DIR})
+  if("${PELEC_TRANSPORT_MODEL}" STREQUAL "Constant")
+    target_compile_definitions(${pelec_exe_name} PRIVATE USE_CONSTANT_TRANSPORT)
+  endif()
   if("${PELEC_TRANSPORT_MODEL}" STREQUAL "Simple")
-    target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_SIMPLE)
+    target_compile_definitions(${pelec_exe_name} PRIVATE USE_SIMPLE_TRANSPORT)
+  endif()
+  if("${PELEC_TRANSPORT_MODEL}" STREQUAL "Sutherland")
+    target_compile_definitions(${pelec_exe_name} PRIVATE USE_SUTHERLAND_TRANSPORT)
   endif()
 
-  set(PELEC_EOS_DIR "${PELE_PHYSICS_SRC_DIR}/Eos/${PELEC_EOS_MODEL}")
+  set(PELEC_EOS_DIR "${PELE_PHYSICS_SRC_DIR}/Eos")
   target_sources(${pelec_exe_name} PRIVATE
                  ${PELEC_EOS_DIR}/EOS.cpp
-                 ${PELEC_EOS_DIR}/EOS.H)
+                 ${PELEC_EOS_DIR}/EOS.H
+                 ${PELEC_EOS_DIR}/GammaLaw.H
+                 ${PELEC_EOS_DIR}/Fuego.H
+                 ${PELEC_EOS_DIR}/SRK.H)
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELEC_EOS_DIR})
+  if("${PELEC_EOS_MODEL}" STREQUAL "GammaLaw")
+    target_compile_definitions(${pelec_exe_name} PRIVATE USE_GAMMALAW_EOS)
+  endif()
   if("${PELEC_EOS_MODEL}" STREQUAL "Fuego")
-    target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_FUEGO)
+    target_compile_definitions(${pelec_exe_name} PRIVATE USE_FUEGO_EOS)
   endif()
   if("${PELEC_EOS_MODEL}" STREQUAL "Soave-Redlich-Kwong")
-    target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_SRK)
+    target_compile_definitions(${pelec_exe_name} PRIVATE USE_SRK_EOS)
   endif()
 
   set(PELEC_MECHANISM_DIR "${PELE_PHYSICS_SRC_DIR}/Support/Fuego/Mechanism/Models/${PELEC_CHEMISTRY_MODEL}")

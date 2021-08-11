@@ -23,7 +23,6 @@ using namespace MASA;
 #include "PeleC.H"
 #include "Derive.H"
 #include "prob.H"
-#include "PelePhysics.H"
 #include "Timestep.H"
 #include "Utilities.H"
 #include "Tagging.H"
@@ -98,6 +97,10 @@ bool PeleC::do_react_load_balance = false;
 bool PeleC::do_mol_load_balance = false;
 
 amrex::Vector<std::string> PeleC::spec_names;
+
+pele::physics::transport::TransportParams<
+  pele::physics::PhysicsType::transport_type>
+  PeleC::trans_parms;
 
 amrex::Vector<int> PeleC::src_list;
 
@@ -838,8 +841,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
     }
 
     if (diffuse_vel) {
-      pele::physics::transport::TransParm const* ltransparm =
-        pele::physics::transport::trans_parm_g;
+      auto const* ltransparm = trans_parms.device_trans_parm();
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
 #ifdef PELEC_USE_EB
@@ -864,8 +866,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
     }
 
     if (diffuse_temp) {
-      pele::physics::transport::TransParm const* ltransparm =
-        pele::physics::transport::trans_parm_g;
+      auto const* ltransparm = trans_parms.device_trans_parm();
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
 #ifdef PELEC_USE_EB
@@ -890,8 +891,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
     }
 
     if (diffuse_enth) {
-      pele::physics::transport::TransParm const* ltransparm =
-        pele::physics::transport::trans_parm_g;
+      auto const* ltransparm = trans_parms.device_trans_parm();
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
 #ifdef PELEC_USE_EB
@@ -1895,7 +1895,7 @@ PeleC::init_les()
       << "WARNING: LES is not supported for multi-component systems"
       << std::endl;
   }
-#ifdef PELEC_USE_SRK
+#ifdef USE_SRK_EOS
   amrex::Abort("LES is not supported for non-ideal equations of state");
 #endif
 }

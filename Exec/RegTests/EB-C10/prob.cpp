@@ -50,23 +50,7 @@ amrex_probinit(
   PeleC::h_prob_parm_device->umax = PeleC::h_prob_parm_device->Ma * cs;
   PeleC::h_prob_parm_device->uavg = 0.5 * PeleC::h_prob_parm_device->umax;
 
-  pele::physics::transport::TransParm trans_parm;
-
-  // Default
-  trans_parm.const_viscosity = 0.0;
-  trans_parm.const_bulk_viscosity = 0.0;
-  trans_parm.const_conductivity = 0.0;
-  trans_parm.const_diffusivity = 0.0;
-
-  // User-specified
-  {
-    amrex::ParmParse pp("transport");
-    pp.query("const_viscosity", trans_parm.const_viscosity);
-    pp.query("const_bulk_viscosity", trans_parm.const_bulk_viscosity);
-    pp.query("const_conductivity", trans_parm.const_conductivity);
-    pp.query("const_diffusivity", trans_parm.const_diffusivity);
-  }
-
+  auto& trans_parm = PeleC::trans_parms.host_trans_parm();
   trans_parm.const_bulk_viscosity = 0.0;
   trans_parm.const_diffusivity = 0.0;
   trans_parm.const_viscosity = PeleC::h_prob_parm_device->rho *
@@ -74,10 +58,7 @@ amrex_probinit(
                                PeleC::h_prob_parm_device->Re;
   trans_parm.const_conductivity =
     trans_parm.const_viscosity * cp / PeleC::h_prob_parm_device->Pr;
-
-  amrex::Gpu::copy(
-    amrex::Gpu::hostToDevice, &trans_parm, &trans_parm + 1,
-    pele::physics::transport::trans_parm_g);
+  PeleC::trans_parms.sync_to_device();
 
   PeleC::h_prob_parm_device->G =
     PeleC::h_prob_parm_device->umax * 4 * trans_parm.const_viscosity /
