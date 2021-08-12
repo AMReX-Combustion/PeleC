@@ -221,24 +221,30 @@ PeleC::defineParticles()
   if (SPRAY_FUEL_NUM > NUM_SPECIES) {
     amrex::Abort("Cannot have more spray fuel species than fluid species");
   }
-#ifdef PELEC_EOS_FUEGO
-  for (int i = 0; i < SPRAY_FUEL_NUM; ++i) {
-    for (int ns = 0; ns < NUM_SPECIES; ++ns) {
-      std::string gas_spec = spec_names[ns];
-      if (gas_spec == spray_fuel_names[i]) {
-        sprayData.indx[i] = ns;
+  if (
+    (std::is_same<
+      pele::physics::PhysicsType::eos_type, pele::physics::eos::SRK>::value) ||
+    (std::is_same<
+      pele::physics::PhysicsType::eos_type,
+      pele::physics::eos::Fuego>::value)) {
+    for (int i = 0; i < SPRAY_FUEL_NUM; ++i) {
+      for (int ns = 0; ns < NUM_SPECIES; ++ns) {
+        std::string gas_spec = spec_names[ns];
+        if (gas_spec == spray_fuel_names[i]) {
+          sprayData.indx[i] = ns;
+        }
+      }
+      if (sprayData.indx[i] < 0) {
+        amrex::Print() << "Fuel " << spray_fuel_names[i]
+                       << " not found in species list" << std::endl;
+        amrex::Abort();
       }
     }
-    if (sprayData.indx[i] < 0) {
-      amrex::Print() << "Fuel " << spray_fuel_names[i]
-                     << " not found in species list" << std::endl;
-      amrex::Abort();
+  } else {
+    for (int ns = 0; ns < SPRAY_FUEL_NUM; ++ns) {
+      sprayData.indx[ns] = 0;
     }
   }
-#else
-  for (int ns = 0; ns < SPRAY_FUEL_NUM; ++ns)
-    sprayData.indx[ns] = 0;
-#endif
   amrex::Vector<Real> fuelEnth(NUM_SPECIES);
   auto eos = pele::physics::PhysicsType::eos();
   eos.T2Hi(sprayData.ref_T, fuelEnth.data());

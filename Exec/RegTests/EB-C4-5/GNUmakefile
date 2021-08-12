@@ -27,9 +27,9 @@ THREAD_SANITIZER = FALSE
 USE_SUNDIALS_PP = FALSE
 USE_REACT = FALSE
 USE_EB = TRUE
-Eos_dir := GammaLaw
+Eos_Model := GammaLaw
 Chemistry_Model := Null
-Transport_dir := Constant
+Transport_Model := Constant
 
 # GNU Make
 Bpack := ./Make.package

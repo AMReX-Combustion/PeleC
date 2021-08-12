@@ -113,8 +113,7 @@ PeleC::fill_soot_source(
       bool get_diag = false;
       BL_PROFILE("PeleC::get_transport_coeffs()");
       // Get Transport coefs on GPU.
-      pele::physics::transport::TransParm const* ltransparm =
-        pele::physics::transport::trans_parm_g;
+      auto const* ltransparm = trans_parms.device_trans_parm();
       amrex::ParallelFor(
         bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
           auto trans = pele::physics::PhysicsType::transport();

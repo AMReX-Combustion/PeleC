@@ -27,9 +27,9 @@ THREAD_SANITIZER = FALSE
 USE_REACT = TRUE
 Reactor_dir := rk64
 USE_EB = FALSE
-Eos_dir := Fuego
+Eos_Model := Fuego
 Chemistry_Model := LiDryer
-Transport_dir := Simple
+Transport_Model := Simple
 USE_SUNDIALS_PP = FALSE
 
 # GNU Make

@@ -34,6 +34,7 @@
 #include "Tagging.H"
 #include "IndexDefines.H"
 #include "prob_parm.H"
+#include "PelePhysics.H"
 
 #define UserBC 6
 
@@ -584,6 +585,9 @@ public:
   static TaggingParm* tagging_parm;
   static PassMap* h_pass_map;
   static PassMap* d_pass_map;
+  static pele::physics::transport::TransportParams<
+    pele::physics::PhysicsType::transport_type>
+    trans_parms;
 
 #ifdef SOOT_MODEL
   static SootModel* soot_model;

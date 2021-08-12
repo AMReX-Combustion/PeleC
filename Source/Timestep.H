@@ -22,7 +22,9 @@ pc_trans4dt(
   amrex::Real rho,
   amrex::Real massfrac[],
   amrex::Real& D,
-  pele::physics::transport::TransParm const* trans_parm)
+  pele::physics::transport::TransParm<
+    pele::physics::PhysicsType::eos_type,
+    pele::physics::PhysicsType::transport_type> const* trans_parm)
 {
   bool get_xi = false, get_mu = false, get_lam = false, get_Ddiag = false;
   amrex::Real dum1 = 0., dum2 = 0.;
@@ -100,7 +102,9 @@ pc_estdt_veldif(
 #endif
   AMREX_D_DECL(
     const amrex::Real& dx, const amrex::Real& dy, const amrex::Real& dz),
-  pele::physics::transport::TransParm const* trans_parm) noexcept
+  pele::physics::transport::TransParm<
+    pele::physics::PhysicsType::eos_type,
+    pele::physics::PhysicsType::transport_type> const* trans_parm) noexcept
 {
   amrex::Real dt = std::numeric_limits<amrex::Real>::max();
 
@@ -148,7 +152,9 @@ pc_estdt_tempdif(
 #endif
   AMREX_D_DECL(
     const amrex::Real& dx, const amrex::Real& dy, const amrex::Real& dz),
-  pele::physics::transport::TransParm const* trans_parm) noexcept
+  pele::physics::transport::TransParm<
+    pele::physics::PhysicsType::eos_type,
+    pele::physics::PhysicsType::transport_type> const* trans_parm) noexcept
 {
   amrex::Real dt = std::numeric_limits<amrex::Real>::max();
 
@@ -199,7 +205,9 @@ pc_estdt_enthdif(
 #endif
   AMREX_D_DECL(
     const amrex::Real& dx, const amrex::Real& dy, const amrex::Real& dz),
-  pele::physics::transport::TransParm const* trans_parm) noexcept
+  pele::physics::transport::TransParm<
+    pele::physics::PhysicsType::eos_type,
+    pele::physics::PhysicsType::transport_type> const* trans_parm) noexcept
 {
   amrex::Real dt = std::numeric_limits<amrex::Real>::max();
 
