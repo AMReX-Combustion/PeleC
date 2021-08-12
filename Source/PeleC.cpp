@@ -1895,9 +1895,10 @@ PeleC::init_les()
       << "WARNING: LES is not supported for multi-component systems"
       << std::endl;
   }
-#ifdef USE_SRK_EOS
-  amrex::Abort("LES is not supported for non-ideal equations of state");
-#endif
+  if (std::is_same<
+        pele::physics::PhysicsType::eos_type, pele::physics::eos::SRK>::value) {
+    amrex::Abort("LES is not supported for non-ideal equations of state");
+  }
 }
 
 void

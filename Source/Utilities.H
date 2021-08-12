@@ -101,11 +101,12 @@ pc_rst_int_e(
   const amrex::Real dual_energy_eta2,
   const int /*verbose*/)
 {
-#ifdef USE_SRK_EOS
-  if (allow_small_energy == 0 || allow_negative_energy == 0) {
-    amrex::Error("Small/negative energy must be allowed for nonideal EOS");
+  if (std::is_same<
+        pele::physics::PhysicsType::eos_type, pele::physics::eos::SRK>::value) {
+    if (allow_small_energy == 0 || allow_negative_energy == 0) {
+      amrex::Error("Small/negative energy must be allowed for nonideal EOS");
+    }
   }
-#endif
   auto eos = pele::physics::PhysicsType::eos();
   if (allow_small_energy == 0) {
     const amrex::Real rhoInv = 1.0 / S(i, j, k, URHO);

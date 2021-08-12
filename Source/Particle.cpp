@@ -191,25 +191,30 @@ PeleC::defineParticles()
   if (SPRAY_FUEL_NUM > NUM_SPECIES) {
     Abort("Cannot have more spray fuel species than fluid species");
   }
-#ifdef USE_FUEGO_EOS || USE_SRK_EOS
-  for (int i = 0; i < SPRAY_FUEL_NUM; ++i) {
-    for (int ns = 0; ns < NUM_SPECIES; ++ns) {
-      std::string gas_spec = spec_names[ns];
-      if (gas_spec == sprayFuelNames[i]) {
-        sprayIndxMap[i] = ns;
+  if (
+    (std::is_same<
+      pele::physics::PhysicsType::eos_type, pele::physics::eos::SRK>::value) ||
+    (std::is_same<
+      pele::physics::PhysicsType::eos_type,
+      pele::physics::eos::Fuego>::value)) {
+    for (int i = 0; i < SPRAY_FUEL_NUM; ++i) {
+      for (int ns = 0; ns < NUM_SPECIES; ++ns) {
+        std::string gas_spec = spec_names[ns];
+        if (gas_spec == sprayFuelNames[i]) {
+          sprayIndxMap[i] = ns;
+        }
+      }
+      if (sprayIndxMap[i] < 0) {
+        Print() << "Fuel " << sprayFuelNames[i] << " not found in species list"
+                << std::endl;
+        Abort();
       }
     }
-    if (sprayIndxMap[i] < 0) {
-      Print() << "Fuel " << sprayFuelNames[i] << " not found in species list"
-              << std::endl;
-      Abort();
+  } else {
+    for (int ns = 0; ns < SPRAY_FUEL_NUM; ++ns) {
+      sprayIndxMap[ns] = 0;
     }
   }
-#else
-  for (int ns = 0; ns < SPRAY_FUEL_NUM; ++ns) {
-    sprayIndxMap[ns] = 0;
-  }
-#endif
 }
 
 void
