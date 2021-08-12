@@ -85,9 +85,6 @@ bcnormal(
       s_ext[UFS + n] = s_int[UFS + n];
 
     // Swirler conditions
-    const amrex::Real* dx = geomdata.CellSize();
-    const amrex::Real rad = std::sqrt(x[1] * x[1] + x[2] * x[2]);
-
     const amrex::Real u = prob_parm.u_swirl_ax;
     const amrex::Real v = 0.0;
     const amrex::Real w = 0.0;
