@@ -87,6 +87,7 @@ ifeq ($(USE_REACT), TRUE)
   ifeq ($(Reactor_dir), rk64)
       USE_SUNDIALS_PP = FALSE
       USE_ARKODE_PP = FALSE
+      USE_CVODE_PP = FALSE
       USE_RK64_PP = TRUE
       Bpack += $(REACTIONS_HOME)/$(Reactor_dir)/Make.package
       Blocs += $(REACTIONS_HOME)/$(Reactor_dir)
