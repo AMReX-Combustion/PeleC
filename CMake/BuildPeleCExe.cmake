@@ -92,11 +92,17 @@ function(build_pelec_exe pelec_exe_name)
                    ${SRC_DIR}/React.H
                    ${SRC_DIR}/React.cpp)
     if("${PELEC_SUNDIALS_INTEGRATOR}" STREQUAL "rk64")
+      target_compile_definitions(${pelec_exe_name} PRIVATE USE_RK64_PP)
       target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/reactor.cpp
                                                ${PELE_PHYSICS_SRC_DIR}/Reactions/reactor.H
                                                ${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor_utils.H)
       target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor_${PELEC_SUNDIALS_INTEGRATOR}.cpp)
-        set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor_${PELEC_SUNDIALS_INTEGRATOR}.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+      set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor_${PELEC_SUNDIALS_INTEGRATOR}.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+      set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/reactor.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+      set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/reactor.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+      set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor_utils.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+      target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions)
+      target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR})
     endif()
     if(PELEC_ENABLE_SUNDIALS)
       target_compile_definitions(${pelec_exe_name} PRIVATE USE_SUNDIALS_PP)
