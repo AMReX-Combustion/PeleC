@@ -168,11 +168,13 @@ PeleC::variableSetUp()
 #endif
 
   if (chem_integrator == 1) {
-    amrex::Print() << "Using built-in RK64 chemistry integrator\n";
+    amrex::Print() << "Using built-in RK64 chemistry integrator from pelec\n";
   }
-#ifdef USE_SUNDIALS_PP
   else if (chem_integrator == 2) {
-    amrex::Print() << "Using sundials chemistry integrator\n";
+#ifdef USE_SUNDIALS_PP
+    amrex::Print() << "Using sundials chemistry integrator from pelephysics\n";
+#else
+    amrex::Print() << "Using rk64 chemistry integrator from pelephysics\n";
   }
 #endif
   else {

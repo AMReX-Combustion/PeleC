@@ -7,9 +7,9 @@
 #include "PelePhysics.H"
 #include "PeleC.H"
 
-#ifdef USE_SUNDIALS_PP
+//#ifdef USE_SUNDIALS_PP
 #include "reactor.H"
-#endif
+//#endif
 
 // Timestep adapter
 AMREX_GPU_DEVICE

@@ -76,7 +76,8 @@ message(STATUS "AMReX-Hydro Configure Section")
 set(AMREX_HYDRO_SUBMOD_LOCATION "${CMAKE_SOURCE_DIR}/Submodules/AMReX-Hydro")
 
 ########################## SUNDIALS ###################################
-
+#default
+set(PELEC_SUNDIALS_INTEGRATOR rk64)
 if(PELEC_ENABLE_SUNDIALS)
   message(STATUS "SUNDIALS Configure Section")
   if(NOT (PELEC_SUNDIALS_INTEGRATOR MATCHES "^(arkode|cvode)$"))
