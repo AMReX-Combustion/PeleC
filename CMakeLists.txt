@@ -76,16 +76,19 @@ message(STATUS "AMReX-Hydro Configure Section")
 set(AMREX_HYDRO_SUBMOD_LOCATION "${CMAKE_SOURCE_DIR}/Submodules/AMReX-Hydro")
 
 ########################## SUNDIALS ###################################
-#default
-set(PELEC_SUNDIALS_INTEGRATOR rk64)
+
+if((PELEC_ODE_INTEGRATOR MATCHES "^(arkode|cvode)$") AND (NOT PELEC_ENABLE_SUNDIALS))
+  message(FATAL_ERROR "SUNDIALS must be enabled for arkode and cvode ODE integrators")
+endif()
+
+if(NOT (PELEC_ODE_INTEGRATOR MATCHES "^(arkode|cvode)$"))
+  set(PELEC_ODE_INTEGRATOR rk64)
+endif()
+
 if(PELEC_ENABLE_SUNDIALS)
   message(STATUS "SUNDIALS Configure Section")
-  if(NOT (PELEC_SUNDIALS_INTEGRATOR MATCHES "^(arkode|cvode)$"))
-    set(PELEC_SUNDIALS_INTEGRATOR arkode)
-  endif()
   set(SUNDIALS_SUBMOD_LOCATION "${CMAKE_SOURCE_DIR}/Submodules/sundials")
   include(SetSundialsOptions)
-  message(STATUS "SUNDIALS Integrator = ${PELEC_SUNDIALS_INTEGRATOR}")
   #BUILD_TESTING is an old CMake keyword so don't clear it in sundials configure
   set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
   add_subdirectory(${SUNDIALS_SUBMOD_LOCATION})
@@ -115,8 +118,9 @@ message(STATUS "CMAKE_SYSTEM_NAME = ${CMAKE_SYSTEM_NAME}")
 message(STATUS "CMAKE_CXX_COMPILER_ID = ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "CMAKE_CXX_COMPILER_VERSION = ${CMAKE_CXX_COMPILER_VERSION}")
 message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
+message(STATUS "ODE Integrator = ${PELEC_ODE_INTEGRATOR}")
 if(PELEC_ENABLE_WERROR)
-  message(STATUS "Enabling Werror.")
+  message(STATUS "Enabling Werror")
 endif()
 
 message(STATUS "PELEC_PRECISION = ${PELEC_PRECISION}")
