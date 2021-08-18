@@ -416,7 +416,7 @@ pc_dermolefrac(
     auto eos = pele::physics::PhysicsType::eos();
     eos.Y2X(mass, mole);
     for (int n = 0; n < NUM_SPECIES; n++) {
-      spec(i, j, k, UFS + n) = mole[n];
+      spec(i, j, k, n) = mole[n];
     }
   });
 }

@@ -86,7 +86,6 @@ There are a number of ways to deal with this "small cell issue" and the reader i
 
 * ``"NoRedist"``: no redistribution
 * ``"FluxRedist"``: flux redistribution
-* ``"MergeRedist"``: merge redistribution
 * ``"StateRedist"``: state redistribution (default)
 
 
