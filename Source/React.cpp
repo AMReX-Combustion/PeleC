@@ -71,7 +71,6 @@ PeleC::react_state(
   react_src.setVal(0.0);
   prefetchToDevice(react_src);
 
-#ifdef USE_SUNDIALS_PP
   // for sundials box integration
   amrex::MultiFab STemp(grids, dmap, NUM_SPECIES + 2, 0);
   amrex::MultiFab extsrc_rY(grids, dmap, NUM_SPECIES, 0);
@@ -94,7 +93,6 @@ PeleC::react_state(
   }
   amrex::MultiFab::Copy(
     extsrc_rY, *non_react_src, UFS, 0, NUM_SPECIES, STemp.nGrow());
-#endif
 
 #ifdef PELEC_USE_EB
   auto const& fact =
@@ -158,7 +156,6 @@ PeleC::react_state(
                 captured_clean_massfrac);
             });
         } else if (chem_integrator == 2) {
-#ifdef USE_SUNDIALS_PP
           amrex::Real wt =
             amrex::ParallelDescriptor::second(); // timing for each fab
 
@@ -301,10 +298,6 @@ PeleC::react_state(
             get_new_data(Work_Estimate_Type)[mfi].plus<amrex::RunOn::Device>(
               wt, vbox);
           }
-#else
-          amrex::Abort(
-            "chem_integrator=2 which requires Sundials to be enabled");
-#endif
         } else {
           amrex::Abort("chem_integrator must be equal to 1 or 2");
         }
