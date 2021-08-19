@@ -83,7 +83,9 @@ function(build_pelec_exe pelec_exe_name)
     set_source_files_properties(${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_create_itracker_${PELEC_DIM}d.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
     set_source_files_properties(${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_redistribution.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
     set_source_files_properties(${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_redistribution.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+    set_source_files_properties(${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_slope_limiter_K.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
     set_source_files_properties(${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_state_redistribute.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+    set_source_files_properties(${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_state_utils.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
   endif()
   
   if(PELEC_ENABLE_REACTIONS)
@@ -135,8 +137,9 @@ function(build_pelec_exe pelec_exe_name)
                    ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_create_itracker_${PELEC_DIM}d.cpp
                    ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_redistribution.H
                    ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_redistribution.cpp
-                   ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_state_utils.cpp
+                   ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_slope_limiter_K.H
                    ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_state_redistribute.cpp
+                   ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_state_utils.cpp
                    ${SRC_DIR}/EB.H
                    ${SRC_DIR}/EB.cpp
                    ${SRC_DIR}/InitEB.cpp
