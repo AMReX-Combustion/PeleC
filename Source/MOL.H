@@ -13,6 +13,17 @@
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
+amrex::Real
+limited_slope(const amrex::Real dlft, const amrex::Real drgt)
+{
+  return dlft * drgt >= 0.0
+           ? 2.0 * amrex::min<amrex::Real>(
+                     amrex::Math::abs(dlft), amrex::Math::abs(drgt))
+           : 0.0;
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
 void
 mol_slope(
   const int i,
@@ -22,7 +33,8 @@ mol_slope(
   const amrex::GpuArray<const int, 3> q_idx,
   const amrex::Array4<const amrex::Real>& q,
   const amrex::Array4<const amrex::Real>& qaux,
-  const amrex::Array4<amrex::Real>& dq
+  const amrex::Array4<amrex::Real>& dq,
+  const amrex::Real small_species_for_group_limiting
 #ifdef PELEC_USE_EB
   ,
   const amrex::Array4<amrex::EBCellFlag const>& flags
@@ -91,15 +103,33 @@ mol_slope(
                              : 0.0;
   }
 
-  for (int n = 0; n < QVAR; n++) {
+  // density and velocity
+  for (int n = 0; n < 4; n++) {
     const amrex::Real dcen = 0.5 * (dlft[n] + drgt[n]);
-    const amrex::Real dlim =
-      dlft[n] * drgt[n] >= 0.0
-        ? 2.0 * amrex::min<amrex::Real>(
-                  amrex::Math::abs(dlft[n]), amrex::Math::abs(drgt[n]))
-        : 0.0;
+    const amrex::Real dlim = limited_slope(dlft[n], drgt[n]);
     dq(i, j, k, n) = amrex::Math::copysign(1.0, dcen) *
                      amrex::min<amrex::Real>(dlim, amrex::Math::abs(dcen));
+  }
+
+  // species
+  bool do_species_limiting = false;
+  amrex::Real dlim[NUM_SPECIES] = {0.0};
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    const amrex::Real dcen = 0.5 * (dlft[4 + n] + drgt[4 + n]);
+    dlim[n] = limited_slope(dlft[4 + n], drgt[4 + n]);
+    dq(i, j, k, 4 + n) = dcen;
+    if (
+      (dlim[n] < amrex::Math::abs(dcen)) &&
+      (q(i, j, k, QFS + n) > small_species_for_group_limiting)) {
+      do_species_limiting = true;
+    }
+  }
+
+  if (do_species_limiting) {
+    for (int n = 0; n < NUM_SPECIES; n++) {
+      dq(i, j, k, 4 + n) =
+        amrex::Math::copysign(1.0, dq(i, j, k, 4 + n)) * dlim[n];
+    }
   }
 }
 
@@ -112,7 +142,8 @@ void pc_compute_hyp_mol_flux(
     area,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> del,
   const int plm_iorder,
-  const int use_laxf_flux
+  const int use_laxf_flux,
+  const amrex::Real small_species_for_group_limiting
 #ifdef PELEC_USE_EB
   ,
   const amrex::Array4<amrex::EBCellFlag const>& flags,

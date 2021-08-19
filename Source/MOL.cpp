@@ -14,7 +14,8 @@ pc_compute_hyp_mol_flux(
 #endif
   ,
   const int plm_iorder,
-  const int use_laxf_flux
+  const int use_laxf_flux,
+  const amrex::Real small_species_for_group_limiting
 #ifdef PELEC_USE_EB
   ,
   const amrex::Array4<amrex::EBCellFlag const>& flags,
@@ -54,7 +55,7 @@ pc_compute_hyp_mol_flux(
       amrex::ParallelFor(
         cbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
           mol_slope(
-            i, j, k, bdim, q_idx, q, qaux, dq
+            i, j, k, bdim, q_idx, q, qaux, dq, small_species_for_group_limiting
 #ifdef PELEC_USE_EB
             ,
             flags

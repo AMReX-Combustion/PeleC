@@ -116,6 +116,9 @@ ppm_reference_eigenvectors   int           0
 # for piecewise linear, reconstruction order to use
 plm_iorder                   int           2
 
+# cutoff value for group limiting of species mass fractions
+small_species_for_group_limiting Real      1e-10
+
 # do we drop from our regular Riemann solver to HLL when we
 # are in shocks to avoid the odd-even decoupling instability?
 hybrid_riemann               int           0

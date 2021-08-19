@@ -33,6 +33,7 @@ pp.query("ppm_temp_fix", ppm_temp_fix);
 pp.query("ppm_predict_gammae", ppm_predict_gammae);
 pp.query("ppm_reference_eigenvectors", ppm_reference_eigenvectors);
 pp.query("plm_iorder", plm_iorder);
+pp.query("small_species_for_group_limiting", small_species_for_group_limiting);
 pp.query("hybrid_riemann", hybrid_riemann);
 pp.query("use_colglaz", use_colglaz);
 pp.query("use_laxf_flux", use_laxf_flux);

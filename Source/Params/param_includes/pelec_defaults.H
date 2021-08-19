@@ -33,6 +33,7 @@ int PeleC::ppm_temp_fix = 0;
 int PeleC::ppm_predict_gammae = 0;
 int PeleC::ppm_reference_eigenvectors = 0;
 int PeleC::plm_iorder = 2;
+amrex::Real PeleC::small_species_for_group_limiting = 1e-10;
 int PeleC::hybrid_riemann = 0;
 int PeleC::use_colglaz = -1;
 int PeleC::use_laxf_flux = 0;

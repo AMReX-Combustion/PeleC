@@ -33,6 +33,7 @@ static int ppm_temp_fix;
 static int ppm_predict_gammae;
 static int ppm_reference_eigenvectors;
 static int plm_iorder;
+static amrex::Real small_species_for_group_limiting;
 static int hybrid_riemann;
 static int use_colglaz;
 static int use_laxf_flux;
