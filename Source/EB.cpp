@@ -739,7 +739,7 @@ pc_apply_eb_boundry_flux_stencil(
                 sten[L].iv_base[0] + ii, sten[L].iv_base[1] + jj,
                 sten[L].iv_base[2] + kk));
               //sum += sten[L].val PELEC_D_TERM_REVERSE([kk], [jj], [ii]) *
-              sum += sten[L].val ([ii], [jj], [kk]) *
+              sum += sten[L].val AMREX_D_TERM([ii], [jj], [kk]) *
                      s(ivp, scomp + n);
 #if AMREX_SPACEDIM > 2
             }
