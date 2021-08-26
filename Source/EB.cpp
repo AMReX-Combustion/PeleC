@@ -366,12 +366,10 @@ pc_fill_bndry_grad_stencil_ls(
                     grad_stencil[L].val AMREX_D_TERM([ii], [jj], [kk]);
                   iter++;
                 } else {
-                  grad_stencil[L].val AMREX_D_TERM([ii], [jj], [kk]) =
-                    0.0;
+                  grad_stencil[L].val AMREX_D_TERM([ii], [jj], [kk]) = 0.0;
                 }
               } else {
-                grad_stencil[L].val AMREX_D_TERM([ii], [jj], [kk]) =
-                  0.0;
+                grad_stencil[L].val AMREX_D_TERM([ii], [jj], [kk]) = 0.0;
               }
 #if AMREX_SPACEDIM > 2
             }
@@ -728,8 +726,8 @@ pc_apply_eb_boundry_flux_stencil(
               const amrex::IntVect ivp = amrex::IntVect(AMREX_D_DECL(
                 sten[L].iv_base[0] + ii, sten[L].iv_base[1] + jj,
                 sten[L].iv_base[2] + kk));
-              sum += sten[L].val AMREX_D_TERM([ii], [jj], [kk]) *
-                     s(ivp, scomp + n);
+              sum +=
+                sten[L].val AMREX_D_TERM([ii], [jj], [kk]) * s(ivp, scomp + n);
 #if AMREX_SPACEDIM > 2
             }
 #endif
