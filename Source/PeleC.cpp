@@ -27,9 +27,6 @@ using namespace MASA;
 #include "Utilities.H"
 #include "Tagging.H"
 #include "IndexDefines.H"
-#if defined(PELEC_USE_REACTIONS) && defined(USE_SUNDIALS_PP)
-#include "reactor.H"
-#endif
 
 #ifdef PELEC_ENABLE_FPE_TRAP
 #if defined(__linux__)
@@ -461,6 +458,13 @@ PeleC::PeleC(
     init_les();
   }
 
+#ifdef PELEC_USE_REACTIONS
+  // Initialize the reactor
+  if (do_react == 1) {
+    init_reactor();
+  }
+#endif
+
   // initialize filters and variables
   nGrowF = 0;
   if (use_explicit_filter) {
@@ -468,7 +472,14 @@ PeleC::PeleC(
   }
 }
 
-PeleC::~PeleC() = default;
+PeleC::~PeleC()
+{
+#ifdef PELEC_USE_REACTIONS
+  if (do_react == 1) {
+    close_reactor();
+  }
+#endif
+};
 
 void
 PeleC::buildMetrics()
@@ -1856,19 +1867,24 @@ PeleC::clear_prob()
 void
 PeleC::init_reactor()
 {
-#ifdef USE_SUNDIALS_PP
+  reactor = pele::physics::reactions::ReactorBase::create(chem_integrator);
+  if ((do_react == 1) && (chem_integrator == "ReactorNull")) {
+    amrex::Print() << "WARNING: turning on reactions while using ReactorNull. "
+                      "Make sure this is intended."
+                   << std::endl;
+  }
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
   {
-    reactor_init(1, 1);
+    reactor->init(1, 1);
   }
-#endif
 }
 
 void
 PeleC::close_reactor()
 {
+  reactor->close();
 }
 #endif
 

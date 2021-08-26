@@ -25,12 +25,10 @@ THREAD_SANITIZER = FALSE
 
 # PeleC
 USE_REACT = TRUE
-Reactor_dir := rk64
 USE_EB = FALSE
 Eos_Model := Fuego
 Chemistry_Model := LiDryer
 Transport_Model := Simple
-USE_SUNDIALS_PP = FALSE
 
 # GNU Make
 Bpack := ./Make.package

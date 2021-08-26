@@ -31,6 +31,9 @@
 #include "IndexDefines.H"
 #include "prob_parm.H"
 #include "PelePhysics.H"
+#ifdef PELEC_USE_REACTIONS
+#include "ReactorBase.H"
+#endif
 
 #define UserBC 6
 
@@ -581,8 +584,9 @@ protected:
   amrex::Vector<std::unique_ptr<amrex::MultiFab>> new_sources;
 
 #ifdef PELEC_USE_REACTIONS
-  static void init_reactor();
-  static void close_reactor();
+  std::unique_ptr<pele::physics::reactions::ReactorBase> reactor;
+  void init_reactor();
+  void close_reactor();
 #endif
 
   void init_les();

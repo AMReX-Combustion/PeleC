@@ -136,7 +136,9 @@ jobs:
           printf "CC=gcc-10\nCXX=g++-10\nFC=gfortran-10\nF90=gfortran-10" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
       - name: PMF debug make
         working-directory: ./Exec/RegTests/PMF
-        run: make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE
+        run: |
+          make COMP=gnu USE_MPI=FALSE DEBUG=TRUE TPL
+          make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE
       - name: PMF debug test
         working-directory: ./Exec/RegTests/PMF
         run: ./PeleC3d.gnu.DEBUG.ex tests/pmf-1/pmf-1.i max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0

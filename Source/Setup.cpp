@@ -7,8 +7,7 @@
 using namespace MASA;
 #endif
 
-#if defined(PELEC_USE_REACTIONS) && defined(AMREX_USE_GPU) && \
-  defined(USE_SUNDIALS_PP)
+#if defined(PELEC_USE_REACTIONS) && defined(AMREX_USE_GPU)
 #include <AMReX_SUNMemory.H>
 #endif
 
@@ -163,26 +162,9 @@ PeleC::variableSetUp()
   read_params();
 
 #ifdef PELEC_USE_REACTIONS
-#if defined(AMREX_USE_GPU) && defined(USE_SUNDIALS_PP)
+#if defined(AMREX_USE_GPU)
   amrex::sundials::MemoryHelper::Initialize();
 #endif
-
-  if (chem_integrator == 1) {
-    amrex::Print() << "Using built-in RK64 chemistry integrator from pelec\n";
-  } else if (chem_integrator == 2) {
-#ifdef USE_SUNDIALS_PP
-    amrex::Print() << "Using sundials chemistry integrator from pelephysics\n";
-#else
-    amrex::Print() << "Using rk64 chemistry integrator from pelephysics\n";
-#endif
-  } else {
-    amrex::Abort("Invalid chem_integrator choice.");
-  }
-
-  // Initialize the reactor
-  if (do_react == 1) {
-    init_reactor();
-  }
 #endif
 
   init_pass_map(h_pass_map);
@@ -657,12 +639,6 @@ PeleC::variableCleanUp()
   derive_lst.clear();
 
   desc_lst.clear();
-
-#ifdef PELEC_USE_REACTIONS
-  if (do_react == 1) {
-    close_reactor();
-  }
-#endif
 
   clear_prob();
 

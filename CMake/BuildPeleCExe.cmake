@@ -118,7 +118,6 @@ function(build_pelec_exe pelec_exe_name)
     endif()
 
     if(PELEC_ENABLE_SUNDIALS)
-      target_compile_definitions(${pelec_exe_name} PRIVATE USE_SUNDIALS_PP)
       target_link_libraries(${pelec_exe_name} PRIVATE sundials_arkode sundials_cvode)
       if(PELEC_ENABLE_CUDA)
         target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/AMReX_SUNMemory.cpp
