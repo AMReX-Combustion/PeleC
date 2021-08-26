@@ -99,12 +99,4 @@ struct PassMap
 
 void init_pass_map(PassMap* pmap);
 
-#if AMREX_SPACEDIM == 1
-#define PELEC_D_TERM_REVERSE(a, b, c) c
-#elif AMREX_SPACEDIM == 2
-#define PELEC_D_TERM_REVERSE(a, b, c) b c
-#elif AMREX_SPACEDIM == 3
-#define PELEC_D_TERM_REVERSE(a, b, c) a b c
-#endif
-
 #endif
