@@ -167,7 +167,7 @@ PeleC::maxDerive(const std::string& name, amrex::Real time, bool local)
 {
   auto mf = derive(name, time, 0);
 
-  BL_ASSERT(!(mf == 0));
+  BL_ASSERT(!(mf == nullptr));
 
   if (level < parent->finestLevel()) {
     const amrex::MultiFab& mask = getLevel(level + 1).build_fine_mask();
