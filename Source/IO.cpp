@@ -213,7 +213,7 @@ PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
       }
     }
     amrex::ParallelDescriptor::Bcast(
-      &(body_state[0]), body_state.size(),
+      &(PeleC::body_state[0]), body_state.size(),
       amrex::ParallelDescriptor::IOProcessorNumber());
     body_state_set = true;
   }
