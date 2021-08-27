@@ -469,7 +469,7 @@ pc_apply_face_stencil(
               const amrex::IntVect ivd = amrex::IntVect{
                 AMREX_D_DECL(iv[0], iv[1] - 1 + t0, iv[2] - 1 + t1)};
               d_newval[L] +=
-                sten[L].val AMREX_D_TERM([t0], [t1], ) * vout(ivd, n);
+                sten[L].val AMREX_D_TERM(, [t0], [t1]) * vout(ivd, n);
 #if AMREX_SPACEDIM > 2
             }
 #endif
@@ -482,7 +482,7 @@ pc_apply_face_stencil(
               const amrex::IntVect ivd = amrex::IntVect{
                 AMREX_D_DECL(iv[0] - 1 + t0, iv[1], iv[2] - 1 + t1)};
               d_newval[L] +=
-                sten[L].val AMREX_D_TERM([t0], [t1], ) * vout(ivd, n);
+                sten[L].val AMREX_D_TERM(, [t0], [t1]) * vout(ivd, n);
 #if AMREX_SPACEDIM > 2
             }
 #endif
@@ -494,7 +494,7 @@ pc_apply_face_stencil(
               const amrex::IntVect ivd = amrex::IntVect{
                 AMREX_D_DECL(iv[0] - 1 + t0, iv[1] - 1 + t1, iv[2])};
               d_newval[L] +=
-                sten[L].val AMREX_D_TERM([t0], [t1], ) * vout(ivd, n);
+                sten[L].val AMREX_D_TERM(, [t0], [t1]) * vout(ivd, n);
             }
           }
 #endif
