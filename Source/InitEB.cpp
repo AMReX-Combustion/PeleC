@@ -364,7 +364,7 @@ PeleC::define_body_state()
     }
     AMREX_ASSERT(body_rank >= 0);
     amrex::ParallelDescriptor::Bcast(
-      &(body_state[0]), body_state.size(), body_rank);
+      &(body_state[0]), body_state.size(), body_rank); // NOLINT
     body_state_set = true;
   }
 }
