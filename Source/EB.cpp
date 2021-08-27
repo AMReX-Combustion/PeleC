@@ -432,9 +432,9 @@ pc_fill_flux_interp_stencil(
       const amrex::Real act0 = amrex::Math::abs(ct0);
       const amrex::Real act1 = amrex::Math::abs(ct1);
       sten[L].val[1][1] = fa(iv) * (1.0 - act0) * (1.0 - act1);
-      sten[L].val[1][t0n + 1] = fa(iv) * act0 * (1.0 - act1);
-      sten[L].val[t1n + 1][1] = fa(iv) * (1.0 - act0) * act1;
-      sten[L].val[t1n + 1][t0n + 1] = fa(iv) * act0 * act1;
+      sten[L].val[t0n + 1][1] = fa(iv) * act0 * (1.0 - act1);
+      sten[L].val[1][t1n + 1] = fa(iv) * (1.0 - act0) * act1;
+      sten[L].val[t0n + 1][t1n+1] = fa(iv) * act0 * act1;
 #endif
     }
   });
@@ -467,7 +467,7 @@ pc_apply_face_stencil(
             for (int t1 = 0; t1 < 3; t1++) {
 #endif
               const amrex::IntVect ivd = amrex::IntVect{
-                AMREX_D_DECL(iv[0], iv[1] - 1 + t1, iv[2] - 1 + t0)};
+                AMREX_D_DECL(iv[0], iv[1] - 1 + t0, iv[2] - 1 + t1)};
               d_newval[L] +=
                 sten[L].val AMREX_D_TERM([t0], [t1], ) * vout(ivd, n);
 #if AMREX_SPACEDIM > 2
@@ -480,7 +480,7 @@ pc_apply_face_stencil(
             for (int t1 = 0; t1 < 3; t1++) {
 #endif
               const amrex::IntVect ivd = amrex::IntVect{
-                AMREX_D_DECL(iv[0] - 1 + t1, iv[1], iv[2] - 1 + t0)};
+                AMREX_D_DECL(iv[0] - 1 + t0, iv[1], iv[2] - 1 + t1)};
               d_newval[L] +=
                 sten[L].val AMREX_D_TERM([t0], [t1], ) * vout(ivd, n);
 #if AMREX_SPACEDIM > 2
@@ -492,7 +492,7 @@ pc_apply_face_stencil(
           for (int t0 = 0; t0 < 3; t0++) {
             for (int t1 = 0; t1 < 3; t1++) {
               const amrex::IntVect ivd = amrex::IntVect{
-                AMREX_D_DECL(iv[0] - 1 + t1, iv[1] - 1 + t0, iv[2])};
+                AMREX_D_DECL(iv[0] - 1 + t0, iv[1] - 1 + t1, iv[2])};
               d_newval[L] +=
                 sten[L].val AMREX_D_TERM([t0], [t1], ) * vout(ivd, n);
             }
