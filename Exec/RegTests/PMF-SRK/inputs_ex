@@ -5,8 +5,8 @@ max_step = 2
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic = 1 1 0
 geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
-geometry.prob_lo     =   0.0        0.0       1.0
-geometry.prob_hi     =   0.3125     0.3125    6.0
+geometry.prob_lo     =   0.0        0.0       0.855
+geometry.prob_hi     =   0.0025     0.0025    0.895
 amr.n_cell           =   8          8         128
 
 #pelec.Riemann    = 0     # 0: HLL,  1: JBB,  2: HLLC
@@ -49,7 +49,7 @@ amr.plot_int          = 10   # number of timesteps between plotfiles
 # PROBLEM PARAMETERS
 prob.pamb = 101325000.0
 prob.phi_in = -0.5
-prob.pertmag = 0.005
+prob.pertmag = 0.00005
 prob.pmf_datafile = "LiDryer_H2_p100_phi1_0000tu0300.dat"
 
 tagging.max_ftracerr_lev = 4
