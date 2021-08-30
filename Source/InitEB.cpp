@@ -806,11 +806,11 @@ initialize_EB2(
     auto gshop = amrex::EB2::makeShop(polys);
     amrex::EB2::Build(
       gshop, geom, max_coarsening_level, max_coarsening_level, 4, false);
-  } else if (geom_type == "sco2-combustor") {
-#ifdef sCO2Combustor
-    EBsCO2Combustor(geom, max_level);
+  } else if (geom_type == "converging-nozzle") {
+#ifdef ConvergingNozzle
+    EBConvergingNozzle(geom, max_level);
 #else
-    amrex::Abort("sco2-combustor geom_type not supported");
+    amrex::Abort("converging-nozzle geom_type not supported");
 #endif
   } else {
     amrex::EB2::Build(geom, max_level, max_level);

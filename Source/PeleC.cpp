@@ -2218,16 +2218,11 @@ PeleC::InitialRedistribution()
   BL_PROFILE("PeleC::InitialRedistribution()");
 
   // Next we must redistribute the initial solution if we are going to use
-  // MergeRedist or StateRedist redistribution schemes
+  // StateRedist redistribution schemes
   if (
     (eb_in_domain) && ((redistribution_type != "StateRedist") &&
-                       (redistribution_type != "MergeRedist"))) {
+                       (redistribution_type != "NewStateRedist"))) {
     return;
-  }
-
-  if (redistribution_type == "MergeRedist") {
-    amrex::Abort("MergeRedist is unsupported. Check with AMReX-Hydro if that "
-                 "has been fixed");
   }
 
   if (verbose) {

@@ -84,6 +84,14 @@ ifeq ($(USE_REACT), TRUE)
       Blocs += $(REACTIONS_HOME)/$(Reactor_dir)
       DEFINES += -DCOMPILE_JACOBIAN
   endif
+  ifeq ($(Reactor_dir), rk64)
+      USE_SUNDIALS_PP = FALSE
+      USE_ARKODE_PP = FALSE
+      USE_CVODE_PP = FALSE
+      USE_RK64_PP = TRUE
+      Bpack += $(REACTIONS_HOME)/$(Reactor_dir)/Make.package
+      Blocs += $(REACTIONS_HOME)/$(Reactor_dir)
+  endif
   ifeq ($(USE_SUNDIALS_PP), TRUE)
       include $(PELE_PHYSICS_HOME)/ThirdParty/Make.ThirdParty
   endif

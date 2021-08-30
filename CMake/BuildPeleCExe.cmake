@@ -83,7 +83,9 @@ function(build_pelec_exe pelec_exe_name)
     set_source_files_properties(${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_create_itracker_${PELEC_DIM}d.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
     set_source_files_properties(${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_redistribution.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
     set_source_files_properties(${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_redistribution.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+    set_source_files_properties(${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_slope_limiter_K.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
     set_source_files_properties(${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_state_redistribute.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+    set_source_files_properties(${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_state_utils.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
   endif()
   
   if(PELEC_ENABLE_REACTIONS)
@@ -91,37 +93,35 @@ function(build_pelec_exe pelec_exe_name)
     target_sources(${pelec_exe_name} PRIVATE
                    ${SRC_DIR}/React.H
                    ${SRC_DIR}/React.cpp)
+    target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions)
+    target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_ODE_INTEGRATOR})
+    target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/reactor.cpp
+                                             ${PELE_PHYSICS_SRC_DIR}/Reactions/reactor.H
+                                             ${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_ODE_INTEGRATOR}/reactor_utils.H)
+    set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/reactor.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+    set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/reactor.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+    set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_ODE_INTEGRATOR}/reactor_utils.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+    if("${PELEC_ODE_INTEGRATOR}" STREQUAL "cvode")
+      target_compile_definitions(${pelec_exe_name} PRIVATE COMPILE_JACOBIAN)
+      if(PELEC_ENABLE_CUDA)
+        target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_ODE_INTEGRATOR}/reactor_${PELEC_ODE_INTEGRATOR}_GPU.cpp)
+        set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_ODE_INTEGRATOR}/reactor_${PELEC_ODE_INTEGRATOR}_GPU.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+      else()
+        target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_ODE_INTEGRATOR}/reactor_${PELEC_ODE_INTEGRATOR}_CPU.cpp)
+        set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_ODE_INTEGRATOR}/reactor_${PELEC_ODE_INTEGRATOR}_CPU.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+      endif()
+    else()
+      target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_ODE_INTEGRATOR}/reactor_${PELEC_ODE_INTEGRATOR}.cpp)
+      set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_ODE_INTEGRATOR}/reactor_${PELEC_ODE_INTEGRATOR}.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+    endif()
+
     if(PELEC_ENABLE_SUNDIALS)
       target_compile_definitions(${pelec_exe_name} PRIVATE USE_SUNDIALS_PP)
-      target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/reactor.cpp
-                                               ${PELE_PHYSICS_SRC_DIR}/Reactions/reactor.H
-                                               ${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor_utils.H)
-      if("${PELEC_SUNDIALS_INTEGRATOR}" STREQUAL "arkode")
-          target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor_${PELEC_SUNDIALS_INTEGRATOR}.cpp)
-          set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor_${PELEC_SUNDIALS_INTEGRATOR}.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-      elseif("${PELEC_SUNDIALS_INTEGRATOR}" STREQUAL "cvode")
-        target_compile_definitions(${pelec_exe_name} PRIVATE COMPILE_JACOBIAN)
-        if(PELEC_ENABLE_CUDA)
-          target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor_${PELEC_SUNDIALS_INTEGRATOR}_GPU.cpp)
-          set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor_${PELEC_SUNDIALS_INTEGRATOR}_GPU.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-        else()
-          target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor_${PELEC_SUNDIALS_INTEGRATOR}_CPU.cpp)
-          set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor_${PELEC_SUNDIALS_INTEGRATOR}_CPU.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-        endif()
-      endif()
-      set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/reactor.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-      set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/reactor.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-      set_source_files_properties(${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR}/reactor_utils.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-      target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions)
-      target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/${PELEC_SUNDIALS_INTEGRATOR})
-      target_link_libraries(${pelec_exe_name} PRIVATE sundials_${PELEC_SUNDIALS_INTEGRATOR})
+      target_link_libraries(${pelec_exe_name} PRIVATE sundials_arkode sundials_cvode)
       if(PELEC_ENABLE_CUDA)
         target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/AMReX_SUNMemory.cpp
                                                  ${PELE_PHYSICS_SRC_DIR}/Reactions/AMReX_SUNMemory.H)
-        target_link_libraries(${pelec_exe_name} PRIVATE sundials_nveccuda)
-        if(PELEC_SUNDIALS_INTEGRATOR STREQUAL "cvode")
-          target_link_libraries(${pelec_exe_name} PRIVATE sundials_sunlinsolcusolversp sundials_sunmatrixcusparse)
-        endif()
+        target_link_libraries(${pelec_exe_name} PRIVATE sundials_nveccuda sundials_sunlinsolcusolversp sundials_sunmatrixcusparse)
       endif()
     endif()
   endif()
@@ -137,8 +137,9 @@ function(build_pelec_exe pelec_exe_name)
                    ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_create_itracker_${PELEC_DIM}d.cpp
                    ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_redistribution.H
                    ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_redistribution.cpp
-                   ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_state_utils.cpp
+                   ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_slope_limiter_K.H
                    ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_state_redistribute.cpp
+                   ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_state_utils.cpp
                    ${SRC_DIR}/EB.H
                    ${SRC_DIR}/EB.cpp
                    ${SRC_DIR}/InitEB.cpp
