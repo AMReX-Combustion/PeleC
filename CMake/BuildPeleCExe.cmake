@@ -86,6 +86,8 @@ function(build_pelec_exe pelec_exe_name)
     set_source_files_properties(${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_slope_limiter_K.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
     set_source_files_properties(${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_state_redistribute.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
     set_source_files_properties(${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_state_utils.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+    set_source_files_properties(${AMREX_HYDRO_SUBMOD_LOCATION}/Slopes/hydro_eb_slopes_${PELEC_DIM}D_K.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+    set_source_files_properties(${AMREX_HYDRO_SUBMOD_LOCATION}/Slopes/hydro_slopes_K.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
   endif()
   
   if(PELEC_ENABLE_REACTIONS)
@@ -140,12 +142,15 @@ function(build_pelec_exe pelec_exe_name)
                    ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_slope_limiter_K.H
                    ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_state_redistribute.cpp
                    ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_state_utils.cpp
+                   ${AMREX_HYDRO_SUBMOD_LOCATION}/Slopes/hydro_eb_slopes_${PELEC_DIM}D_K.H
+                   ${AMREX_HYDRO_SUBMOD_LOCATION}/Slopes/hydro_slopes_K.H
                    ${SRC_DIR}/EB.H
                    ${SRC_DIR}/EB.cpp
                    ${SRC_DIR}/InitEB.cpp
                    ${SRC_DIR}/SparseData.H
                    ${SRC_DIR}/EBStencilTypes.H)
      target_include_directories(${pelec_exe_name} PRIVATE ${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution)
+     target_include_directories(${pelec_exe_name} PRIVATE ${AMREX_HYDRO_SUBMOD_LOCATION}/Slopes)
   endif()
   
   target_sources(${pelec_exe_name}

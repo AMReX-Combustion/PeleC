@@ -58,6 +58,11 @@ if((PELEC_DIM EQUAL 1) AND PELEC_ENABLE_AMREX_EB)
   message(WARNING "Disabling EB for ${PELEC_DIM}D.")
 endif()
 
+if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+  set(PELEC_ENABLE_FPE_TRAP_FOR_TESTS OFF)
+  message(WARNING "Disabling FPE trapping for tests when using AppleClang.")
+endif()
+
 ########################### AMReX #####################################
 
 message(STATUS "AMReX Configure Section")
