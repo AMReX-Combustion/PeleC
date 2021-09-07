@@ -187,8 +187,8 @@ laxfriedrich_flux(
   const amrex::Real v2r,
   const amrex::Real pr,
   const amrex::Real spr[NUM_SPECIES],
-  const int bc_test_val,
-  const amrex::Real cav,
+  const int,
+  const amrex::Real,
   amrex::Real& ustar,
   amrex::Real& uflx_rho,
   amrex::Real& uflx_u,
@@ -196,11 +196,11 @@ laxfriedrich_flux(
   amrex::Real& uflx_w,
   amrex::Real& uflx_eden,
   amrex::Real& uflx_eint,
-  amrex::Real& qint_iu,
-  amrex::Real& qint_iv1,
-  amrex::Real& qint_iv2,
-  amrex::Real& qint_gdpres,
-  amrex::Real& qint_gdgame)
+  amrex::Real&,
+  amrex::Real&,
+  amrex::Real&,
+  amrex::Real&,
+  amrex::Real&)
 {
 
   const amrex::Real wsmall = std::numeric_limits<amrex::Real>::min();
@@ -240,7 +240,7 @@ laxfriedrich_flux(
   ustar = mask ? 0.0 : ustar;
 
   amrex::Real chalf = 0.5 * (cr + cl);
-  amrex::Real max_wavespd = abs(ustar) + chalf;
+  amrex::Real max_wavespd = amrex::Math::abs(ustar) + chalf;
 
   // density eqn
   uflx_rho = 0.5 * ((rl * ul + rr * ur) - max_wavespd * (rr - rl));
