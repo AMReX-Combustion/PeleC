@@ -171,4 +171,88 @@ riemann(
   uflx_eint = qint_iu * regd;
 }
 
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+laxfriedrich_flux(
+  const amrex::Real rl,
+  const amrex::Real ul,
+  const amrex::Real vl,
+  const amrex::Real v2l,
+  const amrex::Real pl,
+  const amrex::Real spl[NUM_SPECIES],
+  const amrex::Real rr,
+  const amrex::Real ur,
+  const amrex::Real vr,
+  const amrex::Real v2r,
+  const amrex::Real pr,
+  const amrex::Real spr[NUM_SPECIES],
+  const int bc_test_val,
+  const amrex::Real cav,
+  amrex::Real& ustar,
+  amrex::Real& uflx_rho,
+  amrex::Real& uflx_u,
+  amrex::Real& uflx_v,
+  amrex::Real& uflx_w,
+  amrex::Real& uflx_eden,
+  amrex::Real& uflx_eint,
+  amrex::Real& qint_iu,
+  amrex::Real& qint_iv1,
+  amrex::Real& qint_iv2,
+  amrex::Real& qint_gdpres,
+  amrex::Real& qint_gdgame)
+{
+
+  const amrex::Real wsmall = std::numeric_limits<amrex::Real>::min();
+
+  auto eos = pele::physics::PhysicsType::eos();
+
+  amrex::Real cl = 0.0;
+  amrex::Real mfrac_l[NUM_SPECIES];
+  amrex::Real mfrac_r[NUM_SPECIES];
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    mfrac_l[n] = spl[n];
+    mfrac_r[n] = spr[n];
+  }
+  eos.RPY2Cs(rl, pl, mfrac_l, cl);
+
+  amrex::Real cr = 0.0;
+  eos.RPY2Cs(rr, pr, mfrac_r, cr);
+
+  amrex::Real el = 0.0;
+  eos.RYP2E(rl, mfrac_l, pl, el);
+
+  amrex::Real er = 0.0;
+  eos.RYP2E(rr, mfrac_r, pr, er);
+
+  //rho e total
+  amrex::Real r_elt =rl*(el + 0.5*(ul*ul + vl*vl + v2l*v2l));
+  amrex::Real r_ert =rr*(er + 0.5*(ur*ur + vr*vr + v2r*v2r));
+
+  const amrex::Real wl = amrex::max<amrex::Real>(wsmall, cl * rl);
+  const amrex::Real wr = amrex::max<amrex::Real>(wsmall, cr * rr);
+  ustar = ((wl * ul + wr * ur) + (pl - pr)) / (wl + wr);
+
+  bool mask = amrex::Math::abs(ustar) < constants::smallu() * 0.5 *
+       (amrex::Math::abs(ul) + amrex::Math::abs(ur)) || ustar == 0.0;
+  ustar = mask ? 0.0 : ustar;
+
+  amrex::Real chalf=0.5*(cr+cl);
+  amrex::Real max_wavespd=abs(ustar)+chalf;
+
+  //density eqn
+  uflx_rho = 0.5* ( (rl*ul + rr*ur)                  - max_wavespd*(rr-rl));
+
+  //three momentum eqns
+  uflx_u   = 0.5* ( (rl*ul*ul  + pl + rr*ur*ur + pr) - max_wavespd*  (rr*ur-rl*ul));
+  uflx_v   = 0.5* ( (rl*vl*ul  + rr*vr*ur)           - max_wavespd*  (rr*vr-rl*vl));
+  uflx_w   = 0.5* ( (rl*v2l*ul + rr*v2r*ur)          - max_wavespd*(rr*v2r-rl*v2l));
+  
+  //total energy eqn
+  uflx_eden = 0.5*(( (r_elt + pl)*ul + (r_ert + pr)*ur ) - max_wavespd*(r_ert-r_elt) );
+
+  //not really used
+  uflx_eint = 0.5*( (rl*el*ul + rr*er*ur) - max_wavespd*(rr*er-rl*el) );
+
+}
 #endif
