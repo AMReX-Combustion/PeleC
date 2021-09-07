@@ -225,34 +225,40 @@ laxfriedrich_flux(
   amrex::Real er = 0.0;
   eos.RYP2E(rr, mfrac_r, pr, er);
 
-  //rho e total
-  amrex::Real r_elt =rl*(el + 0.5*(ul*ul + vl*vl + v2l*v2l));
-  amrex::Real r_ert =rr*(er + 0.5*(ur*ur + vr*vr + v2r*v2r));
+  // rho e total
+  amrex::Real r_elt = rl * (el + 0.5 * (ul * ul + vl * vl + v2l * v2l));
+  amrex::Real r_ert = rr * (er + 0.5 * (ur * ur + vr * vr + v2r * v2r));
 
   const amrex::Real wl = amrex::max<amrex::Real>(wsmall, cl * rl);
   const amrex::Real wr = amrex::max<amrex::Real>(wsmall, cr * rr);
   ustar = ((wl * ul + wr * ur) + (pl - pr)) / (wl + wr);
 
-  bool mask = amrex::Math::abs(ustar) < constants::smallu() * 0.5 *
-       (amrex::Math::abs(ul) + amrex::Math::abs(ur)) || ustar == 0.0;
+  bool mask =
+    amrex::Math::abs(ustar) < constants::smallu() * 0.5 *
+                                (amrex::Math::abs(ul) + amrex::Math::abs(ur)) ||
+    ustar == 0.0;
   ustar = mask ? 0.0 : ustar;
 
-  amrex::Real chalf=0.5*(cr+cl);
-  amrex::Real max_wavespd=abs(ustar)+chalf;
+  amrex::Real chalf = 0.5 * (cr + cl);
+  amrex::Real max_wavespd = abs(ustar) + chalf;
 
-  //density eqn
-  uflx_rho = 0.5* ( (rl*ul + rr*ur)                  - max_wavespd*(rr-rl));
+  // density eqn
+  uflx_rho = 0.5 * ((rl * ul + rr * ur) - max_wavespd * (rr - rl));
 
-  //three momentum eqns
-  uflx_u   = 0.5* ( (rl*ul*ul  + pl + rr*ur*ur + pr) - max_wavespd*  (rr*ur-rl*ul));
-  uflx_v   = 0.5* ( (rl*vl*ul  + rr*vr*ur)           - max_wavespd*  (rr*vr-rl*vl));
-  uflx_w   = 0.5* ( (rl*v2l*ul + rr*v2r*ur)          - max_wavespd*(rr*v2r-rl*v2l));
-  
-  //total energy eqn
-  uflx_eden = 0.5*(( (r_elt + pl)*ul + (r_ert + pr)*ur ) - max_wavespd*(r_ert-r_elt) );
+  // three momentum eqns
+  uflx_u = 0.5 * ((rl * ul * ul + pl + rr * ur * ur + pr) -
+                  max_wavespd * (rr * ur - rl * ul));
+  uflx_v =
+    0.5 * ((rl * vl * ul + rr * vr * ur) - max_wavespd * (rr * vr - rl * vl));
+  uflx_w = 0.5 * ((rl * v2l * ul + rr * v2r * ur) -
+                  max_wavespd * (rr * v2r - rl * v2l));
 
-  //not really used
-  uflx_eint = 0.5*( (rl*el*ul + rr*er*ur) - max_wavespd*(rr*er-rl*el) );
+  // total energy eqn
+  uflx_eden = 0.5 * (((r_elt + pl) * ul + (r_ert + pr) * ur) -
+                     max_wavespd * (r_ert - r_elt));
 
+  // not really used
+  uflx_eint =
+    0.5 * ((rl * el * ul + rr * er * ur) - max_wavespd * (rr * er - rl * el));
 }
 #endif
