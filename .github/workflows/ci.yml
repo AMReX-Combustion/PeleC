@@ -284,22 +284,18 @@ jobs:
         run: |
           wget -q -O - http://repo.radeon.com/rocm/rocm.gpg.key | sudo apt-key add -
           echo 'deb [arch=amd64] http://repo.radeon.com/rocm/apt/debian/ xenial main' | sudo tee /etc/apt/sources.list.d/rocm.list
-          echo 'export PATH=/opt/rocm/llvm/bin:/opt/rocm/profiler/bin:/opt/rocm/opencl/bin:$PATH' | sudo tee -a /etc/profile.d/rocm.sh
+          echo 'export PATH=/opt/rocm/bin:/opt/rocm/profiler/bin:/opt/rocm/opencl/bin:$PATH' | sudo tee -a /etc/profile.d/rocm.sh
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends build-essential rocm-dev roctracer-dev rocprofiler-dev rocrand rocprim rocm-libs
       - name: Configure
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
           source /etc/profile.d/rocm.sh
-          hipcc --version
           which clang
           which clang++
           cmake -B${{runner.workspace}}/build-hip \
-          -DCMAKE_CXX_COMPILER:STRING=$(which hipcc) \
+          -DCMAKE_CXX_COMPILER:STRING=$(which clang++) \
           -DCMAKE_C_COMPILER:STRING=$(which clang) \
-          -DCMAKE_CXX_COMPILER_ID=Clang \
-          -DCMAKE_CXX_COMPILER_VERSION=12.0 \
-          -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT=17 \
           -DCMAKE_CXX_STANDARD=17 \
           -DPELEC_ENABLE_MPI:BOOL=OFF \
           -DPELEC_ENABLE_HIP:BOOL=ON \
