@@ -195,12 +195,7 @@ laxfriedrich_flux(
   amrex::Real& uflx_v,
   amrex::Real& uflx_w,
   amrex::Real& uflx_eden,
-  amrex::Real& uflx_eint,
-  amrex::Real&,
-  amrex::Real&,
-  amrex::Real&,
-  amrex::Real&,
-  amrex::Real&)
+  amrex::Real& uflx_eint)
 {
 
   const amrex::Real wsmall = std::numeric_limits<amrex::Real>::min();

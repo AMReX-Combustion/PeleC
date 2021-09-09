@@ -153,8 +153,7 @@ pc_compute_hyp_mol_flux(
             qtempl[R_P], spl, qtempr[R_RHO], qtempr[R_UN], qtempr[R_UT1],
             qtempr[R_UT2], qtempr[R_P], spr, bc_test_val, cavg, ustar,
             flux_tmp[URHO], flux_tmp[f_idx[0]], flux_tmp[f_idx[1]],
-            flux_tmp[f_idx[2]], flux_tmp[UEDEN], flux_tmp[UEINT], tmp0, tmp1,
-            tmp2, tmp3, tmp4);
+            flux_tmp[f_idx[2]], flux_tmp[UEDEN], flux_tmp[UEINT]);
         }
 
         for (int n = 0; n < NUM_SPECIES; n++) {
