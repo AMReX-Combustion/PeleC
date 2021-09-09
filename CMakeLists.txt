@@ -17,7 +17,6 @@ option(PELEC_ENABLE_CLANG_TIDY "Enable clang-tidy analysis" OFF)
 option(PELEC_ENABLE_CPPCHECK "Enable cppcheck analysis" OFF)
 option(PELEC_ENABLE_WERROR "Treat compiler warnings as errors" OFF)
 option(PELEC_ENABLE_MASA "Enable tests that require MASA" OFF)
-option(PELEC_ENABLE_SUNDIALS "Enable SUNDIALS as ODE solver" ON)
 option(PELEC_ENABLE_FCOMPARE "Enable building fcompare when not testing" OFF)
 option(PELEC_ENABLE_TESTS "Enable regression and unit tests" OFF)
 option(PELEC_ENABLE_FCOMPARE_FOR_TESTS "Check test plots against gold files" OFF)
@@ -82,22 +81,12 @@ set(AMREX_HYDRO_SUBMOD_LOCATION "${CMAKE_SOURCE_DIR}/Submodules/AMReX-Hydro")
 
 ########################## SUNDIALS ###################################
 
-if((PELEC_ODE_INTEGRATOR MATCHES "^(arkode|cvode)$") AND (NOT PELEC_ENABLE_SUNDIALS))
-  message(FATAL_ERROR "SUNDIALS must be enabled for arkode and cvode ODE integrators")
-endif()
-
-if(NOT (PELEC_ODE_INTEGRATOR MATCHES "^(arkode|cvode)$"))
-  set(PELEC_ODE_INTEGRATOR rk64)
-endif()
-
-if(PELEC_ENABLE_SUNDIALS)
-  message(STATUS "SUNDIALS Configure Section")
-  set(SUNDIALS_SUBMOD_LOCATION "${CMAKE_SOURCE_DIR}/Submodules/sundials")
-  include(SetSundialsOptions)
-  #BUILD_TESTING is an old CMake keyword so don't clear it in sundials configure
-  set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
-  add_subdirectory(${SUNDIALS_SUBMOD_LOCATION})
-endif()
+message(STATUS "SUNDIALS Configure Section")
+set(SUNDIALS_SUBMOD_LOCATION "${CMAKE_SOURCE_DIR}/Submodules/sundials")
+include(SetSundialsOptions)
+#BUILD_TESTING is an old CMake keyword so don't clear it in sundials configure
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+add_subdirectory(${SUNDIALS_SUBMOD_LOCATION})
 
 ########################### MASA #####################################
 
@@ -123,7 +112,6 @@ message(STATUS "CMAKE_SYSTEM_NAME = ${CMAKE_SYSTEM_NAME}")
 message(STATUS "CMAKE_CXX_COMPILER_ID = ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "CMAKE_CXX_COMPILER_VERSION = ${CMAKE_CXX_COMPILER_VERSION}")
 message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
-message(STATUS "ODE Integrator = ${PELEC_ODE_INTEGRATOR}")
 if(PELEC_ENABLE_WERROR)
   message(STATUS "Enabling Werror")
 endif()

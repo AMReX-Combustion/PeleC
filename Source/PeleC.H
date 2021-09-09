@@ -31,21 +31,11 @@
 #include "IndexDefines.H"
 #include "prob_parm.H"
 #include "PelePhysics.H"
-#ifdef PELEC_USE_REACTIONS
 #include "ReactorBase.H"
-#endif
 
 #define UserBC 6
 
-enum StateType {
-  State_Type = 0
-#ifdef PELEC_USE_REACTIONS
-  ,
-  Reactions_Type
-#endif
-  ,
-  Work_Estimate_Type
-};
+enum StateType { State_Type = 0, Reactions_Type, Work_Estimate_Type };
 
 // Create storage for all source terms.
 
@@ -453,13 +443,11 @@ public:
 
   static int numGrow();
 
-#ifdef PELEC_USE_REACTIONS
   void react_state(
     amrex::Real time,
     amrex::Real dt,
     bool init = false,
     amrex::MultiFab* aux_src = nullptr);
-#endif
 
   void reset_internal_energy(amrex::MultiFab& S_new, int ng);
 
@@ -583,11 +571,9 @@ protected:
   amrex::Vector<std::unique_ptr<amrex::MultiFab>> old_sources;
   amrex::Vector<std::unique_ptr<amrex::MultiFab>> new_sources;
 
-#ifdef PELEC_USE_REACTIONS
   std::unique_ptr<pele::physics::reactions::ReactorBase> reactor;
   void init_reactor();
   void close_reactor();
-#endif
 
   void init_les();
   void init_filters();

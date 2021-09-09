@@ -63,17 +63,14 @@ Bpack             += $(EOS_HOME)/Make.package
 Blocs             += $(EOS_HOME)
 
 # Reactions
-ifeq ($(USE_REACT), TRUE)
-  REACTIONS_HOME = $(PELE_PHYSICS_HOME)/Reactions
-  EXTERN_CORE       += $(REACTIONS_HOME)
-  INCLUDE_LOCATIONS += $(REACTIONS_HOME)
-  VPATH_LOCATIONS   += $(REACTIONS_HOME)
-  DEFINES += -DPELEC_USE_REACTIONS
-  Bpack += $(REACTIONS_HOME)/Make.package
-  Blocs += $(REACTIONS_HOME)
-  DEFINES += -DCOMPILE_JACOBIAN
-  include $(PELE_PHYSICS_HOME)/ThirdParty/Make.ThirdParty
-endif
+REACTIONS_HOME = $(PELE_PHYSICS_HOME)/Reactions
+EXTERN_CORE       += $(REACTIONS_HOME)
+INCLUDE_LOCATIONS += $(REACTIONS_HOME)
+VPATH_LOCATIONS   += $(REACTIONS_HOME)
+Bpack += $(REACTIONS_HOME)/Make.package
+Blocs += $(REACTIONS_HOME)
+DEFINES += -DCOMPILE_JACOBIAN
+include $(PELE_PHYSICS_HOME)/ThirdParty/Make.ThirdParty
 
 ifdef Chemistry_Model
   CHEM_HOME = $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism/Models/$(Chemistry_Model)

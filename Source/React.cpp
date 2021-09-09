@@ -184,7 +184,6 @@ PeleC::react_state(
             }
           });
 
-        const int reactor_type = 1;
         reactor->react(
           bx, rhoY, frcExt, T, rhoE, frcEExt, fc, mask, dt, current_time
 #ifdef AMREX_USE_GPU
