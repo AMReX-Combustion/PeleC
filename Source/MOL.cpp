@@ -13,7 +13,8 @@ pc_compute_hyp_mol_flux(
     del
 #endif
   ,
-  const int plm_iorder
+  const int plm_iorder,
+  const int use_laxf_flux
 #ifdef PELEC_USE_EB
   ,
   const amrex::Array4<amrex::EBCellFlag const>& flags,
@@ -137,13 +138,23 @@ pc_compute_hyp_mol_flux(
         amrex::Real tmp2 = 0.0;
         amrex::Real tmp3 = 0.0;
         amrex::Real tmp4 = 0.0;
-        riemann(
-          qtempl[R_RHO], qtempl[R_UN], qtempl[R_UT1], qtempl[R_UT2],
-          qtempl[R_P], spl, qtempr[R_RHO], qtempr[R_UN], qtempr[R_UT1],
-          qtempr[R_UT2], qtempr[R_P], spr, bc_test_val, cavg, ustar,
-          flux_tmp[URHO], flux_tmp[f_idx[0]], flux_tmp[f_idx[1]],
-          flux_tmp[f_idx[2]], flux_tmp[UEDEN], flux_tmp[UEINT], tmp0, tmp1,
-          tmp2, tmp3, tmp4);
+
+        if (!use_laxf_flux) {
+          riemann(
+            qtempl[R_RHO], qtempl[R_UN], qtempl[R_UT1], qtempl[R_UT2],
+            qtempl[R_P], spl, qtempr[R_RHO], qtempr[R_UN], qtempr[R_UT1],
+            qtempr[R_UT2], qtempr[R_P], spr, bc_test_val, cavg, ustar,
+            flux_tmp[URHO], flux_tmp[f_idx[0]], flux_tmp[f_idx[1]],
+            flux_tmp[f_idx[2]], flux_tmp[UEDEN], flux_tmp[UEINT], tmp0, tmp1,
+            tmp2, tmp3, tmp4);
+        } else {
+          laxfriedrich_flux(
+            qtempl[R_RHO], qtempl[R_UN], qtempl[R_UT1], qtempl[R_UT2],
+            qtempl[R_P], spl, qtempr[R_RHO], qtempr[R_UN], qtempr[R_UT1],
+            qtempr[R_UT2], qtempr[R_P], spr, bc_test_val, cavg, ustar,
+            flux_tmp[URHO], flux_tmp[f_idx[0]], flux_tmp[f_idx[1]],
+            flux_tmp[f_idx[2]], flux_tmp[UEDEN], flux_tmp[UEINT]);
+        }
 
         for (int n = 0; n < NUM_SPECIES; n++) {
           flux_tmp[UFS + n] = (ustar > 0.0) ? flux_tmp[URHO] * qtempl[R_Y + n]

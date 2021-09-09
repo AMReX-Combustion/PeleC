@@ -35,6 +35,7 @@ pp.query("ppm_reference_eigenvectors", ppm_reference_eigenvectors);
 pp.query("plm_iorder", plm_iorder);
 pp.query("hybrid_riemann", hybrid_riemann);
 pp.query("use_colglaz", use_colglaz);
+pp.query("use_laxf_flux", use_laxf_flux);
 pp.query("riemann_solver", riemann_solver);
 pp.query("cg_maxiter", cg_maxiter);
 pp.query("cg_tol", cg_tol);

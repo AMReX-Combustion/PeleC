@@ -111,7 +111,8 @@ void pc_compute_hyp_mol_flux(
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
     area,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> del,
-  const int plm_iorder
+  const int plm_iorder,
+  const int use_laxf_flux
 #ifdef PELEC_USE_EB
   ,
   const amrex::Array4<amrex::EBCellFlag const>& flags,

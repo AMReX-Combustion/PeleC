@@ -35,6 +35,7 @@ int PeleC::ppm_reference_eigenvectors = 0;
 int PeleC::plm_iorder = 2;
 int PeleC::hybrid_riemann = 0;
 int PeleC::use_colglaz = -1;
+int PeleC::use_laxf_flux = 0;
 int PeleC::riemann_solver = 0;
 int PeleC::cg_maxiter = 12;
 amrex::Real PeleC::cg_tol = 1.0e-5;
