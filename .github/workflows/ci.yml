@@ -176,7 +176,9 @@ jobs:
               cuda-command-line-tools-${{matrix.cuda_pkg}} \
               cuda-compiler-${{matrix.cuda_pkg}} cuda-minimal-build-${{matrix.cuda_pkg}} \
               cuda-nvml-dev-${{matrix.cuda_pkg}} cuda-nvtx-${{matrix.cuda_pkg}} \
-              libcurand-dev-${{matrix.cuda_pkg}} cuda-cupti-dev-${{matrix.cuda_pkg}}
+              libcurand-dev-${{matrix.cuda_pkg}} cuda-cupti-dev-${{matrix.cuda_pkg}} \
+              libcusolver-dev-${{matrix.cuda_pkg}} libcusparse-dev-${{matrix.cuda_pkg}} \
+              libcublas-dev-${{matrix.cuda_pkg}}
       - name: Configure
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
