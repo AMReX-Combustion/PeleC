@@ -311,6 +311,7 @@ jobs:
       - name: Build
         working-directory: ${{runner.workspace}}/build-hip
         run: |
+          echo "::add-matcher::.github/problem-matchers/gcc.json"
           source /etc/profile.d/rocm.sh
           cmake --build . --parallel ${{env.NPROCS}}
   DPCPP:
