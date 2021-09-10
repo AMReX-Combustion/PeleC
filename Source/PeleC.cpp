@@ -473,7 +473,7 @@ PeleC::~PeleC()
   if (do_react == 1) {
     close_reactor();
   }
-};
+}
 
 void
 PeleC::buildMetrics()
