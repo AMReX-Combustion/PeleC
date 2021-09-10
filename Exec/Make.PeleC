@@ -69,7 +69,6 @@ INCLUDE_LOCATIONS += $(REACTIONS_HOME)
 VPATH_LOCATIONS   += $(REACTIONS_HOME)
 Bpack += $(REACTIONS_HOME)/Make.package
 Blocs += $(REACTIONS_HOME)
-DEFINES += -DCOMPILE_JACOBIAN
 include $(PELE_PHYSICS_HOME)/ThirdParty/Make.ThirdParty
 
 ifdef Chemistry_Model

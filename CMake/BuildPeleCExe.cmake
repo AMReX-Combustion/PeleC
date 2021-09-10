@@ -116,7 +116,6 @@ function(build_pelec_exe pelec_exe_name)
   )
 
   target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions)
-  target_compile_definitions(${pelec_exe_name} PRIVATE COMPILE_JACOBIAN)
   target_link_libraries(${pelec_exe_name} PRIVATE sundials_arkode sundials_cvode)
 
   if(PELEC_ENABLE_CUDA)
