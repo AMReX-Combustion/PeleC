@@ -8,6 +8,56 @@
 using namespace MASA;
 #endif
 
+#ifdef PELEC_USE_EB
+#include "EB.H"
+#endif
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+get_idx(const int i, int& im, int& ip)
+{
+  im = i - 1;
+  ip = i + 1;
+}
+
+#ifdef PELEC_USE_EB
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+get_idx(
+  const int i,
+  const int dir,
+  const bool all_regular,
+  const amrex::EBCellFlag& flag,
+  int& im,
+  int& ip)
+{
+  if (all_regular) {
+    get_idx(i, im, ip);
+  } else {
+    if (flag.isCovered()) {
+      im = i;
+      ip = i;
+    } else {
+      const amrex::IntVect ivm = -amrex::IntVect::TheDimensionVector(dir);
+      const amrex::IntVect ivp = amrex::IntVect::TheDimensionVector(dir);
+      im = i - flag.isConnected(ivm);
+      ip = i + flag.isConnected(ivp);
+    }
+  }
+}
+#endif
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+amrex::Real
+get_weight(const int im, const int ip)
+{
+  const int diff = ip - im;
+  return diff == 0 ? 0.0 : (diff == 1 ? 1.0 : 0.5);
+}
+
 void pc_dervelx(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
