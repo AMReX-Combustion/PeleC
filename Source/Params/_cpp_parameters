@@ -129,6 +129,9 @@ hybrid_riemann               int           0
 # this is deprecated---use {\tt riemann\_solver} instead
 use_colglaz                  int           -1
 
+# Lax Friedrich's flux
+use_laxf_flux                int            0
+
 # which Riemann solver do we use:
 # 0: Colella, Glaz, \& Ferguson (a two-shock solver);
 # 1: Colella \& Glaz (a two-shock solver)

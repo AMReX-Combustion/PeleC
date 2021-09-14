@@ -30,7 +30,7 @@ The origin of PeleC is in the context of *The Pele Project*, with the goal of pr
 Dependencies
 ------------
 
-Pele is built on AMReX (available at `https://github.com/AMReX-Codes/amrex <https://github.com/AMReX-Codes/amrex>`_), an adaptive mesh refinement software framework, which provides the underlying software infrastructure for block structured AMR operations. The full AMReX documentation can be found `here <https://amrex-codes.github.io/AMReXUsersGuide.pdf>`_. 
+Pele is built on AMReX (available at `https://github.com/AMReX-Codes/amrex <https://github.com/AMReX-Codes/amrex>`_), an adaptive mesh refinement software framework, which provides the underlying software infrastructure for block structured AMR operations. The full AMReX documentation can be found `here <https://amrex-codes.github.io/amrex>`_. 
 
 Modules for describing the equation of state, diffusion transport model, and reaction kinetics are localized to the ``PelePhysics`` repository. For the purpose of this Users' Guide  ``PelePhysics`` is considered part of ``PeleC`` but it needs to be obtained through a separate checkout as described in the :ref:`readme <README>`.
 
