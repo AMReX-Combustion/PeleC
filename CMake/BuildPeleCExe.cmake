@@ -118,10 +118,15 @@ function(build_pelec_exe pelec_exe_name)
   target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions)
   target_link_libraries(${pelec_exe_name} PRIVATE sundials_arkode sundials_cvode)
 
-  if(PELEC_ENABLE_CUDA)
+  if(PELEC_ENABLE_CUDA OR PELEC_ENABLE_HIP)
     target_sources(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions/AMReX_SUNMemory.cpp
                                              ${PELE_PHYSICS_SRC_DIR}/Reactions/AMReX_SUNMemory.H)
+  endif()
+
+  if(PELEC_ENABLE_CUDA)
     target_link_libraries(${pelec_exe_name} PRIVATE sundials_nveccuda sundials_sunlinsolcusolversp sundials_sunmatrixcusparse)
+  elseif(PELEC_ENABLE_HIP)
+    target_link_libraries(${pelec_exe_name} PRIVATE sundials_nvechip)
   endif()
 
   if(PELEC_ENABLE_FORCING)
