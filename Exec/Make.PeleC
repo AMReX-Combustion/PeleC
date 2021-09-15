@@ -153,13 +153,13 @@ clean::
 	$(SILENT) $(RM) AMReX_buildInfo.cpp
 
 TPL:
-	cd $(PELE_PHYSICS_HOME)/ThirdParty; make AMREX_HOME=$(AMREX_HOME) USE_CUDA=$(USE_CUDA) DEBUG=$(DEBUG) COMP=$(HOSTCC) NVCC=$(COMP)
+	cd $(PELE_PHYSICS_HOME)/ThirdParty; make AMREX_HOME=$(AMREX_HOME) USE_CUDA=$(USE_CUDA) USE_HIP=$(USE_HIP) DEBUG=$(DEBUG) COMP=$(HOSTCC) NVCC=$(COMP)
 
 TPLclean:
-	cd $(PELE_PHYSICS_HOME)/ThirdParty; make AMREX_HOME=$(AMREX_HOME) USE_CUDA=$(USE_CUDA) DEBUG=$(DEBUG) COMP=$(HOSTCC) NVCC=$(COMP) clean
+	cd $(PELE_PHYSICS_HOME)/ThirdParty; make AMREX_HOME=$(AMREX_HOME) USE_CUDA=$(USE_CUDA) USE_HIP=$(USE_HIP) DEBUG=$(DEBUG) COMP=$(HOSTCC) NVCC=$(COMP) clean
 
 TPLrealclean:
-	cd $(PELE_PHYSICS_HOME)/ThirdParty; make AMREX_HOME=$(AMREX_HOME) USE_CUDA=$(USE_CUDA) DEBUG=$(DEBUG) COMP=$(HOSTCC) NVCC=$(COMP) realclean
+	cd $(PELE_PHYSICS_HOME)/ThirdParty; make AMREX_HOME=$(AMREX_HOME) USE_CUDA=$(USE_CUDA) USE_HIP=$(USE_HIP) DEBUG=$(DEBUG) COMP=$(HOSTCC) NVCC=$(COMP) realclean
 
 #-----------------------------------------------------------------------------
 # for debugging.  To see the value of a Makefile variable,
