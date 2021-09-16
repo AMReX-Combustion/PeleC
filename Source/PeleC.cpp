@@ -1547,7 +1547,8 @@ PeleC::errorEst(
 
   amrex::MultiFab S_data(
     get_new_data(State_Type).boxArray(),
-    get_new_data(State_Type).DistributionMap(), NVAR, 1);
+    get_new_data(State_Type).DistributionMap(), NVAR, 1, amrex::MFInfo(),
+    *m_factory);
   const amrex::Real cur_time = state[State_Type].curTime();
   FillPatch(
     *this, S_data, S_data.nGrow(), cur_time, State_Type, Density, NVAR, 0);
