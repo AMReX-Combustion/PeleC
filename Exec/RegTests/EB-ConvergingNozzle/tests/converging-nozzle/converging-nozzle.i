@@ -51,7 +51,7 @@ amr.ref_ratio       = 2 2 2 2 # refinement ratio
 amr.regrid_int      = 4 4 4 4 # how often to regrid
 amr.blocking_factor = 8       # block factor in grid generation
 amr.max_grid_size   = 64
-amr.loadbalance_with_workestimates = 1
+# amr.loadbalance_with_workestimates = 1
 
 # CHECKPOINT FILES
 amr.checkpoint_files_output = 1
