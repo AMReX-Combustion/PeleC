@@ -94,7 +94,7 @@ static amrex::Real react_T_max;
 static amrex::Real react_rho_min;
 static amrex::Real react_rho_max;
 static int disable_shock_burning;
-static int chem_integrator;
+static std::string chem_integrator;
 static int adaptrk_nsubsteps_min;
 static int adaptrk_nsubsteps_max;
 static int adaptrk_nsubsteps_guess;

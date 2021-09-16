@@ -2,7 +2,7 @@
 
 # Example CMake config script for running test suite on Eagle:
 
-module load mpt cuda/10.2.89 cmake
+module load mpt cuda/11.2.2 cmake
 
 cmake -DCMAKE_INSTALL_PREFIX:PATH=./install \
       -DCMAKE_BUILD_TYPE:STRING=Release \
@@ -12,7 +12,6 @@ cmake -DCMAKE_INSTALL_PREFIX:PATH=./install \
       -DPELEC_ENABLE_TESTS:BOOL=ON \
       -DPELEC_ENABLE_FCOMPARE:BOOL=ON \
       -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=ON \
-      -DPELEC_ENABLE_SUNDIALS:BOOL=ON \
       -DPELEC_ENABLE_MASA:BOOL=OFF \
       -DPELEC_ENABLE_ALL_WARNINGS:BOOL=ON \
       -DPELEC_ENABLE_CPPCHECK:BOOL=OFF \

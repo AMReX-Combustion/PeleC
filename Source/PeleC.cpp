@@ -27,9 +27,6 @@ using namespace MASA;
 #include "Utilities.H"
 #include "Tagging.H"
 #include "IndexDefines.H"
-#if defined(PELEC_USE_REACTIONS) && defined(USE_SUNDIALS_PP)
-#include "reactor.H"
-#endif
 
 #ifdef PELEC_ENABLE_FPE_TRAP
 #if defined(__linux__)
@@ -443,9 +440,7 @@ PeleC::PeleC(
     }
   }
 
-#ifdef PELEC_USE_REACTIONS
   get_new_data(Reactions_Type).setVal(0.0);
-#endif
 
   // Don't need this in pure C++?
   // initialize the Godunov state array used in hydro -- we wait
@@ -461,6 +456,11 @@ PeleC::PeleC(
     init_les();
   }
 
+  // Initialize the reactor
+  if (do_react == 1) {
+    init_reactor();
+  }
+
   // initialize filters and variables
   nGrowF = 0;
   if (use_explicit_filter) {
@@ -468,7 +468,12 @@ PeleC::PeleC(
   }
 }
 
-PeleC::~PeleC() = default;
+PeleC::~PeleC()
+{
+  if (do_react == 1) {
+    close_reactor();
+  }
+}
 
 void
 PeleC::buildMetrics()
@@ -647,9 +652,7 @@ PeleC::initData()
     amrex::Print() << "Initializing the data at level " << level << std::endl;
   }
 
-#ifdef PELEC_USE_REACTIONS
   get_new_data(Reactions_Type).setVal(0.0);
-#endif
 
   if (do_mol_load_balance || do_react_load_balance) {
     get_new_data(Work_Estimate_Type).setVal(1.0);
@@ -715,7 +718,6 @@ PeleC::init(AmrLevel& old)
   amrex::MultiFab& S_new = get_new_data(State_Type);
   FillPatch(old, S_new, 0, cur_time, State_Type, 0, NVAR);
 
-#ifdef PELEC_USE_REACTIONS
   amrex::MultiFab& React_new = get_new_data(Reactions_Type);
 
   if (do_react) {
@@ -724,7 +726,6 @@ PeleC::init(AmrLevel& old)
   } else {
     React_new.setVal(0);
   }
-#endif
 
   if (do_mol_load_balance || do_react_load_balance) {
     amrex::MultiFab& work_estimate_new = get_new_data(Work_Estimate_Type);
@@ -1224,12 +1225,10 @@ void PeleC::post_init(amrex::Real /*stop_time*/)
   amrex::Real cumtime = parent->cumTime();
 
   // Fill Reactions_Type data based on initial dt
-#ifdef PELEC_USE_REACTIONS
   if (do_react == 1) {
     bool react_init = true;
     react_state(cumtime, dtlev, react_init);
   }
-#endif
 
   if (level > 0) {
     return;
@@ -1366,10 +1365,7 @@ PeleC::avgDown()
   }
 
   avgDown(State_Type);
-
-#ifdef PELEC_USE_REACTIONS
   avgDown(Reactions_Type);
-#endif
 }
 
 void
@@ -1853,25 +1849,28 @@ PeleC::clear_prob()
   pc_prob_close();
 }
 
-#ifdef PELEC_USE_REACTIONS
 void
 PeleC::init_reactor()
 {
-#ifdef USE_SUNDIALS_PP
+  reactor = pele::physics::reactions::ReactorBase::create(chem_integrator);
+  if ((do_react == 1) && (chem_integrator == "ReactorNull")) {
+    amrex::Print() << "WARNING: turning on reactions while using ReactorNull. "
+                      "Make sure this is intended."
+                   << std::endl;
+  }
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
   {
-    reactor_init(1, 1);
+    reactor->init(1, 1);
   }
-#endif
 }
 
 void
 PeleC::close_reactor()
 {
+  reactor->close();
 }
-#endif
 
 void
 PeleC::init_les()

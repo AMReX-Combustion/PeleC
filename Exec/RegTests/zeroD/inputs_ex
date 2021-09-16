@@ -18,6 +18,7 @@ pelec.hi_bc       =  "Interior" "Interior" "Interior"
 
 # WHICH PHYSICS
 pelec.do_react = 1
+pelec.chem_integrator = "ReactorRK64"
 pelec.do_hydro = 1
 pelec.diffuse_temp = 0
 pelec.diffuse_enth = 0

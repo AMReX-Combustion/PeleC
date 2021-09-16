@@ -24,8 +24,6 @@ FSANITIZER = FALSE
 THREAD_SANITIZER = FALSE
 
 # PeleC
-USE_SUNDIALS_PP = FALSE
-USE_REACT = FALSE
 USE_EB = TRUE
 Eos_Model := GammaLaw
 Chemistry_Model := Null

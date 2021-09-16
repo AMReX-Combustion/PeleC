@@ -61,6 +61,7 @@ amr.derive_plot_vars = density xmom ymom zmom eden Temp pressure x_velocity y_ve
 pelec.plot_rhoy = 0
 pelec.plot_massfrac = 1
 pelec.do_react = 1
+pelec.chem_integrator = "ReactorRK64"
 pelec.diffuse_temp=1
 pelec.diffuse_enth=1
 pelec.diffuse_spec=1
@@ -72,5 +73,3 @@ pelec.do_mol=0
 eb2.use_eb2 = 1
 eb2.geom_type = "all_regular"
 ebd.boundary_grad_stencil_type = 0
-
-pelec.chem_integrator=1
