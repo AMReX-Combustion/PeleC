@@ -96,11 +96,7 @@ amrex::Real PeleC::react_T_max = 1.e200;
 amrex::Real PeleC::react_rho_min = 0.0;
 amrex::Real PeleC::react_rho_max = 1.e200;
 int PeleC::disable_shock_burning = 0;
-#ifdef USE_SUNDIALS_PP
-int PeleC::chem_integrator = 2;
-#else
-int PeleC::chem_integrator = 1;
-#endif
+std::string PeleC::chem_integrator = "ReactorNull";
 int PeleC::adaptrk_nsubsteps_min = 20;
 int PeleC::adaptrk_nsubsteps_max = 300;
 int PeleC::adaptrk_nsubsteps_guess = 50;

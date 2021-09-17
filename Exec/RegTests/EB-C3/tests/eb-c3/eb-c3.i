@@ -26,6 +26,7 @@ pelec.eb_isothermal = 0
 pelec.do_hydro = 1
 pelec.do_mol = 1
 pelec.do_react = 1
+pelec.chem_integrator = "ReactorRK64"
 pelec.allow_negative_energy = 0
 pelec.diffuse_temp = 0
 pelec.diffuse_vel  = 0

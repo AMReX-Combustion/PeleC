@@ -22,6 +22,7 @@ CEXE_sources += Utilities.cpp
 CEXE_sources += Transport.cpp
 CEXE_sources += MOL.cpp
 CEXE_sources += Filter.cpp
+CEXE_sources += React.cpp
 CEXE_sources += External.cpp
 CEXE_sources += Forcing.cpp
 CEXE_sources += LES.cpp
@@ -45,6 +46,7 @@ CEXE_headers += Utilities.H
 CEXE_headers += Transport.H
 CEXE_headers += MOL.H
 CEXE_headers += Filter.H
+CEXE_headers += React.H
 CEXE_headers += Riemann.H
 CEXE_headers += Forcing.H
 CEXE_headers += LES.H
@@ -65,11 +67,6 @@ endif
 
 ifeq ($(USE_SOOT), TRUE)
   CEXE_sources += Soot.cpp
-endif
-
-ifeq ($(USE_REACT), TRUE)
-  CEXE_sources += React.cpp
-  CEXE_headers += React.H
 endif
 
 ifeq ($(USE_MASA), TRUE)

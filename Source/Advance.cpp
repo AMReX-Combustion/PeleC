@@ -50,14 +50,10 @@ PeleC::do_mol_advance(
   // into MOL advance yet");
 
   for (int i = 0; i < num_state_type; ++i) {
-#ifdef PELEC_USE_REACTIONS
     if (!(i == Reactions_Type && do_react)) {
-#endif
       state[i].allocOldData();
       state[i].swapTimeLevels(dt);
-#ifdef PELEC_USE_REACTIONS
     }
-#endif
   }
 
   if (do_mol_load_balance || do_react_load_balance) {
@@ -79,12 +75,10 @@ PeleC::do_mol_advance(
     molSrc_new.define(grids, dmap, NVAR, 0, amrex::MFInfo(), Factory());
   }
 
-#ifdef PELEC_USE_REACTIONS
   if (do_react == 0) {
     get_new_data(Reactions_Type).setVal(0.0);
   }
   const amrex::MultiFab& I_R = get_new_data(Reactions_Type);
-#endif
 
 #ifdef PELEC_USE_EB
   set_body_state(S_old);
@@ -161,13 +155,11 @@ PeleC::do_mol_advance(
   // U^* = U^n + dt*S^n
   amrex::MultiFab::LinComb(S_new, 1.0, Sborder, 0, dt, molSrc, 0, 0, NVAR, 0);
 
-#ifdef PELEC_USE_REACTIONS
   // U^{n+1,*} = U^n + dt*S^n + dt*I_R
   if (do_react == 1) {
     amrex::MultiFab::Saxpy(S_new, dt, I_R, 0, FirstSpec, NUM_SPECIES, 0);
     amrex::MultiFab::Saxpy(S_new, dt, I_R, NUM_SPECIES, Eden, 1, 0);
   }
-#endif
 
   computeTemp(S_new, 0);
 
@@ -213,7 +205,6 @@ PeleC::do_mol_advance(
     S_new, 0.5 * dt, molSrc, 0, 0, NVAR,
     0); //  NOTE: If I_R=0, we are done and U_new is the final new-time state
 
-#ifdef PELEC_USE_REACTIONS
   if (do_react == 1) {
     amrex::MultiFab::Saxpy(S_new, 0.5 * dt, I_R, 0, FirstSpec, NUM_SPECIES, 0);
     amrex::MultiFab::Saxpy(S_new, 0.5 * dt, I_R, NUM_SPECIES, Eden, 1, 0);
@@ -228,11 +219,9 @@ PeleC::do_mol_advance(
     // Compute I_R and U^{n+1} = U^n + dt*(F_{AD} + I_R)
     react_state(time, dt, false, &molSrc);
   }
-#endif
 
   computeTemp(S_new, 0);
 
-#ifdef PELEC_USE_REACTIONS
   if (do_react == 1) {
     for (int mol_iter = 2; mol_iter <= mol_iters; ++mol_iter) {
       if (verbose) {
@@ -253,7 +242,6 @@ PeleC::do_mol_advance(
       computeTemp(S_new, 0);
     }
   }
-#endif
 
 #ifdef PELEC_USE_EB
   set_body_state(S_new);
@@ -475,7 +463,6 @@ PeleC::do_sdc_iteration(
   }
 #endif
 
-#ifdef PELEC_USE_REACTIONS
   // Update I_R and rebuild S_new accordingly
   if (do_react == 1) {
     react_state(time, dt);
@@ -483,9 +470,6 @@ PeleC::do_sdc_iteration(
     construct_Snew(S_new, S_old, dt);
     get_new_data(Reactions_Type).setVal(0);
   }
-#else
-  construct_Snew(S_new, S_old, dt);
-#endif
 
   computeTemp(S_new, ng_src);
 
@@ -512,13 +496,11 @@ PeleC::construct_Snew(
     amrex::MultiFab::Saxpy(S_new, dt, hydro_source, 0, 0, NVAR, ng);
   }
 
-#ifdef PELEC_USE_REACTIONS
   if (do_react == 1) {
     amrex::MultiFab& I_R = get_new_data(Reactions_Type);
     amrex::MultiFab::Saxpy(S_new, dt, I_R, 0, FirstSpec, NUM_SPECIES, 0);
     amrex::MultiFab::Saxpy(S_new, dt, I_R, NUM_SPECIES, Eden, 1, 0);
   }
-#endif
 }
 
 void
@@ -569,7 +551,6 @@ PeleC::initialize_sdc_advance(
     state[i].swapTimeLevels(dt);
   }
 
-#ifdef PELEC_USE_REACTIONS
   if (do_react == 1) {
     // Initialize I_R with value from previous time step
     amrex::MultiFab::Copy(
@@ -577,7 +558,6 @@ PeleC::initialize_sdc_advance(
       get_new_data(Reactions_Type).nComp(),
       get_new_data(Reactions_Type).nGrow());
   }
-#endif
 }
 
 void

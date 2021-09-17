@@ -136,7 +136,9 @@ jobs:
           printf "CC=gcc-10\nCXX=g++-10\nFC=gfortran-10\nF90=gfortran-10" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
       - name: PMF debug make
         working-directory: ./Exec/RegTests/PMF
-        run: make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE
+        run: |
+          make COMP=gnu USE_MPI=FALSE DEBUG=TRUE TPL
+          make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE
       - name: PMF debug test
         working-directory: ./Exec/RegTests/PMF
         run: ./PeleC3d.gnu.DEBUG.ex tests/pmf-1/pmf-1.i max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
@@ -174,7 +176,9 @@ jobs:
               cuda-command-line-tools-${{matrix.cuda_pkg}} \
               cuda-compiler-${{matrix.cuda_pkg}} cuda-minimal-build-${{matrix.cuda_pkg}} \
               cuda-nvml-dev-${{matrix.cuda_pkg}} cuda-nvtx-${{matrix.cuda_pkg}} \
-              libcurand-dev-${{matrix.cuda_pkg}} cuda-cupti-dev-${{matrix.cuda_pkg}}
+              libcurand-dev-${{matrix.cuda_pkg}} cuda-cupti-dev-${{matrix.cuda_pkg}} \
+              libcusolver-dev-${{matrix.cuda_pkg}} libcusparse-dev-${{matrix.cuda_pkg}} \
+              libcublas-dev-${{matrix.cuda_pkg}}
       - name: Configure
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
@@ -292,14 +296,17 @@ jobs:
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
           source /etc/profile.d/rocm.sh
           which clang
-          which clang++
+          which hipcc
           cmake -B${{runner.workspace}}/build-hip \
-          -DCMAKE_CXX_COMPILER:STRING=$(which clang++) \
+          -DCMAKE_CXX_COMPILER:STRING=$(which hipcc) \
           -DCMAKE_C_COMPILER:STRING=$(which clang) \
           -DCMAKE_CXX_STANDARD=17 \
+          -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT=17 \
           -DPELEC_ENABLE_MPI:BOOL=OFF \
           -DPELEC_ENABLE_HIP:BOOL=ON \
           -DAMReX_AMD_ARCH:STRING=gfx908 \
+          -DCMAKE_CXX_COMPILER_ID=Clang \
+          -DCMAKE_CXX_COMPILER_VERSION=12.0 \
           -DPELEC_ENABLE_TESTS:BOOL=ON \
           -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
           -DPELEC_ENABLE_MASA:BOOL=OFF \
@@ -307,6 +314,7 @@ jobs:
       - name: Build
         working-directory: ${{runner.workspace}}/build-hip
         run: |
+          echo "::add-matcher::.github/problem-matchers/gcc.json"
           source /etc/profile.d/rocm.sh
           cmake --build . --parallel ${{env.NPROCS}}
   DPCPP:

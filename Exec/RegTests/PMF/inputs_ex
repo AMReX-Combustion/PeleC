@@ -58,6 +58,7 @@ tagging.ftracerr = 150.e-6
 
 #amr.derive_plot_vars = ALL
 pelec.do_react = 1
+pelec.chem_integrator = "ReactorRK64"
 pelec.diffuse_temp=1
 pelec.diffuse_enth=1
 pelec.diffuse_spec=1

@@ -7,8 +7,7 @@
 using namespace MASA;
 #endif
 
-#if defined(PELEC_USE_REACTIONS) && defined(AMREX_USE_GPU) && \
-  defined(USE_SUNDIALS_PP)
+#ifdef AMREX_USE_GPU
 #include <AMReX_SUNMemory.H>
 #endif
 
@@ -40,11 +39,9 @@ static int norm_vel_bc[] = {INT_DIR,     EXT_DIR,     FOEXTRAP, REFLECT_ODD,
 static int tang_vel_bc[] = {INT_DIR,      EXT_DIR,     FOEXTRAP, REFLECT_EVEN,
                             REFLECT_EVEN, REFLECT_ODD, EXT_DIR};
 
-#ifdef PELEC_USE_REACTIONS
 static int react_src_bc[] = {INT_DIR,      REFLECT_EVEN, REFLECT_EVEN,
                              REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN,
                              REFLECT_EVEN};
-#endif
 
 static amrex::Box
 the_same_box(const amrex::Box& b)
@@ -90,7 +87,6 @@ set_y_vel_bc(amrex::BCRec& bc, const amrex::BCRec& phys_bc)
     , bc.setLo(2, tang_vel_bc[lo_bc[2]]); bc.setHi(2, tang_vel_bc[hi_bc[2]]););
 }
 
-#ifdef PELEC_USE_REACTIONS
 static void
 set_react_src_bc(amrex::BCRec& bc, const amrex::BCRec& phys_bc)
 {
@@ -101,7 +97,6 @@ set_react_src_bc(amrex::BCRec& bc, const amrex::BCRec& phys_bc)
     bc.setHi(dir, react_src_bc[hi_bc[dir]]);
   }
 }
-#endif
 
 static void
 set_z_vel_bc(amrex::BCRec& bc, const amrex::BCRec& phys_bc)
@@ -169,27 +164,8 @@ PeleC::variableSetUp()
   eb_in_domain = ebInDomain();
   read_params();
 
-#ifdef PELEC_USE_REACTIONS
-#if defined(AMREX_USE_GPU) && defined(USE_SUNDIALS_PP)
+#ifdef AMREX_USE_GPU
   amrex::sundials::MemoryHelper::Initialize();
-#endif
-
-  if (chem_integrator == 1) {
-    amrex::Print() << "Using built-in RK64 chemistry integrator from pelec\n";
-  } else if (chem_integrator == 2) {
-#ifdef USE_SUNDIALS_PP
-    amrex::Print() << "Using sundials chemistry integrator from pelephysics\n";
-#else
-    amrex::Print() << "Using rk64 chemistry integrator from pelephysics\n";
-#endif
-  } else {
-    amrex::Abort("Invalid chem_integrator choice.");
-  }
-
-  // Initialize the reactor
-  if (do_react == 1) {
-    init_reactor();
-  }
 #endif
 
   init_pass_map(h_pass_map);
@@ -313,13 +289,11 @@ PeleC::variableSetUp()
 
   // Components 0:Numspec-1 are rho.omega_i
   // Component NUM_SPECIES is rho.edot = (rho.eout-rho.ein)
-#ifdef PELEC_USE_REACTIONS
   store_in_checkpoint = true;
   desc_lst.addDescriptor(
     Reactions_Type, amrex::IndexType::TheCellType(),
     amrex::StateDescriptor::Point, 0, NUM_SPECIES + 2, interp,
     state_data_extrap, store_in_checkpoint);
-#endif
 
   amrex::Vector<amrex::BCRec> bcs(NVAR);
   amrex::Vector<std::string> name(NVAR);
@@ -443,7 +417,6 @@ PeleC::variableSetUp()
 
   desc_lst.setComponent(State_Type, Density, name, bcs, bndryfunc1);
 
-#ifdef PELEC_USE_REACTIONS
   for (int i = 0; i < NUM_SPECIES; ++i) {
     set_react_src_bc(bc, phys_bc);
     react_bcs[i] = bc;
@@ -459,7 +432,6 @@ PeleC::variableSetUp()
   bndryfunc2.setRunOnGPU(true);
 
   desc_lst.setComponent(Reactions_Type, 0, react_name, react_bcs, bndryfunc2);
-#endif
 
   if (do_react_load_balance || do_mol_load_balance) {
     desc_lst.addDescriptor(
@@ -669,12 +641,6 @@ PeleC::variableCleanUp()
   derive_lst.clear();
 
   desc_lst.clear();
-
-#ifdef PELEC_USE_REACTIONS
-  if (do_react == 1) {
-    close_reactor();
-  }
-#endif
 
   clear_prob();
 
