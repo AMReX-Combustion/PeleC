@@ -12,11 +12,9 @@ pc_fill_sv_ebg(
     const amrex::Array4<const amrex::Real>& apz),
   EBBndryGeom* ebg)
 {
-  const auto lo = amrex::lbound(bx);
-  const auto hi = amrex::ubound(bx);
   amrex::ParallelFor(Nebg, [=] AMREX_GPU_DEVICE(int L) {
     const auto& iv = ebg[L].iv;
-    if (is_inside(iv, lo, hi)) {
+    if (bx.contains(iv)) {
       const amrex::Real axm = apx(iv);
       const amrex::Real axp = apx(iv + amrex::IntVect::TheDimensionVector(0));
       const amrex::Real aym = apy(iv);
@@ -71,13 +69,11 @@ pc_fill_bndry_grad_stencil_quadratic(
   const int Nsten,
   EBBndrySten* grad_stencil)
 {
-  const auto lo = amrex::lbound(bx);
-  const auto hi = amrex::ubound(bx);
   const amrex::Real area = std::pow(dx, AMREX_SPACEDIM - 1);
   const amrex::Real fac = area / dx;
 
   amrex::ParallelFor(Nsten, [=] AMREX_GPU_DEVICE(int L) {
-    if (is_inside(ebg[L].iv, lo, hi)) {
+    if (bx.contains(ebg[L].iv)) {
       const amrex::Real n[AMREX_SPACEDIM] = {AMREX_D_DECL(
         ebg[L].eb_normal[0], ebg[L].eb_normal[1], ebg[L].eb_normal[2])};
 
@@ -264,13 +260,11 @@ pc_fill_bndry_grad_stencil_ls(
 
   AMREX_ASSERT(AMREX_SPACEDIM > 1);
 
-  const auto lo = amrex::lbound(bx);
-  const auto hi = amrex::ubound(bx);
   const amrex::Real area = std::pow(dx, AMREX_SPACEDIM - 1);
   const amrex::Real fac = area / dx;
 
   amrex::ParallelFor(Nsten, [=] AMREX_GPU_DEVICE(int L) {
-    if (is_inside(ebg[L].iv, lo, hi)) {
+    if (bx.contains(ebg[L].iv)) {
       const amrex::Real n[AMREX_SPACEDIM] = {AMREX_D_DECL(
         ebg[L].eb_normal[0], ebg[L].eb_normal[1], ebg[L].eb_normal[2])};
 
@@ -310,7 +304,7 @@ pc_fill_bndry_grad_stencil_ls(
                          , sten_iv[1] = baseiv[1] + jj;
                          , sten_iv[2] = baseiv[2] + kk;)
 
-            if (is_inside(sten_iv, lo, hi)) {
+            if (bx.contains(sten_iv)) {
               if (
                 !(AMREX_D_TERM(
                   sten_iv[0] == ivs[0], &&sten_iv[1] == ivs[1],
@@ -351,7 +345,7 @@ pc_fill_bndry_grad_stencil_ls(
                            , sten_iv[1] = baseiv[1] + jj;
                            , sten_iv[2] = baseiv[2] + kk;)
 
-              if (is_inside(sten_iv, lo, hi)) {
+              if (bx.contains(sten_iv)) {
                 if (
                   !(AMREX_D_TERM(
                     sten_iv[0] == ivs[0], &&sten_iv[1] == ivs[1],
@@ -405,11 +399,9 @@ pc_fill_flux_interp_stencil(
   const amrex::Array4<const amrex::Real>& fa,
   FaceSten* sten)
 {
-  const auto lo = amrex::lbound(bx);
-  const auto hi = amrex::ubound(bx);
   amrex::ParallelFor(Nsten, [=] AMREX_GPU_DEVICE(int L) {
     const auto& iv = sten[L].iv;
-    if (is_inside(iv, lo, hi)) {
+    if (bx.contains(iv)) {
 #if AMREX_SPACEDIM == 2
       for (amrex::Real& jj : sten[L].val) {
         jj = 0.0;
@@ -450,9 +442,6 @@ pc_apply_face_stencil(
   const int nc,
   const amrex::Array4<amrex::Real>& vout)
 {
-  const auto lo = amrex::lbound(bx);
-  const auto hi = amrex::ubound(bx);
-
   for (int n = 0; n < nc; n++) {
     amrex::Gpu::DeviceVector<amrex::Real> newval(Nsten);
     amrex::Real* d_newval = newval.data();
@@ -460,7 +449,7 @@ pc_apply_face_stencil(
     amrex::ParallelFor(Nsten, [=] AMREX_GPU_DEVICE(int L) {
       const auto& iv = sten[L].iv;
       d_newval[L] = 0.0;
-      if (is_inside(iv, lo, hi)) {
+      if (bx.contains(iv)) {
         if (dir == 0) {
           for (int t0 = 0; t0 < 3; t0++) {
 #if AMREX_SPACEDIM > 2
@@ -503,7 +492,7 @@ pc_apply_face_stencil(
     });
 
     amrex::ParallelFor(Nsten, [=] AMREX_GPU_DEVICE(int L) {
-      if (is_inside(sten[L].iv, lo, hi)) {
+      if (bx.contains(sten[L].iv)) {
         vout(sten[L].iv, n) = d_newval[L];
       }
     });
@@ -525,16 +514,15 @@ pc_eb_div(
   const amrex::Array4<const amrex::Real>& vf,
   const amrex::Array4<amrex::Real>& DC)
 {
-  const auto lo = amrex::lbound(bx);
-  const auto hi = amrex::ubound(bx);
   const amrex::Real volinv = 1.0 / vol;
+  const amrex::Box bxg2 = amrex::grow(bx, 2);
 
   for (int n = 0; n < nc; n++) {
     // Recompute conservative divergence, DC, on cut cells...need DC in 2 grow
     // cells for final result
     amrex::ParallelFor(Ncut, [=] AMREX_GPU_DEVICE(int L) {
       const auto& iv = sv_ebg[L].iv;
-      if (is_inside(iv, lo, hi, 2)) {
+      if (bxg2.contains(iv)) {
         const amrex::Real kappa_inv =
           1.0 / amrex::max<amrex::Real>(vf(iv), 1.0e-12);
         amrex::Real tmp;
@@ -568,12 +556,9 @@ pc_apply_eb_boundry_visc_flux_stencil(
   amrex::Real* bcflux,
   const int Nflux)
 {
-  const auto lo = amrex::lbound(bx);
-  const auto hi = amrex::ubound(bx);
-
   amrex::ParallelFor(Nsten, [=] AMREX_GPU_DEVICE(int L) {
     const auto& iv = sten[L].iv;
-    if (is_inside(iv, lo, hi)) {
+    if (bx.contains(iv)) {
       const amrex::Real Nmag = std::sqrt(AMREX_D_TERM(
         ebg[L].eb_normal[0] * ebg[L].eb_normal[0],
         +ebg[L].eb_normal[1] * ebg[L].eb_normal[1],
@@ -710,12 +695,9 @@ pc_apply_eb_boundry_flux_stencil(
   const int Nflux,
   const int nc)
 {
-  const auto lo = amrex::lbound(bx);
-  const auto hi = amrex::ubound(bx);
-
   amrex::ParallelFor(Nsten, [=] AMREX_GPU_DEVICE(int L) {
     const amrex::IntVect iv = sten[L].iv;
-    if (is_inside(iv, lo, hi)) {
+    if (bx.contains(iv)) {
       for (int n = 0; n < nc; n++) {
         amrex::Real sum = 0.0;
         for (int ii = 0; ii < 3; ii++) {
