@@ -13,9 +13,6 @@ pc_compute_tangential_vel_derivs_eb(
   const amrex::Array4<amrex::EBCellFlag const>& flags,
   const amrex::Array4<amrex::Real>& td)
 {
-  const auto lo = amrex::lbound(bx);
-  const auto hi = amrex::ubound(bx);
-
   // dx1 and dx2 will be the trangential grid spacing
   const amrex::Real dx1inv = 1.0 / dx1;
   const amrex::Real dx2inv = 1.0 / dx2;
@@ -29,7 +26,7 @@ pc_compute_tangential_vel_derivs_eb(
       AMREX_D_TERM(i = sv_ebg[L].iv[0];, j = sv_ebg[L].iv[1];
                    , k = sv_ebg[L].iv[2];);
       const amrex::IntVect iv = amrex::IntVect{AMREX_D_DECL(i, j, k)};
-      if (is_inside(iv, lo, hi)) {
+      if (bx.contains(iv)) {
         const int jhip = j + flags(i, j, k).isConnected(0, 1, 0);
         const int jhim = j - flags(i, j, k).isConnected(0, -1, 0);
         const int jlop = j + flags(i - 1, j, k).isConnected(0, 1, 0);
@@ -79,7 +76,7 @@ pc_compute_tangential_vel_derivs_eb(
       AMREX_D_TERM(i = sv_ebg[L].iv[0];, j = sv_ebg[L].iv[1];
                    , k = sv_ebg[L].iv[2];);
       const amrex::IntVect iv = amrex::IntVect{AMREX_D_DECL(i, j, k)};
-      if (is_inside(iv, lo, hi)) {
+      if (bx.contains(iv)) {
         const int ihip = i + flags(i, j, k).isConnected(1, 0, 0);
         const int ihim = i - flags(i, j, k).isConnected(-1, 0, 0);
         const int ilop = i + flags(i, j - 1, k).isConnected(1, 0, 0);
@@ -127,7 +124,7 @@ pc_compute_tangential_vel_derivs_eb(
       const int j = sv_ebg[L].iv[1];
       const int k = sv_ebg[L].iv[2];
       const amrex::IntVect iv = amrex::IntVect{AMREX_D_DECL(i, j, k)};
-      if (is_inside(iv, lo, hi)) {
+      if (bx.contains(iv)) {
         const int ihip = i + flags(i, j, k).isConnected(1, 0, 0);
         const int ihim = i - flags(i, j, k).isConnected(-1, 0, 0);
         const int ilop = i + flags(i, j, k - 1).isConnected(1, 0, 0);
