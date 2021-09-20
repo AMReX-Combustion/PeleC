@@ -406,11 +406,7 @@ bcnormal(
       // subsonic velocity inlet
       amrex::Real e_ext, T_ext;
       amrex::Real jet_massfrac[NUM_SPECIES] = {0.0};
-      jet_massfrac[CH4_ID] =
-        prob_parm.Yfuel_jet *
-        (0.5 + 0.5 * tanh(aYf * (rad / prob_parm.r_hole) + bYf));
-      jet_massfrac[O2_ID] = (1.0 - jet_massfrac[CH4_ID]) * 0.23;
-      jet_massfrac[N2_ID] = (1.0 - jet_massfrac[CH4_ID]) * 0.77;
+      jet_massfrac[CH4_ID] = 1.0;
       eos.RYP2E(prob_parm.dens_jet, jet_massfrac, p_int, e_ext);
       eos.EY2T(e_ext, jet_massfrac, T_ext);
 
