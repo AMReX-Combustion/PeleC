@@ -451,14 +451,14 @@ PeleC::PeleC(
   //  init_godunov_indices();
   //}
 
-  // initialize LES variables
-  if (do_les) {
-    init_les();
-  }
-
   // Initialize the reactor
   if (do_react == 1) {
     init_reactor();
+  }
+
+  // initialize LES variables
+  if (do_les) {
+    init_les();
   }
 
   // initialize filters and variables
@@ -1174,6 +1174,11 @@ PeleC::post_restart()
   // if (do_hydro) {
   //  init_godunov_indices();
   //}
+
+  // Initialize the reactor
+  if (do_react == 1) {
+    init_reactor();
+  }
 
   // initialize LES variables
   if (do_les) {
