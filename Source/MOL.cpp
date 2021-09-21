@@ -185,12 +185,11 @@ pc_compute_hyp_mol_flux(
   const int nextra = 0;
 
   const amrex::Real full_area = std::pow(del[0], AMREX_SPACEDIM - 1);
-  const auto lo = amrex::lbound(cbox);
-  const auto hi = amrex::ubound(cbox);
+  const amrex::Box bxg = amrex::grow(cbox, nextra - 1);
 
   amrex::ParallelFor(nebflux, [=] AMREX_GPU_DEVICE(int L) {
     const amrex::IntVect& iv = ebg[L].iv;
-    if (is_inside(iv, lo, hi, nextra - 1)) {
+    if (bxg.contains(iv)) {
       amrex::Real ebnorm[AMREX_SPACEDIM] = {AMREX_D_DECL(
         ebg[L].eb_normal[0], ebg[L].eb_normal[1], ebg[L].eb_normal[2])};
       const amrex::Real ebnorm_mag = std::sqrt(AMREX_D_TERM(
