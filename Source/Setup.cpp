@@ -286,12 +286,13 @@ PeleC::variableSetUp()
 
   // Components 0:Numspec-1 are rho.omega_i
   // Component NUM_SPECIES is rho.edot = (rho.eout-rho.ein)
-  store_in_checkpoint = true;
-  desc_lst.addDescriptor(
-    Reactions_Type, amrex::IndexType::TheCellType(),
-    amrex::StateDescriptor::Point, 0, NUM_SPECIES + 2, interp,
-    state_data_extrap, store_in_checkpoint);
-
+  if (do_react) {
+    store_in_checkpoint = true;
+    desc_lst.addDescriptor(
+      Reactions_Type, amrex::IndexType::TheCellType(),
+      amrex::StateDescriptor::Point, 0, NUM_SPECIES + 2, interp,
+      state_data_extrap, store_in_checkpoint);
+  }
   amrex::Vector<amrex::BCRec> bcs(NVAR);
   amrex::Vector<std::string> name(NVAR);
   amrex::Vector<amrex::BCRec> react_bcs(NUM_SPECIES + 2);
@@ -409,7 +410,9 @@ PeleC::variableSetUp()
   amrex::StateDescriptor::BndryFunc bndryfunc2(pc_reactfill_hyp);
   bndryfunc2.setRunOnGPU(true);
 
-  desc_lst.setComponent(Reactions_Type, 0, react_name, react_bcs, bndryfunc2);
+  if (do_react) {
+    desc_lst.setComponent(Reactions_Type, 0, react_name, react_bcs, bndryfunc2);
+  }
 
   if (do_react_load_balance || do_mol_load_balance) {
     desc_lst.addDescriptor(
