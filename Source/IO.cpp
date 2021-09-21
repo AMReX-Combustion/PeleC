@@ -226,6 +226,11 @@ PeleC::set_state_in_checkpoint(amrex::Vector<int>& state_in_checkpoint)
   for (int i = 0; i < num_state_type; ++i) {
     state_in_checkpoint[i] = 1;
 
+    const bool reactions_type_not_in_chk = true;
+    if ((i == Reactions_Type) && (reactions_type_not_in_chk)) {
+      state_in_checkpoint[i] = 0;
+    }
+
     if (i == Work_Estimate_Type) {
       state_in_checkpoint[i] = 0;
     }
