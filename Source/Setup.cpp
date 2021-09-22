@@ -286,7 +286,7 @@ PeleC::variableSetUp()
 
   // Components 0:Numspec-1 are rho.omega_i
   // Component NUM_SPECIES is rho.edot = (rho.eout-rho.ein)
-  store_in_checkpoint = (do_react == 1) ? true : false;
+  store_in_checkpoint = (do_react == 1);
   desc_lst.addDescriptor(
     Reactions_Type, amrex::IndexType::TheCellType(),
     amrex::StateDescriptor::Point, 0, NUM_SPECIES + 2, interp,
@@ -411,9 +411,11 @@ PeleC::variableSetUp()
   desc_lst.setComponent(Reactions_Type, 0, react_name, react_bcs, bndryfunc2);
 
   if (do_react_load_balance || do_mol_load_balance) {
+    store_in_checkpoint = false;
     desc_lst.addDescriptor(
       Work_Estimate_Type, amrex::IndexType::TheCellType(),
-      amrex::StateDescriptor::Point, 0, 1, &amrex::pc_interp);
+      amrex::StateDescriptor::Point, 0, 1, &amrex::pc_interp, state_data_extrap,
+      store_in_checkpoint);
     // Because we use piecewise constant interpolation, we do not use bc and
     // BndryFunc.
     desc_lst.setComponent(

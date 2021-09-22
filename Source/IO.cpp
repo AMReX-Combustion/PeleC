@@ -51,7 +51,7 @@ PeleC::check_state_in_checkpoint(const StateType state_type)
   bool bExitOnError(false); // ---- dont exit if this file does not exist
   amrex::ParallelDescriptor::ReadAndBcastFile(
     faHeaderFilesName, faHeaderFileChars, bExitOnError);
-  if (faHeaderFileChars.size() > 0) { // ---- headers were read
+  if (!faHeaderFileChars.empty()) { // ---- headers were read
     std::string faFileCharPtrString(faHeaderFileChars.dataPtr());
     std::istringstream fais(faFileCharPtrString, std::istringstream::in);
     while (!fais.eof()) {
