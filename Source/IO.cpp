@@ -64,12 +64,6 @@ PeleC::check_state_in_checkpoint(const StateType state_type)
       }
     }
   }
-  if (amrex::ParallelDescriptor::IOProcessor()) {
-    amrex::Warning(
-      "StateType " + std::to_string(state_type) +
-      " was not found in checkpoint " + filename + " at level " +
-      std::to_string(level) + ". Ensure this was intended");
-  }
   return false;
 }
 
