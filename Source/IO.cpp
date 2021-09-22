@@ -108,6 +108,7 @@ PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
       state[i].define(
         geom.Domain(), grids, dmap, desc_lst[i], ctime, parent->dtLevel(level),
         *m_factory);
+      get_new_data(i).setVal(0.0);
     }
   }
   buildMetrics();
