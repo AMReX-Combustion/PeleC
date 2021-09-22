@@ -401,6 +401,12 @@ PeleC::setPlotVariables()
     amrex::Amr::addDerivePlotVar("WorkEstimate");
   }
 
+  if (do_react == 0) {
+    for (int i = 0; i < desc_lst[Reactions_Type].nComp(); i++) {
+      amrex::Amr::deleteStatePlotVar(desc_lst[Reactions_Type].name(i));
+    }
+  }
+
   bool plot_rhoy = true;
   pp.query("plot_rhoy", plot_rhoy);
   if (plot_rhoy) {
