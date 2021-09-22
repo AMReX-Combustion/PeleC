@@ -39,6 +39,40 @@ amrex::Real vfraceps = 0.000001;
 
 // I/O routines for PeleC
 
+bool
+PeleC::check_state_in_checkpoint(const StateType state_type)
+{
+  const std::string state_pfx =
+    "Level_" + std::to_string(level) + "/SD_" + std::to_string(state_type);
+
+  const std::string filename = parent->theRestartFile();
+  const std::string faHeaderFilesName(filename + "/FabArrayHeaders.txt");
+  amrex::Vector<char> faHeaderFileChars;
+  bool bExitOnError(false); // ---- dont exit if this file does not exist
+  amrex::ParallelDescriptor::ReadAndBcastFile(
+    faHeaderFilesName, faHeaderFileChars, bExitOnError);
+  if (faHeaderFileChars.size() > 0) { // ---- headers were read
+    std::string faFileCharPtrString(faHeaderFileChars.dataPtr());
+    std::istringstream fais(faFileCharPtrString, std::istringstream::in);
+    while (!fais.eof()) {
+      std::string faHeaderName;
+      fais >> faHeaderName;
+      if (!fais.eof()) {
+        if (faHeaderName.rfind(state_pfx, 0) == 0) {
+          return true;
+        }
+      }
+    }
+  }
+  if (amrex::ParallelDescriptor::IOProcessor()) {
+    amrex::Warning(
+      "StateType " + std::to_string(state_type) +
+      " was not found in checkpoint " + filename + " at level " +
+      std::to_string(level) + ". Ensure this was intended");
+  }
+  return false;
+}
+
 void
 PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
 {
@@ -80,7 +114,6 @@ PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
       state[i].define(
         geom.Domain(), grids, dmap, desc_lst[i], ctime, parent->dtLevel(level),
         *m_factory);
-      state[i] = state[i - 1];
     }
   }
   buildMetrics();
@@ -224,15 +257,25 @@ void
 PeleC::set_state_in_checkpoint(amrex::Vector<int>& state_in_checkpoint)
 {
   for (int i = 0; i < num_state_type; ++i) {
-    state_in_checkpoint[i] = 1;
+    const bool is_present =
+      check_state_in_checkpoint(static_cast<StateType>(i));
 
-    const bool reactions_type_not_in_chk = true;
-    if ((i == Reactions_Type) && (reactions_type_not_in_chk)) {
+    if (i == State_Type) {
+      state_in_checkpoint[i] = 1;
+      if (!is_present) {
+        amrex::Abort("State_Type is not present in the checkpoint file");
+      }
+    } else if (i == Work_Estimate_Type) {
+      // Never use work estimate checkpoint
       state_in_checkpoint[i] = 0;
-    }
-
-    if (i == Work_Estimate_Type) {
-      state_in_checkpoint[i] = 0;
+    } else if (i == Reactions_Type) {
+      if (do_react == 0) {
+        state_in_checkpoint[i] = 0;
+      } else {
+        state_in_checkpoint[i] = is_present ? 1 : 0;
+      }
+    } else {
+      amrex::Abort("Unknown StateType");
     }
   }
 }

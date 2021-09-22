@@ -93,6 +93,7 @@ public:
   // This is called only when we restart from an old checkpoint.
   virtual void
   set_state_in_checkpoint(amrex::Vector<int>& state_in_checkpoint) override;
+  bool check_state_in_checkpoint(const StateType state_type);
 
   // Call AmrLevel::checkPoint and then add radiation info
   virtual void checkPoint(
