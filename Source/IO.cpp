@@ -265,15 +265,15 @@ PeleC::set_state_in_checkpoint(amrex::Vector<int>& state_in_checkpoint)
       if (!is_present) {
         amrex::Abort("State_Type is not present in the checkpoint file");
       }
-    } else if (i == Work_Estimate_Type) {
-      // Never use work estimate checkpoint
-      state_in_checkpoint[i] = 0;
     } else if (i == Reactions_Type) {
       if (do_react == 0) {
         state_in_checkpoint[i] = 0;
       } else {
         state_in_checkpoint[i] = is_present ? 1 : 0;
       }
+    } else if (i == Work_Estimate_Type) {
+      // Never use work estimate checkpoint
+      state_in_checkpoint[i] = 0;
     } else {
       amrex::Abort("Unknown StateType");
     }
