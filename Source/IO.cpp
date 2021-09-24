@@ -257,7 +257,7 @@ PeleC::set_state_in_checkpoint(amrex::Vector<int>& state_in_checkpoint)
 
     if (i == State_Type) {
       state_in_checkpoint[i] = 1;
-      if (!is_present) {
+      if ((!is_present) && (level == 0)) {
         amrex::Abort("State_Type is not present in the checkpoint file");
       }
     } else if (i == Reactions_Type) {
