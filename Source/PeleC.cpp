@@ -1549,7 +1549,7 @@ PeleC::errorEst(
   amrex::MultiFab S_data(
     get_new_data(State_Type).boxArray(),
     get_new_data(State_Type).DistributionMap(), NVAR, 1, amrex::MFInfo(),
-    *m_factory);
+    Factory());
   const amrex::Real cur_time = state[State_Type].curTime();
   FillPatch(
     *this, S_data, S_data.nGrow(), cur_time, State_Type, Density, NVAR, 0);
@@ -1891,7 +1891,7 @@ void
 PeleC::init_les()
 {
   // Fill with default coefficient values
-  LES_Coeffs.define(grids, dmap, nCompC, 1);
+  LES_Coeffs.define(grids, dmap, nCompC, 1, amrex::MFInfo(), Factory());
   LES_Coeffs.setVal(0.0);
   LES_Coeffs.setVal(Cs * Cs, comp_Cs2, 1, LES_Coeffs.nGrow());
   LES_Coeffs.setVal(CI, comp_CI, 1, LES_Coeffs.nGrow());

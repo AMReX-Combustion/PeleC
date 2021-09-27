@@ -696,7 +696,6 @@ protected:
 
 #ifdef PELEC_USE_EB
 
-  amrex::FabArray<amrex::BaseFab<int>> ebmask;
   static amrex::GpuArray<amrex::Real, NVAR> body_state;
   static bool body_state_set;
   static bool eb_initialized;

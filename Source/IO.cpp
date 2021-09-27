@@ -107,7 +107,7 @@ PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
       const amrex::Real ctime = state[i - 1].curTime();
       state[i].define(
         geom.Domain(), grids, dmap, desc_lst[i], ctime, parent->dtLevel(level),
-        *m_factory);
+        Factory());
       get_new_data(i).setVal(0.0);
     }
   }

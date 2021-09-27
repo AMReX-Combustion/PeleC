@@ -28,7 +28,6 @@ PeleC::init_eb(
 
 // Set up PeleC EB Datastructures from AMReX EB2 constructs
 // At the end of this routine, the following structures are populated:
-//   - FabArray ebmask
 //  - MultiFAB vfrac
 //  - sv_eb_bndry_geom
 
@@ -37,11 +36,6 @@ PeleC::initialize_eb2_structs()
 {
   BL_PROFILE("PeleC::initialize_eb2_structs()");
   amrex::Print() << "Initializing EB2 structs" << std::endl;
-
-  // NOTE: THIS NEEDS TO BE REPLACED WITH A FLAGFAB
-
-  // 1->regular, 0->irregular, -1->covered, 2->outside
-  ebmask.define(grids, dmap, 1, 0);
 
   static_assert(
     std::is_standard_layout<EBBndryGeom>::value,
@@ -90,7 +84,6 @@ PeleC::initialize_eb2_structs()
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
   for (amrex::MFIter mfi(vfrac, false); mfi.isValid(); ++mfi) {
-    amrex::BaseFab<int>& mfab = ebmask[mfi];
     const amrex::Box tbox = mfi.growntilebox();
     const amrex::EBCellFlagFab& flagfab = flags[mfi];
 
@@ -98,9 +91,9 @@ PeleC::initialize_eb2_structs()
     int iLocal = mfi.LocalIndex();
 
     if (typ == amrex::FabType::regular) {
-      mfab.setVal<amrex::RunOn::Device>(1);
+      // do nothing
     } else if (typ == amrex::FabType::covered) {
-      mfab.setVal<amrex::RunOn::Device>(-1);
+      // do nothing
     } else if (typ == amrex::FabType::singlevalued) {
       int Ncut = 0;
       for (amrex::BoxIterator bit(tbox); bit.ok(); ++bit) {
@@ -124,24 +117,6 @@ PeleC::initialize_eb2_structs()
             d_sv_eb_bndry_geom[ivec].iv = captured_bit;
           });
           ivec++;
-
-          if (mfab.box().contains(bit())) {
-            mfab(bit()) = 0;
-          }
-        } else {
-          if (flag.isRegular()) {
-            if (mfab.box().contains(bit())) {
-              mfab(bit()) = 1;
-            }
-          } else if (flag.isCovered()) {
-            if (mfab.box().contains(bit())) {
-              mfab(bit()) = -1;
-            }
-          } else {
-            if (mfab.box().contains(bit())) {
-              mfab(bit()) = 2;
-            }
-          }
         }
       }
 
@@ -332,18 +307,18 @@ PeleC::define_body_state()
   if (!body_state_set) {
     bool foundPt = false;
     const amrex::MultiFab& S = get_new_data(State_Type);
-    AMREX_ASSERT(S.boxArray() == ebmask.boxArray());
-    AMREX_ASSERT(S.DistributionMap() == ebmask.DistributionMap());
+    auto const& fact =
+      dynamic_cast<amrex::EBFArrayBoxFactory const&>(Factory());
+    auto const& flags = fact.getMultiEBCellFlagFab();
 
     for (amrex::MFIter mfi(S, false); mfi.isValid() && !foundPt; ++mfi) {
       const amrex::Box vbox = mfi.validbox();
-      const amrex::BaseFab<int>& m = ebmask[mfi];
       const amrex::FArrayBox& fab = S[mfi];
-      AMREX_ASSERT(m.box().contains(vbox));
+      auto const& flag_arr = flags.const_array(mfi);
 
       for (amrex::BoxIterator bit(vbox); bit.ok() && !foundPt; ++bit) {
         const amrex::IntVect& iv = bit();
-        if (m(iv, 0) == 1) {
+        if (flag_arr(iv).isRegular()) {
           foundPt = true;
           for (int n = 0; n < S.nComp(); ++n) {
             body_state[n] = fab(iv, n);
@@ -382,7 +357,8 @@ PeleC::set_body_state(amrex::MultiFab& S)
     define_body_state();
   }
 
-  int covered_val = -1;
+  auto const& fact = dynamic_cast<amrex::EBFArrayBoxFactory const&>(Factory());
+  auto const& flags = fact.getMultiEBCellFlagFab();
 
 #ifdef _OPENMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
@@ -390,12 +366,11 @@ PeleC::set_body_state(amrex::MultiFab& S)
   for (amrex::MFIter mfi(S, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
     const amrex::Box& vbox = mfi.tilebox();
     auto const& Sar = S.array(mfi);
-    auto const& mask = ebmask.array(mfi);
+    auto const& flag_arr = flags.const_array(mfi);
     auto const captured_body_state = body_state;
     amrex::ParallelFor(
       vbox, NVAR, [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
-        pc_set_body_state(
-          i, j, k, n, mask, captured_body_state, covered_val, Sar);
+        pc_set_body_state(i, j, k, n, flag_arr, captured_body_state, Sar);
       });
   }
 }
@@ -410,7 +385,8 @@ PeleC::zero_in_body(amrex::MultiFab& S) const
   }
 
   amrex::GpuArray<amrex::Real, NVAR> zeros = {0.0};
-  int covered_val = -1;
+  auto const& fact = dynamic_cast<amrex::EBFArrayBoxFactory const&>(Factory());
+  auto const& flags = fact.getMultiEBCellFlagFab();
 
 #ifdef _OPENMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
@@ -418,10 +394,10 @@ PeleC::zero_in_body(amrex::MultiFab& S) const
   for (amrex::MFIter mfi(S, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
     const amrex::Box& vbox = mfi.tilebox();
     auto const& Sar = S.array(mfi);
-    auto const& mask = ebmask.array(mfi);
+    auto const& flag_arr = flags.const_array(mfi);
     amrex::ParallelFor(
       vbox, NVAR, [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
-        pc_set_body_state(i, j, k, n, mask, zeros, covered_val, Sar);
+        pc_set_body_state(i, j, k, n, flag_arr, zeros, Sar);
       });
   }
 }
