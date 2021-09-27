@@ -247,7 +247,7 @@ pc_dermagvort(
   const auto& flag_fab = amrex::getEBCellFlagFab(derfab);
   const auto& typ = flag_fab.getType(bx);
   if (typ == amrex::FabType::covered) {
-    derfab.setVal<amrex::RunOn::Device>(0.0);
+    derfab.setVal<amrex::RunOn::Device>(0.0, bx);
     return;
   }
   const auto& flags = flag_fab.const_array();
@@ -320,7 +320,7 @@ pc_derdivu(
   const auto& flag_fab = amrex::getEBCellFlagFab(derfab);
   const auto& typ = flag_fab.getType(bx);
   if (typ == amrex::FabType::covered) {
-    derfab.setVal<amrex::RunOn::Device>(0.0);
+    derfab.setVal<amrex::RunOn::Device>(0.0, bx);
     return;
   }
   const auto& flags = flag_fab.const_array();
@@ -386,7 +386,7 @@ pc_derenstrophy(
   const auto& flag_fab = amrex::getEBCellFlagFab(derfab);
   const auto& typ = flag_fab.getType(bx);
   if (typ == amrex::FabType::covered) {
-    derfab.setVal<amrex::RunOn::Device>(0.0);
+    derfab.setVal<amrex::RunOn::Device>(0.0, bx);
     return;
   }
   const auto& flags = flag_fab.const_array();

@@ -528,7 +528,7 @@ PeleC::getMOLSrcTerm(
           if (fr_as_fine) {
             dm_as_fine.resize(amrex::grow(vbox, 1), NVAR);
             dm_as_fine_eli = dm_as_fine.elixir();
-            dm_as_fine.setVal<amrex::RunOn::Device>(0.0);
+            dm_as_fine.setVal<amrex::RunOn::Device>(0.0, amrex::grow(vbox, 1));
           }
           if (Ncut > 0) {
             BL_PROFILE("PeleC::pc_eb_div()");
@@ -541,7 +541,7 @@ PeleC::getMOLSrcTerm(
 
         if (do_reflux && flux_factor != 0) {
           for (auto& dir : flux_ec) {
-            dir.mult<amrex::RunOn::Device>(flux_factor);
+            dir.mult<amrex::RunOn::Device>(flux_factor, dir.box());
           }
 
           if (fr_as_crse) {
@@ -645,7 +645,7 @@ PeleC::getMOLSrcTerm(
 
         amrex::FArrayBox tmpfab(Dfab.box(), S.nComp());
         if (redistribution_type == "FluxRedist") {
-          tmpfab.setVal<amrex::RunOn::Device>(1.0);
+          tmpfab.setVal<amrex::RunOn::Device>(1.0, tmpfab.box());
         }
         amrex::Elixir tmpeli = tmpfab.elixir();
         amrex::Array4<amrex::Real> scratch = tmpfab.array();
