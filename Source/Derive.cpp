@@ -244,8 +244,8 @@ pc_dermagvort(
   auto larr = local.array();
 
 #ifdef PELEC_USE_EB
-  const auto& flag_fab = amrex::getEBCellFlagFab(datfab);
-  const auto& typ = flag_fab.getType(gbx);
+  const auto& flag_fab = amrex::getEBCellFlagFab(derfab);
+  const auto& typ = flag_fab.getType(bx);
   if (typ == amrex::FabType::covered) {
     derfab.setVal<amrex::RunOn::Device>(0.0);
     return;
@@ -317,9 +317,8 @@ pc_derdivu(
   auto divu = derfab.array();
 
 #ifdef PELEC_USE_EB
-  const amrex::Box& gbx = amrex::grow(bx, 1);
-  const auto& flag_fab = amrex::getEBCellFlagFab(datfab);
-  const auto& typ = flag_fab.getType(gbx);
+  const auto& flag_fab = amrex::getEBCellFlagFab(derfab);
+  const auto& typ = flag_fab.getType(bx);
   if (typ == amrex::FabType::covered) {
     derfab.setVal<amrex::RunOn::Device>(0.0);
     return;
@@ -384,8 +383,8 @@ pc_derenstrophy(
   auto larr = local.array();
 
 #ifdef PELEC_USE_EB
-  const auto& flag_fab = amrex::getEBCellFlagFab(datfab);
-  const auto& typ = flag_fab.getType(gbx);
+  const auto& flag_fab = amrex::getEBCellFlagFab(derfab);
+  const auto& typ = flag_fab.getType(bx);
   if (typ == amrex::FabType::covered) {
     derfab.setVal<amrex::RunOn::Device>(0.0);
     return;
