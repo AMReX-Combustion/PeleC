@@ -1549,7 +1549,7 @@ PeleC::errorEst(
   amrex::MultiFab S_data(
     get_new_data(State_Type).boxArray(),
     get_new_data(State_Type).DistributionMap(), NVAR, 1, amrex::MFInfo(),
-    *m_factory);
+    Factory());
   const amrex::Real cur_time = state[State_Type].curTime();
   FillPatch(
     *this, S_data, S_data.nGrow(), cur_time, State_Type, Density, NVAR, 0);
@@ -1597,7 +1597,7 @@ PeleC::errorEst(
       }
 
       // Tagging pressure
-      S_derData.setVal<amrex::RunOn::Device>(0.0);
+      S_derData.setVal<amrex::RunOn::Device>(0.0, datbox);
       pc_derpres(
         datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
         level);
@@ -1618,7 +1618,7 @@ PeleC::errorEst(
       }
 
       // Tagging vel_x
-      S_derData.setVal<amrex::RunOn::Device>(0.0);
+      S_derData.setVal<amrex::RunOn::Device>(0.0, datbox);
       pc_dervelx(
         datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
         level);
@@ -1638,7 +1638,7 @@ PeleC::errorEst(
       }
 
       // Tagging vel_y
-      S_derData.setVal<amrex::RunOn::Device>(0.0);
+      S_derData.setVal<amrex::RunOn::Device>(0.0, datbox);
       pc_dervely(
         datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
         level);
@@ -1658,7 +1658,7 @@ PeleC::errorEst(
       }
 
       // Tagging vel_z
-      S_derData.setVal<amrex::RunOn::Device>(0.0);
+      S_derData.setVal<amrex::RunOn::Device>(0.0, datbox);
       pc_dervelz(
         datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
         level);
@@ -1678,7 +1678,7 @@ PeleC::errorEst(
       }
 
       // Tagging magnitude of vorticity
-      S_derData.setVal<amrex::RunOn::Device>(0.0);
+      S_derData.setVal<amrex::RunOn::Device>(0.0, datbox);
       pc_dermagvort(
         tilebox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
         level);
@@ -1692,7 +1692,7 @@ PeleC::errorEst(
       }
 
       // Tagging temperature
-      S_derData.setVal<amrex::RunOn::Device>(0.0);
+      S_derData.setVal<amrex::RunOn::Device>(0.0, datbox);
       pc_dertemp(
         datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
         level);
@@ -1726,7 +1726,7 @@ PeleC::errorEst(
           // if (amrex::ParallelDescriptor::IOProcessor())
           // amrex::Print() << " Flame tracer will be " << name << '\n';
 
-          S_derData.setVal<amrex::RunOn::Device>(0.0);
+          S_derData.setVal<amrex::RunOn::Device>(0.0, datbox);
           pc_derspectrac(
             datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
             level, idx);
@@ -1891,7 +1891,7 @@ void
 PeleC::init_les()
 {
   // Fill with default coefficient values
-  LES_Coeffs.define(grids, dmap, nCompC, 1);
+  LES_Coeffs.define(grids, dmap, nCompC, 1, amrex::MFInfo(), Factory());
   LES_Coeffs.setVal(0.0);
   LES_Coeffs.setVal(Cs * Cs, comp_Cs2, 1, LES_Coeffs.nGrow());
   LES_Coeffs.setVal(CI, comp_CI, 1, LES_Coeffs.nGrow());
