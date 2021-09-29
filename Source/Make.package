@@ -54,9 +54,11 @@ CEXE_headers += WENO.H
 
 #Source file logic
 ifeq ($(USE_EB), TRUE)
-  CEXE_sources += EB.cpp
-  CEXE_sources += InitEB.cpp
   CEXE_headers += EB.H
+  CEXE_sources += EB.cpp
+  CEXE_headers += Geometry.H
+  CEXE_sources += Geometry.cpp
+  CEXE_sources += InitEB.cpp
   CEXE_headers += SparseData.H
   CEXE_headers += EBStencilTypes.H
 endif
