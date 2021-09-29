@@ -106,7 +106,7 @@ ICEPistonBowl::build(
   // amrex::RealArray point;
   // amrex::RealArray normal;
 
-  amrex::RealArray center({0.04 - 0.0125 - 0.02, 0.0, 0.0});
+  amrex::RealArray center({AMREX_D_DECL(0.04 - 0.0125 - 0.02, 0.0, 0.0)});
 
   const amrex::Real radius = 0.02;
 
@@ -123,7 +123,7 @@ ICEPistonBowl::build(
   amrex::EB2::CylinderIF cf4(
     0.03, 0.10, 0, {AMREX_D_DECL(-0.0125 - 0.02, 0.0, 0.0)}, false);
 
-  amrex::RealArray center2({0.0, 0.0, 0.0});
+  amrex::RealArray center2({AMREX_D_DECL(0.0, 0.0, 0.0)});
 
   const amrex::Real radius2 = 0.09;
 
