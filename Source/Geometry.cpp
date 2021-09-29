@@ -4,7 +4,8 @@ namespace pele {
 namespace pelec {
 
 void
-FlatPlate::build(const amrex::Geometry& geom, const int max_coarsening_level)
+FlatPlate::build(
+  const amrex::Geometry& /*geom*/, const int /*max_coarsening_level*/)
 {
   amrex::Print() << "flat plate  geometry not currently supported. \n";
   amrex::Abort();
@@ -266,7 +267,7 @@ ExtrudedTriangles::build(
 }
 void
 PolygonRevolution::build(
-  const amrex::Geometry& geom, const int max_coarsening_level)
+  const amrex::Geometry& /*geom*/, const int /*max_coarsening_level*/)
 {
   amrex::Print() << "polygon_revolution  geometry not currently supported. "
                     " combustor?\n";
