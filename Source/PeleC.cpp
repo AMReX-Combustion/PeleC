@@ -1567,14 +1567,14 @@ PeleC::errorEst(
       const amrex::Box& tilebox = mfi.tilebox();
       const auto Sfab = S_data.array(mfi);
       auto tag_arr = tags.array(mfi);
-      const auto datbox = S_data[mfi].box();
+      const auto gbx = amrex::grow(tilebox, 1);
       amrex::Elixir S_data_mfi_eli = S_data[mfi].elixir();
 
 #ifdef PELEC_USE_EB
       const auto vfrac_arr = vfrac.array(mfi);
 #endif
 
-      amrex::FArrayBox S_derData(datbox, 1);
+      amrex::FArrayBox S_derData(gbx, 1);
       amrex::Elixir S_derData_eli = S_derData.elixir();
       auto S_derarr = S_derData.array();
       const int ncp = S_derData.nComp();
@@ -1597,10 +1597,9 @@ PeleC::errorEst(
       }
 
       // Tagging pressure
-      S_derData.setVal<amrex::RunOn::Device>(0.0, datbox);
+      S_derData.setVal<amrex::RunOn::Device>(0.0, S_derData.box());
       pc_derpres(
-        datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
-        level);
+        gbx, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc, level);
       if (level < tagging_parm->max_presserr_lev) {
         const amrex::Real captured_presserr = tagging_parm->presserr;
         amrex::ParallelFor(
@@ -1618,10 +1617,9 @@ PeleC::errorEst(
       }
 
       // Tagging vel_x
-      S_derData.setVal<amrex::RunOn::Device>(0.0, datbox);
+      S_derData.setVal<amrex::RunOn::Device>(0.0, S_derData.box());
       pc_dervelx(
-        datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
-        level);
+        gbx, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc, level);
       if (level < tagging_parm->max_velerr_lev) {
         const amrex::Real captured_velerr = tagging_parm->velerr;
         amrex::ParallelFor(
@@ -1638,10 +1636,9 @@ PeleC::errorEst(
       }
 
       // Tagging vel_y
-      S_derData.setVal<amrex::RunOn::Device>(0.0, datbox);
+      S_derData.setVal<amrex::RunOn::Device>(0.0, S_derData.box());
       pc_dervely(
-        datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
-        level);
+        gbx, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc, level);
       if (level < tagging_parm->max_velerr_lev) {
         const amrex::Real captured_velerr = tagging_parm->velerr;
         amrex::ParallelFor(
@@ -1658,10 +1655,9 @@ PeleC::errorEst(
       }
 
       // Tagging vel_z
-      S_derData.setVal<amrex::RunOn::Device>(0.0, datbox);
+      S_derData.setVal<amrex::RunOn::Device>(0.0, S_derData.box());
       pc_dervelz(
-        datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
-        level);
+        gbx, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc, level);
       if (level < tagging_parm->max_velerr_lev) {
         const amrex::Real captured_velerr = tagging_parm->velerr;
         amrex::ParallelFor(
@@ -1678,7 +1674,7 @@ PeleC::errorEst(
       }
 
       // Tagging magnitude of vorticity
-      S_derData.setVal<amrex::RunOn::Device>(0.0, datbox);
+      S_derData.setVal<amrex::RunOn::Device>(0.0, S_derData.box());
       pc_dermagvort(
         tilebox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
         level);
@@ -1692,10 +1688,9 @@ PeleC::errorEst(
       }
 
       // Tagging temperature
-      S_derData.setVal<amrex::RunOn::Device>(0.0, datbox);
+      S_derData.setVal<amrex::RunOn::Device>(0.0, S_derData.box());
       pc_dertemp(
-        datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
-        level);
+        gbx, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc, level);
       if (level < tagging_parm->max_temperr_lev) {
         const amrex::Real captured_temperr = tagging_parm->temperr;
         amrex::ParallelFor(
@@ -1726,9 +1721,9 @@ PeleC::errorEst(
           // if (amrex::ParallelDescriptor::IOProcessor())
           // amrex::Print() << " Flame tracer will be " << name << '\n';
 
-          S_derData.setVal<amrex::RunOn::Device>(0.0, datbox);
+          S_derData.setVal<amrex::RunOn::Device>(0.0, S_derData.box());
           pc_derspectrac(
-            datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
+            gbx, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
             level, idx);
 
           if (level < tagging_parm->max_ftracerr_lev) {
