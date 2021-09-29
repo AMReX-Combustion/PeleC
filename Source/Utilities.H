@@ -567,4 +567,6 @@ unique(T input)
   return output;
 }
 
+std::string convertIntGG(int number);
+
 #endif

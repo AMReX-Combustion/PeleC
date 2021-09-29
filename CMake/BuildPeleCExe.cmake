@@ -147,6 +147,8 @@ function(build_pelec_exe pelec_exe_name)
                    ${AMREX_HYDRO_SUBMOD_LOCATION}/Slopes/hydro_slopes_K.H
                    ${SRC_DIR}/EB.H
                    ${SRC_DIR}/EB.cpp
+                   ${SRC_DIR}/Geometry.H
+                   ${SRC_DIR}/Geometry.cpp
                    ${SRC_DIR}/InitEB.cpp
                    ${SRC_DIR}/SparseData.H
                    ${SRC_DIR}/EBStencilTypes.H)
