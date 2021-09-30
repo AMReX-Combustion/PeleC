@@ -528,7 +528,7 @@ PeleC::getMOLSrcTerm(
           if (fr_as_fine) {
             dm_as_fine.resize(amrex::grow(vbox, 1), NVAR);
             dm_as_fine_eli = dm_as_fine.elixir();
-            dm_as_fine.setVal<amrex::RunOn::Device>(0.0, amrex::grow(vbox, 1));
+            dm_as_fine.setVal<amrex::RunOn::Device>(0.0);
           }
           if (Ncut > 0) {
             BL_PROFILE("PeleC::pc_eb_div()");

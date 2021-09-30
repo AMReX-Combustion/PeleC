@@ -244,7 +244,7 @@ pc_dermagvort(
   auto larr = local.array();
 
 #ifdef PELEC_USE_EB
-  const auto& flag_fab = amrex::getEBCellFlagFab(derfab);
+  const auto& flag_fab = amrex::getEBCellFlagFab(datfab);
   const auto& typ = flag_fab.getType(bx);
   if (typ == amrex::FabType::covered) {
     derfab.setVal<amrex::RunOn::Device>(0.0, bx);
@@ -317,7 +317,7 @@ pc_derdivu(
   auto divu = derfab.array();
 
 #ifdef PELEC_USE_EB
-  const auto& flag_fab = amrex::getEBCellFlagFab(derfab);
+  const auto& flag_fab = amrex::getEBCellFlagFab(datfab);
   const auto& typ = flag_fab.getType(bx);
   if (typ == amrex::FabType::covered) {
     derfab.setVal<amrex::RunOn::Device>(0.0, bx);
@@ -383,7 +383,7 @@ pc_derenstrophy(
   auto larr = local.array();
 
 #ifdef PELEC_USE_EB
-  const auto& flag_fab = amrex::getEBCellFlagFab(derfab);
+  const auto& flag_fab = amrex::getEBCellFlagFab(datfab);
   const auto& typ = flag_fab.getType(bx);
   if (typ == amrex::FabType::covered) {
     derfab.setVal<amrex::RunOn::Device>(0.0, bx);
