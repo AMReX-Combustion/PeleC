@@ -120,16 +120,14 @@ ReadPipeInflow(const std::string iname)
 }
 
 void
-EBLinePistonCylinder(
-  const amrex::Geometry& geom, const int required_level, const int max_level)
+EBLinePistonCylinder::build(
+  const amrex::Geometry& geom, const int max_coarsening_level)
 {
   amrex::EB2::SplineIF Piston;
   std::vector<amrex::RealVect> lnpts;
   amrex::RealVect p;
-  int max_coarsening_level = max_level; // Because there are no mg solvers here
 
-  amrex::Real scaleFact;
-  scaleFact = 0.25;
+  const amrex::Real scaleFact = 0.25;
 
   p = amrex::RealVect(
     AMREX_D_DECL(49.0 * 0.1 * scaleFact, 7.8583 * 0.1 * scaleFact, 0.0));

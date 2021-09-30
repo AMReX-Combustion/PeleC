@@ -34,5 +34,3 @@ Bpack := ./Make.package
 Blocs := .
 PELEC_HOME := ../../../../PeleC
 include $(PELEC_HOME)/Exec/Make.PeleC
-
-DEFINES += -DLinePistonCylinder

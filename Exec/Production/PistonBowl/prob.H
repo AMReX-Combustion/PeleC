@@ -22,6 +22,7 @@
 #include "Transport.H"
 #include "Utilities.H"
 #include "prob_parm.H"
+#include "Geometry.H"
 
 AMREX_FORCE_INLINE
 int
@@ -43,8 +44,14 @@ read_binary_double(std::ifstream& infile)
 
 void ReadPipeInflow(const std::string iname);
 
-void EBLinePistonCylinder(
-  const amrex::Geometry& geom, const int required_level, const int max_level);
+class EBLinePistonCylinder
+  : public pele::pelec::Geometry::Register<EBLinePistonCylinder>
+{
+public:
+  static std::string identifier() { return "Line-Piston-Cylinder"; }
+
+  void build(const amrex::Geometry& geom, const int max_coarsening_level);
+};
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
