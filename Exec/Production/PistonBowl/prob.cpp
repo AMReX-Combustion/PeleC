@@ -199,7 +199,7 @@ amrex_probinit(
   pp.query("Yfuel_domain", PeleC::h_prob_parm_device->Yfuel_domain);
   pp.query("Yox_domain", PeleC::h_prob_parm_device->Yox_domain);
   pp.query("YN2_domain", PeleC::h_prob_parm_device->YN2_domain);
-  pp.query("dens_jet", PeleC::h_prob_parm_device->dens_jet);
+  pp.query("T_jet", PeleC::h_prob_parm_device->T_jet);
   pp.query("vel_jet", PeleC::h_prob_parm_device->vel_jet);
   pp.query("Yox_jet", PeleC::h_prob_parm_device->Yox_jet);
   pp.query("Yfuel_jet", PeleC::h_prob_parm_device->Yfuel_jet);
@@ -221,6 +221,17 @@ amrex_probinit(
   ppic.query("lscale", PeleC::h_prob_parm_device->lscale);
   ppic.query("offset", PeleC::h_prob_parm_device->offset);
   ppic.query("urms0", PeleC::h_prob_parm_device->urms0);
+  amrex::Vector<amrex::Real> win_lo(
+    AMREX_SPACEDIM, std::numeric_limits<amrex::Real>::lowest());
+  amrex::Vector<amrex::Real> win_hi(
+    AMREX_SPACEDIM, std::numeric_limits<amrex::Real>::max());
+  ppic.queryarr("win_lo", win_lo, 0, AMREX_SPACEDIM);
+  ppic.queryarr("win_hi", win_hi, 0, AMREX_SPACEDIM);
+  for (int i = 0; i < AMREX_SPACEDIM; i++) {
+    PeleC::h_prob_parm_device->win_lo[i] = win_lo[i];
+    PeleC::h_prob_parm_device->win_hi[i] = win_hi[i];
+  }
+  ppic.query("win_slope", PeleC::h_prob_parm_device->win_slope);
 
   amrex::ParmParse ppin("inflow");
   ppin.query("inflowProfileFile", PeleC::prob_parm_host->inflowProfileFile);

@@ -11,7 +11,7 @@ struct ProbParmDevice
   amrex::Real Yfuel_domain = 0.;
   amrex::Real Yox_domain = 0.25;
   amrex::Real YN2_domain = 0.75;
-  amrex::Real dens_jet = 0.0001;
+  amrex::Real T_jet = 300.0;
   amrex::Real vel_jet = 5000.;
   amrex::Real Yox_jet = 1.0;
   amrex::Real Yfuel_jet = 0.0;
@@ -31,6 +31,9 @@ struct ProbParmDevice
   amrex::Real offset = 0.0;
   amrex::Real urms0 = 0.0;
   amrex::Real Linput = 0.0;
+  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> win_lo = {0.0, 0.0, 0.0};
+  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> win_hi = {0.0, 0.0, 0.0};
+  amrex::Real win_slope = 1.0;
   int turb_inflow_type = 0;
   int inflowNtime = 0;
   int nr = 0;

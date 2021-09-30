@@ -343,6 +343,25 @@ pc_initdata(
            prob_parm.inres * (idxp1[1] + prob_parm.inres * idxp1[2])] *
         f7;
 
+    const amrex::Real decayx =
+      (0.5 *
+       (std::tanh((x[0] - prob_parm.win_lo[0]) * prob_parm.win_slope) + 1)) *
+      (0.5 *
+       (std::tanh(-(x[0] - prob_parm.win_hi[0]) * prob_parm.win_slope) + 1));
+    const amrex::Real decayy =
+      (0.5 *
+       (std::tanh((x[1] - prob_parm.win_lo[1]) * prob_parm.win_slope) + 1)) *
+      (0.5 *
+       (std::tanh(-(x[1] - prob_parm.win_hi[1]) * prob_parm.win_slope) + 1));
+    const amrex::Real decayz =
+      (0.5 *
+       (std::tanh((x[2] - prob_parm.win_lo[2]) * prob_parm.win_slope) + 1)) *
+      (0.5 *
+       (std::tanh(-(x[2] - prob_parm.win_hi[2]) * prob_parm.win_slope) + 1));
+    u[0] *= decayx * decayy * decayz;
+    u[1] *= decayx * decayy * decayz;
+    u[2] *= decayx * decayy * decayz;
+
     state(i, j, k, UMX) = state(i, j, k, URHO) * u[0];
     state(i, j, k, UMY) = state(i, j, k, URHO) * u[1];
     state(i, j, k, UMZ) = state(i, j, k, URHO) * u[2];
@@ -411,11 +430,11 @@ bcnormal(
       eos.RTY2P(s_int[URHO], s_int[UTEMP], massfrac, p_int);
 
       // subsonic velocity inlet
-      amrex::Real e_ext, T_ext;
+      const amrex::Real T = prob_parm.T_jet;
+      amrex::Real rho, eint;
       amrex::Real jet_massfrac[NUM_SPECIES] = {0.0};
       jet_massfrac[CH4_ID] = 1.0;
-      eos.RYP2E(prob_parm.dens_jet, jet_massfrac, p_int, e_ext);
-      eos.EY2T(e_ext, jet_massfrac, T_ext);
+      eos.PYT2RE(p_int, jet_massfrac, T, rho, eint);
 
       amrex::Real vx_in = 0.0, vy_in = 0.0, vz_in = 0.0;
       if (prob_parm.turb_inflow_type == 1) {
@@ -453,17 +472,16 @@ bcnormal(
         vy_in = vr_in * sin(phi_angle);
       }
 
-      s_ext[URHO] = prob_parm.dens_jet;
-      s_ext[UMX] = prob_parm.dens_jet * vx_in;
-      s_ext[UMY] = prob_parm.dens_jet * vy_in;
-      s_ext[UMZ] = prob_parm.dens_jet * vz_in;
-      s_ext[UEINT] = prob_parm.dens_jet * e_ext;
+      s_ext[URHO] = rho;
+      s_ext[UMX] = rho * vx_in;
+      s_ext[UMY] = rho * vy_in;
+      s_ext[UMZ] = rho * vz_in;
+      s_ext[UEINT] = rho * eint;
       s_ext[UEDEN] =
-        s_ext[UEINT] + 0.5 * prob_parm.dens_jet *
-                         (vx_in * vx_in + vy_in * vy_in + vz_in * vz_in);
-      s_ext[UTEMP] = T_ext;
+        rho * (eint + 0.5 * (vx_in * vx_in + vy_in * vy_in + vz_in * vz_in));
+      s_ext[UTEMP] = T;
       for (int n = 0; n < NUM_SPECIES; n++)
-        s_ext[UFS + n] = prob_parm.dens_jet * jet_massfrac[n];
+        s_ext[UFS + n] = rho * jet_massfrac[n];
     }
   }
 }
