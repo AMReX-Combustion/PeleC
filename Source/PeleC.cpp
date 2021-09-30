@@ -1567,7 +1567,7 @@ PeleC::errorEst(
       const amrex::Box& tilebox = mfi.tilebox();
       const auto Sfab = S_data.array(mfi);
       auto tag_arr = tags.array(mfi);
-      const auto datbox = S_data[mfi].box();
+      const auto datbox = amrex::grow(tilebox, 1);
       amrex::Elixir S_data_mfi_eli = S_data[mfi].elixir();
 
 #ifdef PELEC_USE_EB
