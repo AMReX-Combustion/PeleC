@@ -62,7 +62,7 @@ PeleC::sum_integrated_quantities()
         rho_e = foo[i++];
         rho_K = foo[i++];
         rho_E = foo[i++];
-        enstr = foo[i++];
+        enstr = foo[i++]; // NOLINT
         fuel_prod = foo[i++];
         temp = foo[i++];
 
