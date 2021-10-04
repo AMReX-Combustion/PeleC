@@ -428,7 +428,7 @@ initialize_EB2(
   // Custom types defined here - all_regular, plane, sphere, etc, will get
   // picked up by default (see AMReX_EB2.cpp around L100 )
   amrex::Vector<std::string> amrex_defaults(
-    {"alL_regular", "box", "cylinder", "plane", "sphere", "torus", "parser"});
+    {"all_regular", "box", "cylinder", "plane", "sphere", "torus", "parser"});
   if (!(std::find(amrex_defaults.begin(), amrex_defaults.end(), geom_type) !=
         amrex_defaults.end())) {
     std::unique_ptr<pele::pelec::Geometry> geometry(
