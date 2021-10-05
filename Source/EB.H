@@ -66,12 +66,11 @@ pc_set_body_state(
   const int j,
   const int k,
   const int n,
-  const amrex::Array4<const int>& mask,
+  const amrex::Array4<const amrex::EBCellFlag>& flags,
   const amrex::GpuArray<amrex::Real, NVAR> body_state,
-  const int covered_val,
   const amrex::Array4<amrex::Real>& S)
 {
-  if (mask(i, j, k) == covered_val) {
+  if (flags(i, j, k).isCovered()) {
     S(i, j, k, n) = body_state[n];
   }
 }

@@ -39,6 +39,34 @@ amrex::Real vfraceps = 0.000001;
 
 // I/O routines for PeleC
 
+bool
+PeleC::check_state_in_checkpoint(const StateType state_type)
+{
+  const std::string state_pfx =
+    "Level_" + std::to_string(level) + "/SD_" + std::to_string(state_type);
+
+  const std::string filename = parent->theRestartFile();
+  const std::string faHeaderFilesName(filename + "/FabArrayHeaders.txt");
+  amrex::Vector<char> faHeaderFileChars;
+  bool bExitOnError(false); // ---- dont exit if this file does not exist
+  amrex::ParallelDescriptor::ReadAndBcastFile(
+    faHeaderFilesName, faHeaderFileChars, bExitOnError);
+  if (!faHeaderFileChars.empty()) { // ---- headers were read
+    std::string faFileCharPtrString(faHeaderFileChars.dataPtr());
+    std::istringstream fais(faFileCharPtrString, std::istringstream::in);
+    while (!fais.eof()) {
+      std::string faHeaderName;
+      fais >> faHeaderName;
+      if (!fais.eof()) {
+        if (faHeaderName.rfind(state_pfx, 0) == 0) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
 void
 PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
 {
@@ -79,8 +107,8 @@ PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
       const amrex::Real ctime = state[i - 1].curTime();
       state[i].define(
         geom.Domain(), grids, dmap, desc_lst[i], ctime, parent->dtLevel(level),
-        *m_factory);
-      state[i] = state[i - 1];
+        Factory());
+      get_new_data(i).setVal(0.0);
     }
   }
   buildMetrics();
@@ -218,10 +246,25 @@ void
 PeleC::set_state_in_checkpoint(amrex::Vector<int>& state_in_checkpoint)
 {
   for (int i = 0; i < num_state_type; ++i) {
-    state_in_checkpoint[i] = 1;
+    const bool is_present =
+      check_state_in_checkpoint(static_cast<StateType>(i));
 
-    if (i == Work_Estimate_Type) {
+    if (i == State_Type) {
+      state_in_checkpoint[i] = 1;
+      if ((!is_present) && (level == 0)) {
+        amrex::Abort("State_Type is not present in the checkpoint file");
+      }
+    } else if (i == Reactions_Type) {
+      if (do_react == 0) {
+        state_in_checkpoint[i] = 0;
+      } else {
+        state_in_checkpoint[i] = is_present ? 1 : 0;
+      }
+    } else if (i == Work_Estimate_Type) {
+      // Never use work estimate checkpoint
       state_in_checkpoint[i] = 0;
+    } else {
+      amrex::Abort("Unknown StateType");
     }
   }
 }
@@ -340,6 +383,12 @@ PeleC::setPlotVariables()
   pp.query("plot_cost", plot_cost);
   if (plot_cost) {
     amrex::Amr::addDerivePlotVar("WorkEstimate");
+  }
+
+  if (do_react == 0) {
+    for (int i = 0; i < desc_lst[Reactions_Type].nComp(); i++) {
+      amrex::Amr::deleteStatePlotVar(desc_lst[Reactions_Type].name(i));
+    }
   }
 
   bool plot_rhoy = true;

@@ -35,5 +35,3 @@ Bpack := ./Make.package
 Blocs := .
 PELEC_HOME := ../../..
 include $(PELEC_HOME)/Exec/Make.PeleC
-
-DEFINES += -DConvergingNozzle

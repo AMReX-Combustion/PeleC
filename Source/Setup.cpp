@@ -289,12 +289,11 @@ PeleC::variableSetUp()
 
   // Components 0:Numspec-1 are rho.omega_i
   // Component NUM_SPECIES is rho.edot = (rho.eout-rho.ein)
-  store_in_checkpoint = true;
+  store_in_checkpoint = (do_react == 1);
   desc_lst.addDescriptor(
     Reactions_Type, amrex::IndexType::TheCellType(),
     amrex::StateDescriptor::Point, 0, NUM_SPECIES + 2, interp,
     state_data_extrap, store_in_checkpoint);
-
   amrex::Vector<amrex::BCRec> bcs(NVAR);
   amrex::Vector<std::string> name(NVAR);
   amrex::Vector<amrex::BCRec> react_bcs(NUM_SPECIES + 2);

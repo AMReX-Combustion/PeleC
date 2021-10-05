@@ -105,8 +105,6 @@ read_pmf(const std::string& myfile)
     PeleC::prob_parm_host->h_pmf_Y.end(), PeleC::prob_parm_host->pmf_Y.begin());
   PeleC::h_prob_parm_device->d_pmf_X = PeleC::prob_parm_host->pmf_X.data();
   PeleC::h_prob_parm_device->d_pmf_Y = PeleC::prob_parm_host->pmf_Y.data();
-  PeleC::d_prob_parm_device->d_pmf_X = PeleC::prob_parm_host->pmf_X.data();
-  PeleC::d_prob_parm_device->d_pmf_Y = PeleC::prob_parm_host->pmf_Y.data();
 }
 
 void
@@ -124,7 +122,13 @@ init_bc()
   if (PeleC::h_prob_parm_device->phi_in < 0) {
     const amrex::Real yl = 0.0;
     const amrex::Real yr = 0.0;
+    // Use host pointers for host call to pmf()
+    PeleC::h_prob_parm_device->d_pmf_X = PeleC::prob_parm_host->h_pmf_X.data();
+    PeleC::h_prob_parm_device->d_pmf_Y = PeleC::prob_parm_host->h_pmf_Y.data();
     pmf(yl, yr, pmf_vals, *PeleC::h_prob_parm_device);
+    // Switch back to device pointers
+    PeleC::h_prob_parm_device->d_pmf_X = PeleC::prob_parm_host->pmf_X.data();
+    PeleC::h_prob_parm_device->d_pmf_Y = PeleC::prob_parm_host->pmf_Y.data();
     amrex::Real mysum = 0.0;
     for (int n = 0; n < NUM_SPECIES; n++) {
       molefrac[n] = amrex::max<amrex::Real>(0.0, pmf_vals[3 + n]);

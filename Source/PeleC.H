@@ -105,6 +105,7 @@ public:
   // This is called only when we restart from an old checkpoint.
   virtual void
   set_state_in_checkpoint(amrex::Vector<int>& state_in_checkpoint) override;
+  bool check_state_in_checkpoint(const StateType state_type);
 
   // Call AmrLevel::checkPoint and then add radiation info
   virtual void checkPoint(
@@ -732,7 +733,6 @@ protected:
 
 #ifdef PELEC_USE_EB
 
-  amrex::FabArray<amrex::BaseFab<int>> ebmask;
   static amrex::GpuArray<amrex::Real, NVAR> body_state;
   static bool body_state_set;
   static bool eb_initialized;
