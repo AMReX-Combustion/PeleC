@@ -158,7 +158,7 @@ PeleC::variableSetUp()
   read_params();
 
 #ifdef AMREX_USE_GPU
-  amrex::sundials::MemoryHelper::Initialize();
+  amrex::sundials::Initialize();
 #endif
 
   init_pass_map(h_pass_map);
