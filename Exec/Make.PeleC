@@ -37,6 +37,10 @@ all: $(executable)
 	$(SILENT) $(RM) AMReX_buildInfo.cpp
 	@echo SUCCESS
 
+ifeq ($(USE_CUDA),TRUE)
+   CXXFLAGS+=-Xptxas --disable-optimizer-constants
+endif
+
 # PelePhysics
 PP_SRC_HOME = $(PELE_PHYSICS_HOME)/Source
 EXTERN_CORE       += $(PP_SRC_HOME)
