@@ -22,13 +22,14 @@ void
 PeleC::construct_old_soot_source(amrex::Real time, amrex::Real dt)
 {
   old_sources[soot_src]->setVal(0.0);
-  if (!add_soot_src)
+  if (!add_soot_src) {
     return;
+  }
   amrex::MultiFab& S_old = get_old_data(State_Type);
 
   int ng = 0; // None filled
 
-  fill_soot_source(time, dt, S_old, *old_sources[soot_src], ng);
+  PeleC::fill_soot_source(time, dt, S_old, *old_sources[soot_src], ng);
 
   old_sources[soot_src]->FillBoundary(geom.periodicity());
 }
@@ -37,13 +38,14 @@ void
 PeleC::construct_new_soot_source(amrex::Real time, amrex::Real dt)
 {
   new_sources[soot_src]->setVal(0.0);
-  if (!add_soot_src)
+  if (!add_soot_src) {
     return;
+  }
   amrex::MultiFab& S_new = get_new_data(State_Type);
 
   int ng = 0;
 
-  fill_soot_source(time, dt, S_new, *new_sources[soot_src], ng);
+  PeleC::fill_soot_source(time, dt, S_new, *new_sources[soot_src], ng);
 }
 
 void
@@ -55,9 +57,6 @@ PeleC::fill_soot_source(
   int ng)
 {
   BL_PROFILE("PeleC::fill_soot_source()");
-  const int nCompTr = dComp_lambda + 1;
-  const amrex::Real* dx = geom.CellSize();
-  const amrex::Real* prob_lo = geom.ProbLo();
 
 #ifdef PELE_USE_EB
   auto const& fact = dynamic_cast<EBFArrayBoxFactory const&>(state.Factory());
@@ -69,8 +68,6 @@ PeleC::fill_soot_source(
 #endif
   for (MFIter mfi(soot_src, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
     const amrex::Box& bx = mfi.growntilebox(ng);
-    amrex::RealBox gridloc =
-      amrex::RealBox(grids[mfi.index()], geom.CellSize(), geom.ProbLo());
 #ifdef PELE_USE_EB
     const auto& flag_fab = flags[mfi];
     FabType typ = flag_fab.getType(bx);

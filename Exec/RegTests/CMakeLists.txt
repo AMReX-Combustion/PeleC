@@ -12,6 +12,10 @@ if(PELEC_ENABLE_AMREX_PARTICLES)
   add_subdirectory(Spray-Conv)
 endif()
 
+if(PELEC_ENABLE_SOOT)
+  add_subdirectory(Soot-Flame)
+endif()
+
 if(PELEC_ENABLE_MASA)
   add_subdirectory(MMS)
 endif()

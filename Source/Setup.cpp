@@ -219,6 +219,7 @@ PeleC::variableSetUp()
   NumSootVars = NUM_SOOT_MOMENTS + 1;
   FirstSootVar = cnt;
   cnt += NumSootVars;
+  Print() << "Total conservative variables: " << cnt << std::endl;
 #endif
 
   // const amrex::Real run_strt = amrex::ParallelDescriptor::second() ;
@@ -396,8 +397,9 @@ PeleC::variableSetUp()
   // Set the soot model names
   if (ParallelDescriptor::IOProcessor()) {
     amrex::Print() << NumSootVars << " Soot Variables: " << std::endl;
-    for (int i = 0; i < NumSootVars; ++i)
+    for (int i = 0; i < NumSootVars; ++i) {
       amrex::Print() << soot_model->sootVariableName(i) << ' ' << ' ';
+    }
     amrex::Print() << std::endl;
   }
 

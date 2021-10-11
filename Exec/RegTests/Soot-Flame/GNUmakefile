@@ -25,16 +25,27 @@ THREAD_SANITIZER = FALSE
 # PeleC
 USE_EB = FALSE
 Eos_Model := Fuego
-Chemistry_Model := decane_3sp
+Chemistry_Model := SootReaction
 Transport_Model := Simple
 
-# PeleC-MP
-USE_PARTICLES = TRUE
-SPRAY_FUEL_NUM = 1
-# If you want to use StructOfArrays instead of ArrayOfStructs
-#USE_SPRAY_SOA = TRUE
+# PeleMP
+USE_SOOT = TRUE
+# If this is changed, must run a make clean and rerun make
+NUM_SOOT_MOMENTS = 3
+#NUM_SOOT_MOMENTS = 6
 
 # GNU Make
 Bpack := ./Make.package
 Blocs := .
 include $(PELEC_HOME)/Exec/Make.PeleC
+
+ifeq ($(shell uname),Darwin)
+  all: $(executable)
+	install_name_tool -add_rpath $(PELE_PHYSICS_HOME)/ThirdParty/INSTALL/$(configSpecificTPSuffix)/lib $(executable)
+	$(SILENT) $(RM) AMReX_buildInfo.cpp
+	@echo SUCCESS
+else
+  all: $(executable)
+	$(SILENT) $(RM) AMReX_buildInfo.cpp
+	@echo SUCCESS
+endif
