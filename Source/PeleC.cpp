@@ -15,6 +15,10 @@
 #include <AMReX_Particles.H>
 #endif
 
+#ifdef AMREX_USE_GPU
+#include <AMReX_SUNMemory.H>
+#endif
+
 #ifdef PELEC_USE_MASA
 #include <masa.h>
 using namespace MASA;
@@ -473,6 +477,9 @@ PeleC::~PeleC()
   if (do_react == 1) {
     close_reactor();
   }
+#ifdef AMREX_USE_GPU
+  amrex::sundials::Finalize();
+#endif
 }
 
 void
