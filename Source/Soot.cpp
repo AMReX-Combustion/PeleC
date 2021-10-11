@@ -1,5 +1,6 @@
 #include "PeleC.H"
 
+#ifdef SOOT_MODEL
 #include <Transport.H>
 
 void
@@ -146,3 +147,4 @@ PeleC::fill_soot_source(
     });
   }
 }
+#endif

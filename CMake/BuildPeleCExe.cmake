@@ -69,6 +69,23 @@ function(build_pelec_exe pelec_exe_name)
   target_sources(${pelec_exe_name} PRIVATE
                  ${PELEC_MECHANISM_DIR}/mechanism.cpp
                  ${PELEC_MECHANISM_DIR}/mechanism.H)
+  # Set PeleMP flags
+  set(PELEMP_SRC_DIR ${CMAKE_SOURCE_DIR}/Submodules/PeleMP/Source)
+  if(PELEC_ENABLE_PARTICLES)
+    target_sources(${pelec_exe_name}
+      PRIVATE
+	SprayParticlesInitInsert.cpp
+    )
+    target_compile_definitions(${pelec_exe_name} PRIVATE SPRAY_FUEL_NUM=${PELEMP_SPRAY_FUEL_NUM})
+    target_sources(${pelec_exe_name} PRIVATE
+                   ${PELEMP_SRC_DIR}/PP_Spray/SprayParticles.cpp
+                   ${PELEMP_SRC_DIR}/PP_Spray/SprayParticles.H
+                   ${PELEMP_SRC_DIR}/PP_Spray/SprayFuelData.H
+                   ${PELEMP_SRC_DIR}/PP_Spray/SprayInterpolation.H
+                   ${PELEMP_SRC_DIR}/PP_Spray/Drag.H
+                   ${PELEMP_SRC_DIR}/PP_Spray/WallFunctions.H)
+    target_include_directories(${pelec_exe_name} PRIVATE ${PELEMP_SRC_DIR}/PP_Spray)
+  endif()
   # Avoid warnings from certain files
   if((NOT PELEC_ENABLE_CUDA) AND (CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$"))
     list(APPEND MY_CXX_FLAGS "-w")
@@ -199,6 +216,7 @@ function(build_pelec_exe pelec_exe_name)
        ${SRC_DIR}/React.cpp
        ${SRC_DIR}/Riemann.H
        ${SRC_DIR}/Setup.cpp
+       ${SRC_DIR}/Soot.cpp
        ${SRC_DIR}/Sources.cpp
        ${SRC_DIR}/SumIQ.cpp
        ${SRC_DIR}/SumUtils.cpp

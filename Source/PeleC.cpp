@@ -396,10 +396,11 @@ PeleC::PeleC(
 #ifdef AMREX_PARTICLES
   if (level > 0 && do_spray_particles) {
     int cRefRatio = papa.MaxRefRatio(level - 1);
-    if (cRefRatio > 4)
+    if (cRefRatio > 4) {
       amrex::Abort("Spray particles not supported for ref_ratio > 4");
-    else if (cRefRatio > 2)
+    } else if (cRefRatio > 2) {
       nGrowS = 7;
+    }
   }
 #endif
   if (do_hydro) {
@@ -1090,12 +1091,14 @@ PeleC::post_timestep(int
   const int ncycle = parent->nCycle(level);
   if (do_spray_particles) {
     // Remove virtual particles at this level if we have any.
-    if (theVirtPC() != 0)
+    if (theVirtPC() != nullptr) {
       removeVirtualParticles();
+    }
 
     // Remove Ghost particles on the final iteration
-    if (iteration == ncycle)
+    if (iteration == ncycle) {
       removeGhostParticles();
+    }
 
     // Do particle injection
     int nstep = parent->levelSteps(0);
@@ -1104,7 +1107,7 @@ PeleC::post_timestep(int
     const ProbParmHost* lprobparm = prob_parm_host;
     const ProbParmDevice* lprobparm_d = h_prob_parm_device;
     BL_PROFILE_VAR("SprayParticles::injectParticles()", INJECT_SPRAY);
-    bool injectParts = theSprayPC()->injectParticles(
+    bool injectParts = SprayParticleContainer::injectParticles(
       cumtime, dtlev, nstep, level, finest_level, *lprobparm, *lprobparm_d);
     BL_PROFILE_VAR_STOP(INJECT_SPRAY);
     // Sync up if we're level 0 or if we have particles that may have moved
@@ -1182,7 +1185,7 @@ PeleC::post_restart()
 
 #ifdef AMREX_PARTICLES
   if (do_spray_particles) {
-    particlePostRestart(parent->theRestartFile());
+    particlePostRestart();
   }
 #endif
 
@@ -1233,7 +1236,7 @@ PeleC::post_regrid(
   fine_mask.clear();
 
 #ifdef AMREX_PARTICLES
-  if (do_spray_particles && theSprayPC() != 0 && level == lbase) {
+  if (do_spray_particles && theSprayPC() != nullptr && level == lbase) {
     particle_redistribute(lbase);
   }
 #endif
@@ -1273,10 +1276,13 @@ void PeleC::post_init(amrex::Real /*stop_time*/)
     const ProbParmHost* lprobparm = prob_parm_host;
     const ProbParmDevice* lprobparm_d = h_prob_parm_device;
     BL_PROFILE_VAR("SprayParticles::injectParticles()", INJECT_SPRAY);
-    bool injectParts = theSprayPC()->injectParticles(
-      cumtime, dtlev, 0, level, parent->finestLevel(), *lprobparm, *lprobparm_d);
+    bool injectParts = SprayParticleContainer::injectParticles(
+      cumtime, dtlev, 0, level, parent->finestLevel(), *lprobparm,
+      *lprobparm_d);
     BL_PROFILE_VAR_STOP(INJECT_SPRAY);
-    if (injectParts) theSprayPC()->Redistribute(level, theSprayPC()->finestLevel(), 0);
+    if (injectParts) {
+      theSprayPC()->Redistribute(level, theSprayPC()->finestLevel(), 0);
+    }
   }
 #endif
 

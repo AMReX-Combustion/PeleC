@@ -99,11 +99,12 @@ PeleC::do_mol_advance(
   if (do_spray_particles) {
     int finest_level = parent->finestLevel();
     int finer_ref = 0;
-    if (level < finest_level)
+    if (level < finest_level) {
       finer_ref = parent->MaxRefRatio(level);
+    }
     theSprayPC()->setSprayGridInfo(
-      level, finest_level, amr_ncycle, amr_iteration, finer_ref, ghost_width,
-      where_width, spray_n_grow, tmp_src_width);
+      level, finest_level, amr_ncycle, finer_ref, ghost_width, where_width,
+      spray_n_grow, tmp_src_width);
     nGrow_Sborder = std::max(nGrow_Sborder, spray_n_grow);
     if (Sborder.nGrow() < nGrow_Sborder) {
       std::string abortStr = "Sborder has " + std::to_string(Sborder.nGrow()) +
@@ -174,9 +175,7 @@ PeleC::do_mol_advance(
 #ifdef AMREX_PARTICLES
   if (do_spray_particles) {
     new_sources[spray_src]->setVal(0.);
-    particleMK(
-      time + dt, dt, spray_n_grow, tmp_src_width, amr_iteration, amr_ncycle,
-      tmp_spray_source);
+    particleMK(time + dt, dt, spray_n_grow, tmp_src_width, tmp_spray_source);
     amrex::MultiFab::Saxpy(molSrc, 1.0, *new_sources[spray_src], 0, 0, NVAR, 0);
   }
 #endif
@@ -326,11 +325,12 @@ PeleC::do_sdc_iteration(
   if (do_spray_particles) {
     int finest_level = parent->finestLevel();
     int finer_ref = 0;
-    if (level < finest_level)
+    if (level < finest_level) {
       finer_ref = parent->MaxRefRatio(level);
+    }
     theSprayPC()->setSprayGridInfo(
-      level, finest_level, amr_ncycle, amr_iteration, finer_ref, ghost_width,
-      where_width, spray_n_grow, tmp_src_width);
+      level, finest_level, amr_ncycle, finer_ref, ghost_width, where_width,
+      spray_n_grow, tmp_src_width);
     fill_Sborder = true;
     nGrow_Sborder = std::max(nGrow_Sborder, spray_n_grow);
   }
@@ -424,8 +424,9 @@ PeleC::do_sdc_iteration(
 #ifdef AMREX_PARTICLES
     if (do_spray_particles && level > 0) {
       int maxref = parent->MaxRefRatio(level - 1);
-      if (maxref > 2)
+      if (maxref > 2) {
         nGrowDiff = nGrow_Sborder;
+      }
     }
 #endif
     FillPatch(*this, Sborder, nGrowDiff, time + dt, State_Type, 0, NVAR);
@@ -451,15 +452,14 @@ PeleC::do_sdc_iteration(
   if (do_spray_particles && sub_iteration == sub_ncycle - 1) {
     new_sources[spray_src]->setVal(0.);
     // Advance the particle velocities by dt/2 to the new time.
-    if (particle_verbose)
+    if (particle_verbose) {
       amrex::Print() << "moveKick ... updating velocity only\n";
+    }
 
     if (!do_diffuse) { // Else, this was already done above.  No need to redo
       FillPatch(*this, Sborder, nGrow_Sborder, time + dt, State_Type, 0, NVAR);
     }
-    particleMK(
-      time + dt, dt, spray_n_grow, tmp_src_width, amr_iteration, amr_ncycle,
-      tmp_spray_source);
+    particleMK(time + dt, dt, spray_n_grow, tmp_src_width, tmp_spray_source);
   }
 #endif
 

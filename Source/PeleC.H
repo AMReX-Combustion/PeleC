@@ -151,8 +151,7 @@ public:
   static int particle_verbose;
 
   // How to initialize at restart
-  void particlePostRestart(
-    const std::string& restart_file, bool is_checkpoint = true);
+  void particlePostRestart(bool is_checkpoint = true);
 
   // Redistribute
   virtual void
@@ -174,8 +173,6 @@ public:
     const Real dt,
     const int spray_n_grow,
     const int tmp_src_width,
-    const int amr_iteration,
-    const int amr_ncycle,
     amrex::MultiFab& tmp_spray_source);
 
   // Setup virtual particles if necessary
