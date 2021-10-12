@@ -102,7 +102,7 @@ PeleC::do_mol_advance(
     if (level < finest_level) {
       finer_ref = parent->MaxRefRatio(level);
     }
-    theSprayPC()->setSprayGridInfo(
+    SprayParticleContainer::setSprayGridInfo(
       level, finest_level, amr_ncycle, finer_ref, ghost_width, where_width,
       spray_n_grow, tmp_src_width);
     nGrow_Sborder = std::max(nGrow_Sborder, spray_n_grow);
@@ -328,7 +328,7 @@ PeleC::do_sdc_iteration(
     if (level < finest_level) {
       finer_ref = parent->MaxRefRatio(level);
     }
-    theSprayPC()->setSprayGridInfo(
+    SprayParticleContainer::setSprayGridInfo(
       level, finest_level, amr_ncycle, finer_ref, ghost_width, where_width,
       spray_n_grow, tmp_src_width);
     fill_Sborder = true;
