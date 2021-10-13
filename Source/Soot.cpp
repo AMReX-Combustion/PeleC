@@ -1,6 +1,7 @@
 #include "PeleC.H"
 
 #ifdef SOOT_MODEL
+#include "SootModel.H"
 #include <Transport.H>
 
 void

@@ -3,6 +3,10 @@
 #include "PeleC.H"
 #include "IndexDefines.H"
 
+#ifdef AMREX_PARTICLES
+#include "SprayParticles.H"
+#endif
+
 amrex::Real
 PeleC::advance(
   amrex::Real time, amrex::Real dt, int amr_iteration, int amr_ncycle)

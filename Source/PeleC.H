@@ -23,11 +23,6 @@
 
 #ifdef AMREX_PARTICLES
 #include <AMReX_Particles.H>
-#include <SprayParticles.H>
-#endif
-
-#ifdef SOOT_MODEL
-#include <SootModel.H>
 #endif
 
 #include "Filter.H"
@@ -77,6 +72,9 @@ grow_box_by_one(const amrex::Box& b)
 // Forward declarations
 #ifdef AMREX_PARTICLES
 class SprayParticleContainer;
+#endif
+#ifdef SOOT_MODEL
+class SootModel;
 #endif
 
 // AmrLevel-derived class for hyperbolic conservation equations for stellar
@@ -159,8 +157,8 @@ public:
 
   // Setup ghost and virtual particles and do moveKickDrift
   void particleMKD(
-    const Real time,
-    const Real dt,
+    const amrex::Real time,
+    const amrex::Real dt,
     const int ghost_width,
     const int spray_n_grow,
     const int tmp_src_width,
@@ -169,8 +167,8 @@ public:
 
   // Do the moveKick for active and ghost particles
   void particleMK(
-    const Real time,
-    const Real dt,
+    const amrex::Real time,
+    const amrex::Real dt,
     const int spray_n_grow,
     const int tmp_src_width,
     amrex::MultiFab& tmp_spray_source);

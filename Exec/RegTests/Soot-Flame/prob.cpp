@@ -1,4 +1,5 @@
 #include "prob.H"
+#include "SootModel.H"
 
 std::string
 read_pmf_file(std::ifstream& in)

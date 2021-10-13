@@ -4,6 +4,7 @@
 using namespace amrex;
 
 #ifdef AMREX_PARTICLES
+#include "SprayParticles.H"
 
 namespace {
 bool virtual_particles_set = false;

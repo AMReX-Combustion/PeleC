@@ -18,6 +18,10 @@ using namespace MASA;
 #include "IndexDefines.H"
 #include "prob.H"
 
+#ifdef SOOT_MODEL
+#include "SootModel.H"
+#endif
+
 ProbParmDevice* PeleC::d_prob_parm_device = nullptr;
 ProbParmDevice* PeleC::h_prob_parm_device = nullptr;
 ProbParmHost* PeleC::prob_parm_host = nullptr;

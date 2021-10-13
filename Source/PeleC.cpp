@@ -13,6 +13,11 @@
 
 #ifdef AMREX_PARTICLES
 #include <AMReX_Particles.H>
+#include "SprayParticles.H"
+#endif
+
+#ifdef SOOT_MODEL
+#include "SootModel.H"
 #endif
 
 #ifdef PELEC_USE_MASA
