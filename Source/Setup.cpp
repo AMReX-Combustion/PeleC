@@ -7,10 +7,6 @@
 using namespace MASA;
 #endif
 
-#ifdef AMREX_USE_GPU
-#include <AMReX_SUNMemory.H>
-#endif
-
 #include "Transport.H"
 #include "mechanism.H"
 #include "PeleC.H"
@@ -156,10 +152,6 @@ PeleC::variableSetUp()
   // Get options, set phys_bc
   eb_in_domain = ebInDomain();
   read_params();
-
-#ifdef AMREX_USE_GPU
-  amrex::sundials::Initialize();
-#endif
 
   init_pass_map(h_pass_map);
 
