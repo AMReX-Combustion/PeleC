@@ -144,7 +144,7 @@ PeleC::readParticleParams()
   std::vector<Real> sprayrho;
   std::vector<Real> mu(nfuel, -1.);
   std::vector<Real> lambda(nfuel, -1.);
-  if (particle_mass_tran) {
+  {
     spray_fuel_names.assign(nfuel, "");
     ppp.getarr("fuel_species", fuel_names);
     ppp.getarr("fuel_crit_temp", crit_T);
