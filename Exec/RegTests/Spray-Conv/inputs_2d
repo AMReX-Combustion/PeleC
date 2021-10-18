@@ -55,7 +55,6 @@ pelec.do_spray_particles = 1
 particles.v = 0
 particles.mom_transfer = 1
 particles.mass_transfer = 1
-particles.heat_transfer = 1
 particles.cfl = 0.5
 #particles.init_file = "initspraydata"
 particles.init_function = 1 # Use SprayParticlesInitInsert.cpp for initialization

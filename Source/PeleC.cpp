@@ -1112,7 +1112,7 @@ PeleC::post_timestep(int
     const ProbParmHost* lprobparm = prob_parm_host;
     const ProbParmDevice* lprobparm_d = h_prob_parm_device;
     BL_PROFILE_VAR("SprayParticles::injectParticles()", INJECT_SPRAY);
-    bool injectParts = SprayParticleContainer::injectParticles(
+    bool injectParts = theSprayPC()->injectParticles(
       cumtime, dtlev, nstep, level, finest_level, *lprobparm, *lprobparm_d);
     BL_PROFILE_VAR_STOP(INJECT_SPRAY);
     // Sync up if we're level 0 or if we have particles that may have moved
