@@ -64,14 +64,12 @@ jobs:
           make install
           # Install MASA
           cd ${{runner.workspace}}/deps
-          #git clone --recursive https://github.com/manufactured-solutions/MASA.git ${{runner.workspace}}/deps/MASA
-          git clone --recursive https://github.com/marchdf/MASA.git ${{runner.workspace}}/deps/MASA
+          git clone --recursive https://github.com/manufactured-solutions/MASA.git ${{runner.workspace}}/deps/MASA
           cd ${{runner.workspace}}/deps/MASA
-          git fetch
-          git checkout fix-python
           ./bootstrap
           ./configure CXX='mpicxx -std=c++11' CC=mpicc \
             METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" \
+            --disable-fortran-interfaces --disable-python-interfaces \
             --prefix="${{runner.workspace}}/deps/install/MASA"
           make -j ${{env.NPROCS}}
           make install
