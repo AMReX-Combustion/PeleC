@@ -69,7 +69,7 @@ jobs:
           ./bootstrap
           ./configure CXX='mpicxx -std=c++11' CC=mpicc \
             METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" \
-            --disable-fortran-interfaces --disable-python-interfaces \
+            --enable-fortran-interfaces --disable-python-interfaces \
             --prefix="${{runner.workspace}}/deps/install/MASA"
           make -j ${{env.NPROCS}}
           make install
