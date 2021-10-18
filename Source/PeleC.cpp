@@ -1873,12 +1873,7 @@ PeleC::init_reactor()
                       "Make sure this is intended."
                    << std::endl;
   }
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
-  {
-    reactor->init(1, 1);
-  }
+  reactor->init(1, 1);
 }
 
 void
