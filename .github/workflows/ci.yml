@@ -45,7 +45,7 @@ jobs:
       - name: Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.x'
+          python-version: '3.8'
       - name: Setup
         run: |
           echo "NPROCS=${{matrix.procs}}" >> $GITHUB_ENV
@@ -64,11 +64,8 @@ jobs:
           make install
           # Install MASA
           cd ${{runner.workspace}}/deps
-          # git clone --recursive https://github.com/manufactured-solutions/MASA.git ${{runner.workspace}}/deps/MASA
-          git clone --recursive https://github.com/marchdf/MASA.git ${{runner.workspace}}/deps/MASA
+          git clone --recursive https://github.com/manufactured-solutions/MASA.git ${{runner.workspace}}/deps/MASA
           cd ${{runner.workspace}}/deps/MASA
-          git fetch
-          git checkout fix-python
           ./bootstrap
           ./configure CXX='mpicxx -std=c++11' CC=mpicc \
             METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" \
