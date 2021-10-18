@@ -319,18 +319,33 @@ PeleC::define_body_state()
 
     for (amrex::MFIter mfi(S, false); mfi.isValid() && !foundPt; ++mfi) {
       const amrex::Box vbox = mfi.validbox();
-      const amrex::FArrayBox& fab = S[mfi];
+      auto const& farr = S.const_array(mfi);
       auto const& flag_arr = flags.const_array(mfi);
 
-      for (amrex::BoxIterator bit(vbox); bit.ok() && !foundPt; ++bit) {
-        const amrex::IntVect& iv = bit();
-        if (flag_arr(iv).isRegular()) {
-          foundPt = true;
-          for (int n = 0; n < S.nComp(); ++n) {
-            body_state[n] = fab(iv, n);
+      const auto lo = amrex::lbound(vbox);
+      const auto hi = amrex::ubound(vbox);
+      amrex::Gpu::DeviceVector<amrex::Real> local_body_state(NVAR, -1);
+      amrex::Real* p_body_state = local_body_state.begin();
+      amrex::ParallelFor(1, [=] AMREX_GPU_DEVICE(int /*dummy*/) noexcept {
+        bool foundPt = false;
+        for (int i = lo.x; i <= hi.x && !foundPt; ++i) {
+          for (int j = lo.y; j <= hi.y && !foundPt; ++j) {
+            for (int k = lo.z; k <= hi.z && !foundPt; ++k) {
+              const amrex::IntVect iv(AMREX_D_DECL(i, j, k));
+              if (flag_arr(iv).isRegular()) {
+                foundPt = true;
+                for (int n = 0; n < NVAR; ++n) {
+                  p_body_state[n] = farr(iv, n);
+                }
+              }
+            }
           }
         }
-      }
+      });
+      amrex::Gpu::copy(
+        amrex::Gpu::deviceToHost, local_body_state.begin(),
+        local_body_state.end(), body_state.begin());
+      foundPt = body_state[0] != -1;
     }
 
     // Find proc with lowest rank to find valid point, use that for all
