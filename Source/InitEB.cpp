@@ -108,14 +108,20 @@ PeleC::initialize_eb2_structs()
       sv_eb_bndry_geom[iLocal].resize(Ncut);
       auto const& flag_arr = flags.const_array(mfi);
       EBBndryGeom* d_sv_eb_bndry_geom = sv_eb_bndry_geom[iLocal].data();
+      const auto lo = amrex::lbound(tbox);
+      const auto hi = amrex::ubound(tbox);
       amrex::ParallelFor(1, [=] AMREX_GPU_DEVICE(int /*dummy*/) noexcept {
         int ivec = 0;
-        for (amrex::BoxIterator bit(tbox); bit.ok(); ++bit) {
-          const amrex::IntVect iv = bit();
-          const amrex::EBCellFlag& flag = flag_arr(iv);
-          if (!(flag.isRegular() || flag.isCovered())) {
-            d_sv_eb_bndry_geom[ivec].iv = iv;
-            ivec++;
+        for (int i = lo.x; i <= hi.x; ++i) {
+          for (int j = lo.y; j <= hi.y; ++j) {
+            for (int k = lo.z; k <= hi.z; ++k) {
+              const amrex::IntVect iv(AMREX_D_DECL(i, j, k));
+              const amrex::EBCellFlag& flag = flag_arr(iv);
+              if (!(flag.isRegular() || flag.isCovered())) {
+                d_sv_eb_bndry_geom[ivec].iv = iv;
+                ivec++;
+              }
+            }
           }
         }
       });
