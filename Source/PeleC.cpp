@@ -1281,7 +1281,7 @@ void PeleC::post_init(amrex::Real /*stop_time*/)
     const ProbParmHost* lprobparm = prob_parm_host;
     const ProbParmDevice* lprobparm_d = h_prob_parm_device;
     BL_PROFILE_VAR("SprayParticles::injectParticles()", INJECT_SPRAY);
-    bool injectParts = SprayParticleContainer::injectParticles(
+    bool injectParts = theSprayPC()->injectParticles(
       cumtime, dtlev, 0, level, parent->finestLevel(), *lprobparm,
       *lprobparm_d);
     BL_PROFILE_VAR_STOP(INJECT_SPRAY);
