@@ -87,6 +87,7 @@ pc_estdt_hydro(
     }
 #endif
   });
+  AMREX_ALWAYS_ASSERT_WITH_MESSAGE(dt > 0.0, "ERROR: dt needs to be positive.");
   return dt;
 }
 
@@ -137,6 +138,7 @@ pc_estdt_veldif(
     }
 #endif
   });
+  AMREX_ALWAYS_ASSERT_WITH_MESSAGE(dt > 0.0, "ERROR: dt needs to be positive.");
   return dt;
 }
 
@@ -190,6 +192,7 @@ pc_estdt_tempdif(
     }
 #endif
   });
+  AMREX_ALWAYS_ASSERT_WITH_MESSAGE(dt > 0.0, "ERROR: dt needs to be positive.");
   return dt;
 }
 
@@ -241,6 +244,7 @@ pc_estdt_enthdif(
     }
 #endif
   });
+  AMREX_ALWAYS_ASSERT_WITH_MESSAGE(dt > 0.0, "ERROR: dt needs to be positive.");
   return dt;
 }
 
