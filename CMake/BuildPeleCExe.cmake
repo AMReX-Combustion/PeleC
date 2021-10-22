@@ -118,7 +118,7 @@ function(build_pelec_exe pelec_exe_name)
   target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions)
   target_link_libraries(${pelec_exe_name} PRIVATE sundials_arkode sundials_cvode)
 
-  if(PELEC_ENABLE_CUDA OR PELEC_ENABLE_HIP)
+  if(PELEC_ENABLE_CUDA OR PELEC_ENABLE_HIP OR PELEC_ENABLE_DPCPP)
     target_sources(${pelec_exe_name} PRIVATE ${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_SUNMemory.cpp
                                              ${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_SUNMemory.H)
     target_include_directories(${pelec_exe_name} PRIVATE ${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS)
@@ -128,6 +128,8 @@ function(build_pelec_exe pelec_exe_name)
     target_link_libraries(${pelec_exe_name} PRIVATE sundials_nveccuda sundials_sunlinsolcusolversp sundials_sunmatrixcusparse)
   elseif(PELEC_ENABLE_HIP)
     target_link_libraries(${pelec_exe_name} PRIVATE sundials_nvechip)
+  elseif(PELEC_ENABLE_DPCPP)
+    target_link_libraries(${pelec_exe_name} PRIVATE sundials_nvecsycl)
   endif()
 
   if(PELEC_ENABLE_FORCING)
