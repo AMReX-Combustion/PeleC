@@ -96,15 +96,7 @@ PeleC::initialize_eb2_structs()
     } else if (typ == amrex::FabType::covered) {
       // do nothing
     } else if (typ == amrex::FabType::singlevalued) {
-      int Ncut = 0;
-      for (amrex::BoxIterator bit(tbox); bit.ok(); ++bit) {
-        const amrex::EBCellFlag& flag = flagfab(bit(), 0);
-
-        if (!(flag.isRegular() || flag.isCovered())) {
-          Ncut++;
-        }
-      }
-
+      const int Ncut = flagfab.getNumCutCells(tbox);
       sv_eb_bndry_geom[iLocal].resize(Ncut);
       auto const& flag_arr = flags.const_array(mfi);
       EBBndryGeom* d_sv_eb_bndry_geom = sv_eb_bndry_geom[iLocal].data();
