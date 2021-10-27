@@ -252,7 +252,8 @@ PeleC::initialize_eb2_structs()
           thrust::device, v_all_cut_faces.data(),
           v_all_cut_faces.data() + v_all_cut_faces_size);
         amrex::IntVect* unique_result_end = thrust::unique(
-          v_all_cut_faces.data(), v_all_cut_faces.data() + v_all_cut_faces_size,
+          thrust::device, v_all_cut_faces.data(),
+          v_all_cut_faces.data() + v_all_cut_faces_size,
           thrust::equal_to<amrex::IntVect>());
         const int count_result =
           thrust::distance(v_all_cut_faces.data(), unique_result_end);
