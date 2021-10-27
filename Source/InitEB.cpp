@@ -320,13 +320,13 @@ PeleC::define_body_state()
       amrex::Gpu::DeviceVector<amrex::Real> local_body_state(NVAR, -1);
       amrex::Real* p_body_state = local_body_state.begin();
       amrex::ParallelFor(1, [=] AMREX_GPU_DEVICE(int /*dummy*/) noexcept {
-        bool foundPt = false;
-        for (int i = lo.x; i <= hi.x && !foundPt; ++i) {
-          for (int j = lo.y; j <= hi.y && !foundPt; ++j) {
-            for (int k = lo.z; k <= hi.z && !foundPt; ++k) {
+        bool found = false;
+        for (int i = lo.x; i <= hi.x && !found; ++i) {
+          for (int j = lo.y; j <= hi.y && !found; ++j) {
+            for (int k = lo.z; k <= hi.z && !found; ++k) {
               const amrex::IntVect iv(AMREX_D_DECL(i, j, k));
               if (flag_arr(iv).isRegular()) {
-                foundPt = true;
+                found = true;
                 for (int n = 0; n < NVAR; ++n) {
                   p_body_state[n] = farr(iv, n);
                 }
