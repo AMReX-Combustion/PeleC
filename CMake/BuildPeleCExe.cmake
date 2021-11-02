@@ -79,6 +79,13 @@ function(build_pelec_exe pelec_exe_name)
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELEC_MECHANISM_DIR})
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELE_PHYSICS_SRC_DIR}/Support/Fuego/Evaluation)
 
+  target_sources(${pelec_exe_name}
+    PRIVATE
+    ${PELE_PHYSICS_SRC_DIR}/Utility/PMF/PMFData.cpp
+    ${PELE_PHYSICS_SRC_DIR}/Utility/PMF/PMFData.H
+    ${PELE_PHYSICS_SRC_DIR}/Utility/PMF/PMF.H)
+  target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELE_PHYSICS_SRC_DIR}/Utility/PMF)
+
   if(PELEC_ENABLE_EB)
     set_source_files_properties(${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_create_itracker_${PELEC_DIM}d.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
     set_source_files_properties(${AMREX_HYDRO_SUBMOD_LOCATION}/Redistribution/hydro_redistribution.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
