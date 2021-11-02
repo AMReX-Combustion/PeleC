@@ -100,6 +100,8 @@ VPATH_LOCATIONS   += $(TRANSPORT_HOME)
 Bpack             += $(TRANSPORT_HOME)/Make.package
 Blocs             += $(TRANSPORT_HOME)
 
+include $(PELE_PHYSICS_HOME)/Utility/PMF/Make.package
+
 Bdirs := $(PELEC_HOME)/Source $(PELEC_HOME)/Source/Params/param_includes
 
 Pdirs := Base Amr Boundary AmrCore
