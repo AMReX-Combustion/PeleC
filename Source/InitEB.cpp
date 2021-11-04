@@ -96,30 +96,27 @@ PeleC::initialize_eb2_structs()
     } else if (typ == amrex::FabType::covered) {
       // do nothing
     } else if (typ == amrex::FabType::singlevalued) {
-      int Ncut = 0;
-      for (amrex::BoxIterator bit(tbox); bit.ok(); ++bit) {
-        const amrex::EBCellFlag& flag = flagfab(bit(), 0);
-
-        if (!(flag.isRegular() || flag.isCovered())) {
-          Ncut++;
-        }
-      }
-
+      const int Ncut = flagfab.getNumCutCells(tbox);
       sv_eb_bndry_geom[iLocal].resize(Ncut);
-      int ivec = 0;
-      for (amrex::BoxIterator bit(tbox); bit.ok(); ++bit) {
-        const amrex::EBCellFlag& flag = flagfab(bit(), 0);
-
-        if (!(flag.isRegular() || flag.isCovered())) {
-          EBBndryGeom* d_sv_eb_bndry_geom = sv_eb_bndry_geom[iLocal].data();
-          amrex::IntVect captured_bit = bit();
-          // Serial loop on the GPU
-          amrex::ParallelFor(1, [=] AMREX_GPU_DEVICE(int /*dummy*/) {
-            d_sv_eb_bndry_geom[ivec].iv = captured_bit;
-          });
-          ivec++;
+      auto const& flag_arr = flags.const_array(mfi);
+      EBBndryGeom* d_sv_eb_bndry_geom = sv_eb_bndry_geom[iLocal].data();
+      const auto lo = amrex::lbound(tbox);
+      const auto hi = amrex::ubound(tbox);
+      amrex::ParallelFor(1, [=] AMREX_GPU_DEVICE(int /*dummy*/) noexcept {
+        int ivec = 0;
+        for (int i = lo.x; i <= hi.x; ++i) {
+          for (int j = lo.y; j <= hi.y; ++j) {
+            for (int k = lo.z; k <= hi.z; ++k) {
+              const amrex::IntVect iv(AMREX_D_DECL(i, j, k));
+              const amrex::EBCellFlag& flag = flag_arr(iv);
+              if (!(flag.isRegular() || flag.isCovered())) {
+                d_sv_eb_bndry_geom[ivec].iv = iv;
+                ivec++;
+              }
+            }
+          }
         }
-      }
+      });
 
       // int Nebg = sv_eb_bndry_geom[iLocal].size();
 
@@ -255,7 +252,8 @@ PeleC::initialize_eb2_structs()
           thrust::device, v_all_cut_faces.data(),
           v_all_cut_faces.data() + v_all_cut_faces_size);
         amrex::IntVect* unique_result_end = thrust::unique(
-          v_all_cut_faces.data(), v_all_cut_faces.data() + v_all_cut_faces_size,
+          thrust::device, v_all_cut_faces.data(),
+          v_all_cut_faces.data() + v_all_cut_faces_size,
           thrust::equal_to<amrex::IntVect>());
         const int count_result =
           thrust::distance(v_all_cut_faces.data(), unique_result_end);
@@ -314,18 +312,33 @@ PeleC::define_body_state()
 
     for (amrex::MFIter mfi(S, false); mfi.isValid() && !foundPt; ++mfi) {
       const amrex::Box vbox = mfi.validbox();
-      const amrex::FArrayBox& fab = S[mfi];
+      auto const& farr = S.const_array(mfi);
       auto const& flag_arr = flags.const_array(mfi);
 
-      for (amrex::BoxIterator bit(vbox); bit.ok() && !foundPt; ++bit) {
-        const amrex::IntVect& iv = bit();
-        if (flag_arr(iv).isRegular()) {
-          foundPt = true;
-          for (int n = 0; n < S.nComp(); ++n) {
-            body_state[n] = fab(iv, n);
+      const auto lo = amrex::lbound(vbox);
+      const auto hi = amrex::ubound(vbox);
+      amrex::Gpu::DeviceVector<amrex::Real> local_body_state(NVAR, -1);
+      amrex::Real* p_body_state = local_body_state.begin();
+      amrex::ParallelFor(1, [=] AMREX_GPU_DEVICE(int /*dummy*/) noexcept {
+        bool found = false;
+        for (int i = lo.x; i <= hi.x && !found; ++i) {
+          for (int j = lo.y; j <= hi.y && !found; ++j) {
+            for (int k = lo.z; k <= hi.z && !found; ++k) {
+              const amrex::IntVect iv(AMREX_D_DECL(i, j, k));
+              if (flag_arr(iv).isRegular()) {
+                found = true;
+                for (int n = 0; n < NVAR; ++n) {
+                  p_body_state[n] = farr(iv, n);
+                }
+              }
+            }
           }
         }
-      }
+      });
+      amrex::Gpu::copy(
+        amrex::Gpu::deviceToHost, local_body_state.begin(),
+        local_body_state.end(), body_state.begin());
+      foundPt = body_state[0] != -1;
     }
 
     // Find proc with lowest rank to find valid point, use that for all
