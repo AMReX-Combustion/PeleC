@@ -19,8 +19,8 @@ AMREX_GPU_HOST_DEVICE
 AMREX_FORCE_INLINE
 void
 pmf(
-  amrex::Real xlo,
-  amrex::Real xhi,
+  const amrex::Real xlo,
+  const amrex::Real xhi,
   amrex::GpuArray<amrex::Real, NUM_SPECIES + 4>& y_vector,
   const ProbParmDevice& prob_parm)
 {
@@ -170,8 +170,8 @@ pc_initdata(
          0.982 *
            std::sin(2 * constants::PI() * 5 * (x - 1.4234) / prob_parm.L[0]));
     }
-    amrex::Real z1 = (z - prob_parm.standoff - 0.5*dx[1] + pert);
-    amrex::Real z2 = (z - prob_parm.standoff + 0.5*dx[1] + pert);
+    const amrex::Real z1 = (z - prob_parm.standoff - 0.5 * dx[1] + pert);
+    const amrex::Real z2 = (z - prob_parm.standoff + 0.5 * dx[1] + pert);
     pmf(z1, z2, pmf_vals, prob_parm);
     amrex::Real molefrac[NUM_SPECIES] = {0.0};
     for (int n = 0; n < NUM_SPECIES; n++)
