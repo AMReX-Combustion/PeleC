@@ -6,8 +6,8 @@ max_step = 2
 geometry.is_periodic = 1 1 0
 geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
 geometry.prob_lo     =   0.0        0.0       0.0
-geometry.prob_hi     =   0.8        0.8       1.6
-amr.n_cell           =   64          64       128
+geometry.prob_hi     =   0.1        0.1       1.6
+amr.n_cell           =   8          8         128
 
 #pelec.Riemann    = 0     # 0: HLL,  1: JBB,  2: HLLC
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
@@ -49,10 +49,8 @@ amr.plot_int          = 10   # number of timesteps between plotfiles
 # PROBLEM PARAMETERS
 prob.pamb = 1013250.0  
 prob.phi_in = -0.5
-prob.pertmag = 0.02
-prob.standoff = -1.2
-#prob.pmf_datafile = "LiDryer_H2_p1_phi0_4000tu0300.dat"
-#prob.pmf_datafile = "PMF_CH4_1bar_300K_DRM_MixAvg.dat"
+prob.pertmag = 0.01
+prob.standoff = -1.0
 prob.pmf_datafile = "PMF_NC12H26_1bar_300K_DodecaneLu.dat"
 
 tagging.max_ftracerr_lev = 4
@@ -60,7 +58,8 @@ tagging.ftracerr = 150.e-6
 
 #amr.derive_plot_vars = ALL
 pelec.do_react = 1
-pelec.chem_integrator = "ReactorRK64"
+pelec.chem_integrator = "ReactorCvode"
+cvode.solve_type = "GMRES"
 pelec.diffuse_temp=1
 pelec.diffuse_enth=1
 pelec.diffuse_spec=1
