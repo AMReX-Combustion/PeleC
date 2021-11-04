@@ -170,7 +170,9 @@ pc_initdata(
          0.982 *
            std::sin(2 * constants::PI() * 5 * (x - 1.4234) / prob_parm.L[0]));
     }
-    pmf(z + pert, z + pert, pmf_vals, prob_parm);
+    amrex::Real z1 = (z - prob_parm.standoff - 0.5*dx[1] + pert);
+    amrex::Real z2 = (z - prob_parm.standoff + 0.5*dx[1] + pert);
+    pmf(z1, z2, pmf_vals, prob_parm);
     amrex::Real molefrac[NUM_SPECIES] = {0.0};
     for (int n = 0; n < NUM_SPECIES; n++)
       molefrac[n] = pmf_vals[3 + n];

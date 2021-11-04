@@ -191,6 +191,7 @@ amrex_probinit(
   pp.query("T_in", PeleC::h_prob_parm_device->T_in);
   pp.query("vn_in", PeleC::h_prob_parm_device->vn_in);
   pp.query("pertmag", PeleC::h_prob_parm_device->pertmag);
+  pp.query("standoff", PeleC::h_prob_parm_device->standoff);
   pp.query("pmf_datafile", pmf_datafile);
 
   PeleC::h_prob_parm_device->L[0] = probhi[0] - problo[0];
