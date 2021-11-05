@@ -51,7 +51,7 @@ prob.pamb = 1013250.0
 prob.phi_in = -0.5
 prob.pertmag = 0.01
 prob.standoff = -1.0
-prob.pmf_datafile = "PMF_NC12H26_1bar_300K_DodecaneLu.dat"
+prob.pmf_datafile = "@CMAKE_SOURCE_DIR@/Exec/RegTests/PMF/PMF_NC12H26_1bar_300K_DodecaneLu.dat"
 
 tagging.max_ftracerr_lev = 4
 tagging.ftracerr = 150.e-6

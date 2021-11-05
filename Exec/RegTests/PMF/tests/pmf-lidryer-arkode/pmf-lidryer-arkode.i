@@ -50,7 +50,7 @@ amr.plot_int          = 10   # number of timesteps between plotfiles
 prob.pamb = 1013250.0  
 prob.phi_in = -0.5
 prob.pertmag = 0.005
-prob.pmf_datafile = "LiDryer_H2_p1_phi0_4000tu0300.dat"
+prob.pmf_datafile = "@CMAKE_SOURCE_DIR@/Exec/RegTests/PMF/LiDryer_H2_p1_phi0_4000tu0300.dat"
 #prob.pmf_datafile = "PMF_CH4_1bar_300K_DRM_MixAvg.dat"
 
 tagging.max_ftracerr_lev = 4
