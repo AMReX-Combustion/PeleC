@@ -134,8 +134,10 @@ endfunction(add_test_v2)
 
 # Standard unit test
 function(add_test_u TEST_NAME)
-    setup_test()
     set(CURRENT_TEST_EXE ${CMAKE_BINARY_DIR}/Exec/UnitTests/PeleC-UnitTests)
+    set(CURRENT_TEST_SOURCE_DIR ${CMAKE_SOURCE_DIR}/Exec/UnitTests/${TEST_EXE_DIR})
+    set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/Exec/UnitTests/${TEST_EXE_DIR})
+    file(MAKE_DIRECTORY ${CURRENT_TEST_BINARY_DIR})
     set(PELEC_NP 1)
     if(PELEC_ENABLE_MPI)
       set(MPI_COMMANDS "${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${PELEC_NP} ${MPIEXEC_PREFLAGS}")
