@@ -197,7 +197,7 @@ amrex_probinit(
   pp.queryarr("L", local_L, 0, AMREX_SPACEDIM);
   for (int i = 0; i < AMREX_SPACEDIM; i++) {
     PeleC::h_prob_parm_device->L[i] =
-      (local_L[i] == -1.0) ? probhi[0] - problo[0] : local_L[i];
+      (local_L[i] == -1.0) ? probhi[i] - problo[i] : local_L[i];
   }
 
   read_pmf(pmf_datafile);
