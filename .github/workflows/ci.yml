@@ -140,14 +140,14 @@ jobs:
           make COMP=gnu USE_MPI=FALSE DEBUG=TRUE TPL
           make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE
       - name: PMF debug test
-        working-directory: ./Exec/RegTests/PMF/inputs
-        run: ../PeleC3d.gnu.DEBUG.ex pmf-lidryer-arkode.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
+        working-directory: ./Exec/RegTests/PMF
+        run: ./PeleC3d.gnu.DEBUG.ex pmf-lidryer-arkode.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
       - name: EB debug build
         working-directory: ./Exec/RegTests/EB-C10
         run: make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE
       - name: EB debug test
-        working-directory: ./Exec/RegTests/EB-C10/inputs
-        run: ../PeleC3d.gnu.DEBUG.ex eb-c10.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
+        working-directory: ./Exec/RegTests/EB-C10
+        run: ./PeleC3d.gnu.DEBUG.ex eb-c10.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
   CUDA:
     needs: Formatting
     runs-on: ubuntu-latest

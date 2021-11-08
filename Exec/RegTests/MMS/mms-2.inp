@@ -43,7 +43,7 @@ amr.regrid_int      = 1000000 1000000 # how often to regrid
 amr.blocking_factor = 4       # block factor in grid generation
 amr.max_grid_size   = 64
 amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
-amr.initial_grid_file = mms-2-grids-file
+amr.initial_grid_file = mms-2-grids-file.dat
 
 # CHECKPOINT FILES
 amr.checkpoint_files_output = 0
