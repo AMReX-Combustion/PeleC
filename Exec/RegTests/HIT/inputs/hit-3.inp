@@ -57,7 +57,7 @@ amr.plot_vars  =  density Temp
 amr.derive_plot_vars = x_velocity y_velocity z_velocity magvel magvort pressure
 
 # PROBLEM PARAMETERS
-prob.iname = "@CMAKE_SOURCE_DIR@/Exec/RegTests/HIT/hit_ic_32.in"
+prob.iname = "hit_ic_32.dat"
 prob.binfmt = true
 prob.lambda0 = 0.2645751311064591
 prob.reynolds_lambda0 = 133.6306209562122262
