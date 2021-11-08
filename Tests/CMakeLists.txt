@@ -35,9 +35,8 @@ macro(setup_test)
     # Make working directory for test
     file(MAKE_DIRECTORY ${CURRENT_TEST_BINARY_DIR})
     # Gather all files in source directory for test
-    file(GLOB TEST_FILES "${CURRENT_TEST_SOURCE_DIR}/extra/*")
+    file(GLOB TEST_FILES "${CURRENT_TEST_SOURCE_DIR}/inputs/*")
     # Copy files to test working directory
-    file(COPY ${CURRENT_TEST_SOURCE_DIR}/inputs/${TEST_NAME}.inp DESTINATION "${CURRENT_TEST_BINARY_DIR}/")
     file(COPY ${TEST_FILES} DESTINATION "${CURRENT_TEST_BINARY_DIR}/")
     # Set some default runtime options for all tests
     set(RUNTIME_OPTIONS "amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1")
@@ -103,7 +102,7 @@ function(add_test_v2 TEST_NAME TEST_EXE_DIR LIST_OF_GRID_SIZES)
     # Create the commands to run for each resolution
     foreach(GRID_SIZE IN LISTS LIST_OF_GRID_SIZES)
       file(MAKE_DIRECTORY ${CURRENT_TEST_BINARY_DIR}/${GRID_SIZE})
-      file(GLOB TEST_FILES "${CURRENT_TEST_SOURCE_DIR}/extra/*")
+      file(GLOB TEST_FILES "${CURRENT_TEST_SOURCE_DIR}/inputs/*")
       file(COPY ${TEST_FILES} DESTINATION "${CURRENT_TEST_BINARY_DIR}/${GRID_SIZE}/")
       if(${PELEC_DIM} EQUAL 3)
         set(NCELLS "${GRID_SIZE} ${GRID_SIZE} ${GRID_SIZE}")
