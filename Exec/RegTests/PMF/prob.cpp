@@ -193,10 +193,12 @@ amrex_probinit(
   pp.query("pertmag", PeleC::h_prob_parm_device->pertmag);
   pp.query("standoff", PeleC::h_prob_parm_device->standoff);
   pp.query("pmf_datafile", pmf_datafile);
-
-  PeleC::h_prob_parm_device->L[0] = probhi[0] - problo[0];
-  PeleC::h_prob_parm_device->L[1] = probhi[1] - problo[1];
-  PeleC::h_prob_parm_device->L[2] = probhi[2] - problo[2];
+  amrex::Vector<amrex::Real> local_L(AMREX_SPACEDIM, -1);
+  pp.queryarr("L", local_L, 0, AMREX_SPACEDIM);
+  for (int i = 0; i < AMREX_SPACEDIM; i++) {
+    PeleC::h_prob_parm_device->L[i] =
+      (local_L[i] == -1.0) ? probhi[0] - problo[0] : local_L[i];
+  }
 
   read_pmf(pmf_datafile);
 
