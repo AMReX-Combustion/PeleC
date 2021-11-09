@@ -17,7 +17,7 @@ pelec.lo_bc       =  "Interior"  "Interior"  "Hard"
 pelec.hi_bc       =  "Interior"  "Interior"  "Hard"
 
 # TIME STEP CONTROL
-pelec.cfl            = 0.1     # cfl number for hyperbolic system
+pelec.cfl            = 0.05     # cfl number for hyperbolic system
 pelec.init_shrink    = 0.1     # scale back initial timestep
 pelec.change_max     = 1.1     # scale back initial timestep
 pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
@@ -52,14 +52,14 @@ prob.phi_in = -0.5
 prob.pertmag = 0.01
 prob.standoff = -1.0
 prob.pmf_datafile = "PMF_NC12H26_1bar_300K_DodecaneLu.dat"
+amr.loadbalance_with_workestimates = 1
 
 tagging.max_ftracerr_lev = 4
 tagging.ftracerr = 150.e-6
 
 #amr.derive_plot_vars = ALL
 pelec.do_react = 1
-pelec.chem_integrator = "ReactorCvode"
-cvode.solve_type = "GMRES"
+pelec.chem_integrator = "ReactorRK64"
 pelec.diffuse_temp=1
 pelec.diffuse_enth=1
 pelec.diffuse_spec=1
