@@ -356,9 +356,6 @@ PeleC::read_params()
   // whether to gather data
   ppa.query("loadbalance_with_workestimates", do_mol_load_balance);
   ppa.query("loadbalance_with_workestimates", do_react_load_balance);
-
-  pp.getarr("lo_bc", lo_bc_char, 0, AMREX_SPACEDIM);
-  pp.getarr("hi_bc", hi_bc_char, 0, AMREX_SPACEDIM);
 }
 
 PeleC::PeleC()
