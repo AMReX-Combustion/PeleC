@@ -230,6 +230,8 @@ public:
   void zero_in_body(amrex::MultiFab& S) const;
 #endif
 
+  void set_typical_values_chem();
+
   // Proceed with next timestep?
   virtual int okToContinue() override;
 
@@ -690,6 +692,12 @@ protected:
   static amrex::Vector<std::string> spec_names;
 
   static amrex::Vector<int> src_list;
+
+  static bool use_typical_vals_chem;
+  static bool use_typical_vals_chem_usr;
+  static amrex::Real typical_rhoY_val_min;
+  static int reset_typical_vals_int;
+  static amrex::Vector<amrex::Real> typical_values_chem_usr;
 
   // problem-specific includes
 #include <Problem.H>

@@ -106,6 +106,12 @@ amrex::Real PeleC::previousCPUTimeUsed = 0.0;
 amrex::Real PeleC::startCPUTime = 0.0;
 int PeleC::num_state_type = 0;
 
+amrex::Real PeleC::typical_rhoY_val_min = 1.e-10;
+bool PeleC::use_typical_vals_chem = false;
+bool PeleC::use_typical_vals_chem_usr = false;
+int PeleC::reset_typical_vals_int = 10;
+amrex::Vector<amrex::Real> PeleC::typical_values_chem_usr;
+
 #ifdef PELEC_USE_EB
 static bool eb_initialized = false;
 
@@ -193,6 +199,18 @@ PeleC::read_params()
     phys_bc.setLo(dir, lo_bc[dir]);
     phys_bc.setHi(dir, hi_bc[dir]);
   }
+
+  typical_values_chem_usr.resize(NUM_SPECIES + 1, 1.0e-10);
+  pp.query("use_typ_vals_chem", use_typical_vals_chem);
+  pp.query("use_typ_vals_chem_usr", use_typical_vals_chem_usr);
+
+  if (use_typical_vals_chem_usr) {
+    use_typical_vals_chem = true;
+  }
+
+  pp.query("reset_typical_vals_int", reset_typical_vals_int);
+  pp.queryarr(
+    "typical_values_chem", typical_values_chem_usr, 0, NUM_SPECIES + 1);
 
   // Check phys_bc against possible periodic geometry
   // if periodic, must have internal BC marked.
@@ -1147,6 +1165,12 @@ PeleC::post_timestep(int
       sum_integrated_quantities();
     }
   }
+
+  if (
+    do_react && use_typical_vals_chem &&
+    parent->levelSteps(0) % reset_typical_vals_int == 0) {
+    set_typical_values_chem();
+  }
 }
 
 void
@@ -1178,6 +1202,9 @@ PeleC::post_restart()
   // Initialize the reactor
   if (do_react == 1) {
     init_reactor();
+    if (use_typical_vals_chem) {
+      set_typical_values_chem();
+    }
   }
 
   // initialize LES variables
@@ -1220,6 +1247,10 @@ PeleC::post_regrid(
     particleRedistribute(lbase);
   }
 #endif
+
+  if (use_typical_vals_chem) {
+    set_typical_values_chem();
+  }
 }
 
 void PeleC::post_init(amrex::Real /*stop_time*/)
@@ -1231,7 +1262,12 @@ void PeleC::post_init(amrex::Real /*stop_time*/)
 
   // Fill Reactions_Type data based on initial dt
   if (do_react == 1) {
+
     bool react_init = true;
+    if (use_typical_vals_chem) {
+      set_typical_values_chem();
+    }
+
     react_state(cumtime, dtlev, react_init);
   }
 
