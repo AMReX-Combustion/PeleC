@@ -190,6 +190,7 @@ laxfriedrich_flux(
   const int,
   const amrex::Real,
   amrex::Real& ustar,
+  amrex::Real& maxeigval,
   amrex::Real& uflx_rho,
   amrex::Real& uflx_u,
   amrex::Real& uflx_v,
@@ -236,6 +237,8 @@ laxfriedrich_flux(
 
   amrex::Real chalf = 0.5 * (cr + cl);
   amrex::Real max_wavespd = amrex::Math::abs(ustar) + chalf;
+
+  maxeigval = max_wavespd;
 
   // density eqn
   uflx_rho = 0.5 * ((rl * ul + rr * ur) - max_wavespd * (rr - rl));
