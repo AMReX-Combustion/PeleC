@@ -20,13 +20,12 @@ PeleC::set_typical_values_chem()
     typical_values_chem[NUM_SPECIES] = 0.5 * (minTemp + maxTemp);
     reactor->set_typ_vals_ode(typical_values_chem);
 
-    amrex::Print() << "\n======Setting typical values for level " << level
-                   << " ============\n";
+    amrex::Print() << "\nSetting typical values for level \n" << level <<"\n";
     amrex::Print() << "pelec.typical_values_chem =";
     for (int i = 0; i < (NUM_SPECIES + 1); i++) {
       amrex::Print() << typical_values_chem[i] << "   ";
     }
-    amrex::Print() << "\n=========================================\n";
+    amrex::Print() << "\n-------------\n";
   }
 }
 
