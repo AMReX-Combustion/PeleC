@@ -4,7 +4,7 @@ void
 PeleC::set_typical_values_chem()
 {
 
-  if (use_typ_vals_chem_usr) {
+  if (use_typical_vals_chem_usr) {
     reactor->set_typ_vals_ode(typical_values_chem_usr);
   } else {
     amrex::MultiFab& S_new = get_new_data(State_Type);

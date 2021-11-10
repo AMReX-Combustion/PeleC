@@ -693,8 +693,8 @@ protected:
 
   static amrex::Vector<int> src_list;
 
-  static bool use_typ_vals_chem;
-  static bool use_typ_vals_chem_usr;
+  static bool use_typical_vals_chem;
+  static bool use_typical_vals_chem_usr;
   static amrex::Real typical_rhoY_val_min;
   static int reset_typical_vals_int;
   amrex::Vector<amrex::Real> typical_values_chem;

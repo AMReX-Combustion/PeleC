@@ -107,8 +107,8 @@ amrex::Real PeleC::startCPUTime = 0.0;
 int PeleC::num_state_type = 0;
 
 amrex::Real PeleC::typical_rhoY_val_min = 1.e-10;
-bool PeleC::use_typ_vals_chem = false;
-bool PeleC::use_typ_vals_chem_usr = false;
+bool PeleC::use_typical_vals_chem = false;
+bool PeleC::use_typical_vals_chem_usr = false;
 int PeleC::reset_typical_vals_int = 1;
 amrex::Vector<amrex::Real> PeleC::typical_values_chem_usr;
 
@@ -201,11 +201,11 @@ PeleC::read_params()
   }
 
   typical_values_chem_usr.resize(NUM_SPECIES + 1, 1.0e-10);
-  pp.query("use_typ_vals_chem", use_typ_vals_chem);
-  pp.query("use_typ_vals_chem_usr", use_typ_vals_chem_usr);
+  pp.query("use_typ_vals_chem", use_typical_vals_chem);
+  pp.query("use_typ_vals_chem_usr", use_typical_vals_chem_usr);
 
-  if (use_typ_vals_chem_usr) {
-    use_typ_vals_chem = true;
+  if (use_typical_vals_chem_usr) {
+    use_typical_vals_chem = true;
   }
 
   pp.query("reset_typical_vals_int", reset_typical_vals_int);
@@ -366,7 +366,7 @@ PeleC::PeleC()
     mms_src_evaluated(false)
 #endif
 {
-  typical_values_chem.resize(NUM_SPECIES + 1);
+  typical_values_chem.resize(NUM_SPECIES + 1,1e-10);
 
   nGrowF = 0;
   // Is this relevant for PeleC?
@@ -391,7 +391,7 @@ PeleC::PeleC(
     mms_src_evaluated(false)
 #endif
 {
-  typical_values_chem.resize(NUM_SPECIES + 1);
+  typical_values_chem.resize(NUM_SPECIES + 1,1e-10);
   buildMetrics();
 
 #ifdef PELEC_USE_EB
@@ -1170,7 +1170,7 @@ PeleC::post_timestep(int
   }
 
   if (
-    do_react && use_typ_vals_chem &&
+    do_react && use_typical_vals_chem &&
     parent->levelSteps(0) % reset_typical_vals_int == 0) {
     set_typical_values_chem();
   }
@@ -1205,7 +1205,7 @@ PeleC::post_restart()
   // Initialize the reactor
   if (do_react == 1) {
     init_reactor();
-    if (use_typ_vals_chem) {
+    if (use_typical_vals_chem) {
       set_typical_values_chem();
     }
   }
@@ -1250,99 +1250,103 @@ PeleC::post_regrid(
     particleRedistribute(lbase);
   }
 #endif
+
+  if (use_typical_vals_chem) {
+      set_typical_values_chem();
+  }
 }
 
 void PeleC::post_init(amrex::Real /*stop_time*/)
 {
-  BL_PROFILE("PeleC::post_init()");
+    BL_PROFILE("PeleC::post_init()");
 
-  amrex::Real dtlev = parent->dtLevel(level);
-  amrex::Real cumtime = parent->cumTime();
+    amrex::Real dtlev = parent->dtLevel(level);
+    amrex::Real cumtime = parent->cumTime();
 
-  // Fill Reactions_Type data based on initial dt
-  if (do_react == 1) {
+    // Fill Reactions_Type data based on initial dt
+    if (do_react == 1) {
 
-    bool react_init = true;
-    if (use_typ_vals_chem) {
-      set_typical_values_chem();
+        bool react_init = true;
+        if (use_typical_vals_chem) {
+            set_typical_values_chem();
+        }
+
+        react_state(cumtime, dtlev, react_init);
     }
 
-    react_state(cumtime, dtlev, react_init);
-  }
-
-  if (level > 0) {
-    return;
-  }
-
-  // Average data down from finer levels
-  // so that conserved data is consistent between levels.
-  if (do_avg_down != 0) {
-    int finest_level = parent->finestLevel();
-    for (int k = finest_level - 1; k >= 0; k--) {
-      getLevel(k).avgDown();
+    if (level > 0) {
+        return;
     }
-  }
 
-  // Allow the user to define their own post_init functions.
-  problem_post_init();
-
-  int nstep = parent->levelSteps(0);
-  if (cumtime != 0.0) {
-    cumtime += dtlev;
-  }
-
-  bool sum_int_test = false;
-
-  if (sum_interval > 0) {
-    if (nstep % sum_interval == 0) {
-      sum_int_test = true;
+    // Average data down from finer levels
+    // so that conserved data is consistent between levels.
+    if (do_avg_down != 0) {
+        int finest_level = parent->finestLevel();
+        for (int k = finest_level - 1; k >= 0; k--) {
+            getLevel(k).avgDown();
+        }
     }
-  }
 
-  bool sum_per_test = false;
+    // Allow the user to define their own post_init functions.
+    problem_post_init();
 
-  if (sum_per > 0.0) {
-    const int num_per_old =
-      static_cast<int>(amrex::Math::floor((cumtime - dtlev) / sum_per));
-    const int num_per_new =
-      static_cast<int>(amrex::Math::floor((cumtime) / sum_per));
-
-    if (num_per_old != num_per_new) {
-      sum_per_test = true;
+    int nstep = parent->levelSteps(0);
+    if (cumtime != 0.0) {
+        cumtime += dtlev;
     }
-  }
 
-  if (sum_int_test || sum_per_test) {
-    sum_integrated_quantities();
-  }
+    bool sum_int_test = false;
+
+    if (sum_interval > 0) {
+        if (nstep % sum_interval == 0) {
+            sum_int_test = true;
+        }
+    }
+
+    bool sum_per_test = false;
+
+    if (sum_per > 0.0) {
+        const int num_per_old =
+            static_cast<int>(amrex::Math::floor((cumtime - dtlev) / sum_per));
+        const int num_per_new =
+            static_cast<int>(amrex::Math::floor((cumtime) / sum_per));
+
+        if (num_per_old != num_per_new) {
+            sum_per_test = true;
+        }
+    }
+
+    if (sum_int_test || sum_per_test) {
+        sum_integrated_quantities();
+    }
 }
 
-int
+    int
 PeleC::okToContinue()
 {
-  if (level > 0) {
-    return 1;
-  }
+    if (level > 0) {
+        return 1;
+    }
 
-  int test = 1;
+    int test = 1;
 
-  if (signalStopJob) {
-    test = 0;
+    if (signalStopJob) {
+        test = 0;
 
-    amrex::Print()
-      << " Signalling a stop of the run due to signalStopJob = true."
-      << std::endl;
-  } else if (parent->dtLevel(0) < dt_cutoff) {
-    test = 0;
+        amrex::Print()
+            << " Signalling a stop of the run due to signalStopJob = true."
+            << std::endl;
+    } else if (parent->dtLevel(0) < dt_cutoff) {
+        test = 0;
 
-    amrex::Print() << " Signalling a stop of the run because dt < dt_cutoff."
-                   << std::endl;
-  }
+        amrex::Print() << " Signalling a stop of the run because dt < dt_cutoff."
+            << std::endl;
+    }
 
-  return test;
+    return test;
 }
 
-void
+    void
 PeleC::reflux()
 {
   BL_PROFILE("PeleC::reflux()");
