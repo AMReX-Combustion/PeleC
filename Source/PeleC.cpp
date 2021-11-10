@@ -208,6 +208,7 @@ PeleC::read_params()
     use_typical_vals_chem = true;
   }
 
+  pp.query("typical_rhoY_val_min", typical_rhoY_val_min);
   pp.query("reset_typical_vals_int", reset_typical_vals_int);
   pp.queryarr(
     "typical_values_chem", typical_values_chem_usr, 0, NUM_SPECIES + 1);
