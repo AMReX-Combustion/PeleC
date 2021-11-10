@@ -697,7 +697,6 @@ protected:
   static bool use_typical_vals_chem_usr;
   static amrex::Real typical_rhoY_val_min;
   static int reset_typical_vals_int;
-  amrex::Vector<amrex::Real> typical_values_chem;
   static amrex::Vector<amrex::Real> typical_values_chem_usr;
 
   // problem-specific includes
