@@ -49,14 +49,12 @@ SprayParticleContainer::InitSprayParticles(
   // counts
   if (NRedist < 0) {
     NRedist = 1;
-    if (NProcs <= 512) {
+    if (NProcs <= 1024) {
       NRedist = 2;
-    } else if (NProcs <= 1024) {
-      NRedist = 4;
     } else if (NProcs <= 2048) {
-      NRedist = 32;
+      NRedist = 4;
     } else if (NProcs <= 4096) {
-      NRedist = 48;
+      NRedist = 32;
     }
   }
   Real part_dia = prob_parm.partDia;
