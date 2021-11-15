@@ -12,6 +12,7 @@ struct ProbParmDevice
   amrex::Real T_in = 298.0;
   amrex::Real vn_in = 0.2;
   amrex::Real pertmag = 0.0;
+  amrex::Real standoff = 0.0;
   amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> L = {{1.0}};
   unsigned int pmf_N = 0;
   unsigned int pmf_M = 0;
