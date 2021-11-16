@@ -481,6 +481,8 @@ public:
   volWgtSquaredSumDiff(int comp, amrex::Real time, bool local = false);
   amrex::Real
   maxDerive(const std::string& name, amrex::Real time, bool local = false);
+  amrex::Real
+  minDerive(const std::string& name, amrex::Real time, bool local = false);
 
   // static int NVAR;
   static int Density, Xmom, Ymom, Zmom, Eden, Eint, Temp;
@@ -615,6 +617,8 @@ protected:
   sumDerive(const std::string& name, amrex::Real time, bool local = false);
 
   void sum_integrated_quantities();
+
+  void monitor_extrema();
 
   void write_info();
 

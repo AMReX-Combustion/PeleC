@@ -396,10 +396,16 @@ track_grid_losses            int            0
 # how often (number of coarse timesteps) to compute integral sums (for runtime diagnostics)
 sum_interval                 int           -1
 
+# record extrema of certain variables along with the intergal sums
+track_extrema                int           1
+
+# track the extrema of this species in addition to other quantities
+extrema_spec_name            string	   ""
+
 # how often (simulation time) to compute integral sums (for runtime diagnostics)
 sum_per                      Real          -1.0e0
 
-# abort if we exceed CFL = 1 over the cource of a timestep
+# abort if we exceed CFL = 1 over the course of a timestep
 hard_cfl_limit               int           1
 
 # a string describing the simulation that will be copied into the

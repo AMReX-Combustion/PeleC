@@ -138,3 +138,137 @@ PeleC::sum_integrated_quantities()
 #endif
   }
 }
+
+void
+PeleC::monitor_extrema()
+{
+  BL_PROFILE("PeleC::sum_integrated_quantities()");
+
+  if (verbose <= 0) {
+    return;
+  }
+
+  bool local_flag = true;
+
+  int finest_level = parent->finestLevel();
+  amrex::Real time = state[State_Type].curTime();
+  amrex::Vector<std::string> extrema_vars = {
+    "density", "x_velocity", "y_velocity", "z_velocity",
+    "eint_e",  "Temp",       "pressure",   "massfrac"};
+
+  int nspec_extrema = 1;
+  if (!fuel_name.empty()) {
+    nspec_extrema += 1;
+    extrema_vars.push_back(fuel_name);
+  }
+  if (!flame_trac_name.empty()) {
+    nspec_extrema += 1;
+    extrema_vars.push_back(flame_trac_name);
+  }
+  if (!extrema_spec_name.empty()) {
+    nspec_extrema += 1;
+    extrema_vars.push_back(extrema_spec_name);
+  }
+  auto nextrema = extrema_vars.size();
+  constexpr amrex::Real neg_huge = std::numeric_limits<amrex::Real>::lowest();
+  constexpr amrex::Real huge = std::numeric_limits<amrex::Real>::max();
+  amrex::Vector<amrex::Real> extrema;
+  extrema.resize(nextrema * 2);
+  for (int ii = 0; ii < nextrema; ++ii) {
+    extrema[ii] = neg_huge;
+    extrema[nextrema + ii] = huge;
+  }
+
+  for (int lev = 0; lev <= finest_level; lev++) {
+    PeleC& pc_lev = getLevel(lev);
+    for (int ii = 0; ii < nextrema - nspec_extrema; ++ii) {
+      extrema[ii] = amrex::max(
+        extrema[ii], pc_lev.maxDerive(extrema_vars[ii], time, local_flag));
+      extrema[nextrema + ii] = amrex::min(
+        extrema[nextrema + ii],
+        pc_lev.minDerive(extrema_vars[ii], time, local_flag));
+    }
+
+    // Handle species seperately
+    auto mf = derive("massfrac", time, 0);
+    BL_ASSERT(!(mf == nullptr));
+    int idx_massfrac = nextrema - nspec_extrema;
+    bool local = true;
+    for (int ispec = 0; ispec < NUM_SPECIES; ispec++) {
+      amrex::Real maxval = mf->max(ispec, 0, local);
+      amrex::Real minval = mf->min(ispec, 0, local);
+      // "massfrac" gets the extrema across all mass fractions
+      extrema[idx_massfrac] = amrex::max(extrema[idx_massfrac], maxval);
+      extrema[nextrema + idx_massfrac] =
+        amrex::min(extrema[nextrema + idx_massfrac], minval);
+
+      // Get values for any individual species if relevant
+      for (int iext = 0; iext < nspec_extrema - 1; iext++) {
+        int idx_spec = idx_massfrac + iext + 1;
+        if (extrema_vars[idx_spec].compare(PeleC::spec_names[ispec]) == 0) {
+          extrema[idx_spec] = amrex::max(extrema[idx_spec], maxval);
+          extrema[nextrema + idx_spec] =
+            amrex::min(extrema[nextrema + idx_spec], minval);
+        }
+      }
+    }
+  }
+
+  if (verbose > 0) {
+#ifdef AMREX_LAZY
+    Lazy::QueueReduction([=]() mutable {
+#endif
+      amrex::ParallelDescriptor::ReduceRealMax(
+        extrema.data(), nextrema * 2,
+        amrex::ParallelDescriptor::IOProcessorNumber());
+
+      if (amrex::ParallelDescriptor::IOProcessor()) {
+
+        amrex::Print() << std::endl;
+        for (int ii = 0; ii < nextrema; ++ii) {
+          const int datwidth = 22;
+          const int datprecision = 14;
+          amrex::Print() << "TIME= " << time;
+          amrex::Print() << std::setw(datwidth) << extrema_vars[ii];
+          amrex::Print() << " MIN= " << std::setw(datwidth)
+                         << std::setprecision(datprecision)
+                         << extrema[ii + nextrema];
+          amrex::Print() << " MAX= " << std::setw(datwidth)
+                         << std::setprecision(datprecision) << extrema[ii];
+          amrex::Print() << std::endl;
+        }
+
+        if (parent->NumDataLogs() > 1) {
+          std::ostream& data_log1 = parent->DataLog(1);
+          if (data_log1.good()) {
+            const int datwidth = 16;
+            if (time == 0.0) {
+              data_log1 << std::setw(datwidth) << "          time";
+              for (int ii = 0; ii < nextrema; ++ii) {
+                data_log1 << std::setw(datwidth - 4) << extrema_vars[ii]
+                          << "-min";
+                data_log1 << std::setw(datwidth - 4) << extrema_vars[ii]
+                          << "-max";
+              }
+              data_log1 << std::endl;
+            }
+
+            // Write the quantities at this time
+            const int datprecision = 8;
+            data_log1 << std::setw(datwidth) << time;
+            for (int ii = 0; ii < nextrema; ++ii) {
+              data_log1 << std::setw(datwidth)
+                        << std::setprecision(datprecision)
+                        << extrema[ii + nextrema];
+              data_log1 << std::setw(datwidth)
+                        << std::setprecision(datprecision) << extrema[ii];
+            }
+            data_log1 << std::endl;
+          }
+        }
+      }
+#ifdef AMREX_LAZY
+    });
+#endif
+  }
+}

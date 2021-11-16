@@ -688,11 +688,12 @@ PeleC::initData()
 
     const ProbParmDevice* lprobparm = d_prob_parm_device;
 
-    amrex::ParallelFor(box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      pc_initdata(i, j, k, sfab, geomdata, *lprobparm);
-      // Verify that the sum of (rho Y)_i = rho at every cell
-      pc_check_initial_species(i, j, k, sfab);
-    });
+    amrex::ParallelFor(
+      box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+        pc_initdata(i, j, k, sfab, geomdata, *lprobparm);
+        // Verify that the sum of (rho Y)_i = rho at every cell
+        pc_check_initial_species(i, j, k, sfab);
+      });
   }
 
   enforce_consistent_e(S_new);
@@ -849,7 +850,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
           ,
           const amrex::Array4<const amrex::EBCellFlag>& flag_arr
 #endif
-          ) noexcept -> amrex::Real {
+          ) noexcept->amrex::Real {
           return pc_estdt_hydro(
             bx, fab_arr,
 #ifdef PELEC_USE_EB
@@ -874,7 +875,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
           ,
           const amrex::Array4<const amrex::EBCellFlag>& flag_arr
 #endif
-          ) noexcept -> amrex::Real {
+          ) noexcept->amrex::Real {
           return pc_estdt_veldif(
             bx, fab_arr,
 #ifdef PELEC_USE_EB
@@ -899,7 +900,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
           ,
           const amrex::Array4<const amrex::EBCellFlag>& flag_arr
 #endif
-          ) noexcept -> amrex::Real {
+          ) noexcept->amrex::Real {
           return pc_estdt_tempdif(
             bx, fab_arr,
 #ifdef PELEC_USE_EB
@@ -924,7 +925,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
           ,
           const amrex::Array4<const amrex::EBCellFlag>& flag_arr
 #endif
-          ) noexcept -> amrex::Real {
+          ) noexcept->amrex::Real {
           return pc_estdt_enthdif(
             bx, fab_arr,
 #ifdef PELEC_USE_EB
@@ -1164,6 +1165,8 @@ PeleC::post_timestep(int
 
     if (sum_int_test || sum_per_test) {
       sum_integrated_quantities();
+      if (track_extrema)
+        monitor_extrema();
     }
   }
 
@@ -1316,6 +1319,8 @@ void PeleC::post_init(amrex::Real /*stop_time*/)
 
   if (sum_int_test || sum_per_test) {
     sum_integrated_quantities();
+    if (track_extrema)
+      monitor_extrema();
   }
 }
 
@@ -2112,9 +2117,10 @@ PeleC::computeTemp(amrex::MultiFab& S, int ng)
 #endif
 
     const auto& sarr = S.array(mfi);
-    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      pc_cmpTemp(i, j, k, sarr);
-    });
+    amrex::ParallelFor(
+      bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+        pc_cmpTemp(i, j, k, sarr);
+      });
   }
 }
 

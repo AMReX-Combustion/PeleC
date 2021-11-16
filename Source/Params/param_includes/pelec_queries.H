@@ -104,6 +104,8 @@ pp.query("bndry_func_thread_safe", bndry_func_thread_safe);
 pp.query("print_energy_diagnostics", print_energy_diagnostics);
 pp.query("track_grid_losses", track_grid_losses);
 pp.query("sum_interval", sum_interval);
+pp.query("track_extrema", track_extrema);
+pp.query("extrema_spec_name", extrema_spec_name);
 pp.query("sum_per", sum_per);
 pp.query("hard_cfl_limit", hard_cfl_limit);
 pp.query("job_name", job_name);
