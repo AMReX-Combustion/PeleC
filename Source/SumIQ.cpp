@@ -67,7 +67,8 @@ PeleC::sum_integrated_quantities()
         temp = foo[i++];
 
         amrex::Print() << '\n';
-        amrex::Print() << "TIME = " << time << " MASS        = " << mass << '\n';
+        amrex::Print() << "TIME = " << time << " MASS        = " << mass
+                       << '\n';
         amrex::Print() << "TIME = " << time << " XMOM        = " << mom[0]
                        << '\n';
         amrex::Print() << "TIME = " << time << " YMOM        = " << mom[1]
@@ -84,7 +85,8 @@ PeleC::sum_integrated_quantities()
         //               << '\n';
         amrex::Print() << "TIME = " << time << " FUEL PROD   = " << fuel_prod
                        << '\n';
-        amrex::Print() << "TIME = " << time << " TEMP        = " << temp << '\n';
+        amrex::Print() << "TIME = " << time << " TEMP        = " << temp
+                       << '\n';
 
         if (parent->NumDataLogs() > 0) {
           std::ostream& data_log1 = parent->DataLog(0);
@@ -152,16 +154,16 @@ PeleC::monitor_extrema()
   const int finest_level = parent->finestLevel();
   const amrex::Real time = state[State_Type].curTime();
   amrex::Vector<std::string> extrema_vars = {
-    "density", "x_velocity", "y_velocity", "z_velocity",
-    "eint_e",  "Temp",       "pressure",   "massfrac",
-    "sumYminus1"};
+    "density", "x_velocity", "y_velocity", "z_velocity", "eint_e",
+    "Temp",    "pressure",   "massfrac",   "sumYminus1"};
 
   int nspec_extrema = 2;
   bool use_all_spec = false;
   if (extrema_spec_name == "ALL") {
     use_all_spec = true;
     nspec_extrema += NUM_SPECIES;
-    extrema_vars.insert(extrema_vars.end(), PeleC::spec_names.begin(), PeleC::spec_names.end());
+    extrema_vars.insert(
+      extrema_vars.end(), PeleC::spec_names.begin(), PeleC::spec_names.end());
   } else {
     if (!fuel_name.empty()) {
       nspec_extrema++;
@@ -209,24 +211,24 @@ PeleC::monitor_extrema()
 
       // Get values for any individual species if relevant
       if (use_all_spec) {
-	const int idx_spec = idx_massfrac + ispec + 2;
-	maxima[idx_spec] = amrex::max(maxima[idx_spec], maxval);
-	minima[idx_spec] = amrex::min(minima[idx_spec], minval);
+        const int idx_spec = idx_massfrac + ispec + 2;
+        maxima[idx_spec] = amrex::max(maxima[idx_spec], maxval);
+        minima[idx_spec] = amrex::min(minima[idx_spec], minval);
       } else {
-	for (int iext = 0; iext < nspec_extrema - 2; iext++) {
-	  const int idx_spec = idx_massfrac + iext + 2;
-	  if (extrema_vars[idx_spec] == PeleC::spec_names[ispec]) {
-	    maxima[idx_spec] = amrex::max(maxima[idx_spec], maxval);
-	    minima[idx_spec] = amrex::min(minima[idx_spec], minval);
-	  }
-	}
+        for (int iext = 0; iext < nspec_extrema - 2; iext++) {
+          const int idx_spec = idx_massfrac + iext + 2;
+          if (extrema_vars[idx_spec] == PeleC::spec_names[ispec]) {
+            maxima[idx_spec] = amrex::max(maxima[idx_spec], maxval);
+            minima[idx_spec] = amrex::min(minima[idx_spec], minval);
+          }
+        }
       }
     }
     // sum of mass fractions
-    maxima[idx_massfrac+1] = amrex::max(maxima[idx_massfrac+1],
-					sumY.max(0, 0, local_flag) - 1.0);
-    minima[idx_massfrac+1] = amrex::min(minima[idx_massfrac+1],
-					sumY.min(0, 0, local_flag) - 1.0);
+    maxima[idx_massfrac + 1] =
+      amrex::max(maxima[idx_massfrac + 1], sumY.max(0, 0, local_flag) - 1.0);
+    minima[idx_massfrac + 1] =
+      amrex::min(minima[idx_massfrac + 1], sumY.min(0, 0, local_flag) - 1.0);
   }
 
   if (verbose > 0) {
@@ -245,22 +247,22 @@ PeleC::monitor_extrema()
 
         amrex::Print() << std::endl;
         for (int ii = 0; ii < nextrema; ++ii) {
-          const int datwidth = 14;
-	  const int datwidth_txt = 10;
+          const int datwidth = 15;
+          const int datwidth_txt = 10;
           const int datprecision = 8;
-          amrex::Print() << "TIME = " << time
-			 << " " << std::left << std::setw(datwidth_txt) << extrema_vars[ii]
-			 << "  MIN = " << std::setw(datwidth)
+          amrex::Print() << "TIME = " << time << " " << std::left
+                         << std::setw(datwidth_txt) << extrema_vars[ii]
+                         << "  MIN = " << std::setw(datwidth)
                          << std::setprecision(datprecision) << minima[ii]
-			 << "  MAX = " << std::setw(datwidth)
+                         << "  MAX = " << std::setw(datwidth)
                          << std::setprecision(datprecision) << maxima[ii]
-			 << std::endl;
+                         << std::endl;
         }
 
         if (parent->NumDataLogs() > 1) {
           std::ostream& data_log1 = parent->DataLog(1);
           if (data_log1.good()) {
-            const int datwidth = 16;
+            const int datwidth = 17;
             if (time == 0.0) {
               data_log1 << std::setw(datwidth) << "          time";
               for (int ii = 0; ii < nextrema; ++ii) {
