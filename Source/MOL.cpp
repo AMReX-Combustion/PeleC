@@ -132,6 +132,7 @@ pc_compute_hyp_mol_flux(
 
         amrex::Real flux_tmp[NVAR] = {0.0};
         amrex::Real ustar = 0.0;
+        amrex::Real maxeigval = 0.0;
 
         amrex::Real tmp0 = 0.0;
         amrex::Real tmp1 = 0.0;
@@ -152,17 +153,33 @@ pc_compute_hyp_mol_flux(
             qtempl[R_RHO], qtempl[R_UN], qtempl[R_UT1], qtempl[R_UT2],
             qtempl[R_P], spl, qtempr[R_RHO], qtempr[R_UN], qtempr[R_UT1],
             qtempr[R_UT2], qtempr[R_P], spr, bc_test_val, cavg, ustar,
-            flux_tmp[URHO], flux_tmp[f_idx[0]], flux_tmp[f_idx[1]],
+            maxeigval, flux_tmp[URHO], flux_tmp[f_idx[0]], flux_tmp[f_idx[1]],
             flux_tmp[f_idx[2]], flux_tmp[UEDEN], flux_tmp[UEINT]);
         }
 
-        for (int n = 0; n < NUM_SPECIES; n++) {
-          flux_tmp[UFS + n] = (ustar > 0.0) ? flux_tmp[URHO] * qtempl[R_Y + n]
-                                            : flux_tmp[URHO] * qtempr[R_Y + n];
-          flux_tmp[UFS + n] =
-            (ustar == 0.0)
-              ? flux_tmp[URHO] * 0.5 * (qtempl[R_Y + n] + qtempr[R_Y + n])
-              : flux_tmp[UFS + n];
+        if (!use_laxf_flux) {
+          for (int n = 0; n < NUM_SPECIES; n++) {
+            flux_tmp[UFS + n] = (ustar > 0.0)
+                                  ? flux_tmp[URHO] * qtempl[R_Y + n]
+                                  : flux_tmp[URHO] * qtempr[R_Y + n];
+            flux_tmp[UFS + n] =
+              (ustar == 0.0)
+                ? flux_tmp[URHO] * 0.5 * (qtempl[R_Y + n] + qtempr[R_Y + n])
+                : flux_tmp[UFS + n];
+          }
+        } else {
+          for (int n = 0; n < NUM_SPECIES; n++) {
+
+            // central
+            flux_tmp[UFS + n] =
+              0.5 * (qtempl[R_RHO] * qtempl[R_UN] * qtempl[R_Y + n] +
+                     qtempr[R_RHO] * qtempr[R_UN] * qtempr[R_Y + n]);
+
+            // dissipation
+            flux_tmp[UFS + n] += -0.5 * maxeigval *
+                                 (qtempr[R_RHO] * qtempr[R_Y + n] -
+                                  qtempl[R_RHO] * qtempl[R_Y + n]);
+          }
         }
 
         flux_tmp[UTEMP] = 0.0;
