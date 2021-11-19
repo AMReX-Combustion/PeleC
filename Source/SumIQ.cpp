@@ -2,6 +2,16 @@
 
 #include "PeleC.H"
 
+int PeleC::find_datalog_index(const std::string& logname)
+{
+  for (int ii = 0; ii < parent->NumDataLogs(); ii++) {
+    if (logname == parent->DataLogName(ii)) {
+      return ii;
+    }
+  }
+  return -1; // Requested log not found
+}
+
 void
 PeleC::sum_integrated_quantities()
 {
@@ -10,7 +20,7 @@ PeleC::sum_integrated_quantities()
   if (verbose <= 0) {
     return;
   }
-
+  
   bool local_flag = true;
 
   int finest_level = parent->finestLevel();
@@ -85,11 +95,10 @@ PeleC::sum_integrated_quantities()
         //               << '\n';
         amrex::Print() << "TIME = " << time << " FUEL PROD   = " << fuel_prod
                        << '\n';
-        amrex::Print() << "TIME = " << time << " TEMP        = " << temp
-                       << '\n';
 
-        if (parent->NumDataLogs() > 0) {
-          std::ostream& data_log1 = parent->DataLog(0);
+	const int log_index = find_datalog_index("datalog");
+        if (log_index >= 0) {
+          std::ostream& data_log1 = parent->DataLog(log_index);
           if (data_log1.good()) {
             const int datwidth = 14;
             if (time == 0.0) {
@@ -259,8 +268,10 @@ PeleC::monitor_extrema()
                          << std::endl;
         }
 
-        if (parent->NumDataLogs() > 1) {
-          std::ostream& data_log1 = parent->DataLog(1);
+	
+	const int log_index = find_datalog_index("extremalog");
+        if (log_index >= 0) {
+          std::ostream& data_log1 = parent->DataLog(log_index);
           if (data_log1.good()) {
             const int datwidth = 17;
             if (time == 0.0) {
