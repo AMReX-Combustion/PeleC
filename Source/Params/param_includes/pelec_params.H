@@ -104,6 +104,8 @@ static int bndry_func_thread_safe;
 static int print_energy_diagnostics;
 static int track_grid_losses;
 static int sum_interval;
+static int track_extrema;
+static std::string extrema_spec_name;
 static amrex::Real sum_per;
 static int hard_cfl_limit;
 static std::string job_name;

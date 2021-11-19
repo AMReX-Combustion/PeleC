@@ -108,6 +108,8 @@ int PeleC::print_energy_diagnostics = 0;
 #endif
 int PeleC::track_grid_losses = 0;
 int PeleC::sum_interval = -1;
+int PeleC::track_extrema = 1;
+std::string PeleC::extrema_spec_name = "";
 amrex::Real PeleC::sum_per = -1.0e0;
 int PeleC::hard_cfl_limit = 1;
 std::string PeleC::job_name = "";

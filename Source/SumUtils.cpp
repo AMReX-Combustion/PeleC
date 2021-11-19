@@ -165,14 +165,32 @@ PeleC::volWgtSumMF(
 amrex::Real
 PeleC::maxDerive(const std::string& name, amrex::Real time, bool local)
 {
+  // Note: Includes all cells in MF, even those covered by finer grids or EB
   auto mf = derive(name, time, 0);
 
   BL_ASSERT(!(mf == nullptr));
 
-  if (level < parent->finestLevel()) {
-    const amrex::MultiFab& mask = getLevel(level + 1).build_fine_mask();
-    amrex::MultiFab::Multiply(*mf, mask, 0, 0, 1, 0);
-  }
-
   return mf->max(0, 0, local);
+}
+
+amrex::Real
+PeleC::minDerive(const std::string& name, amrex::Real time, bool local)
+{
+  // Note: Includes all cells in MF, even those covered by finer grids or EB
+  auto mf = derive(name, time, 0);
+
+  BL_ASSERT(!(mf == nullptr));
+
+  return mf->min(0, 0, local);
+}
+
+int
+PeleC::find_datalog_index(const std::string& logname)
+{
+  for (int ii = 0; ii < parent->NumDataLogs(); ii++) {
+    if (logname == parent->DataLogName(ii)) {
+      return ii;
+    }
+  }
+  return -1; // Requested log not found
 }

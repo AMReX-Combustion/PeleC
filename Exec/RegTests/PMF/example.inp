@@ -45,6 +45,7 @@ amr.check_int               = 500    # number of timesteps between checkpoints
 amr.plot_files_output = 0
 amr.plot_file         = plt     # root name of plotfile
 amr.plot_int          = 10   # number of timesteps between plotfiles
+amr.data_log = extremalog
 
 # PROBLEM PARAMETERS
 prob.pamb = 1013250.0  
@@ -65,5 +66,7 @@ pelec.diffuse_spec=1
 pelec.diffuse_vel=1
 pelec.sdc_iters = 2
 pelec.flame_trac_name = HO2
+pelec.extrema_spec_name = H2O
+pelec.plot_massfrac = 1
 amrex.signal_handling=0
 #amrex.throw_handling=0
