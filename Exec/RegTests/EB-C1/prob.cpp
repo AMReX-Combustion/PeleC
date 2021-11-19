@@ -230,7 +230,7 @@ PeleC::problem_post_timestep()
                      << " RHO*W RESIDUAL = " << rhow_residual << '\n';
       amrex::Print() << "TIME= " << time
                      << " RHO*E RESIDUAL = " << rhoE_residual << '\n';
-	
+
       const int log_index = find_datalog_index("mmslog");
       if (log_index >= 0) {
 
@@ -280,7 +280,7 @@ PeleC::problem_post_init()
   amrex::Real time = state[State_Type].curTime();
 
   if (level == 0) {
-    if (amrex::ParallelDescriptor::IOProcessor()) {	
+    if (amrex::ParallelDescriptor::IOProcessor()) {
       const int log_index = find_datalog_index("mmslog");
       if (log_index >= 0) {
         std::ostream& data_log2 = parent->DataLog(log_index);

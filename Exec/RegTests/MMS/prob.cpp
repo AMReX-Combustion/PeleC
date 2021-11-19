@@ -260,10 +260,10 @@ PeleC::problem_post_timestep()
                                     << rhow_residual << '\n';)
       amrex::Print() << "TIME= " << time
                      << " RHO*E RESIDUAL = " << rhoE_residual << '\n';
-	
+
       const int log_index = find_datalog_index("mmslog");
       if (log_index >= 0) {
-	std::ostream& data_log2 = parent->DataLog(log_index);
+        std::ostream& data_log2 = parent->DataLog(log_index);
 
         // Write the quantities at this time
         const int datwidth = 14;
@@ -316,7 +316,7 @@ PeleC::problem_post_init()
 
       const int log_index = find_datalog_index("mmslog");
       if (log_index >= 0) {
-	std::ostream& data_log2 = parent->DataLog(log_index);
+        std::ostream& data_log2 = parent->DataLog(log_index);
         if (time == 0.0) {
           const int datwidth = 14;
           data_log2 << std::setw(datwidth) << "          time";

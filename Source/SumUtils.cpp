@@ -183,3 +183,14 @@ PeleC::minDerive(const std::string& name, amrex::Real time, bool local)
 
   return mf->min(0, 0, local);
 }
+
+int
+PeleC::find_datalog_index(const std::string& logname)
+{
+  for (int ii = 0; ii < parent->NumDataLogs(); ii++) {
+    if (logname == parent->DataLogName(ii)) {
+      return ii;
+    }
+  }
+  return -1; // Requested log not found
+}

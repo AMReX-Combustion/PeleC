@@ -2,16 +2,6 @@
 
 #include "PeleC.H"
 
-int PeleC::find_datalog_index(const std::string& logname)
-{
-  for (int ii = 0; ii < parent->NumDataLogs(); ii++) {
-    if (logname == parent->DataLogName(ii)) {
-      return ii;
-    }
-  }
-  return -1; // Requested log not found
-}
-
 void
 PeleC::sum_integrated_quantities()
 {
@@ -20,7 +10,7 @@ PeleC::sum_integrated_quantities()
   if (verbose <= 0) {
     return;
   }
-  
+
   bool local_flag = true;
 
   int finest_level = parent->finestLevel();
@@ -96,7 +86,7 @@ PeleC::sum_integrated_quantities()
         amrex::Print() << "TIME = " << time << " FUEL PROD   = " << fuel_prod
                        << '\n';
 
-	const int log_index = find_datalog_index("datalog");
+        const int log_index = find_datalog_index("datalog");
         if (log_index >= 0) {
           std::ostream& data_log1 = parent->DataLog(log_index);
           if (data_log1.good()) {
@@ -268,8 +258,7 @@ PeleC::monitor_extrema()
                          << std::endl;
         }
 
-	
-	const int log_index = find_datalog_index("extremalog");
+        const int log_index = find_datalog_index("extremalog");
         if (log_index >= 0) {
           std::ostream& data_log1 = parent->DataLog(log_index);
           if (data_log1.good()) {
