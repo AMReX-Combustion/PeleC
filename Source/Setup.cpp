@@ -559,6 +559,31 @@ PeleC::variableSetUp()
     "cv", amrex::IndexType::TheCellType(), 1, pc_dercv, the_same_box);
   derive_lst.addComponent("cv", desc_lst, State_Type, Density, NVAR);
 
+  derive_lst.add(
+    "viscosity", amrex::IndexType::TheCellType(), 1, pc_derviscosity,
+    the_same_box);
+  derive_lst.addComponent("viscosity", desc_lst, State_Type, Density, NVAR);
+
+  derive_lst.add(
+    "bulk_viscosity", amrex::IndexType::TheCellType(), 1, pc_derbulkviscosity,
+    the_same_box);
+  derive_lst.addComponent(
+    "bulk_viscosity", desc_lst, State_Type, Density, NVAR);
+
+  derive_lst.add(
+    "conductivity", amrex::IndexType::TheCellType(), 1, pc_derconductivity,
+    the_same_box);
+  derive_lst.addComponent("conductivity", desc_lst, State_Type, Density, NVAR);
+
+  amrex::Vector<std::string> var_names_diffusivity(NUM_SPECIES);
+  for (int i = 0; i < NUM_SPECIES; i++) {
+    var_names_diffusivity[i] = "D(" + spec_names[i] + ")";
+  }
+  derive_lst.add(
+    "diffusivity", amrex::IndexType::TheCellType(), NUM_SPECIES,
+    var_names_diffusivity, pc_derdiffusivity, the_same_box);
+  derive_lst.addComponent("diffusivity", desc_lst, State_Type, Density, NVAR);
+
   // LES coefficients
   if (do_les) {
     derive_lst.add(
