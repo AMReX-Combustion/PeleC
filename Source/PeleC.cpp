@@ -1191,6 +1191,9 @@ PeleC::post_timestep(int
 
     if (sum_int_test || sum_per_test) {
       sum_integrated_quantities();
+      if (track_extrema) {
+        monitor_extrema();
+      }
     }
   }
 
@@ -1356,6 +1359,9 @@ void PeleC::post_init(amrex::Real /*stop_time*/)
 
   if (sum_int_test || sum_per_test) {
     sum_integrated_quantities();
+    if (track_extrema) {
+      monitor_extrema();
+    }
   }
 }
 

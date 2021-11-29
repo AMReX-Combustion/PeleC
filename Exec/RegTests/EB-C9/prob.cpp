@@ -85,8 +85,10 @@ PeleC::problem_post_timestep()
 
     if (amrex::ParallelDescriptor::IOProcessor()) {
       amrex::Print() << "TIME= " << time << " RHO ERROR  = " << rho_err << '\n';
-      if (parent->NumDataLogs() > 1) {
-        std::ostream& data_log2 = parent->DataLog(1);
+
+      const int log_index = find_datalog_index("mmslog");
+      if (log_index >= 0) {
+        std::ostream& data_log2 = parent->DataLog(log_index);
 
         // Write the quantities at this time
         const int datwidth = 14;
@@ -111,8 +113,9 @@ PeleC::problem_post_init()
 
   if (level == 0) {
     if (amrex::ParallelDescriptor::IOProcessor()) {
-      if (parent->NumDataLogs() > 1) {
-        std::ostream& data_log2 = parent->DataLog(1);
+      const int log_index = find_datalog_index("mmslog");
+      if (log_index >= 0) {
+        std::ostream& data_log2 = parent->DataLog(log_index);
         if (time == 0.0) {
           const int datwidth = 14;
           data_log2 << std::setw(datwidth) << "          time";

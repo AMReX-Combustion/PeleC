@@ -83,7 +83,6 @@ tagging.max_pressgrad_lev = 3
 #extruded triangles lets the user create a maximum of 5 triangles 
 #in 2D that will be extruded in the z direction
 #make sure the coordinates are in anti-clockwise direction 
-eb2.use_eb2 = 1
 eb2.geom_type = "extruded_triangles"
 extruded_triangles.num_tri = 2
 extruded_triangles.tri_0_point_0 = -20.0 -11.662475437630437 0.0
