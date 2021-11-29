@@ -484,6 +484,48 @@ public:
   amrex::Real
   minDerive(const std::string& name, amrex::Real time, bool local = false);
 
+  // derives that need variables part of this class (e.g. trans_parm)
+  static void pc_derviscosity(
+    const amrex::Box& bx,
+    amrex::FArrayBox& derfab,
+    int dcomp,
+    int ncomp,
+    const amrex::FArrayBox& datfab,
+    const amrex::Geometry& geomdata,
+    amrex::Real time,
+    const int* bcrec,
+    const int level);
+  static void pc_derbulkviscosity(
+    const amrex::Box& bx,
+    amrex::FArrayBox& derfab,
+    int dcomp,
+    int ncomp,
+    const amrex::FArrayBox& datfab,
+    const amrex::Geometry& geomdata,
+    amrex::Real time,
+    const int* bcrec,
+    const int level);
+  static void pc_derconductivity(
+    const amrex::Box& bx,
+    amrex::FArrayBox& derfab,
+    int dcomp,
+    int ncomp,
+    const amrex::FArrayBox& datfab,
+    const amrex::Geometry& geomdata,
+    amrex::Real time,
+    const int* bcrec,
+    const int level);
+  static void pc_derdiffusivity(
+    const amrex::Box& bx,
+    amrex::FArrayBox& derfab,
+    int dcomp,
+    int ncomp,
+    const amrex::FArrayBox& datfab,
+    const amrex::Geometry& geomdata,
+    amrex::Real time,
+    const int* bcrec,
+    const int level);
+
   // static int NVAR;
   static int Density, Xmom, Ymom, Zmom, Eden, Eint, Temp;
 
