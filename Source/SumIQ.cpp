@@ -193,9 +193,9 @@ PeleC::monitor_extrema()
     }
 
     // Handle species seperately
-    auto mf = derive("massfrac", time, 0);
+    auto mf = pc_lev.derive("massfrac", time, 0);
     BL_ASSERT(!(mf == nullptr));
-    amrex::MultiFab sumY(grids, dmap, 1, 0);
+    amrex::MultiFab sumY(pc_lev.grids, pc_lev.dmap, 1, 0);
     sumY.setVal(0.0);
     const int idx_massfrac = nextrema - nspec_extrema;
 
