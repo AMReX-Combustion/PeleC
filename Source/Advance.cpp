@@ -29,6 +29,8 @@ PeleC::advance(
     }
   }
 
+  pre_advance();
+
   amrex::Real dt_new;
   if (do_mol) {
     dt_new = do_mol_advance(time, dt, amr_iteration, amr_ncycle);

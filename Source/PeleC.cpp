@@ -1089,6 +1089,13 @@ PeleC::computeInitialDt(
 }
 
 void
+PeleC::pre_advance()
+{
+  BL_PROFILE("PeleC::pre_advance()");
+  problem_pre_advance();
+}
+
+void
 PeleC::post_timestep(int
 #ifdef AMREX_PARTICLES
                        iteration

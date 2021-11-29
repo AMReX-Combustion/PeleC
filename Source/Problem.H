@@ -2,6 +2,7 @@
 //#define _PROBLEM_H_
 
 // problem-specific PeleC:: declarations go here
+void problem_pre_advance();
 
 void problem_post_timestep();
 

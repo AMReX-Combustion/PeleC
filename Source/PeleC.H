@@ -405,6 +405,9 @@ public:
   // Print information about energy budget.
   void do_energy_diagnostics();
 
+  // Do work before advance().
+  void pre_advance();
+
   // Do work after timestep().
   virtual void post_timestep(int iteration) override;
 
