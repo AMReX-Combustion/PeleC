@@ -85,7 +85,6 @@ tagging.pressgrad = 0.01
 tagging.max_presserr_lev = 3
 tagging.max_pressgrad_lev = 3
 
-eb2.use_eb2 = 1
 ebd.boundary_grad_stencil_type = 0
 eb2.geom_type = "quarter-circle"
 eb2.r_inner = 1.0
