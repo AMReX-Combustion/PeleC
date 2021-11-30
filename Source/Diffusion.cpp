@@ -672,6 +672,14 @@ PeleC::getMOLSrcTerm(
               Dterm(i, j, k, n) = 0.0;
             }
           });
+        // Make sure rho div is same as sum rhoY div
+        amrex::ParallelFor(
+          vbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+            Dterm(i, j, k, URHO) = 0.0;
+            for (int n = 0; n < NUM_SPECIES; n++) {
+              Dterm(i, j, k, URHO) += Dterm(i, j, k, UFS + n);
+            }
+          });
       }
 #endif
 
