@@ -20,7 +20,6 @@ PeleC::sum_integrated_quantities()
   amrex::Real rho_e = 0.0;
   amrex::Real rho_K = 0.0;
   amrex::Real rho_E = 0.0;
-  amrex::Real enstr = 0.0;
   amrex::Real fuel_prod = 0;
   amrex::Real temp = 0;
 
@@ -44,6 +43,7 @@ PeleC::sum_integrated_quantities()
   }
 
   if (verbose > 0) {
+    amrex::Real enstr = 0.0;
     const int nfoo = 10;
     amrex::Real foo[nfoo] = {mass,  mom[0], mom[1], mom[2],    rho_e,
                              rho_K, rho_E,  enstr,  fuel_prod, temp};
