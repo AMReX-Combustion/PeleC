@@ -33,7 +33,6 @@ PeleC::sum_integrated_quantities()
     rho_e += pc_lev.volWgtSum("rho_e", time, local_flag);
     rho_K += pc_lev.volWgtSum("kineng", time, local_flag);
     rho_E += pc_lev.volWgtSum("rho_E", time, local_flag);
-    // enstr += pc_lev.volWgtSum("enstrophy", time, local_flag);
 
     if (!fuel_name.empty()) {
       fuel_prod += pc_lev.volWgtSum("rho_omega_" + fuel_name, time, local_flag);
@@ -43,10 +42,9 @@ PeleC::sum_integrated_quantities()
   }
 
   if (verbose > 0) {
-    amrex::Real enstr = 0.0;
     const int nfoo = 10;
-    amrex::Real foo[nfoo] = {mass,  mom[0], mom[1], mom[2],    rho_e,
-                             rho_K, rho_E,  enstr,  fuel_prod, temp};
+    amrex::Real foo[nfoo] = {mass,  mom[0], mom[1],    mom[2], rho_e,
+                             rho_K, rho_E,  fuel_prod, temp};
 #ifdef AMREX_LAZY
     Lazy::QueueReduction([=]() mutable {
 #endif
@@ -62,7 +60,6 @@ PeleC::sum_integrated_quantities()
         rho_e = foo[i++];
         rho_K = foo[i++];
         rho_E = foo[i++];
-        enstr = foo[i++]; // NOLINT
         fuel_prod = foo[i++];
         temp = foo[i++];
 
@@ -81,8 +78,6 @@ PeleC::sum_integrated_quantities()
                        << '\n';
         amrex::Print() << "TIME = " << time << " RHO*E       = " << rho_E
                        << '\n';
-        // amrex::Print() << "TIME= " << time << " ENSTROPHY   = " << enstr
-        //               << '\n';
         amrex::Print() << "TIME = " << time << " FUEL PROD   = " << fuel_prod
                        << '\n';
 
@@ -100,7 +95,6 @@ PeleC::sum_integrated_quantities()
               data_log1 << std::setw(datwidth) << "         rho_K";
               data_log1 << std::setw(datwidth) << "         rho_e";
               data_log1 << std::setw(datwidth) << "         rho_E";
-              // data_log1 << std::setw(datwidth) << "         enstr";
               data_log1 << std::setw(datwidth) << "     fuel_prod";
               data_log1 << std::setw(datwidth) << "          temp";
               data_log1 << std::endl;
@@ -123,9 +117,6 @@ PeleC::sum_integrated_quantities()
                       << rho_e;
             data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
                       << rho_E;
-            // data_log1 << std::setw(datwidth) <<
-            // std::setprecision(datprecision)
-            //          << enstr;
             data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
                       << fuel_prod;
             data_log1 << std::setw(datwidth) << std::setprecision(datprecision)

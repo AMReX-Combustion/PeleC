@@ -135,11 +135,8 @@ pc_compute_hyp_mol_flux(
         amrex::Real maxeigval = 0.0;
 
         if (!use_laxf_flux) {
-          amrex::Real tmp0 = 0.0;
-          amrex::Real tmp1 = 0.0;
-          amrex::Real tmp2 = 0.0;
-          amrex::Real tmp3 = 0.0;
-          amrex::Real tmp4 = 0.0;
+          amrex::Real tmp0 = 0.0, tmp1 = 0.0, tmp2 = 0.0, tmp3 = 0.0,
+                      tmp4 = 0.0;
           riemann(
             qtempl[R_RHO], qtempl[R_UN], qtempl[R_UT1], qtempl[R_UT2],
             qtempl[R_P], spl, qtempr[R_RHO], qtempr[R_UN], qtempr[R_UT1],
