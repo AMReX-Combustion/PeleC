@@ -289,7 +289,6 @@ pc_fill_bndry_grad_stencil_ls(
       // do not include self cell
       amrex::Real AMREX_D_DECL(
         delta_x_i[NLSPTS], delta_y_i[NLSPTS], delta_z_i[NLSPTS]);
-      amrex::Real qmat[NEL_TRIMAT], wvec[NLSPTS][AMREX_SPACEDIM];
       amrex::Real xi[AMREX_SPACEDIM];
 
       int iter = 0;
@@ -329,7 +328,7 @@ pc_fill_bndry_grad_stencil_ls(
       }
 
       if (iter > AMREX_SPACEDIM) {
-
+        amrex::Real qmat[NEL_TRIMAT], wvec[NLSPTS][AMREX_SPACEDIM];
         get_qmat(AMREX_D_DECL(delta_x_i, delta_y_i, delta_z_i), iter, qmat);
         get_weightvec(
           AMREX_D_DECL(delta_x_i, delta_y_i, delta_z_i), iter, qmat, wvec);
