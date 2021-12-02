@@ -214,6 +214,7 @@ laxfriedrich_flux(
   amrex::Real& ustar,
   amrex::Real& maxeigval,
   amrex::Real& uflx_rho,
+  amrex::Real uflx_rhoY[NUM_SPECIES],
   amrex::Real& uflx_u,
   amrex::Real& uflx_v,
   amrex::Real& uflx_w,
@@ -262,8 +263,13 @@ laxfriedrich_flux(
 
   maxeigval = max_wavespd;
 
-  // density eqn
-  uflx_rho = 0.5 * ((rl * ul + rr * ur) - max_wavespd * (rr - rl));
+  // density and mass frac eqn
+  uflx_rho = 0.0;
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    uflx_rhoY[n] = 0.5 * ((rl * ul * spl[n] + rr * ur * spr[n]) -
+                          max_wavespd * (rr * spr[n] - rl * spl[n]));
+    uflx_rho += uflx_rhoY[n];
+  }
 
   // three momentum eqns
   uflx_u = 0.5 * ((rl * ul * ul + pl + rr * ur * ur + pr) -

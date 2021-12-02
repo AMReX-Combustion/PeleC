@@ -141,20 +141,9 @@ pc_compute_hyp_mol_flux(
             qtempl[R_RHO], qtempl[R_UN], qtempl[R_UT1], qtempl[R_UT2],
             qtempl[R_P], spl, qtempr[R_RHO], qtempr[R_UN], qtempr[R_UT1],
             qtempr[R_UT2], qtempr[R_P], spr, bc_test_val, cavg, ustar,
-            maxeigval, flux_tmp[URHO], flux_tmp[f_idx[0]], flux_tmp[f_idx[1]],
-            flux_tmp[f_idx[2]], flux_tmp[UEDEN], flux_tmp[UEINT]);
-          for (int n = 0; n < NUM_SPECIES; n++) {
-
-            // central
-            flux_tmp[UFS + n] =
-              0.5 * (qtempl[R_RHO] * qtempl[R_UN] * qtempl[R_Y + n] +
-                     qtempr[R_RHO] * qtempr[R_UN] * qtempr[R_Y + n]);
-
-            // dissipation
-            flux_tmp[UFS + n] += -0.5 * maxeigval *
-                                 (qtempr[R_RHO] * qtempr[R_Y + n] -
-                                  qtempl[R_RHO] * qtempl[R_Y + n]);
-          }
+            maxeigval, flux_tmp[URHO], &flux_tmp[UFS], flux_tmp[f_idx[0]],
+            flux_tmp[f_idx[1]], flux_tmp[f_idx[2]], flux_tmp[UEDEN],
+            flux_tmp[UEINT]);
         }
 
         flux_tmp[UTEMP] = 0.0;
