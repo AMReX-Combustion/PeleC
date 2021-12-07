@@ -512,6 +512,134 @@ pc_transdd(
     amrex::max<amrex::Real>(temppres, std::numeric_limits<amrex::Real>::min());
 }
 
+// 2D version of transdd and transdo
+// Corrects the left and right dir-states with the other-Flux
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+pc_transd(
+  const int i,
+  const int j,
+  const int k,
+  const int dir,
+  amrex::Array4<amrex::Real> const& qm,
+  amrex::Array4<amrex::Real> const& qp,
+  amrex::Array4<const amrex::Real> const& qym,
+  amrex::Array4<const amrex::Real> const& qyp,
+  amrex::Array4<const amrex::Real> const& flxx,
+  amrex::Array4<const amrex::Real> const& srcQ,
+  amrex::Array4<const amrex::Real> const& qa,
+  amrex::Array4<const amrex::Real> const& qint,
+  const amrex::Real hdt,
+  const amrex::Real cdtdx,
+  PassMap const& pmap)
+{
+  const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
+  amrex::IntVect ivp0(iv);
+  amrex::IntVect ivp1(iv);
+  int qvidx = -1;
+  if (dir == 0) {
+    ivp0[1]++;
+    ivp1[0]++;
+    qvidx = GDV;
+  } else if (dir == 1) {
+    ivp0[0]++;
+    ivp1[1]++;
+    qvidx = GDU;
+  }
+  const amrex::Real flxrho = cdtdx * (flxx(ivp0, URHO) - flxx(iv, URHO));
+  const amrex::Real flxu = cdtdx * (flxx(ivp0, UMX) - flxx(iv, UMX));
+  const amrex::Real flxv = cdtdx * (flxx(ivp0, UMY) - flxx(iv, UMY));
+  const amrex::Real flxe = cdtdx * (flxx(ivp0, UEDEN) - flxx(iv, UEDEN));
+  const amrex::Real srcr = srcQ(iv, QRHO);
+  const amrex::Real srce = srcQ(iv, QREINT);
+  const amrex::Real srcp = srcQ(iv, QPRES);
+  const amrex::Real c = qa(iv, QGAMC);
+  // Update passive variables
+  for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
+    const int n = pmap.upassMap[ipass];
+    const int nqp = pmap.qpassMap[ipass];
+    const amrex::Real srcpass = srcQ(iv, nqp);
+    const amrex::Real compn = cdtdx * (flxx(ivp0, n) - flxx(iv, n));
+    amrex::Real rr = qyp(iv, QRHO);
+    amrex::Real rrnew = rr - flxrho;
+    amrex::Real compo = rr * qyp(iv, nqp) - compn;
+    qp(iv, nqp) = compo / rrnew + hdt * srcpass;
+
+    rr = qym(ivp1, QRHO);
+    rrnew = rr - flxrho;
+    compo = rr * qym(ivp1, nqp) - compn;
+    qm(ivp1, nqp) = compo / rrnew + hdt * srcpass;
+  }
+
+  const amrex::Real pggp = qint(ivp0, GDPRES);
+  const amrex::Real pggm = qint(iv, GDPRES);
+  const amrex::Real ugp = qint(ivp0, qvidx);
+  const amrex::Real ugm = qint(iv, qvidx);
+
+  const amrex::Real dAup = pggp * ugp - pggm * ugm;
+  const amrex::Real pav = 0.5 * (pggp + pggm);
+  const amrex::Real dAu = ugp - ugm;
+
+  // QP
+
+  // Convert to conservative
+  const amrex::Real rrr = qyp(iv, QRHO);
+  amrex::Real rur = qyp(iv, QU);
+  amrex::Real rvr = qyp(iv, QV);
+  const amrex::Real ekinr = 0.5 * rrr * (rur * rur + rvr * rvr);
+  rur *= rrr;
+  rvr *= rrr;
+
+  const amrex::Real rer = qyp(iv, QREINT) + ekinr;
+  // Add transverse predictor
+  const amrex::Real rrnewr = rrr - flxrho;
+  const amrex::Real runewr = rur - flxu;
+  const amrex::Real rvnewr = rvr - flxv;
+  const amrex::Real renewr = rer - flxe;
+
+  // Convert back to primitive
+  qp(iv, QRHO) = rrnewr + hdt * srcr;
+  qp(iv, QU) = runewr / rrnewr + hdt * srcQ(iv, QU);
+  qp(iv, QV) = rvnewr / rrnewr + hdt * srcQ(iv, QV);
+  const amrex::Real rhoekinr =
+    0.5 * (runewr * runewr + rvnewr * rvnewr) / rrnewr;
+  amrex::Real pnewr = qyp(iv, QPRES) - cdtdx * (dAup + pav * dAu * (c - 1.));
+  pnewr += hdt * srcp;
+  qp(iv, QPRES) =
+    amrex::max<amrex::Real>(pnewr, std::numeric_limits<amrex::Real>::min());
+  qp(iv, QREINT) = renewr - rhoekinr + hdt * srce;
+
+  // QM
+
+  // Conversion to Conservative
+  const amrex::Real rrl = qym(ivp1, QRHO);
+  amrex::Real rul = qym(ivp1, QU);
+  amrex::Real rvl = qym(ivp1, QV);
+  const amrex::Real ekinl = 0.5 * rrl * (rul * rul + rvl * rvl);
+  rul *= rrl;
+  rvl *= rrl;
+  const amrex::Real rel = qym(ivp1, QREINT) + ekinl;
+
+  // Transverse fluxes
+  const amrex::Real rrnewl = rrl - flxrho;
+  const amrex::Real runewl = rul - flxu;
+  const amrex::Real rvnewl = rvl - flxv;
+  const amrex::Real renewl = rel - flxe;
+
+  qm(ivp1, QRHO) = rrnewl + hdt * srcr;
+  qm(ivp1, QU) = runewl / rrnewl + hdt * srcQ(iv, QU);
+  qm(ivp1, QV) = rvnewl / rrnewl + hdt * srcQ(iv, QV);
+  const amrex::Real rhoekinl =
+    0.5 * (runewl * runewl + rvnewl * rvnewl) / rrnewl;
+
+  qm(ivp1, QREINT) = renewl - rhoekinl + hdt * srce;
+  const amrex::Real pnewl =
+    qym(ivp1, QPRES) - cdtdx * (dAup + pav * dAu * (c - 1.));
+  qm(ivp1, QPRES) = amrex::max<amrex::Real>(
+    pnewl + hdt * srcp, std::numeric_limits<amrex::Real>::min());
+}
+
 // Use interface states from Riemann solver for pdivu.
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE

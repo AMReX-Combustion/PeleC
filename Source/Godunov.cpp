@@ -510,8 +510,9 @@ pc_umeth_2D(
 {
   amrex::Real const dx = del[0];
   amrex::Real const dy = del[1];
-  amrex::Real const hdtdy = 0.5 * dt / dy;
   amrex::Real const hdt = 0.5 * dt;
+  amrex::Real const hdtdy = 0.5 * dt / dy;
+  amrex::Real const hdtdx = 0.5 * dt / dx;
 
   const int bclx = bclo[0];
   const int bcly = bclo[1];
@@ -624,8 +625,8 @@ pc_umeth_2D(
 
   amrex::ParallelFor(
     tybx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      pc_transy(
-        i, j, k, qmarr, qparr, qxmarr, qxparr, fyarr, srcQ, qaux, q2, hdt,
+      pc_transd(
+        i, j, k, cdir, qmarr, qparr, qxmarr, qxparr, fyarr, srcQ, qaux, q2, hdt,
         hdtdy, *lpmap);
     });
 
@@ -648,9 +649,9 @@ pc_umeth_2D(
 
   amrex::ParallelFor(
     txbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      pc_transx(
-        i, j, k, qmarr, qparr, qymarr, qyparr, fxarr, srcQ, qaux, gdtemp, a1,
-        vol, hdt, *lpmap);
+      pc_transd(
+        i, j, k, cdir, qmarr, qparr, qymarr, qyparr, fxarr, srcQ, qaux, gdtemp, hdt,
+        hdtdx, *lpmap);
     });
   fxeli.clear();
   qymeli.clear();
