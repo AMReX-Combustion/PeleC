@@ -233,8 +233,8 @@ pc_transx1(
   PassMap const& pmap)
 {
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-  amrex::IntVect ivp0{AMREX_D_DECL(i, j, k)};
-  amrex::IntVect ivp1{AMREX_D_DECL(i, j, k)};
+  amrex::IntVect ivp0(iv);
+  amrex::IntVect ivp1(iv);
   int qvidx = -1;
   if (dir == 0) {
     ivp0[0]++;
@@ -366,8 +366,8 @@ pc_transx2(
   PassMap const& pmap)
 {
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-  amrex::IntVect ivp0{AMREX_D_DECL(i, j, k)};
-  amrex::IntVect ivp1{AMREX_D_DECL(i, j, k)};
+  amrex::IntVect ivp0(iv);
+  amrex::IntVect ivp1(iv);
   int qvidx = -1;
   if (dir == 0) {
     ivp0[0]++;
@@ -480,14 +480,15 @@ pc_transx2(
     amrex::max<amrex::Real>(pnewl, std::numeric_limits<amrex::Real>::min());
 }
 
-// Z corrected from xy
+// dir corrected from other two dirs
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
-pc_transxy(
+pc_transdd(
   const int i,
   const int j,
   const int k,
+  const int dir,
   amrex::Array4<amrex::Real> const& qm,
   amrex::Array4<amrex::Real> const& qp,
   amrex::Array4<const amrex::Real> const& qzm,
@@ -504,9 +505,31 @@ pc_transxy(
   PassMap const& pmap)
 {
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-  const amrex::IntVect ivp0{AMREX_D_DECL(i + 1, j, k)};
-  const amrex::IntVect ivp1{AMREX_D_DECL(i, j + 1, k)};
-  const amrex::IntVect ivp2{AMREX_D_DECL(i, j, k + 1)};
+  amrex::IntVect ivp0(iv);
+  amrex::IntVect ivp1(iv);
+  amrex::IntVect ivp2(iv);
+  int qvidx0 = -1;
+  int qvidx1 = -1;
+  if (dir == 0) {
+    ivp0[1]++;
+    ivp1[2]++;
+    ivp2[0]++;
+    qvidx0 = GDV;
+    qvidx1 = GDW;
+  } else if (dir == 1) {
+    ivp0[0]++;
+    ivp1[2]++;
+    ivp2[1]++;
+    qvidx0 = GDU;
+    qvidx1 = GDW;
+  } else if (dir == 2) {
+    ivp0[0]++;
+    ivp1[1]++;
+    ivp2[2]++;
+    qvidx0 = GDU;
+    qvidx1 = GDV;
+  }
+
   const amrex::Real flxrho = cdtdx * (flxx(ivp0, URHO) - flxx(iv, URHO)) +
                              cdtdy * (flxy(ivp1, URHO) - flxy(iv, URHO));
   const amrex::Real flxu = cdtdx * (flxx(ivp0, UMX) - flxx(iv, UMX)) +
@@ -547,8 +570,8 @@ pc_transxy(
   // Update hydro vars
   const amrex::Real pggpx = qx(ivp0, GDPRES);
   const amrex::Real pggmx = qx(iv, GDPRES);
-  const amrex::Real ugpx = qx(ivp0, GDU);
-  const amrex::Real ugmx = qx(iv, GDU);
+  const amrex::Real ugpx = qx(ivp0, qvidx0);
+  const amrex::Real ugmx = qx(iv, qvidx0);
 
   const amrex::Real dAupx = pggpx * ugpx - pggmx * ugmx;
   const amrex::Real pavx = 0.5 * (pggpx + pggmx);
@@ -556,8 +579,8 @@ pc_transxy(
 
   const amrex::Real pggpy = qy(ivp1, GDPRES);
   const amrex::Real pggmy = qy(iv, GDPRES);
-  const amrex::Real ugpy = qy(ivp1, GDV);
-  const amrex::Real ugmy = qy(iv, GDV);
+  const amrex::Real ugpy = qy(ivp1, qvidx1);
+  const amrex::Real ugmy = qy(iv, qvidx1);
 
   const amrex::Real dAupy = pggpy * ugpy - pggmy * ugmy;
   const amrex::Real pavy = 0.5 * (pggpy + pggmy);
@@ -608,271 +631,6 @@ pc_transxy(
     0.5 * (runewl * runewl + rvnewl * rvnewl + rwnewl * rwnewl) / rrnewl;
   qm(ivp2, QREINT) = renewl - rhoekinl + hdt * srce;
   temppres = qzm(ivp2, QPRES) - pxnew - pynew + hdt * srcp;
-  qm(ivp2, QPRES) =
-    amrex::max<amrex::Real>(temppres, std::numeric_limits<amrex::Real>::min());
-}
-
-// Y corrected by x and z
-AMREX_GPU_DEVICE
-AMREX_FORCE_INLINE
-void
-pc_transxz(
-  const int i,
-  const int j,
-  const int k,
-  amrex::Array4<amrex::Real> const& qm,
-  amrex::Array4<amrex::Real> const& qp,
-  amrex::Array4<const amrex::Real> const& qym,
-  amrex::Array4<const amrex::Real> const& qyp,
-  amrex::Array4<const amrex::Real> const& flxx,
-  amrex::Array4<const amrex::Real> const& flxz,
-  amrex::Array4<const amrex::Real> const& qx,
-  amrex::Array4<const amrex::Real> const& qz,
-  amrex::Array4<const amrex::Real> const& qa,
-  amrex::Array4<const amrex::Real> const& srcq,
-  const amrex::Real hdt,
-  const amrex::Real cdtdx,
-  const amrex::Real cdtdz,
-  PassMap const& pmap)
-{
-  const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-  const amrex::IntVect ivp0{AMREX_D_DECL(i + 1, j, k)};
-  const amrex::IntVect ivp1{AMREX_D_DECL(i, j, k + 1)};
-  const amrex::IntVect ivp2{AMREX_D_DECL(i, j + 1, k)};
-  const amrex::Real flxrho = cdtdx * (flxx(ivp0, URHO) - flxx(iv, URHO)) +
-                             cdtdz * (flxz(ivp1, URHO) - flxz(iv, URHO));
-  const amrex::Real flxu = cdtdx * (flxx(ivp0, UMX) - flxx(iv, UMX)) +
-                           cdtdz * (flxz(ivp1, UMX) - flxz(iv, UMX));
-  const amrex::Real flxv = cdtdx * (flxx(ivp0, UMY) - flxx(iv, UMY)) +
-                           cdtdz * (flxz(ivp1, UMY) - flxz(iv, UMY));
-  const amrex::Real flxw = cdtdx * (flxx(ivp0, UMZ) - flxx(iv, UMZ)) +
-                           cdtdz * (flxz(ivp1, UMZ) - flxz(iv, UMZ));
-  const amrex::Real flxe = cdtdx * (flxx(ivp0, UEDEN) - flxx(iv, UEDEN)) +
-                           cdtdz * (flxz(ivp1, UEDEN) - flxz(iv, UEDEN));
-  const amrex::Real c = qa(iv, QGAMC);
-  const amrex::Real srcrho = srcq(iv, QRHO);
-  const amrex::Real srcu = srcq(iv, QU);
-  const amrex::Real srcv = srcq(iv, QV);
-  const amrex::Real srcw = srcq(iv, QW);
-  const amrex::Real srce = srcq(iv, QREINT);
-  const amrex::Real srcp = srcq(iv, QPRES);
-
-  // Update passive variables
-  const amrex::Real rrr = qyp(iv, QRHO);
-  const amrex::Real rrl = qym(ivp2, QRHO);
-  const amrex::Real rrnewl = rrl - flxrho;
-  const amrex::Real rrnewr = rrr - flxrho;
-  for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    const int n = pmap.upassMap[ipass];
-    const int nqp = pmap.qpassMap[ipass];
-    const amrex::Real srcpass = srcq(iv, nqp);
-    const amrex::Real compn = cdtdx * (flxx(ivp0, n) - flxx(iv, n)) +
-                              cdtdz * (flxz(ivp1, n) - flxz(iv, n));
-    // qp
-    amrex::Real compo = rrr * qyp(iv, nqp) - compn;
-    qp(iv, nqp) = compo / rrnewr + hdt * srcpass;
-    // qm
-    compo = rrl * qym(ivp2, nqp) - compn;
-    qm(ivp2, nqp) = compo / rrnewl + hdt * srcpass;
-  }
-
-  // Update hydro vars
-  const amrex::Real pggpx = qx(ivp0, GDPRES);
-  const amrex::Real pggmx = qx(iv, GDPRES);
-  const amrex::Real ugpx = qx(ivp0, GDU);
-  const amrex::Real ugmx = qx(iv, GDU);
-
-  const amrex::Real dAupx = pggpx * ugpx - pggmx * ugmx;
-  const amrex::Real pavx = 0.5 * (pggpx + pggmx);
-  const amrex::Real dAux = ugpx - ugmx;
-
-  const amrex::Real pggpz = qz(ivp1, GDPRES);
-  const amrex::Real pggmz = qz(iv, GDPRES);
-  const amrex::Real ugpz = qz(ivp1, GDW);
-  const amrex::Real ugmz = qz(iv, GDW);
-
-  const amrex::Real dAupz = pggpz * ugpz - pggmz * ugmz;
-  const amrex::Real pavz = 0.5 * (pggpz + pggmz);
-  const amrex::Real dAuz = ugpz - ugmz;
-  const amrex::Real pxnew = cdtdx * (dAupx + pavx * dAux * (c - 1.0));
-  const amrex::Real pznew = cdtdz * (dAupz + pavz * dAuz * (c - 1.0));
-
-  // qp state
-  const amrex::Real rur = rrr * qyp(iv, QU);
-  const amrex::Real rvr = rrr * qyp(iv, QV);
-  const amrex::Real rwr = rrr * qyp(iv, QW);
-  const amrex::Real ekinr = 0.5 * (rur * rur + rvr * rvr + rwr * rwr) / rrr;
-  const amrex::Real rer = qyp(iv, QREINT) + ekinr;
-
-  const amrex::Real runewr = rur - flxu;
-  const amrex::Real rvnewr = rvr - flxv;
-  const amrex::Real rwnewr = rwr - flxw;
-  const amrex::Real renewr = rer - flxe;
-
-  qp(iv, QRHO) = rrnewr + hdt * srcrho;
-  qp(iv, QU) = runewr / rrnewr + hdt * srcu;
-  qp(iv, QV) = rvnewr / rrnewr + hdt * srcv;
-  qp(iv, QW) = rwnewr / rrnewr + hdt * srcw;
-  const amrex::Real rhoekinr =
-    0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
-  qp(iv, QREINT) = renewr - rhoekinr + hdt * srce;
-  amrex::Real temppres = qyp(iv, QPRES) - pxnew - pznew + hdt * srcp;
-  qp(iv, QPRES) =
-    amrex::max<amrex::Real>(temppres, std::numeric_limits<amrex::Real>::min());
-
-  // qm state
-  const amrex::Real rul = rrl * qym(ivp2, QU);
-  const amrex::Real rvl = rrl * qym(ivp2, QV);
-  const amrex::Real rwl = rrl * qym(ivp2, QW);
-  const amrex::Real ekinl = 0.5 * (rul * rul + rvl * rvl + rwl * rwl) / rrl;
-  const amrex::Real rel = qym(ivp2, QREINT) + ekinl;
-
-  const amrex::Real runewl = rul - flxu;
-  const amrex::Real rvnewl = rvl - flxv;
-  const amrex::Real rwnewl = rwl - flxw;
-  const amrex::Real renewl = rel - flxe;
-
-  qm(ivp2, QRHO) = rrnewl + hdt * srcrho;
-  qm(ivp2, QU) = runewl / rrnewl + hdt * srcu;
-  qm(ivp2, QV) = rvnewl / rrnewl + hdt * srcv;
-  qm(ivp2, QW) = rwnewl / rrnewl + hdt * srcw;
-  const amrex::Real rhoekinl =
-    0.5 * (runewl * runewl + rvnewl * rvnewl + rwnewl * rwnewl) / rrnewl;
-  qm(ivp2, QREINT) = renewl - rhoekinl + hdt * srce;
-  temppres = qym(ivp2, QPRES) - pxnew - pznew + hdt * srcp;
-  qm(ivp2, QPRES) =
-    amrex::max<amrex::Real>(temppres, std::numeric_limits<amrex::Real>::min());
-}
-
-// x corrected by y and z
-AMREX_GPU_DEVICE
-AMREX_FORCE_INLINE
-void
-pc_transyz(
-  const int i,
-  const int j,
-  const int k,
-  amrex::Array4<amrex::Real> const& qm,
-  amrex::Array4<amrex::Real> const& qp,
-  amrex::Array4<const amrex::Real> const& qxm,
-  amrex::Array4<const amrex::Real> const& qxp,
-  amrex::Array4<const amrex::Real> const& flxy,
-  amrex::Array4<const amrex::Real> const& flxz,
-  amrex::Array4<const amrex::Real> const& qy,
-  amrex::Array4<const amrex::Real> const& qz,
-  amrex::Array4<const amrex::Real> const& qa,
-  amrex::Array4<const amrex::Real> const& srcq,
-  const amrex::Real hdt,
-  const amrex::Real cdtdy,
-  const amrex::Real cdtdz,
-  PassMap const& pmap)
-{
-  const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-  const amrex::IntVect ivp0{AMREX_D_DECL(i, j + 1, k)};
-  const amrex::IntVect ivp1{AMREX_D_DECL(i, j, k + 1)};
-  const amrex::IntVect ivp2{AMREX_D_DECL(i + 1, j, k)};
-  const amrex::Real flxrho = cdtdy * (flxy(ivp0, URHO) - flxy(iv, URHO)) +
-                             cdtdz * (flxz(ivp1, URHO) - flxz(iv, URHO));
-  const amrex::Real flxu = cdtdy * (flxy(ivp0, UMX) - flxy(iv, UMX)) +
-                           cdtdz * (flxz(ivp1, UMX) - flxz(iv, UMX));
-  const amrex::Real flxv = cdtdy * (flxy(ivp0, UMY) - flxy(iv, UMY)) +
-                           cdtdz * (flxz(ivp1, UMY) - flxz(iv, UMY));
-  const amrex::Real flxw = cdtdy * (flxy(ivp0, UMZ) - flxy(iv, UMZ)) +
-                           cdtdz * (flxz(ivp1, UMZ) - flxz(iv, UMZ));
-  const amrex::Real flxe = cdtdy * (flxy(ivp0, UEDEN) - flxy(iv, UEDEN)) +
-                           cdtdz * (flxz(ivp1, UEDEN) - flxz(iv, UEDEN));
-  const amrex::Real c = qa(iv, QGAMC);
-  const amrex::Real srcrho = srcq(iv, QRHO);
-  const amrex::Real srcu = srcq(iv, QU);
-  const amrex::Real srcv = srcq(iv, QV);
-  const amrex::Real srcw = srcq(iv, QW);
-  const amrex::Real srce = srcq(iv, QREINT);
-  const amrex::Real srcp = srcq(iv, QPRES);
-
-  // Update passive variables
-  const amrex::Real rrr = qxp(iv, QRHO);
-  const amrex::Real rrl = qxm(ivp2, QRHO);
-  const amrex::Real rrnewl = rrl - flxrho;
-  const amrex::Real rrnewr = rrr - flxrho;
-
-  for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    const int n = pmap.upassMap[ipass];
-    const int nqp = pmap.qpassMap[ipass];
-    const amrex::Real srcpass = srcq(iv, nqp);
-    const amrex::Real compn = cdtdy * (flxy(ivp0, n) - flxy(iv, n)) +
-                              cdtdz * (flxz(ivp1, n) - flxz(iv, n));
-    // qp
-    amrex::Real compo = rrr * qxp(iv, nqp) - compn;
-    qp(iv, nqp) = compo / rrnewr + hdt * srcpass;
-    // qm
-    compo = rrl * qxm(ivp2, nqp) - compn;
-    qm(ivp2, nqp) = compo / rrnewl + hdt * srcpass;
-  }
-
-  // Update hydro vars
-  const amrex::Real pggpz = qz(ivp1, GDPRES);
-  const amrex::Real pggmz = qz(iv, GDPRES);
-  const amrex::Real ugpz = qz(ivp1, GDW);
-  const amrex::Real ugmz = qz(iv, GDW);
-
-  const amrex::Real dAupz = pggpz * ugpz - pggmz * ugmz;
-  const amrex::Real pavz = 0.5 * (pggpz + pggmz);
-  const amrex::Real dAuz = ugpz - ugmz;
-
-  const amrex::Real pggpy = qy(ivp0, GDPRES);
-  const amrex::Real pggmy = qy(iv, GDPRES);
-  const amrex::Real ugpy = qy(ivp0, GDV);
-  const amrex::Real ugmy = qy(iv, GDV);
-
-  const amrex::Real dAupy = pggpy * ugpy - pggmy * ugmy;
-  const amrex::Real pavy = 0.5 * (pggpy + pggmy);
-  const amrex::Real dAuy = ugpy - ugmy;
-  const amrex::Real pznew = cdtdz * (dAupz + pavz * dAuz * (c - 1.0));
-  const amrex::Real pynew = cdtdy * (dAupy + pavy * dAuy * (c - 1.0));
-
-  // qp state
-  const amrex::Real rur = rrr * qxp(iv, QU);
-  const amrex::Real rvr = rrr * qxp(iv, QV);
-  const amrex::Real rwr = rrr * qxp(iv, QW);
-  const amrex::Real ekinr = 0.5 * (rur * rur + rvr * rvr + rwr * rwr) / rrr;
-  const amrex::Real rer = qxp(iv, QREINT) + ekinr;
-
-  const amrex::Real runewr = rur - flxu;
-  const amrex::Real rvnewr = rvr - flxv;
-  const amrex::Real rwnewr = rwr - flxw;
-  const amrex::Real renewr = rer - flxe;
-
-  qp(iv, QRHO) = rrnewr + hdt * srcrho;
-  qp(iv, QU) = runewr / rrnewr + hdt * srcu;
-  qp(iv, QV) = rvnewr / rrnewr + hdt * srcv;
-  qp(iv, QW) = rwnewr / rrnewr + hdt * srcw;
-  const amrex::Real rhoekinr =
-    0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
-  qp(iv, QREINT) = renewr - rhoekinr + hdt * srce;
-  amrex::Real temppres = qxp(iv, QPRES) - pznew - pynew + hdt * srcp;
-  qp(iv, QPRES) =
-    amrex::max<amrex::Real>(temppres, std::numeric_limits<amrex::Real>::min());
-
-  // qm state
-  const amrex::Real rul = rrl * qxm(ivp2, QU);
-  const amrex::Real rvl = rrl * qxm(ivp2, QV);
-  const amrex::Real rwl = rrl * qxm(ivp2, QW);
-  const amrex::Real ekinl = 0.5 * (rul * rul + rvl * rvl + rwl * rwl) / rrl;
-  const amrex::Real rel = qxm(ivp2, QREINT) + ekinl;
-
-  const amrex::Real runewl = rul - flxu;
-  const amrex::Real rvnewl = rvl - flxv;
-  const amrex::Real rwnewl = rwl - flxw;
-  const amrex::Real renewl = rel - flxe;
-
-  qm(ivp2, QRHO) = rrnewl + hdt * srcrho;
-  qm(ivp2, QU) = runewl / rrnewl + hdt * srcu;
-  qm(ivp2, QV) = rvnewl / rrnewl + hdt * srcv;
-  qm(ivp2, QW) = rwnewl / rrnewl + hdt * srcw;
-  const amrex::Real rhoekinl =
-    0.5 * (runewl * runewl + rvnewl * rvnewl + rwnewl * rwnewl) / rrnewl;
-  qm(ivp2, QREINT) = renewl - rhoekinl + hdt * srce;
-  temppres = qxm(ivp2, QPRES) - pznew - pynew + hdt * srcp;
   qm(ivp2, QPRES) =
     amrex::max<amrex::Real>(temppres, std::numeric_limits<amrex::Real>::min());
 }
