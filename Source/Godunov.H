@@ -365,7 +365,7 @@ pc_transdd(
   amrex::IntVect ivp2(iv);
   const int qvidx0 = (dir == 0) ? GDV : ((dir == 1) ? GDU : GDU);
   const int qvidx1 = (dir == 0) ? GDW : ((dir == 1) ? GDW : GDV);
-  
+
   if (dir == 0) {
     ivp0[1]++;
     ivp1[2]++;
