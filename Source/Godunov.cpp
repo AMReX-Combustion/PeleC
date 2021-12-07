@@ -103,25 +103,31 @@ pc_umeth_3D(
       bxg2, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
         amrex::Real slope[QVAR];
         // X slopes and interp
+        int idir = 0;
         for (int n = 0; n < QVAR; ++n) {
           slope[n] = plm_slope(i, j, k, n, 0, q);
         }
-        pc_plm_x(
-          i, j, k, qxmarr, qxparr, slope, q, qaux(i, j, k, QC), dx, dt, *lpmap);
+        pc_plm_d(
+          i, j, k, idir, qxmarr, qxparr, slope, q, qaux(i, j, k, QC), dx, dt,
+          *lpmap);
 
         // Y slopes and interp
+        idir = 1;
         for (int n = 0; n < QVAR; n++) {
           slope[n] = plm_slope(i, j, k, n, 1, q);
         }
-        pc_plm_y(
-          i, j, k, qymarr, qyparr, slope, q, qaux(i, j, k, QC), dy, dt, *lpmap);
+        pc_plm_d(
+          i, j, k, idir, qymarr, qyparr, slope, q, qaux(i, j, k, QC), dy, dt,
+          *lpmap);
 
         // Z slopes and interp
+        idir = 2;
         for (int n = 0; n < QVAR; ++n) {
           slope[n] = plm_slope(i, j, k, n, 2, q);
         }
-        pc_plm_z(
-          i, j, k, qzmarr, qzparr, slope, q, qaux(i, j, k, QC), dz, dt, *lpmap);
+        pc_plm_d(
+          i, j, k, idir, qzmarr, qzparr, slope, q, qaux(i, j, k, QC), dz, dt,
+          *lpmap);
       });
   } else if (ppm_type == 1) {
     // Compute the normal interface states by reconstructing
@@ -557,14 +563,16 @@ pc_umeth_2D(
         // X slopes and interp
         for (int n = 0; n < QVAR; ++n)
           slope[n] = plm_slope(i, j, k, n, 0, q);
-        pc_plm_x(
-          i, j, k, qxmarr, qxparr, slope, q, qaux(i, j, k, QC), dx, dt, *lpmap);
+        pc_plm_d(
+          i, j, k, 0, qxmarr, qxparr, slope, q, qaux(i, j, k, QC), dx, dt,
+          *lpmap);
 
         // Y slopes and interp
         for (int n = 0; n < QVAR; n++)
           slope[n] = plm_slope(i, j, k, n, 1, q);
-        pc_plm_y(
-          i, j, k, qymarr, qyparr, slope, q, qaux(i, j, k, QC), dy, dt, *lpmap);
+        pc_plm_d(
+          i, j, k, 1, qymarr, qyparr, slope, q, qaux(i, j, k, QC), dy, dt,
+          *lpmap);
       });
   } else if (ppm_type == 1) {
     // Compute the normal interface states by reconstructing
@@ -650,8 +658,8 @@ pc_umeth_2D(
   amrex::ParallelFor(
     txbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       pc_transd(
-        i, j, k, cdir, qmarr, qparr, qymarr, qyparr, fxarr, srcQ, qaux, gdtemp, hdt,
-        hdtdx, *lpmap);
+        i, j, k, cdir, qmarr, qparr, qymarr, qyparr, fxarr, srcQ, qaux, gdtemp,
+        hdt, hdtdx, *lpmap);
     });
   fxeli.clear();
   qymeli.clear();
