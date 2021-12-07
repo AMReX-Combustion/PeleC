@@ -234,32 +234,10 @@ pc_transdo(
   PassMap const& pmap)
 {
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-  amrex::IntVect ivp0(iv);
-  amrex::IntVect ivp1(iv);
-  int qvidx = -1;
-  ivp0[other_dir]++;
-  if (other_dir == 0) {
-    qvidx = GDU;
-    if (dir == 1) {
-      ivp1[1]++;
-    } else if (dir == 2) {
-      ivp1[2]++;
-    }
-  } else if (other_dir == 1) {
-    qvidx = GDV;
-    if (dir == 0) {
-      ivp1[0]++;
-    } else if (dir == 2) {
-      ivp1[2]++;
-    }
-  } else if (other_dir == 2) {
-    qvidx = GDW;
-    if (dir == 0) {
-      ivp1[0]++;
-    } else if (dir == 1) {
-      ivp1[1]++;
-    }
-  }
+  const amrex::IntVect ivp0(iv + amrex::IntVect::TheDimensionVector(other_dir));
+  const amrex::IntVect ivp1(iv + amrex::IntVect::TheDimensionVector(dir));
+  const int qvidx = (other_dir == 0) ? GDU : ((other_dir == 1) ? GDV : GDW);
+
   const amrex::Real flxrho = cdtdx * (flxx(ivp0, URHO) - flxx(iv, URHO));
   const amrex::Real flxu = cdtdx * (flxx(ivp0, UMX) - flxx(iv, UMX));
   const amrex::Real flxv = cdtdx * (flxx(ivp0, UMY) - flxx(iv, UMY));
@@ -385,26 +363,21 @@ pc_transdd(
   amrex::IntVect ivp0(iv);
   amrex::IntVect ivp1(iv);
   amrex::IntVect ivp2(iv);
-  int qvidx0 = -1;
-  int qvidx1 = -1;
+  const int qvidx0 = (dir == 0) ? GDV : ((dir == 1) ? GDU : GDU);
+  const int qvidx1 = (dir == 0) ? GDW : ((dir == 1) ? GDW : GDV);
+  
   if (dir == 0) {
     ivp0[1]++;
     ivp1[2]++;
     ivp2[0]++;
-    qvidx0 = GDV;
-    qvidx1 = GDW;
   } else if (dir == 1) {
     ivp0[0]++;
     ivp1[2]++;
     ivp2[1]++;
-    qvidx0 = GDU;
-    qvidx1 = GDW;
   } else if (dir == 2) {
     ivp0[0]++;
     ivp1[1]++;
     ivp2[2]++;
-    qvidx0 = GDU;
-    qvidx1 = GDV;
   }
 
   const amrex::Real flxrho = cdtdx * (flxx(ivp0, URHO) - flxx(iv, URHO)) +

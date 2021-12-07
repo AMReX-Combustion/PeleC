@@ -95,10 +95,6 @@ pc_plm_d(
     {bdim[0] * 0 + bdim[1] * 1 + bdim[2] * 2,
      bdim[0] * 1 + bdim[1] * 0 + bdim[2] * 0,
      bdim[0] * 2 + bdim[1] * 2 + bdim[2] * 1}};
-  const amrex::GpuArray<const int, 3> q_idx{
-    {bdim[0] * QU + bdim[1] * QV + bdim[2] * QW,
-     bdim[0] * QV + bdim[1] * QU + bdim[2] * QU,
-     bdim[0] * QW + bdim[1] * QW + bdim[2] * QV}};
 
   const amrex::Real dtdx = dt / dx;
   const amrex::Real cs = cc * cc;
