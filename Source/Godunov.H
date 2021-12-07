@@ -213,15 +213,16 @@ pc_cmpflx(
   }
 }
 
-// First Transverse Correction for Predicted Y-states, using X-Flux
+// Transverse Correction for Predicted dir-states, using other_dir-Flux
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
-pc_transx1(
+pc_transdo(
   const int i,
   const int j,
   const int k,
   const int dir,
+  const int other_dir,
   amrex::Array4<amrex::Real> const& qm,
   amrex::Array4<amrex::Real> const& qp,
   amrex::Array4<const amrex::Real> const& qym,
@@ -236,16 +237,28 @@ pc_transx1(
   amrex::IntVect ivp0(iv);
   amrex::IntVect ivp1(iv);
   int qvidx = -1;
-  ivp0[dir]++;
-  if (dir == 0) {
-    ivp1[1]++;
+  ivp0[other_dir]++;
+  if (other_dir == 0) {
     qvidx = GDU;
-  } else if (dir == 1) {
-    ivp1[0]++;
+    if (dir == 1) {
+      ivp1[1]++;
+    } else if (dir == 2) {
+      ivp1[2]++;
+    }
+  } else if (other_dir == 1) {
     qvidx = GDV;
-  } else if (dir == 2) {
-    ivp1[0]++;
+    if (dir == 0) {
+      ivp1[0]++;
+    } else if (dir == 2) {
+      ivp1[2]++;
+    }
+  } else if (other_dir == 2) {
     qvidx = GDW;
+    if (dir == 0) {
+      ivp1[0]++;
+    } else if (dir == 1) {
+      ivp1[1]++;
+    }
   }
   const amrex::Real flxrho = cdtdx * (flxx(ivp0, URHO) - flxx(iv, URHO));
   const amrex::Real flxu = cdtdx * (flxx(ivp0, UMX) - flxx(iv, UMX));
@@ -340,138 +353,6 @@ pc_transx1(
   qm(ivp1, QREINT) = renewl - rhoekinl;
   const amrex::Real pnewl =
     qym(ivp1, QPRES) - cdtdx * (dAup + pav * dAu * (c - 1.0));
-  qm(ivp1, QPRES) =
-    amrex::max<amrex::Real>(pnewl, std::numeric_limits<amrex::Real>::min());
-}
-
-// Transverse Correction for Predicted Z-states, using X-Flux
-AMREX_GPU_DEVICE
-AMREX_FORCE_INLINE
-void
-pc_transx2(
-  const int i,
-  const int j,
-  const int k,
-  const int dir,
-  amrex::Array4<amrex::Real> const& qm,
-  amrex::Array4<amrex::Real> const& qp,
-  amrex::Array4<const amrex::Real> const& qzm,
-  amrex::Array4<const amrex::Real> const& qzp,
-  amrex::Array4<const amrex::Real> const& flxx,
-  amrex::Array4<const amrex::Real> const& qa,
-  amrex::Array4<const amrex::Real> const& qint,
-  const amrex::Real cdtdx,
-  PassMap const& pmap)
-{
-  const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-  amrex::IntVect ivp0(iv);
-  amrex::IntVect ivp1(iv);
-  int qvidx = -1;
-  ivp0[dir]++;
-  if (dir == 0) {
-    ivp1[2]++;
-    qvidx = GDU;
-  } else if (dir == 1) {
-    ivp1[2]++;
-    qvidx = GDV;
-  } else if (dir == 2) {
-    ivp1[1]++;
-    qvidx = GDW;
-  }
-  const amrex::Real flxrho = cdtdx * (flxx(ivp0, URHO) - flxx(iv, URHO));
-  const amrex::Real flxu = cdtdx * (flxx(ivp0, UMX) - flxx(iv, UMX));
-  const amrex::Real flxv = cdtdx * (flxx(ivp0, UMY) - flxx(iv, UMY));
-  const amrex::Real flxw = cdtdx * (flxx(ivp0, UMZ) - flxx(iv, UMZ));
-  const amrex::Real flxe = cdtdx * (flxx(ivp0, UEDEN) - flxx(iv, UEDEN));
-  const amrex::Real c = qa(iv, QGAMC);
-  // -  Update Passive Variables
-  for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    const int n = pmap.upassMap[ipass];
-    const int nqp = pmap.qpassMap[ipass];
-    const amrex::Real compn = cdtdx * (flxx(ivp0, n) - flxx(iv, n));
-    amrex::Real rr = qzp(iv, QRHO);
-    amrex::Real rrnew = rr - flxrho;
-    amrex::Real compo = rr * qzp(iv, nqp) - compn;
-    qp(iv, nqp) = compo / rrnew;
-
-    rr = qzm(ivp1, QRHO);
-    rrnew = rr - flxrho;
-    compo = rr * qzm(ivp1, nqp) - compn;
-    qm(ivp1, nqp) = compo / rrnew;
-  }
-  //- Update hydro vars -
-
-  const amrex::Real pggp = qint(ivp0, GDPRES);
-  const amrex::Real pggm = qint(iv, GDPRES);
-  const amrex::Real ugp = qint(ivp0, qvidx);
-  const amrex::Real ugm = qint(iv, qvidx);
-
-  const amrex::Real dAup = pggp * ugp - pggm * ugm;
-  const amrex::Real pav = 0.5 * (pggp + pggm);
-  const amrex::Real dAu = ugp - ugm;
-
-  // QP
-
-  // Convert to conservative
-  const amrex::Real rrr = qzp(iv, QRHO);
-  amrex::Real rur = qzp(iv, QU);
-  amrex::Real rvr = qzp(iv, QV);
-  amrex::Real rwr = qzp(iv, QW);
-  const amrex::Real ekinr = 0.5 * rrr * (rur * rur + rvr * rvr + rwr * rwr);
-  rur *= rrr;
-  rvr *= rrr;
-  rwr *= rrr;
-
-  const amrex::Real rer = qzp(iv, QREINT) + ekinr;
-  // Add transverse predictor
-  const amrex::Real rrnewr = rrr - flxrho;
-  const amrex::Real runewr = rur - flxu;
-  const amrex::Real rvnewr = rvr - flxv;
-  const amrex::Real rwnewr = rwr - flxw;
-  const amrex::Real renewr = rer - flxe;
-
-  // Convert back to primitive
-  qp(iv, QRHO) = rrnewr;
-  qp(iv, QU) = runewr / rrnewr;
-  qp(iv, QV) = rvnewr / rrnewr;
-  qp(iv, QW) = rwnewr / rrnewr;
-  const amrex::Real rhoekinr =
-    0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
-  const amrex::Real pnewr =
-    qzp(iv, QPRES) - cdtdx * (dAup + pav * dAu * (c - 1.0));
-  qp(iv, QPRES) =
-    amrex::max<amrex::Real>(pnewr, std::numeric_limits<amrex::Real>::min());
-  qp(iv, QREINT) = renewr - rhoekinr;
-  // QM
-
-  // Conversion to Conservative
-  const amrex::Real rrl = qzm(ivp1, QRHO);
-  amrex::Real rul = qzm(ivp1, QU);
-  amrex::Real rvl = qzm(ivp1, QV);
-  amrex::Real rwl = qzm(ivp1, QW);
-  const amrex::Real ekinl = 0.5 * rrl * (rul * rul + rvl * rvl + rwl * rwl);
-  rul *= rrl;
-  rvl *= rrl;
-  rwl *= rrl;
-  const amrex::Real rel = qzm(ivp1, QREINT) + ekinl;
-
-  // Transverse fluxes
-  const amrex::Real rrnewl = rrl - flxrho;
-  const amrex::Real runewl = rul - flxu;
-  const amrex::Real rvnewl = rvl - flxv;
-  const amrex::Real rwnewl = rwl - flxw;
-  const amrex::Real renewl = rel - flxe;
-
-  qm(ivp1, QRHO) = rrnewl;
-  qm(ivp1, QU) = runewl / rrnewl;
-  qm(ivp1, QV) = rvnewl / rrnewl;
-  qm(ivp1, QW) = rwnewl / rrnewl;
-  const amrex::Real rhoekinl =
-    0.5 * (runewl * runewl + rvnewl * rvnewl + rwnewl * rwnewl) / rrnewl;
-
-  qm(ivp1, QREINT) = renewl - rhoekinl;
-  const amrex::Real pnewl =
-    qzm(ivp1, QPRES) - cdtdx * (dAup + pav * dAu * (c - 1.0));
   qm(ivp1, QPRES) =
     amrex::max<amrex::Real>(pnewl, std::numeric_limits<amrex::Real>::min());
 }
