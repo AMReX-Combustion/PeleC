@@ -236,16 +236,14 @@ pc_transx1(
   amrex::IntVect ivp0(iv);
   amrex::IntVect ivp1(iv);
   int qvidx = -1;
+  ivp0[dir]++;
   if (dir == 0) {
-    ivp0[0]++;
     ivp1[1]++;
     qvidx = GDU;
   } else if (dir == 1) {
-    ivp0[1]++;
     ivp1[0]++;
     qvidx = GDV;
   } else if (dir == 2) {
-    ivp0[2]++;
     ivp1[0]++;
     qvidx = GDW;
   }
@@ -369,16 +367,14 @@ pc_transx2(
   amrex::IntVect ivp0(iv);
   amrex::IntVect ivp1(iv);
   int qvidx = -1;
+  ivp0[dir]++;
   if (dir == 0) {
-    ivp0[0]++;
     ivp1[2]++;
     qvidx = GDU;
   } else if (dir == 1) {
-    ivp0[1]++;
     ivp1[2]++;
     qvidx = GDV;
   } else if (dir == 2) {
-    ivp0[2]++;
     ivp1[1]++;
     qvidx = GDW;
   }
