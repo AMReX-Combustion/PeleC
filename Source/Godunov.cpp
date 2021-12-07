@@ -281,8 +281,8 @@ pc_umeth_3D(
         i, j, k, 0, qmyx, qpyx, qymarr, qyparr, fxarr, qaux, gdtempx, cdtdx,
         *lpmap);
       // Y|Z
-      pc_transz2(
-        i, j, k, qmyz, qpyz, qymarr, qyparr, fzarr, qaux, gdtempz, cdtdz,
+      pc_transx2(
+        i, j, k, 2, qmyz, qpyz, qymarr, qyparr, fzarr, qaux, gdtempz, cdtdz,
         *lpmap);
     });
 
@@ -344,11 +344,11 @@ pc_umeth_3D(
     tzbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       // Z|X
       pc_transx2(
-        i, j, k, qmzx, qpzx, qzmarr, qzparr, fxarr, qaux, gdtempx, cdtdx,
+        i, j, k, 0, qmzx, qpzx, qzmarr, qzparr, fxarr, qaux, gdtempx, cdtdx,
         *lpmap);
       // Z|Y
-      pc_transy2(
-        i, j, k, qmzy, qpzy, qzmarr, qzparr, fyarr, qaux, gdtempy, cdtdy,
+      pc_transx2(
+        i, j, k, 1, qmzy, qpzy, qzmarr, qzparr, fyarr, qaux, gdtempy, cdtdy,
         *lpmap);
     });
 
