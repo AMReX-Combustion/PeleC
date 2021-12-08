@@ -89,7 +89,7 @@ pc_plm_d(
   PassMap const& pmap)
 {
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-  amrex::IntVect ivp(iv + amrex::IntVect::TheDimensionVector(dir));
+  const amrex::IntVect ivp(iv + amrex::IntVect::TheDimensionVector(dir));
   const amrex::GpuArray<const int, 3> bdim{{dir == 0, dir == 1, dir == 2}};
   const amrex::GpuArray<const int, 3> l_idx{
     {bdim[0] * 0 + bdim[1] * 1 + bdim[2] * 2,
