@@ -360,25 +360,16 @@ pc_transdd(
   PassMap const& pmap)
 {
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-  amrex::IntVect ivp0(iv);
-  amrex::IntVect ivp1(iv);
-  amrex::IntVect ivp2(iv);
   const int qvidx0 = (dir == 0) ? GDV : ((dir == 1) ? GDU : GDU);
   const int qvidx1 = (dir == 0) ? GDW : ((dir == 1) ? GDW : GDV);
-
-  if (dir == 0) {
-    ivp0[1]++;
-    ivp1[2]++;
-    ivp2[0]++;
-  } else if (dir == 1) {
-    ivp0[0]++;
-    ivp1[2]++;
-    ivp2[1]++;
-  } else if (dir == 2) {
-    ivp0[0]++;
-    ivp1[1]++;
-    ivp2[2]++;
-  }
+  const amrex::GpuArray<const int, 3> bdim{{dir == 0, dir == 1, dir == 2}};
+  const amrex::GpuArray<const int, 3> l_idx{
+    {bdim[0] * 0 + bdim[1] * 1 + bdim[2] * 2,
+     bdim[0] * 1 + bdim[1] * 0 + bdim[2] * 0,
+     bdim[0] * 2 + bdim[1] * 2 + bdim[2] * 1}};
+  const amrex::IntVect ivp0(iv + amrex::IntVect::TheDimensionVector(l_idx[1]));
+  const amrex::IntVect ivp1(iv + amrex::IntVect::TheDimensionVector(l_idx[2]));
+  const amrex::IntVect ivp2(iv + amrex::IntVect::TheDimensionVector(dir));
 
   const amrex::Real flxrho = cdtdx * (flxx(ivp0, URHO) - flxx(iv, URHO)) +
                              cdtdy * (flxy(ivp1, URHO) - flxy(iv, URHO));
@@ -508,18 +499,12 @@ pc_transd(
   PassMap const& pmap)
 {
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-  amrex::IntVect ivp0(iv);
-  amrex::IntVect ivp1(iv);
-  int qvidx = -1;
-  if (dir == 0) {
-    ivp0[1]++;
-    ivp1[0]++;
-    qvidx = GDV;
-  } else if (dir == 1) {
-    ivp0[0]++;
-    ivp1[1]++;
-    qvidx = GDU;
-  }
+  const amrex::IntVect ivp0(
+    iv + amrex::IntVect::TheDimensionVector(dir == 0 ? 1 : 0));
+  const amrex::IntVect ivp1(
+    iv + amrex::IntVect::TheDimensionVector(dir == 0 ? 0 : 1));
+  const int qvidx = (dir == 0) ? GDV : GDU;
+
   const amrex::Real flxrho = cdtdx * (flxx(ivp0, URHO) - flxx(iv, URHO));
   const amrex::Real flxu = cdtdx * (flxx(ivp0, UMX) - flxx(iv, UMX));
   const amrex::Real flxv = cdtdx * (flxx(ivp0, UMY) - flxx(iv, UMY));
