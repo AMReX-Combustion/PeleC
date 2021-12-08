@@ -115,8 +115,8 @@ pc_plm_d(
   const amrex::Real alpha0e = drhoe - dp * enth;
   AMREX_D_TERM(, const amrex::Real alpha0v = dvel[l_idx[1]];
                , const amrex::Real alpha0w = dvel[l_idx[2]];)
-  const amrex::GpuArray<amrex::Real, 3> wv = {vel[dir] - cc, vel[dir],
-                                              vel[dir] + cc};
+  const amrex::GpuArray<amrex::Real, 3> wv = {
+    vel[dir] - cc, vel[dir], vel[dir] + cc};
 
   //  Construct the right state on the i-1/2 interface
   amrex::Real rho_ref =
