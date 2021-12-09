@@ -236,7 +236,6 @@ PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
         amrex::Abort("Body state incompatible with checkpointed version");
       }
       const auto bx = bstate_fab.box();
-      amrex::IntVect iv(bx.smallEnd());
       auto const& bstate_arr = bstate_fab.array();
       amrex::Gpu::DeviceVector<amrex::Real> local_body_state(NVAR, -1);
       amrex::Real* p_body_state = local_body_state.begin();
