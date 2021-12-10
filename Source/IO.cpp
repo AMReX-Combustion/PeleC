@@ -235,10 +235,18 @@ PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
       if (bstate_fab.nComp() != NVAR) {
         amrex::Abort("Body state incompatible with checkpointed version");
       }
-      amrex::IntVect iv(bstate_fab.box().smallEnd());
-      for (int n = 0; n < NVAR; ++n) {
-        body_state[n] = bstate_fab(iv, n);
-      }
+      const auto bx = bstate_fab.box();
+      auto const& bstate_arr = bstate_fab.array();
+      amrex::Gpu::DeviceVector<amrex::Real> local_body_state(NVAR, -1);
+      amrex::Real* p_body_state = local_body_state.begin();
+      amrex::ParallelFor(
+        bx, NVAR, [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
+          p_body_state[n] = bstate_arr(i, j, k, n);
+        });
+
+      amrex::Gpu::copy(
+        amrex::Gpu::deviceToHost, local_body_state.begin(),
+        local_body_state.end(), body_state.begin());
     }
     amrex::ParallelDescriptor::Bcast(
       &(body_state[0]), body_state.size(), // NOLINT
@@ -364,10 +372,14 @@ PeleC::checkPoint(
   if (current_version > 0) {
     if (amrex::ParallelDescriptor::IOProcessor() && eb_in_domain) {
       amrex::IntVect iv(AMREX_D_DECL(0, 0, 0));
-      amrex::FArrayBox bstate_fab(amrex::Box(iv, iv), NVAR);
-      for (int n = 0; n < NVAR; ++n) {
-        bstate_fab(iv, n) = body_state[n];
-      }
+      const amrex::Box bx(iv, iv);
+      amrex::FArrayBox bstate_fab(bx, NVAR);
+      auto const& bstate_arr = bstate_fab.array();
+      auto const captured_body_state = body_state;
+      amrex::ParallelFor(
+        bx, NVAR, [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
+          bstate_arr(i, j, k, n) = captured_body_state[n];
+        });
 
       std::ofstream BodyFile;
       std::string FullPathBodyFile = dir;
