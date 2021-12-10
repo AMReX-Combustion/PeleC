@@ -641,7 +641,7 @@ pc_artif_visc(
   const int j,
   const int k,
   amrex::Array4<amrex::Real> const& flx,
-  amrex::Array4<const amrex::Real> const& div,
+  amrex::Array4<const amrex::Real> const& divu,
   amrex::Array4<const amrex::Real> const& u,
   amrex::Real const dx,
   amrex::Real const difmag,
@@ -660,15 +660,15 @@ pc_artif_visc(
   const amrex::IntVect ivpp(
     iv + amrex::IntVect::TheDimensionVector(l_idx[1]) +
     amrex::IntVect::TheDimensionVector(l_idx[2]));
-  const amrex::Real div1 =
+  const amrex::Real div =
     difmag * amrex::min<amrex::Real>(
                0.0, AMREX_D_PICK(
-                      div(iv), 0.5 * (div(iv) + div(ivpj)),
-                      0.25 * (div(iv) + div(ivpj) + div(ivpk) + div(ivpp))));
+                      divu(iv), 0.5 * (divu(iv) + divu(ivpj)),
+                      0.25 * (divu(iv) + divu(ivpj) + divu(ivpk) + divu(ivpp))));
 
   for (int n = 0; n < NVAR; ++n) {
     if (n != UTEMP) {
-      flx(iv, n) += dx * div1 * (u(iv, n) - u(ivm, n));
+      flx(iv, n) += dx * div * (u(iv, n) - u(ivm, n));
     }
   }
   flx(iv, UTEMP) = 0.0;
