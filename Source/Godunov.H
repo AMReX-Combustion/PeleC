@@ -661,10 +661,10 @@ pc_artif_visc(
     iv + amrex::IntVect::TheDimensionVector(l_idx[1]) +
     amrex::IntVect::TheDimensionVector(l_idx[2]));
   const amrex::Real div1 =
-    difmag *
-    amrex::min<amrex::Real>(
-      0.0, AMREX_D_PICK(div(iv), 0.5 * (div(iv) + div(ivpj)),
-                        0.25 * (div(iv) + div(ivpj) + div(ivpk) + div(ivpp))));
+    difmag * amrex::min<amrex::Real>(
+               0.0, AMREX_D_PICK(
+                      div(iv), 0.5 * (div(iv) + div(ivpj)),
+                      0.25 * (div(iv) + div(ivpj) + div(ivpk) + div(ivpp))));
 
   for (int n = 0; n < NVAR; ++n) {
     if (n != UTEMP) {
