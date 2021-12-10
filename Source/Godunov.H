@@ -656,7 +656,6 @@ pc_artif_visc(
     div1 = difmag * amrex::min<amrex::Real>(0.0, div1);
     for (int n = 0; n < NVAR; ++n) {
       if (n != UTEMP) {
-        // Passing in difmag TODO not pass in.
         flx(i, j, k, n) += dx * div1 * (u(i, j, k, n) - u(i - 1, j, k, n));
       }
     }
