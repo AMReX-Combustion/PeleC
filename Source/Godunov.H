@@ -647,41 +647,26 @@ pc_artif_visc(
   amrex::Real const difmag,
   const int dir)
 {
-  amrex::Real div1;
-  if (dir == 0) { // X direction
-    AMREX_D_PICK(div1 = div(i, j, k);
-                 , div1 = 0.5 * (div(i, j, k) + div(i, j + 1, k));
-                 , div1 = 0.25 * (div(i, j, k) + div(i, j + 1, k) +
-                                  div(i, j, k + 1) + div(i, j + 1, k + 1)););
-    div1 = difmag * amrex::min<amrex::Real>(0.0, div1);
+  const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
+  const amrex::IntVect ivm(iv - amrex::IntVect::TheDimensionVector(dir));
+  const amrex::GpuArray<const int, 3> bdim{{dir == 0, dir == 1, dir == 2}};
+  const amrex::GpuArray<const int, 3> l_idx{
+    {bdim[0] * 0 + bdim[1] * 1 + bdim[2] * 2,
+     bdim[0] * 1 + bdim[1] * 0 + bdim[2] * 0,
+     bdim[0] * 2 + bdim[1] * 2 + bdim[2] * 1}};
+
+  const amrex::IntVect ivpj(iv + amrex::IntVect::TheDimensionVector(l_idx[1]));
+  const amrex::IntVect ivpk(iv + amrex::IntVect::TheDimensionVector(l_idx[2]));
+  const amrex::IntVect ivpp(iv + amrex::IntVect::TheDimensionVector(l_idx[1]) + amrex::IntVect::TheDimensionVector(l_idx[2]));
+  const amrex::Real div1 = difmag * amrex::min<amrex::Real>(0.0,AMREX_D_PICK(div(iv), 0.5 * (div(iv) + div(ivpj)), 0.25 * (div(iv) + div(ivpj) +
+                                                                                                                                       div(ivpk) + div(ivpp));));
+  
     for (int n = 0; n < NVAR; ++n) {
       if (n != UTEMP) {
-        flx(i, j, k, n) += dx * div1 * (u(i, j, k, n) - u(i - 1, j, k, n));
+        flx(iv, n) += dx * div1 * (u(iv, n) - u(ivm, n));
       }
     }
-  } else if (dir == 1) { // Y direction
-    AMREX_D_PICK(, div1 = 0.5 * (div(i, j, k) + div(i + 1, j, k));
-                 , div1 = 0.25 * (div(i, j, k) + div(i + 1, j, k) +
-                                  div(i, j, k + 1) + div(i + 1, j, k + 1)););
-    div1 = difmag * amrex::min<amrex::Real>(0.0, div1);
-    for (int n = 0; n < NVAR; ++n) {
-      if (n != UTEMP) {
-        flx(i, j, k, n) +=
-          dx * div1 * (u(i, j, k, n) - u(i, j - 1, k, n)); // Here dx is dy
-      }
-    }
-  } else { // Z direction
-    div1 = 0.25 * (div(i, j, k) + div(i + 1, j, k) + div(i, j + 1, k) +
-                   div(i + 1, j + 1, k));
-    div1 = difmag * amrex::min<amrex::Real>(0.0, div1);
-    for (int n = 0; n < NVAR; ++n) {
-      if (n != UTEMP) {
-        flx(i, j, k, n) +=
-          dx * div1 * (u(i, j, k, n) - u(i, j, k - 1, n)); // Here dx is dz
-      }
-    }
-  }
-  flx(i, j, k, UTEMP) = 0.0;
+  flx(iv, UTEMP) = 0.0;
 }
 
 // Host Functions
