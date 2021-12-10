@@ -657,15 +657,20 @@ pc_artif_visc(
 
   const amrex::IntVect ivpj(iv + amrex::IntVect::TheDimensionVector(l_idx[1]));
   const amrex::IntVect ivpk(iv + amrex::IntVect::TheDimensionVector(l_idx[2]));
-  const amrex::IntVect ivpp(iv + amrex::IntVect::TheDimensionVector(l_idx[1]) + amrex::IntVect::TheDimensionVector(l_idx[2]));
-  const amrex::Real div1 = difmag * amrex::min<amrex::Real>(0.0,AMREX_D_PICK(div(iv), 0.5 * (div(iv) + div(ivpj)), 0.25 * (div(iv) + div(ivpj) +
-                                                                                                                                       div(ivpk) + div(ivpp));));
-  
-    for (int n = 0; n < NVAR; ++n) {
-      if (n != UTEMP) {
-        flx(iv, n) += dx * div1 * (u(iv, n) - u(ivm, n));
-      }
+  const amrex::IntVect ivpp(
+    iv + amrex::IntVect::TheDimensionVector(l_idx[1]) +
+    amrex::IntVect::TheDimensionVector(l_idx[2]));
+  const amrex::Real div1 =
+    difmag *
+    amrex::min<amrex::Real>(
+      0.0, AMREX_D_PICK(div(iv), 0.5 * (div(iv) + div(ivpj)),
+                        0.25 * (div(iv) + div(ivpj) + div(ivpk) + div(ivpp));));
+
+  for (int n = 0; n < NVAR; ++n) {
+    if (n != UTEMP) {
+      flx(iv, n) += dx * div1 * (u(iv, n) - u(ivm, n));
     }
+  }
   flx(iv, UTEMP) = 0.0;
 }
 
