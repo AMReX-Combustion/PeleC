@@ -217,7 +217,7 @@ PeleC::construct_hydro_source(
         pc_umdrv(
           is_finest_level, time, fbx, domain_lo, domain_hi, phys_bc.lo(),
           phys_bc.hi(), s, hyd_src, qarr, qauxar, srcqarr, dx, dt, ppm_type,
-          use_flattening, flx_arr, a, volume.array(mfi), cflLoc);
+          use_flattening, difmag, flx_arr, a, volume.array(mfi), cflLoc);
         BL_PROFILE_VAR_STOP(purm);
 
         BL_PROFILE_VAR("courno + flux reg", crno);
@@ -352,6 +352,7 @@ pc_umdrv(
   const amrex::Real dt,
   const int ppm_type,
   const int use_flattening,
+  const amrex::Real difmag,
   const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
     a,
@@ -375,7 +376,7 @@ pc_umdrv(
   amrex::FArrayBox pdivu(bx, 1);
   amrex::Elixir divueli = divu.elixir();
   amrex::Elixir pdiveli = pdivu.elixir();
-  auto const& divarr = divu.array();
+  auto const& divuarr = divu.array();
   auto const& pdivuarr = pdivu.array();
 
   BL_PROFILE_VAR("PeleC::umeth()", umeth);
@@ -404,12 +405,11 @@ pc_umdrv(
   AMREX_D_TERM(const amrex::Real dx0 = dx[0];, const amrex::Real dx1 = dx[1];
                , const amrex::Real dx2 = dx[2];);
   amrex::ParallelFor(bxg2, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_divu(i, j, k, q, AMREX_D_DECL(dx0, dx1, dx2), divarr);
+    pc_divu(i, j, k, q, AMREX_D_DECL(dx0, dx1, dx2), divuarr);
   });
 
   // consup
-  amrex::Real difmag = 0.1;
-  pc_consup(bx, uin, uout, flx, a, vol, divarr, pdivuarr, dx, difmag);
+  pc_consup(bx, uin, uout, flx, a, vol, divuarr, pdivuarr, dx, difmag);
 }
 
 void
@@ -421,7 +421,7 @@ pc_consup(
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
     a,
   amrex::Array4<const amrex::Real> const& vol,
-  amrex::Array4<const amrex::Real> const& div,
+  amrex::Array4<const amrex::Real> const& divu,
   amrex::Array4<const amrex::Real> const& pdivu,
   amrex::Real const* del,
   amrex::Real const difmag)
@@ -431,7 +431,7 @@ pc_consup(
     amrex::Box const& fbx = surroundingNodes(bx, dir);
     const amrex::Real dx = del[dir];
     amrex::ParallelFor(fbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      pc_artif_visc(i, j, k, flx[dir], div, u, dx, difmag, dir);
+      pc_artif_visc(i, j, k, flx[dir], divu, u, dx, difmag, dir);
       // Normalize Species Flux
       pc_norm_spec_flx(i, j, k, flx[dir]);
       // Make flux extensive
