@@ -154,21 +154,16 @@ get_weightvec(
   amrex::Real r13 = qmat[3];
   amrex::Real r23 = qmat[4];
   amrex::Real r33 = qmat[5];
-#endif
-
-  amrex::Real alpha_ij_1, alpha_ij_2;
-
-#if AMREX_SPACEDIM > 2
-  amrex::Real alpha_ij_3;
   amrex::Real beta = (r12 * r23 - r13 * r22) / (r11 * r22);
 #endif
 
   for (int i = 0; i < N; i++) {
-    alpha_ij_1 = delta_x_i[i] / (r11 * r11);
-    alpha_ij_2 = (delta_y_i[i] - r12 / r11 * delta_x_i[i]) / (r22 * r22);
+    amrex::Real alpha_ij_1 = delta_x_i[i] / (r11 * r11);
+    amrex::Real alpha_ij_2 =
+      (delta_y_i[i] - r12 / r11 * delta_x_i[i]) / (r22 * r22);
 
 #if AMREX_SPACEDIM > 2
-    alpha_ij_3 =
+    amrex::Real alpha_ij_3 =
       (delta_z_i[i] - r23 / r22 * delta_y_i[i] + beta * delta_x_i[i]) /
       (r33 * r33);
 #endif

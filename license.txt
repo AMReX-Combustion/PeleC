@@ -1,8 +1,9 @@
-PeleC Copyright (c) 2018, Alliance for Sustainable Energy, LLC., 
-through National Renewable Energy Laboratory and the The Regents 
+PeleC Copyright (c) 2021, Alliance for Sustainable Energy, LLC., 
+through National Renewable Energy Laboratory, the Regents 
 of the University of California, through Lawrence Berkeley 
-National Laboratory (subject to receipt of any required approvals 
-from the U.S. Dept. of Energy).  All rights reserved.
+National Laboratory, National Technology and Engineering Solutions
+of Sandia, LLC, and UT-Battelle, LLC (subject to receipt of any
+required approvals from the U.S. Dept. of Energy).  All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -17,7 +18,8 @@ documentation and/or other materials provided with the distribution.
 
 (3) Neither the name of the University of California, Lawrence
 Berkeley National Laboratory, Alliance for Sustainable Energy, LLC.,
-National Renewable Energy Laboratory, U.S. Dept. of Energy nor the
+National Renewable Energy Laboratory, National Technology and Engineering Solutions
+of Sandia LLC, UT-Battelle LLC, U.S. Dept. of Energy, nor the
 names of its contributors may be used to endorse or promote products
 derived from this software without specific prior written permission.
 
