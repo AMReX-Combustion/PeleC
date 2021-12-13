@@ -54,7 +54,7 @@ pc_compute_hyp_mol_flux(
       amrex::ParallelFor(
         cbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
           mol_slope(
-            i, j, k, bdim, q_idx, q, qaux, dq
+            i, j, k, dir, q_idx, q, qaux, dq
 #ifdef PELEC_USE_EB
             ,
             flags
@@ -66,27 +66,26 @@ pc_compute_hyp_mol_flux(
     const amrex::Box ebox = amrex::surroundingNodes(tbox, dir);
     amrex::ParallelFor(
       ebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-        const int ii = i - bdim[0];
-        const int jj = j - bdim[1];
-        const int kk = k - bdim[2];
+        const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
+        const amrex::IntVect ivm(iv - amrex::IntVect::TheDimensionVector(dir));
 
         amrex::Real qtempl[5 + NUM_SPECIES] = {0.0};
         qtempl[R_UN] =
-          q(ii, jj, kk, q_idx[0]) +
-          0.5 * ((dq(ii, jj, kk, 1) - dq(ii, jj, kk, 0)) / q(ii, jj, kk, QRHO));
+          q(ivm, q_idx[0]) +
+          0.5 * ((dq(ivm, 1) - dq(ivm, 0)) / q(ivm, QRHO));
         qtempl[R_P] =
-          q(ii, jj, kk, QPRES) +
-          0.5 * (dq(ii, jj, kk, 0) + dq(ii, jj, kk, 1)) * qaux(ii, jj, kk, QC);
-        qtempl[R_UT1] = q(ii, jj, kk, q_idx[1]) + 0.5 * dq(ii, jj, kk, 2);
+          q(ivm, QPRES) +
+          0.5 * (dq(ivm, 0) + dq(ivm, 1)) * qaux(ivm, QC);
+        qtempl[R_UT1] = q(ivm, q_idx[1]) + 0.5 * dq(ivm, 2);
         qtempl[R_UT2] = AMREX_D_PICK(
-          0.0, 0.0, q(ii, jj, kk, q_idx[2]) + 0.5 * dq(ii, jj, kk, 3));
+          0.0, 0.0, q(ivm, q_idx[2]) + 0.5 * dq(ivm, 3));
         qtempl[R_RHO] = 0.0;
         for (int n = 0; n < NUM_SPECIES; n++) {
-          qtempl[R_Y + n] = q(ii, jj, kk, QFS + n) * q(ii, jj, kk, QRHO) +
-                            0.5 * (dq(ii, jj, kk, 4 + n) +
-                                   q(ii, jj, kk, QFS + n) *
-                                     (dq(ii, jj, kk, 0) + dq(ii, jj, kk, 1)) /
-                                     qaux(ii, jj, kk, QC));
+          qtempl[R_Y + n] = q(ivm, QFS + n) * q(ivm, QRHO) +
+                            0.5 * (dq(ivm, 4 + n) +
+                                   q(ivm, QFS + n) *
+                                     (dq(ivm, 0) + dq(ivm, 1)) /
+                                     qaux(ivm, QC));
           qtempl[R_RHO] += qtempl[R_Y + n];
         }
 
@@ -96,21 +95,21 @@ pc_compute_hyp_mol_flux(
 
         amrex::Real qtempr[5 + NUM_SPECIES] = {0.0};
         qtempr[R_UN] =
-          q(i, j, k, q_idx[0]) -
-          0.5 * ((dq(i, j, k, 1) - dq(i, j, k, 0)) / q(i, j, k, QRHO));
-        qtempr[R_P] = q(i, j, k, QPRES) - 0.5 *
-                                            (dq(i, j, k, 0) + dq(i, j, k, 1)) *
-                                            qaux(i, j, k, QC);
-        qtempr[R_UT1] = q(i, j, k, q_idx[1]) - 0.5 * dq(i, j, k, 2);
+          q(iv, q_idx[0]) -
+          0.5 * ((dq(iv, 1) - dq(iv, 0)) / q(iv, QRHO));
+        qtempr[R_P] = q(iv, QPRES) - 0.5 *
+                                            (dq(iv, 0) + dq(iv, 1)) *
+                                            qaux(iv, QC);
+        qtempr[R_UT1] = q(iv, q_idx[1]) - 0.5 * dq(iv, 2);
         qtempr[R_UT2] =
-          AMREX_D_PICK(0.0, 0.0, q(i, j, k, q_idx[2]) - 0.5 * dq(i, j, k, 3));
+          AMREX_D_PICK(0.0, 0.0, q(iv, q_idx[2]) - 0.5 * dq(iv, 3));
         qtempr[R_RHO] = 0.0;
         for (int n = 0; n < NUM_SPECIES; n++) {
           qtempr[R_Y + n] =
-            q(i, j, k, QFS + n) * q(i, j, k, QRHO) -
-            0.5 * (dq(i, j, k, 4 + n) + q(i, j, k, QFS + n) *
-                                          (dq(i, j, k, 0) + dq(i, j, k, 1)) /
-                                          qaux(i, j, k, QC));
+            q(iv, QFS + n) * q(iv, QRHO) -
+            0.5 * (dq(iv, 4 + n) + q(iv, QFS + n) *
+                                          (dq(iv, 0) + dq(iv, 1)) /
+                                          qaux(iv, QC));
           qtempr[R_RHO] += qtempr[R_Y + n];
         }
         for (int n = 0; n < NUM_SPECIES; n++) {
@@ -118,7 +117,7 @@ pc_compute_hyp_mol_flux(
         }
 
         const amrex::Real cavg =
-          0.5 * (qaux(i, j, k, QC) + qaux(ii, jj, kk, QC));
+          0.5 * (qaux(iv, QC) + qaux(ivm, QC));
 
         amrex::Real spl[NUM_SPECIES];
         for (int n = 0; n < NUM_SPECIES; n++) {
@@ -187,7 +186,7 @@ pc_compute_hyp_mol_flux(
         }
 
         for (int ivar = 0; ivar < NVAR; ivar++) {
-          flx[dir](i, j, k, ivar) += flux_tmp[ivar] * area[dir](i, j, k);
+          flx[dir](iv, ivar) += flux_tmp[ivar] * area[dir](i, j, k);
         }
       });
   }

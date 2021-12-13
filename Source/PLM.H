@@ -26,16 +26,20 @@ plm_slope(
   const int dir,
   amrex::Array4<const amrex::Real> const& q)
 {
-  const int bdim[3] = {dir == 0, dir == 1, dir == 2};
-
+  const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
+  const amrex::IntVect ivm2(iv - 2 * amrex::IntVect::TheDimensionVector(dir));
+  const amrex::IntVect ivm(iv - amrex::IntVect::TheDimensionVector(dir));
+  const amrex::IntVect ivp(iv + amrex::IntVect::TheDimensionVector(dir));
+  const amrex::IntVect ivp2(iv + 2 * amrex::IntVect::TheDimensionVector(dir));
+  
   amrex::Real dlft, drgt, dcen, dfm, dfp, dlim, dsgn, dtemp;
-  const amrex::Real qc = q(i, j, k, n);
-  const amrex::Real qm =
-    q(i - 1 * bdim[0], j - 1 * bdim[1], k - 1 * bdim[2], n);
-  const amrex::Real qp =
-    q(i + 1 * bdim[0], j + 1 * bdim[1], k + 1 * bdim[2], n);
+  const amrex::Real qc = q(iv, n);
+  const amrex::Real qm2 = q(ivm2, n);
+  const amrex::Real qm = q(ivm, n);
+  const amrex::Real qp = q(ivp, n);
+  const amrex::Real qp2 = q(ivp2, n);
 
-  dlft = qm - q(i - 2 * bdim[0], j - 2 * bdim[1], k - 2 * bdim[2], n);
+  dlft = qm - qm2;
   drgt = qc - qm;
   dcen = 0.5 * (dlft + drgt);
   dsgn = amrex::Math::copysign(1.0, dcen);
@@ -46,7 +50,7 @@ plm_slope(
   dfm = dsgn * amrex::min<amrex::Real>(dlim, amrex::Math::abs(dcen));
 
   dlft = qp - qc;
-  drgt = q(i + 2 * bdim[0], j + 2 * bdim[1], k + 2 * bdim[2], n) - qp;
+  drgt = qp2 - qp;
   dcen = 0.5 * (dlft + drgt);
   dsgn = amrex::Math::copysign(1.0, dcen);
   dlim = (dlft * drgt >= 0.0)
