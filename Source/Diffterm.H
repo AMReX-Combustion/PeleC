@@ -28,12 +28,8 @@ struct SpeciesEnergyFlux
 {
   AMREX_GPU_DEVICE
   void operator()(
-    const int i,
-    const int j,
-    const int k,
-    const int im,
-    const int jm,
-    const int km,
+    const amrex::IntVect iv,
+    const amrex::IntVect ivm,
     const amrex::Real dxinv,
     const amrex::Real coef[],
     const amrex::Array4<const amrex::Real>& q,
@@ -46,24 +42,23 @@ struct SpeciesEnergyFlux
     amrex::Real mole1[NUM_SPECIES], mole2[NUM_SPECIES];
     amrex::Real hi1[NUM_SPECIES], hi2[NUM_SPECIES];
     for (int ns = 0; ns < NUM_SPECIES; ++ns) {
-      mass1[ns] = q(i, j, k, ns + QFS);
+      mass1[ns] = q(iv, ns + QFS);
     }
     eos.Y2X(mass1, mole1);
     for (int ns = 0; ns < NUM_SPECIES; ++ns) {
-      mass2[ns] = q(im, jm, km, ns + QFS);
+      mass2[ns] = q(ivm, ns + QFS);
     }
     eos.Y2X(mass2, mole2);
 
     // Compute species and enthalpy fluxes for ideal EOS
     // Get species/enthalpy diffusion, compute correction vel
-    amrex::Real T = q(i, j, k, QTEMP);
+    amrex::Real T = q(iv, QTEMP);
     eos.T2Hi(T, hi1);
-    T = q(im, jm, km, QTEMP);
+    T = q(ivm, QTEMP);
     eos.T2Hi(T, hi2);
     amrex::Real Vc = 0.0;
-    const amrex::Real dpdx = dxinv * (q(i, j, k, QPRES) - q(im, jm, km, QPRES));
-    const amrex::Real dlnp =
-      dpdx / (0.5 * (q(i, j, k, QPRES) + q(im, jm, km, QPRES)));
+    const amrex::Real dpdx = dxinv * (q(iv, QPRES) - q(ivm, QPRES));
+    const amrex::Real dlnp = dpdx / (0.5 * (q(iv, QPRES) + q(ivm, QPRES)));
     for (int ns = 0; ns < NUM_SPECIES; ++ns) {
       const amrex::Real Xface = 0.5 * (mole1[ns] + mole2[ns]);
       const amrex::Real Yface = 0.5 * (mass1[ns] + mass2[ns]);
@@ -71,16 +66,16 @@ struct SpeciesEnergyFlux
       const amrex::Real dXdx = dxinv * (mole1[ns] - mole2[ns]);
       const amrex::Real Vd =
         -coef[dComp_rhoD + ns] * (dXdx + (Xface - Yface) * dlnp);
-      flx(i, j, k, UFS + ns) = Vd;
+      flx(iv, UFS + ns) = Vd;
       Vc += Vd;
-      flx(i, j, k, UEDEN) += Vd * hface;
+      flx(iv, UEDEN) += Vd * hface;
     }
     // Add correction velocity to fluxes
     for (int ns = 0; ns < NUM_SPECIES; ++ns) {
       const amrex::Real Yface = 0.5 * (mass1[ns] + mass2[ns]);
       const amrex::Real hface = 0.5 * (hi1[ns] + hi2[ns]);
-      flx(i, j, k, UFS + ns) -= Yface * Vc;
-      flx(i, j, k, UEDEN) -= Yface * hface * Vc;
+      flx(iv, UFS + ns) -= Yface * Vc;
+      flx(iv, UEDEN) -= Yface * hface * Vc;
     }
   }
 };
@@ -90,12 +85,8 @@ struct SpeciesEnergyFlux<pele::physics::eos::SRK>
 {
   AMREX_GPU_DEVICE
   void operator()(
-    const int i,
-    const int j,
-    const int k,
-    const int im,
-    const int jm,
-    const int km,
+    const amrex::IntVect iv,
+    const amrex::IntVect ivm,
     const amrex::Real dxinv,
     const amrex::Real coef[],
     const amrex::Array4<const amrex::Real>& q,
@@ -108,11 +99,11 @@ struct SpeciesEnergyFlux<pele::physics::eos::SRK>
     amrex::Real mole1[NUM_SPECIES], mole2[NUM_SPECIES];
     amrex::Real hi1[NUM_SPECIES], hi2[NUM_SPECIES];
     for (int ns = 0; ns < NUM_SPECIES; ++ns) {
-      mass1[ns] = q(i, j, k, ns + QFS);
+      mass1[ns] = q(iv, ns + QFS);
     }
     eos.Y2X(mass1, mole1);
     for (int ns = 0; ns < NUM_SPECIES; ++ns) {
-      mass2[ns] = q(im, jm, km, ns + QFS);
+      mass2[ns] = q(ivm, ns + QFS);
     }
     eos.Y2X(mass2, mole2);
 
@@ -122,11 +113,11 @@ struct SpeciesEnergyFlux<pele::physics::eos::SRK>
     // interpolate state to face, then do the EOS calls. Current implementation
     // matches old Fortran code.
 
-    const amrex::Real rho1 = q(i, j, k, QRHO);
-    const amrex::Real rho2 = q(im, jm, km, QRHO);
-    const amrex::Real T1 = q(i, j, k, QTEMP);
-    const amrex::Real T2 = q(im, jm, km, QTEMP);
-    const amrex::Real dpdx = dxinv * (q(i, j, k, QPRES) - q(im, jm, km, QPRES));
+    const amrex::Real rho1 = q(iv, QRHO);
+    const amrex::Real rho2 = q(ivm, QRHO);
+    const amrex::Real T1 = q(iv, QTEMP);
+    const amrex::Real T2 = q(ivm, QTEMP);
+    const amrex::Real dpdx = dxinv * (q(iv, QPRES) - q(ivm, QPRES));
 
     amrex::Real Vc = 0.0;
     amrex::Real diP1[NUM_SPECIES], dijY1[NUM_SPECIES][NUM_SPECIES];
@@ -154,17 +145,17 @@ struct SpeciesEnergyFlux<pele::physics::eos::SRK>
       const amrex::Real hface = 0.5 * (hi1[ns] + hi2[ns]);
       ddrive[ns] -= Yface * dsum;
       const amrex::Real Vd = -coef[dComp_rhoD + ns] * ddrive[ns];
-      flx(i, j, k, UFS + ns) = Vd;
+      flx(iv, UFS + ns) = Vd;
       Vc += Vd;
-      flx(i, j, k, UEDEN) += Vd * hface;
+      flx(iv, UEDEN) += Vd * hface;
     }
 
     // Add correction velocity to fluxes
     for (int ns = 0; ns < NUM_SPECIES; ++ns) {
       const amrex::Real Yface = 0.5 * (mass1[ns] + mass2[ns]);
       const amrex::Real hface = 0.5 * (hi1[ns] + hi2[ns]);
-      flx(i, j, k, UFS + ns) -= Yface * Vc;
-      flx(i, j, k, UEDEN) -= Yface * hface * Vc;
+      flx(iv, UFS + ns) -= Yface * Vc;
+      flx(iv, UEDEN) -= Yface * hface * Vc;
     }
   }
 };
@@ -189,24 +180,21 @@ pc_diffusion_flux(
   const amrex::Real delta,
   const int dir)
 {
-  const int bdim[3] = {dir == 0, dir == 1, dir == 2};
-  const int im = i - bdim[0];
-  const int jm = j - bdim[1];
-  const int km = k - bdim[2];
+  const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
+  const amrex::IntVect ivm(iv - amrex::IntVect::TheDimensionVector(dir));
   const amrex::Real dxinv = 1.0 / delta;
   amrex::Real taux = 0.0, tauy = 0.0, tauz = 0.0;
 
   if (dir == 0) {
-    AMREX_D_TERM(
-      const amrex::Real dudx = dxinv * (q(i, j, k, QU) - q(im, jm, km, QU));
-      , const amrex::Real dvdx = dxinv * (q(i, j, k, QV) - q(im, jm, km, QV));
-      const amrex::Real dudy = td(i, j, k, 0);
-      const amrex::Real dvdy = td(i, j, k, 1);
-      , const amrex::Real dwdx = dxinv * (q(i, j, k, QW) - q(im, jm, km, QW));
-      // const amrex::Real dwdy = td(i, j, k, 2);
-      const amrex::Real dudz = td(i, j, k, 3);
-      // const amrex::Real dvdz = td(i, j, k, 4);
-      const amrex::Real dwdz = td(i, j, k, 5););
+    AMREX_D_TERM(const amrex::Real dudx = dxinv * (q(iv, QU) - q(ivm, QU));
+                 , const amrex::Real dvdx = dxinv * (q(iv, QV) - q(ivm, QV));
+                 const amrex::Real dudy = td(iv, 0);
+                 const amrex::Real dvdy = td(iv, 1);
+                 , const amrex::Real dwdx = dxinv * (q(iv, QW) - q(ivm, QW));
+                 // const amrex::Real dwdy = td(iv, 2);
+                 const amrex::Real dudz = td(iv, 3);
+                 // const amrex::Real dvdz = td(iv, 4);
+                 const amrex::Real dwdz = td(iv, 5););
     const amrex::Real divu = AMREX_D_TERM(dudx, +dvdy, +dwdz);
 
     taux =
@@ -214,16 +202,16 @@ pc_diffusion_flux(
     AMREX_D_TERM(, tauy = coef[dComp_mu] * (dudy + dvdx);
                  , tauz = coef[dComp_mu] * (dudz + dwdx););
   } else if (dir == 1) {
-    const amrex::Real dudx = td(i, j, k, 0);
-    const amrex::Real dvdx = td(i, j, k, 1);
-    const amrex::Real dudy = dxinv * (q(i, j, k, QU) - q(im, jm, km, QU));
-    const amrex::Real dvdy = dxinv * (q(i, j, k, QV) - q(im, jm, km, QV));
+    const amrex::Real dudx = td(iv, 0);
+    const amrex::Real dvdx = td(iv, 1);
+    const amrex::Real dudy = dxinv * (q(iv, QU) - q(ivm, QU));
+    const amrex::Real dvdy = dxinv * (q(iv, QV) - q(ivm, QV));
 #if AMREX_SPACEDIM == 3
-    const amrex::Real dwdy = dxinv * (q(i, j, k, QW) - q(im, jm, km, QW));
-    // const amrex::Real dwdx = td(i, j, k, 2);
-    // const amrex::Real dudz = td(i, j, k, 3);
-    const amrex::Real dvdz = td(i, j, k, 4);
-    const amrex::Real dwdz = td(i, j, k, 5);
+    const amrex::Real dwdy = dxinv * (q(iv, QW) - q(ivm, QW));
+    // const amrex::Real dwdx = td(iv, 2);
+    // const amrex::Real dudz = td(iv, 3);
+    const amrex::Real dvdz = td(iv, 4);
+    const amrex::Real dwdz = td(iv, 5);
     tauz = coef[dComp_mu] * (dwdy + dvdz);
 #endif
     const amrex::Real divu = AMREX_D_TERM(dudx, +dvdy, +dwdz);
@@ -232,15 +220,15 @@ pc_diffusion_flux(
     tauy =
       coef[dComp_mu] * (2.0 * dvdy - 2.0 / 3.0 * divu) + coef[dComp_xi] * divu;
   } else if (dir == 2) {
-    const amrex::Real dudx = td(i, j, k, 0);
-    // const amrex::Real dvdx = td(i, j, k, 1);
-    const amrex::Real dwdx = td(i, j, k, 2);
-    // const amrex::Real dudy = td(i, j, k, 3);
-    const amrex::Real dvdy = td(i, j, k, 4);
-    const amrex::Real dwdy = td(i, j, k, 5);
-    const amrex::Real dudz = dxinv * (q(i, j, k, QU) - q(im, jm, km, QU));
-    const amrex::Real dvdz = dxinv * (q(i, j, k, QV) - q(im, jm, km, QV));
-    const amrex::Real dwdz = dxinv * (q(i, j, k, QW) - q(im, jm, km, QW));
+    const amrex::Real dudx = td(iv, 0);
+    // const amrex::Real dvdx = td(iv, 1);
+    const amrex::Real dwdx = td(iv, 2);
+    // const amrex::Real dudy = td(iv, 3);
+    const amrex::Real dvdy = td(iv, 4);
+    const amrex::Real dwdy = td(iv, 5);
+    const amrex::Real dudz = dxinv * (q(iv, QU) - q(ivm, QU));
+    const amrex::Real dvdz = dxinv * (q(iv, QV) - q(ivm, QV));
+    const amrex::Real dwdz = dxinv * (q(iv, QW) - q(ivm, QW));
     const amrex::Real divu = dudx + dvdy + dwdz;
 
     taux = coef[dComp_mu] * (dudz + dwdx);
@@ -248,25 +236,23 @@ pc_diffusion_flux(
     tauz =
       coef[dComp_mu] * (2.0 * dwdz - 2.0 / 3.0 * divu) + coef[dComp_xi] * divu;
   }
-  flx(i, j, k, UMX) = -taux;
-  flx(i, j, k, UMY) = -tauy;
-  flx(i, j, k, UMZ) = -tauz;
-  flx(i, j, k, UEDEN) =
+  flx(iv, UMX) = -taux;
+  flx(iv, UMY) = -tauy;
+  flx(iv, UMZ) = -tauz;
+  flx(iv, UEDEN) =
     0.5 * (AMREX_D_TERM(
-            -taux * (q(i, j, k, QU) + q(im, jm, km, QU)),
-            -tauy * (q(i, j, k, QV) + q(im, jm, km, QV)),
-            -tauz * (q(i, j, k, QW) + q(im, jm, km, QW)))) -
-    coef[dComp_lambda] * (dxinv * (q(i, j, k, QTEMP) - q(im, jm, km, QTEMP)));
+            -taux * (q(iv, QU) + q(ivm, QU)), -tauy * (q(iv, QV) + q(ivm, QV)),
+            -tauz * (q(iv, QW) + q(ivm, QW)))) -
+    coef[dComp_lambda] * (dxinv * (q(iv, QTEMP) - q(ivm, QTEMP)));
 
-  FluxTypes::SpeciesEnergyFluxType()(i, j, k, im, jm, km, dxinv, coef, q, flx);
+  FluxTypes::SpeciesEnergyFluxType()(iv, ivm, dxinv, coef, q, flx);
 
   // Scale by area
-  AMREX_D_TERM(flx(i, j, k, UMX) *= area(i, j, k);
-               , flx(i, j, k, UMY) *= area(i, j, k);
-               , flx(i, j, k, UMZ) *= area(i, j, k););
-  flx(i, j, k, UEDEN) *= area(i, j, k);
+  AMREX_D_TERM(flx(iv, UMX) *= area(i, j, k);, flx(iv, UMY) *= area(i, j, k);
+               , flx(iv, UMZ) *= area(i, j, k););
+  flx(iv, UEDEN) *= area(i, j, k);
   for (int ns = 0; ns < NUM_SPECIES; ++ns)
-    flx(i, j, k, UFS + ns) *= area(i, j, k);
+    flx(iv, UFS + ns) *= area(i, j, k);
 }
 
 // This function computes the flux divergence.

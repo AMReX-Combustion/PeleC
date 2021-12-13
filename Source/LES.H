@@ -187,8 +187,11 @@ pc_smagorinsky_sfs_term(
   const amrex::Real PrT,
   const amrex::Array4<amrex::Real>& flx)
 {
+
+  const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
+  const amrex::IntVect ivm(iv - amrex::IntVect::TheDimensionVector(dir));
+
   // SFS stress
-  const int bdim[3] = {dir == 0, dir == 1, dir == 2};
   const amrex::Real dxinv = 1.0 / dx;
   const amrex::Real deltabar = dx;
   const amrex::Real Cs2 = Cs * Cs;
@@ -207,43 +210,41 @@ pc_smagorinsky_sfs_term(
       i, j, k, q, td, dxinv, deltabar, alphaij[0], alphaij[1], alphaij[2],
       alpha, flux_T);
   }
-  const amrex::Real sigmadx = Cs2 * alphaij[0] - third * CI * alpha * bdim[0];
-  const amrex::Real sigmady = Cs2 * alphaij[1] - third * CI * alpha * bdim[1];
-  const amrex::Real sigmadz = Cs2 * alphaij[2] - third * CI * alpha * bdim[2];
-  flx(i, j, k, UMX) = -sigmadx;
-  flx(i, j, k, UMY) = -sigmady;
-  flx(i, j, k, UMZ) = -sigmadz;
+  const amrex::Real sigmadx =
+    Cs2 * alphaij[0] - third * CI * alpha * (dir == 0);
+  const amrex::Real sigmady =
+    Cs2 * alphaij[1] - third * CI * alpha * (dir == 1);
+  const amrex::Real sigmadz =
+    Cs2 * alphaij[2] - third * CI * alpha * (dir == 2);
+  flx(iv, UMX) = -sigmadx;
+  flx(iv, UMY) = -sigmady;
+  flx(iv, UMZ) = -sigmadz;
 
   // SFS turbulent diffusion
   const amrex::Real Uface[AMREX_SPACEDIM] = {
-    static_cast<amrex::Real>(
-      0.5 * (q(i, j, k, QU) + q(i - bdim[0], j - bdim[1], k - bdim[2], QU))),
-    static_cast<amrex::Real>(
-      0.5 * (q(i, j, k, QV) + q(i - bdim[0], j - bdim[1], k - bdim[2], QV))),
-    static_cast<amrex::Real>(
-      0.5 * (q(i, j, k, QW) + q(i - bdim[0], j - bdim[1], k - bdim[2], QW)))};
-  flx(i, j, k, UEDEN) =
+    static_cast<amrex::Real>(0.5 * (q(iv, QU) + q(ivm, QU))),
+    static_cast<amrex::Real>(0.5 * (q(iv, QV) + q(ivm, QV))),
+    static_cast<amrex::Real>(0.5 * (q(iv, QW) + q(ivm, QW)))};
+  flx(iv, UEDEN) =
     -sigmadx * Uface[0] - sigmady * Uface[1] - sigmadz * Uface[2];
 
   // SFS heat flux - move state from cell centers to faces to compute cp for
   // flux at face
-  amrex::Real T =
-    0.5 * (q(i, j, k, QTEMP) + q(i - bdim[0], j - bdim[1], k - bdim[2], QTEMP));
+  amrex::Real T = 0.5 * (q(iv, QTEMP) + q(ivm, QTEMP));
   amrex::Real massfrac[NUM_SPECIES];
   for (int n = 0; n < NUM_SPECIES; n++) {
-    massfrac[n] = 0.5 * (q(i, j, k, QFS + n) +
-                         q(i - bdim[0], j - bdim[1], k - bdim[2], QFS + n));
+    massfrac[n] = 0.5 * (q(iv, QFS + n) + q(ivm, QFS + n));
   }
   amrex::Real cp = 0.0;
   auto eos = pele::physics::PhysicsType::eos();
   eos.TY2Cp(T, massfrac, cp);
-  flx(i, j, k, UEDEN) = flx(i, j, k, UEDEN) - cp * Cs2 / PrT * flux_T;
+  flx(iv, UEDEN) = flx(iv, UEDEN) - cp * Cs2 / PrT * flux_T;
 
   // Scale fluxes by area
-  flx(i, j, k, UMX) = flx(i, j, k, UMX) * a(i, j, k);
-  flx(i, j, k, UMY) = flx(i, j, k, UMY) * a(i, j, k);
-  flx(i, j, k, UMZ) = flx(i, j, k, UMZ) * a(i, j, k);
-  flx(i, j, k, UEDEN) = flx(i, j, k, UEDEN) * a(i, j, k);
+  flx(iv, UMX) = flx(iv, UMX) * a(iv);
+  flx(iv, UMY) = flx(iv, UMY) * a(iv);
+  flx(iv, UMZ) = flx(iv, UMZ) * a(iv);
+  flx(iv, UEDEN) = flx(iv, UEDEN) * a(iv);
 }
 
 AMREX_GPU_DEVICE
@@ -478,48 +479,43 @@ pc_dynamic_smagorinsky_sfs_term(
   const int dir,
   const amrex::Array4<amrex::Real>& flx)
 {
-  const int bdim[3] = {dir == 0, dir == 1, dir == 2};
+  const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
+  const amrex::IntVect ivm(iv - amrex::IntVect::TheDimensionVector(dir));
 
   // SFS stress
-  const amrex::Real sigmadx = coeff(i, j, k, comp_Cs2) * alphaij(i, j, k, 0) -
-                              coeff(i, j, k, comp_CI) * alpha(i, j, k) / 3.0;
-  const amrex::Real sigmady = coeff(i, j, k, comp_Cs2) * alphaij(i, j, k, 1);
-  const amrex::Real sigmadz = coeff(i, j, k, comp_Cs2) * alphaij(i, j, k, 2);
-  flx(i, j, k, UMX) = -sigmadx;
-  flx(i, j, k, UMY) = -sigmady;
-  flx(i, j, k, UMZ) = -sigmadz;
+  const amrex::Real sigmadx =
+    coeff(iv, comp_Cs2) * alphaij(iv, 0) - coeff(iv, comp_CI) * alpha(iv) / 3.0;
+  const amrex::Real sigmady = coeff(iv, comp_Cs2) * alphaij(iv, 1);
+  const amrex::Real sigmadz = coeff(iv, comp_Cs2) * alphaij(iv, 2);
+  flx(iv, UMX) = -sigmadx;
+  flx(iv, UMY) = -sigmady;
+  flx(iv, UMZ) = -sigmadz;
 
   // SFS turbulent diffusion
   const amrex::Real Uface[AMREX_SPACEDIM] = {
-    static_cast<amrex::Real>(
-      0.5 * (q(i, j, k, QU) + q(i - bdim[0], j - bdim[1], k - bdim[2], QU))),
-    static_cast<amrex::Real>(
-      0.5 * (q(i, j, k, QV) + q(i - bdim[0], j - bdim[1], k - bdim[2], QV))),
-    static_cast<amrex::Real>(
-      0.5 * (q(i, j, k, QW) + q(i - bdim[0], j - bdim[1], k - bdim[2], QW)))};
-  flx(i, j, k, UEDEN) =
+    static_cast<amrex::Real>(0.5 * (q(iv, QU) + q(ivm, QU))),
+    static_cast<amrex::Real>(0.5 * (q(iv, QV) + q(ivm, QV))),
+    static_cast<amrex::Real>(0.5 * (q(iv, QW) + q(ivm, QW)))};
+  flx(iv, UEDEN) =
     -sigmadx * Uface[0] - sigmady * Uface[1] - sigmadz * Uface[2];
 
   // SFS heat flux - move state from cell centers to faces to compute cp for
   // flux at face
-  amrex::Real T =
-    0.5 * (q(i, j, k, QTEMP) + q(i - bdim[0], j - bdim[1], k - bdim[2], QTEMP));
+  amrex::Real T = 0.5 * (q(iv, QTEMP) + q(ivm, QTEMP));
   amrex::Real massfrac[NUM_SPECIES];
   for (int n = 0; n < NUM_SPECIES; n++) {
-    massfrac[n] = 0.5 * (q(i, j, k, QFS + n) +
-                         q(i - bdim[0], j - bdim[1], k - bdim[2], QFS + n));
+    massfrac[n] = 0.5 * (q(iv, QFS + n) + q(ivm, QFS + n));
   }
   amrex::Real cp = 0.0;
   auto eos = pele::physics::PhysicsType::eos();
   eos.TY2Cp(T, massfrac, cp);
-  flx(i, j, k, UEDEN) =
-    flx(i, j, k, UEDEN) - cp * coeff(i, j, k, comp_Cs2ovPrT) * flux_T(i, j, k);
+  flx(iv, UEDEN) = flx(iv, UEDEN) - cp * coeff(iv, comp_Cs2ovPrT) * flux_T(iv);
 
   // Scale fluxes by area
-  flx(i, j, k, UMX) = flx(i, j, k, UMX) * a(i, j, k);
-  flx(i, j, k, UMY) = flx(i, j, k, UMY) * a(i, j, k);
-  flx(i, j, k, UMZ) = flx(i, j, k, UMZ) * a(i, j, k);
-  flx(i, j, k, UEDEN) = flx(i, j, k, UEDEN) * a(i, j, k);
+  flx(iv, UMX) = flx(iv, UMX) * a(iv);
+  flx(iv, UMY) = flx(iv, UMY) * a(iv);
+  flx(iv, UMZ) = flx(iv, UMZ) * a(iv);
+  flx(iv, UEDEN) = flx(iv, UEDEN) * a(iv);
 }
 
 #endif // AMREX_SPACEDIM == 3

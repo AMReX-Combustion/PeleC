@@ -18,7 +18,7 @@ mol_slope(
   const int i,
   const int j,
   const int k,
-  const amrex::GpuArray<const int, 3> bdim,
+  const int dir,
   const amrex::GpuArray<const int, 3> q_idx,
   const amrex::Array4<const amrex::Real>& q,
   const amrex::Array4<const amrex::Real>& qaux,
@@ -29,13 +29,17 @@ mol_slope(
 #endif
 )
 {
+  const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
+  const amrex::IntVect dm(-amrex::IntVect::TheDimensionVector(dir));
+  const amrex::IntVect dp(amrex::IntVect::TheDimensionVector(dir));
+  const amrex::IntVect ivm(iv + dm);
+  const amrex::IntVect ivp(iv + dp);
+
 #ifdef PELEC_USE_EB
   const bool flagArrayL =
-    flags(i, j, k).isConnected(-bdim[0], -bdim[1], -bdim[2]) &&
-    !flags(i, j, k).isCovered();
+    flags(i, j, k).isConnected(dm) && !flags(i, j, k).isCovered();
   const bool flagArrayR =
-    flags(i, j, k).isConnected(+bdim[0], +bdim[1], +bdim[2]) &&
-    !flags(i, j, k).isCovered();
+    flags(i, j, k).isConnected(dp) && !flags(i, j, k).isCovered();
 #else
   const bool flagArrayL = true;
   const bool flagArrayR = true;
@@ -43,52 +47,42 @@ mol_slope(
 
   amrex::Real dlft[QVAR] = {0.0};
   amrex::Real drgt[QVAR] = {0.0};
-  const int im = i - bdim[0];
-  const int jm = j - bdim[1];
-  const int km = k - bdim[2];
-  const int ip = i + bdim[0];
-  const int jp = j + bdim[1];
-  const int kp = k + bdim[2];
 
-  dlft[0] = flagArrayL ? 0.5 * (q(i, j, k, QPRES) - q(im, jm, km, QPRES)) /
-                             qaux(i, j, k, QC) -
-                           0.5 * q(i, j, k, QRHO) *
-                             (q(i, j, k, q_idx[0]) - q(im, jm, km, q_idx[0]))
-                       : 0.0;
-  dlft[1] = flagArrayL ? 0.5 * (q(i, j, k, QPRES) - q(im, jm, km, QPRES)) /
-                             qaux(i, j, k, QC) +
-                           0.5 * q(i, j, k, QRHO) *
-                             (q(i, j, k, q_idx[0]) - q(im, jm, km, q_idx[0]))
-                       : 0.0;
-  dlft[2] = flagArrayL ? q(i, j, k, q_idx[1]) - q(im, jm, km, q_idx[1]) : 0.0;
-  dlft[3] = flagArrayL ? q(i, j, k, q_idx[2]) - q(im, jm, km, q_idx[2]) : 0.0;
+  dlft[0] = flagArrayL
+              ? 0.5 * (q(iv, QPRES) - q(ivm, QPRES)) / qaux(iv, QC) -
+                  0.5 * q(iv, QRHO) * (q(iv, q_idx[0]) - q(ivm, q_idx[0]))
+              : 0.0;
+  dlft[1] = flagArrayL
+              ? 0.5 * (q(iv, QPRES) - q(ivm, QPRES)) / qaux(iv, QC) +
+                  0.5 * q(iv, QRHO) * (q(iv, q_idx[0]) - q(ivm, q_idx[0]))
+              : 0.0;
+  dlft[2] = flagArrayL ? q(iv, q_idx[1]) - q(ivm, q_idx[1]) : 0.0;
+  dlft[3] = flagArrayL ? q(iv, q_idx[2]) - q(ivm, q_idx[2]) : 0.0;
 
-  drgt[0] = flagArrayR ? 0.5 * (q(ip, jp, kp, QPRES) - q(i, j, k, QPRES)) /
-                             qaux(i, j, k, QC) -
-                           0.5 * q(i, j, k, QRHO) *
-                             (q(ip, jp, kp, q_idx[0]) - q(i, j, k, q_idx[0]))
-                       : 0.0;
-  drgt[1] = flagArrayR ? 0.5 * (q(ip, jp, kp, QPRES) - q(i, j, k, QPRES)) /
-                             qaux(i, j, k, QC) +
-                           0.5 * q(i, j, k, QRHO) *
-                             (q(ip, jp, kp, q_idx[0]) - q(i, j, k, q_idx[0]))
-                       : 0.0;
-  drgt[2] = flagArrayR ? q(ip, jp, kp, q_idx[1]) - q(i, j, k, q_idx[1]) : 0.0;
-  drgt[3] = flagArrayR ? q(ip, jp, kp, q_idx[2]) - q(i, j, k, q_idx[2]) : 0.0;
+  drgt[0] = flagArrayR
+              ? 0.5 * (q(ivp, QPRES) - q(iv, QPRES)) / qaux(iv, QC) -
+                  0.5 * q(iv, QRHO) * (q(ivp, q_idx[0]) - q(iv, q_idx[0]))
+              : 0.0;
+  drgt[1] = flagArrayR
+              ? 0.5 * (q(ivp, QPRES) - q(iv, QPRES)) / qaux(iv, QC) +
+                  0.5 * q(iv, QRHO) * (q(ivp, q_idx[0]) - q(iv, q_idx[0]))
+              : 0.0;
+  drgt[2] = flagArrayR ? q(ivp, q_idx[1]) - q(iv, q_idx[1]) : 0.0;
+  drgt[3] = flagArrayR ? q(ivp, q_idx[2]) - q(iv, q_idx[2]) : 0.0;
 
   for (int n = 0; n < NUM_SPECIES; n++) {
-    dlft[4 + n] = flagArrayL ? q(i, j, k, QRHO) * q(i, j, k, QFS + n) -
-                                 q(im, jm, km, QRHO) * q(im, jm, km, QFS + n) -
-                                 q(i, j, k, QFS + n) *
-                                   (q(i, j, k, QPRES) - q(im, jm, km, QPRES)) /
-                                   (qaux(i, j, k, QC) * qaux(i, j, k, QC))
-                             : 0.0;
-    drgt[4 + n] = flagArrayR ? q(ip, jp, kp, QRHO) * q(ip, jp, kp, QFS + n) -
-                                 q(i, j, k, QRHO) * q(i, j, k, QFS + n) -
-                                 q(i, j, k, QFS + n) *
-                                   (q(ip, jp, kp, QPRES) - q(i, j, k, QPRES)) /
-                                   (qaux(i, j, k, QC) * qaux(i, j, k, QC))
-                             : 0.0;
+    dlft[4 + n] = flagArrayL
+                    ? q(iv, QRHO) * q(iv, QFS + n) -
+                        q(ivm, QRHO) * q(ivm, QFS + n) -
+                        q(iv, QFS + n) * (q(iv, QPRES) - q(ivm, QPRES)) /
+                          (qaux(iv, QC) * qaux(iv, QC))
+                    : 0.0;
+    drgt[4 + n] = flagArrayR
+                    ? q(ivp, QRHO) * q(ivp, QFS + n) -
+                        q(iv, QRHO) * q(iv, QFS + n) -
+                        q(iv, QFS + n) * (q(ivp, QPRES) - q(iv, QPRES)) /
+                          (qaux(iv, QC) * qaux(iv, QC))
+                    : 0.0;
   }
 
   for (int n = 0; n < QVAR; n++) {
@@ -98,8 +92,8 @@ mol_slope(
         ? 2.0 * amrex::min<amrex::Real>(
                   amrex::Math::abs(dlft[n]), amrex::Math::abs(drgt[n]))
         : 0.0;
-    dq(i, j, k, n) = amrex::Math::copysign(1.0, dcen) *
-                     amrex::min<amrex::Real>(dlim, amrex::Math::abs(dcen));
+    dq(iv, n) = amrex::Math::copysign(1.0, dcen) *
+                amrex::min<amrex::Real>(dlim, amrex::Math::abs(dcen));
   }
 }
 
