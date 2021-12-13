@@ -430,7 +430,6 @@ PeleC::setPlotVariables()
         desc_lst[State_Type].name(FirstSootVar + i));
     }
   }
-#ifdef PELEC_USE_REACTIONS
   int plot_reactions = 1;
   pp.query("plot_reactions", plot_reactions);
   if (plot_reactions == 0) {
@@ -438,7 +437,6 @@ PeleC::setPlotVariables()
       amrex::Amr::deleteStatePlotVar(desc_lst[Reactions_Type].name(i));
     }
   }
-#endif
 #endif
 
   bool plot_massfrac = false;

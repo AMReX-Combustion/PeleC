@@ -61,6 +61,7 @@ read_pmf(const std::string& myfile)
   pele::physics::eos::speciesNames<pele::physics::EosType>(spec_names);
   int tempCol = -1;
   int velCol = -1;
+  int specCol = -1;
   pos1 = 0;
   // pos2 = 0;
   for (int i = 0; i < variable_count; i++) {
@@ -71,16 +72,15 @@ read_pmf(const std::string& myfile)
       velCol = i - 1;
     } else if (pmf_names[i] == "T" || pmf_names[i] == "temp") {
       tempCol = i - 1;
-    } else if (pmf_names[i] != spec_names[i - 4]) {
-      amrex::Abort("Variables do not match");
+    } else if (pmf_names[i] == spec_names[0]) {
+      specCol = i - 1;
     }
     pos1 = pos2 + 1;
   }
 
-  if (tempCol < 0 || velCol < 0) {
-    amrex::Abort("T and U were not all found");
+  if (tempCol < 0 || velCol < 0 || specCol < 0) {
+    amrex::Abort("Y, T, and U were not all found");
   }
-  int specCol = std::max(tempCol, velCol) + 1;
   PeleC::h_prob_parm_device->tempCol = tempCol;
   PeleC::h_prob_parm_device->velCol = velCol;
   PeleC::h_prob_parm_device->specCol = specCol;

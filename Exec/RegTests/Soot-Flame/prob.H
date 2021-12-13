@@ -15,14 +15,18 @@
 #include "prob_parm.H"
 #include "Constants.H"
 
+#ifdef SOOT_MODEL
+#include "SootModel.H"
+#endif
+
 AMREX_GPU_HOST_DEVICE
 AMREX_FORCE_INLINE
 void
 pmf(
-  amrex::Real xlo,
-  amrex::Real xhi,
+  const amrex::Real xlo,
+  const amrex::Real xhi,
   amrex::GpuArray<amrex::Real, NUM_SPECIES + 4>& y_vector,
-  ProbParmDevice const& prob_parm)
+  const ProbParmDevice const& prob_parm)
 {
   if (prob_parm.pmf_do_average) {
     int lo_loside = 0;
