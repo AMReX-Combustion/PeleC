@@ -31,7 +31,7 @@ plm_slope(
   const amrex::IntVect ivm(iv - amrex::IntVect::TheDimensionVector(dir));
   const amrex::IntVect ivp(iv + amrex::IntVect::TheDimensionVector(dir));
   const amrex::IntVect ivp2(iv + 2 * amrex::IntVect::TheDimensionVector(dir));
-  
+
   amrex::Real dlft, drgt, dcen, dfm, dfp, dlim, dsgn, dtemp;
   const amrex::Real qc = q(iv, n);
   const amrex::Real qm2 = q(ivm2, n);

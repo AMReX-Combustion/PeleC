@@ -71,21 +71,18 @@ pc_compute_hyp_mol_flux(
 
         amrex::Real qtempl[5 + NUM_SPECIES] = {0.0};
         qtempl[R_UN] =
-          q(ivm, q_idx[0]) +
-          0.5 * ((dq(ivm, 1) - dq(ivm, 0)) / q(ivm, QRHO));
+          q(ivm, q_idx[0]) + 0.5 * ((dq(ivm, 1) - dq(ivm, 0)) / q(ivm, QRHO));
         qtempl[R_P] =
-          q(ivm, QPRES) +
-          0.5 * (dq(ivm, 0) + dq(ivm, 1)) * qaux(ivm, QC);
+          q(ivm, QPRES) + 0.5 * (dq(ivm, 0) + dq(ivm, 1)) * qaux(ivm, QC);
         qtempl[R_UT1] = q(ivm, q_idx[1]) + 0.5 * dq(ivm, 2);
-        qtempl[R_UT2] = AMREX_D_PICK(
-          0.0, 0.0, q(ivm, q_idx[2]) + 0.5 * dq(ivm, 3));
+        qtempl[R_UT2] =
+          AMREX_D_PICK(0.0, 0.0, q(ivm, q_idx[2]) + 0.5 * dq(ivm, 3));
         qtempl[R_RHO] = 0.0;
         for (int n = 0; n < NUM_SPECIES; n++) {
-          qtempl[R_Y + n] = q(ivm, QFS + n) * q(ivm, QRHO) +
-                            0.5 * (dq(ivm, 4 + n) +
-                                   q(ivm, QFS + n) *
-                                     (dq(ivm, 0) + dq(ivm, 1)) /
-                                     qaux(ivm, QC));
+          qtempl[R_Y + n] =
+            q(ivm, QFS + n) * q(ivm, QRHO) +
+            0.5 * (dq(ivm, 4 + n) +
+                   q(ivm, QFS + n) * (dq(ivm, 0) + dq(ivm, 1)) / qaux(ivm, QC));
           qtempl[R_RHO] += qtempl[R_Y + n];
         }
 
@@ -95,11 +92,9 @@ pc_compute_hyp_mol_flux(
 
         amrex::Real qtempr[5 + NUM_SPECIES] = {0.0};
         qtempr[R_UN] =
-          q(iv, q_idx[0]) -
-          0.5 * ((dq(iv, 1) - dq(iv, 0)) / q(iv, QRHO));
-        qtempr[R_P] = q(iv, QPRES) - 0.5 *
-                                            (dq(iv, 0) + dq(iv, 1)) *
-                                            qaux(iv, QC);
+          q(iv, q_idx[0]) - 0.5 * ((dq(iv, 1) - dq(iv, 0)) / q(iv, QRHO));
+        qtempr[R_P] =
+          q(iv, QPRES) - 0.5 * (dq(iv, 0) + dq(iv, 1)) * qaux(iv, QC);
         qtempr[R_UT1] = q(iv, q_idx[1]) - 0.5 * dq(iv, 2);
         qtempr[R_UT2] =
           AMREX_D_PICK(0.0, 0.0, q(iv, q_idx[2]) - 0.5 * dq(iv, 3));
@@ -107,17 +102,15 @@ pc_compute_hyp_mol_flux(
         for (int n = 0; n < NUM_SPECIES; n++) {
           qtempr[R_Y + n] =
             q(iv, QFS + n) * q(iv, QRHO) -
-            0.5 * (dq(iv, 4 + n) + q(iv, QFS + n) *
-                                          (dq(iv, 0) + dq(iv, 1)) /
-                                          qaux(iv, QC));
+            0.5 * (dq(iv, 4 + n) +
+                   q(iv, QFS + n) * (dq(iv, 0) + dq(iv, 1)) / qaux(iv, QC));
           qtempr[R_RHO] += qtempr[R_Y + n];
         }
         for (int n = 0; n < NUM_SPECIES; n++) {
           qtempr[R_Y + n] = qtempr[R_Y + n] / qtempr[R_RHO];
         }
 
-        const amrex::Real cavg =
-          0.5 * (qaux(iv, QC) + qaux(ivm, QC));
+        const amrex::Real cavg = 0.5 * (qaux(iv, QC) + qaux(ivm, QC));
 
         amrex::Real spl[NUM_SPECIES];
         for (int n = 0; n < NUM_SPECIES; n++) {

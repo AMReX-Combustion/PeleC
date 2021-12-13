@@ -19,15 +19,15 @@ flatten(
   amrex::Array4<const amrex::Real> const& q)
 {
 
-    const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-    const amrex::IntVect ivm3(iv - 3 * amrex::IntVect::TheDimensionVector(dir));
-    const amrex::IntVect ivm2(iv - 2 * amrex::IntVect::TheDimensionVector(dir));
-    const amrex::IntVect ivm(iv - amrex::IntVect::TheDimensionVector(dir));
-    const amrex::IntVect ivp(iv + amrex::IntVect::TheDimensionVector(dir));
-    const amrex::IntVect ivp2(iv + 2 * amrex::IntVect::TheDimensionVector(dir));
-    const amrex::IntVect ivp3(iv + 3 * amrex::IntVect::TheDimensionVector(dir));
+  const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
+  const amrex::IntVect ivm3(iv - 3 * amrex::IntVect::TheDimensionVector(dir));
+  const amrex::IntVect ivm2(iv - 2 * amrex::IntVect::TheDimensionVector(dir));
+  const amrex::IntVect ivm(iv - amrex::IntVect::TheDimensionVector(dir));
+  const amrex::IntVect ivp(iv + amrex::IntVect::TheDimensionVector(dir));
+  const amrex::IntVect ivp2(iv + 2 * amrex::IntVect::TheDimensionVector(dir));
+  const amrex::IntVect ivp3(iv + 3 * amrex::IntVect::TheDimensionVector(dir));
 
-    if ((!q.contains(ivp3[0], ivp3[1], ivp3[2]) ||
+  if ((!q.contains(ivp3[0], ivp3[1], ivp3[2]) ||
        !q.contains(ivm3[0], ivm3[1], ivm3[2]))) {
     return 1.0;
   }
@@ -41,19 +41,13 @@ flatten(
 
   // amrex::Real dlft, drgt, dcen, dfm, dfp, dlim, dsgn, dtemp, drgtm1, dlftp1,
   // slop; const amrex::Real qc = q(i, j, k, n);
-  const amrex::Real qm =
-    q(ivm, n);
-  const amrex::Real qp =
-    q(ivp, n);
+  const amrex::Real qm = q(ivm, n);
+  const amrex::Real qp = q(ivp, n);
   // assumes QU,QV,QW ordering
-  const amrex::Real qmun =
-    q(ivm, QU + dir);
-  const amrex::Real qpun =
-    q(ivp, QU + dir);
-  const amrex::Real qmm =
-    q(ivm2, n);
-  const amrex::Real qpp =
-    q(ivp2, n);
+  const amrex::Real qmun = q(ivm, QU + dir);
+  const amrex::Real qpun = q(ivp, QU + dir);
+  const amrex::Real qmm = q(ivm2, n);
+  const amrex::Real qpp = q(ivp2, n);
 
   amrex::Real dp = qp - qm;
 
@@ -71,22 +65,20 @@ flatten(
 
   const amrex::Real chi = (amrex::Math::abs(dp) / tmp) > shktst ? tst : 0.0;
 
-  const amrex::IntVect ivm2shft(iv - (2-ishft) * amrex::IntVect::TheDimensionVector(dir));
-  const amrex::IntVect ivmshft(iv - (1-ishft) * amrex::IntVect::TheDimensionVector(dir));
-  const amrex::IntVect ivpshft(iv + (1-ishft) * amrex::IntVect::TheDimensionVector(dir));
-  const amrex::IntVect ivp2shft(iv + (2-ishft) * amrex::IntVect::TheDimensionVector(dir));
-  const amrex::Real qpshft =
-    q(ivpshft, n);
-  const amrex::Real qmshft =
-    q(ivmshft, n);
-  const amrex::Real qpunshft =
-    q(ivpshft, QU + dir);
-  const amrex::Real qmunshft =
-    q(ivmshft, QU + dir);
-  const amrex::Real qppshft =
-    q(ivp2shft, n);
-  const amrex::Real qmmshft =
-    q(ivm2shft, n);
+  const amrex::IntVect ivm2shft(
+    iv - (2 - ishft) * amrex::IntVect::TheDimensionVector(dir));
+  const amrex::IntVect ivmshft(
+    iv - (1 - ishft) * amrex::IntVect::TheDimensionVector(dir));
+  const amrex::IntVect ivpshft(
+    iv + (1 - ishft) * amrex::IntVect::TheDimensionVector(dir));
+  const amrex::IntVect ivp2shft(
+    iv + (2 - ishft) * amrex::IntVect::TheDimensionVector(dir));
+  const amrex::Real qpshft = q(ivpshft, n);
+  const amrex::Real qmshft = q(ivmshft, n);
+  const amrex::Real qpunshft = q(ivpshft, QU + dir);
+  const amrex::Real qmunshft = q(ivmshft, QU + dir);
+  const amrex::Real qppshft = q(ivp2shft, n);
+  const amrex::Real qmmshft = q(ivm2shft, n);
 
   dp = qpshft - qmshft;
 

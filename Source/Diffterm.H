@@ -58,8 +58,7 @@ struct SpeciesEnergyFlux
     eos.T2Hi(T, hi2);
     amrex::Real Vc = 0.0;
     const amrex::Real dpdx = dxinv * (q(iv, QPRES) - q(ivm, QPRES));
-    const amrex::Real dlnp =
-      dpdx / (0.5 * (q(iv, QPRES) + q(ivm, QPRES)));
+    const amrex::Real dlnp = dpdx / (0.5 * (q(iv, QPRES) + q(ivm, QPRES)));
     for (int ns = 0; ns < NUM_SPECIES; ++ns) {
       const amrex::Real Xface = 0.5 * (mole1[ns] + mole2[ns]);
       const amrex::Real Yface = 0.5 * (mass1[ns] + mass2[ns]);
@@ -187,16 +186,15 @@ pc_diffusion_flux(
   amrex::Real taux = 0.0, tauy = 0.0, tauz = 0.0;
 
   if (dir == 0) {
-    AMREX_D_TERM(
-      const amrex::Real dudx = dxinv * (q(iv, QU) - q(ivm, QU));
-      , const amrex::Real dvdx = dxinv * (q(iv, QV) - q(ivm, QV));
-      const amrex::Real dudy = td(iv, 0);
-      const amrex::Real dvdy = td(iv, 1);
-      , const amrex::Real dwdx = dxinv * (q(iv, QW) - q(ivm, QW));
-      // const amrex::Real dwdy = td(iv, 2);
-      const amrex::Real dudz = td(iv, 3);
-      // const amrex::Real dvdz = td(iv, 4);
-      const amrex::Real dwdz = td(iv, 5););
+    AMREX_D_TERM(const amrex::Real dudx = dxinv * (q(iv, QU) - q(ivm, QU));
+                 , const amrex::Real dvdx = dxinv * (q(iv, QV) - q(ivm, QV));
+                 const amrex::Real dudy = td(iv, 0);
+                 const amrex::Real dvdy = td(iv, 1);
+                 , const amrex::Real dwdx = dxinv * (q(iv, QW) - q(ivm, QW));
+                 // const amrex::Real dwdy = td(iv, 2);
+                 const amrex::Real dudz = td(iv, 3);
+                 // const amrex::Real dvdz = td(iv, 4);
+                 const amrex::Real dwdz = td(iv, 5););
     const amrex::Real divu = AMREX_D_TERM(dudx, +dvdy, +dwdz);
 
     taux =
@@ -243,16 +241,14 @@ pc_diffusion_flux(
   flx(iv, UMZ) = -tauz;
   flx(iv, UEDEN) =
     0.5 * (AMREX_D_TERM(
-            -taux * (q(iv, QU) + q(ivm, QU)),
-            -tauy * (q(iv, QV) + q(ivm, QV)),
+            -taux * (q(iv, QU) + q(ivm, QU)), -tauy * (q(iv, QV) + q(ivm, QV)),
             -tauz * (q(iv, QW) + q(ivm, QW)))) -
     coef[dComp_lambda] * (dxinv * (q(iv, QTEMP) - q(ivm, QTEMP)));
 
   FluxTypes::SpeciesEnergyFluxType()(iv, ivm, dxinv, coef, q, flx);
 
   // Scale by area
-  AMREX_D_TERM(flx(iv, UMX) *= area(i, j, k);
-               , flx(iv, UMY) *= area(i, j, k);
+  AMREX_D_TERM(flx(iv, UMX) *= area(i, j, k);, flx(iv, UMY) *= area(i, j, k);
                , flx(iv, UMZ) *= area(i, j, k););
   flx(iv, UEDEN) *= area(i, j, k);
   for (int ns = 0; ns < NUM_SPECIES; ++ns)

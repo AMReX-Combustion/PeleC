@@ -210,32 +210,30 @@ pc_smagorinsky_sfs_term(
       i, j, k, q, td, dxinv, deltabar, alphaij[0], alphaij[1], alphaij[2],
       alpha, flux_T);
   }
-  const amrex::Real sigmadx = Cs2 * alphaij[0] - third * CI * alpha * (dir == 0);
-  const amrex::Real sigmady = Cs2 * alphaij[1] - third * CI * alpha * (dir == 1);
-  const amrex::Real sigmadz = Cs2 * alphaij[2] - third * CI * alpha * (dir == 2);
+  const amrex::Real sigmadx =
+    Cs2 * alphaij[0] - third * CI * alpha * (dir == 0);
+  const amrex::Real sigmady =
+    Cs2 * alphaij[1] - third * CI * alpha * (dir == 1);
+  const amrex::Real sigmadz =
+    Cs2 * alphaij[2] - third * CI * alpha * (dir == 2);
   flx(iv, UMX) = -sigmadx;
   flx(iv, UMY) = -sigmady;
   flx(iv, UMZ) = -sigmadz;
 
   // SFS turbulent diffusion
   const amrex::Real Uface[AMREX_SPACEDIM] = {
-    static_cast<amrex::Real>(
-      0.5 * (q(iv, QU) + q(ivm, QU))),
-    static_cast<amrex::Real>(
-      0.5 * (q(iv, QV) + q(ivm, QV))),
-    static_cast<amrex::Real>(
-      0.5 * (q(iv, QW) + q(ivm, QW)))};
+    static_cast<amrex::Real>(0.5 * (q(iv, QU) + q(ivm, QU))),
+    static_cast<amrex::Real>(0.5 * (q(iv, QV) + q(ivm, QV))),
+    static_cast<amrex::Real>(0.5 * (q(iv, QW) + q(ivm, QW)))};
   flx(iv, UEDEN) =
     -sigmadx * Uface[0] - sigmady * Uface[1] - sigmadz * Uface[2];
 
   // SFS heat flux - move state from cell centers to faces to compute cp for
   // flux at face
-  amrex::Real T =
-    0.5 * (q(iv, QTEMP) + q(ivm, QTEMP));
+  amrex::Real T = 0.5 * (q(iv, QTEMP) + q(ivm, QTEMP));
   amrex::Real massfrac[NUM_SPECIES];
   for (int n = 0; n < NUM_SPECIES; n++) {
-    massfrac[n] = 0.5 * (q(iv, QFS + n) +
-                         q(ivm, QFS + n));
+    massfrac[n] = 0.5 * (q(iv, QFS + n) + q(ivm, QFS + n));
   }
   amrex::Real cp = 0.0;
   auto eos = pele::physics::PhysicsType::eos();
@@ -485,8 +483,8 @@ pc_dynamic_smagorinsky_sfs_term(
   const amrex::IntVect ivm(iv - amrex::IntVect::TheDimensionVector(dir));
 
   // SFS stress
-  const amrex::Real sigmadx = coeff(iv, comp_Cs2) * alphaij(iv, 0) -
-                              coeff(iv, comp_CI) * alpha(iv) / 3.0;
+  const amrex::Real sigmadx =
+    coeff(iv, comp_Cs2) * alphaij(iv, 0) - coeff(iv, comp_CI) * alpha(iv) / 3.0;
   const amrex::Real sigmady = coeff(iv, comp_Cs2) * alphaij(iv, 1);
   const amrex::Real sigmadz = coeff(iv, comp_Cs2) * alphaij(iv, 2);
   flx(iv, UMX) = -sigmadx;
@@ -495,29 +493,23 @@ pc_dynamic_smagorinsky_sfs_term(
 
   // SFS turbulent diffusion
   const amrex::Real Uface[AMREX_SPACEDIM] = {
-    static_cast<amrex::Real>(
-      0.5 * (q(iv, QU) + q(ivm, QU))),
-    static_cast<amrex::Real>(
-      0.5 * (q(iv, QV) + q(ivm, QV))),
-    static_cast<amrex::Real>(
-      0.5 * (q(iv, QW) + q(ivm, QW)))};
+    static_cast<amrex::Real>(0.5 * (q(iv, QU) + q(ivm, QU))),
+    static_cast<amrex::Real>(0.5 * (q(iv, QV) + q(ivm, QV))),
+    static_cast<amrex::Real>(0.5 * (q(iv, QW) + q(ivm, QW)))};
   flx(iv, UEDEN) =
     -sigmadx * Uface[0] - sigmady * Uface[1] - sigmadz * Uface[2];
 
   // SFS heat flux - move state from cell centers to faces to compute cp for
   // flux at face
-  amrex::Real T =
-    0.5 * (q(iv, QTEMP) + q(ivm, QTEMP));
+  amrex::Real T = 0.5 * (q(iv, QTEMP) + q(ivm, QTEMP));
   amrex::Real massfrac[NUM_SPECIES];
   for (int n = 0; n < NUM_SPECIES; n++) {
-    massfrac[n] = 0.5 * (q(iv, QFS + n) +
-                         q(ivm, QFS + n));
+    massfrac[n] = 0.5 * (q(iv, QFS + n) + q(ivm, QFS + n));
   }
   amrex::Real cp = 0.0;
   auto eos = pele::physics::PhysicsType::eos();
   eos.TY2Cp(T, massfrac, cp);
-  flx(iv, UEDEN) =
-    flx(iv, UEDEN) - cp * coeff(iv, comp_Cs2ovPrT) * flux_T(iv);
+  flx(iv, UEDEN) = flx(iv, UEDEN) - cp * coeff(iv, comp_Cs2ovPrT) * flux_T(iv);
 
   // Scale fluxes by area
   flx(iv, UMX) = flx(iv, UMX) * a(iv);
