@@ -20,12 +20,13 @@ flatten(
 {
 
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-  const amrex::IntVect ivm3(iv - 3 * amrex::IntVect::TheDimensionVector(dir));
-  const amrex::IntVect ivm2(iv - 2 * amrex::IntVect::TheDimensionVector(dir));
-  const amrex::IntVect ivm(iv - amrex::IntVect::TheDimensionVector(dir));
-  const amrex::IntVect ivp(iv + amrex::IntVect::TheDimensionVector(dir));
-  const amrex::IntVect ivp2(iv + 2 * amrex::IntVect::TheDimensionVector(dir));
-  const amrex::IntVect ivp3(iv + 3 * amrex::IntVect::TheDimensionVector(dir));
+  const amrex::IntVect dvec(amrex::IntVect::TheDimensionVector(dir));
+  const amrex::IntVect ivm3(iv - 3 * dvec);
+  const amrex::IntVect ivm2(iv - 2 * dvec);
+  const amrex::IntVect ivm(iv - dvec);
+  const amrex::IntVect ivp(iv + dvec);
+  const amrex::IntVect ivp2(iv + 2 * dvec);
+  const amrex::IntVect ivp3(iv + 3 * dvec);
 
   if ((!q.contains(ivp3[0], ivp3[1], ivp3[2]) ||
        !q.contains(ivm3[0], ivm3[1], ivm3[2]))) {
@@ -65,20 +66,12 @@ flatten(
 
   const amrex::Real chi = (amrex::Math::abs(dp) / tmp) > shktst ? tst : 0.0;
 
-  const amrex::IntVect ivm2shft(
-    iv - (2 - ishft) * amrex::IntVect::TheDimensionVector(dir));
-  const amrex::IntVect ivmshft(
-    iv - (1 - ishft) * amrex::IntVect::TheDimensionVector(dir));
-  const amrex::IntVect ivpshft(
-    iv + (1 - ishft) * amrex::IntVect::TheDimensionVector(dir));
-  const amrex::IntVect ivp2shft(
-    iv + (2 - ishft) * amrex::IntVect::TheDimensionVector(dir));
-  const amrex::Real qpshft = q(ivpshft, n);
-  const amrex::Real qmshft = q(ivmshft, n);
-  const amrex::Real qpunshft = q(ivpshft, QU + dir);
-  const amrex::Real qmunshft = q(ivmshft, QU + dir);
-  const amrex::Real qppshft = q(ivp2shft, n);
-  const amrex::Real qmmshft = q(ivm2shft, n);
+  const amrex::Real qpshft =q(iv + (1-ishft) * dvec, n);
+  const amrex::Real qmshft =q(iv - (1+ishft) * dvec, n);
+  const amrex::Real qpunshft = q(iv + (1-ishft)*dvec, QU+dir);
+  const amrex::Real qmunshft = q(iv - (1+ishft)* dvec, QU+dir);
+  const amrex::Real qppshft = q(iv + (2-ishft)*dvec, n);
+  const amrex::Real qmmshft = q(iv - (2+ishft) * dvec, n);
 
   dp = qpshft - qmshft;
 
