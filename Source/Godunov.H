@@ -66,12 +66,12 @@ flatten(
 
   const amrex::Real chi = (amrex::Math::abs(dp) / tmp) > shktst ? tst : 0.0;
 
-  const amrex::Real qpshft =q(iv + (1-ishft) * dvec, n);
-  const amrex::Real qmshft =q(iv - (1+ishft) * dvec, n);
-  const amrex::Real qpunshft = q(iv + (1-ishft)*dvec, QU+dir);
-  const amrex::Real qmunshft = q(iv - (1+ishft)* dvec, QU+dir);
-  const amrex::Real qppshft = q(iv + (2-ishft)*dvec, n);
-  const amrex::Real qmmshft = q(iv - (2+ishft) * dvec, n);
+  const amrex::Real qpshft = q(iv + (1 - ishft) * dvec, n);
+  const amrex::Real qmshft = q(iv - (1 + ishft) * dvec, n);
+  const amrex::Real qpunshft = q(iv + (1 - ishft) * dvec, QU + dir);
+  const amrex::Real qmunshft = q(iv - (1 + ishft) * dvec, QU + dir);
+  const amrex::Real qppshft = q(iv + (2 - ishft) * dvec, n);
+  const amrex::Real qmmshft = q(iv - (2 + ishft) * dvec, n);
 
   dp = qpshft - qmshft;
 
