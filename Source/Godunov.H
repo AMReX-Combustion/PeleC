@@ -350,8 +350,8 @@ pc_transdd(
   PassMap const& pmap)
 {
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-  const int qvidx0 = (dir == 0) ? GDV : ((dir == 1) ? GDU : GDU);
-  const int qvidx1 = (dir == 0) ? GDW : ((dir == 1) ? GDW : GDV);
+  const int qvidx0 = (dir == 0) ? GDV : GDU;
+  const int qvidx1 = (dir == 2) ? GDV : GDW;
   const amrex::GpuArray<const int, 3> bdim{{dir == 0, dir == 1, dir == 2}};
   const amrex::GpuArray<const int, 3> l_idx{
     {bdim[0] * 0 + bdim[1] * 1 + bdim[2] * 2,
