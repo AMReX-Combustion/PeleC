@@ -18,10 +18,18 @@ flatten(
   const int dir,
   amrex::Array4<const amrex::Real> const& q)
 {
-  const int bdim[3] = {dir == 0, dir == 1, dir == 2};
 
-  if ((!q.contains(i + 3 * bdim[0], j + 3 * bdim[1], k + 3 * bdim[2]) ||
-       !q.contains(i - 3 * bdim[0], j - 3 * bdim[1], k - 3 * bdim[2]))) {
+  const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
+  const amrex::IntVect dvec(amrex::IntVect::TheDimensionVector(dir));
+  const amrex::IntVect ivm3(iv - 3 * dvec);
+  const amrex::IntVect ivm2(iv - 2 * dvec);
+  const amrex::IntVect ivm(iv - dvec);
+  const amrex::IntVect ivp(iv + dvec);
+  const amrex::IntVect ivp2(iv + 2 * dvec);
+  const amrex::IntVect ivp3(iv + 3 * dvec);
+
+  if ((!q.contains(ivp3[0], ivp3[1], ivp3[2]) ||
+       !q.contains(ivm3[0], ivm3[1], ivm3[2]))) {
     return 1.0;
   }
   const int n = QPRES;
@@ -34,19 +42,13 @@ flatten(
 
   // amrex::Real dlft, drgt, dcen, dfm, dfp, dlim, dsgn, dtemp, drgtm1, dlftp1,
   // slop; const amrex::Real qc = q(i, j, k, n);
-  const amrex::Real qm =
-    q(i - 1 * bdim[0], j - 1 * bdim[1], k - 1 * bdim[2], n);
-  const amrex::Real qp =
-    q(i + 1 * bdim[0], j + 1 * bdim[1], k + 1 * bdim[2], n);
+  const amrex::Real qm = q(ivm, n);
+  const amrex::Real qp = q(ivp, n);
   // assumes QU,QV,QW ordering
-  const amrex::Real qmun =
-    q(i - 1 * bdim[0], j - 1 * bdim[1], k - 1 * bdim[2], QU + dir);
-  const amrex::Real qpun =
-    q(i + 1 * bdim[0], j + 1 * bdim[1], k + 1 * bdim[2], QU + dir);
-  const amrex::Real qmm =
-    q(i - 2 * bdim[0], j - 2 * bdim[1], k - 2 * bdim[2], n);
-  const amrex::Real qpp =
-    q(i + 2 * bdim[0], j + 2 * bdim[1], k + 2 * bdim[2], n);
+  const amrex::Real qmun = q(ivm, QU + dir);
+  const amrex::Real qpun = q(ivp, QU + dir);
+  const amrex::Real qmm = q(ivm2, n);
+  const amrex::Real qpp = q(ivp2, n);
 
   amrex::Real dp = qp - qm;
 
@@ -64,24 +66,12 @@ flatten(
 
   const amrex::Real chi = (amrex::Math::abs(dp) / tmp) > shktst ? tst : 0.0;
 
-  const amrex::Real qpshft =
-    q(i + (1 - ishft) * bdim[0], j + (1 - ishft) * bdim[1],
-      k + (1 - ishft) * bdim[2], n);
-  const amrex::Real qmshft =
-    q(i - (1 + ishft) * bdim[0], j - (1 + ishft) * bdim[1],
-      k - (1 + ishft) * bdim[2], n);
-  const amrex::Real qpunshft =
-    q(i + (1 - ishft) * bdim[0], j + (1 - ishft) * bdim[1],
-      k + (1 - ishft) * bdim[2], QU + dir);
-  const amrex::Real qmunshft =
-    q(i - (1 + ishft) * bdim[0], j - (1 + ishft) * bdim[1],
-      k - (1 + ishft) * bdim[2], QU + dir);
-  const amrex::Real qppshft =
-    q(i + (2 - ishft) * bdim[0], j + (2 - ishft) * bdim[1],
-      k + (2 - ishft) * bdim[2], n);
-  const amrex::Real qmmshft =
-    q(i - (2 + ishft) * bdim[0], j - (2 + ishft) * bdim[1],
-      k - (2 + ishft) * bdim[2], n);
+  const amrex::Real qpshft = q(iv + (1 - ishft) * dvec, n);
+  const amrex::Real qmshft = q(iv - (1 + ishft) * dvec, n);
+  const amrex::Real qpunshft = q(iv + (1 - ishft) * dvec, QU + dir);
+  const amrex::Real qmunshft = q(iv - (1 + ishft) * dvec, QU + dir);
+  const amrex::Real qppshft = q(iv + (2 - ishft) * dvec, n);
+  const amrex::Real qmmshft = q(iv - (2 + ishft) * dvec, n);
 
   dp = qpshft - qmshft;
 
@@ -383,8 +373,8 @@ pc_transdd(
   PassMap const& pmap)
 {
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-  const int qvidx0 = (dir == 0) ? GDV : ((dir == 1) ? GDU : GDU);
-  const int qvidx1 = (dir == 0) ? GDW : ((dir == 1) ? GDW : GDV);
+  const int qvidx0 = (dir == 0) ? GDV : GDU;
+  const int qvidx1 = (dir == 2) ? GDV : GDW;
   const amrex::GpuArray<const int, 3> bdim{{dir == 0, dir == 1, dir == 2}};
   const amrex::GpuArray<const int, 3> l_idx{
     {bdim[0] * 0 + bdim[1] * 1 + bdim[2] * 2,
