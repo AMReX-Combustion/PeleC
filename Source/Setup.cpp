@@ -181,6 +181,7 @@ PeleC::variableSetUp()
   NumAdv = 0;
 #endif
 
+  // cppcheck-suppress knownConditionTrueFalse
   if (NumAdv > 0) {
     FirstAdv = cnt;
     cnt += NumAdv;

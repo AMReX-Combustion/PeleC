@@ -194,7 +194,7 @@ jobs:
         run: cmake --build build-${{matrix.cuda_pkg}} --parallel ${{env.NPROCS}}
   cppcheck:
     needs: Formatting
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.6.0
@@ -205,8 +205,7 @@ jobs:
           submodules: true
       - name: Dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y cppcheck
+          brew install cppcheck
       - name: Configure
         run: |
           cmake -B${{runner.workspace}}/build-cppcheck \

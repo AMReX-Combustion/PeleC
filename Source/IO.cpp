@@ -117,7 +117,7 @@ PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
   init_eb(geom, grids, dmap);
 #endif
 
-  amrex::MultiFab& S_new = get_new_data(State_Type);
+  const amrex::MultiFab& S_new = get_new_data(State_Type);
 
   for (int n = 0; n < src_list.size(); ++n) {
     int oldGrow = numGrow();
