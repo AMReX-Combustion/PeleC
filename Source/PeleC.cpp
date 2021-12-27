@@ -582,17 +582,17 @@ PeleC::setGridInfo()
     const int nlevs = max_level + 1;
     const int size = 3 * nlevs;
 
-    //amrex::Vector<amrex::Real> dx_level(size);
+    // amrex::Vector<amrex::Real> dx_level(size);
     amrex::Vector<int> domlo_level(size);
     amrex::Vector<int> domhi_level(size);
 
-    //const amrex::Real* dx_coarse = geom.CellSize();
+    // const amrex::Real* dx_coarse = geom.CellSize();
 
     const int* domlo_coarse = geom.Domain().loVect();
     const int* domhi_coarse = geom.Domain().hiVect();
 
     for (int dir = 0; dir < 3; dir++) {
-      //dx_level[dir] = (ZFILL(dx_coarse))[dir];
+      // dx_level[dir] = (ZFILL(dx_coarse))[dir];
 
       domlo_level[dir] = (ARLIM_3D(domlo_coarse))[dir];
       domhi_level[dir] = (ARLIM_3D(domhi_coarse))[dir];
@@ -608,14 +608,15 @@ PeleC::setGridInfo()
 
       for (int dir = 0; dir < 3; dir++) {
         if (dir < AMREX_SPACEDIM) {
-          //dx_level[3 * lev + dir] = dx_level[3 * (lev - 1) + dir] / ref_ratio[dir];
+          // dx_level[3 * lev + dir] = dx_level[3 * (lev - 1) + dir] /
+          // ref_ratio[dir];
           int ncell = (domhi_level[3 * (lev - 1) + dir] -
                        domlo_level[3 * (lev - 1) + dir] + 1) *
                       ref_ratio[dir];
           domlo_level[3 * lev + dir] = domlo_level[dir];
           domhi_level[3 * lev + dir] = domlo_level[3 * lev + dir] + ncell - 1;
         } else {
-          //dx_level[3 * lev + dir] = 0.0;
+          // dx_level[3 * lev + dir] = 0.0;
           domlo_level[3 * lev + dir] = 0;
           domhi_level[3 * lev + dir] = 0;
         }
