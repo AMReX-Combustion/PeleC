@@ -62,19 +62,19 @@ PeleC::construct_hydro_source(
     amrex::MultiFab& S_new = get_new_data(State_Type);
 
     // note: the radiation consup currently does not fill these
-    amrex::Real E_added_flux = 0.;    // cppcheck-suppress variableScope
-    amrex::Real mass_added_flux = 0.; // cppcheck-suppress variableScope
-    amrex::Real xmom_added_flux = 0.; // cppcheck-suppress variableScope
-    amrex::Real ymom_added_flux = 0.; // cppcheck-suppress variableScope
-    amrex::Real zmom_added_flux = 0.; // cppcheck-suppress variableScope
-    amrex::Real mass_lost = 0.;       // cppcheck-suppress variableScope
-    amrex::Real xmom_lost = 0.;       // cppcheck-suppress variableScope
-    amrex::Real ymom_lost = 0.;       // cppcheck-suppress variableScope
-    amrex::Real zmom_lost = 0.;       // cppcheck-suppress variableScope
-    amrex::Real eden_lost = 0.;       // cppcheck-suppress variableScope
-    amrex::Real xang_lost = 0.;       // cppcheck-suppress variableScope
-    amrex::Real yang_lost = 0.;       // cppcheck-suppress variableScope
-    amrex::Real zang_lost = 0.;       // cppcheck-suppress variableScope
+    amrex::Real E_added_flux = 0.;
+    amrex::Real mass_added_flux = 0.;
+    amrex::Real xmom_added_flux = 0.;
+    amrex::Real ymom_added_flux = 0.;
+    amrex::Real zmom_added_flux = 0.;
+    amrex::Real mass_lost = 0.;
+    amrex::Real xmom_lost = 0.;
+    amrex::Real ymom_lost = 0.;
+    amrex::Real zmom_lost = 0.;
+    amrex::Real eden_lost = 0.;
+    amrex::Real xang_lost = 0.;
+    amrex::Real yang_lost = 0.;
+    amrex::Real zang_lost = 0.;
 
     BL_PROFILE_VAR("PeleC::advance_hydro_pc_umdrv()", PC_UMDRV);
 

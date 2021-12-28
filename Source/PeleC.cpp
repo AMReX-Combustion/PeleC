@@ -396,7 +396,7 @@ PeleC::PeleC(
   init_eb(level_geom, bl, dm);
 #endif
 
-  amrex::MultiFab& S_new = get_new_data(State_Type);
+  const amrex::MultiFab& S_new = get_new_data(State_Type);
 
   for (int n = 0; n < src_list.size(); ++n) {
     int oldGrow = numGrow();
@@ -582,17 +582,17 @@ PeleC::setGridInfo()
     const int nlevs = max_level + 1;
     const int size = 3 * nlevs;
 
-    amrex::Vector<amrex::Real> dx_level(size);
+    // amrex::Vector<amrex::Real> dx_level(size);
     amrex::Vector<int> domlo_level(size);
     amrex::Vector<int> domhi_level(size);
 
-    const amrex::Real* dx_coarse = geom.CellSize();
+    // const amrex::Real* dx_coarse = geom.CellSize();
 
     const int* domlo_coarse = geom.Domain().loVect();
     const int* domhi_coarse = geom.Domain().hiVect();
 
     for (int dir = 0; dir < 3; dir++) {
-      dx_level[dir] = (ZFILL(dx_coarse))[dir];
+      // dx_level[dir] = (ZFILL(dx_coarse))[dir];
 
       domlo_level[dir] = (ARLIM_3D(domlo_coarse))[dir];
       domhi_level[dir] = (ARLIM_3D(domhi_coarse))[dir];
@@ -608,15 +608,15 @@ PeleC::setGridInfo()
 
       for (int dir = 0; dir < 3; dir++) {
         if (dir < AMREX_SPACEDIM) {
-          dx_level[3 * lev + dir] =
-            dx_level[3 * (lev - 1) + dir] / ref_ratio[dir];
+          // dx_level[3 * lev + dir] = dx_level[3 * (lev - 1) + dir] /
+          // ref_ratio[dir];
           int ncell = (domhi_level[3 * (lev - 1) + dir] -
                        domlo_level[3 * (lev - 1) + dir] + 1) *
                       ref_ratio[dir];
           domlo_level[3 * lev + dir] = domlo_level[dir];
           domhi_level[3 * lev + dir] = domlo_level[3 * lev + dir] + ncell - 1;
         } else {
-          dx_level[3 * lev + dir] = 0.0;
+          // dx_level[3 * lev + dir] = 0.0;
           domlo_level[3 * lev + dir] = 0;
           domhi_level[3 * lev + dir] = 0;
         }
@@ -837,6 +837,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
     amrex::Real AMREX_D_DECL(dx1 = dx[0], dx2 = dx[1], dx3 = dx[2]);
 
     if (do_hydro) {
+      // cppcheck-suppress uninitvar
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
 #ifdef PELEC_USE_EB
@@ -862,6 +863,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 
     if (diffuse_vel) {
       auto const* ltransparm = trans_parms.device_trans_parm();
+      // cppcheck-suppress uninitvar
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
 #ifdef PELEC_USE_EB
@@ -887,6 +889,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 
     if (diffuse_temp) {
       auto const* ltransparm = trans_parms.device_trans_parm();
+      // cppcheck-suppress uninitvar
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
 #ifdef PELEC_USE_EB
@@ -912,6 +915,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 
     if (diffuse_enth) {
       auto const* ltransparm = trans_parms.device_trans_parm();
+      // cppcheck-suppress uninitvar
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
 #ifdef PELEC_USE_EB
@@ -1459,9 +1463,9 @@ PeleC::enforce_min_density(
   // is meaningless.
 
   amrex::Real dens_change = 1.0;
-  amrex::Real mass_added = 0.0; // cppcheck-suppress variableScope
-  amrex::Real eint_added = 0.0; // cppcheck-suppress variableScope
-  amrex::Real eden_added = 0.0; // cppcheck-suppress variableScope
+  amrex::Real mass_added = 0.0;
+  amrex::Real eint_added = 0.0;
+  amrex::Real eden_added = 0.0;
 
 #ifdef PELEC_USE_EB
   auto const& fact =
@@ -1541,7 +1545,7 @@ PeleC::avgDown(int state_indx)
   }
 
   amrex::MultiFab& S_crse = get_new_data(state_indx);
-  amrex::MultiFab& S_fine = getLevel(level + 1).get_new_data(state_indx);
+  const amrex::MultiFab& S_fine = getLevel(level + 1).get_new_data(state_indx);
 
 #ifdef PELEC_USE_EB
   PeleC& fine_lev = getLevel(level + 1);
@@ -2210,7 +2214,7 @@ PeleC::build_interior_boundary_mask(int ng)
 }
 
 amrex::Real
-PeleC::clean_state(amrex::MultiFab& S)
+PeleC::clean_state(const amrex::MultiFab& S)
 {
   // Enforce a minimum density.
 
