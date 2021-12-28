@@ -61,7 +61,7 @@ PeleC::do_mol_advance(
   }
 
   // get old and new state
-  amrex::MultiFab& S_old = get_old_data(State_Type);
+  const amrex::MultiFab& S_old = get_old_data(State_Type);
   amrex::MultiFab& S_new = get_new_data(State_Type);
 
   // define sourceterm

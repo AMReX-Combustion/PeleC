@@ -359,7 +359,7 @@ PeleC::define_body_state()
 }
 
 void
-PeleC::set_body_state(amrex::MultiFab& S)
+PeleC::set_body_state(const amrex::MultiFab& S)
 {
   BL_PROFILE("PeleC::set_body_state()");
 
