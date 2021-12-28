@@ -379,7 +379,7 @@ PeleC::set_body_state(const amrex::MultiFab& S)
 #endif
   for (amrex::MFIter mfi(S, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
     const amrex::Box& vbox = mfi.tilebox();
-    const auto const& Sar = S.array(mfi);
+    auto const& Sar = S.array(mfi);
     auto const& flag_arr = flags.const_array(mfi);
     auto const captured_body_state = body_state;
     amrex::ParallelFor(
