@@ -225,7 +225,7 @@ public:
 
   void define_body_state();
 
-  void set_body_state(const amrex::MultiFab& S);
+  void set_body_state(amrex::MultiFab& S);
 
   void zero_in_body(amrex::MultiFab& S) const;
 #endif

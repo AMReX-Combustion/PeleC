@@ -359,7 +359,7 @@ PeleC::define_body_state()
 }
 
 void
-PeleC::set_body_state(const amrex::MultiFab& S)
+PeleC::set_body_state(amrex::MultiFab& S)
 {
   BL_PROFILE("PeleC::set_body_state()");
 
@@ -379,9 +379,9 @@ PeleC::set_body_state(const amrex::MultiFab& S)
 #endif
   for (amrex::MFIter mfi(S, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
     const amrex::Box& vbox = mfi.tilebox();
-    const auto& Sar = S.array(mfi);
-    const auto& flag_arr = flags.const_array(mfi);
-    const auto captured_body_state = body_state;
+    auto const& Sar = S.array(mfi);
+    auto const& flag_arr = flags.const_array(mfi);
+    auto const captured_body_state = body_state;
     amrex::ParallelFor(
       vbox, NVAR, [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
         pc_set_body_state(i, j, k, n, flag_arr, captured_body_state, Sar);
@@ -407,8 +407,8 @@ PeleC::zero_in_body(amrex::MultiFab& S) const
 #endif
   for (amrex::MFIter mfi(S, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
     const amrex::Box& vbox = mfi.tilebox();
-    const auto& Sar = S.array(mfi);
-    const auto& flag_arr = flags.const_array(mfi);
+    auto const& Sar = S.array(mfi);
+    auto const& flag_arr = flags.const_array(mfi);
     amrex::ParallelFor(
       vbox, NVAR, [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
         pc_set_body_state(i, j, k, n, flag_arr, zeros, Sar);
