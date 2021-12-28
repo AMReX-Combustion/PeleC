@@ -997,7 +997,7 @@ PeleC::computeNewDt(
     return;
   }
 
-  amrex::Real dt_0 = 1.0e+100;
+  amrex::Real dt_0 = std::numeric_limits<amrex::Real>::max();
   int n_factor = 1;
   for (int i = 0; i <= finest_level; i++) {
     PeleC& adv_level = getLevel(i);
@@ -1067,7 +1067,7 @@ PeleC::computeInitialDt(
     return;
   }
 
-  amrex::Real dt_0 = 1.0e+100;
+  amrex::Real dt_0 = std::numeric_limits<amrex::Real>::max();
   int n_factor = 1;
   // TODO: This will need to change for optimal subcycling.
   for (int i = 0; i <= finest_level; i++) {

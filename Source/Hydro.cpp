@@ -57,7 +57,7 @@ PeleC::construct_hydro_source(
       {AMREX_D_DECL(dx1, dx1, dx1)}};
     const amrex::Real* dxDp = &(dxD[0]);
 
-    amrex::Real courno = -1.0e+200;
+    amrex::Real courno = std::numeric_limits<amrex::Real>::lowest();
 
     amrex::MultiFab& S_new = get_new_data(State_Type);
 
@@ -88,7 +88,7 @@ PeleC::construct_hydro_source(
 #endif
     {
       // amrex::IArrayBox bcMask[AMREX_SPACEDIM];
-      amrex::Real cflLoc = -1.0e+200;
+      amrex::Real cflLoc = std::numeric_limits<amrex::Real>::lowest();
       int is_finest_level = (level == finest_level) ? 1 : 0;
       // int flag_nscbc_isAnyPerio = (geom.isAnyPeriodic()) ? 1 : 0;
       // int flag_nscbc_perio[AMREX_SPACEDIM] = {0}; // For 3D, we will know
