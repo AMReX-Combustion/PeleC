@@ -134,9 +134,7 @@ PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
       grids, dmap, NVAR, newGrow, amrex::MFInfo(), Factory());
   }
 
-  if (do_hydro) {
-    Sborder.define(grids, dmap, NVAR, numGrow(), amrex::MFInfo(), Factory());
-  } else if (do_diffuse) {
+  if (do_hydro || do_diffuse) {
     Sborder.define(grids, dmap, NVAR, numGrow(), amrex::MFInfo(), Factory());
   }
 
