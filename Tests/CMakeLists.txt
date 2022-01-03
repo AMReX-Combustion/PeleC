@@ -4,16 +4,31 @@
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/CTestCustom.cmake ${CMAKE_BINARY_DIR}/CTestCustom.cmake)
 
-# Set location of gold files according to system/compiler/compiler_version
-set(FCOMPARE_GOLD_FILES_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PeleCGoldFiles/${CMAKE_SYSTEM_NAME}/${CMAKE_CXX_COMPILER_ID}/${CMAKE_CXX_COMPILER_VERSION})
-
 if(PELEC_ENABLE_FCOMPARE_FOR_TESTS)
-  message(STATUS "Test golds directory for fcompare: ${FCOMPARE_GOLD_FILES_DIRECTORY}")
+  if("${PELEC_REFERENCE_GOLDS_DIRECTORY}" STREQUAL "")
+    message(FATAL_ERROR "To reference gold files, PELEC_REFERENCE_GOLDS_DIRECTORY must be set and exist")
+  else()
+    if(EXISTS ${PELEC_REFERENCE_GOLDS_DIRECTORY})
+      set(GOLD_FILES_DIRECTORY ${PELEC_REFERENCE_GOLDS_DIRECTORY}/${CMAKE_SYSTEM_NAME}/${CMAKE_CXX_COMPILER_ID}/${CMAKE_CXX_COMPILER_VERSION})
+      message(STATUS "Test golds directory for fcompare: ${GOLD_FILES_DIRECTORY}")
+    else()
+      message(FATAL_ERROR "Specified directory for reference gold files does not exist: ${PELEC_REFERENCE_GOLDS_DIRECTORY}")
+    endif()
+  endif()
 endif()
 
-# Have CMake discover the number of cores on the node
-#include(ProcessorCount)
-#ProcessorCount(PROCESSES)
+if(PELEC_SAVE_GOLDS)
+  if("${PELEC_SAVED_GOLDS_DIRECTORY}" STREQUAL "")
+    message(FATAL_ERROR "To save gold files, PELEC_SAVED_GOLDS_DIRECTORY must be set and exist")
+  else()
+    if(EXISTS ${PELEC_SAVED_GOLDS_DIRECTORY})
+      set(SAVED_GOLDS_DIRECTORY ${PELEC_SAVED_GOLDS_DIRECTORY}/${CMAKE_SYSTEM_NAME}/${CMAKE_CXX_COMPILER_ID}/${CMAKE_CXX_COMPILER_VERSION})
+      message(STATUS "Gold files will be saved to: ${SAVED_GOLDS_DIRECTORY}")
+    else()
+      message(FATAL_ERROR "Specified directory for saving gold files does not exist: ${PELEC_SAVED_GOLDS_DIRECTORY}")
+    endif()
+  endif()
+endif()
 
 #=============================================================================
 # Functions for adding tests / Categories of tests
@@ -25,7 +40,7 @@ macro(setup_test)
     set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/Exec/RegTests/${TEST_EXE_DIR}/tests/${TEST_NAME})
     set(CURRENT_TEST_EXE ${CMAKE_BINARY_DIR}/Exec/RegTests/${TEST_EXE_DIR}/PeleC-${TEST_EXE_DIR})
     # Gold files should be submodule organized by machine and compiler (these are output during configure)
-    set(PLOT_GOLD ${FCOMPARE_GOLD_FILES_DIRECTORY}/${TEST_EXE_DIR}/tests/${TEST_NAME}/plt00010)
+    set(PLOT_GOLD ${GOLD_FILES_DIRECTORY}/${TEST_EXE_DIR}/${TEST_NAME}/plt00010)
     # Test plot is currently expected to be after 10 steps
     set(PLOT_TEST ${CURRENT_TEST_BINARY_DIR}/plt00010)
     # Find fcompare
@@ -64,13 +79,17 @@ macro(setup_test)
       endif()
       set(FCOMPARE_COMMAND "&& ${MPI_COMMANDS} ${FCOMPARE} ${FCOMPARE_TOLERANCE} ${PLOT_GOLD} ${PLOT_TEST}")
     endif()
+    if(PELEC_SAVE_GOLDS)
+      file(MAKE_DIRECTORY ${SAVED_GOLDS_DIRECTORY}/${TEST_EXE_DIR}/${TEST_NAME})
+      set(SAVE_GOLDS_COMMAND "&& cp -R ${PLOT_TEST} ${SAVED_GOLDS_DIRECTORY}/${TEST_EXE_DIR}/${TEST_NAME}/")
+    endif()
 endmacro(setup_test)
 
 # Standard regression test
 function(add_test_r TEST_NAME TEST_EXE_DIR)
     setup_test()
     set(RUNTIME_OPTIONS "max_step=10 ${RUNTIME_OPTIONS}")
-    add_test(${TEST_NAME} sh -c "${MPI_COMMANDS} ${CURRENT_TEST_EXE} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.inp ${RUNTIME_OPTIONS} > ${TEST_NAME}.log ${FCOMPARE_COMMAND}")
+    add_test(${TEST_NAME} sh -c "${MPI_COMMANDS} ${CURRENT_TEST_EXE} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.inp ${RUNTIME_OPTIONS} > ${TEST_NAME}.log ${SAVE_GOLDS_COMMAND} ${FCOMPARE_COMMAND}")
     set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 18000 PROCESSORS ${PELEC_NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "regression" ATTACHED_FILES_ON_FAIL "${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.log")
 endfunction(add_test_r)
 
