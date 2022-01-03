@@ -91,9 +91,7 @@ PeleC::initialize_eb2_structs()
     amrex::FabType typ = flagfab.getType(tbox);
     int iLocal = mfi.LocalIndex();
 
-    if (typ == amrex::FabType::regular) {
-      // do nothing
-    } else if (typ == amrex::FabType::covered) {
+    if ((typ == amrex::FabType::regular) || (typ == amrex::FabType::covered)) {
       // do nothing
     } else if (typ == amrex::FabType::singlevalued) {
       const int Ncut = flagfab.getNumCutCells(tbox);
