@@ -137,6 +137,7 @@ jobs:
       - name: PMF debug make
         working-directory: ./Exec/RegTests/PMF
         run: |
+          echo "::add-matcher::.github/problem-matchers/gcc.json"
           make COMP=gnu USE_MPI=FALSE DEBUG=TRUE TPL
           make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE
       - name: PMF debug test
@@ -144,7 +145,9 @@ jobs:
         run: ./PeleC3d.gnu.DEBUG.ex pmf-lidryer-arkode.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
       - name: EB debug build
         working-directory: ./Exec/RegTests/EB-C10
-        run: make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE
+        run: |
+          echo "::add-matcher::.github/problem-matchers/gcc.json"
+          make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE
       - name: EB debug test
         working-directory: ./Exec/RegTests/EB-C10
         run: ./PeleC3d.gnu.DEBUG.ex eb-c10.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
@@ -194,7 +197,7 @@ jobs:
         run: cmake --build build-${{matrix.cuda_pkg}} --parallel ${{env.NPROCS}}
   cppcheck:
     needs: Formatting
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.6.0
@@ -205,8 +208,7 @@ jobs:
           submodules: true
       - name: Dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y cppcheck
+          brew install cppcheck
       - name: Configure
         run: |
           cmake -B${{runner.workspace}}/build-cppcheck \

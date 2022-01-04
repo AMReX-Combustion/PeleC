@@ -57,24 +57,24 @@ PeleC::construct_hydro_source(
       {AMREX_D_DECL(dx1, dx1, dx1)}};
     const amrex::Real* dxDp = &(dxD[0]);
 
-    amrex::Real courno = -1.0e+200;
+    amrex::Real courno = std::numeric_limits<amrex::Real>::lowest();
 
     amrex::MultiFab& S_new = get_new_data(State_Type);
 
     // note: the radiation consup currently does not fill these
-    amrex::Real E_added_flux = 0.;    // cppcheck-suppress variableScope
-    amrex::Real mass_added_flux = 0.; // cppcheck-suppress variableScope
-    amrex::Real xmom_added_flux = 0.; // cppcheck-suppress variableScope
-    amrex::Real ymom_added_flux = 0.; // cppcheck-suppress variableScope
-    amrex::Real zmom_added_flux = 0.; // cppcheck-suppress variableScope
-    amrex::Real mass_lost = 0.;       // cppcheck-suppress variableScope
-    amrex::Real xmom_lost = 0.;       // cppcheck-suppress variableScope
-    amrex::Real ymom_lost = 0.;       // cppcheck-suppress variableScope
-    amrex::Real zmom_lost = 0.;       // cppcheck-suppress variableScope
-    amrex::Real eden_lost = 0.;       // cppcheck-suppress variableScope
-    amrex::Real xang_lost = 0.;       // cppcheck-suppress variableScope
-    amrex::Real yang_lost = 0.;       // cppcheck-suppress variableScope
-    amrex::Real zang_lost = 0.;       // cppcheck-suppress variableScope
+    amrex::Real E_added_flux = 0.;
+    amrex::Real mass_added_flux = 0.;
+    amrex::Real xmom_added_flux = 0.;
+    amrex::Real ymom_added_flux = 0.;
+    amrex::Real zmom_added_flux = 0.;
+    amrex::Real mass_lost = 0.;
+    amrex::Real xmom_lost = 0.;
+    amrex::Real ymom_lost = 0.;
+    amrex::Real zmom_lost = 0.;
+    amrex::Real eden_lost = 0.;
+    amrex::Real xang_lost = 0.;
+    amrex::Real yang_lost = 0.;
+    amrex::Real zang_lost = 0.;
 
     BL_PROFILE_VAR("PeleC::advance_hydro_pc_umdrv()", PC_UMDRV);
 
@@ -88,7 +88,7 @@ PeleC::construct_hydro_source(
 #endif
     {
       // amrex::IArrayBox bcMask[AMREX_SPACEDIM];
-      amrex::Real cflLoc = -1.0e+200;
+      amrex::Real cflLoc = std::numeric_limits<amrex::Real>::lowest();
       int is_finest_level = (level == finest_level) ? 1 : 0;
       // int flag_nscbc_isAnyPerio = (geom.isAnyPeriodic()) ? 1 : 0;
       // int flag_nscbc_perio[AMREX_SPACEDIM] = {0}; // For 3D, we will know

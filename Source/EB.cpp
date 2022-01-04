@@ -268,7 +268,7 @@ pc_fill_bndry_grad_stencil_ls(
       const amrex::Real n[AMREX_SPACEDIM] = {AMREX_D_DECL(
         ebg[L].eb_normal[0], ebg[L].eb_normal[1], ebg[L].eb_normal[2])};
 
-      amrex::Real centcoord[AMREX_SPACEDIM] = {AMREX_D_DECL(
+      const amrex::Real centcoord[AMREX_SPACEDIM] = {AMREX_D_DECL(
         ebg[L].eb_centroid[0], ebg[L].eb_centroid[1], ebg[L].eb_centroid[2])};
 
       const int ivs[AMREX_SPACEDIM] = {

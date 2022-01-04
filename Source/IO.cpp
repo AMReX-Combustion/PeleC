@@ -121,7 +121,7 @@ PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
   init_eb(geom, grids, dmap);
 #endif
 
-  amrex::MultiFab& S_new = get_new_data(State_Type);
+  const amrex::MultiFab& S_new = get_new_data(State_Type);
 
   for (int n = 0; n < src_list.size(); ++n) {
     int oldGrow = numGrow();
@@ -132,9 +132,7 @@ PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
       grids, dmap, NVAR, newGrow, amrex::MFInfo(), Factory());
   }
 
-  if (do_hydro) {
-    Sborder.define(grids, dmap, NVAR, numGrow(), amrex::MFInfo(), Factory());
-  } else if (do_diffuse) {
+  if (do_hydro || do_diffuse) {
     Sborder.define(grids, dmap, NVAR, numGrow(), amrex::MFInfo(), Factory());
   }
 

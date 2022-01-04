@@ -139,11 +139,11 @@ AMREX_FORCE_INLINE
 void
 get_weightvec(
   AMREX_D_DECL(
-    amrex::Real delta_x_i[NLSPTS],
-    amrex::Real delta_y_i[NLSPTS],
-    amrex::Real delta_z_i[NLSPTS]),
+    const amrex::Real delta_x_i[NLSPTS],
+    const amrex::Real delta_y_i[NLSPTS],
+    const amrex::Real delta_z_i[NLSPTS]),
   int N,
-  amrex::Real qmat[NEL_TRIMAT],
+  const amrex::Real qmat[NEL_TRIMAT],
   amrex::Real wvec[NLSPTS][AMREX_SPACEDIM])
 {
   amrex::Real r11 = qmat[0];
