@@ -69,11 +69,13 @@ function(build_pelec_exe pelec_exe_name)
   target_sources(${pelec_exe_name} PRIVATE
                  ${PELEC_MECHANISM_DIR}/mechanism.cpp
                  ${PELEC_MECHANISM_DIR}/mechanism.H)
-  # Avoid warnings from certain files
+
+  # Use flags to avoid warnings from certain files
   if((NOT PELEC_ENABLE_CUDA) AND (CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$"))
     list(APPEND MY_CXX_FLAGS "-w")
   endif()
   separate_arguments(MY_CXX_FLAGS)
+
   set_source_files_properties(${PELEC_MECHANISM_DIR}/mechanism.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
   set_source_files_properties(${PELEC_MECHANISM_DIR}/mechanism.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELEC_MECHANISM_DIR})
@@ -118,11 +120,20 @@ function(build_pelec_exe pelec_exe_name)
   target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions)
   target_link_libraries(${pelec_exe_name} PRIVATE sundials_arkode sundials_cvode)
 
-  if(PELEC_ENABLE_CUDA OR PELEC_ENABLE_HIP OR PELEC_ENABLE_DPCPP)
-    target_sources(${pelec_exe_name} PRIVATE ${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_SUNMemory.cpp
-                                             ${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_SUNMemory.H)
-    target_include_directories(${pelec_exe_name} PRIVATE ${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS)
-  endif()
+  target_sources(${pelec_exe_name} PRIVATE ${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_Sundials.H
+                                           ${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_Sundials.cpp
+                                           ${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_NVector_MultiFab.cpp
+                                           ${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_NVector_MultiFab.H
+                                           ${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_SUNMemory.cpp
+                                           ${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_SUNMemory.H)
+  set_source_files_properties(${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_Sundials.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+  set_source_files_properties(${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_Sundials.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+  set_source_files_properties(${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_NVector_MultiFab.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+  set_source_files_properties(${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_NVector_MultiFab.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+  set_source_files_properties(${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_SUNMemory.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+  set_source_files_properties(${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_SUNMemory.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
+
+  target_include_directories(${pelec_exe_name} PRIVATE ${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS)
 
   if(PELEC_ENABLE_CUDA)
     target_link_libraries(${pelec_exe_name} PRIVATE sundials_nveccuda sundials_sunlinsolcusolversp sundials_sunmatrixcusparse)
