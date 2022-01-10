@@ -5,6 +5,7 @@
 #include <AMReX_AmrLevel.H>
 #include <AMReX_iMultiFab.H>
 #include <AMReX_ParmParse.H>
+#include <AMReX_Sundials.H>
 
 #ifdef PELEC_USE_EB
 #include <AMReX_EBFArrayBox.H>
