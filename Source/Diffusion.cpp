@@ -155,7 +155,7 @@ PeleC::getMOLSrcTerm(
       const amrex::Box ebfluxbox = amrex::grow(vbox, 2);
 
       const int local_i = mfi.LocalIndex();
-      const size_t Ncut =
+      const auto Ncut =
         (!eb_in_domain) ? 0 : sv_eb_bndry_grad_stencil[local_i].size();
       SparseData<amrex::Real, EBBndrySten> eb_flux_thdlocal;
       if (Ncut > 0) {
