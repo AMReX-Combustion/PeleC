@@ -5,6 +5,12 @@
 #include <AMReX_ParallelDescriptor.H>
 #include <AMReX_AmrLevel.H>
 
+// Defined and initialized when in gnumake, but not defined in cmake and
+// initialization done manually
+#ifndef AMREX_USE_SUNDIALS
+#include <AMReX_Sundials.H>
+#endif
+
 #ifdef AMREX_USE_EB
 #include <AMReX_EB2.H>
 #endif
@@ -42,7 +48,11 @@ main(int argc, char* argv[])
 
   // Make sure to catch new failures.
   amrex::Initialize(argc, argv);
+// Defined and initialized when in gnumake, but not defined in cmake and
+// initialization done manually
+#ifndef AMREX_USE_SUNDIALS
   amrex::sundials::Initialize(amrex::OpenMP::get_max_threads());
+#endif
 
   // Save the inputs file name for later.
   if (!strchr(argv[1], '=')) {
@@ -203,7 +213,11 @@ main(int argc, char* argv[])
   BL_PROFILE_VAR_STOP(pmain);
   BL_PROFILE_SET_RUN_TIME(dRunTime2);
 
+// Defined and finalized when in gnumake, but not defined in cmake and
+// finalization done manually
+#ifndef AMREX_USE_SUNDIALS
   amrex::sundials::Finalize();
+#endif
   amrex::Finalize();
 
   return 0;
