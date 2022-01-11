@@ -117,7 +117,6 @@ main(int argc, char* argv[])
   amrex::Print() << "Initializing EB2 as all_regular because AMReX has EB "
                     "enabled, but PeleC does not"
                  << std::endl;
-  std::string geom_type("all_regular");
   amrex::EB2::Build(
     amrptr->Geom(amrptr->maxLevel()), amrptr->maxLevel(), amrptr->maxLevel());
 #elif defined(AMREX_USE_EB) && defined(PELEC_USE_EB)

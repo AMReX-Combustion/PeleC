@@ -841,7 +841,7 @@ PeleC::writePlotFile(
     }
   }
 
-  int n_data_items = plot_var_map.size() + num_derive;
+  const auto n_data_items = plot_var_map.size() + num_derive;
 
   amrex::Real cur_time = state[State_Type].curTime();
 

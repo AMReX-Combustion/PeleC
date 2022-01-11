@@ -154,8 +154,9 @@ PeleC::getMOLSrcTerm(
       //                to be a constant, and make sure this matches it)
       const amrex::Box ebfluxbox = amrex::grow(vbox, 2);
 
-      int local_i = mfi.LocalIndex();
-      int Ncut = (!eb_in_domain) ? 0 : sv_eb_bndry_grad_stencil[local_i].size();
+      const int local_i = mfi.LocalIndex();
+      const size_t Ncut =
+        (!eb_in_domain) ? 0 : sv_eb_bndry_grad_stencil[local_i].size();
       SparseData<amrex::Real, EBBndrySten> eb_flux_thdlocal;
       if (Ncut > 0) {
         eb_flux_thdlocal.define(sv_eb_bndry_grad_stencil[local_i], NVAR);
@@ -168,7 +169,7 @@ PeleC::getMOLSrcTerm(
       // const int* hi = vbox.hiVect();
 
       BL_PROFILE_VAR_START(diff);
-      int nqaux = NQAUX > 0 ? NQAUX : 1;
+      const int nqaux = NQAUX > 0 ? NQAUX : 1;
       amrex::FArrayBox q(gbox, QVAR);
       amrex::FArrayBox qaux(gbox, nqaux);
       amrex::FArrayBox coeff_cc(gbox, nCompTr);

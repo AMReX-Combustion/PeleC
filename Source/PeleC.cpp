@@ -1807,7 +1807,8 @@ PeleC::errorEst(
           });
 
         const int local_i = mfi.LocalIndex();
-        const int Nebg = (!eb_in_domain) ? 0 : sv_eb_bndry_geom[local_i].size();
+        const size_t Nebg =
+          (!eb_in_domain) ? 0 : sv_eb_bndry_geom[local_i].size();
         EBBndryGeom* ebg = sv_eb_bndry_geom[local_i].data();
         amrex::ParallelFor(Nebg, [=] AMREX_GPU_DEVICE(int L) {
           const auto& iv = ebg[L].iv;
