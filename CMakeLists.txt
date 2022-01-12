@@ -83,6 +83,8 @@ include(SetAmrexCompileFlags)
 
 message(STATUS "AMReX-Hydro Configure Section")
 set(AMREX_HYDRO_SUBMOD_LOCATION "${CMAKE_SOURCE_DIR}/Submodules/AMReX-Hydro")
+include(SetAmrexHydroOptions)
+add_subdirectory(${AMREX_HYDRO_SUBMOD_LOCATION})
 
 ########################## SUNDIALS ###################################
 
