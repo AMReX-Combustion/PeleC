@@ -60,11 +60,12 @@ PeleC::do_mol_advance(
     get_new_data(Work_Estimate_Type).setVal(0.0);
   }
 
-  amrex::MultiFab& S_old = get_old_data(State_Type);
-  amrex::MultiFab& S_new = get_new_data(State_Type);
-
   // define sourceterm
   amrex::MultiFab molSrc(grids, dmap, NVAR, 0, amrex::MFInfo(), Factory());
+
+  amrex::MultiFab& S_new = get_new_data(State_Type);
+  // cppcheck-suppress constVariable
+  amrex::MultiFab& S_old = get_old_data(State_Type);
 
   amrex::MultiFab molSrc_old;
   amrex::MultiFab molSrc_new;
