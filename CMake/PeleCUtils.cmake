@@ -36,7 +36,7 @@ macro(init_code_checks)
       endif()
       add_custom_target(cppcheck ALL
           COMMAND ${CMAKE_COMMAND} -E echo "Running cppcheck on project using ${NP} cores..."
-          COMMAND ${CMAKE_COMMAND} -E make_directory cppcheck/cppcheck-wd
+          COMMAND ${CMAKE_COMMAND} -E make_directory cppcheck
           # cppcheck ignores -isystem directories, so we change them to regular -I include directories (with no spaces either)
           COMMAND sed "s/isystem /I/g" compile_commands.json > cppcheck/cppcheck_compile_commands.json
           COMMAND ${CPPCHECK_EXE} --version
