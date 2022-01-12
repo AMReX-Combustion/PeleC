@@ -169,7 +169,7 @@ PeleC::monitor_extrema()
     }
   }
 
-  auto nextrema = extrema_vars.size();
+  const auto nextrema = extrema_vars.size();
   constexpr amrex::Real neg_huge = std::numeric_limits<amrex::Real>::lowest();
   constexpr amrex::Real huge = std::numeric_limits<amrex::Real>::max();
   amrex::Vector<amrex::Real> minima(nextrema, huge), maxima(nextrema, neg_huge);
@@ -188,7 +188,7 @@ PeleC::monitor_extrema()
     BL_ASSERT(!(mf == nullptr));
     amrex::MultiFab sumY(pc_lev.grids, pc_lev.dmap, 1, 0);
     sumY.setVal(0.0);
-    const int idx_massfrac = nextrema - nspec_extrema;
+    const auto idx_massfrac = nextrema - nspec_extrema;
 
     for (int ispec = 0; ispec < NUM_SPECIES; ispec++) {
       amrex::Real maxval = mf->max(ispec, 0, local_flag);
@@ -201,12 +201,12 @@ PeleC::monitor_extrema()
 
       // Get values for any individual species if relevant
       if (use_all_spec) {
-        const int idx_spec = idx_massfrac + ispec + 2;
+        const auto idx_spec = idx_massfrac + ispec + 2;
         maxima[idx_spec] = amrex::max(maxima[idx_spec], maxval);
         minima[idx_spec] = amrex::min(minima[idx_spec], minval);
       } else {
         for (int iext = 0; iext < nspec_extrema - 2; iext++) {
-          const int idx_spec = idx_massfrac + iext + 2;
+          const auto idx_spec = idx_massfrac + iext + 2;
           if (extrema_vars[idx_spec] == PeleC::spec_names[ispec]) {
             maxima[idx_spec] = amrex::max(maxima[idx_spec], maxval);
             minima[idx_spec] = amrex::min(minima[idx_spec], minval);
