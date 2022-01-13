@@ -2256,9 +2256,7 @@ PeleC::InitialRedistribution(
 
   // Next we must redistribute the initial solution if we are going to use
   // StateRedist redistribution schemes
-  if (
-    (eb_in_domain) && ((redistribution_type != "StateRedist") &&
-                       (redistribution_type != "NewStateRedist"))) {
+  if ((eb_in_domain) && (redistribution_type != "StateRedist")) {
     return;
   }
 
