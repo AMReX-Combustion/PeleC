@@ -60,7 +60,6 @@ PeleC::do_mol_advance(
     get_new_data(Work_Estimate_Type).setVal(0.0);
   }
 
-  // cppcheck-suppress constVariable
   amrex::MultiFab& S_old = get_old_data(State_Type);
   amrex::MultiFab& S_new = get_new_data(State_Type);
 
