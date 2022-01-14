@@ -60,7 +60,12 @@ PeleC::do_mol_advance(
     get_new_data(Work_Estimate_Type).setVal(0.0);
   }
 
+// Using const for non-EB was the best way to fix a difficult warning
+#ifdef PELEC_USE_EB
   amrex::MultiFab& S_old = get_old_data(State_Type);
+#else
+  const amrex::MultiFab& S_old = get_old_data(State_Type);
+#endif
   amrex::MultiFab& S_new = get_new_data(State_Type);
 
   // define sourceterm
