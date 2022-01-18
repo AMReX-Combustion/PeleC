@@ -28,6 +28,12 @@ ifeq ($(USE_FORCING), TRUE)
   DEFINES += -DPELEC_USE_FORCING
 endif
 
+ifeq ($(USE_TURBINFLOW), TRUE)
+  DEFINES += -DPELEC_USE_TURBINFLOW
+  Bpack += $(PELE_PHYSICS_HOME)/Utility/TurbInflow/Make.package
+  Blocs += $(PELE_PHYSICS_HOME)/Utility/TurbInflow
+endif
+
 ifeq ($(USE_EB), TRUE)
   DEFINES += -DPELEC_USE_EB
   ifeq ($(DIM), 1)
