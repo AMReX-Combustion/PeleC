@@ -11,10 +11,12 @@ struct ProbParmDevice
   amrex::Real rho_l = 1.0; // left density (g/cc)
   amrex::Real rhoe_l = 0.0;
   amrex::Real T_l = 1.0;
+  amrex::Real u_l = 0.0;
   amrex::Real p_r = 0.1;     // right pressure (erg/cc)
   amrex::Real rho_r = 0.125; // right density (g/cc)
   amrex::Real rhoe_r = 0.0;
   amrex::Real T_r = 1.0;
+  amrex::Real u_r = 0.0;
   amrex::Real angle = 0.0;
   amrex::Real L = 0.0;
   int left_gas_id = N2_ID;

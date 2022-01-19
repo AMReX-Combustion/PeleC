@@ -18,8 +18,10 @@ amrex_probinit(
   amrex::ParmParse pp("prob");
   pp.query("p_l", PeleC::h_prob_parm_device->p_l);
   pp.query("rho_l", PeleC::h_prob_parm_device->rho_l);
+  pp.query("u_l", PeleC::h_prob_parm_device->u_l);
   pp.query("p_r", PeleC::h_prob_parm_device->p_r);
   pp.query("rho_r", PeleC::h_prob_parm_device->rho_r);
+  pp.query("u_r", PeleC::h_prob_parm_device->u_r);
   pp.query("angle", PeleC::h_prob_parm_device->angle);
   pp.get("left_gas", PeleC::prob_parm_host->gasL);
   pp.get("right_gas", PeleC::prob_parm_host->gasR);
