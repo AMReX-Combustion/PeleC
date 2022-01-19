@@ -50,20 +50,30 @@ pc_initdata(
   // Set the states
   if (xp < 0.5 * prob_parm.L) {
     state(i, j, k, URHO) = prob_parm.rho_l;
-    state(i, j, k, UMX) = 0.0;
-    state(i, j, k, UMY) = 0.0;
+    state(i, j, k, UMX) = prob_parm.rho_l * prob_parm.u_l * cost;
+    state(i, j, k, UMY) = prob_parm.rho_l * prob_parm.u_l * sint;
     state(i, j, k, UMZ) = 0.0;
-    state(i, j, k, UEDEN) = prob_parm.rhoe_l;
     state(i, j, k, UEINT) = prob_parm.rhoe_l;
+    state(i, j, k, UEDEN) =
+      state(i, j, k, UEINT) + 0.5 *
+                                (state(i, j, k, UMX) * state(i, j, k, UMX) +
+                                 state(i, j, k, UMY) * state(i, j, k, UMY) +
+                                 state(i, j, k, UMZ) * state(i, j, k, UMZ)) /
+                                state(i, j, k, URHO);
     state(i, j, k, UTEMP) = prob_parm.T_l;
     state(i, j, k, UFS + prob_parm.left_gas_id) = state(i, j, k, URHO);
   } else {
     state(i, j, k, URHO) = prob_parm.rho_r;
-    state(i, j, k, UMX) = 0.0;
-    state(i, j, k, UMY) = 0.0;
+    state(i, j, k, UMX) = prob_parm.rho_r * prob_parm.u_r * cost;
+    state(i, j, k, UMY) = prob_parm.rho_r * prob_parm.u_r * sint;
     state(i, j, k, UMZ) = 0.0;
-    state(i, j, k, UEDEN) = prob_parm.rhoe_r;
     state(i, j, k, UEINT) = prob_parm.rhoe_r;
+    state(i, j, k, UEDEN) =
+      state(i, j, k, UEINT) + 0.5 *
+                                (state(i, j, k, UMX) * state(i, j, k, UMX) +
+                                 state(i, j, k, UMY) * state(i, j, k, UMY) +
+                                 state(i, j, k, UMZ) * state(i, j, k, UMZ)) /
+                                state(i, j, k, URHO);
     state(i, j, k, UTEMP) = prob_parm.T_r;
     state(i, j, k, UFS + prob_parm.right_gas_id) = state(i, j, k, URHO);
   }
