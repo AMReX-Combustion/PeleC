@@ -72,6 +72,8 @@ tagging.denerr = 1e20
 tagging.dengrad = 4e-5
 tagging.max_denerr_lev = 3
 tagging.max_dengrad_lev = 3
+tagging.tempgrad = 50.0
+tagging.max_tempgrad_lev = 3
 
 eb2.geom_type = "extruded_triangles"
 extruded_triangles.num_tri = 2
