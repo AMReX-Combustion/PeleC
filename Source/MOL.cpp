@@ -124,7 +124,6 @@ pc_compute_hyp_mol_flux(
 
         amrex::Real flux_tmp[NVAR] = {0.0};
         amrex::Real ustar = 0.0;
-        amrex::Real maxeigval = 0.0;
 
         if (!use_laxf_flux) {
           amrex::Real tmp0 = 0.0, tmp1 = 0.0, tmp2 = 0.0, tmp3 = 0.0,
@@ -137,6 +136,7 @@ pc_compute_hyp_mol_flux(
             flux_tmp[f_idx[1]], flux_tmp[f_idx[2]], flux_tmp[UEDEN],
             flux_tmp[UEINT], tmp0, tmp1, tmp2, tmp3, tmp4);
         } else {
+          amrex::Real maxeigval = 0.0;
           laxfriedrich_flux(
             qtempl[R_RHO], qtempl[R_UN], qtempl[R_UT1], qtempl[R_UT2],
             qtempl[R_P], spl, qtempr[R_RHO], qtempr[R_UN], qtempr[R_UT1],
