@@ -53,9 +53,9 @@ pc_initdata(
     state(i, j, k, UMX) = prob_parm.rho_l * prob_parm.u_l * cost;
     state(i, j, k, UMY) = prob_parm.rho_l * prob_parm.u_l * sint;
     state(i, j, k, UMZ) = 0.0;
-    state(i, j, k, UEDEN) = prob_parm.rhoe_l;
-    state(i, j, k, UEINT) =
-      state(i, j, k, UEDEN) + 0.5 *
+    state(i, j, k, UEINT) = prob_parm.rhoe_l;
+    state(i, j, k, UEDEN) =
+      state(i, j, k, UEINT) + 0.5 *
                                 (state(i, j, k, UMX) * state(i, j, k, UMX) +
                                  state(i, j, k, UMY) * state(i, j, k, UMY) +
                                  state(i, j, k, UMZ) * state(i, j, k, UMZ)) /
@@ -67,9 +67,9 @@ pc_initdata(
     state(i, j, k, UMX) = prob_parm.rho_r * prob_parm.u_r * cost;
     state(i, j, k, UMY) = prob_parm.rho_r * prob_parm.u_r * sint;
     state(i, j, k, UMZ) = 0.0;
-    state(i, j, k, UEDEN) = prob_parm.rhoe_r;
-    state(i, j, k, UEINT) =
-      state(i, j, k, UEDEN) + 0.5 *
+    state(i, j, k, UEINT) = prob_parm.rhoe_r;
+    state(i, j, k, UEDEN) =
+      state(i, j, k, UEINT) + 0.5 *
                                 (state(i, j, k, UMX) * state(i, j, k, UMX) +
                                  state(i, j, k, UMY) * state(i, j, k, UMY) +
                                  state(i, j, k, UMZ) * state(i, j, k, UMZ)) /
