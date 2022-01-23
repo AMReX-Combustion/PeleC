@@ -1,19 +1,19 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 max_step = 10000
-stop_time =  1.959e-6 #final time is 0.2*L*sqrt(rhoL/pL)
+stop_time =  0.00003125
 
 # PROBLEM SIZE & GEOMETRY
-geometry.is_periodic = 0  0  1
+geometry.is_periodic = 1  0  1
 geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
-geometry.prob_lo     = 0.0  -0.13  0.0
-geometry.prob_hi     = 0.87 0.653 0.0435
-amr.n_cell           =  160 144 8
+geometry.prob_lo     = 0.0  0.0  0.0
+geometry.prob_hi     = 2.0 0.03125 0.125
+amr.n_cell           =  256 4 4
 
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
-pelec.lo_bc       =  "FOExtrap"  "NoSlipWall"  "Interior"
-pelec.hi_bc       =  "FOExtrap"  "NoSlipWall"  "Interior"
+pelec.lo_bc       =  "Interior"  "NoSlipWall"  "Interior"
+pelec.hi_bc       =  "Interior"  "NoSlipWall"  "Interior"
 
 # WHICH PHYSICS
 pelec.do_hydro = 1
@@ -27,20 +27,21 @@ pelec.diffuse_enth = 0
 # TIME STEP CONTROL
 pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
 pelec.cfl            = 0.2     # cfl number for hyperbolic system
-pelec.init_shrink    = 0.8     # scale back initial timestep
+pelec.init_shrink    = 1.0     # scale back initial timestep
 pelec.change_max     = 1.05    # scale back initial timestep
+#pelec.fixed_dt = 1e-8
 
 # DIAGNOSTICS & VERBOSITY
 pelec.sum_interval   = 1       # timesteps between computing mass
 pelec.v              = 1       # verbosity in PeleC.cpp
 amr.v                = 1       # verbosity in Amr.cpp
-amr.data_log         = datlog
+amr.data_log         = datlog extremalog
 
 # REFINEMENT / REGRIDDING
-amr.max_level       = 1       # maximum level number allowed
+amr.max_level       = 0       # maximum level number allowed
 amr.ref_ratio       = 2 2 2 2 # refinement ratio
 amr.regrid_int      = 2 2 2 2 # how often to regrid
-amr.blocking_factor = 8       # block factor in grid generation
+amr.blocking_factor = 4       # block factor in grid generation
 amr.max_grid_size   = 32
 
 # CHECKPOINT FILES
@@ -53,13 +54,17 @@ amr.plot_files_output = 1
 amr.plot_file       = plt        # root name of plotfile
 amr.plot_int        = 100        # number of timesteps between plotfiles
 amr.derive_plot_vars = ALL
+pelec.plot_massfrac = 1
+pelec.extrema_spec_name = ALL
 
 # PROBLEM PARAMETERS
-prob.p_l = 1e7
-prob.rho_l = 9.6e-4
+prob.p_l = 1e6
+prob.rho_l = 1.0e-3
+prob.u_l = 32000.0
 prob.p_r = 1e6
-prob.rho_r = 1.2e-4
-prob.angle = 30.0
+prob.rho_r = 1.25e-4
+prob.u_r = 32000.0
+prob.angle = 0.0
 prob.left_gas = N2
 prob.right_gas = HE
 
@@ -72,16 +77,14 @@ tagging.denerr = 1e20
 tagging.dengrad = 4e-5
 tagging.max_denerr_lev = 3
 tagging.max_dengrad_lev = 3
-tagging.tempgrad = 50.0
-tagging.max_tempgrad_lev = 3
 
-eb2.geom_type = "extruded_triangles"
-extruded_triangles.num_tri = 2
-extruded_triangles.tri_0_point_0 = -20.0 -11.662475437630437 0.0
-extruded_triangles.tri_0_point_1 = 22.0 -20.0 0.0
-extruded_triangles.tri_0_point_2 = 22.0 12.586235868333839 0.0
-
-extruded_triangles.tri_1_point_0 = -20.0 -11.431535329954588 0.0
-extruded_triangles.tri_1_point_1 = 22.0 12.817175976009688 0.0
-extruded_triangles.tri_1_point_2 = -20.0 20.0 0.0
+# eb2.geom_type = "extruded_triangles"
+# extruded_triangles.num_tri = 2
+# extruded_triangles.tri_0_point_0 = -20.0 -11.662475437630437 0.0
+# extruded_triangles.tri_0_point_1 = 22.0 -20.0 0.0
+# extruded_triangles.tri_0_point_2 = 22.0 12.586235868333839 0.0
+# extruded_triangles.tri_1_point_0 = -20.0 -11.431535329954588 0.0
+# extruded_triangles.tri_1_point_1 = 22.0 12.817175976009688 0.0
+# extruded_triangles.tri_1_point_2 = -20.0 20.0 0.0
 ebd.boundary_grad_stencil_type = 0
+eb2.geom_type = "all_regular"

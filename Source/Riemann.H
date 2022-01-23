@@ -23,6 +23,7 @@ riemann(
   const amrex::Real cav,
   amrex::Real& ustar,
   amrex::Real& uflx_rho,
+  amrex::Real uflx_rhoY[NUM_SPECIES],
   amrex::Real& uflx_u,
   amrex::Real& uflx_v,
   amrex::Real& uflx_w,
@@ -59,30 +60,32 @@ riemann(
   ustar = ((wl * ul + wr * ur) + (pl - pr)) / (wl + wr);
 
   bool mask = ustar > 0.0;
-  amrex::Real ro = mask ? rl : rr;
+  amrex::Real ro = 0.0;
+  amrex::Real rspo[NUM_SPECIES];
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    rspo[n] = mask ? rl * spl[n] : rr * spr[n];
+    ro += rspo[n];
+  }
   amrex::Real uo = mask ? ul : ur;
   amrex::Real po = mask ? pl : pr;
-  amrex::Real sp[NUM_SPECIES];
-  for (int n = 0; n < NUM_SPECIES; n++) {
-    sp[n] = mask ? spl[n] : spr[n];
-  }
 
   mask =
     amrex::Math::abs(ustar) < constants::smallu() * 0.5 *
                                 (amrex::Math::abs(ul) + amrex::Math::abs(ur)) ||
     ustar == 0.0;
   ustar = mask ? 0.0 : ustar;
-  ro = mask ? 0.5 * (rl + rr) : ro;
+  ro = 0.0;
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    rspo[n] = mask ? 0.5 * (rl * spl[n] + rr * spr[n]) : rspo[n];
+    ro += rspo[n];
+  }
   uo = mask ? 0.5 * (ul + ur) : uo;
   po = mask ? 0.5 * (pl + pr) : po;
-  for (int n = 0; n < NUM_SPECIES; n++) {
-    sp[n] = mask ? 0.5 * (spl[n] + spr[n]) : sp[n];
-  }
 
   amrex::Real gdnv_state_rho = ro;
   amrex::Real gdnv_state_p = po;
   for (int n = 0; n < NUM_SPECIES; n++) {
-    gdnv_state_massfrac[n] = sp[n];
+    gdnv_state_massfrac[n] = rspo[n] / ro;
   }
   amrex::Real gdnv_state_e;
   eos.RYP2E(gdnv_state_rho, gdnv_state_massfrac, gdnv_state_p, gdnv_state_e);
@@ -91,13 +94,17 @@ riemann(
   eos.RPY2Cs(gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, co);
 
   const amrex::Real drho = (pstar - po) / (co * co);
-  const amrex::Real rstar =
-    amrex::max<amrex::Real>(std::numeric_limits<amrex::Real>::min(), ro + drho);
-
+  amrex::Real rstar = 0.0;
+  amrex::Real rspstar[NUM_SPECIES];
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    const amrex::Real spon = rspo[n] / ro;
+    rspstar[n] = amrex::max<amrex::Real>(0.0, rspo[n] + drho * spon);
+    rstar += rspstar[n];
+  }
   gdnv_state_rho = rstar;
   gdnv_state_p = pstar;
   for (int n = 0; n < NUM_SPECIES; n++) {
-    gdnv_state_massfrac[n] = sp[n];
+    gdnv_state_massfrac[n] = rspstar[n] / rstar;
   }
   eos.RYP2E(gdnv_state_rho, gdnv_state_massfrac, gdnv_state_p, gdnv_state_e);
   const amrex::Real estar = gdnv_state_rho * gdnv_state_e;
@@ -126,26 +133,38 @@ riemann(
   mask = (ustar == 0.0);
   qint_iv1 = mask ? 0.5 * (vl + vr) : qint_iv1;
   qint_iv2 = mask ? 0.5 * (v2l + v2r) : qint_iv2;
-  amrex::Real rgd = frac * rstar + (1.0 - frac) * ro;
+  amrex::Real rgd = 0.0;
+  amrex::Real rspgd[NUM_SPECIES];
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    rspgd[n] = frac * rspstar[n] + (1.0 - frac) * rspo[n];
+    rgd += rspgd[n];
+  }
   qint_iu = frac * ustar + (1.0 - frac) * uo;
   qint_gdpres = frac * pstar + (1.0 - frac) * po;
-
   gdnv_state_rho = rgd;
   gdnv_state_p = qint_gdpres;
   for (int n = 0; n < NUM_SPECIES; n++) {
-    gdnv_state_massfrac[n] = sp[n];
+    gdnv_state_massfrac[n] = rspgd[n] / rgd;
   }
   eos.RYP2E(gdnv_state_rho, gdnv_state_massfrac, gdnv_state_p, gdnv_state_e);
   amrex::Real regd = gdnv_state_rho * gdnv_state_e;
 
   mask = (spout < 0.0);
-  rgd = mask ? ro : rgd;
+  rgd = 0.0;
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    rspgd[n] = mask ? rspo[n] : rspgd[n];
+    rgd += rspgd[n];
+  }
   qint_iu = mask ? uo : qint_iu;
   qint_gdpres = mask ? po : qint_gdpres;
   regd = mask ? reo : regd;
 
   mask = (spin >= 0.0);
-  rgd = mask ? rstar : rgd;
+  rgd = 0.0;
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    rspgd[n] = mask ? rspstar[n] : rspgd[n];
+    rgd += rspgd[n];
+  }
   qint_iu = mask ? ustar : qint_iu;
   qint_gdpres = mask ? pstar : qint_gdpres;
   regd = mask ? estar : regd;
@@ -153,7 +172,7 @@ riemann(
   gdnv_state_rho = rgd;
   gdnv_state_p = qint_gdpres;
   for (int n = 0; n < NUM_SPECIES; n++) {
-    gdnv_state_massfrac[n] = sp[n];
+    gdnv_state_massfrac[n] = rspgd[n] / rgd;
   }
   eos.RYP2E(gdnv_state_rho, gdnv_state_massfrac, gdnv_state_p, gdnv_state_e);
   regd = gdnv_state_rho * gdnv_state_e;
@@ -161,6 +180,9 @@ riemann(
   qint_gdgame = qint_gdpres / regd + 1.0;
   qint_iu = bc_test_val * qint_iu;
   uflx_rho = rgd * qint_iu;
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    uflx_rhoY[n] = rspgd[n] * qint_iu;
+  }
   uflx_u = uflx_rho * qint_iu + qint_gdpres;
   uflx_v = uflx_rho * qint_iv1;
   uflx_w = uflx_rho * qint_iv2;
@@ -192,6 +214,7 @@ laxfriedrich_flux(
   amrex::Real& ustar,
   amrex::Real& maxeigval,
   amrex::Real& uflx_rho,
+  amrex::Real uflx_rhoY[NUM_SPECIES],
   amrex::Real& uflx_u,
   amrex::Real& uflx_v,
   amrex::Real& uflx_w,
@@ -240,8 +263,13 @@ laxfriedrich_flux(
 
   maxeigval = max_wavespd;
 
-  // density eqn
-  uflx_rho = 0.5 * ((rl * ul + rr * ur) - max_wavespd * (rr - rl));
+  // density and mass frac eqn
+  uflx_rho = 0.0;
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    uflx_rhoY[n] = 0.5 * ((rl * ul * spl[n] + rr * ur * spr[n]) -
+                          max_wavespd * (rr * spr[n] - rl * spl[n]));
+    uflx_rho += uflx_rhoY[n];
+  }
 
   // three momentum eqns
   uflx_u = 0.5 * ((rl * ul * ul + pl + rr * ur * ur + pr) -

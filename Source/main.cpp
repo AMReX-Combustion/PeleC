@@ -5,12 +5,14 @@
 #include <AMReX_ParallelDescriptor.H>
 #include <AMReX_AmrLevel.H>
 
-#ifdef AMREX_USE_EB
-#include <AMReX_EB2.H>
+// Defined and initialized when in gnumake, but not defined in cmake and
+// initialization done manually
+#ifndef AMREX_USE_SUNDIALS
+#include <AMReX_Sundials.H>
 #endif
 
-#ifdef AMREX_USE_GPU
-#include <AMReX_SUNMemory.H>
+#ifdef AMREX_USE_EB
+#include <AMReX_EB2.H>
 #endif
 
 #include "PeleC.H"
@@ -46,8 +48,10 @@ main(int argc, char* argv[])
 
   // Make sure to catch new failures.
   amrex::Initialize(argc, argv);
-#ifdef AMREX_USE_GPU
-  amrex::sundials::Initialize();
+// Defined and initialized when in gnumake, but not defined in cmake and
+// initialization done manually
+#ifndef AMREX_USE_SUNDIALS
+  amrex::sundials::Initialize(amrex::OpenMP::get_max_threads());
 #endif
 
   // Save the inputs file name for later.
@@ -117,7 +121,6 @@ main(int argc, char* argv[])
   amrex::Print() << "Initializing EB2 as all_regular because AMReX has EB "
                     "enabled, but PeleC does not"
                  << std::endl;
-  std::string geom_type("all_regular");
   amrex::EB2::Build(
     amrptr->Geom(amrptr->maxLevel()), amrptr->maxLevel(), amrptr->maxLevel());
 #elif defined(AMREX_USE_EB) && defined(PELEC_USE_EB)
@@ -209,7 +212,9 @@ main(int argc, char* argv[])
   BL_PROFILE_VAR_STOP(pmain);
   BL_PROFILE_SET_RUN_TIME(dRunTime2);
 
-#ifdef AMREX_USE_GPU
+// Defined and finalized when in gnumake, but not defined in cmake and
+// finalization done manually
+#ifndef AMREX_USE_SUNDIALS
   amrex::sundials::Finalize();
 #endif
   amrex::Finalize();
