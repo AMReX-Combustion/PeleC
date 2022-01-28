@@ -1531,6 +1531,81 @@ PeleC::enforce_min_density(
   return dens_change;
 }
 
+#ifdef PELEC_USE_EB
+void
+PeleC::floorSpecCutCells(amrex::MultiFab& S_new)
+{
+
+  auto const& fact =
+    dynamic_cast<amrex::EBFArrayBoxFactory const&>(S_new.Factory());
+  auto const& flags = fact.getMultiEBCellFlagFab();
+
+#ifdef AMREX_USE_OMP
+#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
+#endif
+  for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
+       ++mfi) {
+    const amrex::Box& bx = mfi.tilebox();
+
+    auto const& flagfab = fact.getMultiEBCellFlagFab()[mfi];
+    if ( ( flagfab.getType(bx) != amrex::FabType::regular ) &&
+         ( flagfab.getType(bx) != amrex::FabType::covered ) ) {
+      auto const& rho      = S_new.array(mfi,URHO);
+      auto const& rhoU     = S_new.array(mfi,UMX);
+      auto const& rhoY     = S_new.array(mfi,UFS);
+      auto const& rhoe     = S_new.array(mfi,UEINT);
+      auto const& rhoE     = S_new.array(mfi,UEDEN);
+      auto const& flag     = flagfab.const_array();
+      amrex::ParallelFor(bx, [=]
+      AMREX_GPU_DEVICE (int i, int j, int k) noexcept
+      {
+        if ( flag(i,j,k).isSingleValued() ) {
+          auto eos = pele::physics::PhysicsType::eos();
+          // Squirrel away old rho
+          amrex::Real rhoOld = rho(i,j,k);
+
+          // Floor species rhoYs and get new rho
+          amrex::Real rhoNew = 0.0;
+          amrex::Real massfrac[NUM_SPECIES] = {0.0};
+          amrex::Real massfracold[NUM_SPECIES] = {0.0};
+          for (int n = 0; n<NUM_SPECIES; n++) {
+            massfracold[n] = rhoY(i,j,k,n) / rhoOld;
+            rhoY(i,j,k,n) = amrex::max(0.0,rhoY(i,j,k,n));
+            rhoNew += rhoY(i,j,k,n);
+          }
+          for (int n = 0; n<NUM_SPECIES; n++) {
+            massfrac[n] = rhoY(i,j,k,n) / rhoNew;
+          }
+
+          // Get T and pres
+          amrex::Real T = 0.0;
+          amrex::Real pres = 0.0;
+          amrex::Real eold = rhoe(i,j,k) / rhoOld;
+          eos.REY2T(rhoOld, eold, massfracold, T);
+          eos.RTY2P(rhoOld, T, massfracold, pres);
+
+          // Recompute eint
+          amrex::Real energy = 0.0;
+          eos.PYT2RE(pres, massfrac, T, rhoNew, energy);
+          rhoe(i,j,k) = rhoNew * energy;
+
+          // Recompute etot
+          rhoE(i,j,k) = rhoNew * energy +
+                        AMREX_D_TERM(  rhoNew * (rhoU(i,j,k,0)/rhoOld * rhoU(i,j,k,0)/rhoOld),
+                                     + rhoNew * (rhoU(i,j,k,1)/rhoOld * rhoU(i,j,k,1)/rhoOld),
+                                     + rhoNew * (rhoU(i,j,k,2)/rhoOld * rhoU(i,j,k,2)/rhoOld));
+
+          // Update momentum
+          for (int n = 0; n<AMREX_SPACEDIM; n++) {
+             rhoU(i,j,k,n) *= rhoNew / rhoOld;
+          }
+        }
+      });
+    }
+  }
+}
+#endif
+
 void
 PeleC::avgDown(int state_indx)
 {
