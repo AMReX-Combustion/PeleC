@@ -1553,6 +1553,7 @@ PeleC::floorSpecCutCells(amrex::MultiFab& S_new)
       auto const& rho      = S_new.array(mfi,URHO);
       auto const& rhoU     = S_new.array(mfi,UMX);
       auto const& rhoY     = S_new.array(mfi,UFS);
+      auto const& temp     = S_new.array(mfi,UTEMP);
       auto const& rhoe     = S_new.array(mfi,UEINT);
       auto const& rhoE     = S_new.array(mfi,UEDEN);
       auto const& flag     = flagfab.const_array();
@@ -1560,16 +1561,27 @@ PeleC::floorSpecCutCells(amrex::MultiFab& S_new)
       AMREX_GPU_DEVICE (int i, int j, int k) noexcept
       {
         if ( flag(i,j,k).isSingleValued() ) {
-          auto eos = pele::physics::PhysicsType::eos();
+
           // Squirrel away old rho
           amrex::Real rhoOld = rho(i,j,k);
+          amrex::Real massfracold[NUM_SPECIES] = {0.0};
+
+          // Check for negative, if not return 
+          int dontFix = 1;
+          for (int n = 0; n<NUM_SPECIES; n++) {
+            massfracold[n] = rhoY(i,j,k,n) / rhoOld;
+            if ( massfracold[n] < -1e-12 ) dontFix = 0;
+          }
+
+          if (dontFix) return;
+
+          // Okay, need to do some work
+          auto eos = pele::physics::PhysicsType::eos();
 
           // Floor species rhoYs and get new rho
           amrex::Real rhoNew = 0.0;
           amrex::Real massfrac[NUM_SPECIES] = {0.0};
-          amrex::Real massfracold[NUM_SPECIES] = {0.0};
           for (int n = 0; n<NUM_SPECIES; n++) {
-            massfracold[n] = rhoY(i,j,k,n) / rhoOld;
             rhoY(i,j,k,n) = amrex::max(0.0,rhoY(i,j,k,n));
             rhoNew += rhoY(i,j,k,n);
           }
@@ -1578,10 +1590,8 @@ PeleC::floorSpecCutCells(amrex::MultiFab& S_new)
           }
 
           // Get T and pres
-          amrex::Real T = 0.0;
+          amrex::Real T = temp(i,j,k);
           amrex::Real pres = 0.0;
-          amrex::Real eold = rhoe(i,j,k) / rhoOld;
-          eos.REY2T(rhoOld, eold, massfracold, T);
           eos.RTY2P(rhoOld, T, massfracold, pres);
 
           // Recompute eint
@@ -1590,7 +1600,7 @@ PeleC::floorSpecCutCells(amrex::MultiFab& S_new)
           rhoe(i,j,k) = rhoNew * energy;
 
           // Recompute etot
-          rhoE(i,j,k) = rhoNew * energy +
+          rhoE(i,j,k) = rhoNew * energy + 0.5 *
                         AMREX_D_TERM(  rhoNew * (rhoU(i,j,k,0)/rhoOld * rhoU(i,j,k,0)/rhoOld),
                                      + rhoNew * (rhoU(i,j,k,1)/rhoOld * rhoU(i,j,k,1)/rhoOld),
                                      + rhoNew * (rhoU(i,j,k,2)/rhoOld * rhoU(i,j,k,2)/rhoOld));
