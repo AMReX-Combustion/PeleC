@@ -1564,12 +1564,13 @@ PeleC::floorSpecCutCells(amrex::MultiFab& S_new)
 
           // Squirrel away old rho
           amrex::Real rhoOld = rho(i,j,k);
+          amrex::Real rhoOld_inv = 1.0/rhoOld;
           amrex::Real massfracold[NUM_SPECIES] = {0.0};
 
           // Check for negative, if not return 
           int dontFix = 1;
           for (int n = 0; n<NUM_SPECIES; n++) {
-            massfracold[n] = rhoY(i,j,k,n) / rhoOld;
+            massfracold[n] = rhoY(i,j,k,n) * rhoOld_inv;
             if ( massfracold[n] < -1e-12 ) dontFix = 0;
           }
 
@@ -1582,7 +1583,7 @@ PeleC::floorSpecCutCells(amrex::MultiFab& S_new)
           amrex::Real rhoNew = 0.0;
           amrex::Real massfrac[NUM_SPECIES] = {0.0};
           for (int n = 0; n<NUM_SPECIES; n++) {
-            rhoY(i,j,k,n) = amrex::max(0.0,rhoY(i,j,k,n));
+            rhoY(i,j,k,n) = amrex::min(1.0,amrex::max(0.0,rhoY(i,j,k,n)));
             rhoNew += rhoY(i,j,k,n);
           }
           for (int n = 0; n<NUM_SPECIES; n++) {
@@ -1591,11 +1592,11 @@ PeleC::floorSpecCutCells(amrex::MultiFab& S_new)
           rho(i,j,k) = rhoNew;
 
           // Post reaction, rhoE is right, rhoe/Temp are inconsistent
-          amrex::Real kinNRG = 0.5 * (AMREX_D_TERM(  (rhoU(i,j,k,0)/rhoOld * rhoU(i,j,k,0)/rhoOld),
-                                                   + (rhoU(i,j,k,1)/rhoOld * rhoU(i,j,k,1)/rhoOld), 
-                                                   + (rhoU(i,j,k,2)/rhoOld * rhoU(i,j,k,2)/rhoOld)));
+          amrex::Real kinNRG = 0.5 * (AMREX_D_TERM(  (rhoU(i,j,k,0)*rhoOld_inv * rhoU(i,j,k,0)*rhoOld_inv),
+                                                   + (rhoU(i,j,k,1)*rhoOld_inv * rhoU(i,j,k,1)*rhoOld_inv), 
+                                                   + (rhoU(i,j,k,2)*rhoOld_inv * rhoU(i,j,k,2)*rhoOld_inv)));
           
-          amrex::Real eOld = (rhoE(i,j,k)/rhoOld) - kinNRG;
+          amrex::Real eOld = (rhoE(i,j,k)*rhoOld_inv) - kinNRG;
 
           // Recompute eint
           //amrex::Real energy = 0.0;
@@ -1612,7 +1613,7 @@ PeleC::floorSpecCutCells(amrex::MultiFab& S_new)
 
           // Update momentum
           for (int n = 0; n<AMREX_SPACEDIM; n++) {
-             rhoU(i,j,k,n) *= rhoNew / rhoOld;
+             rhoU(i,j,k,n) *= rhoNew * rhoOld_inv;
           }
         }
       });
