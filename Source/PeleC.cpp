@@ -1583,7 +1583,7 @@ PeleC::floorSpecCutCells(amrex::MultiFab& S_new)
           amrex::Real rhoNew = 0.0;
           amrex::Real massfrac[NUM_SPECIES] = {0.0};
           for (int n = 0; n<NUM_SPECIES; n++) {
-            rhoY(i,j,k,n) = amrex::min(1.0,amrex::max(0.0,rhoY(i,j,k,n)));
+            rhoY(i,j,k,n) = amrex::min(rhoOld,amrex::max(0.0,rhoY(i,j,k,n)));
             rhoNew += rhoY(i,j,k,n);
           }
           for (int n = 0; n<NUM_SPECIES; n++) {
