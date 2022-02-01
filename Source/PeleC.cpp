@@ -1588,22 +1588,27 @@ PeleC::floorSpecCutCells(amrex::MultiFab& S_new)
           for (int n = 0; n<NUM_SPECIES; n++) {
             massfrac[n] = rhoY(i,j,k,n) / rhoNew;
           }
+          rho(i,j,k) = rhoNew;
 
-          // Get T and pres
-          amrex::Real T = temp(i,j,k);
-          amrex::Real pres = 0.0;
-          eos.RTY2P(rhoOld, T, massfracold, pres);
+          // Post reaction, rhoE is right, rhoe/Temp are inconsistent
+          amrex::Real kinNRG = 0.5 * (AMREX_D_TERM(  (rhoU(i,j,k,0)/rhoOld * rhoU(i,j,k,0)/rhoOld),
+                                                   + (rhoU(i,j,k,1)/rhoOld * rhoU(i,j,k,1)/rhoOld), 
+                                                   + (rhoU(i,j,k,2)/rhoOld * rhoU(i,j,k,2)/rhoOld)));
+          
+          amrex::Real eOld = (rhoE(i,j,k)/rhoOld) - kinNRG;
 
           // Recompute eint
-          amrex::Real energy = 0.0;
-          eos.PYT2RE(pres, massfrac, T, rhoNew, energy);
-          rhoe(i,j,k) = rhoNew * energy;
+          //amrex::Real energy = 0.0;
+          //amrex::Real eos_state_ei[NUM_SPECIES] = {0.0};
+          //eos.T2Ei(T, eos_state_ei);
+          //for (int n = 0; n<NUM_SPECIES; n++) {
+          //  energy += massfrac[n] * eos_state_ei[n];
+          //}
+          //eos.PYT2RE(pres, massfrac, T, rhoNew, energy);
+          rhoe(i,j,k) = rhoNew * eOld;
 
           // Recompute etot
-          rhoE(i,j,k) = rhoNew * energy + 0.5 *
-                        AMREX_D_TERM(  rhoNew * (rhoU(i,j,k,0)/rhoOld * rhoU(i,j,k,0)/rhoOld),
-                                     + rhoNew * (rhoU(i,j,k,1)/rhoOld * rhoU(i,j,k,1)/rhoOld),
-                                     + rhoNew * (rhoU(i,j,k,2)/rhoOld * rhoU(i,j,k,2)/rhoOld));
+          rhoE(i,j,k) = rhoNew * eOld + rhoNew * kinNRG;
 
           // Update momentum
           for (int n = 0; n<AMREX_SPACEDIM; n++) {
