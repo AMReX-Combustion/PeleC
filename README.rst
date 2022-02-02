@@ -19,7 +19,7 @@ To build `PeleC` and run a sample 3D flame problem:
     git clone --recursive git@github.com:AMReX-Combustion/PeleC.git
     cd PeleC/Exec/RegTests/PMF
     make TPL && make -j
-    ./Pele3d.xxx.yyy.ex inputs_ex
+    ./Pele3d.xxx.yyy.ex example.inp
 
 * Notes
 
