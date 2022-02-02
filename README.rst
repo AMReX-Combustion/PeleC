@@ -34,7 +34,7 @@ To build `PeleC` and run a sample 3D flame problem:
 Dependencies
 ~~~~~~~~~~~~
 
-`PeleC` was created as a renamed, stripped down version of `Maui`, and is built on the `AMReX` library.  In the process, the Microphysics folder was extracted, and reorganized into a separate repository, `PelePhysics`. PeleC requires the `SUNDIALS <https://github.com/LLNL/sundials>`_ ODE solver library.
+`PeleC` is built on the `AMReX` and `PelePhysics` libraries. PeleC also requires the `SUNDIALS <https://github.com/LLNL/sundials>`_ ODE solver library.
 
 
 Development model
