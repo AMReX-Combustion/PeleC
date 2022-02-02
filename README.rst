@@ -38,9 +38,16 @@ Alternatively, one can set environment variables to use AMReX and PelePhysics re
     export PELEC_HOME=<location for PeleC>
     git clone git@github.com:AMReX-Combustion/PeleC.git ${PELEC_HOME}
 
-4. Move to an example build folder, build an executable, run a test case: ::
+4. Initialise and update submodules: ::
+
+    cd $PELEC_HOME
+    git submodule init
+    git submodule update
+
+5. Move to an example build folder, build third party libraries, build an executable, run a test case: Make sure the CMake version is 3.12 or higher: ::
 
     cd ${PELEC_HOME}/Exec/RegTests/PMF
+    make -j TPL
     make
     ./Pele3d.xxx.yyy.ex inputs_ex
 
