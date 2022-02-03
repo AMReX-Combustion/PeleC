@@ -14,35 +14,12 @@ Getting Started
 
 To build `PeleC` and run a sample 3D flame problem:
 
-1. One can have PeleC use the default submodules for AMReX and PelePhysics in its own repo by simply performing: ::
+1. Have PeleC use the default submodules for AMReX, PelePhysics, and SUNDIALS in its own repo by simply performing: ::
 
     git clone --recursive git@github.com:AMReX-Combustion/PeleC.git
     cd PeleC/Exec/RegTests/PMF
-    make
-    ./Pele3d.xxx.yyy.ex inputs_ex
-
-Alternatively, one can set environment variables to use AMReX and PelePhysics repos from external locations:
-
-1. Set the environment variable, AMREX_HOME, and clone a copy of `AMReX` there: ::
-
-    export AMREX_HOME=<location for AMReX>    
-    git clone git@github.com:AMReX-Codes/amrex.git ${AMREX_HOME}
-
-2. Set the environment variable, PELE_PHYSICS_HOME, and clone a copy of `PelePhysics` there. You should be placed in the `development` branch: ::
-
-    export PELE_PHYSICS_HOME=<location for PelePhysics>
-    git clone git@github.com:AMReX-Combustion/PelePhysics.git ${PELE_PHYSICS_HOME}
-
-3. Set the environment variable, PELEC_HOME, and clone a copy of `PeleC` there. You should be placed in the `development` branch: ::
-
-    export PELEC_HOME=<location for PeleC>
-    git clone git@github.com:AMReX-Combustion/PeleC.git ${PELEC_HOME}
-
-4. Move to an example build folder, build an executable, run a test case: ::
-
-    cd ${PELEC_HOME}/Exec/RegTests/PMF
-    make
-    ./Pele3d.xxx.yyy.ex inputs_ex
+    make TPL && make -j
+    ./Pele3d.xxx.yyy.ex example.inp
 
 * Notes
 
@@ -57,7 +34,7 @@ Alternatively, one can set environment variables to use AMReX and PelePhysics re
 Dependencies
 ~~~~~~~~~~~~
 
-`PeleC` was created as a renamed, stripped down version of `Maui`, and is built on the `AMReX` library.  In the process, the Microphysics folder was extracted, and reorganized into a separate repository, `PelePhysics`.  
+`PeleC` is built on the `AMReX` and `PelePhysics` libraries. PeleC also requires the `SUNDIALS <https://github.com/LLNL/sundials>`_ ODE solver library.
 
 
 Development model
@@ -75,7 +52,7 @@ To add a new feature to PeleC, the procedure is:
     git checkout development
     git pull                     [fix any identified conflicts between local and remote branches of "development"]
     git checkout AmazingNewFeature
-    git merge development        [fix any identified conflicts between "development" and "AmazingNewFeature"]
+    git rebase development        [fix any identified conflicts between "development" and "AmazingNewFeature"]
 
 3a. Build and run the full test suite using CMake and CTest (See the `Build` directory for an example script). Please do not introduce warnings. PeleC is checked against `clang-tidy` and `cppcheck` in the CI. To use `cppcheck` and `clang-tidy` locally use these CMake options: ::
 
