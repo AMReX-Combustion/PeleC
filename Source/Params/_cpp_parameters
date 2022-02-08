@@ -257,9 +257,17 @@ PrT                          Real          1.0
 #-----------------------------------------------------------------------------
 # category: EB
 #-----------------------------------------------------------------------------
+
+# set the EB boundary temperature for isothermal walls
 eb_boundary_T                Real         1.0
+
+# flag for isothermal EB boundary
 eb_isothermal                int          1
+
+# flag for no slip EB boundary
 eb_noslip                    int          1
+
+# redistribution type in amrex-hydro
 redistribution_type          string       "StateRedist"
 
 # flag to clean massfractions on EB cut cells
