@@ -185,11 +185,9 @@ PeleC::getMOLSrcTerm(
       {
         BL_PROFILE("PeleC::ctoprim()");
         PassMap const* lpmap = d_pass_map;
-        const int captured_clean_massfrac = clean_massfrac;
         amrex::ParallelFor(
           gbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            pc_ctoprim(
-              i, j, k, sar, qar, qauxar, *lpmap, captured_clean_massfrac);
+            pc_ctoprim(i, j, k, sar, qar, qauxar, *lpmap);
           });
       }
       // TODO deal with NSCBC
@@ -681,6 +679,9 @@ PeleC::getMOLSrcTerm(
               Dterm(i, j, k, URHO) += Dterm(i, j, k, UFS + n);
             }
           });
+
+        // Make sure the massfractions are ok in cut cells
+        //if(){}
       }
 #endif
 

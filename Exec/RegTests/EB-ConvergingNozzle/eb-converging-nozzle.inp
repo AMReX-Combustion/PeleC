@@ -30,7 +30,6 @@ pelec.do_react = 0
 pelec.chem_integrator = "ReactorRK64"
 pelec.diffuse_enth = 0
 pelec.add_ext_src = 0
-pelec.clean_massfrac=0
 
 # TIME STEP CONTROL
 pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt

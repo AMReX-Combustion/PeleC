@@ -1548,75 +1548,83 @@ PeleC::floorSpecCutCells(amrex::MultiFab& S_new)
     const amrex::Box& bx = mfi.tilebox();
 
     auto const& flagfab = fact.getMultiEBCellFlagFab()[mfi];
-    if ( ( flagfab.getType(bx) != amrex::FabType::regular ) &&
-         ( flagfab.getType(bx) != amrex::FabType::covered ) ) {
-      auto const& rho      = S_new.array(mfi,URHO);
-      auto const& rhoU     = S_new.array(mfi,UMX);
-      auto const& rhoY     = S_new.array(mfi,UFS);
-      auto const& temp     = S_new.array(mfi,UTEMP);
-      auto const& rhoe     = S_new.array(mfi,UEINT);
-      auto const& rhoE     = S_new.array(mfi,UEDEN);
-      auto const& flag     = flagfab.const_array();
-      amrex::ParallelFor(bx, [=]
-      AMREX_GPU_DEVICE (int i, int j, int k) noexcept
-      {
-        if ( flag(i,j,k).isSingleValued() ) {
+    if (
+      (flagfab.getType(bx) != amrex::FabType::regular) &&
+      (flagfab.getType(bx) != amrex::FabType::covered)) {
+      auto const& rho = S_new.array(mfi, URHO);
+      auto const& rhoU = S_new.array(mfi, UMX);
+      auto const& rhoY = S_new.array(mfi, UFS);
+      auto const& temp = S_new.array(mfi, UTEMP);
+      auto const& rhoe = S_new.array(mfi, UEINT);
+      auto const& rhoE = S_new.array(mfi, UEDEN);
+      auto const& flag = flagfab.const_array();
+      amrex::ParallelFor(
+        bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+          if (flag(i, j, k).isSingleValued()) {
 
-          // Squirrel away old rho
-          amrex::Real rhoOld = rho(i,j,k);
-          amrex::Real rhoOld_inv = 1.0/rhoOld;
-          amrex::Real massfracold[NUM_SPECIES] = {0.0};
+            // Squirrel away old rho
+            amrex::Real rhoOld = rho(i, j, k);
+            amrex::Real rhoOld_inv = 1.0 / rhoOld;
+            amrex::Real massfracold[NUM_SPECIES] = {0.0};
 
-          // Check for negative, if not return 
-          int dontFix = 1;
-          for (int n = 0; n<NUM_SPECIES; n++) {
-            massfracold[n] = rhoY(i,j,k,n) * rhoOld_inv;
-            if ( massfracold[n] < -1e-12 ) dontFix = 0;
+            // Check for negative, if not return
+            int dontFix = 1;
+            for (int n = 0; n < NUM_SPECIES; n++) {
+              massfracold[n] = rhoY(i, j, k, n) * rhoOld_inv;
+              if (massfracold[n] < -1e-12)
+                dontFix = 0;
+            }
+
+            if (dontFix)
+              return;
+
+            // Okay, need to do some work
+            auto eos = pele::physics::PhysicsType::eos();
+
+            // Floor species rhoYs and get new rho
+            amrex::Real rhoNew = 0.0;
+            amrex::Real massfrac[NUM_SPECIES] = {0.0};
+            for (int n = 0; n < NUM_SPECIES; n++) {
+              rhoY(i, j, k, n) =
+                amrex::min(rhoOld, amrex::max(0.0, rhoY(i, j, k, n)));
+              rhoNew += rhoY(i, j, k, n);
+            }
+            for (int n = 0; n < NUM_SPECIES; n++) {
+              massfrac[n] = rhoY(i, j, k, n) / rhoNew;
+            }
+            rho(i, j, k) = rhoNew;
+
+            // Post reaction, rhoE is right, rhoe/Temp are inconsistent
+            amrex::Real kinNRG =
+              0.5 *
+              (AMREX_D_TERM(
+                (rhoU(i, j, k, 0) * rhoOld_inv * rhoU(i, j, k, 0) * rhoOld_inv),
+                +(rhoU(i, j, k, 1) * rhoOld_inv * rhoU(i, j, k, 1) *
+                  rhoOld_inv),
+                +(rhoU(i, j, k, 2) * rhoOld_inv * rhoU(i, j, k, 2) *
+                  rhoOld_inv)));
+
+            amrex::Real eOld = (rhoE(i, j, k) * rhoOld_inv) - kinNRG;
+
+            // Recompute eint
+            // amrex::Real energy = 0.0;
+            // amrex::Real eos_state_ei[NUM_SPECIES] = {0.0};
+            // eos.T2Ei(T, eos_state_ei);
+            // for (int n = 0; n<NUM_SPECIES; n++) {
+            //  energy += massfrac[n] * eos_state_ei[n];
+            //}
+            // eos.PYT2RE(pres, massfrac, T, rhoNew, energy);
+            rhoe(i, j, k) = rhoNew * eOld;
+
+            // Recompute etot
+            rhoE(i, j, k) = rhoNew * eOld + rhoNew * kinNRG;
+
+            // Update momentum
+            for (int n = 0; n < AMREX_SPACEDIM; n++) {
+              rhoU(i, j, k, n) *= rhoNew * rhoOld_inv;
+            }
           }
-
-          if (dontFix) return;
-
-          // Okay, need to do some work
-          auto eos = pele::physics::PhysicsType::eos();
-
-          // Floor species rhoYs and get new rho
-          amrex::Real rhoNew = 0.0;
-          amrex::Real massfrac[NUM_SPECIES] = {0.0};
-          for (int n = 0; n<NUM_SPECIES; n++) {
-            rhoY(i,j,k,n) = amrex::min(rhoOld,amrex::max(0.0,rhoY(i,j,k,n)));
-            rhoNew += rhoY(i,j,k,n);
-          }
-          for (int n = 0; n<NUM_SPECIES; n++) {
-            massfrac[n] = rhoY(i,j,k,n) / rhoNew;
-          }
-          rho(i,j,k) = rhoNew;
-
-          // Post reaction, rhoE is right, rhoe/Temp are inconsistent
-          amrex::Real kinNRG = 0.5 * (AMREX_D_TERM(  (rhoU(i,j,k,0)*rhoOld_inv * rhoU(i,j,k,0)*rhoOld_inv),
-                                                   + (rhoU(i,j,k,1)*rhoOld_inv * rhoU(i,j,k,1)*rhoOld_inv), 
-                                                   + (rhoU(i,j,k,2)*rhoOld_inv * rhoU(i,j,k,2)*rhoOld_inv)));
-          
-          amrex::Real eOld = (rhoE(i,j,k)*rhoOld_inv) - kinNRG;
-
-          // Recompute eint
-          //amrex::Real energy = 0.0;
-          //amrex::Real eos_state_ei[NUM_SPECIES] = {0.0};
-          //eos.T2Ei(T, eos_state_ei);
-          //for (int n = 0; n<NUM_SPECIES; n++) {
-          //  energy += massfrac[n] * eos_state_ei[n];
-          //}
-          //eos.PYT2RE(pres, massfrac, T, rhoNew, energy);
-          rhoe(i,j,k) = rhoNew * eOld;
-
-          // Recompute etot
-          rhoE(i,j,k) = rhoNew * eOld + rhoNew * kinNRG;
-
-          // Update momentum
-          for (int n = 0; n<AMREX_SPACEDIM; n++) {
-             rhoU(i,j,k,n) *= rhoNew * rhoOld_inv;
-          }
-        }
-      });
+        });
     }
   }
 }
