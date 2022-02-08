@@ -663,6 +663,7 @@ PeleC::getMOLSrcTerm(
             AMREX_D_DECL(fcx, fcy, fcz), ccc, d_bcs.dataPtr(), geom, dt,
             redistribution_type);
         }
+
         // Make sure div is zero in covered cells
         amrex::ParallelFor(
           vbox, S.nComp(),
@@ -671,6 +672,7 @@ PeleC::getMOLSrcTerm(
               Dterm(i, j, k, n) = 0.0;
             }
           });
+
         // Make sure rho div is same as sum rhoY div
         amrex::ParallelFor(
           vbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
