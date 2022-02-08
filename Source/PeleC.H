@@ -228,8 +228,6 @@ public:
   void set_body_state(amrex::MultiFab& S);
 
   void zero_in_body(amrex::MultiFab& S) const;
-
-  void floorSpecCutCells(amrex::MultiFab& S_new);
 #endif
 
   void set_typical_values_chem();

@@ -265,4 +265,13 @@ void pc_apply_eb_boundry_flux_stencil(
   const int,
   const int);
 
+void pc_eb_clean_massfrac(
+  const amrex::Box&,
+  const amrex::Real,
+  const amrex::Real,
+  amrex::Array4<const amrex::Real> const&,
+  amrex::Array4<amrex::EBCellFlag const> const&,
+  amrex::Array4<amrex::Real> const&,
+  amrex::Array4<amrex::Real> const&);
+
 #endif

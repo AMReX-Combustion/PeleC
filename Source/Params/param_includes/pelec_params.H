@@ -73,6 +73,7 @@ static int eb_isothermal;
 static int eb_noslip;
 static std::string redistribution_type;
 static int eb_clean_massfrac;
+static amrex::Real eb_clean_massfrac_threshold;
 static int do_mms;
 static std::string masa_solution_name;
 static amrex::Real fixed_dt;

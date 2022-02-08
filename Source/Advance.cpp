@@ -126,11 +126,6 @@ PeleC::do_mol_advance(
     amrex::MultiFab::Saxpy(S_new, dt, I_R, NUM_SPECIES, Eden, 1, 0);
   }
 
-#ifdef PELEC_USE_EB
-  // Floor species in cut-cells before recomputing Temp
-  floorSpecCutCells(S_new);
-#endif
-
   computeTemp(S_new, 0);
 
   // Compute S^{n+1} = MOLRhs(U^{n+1,*})
@@ -180,10 +175,6 @@ PeleC::do_mol_advance(
     react_state(time, dt, false, &molSrc);
   }
 
-#ifdef PELEC_USE_EB
-  // Floor species in cut-cells before recomputing Temp
-  floorSpecCutCells(S_new);
-#endif
   computeTemp(S_new, 0);
 
   if (do_react == 1) {

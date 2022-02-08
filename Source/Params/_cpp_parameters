@@ -271,7 +271,10 @@ eb_noslip                    int          1
 redistribution_type          string       "StateRedist"
 
 # flag to clean massfractions on EB cut cells
-eb_clean_massfrac            int          0
+eb_clean_massfrac            int          1
+
+# threshold to use for cleaning massfractions on EB cut cells
+eb_clean_massfrac_threshold  Real         0.0
 
 #-----------------------------------------------------------------------------
 # category: method of manufactured solution

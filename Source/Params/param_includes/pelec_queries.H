@@ -73,6 +73,7 @@ pp.query("eb_isothermal", eb_isothermal);
 pp.query("eb_noslip", eb_noslip);
 pp.query("redistribution_type", redistribution_type);
 pp.query("eb_clean_massfrac", eb_clean_massfrac);
+pp.query("eb_clean_massfrac_threshold", eb_clean_massfrac_threshold);
 pp.query("do_mms", do_mms);
 pp.query("masa_solution_name", masa_solution_name);
 pp.query("fixed_dt", fixed_dt);

@@ -681,7 +681,11 @@ PeleC::getMOLSrcTerm(
           });
 
         // Make sure the massfractions are ok in cut cells
-        //if(){}
+        if ((eb_clean_massfrac) && (typ != amrex::FabType::covered)) {
+          pc_eb_clean_massfrac(
+            vbox, dt, eb_clean_massfrac_threshold, S.const_array(mfi), flag_arr,
+            scratch, Dterm);
+        }
       }
 #endif
 
