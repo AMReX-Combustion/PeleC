@@ -747,46 +747,45 @@ pc_eb_clean_massfrac(
   auto const& rhoY = amrex::Array4<amrex::Real>(scratch, UFS, NUM_SPECIES);
   auto const& rhoe = amrex::Array4<amrex::Real>(scratch, UEINT, 1);
   auto const& rhoE = amrex::Array4<amrex::Real>(scratch, UEDEN, 1);
-  amrex::ParallelFor(
-    bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-      if (flags(iv).isSingleValued()) {
-        const amrex::Real rhoOld = rho(iv);
-        const amrex::Real rhoOld_inv = 1.0 / rhoOld;
+  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
+    if (flags(iv).isSingleValued()) {
+      const amrex::Real rhoOld = rho(iv);
+      const amrex::Real rhoOld_inv = 1.0 / rhoOld;
 
-        // Check for OOB mass fraction
-        bool clean_massfrac = false;
-        for (int n = 0; n < NUM_SPECIES; n++) {
-          const auto mf = rhoY(iv, n) * rhoOld_inv;
-          if ((mf < -threshold) || ((1.0 + threshold) < mf)) {
-            clean_massfrac = true;
-          }
-        }
-
-        if (clean_massfrac) {
-          // Clip species rhoYs and get new rho
-          amrex::Real rhoNew = 0.0;
-          for (int n = 0; n < NUM_SPECIES; n++) {
-            rhoY(iv, n) = amrex::min(rhoOld, amrex::max(0.0, rhoY(iv, n)));
-            rhoNew += rhoY(iv, n);
-          }
-          rho(iv) = rhoNew;
-
-          // Keep kinetic energy, recompute, rhoe, rhoE, and rhoU
-          const amrex::Real kinNRG =
-            0.5 * rhoOld_inv * rhoOld_inv *
-            (AMREX_D_TERM(
-              (rhoU(iv, 0) * rhoU(iv, 0)), +(rhoU(iv, 1) * rhoU(iv, 1)),
-              +(rhoU(iv, 2) * rhoU(iv, 2))));
-          const amrex::Real eOld = (rhoE(iv) * rhoOld_inv) - kinNRG;
-          rhoe(iv) = rhoNew * eOld;
-          rhoE(iv) = rhoNew * eOld + rhoNew * kinNRG;
-          for (int n = 0; n < AMREX_SPACEDIM; n++) {
-            rhoU(iv, n) *= rhoNew * rhoOld_inv;
-          }
+      // Check for OOB mass fraction
+      bool clean_massfrac = false;
+      for (int n = 0; n < NUM_SPECIES; n++) {
+        const auto mf = rhoY(iv, n) * rhoOld_inv;
+        if ((mf < -threshold) || ((1.0 + threshold) < mf)) {
+          clean_massfrac = true;
         }
       }
-    });
+
+      if (clean_massfrac) {
+        // Clip species rhoYs and get new rho
+        amrex::Real rhoNew = 0.0;
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          rhoY(iv, n) = amrex::min(rhoOld, amrex::max(0.0, rhoY(iv, n)));
+          rhoNew += rhoY(iv, n);
+        }
+        rho(iv) = rhoNew;
+
+        // Keep kinetic energy, recompute, rhoe, rhoE, and rhoU
+        const amrex::Real kinNRG =
+          0.5 * rhoOld_inv * rhoOld_inv *
+          (AMREX_D_TERM(
+            (rhoU(iv, 0) * rhoU(iv, 0)), +(rhoU(iv, 1) * rhoU(iv, 1)),
+            +(rhoU(iv, 2) * rhoU(iv, 2))));
+        const amrex::Real eOld = (rhoE(iv) * rhoOld_inv) - kinNRG;
+        rhoe(iv) = rhoNew * eOld;
+        rhoE(iv) = rhoNew * eOld + rhoNew * kinNRG;
+        for (int n = 0; n < AMREX_SPACEDIM; n++) {
+          rhoU(iv, n) *= rhoNew * rhoOld_inv;
+        }
+      }
+    }
+  });
 
   // Compute the updated div
   amrex::ParallelFor(
