@@ -89,6 +89,16 @@ There are a number of ways to deal with this "small cell issue" and the reader i
 * ``"StateRedist"``: state redistribution
 * ``"NewStateRedist"``: improved state redistribution (default)
 
+Mass fractions at the EB
+------------------------
+.. _EBMassFractions:
+
+At the EB, it is possible for the hydrodynamics and diffusion operators to create out-of-bounds mass fractions (:math:`< 0` or :math:`>1`). This can happen for a variety of reasons, including because of the redistribution scheme and the flux interpolation. If this happens, a clipping procedure is applied. This clipping happens after the redistribution scheme. The divergence is used to compute an updated state. A clipping and renormalization is applied to this updated state in cells that (1) have out-of-bounds mass fractions, and (2) are a cut cell or contain a cut cell within neighborhood of one (these are affected by the redistribution scheme). The species are clipped to :math:`0 \geq \rho Y \geq \rho`. A new density is computed from these clipped values. The kinetic energy is preserved and the internal energy, total energy, and momentum is adjusted with the new density. This updated state is then used to compute an updated divergence (by differencing with the original state).
+
+This can be controlled in the code with:
+
+* ``"eb_clean_massfrac"``: flag to activate clipping (default to true)
+* ``"eb_clean_massfrac_threshold"``: threshold for clipping, clipping is turned on if :math:`Y < -\epsilon` or :math:`1+\epsilon < Y` (default to 0)
 
 Re-redistribution
 -----------------
