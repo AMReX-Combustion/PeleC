@@ -736,7 +736,7 @@ pc_eb_clean_massfrac(
     bx, state.nComp(),
     [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
       const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-      if (flags(iv).isSingleValued()) {
+      if (is_cut_neighborhood(iv, flags)) {
         scratch(iv, n) = state(iv, n) + dt * div(iv, n);
       }
     });
@@ -749,7 +749,7 @@ pc_eb_clean_massfrac(
   auto const& rhoE = amrex::Array4<amrex::Real>(scratch, UEDEN, 1);
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-    if (flags(iv).isSingleValued()) {
+    if (is_cut_neighborhood(iv, flags)) {
       const amrex::Real rhoOld = rho(iv);
       const amrex::Real rhoOld_inv = 1.0 / rhoOld;
 
@@ -792,7 +792,7 @@ pc_eb_clean_massfrac(
     bx, state.nComp(),
     [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
       const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-      if (flags(iv).isSingleValued()) {
+      if (is_cut_neighborhood(iv, flags)) {
         div(iv, n) = (scratch(iv, n) - state(iv, n)) / dt;
       }
     });
