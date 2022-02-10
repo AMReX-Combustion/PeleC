@@ -2299,11 +2299,26 @@ PeleC::InitialRedistribution()
                    , apy = fact.getAreaFrac()[1]->const_array(mfi);
                    , apz = fact.getAreaFrac()[2]->const_array(mfi););
 
+      const auto& sarr = S_new.array(mfi);
+      const auto& tarr = tmp.array(mfi);
       Redistribution::ApplyToInitialData(
-        bx, NVAR, S_new.array(mfi), tmp.array(mfi), flag_arr,
-        AMREX_D_DECL(apx, apy, apz), vfrac.const_array(mfi),
-        AMREX_D_DECL(fcx, fcy, fcz), ccc, d_bcs.dataPtr(), geom,
-        redistribution_type);
+        bx, NVAR, sarr, tarr, flag_arr, AMREX_D_DECL(apx, apy, apz),
+        vfrac.const_array(mfi), AMREX_D_DECL(fcx, fcy, fcz), ccc,
+        d_bcs.dataPtr(), geom, redistribution_type);
+
+      // Make sure rho is same as sum rhoY after redistribution
+      amrex::ParallelFor(
+        bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+          amrex::Real drhoYsum = 0.0;
+          for (int n = 0; n < NUM_SPECIES; n++) {
+            drhoYsum += sarr(i, j, k, UFS + n) - tarr(i, j, k, UFS + n);
+          }
+          sarr(i, j, k, URHO) = tarr(i, j, k, URHO) + drhoYsum;
+        });
+      amrex::ParallelFor(
+        bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+          pc_check_initial_species(i, j, k, sarr);
+        });
     }
   }
   set_body_state(S_new);
