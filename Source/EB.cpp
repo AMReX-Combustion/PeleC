@@ -1,4 +1,5 @@
 #include "EB.H"
+#include "Utilities.H"
 
 void
 pc_fill_sv_ebg(
@@ -731,68 +732,30 @@ pc_eb_clean_massfrac(
   amrex::Array4<amrex::Real> const& scratch,
   amrex::Array4<amrex::Real> const& div)
 {
-  // Compute the new state
+  // Compute the new state and the mask
+  amrex::IArrayBox mask(bx);
+  amrex::Elixir mask_eli = mask.elixir();
+  mask.setVal<amrex::RunOn::Device>(0, mask.box());
+  const auto& mask_arr = mask.array();
   amrex::ParallelFor(
     bx, state.nComp(),
     [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
       const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
       if (is_cut_neighborhood(iv, flags)) {
         scratch(iv, n) = state(iv, n) + dt * div(iv, n);
+        mask_arr(iv) = 1;
       }
     });
 
   // Clean the new state
-  auto const& rho = amrex::Array4<amrex::Real>(scratch, URHO, 1);
-  auto const& rhoU = amrex::Array4<amrex::Real>(scratch, UMX, AMREX_SPACEDIM);
-  auto const& rhoY = amrex::Array4<amrex::Real>(scratch, UFS, NUM_SPECIES);
-  auto const& rhoe = amrex::Array4<amrex::Real>(scratch, UEINT, 1);
-  auto const& rhoE = amrex::Array4<amrex::Real>(scratch, UEDEN, 1);
-  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-    if (is_cut_neighborhood(iv, flags)) {
-      const amrex::Real rhoOld = rho(iv);
-      const amrex::Real rhoOld_inv = 1.0 / rhoOld;
-
-      // Check for OOB mass fraction
-      bool clean_massfrac = false;
-      for (int n = 0; n < NUM_SPECIES; n++) {
-        const auto mf = rhoY(iv, n) * rhoOld_inv;
-        if ((mf < -threshold) || ((1.0 + threshold) < mf)) {
-          clean_massfrac = true;
-        }
-      }
-
-      if (clean_massfrac) {
-        // Clip species rhoYs and get new rho
-        amrex::Real rhoNew = 0.0;
-        for (int n = 0; n < NUM_SPECIES; n++) {
-          rhoY(iv, n) = amrex::min(rhoOld, amrex::max(0.0, rhoY(iv, n)));
-          rhoNew += rhoY(iv, n);
-        }
-        rho(iv) = rhoNew;
-
-        // Keep kinetic energy, recompute, rhoe, rhoE, and rhoU
-        const amrex::Real kinNRG =
-          0.5 * rhoOld_inv * rhoOld_inv *
-          (AMREX_D_TERM(
-            (rhoU(iv, 0) * rhoU(iv, 0)), +(rhoU(iv, 1) * rhoU(iv, 1)),
-            +(rhoU(iv, 2) * rhoU(iv, 2))));
-        const amrex::Real eOld = (rhoE(iv) * rhoOld_inv) - kinNRG;
-        rhoe(iv) = rhoNew * eOld;
-        rhoE(iv) = rhoNew * eOld + rhoNew * kinNRG;
-        for (int n = 0; n < AMREX_SPACEDIM; n++) {
-          rhoU(iv, n) *= rhoNew * rhoOld_inv;
-        }
-      }
-    }
-  });
+  clean_massfrac(bx, threshold, mask.const_array(), scratch);
 
   // Compute the updated div
   amrex::ParallelFor(
     bx, state.nComp(),
     [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
       const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-      if (is_cut_neighborhood(iv, flags)) {
+      if (mask_arr(iv)) {
         div(iv, n) = (scratch(iv, n) - state(iv, n)) / dt;
       }
     });

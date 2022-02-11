@@ -1,6 +1,7 @@
 #ifndef _UTILITIES_H_
 #define _UTILITIES_H_
 
+#include <AMReX_IArrayBox.H>
 #include <AMReX_FArrayBox.H>
 #include "Constants.H"
 #include "IndexDefines.H"
@@ -497,5 +498,12 @@ unique(T input)
 }
 
 std::string convertIntGG(int number);
+
+// Clean the mass fractions on state, given a mask
+void clean_massfrac(
+  const amrex::Box&,
+  const amrex::Real,
+  amrex::Array4<const int> const&,
+  amrex::Array4<amrex::Real> const&);
 
 #endif
