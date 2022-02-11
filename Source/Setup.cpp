@@ -181,7 +181,6 @@ PeleC::variableSetUp()
   NumAdv = 0;
 #endif
 
-  // cppcheck-suppress knownConditionTrueFalse
   if (NumAdv > 0) {
     FirstAdv = cnt;
     cnt += NumAdv;
@@ -257,8 +256,12 @@ PeleC::variableSetUp()
 
 #ifdef PELEC_USE_EB
   // Decide from input whether eb interp is needed for FillPatch operations
-  if ((eb_in_domain) and (state_interp_order != 0)) {
-    interp = &amrex::eb_cell_cons_interp;
+  if ((eb_in_domain) && (state_interp_order != 0)) {
+    if (lin_limit_state_interp == 1) {
+      interp = &amrex::eb_lincc_interp;
+    } else {
+      interp = &amrex::eb_cell_cons_interp;
+    }
   }
 #endif
 
