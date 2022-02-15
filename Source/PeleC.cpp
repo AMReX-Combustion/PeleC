@@ -674,6 +674,7 @@ PeleC::initData()
     get_new_data(Work_Estimate_Type).setVal(1.0);
   }
 
+#ifdef PELEC_USE_NEW_MFITER
   const auto geomdata = geom.data();
   const ProbParmDevice* lprobparm = d_prob_parm_device;
   auto sarrs = S_new.arrays();
@@ -684,6 +685,26 @@ PeleC::initData()
       pc_check_initial_species(i, j, k, sarrs[nbx]);
     });
 
+#else
+
+#ifdef _OPENMP
+#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
+#endif
+  for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
+       ++mfi) {
+    const amrex::Box& box = mfi.tilebox();
+    auto sfab = S_new.array(mfi);
+    const auto geomdata = geom.data();
+
+    const ProbParmDevice* lprobparm = d_prob_parm_device;
+
+    amrex::ParallelFor(box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      pc_initdata(i, j, k, sfab, geomdata, *lprobparm);
+      // Verify that the sum of (rho Y)_i = rho at every cell
+      pc_check_initial_species(i, j, k, sfab);
+    });
+  }
+#endif
   enforce_consistent_e(S_new);
 
   // computeTemp(S_new,0);
@@ -789,7 +810,8 @@ PeleC::initialTimeStep()
   return init_dt;
 }
 
-amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
+amrex::Real
+PeleC::estTimeStep(amrex::Real /*dt_old*/)
 {
   BL_PROFILE("PeleC::estTimeStep()");
 
@@ -1249,7 +1271,8 @@ PeleC::post_regrid(
   }
 }
 
-void PeleC::post_init(amrex::Real /*stop_time*/)
+void
+PeleC::post_init(amrex::Real /*stop_time*/)
 {
   BL_PROFILE("PeleC::post_init()");
 
@@ -1417,6 +1440,7 @@ PeleC::normalize_species(amrex::MultiFab& /*S*/)
 void
 PeleC::enforce_consistent_e(amrex::MultiFab& S)
 {
+#ifdef PELEC_USE_NEW_MFITER
   auto sarrs = S.arrays();
   amrex::ParallelFor(
     S, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
@@ -1428,6 +1452,25 @@ PeleC::enforce_consistent_e(amrex::MultiFab& S)
       sarr(i, j, k, UEDEN) = sarr(i, j, k, UEINT) + 0.5 * sarr(i, j, k, URHO) *
                                                       (u * u + v * v + w * w);
     });
+#else
+#ifdef _OPENMP
+#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
+#endif
+  for (amrex::MFIter mfi(S, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
+    const amrex::Box& tbox = mfi.tilebox();
+    const auto Sfab = S.array(mfi);
+    amrex::ParallelFor(
+      tbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+        const amrex::Real rhoInv = 1.0 / Sfab(i, j, k, URHO);
+        const amrex::Real u = Sfab(i, j, k, UMX) * rhoInv;
+        const amrex::Real v = Sfab(i, j, k, UMY) * rhoInv;
+        const amrex::Real w = Sfab(i, j, k, UMZ) * rhoInv;
+        Sfab(i, j, k, UEDEN) = Sfab(i, j, k, UEINT) + 0.5 *
+                                                        Sfab(i, j, k, URHO) *
+                                                        (u * u + v * v + w * w);
+      });
+  }
+#endif
 }
 
 amrex::Real
@@ -2031,6 +2074,7 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
     sum0 = volWgtSumMF(S_new, Eden, true);
   }
 #endif
+
   // Ensure (rho e) isn't too small or negative
 #ifdef _OPENMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
@@ -2042,6 +2086,7 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
       dual_energy_update_E_from_e;
     const auto captured_verbose = verbose;
     const auto captured_dual_energy_eta2 = dual_energy_eta2;
+#ifdef PELEC_USE_NEW_MFITER
     auto sarrs = S_new.arrays();
     amrex::ParallelFor(
       S_new, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
@@ -2050,6 +2095,21 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
           captured_allow_negative_energy, captured_dual_energy_update_E_from_e,
           captured_dual_energy_eta2, captured_verbose);
       });
+#else
+    for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
+         ++mfi) {
+      const amrex::Box& bx = mfi.growntilebox(ng);
+      const auto& sarr = S_new.array(mfi);
+      amrex::ParallelFor(
+        bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+          pc_rst_int_e(
+            i, j, k, sarr, captured_allow_small_energy,
+            captured_allow_negative_energy,
+            captured_dual_energy_update_E_from_e, captured_dual_energy_eta2,
+            captured_verbose);
+        });
+    }
+#endif
   }
 
 #ifndef AMREX_USE_GPU
