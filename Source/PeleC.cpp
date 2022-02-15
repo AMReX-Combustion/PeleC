@@ -677,11 +677,12 @@ PeleC::initData()
   const auto geomdata = geom.data();
   const ProbParmDevice* lprobparm = d_prob_parm_device;
   auto sarrs = S_new.arrays();
-  amrex::ParallelFor(S_new, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
-    pc_initdata(i, j, k, sarrs[nbx], geomdata, *lprobparm);
-    // Verify that the sum of (rho Y)_i = rho at every cell
-    pc_check_initial_species(i, j, k, sarrs[nbx]);
-  });
+  amrex::ParallelFor(
+    S_new, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+      pc_initdata(i, j, k, sarrs[nbx], geomdata, *lprobparm);
+      // Verify that the sum of (rho Y)_i = rho at every cell
+      pc_check_initial_species(i, j, k, sarrs[nbx]);
+    });
 
   enforce_consistent_e(S_new);
 
@@ -2041,19 +2042,14 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
       dual_energy_update_E_from_e;
     const auto captured_verbose = verbose;
     const auto captured_dual_energy_eta2 = dual_energy_eta2;
-    for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
-         ++mfi) {
-      const amrex::Box& bx = mfi.growntilebox(ng);
-      const auto& sarr = S_new.array(mfi);
-      amrex::ParallelFor(
-        bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-          pc_rst_int_e(
-            i, j, k, sarr, captured_allow_small_energy,
-            captured_allow_negative_energy,
-            captured_dual_energy_update_E_from_e, captured_dual_energy_eta2,
-            captured_verbose);
-        });
-    }
+    auto sarrs = S_new.arrays();
+    amrex::ParallelFor(
+      S_new, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+        pc_rst_int_e(
+          i, j, k, sarrs[nbx], captured_allow_small_energy,
+          captured_allow_negative_energy, captured_dual_energy_update_E_from_e,
+          captured_dual_energy_eta2, captured_verbose);
+      });
   }
 
 #ifndef AMREX_USE_GPU
