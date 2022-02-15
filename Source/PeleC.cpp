@@ -674,23 +674,14 @@ PeleC::initData()
     get_new_data(Work_Estimate_Type).setVal(1.0);
   }
 
-#ifdef _OPENMP
-#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
-#endif
-  for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
-       ++mfi) {
-    const amrex::Box& box = mfi.tilebox();
-    auto sfab = S_new.array(mfi);
-    const auto geomdata = geom.data();
-
-    const ProbParmDevice* lprobparm = d_prob_parm_device;
-
-    amrex::ParallelFor(box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      pc_initdata(i, j, k, sfab, geomdata, *lprobparm);
-      // Verify that the sum of (rho Y)_i = rho at every cell
-      pc_check_initial_species(i, j, k, sfab);
-    });
-  }
+  const auto geomdata = geom.data();
+  const ProbParmDevice* lprobparm = d_prob_parm_device;
+  auto sarrs = S_new.arrays();
+  amrex::ParallelFor(S_new, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+    pc_initdata(i, j, k, sarrs[nbx], geomdata, *lprobparm);
+    // Verify that the sum of (rho Y)_i = rho at every cell
+    pc_check_initial_species(i, j, k, sarrs[nbx]);
+  });
 
   enforce_consistent_e(S_new);
 
