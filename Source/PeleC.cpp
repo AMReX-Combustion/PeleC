@@ -647,7 +647,6 @@ PeleC::initData()
 
   // int ns = NVAR;
   amrex::MultiFab& S_new = get_new_data(State_Type);
-  // amrex::Real cur_time = state[State_Type].curTime();
 
   S_new.setVal(0.0);
 
@@ -699,7 +698,10 @@ PeleC::initData()
 
 #ifdef PELEC_USE_EB
   set_body_state(S_new);
-  InitialRedistribution();
+  amrex::Real cur_time = state[State_Type].curTime();
+  const amrex::StateDescriptor* desc = state[State_Type].descriptor();
+  const auto& bcs = desc->getBCs();
+  InitialRedistribution(cur_time, bcs, S_new);
 #endif
 
 #ifdef AMREX_PARTICLES
@@ -2240,7 +2242,10 @@ PeleC::clean_state(const amrex::MultiFab& S, amrex::MultiFab& S_old)
 
 #ifdef PELEC_USE_EB
 void
-PeleC::InitialRedistribution()
+PeleC::InitialRedistribution(
+  const amrex::Real time,
+  const amrex::Vector<amrex::BCRec> bcs,
+  amrex::MultiFab& S_new)
 {
   BL_PROFILE("PeleC::InitialRedistribution()");
 
@@ -2257,18 +2262,14 @@ PeleC::InitialRedistribution()
   }
 
   // Initial data are set at new time step
-  amrex::MultiFab& S_new = get_new_data(State_Type);
   amrex::MultiFab tmp(
     grids, dmap, S_new.nComp(), numGrow(), amrex::MFInfo(), Factory());
 
   amrex::MultiFab::Copy(tmp, S_new, 0, 0, S_new.nComp(), S_new.nGrow());
-  const amrex::Real time = state[State_Type].curTime();
   FillPatch(*this, tmp, numGrow(), time, State_Type, 0, S_new.nComp());
   EB_set_covered(tmp, 0.0);
 
-  const amrex::StateDescriptor* desc = state[State_Type].descriptor();
-  const auto& bcs = desc->getBCs();
-  amrex::Gpu::DeviceVector<amrex::BCRec> d_bcs(desc->nComp());
+  amrex::Gpu::DeviceVector<amrex::BCRec> d_bcs(bcs.size());
   amrex::Gpu::copy(
     amrex::Gpu::hostToDevice, bcs.begin(), bcs.end(), d_bcs.begin());
 
