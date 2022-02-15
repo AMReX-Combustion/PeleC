@@ -1416,23 +1416,17 @@ PeleC::normalize_species(amrex::MultiFab& /*S*/)
 void
 PeleC::enforce_consistent_e(amrex::MultiFab& S)
 {
-#ifdef _OPENMP
-#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
-#endif
-  for (amrex::MFIter mfi(S, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
-    const amrex::Box& tbox = mfi.tilebox();
-    const auto Sfab = S.array(mfi);
-    amrex::ParallelFor(
-      tbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-        const amrex::Real rhoInv = 1.0 / Sfab(i, j, k, URHO);
-        const amrex::Real u = Sfab(i, j, k, UMX) * rhoInv;
-        const amrex::Real v = Sfab(i, j, k, UMY) * rhoInv;
-        const amrex::Real w = Sfab(i, j, k, UMZ) * rhoInv;
-        Sfab(i, j, k, UEDEN) = Sfab(i, j, k, UEINT) + 0.5 *
-                                                        Sfab(i, j, k, URHO) *
-                                                        (u * u + v * v + w * w);
-      });
-  }
+  auto sarrs = S.arrays();
+  amrex::ParallelFor(
+    S, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+      auto sarr = sarrs[nbx];
+      const amrex::Real rhoInv = 1.0 / sarr(i, j, k, URHO);
+      const amrex::Real u = sarr(i, j, k, UMX) * rhoInv;
+      const amrex::Real v = sarr(i, j, k, UMY) * rhoInv;
+      const amrex::Real w = sarr(i, j, k, UMZ) * rhoInv;
+      sarr(i, j, k, UEDEN) = sarr(i, j, k, UEINT) + 0.5 * sarr(i, j, k, URHO) *
+                                                      (u * u + v * v + w * w);
+    });
 }
 
 amrex::Real
