@@ -979,6 +979,16 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
     }
   }
 #endif
+#ifdef SOOT_MODEL
+  amrex::Real estdt_soot = max_dt;
+  if (add_soot_src) {
+    estSootDt(estdt_soot);
+    if (estdt_soot < estdt) {
+      limiter = "soot";
+      estdt = estdt_soot;
+    }
+  }
+#endif
 
   if (verbose) {
     amrex::Print() << "PeleC::estTimeStep (" << limiter << "-limited) at level "
@@ -1168,6 +1178,10 @@ PeleC::post_timestep(int
   amrex::MultiFab& S_new = get_new_data(State_Type);
   int ng_pts = 0;
   computeTemp(S_new, ng_pts);
+
+#ifdef SOOT_MODEL
+  clipSootMoments(S_new, ng_pts);
+#endif
 
   problem_post_timestep();
 

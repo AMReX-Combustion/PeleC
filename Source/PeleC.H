@@ -355,6 +355,10 @@ public:
     amrex::MultiFab& state,
     amrex::MultiFab& soot_src,
     int ng);
+
+  void clipSootMoments(amrex::MultiFab& S_new, const int ng);
+
+  void estSootDt(amrex::Real& estdt_soot);
 #endif
 
 #ifdef PELEC_USE_MASA
