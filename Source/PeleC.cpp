@@ -1881,6 +1881,11 @@ PeleC::derive(const std::string& name, amrex::Real time, int ngrow)
   }
 #endif
 
+  // For those using GrowBoxByOne we need this
+  if ((name == "enstrophy") || (name == "magvort") || (name == "divu")) {
+    ngrow += 1;
+  }
+
 #ifdef AMREX_PARTICLES
   return particleDerive(name, time, ngrow);
 #else
