@@ -598,6 +598,12 @@ public:
 
   // static EB helper functions called from outside class
   static bool ebInitialized();
+
+  void InitialRedistribution(
+    const amrex::Real time,
+    const amrex::Vector<amrex::BCRec> bcs,
+    amrex::MultiFab& S_new);
+
 #else
   amrex::YAFluxRegister flux_reg;
 
@@ -684,8 +690,6 @@ protected:
 
   static amrex::Real
   clean_state(const amrex::MultiFab& S, amrex::MultiFab& S_old);
-
-  void InitialRedistribution();
 
   void buildMetrics();
 

@@ -661,7 +661,6 @@ PeleC::initData()
 
   // int ns = NVAR;
   amrex::MultiFab& S_new = get_new_data(State_Type);
-  // amrex::Real cur_time = state[State_Type].curTime();
 
   S_new.setVal(0.0);
 
@@ -713,7 +712,10 @@ PeleC::initData()
 
 #ifdef PELEC_USE_EB
   set_body_state(S_new);
-  InitialRedistribution();
+  amrex::Real cur_time = state[State_Type].curTime();
+  const amrex::StateDescriptor* desc = state[State_Type].descriptor();
+  const auto& bcs = desc->getBCs();
+  InitialRedistribution(cur_time, bcs, S_new);
 #endif
 
 #ifdef AMREX_PARTICLES
@@ -847,7 +849,6 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
     amrex::Real AMREX_D_DECL(dx1 = dx[0], dx2 = dx[1], dx3 = dx[2]);
 
     if (do_hydro) {
-      // cppcheck-suppress uninitvar
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
 #ifdef PELEC_USE_EB
@@ -873,7 +874,6 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 
     if (diffuse_vel) {
       auto const* ltransparm = trans_parms.device_trans_parm();
-      // cppcheck-suppress uninitvar
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
 #ifdef PELEC_USE_EB
@@ -899,7 +899,6 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 
     if (diffuse_temp) {
       auto const* ltransparm = trans_parms.device_trans_parm();
-      // cppcheck-suppress uninitvar
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
 #ifdef PELEC_USE_EB
@@ -925,7 +924,6 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 
     if (diffuse_enth) {
       auto const* ltransparm = trans_parms.device_trans_parm();
-      // cppcheck-suppress uninitvar
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
 #ifdef PELEC_USE_EB
@@ -2294,7 +2292,10 @@ PeleC::clean_state(const amrex::MultiFab& S, amrex::MultiFab& S_old)
 
 #ifdef PELEC_USE_EB
 void
-PeleC::InitialRedistribution()
+PeleC::InitialRedistribution(
+  const amrex::Real time,
+  const amrex::Vector<amrex::BCRec> bcs,
+  amrex::MultiFab& S_new)
 {
   BL_PROFILE("PeleC::InitialRedistribution()");
 
@@ -2311,18 +2312,14 @@ PeleC::InitialRedistribution()
   }
 
   // Initial data are set at new time step
-  amrex::MultiFab& S_new = get_new_data(State_Type);
   amrex::MultiFab tmp(
     grids, dmap, S_new.nComp(), numGrow(), amrex::MFInfo(), Factory());
 
   amrex::MultiFab::Copy(tmp, S_new, 0, 0, S_new.nComp(), S_new.nGrow());
-  const amrex::Real time = state[State_Type].curTime();
   FillPatch(*this, tmp, numGrow(), time, State_Type, 0, S_new.nComp());
   EB_set_covered(tmp, 0.0);
 
-  const amrex::StateDescriptor* desc = state[State_Type].descriptor();
-  const auto& bcs = desc->getBCs();
-  amrex::Gpu::DeviceVector<amrex::BCRec> d_bcs(desc->nComp());
+  amrex::Gpu::DeviceVector<amrex::BCRec> d_bcs(bcs.size());
   amrex::Gpu::copy(
     amrex::Gpu::hostToDevice, bcs.begin(), bcs.end(), d_bcs.begin());
 
@@ -2353,11 +2350,26 @@ PeleC::InitialRedistribution()
                    , apy = fact.getAreaFrac()[1]->const_array(mfi);
                    , apz = fact.getAreaFrac()[2]->const_array(mfi););
 
+      const auto& sarr = S_new.array(mfi);
+      const auto& tarr = tmp.array(mfi);
       Redistribution::ApplyToInitialData(
-        bx, NVAR, S_new.array(mfi), tmp.array(mfi), flag_arr,
-        AMREX_D_DECL(apx, apy, apz), vfrac.const_array(mfi),
-        AMREX_D_DECL(fcx, fcy, fcz), ccc, d_bcs.dataPtr(), geom,
-        redistribution_type);
+        bx, NVAR, sarr, tarr, flag_arr, AMREX_D_DECL(apx, apy, apz),
+        vfrac.const_array(mfi), AMREX_D_DECL(fcx, fcy, fcz), ccc,
+        d_bcs.dataPtr(), geom, redistribution_type);
+
+      // Make sure rho is same as sum rhoY after redistribution
+      amrex::ParallelFor(
+        bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+          amrex::Real drhoYsum = 0.0;
+          for (int n = 0; n < NUM_SPECIES; n++) {
+            drhoYsum += sarr(i, j, k, UFS + n) - tarr(i, j, k, UFS + n);
+          }
+          sarr(i, j, k, URHO) = tarr(i, j, k, URHO) + drhoYsum;
+        });
+      amrex::ParallelFor(
+        bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+          pc_check_initial_species(i, j, k, sarr);
+        });
     }
   }
   set_body_state(S_new);
