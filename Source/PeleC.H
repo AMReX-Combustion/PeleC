@@ -145,9 +145,6 @@ public:
   // Create relevant particle data
   void createParticleData();
 
-  // Default verbosity of Particle class
-  static int particle_verbose;
-
   // How to initialize at restart
   void particlePostRestart(bool is_checkpoint = true);
 
@@ -188,17 +185,12 @@ public:
   // Time step control based on particles
   void particleEstTimeStep(amrex::Real& est_dt);
 
-  // Default cfl of particles in Particle class
-  static amrex::Real particle_cfl;
-
   // Number of source terms in temporary spray data
   static int num_spray_src;
 
   // Should we write particle ascii files?
   static int write_spray_ascii_files;
 
-  static int particle_mass_tran;
-  static int particle_mom_tran;
   static amrex::Vector<std::string> spray_fuel_names;
 #endif
 

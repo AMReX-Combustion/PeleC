@@ -459,10 +459,6 @@ PeleC::do_sdc_iteration(
   if (do_spray_particles && sub_iteration == sub_ncycle - 1) {
     new_sources[spray_src]->setVal(0.);
     // Advance the particle velocities by dt/2 to the new time.
-    if (particle_verbose) {
-      amrex::Print() << "moveKick ... updating velocity only\n";
-    }
-
     if (!do_diffuse) { // Else, this was already done above.  No need to redo
       FillPatch(*this, Sborder, nGrow_Sborder, time + dt, State_Type, 0, NVAR);
     }
