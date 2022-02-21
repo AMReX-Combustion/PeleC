@@ -232,10 +232,10 @@ function(build_pelec_exe pelec_exe_name)
   target_include_directories(${pelec_exe_name} PRIVATE ${CMAKE_BINARY_DIR})
 
   #Link to amrex libraries
-  target_link_libraries(${pelec_exe_name} PRIVATE AMReX::amrex)
   if(PELEC_DIM GREATER 1)
     target_link_libraries(${pelec_exe_name} PRIVATE AMReX-Hydro::amrex_hydro_api)
   endif()
+  target_link_libraries(${pelec_exe_name} PRIVATE AMReX::amrex)
 
   if(PELEC_ENABLE_CUDA)
     set(pctargets "${pelec_exe_name}")
