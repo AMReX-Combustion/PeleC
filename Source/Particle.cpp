@@ -95,12 +95,12 @@ PeleC::particleEstTimeStep(Real& est_dt)
 }
 
 void
-PeleC::readParticleParams()
+PeleC::readSprayParams()
 {
   ParmParse pp("pelec");
 
   pp.query("do_spray_particles", do_spray_particles);
-  SprayParticleContainer::readParticleParams(
+  SprayParticleContainer::readSprayParams(
     particle_verbose, particle_cfl, wall_temp, mass_trans, mom_trans, write_spray_ascii_files,
     plot_spray_src, init_function, init_file, sprayData, spray_fuel_names);
 }

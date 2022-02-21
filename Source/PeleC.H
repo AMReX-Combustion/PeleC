@@ -133,8 +133,8 @@ public:
 
 #ifdef AMREX_PARTICLES
 
-  // Read particle-related inputs
-  static void readParticleParams();
+  // Read spray related inputs
+  static void readSprayParams();
 
   // Define particle related variables
   static void defineParticles();
