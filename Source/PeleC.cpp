@@ -340,7 +340,7 @@ PeleC::read_params()
   }
 
 #ifdef AMREX_PARTICLES
-  readParticleParams();
+  readSprayParams();
 #endif
 
 #ifdef SOOT_MODEL
