@@ -312,6 +312,7 @@ jobs:
           -DPELEC_ENABLE_TESTS:BOOL=ON \
           -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
           -DPELEC_ENABLE_MASA:BOOL=OFF \
+          -DBUILD_SHARED_LIBS:BOOL=ON \
           ${{github.workspace}}
       - name: Build
         working-directory: ${{runner.workspace}}/build-hip
