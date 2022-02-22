@@ -276,6 +276,9 @@ eb_clean_massfrac            int          1
 # threshold to use for cleaning massfractions on EB cut cells
 eb_clean_massfrac_threshold  Real         0.0
 
+# Max order used for SRD slopes
+eb_srd_max_order             int          2
+
 #-----------------------------------------------------------------------------
 # category: method of manufactured solution
 #-----------------------------------------------------------------------------
