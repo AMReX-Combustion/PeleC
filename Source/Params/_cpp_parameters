@@ -260,7 +260,7 @@ PrT                          Real          1.0
 eb_boundary_T                Real         1.0
 eb_isothermal                int          1
 eb_noslip                    int          1
-redistribution_type          string       "NewStateRedist"
+redistribution_type          string       "StateRedist"
 
 #-----------------------------------------------------------------------------
 # category: method of manufactured solution
