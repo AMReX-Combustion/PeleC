@@ -72,6 +72,9 @@ amrex::Real PeleC::eb_boundary_T = 1.0;
 int PeleC::eb_isothermal = 1;
 int PeleC::eb_noslip = 1;
 std::string PeleC::redistribution_type = "StateRedist";
+int PeleC::eb_clean_massfrac = 1;
+amrex::Real PeleC::eb_clean_massfrac_threshold = 0.0;
+int PeleC::eb_srd_max_order = 2;
 int PeleC::do_mms = 0;
 std::string PeleC::masa_solution_name = "ad_cns_3d_les";
 amrex::Real PeleC::fixed_dt = -1.0;
@@ -99,7 +102,6 @@ int PeleC::adaptrk_nsubsteps_min = 20;
 int PeleC::adaptrk_nsubsteps_max = 300;
 int PeleC::adaptrk_nsubsteps_guess = 50;
 amrex::Real PeleC::adaptrk_errtol = 1e-12;
-int PeleC::clean_massfrac = 0;
 int PeleC::bndry_func_thread_safe = 1;
 #ifdef AMREX_DEBUG
 int PeleC::print_energy_diagnostics = 1;

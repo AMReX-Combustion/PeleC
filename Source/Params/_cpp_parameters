@@ -257,10 +257,27 @@ PrT                          Real          1.0
 #-----------------------------------------------------------------------------
 # category: EB
 #-----------------------------------------------------------------------------
+
+# set the EB boundary temperature for isothermal walls
 eb_boundary_T                Real         1.0
+
+# flag for isothermal EB boundary
 eb_isothermal                int          1
+
+# flag for no slip EB boundary
 eb_noslip                    int          1
+
+# redistribution type in amrex-hydro
 redistribution_type          string       "StateRedist"
+
+# flag to clean massfractions on EB cut cells
+eb_clean_massfrac            int          1
+
+# threshold to use for cleaning massfractions on EB cut cells
+eb_clean_massfrac_threshold  Real         0.0
+
+# Max order used for SRD slopes
+eb_srd_max_order             int          2
 
 #-----------------------------------------------------------------------------
 # category: method of manufactured solution
@@ -373,9 +390,6 @@ adaptrk_nsubsteps_guess      int           50                 n
 
 #explict RK chemistry integrator options (absolute error tol.)
 adaptrk_errtol               Real          1e-12              n
-
-#flag to clean massfractions before react/diffuse/convect
-clean_massfrac         int           0                  n
 
 #-----------------------------------------------------------------------------
 # category: parallelization

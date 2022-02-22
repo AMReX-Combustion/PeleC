@@ -247,11 +247,9 @@ PeleC::getSmagorinskyLESTerm(
       {
         BL_PROFILE("PeleC::ctoprim()");
         const PassMap* lpmap = d_pass_map;
-        const int captured_clean_massfrac = clean_massfrac;
         amrex::ParallelFor(
           gbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            pc_ctoprim(
-              i, j, k, s, q_ar, qauxar, *lpmap, captured_clean_massfrac);
+            pc_ctoprim(i, j, k, s, q_ar, qauxar, *lpmap);
           });
       }
 
@@ -477,11 +475,9 @@ PeleC::getDynamicSmagorinskyLESTerm(
       {
         BL_PROFILE("PeleC::ctoprim()");
         const PassMap* lpmap = d_pass_map;
-        const int captured_clean_massfrac = clean_massfrac;
         amrex::ParallelFor(
           g0box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            pc_ctoprim(
-              i, j, k, s, q_ar, qauxar, *lpmap, captured_clean_massfrac);
+            pc_ctoprim(i, j, k, s, q_ar, qauxar, *lpmap);
           });
       }
 
@@ -558,12 +554,10 @@ PeleC::getDynamicSmagorinskyLESTerm(
       {
         BL_PROFILE("PeleC::ctoprim()");
         const PassMap* lpmap = d_pass_map;
-        const int captured_clean_massfrac = clean_massfrac;
         amrex::ParallelFor(
           g2box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
             pc_ctoprim(
-              i, j, k, filtered_S_ar, filtered_Q_ar, filtered_Qaux_ar, *lpmap,
-              captured_clean_massfrac);
+              i, j, k, filtered_S_ar, filtered_Q_ar, filtered_Qaux_ar, *lpmap);
           });
       }
       test_filter.apply_filter(g3box, K, filtered_K);

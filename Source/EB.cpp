@@ -1,4 +1,5 @@
 #include "EB.H"
+#include "Utilities.H"
 
 void
 pc_fill_sv_ebg(
@@ -719,4 +720,43 @@ pc_apply_eb_boundry_flux_stencil(
       }
     }
   });
+}
+
+void
+pc_eb_clean_massfrac(
+  const amrex::Box& bx,
+  const amrex::Real dt,
+  const amrex::Real threshold,
+  amrex::Array4<const amrex::Real> const& state,
+  amrex::Array4<amrex::EBCellFlag const> const& flags,
+  amrex::Array4<amrex::Real> const& scratch,
+  amrex::Array4<amrex::Real> const& div)
+{
+  // Compute the new state and the mask
+  amrex::IArrayBox mask(bx);
+  amrex::Elixir mask_eli = mask.elixir();
+  mask.setVal<amrex::RunOn::Device>(0, mask.box());
+  const auto& mask_arr = mask.array();
+  amrex::ParallelFor(
+    bx, state.nComp(),
+    [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
+      const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
+      if (is_cut_neighborhood(iv, flags)) {
+        scratch(iv, n) = state(iv, n) + dt * div(iv, n);
+        mask_arr(iv) = 1;
+      }
+    });
+
+  // Clean the new state
+  clean_massfrac(bx, threshold, mask.const_array(), scratch);
+
+  // Compute the updated div
+  amrex::ParallelFor(
+    bx, state.nComp(),
+    [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
+      const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
+      if (mask_arr(iv)) {
+        div(iv, n) = (scratch(iv, n) - state(iv, n)) / dt;
+      }
+    });
 }
