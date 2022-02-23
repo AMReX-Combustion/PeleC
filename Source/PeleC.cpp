@@ -1935,6 +1935,11 @@ PeleC::derive(const std::string& name, amrex::Real time, int ngrow)
   }
 #endif
 
+  // For those using GrowBoxByOne we need this
+  if ((name == "enstrophy") || (name == "magvort") || (name == "divu")) {
+    ngrow += 1;
+  }
+
   return AmrLevel::derive(name, time, ngrow);
 }
 
@@ -2301,9 +2306,7 @@ PeleC::InitialRedistribution(
 
   // Next we must redistribute the initial solution if we are going to use
   // StateRedist redistribution schemes
-  if (
-    (eb_in_domain) && ((redistribution_type != "StateRedist") &&
-                       (redistribution_type != "NewStateRedist"))) {
+  if ((eb_in_domain) && (redistribution_type != "StateRedist")) {
     return;
   }
 
@@ -2355,7 +2358,7 @@ PeleC::InitialRedistribution(
       Redistribution::ApplyToInitialData(
         bx, NVAR, sarr, tarr, flag_arr, AMREX_D_DECL(apx, apy, apz),
         vfrac.const_array(mfi), AMREX_D_DECL(fcx, fcy, fcz), ccc,
-        d_bcs.dataPtr(), geom, redistribution_type);
+        d_bcs.dataPtr(), geom, redistribution_type, eb_srd_max_order);
 
       // Make sure rho is same as sum rhoY after redistribution
       amrex::ParallelFor(

@@ -43,17 +43,6 @@ static int react_src_bc[] = {INT_DIR,      REFLECT_EVEN, REFLECT_EVEN,
                              REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN,
                              REFLECT_EVEN};
 
-static amrex::Box
-the_same_box(const amrex::Box& b)
-{
-  return b;
-}
-static amrex::Box
-grow_box_by_one(const amrex::Box& b)
-{
-  return amrex::grow(b, 1);
-}
-
 static void
 set_scalar_bc(amrex::BCRec& bc, const amrex::BCRec& phys_bc)
 {
@@ -451,61 +440,68 @@ PeleC::variableSetUp()
 
   // Pressure
   derive_lst.add(
-    "pressure", amrex::IndexType::TheCellType(), 1, pc_derpres, the_same_box);
+    "pressure", amrex::IndexType::TheCellType(), 1, pc_derpres,
+    amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("pressure", desc_lst, State_Type, Density, NVAR);
 
   // Kinetic energy
   derive_lst.add(
-    "kineng", amrex::IndexType::TheCellType(), 1, pc_derkineng, the_same_box);
+    "kineng", amrex::IndexType::TheCellType(), 1, pc_derkineng,
+    amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("kineng", desc_lst, State_Type, Density, NVAR);
 
   // Enstrophy
   derive_lst.add(
     "enstrophy", amrex::IndexType::TheCellType(), 1, pc_derenstrophy,
-    grow_box_by_one);
+    amrex::DeriveRec::GrowBoxByOne);
   derive_lst.addComponent("enstrophy", desc_lst, State_Type, Density, NVAR);
 
   // Sound speed (c)
   derive_lst.add(
     "soundspeed", amrex::IndexType::TheCellType(), 1, pc_dersoundspeed,
-    the_same_box);
+    amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("soundspeed", desc_lst, State_Type, Density, NVAR);
 
   // Mach number(M)
   derive_lst.add(
     "MachNumber", amrex::IndexType::TheCellType(), 1, pc_dermachnumber,
-    the_same_box);
+    amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("MachNumber", desc_lst, State_Type, Density, NVAR);
 
   // Entropy (S)
   derive_lst.add(
-    "entropy", amrex::IndexType::TheCellType(), 1, pc_derentropy, the_same_box);
+    "entropy", amrex::IndexType::TheCellType(), 1, pc_derentropy,
+    amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("entropy", desc_lst, State_Type, Density, NVAR);
 
   // Vorticity
   derive_lst.add(
     "magvort", amrex::IndexType::TheCellType(), 1, pc_dermagvort,
-    grow_box_by_one);
+    amrex::DeriveRec::GrowBoxByOne);
   derive_lst.addComponent("magvort", desc_lst, State_Type, Density, NVAR);
 
   // Div(u)
   derive_lst.add(
-    "divu", amrex::IndexType::TheCellType(), 1, pc_derdivu, grow_box_by_one);
+    "divu", amrex::IndexType::TheCellType(), 1, pc_derdivu,
+    amrex::DeriveRec::GrowBoxByOne);
   derive_lst.addComponent("divu", desc_lst, State_Type, Density, NVAR);
 
   // Internal energy as derived from rho*E, part of the state
   derive_lst.add(
-    "eint_E", amrex::IndexType::TheCellType(), 1, pc_dereint1, the_same_box);
+    "eint_E", amrex::IndexType::TheCellType(), 1, pc_dereint1,
+    amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("eint_E", desc_lst, State_Type, Density, NVAR);
 
   // Internal energy as derived from rho*e, part of the state
   derive_lst.add(
-    "eint_e", amrex::IndexType::TheCellType(), 1, pc_dereint2, the_same_box);
+    "eint_e", amrex::IndexType::TheCellType(), 1, pc_dereint2,
+    amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("eint_e", desc_lst, State_Type, Density, NVAR);
 
   // Log(density)
   derive_lst.add(
-    "logden", amrex::IndexType::TheCellType(), 1, pc_derlogden, the_same_box);
+    "logden", amrex::IndexType::TheCellType(), 1, pc_derlogden,
+    amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("logden", desc_lst, State_Type, Density, NVAR);
 
   // Y from rhoY
@@ -516,7 +512,7 @@ PeleC::variableSetUp()
 
   derive_lst.add(
     "massfrac", amrex::IndexType::TheCellType(), NUM_SPECIES,
-    var_names_massfrac, pc_derspec, the_same_box);
+    var_names_massfrac, pc_derspec, amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("massfrac", desc_lst, State_Type, Density, NVAR);
 
   // Species mole fractions
@@ -527,39 +523,45 @@ PeleC::variableSetUp()
 
   derive_lst.add(
     "molefrac", amrex::IndexType::TheCellType(), NUM_SPECIES,
-    var_names_molefrac, pc_dermolefrac, the_same_box);
+    var_names_molefrac, pc_dermolefrac, amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("molefrac", desc_lst, State_Type, Density, NVAR);
 
   // Velocities
   derive_lst.add(
-    "x_velocity", amrex::IndexType::TheCellType(), 1, pc_dervelx, the_same_box);
+    "x_velocity", amrex::IndexType::TheCellType(), 1, pc_dervelx,
+    amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("x_velocity", desc_lst, State_Type, Density, NVAR);
 
   derive_lst.add(
-    "y_velocity", amrex::IndexType::TheCellType(), 1, pc_dervely, the_same_box);
+    "y_velocity", amrex::IndexType::TheCellType(), 1, pc_dervely,
+    amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("y_velocity", desc_lst, State_Type, Density, NVAR);
 
   derive_lst.add(
-    "z_velocity", amrex::IndexType::TheCellType(), 1, pc_dervelz, the_same_box);
+    "z_velocity", amrex::IndexType::TheCellType(), 1, pc_dervelz,
+    amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("z_velocity", desc_lst, State_Type, Density, NVAR);
 
   derive_lst.add(
-    "magvel", amrex::IndexType::TheCellType(), 1, pc_dermagvel, the_same_box);
+    "magvel", amrex::IndexType::TheCellType(), 1, pc_dermagvel,
+    amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("magvel", desc_lst, State_Type, Density, NVAR);
 
   derive_lst.add(
     "radvel", amrex::IndexType::TheCellType(), 1, pc_derradialvel,
-    the_same_box);
+    amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("radvel", desc_lst, State_Type, Density, NVAR);
 
   derive_lst.add(
-    "magmom", amrex::IndexType::TheCellType(), 1, pc_dermagmom, the_same_box);
+    "magmom", amrex::IndexType::TheCellType(), 1, pc_dermagmom,
+    amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("magmom", desc_lst, State_Type, Density, NVAR);
 
 #ifdef PELEC_USE_EB
   // A dummy
   derive_lst.add(
-    "vfrac", amrex::IndexType::TheCellType(), 1, pc_dermagvel, the_same_box);
+    "vfrac", amrex::IndexType::TheCellType(), 1, pc_dermagvel,
+    amrex::DeriveRec::TheSameBox);
 #endif
 
 #ifdef SOOT_MODEL
@@ -567,29 +569,51 @@ PeleC::variableSetUp()
     soot_model->addSootDerivePlotVars(derive_lst, desc_lst, Density, UFSOOT);
   }
 #endif
+// #ifdef AMREX_PARTICLES
+//   // We want a derived type that corresponds to the number of particles
+//   // in each cell.  We only intend to use it in plotfiles for debugging
+//   // purposes. We'll actually set the values in writePlotFile().
+//   derive_lst.add(
+//     "particle_count", amrex::IndexType::TheCellType(), 1, pc_dernull,
+//     amrex::DeriveRec::TheSameBox);
+//   derive_lst.addComponent("particle_count", desc_lst, State_Type, Density, 1);
+
+//   derive_lst.add(
+//     "total_particle_count", amrex::IndexType::TheCellType(), 1, pc_dernull,
+//     amrex::DeriveRec::TheSameBox);
+//   derive_lst.addComponent(
+//     "total_particle_count", desc_lst, State_Type, Density, 1);
+
+//   derive_lst.add(
+//     "particle_density", amrex::IndexType::TheCellType(), 1, pc_dernull,
+//     amrex::DeriveRec::TheSameBox);
+//   derive_lst.addComponent("particle_density", desc_lst, State_Type, Density, 1);
+// #endif
 
   derive_lst.add(
-    "cp", amrex::IndexType::TheCellType(), 1, pc_dercp, the_same_box);
+    "cp", amrex::IndexType::TheCellType(), 1, pc_dercp,
+    amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("cp", desc_lst, State_Type, Density, NVAR);
 
   derive_lst.add(
-    "cv", amrex::IndexType::TheCellType(), 1, pc_dercv, the_same_box);
+    "cv", amrex::IndexType::TheCellType(), 1, pc_dercv,
+    amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("cv", desc_lst, State_Type, Density, NVAR);
 
   derive_lst.add(
     "viscosity", amrex::IndexType::TheCellType(), 1, pc_derviscosity,
-    the_same_box);
+    amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("viscosity", desc_lst, State_Type, Density, NVAR);
 
   derive_lst.add(
     "bulk_viscosity", amrex::IndexType::TheCellType(), 1, pc_derbulkviscosity,
-    the_same_box);
+    amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent(
     "bulk_viscosity", desc_lst, State_Type, Density, NVAR);
 
   derive_lst.add(
     "conductivity", amrex::IndexType::TheCellType(), 1, pc_derconductivity,
-    the_same_box);
+    amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("conductivity", desc_lst, State_Type, Density, NVAR);
 
   amrex::Vector<std::string> var_names_diffusivity(NUM_SPECIES);
@@ -598,21 +622,24 @@ PeleC::variableSetUp()
   }
   derive_lst.add(
     "diffusivity", amrex::IndexType::TheCellType(), NUM_SPECIES,
-    var_names_diffusivity, pc_derdiffusivity, the_same_box);
+    var_names_diffusivity, pc_derdiffusivity, amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("diffusivity", desc_lst, State_Type, Density, NVAR);
 
   // LES coefficients
   if (do_les) {
     derive_lst.add(
-      "C_s2", amrex::IndexType::TheCellType(), 1, pc_dernull, the_same_box);
+      "C_s2", amrex::IndexType::TheCellType(), 1, pc_dernull,
+      amrex::DeriveRec::TheSameBox);
     derive_lst.addComponent("C_s2", desc_lst, State_Type, Density, 1);
 
     derive_lst.add(
-      "C_I", amrex::IndexType::TheCellType(), 1, pc_dernull, the_same_box);
+      "C_I", amrex::IndexType::TheCellType(), 1, pc_dernull,
+      amrex::DeriveRec::TheSameBox);
     derive_lst.addComponent("C_I", desc_lst, State_Type, Density, 1);
 
     derive_lst.add(
-      "Pr_T", amrex::IndexType::TheCellType(), 1, pc_dernull, the_same_box);
+      "Pr_T", amrex::IndexType::TheCellType(), 1, pc_dernull,
+      amrex::DeriveRec::TheSameBox);
     derive_lst.addComponent("Pr_T", desc_lst, State_Type, Density, 1);
   }
 
@@ -621,27 +648,27 @@ PeleC::variableSetUp()
   if (do_mms) {
     derive_lst.add(
       "rhommserror", amrex::IndexType::TheCellType(), 1, pc_derrhommserror,
-      the_same_box);
+      amrex::DeriveRec::TheSameBox);
     derive_lst.addComponent("rhommserror", desc_lst, State_Type, Density, NVAR);
 
     derive_lst.add(
       "ummserror", amrex::IndexType::TheCellType(), 1, pc_derummserror,
-      the_same_box);
+      amrex::DeriveRec::TheSameBox);
     derive_lst.addComponent("ummserror", desc_lst, State_Type, Density, NVAR);
 
     derive_lst.add(
       "vmmserror", amrex::IndexType::TheCellType(), 1, pc_dervmmserror,
-      the_same_box);
+      amrex::DeriveRec::TheSameBox);
     derive_lst.addComponent("vmmserror", desc_lst, State_Type, Density, NVAR);
 
     derive_lst.add(
       "wmmserror", amrex::IndexType::TheCellType(), 1, pc_derwmmserror,
-      the_same_box);
+      amrex::DeriveRec::TheSameBox);
     derive_lst.addComponent("wmmserror", desc_lst, State_Type, Density, NVAR);
 
     derive_lst.add(
       "pmmserror", amrex::IndexType::TheCellType(), 1, pc_derpmmserror,
-      the_same_box);
+      amrex::DeriveRec::TheSameBox);
     derive_lst.addComponent("pmmserror", desc_lst, State_Type, Density, NVAR);
   }
 #endif
