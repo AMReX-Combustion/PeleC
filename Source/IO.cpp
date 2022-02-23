@@ -293,7 +293,7 @@ PeleC::checkPoint(
   if (theSprayPC() != nullptr && do_spray_particles) {
     int write_ascii = 0; // Not for checkpoints
     theSprayPC()->SprayParticleIO(
-      level, is_checkpoint, write_ascii, dir, PeleC::spray_fuel_names);
+      level, is_checkpoint, write_ascii, dir, PeleC::sprayFuelNames);
   }
 #endif
 
@@ -995,7 +995,7 @@ PeleC::writePlotFile(
   if (theSprayPC() != nullptr) {
     theSprayPC()->SprayParticleIO(
       level, is_checkpoint, write_spray_ascii_files, dir,
-      spray_fuel_names);
+      sprayFuelNames);
   }
 #endif
 }

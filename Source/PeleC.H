@@ -191,7 +191,7 @@ public:
   // Should we write particle ascii files?
   static int write_spray_ascii_files;
 
-  static amrex::Vector<std::string> spray_fuel_names;
+  static std::string sprayFuelNames[SPRAY_FUEL_NUM];
 #endif
 
   // Get problem metrics.
