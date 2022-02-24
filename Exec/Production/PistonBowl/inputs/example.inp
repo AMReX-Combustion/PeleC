@@ -116,6 +116,7 @@ eb2.small_volfrac = 1.e-6
 pelec.eb_boundary_T = 1350.
 pelec.eb_isothermal = 0
 ebd.boundary_grad_stencil_type = 1
+pelec.eb_srd_max_order = 0
 
 # Boundary refinement
 pelec.flame_trac_name = CH4

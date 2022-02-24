@@ -185,11 +185,9 @@ PeleC::getMOLSrcTerm(
       {
         BL_PROFILE("PeleC::ctoprim()");
         PassMap const* lpmap = d_pass_map;
-        const int captured_clean_massfrac = clean_massfrac;
         amrex::ParallelFor(
           gbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            pc_ctoprim(
-              i, j, k, sar, qar, qauxar, *lpmap, captured_clean_massfrac);
+            pc_ctoprim(i, j, k, sar, qar, qauxar, *lpmap);
           });
       }
       // TODO deal with NSCBC
@@ -663,8 +661,9 @@ PeleC::getMOLSrcTerm(
             vbox, S.nComp(), Dterm, Dterm_tmp, S.const_array(mfi), scratch,
             flag_arr, AMREX_D_DECL(apx, apy, apz), vfrac.const_array(mfi),
             AMREX_D_DECL(fcx, fcy, fcz), ccc, d_bcs.dataPtr(), geom, dt,
-            redistribution_type);
+            redistribution_type, eb_srd_max_order);
         }
+
         // Make sure div is zero in covered cells
         amrex::ParallelFor(
           vbox, S.nComp(),
@@ -673,6 +672,7 @@ PeleC::getMOLSrcTerm(
               Dterm(i, j, k, n) = 0.0;
             }
           });
+
         // Make sure rho div is same as sum rhoY div
         amrex::ParallelFor(
           vbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -681,6 +681,13 @@ PeleC::getMOLSrcTerm(
               Dterm(i, j, k, URHO) += Dterm(i, j, k, UFS + n);
             }
           });
+
+        // Make sure the massfractions are ok in cut cells
+        if ((eb_clean_massfrac) && (typ != amrex::FabType::covered)) {
+          pc_eb_clean_massfrac(
+            vbox, dt, eb_clean_massfrac_threshold, S.const_array(mfi), flag_arr,
+            scratch, Dterm);
+        }
       }
 #endif
 

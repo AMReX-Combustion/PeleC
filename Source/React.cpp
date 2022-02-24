@@ -152,8 +152,6 @@ PeleC::react_state(
       // TODO: Update here? Or just get reaction source?
       const int do_update = react_init ? 0 : 1;
 
-      const int captured_clean_massfrac = clean_massfrac;
-
 #ifdef PELEC_USE_EB
       const auto& flag_fab = flags[mfi];
       amrex::FabType typ = flag_fab.getType(bx);
@@ -209,9 +207,6 @@ PeleC::react_state(
               dt;
 
             frcEExt(i, j, k) = rhoedot_ext;
-            if (captured_clean_massfrac == 1) {
-              clip_normalize_rYarr(i, j, k, sold_arr, rhoY);
-            }
           });
 
         reactor->react(

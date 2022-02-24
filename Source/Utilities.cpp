@@ -93,3 +93,57 @@ convertIntGG(int number)
   ss << number;         // add number to the stream
   return ss.str();      // return a string with the contents of the stream
 }
+
+void
+clean_massfrac(
+  const amrex::Box& bx,
+  const amrex::Real threshold,
+  amrex::Array4<const int> const& mask,
+  amrex::Array4<amrex::Real> const& state)
+{
+  auto const& rho = amrex::Array4<amrex::Real>(state, URHO, 1);
+  auto const& rhoU = amrex::Array4<amrex::Real>(state, UMX, AMREX_SPACEDIM);
+  auto const& rhoY = amrex::Array4<amrex::Real>(state, UFS, NUM_SPECIES);
+  auto const& rhoe = amrex::Array4<amrex::Real>(state, UEINT, 1);
+  auto const& rhoE = amrex::Array4<amrex::Real>(state, UEDEN, 1);
+
+  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
+    if (mask(iv)) {
+      const amrex::Real rhoOld = rho(iv);
+      const amrex::Real rhoOld_inv = 1.0 / rhoOld;
+
+      // Check for OOB mass fraction
+      bool clean = false;
+      for (int n = 0; n < NUM_SPECIES; n++) {
+        const auto mf = rhoY(iv, n) * rhoOld_inv;
+        if ((mf < -threshold) || ((1.0 + threshold) < mf)) {
+          clean = true;
+        }
+      }
+
+      if (clean) {
+        // Clip species rhoYs and get new rho
+        amrex::Real rhoNew = 0.0;
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          rhoY(iv, n) = amrex::min(rhoOld, amrex::max(0.0, rhoY(iv, n)));
+          rhoNew += rhoY(iv, n);
+        }
+        rho(iv) = rhoNew;
+
+        // Keep kinetic energy, recompute, rhoe, rhoE, and rhoU
+        const amrex::Real kinNRG =
+          0.5 * rhoOld_inv * rhoOld_inv *
+          (AMREX_D_TERM(
+            (rhoU(iv, 0) * rhoU(iv, 0)), +(rhoU(iv, 1) * rhoU(iv, 1)),
+            +(rhoU(iv, 2) * rhoU(iv, 2))));
+        const amrex::Real eOld = (rhoE(iv) * rhoOld_inv) - kinNRG;
+        rhoe(iv) = rhoNew * eOld;
+        rhoE(iv) = rhoNew * eOld + rhoNew * kinNRG;
+        for (int n = 0; n < AMREX_SPACEDIM; n++) {
+          rhoU(iv, n) *= rhoNew * rhoOld_inv;
+        }
+      }
+    }
+  });
+}
