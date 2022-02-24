@@ -159,7 +159,6 @@ public:
     const int ghost_width,
     const int spray_n_grow,
     const int tmp_src_width,
-    const int where_width,
     amrex::MultiFab& tmp_spray_source);
 
   // Do the moveKick for active and ghost particles

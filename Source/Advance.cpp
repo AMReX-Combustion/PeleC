@@ -99,7 +99,6 @@ PeleC::do_mol_advance(
   int nGrow_Sborder = numGrow() + nGrowF;
 #ifdef AMREX_PARTICLES
   int ghost_width = 0;
-  int where_width = 0;
   int spray_n_grow = 0;
   int tmp_src_width = 0;
 
@@ -110,7 +109,7 @@ PeleC::do_mol_advance(
       finer_ref = parent->MaxRefRatio(level);
     }
     SprayParticleContainer::setSprayGridInfo(
-      level, finest_level, amr_ncycle, finer_ref, ghost_width, where_width,
+      level, finest_level, amr_ncycle, finer_ref, ghost_width,
       spray_n_grow, tmp_src_width);
     nGrow_Sborder = std::max(nGrow_Sborder, spray_n_grow);
     if (Sborder.nGrow() < nGrow_Sborder) {
@@ -134,7 +133,7 @@ PeleC::do_mol_advance(
   if (do_spray_particles) {
     old_sources[spray_src]->setVal(0.);
     particleMKD(
-      time, dt, ghost_width, spray_n_grow, tmp_src_width, where_width,
+      time, dt, ghost_width, spray_n_grow, tmp_src_width,
       tmp_spray_source);
     amrex::MultiFab::Saxpy(molSrc, 1.0, *old_sources[spray_src], 0, 0, NVAR, 0);
   }
@@ -325,7 +324,6 @@ PeleC::do_sdc_iteration(
   }
 #ifdef AMREX_PARTICLES
   int ghost_width = 0;
-  int where_width = 0;
   int spray_n_grow = 0;
   int tmp_src_width = 0;
 
@@ -336,7 +334,7 @@ PeleC::do_sdc_iteration(
       finer_ref = parent->MaxRefRatio(level);
     }
     SprayParticleContainer::setSprayGridInfo(
-      level, finest_level, amr_ncycle, finer_ref, ghost_width, where_width,
+      level, finest_level, amr_ncycle, finer_ref, ghost_width,
       spray_n_grow, tmp_src_width);
     fill_Sborder = true;
     nGrow_Sborder = std::max(nGrow_Sborder, spray_n_grow);
@@ -369,7 +367,7 @@ PeleC::do_sdc_iteration(
     if (do_spray_particles) {
       old_sources[spray_src]->setVal(0.);
       particleMKD(
-        time, dt, ghost_width, spray_n_grow, tmp_src_width, where_width,
+        time, dt, ghost_width, spray_n_grow, tmp_src_width,
         tmp_spray_source);
     }
 #endif

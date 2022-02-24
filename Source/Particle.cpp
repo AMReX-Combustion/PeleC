@@ -283,7 +283,6 @@ PeleC::particleMKD(
   const int ghost_width,
   const int spray_n_grow,
   const int tmp_src_width,
-  const int where_width,
   amrex::MultiFab& tmp_spray_source)
 {
   // Setup ghost particles for use in finer levels. Note that ghost
@@ -318,21 +317,20 @@ PeleC::particleMKD(
     false, // not virtual particles
     false, // not ghost particles
     spray_n_grow, tmp_src_width,
-    true, // Move the particles
-    where_width);
+    true); // Move the particles
 
   // Only need the coarsest virtual particles here.
   if (level < finest_level) {
     theVirtPC()->moveKickDrift(
       Sborder, tmp_spray_source, level, dt, time, true, false, spray_n_grow,
-      tmp_src_width, true, where_width);
+      tmp_src_width, true);
   }
 
   // Miiiight need all Ghosts
   if (theGhostPC() != nullptr && level != 0) {
     theGhostPC()->moveKickDrift(
       Sborder, tmp_spray_source, level, dt, time, false, true, spray_n_grow,
-      tmp_src_width, true, where_width);
+      tmp_src_width, true);
   }
   // Must call transfer source after moveKick and moveKickDrift
   // on all particle types
