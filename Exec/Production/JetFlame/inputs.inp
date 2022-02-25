@@ -80,12 +80,13 @@ prob.T_ox      = 900.
 prob.T_fu      = 470.
 prob.tau       = 0.01
 prob.turbulence     = true
-prob.turb_file = Turb.test2
-prob.turb_scale_loc = 1.0
-prob.turb_scale_vel = 100.0
-prob.turb_center = 0.0 0.0
-prob.turb_conv_vel = 2800.
-prob.turb_nplane = 1025
+
+turbinflow.turb_file = Turb.test2
+turbinflow.turb_scale_loc = 1.0
+turbinflow.turb_scale_vel = 100.0
+turbinflow.turb_center = 0.0 0.0
+turbinflow.turb_conv_vel = 2800.
+turbinflow.turb_nplane = 1025
 
 # TAGGING for refinement purposes
 #pelec.flame_trac_name= OH
@@ -98,9 +99,6 @@ prob.turb_nplane = 1025
 tagging.tempgrad = 1
 tagging.max_temprad_lev = 3
 
-####
 amrex.signal_handling=0
 #amrex.throw_handling=0
 #fabarray.mfiter_tile_size = 1024000 8 8
-
-amr.restart         = chk03500
