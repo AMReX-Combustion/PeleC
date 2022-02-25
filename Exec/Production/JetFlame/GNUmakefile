@@ -23,9 +23,6 @@ DEBUG = FALSE
 FSANITIZER = FALSE
 THREAD_SANITIZER = FALSE
 
-# inflow data
-USE_TURBINFLOW  = TRUE
-
 # PeleC
 USE_EB = FALSE
 Eos_Model := Fuego

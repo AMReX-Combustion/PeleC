@@ -8,10 +8,12 @@
 struct PCHypFillExtDir
 {
   ProbParmDevice const* lprobparm;
+  bool m_do_turb_inflow{false};
 
   AMREX_GPU_HOST
-  constexpr explicit PCHypFillExtDir(const ProbParmDevice* d_prob_parm)
-    : lprobparm(d_prob_parm)
+  constexpr explicit PCHypFillExtDir(
+    const ProbParmDevice* d_prob_parm, const bool do_turb_inflow)
+    : lprobparm(d_prob_parm), m_do_turb_inflow(do_turb_inflow)
   {
   }
 
@@ -49,13 +51,11 @@ struct PCHypFillExtDir
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
       }
-#ifdef PELEC_USE_TURBINFLOW
-      if (iv[idir] == domlo[idir] - 1) {
+      if (m_do_turb_inflow && (iv[idir] == domlo[idir] - 1)) {
         for (int n = 0; n < NVAR; n++) {
           s_ext[n] = dest(iv, n);
         }
       }
-#endif
       bcnormal(x, s_int, s_ext, idir, +1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
         dest(iv, n) = s_ext[n];
@@ -67,13 +67,11 @@ struct PCHypFillExtDir
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
       }
-#ifdef PELEC_USE_TURBINFLOW
-      if (iv[idir] == domlo[idir] + 1) {
+      if (m_do_turb_inflow && (iv[idir] == domlo[idir] + 1)) {
         for (int n = 0; n < NVAR; n++) {
           s_ext[n] = dest(iv, n);
         }
       }
-#endif
       bcnormal(x, s_int, s_ext, idir, -1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
         dest(iv, n) = s_ext[n];
@@ -87,13 +85,11 @@ struct PCHypFillExtDir
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
       }
-#ifdef PELEC_USE_TURBINFLOW
-      if (iv[idir] == domlo[idir] - 1) {
+      if (m_do_turb_inflow && (iv[idir] == domlo[idir] - 1)) {
         for (int n = 0; n < NVAR; n++) {
           s_ext[n] = dest(iv, n);
         }
       }
-#endif
       bcnormal(x, s_int, s_ext, idir, +1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
         dest(iv, n) = s_ext[n];
@@ -105,13 +101,11 @@ struct PCHypFillExtDir
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
       }
-#ifdef PELEC_USE_TURBINFLOW
-      if (iv[idir] == domlo[idir] + 1) {
+      if (m_do_turb_inflow && (iv[idir] == domlo[idir] + 1)) {
         for (int n = 0; n < NVAR; n++) {
           s_ext[n] = dest(iv, n);
         }
       }
-#endif
       bcnormal(x, s_int, s_ext, idir, -1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
         dest(iv, n) = s_ext[n];
@@ -125,13 +119,11 @@ struct PCHypFillExtDir
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
       }
-#ifdef PELEC_USE_TURBINFLOW
-      if (iv[idir] == domlo[idir] - 1) {
+      if (m_do_turb_inflow && (iv[idir] == domlo[idir] - 1)) {
         for (int n = 0; n < NVAR; n++) {
           s_ext[n] = dest(iv, n);
         }
       }
-#endif
       bcnormal(x, s_int, s_ext, idir, +1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
         dest(iv, n) = s_ext[n];
@@ -143,13 +135,11 @@ struct PCHypFillExtDir
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
       }
-#ifdef PELEC_USE_TURBINFLOW
-      if (iv[idir] == domlo[idir] + 1) {
+      if (m_do_turb_inflow && (iv[idir] == domlo[idir] + 1)) {
         for (int n = 0; n < NVAR; n++) {
           s_ext[n] = dest(iv, n);
         }
       }
-#endif
       bcnormal(x, s_int, s_ext, idir, -1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
         dest(iv, n) = s_ext[n];
@@ -189,69 +179,44 @@ pc_bcfill_hyp(
   const int bcomp,
   const int scomp)
 {
-  ProbParmDevice* probparmDD =
-    PeleC::d_prob_parm_device; // probparm data for device
-  ProbParmDevice* probparmDH =
-    PeleC::h_prob_parm_device; // host copy of probparm data for device
-  ProbParmHost* probparmH = PeleC::prob_parm_host; // probparm data for host
-  constexpr int dim = AMREX_SPACEDIM;
 
-#ifdef PELEC_USE_TURBINFLOW
-  if (probparmH->do_turb) {
-
-    // Copy problem parameter structs to host
-    amrex::Gpu::copy(
-      amrex::Gpu::deviceToHost, probparmDD, probparmDD + 1, probparmDH);
-    for (int dir = 0; dir < dim; ++dir) {
-
+  if (PeleC::turb_inflow.is_initialized()) {
+    for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
       auto bndryBoxLO = amrex::Box(amrex::adjCellLo(geom.Domain(), dir) & bx);
-      // if(bc[idir] == amrex::BCType::ext_dir)
       if (bcr[1].lo()[dir] == EXT_DIR && bndryBoxLO.ok()) {
         // Create box with ghost cells and set them to zero
-        amrex::IntVect growVect(amrex::IntVect::TheUnitVector());
-        int Grow = PeleC::numGrow();
-        for (int n = 0; n < dim; n++)
-          growVect[n] = Grow;
+        amrex::IntVect growVect(PeleC::numGrow());
         growVect[dir] = 0;
-        amrex::Box modDom = geom.Domain();
-        modDom.grow(growVect);
-        auto bndryBoxLO_ghost = amrex::Box(amrex::adjCellLo(modDom, dir) & bx);
-        data.setVal<amrex::RunOn::Host>(0.0, bndryBoxLO_ghost, UMX, dim);
+        const amrex::Box modDom = amrex::grow(geom.Domain(), growVect);
+        const auto bndryBoxLO_ghost =
+          amrex::Box(amrex::adjCellLo(modDom, dir) & bx);
+        data.setVal<amrex::RunOn::Host>(
+          0.0, bndryBoxLO_ghost, UMX, AMREX_SPACEDIM);
 
-        add_turb(
-          bndryBoxLO, data, 0, geom, time, dir, amrex::Orientation::low,
-          probparmDH->tp);
-        probparmDH->turb_ok[dir] = true;
+        PeleC::turb_inflow.add_turb(
+          bndryBoxLO, data, 0, geom, time, dir, amrex::Orientation::low);
       }
 
       auto bndryBoxHI = amrex::Box(amrex::adjCellHi(geom.Domain(), dir) & bx);
       if (bcr[1].hi()[dir] == EXT_DIR && bndryBoxHI.ok()) {
         // Create box with ghost cells and set them to zero
-        amrex::IntVect growVect(amrex::IntVect::TheUnitVector());
-        int Grow = PeleC::numGrow();
-        for (int n = 0; n < dim; n++)
-          growVect[n] = Grow;
+        amrex::IntVect growVect(PeleC::numGrow());
         growVect[dir] = 0;
-        amrex::Box modDom = geom.Domain();
-        modDom.grow(growVect);
-        auto bndryBoxHI_ghost = amrex::Box(amrex::adjCellHi(modDom, dir) & bx);
-        data.setVal<amrex::RunOn::Host>(0.0, bndryBoxHI_ghost, UMX, dim);
+        const amrex::Box modDom = amrex::grow(geom.Domain(), growVect);
+        const auto bndryBoxHI_ghost =
+          amrex::Box(amrex::adjCellHi(modDom, dir) & bx);
+        data.setVal<amrex::RunOn::Host>(
+          0.0, bndryBoxHI_ghost, UMX, AMREX_SPACEDIM);
 
-        add_turb(
-          bndryBoxHI, data, 0, geom, time, dir, amrex::Orientation::high,
-          probparmDH->tp);
-        probparmDH->turb_ok[dir + dim] = true;
+        PeleC::turb_inflow.add_turb(
+          bndryBoxHI, data, 0, geom, time, dir, amrex::Orientation::high);
       }
     }
-
-    // Copy problem parameter structs back to device
-    amrex::Gpu::copy(
-      amrex::Gpu::hostToDevice, probparmDH, probparmDH + 1, probparmDD);
   }
-#endif
 
+  const ProbParmDevice* lprobparm = PeleC::d_prob_parm_device;
   amrex::GpuBndryFuncFab<PCHypFillExtDir> hyp_bndry_func(
-    PCHypFillExtDir{probparmDD});
+    PCHypFillExtDir{lprobparm, PeleC::turb_inflow.is_initialized()});
   hyp_bndry_func(bx, data, dcomp, numcomp, geom, time, bcr, bcomp, scomp);
 }
 

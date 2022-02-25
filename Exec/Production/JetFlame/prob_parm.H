@@ -3,7 +3,6 @@
 
 #include <AMReX_REAL.H>
 #include <AMReX_GpuMemory.H>
-#include <turbinflow.H>
 
 // using namespace amrex::literals;
 
@@ -20,9 +19,6 @@ struct ProbParmDevice
   amrex::Real tau = 0.01;
   bool turbulence = false;
 
-  amrex::GpuArray<bool, 2 * AMREX_SPACEDIM> turb_ok = {{false}};
-  TurbParm tp;
-
   amrex::Real Y_fuel[NUM_SPECIES] = {0.0};
   amrex::Real Y_ox[NUM_SPECIES] = {0.0};
   amrex::Real center_xy[2] = {0.0};
@@ -32,8 +28,6 @@ struct ProbParmDevice
 
 struct ProbParmHost
 {
-  bool do_turb = false;
-
   ProbParmHost() {}
 };
 
