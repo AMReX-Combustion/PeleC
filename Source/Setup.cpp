@@ -137,22 +137,7 @@ PeleC::variableSetUp()
   d_pass_map =
     static_cast<PassMap*>(amrex::The_Arena()->alloc(sizeof(PassMap)));
   trans_parms.allocate();
-  {
-    amrex::ParmParse pp("geometry");
-    amrex::Vector<amrex::Real> prob_lo(AMREX_SPACEDIM);
-    amrex::Vector<amrex::Real> prob_hi(AMREX_SPACEDIM);
-    for (int i = 0; i < AMREX_SPACEDIM; i++) {
-      prob_lo[i] = 0.;
-      prob_hi[i] = 0.;
-    }
-    pp.queryAdd("prob_lo", prob_lo, AMREX_SPACEDIM);
-    AMREX_ASSERT(prob_lo.size() == AMREX_SPACEDIM);
-    pp.queryarr("prob_hi", prob_hi, 0, AMREX_SPACEDIM);
-    AMREX_ASSERT(prob_hi.size() == AMREX_SPACEDIM);
-    amrex::Vector<amrex::Real> turb_center = {
-      {0.5 * (prob_hi[0] + prob_lo[0]), 0.5 * (prob_hi[1] + prob_lo[1])}};
-    turb_inflow.init(turb_center);
-  }
+  turb_inflow.init(amrex::DefaultGeometry());
 
   // Get options, set phys_bc
   eb_in_domain = ebInDomain();
