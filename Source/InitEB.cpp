@@ -456,3 +456,147 @@ initialize_EB2(
     amrex::EB2::Build(geom, max_level, max_level);
   }
 }
+
+void
+PeleC::eb_distance(const int lev, amrex::MultiFab& signDistLev)
+{
+  if (lev == 0) {
+    amrex::MultiFab::Copy(signDistLev, *signed_dist_0, 0, 0, 1, 0);
+    return;
+  }
+
+  // A pair of MF to hold crse & fine dist data
+  amrex::Array<std::unique_ptr<amrex::MultiFab>, 2> MFpair;
+
+  // dummy bcs
+  amrex::Vector<amrex::BCRec> bcrec_dummy(1);
+  for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
+    bcrec_dummy[0].setLo(dir, INT_DIR);
+    bcrec_dummy[0].setHi(dir, INT_DIR);
+  }
+
+  // Interpolate on successive levels up to lev
+  for (int ilev = 1; ilev <= lev; ++ilev) {
+
+    // Use MF EB interp
+    auto& interpolater = amrex::eb_mf_lincc_interp;
+
+    // Get signDist on coarsen fineBA
+    const auto& pc_ilev = getLevel(ilev);
+    const auto& grids_ilev = pc_ilev.grids;
+    const auto& dmap_ilev = pc_ilev.DistributionMap();
+    amrex::BoxArray coarsenBA(grids_ilev.size());
+    for (int j = 0, N = coarsenBA.size(); j < N; ++j) {
+      coarsenBA.set(
+        j, interpolater.CoarseBox(grids_ilev[j], parent->refRatio(ilev - 1)));
+    }
+    amrex::MultiFab coarsenSignDist(coarsenBA, dmap_ilev, 1, 0);
+    coarsenSignDist.setVal(0.0);
+    amrex::MultiFab* crseSignDist =
+      (ilev == 1) ? signed_dist_0.get() : MFpair[0].get();
+    coarsenSignDist.ParallelCopy(*crseSignDist, 0, 0, 1);
+
+    // Interpolate on current ilev
+    amrex::MultiFab* currentSignDist;
+    if (ilev < lev) {
+      const auto& ebfactory =
+        dynamic_cast<amrex::EBFArrayBoxFactory const&>(pc_ilev.Factory());
+
+      MFpair[1].reset(new amrex::MultiFab(
+        grids_ilev, dmap_ilev, 1, 0, amrex::MFInfo(), ebfactory));
+    }
+    currentSignDist = (ilev == lev) ? &signDistLev : MFpair[1].get();
+
+    interpolater.interp(
+      coarsenSignDist, 0, *currentSignDist, 0, 1, amrex::IntVect(0),
+      parent->Geom(ilev - 1), parent->Geom(ilev), parent->Geom(ilev).Domain(),
+      parent->refRatio(ilev - 1), {bcrec_dummy}, 0);
+
+    // Swap MFpair
+    if (ilev < lev) {
+      std::swap(MFpair[0], MFpair[1]);
+    }
+  }
+}
+
+// Extend the cell-centered based signed distance function
+void PeleC::extend_signed_distance(amrex::MultiFab *signDist,
+                                  amrex::Real extendFactor)
+{
+      // This is a not-so-pretty piece of code that'll take AMReX cell-averaged
+      // signed distance and propagates it manually up to the point where we need to have it
+      // for derefining.
+      const auto geomdata = geom[0].data();
+      amrex::Real maxSignedDist = signDist->max(0);
+      const auto& ebfactory = dynamic_cast<EBFArrayBoxFactory const&>(signDist->Factory());
+      const auto& flags = ebfactory.getMultiEBCellFlagFab();
+      int nGrowFac = flags.nGrow()+1;
+
+      // First set the region far away at the max value we need
+#ifdef AMREX_USE_OMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
+      for (MFIter mfi(*signDist,TilingIfNotGPU()); mfi.isValid(); ++mfi)
+      {
+         const amrex::Box& bx = mfi.growntilebox();
+         auto const& sd_cc = signDist->array(mfi);
+         ParallelFor(bx, [=]
+         AMREX_GPU_DEVICE (int i, int j, int k) noexcept
+         {
+            if ( sd_cc(i,j,k) >= maxSignedDist - 1e-12 ) {
+               const amrex::Real* dx = geomdata.CellSize(); 
+               sd_cc(i,j,k) = nGrowFac*dx[0]*extendFactor;
+            }
+         });
+      }
+
+      // Iteratively compute the distance function in boxes, propagating accross boxes using ghost cells
+      // If needed, increase the number of loop to extend the reach of the distance function
+      const int nMaxLoop = 4;
+      for (int dloop = 1; dloop <= nMaxLoop; dloop++ ) {
+#ifdef AMREX_USE_OMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
+         for (MFIter mfi(*signDist,TilingIfNotGPU()); mfi.isValid(); ++mfi)
+         {
+            const amrex::Box& bx = mfi.tilebox();
+            const amrex::Box& gbx = grow(bx,1);
+            if ( flags[mfi].getType(gbx) == FabType::covered ) {
+                continue;
+            }
+            auto const& sd_cc = signDist->array(mfi);
+            ParallelFor(bx, [=]
+            AMREX_GPU_DEVICE (int i, int j, int k) noexcept
+            {
+               const auto glo = amrex::lbound(gbx);
+               const auto ghi = amrex::ubound(gbx);
+               const amrex::Real* dx = geomdata.CellSize();
+               amrex::Real extendedDist = dx[0] * extendFactor;
+               if ( sd_cc(i,j,k) >= maxSignedDist - 1e-12 ) {
+                  amrex::Real closestEBDist = 1e12;
+                  for (int kk = glo.z; kk <= ghi.z; ++kk) {
+                     for (int jj = glo.y; jj <= ghi.y; ++jj) {
+                        for (int ii = glo.x; ii <= ghi.x; ++ii) {
+                           if ( (i != ii) || (j != jj) || (k != kk) ) {
+                              if ( sd_cc(ii,jj,kk) > 0.0) {
+                                 amrex::Real distToCell = std::sqrt( AMREX_D_TERM(  ((i-ii)*dx[0]*(i-ii)*dx[0]),
+                                                                           + ((j-jj)*dx[1]*(j-jj)*dx[1]),
+                                                                           + ((k-kk)*dx[2]*(k-kk)*dx[2])));
+                                 amrex::Real distToEB = distToCell + sd_cc(ii,jj,kk);
+                                 if ( distToEB < closestEBDist ) closestEBDist = distToEB;
+                              }
+                           }
+                        }
+                     }
+                  }
+                  if ( closestEBDist < 1e10 ) {
+                     sd_cc(i,j,k) = closestEBDist;
+                  } else {
+                     sd_cc(i,j,k) = extendedDist;
+                  }
+               }
+            });
+         }
+         signDist->FillBoundary(geom[0].periodicity());  
+      }
+}

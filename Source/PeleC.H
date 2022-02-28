@@ -228,6 +228,11 @@ public:
   void set_body_state(amrex::MultiFab& S);
 
   void zero_in_body(amrex::MultiFab& S) const;
+
+  void eb_distance(const int lev, amrex::MultiFab& signDistLev);
+
+  void extend_signed_distance( amrex::MultiFab *signDist,
+                              amrex::Real extendFactor);
 #endif
 
   void set_typical_values_chem();
@@ -770,6 +775,8 @@ protected:
 
   amrex::Vector<SparseData<amrex::Real, EBBndrySten>> sv_eb_flux;
   amrex::Vector<SparseData<amrex::Real, EBBndrySten>> sv_eb_bcval;
+
+  std::unique_ptr<amrex::MultiFab> signed_dist_0 = nullptr;
 #endif
   static bool do_react_load_balance;
   static bool do_mol_load_balance;
