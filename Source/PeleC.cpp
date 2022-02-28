@@ -393,7 +393,7 @@ PeleC::PeleC(
   buildMetrics();
 
 #ifdef PELEC_USE_EB
-  init_eb(level_geom, bl, dm);
+  init_eb();
 #endif
 
   const amrex::MultiFab& S_new = get_new_data(State_Type);

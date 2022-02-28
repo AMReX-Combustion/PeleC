@@ -114,7 +114,7 @@ PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
   buildMetrics();
 
 #ifdef PELEC_USE_EB
-  init_eb(geom, grids, dmap);
+  init_eb();
 #endif
 
   const amrex::MultiFab& S_new = get_new_data(State_Type);

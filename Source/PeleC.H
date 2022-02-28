@@ -216,10 +216,7 @@ public:
 
   const amrex::MultiFab& volFrac() const { return vfrac; }
 
-  void init_eb(
-    const amrex::Geometry& level_geom,
-    const amrex::BoxArray& ba,
-    const amrex::DistributionMapping& dm);
+  void init_eb();
 
   void initialize_eb2_structs();
 
@@ -229,10 +226,12 @@ public:
 
   void zero_in_body(amrex::MultiFab& S) const;
 
+  void initialize_signed_distance();
+
   void eb_distance(const int lev, amrex::MultiFab& signDistLev);
 
-  void extend_signed_distance( amrex::MultiFab *signDist,
-                              amrex::Real extendFactor);
+  void
+  extend_signed_distance(amrex::MultiFab* signDist, amrex::Real extendFactor);
 #endif
 
   void set_typical_values_chem();
