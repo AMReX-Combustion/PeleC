@@ -102,7 +102,7 @@ bcnormal(
 
   if (sgn == 1 && idir == 2) {
 
-    if (PeleC::h_prob_parm_device->turbulence) {
+    if (prob_parm.turbulence) {
       velx = s_ext[UMX];
       vely = s_ext[UMY];
       velz = s_ext[UMZ] + prob_parm.v_in;
