@@ -231,15 +231,15 @@ PeleC::variableSetUp()
   amrex::ParmParse ppc("pelec");
   ppc.queryarr("center", center, 0, AMREX_SPACEDIM);
 
-  amrex::Interpolater* interp;
+  amrex::MFInterpolater* interp;
 
   if (state_interp_order == 0) {
-    interp = &amrex::pc_interp;
+    interp = &amrex::mf_pc_interp;
   } else {
     if (lin_limit_state_interp == 1) {
-      interp = &amrex::lincc_interp;
+      interp = &amrex::mf_lincc_interp;
     } else {
-      interp = &amrex::cell_cons_interp;
+      interp = &amrex::mf_cell_cons_interp;
     }
   }
 
@@ -247,9 +247,9 @@ PeleC::variableSetUp()
   // Decide from input whether eb interp is needed for FillPatch operations
   if ((eb_in_domain) && (state_interp_order != 0)) {
     if (lin_limit_state_interp == 1) {
-      interp = &amrex::eb_lincc_interp;
+      interp = &amrex::eb_mf_lincc_interp;
     } else {
-      interp = &amrex::eb_cell_cons_interp;
+      interp = &amrex::eb_mf_cell_cons_interp;
     }
   }
 #endif
