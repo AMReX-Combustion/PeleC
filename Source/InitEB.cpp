@@ -460,6 +460,7 @@ initialize_EB2(
 void
 PeleC::initialize_signed_distance()
 {
+  BL_PROFILE("PeleC::initialize_signed_distance()");
   if (level == 0) {
     const auto& ebfactory =
       dynamic_cast<amrex::EBFArrayBoxFactory const&>(Factory());
@@ -508,6 +509,7 @@ PeleC::initialize_signed_distance()
 void
 PeleC::eb_distance(const int lev, amrex::MultiFab& signDistLev)
 {
+  BL_PROFILE("PeleC::eb_distance()");
   if (lev == 0) {
     amrex::MultiFab::Copy(signDistLev, *signed_dist_0, 0, 0, 1, 0);
     return;
@@ -575,6 +577,7 @@ PeleC::extend_signed_distance(
   // This is a not-so-pretty piece of code that'll take AMReX cell-averaged
   // signed distance and propagates it manually up to the point where we need to
   // have it for derefining.
+  BL_PROFILE("PeleC::extend_signed_distance()");
   const auto geomdata = parent->Geom(0).data();
   amrex::Real maxSignedDist = signDist->max(0);
   const auto& ebfactory =
