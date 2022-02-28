@@ -460,26 +460,26 @@ initialize_EB2(
 void
 PeleC::initialize_signed_distance()
 {
-  if (lev == 0) {
+  if (level == 0) {
     const auto& ebfactory =
       dynamic_cast<amrex::EBFArrayBoxFactory const&>(Factory());
     signed_dist_0.reset(
-      new amrex::MultiFab(grids, dmap, 1, 1, amrex::MFInfo(), *m_factory[lev]));
+      new amrex::MultiFab(grids, dmap, 1, 1, amrex::MFInfo(), ebfactory));
 
     // Estimate the maximum distance we need in terms of level 0 dx:
-    amrex::Real extentFactor = static_cast<amrex::Real>(nErrorBuf(0));
-    for (int ilev = 1; ilev <= max_level; ++ilev) {
-      extentFactor += static_cast<amrex::Real>(nErrorBuf(ilev)) /
+    amrex::Real extentFactor = static_cast<amrex::Real>(parent->nErrorBuf(0));
+    for (int ilev = 1; ilev <= parent->maxLevel(); ++ilev) {
+      extentFactor += static_cast<amrex::Real>(parent->nErrorBuf(ilev)) /
                       std::pow(
-                        static_cast<amrex::Real>(refRatio(ilev - 1)[0]),
+                        static_cast<amrex::Real>(parent->refRatio(ilev - 1)[0]),
                         static_cast<amrex::Real>(ilev));
     }
     extentFactor *= std::sqrt(2.0); // Account for diagonals
 
     amrex::MultiFab signDist(
-      convert(grids[0], amrex::IntVect::TheUnitVector()), dmap[0], 1, 0, MFInfo(),
-      EBFactory(0));
-    FillSignedDistance(signDist, true);
+      convert(grids, amrex::IntVect::TheUnitVector()), dmap, 1, 0,
+      amrex::MFInfo(), ebfactory);
+    amrex::FillSignedDistance(signDist, true);
 
 #ifdef _OPENMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
