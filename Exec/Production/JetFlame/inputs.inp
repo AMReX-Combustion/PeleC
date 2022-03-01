@@ -1,0 +1,104 @@
+# ------------------  INPUTS TO MAIN PROGRAM  -------------------
+max_step = 500000
+stop_time = 1e-2
+
+# PROBLEM SIZE & GEOMETRY
+geometry.is_periodic = 0 0 0  # For each dir, 0: non-perio, 1: periodic
+geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
+geometry.prob_lo     =  -0.256 -0.256 0.0
+geometry.prob_hi     =  0.256  0.256 1.024
+amr.n_cell           =  64 64 128
+#amr.n_cell           =  32 32 64
+
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+# Interior, UserBC, Symmetry, SlipWall, NoSlipWall
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+pelec.lo_bc       =  "FOExtrap"  "FOExtrap"  "UserBC"
+pelec.hi_bc       =  "FOExtrap"  "FOExtrap"  "FOExtrap"
+
+# WHICH PHYSICS
+pelec.do_hydro = 1
+pelec.diffuse_vel = 1
+pelec.diffuse_temp = 1
+pelec.diffuse_spec = 1
+pelec.diffuse_enth=1
+pelec.do_react = 1
+pelec.do_mol = 0
+#pelec.ppm_type=1
+pelec.chem_integrator="ReactorCvode"
+#cvode.solve_type = "GMRES"
+cvode.solve_type = denseAJ_direct     # CVODE Linear solve type (for Newton direction)
+cvode.max_order  = 4                  # CVODE max BDF order.
+
+
+# TIME STEP CONTROL
+pelec.cfl            = 0.3     # cfl number for hyperbolic system
+pelec.init_shrink    = 0.1     # scale back initial timestep
+pelec.change_max     = 1.1     # max time step growth
+pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
+
+# DIAGNOSTICS & VERBOSITY
+pelec.sum_interval   = 1       # timesteps between computing mass
+pelec.v              = 1       # verbosity in PeleC.cpp
+amr.v                = 1       # verbosity in Amr.cpp
+amr.data_log         = datlog
+amr.grid_log        = grdlog  # name of grid logging file
+
+# REFINEMENT / REGRIDDING
+amr.max_level       = 3       # maximum level number allowed
+amr.ref_ratio       = 2 2 2 2 # refinement ratio
+amr.regrid_int      = 2   # how often to regrid
+amr.blocking_factor = 8       # block factor in grid generation
+amr.max_grid_size   = 32
+#amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
+
+# CHECKPOINT FILES
+amr.checkpoint_files_output = 1
+amr.check_file      = chk        # root name of checkpoint file
+amr.check_int       = 500        # number of timesteps between checkpoints
+
+# PLOTFILES
+amr.plot_files_output = 1
+amr.plot_file       = plt        # root name of plotfile
+amr.plot_int        = 100        # number of timesteps between plotfiles
+amr.plot_vars  =  density Temp
+amr.derive_plot_vars = x_velocity y_velocity z_velocity magvel magvort pressure
+pelec.plot_rhoy = 0
+pelec.plot_massfrac = 1
+
+# PROBLEM PARAMETERS
+prob.P_mean = 60795000
+prob.inj_start = 1e-7
+prob.inj_dur   = 5e-4
+prob.v_in      = 2800
+prob.D         = 1.7e-2
+prob.fu_spec   = NC12H26
+prob.fu_ox_spec= CH4
+prob.Y_O2_ox   = 0.164305
+prob.Y_fu_ox   = 0.0205938
+prob.T_ox      = 900.
+prob.T_fu      = 470.
+prob.tau       = 0.01
+prob.turbulence     = true
+
+turbinflow.turb_file = Turb.test2
+turbinflow.turb_scale_loc = 1.0
+turbinflow.turb_scale_vel = 100.0
+turbinflow.turb_center = 0.0 0.0
+turbinflow.turb_conv_vel = 2800.
+turbinflow.turb_nplane = 1025
+
+# TAGGING for refinement purposes
+#pelec.flame_trac_name= OH
+#tagging.max_ftracerr_lev = 3
+#tagging.ftracerr = 1.e-6
+
+#tagging.velgrad = 0.01         # gradient of density value
+#tagging.max_velgrad_lev = 3     # maximum level at which to use density for tagging
+
+tagging.tempgrad = 1
+tagging.max_temprad_lev = 3
+
+amrex.signal_handling=0
+#amrex.throw_handling=0
+#fabarray.mfiter_tile_size = 1024000 8 8

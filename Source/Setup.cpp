@@ -137,6 +137,7 @@ PeleC::variableSetUp()
   d_pass_map =
     static_cast<PassMap*>(amrex::The_Arena()->alloc(sizeof(PassMap)));
   trans_parms.allocate();
+  turb_inflow.init(amrex::DefaultGeometry());
 
   // Get options, set phys_bc
   eb_in_domain = ebInDomain();

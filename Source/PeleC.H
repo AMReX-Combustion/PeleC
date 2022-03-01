@@ -32,6 +32,7 @@
 #include "prob_parm.H"
 #include "PelePhysics.H"
 #include "ReactorBase.H"
+#include "turbinflow.H"
 
 #define UserBC 6
 
@@ -599,6 +600,7 @@ public:
   static pele::physics::transport::TransportParams<
     pele::physics::PhysicsType::transport_type>
     trans_parms;
+  static pele::physics::turbinflow::TurbInflow turb_inflow;
 
 protected:
   amrex::iMultiFab level_mask;
