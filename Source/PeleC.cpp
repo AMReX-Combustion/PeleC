@@ -88,6 +88,7 @@ bool PeleC::eb_in_domain = false;
 bool PeleC::eb_initialized = false;
 bool PeleC::body_state_set = false;
 amrex::GpuArray<amrex::Real, NVAR> PeleC::body_state;
+std::unique_ptr<amrex::MultiFab> PeleC::signed_dist_0 = nullptr;
 #endif
 
 bool PeleC::do_react_load_balance = false;
@@ -1847,7 +1848,6 @@ PeleC::errorEst(
       dynamic_cast<amrex::EBFArrayBoxFactory const&>(Factory());
     amrex::MultiFab signDist(grids, dmap, 1, 0, amrex::MFInfo(), ebfactory);
     eb_distance(level, signDist);
-    // VisMF::Write(signDist,"signDistLev"+std::to_string(level));
 
     // Estimate how far I need to derefine
     const amrex::Real diagFac = std::sqrt(2.0) * 3.0;
