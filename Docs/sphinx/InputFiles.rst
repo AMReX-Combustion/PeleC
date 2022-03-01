@@ -151,7 +151,10 @@ These parameters, once read, are available in the `PeleC` object for use from c+
 
     #pick which all derived variables to plot
     amr.derive_plot_vars  = pressure x_velocity y_velocity
-    
+
+    # we can initialize a solution from a plot file
+    pelec.init_pltfile = "plt00000"
+
     # ---------------------------------------------------------------
     
     # ---------------------------------------------------------------

@@ -484,6 +484,18 @@ unique(T input)
   return output;
 }
 
+// Find position of element in vector
+template <typename T>
+int
+find_position(const std::vector<T>& vec, const T& element)
+{
+  auto it = std::find(vec.begin(), vec.end(), element);
+  if (it != vec.end()) {
+    return distance(vec.begin(), it);
+  }
+  return -1;
+}
+
 std::string convertIntGG(int number);
 
 // Clean the mass fractions on state, given a mask

@@ -113,6 +113,10 @@ public:
   void writeJobInfo(const std::string& dir);
   static void writeBuildInfo(std::ostream& os);
 
+  // Initialize level from plt file
+  void initLevelDataFromPlt(
+    const int lev, const std::string& pltFile, amrex::MultiFab& state);
+
   // Define data descriptors.
   static void variableSetUp();
 

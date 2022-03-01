@@ -12,6 +12,7 @@ pp.query("lin_limit_state_interp", lin_limit_state_interp);
 pp.query("state_nghost", state_nghost);
 pp.query("do_reflux", do_reflux);
 pp.query("do_avg_down", do_avg_down);
+pp.query("init_pltfile", init_pltfile);
 pp.query("difmag", difmag);
 pp.query("small_pres", small_pres);
 pp.query("do_hydro", do_hydro);

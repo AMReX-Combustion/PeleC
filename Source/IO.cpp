@@ -16,6 +16,7 @@
 #endif
 
 #include "mechanism.H"
+#include "PltFileManager.H"
 
 #include "PeleC.H"
 #include "IO.H"
@@ -1193,4 +1194,103 @@ PeleC::writeSmallPlotFile(
   std::string TheFullPath = FullPath;
   TheFullPath += BaseName;
   amrex::VisMF::Write(plotMF, TheFullPath, how, true);
+}
+
+void
+PeleC::initLevelDataFromPlt(
+  const int lev, const std::string& dataPltFile, amrex::MultiFab& state)
+{
+  amrex::Print() << "Using data (rho, u, T, Y) from pltfile " << dataPltFile
+                 << std::endl;
+  pele::physics::pltfilemanager::PltFileManager pltData(dataPltFile);
+  const auto plt_vars = pltData.getVariableList();
+
+  // Read rho, u, temperature (required)
+  std::map<std::string, int> vars{
+    {"density", -1}, {"x_velocity", -1}, {"Temp", -1}};
+  for (auto& var : vars) {
+    var.second = find_position(plt_vars, var.first);
+    if (var.second == -1) {
+      amrex::Abort("Unable to find variable in plot file: " + var.first);
+    }
+  }
+  pltData.fillPatchFromPlt(lev, geom, vars["density"], URHO, 1, state);
+  pltData.fillPatchFromPlt(
+    lev, geom, vars["x_velocity"], UMX, AMREX_SPACEDIM, state);
+  pltData.fillPatchFromPlt(lev, geom, vars["Temp"], UTEMP, 1, state);
+
+  // Copy species from the plot file
+  amrex::Vector<std::string> spec_names;
+  pele::physics::eos::speciesNames<pele::physics::PhysicsType::eos_type>(
+    spec_names);
+  for (int n = 0; n < spec_names.size(); n++) {
+    const auto& spec = spec_names.at(n);
+    const int pos = find_position(plt_vars, "Y(" + spec + ")");
+    if (pos != -1) {
+      pltData.fillPatchFromPlt(lev, geom, pos, UFS + n, 1, state);
+    }
+  }
+
+  // Sanity check the species, clean them up if they aren't too bad
+  auto sarrs = state.arrays();
+  amrex::ParallelFor(
+    state, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+      auto sarr = sarrs[nbx];
+      amrex::Real sumY = 0.0;
+      const auto tol = constants::small_num();
+
+      for (int n = 0; n < NUM_SPECIES; n++) {
+        // if the species is not too far out of bounds, clip it
+        const auto mf = sarr(i, j, k, UFS + n);
+        if ((mf < 0.0) || (1.0 < mf)) {
+          if (((-tol < mf) && (mf < 0.0)) || ((1.0 < mf) && (mf < 1 + tol))) {
+            sarr(i, j, k, UFS + n) =
+              amrex::min<amrex::Real>(1.0, amrex::max<amrex::Real>(0.0, mf));
+          } else {
+            amrex::Abort(
+              "Species mass fraction is out of bounds (spec, value): ( " +
+              std::to_string(n) + ", " + std::to_string(mf) + ")");
+          }
+        }
+
+        sumY += sarr(i, j, k, UFS + n);
+      }
+
+      // If the sumY isn't too far from 1, renormalize
+      if (amrex::Math::abs(1.0 - sumY) < tol) {
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          sarr(i, j, k, UFS + n) /= sumY;
+        }
+      } else {
+        amrex::Abort("Species mass fraction don't sum to 1");
+      }
+    });
+
+  // Convert to conserved variables
+  amrex::ParallelFor(
+    state, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+      auto sarr = sarrs[nbx];
+      const amrex::Real rho = sarr(i, j, k, URHO);
+      const amrex::Real temp = sarr(i, j, k, UTEMP);
+      amrex::Real massfrac[NUM_SPECIES] = {0.0};
+      for (int n = 0; n < NUM_SPECIES; n++) {
+        massfrac[n] = sarr(i, j, k, UFS + n);
+        sarr(i, j, k, UFS + n) *= rho;
+      }
+      AMREX_D_TERM(sarr(i, j, k, UMX) *= rho;, sarr(i, j, k, UMY) *= rho;
+                   , sarr(i, j, k, UMZ) *= rho;)
+
+      auto eos = pele::physics::PhysicsType::eos();
+      amrex::Real eint = 0.0;
+      eos.RTY2E(rho, temp, massfrac, eint);
+
+      sarr(i, j, k, UEINT) = rho * eint;
+      sarr(i, j, k, UEDEN) =
+        rho * eint + 0.5 *
+                       (AMREX_D_TERM(
+                         sarr(i, j, k, UMX) * sarr(i, j, k, UMX),
+                         +sarr(i, j, k, UMY) * sarr(i, j, k, UMY),
+                         +sarr(i, j, k, UMZ) * sarr(i, j, k, UMZ))) /
+                       rho;
+    });
 }
