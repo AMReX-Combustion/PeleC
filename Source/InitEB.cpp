@@ -464,11 +464,11 @@ PeleC::initialize_signed_distance()
   if (level == 0) {
     const auto& ebfactory =
       dynamic_cast<amrex::EBFArrayBoxFactory const&>(Factory());
-    signed_dist_0.reset(
-      new amrex::MultiFab(grids, dmap, 1, 1, amrex::MFInfo(), ebfactory));
+    signed_dist_0 = std::make_unique<amrex::MultiFab>(
+      grids, dmap, 1, 1, amrex::MFInfo(), ebfactory);
 
     // Estimate the maximum distance we need in terms of level 0 dx:
-    amrex::Real extentFactor = static_cast<amrex::Real>(parent->nErrorBuf(0));
+    auto extentFactor = static_cast<amrex::Real>(parent->nErrorBuf(0));
     for (int ilev = 1; ilev <= parent->maxLevel(); ++ilev) {
       extentFactor += static_cast<amrex::Real>(parent->nErrorBuf(ilev)) /
                       std::pow(
@@ -551,9 +551,8 @@ PeleC::eb_distance(const int lev, amrex::MultiFab& signDistLev)
     if (ilev < lev) {
       const auto& ebfactory =
         dynamic_cast<amrex::EBFArrayBoxFactory const&>(pc_ilev.Factory());
-
-      MFpair[1].reset(new amrex::MultiFab(
-        grids_ilev, dmap_ilev, 1, 0, amrex::MFInfo(), ebfactory));
+      MFpair[1] = std::make_unique<amrex::MultiFab>(
+        grids_ilev, dmap_ilev, 1, 0, amrex::MFInfo(), ebfactory);
     }
     currentSignDist = (ilev == lev) ? &signDistLev : MFpair[1].get();
 
@@ -634,8 +633,9 @@ PeleC::extend_signed_distance(
                       +((j - jj) * dx[1] * (j - jj) * dx[1]),
                       +((k - kk) * dx[2] * (k - kk) * dx[2])));
                     const amrex::Real distToEB = distToCell + sd_cc(ii, jj, kk);
-                    if (distToEB < closestEBDist)
+                    if (distToEB < closestEBDist) {
                       closestEBDist = distToEB;
+                    }
                   }
                 }
               }

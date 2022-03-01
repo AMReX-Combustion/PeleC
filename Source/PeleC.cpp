@@ -1599,7 +1599,6 @@ PeleC::errorEst(
 
   amrex::Vector<amrex::BCRec> bcs(NVAR);
   const char tagval = amrex::TagBox::SET;
-  const char clearval = amrex::TagBox::CLEAR;
 
 #ifdef _OPENMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
@@ -1877,7 +1876,7 @@ PeleC::errorEst(
       auto tag = tags.array(mfi);
       amrex::ParallelFor(bx, [=] AMREX_GPU_HOST_DEVICE(int i, int j, int k) {
         if (dist(i, j, k) < clearTagDist) {
-          tag(i, j, k) = clearval;
+          tag(i, j, k) = amrex::TagBox::CLEAR;
         }
       });
     }
