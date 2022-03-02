@@ -88,7 +88,7 @@ bool PeleC::eb_in_domain = false;
 bool PeleC::eb_initialized = false;
 bool PeleC::body_state_set = false;
 amrex::GpuArray<amrex::Real, NVAR> PeleC::body_state;
-std::unique_ptr<amrex::MultiFab> PeleC::signed_dist_0 = nullptr;
+amrex::MultiFab PeleC::signed_dist_0;
 #endif
 
 bool PeleC::do_react_load_balance = false;

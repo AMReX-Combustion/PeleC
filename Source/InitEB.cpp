@@ -464,8 +464,7 @@ PeleC::initialize_signed_distance()
   if (level == 0) {
     const auto& ebfactory =
       dynamic_cast<amrex::EBFArrayBoxFactory const&>(Factory());
-    signed_dist_0 = std::make_unique<amrex::MultiFab>(
-      grids, dmap, 1, 1, amrex::MFInfo(), ebfactory);
+    signed_dist_0.define(grids, dmap, 1, 1, amrex::MFInfo(), ebfactory);
 
     // Estimate the maximum distance we need in terms of level 0 dx:
     auto extentFactor = static_cast<amrex::Real>(parent->nErrorBuf(0));
@@ -485,10 +484,10 @@ PeleC::initialize_signed_distance()
 #ifdef _OPENMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
-    for (amrex::MFIter mfi(*signed_dist_0, amrex::TilingIfNotGPU());
+    for (amrex::MFIter mfi(signed_dist_0, amrex::TilingIfNotGPU());
          mfi.isValid(); ++mfi) {
       const amrex::Box& bx = mfi.tilebox();
-      auto const& sd_cc = signed_dist_0->array(mfi);
+      auto const& sd_cc = signed_dist_0.array(mfi);
       auto const& sd_nd = signDist.const_array(mfi);
       amrex::ParallelFor(
         bx, [sd_cc, sd_nd] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -501,8 +500,8 @@ PeleC::initialize_signed_distance()
           sd_cc(i, j, k) *= fac;
         });
     }
-    signed_dist_0->FillBoundary(parent->Geom(0).periodicity());
-    extend_signed_distance(signed_dist_0.get(), extentFactor);
+    signed_dist_0.FillBoundary(parent->Geom(0).periodicity());
+    extend_signed_distance(&signed_dist_0, extentFactor);
   }
 }
 
@@ -511,7 +510,7 @@ PeleC::eb_distance(const int lev, amrex::MultiFab& signDistLev)
 {
   BL_PROFILE("PeleC::eb_distance()");
   if (lev == 0) {
-    amrex::MultiFab::Copy(signDistLev, *signed_dist_0, 0, 0, 1, 0);
+    amrex::MultiFab::Copy(signDistLev, signed_dist_0, 0, 0, 1, 0);
     return;
   }
 
@@ -543,7 +542,7 @@ PeleC::eb_distance(const int lev, amrex::MultiFab& signDistLev)
     amrex::MultiFab coarsenSignDist(coarsenBA, dmap_ilev, 1, 0);
     coarsenSignDist.setVal(0.0);
     amrex::MultiFab* crseSignDist =
-      (ilev == 1) ? signed_dist_0.get() : MFpair[0].get();
+      (ilev == 1) ? &signed_dist_0 : MFpair[0].get();
     coarsenSignDist.ParallelCopy(*crseSignDist, 0, 0, 1);
 
     // Interpolate on current ilev
