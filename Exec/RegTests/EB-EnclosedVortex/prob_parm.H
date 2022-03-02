@@ -7,8 +7,8 @@
 
 struct ProbParmDevice
 {
-  amrex::Real P_mean   = 1013250.0;
-  amrex::Real T_mean   = 298.0;
+  amrex::Real P_mean = 1013250.0;
+  amrex::Real T_mean = 298.0;
   amrex::Real rvort = 0.1;
   amrex::Real xvort = 0.0;
   amrex::Real yvort = 0.0;

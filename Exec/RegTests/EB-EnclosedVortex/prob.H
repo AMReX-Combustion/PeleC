@@ -45,27 +45,28 @@ pc_initdata(
 {
   const amrex::Real* prob_lo = geomdata.ProbLo();
   const amrex::Real* prob_hi = geomdata.ProbHi();
-  const amrex::Real* dx      = geomdata.CellSize();
+  const amrex::Real* dx = geomdata.CellSize();
 
-  AMREX_D_TERM(const amrex::Real x = prob_lo[0] + (i+0.5)*dx[0];,
-               const amrex::Real y = prob_lo[1] + (j+0.5)*dx[1];,
-               const amrex::Real z = prob_lo[2] + (k+0.5)*dx[2];);
+  AMREX_D_TERM(const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
+               , const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
+               , const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];);
 
-  AMREX_D_TERM(const amrex::Real Lx = prob_hi[0] - prob_lo[0];,
-               const amrex::Real Ly = prob_hi[1] - prob_lo[1];,
-               const amrex::Real Lz = prob_hi[2] - prob_lo[2]);
+  AMREX_D_TERM(const amrex::Real Lx = prob_hi[0] - prob_lo[0];
+               , const amrex::Real Ly = prob_hi[1] - prob_lo[1];
+               , const amrex::Real Lz = prob_hi[2] - prob_lo[2]);
 
-  AMREX_D_TERM(const amrex::Real xc = prob_lo[0] + 0.5 * Lx;,
-               const amrex::Real yc = prob_lo[1] + 0.5 * Ly;,
-               const amrex::Real zc = prob_lo[2] + 0.5 * Lz;);
-
+  AMREX_D_TERM(const amrex::Real xc = prob_lo[0] + 0.5 * Lx;
+               , const amrex::Real yc = prob_lo[1] + 0.5 * Ly;
+               , const amrex::Real zc = prob_lo[2] + 0.5 * Lz;);
 
   const amrex::Real deltax = x - prob_parm.xvort;
   const amrex::Real deltay = y - prob_parm.yvort;
-  const amrex::Real d_sq = deltax*deltax + deltay*deltay;
+  const amrex::Real d_sq = deltax * deltax + deltay * deltay;
   const amrex::Real r_sq = prob_parm.rvort * prob_parm.rvort;
-  const amrex::Real u_vort = -prob_parm.forcevort*deltay/r_sq * exp(-d_sq/r_sq/2.);
-  const amrex::Real v_vort = prob_parm.forcevort*deltax/r_sq * exp(-d_sq/r_sq/2.);
+  const amrex::Real u_vort =
+    -prob_parm.forcevort * deltay / r_sq * exp(-d_sq / r_sq / 2.);
+  const amrex::Real v_vort =
+    prob_parm.forcevort * deltax / r_sq * exp(-d_sq / r_sq / 2.);
   const amrex::Real w_vort = 0.;
 
   const amrex::Real u = u_vort;
@@ -76,9 +77,9 @@ pc_initdata(
   amrex::Real massfrac[NUM_SPECIES] = {0.0};
   massfrac[O2_ID] = 0.233;
   massfrac[N2_ID] = 0.767;
-  if ( std::abs(x-xc) < 0.1*Lx ) {
-      massfrac[O2_ID] = 0.283;
-      massfrac[N2_ID] = 0.717;
+  if (std::abs(x - xc) < 0.1 * Lx) {
+    massfrac[O2_ID] = 0.283;
+    massfrac[N2_ID] = 0.717;
   }
 
   amrex::Real rho, eint;
@@ -110,7 +111,6 @@ bcnormal(
   amrex::GeometryData const& /*geomdata*/,
   ProbParmDevice const& prob_parm)
 {
-
 }
 
 void pc_prob_close();
