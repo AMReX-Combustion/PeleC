@@ -525,6 +525,7 @@ PeleC::eb_distance(const int lev, amrex::MultiFab& signDistLev)
   }
 
   // Interpolate on successive levels up to lev
+  const auto& pc_0lev = getLevel(0);
   for (int ilev = 1; ilev <= lev; ++ilev) {
 
     // Use MF EB interp
@@ -541,8 +542,8 @@ PeleC::eb_distance(const int lev, amrex::MultiFab& signDistLev)
     }
     amrex::MultiFab coarsenSignDist(coarsenBA, dmap_ilev, 1, 0);
     coarsenSignDist.setVal(0.0);
-    amrex::MultiFab* crseSignDist =
-      (ilev == 1) ? &signed_dist_0 : MFpair[0].get();
+    const amrex::MultiFab* crseSignDist =
+      (ilev == 1) ? &pc_0lev.signed_dist_0 : MFpair[0].get();
     coarsenSignDist.ParallelCopy(*crseSignDist, 0, 0, 1);
 
     // Interpolate on current ilev

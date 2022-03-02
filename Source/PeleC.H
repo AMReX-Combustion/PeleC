@@ -775,7 +775,7 @@ protected:
   amrex::Vector<SparseData<amrex::Real, EBBndrySten>> sv_eb_flux;
   amrex::Vector<SparseData<amrex::Real, EBBndrySten>> sv_eb_bcval;
 
-  static amrex::MultiFab signed_dist_0;
+  amrex::MultiFab signed_dist_0;
 #endif
   static bool do_react_load_balance;
   static bool do_mol_load_balance;
