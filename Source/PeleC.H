@@ -337,6 +337,9 @@ public:
 #ifdef SOOT_MODEL
   static void setSootIndx();
 
+  static void addSootDerivePlotVars(amrex::DeriveList& derive_lst,
+                                    const amrex::DescriptorList& desc_lst);
+
   void construct_old_soot_source(amrex::Real time, amrex::Real dt);
 
   void construct_new_soot_source(amrex::Real time, amrex::Real dt);

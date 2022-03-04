@@ -2,6 +2,7 @@
 
 #ifdef SOOT_MODEL
 #include "SootModel.H"
+#include "SootModel_derive.H"
 #include <Transport.H>
 
 void
@@ -17,6 +18,29 @@ PeleC::setSootIndx()
   sc.specIndx = UFS;
   sc.sootIndx = UFSOOT;
   soot_model->setIndices(sc);
+}
+
+void
+PeleC::addSootDerivePlotVars(DeriveList& derive_lst,
+                             const DescriptorList& desc_lst)
+{
+  // Add in soot variables
+  Vector<std::string> sootNames = {"rho_soot", "sum_rho_soot"};
+  derive_lst.add(
+    "soot_vars", IndexType::TheCellType(), sootNames.size(), sootNames,
+    soot_genvars, amrex::DeriveRec::TheSameBox);
+  derive_lst.addComponent("soot_vars", desc_lst, State_Type, URHO, 1);
+  derive_lst.addComponent(
+    "soot_vars", desc_lst, State_Type, UFSOOT, NUM_SOOT_MOMENTS + 1);
+
+  // Variables associated with the second mode (large particles)
+  Vector<std::string> large_part_names = {"NL", "soot_V_L", "soot_S_L"};
+  derive_lst.add(
+    "soot_large_particles", IndexType::TheCellType(), large_part_names.size(),
+    large_part_names, soot_largeparticledata, amrex::DeriveRec::TheSameBox);
+  derive_lst.addComponent(
+    "soot_large_particles", desc_lst, State_Type, UFSOOT,
+    NUM_SOOT_MOMENTS + 1);
 }
 
 void

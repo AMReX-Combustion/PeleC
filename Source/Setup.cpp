@@ -571,7 +571,7 @@ PeleC::variableSetUp()
 
 #ifdef SOOT_MODEL
   if (add_soot_src == 1) {
-    soot_model->addSootDerivePlotVars(derive_lst, desc_lst, State_Type, Density, UFSOOT);
+    addSootDerivePlotVars(derive_lst, desc_lst);
   }
 #endif
 // #ifdef AMREX_PARTICLES
