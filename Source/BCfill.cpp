@@ -8,10 +8,12 @@
 struct PCHypFillExtDir
 {
   ProbParmDevice const* lprobparm;
+  bool m_do_turb_inflow{false};
 
   AMREX_GPU_HOST
-  constexpr explicit PCHypFillExtDir(const ProbParmDevice* d_prob_parm)
-    : lprobparm(d_prob_parm)
+  constexpr explicit PCHypFillExtDir(
+    const ProbParmDevice* d_prob_parm, const bool do_turb_inflow)
+    : lprobparm(d_prob_parm), m_do_turb_inflow(do_turb_inflow)
   {
   }
 
@@ -45,9 +47,14 @@ struct PCHypFillExtDir
     // xlo and xhi
     int idir = 0;
     if ((bc[idir] == amrex::BCType::ext_dir) && (iv[idir] < domlo[idir])) {
-      amrex::IntVect loc(AMREX_D_DECL(domlo[idir], iv[1], iv[2]));
+      const amrex::IntVect loc(AMREX_D_DECL(domlo[idir], iv[1], iv[2]));
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
+      }
+      if (m_do_turb_inflow && (iv[idir] == domlo[idir] - 1)) {
+        for (int n = 0; n < NVAR; n++) {
+          s_ext[n] = dest(iv, n);
+        }
       }
       bcnormal(x, s_int, s_ext, idir, +1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
@@ -56,9 +63,14 @@ struct PCHypFillExtDir
     } else if (
       (bc[idir + AMREX_SPACEDIM] == amrex::BCType::ext_dir) &&
       (iv[idir] > domhi[idir])) {
-      amrex::IntVect loc(AMREX_D_DECL(domhi[idir], iv[1], iv[2]));
+      const amrex::IntVect loc(AMREX_D_DECL(domhi[idir], iv[1], iv[2]));
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
+      }
+      if (m_do_turb_inflow && (iv[idir] == domlo[idir] + 1)) {
+        for (int n = 0; n < NVAR; n++) {
+          s_ext[n] = dest(iv, n);
+        }
       }
       bcnormal(x, s_int, s_ext, idir, -1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
@@ -69,9 +81,14 @@ struct PCHypFillExtDir
     // ylo and yhi
     idir = 1;
     if ((bc[idir] == amrex::BCType::ext_dir) && (iv[idir] < domlo[idir])) {
-      amrex::IntVect loc(AMREX_D_DECL(iv[0], domlo[idir], iv[2]));
+      const amrex::IntVect loc(AMREX_D_DECL(iv[0], domlo[idir], iv[2]));
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
+      }
+      if (m_do_turb_inflow && (iv[idir] == domlo[idir] - 1)) {
+        for (int n = 0; n < NVAR; n++) {
+          s_ext[n] = dest(iv, n);
+        }
       }
       bcnormal(x, s_int, s_ext, idir, +1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
@@ -80,9 +97,14 @@ struct PCHypFillExtDir
     } else if (
       (bc[idir + AMREX_SPACEDIM] == amrex::BCType::ext_dir) &&
       (iv[idir] > domhi[idir])) {
-      amrex::IntVect loc(AMREX_D_DECL(iv[0], domhi[idir], iv[2]));
+      const amrex::IntVect loc(AMREX_D_DECL(iv[0], domhi[idir], iv[2]));
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
+      }
+      if (m_do_turb_inflow && (iv[idir] == domlo[idir] + 1)) {
+        for (int n = 0; n < NVAR; n++) {
+          s_ext[n] = dest(iv, n);
+        }
       }
       bcnormal(x, s_int, s_ext, idir, -1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
@@ -93,8 +115,14 @@ struct PCHypFillExtDir
     // zlo and zhi
     idir = 2;
     if ((bc[idir] == amrex::BCType::ext_dir) && (iv[idir] < domlo[idir])) {
+      const amrex::IntVect loc(AMREX_D_DECL(iv[0], iv[1], domlo[idir]));
       for (int n = 0; n < NVAR; n++) {
-        s_int[n] = dest(iv[0], iv[1], domlo[idir], n);
+        s_int[n] = dest(loc, n);
+      }
+      if (m_do_turb_inflow && (iv[idir] == domlo[idir] - 1)) {
+        for (int n = 0; n < NVAR; n++) {
+          s_ext[n] = dest(iv, n);
+        }
       }
       bcnormal(x, s_int, s_ext, idir, +1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
@@ -103,8 +131,14 @@ struct PCHypFillExtDir
     } else if (
       (bc[idir + AMREX_SPACEDIM] == amrex::BCType::ext_dir) &&
       (iv[idir] > domhi[idir])) {
+      const amrex::IntVect loc(AMREX_D_DECL(iv[0], iv[1], domhi[idir]));
       for (int n = 0; n < NVAR; n++) {
-        s_int[n] = dest(iv[0], iv[1], domhi[idir], n);
+        s_int[n] = dest(loc, n);
+      }
+      if (m_do_turb_inflow && (iv[idir] == domlo[idir] + 1)) {
+        for (int n = 0; n < NVAR; n++) {
+          s_ext[n] = dest(iv, n);
+        }
       }
       bcnormal(x, s_int, s_ext, idir, -1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
@@ -145,9 +179,44 @@ pc_bcfill_hyp(
   const int bcomp,
   const int scomp)
 {
+
+  if (PeleC::turb_inflow.is_initialized()) {
+    for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
+      auto bndryBoxLO = amrex::Box(amrex::adjCellLo(geom.Domain(), dir) & bx);
+      if (bcr[1].lo()[dir] == EXT_DIR && bndryBoxLO.ok()) {
+        // Create box with ghost cells and set them to zero
+        amrex::IntVect growVect(PeleC::numGrow());
+        growVect[dir] = 0;
+        const amrex::Box modDom = amrex::grow(geom.Domain(), growVect);
+        const auto bndryBoxLO_ghost =
+          amrex::Box(amrex::adjCellLo(modDom, dir) & bx);
+        data.setVal<amrex::RunOn::Host>(
+          0.0, bndryBoxLO_ghost, UMX, AMREX_SPACEDIM);
+
+        PeleC::turb_inflow.add_turb(
+          bndryBoxLO, data, 0, geom, time, dir, amrex::Orientation::low);
+      }
+
+      auto bndryBoxHI = amrex::Box(amrex::adjCellHi(geom.Domain(), dir) & bx);
+      if (bcr[1].hi()[dir] == EXT_DIR && bndryBoxHI.ok()) {
+        // Create box with ghost cells and set them to zero
+        amrex::IntVect growVect(PeleC::numGrow());
+        growVect[dir] = 0;
+        const amrex::Box modDom = amrex::grow(geom.Domain(), growVect);
+        const auto bndryBoxHI_ghost =
+          amrex::Box(amrex::adjCellHi(modDom, dir) & bx);
+        data.setVal<amrex::RunOn::Host>(
+          0.0, bndryBoxHI_ghost, UMX, AMREX_SPACEDIM);
+
+        PeleC::turb_inflow.add_turb(
+          bndryBoxHI, data, 0, geom, time, dir, amrex::Orientation::high);
+      }
+    }
+  }
+
   const ProbParmDevice* lprobparm = PeleC::d_prob_parm_device;
   amrex::GpuBndryFuncFab<PCHypFillExtDir> hyp_bndry_func(
-    PCHypFillExtDir{lprobparm});
+    PCHypFillExtDir{lprobparm, PeleC::turb_inflow.is_initialized()});
   hyp_bndry_func(bx, data, dcomp, numcomp, geom, time, bcr, bcomp, scomp);
 }
 

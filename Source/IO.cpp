@@ -562,6 +562,7 @@ PeleC::writeJobInfo(const std::string& dir)
   const char* githash1 = amrex::buildInfoGetGitHash(1);
   const char* githash2 = amrex::buildInfoGetGitHash(2);
   const char* githash3 = amrex::buildInfoGetGitHash(3);
+  const char* githash4 = amrex::buildInfoGetGitHash(4);
   if (strlen(githash1) > 0) {
     jobInfoFile << "PeleC       git hash: " << githash1 << "\n";
   }
@@ -570,6 +571,9 @@ PeleC::writeJobInfo(const std::string& dir)
   }
   if (strlen(githash3) > 0) {
     jobInfoFile << "PelePhysics git hash: " << githash3 << "\n";
+  }
+  if (strlen(githash4) > 0) {
+    jobInfoFile << "AMReX-Hydro git hash: " << githash4 << "\n";
   }
 
   const char* buildgithash = amrex::buildInfoGetBuildGitHash();
@@ -707,6 +711,7 @@ PeleC::writeBuildInfo(std::ostream& os)
   const char* githash1 = amrex::buildInfoGetGitHash(1);
   const char* githash2 = amrex::buildInfoGetGitHash(2);
   const char* githash3 = amrex::buildInfoGetGitHash(3);
+  const char* githash4 = amrex::buildInfoGetGitHash(4);
   if (strlen(githash1) > 0) {
     os << "PeleC       git hash: " << githash1 << "\n";
   }
@@ -715,6 +720,9 @@ PeleC::writeBuildInfo(std::ostream& os)
   }
   if (strlen(githash3) > 0) {
     os << "PelePhysics git hash: " << githash3 << "\n";
+  }
+  if (strlen(githash4) > 0) {
+    os << "AMReX-Hydro git hash: " << githash4 << "\n";
   }
 
   const char* buildgithash = amrex::buildInfoGetBuildGitHash();

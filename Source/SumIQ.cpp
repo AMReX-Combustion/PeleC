@@ -253,7 +253,7 @@ PeleC::monitor_extrema()
         if (log_index >= 0) {
           std::ostream& data_log1 = parent->DataLog(log_index);
           if (data_log1.good()) {
-            const int datwidth = 17;
+            const int datwidth = 18;
             if (time == 0.0) {
               data_log1 << std::setw(datwidth) << "          time";
               for (int ii = 0; ii < nextrema; ++ii) {

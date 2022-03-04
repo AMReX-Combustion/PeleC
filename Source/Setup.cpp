@@ -113,6 +113,7 @@ PeleC::variableSetUp()
     const char* pelec_hash = amrex::buildInfoGetGitHash(1);
     const char* amrex_hash = amrex::buildInfoGetGitHash(2);
     const char* pelephysics_hash = amrex::buildInfoGetGitHash(3);
+    const char* amrexhydro_hash = amrex::buildInfoGetGitHash(4);
     const char* buildgithash = amrex::buildInfoGetBuildGitHash();
     const char* buildgitname = amrex::buildInfoGetBuildGitName();
 
@@ -125,6 +126,9 @@ PeleC::variableSetUp()
     }
     if (strlen(pelephysics_hash) > 0) {
       amrex::Print() << "PelePhysics git hash: " << pelephysics_hash << "\n";
+    }
+    if (strlen(amrexhydro_hash) > 0) {
+      amrex::Print() << "AMReX-Hydro git hash: " << amrexhydro_hash << "\n";
     }
     if (strlen(buildgithash) > 0) {
       amrex::Print() << buildgitname << " git hash: " << buildgithash << "\n";
@@ -144,6 +148,7 @@ PeleC::variableSetUp()
   d_pass_map =
     static_cast<PassMap*>(amrex::The_Arena()->alloc(sizeof(PassMap)));
   trans_parms.allocate();
+  turb_inflow.init(amrex::DefaultGeometry());
 
 #ifdef SOOT_MODEL
   soot_model = new SootModel{};
@@ -239,15 +244,15 @@ PeleC::variableSetUp()
   amrex::ParmParse ppc("pelec");
   ppc.queryarr("center", center, 0, AMREX_SPACEDIM);
 
-  amrex::Interpolater* interp;
+  amrex::MFInterpolater* interp;
 
   if (state_interp_order == 0) {
-    interp = &amrex::pc_interp;
+    interp = &amrex::mf_pc_interp;
   } else {
     if (lin_limit_state_interp == 1) {
-      interp = &amrex::lincc_interp;
+      interp = &amrex::mf_lincc_interp;
     } else {
-      interp = &amrex::cell_cons_interp;
+      interp = &amrex::mf_cell_cons_interp;
     }
   }
 
@@ -255,9 +260,9 @@ PeleC::variableSetUp()
   // Decide from input whether eb interp is needed for FillPatch operations
   if ((eb_in_domain) && (state_interp_order != 0)) {
     if (lin_limit_state_interp == 1) {
-      interp = &amrex::eb_lincc_interp;
+      interp = &amrex::eb_mf_lincc_interp;
     } else {
-      interp = &amrex::eb_cell_cons_interp;
+      interp = &amrex::eb_mf_cell_cons_interp;
     }
   }
 #endif
