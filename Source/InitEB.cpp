@@ -477,7 +477,7 @@ PeleC::initialize_signed_distance()
     extentFactor *= std::sqrt(2.0); // Account for diagonals
 
     amrex::MultiFab signDist(
-      convert(grids, amrex::IntVect::TheUnitVector()), dmap, 1, 0,
+      convert(grids, amrex::IntVect::TheUnitVector()), dmap, 1, 1,
       amrex::MFInfo(), ebfactory);
     amrex::FillSignedDistance(signDist, true);
 
@@ -486,7 +486,7 @@ PeleC::initialize_signed_distance()
 #endif
     for (amrex::MFIter mfi(signed_dist_0, amrex::TilingIfNotGPU());
          mfi.isValid(); ++mfi) {
-      const amrex::Box& bx = mfi.tilebox();
+      const amrex::Box& bx = mfi.growntilebox();
       auto const& sd_cc = signed_dist_0.array(mfi);
       auto const& sd_nd = signDist.const_array(mfi);
       amrex::ParallelFor(
