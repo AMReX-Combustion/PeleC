@@ -304,7 +304,7 @@ PeleC::particleMKD(
     amrex::Print()
       << "moveKickDrift ... updating particle positions and velocity\n";
   }
-
+  auto const* ltransparm = PeleC::trans_parms.device_trans_parm();
   // We will make a temporary copy of the source term array inside
   // moveKickDrift and we are only going to use the spray force out to one ghost
   // cell so we need only define spray_force_old with one ghost cell
@@ -317,20 +317,20 @@ PeleC::particleMKD(
     false, // not virtual particles
     false, // not ghost particles
     spray_n_grow, tmp_src_width,
-    true); // Move the particles
+    true, ltransparm); // Move the particles
 
   // Only need the coarsest virtual particles here.
   if (level < finest_level) {
     theVirtPC()->moveKickDrift(
       Sborder, tmp_spray_source, level, dt, time, true, false, spray_n_grow,
-      tmp_src_width, true);
+      tmp_src_width, true, ltransparm);
   }
 
   // Miiiight need all Ghosts
   if (theGhostPC() != nullptr && level != 0) {
     theGhostPC()->moveKickDrift(
       Sborder, tmp_spray_source, level, dt, time, false, true, spray_n_grow,
-      tmp_src_width, true);
+      tmp_src_width, true, ltransparm);
   }
   // Must call transfer source after moveKick and moveKickDrift
   // on all particle types
@@ -346,23 +346,24 @@ PeleC::particleMK(
   const int tmp_src_width,
   amrex::MultiFab& tmp_spray_source)
 {
+  auto const* ltransparm = PeleC::trans_parms.device_trans_parm();
   if (particle_verbose) {
     amrex::Print() << "moveKick ... updating velocity only\n";
   }
   theSprayPC()->moveKick(
     Sborder, tmp_spray_source, level, dt, time, false, false, spray_n_grow,
-    tmp_src_width);
+    tmp_src_width, ltransparm);
 
   if (level < parent->finestLevel()) {
     theVirtPC()->moveKick(
       Sborder, tmp_spray_source, level, dt, time, true, false, spray_n_grow,
-      tmp_src_width);
+      tmp_src_width, ltransparm);
   }
 
   if (theGhostPC() != nullptr && level != 0) {
     theGhostPC()->moveKick(
       Sborder, tmp_spray_source, level, dt, time, false, true, spray_n_grow,
-      tmp_src_width);
+      tmp_src_width, ltransparm);
   }
   theSprayPC()->transferSource(
     tmp_src_width, level, tmp_spray_source, *new_sources[spray_src]);
