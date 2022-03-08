@@ -114,6 +114,7 @@ PeleC::variableSetUp()
     const char* amrex_hash = amrex::buildInfoGetGitHash(2);
     const char* pelephysics_hash = amrex::buildInfoGetGitHash(3);
     const char* amrexhydro_hash = amrex::buildInfoGetGitHash(4);
+    const char* sundials_hash = amrex::buildInfoGetGitHash(5);
     const char* buildgithash = amrex::buildInfoGetBuildGitHash();
     const char* buildgitname = amrex::buildInfoGetBuildGitName();
 
@@ -129,6 +130,9 @@ PeleC::variableSetUp()
     }
     if (strlen(amrexhydro_hash) > 0) {
       amrex::Print() << "AMReX-Hydro git hash: " << amrexhydro_hash << "\n";
+    }
+    if (strlen(sundials_hash) > 0) {
+      amrex::Print() << "SUNDIALS git hash: " << sundials_hash << "\n";
     }
     if (strlen(buildgithash) > 0) {
       amrex::Print() << buildgitname << " git hash: " << buildgithash << "\n";

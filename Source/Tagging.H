@@ -37,6 +37,11 @@ struct TaggingParm
 
   amrex::Real vfracerr = 1.0e10;
   int max_vfracerr_lev = 10;
+
+  std::string eb_refine_type = "static";
+  int max_eb_refine_lev = 10;
+  int min_eb_refine_lev = -1;
+  int adapt_eb_refined_lev = -1;
 };
 
 AMREX_GPU_DEVICE

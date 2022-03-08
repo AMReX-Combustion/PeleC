@@ -221,10 +221,7 @@ public:
 
   const amrex::MultiFab& volFrac() const { return vfrac; }
 
-  void init_eb(
-    const amrex::Geometry& level_geom,
-    const amrex::BoxArray& ba,
-    const amrex::DistributionMapping& dm);
+  void init_eb();
 
   void initialize_eb2_structs();
 
@@ -233,6 +230,13 @@ public:
   void set_body_state(amrex::MultiFab& S);
 
   void zero_in_body(amrex::MultiFab& S) const;
+
+  void initialize_signed_distance();
+
+  void eb_distance(const int lev, amrex::MultiFab& signDistLev);
+
+  void
+  extend_signed_distance(amrex::MultiFab* signDist, amrex::Real extendFactor);
 #endif
 
   void set_typical_values_chem();
@@ -802,6 +806,8 @@ protected:
 
   amrex::Vector<SparseData<amrex::Real, EBBndrySten>> sv_eb_flux;
   amrex::Vector<SparseData<amrex::Real, EBBndrySten>> sv_eb_bcval;
+
+  amrex::MultiFab signed_dist_0;
 #endif
   static bool do_react_load_balance;
   static bool do_mol_load_balance;

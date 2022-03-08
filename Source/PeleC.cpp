@@ -404,7 +404,7 @@ PeleC::PeleC(
   buildMetrics();
 
 #ifdef PELEC_USE_EB
-  init_eb(level_geom, bl, dm);
+  init_eb();
 #endif
 
   const amrex::MultiFab& S_new = get_new_data(State_Type);
@@ -1655,7 +1655,6 @@ PeleC::errorEst(
 
   amrex::Vector<amrex::BCRec> bcs(NVAR);
   const char tagval = amrex::TagBox::SET;
-  // const char clearval = amrex::TagBox::CLEAR;
 
 #ifdef _OPENMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
@@ -1893,6 +1892,51 @@ PeleC::errorEst(
       // temp_eli.clear();
     }
   }
+
+#ifdef PELEC_USE_EB
+  // Untag cell close to EB, do this last
+  if (
+    (tagging_parm->eb_refine_type == "static") &&
+    (level >= tagging_parm->max_eb_refine_lev)) {
+    // Get distance function at current level
+    const auto& ebfactory =
+      dynamic_cast<amrex::EBFArrayBoxFactory const&>(Factory());
+    amrex::MultiFab signDist(grids, dmap, 1, 0, amrex::MFInfo(), ebfactory);
+    eb_distance(level, signDist);
+
+    // Estimate how far I need to derefine
+    const amrex::Real diagFac = std::sqrt(2.0) * 3.0;
+    amrex::Real clearTagDist =
+      parent->Geom(tagging_parm->max_eb_refine_lev).CellSize(0) *
+      static_cast<amrex::Real>(
+        parent->nErrorBuf(tagging_parm->max_eb_refine_lev)) *
+      diagFac;
+    const int finest_level = parent->finestLevel();
+    for (int ilev = tagging_parm->max_eb_refine_lev + 1; ilev <= finest_level;
+         ++ilev) {
+      clearTagDist +=
+        static_cast<amrex::Real>(parent->nErrorBuf(ilev)) *
+        parent->Geom(tagging_parm->max_eb_refine_lev).CellSize(0) * diagFac;
+    }
+    // Print() << " clearTagDist " <<  clearTagDist << "\n";
+
+    // Untag cells too close to EB
+#ifdef _OPENMP
+#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
+#endif
+    for (amrex::MFIter mfi(tags, amrex::TilingIfNotGPU()); mfi.isValid();
+         ++mfi) {
+      const auto& bx = mfi.tilebox();
+      const auto& dist = signDist.const_array(mfi);
+      auto tag = tags.array(mfi);
+      amrex::ParallelFor(bx, [=] AMREX_GPU_HOST_DEVICE(int i, int j, int k) {
+        if (dist(i, j, k) < clearTagDist) {
+          tag(i, j, k) = amrex::TagBox::CLEAR;
+        }
+      });
+    }
+  }
+#endif
 }
 
 std::unique_ptr<amrex::MultiFab>
