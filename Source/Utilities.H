@@ -48,15 +48,14 @@ pc_rst_int_e(
   }
   auto eos = pele::physics::PhysicsType::eos();
   if (allow_small_energy == 0) {
-    const amrex::Real small_num =
-      std::numeric_limits<amrex::Real>::epsilon() * 1e-100;
+    std::numeric_limits<amrex::Real>::epsilon() * 1e-100;
     const amrex::Real rhoInv = 1.0 / S(i, j, k, URHO);
     const amrex::Real Up = S(i, j, k, UMX) * rhoInv;
     const amrex::Real Vp = S(i, j, k, UMY) * rhoInv;
     const amrex::Real Wp = S(i, j, k, UMZ) * rhoInv;
     const amrex::Real ke = 0.5 * (Up * Up + Vp * Vp + Wp * Wp);
     const amrex::Real eden = S(i, j, k, UEDEN) * rhoInv;
-    const amrex::Real eos_state_T = small_num;
+    const amrex::Real eos_state_T = constants::real_small_num();
     amrex::Real eos_state_massfrac[NUM_SPECIES] = {0.0};
     amrex::Real eos_state_ei[NUM_SPECIES] = {0.0};
     eos.T2Ei(eos_state_T, eos_state_ei);
@@ -118,9 +117,7 @@ pc_rst_int_e(
       if (
         S(i, j, k, UEINT) <
         (S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min())) {
-        const amrex::Real small_num =
-          std::numeric_limits<amrex::Real>::epsilon() * 1e-100;
-        const amrex::Real eos_state_T = small_num;
+        const amrex::Real eos_state_T = constants::real_small_num();
         amrex::Real eos_state_massfrac[NUM_SPECIES] = {0.0};
         amrex::Real eos_state_ei[NUM_SPECIES] = {0.0};
         eos.T2Ei(eos_state_T, eos_state_ei);
@@ -151,9 +148,7 @@ pc_rst_int_e(
       } else if (
         S(i, j, k, UEINT) <=
         (S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min())) {
-        const amrex::Real small_num =
-          std::numeric_limits<amrex::Real>::epsilon() * 1e-100;
-        const amrex::Real eos_state_T = small_num;
+        const amrex::Real eos_state_T = constants::real_small_num();
         amrex::Real eos_state_massfrac[NUM_SPECIES] = {0.0};
         amrex::Real eos_state_ei[NUM_SPECIES] = {0.0};
         eos.T2Ei(eos_state_T, eos_state_ei);
