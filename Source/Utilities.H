@@ -54,7 +54,7 @@ pc_rst_int_e(
     const amrex::Real Wp = S(i, j, k, UMZ) * rhoInv;
     const amrex::Real ke = 0.5 * (Up * Up + Vp * Vp + Wp * Wp);
     const amrex::Real eden = S(i, j, k, UEDEN) * rhoInv;
-    const amrex::Real eos_state_T = constants::real_small_num();
+    const amrex::Real eos_state_T = constants::very_small_num();
     amrex::Real eos_state_massfrac[NUM_SPECIES] = {0.0};
     amrex::Real eos_state_ei[NUM_SPECIES] = {0.0};
     eos.T2Ei(eos_state_T, eos_state_ei);
@@ -116,7 +116,7 @@ pc_rst_int_e(
       if (
         S(i, j, k, UEINT) <
         (S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min())) {
-        const amrex::Real eos_state_T = constants::real_small_num();
+        const amrex::Real eos_state_T = constants::very_small_num();
         amrex::Real eos_state_massfrac[NUM_SPECIES] = {0.0};
         amrex::Real eos_state_ei[NUM_SPECIES] = {0.0};
         eos.T2Ei(eos_state_T, eos_state_ei);
@@ -147,7 +147,7 @@ pc_rst_int_e(
       } else if (
         S(i, j, k, UEINT) <=
         (S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min())) {
-        const amrex::Real eos_state_T = constants::real_small_num();
+        const amrex::Real eos_state_T = constants::very_small_num();
         amrex::Real eos_state_massfrac[NUM_SPECIES] = {0.0};
         amrex::Real eos_state_ei[NUM_SPECIES] = {0.0};
         eos.T2Ei(eos_state_T, eos_state_ei);
