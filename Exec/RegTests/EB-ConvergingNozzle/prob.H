@@ -29,7 +29,8 @@ class EBConvergingNozzle
 public:
   static std::string identifier() { return "converging-nozzle"; }
 
-  void build(const amrex::Geometry& geom, const int max_coarsening_level);
+  void
+  build(const amrex::Geometry& geom, const int max_coarsening_level) override;
 };
 
 AMREX_GPU_DEVICE
