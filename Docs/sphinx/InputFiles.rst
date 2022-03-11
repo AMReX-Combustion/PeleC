@@ -193,7 +193,8 @@ These parameters, once read, are available in the `PeleC` object for use from c+
    sanitize the species mass fractions to ensure that they fall within
    the right bounds. It will error out if the species are too far out
    of bounds (i.e., too far below 0, too far above 1, not summing to
-   1).
+   1). This check is controlled with `pelec.init_pltfile_massfrac_tol`
+   and defaults to :math:`10^{-8}`.
 
 
 Tagging criteria

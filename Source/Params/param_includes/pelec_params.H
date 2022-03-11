@@ -13,6 +13,7 @@ static int state_nghost;
 static int do_reflux;
 static int do_avg_down;
 static std::string init_pltfile;
+static amrex::Real init_pltfile_massfrac_tol;
 static amrex::Real difmag;
 static amrex::Real small_pres;
 static int do_hydro;

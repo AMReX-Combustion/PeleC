@@ -1233,11 +1233,11 @@ PeleC::initLevelDataFromPlt(
 
   // Sanity check the species, clean them up if they aren't too bad
   auto sarrs = state.arrays();
+  const auto tol = init_pltfile_massfrac_tol;
   amrex::ParallelFor(
     state, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
       auto sarr = sarrs[nbx];
       amrex::Real sumY = 0.0;
-      const auto tol = constants::small_num();
 
       for (int n = 0; n < NUM_SPECIES; n++) {
         // if the species is not too far out of bounds, clip it
@@ -1262,7 +1262,9 @@ PeleC::initLevelDataFromPlt(
           sarr(i, j, k, UFS + n) /= sumY;
         }
       } else {
-        amrex::Abort("Species mass fraction don't sum to 1");
+        amrex::Abort(
+          "Species mass fraction don't sum to 1. The sum is: " +
+          std::to_string(sumY));
       }
     });
 
