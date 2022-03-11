@@ -312,25 +312,6 @@ PeleC::read_params()
     ppm_trace_sources = 0;
     pp.add("ppm_trace_sources", ppm_trace_sources);
   }
-  /*
-    if (ppm_temp_fix > 0 && AMREX_SPACEDIM == 1) {
-      amrex::Error("ppm_temp_fix > 0 not implemented in 1-d");
-    }
-
-    if (hybrid_riemann == 1 && AMREX_SPACEDIM == 1) {
-      amrex::Error("hybrid_riemann only implemented in 2- and 3-d");
-    }
-  */
-  if (
-    hybrid_riemann == 1 && (amrex::DefaultGeometry().IsSPHERICAL() ||
-                            amrex::DefaultGeometry().IsRZ())) {
-    amrex::Error(
-      "hybrid_riemann should only be used for Cartesian coordinates");
-  }
-
-  if (use_colglaz >= 0) {
-    amrex::Error("use_colglaz is deprecated. Use riemann_solver instead");
-  }
 
   if (max_dt < fixed_dt) {
     amrex::Error("Cannot have max_dt < fixed_dt");
