@@ -17,5 +17,10 @@ small_num()
 {
   return 1.0e-8;
 }
+AMREX_GPU_HOST_DEVICE constexpr amrex::Real
+very_small_num()
+{
+  return std::numeric_limits<amrex::Real>::epsilon() * 1e-100;
+}
 } // namespace constants
 #endif

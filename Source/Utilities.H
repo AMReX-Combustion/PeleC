@@ -54,8 +54,7 @@ pc_rst_int_e(
     const amrex::Real Wp = S(i, j, k, UMZ) * rhoInv;
     const amrex::Real ke = 0.5 * (Up * Up + Vp * Vp + Wp * Wp);
     const amrex::Real eden = S(i, j, k, UEDEN) * rhoInv;
-    // const amrex::Real eos_state_rho = S(i, j, k, URHO);
-    const amrex::Real eos_state_T = std::numeric_limits<amrex::Real>::min();
+    const amrex::Real eos_state_T = constants::very_small_num();
     amrex::Real eos_state_massfrac[NUM_SPECIES] = {0.0};
     amrex::Real eos_state_ei[NUM_SPECIES] = {0.0};
     eos.T2Ei(eos_state_T, eos_state_ei);
@@ -117,8 +116,7 @@ pc_rst_int_e(
       if (
         S(i, j, k, UEINT) <
         (S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min())) {
-        // const amrex::Real eos_state_rho = S(i, j, k, URHO);
-        const amrex::Real eos_state_T = std::numeric_limits<amrex::Real>::min();
+        const amrex::Real eos_state_T = constants::very_small_num();
         amrex::Real eos_state_massfrac[NUM_SPECIES] = {0.0};
         amrex::Real eos_state_ei[NUM_SPECIES] = {0.0};
         eos.T2Ei(eos_state_T, eos_state_ei);
@@ -149,8 +147,7 @@ pc_rst_int_e(
       } else if (
         S(i, j, k, UEINT) <=
         (S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min())) {
-        // const amrex::Real eos_state_rho = S(i, j, k, URHO);
-        const amrex::Real eos_state_T = std::numeric_limits<amrex::Real>::min();
+        const amrex::Real eos_state_T = constants::very_small_num();
         amrex::Real eos_state_massfrac[NUM_SPECIES] = {0.0};
         amrex::Real eos_state_ei[NUM_SPECIES] = {0.0};
         eos.T2Ei(eos_state_T, eos_state_ei);
@@ -160,19 +157,6 @@ pc_rst_int_e(
           eos_state_e += eos_state_massfrac[sp] * eos_state_ei[sp];
         }
         const amrex::Real eint_new = eos_state_e;
-        /* Avoiding this for now due to GPU restricitions
-        if (verbose) {
-          amrex::Print() << std::endl;
-          amrex::Print()
-            << ">>> Warning: PeleC_util.F90::reset_internal_energy "
-            << " " << i << ", " << j << ", " << k << std::endl;
-          amrex::Print() << ">>> ... resetting neg. e from EOS using
-        std::numeric_limits<amrex::Real>::min()"
-                         << std::endl;
-          amrex::Print() << ">>> ... from ',S(i,j,k,UEINT)/S(i,j,k,URHO),' to "
-                         << std::endl;
-          amrex::Print() << eint_new << std::endl;
-        }*/
         if (dual_energy_update_E_from_e == 1) {
           S(i, j, k, UEDEN) = S(i, j, k, UEDEN) +
                               (S(i, j, k, URHO) * eint_new - S(i, j, k, UEINT));
@@ -234,11 +218,8 @@ pc_ctoprim(
     massfrac[sp] = q(i, j, k, sp + QFS);
   }
 
-  //    amrex::Real aux[NUM_AUX];
-  //    for(int ax = 0; ax < NUM_AUX; ++ax) aux[ax] = q(i,j,k,ax+QFX);
   amrex::Real dpdr_e, dpde, gam1, cs, wbar, p;
 
-  // Are all these EOS calls needed? Seems fairly convoluted.
   eos.Y2WBAR(massfrac, wbar);
   eos.REY2T(rho, e, massfrac, T);
   eos.RTY2P(rho, T, massfrac, p);
