@@ -1,9 +1,12 @@
-#include "PeleC.H"
+
 
 #ifdef SOOT_MODEL
+#include "PeleC.H"
 #include "SootModel.H"
 #include "SootModel_derive.H"
 #include <Transport.H>
+
+using namespace amrex;
 
 void
 PeleC::setSootIndx()

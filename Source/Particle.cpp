@@ -1,10 +1,10 @@
 
-#include "PeleC.H"
 
-using namespace amrex;
 
 #ifdef AMREX_PARTICLES
+#include "PeleC.H"
 #include "SprayParticles.H"
+using namespace amrex;
 
 namespace {
 bool virtual_particles_set = false;
