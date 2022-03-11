@@ -11,7 +11,7 @@ struct ProbParmDevice
 
 struct ProbParmHost
 {
-  ProbParmHost() {}
+  ProbParmHost() = default;
 };
 
 #endif

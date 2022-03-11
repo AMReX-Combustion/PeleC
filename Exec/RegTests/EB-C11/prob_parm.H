@@ -28,7 +28,7 @@ struct ProbParmHost
 {
   std::string gasL = "N2";
   std::string gasR = "HE";
-  ProbParmHost() {}
+  ProbParmHost() = default;
 };
 
 #endif

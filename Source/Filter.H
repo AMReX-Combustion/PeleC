@@ -88,7 +88,7 @@ public:
   }
 
   // Default destructor
-  ~Filter() {}
+  ~Filter() = default;
 
   int get_filter_ngrow() { return _ngrow; }
 

@@ -17,7 +17,7 @@ class SparseData
 {
 public:
   typedef T value_type;
-  SparseData() {}
+  SparseData() = default;
 
   ~SparseData();
 
