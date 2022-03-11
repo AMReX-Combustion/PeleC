@@ -177,6 +177,25 @@ These parameters, once read, are available in the `PeleC` object for use from c+
     
     # ---------------------------------------------------------------
 
+
+.. note::
+
+   It is possible to initialize a simulation using a plot file
+   (e.g. `pelec.init_pltfile = "plt00000"`). It uses :math:`\rho`,
+   :math:`u`, :math:`T`, :math:`Y` from a plot file to initialize a
+   new state. The species in the new simulation will be taken from the
+   plot file. The species that are not in the plot file will be set to
+   zero. The species that are in the plot file but are not in the new
+   simulation will be ignored (leading most probably to an error in
+   species not summing to 1). It is therefore assumed that the
+   non-zero species in the plot file used to initialize the simulation
+   form a subset of the species in the simulation. The code will
+   sanitize the species mass fractions to ensure that they fall within
+   the right bounds. It will error out if the species are too far out
+   of bounds (i.e., too far below 0, too far above 1, not summing to
+   1).
+
+
 Tagging criteria
 ~~~~~~~~~~~~~~~~
 
