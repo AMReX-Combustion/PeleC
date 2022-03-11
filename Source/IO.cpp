@@ -1203,9 +1203,10 @@ PeleC::initLevelDataFromPlt(
             sarr(i, j, k, UFS + n) =
               amrex::min<amrex::Real>(1.0, amrex::max<amrex::Real>(0.0, mf));
           } else {
-            amrex::Abort(
-              "Species mass fraction is out of bounds (spec, value): ( " +
-              std::to_string(n) + ", " + std::to_string(mf) + ")");
+            AMREX_DEVICE_PRINTF(
+              "Species mass fraction is out of bounds (spec, value): (%d, %g)",
+              n, mf);
+            amrex::Abort();
           }
         }
 
@@ -1218,9 +1219,9 @@ PeleC::initLevelDataFromPlt(
           sarr(i, j, k, UFS + n) /= sumY;
         }
       } else {
-        amrex::Abort(
-          "Species mass fraction don't sum to 1. The sum is: " +
-          std::to_string(sumY));
+        AMREX_DEVICE_PRINTF(
+          "Species mass fraction don't sum to 1. The sum is: %g", sumY);
+        amrex::Abort();
       }
     });
 
