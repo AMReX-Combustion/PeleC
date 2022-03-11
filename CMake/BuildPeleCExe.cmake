@@ -25,7 +25,7 @@ function(build_pelec_exe pelec_exe_name)
 
   add_subdirectory(${SRC_DIR}/Params ${BIN_DIR}/Params/${pelec_exe_name})
 
-  target_include_directories(${pelec_exe_name} SYSTEM PRIVATE "${PELE_PHYSICS_SRC_DIR}/Source")
+  target_include_directories(${pelec_exe_name} PRIVATE "${PELE_PHYSICS_SRC_DIR}/Source")
 
   set(PELEC_TRANSPORT_DIR "${PELE_PHYSICS_SRC_DIR}/Transport")
   target_sources(${pelec_exe_name} PRIVATE
@@ -36,7 +36,7 @@ function(build_pelec_exe pelec_exe_name)
                  ${PELEC_TRANSPORT_DIR}/Constant.H
                  ${PELEC_TRANSPORT_DIR}/Simple.H
                  ${PELEC_TRANSPORT_DIR}/Sutherland.H)
-  target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELEC_TRANSPORT_DIR})
+  target_include_directories(${pelec_exe_name} PRIVATE ${PELEC_TRANSPORT_DIR})
   if("${PELEC_TRANSPORT_MODEL}" STREQUAL "Constant")
     target_compile_definitions(${pelec_exe_name} PRIVATE USE_CONSTANT_TRANSPORT)
   endif()
@@ -54,7 +54,7 @@ function(build_pelec_exe pelec_exe_name)
                  ${PELEC_EOS_DIR}/GammaLaw.H
                  ${PELEC_EOS_DIR}/Fuego.H
                  ${PELEC_EOS_DIR}/SRK.H)
-  target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELEC_EOS_DIR})
+  target_include_directories(${pelec_exe_name} PRIVATE ${PELEC_EOS_DIR})
   if("${PELEC_EOS_MODEL}" STREQUAL "GammaLaw")
     target_compile_definitions(${pelec_exe_name} PRIVATE USE_GAMMALAW_EOS)
   endif()
@@ -79,13 +79,12 @@ function(build_pelec_exe pelec_exe_name)
   set_source_files_properties(${PELEC_MECHANISM_DIR}/mechanism.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
   set_source_files_properties(${PELEC_MECHANISM_DIR}/mechanism.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
   target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELEC_MECHANISM_DIR})
-  target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELE_PHYSICS_SRC_DIR}/Support/Fuego/Evaluation)
 
   target_sources(${pelec_exe_name}
     PRIVATE
     ${PELE_PHYSICS_SRC_DIR}/Utility/TurbInflow/turbinflow.cpp
     ${PELE_PHYSICS_SRC_DIR}/Utility/TurbInflow/turbinflow.H)
-  target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELE_PHYSICS_SRC_DIR}/Utility/TurbInflow)
+  target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Utility/TurbInflow)
 
   target_sources(${pelec_exe_name}
     PRIVATE
@@ -128,7 +127,7 @@ function(build_pelec_exe pelec_exe_name)
   set_source_files_properties(${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_SUNMemory.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
   set_source_files_properties(${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_SUNMemory.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
 
-  target_include_directories(${pelec_exe_name} PRIVATE ${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS)
+  target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS)
 
   if(PELEC_ENABLE_CUDA)
     target_link_libraries(${pelec_exe_name} PRIVATE sundials_nveccuda sundials_sunlinsolcusolversp sundials_sunmatrixcusparse)
@@ -218,7 +217,7 @@ function(build_pelec_exe pelec_exe_name)
   
   include(AMReXBuildInfo)
   generate_buildinfo(${pelec_exe_name} ${CMAKE_SOURCE_DIR})
-  target_include_directories(${pelec_exe_name} PRIVATE ${AMREX_SUBMOD_LOCATION}/Tools/C_scripts)
+  target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${AMREX_SUBMOD_LOCATION}/Tools/C_scripts)
 
   if(PELEC_ENABLE_MASA)
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_MASA)
