@@ -52,8 +52,9 @@ pc_initdata(
   state(i, j, k, UEDEN) =
     rho * (eint + 0.5 * (prob_parm.uavg * prob_parm.uavg));
   state(i, j, k, UTEMP) = prob_parm.T;
-  for (int n = 0; n < NUM_SPECIES; n++)
+  for (int n = 0; n < NUM_SPECIES; n++) {
     state(i, j, k, UFS + n) = rho * prob_parm.massfrac[n];
+  }
 }
 
 AMREX_GPU_DEVICE
@@ -131,8 +132,9 @@ bcnormal(
     s_ext[UEINT] = rho * eint;
     s_ext[UEDEN] = rho * (eint + 0.5 * (u * u + v * v + w * w));
     s_ext[UTEMP] = T;
-    for (int n = 0; n < NUM_SPECIES; n++)
+    for (int n = 0; n < NUM_SPECIES; n++) {
       s_ext[UFS + n] = rho * prob_parm.massfrac[n];
+    }
   }
 }
 

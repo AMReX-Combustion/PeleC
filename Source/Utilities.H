@@ -257,32 +257,36 @@ pc_move_transcoefs_to_ec(
 
 {
   if (do_harmonic == 0) {
-    if (dir == 0)
+    if (dir == 0) {
       earr[n] = 0.5 * (carr(i, j, k, n) + carr(i - 1, j, k, n));
-    else if (dir == 1)
+    } else if (dir == 1) {
       earr[n] = 0.5 * (carr(i, j, k, n) + carr(i, j - 1, k, n));
-    else
+    } else {
       earr[n] = 0.5 * (carr(i, j, k, n) + carr(i, j, k - 1, n));
+    }
   } else {
     amrex::Real a = carr(i, j, k, n);
     if (dir == 0) {
       amrex::Real b = carr(i - 1, j, k, n);
-      if (a * b > 0.0)
+      if (a * b > 0.0) {
         earr[n] = 2.0 * (a * b) / (a + b);
-      else
+      } else {
         earr[n] = 0.0;
+      }
     } else if (dir == 1) {
       amrex::Real b = carr(i, j - 1, k, n);
-      if (a * b > 0.0)
+      if (a * b > 0.0) {
         earr[n] = 2.0 * (a * b) / (a + b);
-      else
+      } else {
         earr[n] = 0.0;
+      }
     } else {
       amrex::Real b = carr(i, j, k - 1, n);
-      if (a * b > 0.0)
+      if (a * b > 0.0) {
         earr[n] = 2.0 * (a * b) / (a + b);
-      else
+      } else {
         earr[n] = 0.0;
+      }
     }
   }
 }
@@ -311,8 +315,9 @@ setC(
   const amrex::Real val)
 {
   amrex::ParallelFor(box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    for (int n = Nstart; n < Nend; n++)
+    for (int n = Nstart; n < Nend; n++) {
       array(i, j, k, n) = val;
+    }
   });
 }
 
@@ -343,8 +348,9 @@ lincomb_array4(
   const amrex::Array4<amrex::Real>& d)
 {
   amrex::ParallelFor(box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    for (int n = Nstart; n < Nend; n++)
+    for (int n = Nstart; n < Nend; n++) {
       d(i, j, k, n) = alpha * f1(i, j, k, n) + beta * f2(i, j, k, n);
+    }
   });
 }
 

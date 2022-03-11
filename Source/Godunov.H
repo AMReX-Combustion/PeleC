@@ -166,10 +166,11 @@ pc_cmpflx(
   v2r = qr(i, j, k, IV2);
 
   // Outflow Hack
-  if (dir == 2)
+  if (dir == 2) {
     idx = k;
-  else
+  } else {
     idx = (dir == 0) ? i : j;
+  }
   if (bclo == Outflow && idx == domlo) {
     ul = ur;
     vl = vr;
@@ -195,12 +196,13 @@ pc_cmpflx(
   for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
     int n = pmap.upassMap[ipass];
     int nqp = pmap.qpassMap[ipass];
-    if (ustar > 0.0)
+    if (ustar > 0.0) {
       flx(i, j, k, n) = flxrho * ql(i, j, k, nqp);
-    else if (ustar < 0.0)
+    } else if (ustar < 0.0) {
       flx(i, j, k, n) = flxrho * qr(i, j, k, nqp);
-    else
+    } else {
       flx(i, j, k, n) = flxrho * 0.50 * (ql(i, j, k, nqp) + qr(i, j, k, nqp));
+    }
   }
 }
 

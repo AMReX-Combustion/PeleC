@@ -251,8 +251,9 @@ pc_diffusion_flux(
   AMREX_D_TERM(flx(iv, UMX) *= area(i, j, k);, flx(iv, UMY) *= area(i, j, k);
                , flx(iv, UMZ) *= area(i, j, k););
   flx(iv, UEDEN) *= area(i, j, k);
-  for (int ns = 0; ns < NUM_SPECIES; ++ns)
+  for (int ns = 0; ns < NUM_SPECIES; ++ns) {
     flx(iv, UFS + ns) *= area(i, j, k);
+  }
 }
 
 // This function computes the flux divergence.

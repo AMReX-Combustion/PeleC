@@ -67,10 +67,11 @@ pmf(
       amrex::Real x2 = prob_parm.d_pmf_X[lo_hiside];
       amrex::Real y2 = prob_parm.d_pmf_Y[prob_parm.pmf_N * j + lo_hiside];
       amrex::Real dydx = 0.0;
-      if (lo_loside == lo_hiside)
+      if (lo_loside == lo_hiside) {
         dydx = 0.0;
-      else
+      } else {
         dydx = (y2 - y1) / (x2 - x1);
+      }
       amrex::Real ylo = y1 + dydx * (xlo - x1);
       amrex::Real yhi = 0.0;
       if (lo_loside == hi_loside) {
@@ -82,10 +83,11 @@ pmf(
         y1 = prob_parm.d_pmf_Y[prob_parm.pmf_N * j + hi_loside];
         x2 = prob_parm.d_pmf_X[hi_hiside];
         y2 = prob_parm.d_pmf_Y[prob_parm.pmf_N * j + hi_hiside];
-        if (hi_loside == hi_hiside)
+        if (hi_loside == hi_hiside) {
           dydx = 0.0;
-        else
+        } else {
           dydx = (y2 - y1) / (x2 - x1);
+        }
         yhi = y1 + dydx * (xhi - x1);
         sum += (xhi - x1) * 0.5 * (yhi + y1);
         for (int k = lo_hiside; k < hi_loside - 1; k++) {
@@ -124,10 +126,11 @@ pmf(
       const amrex::Real x2 = prob_parm.d_pmf_X[hiside];
       const amrex::Real y2 = prob_parm.d_pmf_Y[prob_parm.pmf_N * j + hiside];
       amrex::Real dydx = 0.0;
-      if (loside == hiside)
+      if (loside == hiside) {
         dydx = 0.0;
-      else
+      } else {
         dydx = (y2 - y1) / (x2 - x1);
+      }
       y_vector[j] = y1 + dydx * (xlo - x1);
     }
   }
@@ -174,8 +177,9 @@ pc_initdata(
     const amrex::Real z2 = (z - prob_parm.standoff + 0.5 * dx[1] + pert);
     pmf(z1, z2, pmf_vals, prob_parm);
     amrex::Real molefrac[NUM_SPECIES] = {0.0};
-    for (int n = 0; n < NUM_SPECIES; n++)
+    for (int n = 0; n < NUM_SPECIES; n++) {
       molefrac[n] = pmf_vals[3 + n];
+    }
     const amrex::Real T = pmf_vals[0];
     const amrex::Real pres = prob_parm.pamb;
     amrex::Real u[3] = {0.0};
@@ -194,11 +198,13 @@ pc_initdata(
     state(i, j, k, UEDEN) =
       rho * (energy + 0.5 * (u[0] * u[0] + u[1] * u[1] + u[2] * u[2]));
     state(i, j, k, UTEMP) = T;
-    for (int n = 0; n < NUM_SPECIES; n++)
+    for (int n = 0; n < NUM_SPECIES; n++) {
       state(i, j, k, UFS + n) = rho * massfrac[n];
+    }
   } else {
-    for (int n = 0; n < NVAR; n++)
+    for (int n = 0; n < NVAR; n++) {
       state(i, j, k, n) = prob_parm.fuel_state[n];
+    }
   }
 }
 
@@ -226,8 +232,9 @@ bcnormal(
   auto eos = pele::physics::PhysicsType::eos();
   if (sgn == -1) {
     pmf(prob_hi[idir], prob_hi[idir], pmf_vals, prob_parm);
-    for (int n = 0; n < NUM_SPECIES; n++)
+    for (int n = 0; n < NUM_SPECIES; n++) {
       molefrac[n] = pmf_vals[3 + n];
+    }
     T = pmf_vals[0];
     pres = prob_parm.pamb;
     u[0] = 0.0;
@@ -244,13 +251,15 @@ bcnormal(
     s_ext[UEDEN] =
       rho * (energy + 0.5 * (u[0] * u[0] + u[1] * u[1] + u[2] * u[2]));
     s_ext[UTEMP] = T;
-    for (int n = 0; n < NUM_SPECIES; n++)
+    for (int n = 0; n < NUM_SPECIES; n++) {
       s_ext[UFS + n] = rho * massfrac[n];
+    }
 
   } else {
     pmf(prob_lo[idir], prob_lo[idir], pmf_vals, prob_parm);
-    for (int n = 0; n < NUM_SPECIES; n++)
+    for (int n = 0; n < NUM_SPECIES; n++) {
       molefrac[n] = pmf_vals[3 + n];
+    }
     T = pmf_vals[0];
     pres = prob_parm.pamb;
     u[0] = 0.0;
@@ -267,8 +276,9 @@ bcnormal(
     s_ext[UEDEN] =
       rho * (energy + 0.5 * (u[0] * u[0] + u[1] * u[1] + u[2] * u[2]));
     s_ext[UTEMP] = T;
-    for (int n = 0; n < NUM_SPECIES; n++)
+    for (int n = 0; n < NUM_SPECIES; n++) {
       s_ext[UFS + n] = rho * massfrac[n];
+    }
   }
 }
 
