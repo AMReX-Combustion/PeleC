@@ -24,7 +24,7 @@ class AmrexTestEnv : public ::testing::Environment
 public:
   AmrexTestEnv(int& argc, char**& argv) : m_argc(argc), m_argv(argv) {}
 
-  ~AmrexTestEnv() = default;
+  ~AmrexTestEnv() override = default;
 
   void SetUp() override
   {
