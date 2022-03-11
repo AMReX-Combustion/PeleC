@@ -36,8 +36,9 @@ argmax(const amrex::Real array[AMREX_SPACEDIM])
   const amrex::Real max_num =
     amrex::max<amrex::Real>(AMREX_D_DECL(array[0], array[1], array[2]));
   for (int i = 0; i < AMREX_SPACEDIM; i++) {
-    if (max_num == array[i])
+    if (max_num == array[i]) {
       return i;
+    }
   }
   return 0;
 }

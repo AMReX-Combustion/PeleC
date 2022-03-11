@@ -124,8 +124,9 @@ pc_initdata(
   } else {
     amrex::Abort("invalid idir");
   }
-  for (int n = 0; n < NUM_SPECIES; n++)
+  for (int n = 0; n < NUM_SPECIES; n++) {
     state(i, j, k, UFS + n) = 0;
+  }
   state(i, j, k, UFS) = state(i, j, k, URHO);
 }
 
