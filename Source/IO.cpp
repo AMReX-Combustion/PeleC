@@ -433,32 +433,6 @@ PeleC::setPlotVariables()
 
   bool plot_massfrac = false;
   pp.query("plot_massfrac", plot_massfrac);
-  //    if (plot_massfrac)
-  //    {
-  //	if (plot_massfrac)
-  //	{
-  //	    //
-  //	    // Get the species names from the network model.
-  //	    //
-  //	    for (int i = 0; i < NUM_SPECIES; i++)
-  //	    {
-  //		int len = 20;
-  //		Vector<int> int_spec_names(len);
-  //		// This call return the actual length of each string in "len"
-  //		get_spec_names(int_spec_names.dataPtr(),&i,&len);
-  //		char* spec_name = new char[len+1];
-  //		for (int j = 0; j < len; j++)
-  //		    spec_name[j] = int_spec_names[j];
-  //		spec_name[len] = '\0';
-  //		string spec_string = "Y(";
-  //		spec_string += spec_name;
-  //		spec_string += ')';
-  //		parent->addDerivePlotVar(spec_string);
-  //		delete [] spec_name;
-  //	    }
-  //	}
-  //    }
-
   if (plot_massfrac) {
     amrex::Amr::addDerivePlotVar("massfrac");
   } else {
@@ -634,21 +608,6 @@ PeleC::writeJobInfo(const std::string& dir)
               << std::setw(7) << "Z"
               << "\n";
   jobInfoFile << OtherLine;
-  // Why is this here? It creates spec_name and deletes it?
-  //     int len = mlen;
-  //     amrex::Vector<int> int_spec_names(len * NUM_SPECIES);
-  //     CKSYMS(int_spec_names.dataPtr(),&len);
-  //     for (int i = 0; i < NUM_SPECIES; i++) {
-  //         int j = 0;
-  //         char* spec_name = new char[len];
-  //         for (j = 0; j < len; j++) {
-  //           spec_name[j] = int_spec_names[i*len + j];
-  //           if (spec_name[j] == ' ')
-  //             break;
-  //         }
-  //         spec_name[len] = '\0';
-  //         delete [] spec_name;
-  //     }
   jobInfoFile << "\n\n";
 
   // runtime parameters
@@ -1220,9 +1179,6 @@ PeleC::initLevelDataFromPlt(
   pltData.fillPatchFromPlt(lev, geom, vars["Temp"], UTEMP, 1, state);
 
   // Copy species from the plot file
-  amrex::Vector<std::string> spec_names;
-  pele::physics::eos::speciesNames<pele::physics::PhysicsType::eos_type>(
-    spec_names);
   for (int n = 0; n < spec_names.size(); n++) {
     const auto& spec = spec_names.at(n);
     const int pos = find_position(plt_vars, "Y(" + spec + ")");

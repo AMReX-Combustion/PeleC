@@ -1743,12 +1743,7 @@ PeleC::errorEst(
 
       // Tagging flame tracer
       if (!flame_trac_name.empty()) {
-        int idx = -1;
-        for (int i = 0; i < spec_names.size(); ++i) {
-          if (flame_trac_name == spec_names[i]) {
-            idx = i;
-          }
-        }
+        int idx = find_position(spec_names, flame_trac_name);
 
         if (idx >= 0) {
           // const std::string name = "Y("+flame_trac_name+")";
