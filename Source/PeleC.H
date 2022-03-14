@@ -680,7 +680,7 @@ protected:
 
   void write_info();
 
-  void stopJob();
+  static void stopJob();
 
   // The data.
   amrex::MultiFab volume;

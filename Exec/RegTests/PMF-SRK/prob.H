@@ -46,7 +46,7 @@ pmf(
       hi_hiside = prob_parm.pmf_N - 1;
     }
     if (lo_loside == 0) {
-      for (unsigned int i = 0; i < prob_parm.pmf_N - 1; i++) {
+      for (int i = 0; i < prob_parm.pmf_N - 1; i++) {
         if ((xlo > prob_parm.d_pmf_X[i]) && (xlo < prob_parm.d_pmf_X[i + 1])) {
           lo_loside = i;
           lo_hiside = i + 1;
@@ -54,14 +54,14 @@ pmf(
       }
     }
     if (hi_loside == 0) {
-      for (unsigned int i = 0; i < prob_parm.pmf_N - 1; i++) {
+      for (int i = 0; i < prob_parm.pmf_N - 1; i++) {
         if ((xhi > prob_parm.d_pmf_X[i]) && (xhi < prob_parm.d_pmf_X[i + 1])) {
           hi_loside = i;
           hi_hiside = i + 1;
         }
       }
     }
-    for (unsigned int j = 0; j < prob_parm.pmf_M; j++) {
+    for (int j = 0; j < prob_parm.pmf_M; j++) {
       amrex::Real x1 = prob_parm.d_pmf_X[lo_loside];
       amrex::Real y1 = prob_parm.d_pmf_Y[prob_parm.pmf_N * j + lo_loside];
       amrex::Real x2 = prob_parm.d_pmf_X[lo_hiside];
@@ -111,7 +111,7 @@ pmf(
       hiside = prob_parm.pmf_N - 1;
     }
     if (loside == -1) {
-      for (unsigned int i = 0; i < prob_parm.pmf_N - 1; i++) {
+      for (int i = 0; i < prob_parm.pmf_N - 1; i++) {
         if (
           (xmid >= prob_parm.d_pmf_X[i]) &&
           (xmid <= prob_parm.d_pmf_X[i + 1])) {
@@ -120,7 +120,7 @@ pmf(
         }
       }
     }
-    for (unsigned int j = 0; j < prob_parm.pmf_M; j++) {
+    for (int j = 0; j < prob_parm.pmf_M; j++) {
       const amrex::Real x1 = prob_parm.d_pmf_X[loside];
       const amrex::Real y1 = prob_parm.d_pmf_Y[prob_parm.pmf_N * j + loside];
       const amrex::Real x2 = prob_parm.d_pmf_X[hiside];

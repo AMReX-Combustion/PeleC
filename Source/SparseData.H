@@ -16,7 +16,6 @@ template <class T, class Cell>
 class SparseData
 {
 public:
-  typedef T value_type;
   SparseData() = default;
 
   ~SparseData();
