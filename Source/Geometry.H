@@ -10,7 +10,7 @@ namespace pelec {
 class Geometry : public physics::Factory<Geometry>
 {
 public:
-  static const std::string base_identifier() { return "Geometry"; }
+  static std::string base_identifier() { return "Geometry"; }
   virtual void
   build(const amrex::Geometry& geom, const int max_coarsening_level) = 0;
   ~Geometry() override = default;

@@ -464,7 +464,7 @@ unique(T input)
 
   // allocate the memory
   T output(Nunique);
-  if (output.size() == 0) {
+  if (output.empty()) {
     return output;
   }
   typename T::value_type* d_output = output.data();

@@ -137,8 +137,8 @@ struct SpeciesEnergyFlux<pele::physics::eos::SRK>
       }
     }
     amrex::Real dsum = 0.0;
-    for (int ns = 0; ns < NUM_SPECIES; ++ns) {
-      dsum += ddrive[ns];
+    for (double ns : ddrive) {
+      dsum += ns;
     }
     for (int ns = 0; ns < NUM_SPECIES; ++ns) {
       const amrex::Real Yface = 0.5 * (mass1[ns] + mass2[ns]);
