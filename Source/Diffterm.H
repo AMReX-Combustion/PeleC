@@ -137,7 +137,7 @@ struct SpeciesEnergyFlux<pele::physics::eos::SRK>
       }
     }
     amrex::Real dsum = 0.0;
-    for (double ns : ddrive) {
+    for (amrex::Real ns : ddrive) {
       dsum += ns;
     }
     for (int ns = 0; ns < NUM_SPECIES; ++ns) {
