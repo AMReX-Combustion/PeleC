@@ -1157,7 +1157,7 @@ PeleC::writeSmallPlotFile(
 
 void
 PeleC::initLevelDataFromPlt(
-  const int lev, const std::string& dataPltFile, amrex::MultiFab& state)
+  const int lev, const std::string& dataPltFile, amrex::MultiFab& S_new)
 {
   amrex::Print() << "Using data (rho, u, T, Y) from pltfile " << dataPltFile
                  << std::endl;
@@ -1173,25 +1173,25 @@ PeleC::initLevelDataFromPlt(
       amrex::Abort("Unable to find variable in plot file: " + var.first);
     }
   }
-  pltData.fillPatchFromPlt(lev, geom, vars["density"], URHO, 1, state);
+  pltData.fillPatchFromPlt(lev, geom, vars["density"], URHO, 1, S_new);
   pltData.fillPatchFromPlt(
-    lev, geom, vars["x_velocity"], UMX, AMREX_SPACEDIM, state);
-  pltData.fillPatchFromPlt(lev, geom, vars["Temp"], UTEMP, 1, state);
+    lev, geom, vars["x_velocity"], UMX, AMREX_SPACEDIM, S_new);
+  pltData.fillPatchFromPlt(lev, geom, vars["Temp"], UTEMP, 1, S_new);
 
   // Copy species from the plot file
   for (int n = 0; n < spec_names.size(); n++) {
     const auto& spec = spec_names.at(n);
     const int pos = find_position(plt_vars, "Y(" + spec + ")");
     if (pos != -1) {
-      pltData.fillPatchFromPlt(lev, geom, pos, UFS + n, 1, state);
+      pltData.fillPatchFromPlt(lev, geom, pos, UFS + n, 1, S_new);
     }
   }
 
   // Sanity check the species, clean them up if they aren't too bad
-  auto sarrs = state.arrays();
+  auto sarrs = S_new.arrays();
   const auto tol = init_pltfile_massfrac_tol;
   amrex::ParallelFor(
-    state, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+    S_new, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
       auto sarr = sarrs[nbx];
       amrex::Real sumY = 0.0;
 
@@ -1239,7 +1239,7 @@ PeleC::initLevelDataFromPlt(
 
   // Convert to conserved variables
   amrex::ParallelFor(
-    state, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+    S_new, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
       auto sarr = sarrs[nbx];
       const amrex::Real rho = sarr(i, j, k, URHO);
       const amrex::Real temp = sarr(i, j, k, UTEMP);
