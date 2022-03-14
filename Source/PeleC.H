@@ -115,7 +115,7 @@ public:
 
   // Initialize level from plt file
   void initLevelDataFromPlt(
-    const int lev, const std::string& pltFile, amrex::MultiFab& state);
+    const int lev, const std::string& pltFile, amrex::MultiFab& S_new);
 
   // Define data descriptors.
   static void variableSetUp();
