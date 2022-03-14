@@ -12,7 +12,7 @@ int PeleC::lin_limit_state_interp = 1;
 int PeleC::state_nghost = 0;
 int PeleC::do_reflux = 1;
 int PeleC::do_avg_down = 1;
-std::string PeleC::init_pltfile = "";
+std::string PeleC::init_pltfile;
 amrex::Real PeleC::init_pltfile_massfrac_tol = 1e-8;
 amrex::Real PeleC::difmag = 0.1;
 amrex::Real PeleC::small_pres = 1.e-200;
