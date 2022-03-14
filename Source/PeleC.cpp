@@ -335,7 +335,6 @@ PeleC::read_params()
 
   // Get some useful amr inputs
   amrex::ParmParse ppa("amr");
-
   // This turns on the lb stuff inside Amr, but we use our own flag to signal
   // whether to gather data
   ppa.query("loadbalance_with_workestimates", do_mol_load_balance);
@@ -657,22 +656,27 @@ PeleC::initData()
     get_new_data(Work_Estimate_Type).setVal(1.0);
   }
 
+  if (init_pltfile.empty()) {
 #ifdef _OPENMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
-  for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
-       ++mfi) {
-    const amrex::Box& box = mfi.tilebox();
-    auto sfab = S_new.array(mfi);
-    const auto geomdata = geom.data();
+    for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
+         ++mfi) {
+      const amrex::Box& box = mfi.tilebox();
+      auto sfab = S_new.array(mfi);
+      const auto geomdata = geom.data();
 
-    const ProbParmDevice* lprobparm = d_prob_parm_device;
+      const ProbParmDevice* lprobparm = d_prob_parm_device;
 
-    amrex::ParallelFor(box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      pc_initdata(i, j, k, sfab, geomdata, *lprobparm);
-      // Verify that the sum of (rho Y)_i = rho at every cell
-      pc_check_initial_species(i, j, k, sfab);
-    });
+      amrex::ParallelFor(
+        box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+          pc_initdata(i, j, k, sfab, geomdata, *lprobparm);
+          // Verify that the sum of (rho Y)_i = rho at every cell
+          pc_check_initial_species(i, j, k, sfab);
+        });
+    }
+  } else {
+    initLevelDataFromPlt(level, init_pltfile, S_new);
   }
 
   enforce_consistent_e(S_new);
@@ -1739,12 +1743,7 @@ PeleC::errorEst(
 
       // Tagging flame tracer
       if (!flame_trac_name.empty()) {
-        int idx = -1;
-        for (int i = 0; i < spec_names.size(); ++i) {
-          if (flame_trac_name == spec_names[i]) {
-            idx = i;
-          }
-        }
+        int idx = find_position(spec_names, flame_trac_name);
 
         if (idx >= 0) {
           // const std::string name = "Y("+flame_trac_name+")";

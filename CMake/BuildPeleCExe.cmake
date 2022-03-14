@@ -88,6 +88,13 @@ function(build_pelec_exe pelec_exe_name)
 
   target_sources(${pelec_exe_name}
     PRIVATE
+    ${PELE_PHYSICS_SRC_DIR}/Utility/PltFileManager/PltFileManager.cpp
+    ${PELE_PHYSICS_SRC_DIR}/Utility/PltFileManager/PltFileManager.H
+    ${PELE_PHYSICS_SRC_DIR}/Utility/PltFileManager/PltFileManagerBCFill.H)
+    target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELE_PHYSICS_SRC_DIR}/Utility/PltFileManager)
+
+  target_sources(${pelec_exe_name}
+    PRIVATE
       ${PELE_PHYSICS_SRC_DIR}/Reactions/ReactorArkode.H
       ${PELE_PHYSICS_SRC_DIR}/Reactions/ReactorArkode.cpp
       ${PELE_PHYSICS_SRC_DIR}/Reactions/ReactorBase.H

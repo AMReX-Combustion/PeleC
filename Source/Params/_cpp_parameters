@@ -34,6 +34,12 @@ do_reflux                    int           1
 # do we average down the fine data onto the coarse?
 do_avg_down                  int           1
 
+# Initialize from a plot file
+init_pltfile              string          ""
+
+# Acceptable tolerance for species mass fraction when initializing from a plot file
+init_pltfile_massfrac_tol   Real         1e-8
+
 #-----------------------------------------------------------------------------
 # category: Processor Type
 #-----------------------------------------------------------------------------
@@ -261,7 +267,7 @@ hard_cfl_limit               int           1
 job_name                     string        ""
 
 #-----------------------------------------------------------------------------
-# category: misc combusiton
+# category: misc combustion
 #-----------------------------------------------------------------------------
 
 flame_trac_name              string        ""

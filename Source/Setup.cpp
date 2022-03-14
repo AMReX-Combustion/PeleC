@@ -330,10 +330,8 @@ PeleC::variableSetUp()
   }
 
   // Get the species names from the network model
-  // Set it for Null mechanism let it be overwritten for others
-  spec_names.resize(1);
-  spec_names[0] = "Null";
-  CKSYMS_STR(spec_names);
+  pele::physics::eos::speciesNames<pele::physics::PhysicsType::eos_type>(
+    spec_names);
 
   if (amrex::ParallelDescriptor::IOProcessor()) {
     amrex::Print() << NUM_SPECIES << " Species: " << std::endl;
