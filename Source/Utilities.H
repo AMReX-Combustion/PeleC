@@ -500,9 +500,9 @@ std::string convertIntGG(int number);
 
 // Clean the mass fractions on state, given a mask
 void clean_massfrac(
-  const amrex::Box&,
-  const amrex::Real,
-  amrex::Array4<const int> const&,
-  amrex::Array4<amrex::Real> const&);
+  const amrex::Box& /*bx*/,
+  const amrex::Real /*threshold*/,
+  amrex::Array4<const int> const& /*mask*/,
+  amrex::Array4<amrex::Real> const& /*state*/);
 
 #endif

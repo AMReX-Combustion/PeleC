@@ -42,7 +42,7 @@ PeleC::fill_forcing_source(
 #ifdef PELEC_USE_EB
     state_old
 #endif
-  ,
+  /*unused*/,
   const amrex::MultiFab& state_new,
   amrex::MultiFab& forcing_src,
   int ng)

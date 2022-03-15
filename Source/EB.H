@@ -202,98 +202,98 @@ is_cut_neighborhood(
 }
 
 void pc_fill_sv_ebg(
-  const amrex::Box&,
-  const int,
-  const amrex::Array4<const amrex::Real>&,
-  const amrex::Array4<const amrex::Real>&,
+  const amrex::Box& /*bx*/,
+  const int /*Nebg*/,
+  const amrex::Array4<const amrex::Real>& /*vfrac*/,
+  const amrex::Array4<const amrex::Real>& /*bcent*/,
   AMREX_D_DECL(
     const amrex::Array4<const amrex::Real>&,
     const amrex::Array4<const amrex::Real>&,
     const amrex::Array4<const amrex::Real>&),
-  EBBndryGeom*);
+  EBBndryGeom* /*ebg*/);
 
 void pc_fill_bndry_grad_stencil_ls(
-  const amrex::Box&,
-  const amrex::Real,
-  const int,
-  const EBBndryGeom*,
-  const int,
+  const amrex::Box& /*bx*/,
+  const amrex::Real /*dx*/,
+  const int /*unused*/,
+  const EBBndryGeom* /*ebg*/,
+  const int /*Nsten*/,
   const amrex::Array4<amrex::EBCellFlag const>& flags,
-  EBBndrySten*);
+  EBBndrySten* /*grad_stencil*/);
 
 void pc_fill_bndry_grad_stencil_quadratic(
-  const amrex::Box&,
-  const amrex::Real,
-  const int,
-  const EBBndryGeom*,
-  const int,
-  EBBndrySten*);
+  const amrex::Box& /*bx*/,
+  const amrex::Real /*dx*/,
+  const int /*unused*/,
+  const EBBndryGeom* /*ebg*/,
+  const int /*Nsten*/,
+  EBBndrySten* /*grad_stencil*/);
 
 void pc_fill_flux_interp_stencil(
-  const amrex::Box&,
-  const amrex::Box,
-  const int,
-  const amrex::Array4<const amrex::Real>&,
-  const amrex::Array4<const amrex::Real>&,
-  FaceSten*);
+  const amrex::Box& /*bx*/,
+  const amrex::Box /*unused*/,
+  const int /*Nsten*/,
+  const amrex::Array4<const amrex::Real>& /*fc*/,
+  const amrex::Array4<const amrex::Real>& /*fa*/,
+  FaceSten* /*sten*/);
 
 void pc_apply_face_stencil(
-  const amrex::Box&,
-  const amrex::Box,
-  const FaceSten*,
-  const int,
-  const int,
-  const int,
-  const amrex::Array4<amrex::Real>&);
+  const amrex::Box& /*bx*/,
+  const amrex::Box /*unused*/,
+  const FaceSten* /*sten*/,
+  const int /*Nsten*/,
+  const int /*dir*/,
+  const int /*nc*/,
+  const amrex::Array4<amrex::Real>& /*vout*/);
 
 void pc_eb_div(
-  const amrex::Box&,
-  const amrex::Real,
-  const int,
-  const EBBndryGeom*,
-  const int,
+  const amrex::Box& /*bx*/,
+  const amrex::Real /*vol*/,
+  const int /*nc*/,
+  const EBBndryGeom* /*sv_ebg*/,
+  const int /*Ncut*/,
   AMREX_D_DECL(
     const amrex::Array4<const amrex::Real>&,
     const amrex::Array4<const amrex::Real>&,
     const amrex::Array4<const amrex::Real>&),
-  const amrex::Real*,
-  const amrex::Array4<const amrex::Real>&,
-  const amrex::Array4<amrex::Real>&);
+  const amrex::Real* /*ebflux*/,
+  const amrex::Array4<const amrex::Real>& /*vf*/,
+  const amrex::Array4<amrex::Real>& /*DC*/);
 
 void pc_apply_eb_boundry_visc_flux_stencil(
-  const amrex::Box&,
-  const EBBndrySten*,
-  const int,
-  const EBBndryGeom*,
-  const int,
-  amrex::Array4<const amrex::Real> const&,
-  amrex::Array4<const amrex::Real> const&,
-  const amrex::Real*,
-  const int,
-  amrex::Real*,
-  const int);
+  const amrex::Box& /*bx*/,
+  const EBBndrySten* /*sten*/,
+  const int /*Nsten*/,
+  const EBBndryGeom* /*ebg*/,
+  const int /*unused*/,
+  amrex::Array4<const amrex::Real> const& /*q*/,
+  amrex::Array4<const amrex::Real> const& /*coeff*/,
+  const amrex::Real* /*bcval*/,
+  const int /*unused*/,
+  amrex::Real* /*bcflux*/,
+  const int /*Nflux*/);
 
 void pc_apply_eb_boundry_flux_stencil(
-  const amrex::Box&,
-  const EBBndrySten*,
-  const int,
-  amrex::Array4<const amrex::Real> const&,
-  const int,
-  amrex::Array4<const amrex::Real> const&,
-  const int,
-  const amrex::Real*,
-  const int,
-  amrex::Real*,
-  const int,
-  const int);
+  const amrex::Box& /*bx*/,
+  const EBBndrySten* /*sten*/,
+  const int /*Nsten*/,
+  amrex::Array4<const amrex::Real> const& /*s*/,
+  const int /*scomp*/,
+  amrex::Array4<const amrex::Real> const& /*D*/,
+  const int /*Dcomp*/,
+  const amrex::Real* /*bcval*/,
+  const int /*unused*/,
+  amrex::Real* /*bcflux*/,
+  const int /*Nflux*/,
+  const int /*nc*/);
 
 void pc_eb_clean_massfrac(
-  const amrex::Box&,
-  const amrex::Real,
-  const amrex::Real,
-  amrex::Array4<const amrex::Real> const&,
-  amrex::Array4<amrex::EBCellFlag const> const&,
-  amrex::Array4<amrex::Real> const&,
-  amrex::Array4<amrex::Real> const&);
+  const amrex::Box& /*bx*/,
+  const amrex::Real /*dt*/,
+  const amrex::Real /*threshold*/,
+  amrex::Array4<const amrex::Real> const& /*state*/,
+  amrex::Array4<amrex::EBCellFlag const> const& /*flags*/,
+  amrex::Array4<amrex::Real> const& /*scratch*/,
+  amrex::Array4<amrex::Real> const& /*div*/);
 
 #endif
