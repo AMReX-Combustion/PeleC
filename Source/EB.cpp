@@ -755,7 +755,7 @@ pc_eb_clean_massfrac(
     bx, state.nComp(),
     [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
       const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-      if (mask_arr(iv)) {
+      if (mask_arr(iv) != 0) {
         div(iv, n) = (scratch(iv, n) - state(iv, n)) / dt;
       }
     });

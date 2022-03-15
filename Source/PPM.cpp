@@ -122,7 +122,8 @@ trace_ppm(
     amrex::Real Im[QVAR][3];
 
     for (int n = 0; n < QVAR; n++) {
-      if (use_hybrid_weno && ((weno_scheme == 0) || (weno_scheme == 1))) {
+      if (
+        (use_hybrid_weno != 0) && ((weno_scheme == 0) || (weno_scheme == 1))) {
 
         amrex::Real s_weno5[5];
         s_weno5[0] = q_arr(ivm2, n);
@@ -140,7 +141,7 @@ trace_ppm(
         }
         ppm_int_profile(sm, sp, s_weno5[2], un, cc, dtdx, Ip[n], Im[n]);
 
-      } else if (use_hybrid_weno && weno_scheme == 2) {
+      } else if ((use_hybrid_weno != 0) && weno_scheme == 2) {
 
         amrex::Real s_weno7[7];
         const amrex::IntVect ivm3(
@@ -160,7 +161,7 @@ trace_ppm(
         weno_reconstruct_7z(s_weno7, sm, sp);
         ppm_int_profile(sm, sp, s_weno7[3], un, cc, dtdx, Ip[n], Im[n]);
 
-      } else if (use_hybrid_weno && weno_scheme == 3) {
+      } else if ((use_hybrid_weno != 0) && weno_scheme == 3) {
 
         amrex::Real s_weno3[3];
         if (idir == 0) {

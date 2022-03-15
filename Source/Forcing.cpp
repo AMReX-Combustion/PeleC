@@ -10,7 +10,7 @@ void
 
   old_sources[forcing_src]->setVal(0.0);
 
-  if (!add_forcing_src) {
+  if (add_forcing_src == 0) {
     return;
   }
 
@@ -29,7 +29,7 @@ void
 
   new_sources[forcing_src]->setVal(0.0);
 
-  if (!add_forcing_src) {
+  if (add_forcing_src == 0) {
     return;
   }
 

@@ -600,7 +600,7 @@ PeleC::variableSetUp()
   derive_lst.addComponent("diffusivity", desc_lst, State_Type, Density, NVAR);
 
   // LES coefficients
-  if (do_les) {
+  if (do_les != 0) {
     derive_lst.add(
       "C_s2", amrex::IndexType::TheCellType(), 1, pc_dernull,
       amrex::DeriveRec::TheSameBox);
@@ -682,7 +682,7 @@ PeleC::variableCleanUp()
 void
 PeleC::set_active_sources()
 {
-  if (do_diffuse && !do_mol) {
+  if (do_diffuse && (do_mol == 0)) {
     src_list.push_back(diff_src);
   }
 
@@ -703,7 +703,7 @@ PeleC::set_active_sources()
 #endif
 
   // optional LES source
-  if (do_les) {
+  if (do_les != 0) {
     src_list.push_back(les_src);
   }
 

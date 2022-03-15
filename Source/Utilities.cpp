@@ -109,7 +109,7 @@ clean_massfrac(
 
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-    if (mask(iv)) {
+    if (mask(iv) != 0) {
       const amrex::Real rhoOld = rho(iv);
       const amrex::Real rhoOld_inv = 1.0 / rhoOld;
 

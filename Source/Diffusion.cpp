@@ -96,12 +96,12 @@ PeleC::getMOLSrcTerm(
   }
 
   amrex::EBFluxRegister* fr_as_crse = nullptr;
-  if (do_reflux && level < parent->finestLevel()) {
+  if ((do_reflux != 0) && level < parent->finestLevel()) {
     fr_as_crse = &getFluxReg(level + 1);
   }
 
   amrex::EBFluxRegister* fr_as_fine = nullptr;
-  if (do_reflux && level > 0) {
+  if ((do_reflux != 0) && level > 0) {
     fr_as_fine = &getFluxReg(level);
   }
 
@@ -138,7 +138,7 @@ PeleC::getMOLSrcTerm(
       amrex::FabType typ = flag_fab.getType(vbox);
       if (typ == amrex::FabType::covered) {
         setV(vbox, NVAR, MOLSrc, 0);
-        if (do_mol_load_balance && cost) {
+        if (do_mol_load_balance && (cost != nullptr)) {
           wt = (amrex::ParallelDescriptor::second() - wt) / vbox.d_numPts();
           (*cost)[mfi].plus<amrex::RunOn::Device>(wt, vbox);
         }
@@ -326,7 +326,7 @@ PeleC::getMOLSrcTerm(
         AMREX_ASSERT(Nvals == Ncut);
         AMREX_ASSERT(nFlux == Ncut);
 
-        if (eb_isothermal && (diffuse_temp != 0 || diffuse_enth != 0)) {
+        if ((eb_isothermal != 0) && (diffuse_temp != 0 || diffuse_enth != 0)) {
           {
             BL_PROFILE("PeleC::pc_apply_eb_boundry_flux_stencil()");
             pc_apply_eb_boundry_flux_stencil(
@@ -336,7 +336,7 @@ PeleC::getMOLSrcTerm(
           }
         }
         // Compute momentum transfer at no-slip EB wall
-        if (eb_noslip && diffuse_vel == 1) {
+        if ((eb_noslip != 0) && diffuse_vel == 1) {
           {
             BL_PROFILE("PeleC::pc_apply_eb_boundry_visc_flux_stencil()");
             pc_apply_eb_boundry_visc_flux_stencil(
@@ -358,7 +358,7 @@ PeleC::getMOLSrcTerm(
       // Also, Dterm currently contains the divergence of the face-centered
       // diffusion fluxes.  Increment this with the divergence of the
       // face-centered hyperbloic fluxes.
-      if (do_hydro && do_mol) {
+      if ((do_hydro != 0) && (do_mol != 0)) {
         // amrex::FArrayBox flatn(cbox, 1);
         // amrex::Elixir flatn_eli;
         // flatn_eli = flatn.elixir();
@@ -370,7 +370,7 @@ PeleC::getMOLSrcTerm(
         amrex::Elixir diffusion_flux_eli[AMREX_SPACEDIM];
         amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM>
           diffusion_flux_arr;
-        if (use_explicit_filter) {
+        if (use_explicit_filter != 0) {
           for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
             diffusion_flux[dir].resize(flux_ec[dir].box(), NVAR);
             diffusion_flux_eli[dir] = diffusion_flux[dir].elixir();
@@ -400,7 +400,7 @@ PeleC::getMOLSrcTerm(
         }
 
         // Filter hydro source term and fluxes here
-        if (use_explicit_filter) {
+        if (use_explicit_filter != 0) {
           // Get the hydro term
           amrex::FArrayBox hydro_flux[AMREX_SPACEDIM];
           amrex::Elixir hydro_flux_eli[AMREX_SPACEDIM];
@@ -524,7 +524,7 @@ PeleC::getMOLSrcTerm(
         fab_rrflag_as_crse.resize(amrex::Box::TheUnitBox());
         fab_rrflag_as_crse_eli = fab_rrflag_as_crse.elixir();
         {
-          if (fr_as_fine) {
+          if (fr_as_fine != nullptr) {
             dm_as_fine.resize(amrex::grow(vbox, 1), NVAR);
             dm_as_fine_eli = dm_as_fine.elixir();
             dm_as_fine.setVal<amrex::RunOn::Device>(0.0);
@@ -538,12 +538,12 @@ PeleC::getMOLSrcTerm(
           }
         }
 
-        if (do_reflux && flux_factor != 0) {
+        if ((do_reflux != 0) && flux_factor != 0) {
           for (auto& dir : flux_ec) {
             dir.mult<amrex::RunOn::Device>(flux_factor, dir.box());
           }
 
-          if (fr_as_crse) {
+          if (fr_as_crse != nullptr) {
             fr_as_crse->CrseAdd(
               mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])},
               dxD.data(), dt, vfrac[mfi],
@@ -558,7 +558,7 @@ PeleC::getMOLSrcTerm(
             // }
           }
 
-          if (fr_as_fine) {
+          if (fr_as_fine != nullptr) {
             fr_as_fine->FineAdd(
               mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])},
               dxD.data(), dt, vfrac[mfi],
@@ -581,9 +581,10 @@ PeleC::getMOLSrcTerm(
 
 #ifdef PELEC_USE_EB
       // do regular flux reg ops
-      if (do_reflux && flux_factor != 0 && typ == amrex::FabType::regular)
+      if (
+        (do_reflux != 0) && flux_factor != 0 && typ == amrex::FabType::regular)
 #else
-      if (do_reflux && flux_factor != 0) // no eb in problem
+      if ((do_reflux != 0) && flux_factor != 0) // no eb in problem
 #endif
       {
         for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
@@ -683,7 +684,7 @@ PeleC::getMOLSrcTerm(
           });
 
         // Make sure the massfractions are ok in cut cells
-        if ((eb_clean_massfrac) && (typ != amrex::FabType::covered)) {
+        if (((eb_clean_massfrac) != 0) && (typ != amrex::FabType::covered)) {
           pc_eb_clean_massfrac(
             vbox, dt, eb_clean_massfrac_threshold, S.const_array(mfi), flag_arr,
             scratch, Dterm);
@@ -694,7 +695,7 @@ PeleC::getMOLSrcTerm(
       copy_array4(vbox, NVAR, Dterm, MOLSrc);
 
 #ifdef PELEC_USE_EB
-      if (do_mol_load_balance && cost) {
+      if (do_mol_load_balance && (cost != nullptr)) {
         amrex::Gpu::streamSynchronize();
         wt = (amrex::ParallelDescriptor::second() - wt) / vbox.d_numPts();
         (*cost)[mfi].plus<amrex::RunOn::Device>(wt, vbox);

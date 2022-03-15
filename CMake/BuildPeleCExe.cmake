@@ -3,7 +3,7 @@ function(build_pelec_exe pelec_exe_name)
   add_executable(${pelec_exe_name} "")
 
   if(CLANG_TIDY_EXE)
-    set_target_properties(${pelec_exe_name} PROPERTIES CXX_CLANG_TIDY ${CLANG_TIDY_EXE})
+    set_target_properties(${pelec_exe_name} PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_EXE};-fix")
   endif()
 
   target_sources(${pelec_exe_name}
