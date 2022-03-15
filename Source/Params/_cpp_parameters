@@ -29,10 +29,10 @@ lin_limit_state_interp       int           1
 state_nghost                 int           0
 
 # do we do the hyperbolic reflux at coarse-fine interfaces?
-do_reflux                    int           1
+do_reflux                   bool           true
 
 # do we average down the fine data onto the coarse?
-do_avg_down                  int           1
+do_avg_down                 bool           true
 
 # Initialize from a plot file
 init_pltfile              string          ""
@@ -55,21 +55,21 @@ difmag                       Real          0.1
 small_pres                   Real          1.e-200
 
 # permits hydro to be turned on and off for running pure rad problems
-do_hydro                     int          -1
+do_hydro                     bool          false
 
 # uses MOL aapproach to timestep advection and diffusion
-do_mol                       int          0
+do_mol                       bool          false
 
 # permits Ghost-Cells Navier-Stokes Boundary Conditions to be turned on and off
 # for advective terms (adv) and for diffusion terms (diff)
-nscbc_adv                    int          1
-nscbc_diff                   int          0
+nscbc_adv                   bool          true
+nscbc_diff                  bool          false
 
 # if true, define an additional source term
-add_ext_src                  int           0
+add_ext_src                 bool           false
 
 # if true, define an additional forcing term
-add_forcing_src              int           0
+add_forcing_src             bool           false
 
 # reconstruction type:
 # 0: piecewise linear;
@@ -77,15 +77,15 @@ add_forcing_src              int           0
 # 2: extrema-preserving ppm (deprecated in C++)
 ppm_type                     int           0
 
-# to we reconstruct and trace under the parabolas of the source
+# do we reconstruct and trace under the parabolas of the source
 # terms to the velocity
-ppm_trace_sources            int           0
+ppm_trace_sources           bool           false
 
 # for piecewise linear, reconstruction order to use
 plm_iorder                   int           2
 
 # Lax Friedrich's flux
-use_laxf_flux                int            0
+use_laxf_flux               bool           false
 
 # which Riemann solver do we use:
 # 0: Colella, Glaz, \& Ferguson (a two-shock solver);
@@ -95,12 +95,12 @@ riemann_solver               int           0
 
 # flatten the reconstructed profiles around shocks to prevent them
 # from becoming too thin
-use_flattening               int           1
+use_flattening              bool           true
 
 # Allow internal energy resets and temperature flooring to change the
 # total energy variable UEDEN in addition to the internal energy variable
 # UEINT.
-dual_energy_update_E_from_e  int           1
+dual_energy_update_E_from_e  bool           true
 
 # Threshold value of (E - K) / E such that above eta2, we update the
 # internal energy variable UEINT to match E - K. Below this, UEINT
@@ -108,11 +108,11 @@ dual_energy_update_E_from_e  int           1
 dual_energy_eta2             Real          1.0e-4
 
 # Whether or not to allow internal energy to be less than zero
-allow_negative_energy        int           1
+allow_negative_energy       bool           true
 
 # Whether or not to allow the internal energy to be less than the
 # internal energy corresponding to small\_temp
-allow_small_energy           int           1
+allow_small_energy          bool           true
 
 # if we are doing an external -x boundary condition, who do we interpret it?
 xl_ext_bc_type               string        ""
@@ -137,7 +137,7 @@ zr_ext_bc_type               string        ""
 #-----------------------------------------------------------------------------
 
 # permits LES to be turned on and off
-do_les                       int           0
+do_les                       bool          false
 
 # permits explicit LES to be turned on and off
 use_explicit_filter          int           0
@@ -159,16 +159,16 @@ PrT                          Real          1.0
 eb_boundary_T                Real         1.0
 
 # flag for isothermal EB boundary
-eb_isothermal                int          1
+eb_isothermal                bool         true
 
 # flag for no slip EB boundary
-eb_noslip                    int          1
+eb_noslip                    bool         true
 
 # redistribution type in amrex-hydro
 redistribution_type          string       "StateRedist"
 
 # flag to clean massfractions on EB cut cells
-eb_clean_massfrac            int          1
+eb_clean_massfrac           bool          true
 
 # threshold to use for cleaning massfractions on EB cut cells
 eb_clean_massfrac_threshold  Real         0.0
@@ -181,7 +181,7 @@ eb_srd_max_order             int          2
 #-----------------------------------------------------------------------------
 
 # permits MMS (using MASA library) to be turned on and off
-do_mms                       int           0
+do_mms                       bool          false
 
 # name of the MMS MASA solution to load
 masa_solution_name           string        "ad_cns_3d_les"
@@ -226,7 +226,7 @@ mol_iters                    int           1
 #-----------------------------------------------------------------------------
 
 # permits reactions to be turned on and off
-do_react                     int           0
+do_react                    bool           false
 
 # chemistry integrator
 chem_integrator              string        "ReactorNull"
@@ -235,23 +235,23 @@ chem_integrator              string        "ReactorNull"
 # category: parallelization
 #-----------------------------------------------------------------------------
 
-bndry_func_thread_safe       int           1
+bndry_func_thread_safe      bool           true
 
 #-----------------------------------------------------------------------------
 # category: diagnostics
 #-----------------------------------------------------------------------------
 
 # display breakdown of energy sources
-print_energy_diagnostics     int           (0, 1)
+print_energy_diagnostics     bool           (false, true)
 
 # calculate losses of material through physical grid boundaries
-track_grid_losses            int            0
+track_grid_losses           bool            false
 
 # how often (number of coarse timesteps) to compute integral sums (for runtime diagnostics)
 sum_interval                 int           -1
 
 # record extrema of certain variables along with the intergal sums
-track_extrema                int           1
+track_extrema               bool           true
 
 # track the extrema of this species in addition to other quantities
 extrema_spec_name            string	   ""
@@ -260,7 +260,7 @@ extrema_spec_name            string	   ""
 sum_per                      Real          -1.0e0
 
 # abort if we exceed CFL = 1 over the course of a timestep
-hard_cfl_limit               int           1
+hard_cfl_limit               bool           true
 
 # a string describing the simulation that will be copied into the
 # plotfile's {\tt job\_info} file

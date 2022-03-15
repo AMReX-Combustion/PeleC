@@ -309,7 +309,7 @@ PeleC::read_params()
     amrex::Print()
       << "WARNING: ppm_trace_sources = 1 not implemented for ppm_type = 0"
       << std::endl;
-    ppm_trace_sources = 0;
+    ppm_trace_sources = false;
     pp.add("ppm_trace_sources", ppm_trace_sources);
   }
 
