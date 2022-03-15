@@ -110,6 +110,8 @@ class Param(object):
             tstr = "amrex::Real {}::{}".format(self.cpp_class, self.cpp_var_name)
         elif self.dtype == "string":
             tstr = "std::string {}::{}".format(self.cpp_class, self.cpp_var_name)
+        elif self.dtype == "bool":
+            tstr = "bool {}::{}".format(self.cpp_class, self.cpp_var_name)
         else:
             sys.exit("invalid data type for parameter {}".format(self.name))
 
@@ -125,7 +127,10 @@ class Param(object):
             ostr += "{} = {};\n".format(tstr, self.default)
             ostr += "#endif\n"
         else:
-            ostr += "{} = {};\n".format(tstr, self.default)
+            if self.dtype == "string" and self.default == '""':
+                ostr += "{};\n".format(tstr)
+            else:
+                ostr += "{} = {};\n".format(tstr, self.default)
 
         if self.ifdef is not None:
             ostr += "#endif\n"
@@ -165,6 +170,8 @@ class Param(object):
             tstr = "{} amrex::Real {};\n".format(static, self.cpp_var_name)
         elif self.dtype == "string":
             tstr = "{} std::string {};\n".format(static, self.cpp_var_name)
+        elif self.dtype == "bool":
+            tstr = "{} bool {};\n".format(static, self.cpp_var_name)
         else:
             sys.exit("invalid data type for parameter {}".format(self.name))
 
