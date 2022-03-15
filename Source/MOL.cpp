@@ -12,7 +12,7 @@ pc_compute_hyp_mol_flux(
 #ifdef PELEC_USE_EB
     del
 #endif
-  ,
+  /*unused*/,
   const int plm_iorder,
   const int use_laxf_flux
 #ifdef PELEC_USE_EB

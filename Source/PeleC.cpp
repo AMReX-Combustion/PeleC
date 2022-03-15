@@ -1080,7 +1080,7 @@ PeleC::post_timestep(int
 #ifdef AMREX_PARTICLES
                        iteration
 #endif
-)
+                     /*iteration*/)
 {
   BL_PROFILE("PeleC::post_timestep()");
 
@@ -1225,7 +1225,7 @@ PeleC::post_regrid(
 #ifdef AMREX_PARTICLES
     lbase
 #endif
-  ,
+  /*lbase*/,
   int /*new_finest*/)
 {
   BL_PROFILE("PeleC::post_regrid()");

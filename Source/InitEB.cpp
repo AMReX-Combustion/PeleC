@@ -422,7 +422,7 @@ initialize_EB2(
 #ifdef LinePistonCylinder
     required_level
 #endif
-  ,
+  /*unused*/,
   const int max_level)
 {
   BL_PROFILE("PeleC::initialize_EB2()");

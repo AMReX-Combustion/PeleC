@@ -44,7 +44,7 @@ PeleC::fill_ext_source(
 #ifdef PELEC_USE_EB
     state_old
 #endif
-  ,
+  /*unused*/,
   const amrex::MultiFab& /*state_new*/,
   amrex::MultiFab& ext_src,
   int ng)

@@ -1,5 +1,5 @@
 ---
-Checks:          'bugprone-*,clang-diagnostic-*,clang-analyzer-*,corecppguidelines-*,modernize-*,readability-*,-readability-magic-numbers,-readability-identifier-naming,-modernize-avoid-c-arrays,-modernize-use-trailing-return-type,-readability-named-parameter,-readability-implicit-bool-conversion,-readability-isolate-declaration,-readability-avoid-const-params-in-decls'
+Checks:          'bugprone-*,clang-diagnostic-*,clang-analyzer-*,corecppguidelines-*,modernize-*,readability-*,-readability-magic-numbers,-readability-identifier-naming,-modernize-avoid-c-arrays,-modernize-use-trailing-return-type,-readability-implicit-bool-conversion,-readability-isolate-declaration,-readability-avoid-const-params-in-decls'
 WarningsAsErrors: ''
 HeaderFilterRegex: '.*'
 AnalyzeTemporaryDtors: false
