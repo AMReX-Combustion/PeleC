@@ -60,6 +60,7 @@ extern.new_Jacobian_each_cell = 0
 amr.derive_plot_vars = density xmom ymom zmom eden Temp pressure x_velocity y_velocity z_velocity
 pelec.plot_rhoy = 0
 pelec.plot_massfrac = 1
+pelec.do_hydro = 1
 pelec.do_react = 1
 pelec.chem_integrator = "ReactorCvode"
 cvode.solve_type = "GMRES"

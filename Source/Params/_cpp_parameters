@@ -55,7 +55,7 @@ difmag                       Real          0.1
 small_pres                   Real          1.e-200
 
 # permits hydro to be turned on and off for running pure rad problems
-do_hydro                     bool          false
+do_hydro                     bool          true
 
 # uses MOL aapproach to timestep advection and diffusion
 do_mol                       bool          false
