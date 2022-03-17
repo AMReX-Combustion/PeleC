@@ -9,7 +9,6 @@ geometry.is_periodic =  0   0  0
 geometry.coord_sys   =  0       # 0 => cart
 geometry.prob_lo     =  -1.4 -1.4 -0.275
 geometry.prob_hi     =  1.4  1.4  0.425
-#amr.n_cell           =  128 128 48
 amr.n_cell           =  512 512 128
 
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
@@ -77,23 +76,19 @@ pelec.plot_massfrac = 1
 pelec.extrema_spec_name = ALL
 
 # PROBLEM PARAMETERS
-prob.Pres_domain = 6.0795e7
-prob.Temp_domain = 900.0
-prob.Yfuel_domain = 0.0205938
-prob.Yox_domain = 0.164305
-prob.YN2_domain = 0.8151012
-prob.T_jet = 470.0
-prob.vel_jet = 2800.0
-prob.Yox_jet = 0.00
-prob.Yfuel_jet = 1.00
-prob.YN2_jet = 0.00
+prob.Pres_mean = 6.0795e7
+prob.Temp_mean = 900.0
 prob.centx = 0.00
 prob.centz = 0.00
 prob.r_circ = 0.15
 prob.r_hole = 0.0085
 prob.nholes = 4
 prob.cone_angle= 45.0
-prob.inj_time = 0.0005
+prob.T_jet = 470.0
+prob.vel_jet = 2800.0
+prob.Z = 0.45
+prob.injection_start = 0.0
+prob.injection_duration = 0.0005
 
 ic.hitIC = 1
 ic.inres = 128
