@@ -150,7 +150,7 @@ PeleC::react_state(
 
       // only update beyond first step
       // TODO: Update here? Or just get reaction source?
-      const int do_update = react_init ? 0 : 1;
+      const bool do_update = react_init;
 
 #ifdef PELEC_USE_EB
       const auto& flag_fab = flags[mfi];
@@ -259,7 +259,7 @@ PeleC::react_state(
               rhonew += rhoY(i, j, k, nsp);
             }
 
-            if (do_update != 0) {
+            if (do_update) {
               snew_arr(i, j, k, URHO) = rhonew;
               snew_arr(i, j, k, UMX) = umnew;
               snew_arr(i, j, k, UMY) = vmnew;
