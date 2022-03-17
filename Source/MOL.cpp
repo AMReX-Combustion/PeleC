@@ -127,7 +127,7 @@ pc_compute_hyp_mol_flux(
         amrex::Real flux_tmp[NVAR] = {0.0};
         amrex::Real ustar = 0.0;
 
-        if (use_laxf_flux) {
+        if (!use_laxf_flux) {
           amrex::Real tmp0 = 0.0, tmp1 = 0.0, tmp2 = 0.0, tmp3 = 0.0,
                       tmp4 = 0.0;
           riemann(
