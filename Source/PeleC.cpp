@@ -37,7 +37,6 @@ using namespace MASA;
 #endif
 
 bool PeleC::signalStopJob = false;
-bool PeleC::dump_old = false;
 int PeleC::verbose = 0;
 int PeleC::radius_grow = 1;
 amrex::BCRec PeleC::phys_bc;
@@ -62,20 +61,11 @@ int PeleC::pstateNum = 0;
 
 #include "pelec_defaults.H"
 
-int PeleC::diffuse_temp = 0;
-int PeleC::diffuse_enth = 0;
-int PeleC::diffuse_spec = 0;
-int PeleC::diffuse_vel = 0;
-amrex::Real PeleC::diffuse_cutoff_density =
-  -std::numeric_limits<amrex::Real>::max();
 bool PeleC::do_diffuse = false;
 
 #ifdef PELEC_USE_MASA
 bool PeleC::mms_initialized = false;
 #endif
-
-int PeleC::use_hybrid_weno = 0;
-int PeleC::weno_scheme = 1;
 
 int PeleC::les_model = 0;
 int PeleC::les_filter_type = no_filter;
@@ -146,8 +136,6 @@ PeleC::read_params()
 #include "pelec_queries.H"
 
   pp.query("v", verbose);
-  pp.query("sum_interval", sum_interval);
-  pp.query("dump_old", dump_old);
 
   // Get boundary conditions
   amrex::Vector<std::string> lo_bc_char(AMREX_SPACEDIM);
@@ -257,19 +245,13 @@ PeleC::read_params()
     amrex::Abort("We don't support spherical coordinate systems in 3D");
   }
 
-  pp.query("diffuse_temp", diffuse_temp);
-  pp.query("diffuse_enth", diffuse_enth);
-  pp.query("diffuse_spec", diffuse_spec);
-  pp.query("diffuse_vel", diffuse_vel);
-  pp.query("diffuse_cutoff_density", diffuse_cutoff_density);
-
-  do_diffuse = diffuse_temp || diffuse_enth || diffuse_spec || diffuse_vel;
+  do_diffuse = (diffuse_temp || diffuse_enth || diffuse_spec || diffuse_vel);
 
   // sanity checks
   if (cfl <= 0.0 || cfl > 1.0) {
     amrex::Error("Invalid CFL factor; must be between zero and one.");
   }
-  if ((do_hydro == 1) && (do_mol == 1) && (cfl > 0.3)) {
+  if (do_hydro && do_mol && (cfl > 0.3)) {
     amrex::Print() << "WARNING -- CFL should be <= 0.3 when using MOL hydro."
                    << std::endl;
   }
@@ -290,22 +272,20 @@ PeleC::read_params()
   }
 
   // Check on PPM type
-  if ((do_hydro == 1) && (do_mol == 0)) {
+  if (do_hydro && (!do_mol)) {
     if (ppm_type != 0 && ppm_type != 1) {
       amrex::Error("PeleC::ppm_type must be 0 (PLM) or 1 (PPM)");
     }
   }
 
-  pp.query("use_hybrid_weno", use_hybrid_weno);
-  pp.query("weno_scheme", weno_scheme);
-  if (ppm_type != 1 && use_hybrid_weno == 1) {
+  if (ppm_type != 1 && use_hybrid_weno) {
     amrex::Error("PeleC::ppm_type must be 1 (PPM) to use WENO method");
   }
 
   // for the moment, ppm_type = 0 does not support ppm_trace_sources --
   // we need to add the momentum sources to the states (and not
   // add it in trans_3d
-  if (ppm_type == 0 && ppm_trace_sources == 1) {
+  if (ppm_type == 0 && ppm_trace_sources) {
     amrex::Print()
       << "WARNING: ppm_trace_sources = 1 not implemented for ppm_type = 0"
       << std::endl;
@@ -322,7 +302,7 @@ PeleC::read_params()
 #endif
 
 #ifdef PELEC_USE_EB
-  if ((do_mol == 0) && (eb_in_domain)) {
+  if ((!do_mol) && eb_in_domain) {
     amrex::Abort("Must do_mol = 1 when using EB\n");
   }
 #endif
@@ -331,7 +311,8 @@ PeleC::read_params()
   read_tagging_params();
 
   // TODO: What is this?
-  amrex::StateDescriptor::setBndryFuncThreadSafety(bndry_func_thread_safe);
+  amrex::StateDescriptor::setBndryFuncThreadSafety(
+    static_cast<int>(bndry_func_thread_safe));
 
   // Get some useful amr inputs
   amrex::ParmParse ppa("amr");
@@ -451,7 +432,7 @@ PeleC::PeleC(
   //}
 
   // Initialize the reactor
-  if (do_react == 1) {
+  if (do_react) {
     init_reactor();
   }
 
@@ -469,7 +450,7 @@ PeleC::PeleC(
 
 PeleC::~PeleC()
 {
-  if (do_react == 1) {
+  if (do_react) {
     close_reactor();
   }
 }
@@ -646,7 +627,7 @@ PeleC::initData()
   }
 #endif
 
-  if (verbose) {
+  if (verbose != 0) {
     amrex::Print() << "Initializing the data at level " << level << std::endl;
   }
 
@@ -701,7 +682,7 @@ PeleC::initData()
   }
 #endif
 
-  if (verbose) {
+  if (verbose != 0) {
     amrex::Print() << "Done initializing level " << level << " data "
                    << std::endl;
   }
@@ -930,7 +911,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
     amrex::ParallelDescriptor::ReduceRealMin(estdt_hydro);
     estdt_hydro *= cfl;
 
-    if (verbose) {
+    if (verbose != 0) {
       amrex::Print() << "...estimated hydro-limited timestep at level " << level
                      << ": " << estdt_hydro << std::endl;
     }
@@ -953,7 +934,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
   }
 #endif
 
-  if (verbose) {
+  if (verbose != 0) {
     amrex::Print() << "PeleC::estTimeStep (" << limiter << "-limited) at level "
                    << level << ":  estdt = " << estdt << '\n';
   }
@@ -996,7 +977,7 @@ PeleC::computeNewDt(
     } else {
       // Limit dt's by change_max * old dt
       for (int i = 0; i <= finest_level; i++) {
-        if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
+        if ((verbose != 0) && amrex::ParallelDescriptor::IOProcessor()) {
           if (dt_min[i] > change_max * dt_level[i]) {
             amrex::Print() << "PeleC::compute_new_dt : limiting dt at level "
                            << i << '\n';
@@ -1191,7 +1172,7 @@ PeleC::post_restart()
   //}
 
   // Initialize the reactor
-  if (do_react == 1) {
+  if (do_react) {
     init_reactor();
     if (use_typical_vals_chem) {
       set_typical_values_chem();
@@ -1252,7 +1233,7 @@ void PeleC::post_init(amrex::Real /*stop_time*/)
   amrex::Real cumtime = parent->cumTime();
 
   // Fill Reactions_Type data based on initial dt
-  if (do_react == 1) {
+  if (do_react) {
 
     bool react_init = true;
     if (use_typical_vals_chem) {
@@ -1268,7 +1249,7 @@ void PeleC::post_init(amrex::Real /*stop_time*/)
 
   // Average data down from finer levels
   // so that conserved data is consistent between levels.
-  if (do_avg_down != 0) {
+  if (do_avg_down) {
     int finest_level = parent->finestLevel();
     for (int k = finest_level - 1; k >= 0; k--) {
       getLevel(k).avgDown();
@@ -1373,7 +1354,7 @@ PeleC::reflux()
   }
 #endif
 
-  if (verbose) {
+  if (verbose != 0) {
     const int IOProc = amrex::ParallelDescriptor::IOProcessorNumber();
     amrex::Real end = amrex::ParallelDescriptor::second() - strt;
 
@@ -1943,7 +1924,7 @@ void
 PeleC::init_reactor()
 {
   reactor = pele::physics::reactions::ReactorBase::create(chem_integrator);
-  if ((do_react == 1) && (chem_integrator == "ReactorNull")) {
+  if (do_react && (chem_integrator == "ReactorNull")) {
     amrex::Print() << "WARNING: turning on reactions while using ReactorNull. "
                       "Make sure this is intended."
                    << std::endl;
@@ -2286,7 +2267,7 @@ PeleC::InitialRedistribution(
     return;
   }
 
-  if (verbose) {
+  if (verbose != 0) {
     amrex::Print() << "Doing initial redistribution... " << std::endl;
   }
 

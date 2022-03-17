@@ -40,6 +40,9 @@ init_pltfile              string          ""
 # Acceptable tolerance for species mass fraction when initializing from a plot file
 init_pltfile_massfrac_tol   Real         1e-8
 
+# Checkpoint old state
+dump_old                   bool          false
+
 #-----------------------------------------------------------------------------
 # category: Processor Type
 #-----------------------------------------------------------------------------
@@ -59,6 +62,12 @@ do_hydro                     bool          true
 
 # uses MOL aapproach to timestep advection and diffusion
 do_mol                       bool          false
+
+# use hybrid WENO scheme in PPM method
+use_hybrid_weno              bool          false
+
+# WENO scheme type in PPM method
+weno_scheme                  int           1
 
 # permits Ghost-Cells Navier-Stokes Boundary Conditions to be turned on and off
 # for advective terms (adv) and for diffusion terms (diff)
@@ -133,6 +142,22 @@ zl_ext_bc_type               string        ""
 zr_ext_bc_type               string        ""
 
 #-----------------------------------------------------------------------------
+# category: diffusion
+#-----------------------------------------------------------------------------
+
+# flag for diffusion for temperature
+diffuse_temp                  bool         false
+
+# flag for diffusion for enthalpy
+diffuse_enth                  bool         false
+
+# flag for diffusion for species
+diffuse_spec                  bool         false
+
+# flag for diffusion for velocity
+diffuse_vel                   bool         false
+
+#-----------------------------------------------------------------------------
 # category: large eddy simulation
 #-----------------------------------------------------------------------------
 
@@ -140,7 +165,7 @@ zr_ext_bc_type               string        ""
 do_les                       bool          false
 
 # permits explicit LES to be turned on and off
-use_explicit_filter          int           0
+use_explicit_filter          bool          false
 
 # Constant Smagorinsky Cs coefficient
 Cs                           Real          0.0

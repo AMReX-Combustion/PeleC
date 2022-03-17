@@ -30,7 +30,9 @@ pc_umeth_3D(
   const amrex::Real* del,
   const amrex::Real dt,
   const int ppm_type,
-  const int use_flattening)
+  const bool use_flattening,
+  const bool use_hybrid_weno,
+  const int weno_scheme)
 {
   amrex::Real const dx = del[0];
   amrex::Real const dy = del[1];
@@ -138,17 +140,17 @@ pc_umeth_3D(
     int idir = 0;
     trace_ppm(
       bxg2, idir, q, srcQ, qxmarr, qxparr, bxg2, dt, del, use_flattening,
-      PeleC::use_hybrid_weno, PeleC::weno_scheme);
+      use_hybrid_weno, weno_scheme);
 
     idir = 1;
     trace_ppm(
       bxg2, idir, q, srcQ, qymarr, qyparr, bxg2, dt, del, use_flattening,
-      PeleC::use_hybrid_weno, PeleC::weno_scheme);
+      use_hybrid_weno, weno_scheme);
 
     idir = 2;
     trace_ppm(
       bxg2, idir, q, srcQ, qzmarr, qzparr, bxg2, dt, del, use_flattening,
-      PeleC::use_hybrid_weno, PeleC::weno_scheme);
+      use_hybrid_weno, weno_scheme);
 
   } else {
     amrex::Error("PeleC::ppm_type must be 0 (PLM) or 1 (PPM)");
@@ -501,7 +503,9 @@ pc_umeth_2D(
   const amrex::Real* del,
   const amrex::Real dt,
   const int ppm_type,
-  const int use_flattening)
+  const bool use_flattening,
+  const bool use_hybrid_weno,
+  const int weno_scheme)
 {
   amrex::Real const dx = del[0];
   amrex::Real const dy = del[1];
@@ -572,12 +576,12 @@ pc_umeth_2D(
     int idir = 0;
     trace_ppm(
       bxg2, idir, q, srcQ, qxmarr, qxparr, bxg2, dt, del, use_flattening,
-      PeleC::use_hybrid_weno, PeleC::weno_scheme);
+      use_hybrid_weno, weno_scheme);
 
     idir = 1;
     trace_ppm(
       bxg2, idir, q, srcQ, qymarr, qyparr, bxg2, dt, del, use_flattening,
-      PeleC::use_hybrid_weno, PeleC::weno_scheme);
+      use_hybrid_weno, weno_scheme);
 
   } else {
     amrex::Error("PeleC::ppm_type must be 0 (PLM) or 1 (PPM)");

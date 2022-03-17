@@ -34,20 +34,20 @@ pc_rst_int_e(
   const int j,
   const int k,
   amrex::Array4<amrex::Real> const& S,
-  const int allow_small_energy,
-  const int allow_negative_energy,
-  const int dual_energy_update_E_from_e,
+  const bool allow_small_energy,
+  const bool allow_negative_energy,
+  const bool dual_energy_update_E_from_e,
   const amrex::Real dual_energy_eta2,
   const int /*verbose*/)
 {
   if (std::is_same<
         pele::physics::PhysicsType::eos_type, pele::physics::eos::SRK>::value) {
-    if (allow_small_energy == 0 || allow_negative_energy == 0) {
+    if ((!allow_small_energy) || (!allow_negative_energy)) {
       amrex::Error("Small/negative energy must be allowed for nonideal EOS");
     }
   }
   auto eos = pele::physics::PhysicsType::eos();
-  if (allow_small_energy == 0) {
+  if (!allow_small_energy) {
     const amrex::Real rhoInv = 1.0 / S(i, j, k, URHO);
     const amrex::Real Up = S(i, j, k, UMX) * rhoInv;
     const amrex::Real Vp = S(i, j, k, UMY) * rhoInv;
@@ -96,7 +96,7 @@ pc_rst_int_e(
         for (int sp = 0; sp < NUM_SPECIES; sp++) {
           eos_state_e += eos_state_massfrac[sp] * eos_state_ei[sp];
         }
-        if (dual_energy_update_E_from_e == 1) {
+        if (dual_energy_update_E_from_e) {
           S(i, j, k, UEDEN) =
             S(i, j, k, UEDEN) +
             (S(i, j, k, URHO) * eos_state_e - S(i, j, k, UEINT));
@@ -104,7 +104,7 @@ pc_rst_int_e(
         S(i, j, k, UEINT) = S(i, j, k, URHO) * eos_state_e;
       }
     }
-  } else if (allow_negative_energy == 0) {
+  } else if (!allow_negative_energy) {
     const amrex::Real rhoInv = 1.0 / S(i, j, k, URHO);
     const amrex::Real Up = S(i, j, k, UMX) * rhoInv;
     const amrex::Real Vp = S(i, j, k, UMY) * rhoInv;
@@ -142,7 +142,7 @@ pc_rst_int_e(
       } else if (
         S(i, j, k, UEINT) >
           (S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min()) &&
-        (dual_energy_update_E_from_e == 1)) {
+        (dual_energy_update_E_from_e)) {
         S(i, j, k, UEDEN) = S(i, j, k, UEINT) + S(i, j, k, URHO) * ke;
       } else if (
         S(i, j, k, UEINT) <=
@@ -157,7 +157,7 @@ pc_rst_int_e(
           eos_state_e += eos_state_massfrac[sp] * eos_state_ei[sp];
         }
         const amrex::Real eint_new = eos_state_e;
-        if (dual_energy_update_E_from_e == 1) {
+        if (dual_energy_update_E_from_e) {
           S(i, j, k, UEDEN) = S(i, j, k, UEDEN) +
                               (S(i, j, k, URHO) * eint_new - S(i, j, k, UEINT));
         }

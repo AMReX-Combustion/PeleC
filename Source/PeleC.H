@@ -595,10 +595,6 @@ public:
   void avgDown();
   void avgDown(int state_indx);
 
-  // Parameters for using WENO in the PPM method
-  static int use_hybrid_weno;
-  static int weno_scheme;
-
   static ProbParmDevice* h_prob_parm_device;
   static ProbParmDevice* d_prob_parm_device;
   static ProbParmHost* prob_parm_host;
@@ -693,7 +689,6 @@ protected:
 #include "pelec_params.H"
 
   static bool signalStopJob;
-  static bool dump_old;
   static int radius_grow;
   static int verbose;
   static amrex::BCRec phys_bc;
@@ -714,11 +709,6 @@ protected:
 
   static amrex::Real getCPUTime();
 
-  static int diffuse_temp;
-  static int diffuse_enth;
-  static int diffuse_spec;
-  static int diffuse_vel;
-  static amrex::Real diffuse_cutoff_density;
   static bool do_diffuse;
 
   static int les_model;

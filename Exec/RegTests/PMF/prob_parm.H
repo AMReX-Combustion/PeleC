@@ -16,7 +16,7 @@ struct ProbParmDevice
   amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> L = {{1.0}};
   int pmf_N = 0;
   int pmf_M = 0;
-  int pmf_do_average = 0;
+  bool pmf_do_average = false;
 
   amrex::GpuArray<amrex::Real, NVAR> fuel_state = {{0.0}};
   amrex::Real* d_pmf_X = nullptr;

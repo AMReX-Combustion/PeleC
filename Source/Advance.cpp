@@ -78,7 +78,7 @@ PeleC::do_mol_advance(
     molSrc_new.define(grids, dmap, NVAR, 0, amrex::MFInfo(), Factory());
   }
 
-  if (do_react == 0) {
+  if (!do_react) {
     get_new_data(Reactions_Type).setVal(0.0);
   }
   const amrex::MultiFab& I_R = get_new_data(Reactions_Type);
@@ -89,7 +89,7 @@ PeleC::do_mol_advance(
 #endif
 
   // Compute S^{n} = MOLRhs(U^{n})
-  if (verbose) {
+  if (verbose != 0) {
     amrex::Print() << "... Computing MOL source term at t^{n} " << std::endl;
   }
   FillPatch(*this, Sborder, numGrow() + nGrowF, time, State_Type, 0, NVAR);
@@ -121,7 +121,7 @@ PeleC::do_mol_advance(
   amrex::MultiFab::LinComb(S_new, 1.0, Sborder, 0, dt, molSrc, 0, 0, NVAR, 0);
 
   // U^{n+1,*} = U^n + dt*S^n + dt*I_R
-  if (do_react == 1) {
+  if (do_react) {
     amrex::MultiFab::Saxpy(S_new, dt, I_R, 0, FirstSpec, NUM_SPECIES, 0);
     amrex::MultiFab::Saxpy(S_new, dt, I_R, NUM_SPECIES, Eden, 1, 0);
   }
@@ -129,7 +129,7 @@ PeleC::do_mol_advance(
   computeTemp(S_new, 0);
 
   // Compute S^{n+1} = MOLRhs(U^{n+1,*})
-  if (verbose) {
+  if (verbose != 0) {
     amrex::Print() << "... Computing MOL source term at t^{n+1} " << std::endl;
   }
   FillPatch(*this, Sborder, numGrow() + nGrowF, time + dt, State_Type, 0, NVAR);
@@ -160,7 +160,7 @@ PeleC::do_mol_advance(
     S_new, 0.5 * dt, molSrc, 0, 0, NVAR,
     0); //  NOTE: If I_R=0, we are done and U_new is the final new-time state
 
-  if (do_react == 1) {
+  if (do_react) {
     amrex::MultiFab::Saxpy(S_new, 0.5 * dt, I_R, 0, FirstSpec, NUM_SPECIES, 0);
     amrex::MultiFab::Saxpy(S_new, 0.5 * dt, I_R, NUM_SPECIES, Eden, 1, 0);
 
@@ -177,9 +177,9 @@ PeleC::do_mol_advance(
 
   computeTemp(S_new, 0);
 
-  if (do_react == 1) {
+  if (do_react) {
     for (int mol_iter = 2; mol_iter <= mol_iters; ++mol_iter) {
-      if (verbose) {
+      if (verbose != 0) {
         amrex::Print() << "... Re-computing MOL source term at t^{n+1} (iter = "
                        << mol_iter << " of " << mol_iters << ")" << std::endl;
       }
@@ -464,7 +464,7 @@ PeleC::do_sdc_iteration(
     // Get diffusion source separate from other sources, since it requires grow
     // cells, and we may want to reuse what we fill-patched for hydro
     if (do_diffuse) {
-      if (verbose) {
+      if (verbose != 0) {
         amrex::Print() << "... Computing diffusion terms at t^(n)" << std::endl;
       }
       AMREX_ASSERT(
@@ -496,7 +496,7 @@ PeleC::do_sdc_iteration(
   // Now update t_new sources (diffusion separate because it requires a fill
   // patch)
   if (do_diffuse) {
-    if (verbose) {
+    if (verbose != 0) {
       amrex::Print() << "... Computing diffusion terms at t^(n+1,"
                      << sub_iteration + 1 << ")" << std::endl;
     }
@@ -547,7 +547,7 @@ PeleC::do_sdc_iteration(
 #endif
 
   // Update I_R and rebuild S_new accordingly
-  if (do_react == 1) {
+  if (do_react) {
     react_state(time, dt);
   } else {
     construct_Snew(S_new, S_old, dt);
@@ -579,7 +579,7 @@ PeleC::construct_Snew(
     amrex::MultiFab::Saxpy(S_new, dt, hydro_source, 0, 0, NVAR, ng);
   }
 
-  if (do_react == 1) {
+  if (do_react) {
     amrex::MultiFab& I_R = get_new_data(Reactions_Type);
     amrex::MultiFab::Saxpy(S_new, dt, I_R, 0, FirstSpec, NUM_SPECIES, 0);
     amrex::MultiFab::Saxpy(S_new, dt, I_R, NUM_SPECIES, Eden, 1, 0);
@@ -634,7 +634,7 @@ PeleC::initialize_sdc_advance(
     state[i].swapTimeLevels(dt);
   }
 
-  if (do_react == 1) {
+  if (do_react) {
     // Initialize I_R with value from previous time step
     amrex::MultiFab::Copy(
       get_new_data(Reactions_Type), get_old_data(Reactions_Type), 0, 0,

@@ -11,8 +11,8 @@ PeleC::getMOLSrcTerm(
   BL_PROFILE("PeleC::getMOLSrcTerm()");
   BL_PROFILE_VAR_NS("diffusion_stuff", diff);
   if (
-    diffuse_temp == 0 && diffuse_enth == 0 && diffuse_spec == 0 &&
-    diffuse_vel == 0 && do_hydro == 0) {
+    (!diffuse_temp) && (!diffuse_enth) && (!diffuse_spec) && (!diffuse_vel) &&
+    (!do_hydro)) {
     MOLSrcTerm.setVal(0, 0, NVAR, MOLSrcTerm.nGrow());
     return;
   }
@@ -138,7 +138,7 @@ PeleC::getMOLSrcTerm(
       amrex::FabType typ = flag_fab.getType(vbox);
       if (typ == amrex::FabType::covered) {
         setV(vbox, NVAR, MOLSrc, 0);
-        if (do_mol_load_balance && cost) {
+        if (do_mol_load_balance && (cost != nullptr)) {
           wt = (amrex::ParallelDescriptor::second() - wt) / vbox.d_numPts();
           (*cost)[mfi].plus<amrex::RunOn::Device>(wt, vbox);
         }
@@ -293,20 +293,20 @@ PeleC::getMOLSrcTerm(
       //      this process.  Ideally, we'd redo that test to diffuse a passive
       //      scalar instead....
 
-      if (diffuse_temp == 0 && diffuse_enth == 0) {
+      if ((!diffuse_temp) && (!diffuse_enth)) {
         setC(cbox, Eden, Eint, Dterm, 0.0);
         for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
           setC(eboxes[dir], Eden, Eint, flx[dir], 0.0);
         }
       }
-      if (diffuse_spec == 0) {
+      if (!diffuse_spec) {
         setC(cbox, FirstSpec, FirstSpec + NUM_SPECIES, Dterm, 0.0);
         for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
           setC(eboxes[dir], FirstSpec, FirstSpec + NUM_SPECIES, flx[dir], 0.0);
         }
       }
 
-      if (diffuse_vel == 0) {
+      if (!diffuse_vel) {
         setC(cbox, Xmom, Xmom + 3, Dterm, 0.0);
         for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
           setC(eboxes[dir], Xmom, Xmom + 3, flx[dir], 0.0);
@@ -326,7 +326,7 @@ PeleC::getMOLSrcTerm(
         AMREX_ASSERT(Nvals == Ncut);
         AMREX_ASSERT(nFlux == Ncut);
 
-        if (eb_isothermal && (diffuse_temp != 0 || diffuse_enth != 0)) {
+        if (eb_isothermal && (diffuse_temp || diffuse_enth)) {
           {
             BL_PROFILE("PeleC::pc_apply_eb_boundry_flux_stencil()");
             pc_apply_eb_boundry_flux_stencil(
@@ -336,7 +336,7 @@ PeleC::getMOLSrcTerm(
           }
         }
         // Compute momentum transfer at no-slip EB wall
-        if (eb_noslip && diffuse_vel == 1) {
+        if (eb_noslip && diffuse_vel) {
           {
             BL_PROFILE("PeleC::pc_apply_eb_boundry_visc_flux_stencil()");
             pc_apply_eb_boundry_visc_flux_stencil(
@@ -524,7 +524,7 @@ PeleC::getMOLSrcTerm(
         fab_rrflag_as_crse.resize(amrex::Box::TheUnitBox());
         fab_rrflag_as_crse_eli = fab_rrflag_as_crse.elixir();
         {
-          if (fr_as_fine) {
+          if (fr_as_fine != nullptr) {
             dm_as_fine.resize(amrex::grow(vbox, 1), NVAR);
             dm_as_fine_eli = dm_as_fine.elixir();
             dm_as_fine.setVal<amrex::RunOn::Device>(0.0);
@@ -543,7 +543,7 @@ PeleC::getMOLSrcTerm(
             dir.mult<amrex::RunOn::Device>(flux_factor, dir.box());
           }
 
-          if (fr_as_crse) {
+          if (fr_as_crse != nullptr) {
             fr_as_crse->CrseAdd(
               mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])},
               dxD.data(), dt, vfrac[mfi],
@@ -558,7 +558,7 @@ PeleC::getMOLSrcTerm(
             // }
           }
 
-          if (fr_as_fine) {
+          if (fr_as_fine != nullptr) {
             fr_as_fine->FineAdd(
               mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])},
               dxD.data(), dt, vfrac[mfi],
@@ -694,7 +694,7 @@ PeleC::getMOLSrcTerm(
       copy_array4(vbox, NVAR, Dterm, MOLSrc);
 
 #ifdef PELEC_USE_EB
-      if (do_mol_load_balance && cost) {
+      if (do_mol_load_balance && (cost != nullptr)) {
         amrex::Gpu::streamSynchronize();
         wt = (amrex::ParallelDescriptor::second() - wt) / vbox.d_numPts();
         (*cost)[mfi].plus<amrex::RunOn::Device>(wt, vbox);
