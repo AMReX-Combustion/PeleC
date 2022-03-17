@@ -215,7 +215,8 @@ PeleC::construct_hydro_source(
         pc_umdrv(
           is_finest_level, time, fbx, domain_lo, domain_hi, phys_bc.lo(),
           phys_bc.hi(), s, hyd_src, qarr, qauxar, srcqarr, dx, dt, ppm_type,
-          use_flattening, difmag, flx_arr, a, volume.array(mfi), cflLoc);
+          use_flattening, use_hybrid_weno, weno_scheme, difmag, flx_arr, a,
+          volume.array(mfi), cflLoc);
         BL_PROFILE_VAR_STOP(purm);
 
         BL_PROFILE_VAR("courno + flux reg", crno);
@@ -350,6 +351,8 @@ pc_umdrv(
   const amrex::Real dt,
   const int ppm_type,
   const bool use_flattening,
+  const bool use_hybrid_weno,
+  const int weno_scheme,
   const amrex::Real difmag,
   const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
@@ -387,12 +390,13 @@ pc_umdrv(
   pc_umeth_2D(
     bx, bclo, bchi, domlo, domhi, q, qaux, src_q, // bcMask,
     flx[0], flx[1], qec_arr[0], qec_arr[1], a[0], a[1], pdivuarr, vol, dx, dt,
-    ppm_type, use_flattening);
+    ppm_type, use_flattening, use_hybrid_weno, weno_scheme);
 #elif AMREX_SPACEDIM == 3
   pc_umeth_3D(
     bx, bclo, bchi, domlo, domhi, q, qaux, src_q, // bcMask,
     flx[0], flx[1], flx[2], qec_arr[0], qec_arr[1], qec_arr[2], a[0], a[1],
-    a[2], pdivuarr, vol, dx, dt, ppm_type, use_flattening);
+    a[2], pdivuarr, vol, dx, dt, ppm_type, use_flattening, use_hybrid_weno,
+    weno_scheme);
 #endif
   BL_PROFILE_VAR_STOP(umeth);
   for (auto& dir : qec_eli) {

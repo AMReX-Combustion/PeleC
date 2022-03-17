@@ -172,6 +172,8 @@ void pc_umdrv(
   const amrex::Real dt,
   const int ppm_type,
   const bool use_flattening,
+  const bool use_hybrid_weno,
+  const int weno_scheme,
   const amrex::Real difmag,
   const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>

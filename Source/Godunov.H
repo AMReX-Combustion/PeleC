@@ -697,7 +697,9 @@ void pc_umeth_3D(
   const amrex::Real* del,
   const amrex::Real dt,
   const int ppm_type,
-  const bool use_flattening);
+  const bool use_flattening,
+  const bool use_hybrid_weno,
+  const int weno_scheme);
 
 #elif AMREX_SPACEDIM == 2
 
@@ -722,7 +724,9 @@ void pc_umeth_2D(
   const amrex::Real* del,
   const amrex::Real dt,
   const int ppm_type,
-  const bool use_flattening);
+  const bool use_flattening,
+  const bool use_hybrid_weno,
+  const int weno_scheme);
 #endif
 
 #endif

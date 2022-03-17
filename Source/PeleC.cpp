@@ -273,7 +273,7 @@ PeleC::read_params()
   }
 
   // Check on PPM type
-  if (do_hydro && (!do_mol) {
+  if (do_hydro && (!do_mol)) {
     if (ppm_type != 0 && ppm_type != 1) {
       amrex::Error("PeleC::ppm_type must be 0 (PLM) or 1 (PPM)");
     }
