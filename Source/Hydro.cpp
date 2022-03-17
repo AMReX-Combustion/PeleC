@@ -215,8 +215,7 @@ PeleC::construct_hydro_source(
         pc_umdrv(
           is_finest_level, time, fbx, domain_lo, domain_hi, phys_bc.lo(),
           phys_bc.hi(), s, hyd_src, qarr, qauxar, srcqarr, dx, dt, ppm_type,
-          use_flattening, difmag, flx_arr, a,
-          volume.array(mfi), cflLoc);
+          use_flattening, difmag, flx_arr, a, volume.array(mfi), cflLoc);
         BL_PROFILE_VAR_STOP(purm);
 
         BL_PROFILE_VAR("courno + flux reg", crno);
