@@ -11,8 +11,8 @@ PeleC::getMOLSrcTerm(
   BL_PROFILE("PeleC::getMOLSrcTerm()");
   BL_PROFILE_VAR_NS("diffusion_stuff", diff);
   if (
-    diffuse_temp == 0 && diffuse_enth == 0 && diffuse_spec == 0 &&
-    diffuse_vel == 0 && (!do_hydro)) {
+    (!diffuse_temp) && (!diffuse_enth) && (!diffuse_spec) && (!diffuse_vel) &&
+    (!do_hydro)) {
     MOLSrcTerm.setVal(0, 0, NVAR, MOLSrcTerm.nGrow());
     return;
   }
@@ -293,20 +293,20 @@ PeleC::getMOLSrcTerm(
       //      this process.  Ideally, we'd redo that test to diffuse a passive
       //      scalar instead....
 
-      if (diffuse_temp == 0 && diffuse_enth == 0) {
+      if ((!diffuse_temp) && (!diffuse_enth)) {
         setC(cbox, Eden, Eint, Dterm, 0.0);
         for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
           setC(eboxes[dir], Eden, Eint, flx[dir], 0.0);
         }
       }
-      if (diffuse_spec == 0) {
+      if (!diffuse_spec) {
         setC(cbox, FirstSpec, FirstSpec + NUM_SPECIES, Dterm, 0.0);
         for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
           setC(eboxes[dir], FirstSpec, FirstSpec + NUM_SPECIES, flx[dir], 0.0);
         }
       }
 
-      if (diffuse_vel == 0) {
+      if (!diffuse_vel) {
         setC(cbox, Xmom, Xmom + 3, Dterm, 0.0);
         for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
           setC(eboxes[dir], Xmom, Xmom + 3, flx[dir], 0.0);
@@ -326,7 +326,7 @@ PeleC::getMOLSrcTerm(
         AMREX_ASSERT(Nvals == Ncut);
         AMREX_ASSERT(nFlux == Ncut);
 
-        if (eb_isothermal && (diffuse_temp != 0 || diffuse_enth != 0)) {
+        if (eb_isothermal && (diffuse_temp || diffuse_enth)) {
           {
             BL_PROFILE("PeleC::pc_apply_eb_boundry_flux_stencil()");
             pc_apply_eb_boundry_flux_stencil(
@@ -336,7 +336,7 @@ PeleC::getMOLSrcTerm(
           }
         }
         // Compute momentum transfer at no-slip EB wall
-        if (eb_noslip && diffuse_vel == 1) {
+        if (eb_noslip && diffuse_vel) {
           {
             BL_PROFILE("PeleC::pc_apply_eb_boundry_visc_flux_stencil()");
             pc_apply_eb_boundry_visc_flux_stencil(
@@ -370,7 +370,7 @@ PeleC::getMOLSrcTerm(
         amrex::Elixir diffusion_flux_eli[AMREX_SPACEDIM];
         amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM>
           diffusion_flux_arr;
-        if (use_explicit_filter != 0) {
+        if (use_explicit_filter) {
           for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
             diffusion_flux[dir].resize(flux_ec[dir].box(), NVAR);
             diffusion_flux_eli[dir] = diffusion_flux[dir].elixir();
@@ -400,7 +400,7 @@ PeleC::getMOLSrcTerm(
         }
 
         // Filter hydro source term and fluxes here
-        if (use_explicit_filter != 0) {
+        if (use_explicit_filter) {
           // Get the hydro term
           amrex::FArrayBox hydro_flux[AMREX_SPACEDIM];
           amrex::Elixir hydro_flux_eli[AMREX_SPACEDIM];

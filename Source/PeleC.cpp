@@ -245,8 +245,7 @@ PeleC::read_params()
     amrex::Abort("We don't support spherical coordinate systems in 3D");
   }
 
-  do_diffuse = (diffuse_temp != 0) || (diffuse_enth != 0) ||
-               (diffuse_spec != 0) || (diffuse_vel != 0);
+  do_diffuse = (diffuse_temp || diffuse_enth || diffuse_spec || diffuse_vel);
 
   // sanity checks
   if (cfl <= 0.0 || cfl > 1.0) {
@@ -257,7 +256,7 @@ PeleC::read_params()
                    << std::endl;
   }
 
-  if ((do_les || (use_explicit_filter != 0)) && (AMREX_SPACEDIM != 3)) {
+  if ((do_les || use_explicit_filter) && (AMREX_SPACEDIM != 3)) {
     amrex::Abort("Using LES/filtering currently requires 3d.");
   }
 
@@ -267,7 +266,7 @@ PeleC::read_params()
     pp.query("les_test_filter_fgr", les_test_filter_fgr);
   }
 
-  if (use_explicit_filter != 0) {
+  if (use_explicit_filter) {
     pp.query("les_filter_type", les_filter_type);
     pp.query("les_filter_fgr", les_filter_fgr);
   }
@@ -444,7 +443,7 @@ PeleC::PeleC(
 
   // initialize filters and variables
   nGrowF = 0;
-  if (use_explicit_filter != 0) {
+  if (use_explicit_filter) {
     init_filters();
   }
 }
@@ -794,9 +793,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
   amrex::Real estdt_vdif = max_dt_over_cfl;
   amrex::Real estdt_tdif = max_dt_over_cfl;
   amrex::Real estdt_edif = max_dt_over_cfl;
-  if (
-    do_hydro || do_mol || (diffuse_vel != 0) || (diffuse_temp != 0) ||
-    (diffuse_enth != 0)) {
+  if (do_hydro || do_mol || diffuse_vel || diffuse_temp || diffuse_enth) {
 
 #ifdef PELEC_USE_EB
     auto const& fact =
@@ -831,7 +828,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
       estdt_hydro = amrex::min<amrex::Real>(estdt_hydro, dt);
     }
 
-    if (diffuse_vel != 0) {
+    if (diffuse_vel) {
       auto const* ltransparm = trans_parms.device_trans_parm();
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
@@ -856,7 +853,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
       estdt_vdif = amrex::min<amrex::Real>(estdt_vdif, dt);
     }
 
-    if (diffuse_temp != 0) {
+    if (diffuse_temp) {
       auto const* ltransparm = trans_parms.device_trans_parm();
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
@@ -881,7 +878,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
       estdt_tdif = amrex::min<amrex::Real>(estdt_tdif, dt);
     }
 
-    if (diffuse_enth != 0) {
+    if (diffuse_enth) {
       auto const* ltransparm = trans_parms.device_trans_parm();
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
@@ -1189,7 +1186,7 @@ PeleC::post_restart()
 
   // initialize filters and variables
   nGrowF = 0;
-  if (use_explicit_filter != 0) {
+  if (use_explicit_filter) {
     init_filters();
   }
 

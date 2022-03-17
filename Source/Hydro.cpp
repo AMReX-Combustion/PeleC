@@ -223,7 +223,7 @@ PeleC::construct_hydro_source(
         courno = amrex::max<amrex::Real>(courno, cflLoc);
 
         // Filter hydro source and fluxes here
-        if (use_explicit_filter != 0) {
+        if (use_explicit_filter) {
           for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
             const amrex::Box& bxtmp = amrex::surroundingNodes(bx, dir);
             amrex::FArrayBox filtered_flux(bxtmp, NVAR);

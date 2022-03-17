@@ -150,7 +150,7 @@ PeleC::react_state(
 
       // only update beyond first step
       // TODO: Update here? Or just get reaction source?
-      const bool do_update = react_init;
+      const bool do_update = !react_init;
 
 #ifdef PELEC_USE_EB
       const auto& flag_fab = flags[mfi];
