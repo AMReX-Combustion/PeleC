@@ -103,7 +103,7 @@ PeleC::getLESTerm(
 {
   BL_PROFILE("PeleC::getLESTerm()");
 
-  if (static_cast<int>(do_les) == 0) {
+  if (!do_les) {
     LESTerm.setVal(0, 0, NVAR, LESTerm.nGrow());
     return;
   }

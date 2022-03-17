@@ -268,19 +268,18 @@ PeleC::variableSetUp()
   // explicitly if we want to do something different,
   // like not store the state data in a checkpoint directory
   bool state_data_extrap = false;
-  bool store_in_checkpoint;
+  bool store_in_checkpoint = true;
 
   int ngrow_state = state_nghost;
   AMREX_ASSERT(ngrow_state >= 0);
 
-  store_in_checkpoint = true;
   desc_lst.addDescriptor(
     State_Type, amrex::IndexType::TheCellType(), amrex::StateDescriptor::Point,
     ngrow_state, NVAR, interp, state_data_extrap, store_in_checkpoint);
 
   // Components 0:Numspec-1 are rho.omega_i
   // Component NUM_SPECIES is rho.edot = (rho.eout-rho.ein)
-  store_in_checkpoint = (static_cast<int>(do_react) == 1);
+  store_in_checkpoint = do_react;
   desc_lst.addDescriptor(
     Reactions_Type, amrex::IndexType::TheCellType(),
     amrex::StateDescriptor::Point, 0, NUM_SPECIES + 2, interp,
@@ -687,12 +686,12 @@ PeleC::set_active_sources()
   }
 
   // optional external source
-  if (static_cast<int>(add_ext_src) == 1) {
+  if (add_ext_src) {
     src_list.push_back(ext_src);
   }
 
   // optional forcing source
-  if (static_cast<int>(add_forcing_src) == 1) {
+  if (add_forcing_src) {
     src_list.push_back(forcing_src);
   }
 

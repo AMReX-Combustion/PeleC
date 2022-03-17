@@ -33,7 +33,7 @@ PeleC::construct_hydro_source(
         sources_for_hydro, 0.5, *old_sources[src_list[n]], 0, 0, NVAR, ng);
     }
     // Add I_R terms to advective forcing
-    if (static_cast<int>(do_react) == 1) {
+    if (do_react) {
       amrex::MultiFab::Add(
         sources_for_hydro, get_new_data(Reactions_Type), 0, FirstSpec,
         NUM_SPECIES, ng);
@@ -324,7 +324,7 @@ PeleC::construct_hydro_source(
     if (courno > 1.0) {
       amrex::Print() << "WARNING -- EFFECTIVE CFL AT THIS LEVEL " << level
                      << " IS " << courno << '\n';
-      if (static_cast<int>(hard_cfl_limit) == 1) {
+      if (hard_cfl_limit) {
         amrex::Abort("CFL is too high at this level -- go back to a checkpoint "
                      "and restart with lower cfl number");
       }

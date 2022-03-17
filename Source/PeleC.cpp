@@ -270,9 +270,7 @@ PeleC::read_params()
   if (cfl <= 0.0 || cfl > 1.0) {
     amrex::Error("Invalid CFL factor; must be between zero and one.");
   }
-  if (
-    (static_cast<int>(do_hydro) == 1) && (static_cast<int>(do_mol) == 1) &&
-    (cfl > 0.3)) {
+  if (do_hydro && do_mol && (cfl > 0.3)) {
     amrex::Print() << "WARNING -- CFL should be <= 0.3 when using MOL hydro."
                    << std::endl;
   }
@@ -293,7 +291,7 @@ PeleC::read_params()
   }
 
   // Check on PPM type
-  if ((static_cast<int>(do_hydro) == 1) && (static_cast<int>(do_mol) == 0)) {
+  if (do_hydro && (!do_mol) {
     if (ppm_type != 0 && ppm_type != 1) {
       amrex::Error("PeleC::ppm_type must be 0 (PLM) or 1 (PPM)");
     }
@@ -308,7 +306,7 @@ PeleC::read_params()
   // for the moment, ppm_type = 0 does not support ppm_trace_sources --
   // we need to add the momentum sources to the states (and not
   // add it in trans_3d
-  if (ppm_type == 0 && static_cast<int>(ppm_trace_sources) == 1) {
+  if (ppm_type == 0 && ppm_trace_sources) {
     amrex::Print()
       << "WARNING: ppm_trace_sources = 1 not implemented for ppm_type = 0"
       << std::endl;
@@ -325,7 +323,7 @@ PeleC::read_params()
 #endif
 
 #ifdef PELEC_USE_EB
-  if ((static_cast<int>(do_mol) == 0) && (eb_in_domain)) {
+  if ((!do_mol) && eb_in_domain) {
     amrex::Abort("Must do_mol = 1 when using EB\n");
   }
 #endif
@@ -455,7 +453,7 @@ PeleC::PeleC(
   //}
 
   // Initialize the reactor
-  if (static_cast<int>(do_react) == 1) {
+  if (do_react) {
     init_reactor();
   }
 
@@ -473,7 +471,7 @@ PeleC::PeleC(
 
 PeleC::~PeleC()
 {
-  if (static_cast<int>(do_react) == 1) {
+  if (do_react) {
     close_reactor();
   }
 }
@@ -1197,7 +1195,7 @@ PeleC::post_restart()
   //}
 
   // Initialize the reactor
-  if (static_cast<int>(do_react) == 1) {
+  if (do_react) {
     init_reactor();
     if (use_typical_vals_chem) {
       set_typical_values_chem();
@@ -1258,7 +1256,7 @@ void PeleC::post_init(amrex::Real /*stop_time*/)
   amrex::Real cumtime = parent->cumTime();
 
   // Fill Reactions_Type data based on initial dt
-  if (static_cast<int>(do_react) == 1) {
+  if (do_react) {
 
     bool react_init = true;
     if (use_typical_vals_chem) {
@@ -1949,7 +1947,7 @@ void
 PeleC::init_reactor()
 {
   reactor = pele::physics::reactions::ReactorBase::create(chem_integrator);
-  if ((static_cast<int>(do_react) == 1) && (chem_integrator == "ReactorNull")) {
+  if (do_react && (chem_integrator == "ReactorNull")) {
     amrex::Print() << "WARNING: turning on reactions while using ReactorNull. "
                       "Make sure this is intended."
                    << std::endl;

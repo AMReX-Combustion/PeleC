@@ -12,7 +12,7 @@ PeleC::getMOLSrcTerm(
   BL_PROFILE_VAR_NS("diffusion_stuff", diff);
   if (
     diffuse_temp == 0 && diffuse_enth == 0 && diffuse_spec == 0 &&
-    diffuse_vel == 0 && static_cast<int>(do_hydro) == 0) {
+    diffuse_vel == 0 && (!do_hydro)) {
     MOLSrcTerm.setVal(0, 0, NVAR, MOLSrcTerm.nGrow());
     return;
   }
