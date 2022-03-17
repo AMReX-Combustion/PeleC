@@ -30,7 +30,7 @@ pc_umeth_3D(
   const amrex::Real* del,
   const amrex::Real dt,
   const int ppm_type,
-  const int use_flattening)
+  const bool use_flattening)
 {
   amrex::Real const dx = del[0];
   amrex::Real const dy = del[1];
@@ -501,7 +501,7 @@ pc_umeth_2D(
   const amrex::Real* del,
   const amrex::Real dt,
   const int ppm_type,
-  const int use_flattening)
+  const bool use_flattening)
 {
   amrex::Real const dx = del[0];
   amrex::Real const dy = del[1];

@@ -18,6 +18,8 @@ pp.query("difmag", difmag);
 pp.query("small_pres", small_pres);
 pp.query("do_hydro", do_hydro);
 pp.query("do_mol", do_mol);
+pp.query("use_hybrid_weno", use_hybrid_weno);
+pp.query("weno_scheme", weno_scheme);
 pp.query("nscbc_adv", nscbc_adv);
 pp.query("nscbc_diff", nscbc_diff);
 pp.query("add_ext_src", add_ext_src);

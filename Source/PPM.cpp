@@ -13,8 +13,8 @@ trace_ppm(
   const amrex::Box& vbx,
   const amrex::Real dt,
   const amrex::Real* dx,
-  const int use_flattening,
-  const int use_hybrid_weno,
+  const bool use_flattening,
+  const bool use_hybrid_weno,
   const int weno_scheme)
 {
   // here, lo and hi are the range we loop over -- this can include ghost cells

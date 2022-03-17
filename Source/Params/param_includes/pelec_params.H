@@ -18,6 +18,8 @@ static amrex::Real difmag;
 static amrex::Real small_pres;
 static bool do_hydro;
 static bool do_mol;
+static bool use_hybrid_weno;
+static int weno_scheme;
 static bool nscbc_adv;
 static bool nscbc_diff;
 static bool add_ext_src;

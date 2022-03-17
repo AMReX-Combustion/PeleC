@@ -215,7 +215,7 @@ PeleC::construct_hydro_source(
         pc_umdrv(
           is_finest_level, time, fbx, domain_lo, domain_hi, phys_bc.lo(),
           phys_bc.hi(), s, hyd_src, qarr, qauxar, srcqarr, dx, dt, ppm_type,
-          static_cast<int>(use_flattening), difmag, flx_arr, a,
+          use_flattening, difmag, flx_arr, a,
           volume.array(mfi), cflLoc);
         BL_PROFILE_VAR_STOP(purm);
 
@@ -350,7 +350,7 @@ pc_umdrv(
   const amrex::Real* dx,
   const amrex::Real dt,
   const int ppm_type,
-  const int use_flattening,
+  const bool use_flattening,
   const amrex::Real difmag,
   const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>

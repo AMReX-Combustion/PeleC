@@ -60,6 +60,12 @@ do_hydro                     bool          true
 # uses MOL aapproach to timestep advection and diffusion
 do_mol                       bool          false
 
+# use hybrid WENO scheme in PPM method
+use_hybrid_weno              bool          false
+
+# WENO scheme type in PPM method
+weno_scheme                  int           1
+
 # permits Ghost-Cells Navier-Stokes Boundary Conditions to be turned on and off
 # for advective terms (adv) and for diffusion terms (diff)
 nscbc_adv                   bool          true
