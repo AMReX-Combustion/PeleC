@@ -133,6 +133,22 @@ zl_ext_bc_type               string        ""
 zr_ext_bc_type               string        ""
 
 #-----------------------------------------------------------------------------
+# category: diffusion
+#-----------------------------------------------------------------------------
+
+# flag for diffusion for temperature
+diffuse_temp                  bool         false
+
+# flag for diffusion for enthalpy
+diffuse_enth                  bool         false
+
+# flag for diffusion for species
+diffuse_spec                  bool         false
+
+# flag for diffusion for velocity
+diffuse_vel                   bool         false
+
+#-----------------------------------------------------------------------------
 # category: large eddy simulation
 #-----------------------------------------------------------------------------
 

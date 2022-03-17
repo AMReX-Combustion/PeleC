@@ -62,12 +62,6 @@ int PeleC::pstateNum = 0;
 
 #include "pelec_defaults.H"
 
-int PeleC::diffuse_temp = 0;
-int PeleC::diffuse_enth = 0;
-int PeleC::diffuse_spec = 0;
-int PeleC::diffuse_vel = 0;
-amrex::Real PeleC::diffuse_cutoff_density =
-  -std::numeric_limits<amrex::Real>::max();
 bool PeleC::do_diffuse = false;
 
 #ifdef PELEC_USE_MASA
@@ -256,12 +250,6 @@ PeleC::read_params()
   } else if (amrex::DefaultGeometry().IsSPHERICAL()) {
     amrex::Abort("We don't support spherical coordinate systems in 3D");
   }
-
-  pp.query("diffuse_temp", diffuse_temp);
-  pp.query("diffuse_enth", diffuse_enth);
-  pp.query("diffuse_spec", diffuse_spec);
-  pp.query("diffuse_vel", diffuse_vel);
-  pp.query("diffuse_cutoff_density", diffuse_cutoff_density);
 
   do_diffuse = (diffuse_temp != 0) || (diffuse_enth != 0) ||
                (diffuse_spec != 0) || (diffuse_vel != 0);
