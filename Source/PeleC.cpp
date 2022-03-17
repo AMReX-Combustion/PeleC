@@ -37,7 +37,6 @@ using namespace MASA;
 #endif
 
 bool PeleC::signalStopJob = false;
-bool PeleC::dump_old = false;
 int PeleC::verbose = 0;
 int PeleC::radius_grow = 1;
 amrex::BCRec PeleC::phys_bc;
@@ -137,8 +136,6 @@ PeleC::read_params()
 #include "pelec_queries.H"
 
   pp.query("v", verbose);
-  pp.query("sum_interval", sum_interval);
-  pp.query("dump_old", dump_old);
 
   // Get boundary conditions
   amrex::Vector<std::string> lo_bc_char(AMREX_SPACEDIM);

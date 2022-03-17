@@ -689,7 +689,6 @@ protected:
 #include "pelec_params.H"
 
   static bool signalStopJob;
-  static bool dump_old;
   static int radius_grow;
   static int verbose;
   static amrex::BCRec phys_bc;

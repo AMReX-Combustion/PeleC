@@ -14,6 +14,7 @@ static bool do_reflux;
 static bool do_avg_down;
 static std::string init_pltfile;
 static amrex::Real init_pltfile_massfrac_tol;
+static bool dump_old;
 static amrex::Real difmag;
 static amrex::Real small_pres;
 static bool do_hydro;
