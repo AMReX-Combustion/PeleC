@@ -278,7 +278,7 @@ PeleC::read_params()
     }
   }
 
-  if (ppm_type != 1 && use_hybrid_weno == 1) {
+  if (ppm_type != 1 && use_hybrid_weno) {
     amrex::Error("PeleC::ppm_type must be 1 (PPM) to use WENO method");
   }
 
