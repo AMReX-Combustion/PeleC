@@ -356,8 +356,8 @@ pc_transdd(
   const int qvidx0 = (dir == 0) ? GDV : GDU;
   const int qvidx1 = (dir == 2) ? GDV : GDW;
   const amrex::GpuArray<const int, 3> bdim{
-    {static_cast<const int>(dir == 0), static_cast<const int>(dir == 1),
-     static_cast<const int>(dir == 2)}};
+    {static_cast<int>(dir == 0), static_cast<int>(dir == 1),
+     static_cast<int>(dir == 2)}};
   const amrex::GpuArray<const int, 3> l_idx{
     {bdim[0] * 0 + bdim[1] * 1 + bdim[2] * 2,
      bdim[0] * 1 + bdim[1] * 0 + bdim[2] * 0,
@@ -645,8 +645,8 @@ pc_artif_visc(
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
   const amrex::IntVect ivm(iv - amrex::IntVect::TheDimensionVector(dir));
   const amrex::GpuArray<const int, 3> bdim{
-    {static_cast<const int>(dir == 0), static_cast<const int>(dir == 1),
-     static_cast<const int>(dir == 2)}};
+    {static_cast<int>(dir == 0), static_cast<int>(dir == 1),
+     static_cast<int>(dir == 2)}};
   const amrex::GpuArray<const int, 3> l_idx{
     {bdim[0] * 0 + bdim[1] * 1 + bdim[2] * 2,
      bdim[0] * 1 + bdim[1] * 0 + bdim[2] * 0,
