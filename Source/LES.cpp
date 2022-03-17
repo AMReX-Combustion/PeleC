@@ -54,7 +54,7 @@ PeleC::construct_old_les_source(
   amrex::Real time, amrex::Real dt, int /*sub_iteration*/, int /*sub_ncycle*/)
 {
   // Add grow cells necessary for explicit filtering of source terms
-  if (use_explicit_filter) {
+  if (use_explicit_filter != 0) {
     filtered_les_source.define(
       grids, dmap, NVAR, old_sources[les_src]->nGrow(), amrex::MFInfo(),
       Factory());
@@ -76,7 +76,7 @@ PeleC::construct_new_les_source(
   amrex::Real time, amrex::Real dt, int sub_iteration, int sub_ncycle)
 {
   // Add grow cells necessary for explicit filtering of source terms
-  if (use_explicit_filter) {
+  if (use_explicit_filter != 0) {
     filtered_les_source.define(
       grids, dmap, NVAR, new_sources[les_src]->nGrow(), amrex::MFInfo(),
       Factory());
@@ -103,12 +103,12 @@ PeleC::getLESTerm(
 {
   BL_PROFILE("PeleC::getLESTerm()");
 
-  if (do_les == 0) {
+  if (static_cast<int>(do_les) == 0) {
     LESTerm.setVal(0, 0, NVAR, LESTerm.nGrow());
     return;
   }
 
-  if (verbose) {
+  if (verbose != 0) {
     amrex::Print() << "... Computing LES term at time " << time << std::endl;
   }
 
@@ -161,7 +161,7 @@ PeleC::getLESTerm(
   //  }
 
   // Filter the SGS source term
-  if (use_explicit_filter) {
+  if (use_explicit_filter != 0) {
     les_filter.apply_filter(LESTerm, filtered_les_source);
     LESTerm.define(
       grids, dmap, NVAR, filtered_les_source.nGrow(), amrex::MFInfo(),

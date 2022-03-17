@@ -263,18 +263,21 @@ PeleC::read_params()
   pp.query("diffuse_vel", diffuse_vel);
   pp.query("diffuse_cutoff_density", diffuse_cutoff_density);
 
-  do_diffuse = diffuse_temp || diffuse_enth || diffuse_spec || diffuse_vel;
+  do_diffuse = (diffuse_temp != 0) || (diffuse_enth != 0) ||
+               (diffuse_spec != 0) || (diffuse_vel != 0);
 
   // sanity checks
   if (cfl <= 0.0 || cfl > 1.0) {
     amrex::Error("Invalid CFL factor; must be between zero and one.");
   }
-  if ((do_hydro == 1) && (do_mol == 1) && (cfl > 0.3)) {
+  if (
+    (static_cast<int>(do_hydro) == 1) && (static_cast<int>(do_mol) == 1) &&
+    (cfl > 0.3)) {
     amrex::Print() << "WARNING -- CFL should be <= 0.3 when using MOL hydro."
                    << std::endl;
   }
 
-  if ((do_les || use_explicit_filter) && (AMREX_SPACEDIM != 3)) {
+  if ((do_les || (use_explicit_filter != 0)) && (AMREX_SPACEDIM != 3)) {
     amrex::Abort("Using LES/filtering currently requires 3d.");
   }
 
@@ -284,13 +287,13 @@ PeleC::read_params()
     pp.query("les_test_filter_fgr", les_test_filter_fgr);
   }
 
-  if (use_explicit_filter) {
+  if (use_explicit_filter != 0) {
     pp.query("les_filter_type", les_filter_type);
     pp.query("les_filter_fgr", les_filter_fgr);
   }
 
   // Check on PPM type
-  if ((do_hydro == 1) && (do_mol == 0)) {
+  if ((static_cast<int>(do_hydro) == 1) && (static_cast<int>(do_mol) == 0)) {
     if (ppm_type != 0 && ppm_type != 1) {
       amrex::Error("PeleC::ppm_type must be 0 (PLM) or 1 (PPM)");
     }
@@ -305,7 +308,7 @@ PeleC::read_params()
   // for the moment, ppm_type = 0 does not support ppm_trace_sources --
   // we need to add the momentum sources to the states (and not
   // add it in trans_3d
-  if (ppm_type == 0 && ppm_trace_sources == 1) {
+  if (ppm_type == 0 && static_cast<int>(ppm_trace_sources) == 1) {
     amrex::Print()
       << "WARNING: ppm_trace_sources = 1 not implemented for ppm_type = 0"
       << std::endl;
@@ -322,7 +325,7 @@ PeleC::read_params()
 #endif
 
 #ifdef PELEC_USE_EB
-  if ((do_mol == 0) && (eb_in_domain)) {
+  if ((static_cast<int>(do_mol) == 0) && (eb_in_domain)) {
     amrex::Abort("Must do_mol = 1 when using EB\n");
   }
 #endif
@@ -331,7 +334,8 @@ PeleC::read_params()
   read_tagging_params();
 
   // TODO: What is this?
-  amrex::StateDescriptor::setBndryFuncThreadSafety(bndry_func_thread_safe);
+  amrex::StateDescriptor::setBndryFuncThreadSafety(
+    static_cast<int>(bndry_func_thread_safe));
 
   // Get some useful amr inputs
   amrex::ParmParse ppa("amr");
@@ -451,7 +455,7 @@ PeleC::PeleC(
   //}
 
   // Initialize the reactor
-  if (do_react == 1) {
+  if (static_cast<int>(do_react) == 1) {
     init_reactor();
   }
 
@@ -462,14 +466,14 @@ PeleC::PeleC(
 
   // initialize filters and variables
   nGrowF = 0;
-  if (use_explicit_filter) {
+  if (use_explicit_filter != 0) {
     init_filters();
   }
 }
 
 PeleC::~PeleC()
 {
-  if (do_react == 1) {
+  if (static_cast<int>(do_react) == 1) {
     close_reactor();
   }
 }
@@ -646,7 +650,7 @@ PeleC::initData()
   }
 #endif
 
-  if (verbose) {
+  if (verbose != 0) {
     amrex::Print() << "Initializing the data at level " << level << std::endl;
   }
 
@@ -701,7 +705,7 @@ PeleC::initData()
   }
 #endif
 
-  if (verbose) {
+  if (verbose != 0) {
     amrex::Print() << "Done initializing level " << level << " data "
                    << std::endl;
   }
@@ -812,7 +816,9 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
   amrex::Real estdt_vdif = max_dt_over_cfl;
   amrex::Real estdt_tdif = max_dt_over_cfl;
   amrex::Real estdt_edif = max_dt_over_cfl;
-  if (do_hydro || do_mol || diffuse_vel || diffuse_temp || diffuse_enth) {
+  if (
+    do_hydro || do_mol || (diffuse_vel != 0) || (diffuse_temp != 0) ||
+    (diffuse_enth != 0)) {
 
 #ifdef PELEC_USE_EB
     auto const& fact =
@@ -847,7 +853,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
       estdt_hydro = amrex::min<amrex::Real>(estdt_hydro, dt);
     }
 
-    if (diffuse_vel) {
+    if (diffuse_vel != 0) {
       auto const* ltransparm = trans_parms.device_trans_parm();
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
@@ -872,7 +878,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
       estdt_vdif = amrex::min<amrex::Real>(estdt_vdif, dt);
     }
 
-    if (diffuse_temp) {
+    if (diffuse_temp != 0) {
       auto const* ltransparm = trans_parms.device_trans_parm();
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
@@ -897,7 +903,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
       estdt_tdif = amrex::min<amrex::Real>(estdt_tdif, dt);
     }
 
-    if (diffuse_enth) {
+    if (diffuse_enth != 0) {
       auto const* ltransparm = trans_parms.device_trans_parm();
       amrex::Real dt = amrex::ReduceMin(
         stateMF,
@@ -930,7 +936,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
     amrex::ParallelDescriptor::ReduceRealMin(estdt_hydro);
     estdt_hydro *= cfl;
 
-    if (verbose) {
+    if (verbose != 0) {
       amrex::Print() << "...estimated hydro-limited timestep at level " << level
                      << ": " << estdt_hydro << std::endl;
     }
@@ -953,7 +959,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
   }
 #endif
 
-  if (verbose) {
+  if (verbose != 0) {
     amrex::Print() << "PeleC::estTimeStep (" << limiter << "-limited) at level "
                    << level << ":  estdt = " << estdt << '\n';
   }
@@ -996,7 +1002,7 @@ PeleC::computeNewDt(
     } else {
       // Limit dt's by change_max * old dt
       for (int i = 0; i <= finest_level; i++) {
-        if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
+        if ((verbose != 0) && amrex::ParallelDescriptor::IOProcessor()) {
           if (dt_min[i] > change_max * dt_level[i]) {
             amrex::Print() << "PeleC::compute_new_dt : limiting dt at level "
                            << i << '\n';
@@ -1191,7 +1197,7 @@ PeleC::post_restart()
   //}
 
   // Initialize the reactor
-  if (do_react == 1) {
+  if (static_cast<int>(do_react) == 1) {
     init_reactor();
     if (use_typical_vals_chem) {
       set_typical_values_chem();
@@ -1205,7 +1211,7 @@ PeleC::post_restart()
 
   // initialize filters and variables
   nGrowF = 0;
-  if (use_explicit_filter) {
+  if (use_explicit_filter != 0) {
     init_filters();
   }
 
@@ -1252,7 +1258,7 @@ void PeleC::post_init(amrex::Real /*stop_time*/)
   amrex::Real cumtime = parent->cumTime();
 
   // Fill Reactions_Type data based on initial dt
-  if (do_react == 1) {
+  if (static_cast<int>(do_react) == 1) {
 
     bool react_init = true;
     if (use_typical_vals_chem) {
@@ -1268,7 +1274,7 @@ void PeleC::post_init(amrex::Real /*stop_time*/)
 
   // Average data down from finer levels
   // so that conserved data is consistent between levels.
-  if (do_avg_down != 0) {
+  if (static_cast<int>(do_avg_down) != 0) {
     int finest_level = parent->finestLevel();
     for (int k = finest_level - 1; k >= 0; k--) {
       getLevel(k).avgDown();
@@ -1373,7 +1379,7 @@ PeleC::reflux()
   }
 #endif
 
-  if (verbose) {
+  if (verbose != 0) {
     const int IOProc = amrex::ParallelDescriptor::IOProcessorNumber();
     amrex::Real end = amrex::ParallelDescriptor::second() - strt;
 
@@ -1943,7 +1949,7 @@ void
 PeleC::init_reactor()
 {
   reactor = pele::physics::reactions::ReactorBase::create(chem_integrator);
-  if ((do_react == 1) && (chem_integrator == "ReactorNull")) {
+  if ((static_cast<int>(do_react) == 1) && (chem_integrator == "ReactorNull")) {
     amrex::Print() << "WARNING: turning on reactions while using ReactorNull. "
                       "Make sure this is intended."
                    << std::endl;
@@ -2094,10 +2100,10 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
       amrex::ParallelFor(
         bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
           pc_rst_int_e(
-            i, j, k, sarr, captured_allow_small_energy,
-            captured_allow_negative_energy,
-            captured_dual_energy_update_E_from_e, captured_dual_energy_eta2,
-            captured_verbose);
+            i, j, k, sarr, static_cast<int>(captured_allow_small_energy),
+            static_cast<int>(captured_allow_negative_energy),
+            static_cast<int>(captured_dual_energy_update_E_from_e),
+            captured_dual_energy_eta2, captured_verbose);
         });
     }
   }
@@ -2286,7 +2292,7 @@ PeleC::InitialRedistribution(
     return;
   }
 
-  if (verbose) {
+  if (verbose != 0) {
     amrex::Print() << "Doing initial redistribution... " << std::endl;
   }
 

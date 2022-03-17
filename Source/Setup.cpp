@@ -280,7 +280,7 @@ PeleC::variableSetUp()
 
   // Components 0:Numspec-1 are rho.omega_i
   // Component NUM_SPECIES is rho.edot = (rho.eout-rho.ein)
-  store_in_checkpoint = (do_react == 1);
+  store_in_checkpoint = (static_cast<int>(do_react) == 1);
   desc_lst.addDescriptor(
     Reactions_Type, amrex::IndexType::TheCellType(),
     amrex::StateDescriptor::Point, 0, NUM_SPECIES + 2, interp,
@@ -687,12 +687,12 @@ PeleC::set_active_sources()
   }
 
   // optional external source
-  if (add_ext_src == 1) {
+  if (static_cast<int>(add_ext_src) == 1) {
     src_list.push_back(ext_src);
   }
 
   // optional forcing source
-  if (add_forcing_src == 1) {
+  if (static_cast<int>(add_forcing_src) == 1) {
     src_list.push_back(forcing_src);
   }
 

@@ -12,13 +12,13 @@ PeleC::construct_hydro_source(
   int sub_ncycle)
 {
   if (do_mol) {
-    if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
+    if ((verbose != 0) && amrex::ParallelDescriptor::IOProcessor()) {
       amrex::Print() << "... Zeroing Godunov-based hydro advance" << std::endl;
     }
     hydro_source.setVal(0);
   } else {
 
-    if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
+    if ((verbose != 0) && amrex::ParallelDescriptor::IOProcessor()) {
       amrex::Print() << "... Computing hydro advance" << std::endl;
     }
 
@@ -33,7 +33,7 @@ PeleC::construct_hydro_source(
         sources_for_hydro, 0.5, *old_sources[src_list[n]], 0, 0, NVAR, ng);
     }
     // Add I_R terms to advective forcing
-    if (do_react == 1) {
+    if (static_cast<int>(do_react) == 1) {
       amrex::MultiFab::Add(
         sources_for_hydro, get_new_data(Reactions_Type), 0, FirstSpec,
         NUM_SPECIES, ng);
@@ -215,14 +215,15 @@ PeleC::construct_hydro_source(
         pc_umdrv(
           is_finest_level, time, fbx, domain_lo, domain_hi, phys_bc.lo(),
           phys_bc.hi(), s, hyd_src, qarr, qauxar, srcqarr, dx, dt, ppm_type,
-          use_flattening, difmag, flx_arr, a, volume.array(mfi), cflLoc);
+          static_cast<int>(use_flattening), difmag, flx_arr, a,
+          volume.array(mfi), cflLoc);
         BL_PROFILE_VAR_STOP(purm);
 
         BL_PROFILE_VAR("courno + flux reg", crno);
         courno = amrex::max<amrex::Real>(courno, cflLoc);
 
         // Filter hydro source and fluxes here
-        if (use_explicit_filter) {
+        if (use_explicit_filter != 0) {
           for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
             const amrex::Box& bxtmp = amrex::surroundingNodes(bx, dir);
             amrex::FArrayBox filtered_flux(bxtmp, NVAR);
@@ -323,7 +324,7 @@ PeleC::construct_hydro_source(
     if (courno > 1.0) {
       amrex::Print() << "WARNING -- EFFECTIVE CFL AT THIS LEVEL " << level
                      << " IS " << courno << '\n';
-      if (hard_cfl_limit == 1) {
+      if (static_cast<int>(hard_cfl_limit) == 1) {
         amrex::Abort("CFL is too high at this level -- go back to a checkpoint "
                      "and restart with lower cfl number");
       }

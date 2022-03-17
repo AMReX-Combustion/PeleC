@@ -268,7 +268,7 @@ PeleC::set_state_in_checkpoint(amrex::Vector<int>& state_in_checkpoint)
         amrex::Abort("State_Type is not present in the checkpoint file");
       }
     } else if (i == Reactions_Type) {
-      if (do_react == 0) {
+      if (static_cast<int>(do_react) == 0) {
         state_in_checkpoint[i] = 0;
       } else {
         state_in_checkpoint[i] = is_present ? 1 : 0;
@@ -413,7 +413,7 @@ PeleC::setPlotVariables()
     amrex::Amr::addDerivePlotVar("WorkEstimate");
   }
 
-  if (do_react == 0) {
+  if (static_cast<int>(do_react) == 0) {
     for (int i = 0; i < desc_lst[Reactions_Type].nComp(); i++) {
       amrex::Amr::deleteStatePlotVar(desc_lst[Reactions_Type].name(i));
     }

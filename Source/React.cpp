@@ -44,7 +44,7 @@ PeleC::react_state(
 
   AMREX_ASSERT(do_react == 1);
 
-  if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
+  if ((verbose != 0) && amrex::ParallelDescriptor::IOProcessor()) {
     if (react_init) {
       amrex::Print() << "... Initializing reactions, using interval dt = " << dt
                      << std::endl;
@@ -259,7 +259,7 @@ PeleC::react_state(
               rhonew += rhoY(i, j, k, nsp);
             }
 
-            if (do_update) {
+            if (do_update != 0) {
               snew_arr(i, j, k, URHO) = rhonew;
               snew_arr(i, j, k, UMX) = umnew;
               snew_arr(i, j, k, UMY) = vmnew;

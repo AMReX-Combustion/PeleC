@@ -40,7 +40,9 @@ pc_compute_hyp_mol_flux(
     setV(cbox, QVAR, dq, 0.0);
 
     // dimensional indexing
-    const amrex::GpuArray<const int, 3> bdim{{dir == 0, dir == 1, dir == 2}};
+    const amrex::GpuArray<const int, 3> bdim{
+      {static_cast<const int>(dir == 0), static_cast<const int>(dir == 1),
+       static_cast<const int>(dir == 2)}};
     const amrex::GpuArray<const int, 3> q_idx{
       {bdim[0] * QU + bdim[1] * QV + bdim[2] * QW,
        bdim[0] * QV + bdim[1] * QU + bdim[2] * QU,
@@ -125,7 +127,7 @@ pc_compute_hyp_mol_flux(
         amrex::Real flux_tmp[NVAR] = {0.0};
         amrex::Real ustar = 0.0;
 
-        if (!use_laxf_flux) {
+        if (use_laxf_flux == 0) {
           amrex::Real tmp0 = 0.0, tmp1 = 0.0, tmp2 = 0.0, tmp3 = 0.0,
                       tmp4 = 0.0;
           riemann(

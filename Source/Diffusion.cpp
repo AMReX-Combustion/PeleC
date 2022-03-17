@@ -12,7 +12,7 @@ PeleC::getMOLSrcTerm(
   BL_PROFILE_VAR_NS("diffusion_stuff", diff);
   if (
     diffuse_temp == 0 && diffuse_enth == 0 && diffuse_spec == 0 &&
-    diffuse_vel == 0 && do_hydro == 0) {
+    diffuse_vel == 0 && static_cast<int>(do_hydro) == 0) {
     MOLSrcTerm.setVal(0, 0, NVAR, MOLSrcTerm.nGrow());
     return;
   }
@@ -138,7 +138,7 @@ PeleC::getMOLSrcTerm(
       amrex::FabType typ = flag_fab.getType(vbox);
       if (typ == amrex::FabType::covered) {
         setV(vbox, NVAR, MOLSrc, 0);
-        if (do_mol_load_balance && cost) {
+        if (do_mol_load_balance && (cost != nullptr)) {
           wt = (amrex::ParallelDescriptor::second() - wt) / vbox.d_numPts();
           (*cost)[mfi].plus<amrex::RunOn::Device>(wt, vbox);
         }
@@ -370,7 +370,7 @@ PeleC::getMOLSrcTerm(
         amrex::Elixir diffusion_flux_eli[AMREX_SPACEDIM];
         amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM>
           diffusion_flux_arr;
-        if (use_explicit_filter) {
+        if (use_explicit_filter != 0) {
           for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
             diffusion_flux[dir].resize(flux_ec[dir].box(), NVAR);
             diffusion_flux_eli[dir] = diffusion_flux[dir].elixir();
@@ -390,9 +390,10 @@ PeleC::getMOLSrcTerm(
 #endif
           // auto const& vol = volume.array(mfi);
           pc_compute_hyp_mol_flux(
-            cbox, qar, qauxar, flx, area_arr, dx, plm_iorder, use_laxf_flux
+            cbox, qar, qauxar, flx, area_arr, dx, plm_iorder,
+            static_cast<int>(use_laxf_flux)
 #ifdef PELEC_USE_EB
-            ,
+              ,
             flags.array(mfi), d_sv_eb_bndry_geom, Ncut, d_eb_flux_thdlocal,
             nFlux
 #endif
@@ -400,7 +401,7 @@ PeleC::getMOLSrcTerm(
         }
 
         // Filter hydro source term and fluxes here
-        if (use_explicit_filter) {
+        if (use_explicit_filter != 0) {
           // Get the hydro term
           amrex::FArrayBox hydro_flux[AMREX_SPACEDIM];
           amrex::Elixir hydro_flux_eli[AMREX_SPACEDIM];
@@ -524,7 +525,7 @@ PeleC::getMOLSrcTerm(
         fab_rrflag_as_crse.resize(amrex::Box::TheUnitBox());
         fab_rrflag_as_crse_eli = fab_rrflag_as_crse.elixir();
         {
-          if (fr_as_fine) {
+          if (fr_as_fine != nullptr) {
             dm_as_fine.resize(amrex::grow(vbox, 1), NVAR);
             dm_as_fine_eli = dm_as_fine.elixir();
             dm_as_fine.setVal<amrex::RunOn::Device>(0.0);
@@ -543,7 +544,7 @@ PeleC::getMOLSrcTerm(
             dir.mult<amrex::RunOn::Device>(flux_factor, dir.box());
           }
 
-          if (fr_as_crse) {
+          if (fr_as_crse != nullptr) {
             fr_as_crse->CrseAdd(
               mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])},
               dxD.data(), dt, vfrac[mfi],
@@ -558,7 +559,7 @@ PeleC::getMOLSrcTerm(
             // }
           }
 
-          if (fr_as_fine) {
+          if (fr_as_fine != nullptr) {
             fr_as_fine->FineAdd(
               mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])},
               dxD.data(), dt, vfrac[mfi],
@@ -694,7 +695,7 @@ PeleC::getMOLSrcTerm(
       copy_array4(vbox, NVAR, Dterm, MOLSrc);
 
 #ifdef PELEC_USE_EB
-      if (do_mol_load_balance && cost) {
+      if (do_mol_load_balance && (cost != nullptr)) {
         amrex::Gpu::streamSynchronize();
         wt = (amrex::ParallelDescriptor::second() - wt) / vbox.d_numPts();
         (*cost)[mfi].plus<amrex::RunOn::Device>(wt, vbox);
