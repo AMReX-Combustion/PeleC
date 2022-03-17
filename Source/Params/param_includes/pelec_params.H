@@ -43,7 +43,7 @@ static bool diffuse_enth;
 static bool diffuse_spec;
 static bool diffuse_vel;
 static bool do_les;
-static int use_explicit_filter;
+static bool use_explicit_filter;
 static amrex::Real Cs;
 static amrex::Real CI;
 static amrex::Real PrT;

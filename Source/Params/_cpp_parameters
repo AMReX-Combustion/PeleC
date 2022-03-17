@@ -156,7 +156,7 @@ diffuse_vel                   bool         false
 do_les                       bool          false
 
 # permits explicit LES to be turned on and off
-use_explicit_filter          int           0
+use_explicit_filter          bool          false
 
 # Constant Smagorinsky Cs coefficient
 Cs                           Real          0.0
