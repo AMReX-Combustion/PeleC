@@ -286,8 +286,10 @@ bcnormal(
     // Ellipse: major in normal, minor is tangential
     const amrex::Real elrSq =
       n_loc * n_loc /
-        (prob_parm.r_hole / cos(prob_parm.cone_angle * M_PI / 180.0) *
-         prob_parm.r_hole / cos(prob_parm.cone_angle * M_PI / 180.0)) +
+        (prob_parm.r_hole /
+         cos(prob_parm.cone_angle * constants::PI() / 180.0) *
+         prob_parm.r_hole /
+         cos(prob_parm.cone_angle * constants::PI() / 180.0)) +
       t_loc * t_loc / (prob_parm.r_hole * prob_parm.r_hole);
 
     if (elrSq < 1.2) {
@@ -314,10 +316,11 @@ bcnormal(
       // velocity
       amrex::Real vx_in = 0.0, vy_in = 0.0, vz_in = 0.0;
       const amrex::Real vjet_pipeflow = prob_parm.vel_jet * eta;
-      vz_in = -vjet_pipeflow *
-              cos(prob_parm.cone_angle * M_PI / 180.0); // top XY plane
+      vz_in =
+        -vjet_pipeflow *
+        cos(prob_parm.cone_angle * constants::PI() / 180.0); // top XY plane
       const amrex::Real vr_in =
-        vjet_pipeflow * sin(prob_parm.cone_angle * M_PI / 180.0);
+        vjet_pipeflow * sin(prob_parm.cone_angle * constants::PI() / 180.0);
       vx_in = vr_in * cos(phi_angle);
       vy_in = vr_in * sin(phi_angle);
 
@@ -337,7 +340,58 @@ bcnormal(
 
 void pc_prob_close();
 
-using ProblemTags = EmptyProbTagStruct;
+struct MyProbTagStruct
+{
+  AMREX_GPU_DEVICE
+  AMREX_FORCE_INLINE
+  static void set_problem_tags(
+    const int i,
+    const int j,
+    const int k,
+    amrex::Array4<char> const& tag,
+    amrex::Array4<amrex::Real const> const& /*field*/,
+    char tagval,
+    const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx,
+    const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_lo,
+    const amrex::Real /*time*/,
+    const int /*level*/,
+    ProbParmDevice const& prob_parm) noexcept
+  {
+    AMREX_D_TERM(const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
+                 , const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
+                 , const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];);
+
+    // Tag around the jets
+    const amrex::Real dphi_angle = 2.0 * constants::PI() / prob_parm.nholes;
+    for (int nh = 1; nh <= prob_parm.nholes; nh++) {
+      const amrex::Real phi_angle = nh * dphi_angle;
+      const amrex::Real cx =
+        prob_parm.centx + prob_parm.r_circ * cos(phi_angle);
+      const amrex::Real cy =
+        prob_parm.centy + prob_parm.r_circ * sin(phi_angle);
+
+      const amrex::Real n_loc =
+        (x - cx) * cos(phi_angle) - (y - cy) * sin(phi_angle);
+      const amrex::Real t_loc =
+        (x - cx) * sin(phi_angle) + (y - cy) * cos(phi_angle);
+
+      const amrex::Real elrSq =
+        n_loc * n_loc /
+          (prob_parm.r_hole /
+           cos(prob_parm.cone_angle * constants::PI() / 180.0) *
+           prob_parm.r_hole /
+           cos(prob_parm.cone_angle * constants::PI() / 180.0)) +
+        t_loc * t_loc / (prob_parm.r_hole * prob_parm.r_hole);
+
+      if (elrSq < 1.2) {
+        tag(i, j, k) = tagval;
+      }
+    }
+  }
+};
+
+using ProblemTags = MyProbTagStruct;
+
 using ProblemDerives = EmptyProbDeriveStruct;
 
 #endif

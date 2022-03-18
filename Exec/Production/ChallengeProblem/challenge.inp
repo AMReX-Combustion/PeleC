@@ -37,7 +37,7 @@ cvode.max_order = 4
 
 # TIME STEP CONTROL
 pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
-pelec.cfl            = 0.1     # cfl number for hyperbolic system
+pelec.cfl            = 0.2     # cfl number for hyperbolic system
 pelec.init_shrink    = 0.01    # scale back initial timestep
 pelec.change_max     = 1.05     # maximum increase in dt over successive steps
 
@@ -76,10 +76,10 @@ pelec.plot_massfrac = 1
 pelec.extrema_spec_name = ALL
 
 # PROBLEM PARAMETERS
-prob.Pres_mean = 6.0795e7
-prob.Temp_mean = 900.0
+prob.P_mean = 6.0795e7
+prob.T_mean = 900.0
 prob.centx = 0.00
-prob.centz = 0.00
+prob.centy = 0.00
 prob.r_circ = 0.15
 prob.r_hole = 0.0085
 prob.nholes = 4
@@ -101,9 +101,6 @@ ic.urms0 = 4000.0
 ic.win_lo = -0.7 -0.7 0.15
 ic.win_hi =  0.7 0.7 0.3
 ic.win_slope = 10.0
-
-inflow.inflowProfileFile = "InflowPC.bin"
-inflow.turb_inflow_type = 1
 
 # TAGGING
 tagging.temperr  = 1e20
