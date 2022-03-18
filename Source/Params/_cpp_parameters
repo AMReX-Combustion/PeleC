@@ -83,6 +83,7 @@ add_soot_src                 int           1
 # if true, plot soot variable data
 plot_soot                    int           1
 
+# if true, define an additional forcing term
 add_forcing_src             bool           false
 
 # reconstruction type:
