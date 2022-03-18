@@ -16,8 +16,7 @@ template <class T, class Cell>
 class SparseData
 {
 public:
-  typedef T value_type;
-  SparseData() {}
+  SparseData() = default;
 
   ~SparseData();
 
@@ -128,9 +127,9 @@ SparseData<T, Cell>::merge(
   const int captured_m_region_size = m_region_size;
   auto* d_data = m_data.data();
   auto* d_thdlocal_data = thdlocal.m_data.data();
-  auto* d_mask = mask.data();
+  const auto* d_mask = mask.data();
   amrex::ParallelFor(captured_m_region_size, [=] AMREX_GPU_DEVICE(int i) {
-    if (d_mask[i]) {
+    if (d_mask[i] != 0) {
       for (int n = 0; n < ncomp; ++n) {
 #ifdef _OPENMP
 #pragma omp atomic write

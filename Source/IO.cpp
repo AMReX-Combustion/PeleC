@@ -16,6 +16,7 @@
 #endif
 
 #include "mechanism.H"
+#include "PltFileManager.H"
 
 #include "PeleC.H"
 #include "IO.H"
@@ -265,7 +266,7 @@ PeleC::set_state_in_checkpoint(amrex::Vector<int>& state_in_checkpoint)
         amrex::Abort("State_Type is not present in the checkpoint file");
       }
     } else if (i == Reactions_Type) {
-      if (do_react == 0) {
+      if (!do_react) {
         state_in_checkpoint[i] = 0;
       } else {
         state_in_checkpoint[i] = is_present ? 1 : 0;
@@ -399,7 +400,7 @@ PeleC::setPlotVariables()
     amrex::Amr::addDerivePlotVar("WorkEstimate");
   }
 
-  if (do_react == 0) {
+  if (!do_react) {
     for (int i = 0; i < desc_lst[Reactions_Type].nComp(); i++) {
       amrex::Amr::deleteStatePlotVar(desc_lst[Reactions_Type].name(i));
     }
@@ -439,32 +440,6 @@ PeleC::setPlotVariables()
 
   bool plot_massfrac = false;
   pp.query("plot_massfrac", plot_massfrac);
-  //    if (plot_massfrac)
-  //    {
-  //	if (plot_massfrac)
-  //	{
-  //	    //
-  //	    // Get the species names from the network model.
-  //	    //
-  //	    for (int i = 0; i < NUM_SPECIES; i++)
-  //	    {
-  //		int len = 20;
-  //		Vector<int> int_spec_names(len);
-  //		// This call return the actual length of each string in "len"
-  //		get_spec_names(int_spec_names.dataPtr(),&i,&len);
-  //		char* spec_name = new char[len+1];
-  //		for (int j = 0; j < len; j++)
-  //		    spec_name[j] = int_spec_names[j];
-  //		spec_name[len] = '\0';
-  //		string spec_string = "Y(";
-  //		spec_string += spec_name;
-  //		spec_string += ')';
-  //		parent->addDerivePlotVar(spec_string);
-  //		delete [] spec_name;
-  //	    }
-  //	}
-  //    }
-
   if (plot_massfrac) {
     amrex::Amr::addDerivePlotVar("massfrac");
   } else {
@@ -640,21 +615,6 @@ PeleC::writeJobInfo(const std::string& dir)
               << std::setw(7) << "Z"
               << "\n";
   jobInfoFile << OtherLine;
-  // Why is this here? It creates spec_name and deletes it?
-  //     int len = mlen;
-  //     amrex::Vector<int> int_spec_names(len * NUM_SPECIES);
-  //     CKSYMS(int_spec_names.dataPtr(),&len);
-  //     for (int i = 0; i < NUM_SPECIES; i++) {
-  //         int j = 0;
-  //         char* spec_name = new char[len];
-  //         for (j = 0; j < len; j++) {
-  //           spec_name[j] = int_spec_names[i*len + j];
-  //           if (spec_name[j] == ' ')
-  //             break;
-  //         }
-  //         spec_name[len] = '\0';
-  //         delete [] spec_name;
-  //     }
   jobInfoFile << "\n\n";
 
   // runtime parameters
@@ -1161,4 +1121,115 @@ PeleC::writeSmallPlotFile(
   std::string TheFullPath = FullPath;
   TheFullPath += BaseName;
   amrex::VisMF::Write(plotMF, TheFullPath, how, true);
+}
+
+void
+PeleC::initLevelDataFromPlt(
+  const int lev, const std::string& dataPltFile, amrex::MultiFab& S_new)
+{
+  amrex::Print() << "Using data (rho, u, T, Y) from pltfile " << dataPltFile
+                 << std::endl;
+  pele::physics::pltfilemanager::PltFileManager pltData(dataPltFile);
+  const auto plt_vars = pltData.getVariableList();
+
+  // Read rho, u, temperature (required)
+  std::map<std::string, int> vars{
+    {"density", -1}, {"x_velocity", -1}, {"Temp", -1}};
+  for (auto& var : vars) {
+    var.second = find_position(plt_vars, var.first);
+    if (var.second == -1) {
+      amrex::Abort("Unable to find variable in plot file: " + var.first);
+    }
+  }
+  pltData.fillPatchFromPlt(lev, geom, vars["density"], URHO, 1, S_new);
+  pltData.fillPatchFromPlt(
+    lev, geom, vars["x_velocity"], UMX, AMREX_SPACEDIM, S_new);
+  pltData.fillPatchFromPlt(lev, geom, vars["Temp"], UTEMP, 1, S_new);
+
+  // Copy species from the plot file
+  for (int n = 0; n < spec_names.size(); n++) {
+    const auto& spec = spec_names.at(n);
+    const int pos = find_position(plt_vars, "Y(" + spec + ")");
+    if (pos != -1) {
+      pltData.fillPatchFromPlt(lev, geom, pos, UFS + n, 1, S_new);
+    }
+  }
+
+  // Sanity check the species, clean them up if they aren't too bad
+  auto sarrs = S_new.arrays();
+  const auto tol = init_pltfile_massfrac_tol;
+  amrex::ParallelFor(
+    S_new, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+      auto sarr = sarrs[nbx];
+      amrex::Real sumY = 0.0;
+
+      for (int n = 0; n < NUM_SPECIES; n++) {
+        // if the species is not too far out of bounds, clip it
+        const auto mf = sarr(i, j, k, UFS + n);
+        if ((mf < 0.0) || (1.0 < mf)) {
+          if (((-tol < mf) && (mf < 0.0)) || ((1.0 < mf) && (mf < 1 + tol))) {
+            sarr(i, j, k, UFS + n) =
+              amrex::min<amrex::Real>(1.0, amrex::max<amrex::Real>(0.0, mf));
+          } else {
+#ifdef AMREX_USE_GPU
+            AMREX_DEVICE_PRINTF(
+              "Species mass fraction is out of bounds (spec, value): (%d, %g)",
+              n, mf);
+            amrex::Abort();
+#else
+            amrex::Abort(
+              "Species mass fraction is out of bounds (spec, value): ( " +
+              std::to_string(n) + ", " + std::to_string(mf) + ")");
+#endif
+          }
+        }
+
+        sumY += sarr(i, j, k, UFS + n);
+      }
+
+      // If the sumY isn't too far from 1, renormalize
+      if (amrex::Math::abs(1.0 - sumY) < tol) {
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          sarr(i, j, k, UFS + n) /= sumY;
+        }
+      } else {
+#ifdef AMREX_USE_GPU
+        AMREX_DEVICE_PRINTF(
+          "Species mass fraction don't sum to 1. The sum is: %g", sumY);
+        amrex::Abort();
+#else
+        amrex::Abort(
+          "Species mass fraction don't sum to 1. The sum is: " +
+          std::to_string(sumY));
+#endif
+      }
+    });
+
+  // Convert to conserved variables
+  amrex::ParallelFor(
+    S_new, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+      auto sarr = sarrs[nbx];
+      const amrex::Real rho = sarr(i, j, k, URHO);
+      const amrex::Real temp = sarr(i, j, k, UTEMP);
+      amrex::Real massfrac[NUM_SPECIES] = {0.0};
+      for (int n = 0; n < NUM_SPECIES; n++) {
+        massfrac[n] = sarr(i, j, k, UFS + n);
+        sarr(i, j, k, UFS + n) *= rho;
+      }
+      AMREX_D_TERM(sarr(i, j, k, UMX) *= rho;, sarr(i, j, k, UMY) *= rho;
+                   , sarr(i, j, k, UMZ) *= rho;)
+
+      auto eos = pele::physics::PhysicsType::eos();
+      amrex::Real eint = 0.0;
+      eos.RTY2E(rho, temp, massfrac, eint);
+
+      sarr(i, j, k, UEINT) = rho * eint;
+      sarr(i, j, k, UEDEN) =
+        rho * eint + 0.5 *
+                       (AMREX_D_TERM(
+                         sarr(i, j, k, UMX) * sarr(i, j, k, UMX),
+                         +sarr(i, j, k, UMY) * sarr(i, j, k, UMY),
+                         +sarr(i, j, k, UMZ) * sarr(i, j, k, UMZ))) /
+                       rho;
+    });
 }

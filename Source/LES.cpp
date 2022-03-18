@@ -103,12 +103,12 @@ PeleC::getLESTerm(
 {
   BL_PROFILE("PeleC::getLESTerm()");
 
-  if (do_les == 0) {
+  if (!do_les) {
     LESTerm.setVal(0, 0, NVAR, LESTerm.nGrow());
     return;
   }
 
-  if (verbose) {
+  if (verbose != 0) {
     amrex::Print() << "... Computing LES term at time " << time << std::endl;
   }
 

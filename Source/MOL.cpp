@@ -12,9 +12,9 @@ pc_compute_hyp_mol_flux(
 #ifdef PELEC_USE_EB
     del
 #endif
-  ,
+  /*unused*/,
   const int plm_iorder,
-  const int use_laxf_flux
+  const bool use_laxf_flux
 #ifdef PELEC_USE_EB
   ,
   const amrex::Array4<amrex::EBCellFlag const>& flags,
@@ -40,7 +40,9 @@ pc_compute_hyp_mol_flux(
     setV(cbox, QVAR, dq, 0.0);
 
     // dimensional indexing
-    const amrex::GpuArray<const int, 3> bdim{{dir == 0, dir == 1, dir == 2}};
+    const amrex::GpuArray<const int, 3> bdim{
+      {static_cast<int>(dir == 0), static_cast<int>(dir == 1),
+       static_cast<int>(dir == 2)}};
     const amrex::GpuArray<const int, 3> q_idx{
       {bdim[0] * QU + bdim[1] * QV + bdim[2] * QW,
        bdim[0] * QV + bdim[1] * QU + bdim[2] * QU,

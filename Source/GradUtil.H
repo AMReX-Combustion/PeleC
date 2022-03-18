@@ -103,14 +103,14 @@ pc_compute_tangential_vel_derivs(
 
 #ifdef PELEC_USE_EB
 void pc_compute_tangential_vel_derivs_eb(
-  const amrex::Box&,
-  const int,
-  const amrex::Real,
-  const amrex::Real,
-  const EBBndryGeom*,
-  const int,
-  const amrex::Array4<const amrex::Real>&,
-  const amrex::Array4<amrex::EBCellFlag const>&,
-  const amrex::Array4<amrex::Real>&);
+  const amrex::Box& /*bx*/,
+  const int /*dir*/,
+  const amrex::Real /*dx1*/,
+  const amrex::Real /*dx2*/,
+  const EBBndryGeom* /*sv_ebg*/,
+  const int /*Ncut*/,
+  const amrex::Array4<const amrex::Real>& /*q*/,
+  const amrex::Array4<amrex::EBCellFlag const>& /*flags*/,
+  const amrex::Array4<amrex::Real>& /*td*/);
 #endif
 #endif

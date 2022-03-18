@@ -95,33 +95,37 @@ public:
     const amrex::DistributionMapping& dm,
     amrex::Real time);
 
-  virtual ~PeleC();
+  ~PeleC() override;
 
   // Restart from a checkpoint file.
-  virtual void restart(
+  void restart(
     amrex::Amr& papa, std::istream& is, bool bReadSpecial = false) override;
 
   // This is called only when we restart from an old checkpoint.
-  virtual void
+  void
   set_state_in_checkpoint(amrex::Vector<int>& state_in_checkpoint) override;
   bool check_state_in_checkpoint(const StateType state_type);
 
   // Call AmrLevel::checkPoint and then add radiation info
-  virtual void checkPoint(
+  void checkPoint(
     const std::string& dir,
     std::ostream& os,
     amrex::VisMF::How how,
     bool dump_old) override;
 
-  virtual void setPlotVariables() override;
+  void setPlotVariables() override;
 
   // Write a plotfile to specified directory.
-  virtual void writePlotFile(
+  void writePlotFile(
     const std::string& dir, std::ostream& os, amrex::VisMF::How how) override;
-  virtual void writeSmallPlotFile(
+  void writeSmallPlotFile(
     const std::string& dir, std::ostream& os, amrex::VisMF::How how) override;
   void writeJobInfo(const std::string& dir);
   static void writeBuildInfo(std::ostream& os);
+
+  // Initialize level from plt file
+  void initLevelDataFromPlt(
+    const int lev, const std::string& pltFile, amrex::MultiFab& S_new);
 
   // Define data descriptors.
   static void variableSetUp();
@@ -130,7 +134,7 @@ public:
   static void variableCleanUp();
 
   // Initialize grid data at problem start-up.
-  virtual void initData() override;
+  void initData() override;
 
 #ifdef AMREX_PARTICLES
 
@@ -202,19 +206,19 @@ public:
   amrex::MultiFab& Volume();
 
   // Set time levels of state data.
-  virtual void setTimeLevel(
+  void setTimeLevel(
     amrex::Real time, amrex::Real dt_old, amrex::Real dt_new) override;
 
   // Initialize data on this level from another PeleC (during regrid).
-  virtual void init(amrex::AmrLevel& old) override;
+  void init(amrex::AmrLevel& old) override;
 
   // Initialize data on this level after regridding if old level did not
   // previously exist
-  virtual void init() override;
+  void init() override;
 
   // Initialize EB geometry for finest_level and level grids for
   // other levels for the Amr class to do timed load balances.
-  virtual int WorkEstType() override { return Work_Estimate_Type; }
+  int WorkEstType() override { return Work_Estimate_Type; }
 
 #ifdef PELEC_USE_EB
   static bool DoMOLLoadBalance() { return do_mol_load_balance; }
@@ -242,10 +246,10 @@ public:
   void set_typical_values_chem();
 
   // Proceed with next timestep?
-  virtual int okToContinue() override;
+  int okToContinue() override;
 
   // Advance grids at this level in time.
-  virtual amrex::Real
+  amrex::Real
   advance(amrex::Real time, amrex::Real dt, int iteration, int ncycle) override;
 
   amrex::Real do_mol_advance(
@@ -405,7 +409,7 @@ public:
   amrex::Real initialTimeStep();
 
   // Compute initial `dt'.
-  virtual void computeInitialDt(
+  void computeInitialDt(
     int finest_level,
     int sub_cycle,
     amrex::Vector<int>& n_cycle,
@@ -414,7 +418,7 @@ public:
     amrex::Real stop_time) override;
 
   // Compute new `dt'.
-  virtual void computeNewDt(
+  void computeNewDt(
     int finest_level,
     int sub_cycle,
     amrex::Vector<int>& n_cycle,
@@ -425,10 +429,10 @@ public:
     int post_regrid_flag) override;
 
   // Allocate data at old time.
-  virtual void allocOldData() override;
+  void allocOldData() override;
 
   // Remove data at old time.
-  virtual void removeOldData() override;
+  void removeOldData() override;
 
   // Passes some data about the grid to a Fortran module.
   void setGridInfo();
@@ -437,22 +441,22 @@ public:
   void do_energy_diagnostics();
 
   // Do work after timestep().
-  virtual void post_timestep(int iteration) override;
+  void post_timestep(int iteration) override;
 
   // Contains operations to be done only after a full coarse timestep.
-  virtual void postCoarseTimeStep(amrex::Real cumtime) override;
+  void postCoarseTimeStep(amrex::Real cumtime) override;
 
   // Do work after regrid().
-  virtual void post_regrid(int lbase, int new_finest) override;
+  void post_regrid(int lbase, int new_finest) override;
 
   // Do work after a restart().
-  virtual void post_restart() override;
+  void post_restart() override;
 
   // Do work after init().
-  virtual void post_init(amrex::Real stop_time) override;
+  void post_init(amrex::Real stop_time) override;
 
   // Error estimation for regridding.
-  virtual void errorEst(
+  void errorEst(
     amrex::TagBoxArray& tags,
     int clearval,
     int tagval,
@@ -464,12 +468,12 @@ public:
   // The user is responsible for deleting this pointer when done
   // with it.  If ngrow>0 the MultiFab is built on the appropriately
   // grown BoxArray.
-  virtual std::unique_ptr<amrex::MultiFab>
+  std::unique_ptr<amrex::MultiFab>
   derive(const std::string& name, amrex::Real time, int ngrow) override;
 
   // This version of derive() fills the dcomp'th component of mf with the
   // derived quantity.
-  virtual void derive(
+  void derive(
     const std::string& name,
     amrex::Real time,
     amrex::MultiFab& mf,
@@ -617,10 +621,6 @@ public:
   void avgDown();
   void avgDown(int state_indx);
 
-  // Parameters for using WENO in the PPM method
-  static int use_hybrid_weno;
-  static int weno_scheme;
-
   static ProbParmDevice* h_prob_parm_device;
   static ProbParmDevice* d_prob_parm_device;
   static ProbParmHost* prob_parm_host;
@@ -706,7 +706,7 @@ protected:
 
   void write_info();
 
-  void stopJob();
+  static void stopJob();
 
   // The data.
   amrex::MultiFab volume;
@@ -719,7 +719,6 @@ protected:
 #include "pelec_params.H"
 
   static bool signalStopJob;
-  static bool dump_old;
   static int radius_grow;
   static int verbose;
   static amrex::BCRec phys_bc;
@@ -740,11 +739,6 @@ protected:
 
   static amrex::Real getCPUTime();
 
-  static int diffuse_temp;
-  static int diffuse_enth;
-  static int diffuse_spec;
-  static int diffuse_vel;
-  static amrex::Real diffuse_cutoff_density;
   static bool do_diffuse;
 
   static int les_model;

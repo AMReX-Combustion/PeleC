@@ -89,7 +89,6 @@ riemann(
   }
   amrex::Real gdnv_state_e;
   eos.RYP2E(gdnv_state_rho, gdnv_state_massfrac, gdnv_state_p, gdnv_state_e);
-  const amrex::Real reo = gdnv_state_rho * gdnv_state_e;
   amrex::Real co;
   eos.RPY2Cs(gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, co);
 
@@ -107,7 +106,6 @@ riemann(
     gdnv_state_massfrac[n] = rspstar[n] / rstar;
   }
   eos.RYP2E(gdnv_state_rho, gdnv_state_massfrac, gdnv_state_p, gdnv_state_e);
-  const amrex::Real estar = gdnv_state_rho * gdnv_state_e;
   amrex::Real cstar;
   eos.RPY2Cs(gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, cstar);
 
@@ -147,7 +145,6 @@ riemann(
     gdnv_state_massfrac[n] = rspgd[n] / rgd;
   }
   eos.RYP2E(gdnv_state_rho, gdnv_state_massfrac, gdnv_state_p, gdnv_state_e);
-  amrex::Real regd = gdnv_state_rho * gdnv_state_e;
 
   mask = (spout < 0.0);
   rgd = 0.0;
@@ -157,7 +154,6 @@ riemann(
   }
   qint_iu = mask ? uo : qint_iu;
   qint_gdpres = mask ? po : qint_gdpres;
-  regd = mask ? reo : regd;
 
   mask = (spin >= 0.0);
   rgd = 0.0;
@@ -167,7 +163,6 @@ riemann(
   }
   qint_iu = mask ? ustar : qint_iu;
   qint_gdpres = mask ? pstar : qint_gdpres;
-  regd = mask ? estar : regd;
 
   gdnv_state_rho = rgd;
   gdnv_state_p = qint_gdpres;
@@ -175,7 +170,7 @@ riemann(
     gdnv_state_massfrac[n] = rspgd[n] / rgd;
   }
   eos.RYP2E(gdnv_state_rho, gdnv_state_massfrac, gdnv_state_p, gdnv_state_e);
-  regd = gdnv_state_rho * gdnv_state_e;
+  amrex::Real regd = gdnv_state_rho * gdnv_state_e;
 
   qint_gdgame = qint_gdpres / regd + 1.0;
   qint_iu = bc_test_val * qint_iu;
@@ -209,8 +204,8 @@ laxfriedrich_flux(
   const amrex::Real v2r,
   const amrex::Real pr,
   const amrex::Real spr[NUM_SPECIES],
-  const int,
-  const amrex::Real,
+  const int /*unused*/,
+  const amrex::Real /*unused*/,
   amrex::Real& ustar,
   amrex::Real& maxeigval,
   amrex::Real& uflx_rho,

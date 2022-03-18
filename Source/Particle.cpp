@@ -1,6 +1,5 @@
 
 
-
 #ifdef AMREX_PARTICLES
 #include "PeleC.H"
 #include "SprayParticles.H"
@@ -101,8 +100,9 @@ PeleC::readSprayParams()
 
   pp.query("do_spray_particles", do_spray_particles);
   SprayParticleContainer::readSprayParams(
-    particle_verbose, particle_cfl, wall_temp, mass_trans, mom_trans, write_spray_ascii_files,
-    plot_spray_src, init_function, init_file, sprayData, sprayFuelNames);
+    particle_verbose, particle_cfl, wall_temp, mass_trans, mom_trans,
+    write_spray_ascii_files, plot_spray_src, init_function, init_file,
+    sprayData, sprayFuelNames);
 }
 
 void
@@ -216,13 +216,13 @@ PeleC::removeGhostParticles()
 void
 PeleC::createParticleData()
 {
-  SprayPC = new SprayParticleContainer(
-    parent, &phys_bc, sprayData, scomps, wall_temp);
+  SprayPC =
+    new SprayParticleContainer(parent, &phys_bc, sprayData, scomps, wall_temp);
   theSprayPC()->SetVerbose(particle_verbose);
-  VirtPC = new SprayParticleContainer(
-    parent, &phys_bc, sprayData, scomps, wall_temp);
-  GhostPC = new SprayParticleContainer(
-    parent, &phys_bc, sprayData, scomps, wall_temp);
+  VirtPC =
+    new SprayParticleContainer(parent, &phys_bc, sprayData, scomps, wall_temp);
+  GhostPC =
+    new SprayParticleContainer(parent, &phys_bc, sprayData, scomps, wall_temp);
 }
 
 // Initialize the particles on the grid at level 0
@@ -314,10 +314,9 @@ PeleC::particleMKD(
   // Do the valid particles themselves
   theSprayPC()->moveKickDrift(
     Sborder, tmp_spray_source, level, dt, time,
-    false, // not virtual particles
-    false, // not ghost particles
-    spray_n_grow, tmp_src_width,
-    true, ltransparm); // Move the particles
+    false,                                          // not virtual particles
+    false,                                          // not ghost particles
+    spray_n_grow, tmp_src_width, true, ltransparm); // Move the particles
 
   // Only need the coarsest virtual particles here.
   if (level < finest_level) {

@@ -40,15 +40,15 @@
 #define GDGAME 5
 
 #define dComp_rhoD 0
-#define dComp_mu dComp_rhoD + NUM_SPECIES
-#define dComp_xi dComp_mu + 1
-#define dComp_lambda dComp_xi + 1
+#define dComp_mu (dComp_rhoD + NUM_SPECIES)
+#define dComp_xi (dComp_mu + 1)
+#define dComp_lambda (dComp_xi + 1)
 
 #define comp_Cs2 0
-#define comp_CI comp_Cs2 + 1
-#define comp_PrT comp_CI + 1
+#define comp_CI (comp_Cs2 + 1)
+#define comp_PrT (comp_CI + 1)
 #define comp_Cs2ovPrT comp_PrT
-#define nCompC comp_PrT + 1
+#define nCompC (comp_PrT + 1)
 
 #define SlipWall 4
 #define NoSlipWall 5
@@ -61,27 +61,27 @@
 #define NUM_AUX 0
 #endif
 
-#define UFS UFA + NUM_ADV
-#define UFX UFS + NUM_SPECIES
+#define UFS (UFA + NUM_ADV)
+#define UFX (UFS + NUM_SPECIES)
 #ifdef SOOT_MODEL
-#define NUM_SOOT_VARS NUM_SOOT_MOMENTS + 1
-#define UFSOOT UFX + NUM_AUX
+#define NUM_SOOT_VARS (NUM_SOOT_MOMENTS + 1)
+#define UFSOOT (UFX + NUM_AUX)
 #else
 #define NUM_SOOT_VARS 0
 #endif
-#define NVAR NTHERM + NUM_ADV + NUM_SPECIES + NUM_AUX + NUM_SOOT_VARS
+#define NVAR (NTHERM + NUM_ADV + NUM_SPECIES + NUM_AUX + NUM_SOOT_VARS)
 
-#define QFS QFA + NUM_ADV
-#define QFX QFS + NUM_SPECIES
+#define QFS (QFA + NUM_ADV)
+#define QFX (QFS + NUM_SPECIES)
 #ifdef SOOT_MODEL
-#define QFSOOT QFX + NUM_AUX
+#define QFSOOT (QFX + NUM_AUX)
 #endif
-#define QVAR QTHERM + NUM_ADV + NUM_SPECIES + NUM_AUX + NUM_SOOT_VARS
+#define QVAR (QTHERM + NUM_ADV + NUM_SPECIES + NUM_AUX + NUM_SOOT_VARS)
 #define NQ QVAR
 #define NQAUX 6
 #define NGDNV 6
 
-#define NPASSIVE NUM_SPECIES + NUM_ADV + NUM_AUX + 3 - AMREX_SPACEDIM
+#define NPASSIVE (NUM_SPECIES + NUM_ADV + NUM_AUX + 3 - AMREX_SPACEDIM)
 
 // Number of passive variables that are not per unit mass, U = Q instead of U =
 // rho Q

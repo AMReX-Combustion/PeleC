@@ -24,7 +24,7 @@ class AmrexTestEnv : public ::testing::Environment
 public:
   AmrexTestEnv(int& argc, char**& argv) : m_argc(argc), m_argv(argv) {}
 
-  ~AmrexTestEnv() = default;
+  ~AmrexTestEnv() override = default;
 
   void SetUp() override
   {
@@ -46,8 +46,9 @@ public:
     bool keep_parameters = false;
     pp.query("keep_parameters", keep_parameters);
 
-    if (!keep_parameters)
+    if (!keep_parameters) {
       amrex::ParmParse::Finalize();
+    }
   }
 
   void TearDown() override { amrex::Finalize(); }

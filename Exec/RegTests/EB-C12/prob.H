@@ -54,8 +54,9 @@ pc_initdata(
   state(i, j, k, UEINT) = rho * eint;
   state(i, j, k, UEDEN) = rho * (eint + 0.5 * prob_parm.u0 * prob_parm.u0);
   state(i, j, k, UTEMP) = T;
-  for (int n = 0; n < NUM_SPECIES; n++)
+  for (int n = 0; n < NUM_SPECIES; n++) {
     state(i, j, k, UFS + n) = rho * prob_parm.massfrac[n];
+  }
 }
 
 AMREX_GPU_DEVICE

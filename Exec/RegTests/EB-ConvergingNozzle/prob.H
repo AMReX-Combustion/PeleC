@@ -29,7 +29,8 @@ class EBConvergingNozzle
 public:
   static std::string identifier() { return "converging-nozzle"; }
 
-  void build(const amrex::Geometry& geom, const int max_coarsening_level);
+  void
+  build(const amrex::Geometry& geom, const int max_coarsening_level) override;
 };
 
 AMREX_GPU_DEVICE
@@ -89,8 +90,9 @@ bcnormal(
     s_ext[UEINT] = s_int[UEINT];
     s_ext[UEDEN] = s_int[UEDEN];
     s_ext[UTEMP] = s_int[UTEMP];
-    for (int n = 0; n < NUM_SPECIES; n++)
+    for (int n = 0; n < NUM_SPECIES; n++) {
       s_ext[UFS + n] = s_int[UFS + n];
+    }
 
     // Swirler conditions
     const amrex::Real u = prob_parm.u_swirl_ax;
@@ -115,8 +117,9 @@ bcnormal(
     s_ext[UEINT] = rho * eint;
     s_ext[UEDEN] = rho * (eint + 0.5 * (u * u + v * v + w * w));
     s_ext[UTEMP] = T;
-    for (int n = 0; n < NUM_SPECIES; n++)
+    for (int n = 0; n < NUM_SPECIES; n++) {
       s_ext[UFS + n] = rho * swirl_massfrac[n];
+    }
   }
 }
 

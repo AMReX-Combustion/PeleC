@@ -44,7 +44,7 @@ PeleC::react_state(
 
   AMREX_ASSERT(do_react == 1);
 
-  if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
+  if ((verbose != 0) && amrex::ParallelDescriptor::IOProcessor()) {
     if (react_init) {
       amrex::Print() << "... Initializing reactions, using interval dt = " << dt
                      << std::endl;
@@ -150,7 +150,7 @@ PeleC::react_state(
 
       // only update beyond first step
       // TODO: Update here? Or just get reaction source?
-      const int do_update = react_init ? 0 : 1;
+      const bool do_update = !react_init;
 
 #ifdef PELEC_USE_EB
       const auto& flag_fab = flags[mfi];

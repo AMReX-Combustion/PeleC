@@ -32,6 +32,9 @@ endif
 Bpack += $(PELE_PHYSICS_HOME)/Utility/TurbInflow/Make.package
 Blocs += $(PELE_PHYSICS_HOME)/Utility/TurbInflow
 
+Bpack += $(PELE_PHYSICS_HOME)/Utility/PltFileManager/Make.package
+Blocs += $(PELE_PHYSICS_HOME)/Utility/PltFileManager
+
 ifeq ($(USE_EB), TRUE)
   DEFINES += -DPELEC_USE_EB
   ifeq ($(DIM), 1)

@@ -211,11 +211,11 @@ pc_smagorinsky_sfs_term(
       alpha, flux_T);
   }
   const amrex::Real sigmadx =
-    Cs2 * alphaij[0] - third * CI * alpha * (dir == 0);
+    Cs2 * alphaij[0] - third * CI * alpha * static_cast<double>(dir == 0);
   const amrex::Real sigmady =
-    Cs2 * alphaij[1] - third * CI * alpha * (dir == 1);
+    Cs2 * alphaij[1] - third * CI * alpha * static_cast<double>(dir == 1);
   const amrex::Real sigmadz =
-    Cs2 * alphaij[2] - third * CI * alpha * (dir == 2);
+    Cs2 * alphaij[2] - third * CI * alpha * static_cast<double>(dir == 2);
   flx(iv, UMX) = -sigmadx;
   flx(iv, UMY) = -sigmady;
   flx(iv, UMZ) = -sigmadz;

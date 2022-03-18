@@ -10,10 +10,10 @@ namespace pelec {
 class Geometry : public physics::Factory<Geometry>
 {
 public:
-  static const std::string base_identifier() { return "Geometry"; }
+  static std::string base_identifier() { return "Geometry"; }
   virtual void
   build(const amrex::Geometry& geom, const int max_coarsening_level) = 0;
-  virtual ~Geometry() = default;
+  ~Geometry() override = default;
 };
 
 class FlatPlate : public Geometry::Register<FlatPlate>
@@ -21,7 +21,8 @@ class FlatPlate : public Geometry::Register<FlatPlate>
 public:
   static std::string identifier() { return "flat_plate"; }
 
-  void build(const amrex::Geometry& geom, const int max_coarsening_level);
+  void
+  build(const amrex::Geometry& geom, const int max_coarsening_level) override;
 };
 
 class Ramp : public Geometry::Register<Ramp>
@@ -29,7 +30,8 @@ class Ramp : public Geometry::Register<Ramp>
 public:
   static std::string identifier() { return "ramp"; }
 
-  void build(const amrex::Geometry& geom, const int max_coarsening_level);
+  void
+  build(const amrex::Geometry& geom, const int max_coarsening_level) override;
 };
 
 class Combustor : public Geometry::Register<Combustor>
@@ -37,7 +39,8 @@ class Combustor : public Geometry::Register<Combustor>
 public:
   static std::string identifier() { return "combustor"; }
 
-  void build(const amrex::Geometry& geom, const int max_coarsening_level);
+  void
+  build(const amrex::Geometry& geom, const int max_coarsening_level) override;
 };
 
 class ICEPistonBowl : public Geometry::Register<ICEPistonBowl>
@@ -45,7 +48,8 @@ class ICEPistonBowl : public Geometry::Register<ICEPistonBowl>
 public:
   static std::string identifier() { return "ICE_PistonBowl"; }
 
-  void build(const amrex::Geometry& geom, const int max_coarsening_level);
+  void
+  build(const amrex::Geometry& geom, const int max_coarsening_level) override;
 };
 
 class ExtrudedTriangles : public Geometry::Register<ExtrudedTriangles>
@@ -53,7 +57,8 @@ class ExtrudedTriangles : public Geometry::Register<ExtrudedTriangles>
 public:
   static std::string identifier() { return "extruded_triangles"; }
 
-  void build(const amrex::Geometry& geom, const int max_coarsening_level);
+  void
+  build(const amrex::Geometry& geom, const int max_coarsening_level) override;
 };
 
 class PolygonRevolution : public Geometry::Register<PolygonRevolution>
@@ -61,7 +66,8 @@ class PolygonRevolution : public Geometry::Register<PolygonRevolution>
 public:
   static std::string identifier() { return "polygon_revolution"; }
 
-  void build(const amrex::Geometry& geom, const int max_coarsening_level);
+  void
+  build(const amrex::Geometry& geom, const int max_coarsening_level) override;
 };
 
 class MovingPlane : public Geometry::Register<MovingPlane>
@@ -69,7 +75,8 @@ class MovingPlane : public Geometry::Register<MovingPlane>
 public:
   static std::string identifier() { return "moving_plane"; }
 
-  void build(const amrex::Geometry& geom, const int max_coarsening_level);
+  void
+  build(const amrex::Geometry& geom, const int max_coarsening_level) override;
 };
 
 class QuarterCircle : public Geometry::Register<QuarterCircle>
@@ -77,7 +84,8 @@ class QuarterCircle : public Geometry::Register<QuarterCircle>
 public:
   static std::string identifier() { return "quarter-circle"; }
 
-  void build(const amrex::Geometry& geom, const int max_coarsening_level);
+  void
+  build(const amrex::Geometry& geom, const int max_coarsening_level) override;
 };
 
 } // namespace pelec

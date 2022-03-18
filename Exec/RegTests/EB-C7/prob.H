@@ -47,8 +47,9 @@ pc_initdata(
     state(i, j, k, UEINT) = prob_parm.rhol * prob_parm.eintl;
     state(i, j, k, UEDEN) = prob_parm.rhol * prob_parm.eintl;
     state(i, j, k, UTEMP) = prob_parm.Tl;
-    for (int n = 0; n < NUM_SPECIES; n++)
+    for (int n = 0; n < NUM_SPECIES; n++) {
       state(i, j, k, UFS + n) = prob_parm.rhol * prob_parm.massfrac[n];
+    }
   } else {
     state(i, j, k, URHO) = prob_parm.rhor;
     state(i, j, k, UMX) = 0.0;
@@ -57,8 +58,9 @@ pc_initdata(
     state(i, j, k, UEINT) = prob_parm.rhor * prob_parm.eintr;
     state(i, j, k, UEDEN) = prob_parm.rhor * prob_parm.eintr;
     state(i, j, k, UTEMP) = prob_parm.Tr;
-    for (int n = 0; n < NUM_SPECIES; n++)
+    for (int n = 0; n < NUM_SPECIES; n++) {
       state(i, j, k, UFS + n) = prob_parm.rhor * prob_parm.massfrac[n];
+    }
   }
 }
 

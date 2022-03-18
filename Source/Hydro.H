@@ -108,12 +108,14 @@ pc_norm_spec_flx(
   const int num = NUM_SPECIES + UFS;
   amrex::Real summ, fac;
   summ = 0.0;
-  for (int n = UFS; n < num; ++n)
+  for (int n = UFS; n < num; ++n) {
     summ += flx(i, j, k, n);
+  }
 
   fac = (summ != 0.0) ? flx(i, j, k, URHO) / summ : 1.0;
-  for (int n = UFS; n < num; ++n)
+  for (int n = UFS; n < num; ++n) {
     flx(i, j, k, n) *= fac;
+  }
 }
 
 AMREX_GPU_DEVICE
@@ -127,8 +129,9 @@ pc_ext_flx(
   amrex::Array4<const amrex::Real> const& a)
 {
   amrex::Real area = a(i, j, k); // avoid reading from global memory NVAR times
-  for (int n = 0; n < NVAR; ++n)
+  for (int n = 0; n < NVAR; ++n) {
     flx(i, j, k, n) *= area;
+  }
 }
 
 AMREX_GPU_DEVICE
@@ -173,7 +176,9 @@ void pc_umdrv(
   const amrex::Real* dx,
   const amrex::Real dt,
   const int ppm_type,
-  const int use_flattening,
+  const bool use_flattening,
+  const bool use_hybrid_weno,
+  const int weno_scheme,
   const amrex::Real difmag,
   const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>

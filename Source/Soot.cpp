@@ -24,8 +24,8 @@ PeleC::setSootIndx()
 }
 
 void
-PeleC::addSootDerivePlotVars(DeriveList& derive_lst,
-                             const DescriptorList& desc_lst)
+PeleC::addSootDerivePlotVars(
+  DeriveList& derive_lst, const DescriptorList& desc_lst)
 {
   // Add in soot variables
   Vector<std::string> sootNames = {"rho_soot", "sum_rho_soot"};
@@ -42,8 +42,7 @@ PeleC::addSootDerivePlotVars(DeriveList& derive_lst,
     "soot_large_particles", IndexType::TheCellType(), large_part_names.size(),
     large_part_names, soot_largeparticledata, amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent(
-    "soot_large_particles", desc_lst, State_Type, UFSOOT,
-    NUM_SOOT_MOMENTS + 1);
+    "soot_large_particles", desc_lst, State_Type, UFSOOT, NUM_SOOT_MOMENTS + 1);
 }
 
 void
@@ -121,8 +120,7 @@ PeleC::fill_soot_source(
       PassMap const* lpmap = d_pass_map;
       amrex::ParallelFor(
         bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-          pc_ctoprim(
-            i, j, k, s_arr, q_arr, qaux_arr, *lpmap);
+          pc_ctoprim(i, j, k, s_arr, q_arr, qaux_arr, *lpmap);
         });
     }
 
@@ -160,8 +158,8 @@ PeleC::fill_soot_source(
   }
 }
 
-void PeleC::clipSootMoments(amrex::MultiFab& S_new,
-                            const int ng)
+void
+PeleC::clipSootMoments(amrex::MultiFab& S_new, const int ng)
 {
   for (MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
     const amrex::Box& bx = mfi.growntilebox(ng);
@@ -181,7 +179,8 @@ void PeleC::clipSootMoments(amrex::MultiFab& S_new,
   }
 }
 
-void PeleC::estSootDt(amrex::Real& estdt_soot)
+void
+PeleC::estSootDt(amrex::Real& estdt_soot)
 {
   const amrex::MultiFab& state = get_new_data(State_Type);
   amrex::Real local_dt = 1.E20;
@@ -216,8 +215,7 @@ void PeleC::estSootDt(amrex::Real& estdt_soot)
       PassMap const* lpmap = d_pass_map;
       amrex::ParallelFor(
         bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-          pc_ctoprim(
-            i, j, k, s_arr, q_arr, qaux_arr, *lpmap);
+          pc_ctoprim(i, j, k, s_arr, q_arr, qaux_arr, *lpmap);
         });
     }
     Real sootdt = soot_model->estSootDt(bx, q_arr);
