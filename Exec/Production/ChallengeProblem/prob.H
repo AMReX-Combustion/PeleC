@@ -300,8 +300,8 @@ bcnormal(
         massfrac_int[n] = s_int[UFS + n] / s_int[URHO];
       eos.RTY2P(s_int[URHO], s_int[UTEMP], massfrac_int, p_int);
 
-      // Tanh profile, assuming 10% tanh width
-      const amrex::Real eta = 0.5 * (1.0 - std::tanh((elrSq - 1.0) / 0.1));
+      // Tanh profile
+      const amrex::Real eta = 0.5 * (1.0 - std::tanh((elrSq - 1.0) / 0.2));
 
       // Composition
       amrex::Real massfrac[NUM_SPECIES] = {0.0};
