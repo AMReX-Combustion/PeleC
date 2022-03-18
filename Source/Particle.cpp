@@ -163,11 +163,7 @@ PeleC::setupVirtualParticles()
   BL_PROFILE("PeleC::setupVirtualParticles()");
   if (theSprayPC() != nullptr && !virtual_particles_set) {
     if (level < parent->finestLevel()) {
-#ifdef USE_SPRAY_SOA
-      SprayParticleContainer::ParticleTileType virts;
-#else
       SprayParticleContainer::AoS virts;
-#endif
       ((PeleC*)&parent->getLevel(level + 1))->setupVirtualParticles();
       theVirtPC()->CreateVirtualParticles(level + 1, virts);
       theVirtPC()->AddParticlesAtLevel(virts, level);
@@ -194,11 +190,7 @@ PeleC::setupGhostParticles(int ngrow)
   BL_PROFILE("PeleC::setupGhostParticles()");
   AMREX_ASSERT(level < parent->finestLevel());
   if (PeleC::theSprayPC() != nullptr) {
-#ifdef USE_SPRAY_SOA
-    SprayParticleContainer::ParticleTileType ghosts;
-#else
     SprayParticleContainer::AoS ghosts;
-#endif
     theSprayPC()->CreateGhostParticles(level, ngrow, ghosts);
     theGhostPC()->AddParticlesAtLevel(ghosts, level + 1, ngrow);
   }
