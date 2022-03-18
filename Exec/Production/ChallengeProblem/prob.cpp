@@ -73,25 +73,27 @@ amrex_probinit(
   const amrex_real* problo,
   const amrex_real* probhi)
 {
-  // Parse params
   amrex::ParmParse pp("prob");
-  pp.query("Pres_domain", PeleC::h_prob_parm_device->Pres_domain);
-  pp.query("Temp_domain", PeleC::h_prob_parm_device->Temp_domain);
-  pp.query("Yfuel_domain", PeleC::h_prob_parm_device->Yfuel_domain);
-  pp.query("Yox_domain", PeleC::h_prob_parm_device->Yox_domain);
-  pp.query("YN2_domain", PeleC::h_prob_parm_device->YN2_domain);
-  pp.query("T_jet", PeleC::h_prob_parm_device->T_jet);
-  pp.query("vel_jet", PeleC::h_prob_parm_device->vel_jet);
-  pp.query("Yox_jet", PeleC::h_prob_parm_device->Yox_jet);
-  pp.query("Yfuel_jet", PeleC::h_prob_parm_device->Yfuel_jet);
-  pp.query("YN2_jet", PeleC::h_prob_parm_device->YN2_jet);
-  pp.query("centx", PeleC::h_prob_parm_device->centx);
-  pp.query("centz", PeleC::h_prob_parm_device->centz);
-  pp.query("r_circ", PeleC::h_prob_parm_device->r_circ);
-  pp.query("r_hole", PeleC::h_prob_parm_device->r_hole);
+
+  // Chamber conditions
+  pp.query("P_mean", PeleC::h_prob_parm_device->P_mean);
+  pp.query("T_mean", PeleC::h_prob_parm_device->T_mean);
+  pp.query("Y_CH4_chamber", PeleC::h_prob_parm_device->Y_CH4_chamber);
+  pp.query("Y_O2_chamber", PeleC::h_prob_parm_device->Y_O2_chamber);
+
+  // Injection parameters
   pp.query("nholes", PeleC::h_prob_parm_device->nholes);
   pp.query("cone_angle", PeleC::h_prob_parm_device->cone_angle);
-  pp.query("inj_time", PeleC::h_prob_parm_device->inj_time);
+  pp.query("centx", PeleC::h_prob_parm_device->centx);
+  pp.query("centy", PeleC::h_prob_parm_device->centy);
+  pp.query("r_circ", PeleC::h_prob_parm_device->r_circ);
+  pp.query("r_hole", PeleC::h_prob_parm_device->r_hole);
+  pp.query("T_jet", PeleC::h_prob_parm_device->T_jet);
+  pp.query("vel_jet", PeleC::h_prob_parm_device->vel_jet);
+  pp.query("injection_start", PeleC::h_prob_parm_device->inj_start);
+  pp.query("injection_duration", PeleC::h_prob_parm_device->inj_dur);
+  pp.query("tau", PeleC::h_prob_parm_device->tau);
+  pp.query("Z", PeleC::h_prob_parm_device->Z);
 
   amrex::ParmParse ppic("ic");
   ppic.query("hitIC", PeleC::h_prob_parm_device->hitIC);
@@ -173,26 +175,6 @@ amrex_probinit(
   }
 
   amrex::Gpu::copy(
-    amrex::Gpu::hostToDevice, PeleC::prob_parm_host->h_timeInput.begin(),
-    PeleC::prob_parm_host->h_timeInput.end(),
-    PeleC::prob_parm_host->timeInput.begin());
-  amrex::Gpu::copy(
-    amrex::Gpu::hostToDevice, PeleC::prob_parm_host->h_rM.begin(),
-    PeleC::prob_parm_host->h_rM.end(), PeleC::prob_parm_host->rM.begin());
-  amrex::Gpu::copy(
-    amrex::Gpu::hostToDevice, PeleC::prob_parm_host->h_thetaM.begin(),
-    PeleC::prob_parm_host->h_thetaM.end(),
-    PeleC::prob_parm_host->thetaM.begin());
-  amrex::Gpu::copy(
-    amrex::Gpu::hostToDevice, PeleC::prob_parm_host->h_Uz.begin(),
-    PeleC::prob_parm_host->h_Uz.end(), PeleC::prob_parm_host->Uz.begin());
-  amrex::Gpu::copy(
-    amrex::Gpu::hostToDevice, PeleC::prob_parm_host->h_Ur.begin(),
-    PeleC::prob_parm_host->h_Ur.end(), PeleC::prob_parm_host->Ur.begin());
-  amrex::Gpu::copy(
-    amrex::Gpu::hostToDevice, PeleC::prob_parm_host->h_Ut.begin(),
-    PeleC::prob_parm_host->h_Ut.end(), PeleC::prob_parm_host->Ut.begin());
-  amrex::Gpu::copy(
     amrex::Gpu::hostToDevice, PeleC::prob_parm_host->h_xinput.begin(),
     PeleC::prob_parm_host->h_xinput.end(),
     PeleC::prob_parm_host->xinput.begin());
@@ -217,13 +199,6 @@ amrex_probinit(
     PeleC::prob_parm_host->h_xdiff.end(), PeleC::prob_parm_host->xdiff.begin());
 
   // Get pointers to the data
-  PeleC::h_prob_parm_device->d_timeInput =
-    PeleC::prob_parm_host->timeInput.data();
-  PeleC::h_prob_parm_device->d_rM = PeleC::prob_parm_host->rM.data();
-  PeleC::h_prob_parm_device->d_thetaM = PeleC::prob_parm_host->thetaM.data();
-  PeleC::h_prob_parm_device->d_Uz = PeleC::prob_parm_host->Uz.data();
-  PeleC::h_prob_parm_device->d_Ur = PeleC::prob_parm_host->Ur.data();
-  PeleC::h_prob_parm_device->d_Ut = PeleC::prob_parm_host->Ut.data();
   PeleC::h_prob_parm_device->d_xinput = PeleC::prob_parm_host->xinput.data();
   PeleC::h_prob_parm_device->d_uinput = PeleC::prob_parm_host->uinput.data();
   PeleC::h_prob_parm_device->d_vinput = PeleC::prob_parm_host->vinput.data();

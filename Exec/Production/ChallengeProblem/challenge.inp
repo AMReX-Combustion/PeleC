@@ -114,6 +114,7 @@ tagging.max_ftracerr_lev = 2
 tagging.ftracerr = 0.25
 tagging.vfracerr = 1e20
 tagging.max_vfracerr_lev = 2
+tagging.max_eb_refine_lev = 0
 pelec.flame_trac_name = CH4
 
 eb2.geom_type = "Line-Piston-Cylinder"
