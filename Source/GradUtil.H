@@ -3,9 +3,7 @@
 
 #include <AMReX_FArrayBox.H>
 #include "IndexDefines.H"
-#ifdef PELEC_USE_EB
 #include "EB.H"
-#endif
 
 // This header file contains functions and declarations for Gradient Utilities
 // in 3D for PeleC GPU. As per the convention of AMReX, inlined functions are
@@ -101,7 +99,6 @@ pc_compute_tangential_vel_derivs(
   }
 }
 
-#ifdef PELEC_USE_EB
 void pc_compute_tangential_vel_derivs_eb(
   const amrex::Box& /*bx*/,
   const int /*dir*/,
@@ -112,5 +109,4 @@ void pc_compute_tangential_vel_derivs_eb(
   const amrex::Array4<const amrex::Real>& /*q*/,
   const amrex::Array4<amrex::EBCellFlag const>& /*flags*/,
   const amrex::Array4<amrex::Real>& /*td*/);
-#endif
 #endif

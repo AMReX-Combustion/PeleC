@@ -60,15 +60,9 @@ PeleC::do_mol_advance(
     get_new_data(Work_Estimate_Type).setVal(0.0);
   }
 
-// Using const for non-EB was the best way to fix a difficult warning
-#ifdef PELEC_USE_EB
   amrex::MultiFab& S_old = get_old_data(State_Type);
-#else
-  const amrex::MultiFab& S_old = get_old_data(State_Type);
-#endif
   amrex::MultiFab& S_new = get_new_data(State_Type);
 
-  // define sourceterm
   amrex::MultiFab molSrc(grids, dmap, NVAR, 0, amrex::MFInfo(), Factory());
 
   amrex::MultiFab molSrc_old;
@@ -83,10 +77,8 @@ PeleC::do_mol_advance(
   }
   const amrex::MultiFab& I_R = get_new_data(Reactions_Type);
 
-#ifdef PELEC_USE_EB
   set_body_state(S_old);
   set_body_state(S_new);
-#endif
 
   // Compute S^{n} = MOLRhs(U^{n})
   if (verbose != 0) {
@@ -199,9 +191,7 @@ PeleC::do_mol_advance(
     }
   }
 
-#ifdef PELEC_USE_EB
   set_body_state(S_new);
-#endif
 
   return dt;
 }

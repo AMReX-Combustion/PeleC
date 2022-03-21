@@ -26,7 +26,6 @@ THREAD_SANITIZER = FALSE
 Eos_Model := Fuego
 Chemistry_Model := drm19
 Transport_Model := Simple
-USE_EB = TRUE
 USE_MASA = FALSE
 
 # GNU Make

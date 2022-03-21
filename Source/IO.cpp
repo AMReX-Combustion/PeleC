@@ -11,9 +11,7 @@
 #include <AMReX_Utility.H>
 #include <AMReX_buildInfo.H>
 #include <AMReX_ParmParse.H>
-#ifdef PELEC_USE_EB
 #include <AMReX_EBMultiFabUtil.H>
-#endif
 
 #include "mechanism.H"
 #include "PltFileManager.H"
@@ -114,9 +112,7 @@ PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
   }
   buildMetrics();
 
-#ifdef PELEC_USE_EB
   init_eb();
-#endif
 
   const amrex::MultiFab& S_new = get_new_data(State_Type);
 
@@ -215,13 +211,13 @@ PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
       geom, papa.Geom(level - 1), papa.refRatio(level - 1), level, NVAR);
 
     if (!amrex::DefaultGeometry().IsCartesian()) {
-      pres_reg.define(
-        grids, papa.boxArray(level - 1), dmap, papa.DistributionMap(level - 1),
-        geom, papa.Geom(level - 1), papa.refRatio(level - 1), level, 1);
+      // pres_reg.define(
+      // grids, papa.boxArray(level - 1), dmap, papa.DistributionMap(level - 1),
+      // geom, papa.Geom(level - 1), papa.refRatio(level - 1), level, 1);
+      amrex::Abort("We don't do rz.");
     }
   }
 
-#ifdef PELEC_USE_EB
   if (input_version > 0 && level == 0 && eb_in_domain) {
     if (amrex::ParallelDescriptor::IOProcessor()) {
       std::ifstream BodyFile;
@@ -252,7 +248,6 @@ PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
       amrex::ParallelDescriptor::IOProcessorNumber());
     body_state_set = true;
   }
-#endif
 }
 
 void
@@ -367,7 +362,6 @@ PeleC::checkPoint(
     */
   }
 
-#ifdef PELEC_USE_EB
   if (current_version > 0) {
     if (amrex::ParallelDescriptor::IOProcessor() && eb_in_domain) {
       amrex::IntVect iv(AMREX_D_DECL(0, 0, 0));
@@ -388,7 +382,6 @@ PeleC::checkPoint(
       BodyFile.close();
     }
   }
-#endif
 }
 
 void
@@ -398,7 +391,6 @@ PeleC::setPlotVariables()
 
   amrex::ParmParse pp("pelec");
 
-#ifdef PELEC_USE_EB
   bool plot_vfrac = eb_in_domain;
   pp.query("plot_vfrac ", plot_vfrac);
   if (plot_vfrac) {
@@ -406,7 +398,6 @@ PeleC::setPlotVariables()
   } else if (amrex::Amr::isDerivePlotVar("vfrac")) {
     amrex::Amr::deleteDerivePlotVar("vfrac");
   }
-#endif
   bool plot_cost = true;
   pp.query("plot_cost", plot_cost);
   if (plot_cost) {
@@ -740,27 +731,11 @@ PeleC::writeBuildInfo(std::ostream& os)
      << "is undefined (0)" << std::endl;
 #endif
 
-#ifdef PELEC_USE_EB
-  os << std::setw(35) << std::left << "PELEC_USE_EB " << std::setw(6) << "ON"
-     << std::endl;
-#else
-  os << std::setw(35) << std::left << "PELEC_USE_EB " << std::setw(6) << "OFF"
-     << std::endl;
-#endif
-
 #ifdef PELEC_USE_MASA
   os << std::setw(35) << std::left << "PELEC_USE_MASA " << std::setw(6) << "ON"
      << std::endl;
 #else
   os << std::setw(35) << std::left << "PELEC_USE_MASA " << std::setw(6) << "OFF"
-     << std::endl;
-#endif
-
-#ifdef PELEC_USE_EB
-  os << std::setw(35) << std::left << "PELEC_USE_EB " << std::setw(6) << "ON"
-     << std::endl;
-#else
-  os << std::setw(35) << std::left << "PELEC_USE_EB " << std::setw(6) << "OFF"
      << std::endl;
 #endif
 
@@ -926,11 +901,9 @@ PeleC::writePlotFile(
       os << PathNameInHeader << '\n';
     }
 
-#ifdef PELEC_USE_EB
     if (eb_in_domain && level == parent->finestLevel()) {
       os << vfraceps << '\n';
     }
-#endif
   }
 
   // We combine all of the multifabs -- state, derived, etc -- into one
@@ -962,11 +935,6 @@ PeleC::writePlotFile(
       cnt += ncomp;
     }
   }
-
-#ifdef PELEC_USE_EB
-  // Prefer app-specific one
-  // amrex::EB_set_covered(plotMF);
-#endif
 
   // Use the Full pathname when naming the MultiFab.
   std::string TheFullPath = FullPath;

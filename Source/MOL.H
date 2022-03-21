@@ -1,9 +1,7 @@
 #ifndef _MOL_H_
 #define _MOL_H_
 
-#ifdef PELEC_USE_EB
 #include <AMReX_EBCellFlag.H>
-#endif
 
 #include "Diffterm.H"
 #include "IndexDefines.H"
@@ -22,12 +20,8 @@ mol_slope(
   const amrex::GpuArray<const int, 3> q_idx,
   const amrex::Array4<const amrex::Real>& q,
   const amrex::Array4<const amrex::Real>& qaux,
-  const amrex::Array4<amrex::Real>& dq
-#ifdef PELEC_USE_EB
-  ,
-  const amrex::Array4<amrex::EBCellFlag const>& flags
-#endif
-)
+  const amrex::Array4<amrex::Real>& dq,
+  const amrex::Array4<amrex::EBCellFlag const>& flags)
 {
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
   const amrex::IntVect dm(-amrex::IntVect::TheDimensionVector(dir));
@@ -35,15 +29,10 @@ mol_slope(
   const amrex::IntVect ivm(iv + dm);
   const amrex::IntVect ivp(iv + dp);
 
-#ifdef PELEC_USE_EB
   const bool flagArrayL =
     flags(i, j, k).isConnected(dm) && !flags(i, j, k).isCovered();
   const bool flagArrayR =
     flags(i, j, k).isConnected(dp) && !flags(i, j, k).isCovered();
-#else
-  const bool flagArrayL = true;
-  const bool flagArrayR = true;
-#endif
 
   amrex::Real dlft[QVAR] = {0.0};
   amrex::Real drgt[QVAR] = {0.0};
@@ -106,15 +95,11 @@ void pc_compute_hyp_mol_flux(
     area,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> del,
   const int plm_iorder,
-  const bool use_laxf_flux
-#ifdef PELEC_USE_EB
-  ,
+  const bool use_laxf_flux,
   const amrex::Array4<amrex::EBCellFlag const>& flags,
   const EBBndryGeom* ebg,
   const int Nebg,
   amrex::Real* ebflux,
-  const int nebflux
-#endif
-);
+  const int nebflux);
 
 #endif

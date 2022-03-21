@@ -244,7 +244,6 @@ pc_dermagvort(
   amrex::Elixir local_eli = local.elixir();
   auto larr = local.array();
 
-#ifdef PELEC_USE_EB
   const auto& flag_fab = amrex::getEBCellFlagFab(datfab);
   const auto& typ = flag_fab.getType(bx);
   if (typ == amrex::FabType::covered) {
@@ -253,7 +252,6 @@ pc_dermagvort(
   }
   const auto& flags = flag_fab.const_array();
   const bool all_regular = typ == amrex::FabType::regular;
-#endif
 
   // Convert momentum to velocity.
   amrex::ParallelFor(gbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -273,15 +271,9 @@ pc_dermagvort(
 
     // if fab is all regular -> call regular idx and weights
     // otherwise
-#ifdef PELEC_USE_EB
     AMREX_D_TERM(get_idx(i, 0, all_regular, flags(i, j, k), im, ip);
                  , get_idx(j, 1, all_regular, flags(i, j, k), jm, jp);
                  , get_idx(k, 2, all_regular, flags(i, j, k), km, kp);)
-#else
-    AMREX_D_TERM(get_idx(i, im, ip);
-                 , get_idx(j, jm, jp);
-                 , get_idx(k, km, kp);)
-#endif
     AMREX_D_TERM(const amrex::Real wi = get_weight(im, ip);
                  , const amrex::Real wj = get_weight(jm, jp);
                  , const amrex::Real wk = get_weight(km, kp);)
@@ -317,7 +309,6 @@ pc_derdivu(
   auto const dat = datfab.const_array();
   auto divu = derfab.array();
 
-#ifdef PELEC_USE_EB
   const auto& flag_fab = amrex::getEBCellFlagFab(datfab);
   const auto& typ = flag_fab.getType(bx);
   if (typ == amrex::FabType::covered) {
@@ -326,7 +317,6 @@ pc_derdivu(
   }
   const auto& flags = flag_fab.const_array();
   const bool all_regular = typ == amrex::FabType::regular;
-#endif
 
   AMREX_D_TERM(const amrex::Real dx = geomdata.CellSize(0);
                , const amrex::Real dy = geomdata.CellSize(1);
@@ -334,16 +324,9 @@ pc_derdivu(
 
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     AMREX_D_TERM(int im; int ip;, int jm; int jp;, int km; int kp;)
-#ifdef PELEC_USE_EB
     AMREX_D_TERM(get_idx(i, 0, all_regular, flags(i, j, k), im, ip);
                  , get_idx(j, 1, all_regular, flags(i, j, k), jm, jp);
                  , get_idx(k, 2, all_regular, flags(i, j, k), km, kp);)
-#else
-    AMREX_D_TERM(get_idx(i, im, ip);
-                 , get_idx(j, jm, jp);
-                 , get_idx(k, km, kp);)
-
-#endif
     AMREX_D_TERM(const amrex::Real wi = get_weight(im, ip);
                  , const amrex::Real wj = get_weight(jm, jp);
                  , const amrex::Real wk = get_weight(km, kp);)
@@ -383,7 +366,6 @@ pc_derenstrophy(
   amrex::Elixir local_eli = local.elixir();
   auto larr = local.array();
 
-#ifdef PELEC_USE_EB
   const auto& flag_fab = amrex::getEBCellFlagFab(datfab);
   const auto& typ = flag_fab.getType(bx);
   if (typ == amrex::FabType::covered) {
@@ -392,7 +374,6 @@ pc_derenstrophy(
   }
   const auto& flags = flag_fab.const_array();
   const bool all_regular = typ == amrex::FabType::regular;
-#endif
 
   // Convert momentum to velocity.
   amrex::ParallelFor(gbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -409,16 +390,9 @@ pc_derenstrophy(
   // Calculate enstrophy.
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     AMREX_D_TERM(int im; int ip;, int jm; int jp;, int km; int kp;)
-#ifdef PELEC_USE_EB
     AMREX_D_TERM(get_idx(i, 0, all_regular, flags(i, j, k), im, ip);
                  , get_idx(j, 1, all_regular, flags(i, j, k), jm, jp);
                  , get_idx(k, 2, all_regular, flags(i, j, k), km, kp);)
-#else
-    AMREX_D_TERM(get_idx(i, im, ip);
-                 , get_idx(j, jm, jp);
-                 , get_idx(k, km, kp);)
-
-#endif
     AMREX_D_TERM(const amrex::Real wi = get_weight(im, ip);
                  , const amrex::Real wj = get_weight(jm, jp);
                  , const amrex::Real wk = get_weight(km, kp);)
