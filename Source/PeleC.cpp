@@ -1269,13 +1269,8 @@ PeleC::reflux()
 
   PeleC& fine_level = getLevel(level + 1);
   amrex::MultiFab& S_crse = get_new_data(State_Type);
-
-  if (eb_in_domain) {
-    amrex::MultiFab& S_fine = fine_level.get_new_data(State_Type);
-    fine_level.flux_reg.Reflux(S_crse, vfrac, S_fine, fine_level.vfrac);
-  } else {
-    fine_level.flux_reg.Reflux(S_crse);
-  }
+  amrex::MultiFab& S_fine = fine_level.get_new_data(State_Type);
+  fine_level.flux_reg.Reflux(S_crse, vfrac, S_fine, fine_level.vfrac);
 
   if (!amrex::DefaultGeometry().IsCartesian() && eb_in_domain) {
     amrex::Abort("rz not yet compatible with EB");
@@ -2036,14 +2031,14 @@ PeleC::build_interior_boundary_mask(int ng)
 }
 
 amrex::Real
-PeleC::clean_state(const amrex::MultiFab& S)
+PeleC::clean_state(const amrex::MultiFab& /*S*/)
 {
   // In the past, we enforced a minimum density and normalization of species.
   return 0.0;
 }
 
 amrex::Real
-PeleC::clean_state(const amrex::MultiFab& S, amrex::MultiFab& S_old)
+PeleC::clean_state(const amrex::MultiFab& /*S*/, amrex::MultiFab& /*S_old*/)
 {
   // In the past, we enforced a minimum density and normalization of species.
   return 0.0;

@@ -158,7 +158,7 @@ function(build_pelec_exe pelec_exe_name)
        ${SRC_DIR}/Diffusion.cpp
        ${SRC_DIR}/EB.H
        ${SRC_DIR}/EB.cpp
-       ${SRC_DIR}/EBStencilTypes.H)
+       ${SRC_DIR}/EBStencilTypes.H
        ${SRC_DIR}/External.cpp
        ${SRC_DIR}/Filter.H
        ${SRC_DIR}/Filter.cpp

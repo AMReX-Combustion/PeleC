@@ -850,11 +850,4 @@ PeleC::getFluxReg(int lev)
   return getLevel(lev).getFluxReg();
 }
 
-AMREX_FORCE_INLINE
-amrex::EBFluxRegister&
-PeleC::getPresReg(int lev)
-{
-  return getLevel(lev).getPresReg();
-}
-
 #endif

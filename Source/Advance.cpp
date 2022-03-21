@@ -25,7 +25,6 @@ PeleC::advance(
 
     if (!amrex::DefaultGeometry().IsCartesian()) {
       amrex::Abort("Flux registers not r-z compatible yet");
-      getPresReg(level + 1).reset();
     }
   }
 
