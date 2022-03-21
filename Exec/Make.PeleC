@@ -25,6 +25,10 @@ include $(AMREX_HOME)/Tools/GNUMake/Make.defs
 # PeleC uses a coarse grained OMP approach
 DEFINES += -DCRSEGRNDOMP
 
+ifeq ($(DIM), 1)
+  $(error PeleC does not support 1D)
+endif
+
 Bpack += $(PELE_PHYSICS_HOME)/Utility/TurbInflow/Make.package
 Blocs += $(PELE_PHYSICS_HOME)/Utility/TurbInflow
 
