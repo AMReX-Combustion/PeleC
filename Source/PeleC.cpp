@@ -765,7 +765,8 @@ PeleC::initialTimeStep()
   return init_dt;
 }
 
-amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
+amrex::Real
+PeleC::estTimeStep(amrex::Real /*dt_old*/)
 {
   BL_PROFILE("PeleC::estTimeStep()");
 
@@ -1225,7 +1226,8 @@ PeleC::post_regrid(
   }
 }
 
-void PeleC::post_init(amrex::Real /*stop_time*/)
+void
+PeleC::post_init(amrex::Real /*stop_time*/)
 {
   BL_PROFILE("PeleC::post_init()");
 
@@ -1358,16 +1360,10 @@ PeleC::reflux()
     const int IOProc = amrex::ParallelDescriptor::IOProcessorNumber();
     amrex::Real end = amrex::ParallelDescriptor::second() - strt;
 
-#ifdef AMREX_LAZY
-    Lazy::QueueReduction([=]() mutable {
-#endif
-      amrex::ParallelDescriptor::ReduceRealMax(end, IOProc);
+    amrex::ParallelDescriptor::ReduceRealMax(end, IOProc);
 
-      amrex::Print() << "PeleC::reflux() at level " << level
-                     << " : time = " << end << std::endl;
-#ifdef AMREX_LAZY
-    });
-#endif
+    amrex::Print() << "PeleC::reflux() at level " << level
+                   << " : time = " << end << std::endl;
   }
 }
 
@@ -1471,29 +1467,23 @@ PeleC::enforce_min_density(
   if (print_energy_diagnostics) {
     amrex::Real foo[3] = {mass_added, eint_added, eden_added};
 
-#ifdef AMREX_LAZY
-    Lazy::QueueReduction([=]() mutable {
-#endif
-      amrex::ParallelDescriptor::ReduceRealSum(
-        foo, 3, amrex::ParallelDescriptor::IOProcessorNumber());
+    amrex::ParallelDescriptor::ReduceRealSum(
+      foo, 3, amrex::ParallelDescriptor::IOProcessorNumber());
 
-      if (amrex::ParallelDescriptor::IOProcessor()) {
-        mass_added = foo[0];
-        eint_added = foo[1];
-        eden_added = foo[2];
+    if (amrex::ParallelDescriptor::IOProcessor()) {
+      mass_added = foo[0];
+      eint_added = foo[1];
+      eden_added = foo[2];
 
-        if (amrex::Math::abs(mass_added) != 0.0) {
-          amrex::Print() << "   Mass added from negative density correction : "
-                         << mass_added << std::endl;
-          amrex::Print() << "(rho e) added from negative density correction : "
-                         << eint_added << std::endl;
-          amrex::Print() << "(rho E) added from negative density correction : "
-                         << eden_added << std::endl;
-        }
+      if (amrex::Math::abs(mass_added) != 0.0) {
+        amrex::Print() << "   Mass added from negative density correction : "
+                       << mass_added << std::endl;
+        amrex::Print() << "(rho e) added from negative density correction : "
+                       << eint_added << std::endl;
+        amrex::Print() << "(rho E) added from negative density correction : "
+                       << eden_added << std::endl;
       }
-#ifdef AMREX_LAZY
-    });
-#endif
+    }
   }
 
   return dens_change;
@@ -2087,20 +2077,14 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
   if (parent->finestLevel() == 0 && print_energy_diagnostics) {
     // Pass in the multifab and the component
     amrex::Real sum = volWgtSumMF(S_new, Eden, true);
-#ifdef AMREX_LAZY
-    Lazy::QueueReduction([=]() mutable {
-#endif
-      amrex::ParallelDescriptor::ReduceRealSum(sum0);
-      amrex::ParallelDescriptor::ReduceRealSum(sum);
-      if (
-        amrex::ParallelDescriptor::IOProcessor() &&
-        amrex::Math::abs(sum - sum0) > 0) {
-        amrex::Print() << "(rho E) added from reset terms                 : "
-                       << sum - sum0 << " out of " << sum0 << std::endl;
-      }
-#ifdef AMREX_LAZY
-    });
-#endif
+    amrex::ParallelDescriptor::ReduceRealSum(sum0);
+    amrex::ParallelDescriptor::ReduceRealSum(sum);
+    if (
+      amrex::ParallelDescriptor::IOProcessor() &&
+      amrex::Math::abs(sum - sum0) > 0) {
+      amrex::Print() << "(rho E) added from reset terms                 : "
+                     << sum - sum0 << " out of " << sum0 << std::endl;
+    }
   }
 #endif
 }

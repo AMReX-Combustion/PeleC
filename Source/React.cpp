@@ -332,16 +332,10 @@ PeleC::react_state(
     const int IOProc = amrex::ParallelDescriptor::IOProcessorNumber();
     amrex::Real run_time = amrex::ParallelDescriptor::second() - strt_time;
 
-#ifdef AMREX_LAZY
-    Lazy::QueueReduction([=]() mutable {
-#endif
-      amrex::ParallelDescriptor::ReduceRealMax(run_time, IOProc);
+    amrex::ParallelDescriptor::ReduceRealMax(run_time, IOProc);
 
-      if (amrex::ParallelDescriptor::IOProcessor()) {
-        amrex::Print() << "PeleC::react_state() time = " << run_time << "\n";
-      }
-#ifdef AMREX_LAZY
-    });
-#endif
+    if (amrex::ParallelDescriptor::IOProcessor()) {
+      amrex::Print() << "PeleC::react_state() time = " << run_time << "\n";
+    }
   }
 }
