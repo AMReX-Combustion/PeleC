@@ -817,8 +817,7 @@ PeleC::initialTimeStep()
   return init_dt;
 }
 
-amrex::Real
-PeleC::estTimeStep(amrex::Real /*dt_old*/)
+amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 {
   BL_PROFILE("PeleC::estTimeStep()");
 
@@ -1232,8 +1231,7 @@ PeleC::post_regrid(
   }
 }
 
-void
-PeleC::post_init(amrex::Real /*stop_time*/)
+void PeleC::post_init(amrex::Real /*stop_time*/)
 {
   BL_PROFILE("PeleC::post_init()");
 
