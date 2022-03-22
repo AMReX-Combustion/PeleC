@@ -618,7 +618,7 @@ protected:
 
   void reflux();
 
-  amrex::Real clean_state(const amrex::MultiFab& S);
+  static amrex::Real clean_state(const amrex::MultiFab& S);
 
   static amrex::Real
   clean_state(const amrex::MultiFab& S, amrex::MultiFab& S_old);
