@@ -1,4 +1,15 @@
+#include <istream> // for getline, istringstream, basic_istream
+#include <string>  // for allocator, char_traits, operator+, to_string
+
+#include "AMReX_Config.H"  // for AMREX_SPACEDIM
+#include "AMReX_IntVect.H" // for IntVect
+#include "AMReX_SPACE.H"   // for AMREX_D_DECL, AMREX_D_TERM
+
 #include "Utilities.H"
+
+namespace amrex {
+class Box;
+} // namespace amrex
 
 // -----------------------------------------------------------
 // Read a binary file

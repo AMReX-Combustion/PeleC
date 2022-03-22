@@ -1,4 +1,23 @@
-#include <Filter.H>
+#include <cmath>   // for sqrt, exp
+#include <numeric> // for accumulate
+
+#include "AMReX_Array4.H"           // for Array4
+#include "AMReX_BLProfiler.H"       // for BL_PROFILE
+#include "AMReX_BLassert.H"         // for AMREX_ASSERT
+#include "AMReX_Box.H"              // for Box
+#include "AMReX_FArrayBox.H"        // for FArrayBox
+#include "AMReX_FabArray.H"         // for FabArray
+#include "AMReX_GpuContainers.H"    // for DeviceVector, copy, hostToDevice
+#include "AMReX_GpuLaunchFunctsC.H" // for ParallelFor
+#include "AMReX_GpuQualifiers.H"    // for AMREX_GPU_DEVICE
+#include "AMReX_MFIter.H"           // for MFIter, TilingIfNotGPU
+#include "AMReX_MultiFab.H"         // for MultiFab
+#include "AMReX_REAL.H"             // for Real
+
+#include "Constants.H" // for PI
+#include "Utilities.H" // for setC
+
+#include "Filter.H"
 
 // Set the filter weights for the standard box filter
 void

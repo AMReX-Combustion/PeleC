@@ -1,4 +1,11 @@
+#include "AMReX_ParmParse.H" // for ParmParse
+#include "AMReX_REAL.H"      // for amrex_real, Real
+
 #include "prob.H"
+#include "GammaLaw.H"        // for GammaLaw
+#include "PeleC.H"           // for PeleC, PeleC::h_prob_parm_device, PeleC...
+#include "PelePhysics.H"     // for PhysicsType
+#include "TransportParams.H" // for TransParm, TransportParams
 
 void
 pc_prob_close()

@@ -5,19 +5,13 @@
 #include <omp.h>
 #endif
 
-#include <AMReX_FArrayBox.H>
-
-#include "PeleC.H"
-#include "Utilities.H"
-#include "GradUtil.H"
-#include "Diffterm.H"
-#include "MOL.H"
-#include "EB.H"
-#include "hydro_redistribution.H"
-
-// This header file contains functions and declarations for the diffusion
-// portion of PeleC GPU. As per the convention of AMReX, inlined functions are
-// defined here. Where as non-inline functions are declared here.
+#include "AMReX_Array4.H"        // for Array4
+#include "AMReX_Config.H"        // for AMREX_SPACEDIM
+#include "AMReX_Dim3.H"          // for Dim3
+#include "AMReX_Extension.H"     // for AMREX_FORCE_INLINE
+#include "AMReX_GpuQualifiers.H" // for AMREX_GPU_DEVICE
+#include "AMReX_REAL.H"          // for Real
+#include "AMReX_SPACE.H"         // for AMREX_D_DECL
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE

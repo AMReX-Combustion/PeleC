@@ -1,24 +1,69 @@
-#include <iomanip>
-#include <iostream>
-#include <memory>
-#include <string>
-#include <ctime>
+#include <algorithm> // for find
+#include <ctime>     // for localtime, strftime, time, time_t
+#include <iomanip>   // for operator<<, setw, setprecision
+#include <iostream>  // for operator<<, basic_ostream, string
+#include <iterator>  // for distance
+#include <list>      // for list, operator!=, __list_iterator
+#include <map>       // for map, __map_iterator, operator!=
+#include <memory>    // for unique_ptr, make_unique
+#include <stdio.h>   // for sprintf
+#include <stdlib.h>  // for abs
+#include <string.h>  // for strlen
+#include <string>    // for char_traits, allocator, basic_...
+#include <utility>   // for pair
 
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
-#include <AMReX_Utility.H>
-#include <AMReX_buildInfo.H>
-#include <AMReX_ParmParse.H>
-#include <AMReX_EBMultiFabUtil.H>
+#include "AMReX.H"                    // for Abort, Error
+#include "AMReX_Algorithm.H"          // for max, min
+#include "AMReX_Amr.H"                // for Amr
+#include "AMReX_AmrLevel.H"           // for AmrLevel::desc_lst, AmrLevel
+#include "AMReX_Array.H"              // for GpuArray
+#include "AMReX_Array4.H"             // for Array4
+#include "AMReX_BLassert.H"           // for AMREX_ASSERT
+#include "AMReX_Box.H"                // for operator<<, Box
+#include "AMReX_BoxArray.H"           // for BoxArray
+#include "AMReX_buildInfo.H"          // for buildInfoGetGitHash, buildInfo...
+#include "AMReX_Config.H"             // for AMREX_SPACEDIM
+#include "AMReX_Derive.H"             // for DeriveRec, DeriveList
+#include "AMReX_EBFluxRegister.H"     // for EBFluxRegister
+#include "AMReX_FArrayBox.H"          // for FArrayBox
+#include "AMReX_FabArray.H"           // for MFInfo, MultiArray4
+#include "AMReX_FileSystem.H"         // for CurrentPath
+#include "AMReX_Geometry.H"           // for Geometry, DefaultGeometry
+#include "AMReX_GpuContainers.H"      // for DeviceVector, copy, deviceToHost
+#include "AMReX_GpuLaunchFunctsC.H"   // for ParallelFor
+#include "AMReX_GpuQualifiers.H"      // for AMREX_GPU_DEVICE
+#include "AMReX_IndexType.H"          // for IndexType
+#include "AMReX_IntVect.H"            // for IntVect
+#include "AMReX_MFParallelFor.H"      // for ParallelFor
+#include "AMReX_Math.H"               // for abs
+#include "AMReX_MultiFab.H"           // for MultiFab
+#include "AMReX_ParallelDescriptor.H" // for IOProcessor, Barrier, Bcast
+#include "AMReX_ParmParse.H"          // for ParmParse
+#include "AMReX_Print.H"              // for Print
+#include "AMReX_REAL.H"               // for Real
+#include "AMReX_RealBox.H"            // for RealBox
+#include "AMReX_SPACE.H"              // for AMREX_D_TERM, AMREX_D_DECL
+#include "AMReX_StateData.H"          // for StateData
+#include "AMReX_StateDescriptor.H"    // for DescriptorList, StateDescriptor
+#include "AMReX_Utility.H"            // for CreateDirectoryFailed, UtilCre...
+#include "AMReX_Vector.H"             // for Vector
+#include "AMReX_VisMF.H"              // for VisMF, VisMF::How
 
-#include "mechanism.H"
-#include "PltFileManager.H"
+#include "Fuego.H"          // for Fuego
+#include "GammaLaw.H"       // for GammaLaw
+#include "IndexDefines.H"   // for NVAR, UFS, UMX, UMY, UMZ, NUM_ADV
+#include "mechanism.H"      // for NUM_SPECIES, CKINDX
+#include "PeleC.H"          // for PeleC, State_Type, PeleC::body...
+#include "PelePhysics.H"    // for PhysicsType
+#include "PltFileManager.H" // for PltFileManager
+#include "SRK.H"            // for SRK
+#include "Utilities.H"      // for find_position
 
-#include "PeleC.H"
 #include "IO.H"
-#include "IndexDefines.H"
 
 // PeleC maintains an internal checkpoint version numbering system.
 // This allows us to maintain backwards compatibility with checkpoints

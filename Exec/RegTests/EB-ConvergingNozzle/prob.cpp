@@ -1,4 +1,39 @@
+#include <cmath>   // for sqrt, M_PI
+#include <ostream> // for endl
+#include <utility> // for move
+#include <vector>  // for vector
+
+#include "AMReX.H"                     // for Verbose
+#include "AMReX_Algorithm.H"           // for max, min
+#include "AMReX_Box.H"                 // for AllGatherBoxes, grow, surroun...
+#include "AMReX_BoxArray.H"            // for convert
+#include "AMReX_BoxList.H"             // for BoxList
+#include "AMReX_EB2.H"                 // for Build
+#include "AMReX_EB2_GeometryShop.H"    // for GeometryShop, makeShop
+#include "AMReX_EB2_IF_Cylinder.H"     // for CylinderIF
+#include "AMReX_EB2_IF_Intersection.H" // for makeIntersection
+#include "AMReX_EB2_IF_Lathe.H"        // for LatheIF, lathe
+#include "AMReX_EB2_IF_Plane.H"        // for PlaneIF
+#include "AMReX_EB2_IF_Rotation.H"     // for RotationIF, rotate
+#include "AMReX_EB2_IF_Translation.H"  // for translate
+#include "AMReX_EB2_IF_Union.H"        // for makeUnion
+#include "AMReX_EBCellFlag.H"          // for EBCellFlagFab
+#include "AMReX_FabFactory.H"          // for DefaultFabFactory
+#include "AMReX_GpuDevice.H"           // for streamSynchronize
+#include "AMReX_IntVect.H"             // for coarsen, scale
+#include "AMReX_ParallelReduce.H"      // for Sum
+#include "AMReX_ParmParse.H"           // for ParmParse
+#include "AMReX_REAL.H"                // for Real, amrex_real
+#include "AMReX_SPACE.H"               // for AMREX_D_DECL
+#include "AMReX_Vector.H"              // for Vector
+
+#include "PeleC.H" // for PeleC, PeleC::h_prob_parm_device
+
 #include "prob.H"
+
+namespace amrex {
+class Geometry;
+} // namespace amrex
 
 void
 pc_prob_close()

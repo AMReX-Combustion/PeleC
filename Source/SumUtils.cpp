@@ -1,4 +1,20 @@
-#include "PeleC.H"
+#include <iosfwd> // for string
+#include <memory> // for unique_ptr
+#include <string> // for operator==
+
+#include "AMReX.H"                    // for Abort
+#include "AMReX_Amr.H"                // for Amr
+#include "AMReX_BLProfiler.H"         // for BL_PROFILE
+#include "AMReX_BLassert.H"           // for AMREX_ASSERT, BL_ASSERT
+#include "AMReX_FArrayBox.H"          // for FArrayBox
+#include "AMReX_FabArray.H"           // for FabArray
+#include "AMReX_GpuControl.H"         // for RunOn, RunOn::Device
+#include "AMReX_MFIter.H"             // for MFIter, TilingIfNotGPU
+#include "AMReX_MultiFab.H"           // for MultiFab
+#include "AMReX_ParallelDescriptor.H" // for ReduceRealSum
+#include "AMReX_REAL.H"               // for Real
+
+#include "PeleC.H" // for PeleC, PeleC::eb_in_domain
 
 amrex::Real
 PeleC::sumDerive(const std::string& name, amrex::Real time, bool local)

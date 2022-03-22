@@ -1,4 +1,37 @@
-#include "React.H"
+#include <memory>  // for allocator
+#include <ostream> // for endl
+
+#include "AMReX_Array4.H"             // for Array4
+#include "AMReX_BLProfiler.H"         // for BL_PROFILE
+#include "AMReX_BLassert.H"           // for AMREX_ASSERT
+#include "AMReX_Box.H"                // for Box
+#include "AMReX_EBCellFlag.H"         // for EBCellFlagFab
+#include "AMReX_EBFabFactory.H"       // for EBFArrayBoxFactory
+#include "AMReX_FArrayBox.H"          // for FArrayBox
+#include "AMReX_FabArray.H"           // for FabArray, MFInfo
+#include "AMReX_FabArrayUtility.H"    // for prefetchToDevice
+#include "AMReX_FabFactory.H"         // for FabType, FabFactory, FabType::...
+#include "AMReX_Geometry.H"           // for Geometry
+#include "AMReX_GpuControl.H"         // for RunOn, RunOn::Device
+#include "AMReX_GpuDevice.H"          // for Device
+#include "AMReX_GpuLaunchFunctsC.H"   // for ParallelFor
+#include "AMReX_GpuQualifiers.H"      // for AMREX_GPU_DEVICE
+#include "AMReX_MFIter.H"             // for MFIter, TilingIfNotGPU
+#include "AMReX_MultiFab.H"           // for MultiFab
+#include "AMReX_ParallelDescriptor.H" // for second, IOProcessor, IOProcess...
+#include "AMReX_Print.H"              // for Print
+#include "AMReX_REAL.H"               // for Real
+#include "AMReX_Vector.H"             // for Vector
+#include "AMReX_iMultiFab.H"          // for iMultiFab
+
+#include "Fuego.H"        // for Fuego
+#include "GammaLaw.H"     // for GammaLaw
+#include "IndexDefines.H" // for UFS, NVAR, UEDEN, UMX, UMY, UMZ
+#include "mechanism.H"    // for NUM_SPECIES
+#include "PeleC.H"        // for PeleC, State_Type, PeleC::src_...
+#include "PelePhysics.H"  // for PhysicsType
+#include "ReactorBase.H"  // for ReactorBase
+#include "SRK.H"          // for SRK
 
 void
 PeleC::set_typical_values_chem()
@@ -16,7 +49,7 @@ PeleC::set_typical_values_chem()
       amrex::Real rhoYs_min = S_new.min(UFS + sp);
       amrex::Real rhoYs_max = S_new.max(UFS + sp);
       typical_values_chem[sp] =
-        std::max(0.5 * (rhoYs_min + rhoYs_max), typical_rhoY_val_min);
+        amrex::max(0.5 * (rhoYs_min + rhoYs_max), typical_rhoY_val_min);
     }
     typical_values_chem[NUM_SPECIES] = 0.5 * (minTemp + maxTemp);
     reactor->set_typ_vals_ode(typical_values_chem);

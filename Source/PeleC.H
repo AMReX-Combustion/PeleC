@@ -1,31 +1,44 @@
 #ifndef _PELEC_H_
 #define _PELEC_H_
 
-#include <AMReX_BC_TYPES.H>
-#include <AMReX_AmrLevel.H>
-#include <AMReX_iMultiFab.H>
-#include <AMReX_ParmParse.H>
-#include <AMReX_EBFArrayBox.H>
-#include <AMReX_EBFluxRegister.H>
-#include <AMReX_EBCellFlag.H>
-#include <AMReX_MultiCutFab.H>
+#include <algorithm>
+#include <array>    // for array
+#include <iosfwd>   // for string, ostream, istream
+#include <stdlib.h> // for abs
+#include <string>   // for allocator, char_traits, operator!=
+
+#include "AMReX.H"                // for Abort
+#include "AMReX_Amr.H"            // for Amr
+#include "AMReX_AmrLevel.H"       // for AmrLevel
+#include "AMReX_Array.H"          // for GpuArray
+#include "AMReX_Array4.H"         // for Array4
+#include "AMReX_Config.H"         // for AMREX_SPACEDIM
+#include "AMReX_EBFluxRegister.H" // for EBFluxRegister
+#include "AMReX_Extension.H"      // for AMREX_FORCE_INLINE
+#include "AMReX_GpuContainers.H"  // for DeviceVector
+#include "AMReX_GpuQualifiers.H"  // for AMREX_GPU_DEVICE
+#include "AMReX_iMultiFab.H"      // for iMultiFab
+#include "AMReX_Math.H"           // for abs
+#include "AMReX_MultiFab.H"       // for MultiFab
+#include "AMReX_ParmParse.H"      // for ParmParse
+#include "AMReX_REAL.H"           // for Real
+#include "AMReX_Vector.H"         // for Vector
+#include "AMReX_VisMF.H"          // for VisMF, VisMF::How
 
 #ifdef AMREX_PARTICLES
-#include <AMReX_Particles.H>
-#include <SprayParticles.H>
+#include "AMReX_Particles.H"
+#include "SprayParticles.H"
 #endif
 
-#include "Filter.H"
-#include "Tagging.H"
-#include "IndexDefines.H"
-#include "prob_parm.H"
-#include "PelePhysics.H"
-#include "ReactorBase.H"
-#include "turbinflow.H"
-#include "SparseData.H"
-#include "EBStencilTypes.H"
-
-#define UserBC 6
+#include "EBStencilTypes.H" // for EBBndryGeom
+#include "Filter.H"         // for Filter
+#include "IndexDefines.H"   // for PassMap (ptr only), URHO, NVAR, UFS
+#include "mechanism.H"      // for NUM_SPECIES
+#include "PelePhysics.H"    // for PhysicsType
+#include "prob_parm.H"      // for ProbParmDevice
+#include "ReactorBase.H"    // for reactions
+#include "SparseData.H"     // for SparseData
+#include "turbinflow.H"     // for turbinflow
 
 enum StateType { State_Type = 0, Reactions_Type, Work_Estimate_Type };
 
@@ -45,22 +58,42 @@ enum sources {
   num_src
 };
 
-/*
-static amrex::Box
-the_same_box(const amrex::Box& b)
-{
-  return b;
-}
-
-static amrex::Box
-grow_box_by_one(const amrex::Box& b)
-{
-  return amrex::grow(b, 1);
-}
-*/
-
 // AmrLevel-derived class for hyperbolic conservation equations for stellar
 // media
+
+namespace amrex {
+class BCRec;
+class Box;
+class BoxArray;
+class DistributionMapping;
+class FArrayBox;
+class Geometry;
+class IntVect;
+class MultiCutFab;
+class TagBoxArray;
+} // namespace amrex
+
+namespace pele {
+namespace physics {
+namespace reactions {
+class ReactorBase;
+} // namespace reactions
+namespace transport {
+template <typename TransportType>
+class TransportParams;
+} // namespace transport
+namespace turbinflow {
+struct TurbInflow;
+} // namespace turbinflow
+} // namespace physics
+} // namespace pele
+
+struct EBBndryGeom;
+struct EBBndrySten;
+struct FaceSten;
+struct ProbParmDevice;
+struct ProbParmHost;
+struct TaggingParm;
 
 class PeleC : public amrex::AmrLevel
 {
@@ -713,8 +746,8 @@ protected:
   static int reset_typical_vals_int;
   static amrex::Vector<amrex::Real> typical_values_chem_usr;
 
-  // problem-specific includes
-#include <Problem.H>
+// problem-specific includes
+#include "Problem.H"
 
   static amrex::GpuArray<amrex::Real, NVAR> body_state;
   static bool body_state_set;

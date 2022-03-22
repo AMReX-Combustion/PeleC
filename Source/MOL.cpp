@@ -1,4 +1,19 @@
+#include <cmath> // for pow, sqrt
+
+#include "AMReX_Box.H"              // for grow, Box, surroundingNodes
+#include "AMReX_FArrayBox.H"        // for FArrayBox
+#include "AMReX_GpuElixir.H"        // for Elixir
+#include "AMReX_GpuLaunchFunctsC.H" // for ParallelFor
+
+#include "EBStencilTypes.H" // for EBBndryGeom
+#include "Riemann.H"        // for laxfriedrich_flux, riemann
+#include "Utilities.H"      // for setV
+
 #include "MOL.H"
+
+namespace amrex {
+class EBCellFlag;
+} // namespace amrex
 
 void
 pc_compute_hyp_mol_flux(

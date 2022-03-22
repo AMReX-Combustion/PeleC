@@ -1,32 +1,30 @@
 #ifndef _EB_H_
 #define _EB_H_
 
-#include <AMReX_ParmParse.H>
-#include <AMReX_Geometry.H>
-#include <AMReX_DistributionMapping.H>
-#include <AMReX_BoxArray.H>
-#include <AMReX_VisMF.H>
-#include <AMReX_PlotFileUtil.H>
-#include <AMReX_EB2.H>
-#include <AMReX_EB2_IF_Union.H>
-#include <AMReX_EB2_IF_Intersection.H>
-#include <AMReX_EB2_IF_Complement.H>
-#include <AMReX_EB2_IF_Scale.H>
-#include <AMReX_EB2_IF_Translation.H>
-#include <AMReX_EB2_IF_Lathe.H>
-#include <AMReX_EB2_IF_Box.H>
-#include <AMReX_EB2_IF_Cylinder.H>
-#include <AMReX_EB2_IF_Ellipsoid.H>
-#include <AMReX_EB2_IF_Sphere.H>
-#include <AMReX_EB2_IF_Plane.H>
-#include <AMReX_EB2_IF_Extrusion.H>
-#include <AMReX_EB2_GeometryShop.H>
-#include <AMReX_EB2_IF_Difference.H>
-#include <AMReX_EBFluxRegister_C.H>
-#include <AMReX_EB_utils.H>
+#include <math.h>   // for pow, sqrt
+#include <stdlib.h> // for abs
 
-#include "PeleC.H"
-#include "IndexDefines.H"
+#include "AMReX_Algorithm.H"     // for max
+#include "AMReX_Array.H"         // for GpuArray
+#include "AMReX_Array4.H"        // for Array4
+#include "AMReX_Config.H"        // for AMREX_SPACEDIM
+#include "AMReX_EBCellFlag.H"    // for EBCellFlag
+#include "AMReX_Extension.H"     // for AMREX_FORCE_INLINE
+#include "AMReX_GpuQualifiers.H" // for AMREX_GPU_DEVICE
+#include "AMReX_IntVect.H"       // for IntVect, operator*
+#include "AMReX_Math.H"          // for abs
+#include "AMReX_REAL.H"          // for Real
+#include "AMReX_SPACE.H"         // for AMREX_D_DECL
+
+#include "IndexDefines.H" // for NLSPTS, NEL_TRIMAT, NVAR
+
+namespace amrex {
+class Box;
+} // namespace amrex
+
+struct EBBndryGeom;
+struct EBBndrySten;
+struct FaceSten;
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE

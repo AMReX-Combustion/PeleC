@@ -1,13 +1,29 @@
 #ifndef _MOL_H_
 #define _MOL_H_
 
-#include <AMReX_EBCellFlag.H>
+#include <math.h>   // for copysign
+#include <stdlib.h> // for abs
 
-#include "Diffterm.H"
-#include "IndexDefines.H"
-#include "PeleC.H"
-#include "Riemann.H"
-#include "PelePhysics.H"
+#include "AMReX_Algorithm.H"     // for min
+#include "AMReX_Array.H"         // for GpuArray
+#include "AMReX_Array4.H"        // for Array4
+#include "AMReX_Config.H"        // for AMREX_SPACEDIM
+#include "AMReX_EBCellFlag.H"    // for EBCellFlag
+#include "AMReX_Extension.H"     // for AMREX_FORCE_INLINE
+#include "AMReX_GpuQualifiers.H" // for AMREX_GPU_DEVICE
+#include "AMReX_IntVect.H"       // for IntVect
+#include "AMReX_Math.H"          // for abs, copysign
+#include "AMReX_REAL.H"          // for Real
+#include "AMReX_SPACE.H"         // for AMREX_D_DECL
+
+#include "IndexDefines.H" // for QPRES, QC, QRHO, QFS, QVAR
+#include "mechanism.H"    // for NUM_SPECIES
+
+namespace amrex {
+class Box;
+} // namespace amrex
+
+struct EBBndryGeom;
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE

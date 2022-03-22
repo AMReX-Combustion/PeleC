@@ -1,11 +1,20 @@
 #ifndef _HYDRO_H_
 #define _HYDRO_H_
 
-#include "PeleC.H"
-#include "IndexDefines.H"
-#include "PelePhysics.H"
-#include "Utilities.H"
-#include "Godunov.H"
+#include "AMReX_Array.H"         // for GpuArray
+#include "AMReX_Array4.H"        // for Array4
+#include "AMReX_Config.H"        // for AMREX_SPACEDIM
+#include "AMReX_Extension.H"     // for AMREX_FORCE_INLINE
+#include "AMReX_GpuQualifiers.H" // for AMREX_GPU_DEVICE
+#include "AMReX_REAL.H"          // for Real
+#include "AMReX_SPACE.H"         // for AMREX_D_TERM, AMREX_D_DECL
+
+#include "IndexDefines.H" // for QU, QV, QW, QREINT, UFS, NVAR, PassMap
+#include "mechanism.H"    // for NUM_SPECIES
+
+namespace amrex {
+class Box;
+} // namespace amrex
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE

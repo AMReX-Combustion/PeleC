@@ -1,18 +1,35 @@
-#include <AMReX_CArena.H>
-#include <AMReX_REAL.H>
-#include <AMReX_Amr.H>
-#include <AMReX_ParmParse.H>
-#include <AMReX_ParallelDescriptor.H>
-#include <AMReX_AmrLevel.H>
-#include <AMReX_EB2.H>
+#include <stdio.h>  // for sprintf
+#include <string.h> // for strchr
+#include <time.h>   // for tm, gmtime, time, time_t
+#include <iomanip>  // for setw, __iom_t6, setfill, setpr...
+#include <iostream> // for endl, string, operator>>, cin
+#include <string>   // for operator==
+
+#include "AMReX.H"                    // for Abort, Finalize, Initialize
+#include "AMReX_Amr.H"                // for Amr
+#include "AMReX_AmrLevel.H"           // for AmrLevel
+#include "AMReX_Arena.H"              // for The_Arena, Arena
+#include "AMReX_BLProfiler.H"         // for BL_PROFILE_SET_RUN_TIME, BL_PR...
+#include "AMReX_EBSupport.H"          // for EBSupport, EBSupport::full
+#include "AMReX_CArena.H"             // for CArena
+#include "AMReX_OpenMP.H"             // for get_max_threads
+#include "AMReX_ParmParse.H"          // for ParmParse
+#include "AMReX_ParallelDescriptor.H" // for IOProcessor, second, Barrier
+#include "AMReX_Print.H"              // for Print
+#include "AMReX_REAL.H"               // for Real
 
 // Defined and initialized when in gnumake, but not defined in cmake and
 // initialization done manually
 #ifndef AMREX_USE_SUNDIALS
-#include <AMReX_Sundials.H>
+#include <AMReX_Sundials.H> // for Finalize, Initialize
 #endif
 
-#include "PeleC.H"
+#include "PeleC.H" // for PeleC
+
+namespace amrex {
+class Geometry;
+class LevelBld;
+} // namespace amrex
 
 std::string inputs_name;
 

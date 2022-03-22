@@ -1,17 +1,29 @@
 #ifndef _LES_H_
 #define _LES_H_
 
-#include "PeleC.H"
-#include "Utilities.H"
-#include "Diffusion.H"
-#include "Diffterm.H"
-#include "GradUtil.H"
-#include "PelePhysics.H"
-#include "Filter.H"
+#include <cmath> // for sqrt
 
 #ifdef _OPENMP
 #include <omp.h>
 #endif
+
+#include "AMReX_Algorithm.H"     // for max, min
+#include "AMReX_Array.H"         // for GpuArray
+#include "AMReX_Array4.H"        // for Array4
+#include "AMReX_Config.H"        // for AMREX_SPACEDIM
+#include "AMReX_Extension.H"     // for AMREX_FORCE_INLINE
+#include "AMReX_GpuQualifiers.H" // for AMREX_GPU_DEVICE
+#include "AMReX_IntVect.H"       // for IntVect
+#include "AMReX_REAL.H"          // for Real
+#include "AMReX_SPACE.H"         // for AMREX_D_DECL
+
+#include "Constants.H"    // for small_num
+#include "Fuego.H"        // for Fuego
+#include "GammaLaw.H"     // for GammaLaw
+#include "IndexDefines.H" // for QU, QV, QW, QRHO, QTEMP, UEDEN, UMX
+#include "mechanism.H"    // for NUM_SPECIES
+#include "PelePhysics.H"  // for PhysicsType
+#include "SRK.H"          // for SRK
 
 #if AMREX_SPACEDIM == 3
 AMREX_GPU_DEVICE

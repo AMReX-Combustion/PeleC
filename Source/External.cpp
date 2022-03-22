@@ -1,5 +1,24 @@
-#include "PeleC.H"
-#include "IndexDefines.H"
+#include <memory> // for allocator
+
+#include "AMReX_Array4.H"           // for Array4
+#include "AMReX_EBCellFlag.H"       // for EBCellFlagFab
+#include "AMReX_EBFabFactory.H"     // for EBFArrayBoxFactory
+#include "AMReX_FabArray.H"         // for FabArray
+#include "AMReX_FabFactory.H"       // for FabType, FabFactory, FabType::co...
+#include "AMReX_Geometry.H"         // for Geometry
+#include "AMReX_GpuLaunchFunctsC.H" // for ParallelFor
+#include "AMReX_GpuQualifiers.H"    // for AMREX_GPU_DEVICE
+#include "AMReX_MFIter.H"           // for MFIter, TilingIfNotGPU
+#include "AMReX_MultiFab.H"         // for MultiFab
+#include "AMReX_REAL.H"             // for Real
+#include "AMReX_Vector.H"           // for Vector
+
+#include "IndexDefines.H" // for NVAR
+#include "PeleC.H"        // for PeleC, ext_src, State_Type
+
+namespace amrex {
+class Box;
+} // namespace amrex
 
 void
 PeleC::construct_old_ext_source(amrex::Real time, amrex::Real dt)

@@ -1,12 +1,28 @@
 #ifndef _GODUNOV_H_
 #define _GODUNOV_H_
 
-#include <AMReX_FArrayBox.H>
-#include <AMReX_IArrayBox.H>
+#include <stdlib.h>    // for abs
+#include <mechanism.H> // for NUM_SPECIES
+#include <limits>      // for numeric_limits
 
-#include "Constants.H"
-#include "IndexDefines.H"
-#include "Riemann.H"
+#include "AMReX_Algorithm.H"     // for max, min
+#include "AMReX_Array.H"         // for GpuArray
+#include "AMReX_Array4.H"        // for Array4
+#include "AMReX_BC_TYPES.H"      // for Outflow
+#include "AMReX_Config.H"        // for AMREX_SPACEDIM
+#include "AMReX_Extension.H"     // for AMREX_FORCE_INLINE
+#include "AMReX_GpuQualifiers.H" // for AMREX_GPU_DEVICE
+#include "AMReX_IntVect.H"       // for IntVect, operator*
+#include "AMReX_Math.H"          // for abs
+#include "AMReX_REAL.H"          // for Real
+#include "AMReX_SPACE.H"         // for AMREX_D_DECL, AMREX_D_PICK, AMREX_D...
+
+#include "IndexDefines.H" // for QU, QRHO, QV, QPRES, GDPRES, QREINT
+#include "Riemann.H"      // for riemann
+
+namespace amrex {
+class Box;
+} // namespace amrex
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE

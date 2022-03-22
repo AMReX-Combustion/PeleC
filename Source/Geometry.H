@@ -1,8 +1,13 @@
 #ifndef _GEOMETRY_H_
 #define _GEOMETRY_H_
-#include "Factory.H"
-#include "EB.H"
-#include "Utilities.H"
+
+#include <iosfwd> // for string
+
+#include "Factory.H" // for Factory<>::Register, Factory
+
+namespace amrex {
+class Geometry;
+} // namespace amrex
 
 namespace pele {
 namespace pelec {

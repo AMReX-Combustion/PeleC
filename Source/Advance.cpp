@@ -1,7 +1,23 @@
-#include "mechanism.H"
+#include <memory>  // for allocator
+#include <ostream> // for endl
 
-#include "PeleC.H"
-#include "IndexDefines.H"
+#include "AMReX.H"                    // for Abort
+#include "AMReX_Amr.H"                // for Amr
+#include "AMReX_BLProfiler.H"         // for BL_PROFILE
+#include "AMReX_BLassert.H"           // for AMREX_ASSERT
+#include "AMReX_EBFluxRegister.H"     // for EBFluxRegister
+#include "AMReX_FabArray.H"           // for MFInfo
+#include "AMReX_Geometry.H"           // for DefaultGeometry, Geometry
+#include "AMReX_MultiFab.H"           // for MultiFab
+#include "AMReX_ParallelDescriptor.H" // for ReduceRealSum
+#include "AMReX_Print.H"              // for Print
+#include "AMReX_REAL.H"               // for Real
+#include "AMReX_StateData.H"          // for StateData
+#include "AMReX_Vector.H"             // for Vector
+
+#include "IndexDefines.H" // for NVAR
+#include "mechanism.H"    // for NUM_SPECIES
+#include "PeleC.H"        // for PeleC, PeleC::src_list, Reacti...
 
 amrex::Real
 PeleC::advance(

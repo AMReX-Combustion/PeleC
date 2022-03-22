@@ -1,9 +1,30 @@
-#include "mechanism.H"
+#include <math.h> // for sqrt, log10
 
-#include "PelePhysics.H"
+#include "AMReX_Array.H"            // for GpuArray
+#include "AMReX_Array4.H"           // for Array4
+#include "AMReX_Box.H"              // for Box (ptr only), grow
+#include "AMReX_Config.H"           // for AMREX_SPACEDIM
+#include "AMReX_EBFArrayBox.H"      // for getEBCellFlagFab
+#include "AMReX_FArrayBox.H"        // for FArrayBox
+#include "AMReX_FabFactory.H"       // for FabType, FabType::covered, FabTy...
+#include "AMReX_Geometry.H"         // for Geometry
+#include "AMReX_GpuControl.H"       // for RunOn, RunOn::Device
+#include "AMReX_GpuElixir.H"        // for Elixir
+#include "AMReX_GpuLaunchFunctsC.H" // for ParallelFor
+#include "AMReX_SPACE.H"            // for AMREX_D_TERM
+
+#include "Constant.H"        // for ConstTransport
+#include "Fuego.H"           // for Fuego
+#include "GammaLaw.H"        // for GammaLaw
+#include "IndexDefines.H"    // for URHO, UMX, UMY, UMZ, UFS, UTEMP
+#include "mechanism.H"       // for NUM_SPECIES
+#include "PeleC.H"           // for PeleC, PeleC::trans_parms
+#include "PelePhysics.H"     // for PhysicsType
+#include "Simple.H"          // for SimpleTransport
+#include "SRK.H"             // for SRK
+#include "TransportParams.H" // for TransParm, TransportParams
+
 #include "Derive.H"
-#include "PeleC.H"
-#include "IndexDefines.H"
 
 void
 pc_dervelx(

@@ -1,9 +1,8 @@
-/** \file unit-tests-main.cpp
- *  Entry point for unit tests
- */
+#include <iosfwd> // for string
 
-#include "gtest/gtest.h"
-#include "AmrexTestEnv.H"
+#include "gtest/gtest_pred_impl.h" // for AddGlobalTestEnvironment, InitGoo...
+
+#include "AmrexTestEnv.H" // for AmrexTestEnv
 
 // Necessary as it's used in other source files
 std::string inputs_name;

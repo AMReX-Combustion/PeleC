@@ -1,18 +1,48 @@
-#include <AMReX_ParmParse.H>
-#include <AMReX_buildInfo.H>
-#include <memory>
+#include <functional> // for __base
+#include <ostream>    // for string, endl
+#include <stdio.h>    // for sprintf
+#include <string.h>   // for strlen
+#include <string>     // for basic_string, allocator, basic...
 
 #ifdef PELEC_USE_MASA
-#include <masa.h>
+#include <masa.h> // for MASA
 using namespace MASA;
 #endif
 
-#include "Transport.H"
-#include "mechanism.H"
-#include "PeleC.H"
-#include "Derive.H"
-#include "IndexDefines.H"
-#include "prob.H"
+#include "AMReX_AmrLevel.H"           // for AmrLevel::derive_lst, AmrLevel...
+#include "AMReX_Arena.H"              // for The_Arena, Arena
+#include "AMReX_BCRec.H"              // for BCRec
+#include "AMReX_BC_TYPES.H"           // for REFLECT_EVEN, EXT_DIR, INT_DIR
+#include "AMReX_BLassert.H"           // for AMREX_ASSERT
+#include "AMReX_buildInfo.H"          // for buildInfoGetGitHash, buildInfo...
+#include "AMReX_Config.H"             // for AMREX_SPACEDIM
+#include "AMReX_Derive.H"             // for DeriveList, DeriveRec
+#include "AMReX_EBMFInterpolater.H"   // for EBMFCellConsLinInterp, eb_mf_c...
+#include "AMReX_Geometry.H"           // for DefaultGeometry
+#include "AMReX_GpuContainers.H"      // for copy, hostToDevice
+#include "AMReX_IndexType.H"          // for IndexType
+#include "AMReX_Interpolater.H"       // for PCInterp, pc_interp
+#include "AMReX_MFInterpolater.H"     // for MFCellConsLinInterp, MFInterpo...
+#include "AMReX_ParallelDescriptor.H" // for IOProcessor, second
+#include "AMReX_ParmParse.H"          // for ParmParse
+#include "AMReX_Print.H"              // for Print
+#include "AMReX_REAL.H"               // for Real
+#include "AMReX_SPACE.H"              // for AMREX_D_TERM
+#include "AMReX_StateDescriptor.H"    // for DescriptorList, StateDescriptor
+#include "AMReX_Vector.H"             // for Vector
+
+#include "Derive.H"          // for pc_dernull, pc_dermagvel, pc_d...
+#include "EOS.H"             // for speciesNames
+#include "IndexDefines.H"    // for NVAR, NUM_AUX, PassMap, init_p...
+#include "mechanism.H"       // for NUM_SPECIES
+#include "PeleC.H"           // for PeleC::Density, State_Type
+#include "PelePhysics.H"     // for PhysicsType
+#include "ProblemDerive.H"   // for add_problem_derives
+#include "prob.H"            // for ProblemDerives
+#include "prob_parm.H"       // for ProbParmDevice, ProbParmHost
+#include "Tagging.H"         // for TaggingParm
+#include "TransportParams.H" // for TransportParams
+#include "turbinflow.H"      // for TurbInflow
 
 ProbParmDevice* PeleC::d_prob_parm_device = nullptr;
 ProbParmDevice* PeleC::h_prob_parm_device = nullptr;

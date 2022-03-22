@@ -1,6 +1,10 @@
-#include <AMReX_ParmParse.H>
+#include <string> // for allocator, char_traits, operator!=, bas...
 
-#include "PeleC.H"
+#include "AMReX.H"           // for Abort
+#include "AMReX_ParmParse.H" // for ParmParse
+
+#include "PeleC.H" // for PeleC::tagging_parm, PeleC
+
 #include "Tagging.H"
 
 void

@@ -1,9 +1,31 @@
-#include <AMReX_FArrayBox.H>
-#include <AMReX_Geometry.H>
-#include <AMReX_PhysBCFunct.H>
+#include <memory>  // for allocator
+#include <utility> // for move
 
-#include "PeleC.H"
-#include "prob.H"
+#include "AMReX_Array.H"            // for Array
+#include "AMReX_Array4.H"           // for Array4
+#include "AMReX_BCRec.H"            // for BCRec
+#include "AMReX_BC_TYPES.H"         // for ext_dir, EXT_DIR
+#include "AMReX_Box.H"              // for Box, adjCellHi, adjCellLo, grow
+#include "AMReX_Config.H"           // for AMREX_SPACEDIM
+#include "AMReX_FArrayBox.H"        // for FArrayBox
+#include "AMReX_Geometry.H"         // for Geometry, GeometryData
+#include "AMReX_GpuControl.H"       // for RunOn, RunOn::Host
+#include "AMReX_GpuLaunchFunctsC.H" // for ParallelFor
+#include "AMReX_GpuQualifiers.H"    // for AMREX_GPU_DEVICE, AMREX_GPU_HOST
+#include "AMReX_IntVect.H"          // for IntVect
+#include "AMReX_Orientation.H"      // for Orientation, Orientation::high
+#include "AMReX_PhysBCFunct.H"      // for GpuBndryFuncFab
+#include "AMReX_REAL.H"             // for Real
+#include "AMReX_SPACE.H"            // for AMREX_D_DECL
+#include "AMReX_Vector.H"           // for Vector
+
+#include "IndexDefines.H" // for NVAR, UMX
+#include "PeleC.H"        // for PeleC, PeleC::turb_inflow, PeleC...
+#include "turbinflow.H"   // for TurbInflow
+
+#include "prob.H" // for bcnormal
+
+struct ProbParmDevice;
 
 struct PCHypFillExtDir
 {

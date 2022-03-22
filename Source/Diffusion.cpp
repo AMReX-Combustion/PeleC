@@ -1,4 +1,58 @@
+#include <array>  // for array
+#include <string> // for allocator, char_traits, operat...
+#include <vector> // for vector
+
+#include "AMReX.H"                    // for Abort
+#include "AMReX_Amr.H"                // for Amr
+#include "AMReX_Array.H"              // for GpuArray, Array
+#include "AMReX_BLProfiler.H"         // for BL_PROFILE, BL_PROFILE_VAR_NS
+#include "AMReX_BLassert.H"           // for AMREX_ASSERT
+#include "AMReX_Box.H"                // for Box, surroundingNodes, grow
+#include "AMReX_EBCellFlag.H"         // for EBCellFlagFab, EBCellFlag
+#include "AMReX_EBFabFactory.H"       // for EBFArrayBoxFactory
+#include "AMReX_EBFluxRegister.H"     // for EBFluxRegister
+#include "AMReX_FArrayBox.H"          // for FArrayBox
+#include "AMReX_FabArray.H"           // for FabArray
+#include "AMReX_FabArrayUtility.H"    // for prefetchToDevice
+#include "AMReX_FabFactory.H"         // for FabType, FabType::regular, Fab...
+#include "AMReX_Geometry.H"           // for Geometry
+#include "AMReX_GpuContainers.H"      // for DeviceVector, copy, hostToDevice
+#include "AMReX_GpuControl.H"         // for RunOn, RunOn::Device, RunOn::Cpu
+#include "AMReX_GpuDevice.H"          // for streamSynchronize
+#include "AMReX_GpuElixir.H"          // for Elixir
+#include "AMReX_GpuLaunchFunctsC.H"   // for ParallelFor, launch
+#include "AMReX_IArrayBox.H"          // for IArrayBox
+#include "AMReX_MFIter.H"             // for MFIter, TilingIfNotGPU
+#include "AMReX_MultiCutFab.H"        // for MultiCutFab, CutFab
+#include "AMReX_MultiFab.H"           // for MultiFab
+#include "AMReX_PODVector.H"          // for PODVector
+#include "AMReX_ParallelDescriptor.H" // for second
+#include "AMReX_StateData.H"          // for StateData
+#include "AMReX_StateDescriptor.H"    // for StateDescriptor
+#include "AMReX_Vector.H"             // for Vector
+
+#include "hydro_redistribution.H" // for Apply
+
+#include "Constant.H"        // for ConstTransport
+#include "Diffterm.H"        // for pc_flux_div, pc_compute_diffus...
+#include "EB.H"              // for pc_apply_eb_boundry_flux_stencil
+#include "EBStencilTypes.H"  // for EBBndrySten, EBBndryGeom, sten...
+#include "Filter.H"          // for Filter
+#include "IndexDefines.H"    // for NVAR, QTEMP, UFS, dComp_lambda
+#include "MOL.H"             // for pc_compute_hyp_mol_flux
+#include "mechanism.H"       // for NUM_SPECIES
+#include "PeleC.H"           // for PeleC, PeleC::Xmom, PeleC::Fir...
+#include "PelePhysics.H"     // for PhysicsType
+#include "SparseData.H"      // for SparseData
+#include "Simple.H"          // for SimpleTransport
+#include "TransportParams.H" // for TransParm, TransportParams
+#include "Utilities.H"       // for setC, copy_array4, setV, linco...
+
 #include "Diffusion.H"
+
+namespace amrex {
+class BCRec;
+} // namespace amrex
 
 void
 PeleC::getMOLSrcTerm(

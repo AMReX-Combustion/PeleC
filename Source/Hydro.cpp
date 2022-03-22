@@ -1,3 +1,33 @@
+#include <array>   // for array
+#include <limits>  // for numeric_limits
+#include <memory>  // for allocator
+#include <ostream> // for endl
+
+#include "AMReX.H"                    // for Abort
+#include "AMReX_Algorithm.H"          // for max
+#include "AMReX_Amr.H"                // for Amr
+#include "AMReX_BCRec.H"              // for BCRec
+#include "AMReX_BLProfiler.H"         // for BL_PROFILE_VAR, BL_PROFILE_VAR...
+#include "AMReX_BLassert.H"           // for AMREX_ASSERT
+#include "AMReX_Box.H"                // for surroundingNodes, grow, Box
+#include "AMReX_EBFluxRegister.H"     // for EBFluxRegister
+#include "AMReX_FArrayBox.H"          // for FArrayBox
+#include "AMReX_FabArray.H"           // for FabArray
+#include "AMReX_Geometry.H"           // for Geometry, DefaultGeometry
+#include "AMReX_GpuControl.H"         // for RunOn, RunOn::Cpu
+#include "AMReX_GpuElixir.H"          // for Elixir
+#include "AMReX_GpuLaunchFunctsC.H"   // for ParallelFor
+#include "AMReX_MFIter.H"             // for MFIter, TilingIfNotGPU
+#include "AMReX_MultiFab.H"           // for MultiFab
+#include "AMReX_ParallelDescriptor.H" // for IOProcessor, IOProcessorNumber
+#include "AMReX_Print.H"              // for Print
+#include "AMReX_Vector.H"             // for Vector
+
+#include "Filter.H"    // for Filter
+#include "Godunov.H"   // for pc_artif_visc, pc_umeth_3D
+#include "PeleC.H"     // for PeleC, PeleC::src_list, PeleC:...
+#include "Utilities.H" // for copy_array4, setV, pc_ctoprim
+
 #include "Hydro.H"
 
 // Set up the source terms to go into the hydro.

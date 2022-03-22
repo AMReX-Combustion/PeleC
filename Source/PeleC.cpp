@@ -1,29 +1,14 @@
-#include <memory>
+#include <algorithm>   // for find
+#include <cmath>       // for floor, pow, sqrt
+#include <limits>      // for numeric_limits
+#include <iostream>    // for string, endl, operator<<, basi...
+#include <iterator>    // for distance
+#include <type_traits> // for integral_constant<>::value
+#include <vector>      // for vector
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
-
-#include <AMReX_Vector.H>
-#include <AMReX_TagBox.H>
-#include <AMReX_EBMultiFabUtil.H>
-#include "hydro_redistribution.H"
-
-#ifdef AMREX_PARTICLES
-#include <AMReX_Particles.H>
-#endif
-
-#ifdef PELEC_USE_MASA
-#include <masa.h>
-using namespace MASA;
-#endif
-
-#include "PeleC.H"
-#include "Derive.H"
-#include "prob.H"
-#include "Timestep.H"
-#include "Utilities.H"
-#include "Tagging.H"
-#include "IndexDefines.H"
 
 #ifdef PELEC_ENABLE_FPE_TRAP
 #if defined(__linux__)
@@ -32,6 +17,70 @@ using namespace MASA;
 #include <fenv.h>
 #endif
 #endif
+
+#include "AMReX_Algorithm.H"          // for min, max
+#include "AMReX_AmrLevel.H"           // for AmrLevel
+#include "AMReX_ArrayLim.H"           // for ARLIM_3D
+#include "AMReX_BCRec.H"              // for BCRec
+#include "AMReX_BC_TYPES.H"           // for Interior, Symmetry
+#include "AMReX_BLProfiler.H"         // for BL_PROFILE
+#include "AMReX_BLassert.H"           // for AMREX_ASSERT
+#include "AMReX_Box.H"                // for grow, Box
+#include "AMReX_BoxArray.H"           // for BoxArray
+#include "AMReX_BoxList.H"            // for BoxList
+#include "AMReX_EBCellFlag.H"         // for EBCellFlag (ptr only), EBCellF...
+#include "AMReX_EBFabFactory.H"       // for EBFArrayBoxFactory
+#include "AMReX_EBFluxRegister.H"     // for EBFluxRegister
+#include "AMReX_EBMultiFabUtil.H"     // for EB_average_down, EB_set_covered
+#include "AMReX_FArrayBox.H"          // for FArrayBox, FArrayBoxFactory
+#include "AMReX_FabArray.H"           // for MFInfo, FabArray
+#include "AMReX_FabArrayUtility.H"    // for ReduceMin, prefetchToDevice
+#include "AMReX_FabFactory.H"         // for FabFactory, FabType, FabType::...
+#include "AMReX_Geometry.H"           // for Geometry, DefaultGeometry, Geo...
+#include "AMReX_GpuControl.H"         // for RunOn, RunOn::Device
+#include "AMReX_GpuElixir.H"          // for Elixir
+#include "AMReX_GpuLaunchFunctsC.H"   // for ParallelFor
+#include "AMReX_IArrayBox.H"          // for IArrayBox
+#include "AMReX_IntVect.H"            // for IntVect
+#include "AMReX_iMultiFab.H"          // for iMultiFab
+#include "AMReX_MFIter.H"             // for MFIter, TilingIfNotGPU
+#include "AMReX_MultiCutFab.H"        // for MultiCutFab
+#include "AMReX_MultiFabUtil.H"       // for average_down, makeFineMask
+#include "AMReX_PODVector.H"          // for PODVector
+#include "AMReX_ParallelDescriptor.H" // for IOProcessor, second, ReduceRea...
+#include "AMReX_ParmParse.H"          // for ParmParse
+#include "AMReX_Print.H"              // for Print
+#include "AMReX_RealBox.H"            // for RealBox
+#include "AMReX_SPACE.H"              // for AMREX_D_DECL, AMREX_D_TERM
+#include "AMReX_StateData.H"          // for StateData
+#include "AMReX_StateDescriptor.H"    // for StateDescriptor
+#include "AMReX_TagBox.H"             // for TagBoxArray, TagBox, TagBox::C...
+#include "AMReX_Vector.H"             // for Vector
+
+#ifdef AMREX_PARTICLES
+#include <AMReX_Particles.H>
+#endif
+
+#include "hydro_redistribution.H" // for ApplyToInitialData
+
+#ifdef PELEC_USE_MASA
+#include <masa.h> // for masa_set_param, masa_init, MASA
+using namespace MASA;
+#endif
+
+#include "EBStencilTypes.H" // for EBBndrySten, EBBndryGeom, Face...
+#include "PeleC.H"
+#include "Derive.H"          // for pc_dermagvort, pc_derpres, pc_...
+#include "Problem.H"         // for PeleC::problem_post_init, Pele...
+#include "prob.H"            // for ProblemTags, pc_initdata, pc_p...
+#include "prob_parm.H"       // for ProbParmDevice
+#include "ReactorBase.H"     // for ReactorBase
+#include "Timestep.H"        // for pc_estdt_enthdif, pc_estdt_hydro
+#include "TransportParams.H" // for TransportParams, TransParm
+#include "turbinflow.H"      // for TurbInflow
+#include "Utilities.H"       // for find_position, pc_cmpTemp, pc_...
+#include "Tagging.H"         // for TaggingParm, tag_graderror
+#include "IndexDefines.H"    // for NVAR, URHO, comp_Cs2, UFS, com...
 
 bool PeleC::signalStopJob = false;
 int PeleC::verbose = 0;
@@ -56,7 +105,18 @@ int PeleC::pstateRho = -1;
 int PeleC::pstateY = -1;
 int PeleC::pstateNum = 0;
 
-#include "pelec_defaults.H"
+#include "pelec_defaults.H" // for PeleC::do_les, PeleC::do_hydro
+
+namespace amrex {
+class DistributionMapping;
+} // namespace amrex
+namespace pele {
+namespace physics {
+namespace eos {
+struct SRK;
+} // namespace eos
+} // namespace physics
+} // namespace pele
 
 bool PeleC::do_diffuse = false;
 
@@ -751,7 +811,8 @@ PeleC::initialTimeStep()
   return init_dt;
 }
 
-amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
+amrex::Real
+PeleC::estTimeStep(amrex::Real /*dt_old*/)
 {
   BL_PROFILE("PeleC::estTimeStep()");
 
@@ -1165,7 +1226,8 @@ PeleC::post_regrid(
   }
 }
 
-void PeleC::post_init(amrex::Real /*stop_time*/)
+void
+PeleC::post_init(amrex::Real /*stop_time*/)
 {
   BL_PROFILE("PeleC::post_init()");
 
@@ -1833,34 +1895,11 @@ PeleC::init_mms()
     if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
       amrex::Print() << "Initializing MMS" << std::endl;
     }
-// Shut of FPE for MASA initialization because it has FPEs
-#ifdef PELEC_ENABLE_FPE_TRAP
-#if defined(__linux__)
-    unsigned int prev_fpe_excepts = fegetexcept();
-    fedisableexcept(prev_fpe_excepts);
-#elif defined(__APPLE__)
-    static fenv_t prev_fpe_excepts;
-    fegetenv(&prev_fpe_excepts);
-    static fenv_t new_fpe_excepts;
-    new_fpe_excepts.__control |= FE_ALL_EXCEPT;
-    new_fpe_excepts.__mxcsr |= FE_ALL_EXCEPT << 7;
-    fesetenv(&new_fpe_excepts);
-#endif
-#endif
     masa_init("mms", masa_solution_name.c_str());
     masa_set_param("Cs", PeleC::Cs);
     masa_set_param("CI", PeleC::CI);
     masa_set_param("PrT", PeleC::PrT);
     mms_initialized = true;
-#ifdef PELEC_ENABLE_FPE_TRAP
-#if defined(__linux__)
-    if (prev_fpe_excepts != 0) {
-      feenableexcept(prev_fpe_excepts);
-    }
-#elif defined(__APPLE__)
-    fesetenv(&prev_fpe_excepts);
-#endif
-#endif
   }
 }
 #endif

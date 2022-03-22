@@ -1,5 +1,12 @@
-#include "PeleC.H"
-#include "IndexDefines.H"
+#include <memory> // for allocator
+
+#include "AMReX_BLassert.H" // for AMREX_ASSERT
+#include "AMReX_MultiFab.H" // for MultiFab
+#include "AMReX_REAL.H"     // for Real
+#include "AMReX_Vector.H"   // for Vector
+
+#include "IndexDefines.H" // for NVAR
+#include "PeleC.H"        // for PeleC, PeleC::src_list, ext_src
 
 void
 PeleC::construct_old_source(

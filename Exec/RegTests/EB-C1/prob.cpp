@@ -1,3 +1,23 @@
+#include <cmath>   // for sqrt
+#include <iomanip> // for operator<<, setw, setprecision
+#include <memory>  // for allocator
+#include <ostream> // for operator<<, basic_ostream, cha...
+
+#include "AMReX_Amr.H"                // for Amr
+#include "AMReX_MultiFab.H"           // for MultiFab
+#include "AMReX_ParallelDescriptor.H" // for IOProcessorNumber, ReduceRealSum
+#include "AMReX_ParmParse.H"          // for ParmParse
+#include "AMReX_Print.H"              // for Print
+#include "AMReX_REAL.H"               // for Real, amrex_real
+#include "AMReX_StateData.H"          // for StateData
+#include "AMReX_Vector.H"             // for Vector
+
+#include "mechanism.H"        // for NUM_SPECIES
+#include "PeleC.H"            // for PeleC, PeleC::h_prob_parm_device
+#include "PhysicsConstants.H" // for Constants, Constants::AIRMW
+#include "prob_parm.H"        // for ProbParmDevice
+#include "TransportParams.H"  // for TransParm, TransportParams
+
 #include "prob.H"
 
 void

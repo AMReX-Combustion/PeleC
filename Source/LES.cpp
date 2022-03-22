@@ -47,6 +47,35 @@
 //     turbulent one, so this is standard modeling approach is probably
 //     justified.
 
+#include <memory>  // for allocator
+#include <ostream> // for endl
+
+#include "AMReX.H"                  // for Error
+#include "AMReX_Amr.H"              // for Amr
+#include "AMReX_BLProfiler.H"       // for BL_PROFILE
+#include "AMReX_Box.H"              // for surroundingNodes, Box, grow
+#include "AMReX_EBCellFlag.H"       // for EBCellFlagFab
+#include "AMReX_EBFabFactory.H"     // for EBFArrayBoxFactory
+#include "AMReX_EBFluxRegister.H"   // for EBFluxRegister
+#include "AMReX_FArrayBox.H"        // for FArrayBox
+#include "AMReX_FabArray.H"         // for FabArray, MFInfo
+#include "AMReX_FabArrayUtility.H"  // for prefetchToDevice
+#include "AMReX_FabFactory.H"       // for FabType, FabFactory, FabType::co...
+#include "AMReX_Geometry.H"         // for Geometry
+#include "AMReX_GpuControl.H"       // for RunOn, RunOn::Cpu
+#include "AMReX_GpuElixir.H"        // for Elixir
+#include "AMReX_GpuLaunchFunctsC.H" // for ParallelFor
+#include "AMReX_MFIter.H"           // for MFIter, TilingIfNotGPU
+#include "AMReX_MultiFab.H"         // for MultiFab
+#include "AMReX_Print.H"            // for Print
+#include "AMReX_Vector.H"           // for Vector
+
+#include "Diffterm.H"  // for pc_flux_div
+#include "Filter.H"    // for Filter, box
+#include "GradUtil.H"  // for pc_compute_tangential_vel_derivs
+#include "PeleC.H"     // for PeleC, les_src, PeleC::d_pass_map
+#include "Utilities.H" // for setV, pc_move_transcoefs_to_ec
+
 #include "LES.H"
 
 void

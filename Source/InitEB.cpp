@@ -1,15 +1,61 @@
-#include <memory>
+#include <algorithm>   // for find
+#include <array>       // for array, array<>::value_type
+#include <cmath>       // for sqrt, pow
+#include <memory>      // for unique_ptr, make_unique, swap
+#include <ostream>     // for string, endl
+#include <string>      // for allocator, basic_string, opera...
+#include <type_traits> // for integral_constant<>::value
+#include <vector>      // for vector
 
-#include "EB.H"
-#include "prob.H"
-#include "Utilities.H"
-#include "Geometry.H"
+#include "AMReX.H"                    // for Abort
+#include "AMReX_Amr.H"                // for Amr
+#include "AMReX_Array.H"              // for GpuArray, Array
+#include "AMReX_Array4.H"             // for Array4
+#include "AMReX_BCRec.H"              // for BCRec
+#include "AMReX_BC_TYPES.H"           // for INT_DIR
+#include "AMReX_BLProfiler.H"         // for BL_PROFILE
+#include "AMReX_BLassert.H"           // for AMREX_ASSERT
+#include "AMReX_Box.H"                // for Box, lbound, ubound, bdryLo, grow
+#include "AMReX_BoxArray.H"           // for BoxArray, convert
+#include "AMReX_Config.H"             // for AMREX_SPACEDIM
+#include "AMReX_Dim3.H"               // for Dim3
+#include "AMReX_EB2.H"                // for Build
+#include "AMReX_EBCellFlag.H"         // for EBCellFlagFab, EBCellFlag
+#include "AMReX_EBFabFactory.H"       // for EBFArrayBoxFactory
+#include "AMReX_EBMFInterpolater.H"   // for EBMFCellConsLinInterp, eb_mf_l...
+#include "AMReX_EB_utils.H"           // for FillSignedDistance
+#include "AMReX_FabArray.H"           // for FabArray, MFInfo
+#include "AMReX_FabFactory.H"         // for FabType, FabFactory, FabType::...
+#include "AMReX_Geometry.H"           // for Geometry, GeometryData
+#include "AMReX_GpuContainers.H"      // for DeviceVector, copy, deviceToHost
+#include "AMReX_GpuLaunchFunctsC.H"   // for ParallelFor
+#include "AMReX_GpuQualifiers.H"      // for AMREX_GPU_DEVICE
+#include "AMReX_IntVect.H"            // for IntVect, BASISV, operator*
+#include "AMReX_MFIter.H"             // for MFIter, TilingIfNotGPU
+#include "AMReX_MultiCutFab.H"        // for MultiCutFab, CutFab
+#include "AMReX_MultiFab.H"           // for MultiFab
+#include "AMReX_PODVector.H"          // for PODVector
+#include "AMReX_ParallelDescriptor.H" // for Bcast, MyProc, NProcs, ReduceI...
+#include "AMReX_ParmParse.H"          // for ParmParse
+#include "AMReX_Print.H"              // for Print
+#include "AMReX_REAL.H"               // for Real
+#include "AMReX_Reduce.H"             // for Sum
+#include "AMReX_SPACE.H"              // for AMREX_D_DECL, AMREX_D_TERM
+#include "AMReX_Vector.H"             // for Vector
 
 #if defined(AMREX_USE_CUDA) || defined(AMREX_USE_HIP)
 #include <thrust/unique.h>
 #include <thrust/sort.h>
 #include <thrust/execution_policy.h>
 #endif
+
+#include "EB.H"             // for pc_set_body_state, pc_fill_bnd...
+#include "EBStencilTypes.H" // for EBBndryGeom, EBBndrySten, Face...
+#include "Geometry.H"       // for Geometry
+#include "IndexDefines.H"   // for NVAR, QTEMP, QU, QVAR
+#include "PeleC.H"          // for PeleC, PeleC::body_state, Pele...
+#include "SparseData.H"     // for SparseData
+#include "Utilities.H"      // for sort, unique
 
 inline bool
 PeleC::ebInitialized()

@@ -1,12 +1,16 @@
 #ifndef _FILTER_H_
 #define _FILTER_H_
 
-#include <AMReX_REAL.H>
-#include <AMReX_Array.H>
-#include <AMReX_MultiFab.H>
+#include <memory> // for allocator
 
-#include "Constants.H"
-#include "Utilities.H"
+#include "AMReX_REAL.H"   // for Real
+#include "AMReX_Vector.H" // for Vector
+
+namespace amrex {
+class Box;
+class FArrayBox;
+class MultiFab;
+} // namespace amrex
 
 #ifdef _OPENMP
 #include <omp.h>

@@ -1,3 +1,7 @@
+#include "AMReX_SPACE.H" // for AMREX_D_PICK
+
+#include "mechanism.H" // for NUM_SPECIES
+
 #include "IndexDefines.H"
 
 void

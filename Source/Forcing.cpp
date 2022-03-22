@@ -1,8 +1,28 @@
-#include "PeleC.H"
-#include "Forcing.H"
+#include <memory> // for allocator
+
+#include "AMReX_Array4.H"           // for Array4
+#include "AMReX_EBCellFlag.H"       // for EBCellFlagFab
+#include "AMReX_EBFabFactory.H"     // for EBFArrayBoxFactory
+#include "AMReX_FabArray.H"         // for FabArray
+#include "AMReX_FabFactory.H"       // for FabType, FabFactory, FabType::co...
+#include "AMReX_Geometry.H"         // for Geometry
+#include "AMReX_GpuLaunchFunctsC.H" // for ParallelFor
+#include "AMReX_GpuQualifiers.H"    // for AMREX_GPU_DEVICE
+#include "AMReX_MFIter.H"           // for MFIter, TilingIfNotGPU
+#include "AMReX_MultiFab.H"         // for MultiFab
+#include "AMReX_REAL.H"             // for Real
+#include "AMReX_Vector.H"           // for Vector
+
+#include "IndexDefines.H" // for URHO, UMX, UMY, UMZ
+#include "PeleC.H"        // for PeleC, forcing_src, State_Type
+#include "prob_parm.H"    // for ProbParmDevice
+
+namespace amrex {
+class Box;
+} // namespace amrex
 
 void
-  PeleC::construct_old_forcing_source(amrex::Real /*time*/, amrex::Real /*dt*/)
+PeleC::construct_old_forcing_source(amrex::Real /*time*/, amrex::Real /*dt*/)
 {
   const amrex::MultiFab& S_old = get_old_data(State_Type);
 
@@ -20,7 +40,7 @@ void
 }
 
 void
-  PeleC::construct_new_forcing_source(amrex::Real /*time*/, amrex::Real /*dt*/)
+PeleC::construct_new_forcing_source(amrex::Real /*time*/, amrex::Real /*dt*/)
 {
   const amrex::MultiFab& S_old = get_old_data(State_Type);
   const amrex::MultiFab& S_new = get_new_data(State_Type);

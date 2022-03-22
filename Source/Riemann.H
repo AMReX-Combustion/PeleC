@@ -1,5 +1,7 @@
 #ifndef _RIEMANN_H_
 #define _RIEMANN_H_
+
+#include "Constants.H"
 #include "PeleC.H"
 #include "PelePhysics.H"
 
