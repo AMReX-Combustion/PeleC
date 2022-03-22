@@ -1,5 +1,7 @@
+// System
 #include <math.h> // for sqrt, log10
 
+// AMReX
 #include "AMReX_Array.H"            // for GpuArray
 #include "AMReX_Array4.H"           // for Array4
 #include "AMReX_Box.H"              // for Box (ptr only), grow
@@ -13,17 +15,19 @@
 #include "AMReX_GpuLaunchFunctsC.H" // for ParallelFor
 #include "AMReX_SPACE.H"            // for AMREX_D_TERM
 
-#include "Constant.H"        // for ConstTransport
+// PelePhysics
 #include "Fuego.H"           // for Fuego
 #include "GammaLaw.H"        // for GammaLaw
-#include "IndexDefines.H"    // for URHO, UMX, UMY, UMZ, UFS, UTEMP
 #include "mechanism.H"       // for NUM_SPECIES
-#include "PeleC.H"           // for PeleC, PeleC::trans_parms
 #include "PelePhysics.H"     // for PhysicsType
 #include "Simple.H"          // for SimpleTransport
 #include "SRK.H"             // for SRK
 #include "TransportParams.H" // for TransParm, TransportParams
 
+// PeleC
+#include "Constant.H"     // for ConstTransport
+#include "IndexDefines.H" // for URHO, UMX, UMY, UMZ, UFS, UTEMP
+#include "PeleC.H"        // for PeleC, PeleC::trans_parms
 #include "Derive.H"
 
 void

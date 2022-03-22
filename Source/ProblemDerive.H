@@ -2,9 +2,11 @@
 #ifndef _PROBLEMDERIVE_H_
 #define _PROBLEMDERIVE_H_
 
-#include <AMReX_Derive.H>
-#include <AMReX_FArrayBox.H>
+// AMReX
+#include "AMReX_Derive.H"
+#include "AMReX_FArrayBox.H"
 
+// PeleC
 #include "PeleC.H"
 #include "IndexDefines.H"
 

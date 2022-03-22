@@ -1,7 +1,10 @@
+// AMReX
 #include "AMReX_SPACE.H" // for AMREX_D_PICK
 
+// PelePhysics
 #include "mechanism.H" // for NUM_SPECIES
 
+// PeleC
 #include "IndexDefines.H"
 
 void

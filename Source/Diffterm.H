@@ -1,6 +1,7 @@
 #ifndef _DIFFTERM_H_
 #define _DIFFTERM_H_
 
+// AMReX
 #include "AMReX_Array4.H"        // for Array4
 #include "AMReX_Config.H"        // for AMREX_SPACEDIM
 #include "AMReX_Extension.H"     // for AMREX_FORCE_INLINE
@@ -10,13 +11,16 @@
 #include "AMReX_REAL.H"          // for Real
 #include "AMReX_SPACE.H"         // for AMREX_D_TERM, AMREX_D_DECL
 
-#include "EOS.H"          // for EosType
-#include "Fuego.H"        // for Fuego
-#include "GammaLaw.H"     // for GammaLaw
+// PelePhysics
+#include "EOS.H"         // for EosType
+#include "Fuego.H"       // for Fuego
+#include "GammaLaw.H"    // for GammaLaw
+#include "mechanism.H"   // for NUM_SPECIES
+#include "PelePhysics.H" // for PhysicsType
+#include "SRK.H"         // for SRK
+
+// PeleC
 #include "IndexDefines.H" // for dComp_mu, QU, QV, QW, QPRES, QTEMP
-#include "mechanism.H"    // for NUM_SPECIES
-#include "PelePhysics.H"  // for PhysicsType
-#include "SRK.H"          // for SRK
 
 namespace amrex {
 class Box;

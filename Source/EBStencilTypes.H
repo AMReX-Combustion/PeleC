@@ -1,8 +1,9 @@
 #ifndef _EBStencilTypes_H_
 #define _EBStencilTypes_H_
 
-#include <AMReX_REAL.H>
-#include <AMReX_IntVect.H>
+// AMReX
+#include "AMReX_REAL.H"
+#include "AMReX_IntVect.H"
 
 static amrex::Box stencil_volume_box(
   amrex::IntVect(AMREX_D_DECL(-1, -1, -1)),

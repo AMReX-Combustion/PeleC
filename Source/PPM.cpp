@@ -1,5 +1,7 @@
+// System
 #include <limits> // for numeric_limits
 
+// AMReX
 #include "AMReX_Array.H"            // for GpuArray
 #include "AMReX_Array4.H"           // for Array4
 #include "AMReX_Box.H"              // for Box
@@ -9,15 +11,18 @@
 #include "AMReX_IntVect.H"          // for IntVect, operator*
 #include "AMReX_SPACE.H"            // for AMREX_D_DECL
 
-#include "Fuego.H"        // for Fuego
-#include "GammaLaw.H"     // for GammaLaw
+// PelePhysics
+#include "Fuego.H"       // for Fuego
+#include "GammaLaw.H"    // for GammaLaw
+#include "mechanism.H"   // for NUM_SPECIES
+#include "PelePhysics.H" // for PhysicsType
+#include "SRK.H"         // for SRK
+
+// PeleC
 #include "Godunov.H"      // for flatten
 #include "IndexDefines.H" // for QPRES, QRHO, QFS, QREINT, QU, QV
-#include "mechanism.H"    // for NUM_SPECIES
-#include "PelePhysics.H"  // for PhysicsType
+#include "WENO.H"         // for weno_reconstruct_3z, weno_recons...
 #include "PPM.H"
-#include "SRK.H"  // for SRK
-#include "WENO.H" // for weno_reconstruct_3z, weno_recons...
 
 void
 trace_ppm(

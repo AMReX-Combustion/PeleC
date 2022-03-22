@@ -1,7 +1,9 @@
-#include <iosfwd> // for string
+// System
 #include <memory> // for unique_ptr
+#include <iosfwd> // for string
 #include <string> // for operator==
 
+// AMReX
 #include "AMReX.H"                    // for Abort
 #include "AMReX_Amr.H"                // for Amr
 #include "AMReX_BLProfiler.H"         // for BL_PROFILE
@@ -14,6 +16,7 @@
 #include "AMReX_ParallelDescriptor.H" // for ReduceRealSum
 #include "AMReX_REAL.H"               // for Real
 
+// PeleC
 #include "PeleC.H" // for PeleC, PeleC::eb_in_domain
 
 amrex::Real

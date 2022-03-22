@@ -1,3 +1,4 @@
+// System
 #include <iomanip> // for operator<<, setw, setprecision
 #include <limits>  // for numeric_limits
 #include <memory>  // for unique_ptr
@@ -5,6 +6,7 @@
 #include <string>  // for basic_string, char_traits, all...
 #include <vector>  // for vector<>::iterator
 
+// AMReX
 #include "AMReX_Algorithm.H"          // for max, min
 #include "AMReX_Amr.H"                // for Amr
 #include "AMReX_BLProfiler.H"         // for BL_PROFILE
@@ -16,8 +18,11 @@
 #include "AMReX_StateData.H"          // for StateData
 #include "AMReX_Vector.H"             // for Vector
 
+// PelePhysics
 #include "mechanism.H" // for NUM_SPECIES
-#include "PeleC.H"     // for PeleC, PeleC::verbose, PeleC::...
+
+// PeleC
+#include "PeleC.H" // for PeleC, PeleC::verbose, PeleC::...
 
 void
 PeleC::sum_integrated_quantities()

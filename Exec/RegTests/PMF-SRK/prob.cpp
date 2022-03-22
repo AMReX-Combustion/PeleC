@@ -1,6 +1,8 @@
+// System
 #include <istream> // for getline, string, istringstream, str...
 #include <string>  // for allocator, basic_string
 
+// AMReX
 #include "AMReX.H"               // for Abort
 #include "AMReX_Algorithm.H"     // for max
 #include "AMReX_GpuContainers.H" // for DeviceVector, copy, hostToDevice
@@ -9,8 +11,11 @@
 #include "AMReX_REAL.H"          // for Real, amrex_real
 #include "AMReX_Vector.H"        // for Vector
 
-#include "PeleC.H" // for PeleC, PeleC::h_prob_parm_device
+// PelePhysics
+#include "mechanism.H" // for NUM_SPECIES, N2_ID, O2_ID, H2_ID
 
+// PeleC
+#include "PeleC.H" // for PeleC, PeleC::h_prob_parm_device
 #include "prob.H"
 
 std::string

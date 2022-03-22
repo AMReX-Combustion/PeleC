@@ -1,9 +1,12 @@
+// System
 #include <ostream> // for endl
 
+// GoogleTest
 #include <gtest/gtest-message.h>   // for Message
-#include <gtest/gtest-test-part.h> // for TestPartResult
-#include "gtest/gtest_pred_impl.h" // for Test, SuiteApiResolver, TEST, Tes...
+#include <gtest/gtest-test-part.h> // for SuiteApiResolver, TestFactoryImpl
+#include <gtest/gtest.h>           // for Test, TestInfo (ptr only), TEST
 
+// AMReX
 #include "AMReX_Print.H" // for Print
 
 namespace amrex {

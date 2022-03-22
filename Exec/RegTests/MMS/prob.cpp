@@ -1,8 +1,10 @@
+// System
 #include <cmath>   // for sqrt
 #include <iomanip> // for operator<<, setw, setprecision
 #include <memory>  // for allocator
 #include <ostream> // for operator<<, basic_ostream, cha...
 
+// AMReX
 #include "AMReX_Amr.H"                // for Amr
 #include "AMReX_MultiFab.H"           // for MultiFab
 #include "AMReX_ParallelDescriptor.H" // for IOProcessorNumber, ReduceRealSum
@@ -12,12 +14,14 @@
 #include "AMReX_StateData.H"          // for StateData
 #include "AMReX_Vector.H"             // for Vector
 
+// PelePhysics
 #include "mechanism.H"        // for NUM_SPECIES
-#include "PeleC.H"            // for PeleC, PeleC::h_prob_parm_device
 #include "PhysicsConstants.H" // for Constants, Constants::AIRMW
-#include "prob_parm.H"        // for ProbParmDevice
 #include "TransportParams.H"  // for TransParm, TransportParams
 
+// PeleC
+#include "PeleC.H"     // for PeleC, PeleC::h_prob_parm_device
+#include "prob_parm.H" // for ProbParmDevice
 #include "prob.H"
 
 void
@@ -31,8 +35,8 @@ amrex_probinit(
   const int* /*init*/,
   const int* /*name*/,
   const int* /*namelen*/,
-  const amrex_real* problo,
-  const amrex_real* probhi)
+  const amrex::Real* problo,
+  const amrex::Real* probhi)
 {
   // Parse params
   {

@@ -1,12 +1,14 @@
 #ifndef _UTILITIES_H_
 #define _UTILITIES_H_
 
+// System
 #include <stddef.h>    // for size_t
 #include <limits>      // for numeric_limits
 #include <ostream>     // for stringstream, string, operator<<
 #include <type_traits> // for integral_constant<>::value, is_same
 #include <vector>      // for vector
 
+// AMReX
 #include "AMReX.H"                  // for Error
 #include "AMReX_Algorithm.H"        // for max
 #include "AMReX_Array.H"            // for GpuArray
@@ -19,14 +21,17 @@
 #include "AMReX_Reduce.H"           // for Sum
 #include "AMReX_Vector.H"           // for Vector
 
-#include "Constants.H"        // for very_small_num, small_num
+// PelePhysics
 #include "Fuego.H"            // for Fuego
 #include "GammaLaw.H"         // for GammaLaw
-#include "IndexDefines.H"     // for URHO, UEINT, UEDEN, UTEMP, QFS, UFS
 #include "mechanism.H"        // for NUM_SPECIES
 #include "PelePhysics.H"      // for PhysicsType
 #include "PhysicsConstants.H" // for Constants, Constants::RU
 #include "SRK.H"              // for SRK
+
+// PeleC
+#include "Constants.H"    // for very_small_num, small_num
+#include "IndexDefines.H" // for URHO, UEINT, UEDEN, UTEMP, QFS, UFS
 
 namespace amrex {
 class Box;

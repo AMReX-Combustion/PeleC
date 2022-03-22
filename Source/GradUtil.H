@@ -1,6 +1,7 @@
 #ifndef _GRADUTIL_H_
 #define _GRADUTIL_H_
 
+// AMReX
 #include "AMReX_Array4.H"        // for Array4
 #include "AMReX_Config.H"        // for AMREX_SPACEDIM
 #include "AMReX_Extension.H"     // for AMREX_FORCE_INLINE
@@ -8,6 +9,7 @@
 #include "AMReX_REAL.H"          // for Real
 #include "AMReX_SPACE.H"         // for AMREX_D_PICK
 
+// PeleC
 #include "IndexDefines.H" // for QU, QV, QW
 
 namespace amrex {

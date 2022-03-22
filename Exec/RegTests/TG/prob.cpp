@@ -1,14 +1,18 @@
+// System
 #include <ostream> // for ofstream, endl
 
+// AMReX
 #include "AMReX_ParmParse.H" // for ParmParse
 #include "AMReX_Print.H"     // for Print
 #include "AMReX_REAL.H"      // for amrex_real, Real
 
-#include "Constants.H"       // for PI
+// PelePhysics
 #include "mechanism.H"       // for NUM_SPECIES
-#include "PeleC.H"           // for PeleC, PeleC::h_prob_parm_device, PeleC...
 #include "TransportParams.H" // for TransParm, TransportParams
 
+// PeleC
+#include "Constants.H" // for PI
+#include "PeleC.H"     // for PeleC, PeleC::h_prob_parm_device, PeleC...
 #include "prob.H"
 
 void
@@ -22,8 +26,8 @@ amrex_probinit(
   const int* /*init*/,
   const int* /*name*/,
   const int* /*namelen*/,
-  const amrex_real* problo,
-  const amrex_real* probhi)
+  const amrex::Real* problo,
+  const amrex::Real* probhi)
 {
   // Parse params
   {

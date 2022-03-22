@@ -1,9 +1,11 @@
 #ifndef _MOL_H_
 #define _MOL_H_
 
+// System
 #include <math.h>   // for copysign
 #include <stdlib.h> // for abs
 
+// AMReX
 #include "AMReX_Algorithm.H"     // for min
 #include "AMReX_Array.H"         // for GpuArray
 #include "AMReX_Array4.H"        // for Array4
@@ -16,8 +18,11 @@
 #include "AMReX_REAL.H"          // for Real
 #include "AMReX_SPACE.H"         // for AMREX_D_DECL
 
+// PelePhysics
+#include "mechanism.H" // for NUM_SPECIES
+
+// PeleC
 #include "IndexDefines.H" // for QPRES, QC, QRHO, QFS, QVAR
-#include "mechanism.H"    // for NUM_SPECIES
 
 namespace amrex {
 class Box;

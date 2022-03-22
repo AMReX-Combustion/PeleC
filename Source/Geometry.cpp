@@ -1,13 +1,15 @@
-#include <algorithm> // for min
+// System
+#include <algorithm> // for max
 #include <array>     // for array
 #include <math.h>    // for sqrt
 #include <memory>    // for unique_ptr, make_unique
-#include <ostream>   // for endl, string
+#include <ostream>   // for endl
 #include <stdlib.h>  // for abs
 #include <string>    // for allocator, operator+, char_tr...
-#include <vector>    // for vector
 #include <utility>   // for move
+#include <vector>    // for vector
 
+// AMReX
 #include "AMReX.H"                     // for Abort, Verbose
 #include "AMReX_Algorithm.H"           // for max, min
 #include "AMReX_Array.H"               // for Array, RealArray
@@ -40,8 +42,8 @@
 #include "AMReX_SPACE.H"               // for AMREX_D_DECL
 #include "AMReX_Vector.H"              // for Vector
 
+// PeleC
 #include "Utilities.H" // for convertIntGG
-
 #include "Geometry.H"
 
 namespace pele {

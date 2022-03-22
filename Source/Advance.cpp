@@ -1,6 +1,8 @@
+// System
 #include <memory>  // for allocator
 #include <ostream> // for endl
 
+// AMReX
 #include "AMReX.H"                    // for Abort
 #include "AMReX_Amr.H"                // for Amr
 #include "AMReX_BLProfiler.H"         // for BL_PROFILE
@@ -15,8 +17,11 @@
 #include "AMReX_StateData.H"          // for StateData
 #include "AMReX_Vector.H"             // for Vector
 
+// PelePhysics
+#include "mechanism.H" // for NUM_SPECIES
+
+// PeleC
 #include "IndexDefines.H" // for NVAR
-#include "mechanism.H"    // for NUM_SPECIES
 #include "PeleC.H"        // for PeleC, PeleC::src_list, Reacti...
 
 amrex::Real

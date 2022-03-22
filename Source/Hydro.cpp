@@ -1,8 +1,10 @@
+// System
 #include <array>   // for array
 #include <limits>  // for numeric_limits
 #include <memory>  // for allocator
 #include <ostream> // for endl
 
+// AMReX
 #include "AMReX.H"                    // for Abort
 #include "AMReX_Algorithm.H"          // for max
 #include "AMReX_Amr.H"                // for Amr
@@ -23,11 +25,14 @@
 #include "AMReX_Print.H"              // for Print
 #include "AMReX_Vector.H"             // for Vector
 
+// PelePhysics
+#include "mechanism.H" // for NUM_SPECIES
+
+// PeleC
 #include "Filter.H"    // for Filter
 #include "Godunov.H"   // for pc_artif_visc, pc_umeth_3D
 #include "PeleC.H"     // for PeleC, PeleC::src_list, PeleC:...
 #include "Utilities.H" // for copy_array4, setV, pc_ctoprim
-
 #include "Hydro.H"
 
 // Set up the source terms to go into the hydro.

@@ -1,8 +1,10 @@
+// System
 #include <cmath>   // for sqrt, M_PI
 #include <ostream> // for endl
 #include <utility> // for move
 #include <vector>  // for vector
 
+// AMReX
 #include "AMReX.H"                     // for Verbose
 #include "AMReX_Algorithm.H"           // for max, min
 #include "AMReX_Box.H"                 // for AllGatherBoxes, grow, surroun...
@@ -27,8 +29,8 @@
 #include "AMReX_SPACE.H"               // for AMREX_D_DECL
 #include "AMReX_Vector.H"              // for Vector
 
+// PeleC
 #include "PeleC.H" // for PeleC, PeleC::h_prob_parm_device
-
 #include "prob.H"
 
 namespace amrex {

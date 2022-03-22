@@ -1,6 +1,8 @@
+// System
 #include <cmath>   // for sqrt, exp
 #include <numeric> // for accumulate
 
+// AMReX
 #include "AMReX_Array4.H"           // for Array4
 #include "AMReX_BLProfiler.H"       // for BL_PROFILE
 #include "AMReX_BLassert.H"         // for AMREX_ASSERT
@@ -14,9 +16,9 @@
 #include "AMReX_MultiFab.H"         // for MultiFab
 #include "AMReX_REAL.H"             // for Real
 
+// PeleC
 #include "Constants.H" // for PI
 #include "Utilities.H" // for setC
-
 #include "Filter.H"
 
 // Set the filter weights for the standard box filter

@@ -1,9 +1,12 @@
+// AMReX
 #include "AMReX_ParmParse.H" // for ParmParse
 #include "AMReX_REAL.H"      // for Real, amrex_real
 
+// PelePhysics
 #include "mechanism.H" // for NUM_SPECIES
-#include "PeleC.H"     // for PeleC, PeleC::h_prob_parm_device
 
+// PeleC
+#include "PeleC.H" // for PeleC, PeleC::h_prob_parm_device
 #include "prob.H"
 
 void
@@ -17,8 +20,8 @@ amrex_probinit(
   const int* /*init*/,
   const int* /*name*/,
   const int* /*namelen*/,
-  const amrex_real* problo,
-  const amrex_real* probhi)
+  const amrex::Real* problo,
+  const amrex::Real* probhi)
 {
   // Parse params
   amrex::ParmParse pp("prob");

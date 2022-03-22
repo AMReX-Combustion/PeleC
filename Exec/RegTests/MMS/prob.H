@@ -1,6 +1,7 @@
 #ifndef PROB_H_
 #define PROB_H_
 
+// AMReX
 #include "AMReX_Array4.H"        // for Array4
 #include "AMReX_Config.H"        // for AMREX_SPACEDIM
 #include "AMReX_Extension.H"     // for AMREX_FORCE_INLINE
@@ -9,15 +10,20 @@
 #include "AMReX_SPACE.H"         // for AMREX_D_TERM, AMREX_D_DECL
 #include "AMReX_REAL.H"          // for Real
 
+// MASA
 #ifdef PELEC_USE_MASA
 #include <masa.h> // for masa_eval_3d_exact_u, masa_eval_3d_...
+
 using namespace MASA;
 #endif
 
-#include "GammaLaw.H"      // for GammaLaw
+// PelePhysics
+#include "GammaLaw.H"    // for GammaLaw
+#include "mechanism.H"   // for NUM_SPECIES
+#include "PelePhysics.H" // for PhysicsType
+
+// PeleC
 #include "IndexDefines.H"  // for UEDEN, UEINT, UFS, UMX, UMY, UMZ, URHO
-#include "mechanism.H"     // for NUM_SPECIES
-#include "PelePhysics.H"   // for PhysicsType
 #include "ProblemDerive.H" // for EmptyProbDeriveStruct
 #include "Tagging.H"       // for EmptyProbTagStruct
 

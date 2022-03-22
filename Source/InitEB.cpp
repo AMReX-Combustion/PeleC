@@ -1,3 +1,4 @@
+// System
 #include <algorithm>   // for find
 #include <array>       // for array, array<>::value_type
 #include <cmath>       // for sqrt, pow
@@ -7,6 +8,7 @@
 #include <type_traits> // for integral_constant<>::value
 #include <vector>      // for vector
 
+// AMReX
 #include "AMReX.H"                    // for Abort
 #include "AMReX_Amr.H"                // for Amr
 #include "AMReX_Array.H"              // for GpuArray, Array
@@ -43,12 +45,14 @@
 #include "AMReX_SPACE.H"              // for AMREX_D_DECL, AMREX_D_TERM
 #include "AMReX_Vector.H"             // for Vector
 
+// Thrust
 #if defined(AMREX_USE_CUDA) || defined(AMREX_USE_HIP)
 #include <thrust/unique.h>
 #include <thrust/sort.h>
 #include <thrust/execution_policy.h>
 #endif
 
+// PeleC
 #include "EB.H"             // for pc_set_body_state, pc_fill_bnd...
 #include "EBStencilTypes.H" // for EBBndryGeom, EBBndrySten, Face...
 #include "Geometry.H"       // for Geometry

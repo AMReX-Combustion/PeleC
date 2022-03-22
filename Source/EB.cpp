@@ -1,5 +1,7 @@
+// System
 #include <cmath> // for copysign, sqrt, pow
 
+// AMReX
 #include "AMReX.H"                  // for Abort
 #include "AMReX_BLassert.H"         // for AMREX_ASSERT
 #include "AMReX_Box.H"              // for Box, grow
@@ -9,9 +11,10 @@
 #include "AMReX_GpuLaunchFunctsC.H" // for ParallelFor
 #include "AMReX_IArrayBox.H"        // for IArrayBox
 
-#include "EB.H"
+// PeleC
 #include "EBStencilTypes.H" // for EBBndryGeom, EBBndrySten, FaceSten
 #include "Utilities.H"      // for clean_massfrac
+#include "EB.H"
 
 void
 pc_fill_sv_ebg(

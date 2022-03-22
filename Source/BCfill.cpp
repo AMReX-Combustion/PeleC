@@ -1,6 +1,8 @@
+// System
 #include <memory>  // for allocator
 #include <utility> // for move
 
+// AMReX
 #include "AMReX_Array.H"            // for Array
 #include "AMReX_Array4.H"           // for Array4
 #include "AMReX_BCRec.H"            // for BCRec
@@ -19,11 +21,13 @@
 #include "AMReX_SPACE.H"            // for AMREX_D_DECL
 #include "AMReX_Vector.H"           // for Vector
 
+// PelePhysics
+#include "turbinflow.H" // for TurbInflow
+
+// PeleC
 #include "IndexDefines.H" // for NVAR, UMX
 #include "PeleC.H"        // for PeleC, PeleC::turb_inflow, PeleC...
-#include "turbinflow.H"   // for TurbInflow
-
-#include "prob.H" // for bcnormal
+#include "prob.H"         // for bcnormal
 
 struct ProbParmDevice;
 

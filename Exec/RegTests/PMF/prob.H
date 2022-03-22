@@ -1,8 +1,10 @@
 #ifndef _PROB_H_
 #define _PROB_H_
 
+// System
 #include <cmath> // for sin
 
+// AMReX
 #include "AMReX_Array.H"         // for GpuArray
 #include "AMReX_Array4.H"        // for Array4
 #include "AMReX_Config.H"        // for AMREX_SPACEDIM
@@ -11,11 +13,14 @@
 #include "AMReX_GpuQualifiers.H" // for AMREX_GPU_DEVICE, AMREX_GPU_HOST_DE...
 #include "AMReX_REAL.H"          // for Real
 
+// PelePhysics
+#include "Fuego.H"       // for Fuego
+#include "mechanism.H"   // for NUM_SPECIES
+#include "PelePhysics.H" // for PhysicsType
+
+// PeleC
 #include "Constants.H"     // for PI
-#include "Fuego.H"         // for Fuego
 #include "IndexDefines.H"  // for UEDEN, UEINT, UFS, UMX, UMY, UMZ, URHO
-#include "mechanism.H"     // for NUM_SPECIES
-#include "PelePhysics.H"   // for PhysicsType
 #include "ProblemDerive.H" // for EmptyProbDeriveStruct
 #include "prob_parm.H"     // for ProbParmDevice
 #include "Tagging.H"       // for EmptyProbTagStruct

@@ -47,9 +47,11 @@
 //     turbulent one, so this is standard modeling approach is probably
 //     justified.
 
+// System
 #include <memory>  // for allocator
 #include <ostream> // for endl
 
+// AMReX
 #include "AMReX.H"                  // for Error
 #include "AMReX_Amr.H"              // for Amr
 #include "AMReX_BLProfiler.H"       // for BL_PROFILE
@@ -70,12 +72,12 @@
 #include "AMReX_Print.H"            // for Print
 #include "AMReX_Vector.H"           // for Vector
 
+// PeleC
 #include "Diffterm.H"  // for pc_flux_div
 #include "Filter.H"    // for Filter, box
 #include "GradUtil.H"  // for pc_compute_tangential_vel_derivs
 #include "PeleC.H"     // for PeleC, les_src, PeleC::d_pass_map
 #include "Utilities.H" // for setV, pc_move_transcoefs_to_ec
-
 #include "LES.H"
 
 void

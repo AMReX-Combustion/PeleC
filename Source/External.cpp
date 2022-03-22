@@ -1,5 +1,7 @@
+// System
 #include <memory> // for allocator
 
+// AMReX
 #include "AMReX_Array4.H"           // for Array4
 #include "AMReX_EBCellFlag.H"       // for EBCellFlagFab
 #include "AMReX_EBFabFactory.H"     // for EBFArrayBoxFactory
@@ -13,6 +15,7 @@
 #include "AMReX_REAL.H"             // for Real
 #include "AMReX_Vector.H"           // for Vector
 
+// PeleC
 #include "IndexDefines.H" // for NVAR
 #include "PeleC.H"        // for PeleC, ext_src, State_Type
 

@@ -1,6 +1,9 @@
+// System
 #include <memory>  // for allocator
 #include <ostream> // for endl
 
+// AMReX
+#include "AMReX_Algorithm.H"          // for max
 #include "AMReX_Array4.H"             // for Array4
 #include "AMReX_BLProfiler.H"         // for BL_PROFILE
 #include "AMReX_BLassert.H"           // for AMREX_ASSERT
@@ -24,14 +27,17 @@
 #include "AMReX_Vector.H"             // for Vector
 #include "AMReX_iMultiFab.H"          // for iMultiFab
 
-#include "Fuego.H"        // for Fuego
-#include "GammaLaw.H"     // for GammaLaw
+// PelePhysics
+#include "Fuego.H"       // for Fuego
+#include "GammaLaw.H"    // for GammaLaw
+#include "mechanism.H"   // for NUM_SPECIES
+#include "PelePhysics.H" // for PhysicsType
+#include "ReactorBase.H" // for ReactorBase
+#include "SRK.H"         // for SRK
+
+// PeleC
 #include "IndexDefines.H" // for UFS, NVAR, UEDEN, UMX, UMY, UMZ
-#include "mechanism.H"    // for NUM_SPECIES
 #include "PeleC.H"        // for PeleC, State_Type, PeleC::src_...
-#include "PelePhysics.H"  // for PhysicsType
-#include "ReactorBase.H"  // for ReactorBase
-#include "SRK.H"          // for SRK
 
 void
 PeleC::set_typical_values_chem()

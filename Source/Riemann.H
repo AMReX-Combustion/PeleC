@@ -1,9 +1,12 @@
 #ifndef _RIEMANN_H_
 #define _RIEMANN_H_
 
+// PelePhysics
+#include "PelePhysics.H"
+
+// PeleC
 #include "Constants.H"
 #include "PeleC.H"
-#include "PelePhysics.H"
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE

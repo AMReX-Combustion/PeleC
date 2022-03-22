@@ -1,8 +1,10 @@
 #ifndef _PROB_H_
 #define _PROB_H_
 
+// System
 #include <math.h> // for cos, sin
 
+// AMReX
 #include "AMReX_Array.H"         // for GpuArray
 #include "AMReX_Array4.H"        // for Array4
 #include "AMReX_Config.H"        // for AMREX_SPACEDIM
@@ -11,10 +13,13 @@
 #include "AMReX_GpuQualifiers.H" // for AMREX_GPU_DEVICE
 #include "AMReX_REAL.H"          // for Real
 
-#include "GammaLaw.H"     // for GammaLaw
+// PelePhysics
+#include "GammaLaw.H"    // for GammaLaw
+#include "mechanism.H"   // for NUM_SPECIES
+#include "PelePhysics.H" // for PhysicsType
+
+// PeleC
 #include "IndexDefines.H" // for UEDEN, UEINT, UFS, UMX, UMY, UMZ, URHO
-#include "mechanism.H"    // for NUM_SPECIES
-#include "PelePhysics.H"  // for PhysicsType
 #include "prob_parm.H"    // for ProbParmDevice
 
 namespace amrex {
