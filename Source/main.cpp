@@ -1,3 +1,4 @@
+// System
 #include <stdio.h>  // for sprintf
 #include <string.h> // for strchr
 #include <time.h>   // for tm, gmtime, time, time_t
@@ -5,6 +6,7 @@
 #include <iostream> // for endl, string, operator>>, cin
 #include <string>   // for operator==
 
+// AMReX
 #include "AMReX.H"                    // for Abort, Finalize, Initialize
 #include "AMReX_Amr.H"                // for Amr
 #include "AMReX_AmrLevel.H"           // for AmrLevel
@@ -24,6 +26,7 @@
 #include <AMReX_Sundials.H> // for Finalize, Initialize
 #endif
 
+// PeleC
 #include "PeleC.H" // for PeleC
 
 namespace amrex {

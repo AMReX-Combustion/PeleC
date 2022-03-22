@@ -1,8 +1,7 @@
-#include <algorithm>   // for find
+// System
 #include <cmath>       // for floor, pow, sqrt
 #include <limits>      // for numeric_limits
-#include <iostream>    // for string, endl, operator<<, basi...
-#include <iterator>    // for distance
+#include <iostream>    // for endl, operator<<, basic_ostream
 #include <type_traits> // for integral_constant<>::value
 #include <vector>      // for vector
 
@@ -18,6 +17,7 @@
 #endif
 #endif
 
+// AMReX
 #include "AMReX_Algorithm.H"          // for min, max
 #include "AMReX_AmrLevel.H"           // for AmrLevel
 #include "AMReX_ArrayLim.H"           // for ARLIM_3D
@@ -61,26 +61,34 @@
 #include <AMReX_Particles.H>
 #endif
 
+// AMReX-Hydro
 #include "hydro_redistribution.H" // for ApplyToInitialData
 
+// MASA
 #ifdef PELEC_USE_MASA
 #include <masa.h> // for masa_set_param, masa_init, MASA
+
 using namespace MASA;
 #endif
 
-#include "EBStencilTypes.H" // for EBBndrySten, EBBndryGeom, Face...
-#include "PeleC.H"
-#include "Derive.H"          // for pc_dermagvort, pc_derpres, pc_...
-#include "Problem.H"         // for PeleC::problem_post_init, Pele...
-#include "prob.H"            // for ProblemTags, pc_initdata, pc_p...
-#include "prob_parm.H"       // for ProbParmDevice
+// PelePhysics
+#include "mechanism.H"       // for NUM_SPECIES
 #include "ReactorBase.H"     // for ReactorBase
-#include "Timestep.H"        // for pc_estdt_enthdif, pc_estdt_hydro
 #include "TransportParams.H" // for TransportParams, TransParm
 #include "turbinflow.H"      // for TurbInflow
-#include "Utilities.H"       // for find_position, pc_cmpTemp, pc_...
-#include "Tagging.H"         // for TaggingParm, tag_graderror
-#include "IndexDefines.H"    // for NVAR, URHO, comp_Cs2, UFS, com...
+
+// PeleC
+#include "EBStencilTypes.H" // for EBBndrySten, EBBndryGeom, Face...
+#include "Derive.H"         // for pc_dermagvort, pc_derpres, pc_...
+#include "IndexDefines.H"   // for NVAR, URHO, comp_Cs2, UFS, com...
+#include "Problem.H"        // for PeleC::problem_post_init, Pele...
+#include "prob.H"           // for pc_init_data
+#include "prob_parm.H"      // for ProbParmDevice
+#include "Timestep.H"       // for pc_estdt_enthdif, pc_estdt_hydro
+#include "Tagging.H"        // for TaggingParm, tag_graderror
+#include "Utilities.H"      // for find_position, pc_cmpTemp, pc_...
+
+#include "PeleC.H"
 
 bool PeleC::signalStopJob = false;
 int PeleC::verbose = 0;
@@ -185,8 +193,6 @@ PeleC::read_params()
   read_params_done = true;
 
   amrex::ParmParse pp("pelec");
-
-#include "pelec_queries.H"
 
   pp.query("v", verbose);
 

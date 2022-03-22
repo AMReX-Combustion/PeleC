@@ -1,9 +1,11 @@
 #ifndef _EB_H_
 #define _EB_H_
 
+// System
 #include <math.h>   // for pow, sqrt
 #include <stdlib.h> // for abs
 
+// AMReX
 #include "AMReX_Algorithm.H"     // for max
 #include "AMReX_Array.H"         // for GpuArray
 #include "AMReX_Array4.H"        // for Array4
@@ -16,6 +18,7 @@
 #include "AMReX_REAL.H"          // for Real
 #include "AMReX_SPACE.H"         // for AMREX_D_DECL
 
+// PeleC
 #include "IndexDefines.H" // for NLSPTS, NEL_TRIMAT, NVAR
 
 namespace amrex {

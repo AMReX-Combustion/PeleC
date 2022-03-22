@@ -1,12 +1,15 @@
 #ifndef _PELEC_H_
 #define _PELEC_H_
 
+// System
 #include <algorithm>
+#include <stdlib.h> // for abs
+#include <memory>   // for unique_ptr
 #include <array>    // for array
 #include <iosfwd>   // for string, ostream, istream
-#include <stdlib.h> // for abs
 #include <string>   // for allocator, char_traits, operator!=
 
+// AMReX
 #include "AMReX.H"                // for Abort
 #include "AMReX_Amr.H"            // for Amr
 #include "AMReX_AmrLevel.H"       // for AmrLevel
@@ -30,15 +33,18 @@
 #include "SprayParticles.H"
 #endif
 
+// PelePhysics
+#include "mechanism.H"   // for NUM_SPECIES
+#include "PelePhysics.H" // for PhysicsType
+#include "turbinflow.H"  // for turbinflow
+
+// PeleC
 #include "EBStencilTypes.H" // for EBBndryGeom
 #include "Filter.H"         // for Filter
 #include "IndexDefines.H"   // for PassMap (ptr only), URHO, NVAR, UFS
-#include "mechanism.H"      // for NUM_SPECIES
-#include "PelePhysics.H"    // for PhysicsType
 #include "prob_parm.H"      // for ProbParmDevice
 #include "ReactorBase.H"    // for reactions
 #include "SparseData.H"     // for SparseData
-#include "turbinflow.H"     // for turbinflow
 
 enum StateType { State_Type = 0, Reactions_Type, Work_Estimate_Type };
 

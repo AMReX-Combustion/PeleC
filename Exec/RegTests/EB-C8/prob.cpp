@@ -1,13 +1,17 @@
+// System
 #include <string> // for allocator, char_traits, operator==, bas...
 
+// AMReX
 #include "AMReX_ParmParse.H" // for ParmParse
 #include "AMReX_REAL.H"      // for Real, amrex_real
 
+// PelePhysics
 #include "Fuego.H"       // for Fuego
 #include "mechanism.H"   // for HE_ID, N2_ID, NUM_SPECIES
-#include "PeleC.H"       // for PeleC, PeleC::h_prob_parm_device, PeleC...
 #include "PelePhysics.H" // for PhysicsType
 
+// PeleC
+#include "PeleC.H" // for PeleC, PeleC::h_prob_parm_device, PeleC...
 #include "prob.H"
 
 void

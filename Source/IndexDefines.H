@@ -1,9 +1,11 @@
 #ifndef _INDEX_DEFINES_H_
 #define _INDEX_DEFINES_H_
 
+// AMReX
 #include "AMReX_Array.H"  // for GpuArray
 #include "AMReX_Config.H" // for AMREX_SPACEDIM
 
+// PelePhysics
 #include "mechanism.H" // for NUM_SPECIES
 
 #define UserBC 6

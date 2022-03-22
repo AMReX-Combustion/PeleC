@@ -1,8 +1,7 @@
 #ifndef _PROB_H_
 #define _PROB_H_
 
-#include <math.h> // for M_PI
-
+// AMReX
 #include "AMReX_Array4.H"        // for Array4
 #include "AMReX_Config.H"        // for AMREX_SPACEDIM
 #include "AMReX_Extension.H"     // for AMREX_FORCE_INLINE
@@ -11,10 +10,14 @@
 #include "AMReX_REAL.H"          // for Real
 #include "AMReX_SPACE.H"         // for AMREX_D_TERM
 
-#include "GammaLaw.H"      // for GammaLaw
+// PelePhysics
+#include "GammaLaw.H"    // for GammaLaw
+#include "mechanism.H"   // for NUM_SPECIES
+#include "PelePhysics.H" // for PhysicsType
+
+// PeleC
+#include "Constants.H"     // for PI
 #include "IndexDefines.H"  // for URHO, NVAR, UMX, UMY, UMZ, UFS, UEDEN
-#include "mechanism.H"     // for NUM_SPECIES
-#include "PelePhysics.H"   // for PhysicsType
 #include "ProblemDerive.H" // for EmptyProbDeriveStruct
 #include "prob_parm.H"     // for ProbParmDevice
 #include "Tagging.H"       // for EmptyProbTagStruct
@@ -33,8 +36,8 @@ pc_initdata(
   // Set explosion pressure -- we will convert the point-explosion energy into
   // a corresponding pressure distributed throughout the perturbed volume
   auto eos = pele::physics::PhysicsType::eos();
-  amrex::Real vctr =
-    4.0 / 3.0 * M_PI * (prob_parm.r_init * prob_parm.r_init * prob_parm.r_init);
+  amrex::Real vctr = 4.0 / 3.0 * constants::PI() *
+                     (prob_parm.r_init * prob_parm.r_init * prob_parm.r_init);
   amrex::Real p_exp = (eos.gamma - 1.0) * prob_parm.exp_energy / vctr;
 
   // Geometry

@@ -1,8 +1,10 @@
 #ifndef _PROB_H_
 #define _PROB_H_
 
+// System
 #include <math.h> // for sin
 
+// AMReX
 #include "AMReX.H"               // for Abort
 #include "AMReX_Array.H"         // for GpuArray
 #include "AMReX_Array4.H"        // for Array4
@@ -12,10 +14,13 @@
 #include "AMReX_GpuQualifiers.H" // for AMREX_GPU_DEVICE
 #include "AMReX_REAL.H"          // for Real
 
-#include "GammaLaw.H"      // for GammaLaw
+// PelePhysics
+#include "GammaLaw.H"    // for GammaLaw
+#include "mechanism.H"   // for NUM_SPECIES
+#include "PelePhysics.H" // for PhysicsType
+
+// PeleC
 #include "IndexDefines.H"  // for URHO, UEINT, UEDEN, UMX, UMY, UMZ
-#include "mechanism.H"     // for NUM_SPECIES
-#include "PelePhysics.H"   // for PhysicsType
 #include "ProblemDerive.H" // for EmptyProbDeriveStruct
 #include "prob_parm.H"     // for ProbParmDevice
 #include "Tagging.H"       // for EmptyProbTagStruct

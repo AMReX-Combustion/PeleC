@@ -1,10 +1,12 @@
 #ifndef _TAGGING_H_
 #define _TAGGING_H_
 
-#include <iosfwd>   // for string
+// System
 #include <stdlib.h> // for abs
+#include <iosfwd>   // for string
 #include <utility>  // for forward
 
+// AMReX
 #include "AMReX_Algorithm.H"     // for max
 #include "AMReX_Array.H"         // for GpuArray
 #include "AMReX_Array4.H"        // for Array4

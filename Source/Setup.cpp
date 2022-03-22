@@ -1,14 +1,18 @@
-#include <functional> // for __base
-#include <ostream>    // for string, endl
+// System
 #include <stdio.h>    // for sprintf
 #include <string.h>   // for strlen
+#include <functional> // for __base
+#include <ostream>    // for string, endl
 #include <string>     // for basic_string, allocator, basic...
 
+// MASA
 #ifdef PELEC_USE_MASA
 #include <masa.h> // for MASA
+
 using namespace MASA;
 #endif
 
+// AMReX
 #include "AMReX_AmrLevel.H"           // for AmrLevel::derive_lst, AmrLevel...
 #include "AMReX_Arena.H"              // for The_Arena, Arena
 #include "AMReX_BCRec.H"              // for BCRec
@@ -31,18 +35,21 @@ using namespace MASA;
 #include "AMReX_StateDescriptor.H"    // for DescriptorList, StateDescriptor
 #include "AMReX_Vector.H"             // for Vector
 
-#include "Derive.H"          // for pc_dernull, pc_dermagvel, pc_d...
+// PelePhysics
 #include "EOS.H"             // for speciesNames
-#include "IndexDefines.H"    // for NVAR, NUM_AUX, PassMap, init_p...
 #include "mechanism.H"       // for NUM_SPECIES
-#include "PeleC.H"           // for PeleC::Density, State_Type
 #include "PelePhysics.H"     // for PhysicsType
-#include "ProblemDerive.H"   // for add_problem_derives
-#include "prob.H"            // for ProblemDerives
-#include "prob_parm.H"       // for ProbParmDevice, ProbParmHost
-#include "Tagging.H"         // for TaggingParm
 #include "TransportParams.H" // for TransportParams
 #include "turbinflow.H"      // for TurbInflow
+
+// PeleC
+#include "Derive.H"        // for pc_dernull, pc_dermagvel, pc_d...
+#include "IndexDefines.H"  // for NVAR, NUM_AUX, PassMap, init_p...
+#include "PeleC.H"         // for PeleC::Density, State_Type
+#include "ProblemDerive.H" // for add_problem_derives
+#include "prob.H"          // for ProblemDerives
+#include "prob_parm.H"     // for ProbParmDevice, ProbParmHost
+#include "Tagging.H"       // for TaggingParm
 
 ProbParmDevice* PeleC::d_prob_parm_device = nullptr;
 ProbParmDevice* PeleC::h_prob_parm_device = nullptr;

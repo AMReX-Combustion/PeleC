@@ -1,3 +1,4 @@
+// System
 #include <memory>  // for allocator
 #include <ostream> // for endl, string
 
@@ -5,6 +6,10 @@
 #include <omp.h>
 #endif
 
+// MASA
+#include <masa.h> // for masa_eval_3d_exact_rho, masa_e...
+
+// AMReX
 #include "AMReX_AmrLevel.H"           // for FillPatchIterator
 #include "AMReX_Array.H"              // for GpuArray
 #include "AMReX_Array4.H"             // for Array4
@@ -24,10 +29,11 @@
 #include "AMReX_REAL.H"               // for Real
 #include "AMReX_Vector.H"             // for Vector
 
-#include <masa.h> // for masa_eval_3d_exact_rho, masa_e...
+// PelePhysics
+#include "mechanism.H" // for NUM_SPECIES
 
+// PeleC
 #include "IndexDefines.H" // for NVAR, UFS, URHO, UEDEN, UMX, UMY
-#include "mechanism.H"    // for NUM_SPECIES
 #include "PeleC.H"        // for PeleC, mms_src, State_Type
 
 namespace amrex {

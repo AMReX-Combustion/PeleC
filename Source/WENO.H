@@ -1,8 +1,9 @@
 #ifndef _WENO_H_
 #define _WENO_H_
 
-#include <AMReX_FArrayBox.H>
-#include <AMReX_IArrayBox.H>
+// AMReX
+#include "AMReX_FArrayBox.H"
+#include "AMReX_IArrayBox.H"
 
 // WENO 5 JS (Original Jiang GS, Shu CW. Efficient Implementation of Weighted
 // ENO Schemes.

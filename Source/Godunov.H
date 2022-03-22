@@ -1,10 +1,11 @@
 #ifndef _GODUNOV_H_
 #define _GODUNOV_H_
 
-#include <stdlib.h>    // for abs
-#include <mechanism.H> // for NUM_SPECIES
-#include <limits>      // for numeric_limits
+// System
+#include <stdlib.h> // for abs
+#include <limits>   // for numeric_limits
 
+// AMReX
 #include "AMReX_Algorithm.H"     // for max, min
 #include "AMReX_Array.H"         // for GpuArray
 #include "AMReX_Array4.H"        // for Array4
@@ -17,6 +18,10 @@
 #include "AMReX_REAL.H"          // for Real
 #include "AMReX_SPACE.H"         // for AMREX_D_DECL, AMREX_D_PICK, AMREX_D...
 
+// PelePhysics
+#include "mechanism.H" // for NUM_SPECIES
+
+// PeleC
 #include "IndexDefines.H" // for QU, QRHO, QV, QPRES, GDPRES, QREINT
 #include "Riemann.H"      // for riemann
 

@@ -1,6 +1,7 @@
 #ifndef _PROB_H_
 #define _PROB_H_
 
+// AMReX
 #include "AMReX.H"               // for Abort
 #include "AMReX_Array.H"         // for GpuArray
 #include "AMReX_Array4.H"        // for Array4
@@ -10,8 +11,11 @@
 #include "AMReX_GpuQualifiers.H" // for AMREX_GPU_DEVICE
 #include "AMReX_REAL.H"          // for Real
 
+// PelePhysics
+#include "mechanism.H" // for NUM_SPECIES
+
+// PeleC
 #include "IndexDefines.H"  // for URHO, UEDEN, UEINT, UMX, UMY, UMZ
-#include "mechanism.H"     // for NUM_SPECIES
 #include "ProblemDerive.H" // for EmptyProbDeriveStruct
 #include "prob_parm.H"     // for ProbParmDevice
 #include "Tagging.H"       // for EmptyProbTagStruct

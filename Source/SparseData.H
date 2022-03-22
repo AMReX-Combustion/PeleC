@@ -1,7 +1,8 @@
 #ifndef _SparseData_H_
 #define _SparseData_H_
 
-#include <AMReX_Vector.H>
+// AMReX
+#include "AMReX_Vector.H"
 
 AMREX_GPU_HOST_DEVICE
 AMREX_FORCE_INLINE

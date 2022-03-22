@@ -1,11 +1,14 @@
+// System
 #include "AMReX_ParmParse.H" // for ParmParse
 #include "AMReX_REAL.H"      // for Real, amrex_real
 
+// PelePhysics
 #include "GammaLaw.H"    // for GammaLaw
 #include "mechanism.H"   // for NUM_SPECIES
-#include "PeleC.H"       // for PeleC, PeleC::h_prob_parm_device
 #include "PelePhysics.H" // for PhysicsType
 
+// PeleC
+#include "PeleC.H" // for PeleC, PeleC::h_prob_parm_device
 #include "prob.H"
 
 void

@@ -1,21 +1,21 @@
-#include <algorithm> // for find
-#include <ctime>     // for localtime, strftime, time, time_t
-#include <iomanip>   // for operator<<, setw, setprecision
-#include <iostream>  // for operator<<, basic_ostream, string
-#include <iterator>  // for distance
-#include <list>      // for list, operator!=, __list_iterator
-#include <map>       // for map, __map_iterator, operator!=
-#include <memory>    // for unique_ptr, make_unique
-#include <stdio.h>   // for sprintf
-#include <stdlib.h>  // for abs
-#include <string.h>  // for strlen
-#include <string>    // for char_traits, allocator, basic_...
-#include <utility>   // for pair
+// System
+#include <ctime>    // for localtime, strftime, time, time_t
+#include <iomanip>  // for operator<<, setw, setprecision
+#include <iostream> // for operator<<, basic_ostream, endl
+#include <list>     // for list, operator!=, __list_iterator
+#include <map>      // for map, __map_iterator, operator!=
+#include <memory>   // for unique_ptr, make_unique
+#include <string>   // for char_traits, allocator, basic_...
+#include <stdio.h>  // for sprintf
+#include <stdlib.h> // for abs
+#include <string.h> // for strlen
+#include <utility>  // for pair
 
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
+// AMReX
 #include "AMReX.H"                    // for Abort, Error
 #include "AMReX_Algorithm.H"          // for max, min
 #include "AMReX_Amr.H"                // for Amr
@@ -53,16 +53,18 @@
 #include "AMReX_Vector.H"             // for Vector
 #include "AMReX_VisMF.H"              // for VisMF, VisMF::How
 
+// PelePhysics
 #include "Fuego.H"          // for Fuego
 #include "GammaLaw.H"       // for GammaLaw
-#include "IndexDefines.H"   // for NVAR, UFS, UMX, UMY, UMZ, NUM_ADV
 #include "mechanism.H"      // for NUM_SPECIES, CKINDX
-#include "PeleC.H"          // for PeleC, State_Type, PeleC::body...
 #include "PelePhysics.H"    // for PhysicsType
 #include "PltFileManager.H" // for PltFileManager
 #include "SRK.H"            // for SRK
-#include "Utilities.H"      // for find_position
 
+// PeleC
+#include "IndexDefines.H" // for NVAR, UFS, UMX, UMY, UMZ, NUM_ADV
+#include "PeleC.H"        // for PeleC, State_Type, PeleC::body...
+#include "Utilities.H"    // for find_position
 #include "IO.H"
 
 // PeleC maintains an internal checkpoint version numbering system.

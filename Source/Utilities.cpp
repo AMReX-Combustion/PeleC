@@ -1,10 +1,16 @@
-#include <istream> // for getline, istringstream, basic_istream
-#include <string>  // for allocator, char_traits, operator+, to_string
+// System
+#include <istream> // for getline, basic_istream
+#include <string>  // for operator+, to_string
 
+// AMReX
 #include "AMReX_Config.H"  // for AMREX_SPACEDIM
 #include "AMReX_IntVect.H" // for IntVect
 #include "AMReX_SPACE.H"   // for AMREX_D_DECL, AMREX_D_TERM
 
+// PelePhysics
+#include "mechanism.H" // for NUM_SPECIES
+
+// PeleC
 #include "Utilities.H"
 
 namespace amrex {

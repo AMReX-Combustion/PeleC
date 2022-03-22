@@ -1,7 +1,10 @@
+// System
 #include <iosfwd> // for string
 
-#include "gtest/gtest_pred_impl.h" // for AddGlobalTestEnvironment, InitGoo...
+// GoogleTest
+#include <gtest/gtest.h> // for AddGlobalTestEnvironment, InitGoogleTest
 
+// AMReX
 #include "AmrexTestEnv.H" // for AmrexTestEnv
 
 // Necessary as it's used in other source files

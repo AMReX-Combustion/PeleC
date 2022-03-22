@@ -1,6 +1,7 @@
 #ifndef _HYDRO_H_
 #define _HYDRO_H_
 
+// AMReX
 #include "AMReX_Array.H"         // for GpuArray
 #include "AMReX_Array4.H"        // for Array4
 #include "AMReX_Config.H"        // for AMREX_SPACEDIM
@@ -9,8 +10,11 @@
 #include "AMReX_REAL.H"          // for Real
 #include "AMReX_SPACE.H"         // for AMREX_D_TERM, AMREX_D_DECL
 
+// PelePhysics
+#include "mechanism.H" // for NUM_SPECIES
+
+// PeleC
 #include "IndexDefines.H" // for QU, QV, QW, QREINT, UFS, NVAR, PassMap
-#include "mechanism.H"    // for NUM_SPECIES
 
 namespace amrex {
 class Box;

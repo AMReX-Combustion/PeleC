@@ -1,7 +1,8 @@
+// System
 #include <array>  // for array
 #include <string> // for allocator, char_traits, operat...
-#include <vector> // for vector
 
+// AMReX
 #include "AMReX.H"                    // for Abort
 #include "AMReX_Amr.H"                // for Amr
 #include "AMReX_Array.H"              // for GpuArray, Array
@@ -31,23 +32,26 @@
 #include "AMReX_StateDescriptor.H"    // for StateDescriptor
 #include "AMReX_Vector.H"             // for Vector
 
+// AMReX-Hydro
 #include "hydro_redistribution.H" // for Apply
 
-#include "Constant.H"        // for ConstTransport
-#include "Diffterm.H"        // for pc_flux_div, pc_compute_diffus...
-#include "EB.H"              // for pc_apply_eb_boundry_flux_stencil
-#include "EBStencilTypes.H"  // for EBBndrySten, EBBndryGeom, sten...
-#include "Filter.H"          // for Filter
-#include "IndexDefines.H"    // for NVAR, QTEMP, UFS, dComp_lambda
-#include "MOL.H"             // for pc_compute_hyp_mol_flux
+// PelePhysics
 #include "mechanism.H"       // for NUM_SPECIES
-#include "PeleC.H"           // for PeleC, PeleC::Xmom, PeleC::Fir...
 #include "PelePhysics.H"     // for PhysicsType
-#include "SparseData.H"      // for SparseData
 #include "Simple.H"          // for SimpleTransport
 #include "TransportParams.H" // for TransParm, TransportParams
-#include "Utilities.H"       // for setC, copy_array4, setV, linco...
 
+// PeleC
+#include "Constant.H"       // for ConstTransport
+#include "Diffterm.H"       // for pc_flux_div, pc_compute_diffus...
+#include "EB.H"             // for pc_apply_eb_boundry_flux_stencil
+#include "EBStencilTypes.H" // for EBBndrySten, EBBndryGeom, sten...
+#include "Filter.H"         // for Filter
+#include "IndexDefines.H"   // for NVAR, QTEMP, UFS, dComp_lambda
+#include "MOL.H"            // for pc_compute_hyp_mol_flux
+#include "PeleC.H"          // for PeleC, PeleC::Xmom, PeleC::Fir...
+#include "SparseData.H"     // for SparseData
+#include "Utilities.H"      // for setC, copy_array4, setV, linco...
 #include "Diffusion.H"
 
 namespace amrex {

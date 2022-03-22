@@ -1,13 +1,17 @@
+// System
 #include <ostream> // for ofstream, endl
 
+// AMReX
 #include "AMReX_ParmParse.H" // for ParmParse
 #include "AMReX_Print.H"     // for Print
 #include "AMReX_REAL.H"      // for amrex_real, Real
 
+// PelePhysics
 #include "GammaLaw.H"    // for GammaLaw
-#include "PeleC.H"       // for PeleC, PeleC::h_prob_parm_device
 #include "PelePhysics.H" // for PhysicsType
 
+// PeleC
+#include "PeleC.H" // for PeleC, PeleC::h_prob_parm_device
 #include "prob.H"
 
 void

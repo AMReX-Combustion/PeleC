@@ -1,14 +1,17 @@
 #ifndef _Derive_H_
 #define _Derive_H_
 
+// AMReX
 #include "AMReX_EBCellFlag.H"    // for EBCellFlag
 #include "AMReX_Extension.H"     // for AMREX_FORCE_INLINE
 #include "AMReX_GpuQualifiers.H" // for AMREX_GPU_DEVICE
 #include "AMReX_IntVect.H"       // for IntVect
 #include "AMReX_REAL.H"          // for Real
 
+// MASA
 #ifdef PELEC_USE_MASA
 #include <masa.h> // for MASA
+
 using namespace MASA;
 #endif
 
