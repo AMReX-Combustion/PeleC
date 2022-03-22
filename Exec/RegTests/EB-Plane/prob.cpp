@@ -1,3 +1,11 @@
+#include "AMReX_ParmParse.H" // for ParmParse
+#include "AMReX_REAL.H"      // for amrex_real, Real
+
+#include "GammaLaw.H"        // for GammaLaw
+#include "PeleC.H"           // for PeleC, PeleC::h_prob_parm_device, PeleC...
+#include "PelePhysics.H"     // for PhysicsType
+#include "TransportParams.H" // for TransParm, TransportParams
+
 #include "prob.H"
 
 void
@@ -11,8 +19,8 @@ amrex_probinit(
   const int* /*init*/,
   const int* /*name*/,
   const int* /*namelen*/,
-  const amrex_real* problo,
-  const amrex_real* probhi)
+  const amrex::Real* problo,
+  const amrex::Real* probhi)
 {
   // Parse params
   {

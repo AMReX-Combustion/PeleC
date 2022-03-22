@@ -1,9 +1,4 @@
-#include <iomanip>
-#include <vector>
-#include <algorithm>
-#include <string>
-
-#include "PeleC.H"
+#include "AMReX_BC_TYPES.H" // for amrex
 
 using namespace amrex;
 

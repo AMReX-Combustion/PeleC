@@ -1,9 +1,21 @@
 #ifndef _GRADUTIL_H_
 #define _GRADUTIL_H_
 
-#include <AMReX_FArrayBox.H>
-#include "IndexDefines.H"
-#include "EB.H"
+#include "AMReX_Array4.H"        // for Array4
+#include "AMReX_Config.H"        // for AMREX_SPACEDIM
+#include "AMReX_Extension.H"     // for AMREX_FORCE_INLINE
+#include "AMReX_GpuQualifiers.H" // for AMREX_GPU_DEVICE
+#include "AMReX_REAL.H"          // for Real
+#include "AMReX_SPACE.H"         // for AMREX_D_PICK
+
+#include "IndexDefines.H" // for QU, QV, QW
+
+namespace amrex {
+class Box;
+class EBCellFlag;
+} // namespace amrex
+
+struct EBBndryGeom;
 
 // This header file contains functions and declarations for Gradient Utilities
 // in 3D for PeleC GPU. As per the convention of AMReX, inlined functions are

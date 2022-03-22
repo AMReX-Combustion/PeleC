@@ -1,19 +1,31 @@
 #ifndef _DIFFTERM_H_
 #define _DIFFTERM_H_
 
-#include <AMReX_FArrayBox.H>
-#include <AMReX_EBCellFlag.H>
+#include "AMReX_Array4.H"        // for Array4
+#include "AMReX_Config.H"        // for AMREX_SPACEDIM
+#include "AMReX_Extension.H"     // for AMREX_FORCE_INLINE
+#include "AMReX_FabFactory.H"    // for FabType
+#include "AMReX_GpuQualifiers.H" // for AMREX_GPU_DEVICE
+#include "AMReX_IntVect.H"       // for IntVect
+#include "AMReX_REAL.H"          // for Real
+#include "AMReX_SPACE.H"         // for AMREX_D_TERM, AMREX_D_DECL
 
-#include "IndexDefines.H"
-#include "EBStencilTypes.H"
-#include "PelePhysics.H"
-#include "Utilities.H"
-#include "GradUtil.H"
-#include "Diffusion.H"
+#include "EOS.H"          // for EosType
+#include "Fuego.H"        // for Fuego
+#include "GammaLaw.H"     // for GammaLaw
+#include "IndexDefines.H" // for dComp_mu, QU, QV, QW, QPRES, QTEMP
+#include "mechanism.H"    // for NUM_SPECIES
+#include "PelePhysics.H"  // for PhysicsType
+#include "SRK.H"          // for SRK
 
-// This header file contains functions and declarations for diffterm in 3D for
-// PeleC GPU. As per the convention of AMReX, inlined device functions are
-// defined here. Where as non-inline host functions are declared here.
+namespace amrex {
+class Box;
+class EBCellFlag;
+template <class T, unsigned int N>
+struct GpuArray;
+} // namespace amrex
+
+struct EBBndryGeom;
 
 // The original Diffterm function passes too many arguments, which contribute to
 // kernel launch overhead. In order to combat this, we split some of the

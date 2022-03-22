@@ -1,3 +1,23 @@
+#include <algorithm> // for is_sorted
+#include <math.h>    // for sqrt
+#include <stddef.h>  // for size_t
+#include <memory>    // for allocator
+#include <numeric>   // for adjacent_difference
+#include <ostream>   // for endl, ofstream
+
+#include "AMReX.H"               // for Abort
+#include "AMReX_GpuContainers.H" // for DeviceVector, copy, hostToDevice
+#include "AMReX_ParmParse.H"     // for ParmParse
+#include "AMReX_Print.H"         // for Print
+#include "AMReX_REAL.H"          // for Real, amrex_real
+#include "AMReX_Vector.H"        // for Vector
+
+#include "GammaLaw.H"        // for GammaLaw
+#include "mechanism.H"       // for NUM_SPECIES
+#include "PeleC.H"           // for PeleC, PeleC::h_prob_parm_device
+#include "PelePhysics.H"     // for PhysicsType
+#include "TransportParams.H" // for TransParm, TransportParams
+
 #include "prob.H"
 
 void

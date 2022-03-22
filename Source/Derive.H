@@ -1,14 +1,22 @@
 #ifndef _Derive_H_
 #define _Derive_H_
 
-#include <AMReX_FArrayBox.H>
-#include <AMReX_Geometry.H>
+#include "AMReX_EBCellFlag.H"    // for EBCellFlag
+#include "AMReX_Extension.H"     // for AMREX_FORCE_INLINE
+#include "AMReX_GpuQualifiers.H" // for AMREX_GPU_DEVICE
+#include "AMReX_IntVect.H"       // for IntVect
+#include "AMReX_REAL.H"          // for Real
+
 #ifdef PELEC_USE_MASA
-#include <masa.h>
+#include <masa.h> // for MASA
 using namespace MASA;
 #endif
 
-#include "EB.H"
+namespace amrex {
+class Box;
+class FArrayBox;
+class Geometry;
+} // namespace amrex
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE

@@ -1,3 +1,47 @@
+#include <algorithm> // for min
+#include <array>     // for array
+#include <math.h>    // for sqrt
+#include <memory>    // for unique_ptr, make_unique
+#include <ostream>   // for endl, string
+#include <stdlib.h>  // for abs
+#include <string>    // for allocator, operator+, char_tr...
+#include <vector>    // for vector
+#include <utility>   // for move
+
+#include "AMReX.H"                     // for Abort, Verbose
+#include "AMReX_Algorithm.H"           // for max, min
+#include "AMReX_Array.H"               // for Array, RealArray
+#include "AMReX_Box.H"                 // for AllGatherBoxes, grow, surroun...
+#include "AMReX_BoxArray.H"            // for convert
+#include "AMReX_BoxList.H"             // for BoxList
+#include "AMReX_Config.H"              // for AMREX_SPACEDIM
+#include "AMReX_EB2.H"                 // for Build
+#include "AMReX_EB2_GeometryShop.H"    // for GeometryShop, makeShop
+#include "AMReX_EB2_IF_Box.H"          // for BoxIF
+#include "AMReX_EB2_IF_Cylinder.H"     // for CylinderIF
+#include "AMReX_EB2_IF_Difference.H"   // for makeDifference
+#include "AMReX_EB2_IF_Extrusion.H"    // for extrude
+#include "AMReX_EB2_IF_Intersection.H" // for IntersectionIF, makeIntersection
+#include "AMReX_EB2_IF_Lathe.H"        // for LatheIF, lathe
+#include "AMReX_EB2_IF_Plane.H"        // for PlaneIF
+#include "AMReX_EB2_IF_Sphere.H"       // for SphereIF
+#include "AMReX_EB2_IF_Translation.H"  // for translate
+#include "AMReX_EB2_IF_Union.H"        // for makeUnion, UnionIF
+#include "AMReX_EBCellFlag.H"          // for EBCellFlagFab
+#include "AMReX_FabFactory.H"          // for DefaultFabFactory
+#include "AMReX_Geometry.H"            // for Geometry, DefaultGeometry
+#include "AMReX_GpuDevice.H"           // for streamSynchronize
+#include "AMReX_IntVect.H"             // for scale, coarsen
+#include "AMReX_Math.H"                // for abs
+#include "AMReX_ParallelReduce.H"      // for Sum
+#include "AMReX_ParmParse.H"           // for ParmParse
+#include "AMReX_Print.H"               // for Print
+#include "AMReX_REAL.H"                // for Real
+#include "AMReX_SPACE.H"               // for AMREX_D_DECL
+#include "AMReX_Vector.H"              // for Vector
+
+#include "Utilities.H" // for convertIntGG
+
 #include "Geometry.H"
 
 namespace pele {

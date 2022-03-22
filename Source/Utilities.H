@@ -1,11 +1,43 @@
 #ifndef _UTILITIES_H_
 #define _UTILITIES_H_
 
-#include <AMReX_IArrayBox.H>
-#include <AMReX_FArrayBox.H>
-#include "Constants.H"
-#include "IndexDefines.H"
-#include "PelePhysics.H"
+#include <stddef.h>    // for size_t
+#include <limits>      // for numeric_limits
+#include <ostream>     // for stringstream, string, operator<<
+#include <type_traits> // for integral_constant<>::value, is_same
+#include <vector>      // for vector
+
+#include "AMReX.H"                  // for Error
+#include "AMReX_Algorithm.H"        // for max
+#include "AMReX_Array.H"            // for GpuArray
+#include "AMReX_Array4.H"           // for Array4
+#include "AMReX_Extension.H"        // for AMREX_FORCE_INLINE
+#include "AMReX_Gpu.H"              // for KernelInfo
+#include "AMReX_GpuLaunchFunctsC.H" // for ParallelFor
+#include "AMReX_GpuQualifiers.H"    // for AMREX_GPU_DEVICE
+#include "AMReX_REAL.H"             // for Real
+#include "AMReX_Reduce.H"           // for Sum
+#include "AMReX_Vector.H"           // for Vector
+
+#include "Constants.H"        // for very_small_num, small_num
+#include "Fuego.H"            // for Fuego
+#include "GammaLaw.H"         // for GammaLaw
+#include "IndexDefines.H"     // for URHO, UEINT, UEDEN, UTEMP, QFS, UFS
+#include "mechanism.H"        // for NUM_SPECIES
+#include "PelePhysics.H"      // for PhysicsType
+#include "PhysicsConstants.H" // for Constants, Constants::RU
+#include "SRK.H"              // for SRK
+
+namespace amrex {
+class Box;
+} // namespace amrex
+namespace pele {
+namespace physics {
+namespace eos {
+struct SRK;
+} // namespace eos
+} // namespace physics
+} // namespace pele
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE

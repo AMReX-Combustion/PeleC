@@ -1,25 +1,28 @@
 #ifndef _PROB_H_
 #define _PROB_H_
 
-#include <AMReX_Print.H>
-#include <AMReX_ParmParse.H>
-#include <AMReX_Geometry.H>
-#include <AMReX_FArrayBox.H>
-#include <AMReX_REAL.H>
-#include <AMReX_GpuMemory.H>
-#include <AMReX_ParmParse.H>
+#include <memory> // for unique_ptr
+#include <iosfwd> // for string
 
-#include "IndexDefines.H"
-#include "Constants.H"
-#include "EOS.H"
-#include "Tagging.H"
-#include "Transport.H"
-#include "ProblemDerive.H"
-#include "prob_parm.H"
-#include "EB.H"
-#include <AMReX_EB2_IF_Rotation.H>
-#include "Utilities.H"
-#include "Geometry.H"
+#include "AMReX_Array4.H"        // for Array4
+#include "AMReX_Extension.H"     // for AMREX_FORCE_INLINE
+#include "AMReX_GpuQualifiers.H" // for AMREX_GPU_DEVICE
+#include "AMReX_REAL.H"          // for Real
+
+#include "Factory.H"       // for Factory<>::Register
+#include "Geometry.H"      // for Geometry
+#include "GammaLaw.H"      // for GammaLaw
+#include "IndexDefines.H"  // for URHO, UTEMP, UEDEN, UEINT, UFS, UMX
+#include "PelePhysics.H"   // for PhysicsType
+#include "ProblemDerive.H" // for EmptyProbDeriveStruct
+#include "prob_parm.H"     // for ProbParmDevice
+#include "mechanism.H"     // for NUM_SPECIES
+#include "Tagging.H"       // for EmptyProbTagStruct
+
+namespace amrex {
+class Geometry;
+struct GeometryData;
+} // namespace amrex
 
 void parse_params(std::unique_ptr<ProbParmDevice>& prob_parm_device);
 

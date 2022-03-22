@@ -1,3 +1,11 @@
+#include "AMReX_Array.H"            // for GpuArray
+#include "AMReX_Box.H"              // for Box
+#include "AMReX_EBCellFlag.H"       // for EBCellFlag
+#include "AMReX_GpuLaunchFunctsC.H" // for ParallelFor
+#include "AMReX_IntVect.H"          // for IntVect
+
+#include "EBStencilTypes.H" // for EBBndryGeom
+
 #include "GradUtil.H"
 
 void

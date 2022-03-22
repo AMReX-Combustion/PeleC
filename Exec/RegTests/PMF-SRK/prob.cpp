@@ -1,3 +1,16 @@
+#include <istream> // for getline, string, istringstream, str...
+#include <string>  // for allocator, basic_string
+
+#include "AMReX.H"               // for Abort
+#include "AMReX_Algorithm.H"     // for max
+#include "AMReX_GpuContainers.H" // for DeviceVector, copy, hostToDevice
+#include "AMReX_ParmParse.H"     // for ParmParse
+#include "AMReX_Print.H"         // for Print
+#include "AMReX_REAL.H"          // for Real, amrex_real
+#include "AMReX_Vector.H"        // for Vector
+
+#include "PeleC.H" // for PeleC, PeleC::h_prob_parm_device
+
 #include "prob.H"
 
 std::string

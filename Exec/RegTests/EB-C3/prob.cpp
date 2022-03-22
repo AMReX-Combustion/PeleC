@@ -1,3 +1,11 @@
+#include "AMReX_ParmParse.H" // for ParmParse
+#include "AMReX_REAL.H"      // for Real, amrex_real
+
+#include "Fuego.H"       // for Fuego
+#include "mechanism.H"   // for H2_ID, N2_ID, O2_ID
+#include "PeleC.H"       // for PeleC, PeleC::h_prob_parm_device
+#include "PelePhysics.H" // for PhysicsType
+
 #include "prob.H"
 
 void

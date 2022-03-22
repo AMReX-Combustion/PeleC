@@ -1,5 +1,17 @@
+#include <cmath> // for copysign, sqrt, pow
+
+#include "AMReX.H"                  // for Abort
+#include "AMReX_BLassert.H"         // for AMREX_ASSERT
+#include "AMReX_Box.H"              // for Box, grow
+#include "AMReX_GpuContainers.H"    // for DeviceVector
+#include "AMReX_GpuControl.H"       // for RunOn, RunOn::Device
+#include "AMReX_GpuElixir.H"        // for Elixir
+#include "AMReX_GpuLaunchFunctsC.H" // for ParallelFor
+#include "AMReX_IArrayBox.H"        // for IArrayBox
+
 #include "EB.H"
-#include "Utilities.H"
+#include "EBStencilTypes.H" // for EBBndryGeom, EBBndrySten, FaceSten
+#include "Utilities.H"      // for clean_massfrac
 
 void
 pc_fill_sv_ebg(

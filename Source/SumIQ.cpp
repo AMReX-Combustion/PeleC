@@ -1,6 +1,23 @@
-#include <iomanip>
+#include <iomanip> // for operator<<, setw, setprecision
+#include <limits>  // for numeric_limits
+#include <memory>  // for unique_ptr
+#include <ostream> // for operator<<, basic_ostream, ost...
+#include <string>  // for basic_string, char_traits, all...
+#include <vector>  // for vector<>::iterator
 
-#include "PeleC.H"
+#include "AMReX_Algorithm.H"          // for max, min
+#include "AMReX_Amr.H"                // for Amr
+#include "AMReX_BLProfiler.H"         // for BL_PROFILE
+#include "AMReX_BLassert.H"           // for BL_ASSERT
+#include "AMReX_MultiFab.H"           // for MultiFab
+#include "AMReX_ParallelDescriptor.H" // for IOProcessorNumber, IOProcessor
+#include "AMReX_Print.H"              // for Print
+#include "AMReX_REAL.H"               // for Real
+#include "AMReX_StateData.H"          // for StateData
+#include "AMReX_Vector.H"             // for Vector
+
+#include "mechanism.H" // for NUM_SPECIES
+#include "PeleC.H"     // for PeleC, PeleC::verbose, PeleC::...
 
 void
 PeleC::sum_integrated_quantities()

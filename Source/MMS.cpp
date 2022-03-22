@@ -1,11 +1,38 @@
+#include <memory>  // for allocator
+#include <ostream> // for endl, string
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
-#include <masa.h>
+#include "AMReX_AmrLevel.H"           // for FillPatchIterator
+#include "AMReX_Array.H"              // for GpuArray
+#include "AMReX_Array4.H"             // for Array4
+#include "AMReX_BLProfiler.H"         // for BL_PROFILE
+#include "AMReX_Config.H"             // for AMREX_SPACEDIM
+#include "AMReX_EBCellFlag.H"         // for EBCellFlagFab
+#include "AMReX_EBFabFactory.H"       // for EBFArrayBoxFactory
+#include "AMReX_FabArray.H"           // for FabArray
+#include "AMReX_FabFactory.H"         // for FabType, FabFactory, FabType::...
+#include "AMReX_Geometry.H"           // for Geometry
+#include "AMReX_GpuLaunchFunctsC.H"   // for ParallelFor
+#include "AMReX_GpuQualifiers.H"      // for AMREX_GPU_DEVICE
+#include "AMReX_MFIter.H"             // for MFIter, TilingIfNotGPU
+#include "AMReX_MultiFab.H"           // for MultiFab
+#include "AMReX_ParallelDescriptor.H" // for IOProcessor
+#include "AMReX_Print.H"              // for Print
+#include "AMReX_REAL.H"               // for Real
+#include "AMReX_Vector.H"             // for Vector
 
-#include "PeleC.H"
-#include "IndexDefines.H"
+#include <masa.h> // for masa_eval_3d_exact_rho, masa_e...
+
+#include "IndexDefines.H" // for NVAR, UFS, URHO, UEDEN, UMX, UMY
+#include "mechanism.H"    // for NUM_SPECIES
+#include "PeleC.H"        // for PeleC, mms_src, State_Type
+
+namespace amrex {
+class Box;
+} // namespace amrex
 
 using std::string;
 using namespace MASA;

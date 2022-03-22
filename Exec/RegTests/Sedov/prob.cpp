@@ -1,3 +1,8 @@
+#include "AMReX_ParmParse.H" // for ParmParse
+#include "AMReX_REAL.H"      // for amrex_real
+
+#include "PeleC.H" // for PeleC, PeleC::h_prob_parm_device
+
 #include "prob.H"
 
 void

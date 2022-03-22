@@ -1,22 +1,21 @@
 #ifndef _PROB_H_
 #define _PROB_H_
 
-#include <AMReX_Print.H>
-#include <AMReX_ParmParse.H>
-#include <AMReX_Geometry.H>
-#include <AMReX_FArrayBox.H>
-#include <AMReX_REAL.H>
-#include <AMReX_GpuMemory.H>
+#include "AMReX_Array.H"         // for GpuArray
+#include "AMReX_Array4.H"        // for Array4
+#include "AMReX_Extension.H"     // for AMREX_FORCE_INLINE
+#include "AMReX_GpuQualifiers.H" // for AMREX_GPU_DEVICE
+#include "AMReX_REAL.H"          // for Real
 
-#include "mechanism.H"
+#include "IndexDefines.H"  // for UEDEN, UEINT, UFS, UMX, UMY, UMZ, URHO
+#include "mechanism.H"     // for NUM_SPECIES
+#include "ProblemDerive.H" // for EmptyProbDeriveStruct
+#include "prob_parm.H"     // for ProbParmDevice
+#include "Tagging.H"       // for EmptyProbTagStruct
 
-#include "PeleC.H"
-#include "IndexDefines.H"
-#include "PelePhysics.H"
-#include "Tagging.H"
-
-#include "ProblemDerive.H"
-#include "prob_parm.H"
+namespace amrex {
+struct GeometryData;
+} // namespace amrex
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE

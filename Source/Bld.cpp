@@ -1,6 +1,15 @@
-#include <AMReX_LevelBld.H>
+#include "AMReX_LevelBld.H" // for LevelBld
+#include "AMReX_AmrLevel.H" // for AmrLevel
+#include "AMReX_REAL.H"     // for Real
 
-#include "PeleC.H"
+#include "PeleC.H" // for PeleC
+
+namespace amrex {
+class Amr;
+class BoxArray;
+class DistributionMapping;
+class Geometry;
+} // namespace amrex
 
 class PeleCBld : public amrex::LevelBld
 {

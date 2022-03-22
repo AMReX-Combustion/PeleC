@@ -1,13 +1,10 @@
-/** \file test_config.cpp
- *
- *  Tests various configurations for GPU builds
- */
+#include <ostream> // for endl
 
-#include "gtest/gtest.h"
-#include "AMReX_ccse-mpi.H"
-#include "AMReX_ParallelDescriptor.H"
-#include "AMReX_Print.H"
-#include "AMReX_Gpu.H"
+#include <gtest/gtest-message.h>   // for Message
+#include <gtest/gtest-test-part.h> // for TestPartResult
+#include "gtest/gtest_pred_impl.h" // for Test, SuiteApiResolver, TEST, Tes...
+
+#include "AMReX_Print.H" // for Print
 
 namespace amrex {
 const char* buildInfoGetGitHash(int i);

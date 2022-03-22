@@ -1,13 +1,20 @@
 #ifndef _PPM_H_
 #define _PPM_H_
 
-#include <AMReX_FArrayBox.H>
-#include <AMReX_IArrayBox.H>
+#include <math.h>   // for copysign
+#include <stdlib.h> // for abs
 
-#include "Constants.H"
-#include "IndexDefines.H"
-#include "PelePhysics.H"
-#include "Riemann.H"
+#include "AMReX_Algorithm.H"     // for min, max
+#include "AMReX_Extension.H"     // for AMREX_FORCE_INLINE
+#include "AMReX_GpuQualifiers.H" // for AMREX_GPU_DEVICE
+#include "AMReX_Math.H"          // for abs, copysign
+#include "AMReX_REAL.H"          // for Real
+
+namespace amrex {
+class Box;
+template <typename T>
+struct Array4;
+} // namespace amrex
 
 constexpr int im2 = 0;
 constexpr int im1 = 1;

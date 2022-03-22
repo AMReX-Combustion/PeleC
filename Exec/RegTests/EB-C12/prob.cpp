@@ -1,3 +1,7 @@
+#include "AMReX_REAL.H" // for amrex_real, Real
+
+#include "PeleC.H" // for PeleC, PeleC::h_prob_parm_device
+
 #include "prob.H"
 
 void

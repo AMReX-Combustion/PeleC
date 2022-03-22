@@ -1,3 +1,12 @@
+#include <ostream> // for ofstream, endl
+
+#include "AMReX_ParmParse.H" // for ParmParse
+#include "AMReX_Print.H"     // for Print
+#include "AMReX_REAL.H"      // for Real, amrex_real
+
+#include "PeleC.H"           // for PeleC, PeleC::h_prob_parm_device, PeleC...
+#include "TransportParams.H" // for TransParm, TransportParams
+
 #include "prob.H"
 
 void
@@ -14,7 +23,6 @@ amrex_probinit(
   const amrex_real* problo,
   const amrex_real* probhi)
 {
-  // Parse params
   {
     amrex::ParmParse pp("prob");
     pp.query("p", PeleC::h_prob_parm_device->p);

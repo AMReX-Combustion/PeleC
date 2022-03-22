@@ -1,9 +1,21 @@
 #ifndef _TAGGING_H_
 #define _TAGGING_H_
 
-#include <AMReX_FArrayBox.H>
-#include <AMReX_TagBox.H>
-#include "prob_parm.H"
+#include <iosfwd>   // for string
+#include <stdlib.h> // for abs
+#include <utility>  // for forward
+
+#include "AMReX_Algorithm.H"     // for max
+#include "AMReX_Array.H"         // for GpuArray
+#include "AMReX_Array4.H"        // for Array4
+#include "AMReX_Config.H"        // for AMREX_SPACEDIM
+#include "AMReX_Extension.H"     // for AMREX_FORCE_INLINE
+#include "AMReX_GpuQualifiers.H" // for AMREX_GPU_DEVICE
+#include "AMReX_Math.H"          // for abs
+#include "AMReX_REAL.H"          // for Real
+#include "AMReX_SPACE.H"         // for AMREX_D_DECL, AMREX_D_TERM
+
+struct ProbParmDevice;
 
 struct TaggingParm
 {

@@ -1,6 +1,23 @@
-#include "Godunov.H"
+#include <limits> // for numeric_limits
+
+#include "AMReX_Array.H"            // for GpuArray
+#include "AMReX_Array4.H"           // for Array4
+#include "AMReX_Box.H"              // for Box
+#include "AMReX_Config.H"           // for AMREX_SPACEDIM
+#include "AMReX_Gpu.H"              // for KernelInfo
+#include "AMReX_GpuLaunchFunctsC.H" // for ParallelFor
+#include "AMReX_IntVect.H"          // for IntVect, operator*
+#include "AMReX_SPACE.H"            // for AMREX_D_DECL
+
+#include "Fuego.H"        // for Fuego
+#include "GammaLaw.H"     // for GammaLaw
+#include "Godunov.H"      // for flatten
+#include "IndexDefines.H" // for QPRES, QRHO, QFS, QREINT, QU, QV
+#include "mechanism.H"    // for NUM_SPECIES
+#include "PelePhysics.H"  // for PhysicsType
 #include "PPM.H"
-#include "WENO.H"
+#include "SRK.H"  // for SRK
+#include "WENO.H" // for weno_reconstruct_3z, weno_recons...
 
 void
 trace_ppm(

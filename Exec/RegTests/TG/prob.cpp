@@ -1,3 +1,14 @@
+#include <ostream> // for ofstream, endl
+
+#include "AMReX_ParmParse.H" // for ParmParse
+#include "AMReX_Print.H"     // for Print
+#include "AMReX_REAL.H"      // for amrex_real, Real
+
+#include "Constants.H"       // for PI
+#include "mechanism.H"       // for NUM_SPECIES
+#include "PeleC.H"           // for PeleC, PeleC::h_prob_parm_device, PeleC...
+#include "TransportParams.H" // for TransParm, TransportParams
+
 #include "prob.H"
 
 void

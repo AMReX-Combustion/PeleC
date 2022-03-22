@@ -1,23 +1,33 @@
 #ifndef _PROB_H_
 #define _PROB_H_
 
-#include <AMReX_Print.H>
-#include <AMReX_ParmParse.H>
-#include <AMReX_Geometry.H>
-#include <AMReX_FArrayBox.H>
-#include <AMReX_REAL.H>
-#include <AMReX_GpuMemory.H>
+#include <cmath> // for exp
 
-#include "mechanism.H"
+#include "AMReX_Array.H"            // for GpuArray
+#include "AMReX_Array4.H"           // for Array4
+#include "AMReX_Box.H"              // for Box
+#include "AMReX_Config.H"           // for AMREX_SPACEDIM
+#include "AMReX_Derive.H"           // for DeriveList
+#include "AMReX_Extension.H"        // for AMREX_FORCE_INLINE
+#include "AMReX_FArrayBox.H"        // for FArrayBox
+#include "AMReX_Geometry.H"         // for Geometry, GeometryData
+#include "AMReX_GpuLaunchFunctsC.H" // for ParallelFor
+#include "AMReX_GpuQualifiers.H"    // for AMREX_GPU_DEVICE
+#include "AMReX_IndexType.H"        // for IndexType
+#include "AMReX_REAL.H"             // for Real
 
-#include "PeleC.H"
-#include "IndexDefines.H"
-#include "Constants.H"
-#include "PelePhysics.H"
-
-#include "Tagging.H"
+#include "GammaLaw.H"     // for GammaLaw
+#include "IndexDefines.H" // for URHO, NVAR, UEDEN, UEINT, UFS, UMX
+#include "mechanism.H"    // for NUM_SPECIES
+#include "PeleC.H"        // for PeleC, PeleC::d_prob_parm_device
+#include "PelePhysics.H"  // for PhysicsType
 #include "ProblemDerive.H"
-#include "prob_parm.H"
+#include "prob_parm.H" // for ProbParmDevice
+#include "Tagging.H"   // for EmptyProbTagStruct
+
+namespace amrex {
+class DescriptorList;
+} // namespace amrex
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE

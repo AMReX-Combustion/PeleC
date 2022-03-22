@@ -1,4 +1,21 @@
+#include "AMReX.H"                  // for Abort
+#include "AMReX_Array.H"            // for GpuArray
+#include "AMReX_BLProfiler.H"       // for BL_PROFILE
+#include "AMReX_Box.H"              // for surroundingNodes, Box
+#include "AMReX_FArrayBox.H"        // for FArrayBox
+#include "AMReX_GpuElixir.H"        // for Elixir
+#include "AMReX_GpuLaunchFunctsC.H" // for ParallelFor
+
+#include "GradUtil.H"  // for pc_compute_tangential_vel_derivs
+#include "Utilities.H" // for pc_move_transcoefs_to_ec
+
 #include "Diffterm.H"
+
+namespace amrex {
+class EBCellFlag;
+} // namespace amrex
+
+struct EBBndryGeom;
 
 // This file contains the driver for generating the diffusion fluxes, which are
 // then used to generate the diffusion flux divergence.

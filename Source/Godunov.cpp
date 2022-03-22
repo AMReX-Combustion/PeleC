@@ -1,6 +1,14 @@
+#include "AMReX.H"                  // for Error
+#include "AMReX_Box.H"              // for grow, surroundingNodes, Box (ptr...
+#include "AMReX_FArrayBox.H"        // for FArrayBox
+#include "AMReX_GpuElixir.H"        // for Elixir
+#include "AMReX_GpuLaunchFunctsC.H" // for ParallelFor
+
+#include "PeleC.H" // for PeleC, PeleC::d_pass_map
+#include "PLM.H"   // for pc_plm_d, plm_slope
+#include "PPM.H"   // for trace_ppm
+
 #include "Godunov.H"
-#include "PLM.H"
-#include "PPM.H"
 
 // Host function to call gpu hydro functions
 #if AMREX_SPACEDIM == 3
