@@ -29,11 +29,10 @@ amrex_probinit(
   }
 
   {
-    amrex::ParmParse pp("forcing");
-    pp.query("u0", PeleC::h_prob_parm_device->forcing_u0);
-    pp.query("v0", PeleC::h_prob_parm_device->forcing_v0);
-    pp.query("w0", PeleC::h_prob_parm_device->forcing_w0);
-    pp.query("forcing", PeleC::h_prob_parm_device->forcing_force);
+    amrex::ParmParse pp("pelec");
+    pp.query("forcing_u0", PeleC::h_prob_parm_device->forcing_u0);
+    pp.query("forcing_v0", PeleC::h_prob_parm_device->forcing_v0);
+    pp.query("forcing_w0", PeleC::h_prob_parm_device->forcing_w0);
   }
 
   // Define the length scale
@@ -91,8 +90,7 @@ amrex_probinit(
     << PeleC::h_prob_parm_device->prandtl << ","
     << PeleC::h_prob_parm_device->forcing_u0 << ","
     << PeleC::h_prob_parm_device->forcing_v0 << ","
-    << PeleC::h_prob_parm_device->forcing_w0 << ","
-    << PeleC::h_prob_parm_device->forcing_force << std::endl;
+    << PeleC::h_prob_parm_device->forcing_w0 << std::endl;
   ofs.close();
 
   // Load velocity fields from file. Assume data set ordered in Fortran

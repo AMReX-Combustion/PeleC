@@ -71,16 +71,10 @@ PeleC::fill_forcing_source(
     auto const& sarr = state_new.array(mfi);
     auto const& src = forcing_src.array(mfi);
 
-    amrex::Real u0 = 0.0;
-    amrex::Real v0 = 0.0;
-    amrex::Real w0 = 0.0;
-    amrex::Real force = 0.0;
-#ifdef PELEC_USE_FORCING
-    u0 = PeleC::h_prob_parm_device->forcing_u0;
-    v0 = PeleC::h_prob_parm_device->forcing_v0;
-    w0 = PeleC::h_prob_parm_device->forcing_w0;
-    force = PeleC::h_prob_parm_device->forcing_force;
-#endif
+    amrex::Real u0 = forcing_u0;
+    amrex::Real v0 = forcing_v0;
+    amrex::Real w0 = forcing_w0;
+    amrex::Real force = forcing_force;
 
     // Evaluate the linear forcing term
     amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
