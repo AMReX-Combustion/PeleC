@@ -35,7 +35,6 @@ struct ProbParmDevice
   amrex::Real forcing_u0 = 0.0;
   amrex::Real forcing_v0 = 0.0;
   amrex::Real forcing_w0 = 0.0;
-  amrex::Real forcing_force = 0.0;
 };
 
 struct ProbParmHost

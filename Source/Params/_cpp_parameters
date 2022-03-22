@@ -80,6 +80,14 @@ add_ext_src                 bool           false
 # if true, define an additional forcing term
 add_forcing_src             bool           false
 
+# Mean velocity to define fluctuations to force
+forcing_u0                  Real           0.0
+forcing_v0                  Real           0.0
+forcing_w0                  Real           0.0
+
+# Forcing
+forcing_force               Real           0.0
+
 # reconstruction type:
 # 0: piecewise linear;
 # 1: classic Colella \& Woodward ppm;
