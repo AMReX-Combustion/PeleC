@@ -1,17 +1,20 @@
 #ifndef _PROB_H_
 #define _PROB_H_
 
-#include <AMReX_Geometry.H>
-#include <AMReX_FArrayBox.H>
-#include <AMReX_REAL.H>
-#include <AMReX_GpuMemory.H>
+// AMReX
+#include "AMReX_Geometry.H"
+#include "AMReX_FArrayBox.H"
+#include "AMReX_REAL.H"
+#include "AMReX_GpuMemory.H"
 
+// PelePhysics
 #include "mechanism.H"
+#include "PelePhysics.H"
 
+// PeleC
 #include "PeleC.H"
 #include "IndexDefines.H"
 #include "Constants.H"
-#include "PelePhysics.H"
 #include "Tagging.H"
 #include "ProblemDerive.H"
 #include "prob_parm.H"

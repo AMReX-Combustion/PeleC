@@ -10,7 +10,7 @@
 #include "AMReX_ParallelDescriptor.H" // for IOProcessorNumber, ReduceRealSum
 #include "AMReX_ParmParse.H"          // for ParmParse
 #include "AMReX_Print.H"              // for Print
-#include "AMReX_REAL.H"               // for Real, amrex_real
+#include "AMReX_REAL.H"               // for Real
 #include "AMReX_StateData.H"          // for StateData
 #include "AMReX_Vector.H"             // for Vector
 

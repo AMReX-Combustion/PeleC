@@ -1,25 +1,29 @@
 #ifndef _PROB_H_
 #define _PROB_H_
 
-#include <AMReX_Print.H>
-#include <AMReX_ParmParse.H>
-#include <AMReX_Geometry.H>
-#include <AMReX_FArrayBox.H>
-#include <AMReX_REAL.H>
-#include <AMReX_GpuMemory.H>
-#include <AMReX_ParmParse.H>
+// AMReX
+#include "AMReX_EB2_IF_Rotation.H"
+#include "AMReX_Print.H"
+#include "AMReX_ParmParse.H"
+#include "AMReX_Geometry.H"
+#include "AMReX_FArrayBox.H"
+#include "AMReX_REAL.H"
+#include "AMReX_GpuMemory.H"
+#include "AMReX_ParmParse.H"
 
-#include "IndexDefines.H"
-#include "Constants.H"
+// PelePhysics
 #include "EOS.H"
-#include "Tagging.H"
-#include "Transport.H"
+
+// PeleC
+#include "EB.H"
+#include "Constants.H"
+#include "Geometry.H"
+#include "IndexDefines.H"
 #include "ProblemDerive.H"
 #include "prob_parm.H"
-#include "EB.H"
-#include <AMReX_EB2_IF_Rotation.H>
+#include "Tagging.H"
+#include "Transport.H"
 #include "Utilities.H"
-#include "Geometry.H"
 
 void parse_params(std::unique_ptr<ProbParmDevice>& prob_parm_device);
 

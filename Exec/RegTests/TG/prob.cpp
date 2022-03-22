@@ -4,7 +4,7 @@
 // AMReX
 #include "AMReX_ParmParse.H" // for ParmParse
 #include "AMReX_Print.H"     // for Print
-#include "AMReX_REAL.H"      // for amrex_real, Real
+#include "AMReX_REAL.H"      // for Real
 
 // PelePhysics
 #include "mechanism.H"       // for NUM_SPECIES

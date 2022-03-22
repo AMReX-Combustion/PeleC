@@ -1,6 +1,6 @@
 // AMReX
 #include "AMReX_ParmParse.H" // for ParmParse
-#include "AMReX_REAL.H"      // for amrex_real, Real
+#include "AMReX_REAL.H"      // for Real
 
 // PelePhysics
 #include "GammaLaw.H"        // for GammaLaw
@@ -23,8 +23,8 @@ amrex_probinit(
   const int* /*init*/,
   const int* /*name*/,
   const int* /*namelen*/,
-  const amrex_real* problo,
-  const amrex_real* probhi)
+  const amrex::Real* problo,
+  const amrex::Real* probhi)
 {
   // Parse params
   {
