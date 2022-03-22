@@ -1,6 +1,6 @@
 // AMReX
 #include "AMReX_ParmParse.H" // for ParmParse
-#include "AMReX_REAL.H"      // for Real, amrex_real
+#include "AMReX_REAL.H"      // for Real
 
 // PelePhysics
 #include "Fuego.H"       // for Fuego

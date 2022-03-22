@@ -25,7 +25,7 @@
 #include "AMReX_IntVect.H"             // for coarsen, scale
 #include "AMReX_ParallelReduce.H"      // for Sum
 #include "AMReX_ParmParse.H"           // for ParmParse
-#include "AMReX_REAL.H"                // for Real, amrex_real
+#include "AMReX_REAL.H"                // for Real
 #include "AMReX_SPACE.H"               // for AMREX_D_DECL
 #include "AMReX_Vector.H"              // for Vector
 
@@ -65,8 +65,8 @@ amrex_probinit(
   const int* /*init*/,
   const int* /*name*/,
   const int* /*namelen*/,
-  const amrex_real* /*problo*/,
-  const amrex_real* /*probhi*/)
+  const amrex::Real* /*problo*/,
+  const amrex::Real* /*probhi*/)
 {
   parse_params(PeleC::h_prob_parm_device);
 }

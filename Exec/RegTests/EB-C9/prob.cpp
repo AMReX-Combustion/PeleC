@@ -9,7 +9,7 @@
 #include "AMReX_ParallelDescriptor.H" // for IOProcessor, IOProcessorNumber
 #include "AMReX_ParmParse.H"          // for ParmParse
 #include "AMReX_Print.H"              // for Print
-#include "AMReX_REAL.H"               // for Real, amrex_real
+#include "AMReX_REAL.H"               // for Real
 #include "AMReX_StateData.H"          // for StateData
 #include "AMReX_Vector.H"             // for Vector
 
@@ -27,8 +27,8 @@ amrex_probinit(
   const int* /*init*/,
   const int* /*name*/,
   const int* /*namelen*/,
-  const amrex_real* problo,
-  const amrex_real* probhi)
+  const amrex::Real* problo,
+  const amrex::Real* probhi)
 {
   // Parse params
   amrex::ParmParse pp("prob");

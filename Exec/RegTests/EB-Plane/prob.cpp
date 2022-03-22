@@ -1,6 +1,6 @@
 // AMReX
 #include "AMReX_ParmParse.H" // for ParmParse
-#include "AMReX_REAL.H"      // for amrex_real, Real
+#include "AMReX_REAL.H"      // for Real
 
 // PelePhysics
 #include "GammaLaw.H"        // for GammaLaw
