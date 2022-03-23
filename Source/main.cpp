@@ -23,7 +23,7 @@
 // Defined and initialized when in gnumake, but not defined in cmake and
 // initialization done manually
 #ifndef AMREX_USE_SUNDIALS
-#include <AMReX_Sundials.H> // for Finalize, Initialize
+#include "AMReX_Sundials.H" // for Finalize, Initialize
 #endif
 
 // PeleC
