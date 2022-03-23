@@ -16,7 +16,7 @@ jobs:
         source: './Source ./Exec'
         exclude: '.'
         extensions: 'H,h,cpp'
-        clangFormatVersion: 11
+        clangFormatVersion: 10
   CMake:
     needs: Formatting
     runs-on: ${{matrix.os}}
