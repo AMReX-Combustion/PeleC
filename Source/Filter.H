@@ -28,6 +28,30 @@ enum filter_types {
   num_filter_types
 };
 
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+run_filter(
+  const int i,
+  const int j,
+  const int k,
+  const int nc,
+  const int ng,
+  const int nstart,
+  const amrex::Real* w,
+  amrex::Array4<const amrex::Real> const& q,
+  amrex::Array4<amrex::Real> const& qh)
+{
+  for (int n = -ng; n <= ng; n++) {
+    for (int m = -ng; m <= ng; m++) {
+      for (int l = -ng; l <= ng; l++) {
+        qh(i, j, k, nc + nstart) += w[l + ng] * w[m + ng] * w[n + ng] *
+                                    q(i + l, j + m, k + n, nc + nstart);
+      }
+    }
+  }
+}
+
 class Filter
 {
 

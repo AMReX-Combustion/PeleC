@@ -370,19 +370,16 @@ PeleC::set_body_state(amrex::MultiFab& S)
   auto const& fact = dynamic_cast<amrex::EBFArrayBoxFactory const&>(Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
 
-#ifdef _OPENMP
-#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
-#endif
-  for (amrex::MFIter mfi(S, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
-    const amrex::Box& vbox = mfi.tilebox();
-    auto const& Sar = S.array(mfi);
-    auto const& flag_arr = flags.const_array(mfi);
-    auto const captured_body_state = body_state;
-    amrex::ParallelFor(
-      vbox, NVAR, [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
-        pc_set_body_state(i, j, k, n, flag_arr, captured_body_state, Sar);
-      });
-  }
+  auto const& sarrs = S.arrays();
+  auto const& flagarrs = flags.const_arrays();
+  auto const captured_body_state = body_state;
+  const amrex::IntVect ngs(0);
+  amrex::ParallelFor(
+    S, ngs, NVAR,
+    [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k, int n) noexcept {
+      pc_set_body_state(
+        i, j, k, n, flagarrs[nbx], captured_body_state, sarrs[nbx]);
+    });
 }
 
 void
@@ -398,18 +395,15 @@ PeleC::zero_in_body(amrex::MultiFab& S) const
   auto const& fact = dynamic_cast<amrex::EBFArrayBoxFactory const&>(Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
 
-#ifdef _OPENMP
-#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
-#endif
-  for (amrex::MFIter mfi(S, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
-    const amrex::Box& vbox = mfi.tilebox();
-    auto const& Sar = S.array(mfi);
-    auto const& flag_arr = flags.const_array(mfi);
-    amrex::ParallelFor(
-      vbox, NVAR, [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
-        pc_set_body_state(i, j, k, n, flag_arr, zeros, Sar);
-      });
-  }
+  auto const& sarrs = S.arrays();
+  auto const& flagarrs = flags.const_arrays();
+  auto const captured_body_state = body_state;
+  const amrex::IntVect ngs(0);
+  amrex::ParallelFor(
+    S, ngs, NVAR,
+    [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k, int n) noexcept {
+      pc_set_body_state(i, j, k, n, flagarrs[nbx], zeros, sarrs[nbx]);
+    });
 }
 
 // Sets up implicit function using EB2 infrastructure
@@ -479,25 +473,23 @@ PeleC::initialize_signed_distance()
       amrex::MFInfo(), ebfactory);
     amrex::FillSignedDistance(signDist, true);
 
-#ifdef _OPENMP
-#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
-#endif
-    for (amrex::MFIter mfi(signed_dist_0, amrex::TilingIfNotGPU());
-         mfi.isValid(); ++mfi) {
-      const amrex::Box& bx = mfi.growntilebox();
-      auto const& sd_cc = signed_dist_0.array(mfi);
-      auto const& sd_nd = signDist.const_array(mfi);
-      amrex::ParallelFor(
-        bx, [sd_cc, sd_nd] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-          const amrex::Real fac = AMREX_D_PICK(0.5, 0.25, 0.125);
-          sd_cc(i, j, k) = AMREX_D_TERM(
-            sd_nd(i, j, k) + sd_nd(i + 1, j, k),
-            +sd_nd(i, j + 1, k) + sd_nd(i + 1, j + 1, k),
-            +sd_nd(i, j, k + 1) + sd_nd(i + 1, j, k + 1) +
-              sd_nd(i, j + 1, k + 1) + sd_nd(i + 1, j + 1, k + 1));
-          sd_cc(i, j, k) *= fac;
-        });
-    }
+    const auto& sd_ccs = signed_dist_0.arrays();
+    const auto& sd_nds = signDist.const_arrays();
+    const amrex::IntVect ngs(signed_dist_0.nGrow());
+    amrex::ParallelFor(
+      signed_dist_0, ngs,
+      [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+        const auto& sd_cc = sd_ccs[nbx];
+        const auto& sd_nd = sd_nds[nbx];
+        const amrex::Real fac = AMREX_D_PICK(0.5, 0.25, 0.125);
+        sd_cc(i, j, k) = AMREX_D_TERM(
+          sd_nd(i, j, k) + sd_nd(i + 1, j, k),
+          +sd_nd(i, j + 1, k) + sd_nd(i + 1, j + 1, k),
+          +sd_nd(i, j, k + 1) + sd_nd(i + 1, j, k + 1) +
+            sd_nd(i, j + 1, k + 1) + sd_nd(i + 1, j + 1, k + 1));
+        sd_cc(i, j, k) *= fac;
+      });
+
     signed_dist_0.FillBoundary(parent->Geom(0).periodicity());
     extend_signed_distance(&signed_dist_0, extentFactor);
   }
@@ -583,20 +575,17 @@ PeleC::extend_signed_distance(
   int nGrowFac = flags.nGrow() + 1;
 
   // First set the region far away at the max value we need
-#ifdef _OPENMP
-#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
-#endif
-  for (amrex::MFIter mfi(*signDist, amrex::TilingIfNotGPU()); mfi.isValid();
-       ++mfi) {
-    const amrex::Box& bx = mfi.growntilebox();
-    auto const& sd_cc = signDist->array(mfi);
-    ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+  auto const& sd_ccs = signDist->arrays();
+  const amrex::IntVect ngs(signDist->nGrow());
+  amrex::ParallelFor(
+    *signDist, ngs,
+    [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+      const auto& sd_cc = sd_ccs[nbx];
       if (sd_cc(i, j, k) >= maxSignedDist - 1e-12) {
         const amrex::Real* dx = geomdata.CellSize();
         sd_cc(i, j, k) = nGrowFac * dx[0] * extendFactor;
       }
     });
-  }
 
   // Iteratively compute the distance function in boxes, propagating accross
   // boxes using ghost cells If needed, increase the number of loop to extend

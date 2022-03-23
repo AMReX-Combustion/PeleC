@@ -7,7 +7,6 @@ PeleC::sumDerive(const std::string& name, amrex::Real time, bool local)
     amrex::Abort("sumDerive undefined for EB");
   }
 
-  amrex::Real sum = 0.0;
   auto mf = derive(name, time, 0);
 
   AMREX_ASSERT(!(mf == nullptr));
@@ -17,21 +16,7 @@ PeleC::sumDerive(const std::string& name, amrex::Real time, bool local)
     amrex::MultiFab::Multiply(*mf, mask, 0, 0, 1, 0);
   }
 
-#ifdef _OPENMP
-#pragma omp parallel if (amrex::Gpu::notInLaunchRegion()) reduction(+ : sum)
-#endif
-  {
-    for (amrex::MFIter mfi(*mf, amrex::TilingIfNotGPU()); mfi.isValid();
-         ++mfi) {
-      sum += (*mf)[mfi].sum<amrex::RunOn::Device>(mfi.tilebox(), 0);
-    }
-  }
-
-  if (!local) {
-    amrex::ParallelDescriptor::ReduceRealSum(sum);
-  }
-
-  return sum;
+  return mf->sum(0, local);
 }
 
 amrex::Real

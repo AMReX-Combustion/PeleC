@@ -1,4 +1,4 @@
-#include <Filter.H>
+#include "Filter.H"
 
 // Set the filter weights for the standard box filter
 void
@@ -420,13 +420,23 @@ Filter::apply_filter(
   // Ensure enough grow cells
   AMREX_ASSERT(in.nGrow() >= out.nGrow() + _ngrow);
 
-#ifdef _OPENMP
-#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
-#endif
-  for (amrex::MFIter mfi(in, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
-    const amrex::Box cbox = mfi.growntilebox(out.nGrow());
-    apply_filter(cbox, in[mfi], out[mfi], nstart, ncnt);
-  }
+  const auto& ins = in.const_arrays();
+  const auto& outs = out.arrays();
+  out.setVal(0, nstart, ncnt);
+
+  amrex::Gpu::DeviceVector<amrex::Real> weights(_weights.size());
+  amrex::Real* w = weights.data();
+  amrex::Gpu::copy(
+    amrex::Gpu::hostToDevice, _weights.begin(), _weights.end(),
+    weights.begin());
+  const int captured_ngrow = _ngrow;
+
+  const amrex::IntVect ngs(out.nGrow());
+  amrex::ParallelFor(
+    in, ngs, ncnt - nstart,
+    [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k, int nc) noexcept {
+      run_filter(i, j, k, nc, captured_ngrow, nstart, w, ins[nbx], outs[nbx]);
+    });
 }
 
 // Run the filtering operation on a FAB
@@ -461,7 +471,7 @@ Filter::apply_filter(
   const int ncnt,
   const int /*ncomp*/)
 {
-  const auto q = in.array();
+  const auto q = in.const_array();
   auto qh = out.array();
   setC(box, nstart, ncnt, qh, 0.0);
   amrex::Gpu::DeviceVector<amrex::Real> weights(_weights.size());
@@ -474,14 +484,6 @@ Filter::apply_filter(
   amrex::ParallelFor(
     box, ncnt - nstart,
     [=] AMREX_GPU_DEVICE(int i, int j, int k, int nc) noexcept {
-      for (int n = -captured_ngrow; n <= captured_ngrow; n++) {
-        for (int m = -captured_ngrow; m <= captured_ngrow; m++) {
-          for (int l = -captured_ngrow; l <= captured_ngrow; l++) {
-            qh(i, j, k, nc + nstart) +=
-              w[l + captured_ngrow] * w[m + captured_ngrow] *
-              w[n + captured_ngrow] * q(i + l, j + m, k + n, nc);
-          }
-        }
-      }
+      run_filter(i, j, k, nc, captured_ngrow, nstart, w, q, qh);
     });
 }

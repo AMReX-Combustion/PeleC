@@ -624,24 +624,15 @@ PeleC::initData()
   }
 
   if (init_pltfile.empty()) {
-#ifdef _OPENMP
-#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
-#endif
-    for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
-         ++mfi) {
-      const amrex::Box& box = mfi.tilebox();
-      auto sfab = S_new.array(mfi);
-      const auto geomdata = geom.data();
-
-      const ProbParmDevice* lprobparm = d_prob_parm_device;
-
-      amrex::ParallelFor(
-        box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-          pc_initdata(i, j, k, sfab, geomdata, *lprobparm);
-          // Verify that the sum of (rho Y)_i = rho at every cell
-          pc_check_initial_species(i, j, k, sfab);
-        });
-    }
+    const auto geomdata = geom.data();
+    const ProbParmDevice* lprobparm = d_prob_parm_device;
+    auto sarrs = S_new.arrays();
+    amrex::ParallelFor(
+      S_new, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+        pc_initdata(i, j, k, sarrs[nbx], geomdata, *lprobparm);
+        // Verify that the sum of (rho Y)_i = rho at every cell
+        pc_check_initial_species(i, j, k, sarrs[nbx]);
+      });
   } else {
     initLevelDataFromPlt(level, init_pltfile, S_new);
   }
@@ -1309,23 +1300,17 @@ PeleC::avgDown()
 void
 PeleC::enforce_consistent_e(amrex::MultiFab& S)
 {
-#ifdef _OPENMP
-#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
-#endif
-  for (amrex::MFIter mfi(S, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
-    const amrex::Box& tbox = mfi.tilebox();
-    const auto Sfab = S.array(mfi);
-    amrex::ParallelFor(
-      tbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-        const amrex::Real rhoInv = 1.0 / Sfab(i, j, k, URHO);
-        const amrex::Real u = Sfab(i, j, k, UMX) * rhoInv;
-        const amrex::Real v = Sfab(i, j, k, UMY) * rhoInv;
-        const amrex::Real w = Sfab(i, j, k, UMZ) * rhoInv;
-        Sfab(i, j, k, UEDEN) = Sfab(i, j, k, UEINT) + 0.5 *
-                                                        Sfab(i, j, k, URHO) *
-                                                        (u * u + v * v + w * w);
-      });
-  }
+  auto sarrs = S.arrays();
+  amrex::ParallelFor(
+    S, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+      auto sarr = sarrs[nbx];
+      const amrex::Real rhoInv = 1.0 / sarr(i, j, k, URHO);
+      const amrex::Real u = sarr(i, j, k, UMX) * rhoInv;
+      const amrex::Real v = sarr(i, j, k, UMY) * rhoInv;
+      const amrex::Real w = sarr(i, j, k, UMZ) * rhoInv;
+      sarr(i, j, k, UEDEN) = sarr(i, j, k, UEINT) + 0.5 * sarr(i, j, k, URHO) *
+                                                      (u * u + v * v + w * w);
+    });
 }
 
 void
@@ -1648,23 +1633,16 @@ PeleC::errorEst(
         static_cast<amrex::Real>(parent->nErrorBuf(ilev)) *
         parent->Geom(tagging_parm->max_eb_refine_lev).CellSize(0) * diagFac;
     }
-    // Print() << " clearTagDist " <<  clearTagDist << "\n";
 
     // Untag cells too close to EB
-#ifdef _OPENMP
-#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
-#endif
-    for (amrex::MFIter mfi(tags, amrex::TilingIfNotGPU()); mfi.isValid();
-         ++mfi) {
-      const auto& bx = mfi.tilebox();
-      const auto& dist = signDist.const_array(mfi);
-      auto tag = tags.array(mfi);
-      amrex::ParallelFor(bx, [=] AMREX_GPU_HOST_DEVICE(int i, int j, int k) {
-        if (dist(i, j, k) < clearTagDist) {
-          tag(i, j, k) = amrex::TagBox::CLEAR;
+    const auto& dists = signDist.const_arrays();
+    const auto& tagarrs = tags.arrays();
+    amrex::ParallelFor(
+      tags, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+        if (dists[nbx](i, j, k) < clearTagDist) {
+          tagarrs[nbx](i, j, k) = amrex::TagBox::CLEAR;
         }
       });
-    }
   }
 }
 
@@ -1873,6 +1851,7 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
     sum0 = volWgtSumMF(S_new, Eden, true);
   }
 #endif
+
   // Ensure (rho e) isn't too small or negative
 #ifdef _OPENMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
@@ -1884,19 +1863,15 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
       dual_energy_update_E_from_e;
     const auto captured_verbose = verbose;
     const auto captured_dual_energy_eta2 = dual_energy_eta2;
-    for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
-         ++mfi) {
-      const amrex::Box& bx = mfi.growntilebox(ng);
-      const auto& sarr = S_new.array(mfi);
-      amrex::ParallelFor(
-        bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-          pc_rst_int_e(
-            i, j, k, sarr, captured_allow_small_energy,
-            captured_allow_negative_energy,
-            captured_dual_energy_update_E_from_e, captured_dual_energy_eta2,
-            captured_verbose);
-        });
-    }
+    auto sarrs = S_new.arrays();
+    const amrex::IntVect ngs(ng);
+    amrex::ParallelFor(
+      S_new, ngs, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+        pc_rst_int_e(
+          i, j, k, sarrs[nbx], captured_allow_small_energy,
+          captured_allow_negative_energy, captured_dual_energy_update_E_from_e,
+          captured_dual_energy_eta2, captured_verbose);
+      });
   }
 
 #ifndef AMREX_USE_GPU
@@ -1924,23 +1899,15 @@ PeleC::computeTemp(amrex::MultiFab& S, int ng)
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(S.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
 
-#ifdef _OPENMP
-#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
-#endif
-  for (amrex::MFIter mfi(S, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
-    const amrex::Box& bx = mfi.growntilebox(ng);
-
-    const auto& flag_fab = flags[mfi];
-    amrex::FabType typ = flag_fab.getType(bx);
-    if (typ == amrex::FabType::covered) {
-      continue;
-    }
-
-    const auto& sarr = S.array(mfi);
-    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      pc_cmpTemp(i, j, k, sarr);
+  auto const& sarrs = S.arrays();
+  auto const& flagarrs = flags.const_arrays();
+  const amrex::IntVect ngs(ng);
+  amrex::ParallelFor(
+    S, ngs, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+      if (!flagarrs[nbx](i, j, k).isCovered()) {
+        pc_cmpTemp(i, j, k, sarrs[nbx]);
+      }
     });
-  }
 }
 
 amrex::Real
@@ -1977,24 +1944,15 @@ PeleC::build_fine_mask()
   amrex::BoxArray fba = parent->boxArray(level);
   amrex::iMultiFab ifine_mask = makeFineMask(cba, cdm, fba, crse_ratio, 1, 0);
 
-#ifdef _OPENMP
-#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
-#endif
-  for (amrex::MFIter mfi(fine_mask, amrex::TilingIfNotGPU()); mfi.isValid();
-       ++mfi) {
-    auto& fab = fine_mask[mfi];
-    auto& ifab = ifine_mask[mfi];
-    const auto arr = fab.array();
-    const auto iarr = ifab.array();
-    amrex::ParallelFor(
-      fab.box(), [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+  const auto& arrs = fine_mask.arrays();
+  const auto& iarrs = ifine_mask.const_arrays();
+  amrex::ParallelFor(
+    fine_mask, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
 #ifdef _OPENMP
 #pragma omp atomic write
 #endif
-        arr(i, j, k) = iarr(i, j, k);
-      });
-  }
-
+      arrs[nbx](i, j, k) = iarrs[nbx](i, j, k);
+    });
   return fine_mask;
 }
 
