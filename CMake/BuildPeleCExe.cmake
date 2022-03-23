@@ -144,19 +144,6 @@ function(build_pelec_exe pelec_exe_name)
     target_link_libraries(${pelec_exe_name} PRIVATE sundials_nvecsycl)
   endif()
 
-  if(PELEC_ENABLE_EB)
-    target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_EB)
-    target_sources(${pelec_exe_name}
-                   PRIVATE
-                   ${SRC_DIR}/EB.H
-                   ${SRC_DIR}/EB.cpp
-                   ${SRC_DIR}/Geometry.H
-                   ${SRC_DIR}/Geometry.cpp
-                   ${SRC_DIR}/InitEB.cpp
-                   ${SRC_DIR}/SparseData.H
-                   ${SRC_DIR}/EBStencilTypes.H)
-  endif()
-  
   target_sources(${pelec_exe_name}
      PRIVATE
        ${SRC_DIR}/Advance.cpp
@@ -169,6 +156,9 @@ function(build_pelec_exe pelec_exe_name)
        ${SRC_DIR}/Diffterm.cpp
        ${SRC_DIR}/Diffusion.H
        ${SRC_DIR}/Diffusion.cpp
+       ${SRC_DIR}/EB.H
+       ${SRC_DIR}/EB.cpp
+       ${SRC_DIR}/EBStencilTypes.H
        ${SRC_DIR}/External.cpp
        ${SRC_DIR}/Filter.H
        ${SRC_DIR}/Filter.cpp
@@ -178,11 +168,14 @@ function(build_pelec_exe pelec_exe_name)
        ${SRC_DIR}/GradUtil.cpp
        ${SRC_DIR}/Hydro.H
        ${SRC_DIR}/Hydro.cpp
+       ${SRC_DIR}/Geometry.H
+       ${SRC_DIR}/Geometry.cpp
        ${SRC_DIR}/Godunov.H
        ${SRC_DIR}/Godunov.cpp
        ${SRC_DIR}/PLM.H
        ${SRC_DIR}/PPM.H
        ${SRC_DIR}/PPM.cpp
+       ${SRC_DIR}/InitEB.cpp
        ${SRC_DIR}/IndexDefines.H
        ${SRC_DIR}/IndexDefines.cpp
        ${SRC_DIR}/IO.H
@@ -201,6 +194,7 @@ function(build_pelec_exe pelec_exe_name)
        ${SRC_DIR}/Riemann.H
        ${SRC_DIR}/Setup.cpp
        ${SRC_DIR}/Sources.cpp
+       ${SRC_DIR}/SparseData.H
        ${SRC_DIR}/SumIQ.cpp
        ${SRC_DIR}/SumUtils.cpp
        ${SRC_DIR}/Tagging.H

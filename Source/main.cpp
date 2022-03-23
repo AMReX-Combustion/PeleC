@@ -4,6 +4,7 @@
 #include <AMReX_ParmParse.H>
 #include <AMReX_ParallelDescriptor.H>
 #include <AMReX_AmrLevel.H>
+#include <AMReX_EB2.H>
 
 // Defined and initialized when in gnumake, but not defined in cmake and
 // initialization done manually
@@ -11,18 +12,12 @@
 #include <AMReX_Sundials.H>
 #endif
 
-#ifdef AMREX_USE_EB
-#include <AMReX_EB2.H>
-#endif
-
 #include "PeleC.H"
 
 std::string inputs_name;
 
-#ifdef PELEC_USE_EB
 void
 initialize_EB2(const amrex::Geometry& geom, int required_level, int max_level);
-#endif
 
 amrex::LevelBld* getLevelBld();
 
@@ -117,13 +112,6 @@ main(int argc, char* argv[])
   // Initialize random seed after we're running in parallel.
   auto* amrptr = new amrex::Amr(getLevelBld());
 
-#if defined(AMREX_USE_EB) && !defined(PELEC_USE_EB)
-  amrex::Print() << "Initializing EB2 as all_regular because AMReX has EB "
-                    "enabled, but PeleC does not"
-                 << std::endl;
-  amrex::EB2::Build(
-    amrptr->Geom(amrptr->maxLevel()), amrptr->maxLevel(), amrptr->maxLevel());
-#elif defined(AMREX_USE_EB) && defined(PELEC_USE_EB)
   amrex::AmrLevel::SetEBSupportLevel(
     amrex::EBSupport::full); // need both area and volume fractions
   amrex::AmrLevel::SetEBMaxGrowCells(
@@ -131,7 +119,6 @@ main(int argc, char* argv[])
     5); // 5 focdr ebcellflags, 4 for vfrac, 2 is not used for EBSupport::volume
   initialize_EB2(
     amrptr->Geom(amrptr->maxLevel()), amrptr->maxLevel(), amrptr->maxLevel());
-#endif
 
   amrptr->init(strt_time, stop_time);
 

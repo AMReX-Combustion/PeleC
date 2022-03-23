@@ -252,16 +252,14 @@ PeleC::variableSetUp()
     }
   }
 
-#ifdef PELEC_USE_EB
   // Decide from input whether eb interp is needed for FillPatch operations
-  if ((eb_in_domain) && (state_interp_order != 0)) {
+  if (eb_in_domain && (state_interp_order != 0)) {
     if (lin_limit_state_interp == 1) {
       interp = &amrex::eb_mf_lincc_interp;
     } else {
       interp = &amrex::eb_mf_cell_cons_interp;
     }
   }
-#endif
 
   // Note that the default is state_data_extrap = false,
   // store_in_checkpoint = true.  We only need to put these in
@@ -535,12 +533,9 @@ PeleC::variableSetUp()
     amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("magmom", desc_lst, State_Type, Density, NVAR);
 
-#ifdef PELEC_USE_EB
-  // A dummy
   derive_lst.add(
     "vfrac", amrex::IndexType::TheCellType(), 1, pc_dermagvel,
     amrex::DeriveRec::TheSameBox);
-#endif
 
 #ifdef AMREX_PARTICLES
   // We want a derived type that corresponds to the number of particles
@@ -665,9 +660,7 @@ PeleC::variableCleanUp()
 
   clear_prob();
 
-#ifdef PELEC_USE_EB
   eb_initialized = false;
-#endif
 
   delete prob_parm_host;
   delete tagging_parm;

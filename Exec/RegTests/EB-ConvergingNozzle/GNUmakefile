@@ -24,7 +24,6 @@ FSANITIZER = FALSE
 THREAD_SANITIZER = FALSE
 
 # PeleC
-USE_EB = TRUE
 # Eos_dir := Soave-Redlich-Kwong
 Eos_Model := GammaLaw
 Chemistry_Model := Null

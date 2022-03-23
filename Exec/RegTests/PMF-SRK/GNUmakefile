@@ -24,7 +24,6 @@ FSANITIZER = FALSE
 THREAD_SANITIZER = FALSE
 
 # PeleC
-USE_EB = FALSE
 USE_MASA = FALSE
 Eos_Model := Soave-Redlich-Kwong
 Chemistry_Model := LiDryer

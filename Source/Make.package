@@ -26,6 +26,9 @@ CEXE_sources += React.cpp
 CEXE_sources += External.cpp
 CEXE_sources += Forcing.cpp
 CEXE_sources += LES.cpp
+CEXE_sources += EB.cpp
+CEXE_sources += Geometry.cpp
+CEXE_sources += InitEB.cpp
 
 #C++ headers
 CEXE_headers += PeleC.H
@@ -51,17 +54,10 @@ CEXE_headers += Riemann.H
 CEXE_headers += Forcing.H
 CEXE_headers += LES.H
 CEXE_headers += WENO.H
-
-#Source file logic
-ifeq ($(USE_EB), TRUE)
-  CEXE_headers += EB.H
-  CEXE_sources += EB.cpp
-  CEXE_headers += Geometry.H
-  CEXE_sources += Geometry.cpp
-  CEXE_sources += InitEB.cpp
-  CEXE_headers += SparseData.H
-  CEXE_headers += EBStencilTypes.H
-endif
+CEXE_headers += EBStencilTypes.H
+CEXE_headers += EB.H
+CEXE_headers += Geometry.H
+CEXE_headers += SparseData.H
 
 ifeq ($(USE_PARTICLES), TRUE)
   CEXE_sources += Particle.cpp

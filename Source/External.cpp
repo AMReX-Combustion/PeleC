@@ -40,23 +40,15 @@ void
 PeleC::fill_ext_source(
   amrex::Real /*time*/,
   amrex::Real /*dt*/,
-  const amrex::MultiFab&
-#ifdef PELEC_USE_EB
-    state_old
-#endif
+  const amrex::MultiFab& state_old
   /*unused*/,
   const amrex::MultiFab& /*state_new*/,
   amrex::MultiFab& ext_src,
   int ng)
 {
-  // const amrex::Real* dx = geom.CellSize();
-  // const amrex::Real* prob_lo = geom.ProbLo();
-
-#ifdef PELEC_USE_EB
   auto const& fact =
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(state_old.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
-#endif
 
 #ifdef _OPENMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
@@ -65,13 +57,11 @@ PeleC::fill_ext_source(
        ++mfi) {
     const amrex::Box& bx = mfi.growntilebox(ng);
 
-#ifdef PELEC_USE_EB
     const auto& flag_fab = flags[mfi];
     amrex::FabType typ = flag_fab.getType(bx);
     if (typ == amrex::FabType::covered) {
       continue;
     }
-#endif
 
     // auto const& So = state_old.array(mfi);
     // auto const& Sn = state_new.array(mfi);

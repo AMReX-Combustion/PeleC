@@ -2,10 +2,8 @@
 #define _TIMESTEP_H_
 
 #include <AMReX_FArrayBox.H>
-#ifdef PELEC_USE_EB
 #include <AMReX_EBFArrayBox.H>
 #include <AMReX_EBCellFlag.H>
-#endif
 
 #include "PelePhysics.H"
 #include "IndexDefines.H"
@@ -50,9 +48,7 @@ amrex::Real
 pc_estdt_hydro(
   const amrex::Box& bx,
   const amrex::Array4<const amrex::Real>& u,
-#ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
-#endif
   AMREX_D_DECL(
     const amrex::Real& dx,
     const amrex::Real& dy,
@@ -61,9 +57,7 @@ pc_estdt_hydro(
   amrex::Real dt = std::numeric_limits<amrex::Real>::max();
 
   amrex::Loop(bx, [=, &dt](int i, int j, int k) {
-#ifdef PELEC_USE_EB
     if (!flags(i, j, k).isCovered()) {
-#endif
       const amrex::Real rho = u(i, j, k, URHO);
       const amrex::Real rhoInv = 1.0 / rho;
       amrex::Real T = u(i, j, k, UTEMP);
@@ -83,9 +77,7 @@ pc_estdt_hydro(
                    , const amrex::Real uz = u(i, j, k, UMZ) * rhoInv;
                    const amrex::Real dt3 = dz / (c + amrex::Math::abs(uz));
                    dt = amrex::min<amrex::Real>(dt, dt3););
-#ifdef PELEC_USE_EB
     }
-#endif
   });
   AMREX_ALWAYS_ASSERT_WITH_MESSAGE(dt > 0.0, "ERROR: dt needs to be positive.");
   return dt;
@@ -98,9 +90,7 @@ amrex::Real
 pc_estdt_veldif(
   const amrex::Box& bx,
   const amrex::Array4<const amrex::Real>& u,
-#ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
-#endif
   AMREX_D_DECL(
     const amrex::Real& dx, const amrex::Real& dy, const amrex::Real& dz),
   pele::physics::transport::TransParm<
@@ -110,9 +100,7 @@ pc_estdt_veldif(
   amrex::Real dt = std::numeric_limits<amrex::Real>::max();
 
   amrex::Loop(bx, [=, &dt](int i, int j, int k) {
-#ifdef PELEC_USE_EB
     if (!flags(i, j, k).isCovered()) {
-#endif
       const amrex::Real rho = u(i, j, k, URHO);
       const amrex::Real rhoInv = 1.0 / rho;
       amrex::Real massfrac[NUM_SPECIES];
@@ -134,9 +122,7 @@ pc_estdt_veldif(
         dt = amrex::min<amrex::Real>(dt, dt2);
         , const amrex::Real dt3 = 0.5 * dz * dz / (AMREX_SPACEDIM * D);
         dt = amrex::min<amrex::Real>(dt, dt3););
-#ifdef PELEC_USE_EB
     }
-#endif
   });
   AMREX_ALWAYS_ASSERT_WITH_MESSAGE(dt > 0.0, "ERROR: dt needs to be positive.");
   return dt;
@@ -149,9 +135,7 @@ amrex::Real
 pc_estdt_tempdif(
   const amrex::Box& bx,
   const amrex::Array4<const amrex::Real>& u,
-#ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
-#endif
   AMREX_D_DECL(
     const amrex::Real& dx, const amrex::Real& dy, const amrex::Real& dz),
   pele::physics::transport::TransParm<
@@ -161,9 +145,7 @@ pc_estdt_tempdif(
   amrex::Real dt = std::numeric_limits<amrex::Real>::max();
 
   amrex::Loop(bx, [=, &dt](int i, int j, int k) {
-#ifdef PELEC_USE_EB
     if (!flags(i, j, k).isCovered()) {
-#endif
       const amrex::Real rho = u(i, j, k, URHO);
       const amrex::Real rhoInv = 1.0 / rho;
       amrex::Real massfrac[NUM_SPECIES];
@@ -188,9 +170,7 @@ pc_estdt_tempdif(
         dt = amrex::min<amrex::Real>(dt, dt2);
         , const amrex::Real dt3 = 0.5 * dz * dz / (AMREX_SPACEDIM * D);
         dt = amrex::min<amrex::Real>(dt, dt3););
-#ifdef PELEC_USE_EB
     }
-#endif
   });
   AMREX_ALWAYS_ASSERT_WITH_MESSAGE(dt > 0.0, "ERROR: dt needs to be positive.");
   return dt;
@@ -203,9 +183,7 @@ amrex::Real
 pc_estdt_enthdif(
   const amrex::Box& bx,
   const amrex::Array4<const amrex::Real>& u,
-#ifdef PELEC_USE_EB
   const amrex::Array4<const amrex::EBCellFlag>& flags,
-#endif
   AMREX_D_DECL(
     const amrex::Real& dx, const amrex::Real& dy, const amrex::Real& dz),
   pele::physics::transport::TransParm<
@@ -215,9 +193,7 @@ pc_estdt_enthdif(
   amrex::Real dt = std::numeric_limits<amrex::Real>::max();
 
   amrex::Loop(bx, [=, &dt](int i, int j, int k) {
-#ifdef PELEC_USE_EB
     if (!flags(i, j, k).isCovered()) {
-#endif
       const amrex::Real rho = u(i, j, k, URHO);
       const amrex::Real rhoInv = 1.0 / rho;
       amrex::Real massfrac[NUM_SPECIES];
@@ -239,10 +215,7 @@ pc_estdt_enthdif(
         dt = amrex::min<amrex::Real>(dt, dt2);
         , const amrex::Real dt3 = 0.5 * dz * dz / (AMREX_SPACEDIM * D);
         dt = amrex::min<amrex::Real>(dt, dt3););
-
-#ifdef PELEC_USE_EB
     }
-#endif
   });
   AMREX_ALWAYS_ASSERT_WITH_MESSAGE(dt > 0.0, "ERROR: dt needs to be positive.");
   return dt;

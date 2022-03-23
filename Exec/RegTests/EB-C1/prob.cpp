@@ -194,9 +194,9 @@ PeleC::problem_post_timestep()
     // Get the norm and normalize it
     amrex::MultiFab vol(grids, dmap, 1, 0);
     amrex::MultiFab::Copy(vol, volume, 0, 0, 1, 0);
-#ifdef PELEC_USE_EB
-    amrex::MultiFab::Multiply(vol, vfrac, 0, 0, 1, 0);
-#endif
+    if (eb_in_domain) {
+      amrex::MultiFab::Multiply(vol, vfrac, 0, 0, 1, 0);
+    }
     amrex::Real V = vol.sum(0, false);
     rho_mms_err = std::sqrt(rho_mms_err / V);
     u_mms_err = std::sqrt(u_mms_err / V);

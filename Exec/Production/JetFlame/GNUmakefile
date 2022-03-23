@@ -24,7 +24,6 @@ FSANITIZER = FALSE
 THREAD_SANITIZER = FALSE
 
 # PeleC
-USE_EB = FALSE
 Eos_Model := Fuego
 Transport_Model := Simple
 Chemistry_Model := dodecane_lu

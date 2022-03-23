@@ -11,7 +11,6 @@ include(PeleCUtils)
 
 #General options for all executables in the project
 set(PELEC_DIM "3" CACHE STRING "Number of physical dimensions")
-option(PELEC_ENABLE_AMREX_EB "Enable EB in AMReX library" ON)
 option(PELEC_ENABLE_ALL_WARNINGS "Enable all compiler warnings" ON)
 option(PELEC_ENABLE_CLANG_TIDY "Enable clang-tidy analysis" OFF)
 option(PELEC_ENABLE_CPPCHECK "Enable cppcheck analysis" OFF)
@@ -57,9 +56,8 @@ if(PELEC_ENABLE_CUDA)
   endif()
 endif()
 
-if((PELEC_DIM EQUAL 1) AND PELEC_ENABLE_AMREX_EB)
-  set(PELEC_ENABLE_AMREX_EB OFF)
-  message(WARNING "Disabling EB for ${PELEC_DIM}D.")
+if(PELEC_DIM EQUAL 1)
+  message(FATAL_ERROR "PeleC does not enable 1D.")
 endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
@@ -84,9 +82,7 @@ include(SetAmrexCompileFlags)
 message(STATUS "AMReX-Hydro Configure Section")
 set(AMREX_HYDRO_SUBMOD_LOCATION "${CMAKE_SOURCE_DIR}/Submodules/AMReX-Hydro")
 include(SetAmrexHydroOptions)
-if(PELEC_DIM GREATER 1)
-  add_subdirectory(${AMREX_HYDRO_SUBMOD_LOCATION})
-endif()
+add_subdirectory(${AMREX_HYDRO_SUBMOD_LOCATION})
 
 ########################## SUNDIALS ###################################
 
@@ -126,7 +122,7 @@ if(PELEC_ENABLE_WERROR)
 endif()
 
 message(STATUS "PELEC_PRECISION = ${PELEC_PRECISION}")
-if("${PELEC_PRECISION}" STREQUAL "SINGLE" AND PELEC_ENABLE_AMREX_EB)
+if("${PELEC_PRECISION}" STREQUAL "SINGLE")
   message(FATAL_ERROR "Single precision currently not allowed in AMReX with EB enabled")
 endif()
 if("${PELEC_PRECISION}" STREQUAL "SINGLE" AND PELEC_ENABLE_MASA)
