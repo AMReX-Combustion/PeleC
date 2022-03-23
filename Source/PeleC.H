@@ -17,10 +17,6 @@
 #include <AMReX_YAFluxRegister.H>
 #endif
 
-#ifdef AMREX_LAZY
-#include <AMReX_Lazy.H>
-#endif
-
 #ifdef AMREX_PARTICLES
 #include <AMReX_Particles.H>
 #include <SprayParticles.H>

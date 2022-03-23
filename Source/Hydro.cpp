@@ -291,33 +291,27 @@ PeleC::construct_hydro_source(
         E_added_flux, xmom_added_flux, ymom_added_flux, zmom_added_flux,
         mass_added_flux};
 
-#ifdef AMREX_LAZY
-      Lazy::QueueReduction([=]() mutable {
-#endif
-        amrex::ParallelDescriptor::ReduceRealSum(
-          foo, 5, amrex::ParallelDescriptor::IOProcessorNumber());
+      amrex::ParallelDescriptor::ReduceRealSum(
+        foo, 5, amrex::ParallelDescriptor::IOProcessorNumber());
 
 #ifdef AMREX_DEBUG
-        if (amrex::ParallelDescriptor::IOProcessor()) {
-          E_added_flux = foo[0];
-          xmom_added_flux = foo[1];
-          ymom_added_flux = foo[2];
-          zmom_added_flux = foo[3];
-          mass_added_flux = foo[4];
-          amrex::Print() << "mass added from fluxes                      : "
-                         << mass_added_flux << std::endl;
-          amrex::Print() << "xmom added from fluxes                      : "
-                         << xmom_added_flux << std::endl;
-          amrex::Print() << "ymom added from fluxes                      : "
-                         << ymom_added_flux << std::endl;
-          amrex::Print() << "zmom added from fluxes                      : "
-                         << zmom_added_flux << std::endl;
-          amrex::Print() << "(rho E) added from fluxes                   : "
-                         << E_added_flux << std::endl;
-        }
-#endif
-#ifdef AMREX_LAZY
-      });
+      if (amrex::ParallelDescriptor::IOProcessor()) {
+        E_added_flux = foo[0];
+        xmom_added_flux = foo[1];
+        ymom_added_flux = foo[2];
+        zmom_added_flux = foo[3];
+        mass_added_flux = foo[4];
+        amrex::Print() << "mass added from fluxes                      : "
+                       << mass_added_flux << std::endl;
+        amrex::Print() << "xmom added from fluxes                      : "
+                       << xmom_added_flux << std::endl;
+        amrex::Print() << "ymom added from fluxes                      : "
+                       << ymom_added_flux << std::endl;
+        amrex::Print() << "zmom added from fluxes                      : "
+                       << zmom_added_flux << std::endl;
+        amrex::Print() << "(rho E) added from fluxes                   : "
+                       << E_added_flux << std::endl;
+      }
 #endif
     }
 
