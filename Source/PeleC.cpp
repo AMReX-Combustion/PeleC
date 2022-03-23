@@ -194,6 +194,8 @@ PeleC::read_params()
 
   amrex::ParmParse pp("pelec");
 
+#include "pelec_queries.H"
+
   pp.query("v", verbose);
 
   // Get boundary conditions
