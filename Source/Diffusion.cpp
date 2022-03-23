@@ -607,9 +607,9 @@ PeleC::getMOLSrcTerm(
         AMREX_D_TERM(auto apx = areafrac[0]->const_array(mfi);
                      , auto apy = areafrac[1]->const_array(mfi);
                      , auto apz = areafrac[2]->const_array(mfi););
-        AMREX_D_TERM(auto fcx = fact.getFaceCent()[0]->const_array(mfi);
-                     , auto fcy = fact.getFaceCent()[1]->const_array(mfi);
-                     , auto fcz = fact.getFaceCent()[2]->const_array(mfi););
+        AMREX_D_TERM(auto fcx = facecent[0]->const_array(mfi);
+                     , auto fcy = facecent[1]->const_array(mfi);
+                     , auto fcz = facecent[2]->const_array(mfi););
         auto ccc = fact.getCentroid().const_array(mfi);
 
         amrex::FArrayBox tmpfab(Dfab.box(), S.nComp());
