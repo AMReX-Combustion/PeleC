@@ -91,32 +91,29 @@ bcnormal(
   amrex::GeometryData const& geomdata,
   ProbParmDevice const& prob_parm)
 {
-  const amrex::Real* prob_lo = geomdata.ProbLo();
-  const amrex::Real* prob_hi = geomdata.ProbHi();
-  amrex::Real velx, vely, velz;
-  amrex::Real massfrac[NUM_SPECIES] = {0.0};
-  auto eos = pele::physics::PhysicsType::eos();
-
-  amrex::Real radius = {0.0};
-  amrex::Real int_energy;
-
   if (sgn == 1 && idir == 2) {
+
+    amrex::Real velx = 0.0, vely = 0.0, velz = 0.0;
+    amrex::Real massfrac[NUM_SPECIES] = {0.0};
+    auto eos = pele::physics::PhysicsType::eos();
+
+    // interior pressure
+    amrex::Real p_int;
+    amrex::Real massfrac_int[NUM_SPECIES] = {0.0};
+    for (int n = 0; n < NUM_SPECIES; n++)
+      massfrac_int[n] = s_int[UFS + n] / s_int[URHO];
+    eos.RTY2P(s_int[URHO], s_int[UTEMP], massfrac_int, p_int);
 
     if (prob_parm.turbulence) {
       velx = s_ext[UMX];
       vely = s_ext[UMY];
       velz = s_ext[UMZ] + prob_parm.v_in;
-    } else {
-      velx = 0.0;
-      vely = 0.0;
-      velz = 0.0 + prob_parm.v_in;
     }
 
-    radius = std::sqrt(
+    const amrex::Real radius = std::sqrt(
       std::pow(x[0] - prob_parm.center_xy[0], 2) +
       std::pow(x[1] - prob_parm.center_xy[1], 2));
-    amrex::Real eta = {0};
-    eta =
+    amrex::Real eta =
       0.5 *
       (1.0 - std::tanh(
                2.0 * (radius - prob_parm.D * 0.5) / (0.1 * prob_parm.D * 0.5)));
@@ -125,17 +122,17 @@ bcnormal(
     for (int n = 0; n < NUM_SPECIES; n++) {
       massfrac[n] = eta * prob_parm.Y_fuel[n] + (1.0 - eta) * prob_parm.Y_ox[n];
     }
-    int_energy = eta * prob_parm.U_fuel + (1.0 - eta) * prob_parm.U_ox;
+    amrex::Real int_energy =
+      eta * prob_parm.U_fuel + (1.0 - eta) * prob_parm.U_ox;
 
     s_ext[UTEMP] = 500.0; // initial guess to help EY2T converge
     eos.EY2T(int_energy, massfrac, s_ext[UTEMP]);
     //    GET_T_GIVEN_HY(&enthalpy,massfrac,&s_ext[DEF_Temp],&ierr);
 
     amrex::Real rho, eint;
-    eos.PYT2R(prob_parm.P_mean, massfrac, s_ext[UTEMP], rho);
-    s_ext[URHO] = rho;
+    eos.PYT2RE(p_int, massfrac, s_ext[UTEMP], rho, eint);
 
-    eos.RTY2E(rho, s_ext[UTEMP], massfrac, eint);
+    s_ext[URHO] = rho;
     s_ext[UEINT] = rho * eint;
 
     for (int n = 0; n < NUM_SPECIES; n++) {
