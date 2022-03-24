@@ -408,13 +408,7 @@ PeleC::zero_in_body(amrex::MultiFab& S) const
 // Sets up implicit function using EB2 infrastructure
 void
 initialize_EB2(
-  const amrex::Geometry& geom,
-  const int
-#ifdef LinePistonCylinder
-    required_level
-#endif
-  /*unused*/,
-  const int max_level)
+  const amrex::Geometry& geom, const int /*unused*/, const int max_level)
 {
   BL_PROFILE("PeleC::initialize_EB2()");
 
