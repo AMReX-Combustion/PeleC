@@ -1,5 +1,9 @@
+#include <AMReX_REAL.H>
+#include <AMReX_GpuQualifiers.H>
+#include <AMReX_GpuMemory.H>
+
 #include "PeleC.H"
-#include "Forcing.H"
+#include "IndexDefines.H"
 
 void
   PeleC::construct_old_forcing_source(amrex::Real /*time*/, amrex::Real /*dt*/)
