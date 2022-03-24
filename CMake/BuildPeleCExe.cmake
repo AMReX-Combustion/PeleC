@@ -162,7 +162,6 @@ function(build_pelec_exe pelec_exe_name)
        ${SRC_DIR}/External.cpp
        ${SRC_DIR}/Filter.H
        ${SRC_DIR}/Filter.cpp
-       ${SRC_DIR}/Forcing.H
        ${SRC_DIR}/Forcing.cpp
        ${SRC_DIR}/GradUtil.H
        ${SRC_DIR}/GradUtil.cpp
@@ -189,7 +188,6 @@ function(build_pelec_exe pelec_exe_name)
        ${SRC_DIR}/PeleC.cpp
        ${SRC_DIR}/Problem.H
        ${SRC_DIR}/ProblemDerive.H
-       ${SRC_DIR}/React.H
        ${SRC_DIR}/React.cpp
        ${SRC_DIR}/Riemann.H
        ${SRC_DIR}/Setup.cpp

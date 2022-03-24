@@ -1,4 +1,8 @@
-#include "React.H"
+#include <AMReX_FArrayBox.H>
+
+#include "IndexDefines.H"
+#include "PelePhysics.H"
+#include "PeleC.H"
 
 void
 PeleC::set_typical_values_chem()
