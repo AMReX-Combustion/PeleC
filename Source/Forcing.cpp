@@ -62,7 +62,7 @@ PeleC::fill_forcing_source(
     [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
       if (!flagarrs[nbx](i, j, k).isCovered()) {
         const auto& sarr = sarrs[nbx];
-        auto& src = srcs[nbx];
+        const auto& src = srcs[nbx];
         src(i, j, k, UMX) =
           force * sarr(i, j, k, URHO) * (sarr(i, j, k, UMX) - u0);
         src(i, j, k, UMY) =

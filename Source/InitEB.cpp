@@ -397,7 +397,6 @@ PeleC::zero_in_body(amrex::MultiFab& S) const
 
   auto const& sarrs = S.arrays();
   auto const& flagarrs = flags.const_arrays();
-  auto const captured_body_state = body_state;
   const amrex::IntVect ngs(0);
   amrex::ParallelFor(
     S, ngs, NVAR,
