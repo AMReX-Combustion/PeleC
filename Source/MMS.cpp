@@ -76,42 +76,31 @@ PeleC::fill_mms_source(
   amrex::FillPatchIterator fpi(
     *this, mms_source, ng, time, State_Type, 0, NVAR);
 
-#ifdef _OPENMP
-#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
-#endif
-  {
-    for (amrex::MFIter mfi(mms_source, amrex::TilingIfNotGPU()); mfi.isValid();
-         ++mfi) {
-      const amrex::Box& bx = mfi.growntilebox(ng);
+  auto const& sarrs = S.const_arrays();
+  auto const& srcs = mms_source.arrays();
+  auto const& flagarrs = flags.const_arrays();
+  const amrex::IntVect ngs(ng);
+  amrex::ParallelFor(
+    mms_source, ngs,
+    [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+      if (!flagarrs[nbx](i, j, k).isCovered()) {
+        const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
+        const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
+        const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];
 
-      const auto& flag_fab = flags[mfi];
-      amrex::FabType typ = flag_fab.getType(bx);
-      if (typ == amrex::FabType::covered) {
-        continue;
+        const auto sarr = sarrs[nbx];
+        auto src = srcs[nbx];
+        src(i, j, k, URHO) = masa_eval_3d_source_rho(x, y, z);
+        src(i, j, k, UMX) = masa_eval_3d_source_rho_u(x, y, z);
+        src(i, j, k, UMY) = masa_eval_3d_source_rho_v(x, y, z);
+        src(i, j, k, UMZ) = masa_eval_3d_source_rho_w(x, y, z);
+        src(i, j, k, UEDEN) = masa_eval_3d_source_rho_e(x, y, z);
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          src(i, j, k, UFS + n) = src(i, j, k, URHO) * sarr(i, j, k, UFS + n) /
+                                  masa_eval_3d_exact_rho(x, y, z);
+        }
       }
-
-      auto const& s = S.array(mfi);
-      auto const& src = mms_source.array(mfi);
-
-      // Evaluate the source using MASA
-      amrex::ParallelFor(
-        bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-          const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
-          const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
-          const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];
-
-          src(i, j, k, URHO) = masa_eval_3d_source_rho(x, y, z);
-          src(i, j, k, UMX) = masa_eval_3d_source_rho_u(x, y, z);
-          src(i, j, k, UMY) = masa_eval_3d_source_rho_v(x, y, z);
-          src(i, j, k, UMZ) = masa_eval_3d_source_rho_w(x, y, z);
-          src(i, j, k, UEDEN) = masa_eval_3d_source_rho_e(x, y, z);
-          for (int n = 0; n < NUM_SPECIES; n++) {
-            src(i, j, k, UFS + n) = src(i, j, k, URHO) * s(i, j, k, UFS + n) /
-                                    masa_eval_3d_exact_rho(x, y, z);
-          }
-        });
-    }
-  }
+    });
 
   amrex::MultiFab::Copy(mms_src, mms_source, 0, 0, NVAR, ng);
   mms_src_evaluated = true;
