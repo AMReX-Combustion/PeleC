@@ -578,6 +578,7 @@ public:
 protected:
   amrex::iMultiFab level_mask;
   std::array<const amrex::MultiCutFab*, AMREX_SPACEDIM> areafrac;
+  std::array<const amrex::MultiCutFab*, AMREX_SPACEDIM> facecent;
 
   // Build a mask that ghost cells overlapping with interior cells in the same
   // multifab are set to 0, whereas others are set to 1.
