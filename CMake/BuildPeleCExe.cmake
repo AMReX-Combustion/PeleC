@@ -1,4 +1,6 @@
-function(build_pelec_exe pelec_exe_name)
+function(build_pelec_exe pelec_exe_name pelec_lib_name)
+
+  set(SRC_DIR ${CMAKE_SOURCE_DIR}/Source)
 
   add_executable(${pelec_exe_name} "")
 
@@ -13,136 +15,11 @@ function(build_pelec_exe pelec_exe_name)
        prob.cpp
   )
   
+  #PeleC include directories
   target_include_directories(${pelec_exe_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-
-  set(PELE_PHYSICS_SRC_DIR ${CMAKE_SOURCE_DIR}/Submodules/PelePhysics)
-  set(PELE_PHYSICS_BIN_DIR ${CMAKE_BINARY_DIR}/Submodules/PelePhysics/${pelec_exe_name})
-
-  set(SRC_DIR ${CMAKE_SOURCE_DIR}/Source)
-  set(BIN_DIR ${CMAKE_BINARY_DIR}/Source/${pelec_exe_name})
-
-  include(SetPeleCCompileFlags)
-
-  add_subdirectory(${SRC_DIR}/Params ${BIN_DIR}/Params/${pelec_exe_name})
-
-  target_include_directories(${pelec_exe_name} PRIVATE "${PELE_PHYSICS_SRC_DIR}/Source")
-
-  set(PELEC_TRANSPORT_DIR "${PELE_PHYSICS_SRC_DIR}/Transport")
-  target_sources(${pelec_exe_name} PRIVATE
-                 ${PELEC_TRANSPORT_DIR}/Transport.H
-                 ${PELEC_TRANSPORT_DIR}/Transport.cpp
-                 ${PELEC_TRANSPORT_DIR}/TransportParams.H
-                 ${PELEC_TRANSPORT_DIR}/TransportTypes.H
-                 ${PELEC_TRANSPORT_DIR}/Constant.H
-                 ${PELEC_TRANSPORT_DIR}/Simple.H
-                 ${PELEC_TRANSPORT_DIR}/Sutherland.H)
-  target_include_directories(${pelec_exe_name} PRIVATE ${PELEC_TRANSPORT_DIR})
-  if("${PELEC_TRANSPORT_MODEL}" STREQUAL "Constant")
-    target_compile_definitions(${pelec_exe_name} PRIVATE USE_CONSTANT_TRANSPORT)
-  endif()
-  if("${PELEC_TRANSPORT_MODEL}" STREQUAL "Simple")
-    target_compile_definitions(${pelec_exe_name} PRIVATE USE_SIMPLE_TRANSPORT)
-  endif()
-  if("${PELEC_TRANSPORT_MODEL}" STREQUAL "Sutherland")
-    target_compile_definitions(${pelec_exe_name} PRIVATE USE_SUTHERLAND_TRANSPORT)
-  endif()
-
-  set(PELEC_EOS_DIR "${PELE_PHYSICS_SRC_DIR}/Eos")
-  target_sources(${pelec_exe_name} PRIVATE
-                 ${PELEC_EOS_DIR}/EOS.cpp
-                 ${PELEC_EOS_DIR}/EOS.H
-                 ${PELEC_EOS_DIR}/GammaLaw.H
-                 ${PELEC_EOS_DIR}/Fuego.H
-                 ${PELEC_EOS_DIR}/SRK.H)
-  target_include_directories(${pelec_exe_name} PRIVATE ${PELEC_EOS_DIR})
-  if("${PELEC_EOS_MODEL}" STREQUAL "GammaLaw")
-    target_compile_definitions(${pelec_exe_name} PRIVATE USE_GAMMALAW_EOS)
-  endif()
-  if("${PELEC_EOS_MODEL}" STREQUAL "Fuego")
-    target_compile_definitions(${pelec_exe_name} PRIVATE USE_FUEGO_EOS)
-  endif()
-  if("${PELEC_EOS_MODEL}" STREQUAL "Soave-Redlich-Kwong")
-    target_compile_definitions(${pelec_exe_name} PRIVATE USE_SRK_EOS)
-  endif()
-
-  set(PELEC_MECHANISM_DIR "${PELE_PHYSICS_SRC_DIR}/Support/Fuego/Mechanism/Models/${PELEC_CHEMISTRY_MODEL}")
-  target_sources(${pelec_exe_name} PRIVATE
-                 ${PELEC_MECHANISM_DIR}/mechanism.cpp
-                 ${PELEC_MECHANISM_DIR}/mechanism.H)
-
-  # Use flags to avoid warnings from certain files
-  if((NOT PELEC_ENABLE_CUDA) AND (CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$"))
-    list(APPEND MY_CXX_FLAGS "-w")
-  endif()
-  separate_arguments(MY_CXX_FLAGS)
-
-  set_source_files_properties(${PELEC_MECHANISM_DIR}/mechanism.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-  set_source_files_properties(${PELEC_MECHANISM_DIR}/mechanism.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-  target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELEC_MECHANISM_DIR})
-
-  target_sources(${pelec_exe_name}
-    PRIVATE
-    ${PELE_PHYSICS_SRC_DIR}/Utility/TurbInflow/turbinflow.cpp
-    ${PELE_PHYSICS_SRC_DIR}/Utility/TurbInflow/turbinflow.H)
-  target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Utility/TurbInflow)
-
-  target_sources(${pelec_exe_name}
-    PRIVATE
-    ${PELE_PHYSICS_SRC_DIR}/Utility/PltFileManager/PltFileManager.cpp
-    ${PELE_PHYSICS_SRC_DIR}/Utility/PltFileManager/PltFileManager.H
-    ${PELE_PHYSICS_SRC_DIR}/Utility/PltFileManager/PltFileManagerBCFill.H)
-    target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${PELE_PHYSICS_SRC_DIR}/Utility/PltFileManager)
-
-  target_sources(${pelec_exe_name}
-    PRIVATE
-      ${PELE_PHYSICS_SRC_DIR}/Reactions/ReactorArkode.H
-      ${PELE_PHYSICS_SRC_DIR}/Reactions/ReactorArkode.cpp
-      ${PELE_PHYSICS_SRC_DIR}/Reactions/ReactorBase.H
-      ${PELE_PHYSICS_SRC_DIR}/Reactions/ReactorBase.cpp
-      ${PELE_PHYSICS_SRC_DIR}/Reactions/ReactorCvode.H
-      ${PELE_PHYSICS_SRC_DIR}/Reactions/ReactorCvode.cpp
-      ${PELE_PHYSICS_SRC_DIR}/Reactions/ReactorCvodeCustomLinSolver.H
-      ${PELE_PHYSICS_SRC_DIR}/Reactions/ReactorCvodeCustomLinSolver.cpp
-      ${PELE_PHYSICS_SRC_DIR}/Reactions/ReactorCvodeJacobian.H
-      ${PELE_PHYSICS_SRC_DIR}/Reactions/ReactorCvodeJacobian.cpp
-      ${PELE_PHYSICS_SRC_DIR}/Reactions/ReactorCvodePreconditioner.H
-      ${PELE_PHYSICS_SRC_DIR}/Reactions/ReactorCvodePreconditioner.cpp
-      ${PELE_PHYSICS_SRC_DIR}/Reactions/ReactorCvodeUtils.H
-      ${PELE_PHYSICS_SRC_DIR}/Reactions/ReactorCvodeUtils.cpp
-      ${PELE_PHYSICS_SRC_DIR}/Reactions/ReactorNull.H
-      ${PELE_PHYSICS_SRC_DIR}/Reactions/ReactorNull.cpp
-      ${PELE_PHYSICS_SRC_DIR}/Reactions/ReactorRK64.H
-      ${PELE_PHYSICS_SRC_DIR}/Reactions/ReactorRK64.cpp
-      ${PELE_PHYSICS_SRC_DIR}/Reactions/ReactorTypes.H
-      ${PELE_PHYSICS_SRC_DIR}/Reactions/ReactorUtils.H
-      ${PELE_PHYSICS_SRC_DIR}/Reactions/ReactorUtils.cpp
-  )
-
-  target_include_directories(${pelec_exe_name} PRIVATE ${PELE_PHYSICS_SRC_DIR}/Reactions)
-  target_link_libraries(${pelec_exe_name} PRIVATE sundials_arkode sundials_cvode)
-
-  target_sources(${pelec_exe_name} PRIVATE ${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_Sundials.H
-                                           ${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_Sundials.cpp
-                                           ${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_NVector_MultiFab.cpp
-                                           ${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_NVector_MultiFab.H
-                                           ${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_SUNMemory.cpp
-                                           ${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_SUNMemory.H)
-  set_source_files_properties(${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_Sundials.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-  set_source_files_properties(${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_Sundials.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-  set_source_files_properties(${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_NVector_MultiFab.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-  set_source_files_properties(${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_NVector_MultiFab.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-  set_source_files_properties(${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_SUNMemory.cpp PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-  set_source_files_properties(${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS/AMReX_SUNMemory.H PROPERTIES COMPILE_OPTIONS "${MY_CXX_FLAGS}")
-
-  target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS)
-
-  if(PELEC_ENABLE_CUDA)
-    target_link_libraries(${pelec_exe_name} PRIVATE sundials_nveccuda sundials_sunlinsolcusolversp sundials_sunmatrixcusparse)
-  elseif(PELEC_ENABLE_HIP)
-    target_link_libraries(${pelec_exe_name} PRIVATE sundials_nvechip)
-  elseif(PELEC_ENABLE_DPCPP)
-    target_link_libraries(${pelec_exe_name} PRIVATE sundials_nvecsycl)
-  endif()
+  target_include_directories(${pelec_exe_name} PRIVATE ${SRC_DIR})
+  target_include_directories(${pelec_exe_name} PRIVATE ${CMAKE_BINARY_DIR})
+  target_include_directories(${pelec_exe_name} PRIVATE ${CMAKE_SOURCE_DIR}/Source/Params/param_includes)
 
   target_sources(${pelec_exe_name}
      PRIVATE
@@ -202,18 +79,7 @@ function(build_pelec_exe pelec_exe_name)
        ${SRC_DIR}/Utilities.cpp
        ${SRC_DIR}/WENO.H
   )
-
-  if(NOT "${pelec_exe_name}" STREQUAL "PeleC-UnitTests")
-    target_sources(${pelec_exe_name}
-       PRIVATE
-         ${SRC_DIR}/main.cpp
-    )
-  endif()
   
-  include(AMReXBuildInfo)
-  generate_buildinfo(${pelec_exe_name} ${CMAKE_SOURCE_DIR})
-  target_include_directories(${pelec_exe_name} SYSTEM PRIVATE ${AMREX_SUBMOD_LOCATION}/Tools/C_scripts)
-
   if(PELEC_ENABLE_MASA)
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_MASA)
     target_sources(${pelec_exe_name} PRIVATE ${SRC_DIR}/MMS.cpp)
@@ -223,22 +89,15 @@ function(build_pelec_exe pelec_exe_name)
     endif()
   endif()
 
-  if(PELEC_ENABLE_MPI)
-    target_link_libraries(${pelec_exe_name} PRIVATE $<$<BOOL:${MPI_CXX_FOUND}>:MPI::MPI_CXX>)
+  if(NOT "${pelec_exe_name}" STREQUAL "PeleC-UnitTests")
+    target_sources(${pelec_exe_name}
+       PRIVATE
+         ${CMAKE_SOURCE_DIR}/Source/main.cpp
+    )
   endif()
-
-  #PeleC include directories
-  target_include_directories(${pelec_exe_name} PRIVATE ${SRC_DIR})
-  target_include_directories(${pelec_exe_name} PRIVATE ${CMAKE_BINARY_DIR})
-
-  #Link to amrex libraries
-  if(PELEC_DIM GREATER 1)
-    target_link_libraries(${pelec_exe_name} PRIVATE AMReX-Hydro::amrex_hydro_api)
-  endif()
-  target_link_libraries(${pelec_exe_name} PRIVATE AMReX::amrex)
 
   if(PELEC_ENABLE_CUDA)
-    set(pctargets "${pelec_exe_name}")
+    set(pctargets "${pelec_exe_name};${pelec_lib_name}")
     foreach(tgt IN LISTS pctargets)
       get_target_property(PELEC_SOURCES ${tgt} SOURCES)
       list(FILTER PELEC_SOURCES INCLUDE REGEX "\\.cpp")
@@ -248,6 +107,8 @@ function(build_pelec_exe pelec_exe_name)
     target_compile_options(${pelec_exe_name} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xptxas --disable-optimizer-constants>)
   endif()
  
+  target_link_libraries(${pelec_exe_name} PRIVATE ${pelec_lib_name} AMReX-Hydro::amrex_hydro_api AMReX::amrex)
+
   #Define what we want to be installed during a make install 
   install(TARGETS ${pelec_exe_name}
           RUNTIME DESTINATION bin

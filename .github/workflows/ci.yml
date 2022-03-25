@@ -78,7 +78,6 @@ jobs:
       - name: Configure
         run: |
           (for DIM in 2 3; do \
-            if [ "${DIM}" != '3' ]; then WARNINGS=OFF; else WARNINGS=ON; fi; \
             printf "\n-------- Configuring ${DIM}D --------\n"; \
             cmake -G Ninja \
             -B${{runner.workspace}}/build-${DIM}d-${{matrix.os}} \
@@ -87,11 +86,9 @@ jobs:
             -DPELEC_DIM:STRING=${DIM} \
             -DPELEC_ENABLE_MPI:BOOL=ON \
             ${{matrix.mpipreflags}} \
-            -DPELEC_ENABLE_TESTS:BOOL=ON \
             -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
             -DPELEC_ENABLE_MASA:BOOL=ON \
             -DMASA_DIR:STRING=${{runner.workspace}}/deps/install/MASA \
-            -DPELEC_ENABLE_ALL_WARNINGS:BOOL=${WARNINGS} \
             ${{github.workspace}}; \
             if [ $? -ne 0 ]; then exit 1; fi \
           done)
@@ -175,7 +172,7 @@ jobs:
           wget -q -O - https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub | sudo apt-key add -
           echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /" | sudo tee /etc/apt/sources.list.d/cuda.list
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
+          sudo apt-get install -y --no-install-recommends ninja-build \
               cuda-command-line-tools-${{matrix.cuda_pkg}} \
               cuda-compiler-${{matrix.cuda_pkg}} cuda-minimal-build-${{matrix.cuda_pkg}} \
               cuda-nvml-dev-${{matrix.cuda_pkg}} cuda-nvtx-${{matrix.cuda_pkg}} \
@@ -187,7 +184,8 @@ jobs:
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
           export PATH=/usr/local/nvidia/bin:/usr/local/cuda-${{matrix.cuda_ver}}/bin:${PATH}
           export LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/cuda-${{matrix.cuda_ver}}/lib:${LD_LIBRARY_PATH}
-          cmake -Bbuild-${{matrix.cuda_pkg}} \
+          cmake -G Ninja -Bbuild-${{matrix.cuda_pkg}} \
+            -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo \
             -DPELEC_ENABLE_MPI=OFF \
             -DPELEC_ENABLE_CUDA=ON \
             -DAMReX_CUDA_ERROR_CAPTURE_THIS:BOOL=ON \
@@ -213,7 +211,6 @@ jobs:
         run: |
           cmake -B${{runner.workspace}}/build-cppcheck \
           -DPELEC_ENABLE_MPI:BOOL=OFF \
-          -DPELEC_ENABLE_TESTS:BOOL=ON \
           -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
           -DPELEC_ENABLE_MASA:BOOL=OFF \
           -DPELEC_ENABLE_CPPCHECK:BOOL=ON \
@@ -245,16 +242,16 @@ jobs:
       - name: Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang-tidy-10
+          sudo apt-get install -y clang-tidy-10 ninja-build
           sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-10 100
       - name: Configure
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
-          cmake -B${{runner.workspace}}/build-clang-tidy \
+          cmake -G Ninja -B${{runner.workspace}}/build-clang-tidy \
+          -DCMAKE_BUILD_TYPE:STRING=Debug \
           -DCMAKE_CXX_COMPILER:STRING=clang++ \
           -DCMAKE_C_COMPILER:STRING=clang \
           -DPELEC_ENABLE_MPI:BOOL=OFF \
-          -DPELEC_ENABLE_TESTS:BOOL=ON \
           -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
           -DPELEC_ENABLE_MASA:BOOL=OFF \
           -DPELEC_ENABLE_CLANG_TIDY:BOOL=ON \
@@ -292,14 +289,16 @@ jobs:
           echo 'deb [arch=amd64] http://repo.radeon.com/rocm/apt/debian/ ubuntu main' | sudo tee /etc/apt/sources.list.d/rocm.list
           echo 'export PATH=/opt/rocm/llvm/bin:/opt/rocm/bin:/opt/rocm/profiler/bin:/opt/rocm/opencl/bin:$PATH' | sudo tee -a /etc/profile.d/rocm.sh
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends build-essential rocm-dev roctracer-dev rocprofiler-dev rocrand-dev rocprim-dev rocm-libs
+          sudo apt-get install -y --no-install-recommends ninja-build \
+              build-essential rocm-dev roctracer-dev rocprofiler-dev rocrand-dev rocprim-dev rocm-libs
       - name: Configure
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
           source /etc/profile.d/rocm.sh
           which clang
           which hipcc
-          cmake -B${{runner.workspace}}/build-hip \
+          cmake -G Ninja -B${{runner.workspace}}/build-hip \
+          -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo \
           -DCMAKE_CXX_COMPILER:STRING=$(which hipcc) \
           -DCMAKE_C_COMPILER:STRING=$(which clang) \
           -DCMAKE_CXX_STANDARD=17 \
@@ -309,7 +308,6 @@ jobs:
           -DCMAKE_HIP_ARCHITECTURES=gfx908 \
           -DAMDGPU_TARGETS=gfx908 \
           -DGPU_TARGETS=gfx908 \
-          -DPELEC_ENABLE_TESTS:BOOL=ON \
           -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
           -DPELEC_ENABLE_MASA:BOOL=OFF \
           ${{github.workspace}}
@@ -335,20 +333,21 @@ jobs:
           wget -q -O - https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB | sudo apt-key add -
           echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends build-essential g++ gfortran intel-oneapi-dpcpp-cpp-compiler intel-oneapi-mkl-devel
+          sudo apt-get install -y --no-install-recommends ninja-build \
+            build-essential g++ gfortran intel-oneapi-dpcpp-cpp-compiler intel-oneapi-mkl-devel
       - name: Configure
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
           set +e
           source /opt/intel/oneapi/setvars.sh
           set -e
-          cmake -B${{runner.workspace}}/build-dpcpp \
+          cmake -G Ninja -B${{runner.workspace}}/build-dpcpp \
+            -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo \
             -DCMAKE_CXX_COMPILER=$(which dpcpp) \
             -DCMAKE_C_COMPILER=$(which clang) \
             -DPELEC_ENABLE_MPI:BOOL=OFF \
             -DPELEC_ENABLE_MASA:BOOL=OFF \
             -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
-            -DPELEC_ENABLE_TESTS:BOOL=ON \
             -DPELEC_ENABLE_DPCPP:BOOL=ON \
             ${{github.workspace}}
       - name: Build

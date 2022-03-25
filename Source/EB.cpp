@@ -739,7 +739,8 @@ pc_eb_clean_massfrac(
   const auto& mask_arr = mask.array();
   amrex::ParallelFor(
     bx, state.nComp(),
-    [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
+    [=] AMREX_GPU_DEVICE(
+      int i, int j, AMREX_D_PICK(int /*k*/, int /*k*/, int k), int n) noexcept {
       const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
       if (is_cut_neighborhood(iv, flags)) {
         scratch(iv, n) = state(iv, n) + dt * div(iv, n);
@@ -753,7 +754,8 @@ pc_eb_clean_massfrac(
   // Compute the updated div
   amrex::ParallelFor(
     bx, state.nComp(),
-    [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
+    [=] AMREX_GPU_DEVICE(
+      int i, int j, AMREX_D_PICK(int /*k*/, int /*k*/, int k), int n) noexcept {
       const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
       if (mask_arr(iv) != 0) {
         div(iv, n) = (scratch(iv, n) - state(iv, n)) / dt;

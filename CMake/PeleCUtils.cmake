@@ -40,7 +40,7 @@ macro(init_code_checks)
           # cppcheck ignores -isystem directories, so we change them to regular -I include directories (with no spaces either)
           COMMAND sed "s/isystem /I/g" compile_commands.json > cppcheck/cppcheck_compile_commands.json
           COMMAND ${CPPCHECK_EXE} --version
-          COMMAND ${CPPCHECK_EXE} --template=gcc --inline-suppr --suppress=unusedFunction --suppress=useStlAlgorithm --std=c++14 --language=c++ --enable=all --project=cppcheck/cppcheck_compile_commands.json -i ${CMAKE_SOURCE_DIR}/Submodules/AMReX/Src -i ${CMAKE_SOURCE_DIR}/Submodules/GoogleTest --output-file=cppcheck/cppcheck-full-report.txt -j ${NP}
+          COMMAND ${CPPCHECK_EXE} --template=gcc --inline-suppr --suppress=unusedFunction --std=c++14 --language=c++ --enable=all --project=cppcheck/cppcheck_compile_commands.json -i ${CMAKE_SOURCE_DIR}/Submodules/AMReX/Src -i ${CMAKE_SOURCE_DIR}/Submodules/GoogleTest --output-file=cppcheck/cppcheck-full-report.txt -j ${NP}
           # Currently we filter analysis from submodules after cppcheck has run
           #COMMAND awk -v nlines=2 "/Submodules\/AMReX/ || /Submodules\/GoogleTest/ {for (i=0; i<nlines; i++) {getline}; next} 1" < cppcheck/cppcheck-full-report.txt > cppcheck/cppcheck-short-report.txt
           COMMAND awk -v nlines=2 "/Submodules/ {for (i=0; i<nlines; i++) {getline}; next} 1" < cppcheck/cppcheck-full-report.txt > cppcheck/cppcheck-short-report.txt

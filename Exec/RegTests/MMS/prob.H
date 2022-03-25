@@ -91,14 +91,7 @@ bcnormal(
   ProbParmDevice const& /*prob_parm*/)
 {
   amrex::Real x0 = 0.0, x1 = 0.0, x2 = 0.0;
-
-  x0 = x[0];
-#if AMREX_SPACEDIM > 1
-  x1 = x[1];
-#endif
-#if AMREX_SPACEDIM > 2
-  x2 = x[2];
-#endif
+  AMREX_D_TERM(x0 = x[0];, x1 = x[1];, x2 = x[2];)
   const amrex::Real rho = masa_eval_3d_exact_rho(x0, x1, x2);
   const amrex::Real u[AMREX_SPACEDIM] = {AMREX_D_DECL(
     masa_eval_3d_exact_u(x0, x1, x2), masa_eval_3d_exact_v(x0, x1, x2),
