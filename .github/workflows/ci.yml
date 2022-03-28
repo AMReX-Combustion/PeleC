@@ -82,7 +82,7 @@ jobs:
             cmake -G Ninja \
             -B${{runner.workspace}}/build-${DIM}d-${{matrix.os}} \
             -DCMAKE_INSTALL_PREFIX:PATH=${{runner.workspace}}/install \
-            -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo \
+            -DCMAKE_BUILD_TYPE:STRING=Release \
             -DPELEC_DIM:STRING=${DIM} \
             -DPELEC_ENABLE_MPI:BOOL=ON \
             ${{matrix.mpipreflags}} \
@@ -185,7 +185,7 @@ jobs:
           export PATH=/usr/local/nvidia/bin:/usr/local/cuda-${{matrix.cuda_ver}}/bin:${PATH}
           export LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/cuda-${{matrix.cuda_ver}}/lib:${LD_LIBRARY_PATH}
           cmake -G Ninja -Bbuild-${{matrix.cuda_pkg}} \
-            -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo \
+            -DCMAKE_BUILD_TYPE:STRING=Release \
             -DPELEC_ENABLE_MPI=OFF \
             -DPELEC_ENABLE_CUDA=ON \
             -DAMReX_CUDA_ERROR_CAPTURE_THIS:BOOL=ON \
@@ -298,7 +298,7 @@ jobs:
           which clang
           which hipcc
           cmake -G Ninja -B${{runner.workspace}}/build-hip \
-          -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo \
+          -DCMAKE_BUILD_TYPE:STRING=Release \
           -DCMAKE_CXX_COMPILER:STRING=$(which hipcc) \
           -DCMAKE_C_COMPILER:STRING=$(which clang) \
           -DCMAKE_CXX_STANDARD=17 \
