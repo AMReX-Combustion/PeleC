@@ -342,7 +342,7 @@ jobs:
           source /opt/intel/oneapi/setvars.sh
           set -e
           cmake -G Ninja -B${{runner.workspace}}/build-dpcpp \
-            -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo \
+            -DCMAKE_BUILD_TYPE:STRING=Release \
             -DCMAKE_CXX_COMPILER=$(which dpcpp) \
             -DCMAKE_C_COMPILER=$(which clang) \
             -DPELEC_ENABLE_MPI:BOOL=OFF \
