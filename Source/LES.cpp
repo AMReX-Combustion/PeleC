@@ -324,11 +324,6 @@ PeleC::getSmagorinskyLESTerm(
           });
       }
 
-#ifdef AMREX_USE_GPU
-      auto device = amrex::RunOn::Gpu;
-#else
-      auto device = amrex::RunOn::Cpu;
-#endif
       if (do_reflux && flux_factor != 0) // no eb in problem
       {
         for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
@@ -342,13 +337,13 @@ PeleC::getSmagorinskyLESTerm(
         if (level < parent->finestLevel()) {
           getFluxReg(level + 1).CrseAdd(
             mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}}, dxDp,
-            dt, device);
+            dt, amrex::RunOn::Device);
         }
 
         if (level > 0) {
           getFluxReg(level).FineAdd(
             mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}}, dxDp,
-            dt, device);
+            dt, amrex::RunOn::Device);
         }
       }
     } // End of MFIter scope
@@ -689,11 +684,6 @@ PeleC::getDynamicSmagorinskyLESTerm(
           });
       }
 
-#ifdef AMREX_USE_GPU
-      auto device = amrex::RunOn::Gpu;
-#else
-      auto device = amrex::RunOn::Cpu;
-#endif
       if (do_reflux && flux_factor != 0) // no eb in problem
       {
         for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
@@ -707,13 +697,13 @@ PeleC::getDynamicSmagorinskyLESTerm(
         if (level < parent->finestLevel()) {
           getFluxReg(level + 1).CrseAdd(
             mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}}, dxDp,
-            dt, device);
+            dt, amrex::RunOn::Device);
         }
 
         if (level > 0) {
           getFluxReg(level).FineAdd(
             mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}}, dxDp,
-            dt, device);
+            dt, amrex::RunOn::Device);
         }
       }
     }

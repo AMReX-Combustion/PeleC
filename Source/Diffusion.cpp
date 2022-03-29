@@ -9,7 +9,6 @@ PeleC::getMOLSrcTerm(
   amrex::Real flux_factor)
 {
   BL_PROFILE("PeleC::getMOLSrcTerm()");
-  BL_PROFILE_VAR_NS("diffusion_stuff", diff);
   if (
     (!diffuse_temp) && (!diffuse_enth) && (!diffuse_spec) && (!diffuse_vel) &&
     (!do_hydro)) {
@@ -158,7 +157,6 @@ PeleC::getMOLSrcTerm(
       auto* d_sv_eb_bndry_geom =
         (Ncut > 0 ? sv_eb_bndry_geom[local_i].data() : nullptr);
 
-      BL_PROFILE_VAR_START(diff);
       const int nqaux = NQAUX > 0 ? NQAUX : 1;
       amrex::FArrayBox q(gbox, QVAR);
       amrex::FArrayBox qaux(gbox, nqaux);
@@ -333,8 +331,6 @@ PeleC::getMOLSrcTerm(
         }
       }
 
-      BL_PROFILE_VAR_STOP(diff);
-
       // At this point flux_ec contains the diffusive fluxes in each direction
       // at face centers for the (potentially partially covered) grid-aligned
       // faces and eb_flux_thdlocal contains the flux for the cut faces. Before
@@ -430,12 +426,6 @@ PeleC::getMOLSrcTerm(
         }
       }
 
-#ifdef AMREX_USE_GPU
-      auto device = amrex::RunOn::Gpu;
-#else
-      auto device = amrex::RunOn::Cpu;
-#endif
-
       if (eb_in_domain) {
         amrex::Gpu::DeviceVector<int> v_eb_tile_mask(Ncut, 0);
         int* eb_tile_mask = v_eb_tile_mask.dataPtr();
@@ -527,7 +517,7 @@ PeleC::getMOLSrcTerm(
                 {AMREX_D_DECL(
                   &((*areafrac[0])[mfi]), &((*areafrac[1])[mfi]),
                   &((*areafrac[2])[mfi]))},
-                device);
+                amrex::RunOn::Device);
               // if (AMREX_SPACEDIM <= 2) {
               //   amrex::Print()
               //     << "WARNING:Re redistribution crseadd for EB not tested "
@@ -542,7 +532,7 @@ PeleC::getMOLSrcTerm(
                 {AMREX_D_DECL(
                   &((*areafrac[0])[mfi]), &((*areafrac[1])[mfi]),
                   &((*areafrac[2])[mfi]))},
-                dm_as_fine, device);
+                dm_as_fine, amrex::RunOn::Device);
 
               // if (AMREX_SPACEDIM <= 2) {
               //   amrex::Print()
@@ -568,13 +558,13 @@ PeleC::getMOLSrcTerm(
         if (level < parent->finestLevel()) {
           getFluxReg(level + 1).CrseAdd(
             mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}},
-            dxD.data(), dt, device);
+            dxD.data(), dt, amrex::RunOn::Device);
         }
 
         if (level > 0) {
           getFluxReg(level).FineAdd(
             mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}},
-            dxD.data(), dt, device);
+            dxD.data(), dt, amrex::RunOn::Device);
         }
       }
 
