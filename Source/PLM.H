@@ -19,9 +19,7 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 amrex::Real
 plm_slope(
-  const int i,
-  const int j,
-  const int k,
+  AMREX_D_DECL(const int i, const int j, const int k),
   const int n,
   const int dir,
   amrex::Array4<const amrex::Real> const& q)
@@ -78,9 +76,7 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 pc_plm_d(
-  const int i,
-  const int j,
-  const int k,
+  AMREX_D_DECL(const int i, const int j, const int k),
   const int dir,
   amrex::Array4<amrex::Real> const& qm,
   amrex::Array4<amrex::Real> const& qp,

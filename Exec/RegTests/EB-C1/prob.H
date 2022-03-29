@@ -83,12 +83,13 @@ bcnormal(
   amrex::GeometryData const& /*geomdata*/,
   ProbParmDevice const& /*prob_parm*/)
 {
-  const amrex::Real rho = masa_eval_3d_exact_rho(x[0], x[1], x[2]);
-  const amrex::Real u[3] = {
-    masa_eval_3d_exact_u(x[0], x[1], x[2]),
-    masa_eval_3d_exact_v(x[0], x[1], x[2]),
-    masa_eval_3d_exact_w(x[0], x[1], x[2])};
-  const amrex::Real p = masa_eval_3d_exact_p(x[0], x[1], x[2]);
+  amrex::Real x0 = 0.0, x1 = 0.0, x2 = 0.0;
+  AMREX_D_TERM(x0 = x[0];, x1 = x[1];, x2 = x[2];)
+  const amrex::Real rho = masa_eval_3d_exact_rho(x0, x1, x2);
+  const amrex::Real u[AMREX_SPACEDIM] = {AMREX_D_DECL(
+    masa_eval_3d_exact_u(x0, x1, x2), masa_eval_3d_exact_v(x0, x1, x2),
+    masa_eval_3d_exact_w(x0, x1, x2))};
+  const amrex::Real p = masa_eval_3d_exact_p(x0, x1, x2);
   amrex::Real massfrac[NUM_SPECIES] = {1.0};
 
   amrex::Real eint, T;
@@ -98,11 +99,12 @@ bcnormal(
 
   // Set the external state
   s_ext[URHO] = rho;
-  s_ext[UMX] = rho * u[0];
-  s_ext[UMY] = rho * u[1];
-  s_ext[UMZ] = rho * u[2];
+  AMREX_D_TERM(s_ext[UMX] = rho * u[0];, s_ext[UMY] = rho * u[1];
+               , s_ext[UMZ] = rho * u[2];)
   s_ext[UEINT] = rho * eint;
-  s_ext[UEDEN] = rho * (eint + 0.5 * (u[0] * u[0] + u[1] * u[1] + u[2] * u[2]));
+  s_ext[UEDEN] =
+    rho *
+    (eint + 0.5 * (AMREX_D_TERM(u[0] * u[0], +u[1] * u[1], +u[2] * u[2])));
   s_ext[UTEMP] = T;
   for (int n = 0; n < NUM_SPECIES; n++)
     s_ext[UFS + n] = rho * massfrac[n];

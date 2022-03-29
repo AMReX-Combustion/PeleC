@@ -166,9 +166,8 @@ PeleC::problem_post_timestep()
   int finest_level = parent->finestLevel();
   amrex::Real time = state[State_Type].curTime();
   amrex::Real rho_mms_err = 0.0;
-  amrex::Real u_mms_err = 0.0;
-  amrex::Real v_mms_err = 0.0;
-  amrex::Real w_mms_err = 0.0;
+  AMREX_D_TERM(amrex::Real u_mms_err = 0.0;, amrex::Real v_mms_err = 0.0;
+               , amrex::Real w_mms_err = 0.0;)
   amrex::Real p_mms_err = 0.0;
   amrex::Real rho_residual = 0.0;
   amrex::Real rhou_residual = 0.0;

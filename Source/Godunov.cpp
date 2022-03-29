@@ -107,29 +107,29 @@ pc_umeth_3D(
         // X slopes and interp
         int idir = 0;
         for (int n = 0; n < QVAR; ++n) {
-          slope[n] = plm_slope(i, j, k, n, 0, q);
+          slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, 0, q);
         }
         pc_plm_d(
-          i, j, k, idir, qxmarr, qxparr, slope, q, qaux(i, j, k, QC), dx, dt,
-          *lpmap);
+          AMREX_D_DECL(i, j, k), idir, qxmarr, qxparr, slope, q,
+          qaux(i, j, k, QC), dx, dt, *lpmap);
 
         // Y slopes and interp
         idir = 1;
         for (int n = 0; n < QVAR; n++) {
-          slope[n] = plm_slope(i, j, k, n, 1, q);
+          slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, 1, q);
         }
         pc_plm_d(
-          i, j, k, idir, qymarr, qyparr, slope, q, qaux(i, j, k, QC), dy, dt,
-          *lpmap);
+          AMREX_D_DECL(i, j, k), idir, qymarr, qyparr, slope, q,
+          qaux(i, j, k, QC), dy, dt, *lpmap);
 
         // Z slopes and interp
         idir = 2;
         for (int n = 0; n < QVAR; ++n) {
-          slope[n] = plm_slope(i, j, k, n, 2, q);
+          slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, 2, q);
         }
         pc_plm_d(
-          i, j, k, idir, qzmarr, qzparr, slope, q, qaux(i, j, k, QC), dz, dt,
-          *lpmap);
+          AMREX_D_DECL(i, j, k), idir, qzmarr, qzparr, slope, q,
+          qaux(i, j, k, QC), dz, dt, *lpmap);
       });
   } else if (ppm_type == 1) {
     // Compute the normal interface states by reconstructing
@@ -223,12 +223,12 @@ pc_umeth_3D(
   amrex::ParallelFor(txbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // X|Y
     pc_transdo(
-      i, j, k, cdir, 1, qmxy, qpxy, qxmarr, qxparr, fyarr, qaux, gdtempy, cdtdy,
-      *lpmap);
+      AMREX_D_DECL(i, j, k), cdir, 1, qmxy, qpxy, qxmarr, qxparr, fyarr, qaux,
+      gdtempy, cdtdy, *lpmap);
     // X|Z
     pc_transdo(
-      i, j, k, cdir, 2, qmxz, qpxz, qxmarr, qxparr, fzarr, qaux, gdtempz, cdtdz,
-      *lpmap);
+      AMREX_D_DECL(i, j, k), cdir, 2, qmxz, qpxz, qxmarr, qxparr, fzarr, qaux,
+      gdtempz, cdtdz, *lpmap);
   });
 
   const amrex::Box& txfxbx = surroundingNodes(bxg1, cdir);
@@ -284,12 +284,12 @@ pc_umeth_3D(
   amrex::ParallelFor(tybx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // Y|X
     pc_transdo(
-      i, j, k, cdir, 0, qmyx, qpyx, qymarr, qyparr, fxarr, qaux, gdtempx, cdtdx,
-      *lpmap);
+      AMREX_D_DECL(i, j, k), cdir, 0, qmyx, qpyx, qymarr, qyparr, fxarr, qaux,
+      gdtempx, cdtdx, *lpmap);
     // Y|Z
     pc_transdo(
-      i, j, k, cdir, 2, qmyz, qpyz, qymarr, qyparr, fzarr, qaux, gdtempz, cdtdz,
-      *lpmap);
+      AMREX_D_DECL(i, j, k), cdir, 2, qmyz, qpyz, qymarr, qyparr, fzarr, qaux,
+      gdtempz, cdtdz, *lpmap);
   });
 
   fzeli.clear();
@@ -349,12 +349,12 @@ pc_umeth_3D(
   amrex::ParallelFor(tzbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // Z|X
     pc_transdo(
-      i, j, k, cdir, 0, qmzx, qpzx, qzmarr, qzparr, fxarr, qaux, gdtempx, cdtdx,
-      *lpmap);
+      AMREX_D_DECL(i, j, k), cdir, 0, qmzx, qpzx, qzmarr, qzparr, fxarr, qaux,
+      gdtempx, cdtdx, *lpmap);
     // Z|Y
     pc_transdo(
-      i, j, k, cdir, 1, qmzy, qpzy, qzmarr, qzparr, fyarr, qaux, gdtempy, cdtdy,
-      *lpmap);
+      AMREX_D_DECL(i, j, k), cdir, 1, qmzy, qpzy, qzmarr, qzparr, fyarr, qaux,
+      gdtempy, cdtdy, *lpmap);
   });
 
   fxeli.clear();
@@ -409,8 +409,8 @@ pc_umeth_3D(
   const amrex::Box& tyzbx = grow(bx, cdir, 1);
   amrex::ParallelFor(tyzbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_transdd(
-      i, j, k, cdir, qm, qp, qxmarr, qxparr, flyz, flzy, qyz, qzy, qaux, srcQ,
-      hdt, hdtdy, hdtdz, *lpmap);
+      AMREX_D_DECL(i, j, k), cdir, qm, qp, qxmarr, qxparr, flyz, flzy, qyz, qzy,
+      qaux, srcQ, hdt, hdtdy, hdtdz, *lpmap);
   });
 
   fluxzyeli.clear();
@@ -431,8 +431,8 @@ pc_umeth_3D(
   const amrex::Box& txzbx = grow(bx, cdir, 1);
   amrex::ParallelFor(txzbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_transdd(
-      i, j, k, cdir, qm, qp, qymarr, qyparr, flxz, flzx, qxz, qzx, qaux, srcQ,
-      hdt, hdtdx, hdtdz, *lpmap);
+      AMREX_D_DECL(i, j, k), cdir, qm, qp, qymarr, qyparr, flxz, flzx, qxz, qzx,
+      qaux, srcQ, hdt, hdtdx, hdtdz, *lpmap);
   });
 
   fluxzxeli.clear();
@@ -453,8 +453,8 @@ pc_umeth_3D(
   const amrex::Box& txybx = grow(bx, cdir, 1);
   amrex::ParallelFor(txybx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_transdd(
-      i, j, k, cdir, qm, qp, qzmarr, qzparr, flxy, flyx, qxy, qyx, qaux, srcQ,
-      hdt, hdtdx, hdtdy, *lpmap);
+      AMREX_D_DECL(i, j, k), cdir, qm, qp, qzmarr, qzparr, flxy, flyx, qxy, qyx,
+      qaux, srcQ, hdt, hdtdx, hdtdy, *lpmap);
   });
 
   gdvyxeli.clear();
@@ -555,17 +555,17 @@ pc_umeth_2D(
         amrex::Real slope[QVAR];
         // X slopes and interp
         for (int n = 0; n < QVAR; ++n)
-          slope[n] = plm_slope(i, j, k, n, 0, q);
+          slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, 0, q);
         pc_plm_d(
-          i, j, k, 0, qxmarr, qxparr, slope, q, qaux(i, j, k, QC), dx, dt,
-          *lpmap);
+          AMREX_D_DECL(i, j, k), 0, qxmarr, qxparr, slope, q, qaux(i, j, k, QC),
+          dx, dt, *lpmap);
 
         // Y slopes and interp
         for (int n = 0; n < QVAR; n++)
-          slope[n] = plm_slope(i, j, k, n, 1, q);
+          slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, 1, q);
         pc_plm_d(
-          i, j, k, 1, qymarr, qyparr, slope, q, qaux(i, j, k, QC), dy, dt,
-          *lpmap);
+          AMREX_D_DECL(i, j, k), 1, qymarr, qyparr, slope, q, qaux(i, j, k, QC),
+          dy, dt, *lpmap);
       });
   } else if (ppm_type == 1) {
     // Compute the normal interface states by reconstructing
@@ -624,11 +624,13 @@ pc_umeth_2D(
   auto const& qmarr = qm.array();
   auto const& qparr = qp.array();
 
-  amrex::ParallelFor(tybx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_transd(
-      i, j, k, cdir, qmarr, qparr, qxmarr, qxparr, fyarr, srcQ, qaux, q2, hdt,
-      hdtdy, *lpmap);
-  });
+  amrex::ParallelFor(
+    tybx, [=] AMREX_GPU_DEVICE(
+            int i, int j, AMREX_D_PICK(int /*k*/, int /*k*/, int k)) noexcept {
+      pc_transd(
+        AMREX_D_DECL(i, j, k), cdir, qmarr, qparr, qxmarr, qxparr, fyarr, srcQ,
+        qaux, q2, hdt, hdtdy, *lpmap);
+    });
 
   fyeli.clear();
   qxmeli.clear();
@@ -646,11 +648,13 @@ pc_umeth_2D(
   cdir = 1;
   const amrex::Box& txbx = grow(bx, cdir, 1);
 
-  amrex::ParallelFor(txbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_transd(
-      i, j, k, cdir, qmarr, qparr, qymarr, qyparr, fxarr, srcQ, qaux, gdtemp,
-      hdt, hdtdx, *lpmap);
-  });
+  amrex::ParallelFor(
+    txbx, [=] AMREX_GPU_DEVICE(
+            int i, int j, AMREX_D_PICK(int /*k*/, int /*k*/, int k)) noexcept {
+      pc_transd(
+        AMREX_D_DECL(i, j, k), cdir, qmarr, qparr, qymarr, qyparr, fxarr, srcQ,
+        qaux, gdtemp, hdt, hdtdx, *lpmap);
+    });
   fxeli.clear();
   qymeli.clear();
   qypeli.clear();
