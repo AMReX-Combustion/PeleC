@@ -93,6 +93,14 @@ bcnormal(
 {
   if (sgn == 1 && idir == 2) {
 
+    // Save off the inflow velocity if specified
+    amrex::Real velx = 0.0, vely = 0.0, velz = 0.0;
+    if (prob_parm.turbulence) {
+      velx = s_ext[UMX];
+      vely = s_ext[UMY];
+      velz = s_ext[UMZ] + prob_parm.v_in;
+    }
+
     // default wall condition
     s_ext[URHO] = s_int[URHO];
     s_ext[UMX] = -s_int[UMX];
@@ -109,7 +117,6 @@ bcnormal(
       (x[1] - prob_parm.center_xy[1]) * (x[1] - prob_parm.center_xy[1]));
 
     if (radius < 1.2 * 0.5 * prob_parm.D) {
-      amrex::Real velx = 0.0, vely = 0.0, velz = 0.0;
       amrex::Real massfrac[NUM_SPECIES] = {0.0};
       auto eos = pele::physics::PhysicsType::eos();
 
@@ -120,11 +127,6 @@ bcnormal(
         massfrac_int[n] = s_int[UFS + n] / s_int[URHO];
       eos.RTY2P(s_int[URHO], s_int[UTEMP], massfrac_int, p_int);
 
-      if (prob_parm.turbulence) {
-        velx = s_ext[UMX];
-        vely = s_ext[UMY];
-        velz = s_ext[UMZ] + prob_parm.v_in;
-      }
 
       amrex::Real eta = 0.5 * (1.0 - std::tanh(
                                        2.0 * (radius - prob_parm.D * 0.5) /
