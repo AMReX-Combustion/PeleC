@@ -100,6 +100,9 @@ bcnormal(
       vely = s_ext[UMY];
       velz = s_ext[UMZ] + prob_parm.v_in;
     }
+    else{
+      velz += prob_parm.v_in;
+    }
 
     // default wall condition
     s_ext[URHO] = s_int[URHO];
