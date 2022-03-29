@@ -60,7 +60,6 @@ There are several basic geometries that are available in AMReX that can be easil
 
 .. code::
 
-    eb2.use_eb2 = 1
     eb2.geom_type = box
     eb2.box_lo =  -2.0  -2.0 -2.0
     eb2.box_hi =   2.0   2.0  2.0 
@@ -71,7 +70,6 @@ To specify an external flow sphere geometry, add the following lines to the inpu
 
 .. code::
 
-    eb2.use_eb2 = 1
     eb2.geom_type = sphere
     eb2.sphere_radius = 0.5
     eb2.sphere_center = 2.0 2.0  2.0
