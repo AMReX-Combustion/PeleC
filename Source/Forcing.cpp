@@ -6,7 +6,7 @@
 #include "IndexDefines.H"
 
 void
-PeleC::construct_old_forcing_source(amrex::Real /*time*/, amrex::Real /*dt*/)
+  PeleC::construct_old_forcing_source(amrex::Real /*time*/, amrex::Real /*dt*/)
 {
   const amrex::MultiFab& S_old = get_old_data(State_Type);
 
@@ -24,7 +24,7 @@ PeleC::construct_old_forcing_source(amrex::Real /*time*/, amrex::Real /*dt*/)
 }
 
 void
-PeleC::construct_new_forcing_source(amrex::Real /*time*/, amrex::Real /*dt*/)
+  PeleC::construct_new_forcing_source(amrex::Real /*time*/, amrex::Real /*dt*/)
 {
   const amrex::MultiFab& S_old = get_old_data(State_Type);
   const amrex::MultiFab& S_new = get_new_data(State_Type);
