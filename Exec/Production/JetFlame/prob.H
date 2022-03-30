@@ -99,8 +99,7 @@ bcnormal(
       velx = s_ext[UMX];
       vely = s_ext[UMY];
       velz = s_ext[UMZ] + prob_parm.v_in;
-    }
-    else{
+    } else {
       velz += prob_parm.v_in;
     }
 
@@ -119,7 +118,7 @@ bcnormal(
       (x[0] - prob_parm.center_xy[0]) * (x[0] - prob_parm.center_xy[0]) +
       (x[1] - prob_parm.center_xy[1]) * (x[1] - prob_parm.center_xy[1]));
 
-    if (radius < 1.2 * 0.5 * prob_parm.D) {
+    if (radius < 1.1 * 0.5 * prob_parm.D) {
       amrex::Real massfrac[NUM_SPECIES] = {0.0};
       auto eos = pele::physics::PhysicsType::eos();
 
@@ -129,7 +128,6 @@ bcnormal(
       for (int n = 0; n < NUM_SPECIES; n++)
         massfrac_int[n] = s_int[UFS + n] / s_int[URHO];
       eos.RTY2P(s_int[URHO], s_int[UTEMP], massfrac_int, p_int);
-
 
       amrex::Real eta = 0.5 * (1.0 - std::tanh(
                                        2.0 * (radius - prob_parm.D * 0.5) /
