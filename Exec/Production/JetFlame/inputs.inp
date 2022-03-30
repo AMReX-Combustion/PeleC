@@ -81,12 +81,16 @@ prob.T_fu      = 470.
 prob.tau       = 0.01
 prob.turbulence     = true
 
-turbinflow.turb_file = Turb.test2
-turbinflow.turb_scale_loc = 1.0
-turbinflow.turb_scale_vel = 100.0
-turbinflow.turb_center = 0.0 0.0
-turbinflow.turb_conv_vel = 2800.
-turbinflow.turb_nplane = 1025
+turbinflows = bottom_jet
+turbinflow.bottom_jet.turb_file = Turb.test2
+turbinflow.bottom_jet.dir = 2
+turbinflow.bottom_jet.side = "low"
+turbinflow.bottom_jet.turb_scale_loc = 1.0
+turbinflow.bottom_jet.turb_scale_vel = 100.0
+turbinflow.bottom_jet.turb_center    = 0.0 0.0
+turbinflow.bottom_jet.turb_conv_vel  = 2800.0
+turbinflow.bottom_jet.turb_nplane    = 1025
+turbinflow.bottom_jet.time_offset    = 0.0
 
 # TAGGING for refinement purposes
 #pelec.flame_trac_name= OH
