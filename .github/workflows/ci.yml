@@ -165,7 +165,6 @@ jobs:
           submodules: true
       - name: Dependencies
         run: |
-          sudo apt-get -qqq update
           sudo wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub
           sudo apt-key add 7fa2af80.pub
           echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /" \
