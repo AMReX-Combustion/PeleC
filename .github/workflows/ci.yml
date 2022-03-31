@@ -23,6 +23,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
+        build_type: [Release, Debug]
         include:
           - os: macos-latest
             install_deps: brew install mpich automake ninja
@@ -32,6 +33,13 @@ jobs:
             install_deps: sudo apt-get update && sudo apt-get install mpich libmpich-dev ninja-build
             comp: gnu
             procs: $(nproc)
+          - build_type: Release
+            ctest_args: -LE no-ci
+          - build_type: Debug
+            ctest_args: -R eb-c12
+        exclude:
+          - os: macos-latest
+            build_type: Debug
     steps:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.6.0
@@ -78,9 +86,9 @@ jobs:
           (for DIM in 2 3; do \
             printf "\n-------- Configuring ${DIM}D --------\n"; \
             cmake -G Ninja \
-            -B${{runner.workspace}}/build-${DIM}d-${{matrix.os}} \
-            -DCMAKE_INSTALL_PREFIX:PATH=${{runner.workspace}}/install \
-            -DCMAKE_BUILD_TYPE:STRING=Release \
+            -B${{runner.workspace}}/build-${DIM}d-${{matrix.os}}-${{matrix.build_type}} \
+            -DCMAKE_INSTALL_PREFIX:PATH=${{runner.workspace}}/install-${DIM}d-${{matrix.os}}-${{matrix.build_type}} \
+            -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} \
             -DPELEC_DIM:STRING=${DIM} \
             -DPELEC_ENABLE_MPI:BOOL=ON \
             -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
@@ -93,7 +101,7 @@ jobs:
         run: |
           (for DIM in 2 3; do \
             printf "\n-------- Building ${DIM}D --------\n"; \
-            cmake --build ${{runner.workspace}}/build-${DIM}d-${{matrix.os}} \
+            cmake --build ${{runner.workspace}}/build-${DIM}d-${{matrix.os}}-${{matrix.build_type}} \
               --parallel ${{env.NPROCS}} 2>&1 | tee -a ${{runner.workspace}}/build-output.txt; \
             if [ ${PIPESTATUS[0]} -ne 0 ]; then exit 1; fi \
           done)
@@ -109,8 +117,8 @@ jobs:
         run: |
           (for DIM in 2 3; do \
             printf "\n-------- Testing ${DIM}D --------\n"; \
-            cd ${{runner.workspace}}/build-${DIM}d-${{matrix.os}}; \
-            ctest -j ${{env.NPROCS}} -LE no-ci --output-on-failure; \
+            cd ${{runner.workspace}}/build-${DIM}d-${{matrix.os}}-${{matrix.build_type}}; \
+            ctest -j ${{env.NPROCS}} ${{matrix.ctest_args}} --output-on-failure; \
             if [ $? -ne 0 ]; then exit 1; fi \
           done)
   CPU-GNUmake:
