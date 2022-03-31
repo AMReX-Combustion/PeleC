@@ -80,6 +80,14 @@ public:
   void build(const amrex::Geometry& geom, const int max_coarsening_level);
 };
 
+class TailoredBB : public Geometry::Register<TailoredBB>
+{
+public:
+  static std::string identifier() { return "tailored_bb"; }
+
+  void build(const amrex::Geometry& geom, const int max_coarsening_level);
+};
+
 } // namespace pelec
 } // namespace pele
 #endif
