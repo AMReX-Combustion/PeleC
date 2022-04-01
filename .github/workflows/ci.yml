@@ -108,8 +108,9 @@ jobs:
       - name: Report
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
-          egrep "warning:|error:" ${{runner.workspace}}/build-output.txt | egrep -v "Submodules" | sort | uniq | \
-            awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > ${{runner.workspace}}/build-output-warnings.txt
+          egrep "warning:|error:" ${{runner.workspace}}/build-output.txt \
+            | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest" | sort | uniq \
+            | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > ${{runner.workspace}}/build-output-warnings.txt
           cat ${{runner.workspace}}/build-output-warnings.txt
           export return=$(tail -n 1 ${{runner.workspace}}/build-output-warnings.txt | awk '{print $2}')
           exit ${return}
@@ -141,18 +142,34 @@ jobs:
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
           make COMP=gnu USE_MPI=FALSE DEBUG=TRUE TPL
-          make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE
+          make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
       - name: PMF debug test
         working-directory: ./Exec/RegTests/PMF
         run: ./PeleC3d.gnu.DEBUG.ex pmf-lidryer-arkode.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
+      - name: PMF debug report
+        working-directory: ./Exec/RegTests/PMF
+        run: |
+          egrep "warning:|error:" build-output.txt | sort | uniq | \
+            awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
+          cat warnings.txt
+          export return=$(tail -n 1 warnings.txt | awk '{print $2}')
+          exit ${return}
       - name: EB debug build
         working-directory: ./Exec/RegTests/EB-C10
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
-          make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE
+          make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
       - name: EB debug test
         working-directory: ./Exec/RegTests/EB-C10
         run: ./PeleC3d.gnu.DEBUG.ex eb-c10.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
+      - name: PMF debug report
+        working-directory: ./Exec/RegTests/EB-C19
+        run: |
+          egrep "warning:|error:" build-output.txt | sort | uniq | \
+            awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
+          cat warnings.txt
+          export return=$(tail -n 1 warnings.txt | awk '{print $2}')
+          exit ${return}
   GPU-Nvidia:
     name: GPU-CUDA v${{matrix.cuda_ver}}
     needs: Formatting
@@ -178,7 +195,7 @@ jobs:
           echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /" \
               | sudo tee /etc/apt/sources.list.d/cuda.list
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends ninja-build \
+          sudo apt-get install -y ninja-build \
               cuda-command-line-tools-${{matrix.cuda_pkg}} \
               cuda-compiler-${{matrix.cuda_pkg}} cuda-minimal-build-${{matrix.cuda_pkg}} \
               cuda-nvml-dev-${{matrix.cuda_pkg}} cuda-nvtx-${{matrix.cuda_pkg}} \
@@ -220,8 +237,7 @@ jobs:
           echo 'export PATH=/opt/rocm/llvm/bin:/opt/rocm/bin:/opt/rocm/profiler/bin:/opt/rocm/opencl/bin:$PATH' \
               | sudo tee -a /etc/profile.d/rocm.sh
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends ninja-build \
-              build-essential rocm-dev roctracer-dev rocprofiler-dev rocrand-dev rocprim-dev rocm-libs
+          sudo apt-get install -y ninja-build rocm-dev roctracer-dev rocprofiler-dev rocrand-dev rocprim-dev rocm-libs
       - name: Configure
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
@@ -267,8 +283,7 @@ jobs:
           echo "deb https://apt.repos.intel.com/oneapi all main" \
               | sudo tee /etc/apt/sources.list.d/oneAPI.list
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends ninja-build \
-            build-essential g++ gfortran intel-oneapi-dpcpp-cpp-compiler intel-oneapi-mkl-devel
+          sudo apt-get install -y ninja-build intel-oneapi-dpcpp-cpp-compiler intel-oneapi-mkl-devel
       - name: Configure
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
@@ -358,8 +373,9 @@ jobs:
         working-directory: ${{runner.workspace}}/build-clang-tidy
         run: |
           cmake --build . --parallel ${{env.NPROCS}} 2>&1 | tee -a clang-tidy-full-report.txt
-          cat clang-tidy-full-report.txt | grep "warning:" | grep -v "Submodules" | sort | uniq | \
-            awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > clang-tidy-warnings.txt
+          cat clang-tidy-full-report.txt | egrep "warning:|error:" \
+            | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest" | sort | uniq \
+            | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > clang-tidy-warnings.txt
       - name: Full report
         working-directory: ${{runner.workspace}}/build-clang-tidy
         run: cat clang-tidy-full-report.txt
