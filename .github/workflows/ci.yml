@@ -149,8 +149,9 @@ jobs:
       - name: PMF debug report
         working-directory: ./Exec/RegTests/PMF
         run: |
-          egrep "warning:|error:" build-output.txt | sort | uniq | \
-            awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
+          egrep "warning:|error:" build-output.txt \
+            | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest" | sort | uniq \
+            | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
           cat warnings.txt
           export return=$(tail -n 1 warnings.txt | awk '{print $2}')
           exit ${return}
@@ -165,8 +166,9 @@ jobs:
       - name: EB debug report
         working-directory: ./Exec/RegTests/EB-C19
         run: |
-          egrep "warning:|error:" build-output.txt | sort | uniq | \
-            awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
+          egrep "warning:|error:" build-output.txt \
+            | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest" | sort | uniq \
+            | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
           cat warnings.txt
           export return=$(tail -n 1 warnings.txt | awk '{print $2}')
           exit ${return}
