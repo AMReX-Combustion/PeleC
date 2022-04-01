@@ -73,7 +73,7 @@ prob.angle = 30.0
 tagging.denerr = 3
 tagging.denratio = 1.1
 tagging.max_denerr_lev = 3
-tagging.max_dengrad_lev = 3
+tagging.max_denratio_lev = 3
 
 tagging.presserr = 3
 tagging.pressgrad = 0.01
