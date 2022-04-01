@@ -175,7 +175,7 @@ jobs:
             if [ $? -ne 0 ]; then exit 1; fi \
           done)
   GPU-Nvidia:
-    name: GPU-CUDA v${{matrix.cuda_ver}}
+    name: GPU-CUDA v11.2
     needs: [Formatting, CPU-GNUmake]
     runs-on: ubuntu-latest
     strategy:
