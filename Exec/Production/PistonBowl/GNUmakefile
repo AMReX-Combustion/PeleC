@@ -31,5 +31,5 @@ USE_MASA = FALSE
 # GNU Make
 Bpack := ./Make.package
 Blocs := .
-PELEC_HOME := ../../../../PeleC
+PELEC_HOME := ../../..
 include $(PELEC_HOME)/Exec/Make.PeleC
