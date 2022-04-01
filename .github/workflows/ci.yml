@@ -17,8 +17,58 @@ jobs:
         exclude: '.'
         extensions: 'H,h,cpp'
         clangFormatVersion: 11
-  CPU-CMake:
+  CPU-GNUmake:
     needs: Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.6.0
+        with:
+          access_token: ${{github.token}}
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Setup
+        run: |
+          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
+          printf "CC=gcc-10\nCXX=g++-10\nFC=gfortran-10\nF90=gfortran-10" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
+      - name: PMF debug make
+        working-directory: ./Exec/RegTests/PMF
+        run: |
+          echo "::add-matcher::.github/problem-matchers/gcc.json"
+          make COMP=gnu USE_MPI=FALSE DEBUG=TRUE TPL
+          make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
+      - name: PMF debug test
+        working-directory: ./Exec/RegTests/PMF
+        run: ./PeleC3d.gnu.DEBUG.ex pmf-lidryer-arkode.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
+      - name: PMF debug report
+        working-directory: ./Exec/RegTests/PMF
+        run: |
+          egrep "warning:|error:" build-output.txt \
+            | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|GNUmakefile" | sort | uniq \
+            | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
+          cat warnings.txt
+          export return=$(tail -n 1 warnings.txt | awk '{print $2}')
+          exit ${return}
+      - name: EB debug build
+        working-directory: ./Exec/RegTests/EB-C10
+        run: |
+          echo "::add-matcher::.github/problem-matchers/gcc.json"
+          make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
+      - name: EB debug test
+        working-directory: ./Exec/RegTests/EB-C10
+        run: ./PeleC3d.gnu.DEBUG.ex eb-c10.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
+      - name: EB debug report
+        working-directory: ./Exec/RegTests/EB-C19
+        run: |
+          egrep "warning:|error:" build-output.txt \
+            | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|GNUmakefile" | sort | uniq \
+            | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
+          cat warnings.txt
+          export return=$(tail -n 1 warnings.txt | awk '{print $2}')
+          exit ${return}
+  CPU-CMake:
+    needs: [Formatting, CPU-GNUmake]
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
@@ -122,59 +172,9 @@ jobs:
             ctest -j ${{env.NPROCS}} ${{matrix.ctest_args}} --output-on-failure; \
             if [ $? -ne 0 ]; then exit 1; fi \
           done)
-  CPU-GNUmake:
-    needs: Formatting
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.6.0
-        with:
-          access_token: ${{github.token}}
-      - uses: actions/checkout@v2
-        with:
-          submodules: true
-      - name: Setup
-        run: |
-          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
-          printf "CC=gcc-10\nCXX=g++-10\nFC=gfortran-10\nF90=gfortran-10" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
-      - name: PMF debug make
-        working-directory: ./Exec/RegTests/PMF
-        run: |
-          echo "::add-matcher::.github/problem-matchers/gcc.json"
-          make COMP=gnu USE_MPI=FALSE DEBUG=TRUE TPL
-          make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
-      - name: PMF debug test
-        working-directory: ./Exec/RegTests/PMF
-        run: ./PeleC3d.gnu.DEBUG.ex pmf-lidryer-arkode.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
-      - name: PMF debug report
-        working-directory: ./Exec/RegTests/PMF
-        run: |
-          egrep "warning:|error:" build-output.txt \
-            | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|GNUmakefile" | sort | uniq \
-            | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
-          cat warnings.txt
-          export return=$(tail -n 1 warnings.txt | awk '{print $2}')
-          exit ${return}
-      - name: EB debug build
-        working-directory: ./Exec/RegTests/EB-C10
-        run: |
-          echo "::add-matcher::.github/problem-matchers/gcc.json"
-          make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
-      - name: EB debug test
-        working-directory: ./Exec/RegTests/EB-C10
-        run: ./PeleC3d.gnu.DEBUG.ex eb-c10.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
-      - name: EB debug report
-        working-directory: ./Exec/RegTests/EB-C19
-        run: |
-          egrep "warning:|error:" build-output.txt \
-            | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|GNUmakefile" | sort | uniq \
-            | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
-          cat warnings.txt
-          export return=$(tail -n 1 warnings.txt | awk '{print $2}')
-          exit ${return}
   GPU-Nvidia:
     name: GPU-CUDA v${{matrix.cuda_ver}}
-    needs: Formatting
+    needs: [Formatting, CPU-GNUmake]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -220,7 +220,7 @@ jobs:
         run: cmake --build build-${{matrix.cuda_pkg}} --parallel ${{env.NPROCS}}
   GPU-AMD:
     name: GPU-HIP
-    needs: Formatting
+    needs: [Formatting, CPU-GNUmake]
     runs-on: ubuntu-latest
     steps:
       - name: Cancel previous runs
@@ -268,7 +268,7 @@ jobs:
           cmake --build . --parallel ${{env.NPROCS}}
   GPU-Intel:
     name: GPU-DPCPP
-    needs: Formatting
+    needs: [Formatting, CPU-GNUmake]
     runs-on: ubuntu-latest
     steps:
       - name: Cancel previous runs
