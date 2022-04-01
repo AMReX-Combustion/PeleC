@@ -150,7 +150,7 @@ jobs:
         working-directory: ./Exec/RegTests/PMF
         run: |
           egrep "warning:|error:" build-output.txt \
-            | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest" | sort | uniq \
+            | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|GNUmakefile" | sort | uniq \
             | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
           cat warnings.txt
           export return=$(tail -n 1 warnings.txt | awk '{print $2}')
@@ -167,7 +167,7 @@ jobs:
         working-directory: ./Exec/RegTests/EB-C19
         run: |
           egrep "warning:|error:" build-output.txt \
-            | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest" | sort | uniq \
+            | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|GNUmakefile" | sort | uniq \
             | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
           cat warnings.txt
           export return=$(tail -n 1 warnings.txt | awk '{print $2}')
