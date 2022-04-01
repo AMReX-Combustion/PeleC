@@ -45,7 +45,8 @@ jobs:
         working-directory: ./Exec/RegTests/PMF
         run: |
           egrep "warning:|error:" build-output.txt \
-            | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|GNUmakefile" | sort | uniq \
+            | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|GNUmakefile" \
+            | egrep -v "Submodules/PelePhysics/Support/Fuego/Mechanism/Models" | sort | uniq \
             | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
           cat warnings.txt
           export return=$(tail -n 1 warnings.txt | awk '{print $2}')
@@ -379,7 +380,7 @@ jobs:
         run: |
           cmake --build . --parallel ${{env.NPROCS}} 2>&1 | tee -a clang-tidy-full-report.txt
           egrep "warning:|error:" clang-tidy-full-report.txt \
-            | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest" 
+            | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest" \
             | egrep -v "Submodules/PelePhysics/Support/Fuego/Mechanism/Models" | sort | uniq \
             | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > clang-tidy-warnings.txt
       - name: Full report
