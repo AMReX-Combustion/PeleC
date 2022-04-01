@@ -124,9 +124,9 @@ clean_massfrac(
           }
         }
 
+        amrex::Real rhoNew = 0.0;
         if (clean) {
           // Clip species rhoYs and get new rho
-          amrex::Real rhoNew = 0.0;
           for (int n = 0; n < NUM_SPECIES; n++) {
             rhoY(iv, n) = amrex::min(rhoOld, amrex::max(0.0, rhoY(iv, n)));
             rhoNew += rhoY(iv, n);
