@@ -110,6 +110,11 @@ jobs:
         run: |
           # Install MPI
           ${{matrix.install_deps}}
+          # Install Python packages
+          python -m pip install --upgrade pip
+          pip install nose numpy pandas
+      - name: MASA
+        run: |
           # Install MetaPhysicL
           cd ${{runner.workspace}}/deps
           git clone --recursive https://github.com/roystgnr/MetaPhysicL.git ${{runner.workspace}}/deps/MetaPhysicL
@@ -128,9 +133,6 @@ jobs:
             --prefix="${{runner.workspace}}/deps/install/MASA"
           make -j ${{env.NPROCS}}
           make install
-          # Install Python packages
-          python -m pip install --upgrade pip
-          pip install nose numpy pandas
       - name: Configure
         run: |
           (for DIM in 2 3; do \
