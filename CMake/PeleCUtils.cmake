@@ -40,15 +40,11 @@ macro(init_code_checks)
           # cppcheck ignores -isystem directories, so we change them to regular -I include directories (with no spaces either)
           COMMAND sed "s/isystem /I/g" compile_commands.json > cppcheck/cppcheck_compile_commands.json
           COMMAND ${CPPCHECK_EXE} --version
-          COMMAND ${CPPCHECK_EXE} --template=gcc --inline-suppr --suppress=unusedFunction --std=c++14 --language=c++ --enable=all --project=cppcheck/cppcheck_compile_commands.json -i ${CMAKE_SOURCE_DIR}/Submodules/AMReX/Src -i ${CMAKE_SOURCE_DIR}/Submodules/GoogleTest --output-file=cppcheck/cppcheck-full-report.txt -j ${NP}
-          # Currently we filter analysis from submodules after cppcheck has run
-          #COMMAND awk -v nlines=2 "/Submodules\/AMReX/ || /Submodules\/GoogleTest/ {for (i=0; i<nlines; i++) {getline}; next} 1" < cppcheck/cppcheck-full-report.txt > cppcheck/cppcheck-short-report.txt
-          COMMAND awk -v nlines=2 "/Submodules/ {for (i=0; i<nlines; i++) {getline}; next} 1" < cppcheck/cppcheck-full-report.txt > cppcheck/cppcheck-short-report.txt
-          COMMAND cat cppcheck/cppcheck-short-report.txt | egrep "information:|error:|performance:|portability:|style:|warning:" | sort | uniq > cppcheck-warnings.txt
-          COMMAND printf "Warnings: " >> cppcheck-warnings.txt
-          COMMAND cat cppcheck-warnings.txt | awk "END{print NR-1}" >> cppcheck-warnings.txt
+          COMMAND ${CPPCHECK_EXE} --template=gcc --inline-suppr --suppress=unusedFunction --std=c++14 --language=c++ --enable=all --project=cppcheck/cppcheck_compile_commands.json --output-file=cppcheck/cppcheck-full-report.txt -j ${NP}
+          COMMAND egrep "information:|error:|performance:|portability:|style:|warning:" cppcheck/cppcheck-full-report.txt | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest" | sort | uniq > cppcheck/cppcheck-report.txt
+          COMMAND wc -l cppcheck/cppcheck-report.txt
           COMMENT "Run cppcheck on project compile_commands.json"
-          BYPRODUCTS cppcheck-warnings.txt
+          BYPRODUCTS cppcheck/cppcheck-report.txt
           WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
           VERBATIM USES_TERMINAL
       )

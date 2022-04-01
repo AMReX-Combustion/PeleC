@@ -337,9 +337,10 @@ jobs:
         working-directory: ${{runner.workspace}}/build-cppcheck/cppcheck
         run: cat cppcheck-full-report.txt
       - name: Short report
-        working-directory: ${{runner.workspace}}/build-cppcheck
+        working-directory: ${{runner.workspace}}/build-cppcheck/cppcheck
         run: |
           echo "::add-matcher::.github/problem-matchers/cppcheck.json"
+          awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' < cppcheck-report.txt > cppcheck-warnings.txt
           cat cppcheck-warnings.txt
           export return=$(tail -n 1 cppcheck-warnings.txt | awk '{print $2}')
           exit ${return}
@@ -375,7 +376,7 @@ jobs:
         working-directory: ${{runner.workspace}}/build-clang-tidy
         run: |
           cmake --build . --parallel ${{env.NPROCS}} 2>&1 | tee -a clang-tidy-full-report.txt
-          cat clang-tidy-full-report.txt | egrep "warning:|error:" \
+          egrep "warning:|error:" clang-tidy-full-report.txt \
             | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest" | sort | uniq \
             | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > clang-tidy-warnings.txt
       - name: Full report
