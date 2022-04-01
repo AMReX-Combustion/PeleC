@@ -162,7 +162,7 @@ jobs:
       - name: EB debug test
         working-directory: ./Exec/RegTests/EB-C10
         run: ./PeleC3d.gnu.DEBUG.ex eb-c10.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
-      - name: PMF debug report
+      - name: EB debug report
         working-directory: ./Exec/RegTests/EB-C19
         run: |
           egrep "warning:|error:" build-output.txt | sort | uniq | \
