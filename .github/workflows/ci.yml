@@ -60,7 +60,7 @@ jobs:
         working-directory: ./Exec/RegTests/EB-C10
         run: ./PeleC3d.gnu.DEBUG.ex eb-c10.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
       - name: EB debug report
-        working-directory: ./Exec/RegTests/EB-C19
+        working-directory: ./Exec/RegTests/EB-C10
         run: |
           egrep "warning:|error:" build-output.txt \
             | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|GNUmakefile" \
