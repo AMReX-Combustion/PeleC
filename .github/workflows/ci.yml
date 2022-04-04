@@ -219,7 +219,8 @@ jobs:
             -DPELEC_ENABLE_MPI=OFF \
             -DPELEC_ENABLE_CUDA=ON \
             -DAMReX_CUDA_ERROR_CAPTURE_THIS:BOOL=ON \
-            -DAMReX_CUDA_ARCH=70 \
+            -DCMAKE_CUDA_COMPILE_SEPARABLE_COMPILATION:BOOL=ON \
+            -DCMAKE_CUDA_ARCHITECTURES=70 \
             ${{github.workspace}}
       - name: Build
         run: cmake --build build-${{matrix.cuda_pkg}} --parallel ${{env.NPROCS}}
