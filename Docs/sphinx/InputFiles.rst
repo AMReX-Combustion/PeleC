@@ -130,8 +130,10 @@ These parameters, once read, are available in the `PeleC` object for use from c+
     #------------------------
     tagging.denerr = 3             # density value
     tagging.dengrad = 0.01         # gradient of density value
+    tagging.denratio = 1.1         # ratio of adjacent cells density
     tagging.max_denerr_lev = 3     # maximum level at which to use density for tagging
     tagging.max_dengrad_lev = 3    # maximum level at which to use density gradient for tagging
+    tagging.max_denratio_lev = 3   # maximum level at which to use density ratio for tagging
 
     #------------------------
     # CHECKPOINT FILES
@@ -209,6 +211,13 @@ Tagging criteria are used to inform the refinement of flow features. They are ad
    \max(&|f_{i+1,j,k} - f_{i,j,k}|, |f_{i,j,k} - f_{i-1,j,k}|,\\
    &|f_{i,j+1,k} - f_{i,j,k}|, |f_{i,j,k} - f_{i,j-1,k}|,\\
    &|f_{i,j,k+1} - f_{i,j,k}|, |f_{i,j,k} - f_{i,j,k-1}|) \geq v
+
+- `*ratio`: tag cell for refinement when the maximum ratio of the field (currently only supported for density) exceeds this threshold value, i.e.
+
+.. math::
+   \max(&|f_{i+1,j,k} / f_{i,j,k}|, |f_{i,j,k} / f_{i-1,j,k}|,|f_{i,j,k} / f_{i+1,j,k}|, |f_{i-1,j,k} / f_{i,j,k}|,\\
+   &|f_{i,j+1,k} / f_{i,j,k}|, |f_{i,j,k} / f_{i,j-1,k}|,|f_{i,j,k} / f_{i,j+1,k}|, |f_{i,j-1,k} / f_{i,j,k}|,\\
+   &|f_{i,j,k+1} / f_{i,j,k}|, |f_{i,j,k} / f_{i,j,k-1}|,|f_{i,j,k} / f_{i,j,k+1}|, |f_{i,j,k-1} / f_{i,j,k}|) \geq v
 
 - `max_*_level`: maximum level for use of this tag (beyond this level, this tag will not be used for refinement).
 

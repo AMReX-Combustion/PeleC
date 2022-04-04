@@ -1414,6 +1414,13 @@ PeleC::errorEst(
             tag_graderror(i, j, k, tag_arr, Sfab, captured_dengrad, tagval);
           });
       }
+      if (level < tagging_parm->max_denratio_lev) {
+        const amrex::Real captured_denratio = tagging_parm->denratio;
+        amrex::ParallelFor(
+          tilebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+            tag_ratioerror(i, j, k, tag_arr, Sfab, captured_denratio, tagval);
+          });
+      }
 
       // Tagging pressure
       S_derData.setVal<amrex::RunOn::Device>(0.0, datbox);
