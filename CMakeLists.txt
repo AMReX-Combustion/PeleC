@@ -44,6 +44,7 @@ endif()
 
 if(PELEC_ENABLE_CUDA)
   enable_language(CUDA)
+  set(CMAKE_CUDA_SEPARABLE_COMPILATION ON CACHE INTERNAL "")
   if(CMAKE_CUDA_COMPILER_VERSION VERSION_LESS "10.0")
     message(FATAL_ERROR "Your nvcc version is ${CMAKE_CUDA_COMPILER_VERSION} which is unsupported."
       "Please use CUDA toolkit version 10.0 or newer.")
