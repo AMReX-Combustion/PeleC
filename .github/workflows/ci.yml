@@ -183,7 +183,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        cuda_pkg: [11-2]
+        cuda_ver: [11.2]
         include:
           - cuda_ver: "11.2"
             cuda_pkg: 11-2
@@ -219,7 +219,7 @@ jobs:
             -DPELEC_ENABLE_MPI=OFF \
             -DPELEC_ENABLE_CUDA=ON \
             -DAMReX_CUDA_ERROR_CAPTURE_THIS:BOOL=ON \
-            -DAMReX_CUDA_ARCH=Volta \
+            -DAMReX_CUDA_ARCH=70 \
             ${{github.workspace}}
       - name: Build
         run: cmake --build build-${{matrix.cuda_pkg}} --parallel ${{env.NPROCS}}
