@@ -17,8 +17,7 @@ pc_srctoprim(
   amrex::Array4<const amrex::Real> const& q,
   amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& src,
-  amrex::Array4<amrex::Real> const& srcq,
-  PassMap const& pmap)
+  amrex::Array4<amrex::Real> const& srcq)
 {
   // Local loading Vars ==> Load once from global memory use multiple times
   const amrex::Real srcrho = src(i, j, k, URHO);
@@ -41,10 +40,17 @@ pc_srctoprim(
       (srcq(i, j, k, QREINT) - q(i, j, k, QREINT) * srcrho * rhoinv) * rhoinv +
     qa(i, j, k, QDPDR) * srcrho;
 
-  for (int ip = 0; ip < NPASSIVE; ++ip) {
-    const int n = pmap.upassMap[ip];
-    const int nq = pmap.qpassMap[ip];
-    srcq(i, j, k, nq) = (src(i, j, k, n) - q(i, j, k, nq) * srcrho) * rhoinv;
+  for (int n = 0; n < NUM_ADV; n++) {
+    srcq(i, j, k, UFA + n) =
+      (src(i, j, k, UFA + n) - q(i, j, k, QFA + n) * srcrho) * rhoinv;
+  }
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    srcq(i, j, k, UFS + n) =
+      (src(i, j, k, UFS + n) - q(i, j, k, QFS + n) * srcrho) * rhoinv;
+  }
+  for (int n = 0; n < NUM_AUX; n++) {
+    srcq(i, j, k, UFX + n) =
+      (src(i, j, k, UFX + n) - q(i, j, k, QFX + n) * srcrho) * rhoinv;
   }
 }
 

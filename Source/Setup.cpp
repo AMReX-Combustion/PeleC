@@ -18,8 +18,6 @@ ProbParmDevice* PeleC::d_prob_parm_device = nullptr;
 ProbParmDevice* PeleC::h_prob_parm_device = nullptr;
 ProbParmHost* PeleC::prob_parm_host = nullptr;
 TaggingParm* PeleC::tagging_parm = nullptr;
-PassMap* PeleC::d_pass_map = nullptr;
-PassMap* PeleC::h_pass_map = nullptr;
 
 // Components are:
 // Interior, Inflow, Outflow,  Symmetry,     SlipWall,     NoSlipWall, UserBC
@@ -139,22 +137,14 @@ PeleC::variableSetUp()
   prob_parm_host = new ProbParmHost{};
   h_prob_parm_device = new ProbParmDevice{};
   tagging_parm = new TaggingParm{};
-  h_pass_map = new PassMap{};
   d_prob_parm_device = static_cast<ProbParmDevice*>(
     amrex::The_Arena()->alloc(sizeof(ProbParmDevice)));
-  d_pass_map =
-    static_cast<PassMap*>(amrex::The_Arena()->alloc(sizeof(PassMap)));
   trans_parms.allocate();
   turb_inflow.init(amrex::DefaultGeometry());
 
   // Get options, set phys_bc
   eb_in_domain = ebInDomain();
   read_params();
-
-  init_pass_map(h_pass_map);
-
-  amrex::Gpu::copy(
-    amrex::Gpu::hostToDevice, h_pass_map, h_pass_map + 1, d_pass_map);
 
 #ifdef PELEC_USE_MASA
   if (do_mms) {
@@ -665,9 +655,7 @@ PeleC::variableCleanUp()
   delete prob_parm_host;
   delete tagging_parm;
   delete h_prob_parm_device;
-  delete h_pass_map;
   amrex::The_Arena()->free(d_prob_parm_device);
-  amrex::The_Arena()->free(d_pass_map);
   trans_parms.deallocate();
 }
 

@@ -568,8 +568,6 @@ public:
   static ProbParmDevice* d_prob_parm_device;
   static ProbParmHost* prob_parm_host;
   static TaggingParm* tagging_parm;
-  static PassMap* h_pass_map;
-  static PassMap* d_pass_map;
   static pele::physics::transport::TransportParams<
     pele::physics::PhysicsType::transport_type>
     trans_parms;

@@ -72,8 +72,6 @@
 #define NQAUX 6
 #define NGDNV 6
 
-#define NPASSIVE (NUM_SPECIES + NUM_ADV + NUM_AUX + 3 - AMREX_SPACEDIM)
-
 #if AMREX_SPACEDIM == 1
 // hopefully we wont do EB in 1D
 #define NLSPTS 1
@@ -90,13 +88,5 @@
 #define NEL_TRIMAT 6
 
 #endif
-
-struct PassMap
-{
-  amrex::GpuArray<int, NPASSIVE> upassMap = {{0}};
-  amrex::GpuArray<int, NPASSIVE> qpassMap = {{0}};
-};
-
-void init_pass_map(PassMap* pmap);
 
 #endif
