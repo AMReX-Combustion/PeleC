@@ -306,8 +306,8 @@ PeleC::getMOLSrcTerm(
 
         int Nvals = sv_eb_bcval[local_i].numPts();
 
-        AMREX_ASSERT(Nvals == Ncut);
-        AMREX_ASSERT(nFlux == Ncut);
+        AMREX_ASSERT(static_cast<unsigned long>(Nvals) == Ncut);
+        AMREX_ASSERT(static_cast<unsigned long>(nFlux) == Ncut);
 
         if (eb_isothermal && (diffuse_temp || diffuse_enth)) {
           {
