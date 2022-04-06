@@ -147,8 +147,8 @@ flatten(
   const amrex::IntVect ivp2(iv + 2 * dvec);
   const amrex::IntVect ivp3(iv + 3 * dvec);
 
-  if ((!q.contains(ivp3[0], ivp3[1], ivp3[2]) ||
-       !q.contains(ivm3[0], ivm3[1], ivm3[2]))) {
+  if ((!q.contains(ivp3[0], ivp3[1], AMREX_D_PICK(0, 0, ivp3[2])) ||
+       !q.contains(ivm3[0], ivm3[1], AMREX_D_PICK(0, 0, ivm3[2])))) {
     return 1.0;
   }
   const int n = QPRES;
