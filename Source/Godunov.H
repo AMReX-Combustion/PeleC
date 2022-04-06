@@ -12,13 +12,10 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 amrex::Real
 flatten(
-  const int i,
-  const int j,
-  const int k,
+  AMREX_D_DECL(const int i, const int j, const int k),
   const int dir,
   amrex::Array4<const amrex::Real> const& q)
 {
-
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
   const amrex::IntVect dvec(amrex::IntVect::TheDimensionVector(dir));
   const amrex::IntVect ivm3(iv - 3 * dvec);
@@ -223,9 +220,7 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 pc_transdo(
-  const int i,
-  const int j,
-  const int k,
+  AMREX_D_DECL(const int i, const int j, const int k),
   const int dir,
   const int other_dir,
   amrex::Array4<amrex::Real> const& qm,
@@ -356,9 +351,7 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 pc_transdd(
-  const int i,
-  const int j,
-  const int k,
+  AMREX_D_DECL(const int i, const int j, const int k),
   const int dir,
   amrex::Array4<amrex::Real> const& qm,
   amrex::Array4<amrex::Real> const& qp,
@@ -513,9 +506,7 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 pc_transd(
-  const int i,
-  const int j,
-  const int k,
+  AMREX_D_DECL(const int i, const int j, const int k),
   const int dir,
   amrex::Array4<amrex::Real> const& qm,
   amrex::Array4<amrex::Real> const& qp,
@@ -678,9 +669,7 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 pc_artif_visc(
-  const int i,
-  const int j,
-  const int k,
+  AMREX_D_DECL(const int i, const int j, const int k),
   amrex::Array4<amrex::Real> const& flx,
   amrex::Array4<const amrex::Real> const& divu,
   amrex::Array4<const amrex::Real> const& u,
@@ -699,10 +688,12 @@ pc_artif_visc(
      bdim[0] * 2 + bdim[1] * 2 + bdim[2] * 1}};
 
   const amrex::IntVect ivpj(iv + amrex::IntVect::TheDimensionVector(l_idx[1]));
+#if AMREX_SPACEDIM == 3
   const amrex::IntVect ivpk(iv + amrex::IntVect::TheDimensionVector(l_idx[2]));
   const amrex::IntVect ivpp(
     iv + amrex::IntVect::TheDimensionVector(l_idx[1]) +
     amrex::IntVect::TheDimensionVector(l_idx[2]));
+#endif
   const amrex::Real div =
     difmag *
     amrex::min<amrex::Real>(

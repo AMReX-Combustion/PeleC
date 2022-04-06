@@ -5,21 +5,10 @@
 #include <AMReX_AmrLevel.H>
 #include <AMReX_iMultiFab.H>
 #include <AMReX_ParmParse.H>
-
-#ifdef PELEC_USE_EB
 #include <AMReX_EBFArrayBox.H>
-#include "EBStencilTypes.H"
-#include "SparseData.H"
 #include <AMReX_EBFluxRegister.H>
 #include <AMReX_EBCellFlag.H>
 #include <AMReX_MultiCutFab.H>
-#else
-#include <AMReX_YAFluxRegister.H>
-#endif
-
-#ifdef AMREX_LAZY
-#include <AMReX_Lazy.H>
-#endif
 
 #ifdef AMREX_PARTICLES
 #include <AMReX_Particles.H>
@@ -32,6 +21,8 @@
 #include "PelePhysics.H"
 #include "ReactorBase.H"
 #include "turbinflow.H"
+#include "SparseData.H"
+#include "EBStencilTypes.H"
 
 #define UserBC 6
 
@@ -220,7 +211,6 @@ public:
   // other levels for the Amr class to do timed load balances.
   int WorkEstType() override { return Work_Estimate_Type; }
 
-#ifdef PELEC_USE_EB
   static bool DoMOLLoadBalance() { return do_mol_load_balance; }
 
   const amrex::MultiFab& volFrac() const { return vfrac; }
@@ -241,7 +231,6 @@ public:
 
   void
   extend_signed_distance(amrex::MultiFab* signDist, amrex::Real extendFactor);
-#endif
 
   void set_typical_values_chem();
 
@@ -587,19 +576,10 @@ public:
     return (geom_type != "all_regular");
   }
 
-#ifdef PELEC_USE_EB
-
   amrex::EBFluxRegister flux_reg;
-
   amrex::EBFluxRegister& getFluxReg();
   amrex::EBFluxRegister& getFluxReg(int lev);
 
-  amrex::EBFluxRegister pres_reg;
-
-  amrex::EBFluxRegister& getPresReg();
-  amrex::EBFluxRegister& getPresReg(int lev);
-
-  // static EB helper functions called from outside class
   static bool ebInitialized();
 
   void InitialRedistribution(
@@ -607,17 +587,6 @@ public:
     const amrex::Vector<amrex::BCRec> bcs,
     amrex::MultiFab& S_new);
 
-#else
-  amrex::YAFluxRegister flux_reg;
-
-  amrex::YAFluxRegister& getFluxReg();
-  amrex::YAFluxRegister& getFluxReg(int lev);
-
-  amrex::YAFluxRegister pres_reg;
-
-  amrex::YAFluxRegister& getPresReg();
-  amrex::YAFluxRegister& getPresReg(int lev);
-#endif
   void avgDown();
   void avgDown(int state_indx);
 
@@ -638,9 +607,8 @@ public:
 
 protected:
   amrex::iMultiFab level_mask;
-#ifdef PELEC_USE_EB
   std::array<const amrex::MultiCutFab*, AMREX_SPACEDIM> areafrac;
-#endif
+  std::array<const amrex::MultiCutFab*, AMREX_SPACEDIM> facecent;
 
   // Build a mask that ghost cells overlapping with interior cells in the same
   // multifab are set to 0, whereas others are set to 1.
@@ -681,12 +649,7 @@ protected:
 
   void reflux();
 
-  static void normalize_species(amrex::MultiFab& S_new);
-
-  static amrex::Real
-  enforce_min_density(amrex::MultiFab& S_old, const amrex::MultiFab& S_new);
-
-  amrex::Real clean_state(const amrex::MultiFab& S);
+  static amrex::Real clean_state(const amrex::MultiFab& S);
 
   static amrex::Real
   clean_state(const amrex::MultiFab& S, amrex::MultiFab& S_old);
@@ -784,8 +747,6 @@ protected:
   // problem-specific includes
 #include <Problem.H>
 
-#ifdef PELEC_USE_EB
-
   static amrex::GpuArray<amrex::Real, NVAR> body_state;
   static bool body_state_set;
   static bool eb_initialized;
@@ -802,7 +763,6 @@ protected:
   amrex::Vector<SparseData<amrex::Real, EBBndrySten>> sv_eb_bcval;
 
   amrex::MultiFab signed_dist_0;
-#endif
   static bool do_react_load_balance;
   static bool do_mol_load_balance;
 };
@@ -907,7 +867,6 @@ pc_check_initial_species(
   }
 }
 
-#ifdef PELEC_USE_EB
 AMREX_FORCE_INLINE
 amrex::EBFluxRegister&
 PeleC::getFluxReg()
@@ -921,50 +880,5 @@ PeleC::getFluxReg(int lev)
 {
   return getLevel(lev).getFluxReg();
 }
-
-AMREX_FORCE_INLINE
-amrex::EBFluxRegister&
-PeleC::getPresReg()
-{
-  return pres_reg;
-}
-
-AMREX_FORCE_INLINE
-amrex::EBFluxRegister&
-PeleC::getPresReg(int lev)
-{
-  return getLevel(lev).getPresReg();
-}
-
-#else
-
-AMREX_FORCE_INLINE
-amrex::YAFluxRegister&
-PeleC::getFluxReg()
-{
-  return flux_reg;
-}
-
-AMREX_FORCE_INLINE
-amrex::YAFluxRegister&
-PeleC::getFluxReg(int lev)
-{
-  return getLevel(lev).getFluxReg();
-}
-
-AMREX_FORCE_INLINE
-amrex::YAFluxRegister&
-PeleC::getPresReg()
-{
-  return pres_reg;
-}
-
-AMREX_FORCE_INLINE
-amrex::YAFluxRegister&
-PeleC::getPresReg(int lev)
-{
-  return getLevel(lev).getPresReg();
-}
-#endif
 
 #endif

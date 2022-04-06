@@ -24,8 +24,6 @@ FSANITIZER = FALSE
 THREAD_SANITIZER = FALSE
 
 # PeleC
-USE_FORCING = TRUE
-USE_EB = FALSE
 Eos_Model := GammaLaw
 Transport_Model := Constant
 Chemistry_Model := Null

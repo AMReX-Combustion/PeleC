@@ -213,7 +213,6 @@ PeleC::variableSetUp()
   NumSootVars = NUM_SOOT_MOMENTS + 1;
   FirstSootVar = cnt;
   cnt += NumSootVars;
-  Print() << "Total conservative variables: " << cnt << std::endl;
 #endif
 
   // const amrex::Real run_strt = amrex::ParallelDescriptor::second() ;
@@ -260,16 +259,14 @@ PeleC::variableSetUp()
     }
   }
 
-#ifdef PELEC_USE_EB
   // Decide from input whether eb interp is needed for FillPatch operations
-  if ((eb_in_domain) && (state_interp_order != 0)) {
+  if (eb_in_domain && (state_interp_order != 0)) {
     if (lin_limit_state_interp == 1) {
       interp = &amrex::eb_mf_lincc_interp;
     } else {
       interp = &amrex::eb_mf_cell_cons_interp;
     }
   }
-#endif
 
   // Note that the default is state_data_extrap = false,
   // store_in_checkpoint = true.  We only need to put these in
@@ -390,7 +387,7 @@ PeleC::variableSetUp()
 
 #ifdef SOOT_MODEL
   // Set the soot model names
-  if (ParallelDescriptor::IOProcessor()) {
+  if (amrex::ParallelDescriptor::IOProcessor()) {
     amrex::Print() << NumSootVars << " Soot Variables: " << std::endl;
     for (int i = 0; i < NumSootVars; ++i) {
       amrex::Print() << soot_model->sootVariableName(i) << ' ' << ' ';
@@ -563,12 +560,9 @@ PeleC::variableSetUp()
     amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("magmom", desc_lst, State_Type, Density, NVAR);
 
-#ifdef PELEC_USE_EB
-  // A dummy
   derive_lst.add(
     "vfrac", amrex::IndexType::TheCellType(), 1, pc_dermagvel,
     amrex::DeriveRec::TheSameBox);
-#endif
 
 #ifdef SOOT_MODEL
   if (add_soot_src == 1) {
@@ -704,9 +698,7 @@ PeleC::variableCleanUp()
 
   clear_prob();
 
-#ifdef PELEC_USE_EB
   eb_initialized = false;
-#endif
 
 #ifdef SOOT_MODEL
   delete soot_model;

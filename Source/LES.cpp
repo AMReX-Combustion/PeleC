@@ -198,18 +198,16 @@ PeleC::getSmagorinskyLESTerm(
     {AMREX_D_DECL(dx1, dx1, dx1)}};
   const amrex::Real* dxDp = &(dxD[0]);
 
-  amrex::MultiFab S(grids, dmap, NVAR, ngrow);
+  amrex::MultiFab S(grids, dmap, NVAR, ngrow, amrex::MFInfo(), Factory());
   FillPatch(*this, S, ngrow, time, State_Type, 0, NVAR); // FIXME: time+dt?
 
   // Fetch some gpu arrays
   prefetchToDevice(S);
   prefetchToDevice(LESTerm);
 
-#ifdef PELEC_USE_EB
   auto const& fact =
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(S.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
-#endif
 
 #ifdef _OPENMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
@@ -220,9 +218,6 @@ PeleC::getSmagorinskyLESTerm(
       const amrex::Box gbox = amrex::grow(vbox, ngrow);
       const amrex::Box cbox = amrex::grow(vbox, ngrow - 1);
 
-      // const amrex::Box& dbox = geom.Domain();
-
-#ifdef PELEC_USE_EB
       const auto& flag_fab = flags[mfi];
       amrex::FabType typ = flag_fab.getType(cbox);
       if (typ != amrex::FabType::regular) {
@@ -231,7 +226,6 @@ PeleC::getSmagorinskyLESTerm(
       if (typ == amrex::FabType::covered) {
         continue;
       }
-#endif
 
       auto const& s = S.array(mfi);
       int nqaux = NQAUX > 0 ? NQAUX : 1;
@@ -330,11 +324,6 @@ PeleC::getSmagorinskyLESTerm(
           });
       }
 
-#ifdef AMREX_USE_GPU
-      auto device = amrex::RunOn::Gpu;
-#else
-      auto device = amrex::RunOn::Cpu;
-#endif
       if (do_reflux && flux_factor != 0) // no eb in problem
       {
         for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
@@ -348,13 +337,13 @@ PeleC::getSmagorinskyLESTerm(
         if (level < parent->finestLevel()) {
           getFluxReg(level + 1).CrseAdd(
             mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}}, dxDp,
-            dt, device);
+            dt, amrex::RunOn::Device);
         }
 
         if (level > 0) {
           getFluxReg(level).FineAdd(
             mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}}, dxDp,
-            dt, device);
+            dt, amrex::RunOn::Device);
         }
       }
     } // End of MFIter scope
@@ -419,7 +408,9 @@ PeleC::getDynamicSmagorinskyLESTerm(
   const amrex::Real* dxDp = &(dxD[0]);
 
   // 1. Get state variable data
-  amrex::MultiFab S(grids, dmap, NVAR, nGrowD + nGrowC + nGrowT + 1);
+  amrex::MultiFab S(
+    grids, dmap, NVAR, nGrowD + nGrowC + nGrowT + 1, amrex::MFInfo(),
+    Factory());
   FillPatch(
     *this, S, nGrowD + nGrowC + nGrowT + 1, time, State_Type, 0,
     NVAR); // FIXME: time+dt?
@@ -430,11 +421,9 @@ PeleC::getDynamicSmagorinskyLESTerm(
   prefetchToDevice(LESTerm);
   prefetchToDevice(LES_Coeffs);
 
-#ifdef PELEC_USE_EB
   auto const& fact =
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(S.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
-#endif
 
 #ifdef _OPENMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
@@ -448,9 +437,7 @@ PeleC::getDynamicSmagorinskyLESTerm(
       const amrex::Box g3box = amrex::grow(vbox, nGrowC + 1);
       const amrex::Box g4box = amrex::grow(vbox, 1);
       const amrex::Box cbox = amrex::grow(vbox, 0);
-      // const amrex::Box& dbox = geom.Domain();
 
-#ifdef PELEC_USE_EB
       const auto& flag_fab = flags[mfi];
       amrex::FabType typ = flag_fab.getType(cbox);
       if (typ != amrex::FabType::regular) {
@@ -459,7 +446,6 @@ PeleC::getDynamicSmagorinskyLESTerm(
       if (typ == amrex::FabType::covered) {
         continue;
       }
-#endif
 
       auto const& s = S.array(mfi);
       int nqaux = NQAUX > 0 ? NQAUX : 1;
@@ -698,11 +684,6 @@ PeleC::getDynamicSmagorinskyLESTerm(
           });
       }
 
-#ifdef AMREX_USE_GPU
-      auto device = amrex::RunOn::Gpu;
-#else
-      auto device = amrex::RunOn::Cpu;
-#endif
       if (do_reflux && flux_factor != 0) // no eb in problem
       {
         for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
@@ -716,13 +697,13 @@ PeleC::getDynamicSmagorinskyLESTerm(
         if (level < parent->finestLevel()) {
           getFluxReg(level + 1).CrseAdd(
             mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}}, dxDp,
-            dt, device);
+            dt, amrex::RunOn::Device);
         }
 
         if (level > 0) {
           getFluxReg(level).FineAdd(
             mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}}, dxDp,
-            dt, device);
+            dt, amrex::RunOn::Device);
         }
       }
     }

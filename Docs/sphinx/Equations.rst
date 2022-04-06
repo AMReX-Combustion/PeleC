@@ -61,13 +61,13 @@ Some notes:
   all 3 components of the velocity. You should always initialize all velocity components to zero, and
   always construct the kinetic energy with all three velocity components.
 
-* There are ``NADV`` advected quantities, which range from :math:`{\tt
-  UFA: UFA+nadv-1}`.  The advected quantities have no effect at all on
+* There are ``NUM_ADV`` advected quantities, which range from :math:`{\tt
+  UFA: UFA+NUM_ADV-1}`.  The advected quantities have no effect at all on
   the rest of the solution but can be useful as tracer quantities.
 
-* There are ``NSPECIES`` species defined in the chemistry model, which range from :math:`{\tt UFS: UFS+nspecies-1}`.
+* There are ``NUM_SPECIES`` species defined in the chemistry model, which range from :math:`{\tt UFS: UFS+NUM_SPECIES-1}`.
 
-* There are ``NAUX`` auxiliary variables, from :math:`{\tt UFX:UFX+naux-1}`. The auxiliary variables are passed into the equation
+* There are ``NUM_AUX`` auxiliary variables, from :math:`{\tt UFX:UFX+NUM_AUX-1}`. The auxiliary variables are passed into the equation
   of state routines along with the species.
 
 

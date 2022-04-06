@@ -8,22 +8,15 @@ pc_compute_hyp_mol_flux(
   const amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
     area,
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>
-#ifdef PELEC_USE_EB
-    del
-#endif
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> del
   /*unused*/,
   const int plm_iorder,
-  const bool use_laxf_flux
-#ifdef PELEC_USE_EB
-  ,
+  const bool use_laxf_flux,
   const amrex::Array4<amrex::EBCellFlag const>& flags,
   const EBBndryGeom* ebg,
   const int /*Nebg*/,
   amrex::Real* ebflux,
-  const int nebflux
-#endif
-)
+  const int nebflux)
 {
   const int R_RHO = 0;
   const int R_UN = 1;
@@ -55,13 +48,7 @@ pc_compute_hyp_mol_flux(
     if (plm_iorder != 1) {
       amrex::ParallelFor(
         cbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-          mol_slope(
-            i, j, k, dir, q_idx, q, qaux, dq
-#ifdef PELEC_USE_EB
-            ,
-            flags
-#endif
-          );
+          mol_slope(i, j, k, dir, q_idx, q, qaux, dq, flags);
         });
     }
     const amrex::Box tbox = amrex::grow(cbox, dir, -1);
@@ -162,7 +149,6 @@ pc_compute_hyp_mol_flux(
       });
   }
 
-#ifdef PELEC_USE_EB
   // nextra was 3 for EB in PeleC but we are operating on a different
   // box here, so this should be zero.
   const int nextra = 0;
@@ -193,5 +179,4 @@ pc_compute_hyp_mol_flux(
       }
     }
   });
-#endif
 }

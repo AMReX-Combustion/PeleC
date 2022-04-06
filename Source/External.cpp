@@ -40,47 +40,26 @@ void
 PeleC::fill_ext_source(
   amrex::Real /*time*/,
   amrex::Real /*dt*/,
-  const amrex::MultiFab&
-#ifdef PELEC_USE_EB
-    state_old
-#endif
+  const amrex::MultiFab& state_old
   /*unused*/,
   const amrex::MultiFab& /*state_new*/,
   amrex::MultiFab& ext_src,
   int ng)
 {
-  // const amrex::Real* dx = geom.CellSize();
-  // const amrex::Real* prob_lo = geom.ProbLo();
-
-#ifdef PELEC_USE_EB
   auto const& fact =
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(state_old.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
-#endif
 
-#ifdef _OPENMP
-#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
-#endif
-  for (amrex::MFIter mfi(ext_src, amrex::TilingIfNotGPU()); mfi.isValid();
-       ++mfi) {
-    const amrex::Box& bx = mfi.growntilebox(ng);
-
-#ifdef PELEC_USE_EB
-    const auto& flag_fab = flags[mfi];
-    amrex::FabType typ = flag_fab.getType(bx);
-    if (typ == amrex::FabType::covered) {
-      continue;
-    }
-#endif
-
-    // auto const& So = state_old.array(mfi);
-    // auto const& Sn = state_new.array(mfi);
-    auto const& Farr = ext_src.array(mfi);
-
-    // Evaluate the external source
-    amrex::ParallelFor(
-      bx, NVAR, [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
-        Farr(i, j, k, n) = 0.0;
-      });
-  }
+  // auto const& Sos = state_old.const_arrays();
+  // auto const& Sns = state_new.const_arrays();
+  auto const& Farrs = ext_src.arrays();
+  auto const& flagarrs = flags.const_arrays();
+  const amrex::IntVect ngs(ng);
+  amrex::ParallelFor(
+    ext_src, ngs, NVAR,
+    [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k, int n) noexcept {
+      if (!flagarrs[nbx](i, j, k).isCovered()) {
+        Farrs[nbx](i, j, k, n) = 0.0;
+      }
+    });
 }

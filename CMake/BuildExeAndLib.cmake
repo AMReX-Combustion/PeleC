@@ -1,0 +1,7 @@
+get_filename_component(DIR_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+set(pelec_lib_name PelePhysics-Lib-${PELEC_EOS_MODEL}-${PELEC_CHEMISTRY_MODEL}-${PELEC_TRANSPORT_MODEL})
+set(pelec_exe_name PeleC-${DIR_NAME})
+include(BuildPeleCLib)
+include(BuildPeleCExe)
+build_pelec_lib(${pelec_lib_name})
+build_pelec_exe(${pelec_exe_name} ${pelec_lib_name})

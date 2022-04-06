@@ -45,89 +45,79 @@ PeleC::sum_integrated_quantities()
     const int nfoo = 10;
     amrex::Real foo[nfoo] = {mass,  mom[0], mom[1],    mom[2], rho_e,
                              rho_K, rho_E,  fuel_prod, temp};
-#ifdef AMREX_LAZY
-    Lazy::QueueReduction([=]() mutable {
-#endif
-      amrex::ParallelDescriptor::ReduceRealSum(
-        foo, nfoo, amrex::ParallelDescriptor::IOProcessorNumber());
+    amrex::ParallelDescriptor::ReduceRealSum(
+      foo, nfoo, amrex::ParallelDescriptor::IOProcessorNumber());
 
-      if (amrex::ParallelDescriptor::IOProcessor()) {
-        int i = 0;
-        mass = foo[i++];
-        mom[0] = foo[i++];
-        mom[1] = foo[i++];
-        mom[2] = foo[i++];
-        rho_e = foo[i++];
-        rho_K = foo[i++];
-        rho_E = foo[i++];
-        fuel_prod = foo[i++];
-        temp = foo[i++];
+    if (amrex::ParallelDescriptor::IOProcessor()) {
+      int i = 0;
+      mass = foo[i++];
+      mom[0] = foo[i++];
+      mom[1] = foo[i++];
+      mom[2] = foo[i++];
+      rho_e = foo[i++];
+      rho_K = foo[i++];
+      rho_E = foo[i++];
+      fuel_prod = foo[i++];
+      temp = foo[i++];
 
-        amrex::Print() << '\n';
-        amrex::Print() << "TIME = " << time << " MASS        = " << mass
-                       << '\n';
-        amrex::Print() << "TIME = " << time << " XMOM        = " << mom[0]
-                       << '\n';
-        amrex::Print() << "TIME = " << time << " YMOM        = " << mom[1]
-                       << '\n';
-        amrex::Print() << "TIME = " << time << " ZMOM        = " << mom[2]
-                       << '\n';
-        amrex::Print() << "TIME = " << time << " RHO*e       = " << rho_e
-                       << '\n';
-        amrex::Print() << "TIME = " << time << " RHO*K       = " << rho_K
-                       << '\n';
-        amrex::Print() << "TIME = " << time << " RHO*E       = " << rho_E
-                       << '\n';
-        amrex::Print() << "TIME = " << time << " FUEL PROD   = " << fuel_prod
-                       << '\n';
+      amrex::Print() << '\n';
+      amrex::Print() << "TIME = " << time << " MASS        = " << mass << '\n';
+      amrex::Print() << "TIME = " << time << " XMOM        = " << mom[0]
+                     << '\n';
+      amrex::Print() << "TIME = " << time << " YMOM        = " << mom[1]
+                     << '\n';
+      amrex::Print() << "TIME = " << time << " ZMOM        = " << mom[2]
+                     << '\n';
+      amrex::Print() << "TIME = " << time << " RHO*e       = " << rho_e << '\n';
+      amrex::Print() << "TIME = " << time << " RHO*K       = " << rho_K << '\n';
+      amrex::Print() << "TIME = " << time << " RHO*E       = " << rho_E << '\n';
+      amrex::Print() << "TIME = " << time << " FUEL PROD   = " << fuel_prod
+                     << '\n';
 
-        const int log_index = find_datalog_index("datalog");
-        if (log_index >= 0) {
-          std::ostream& data_log1 = parent->DataLog(log_index);
-          if (data_log1.good()) {
-            const int datwidth = 14;
-            if (time == 0.0) {
-              data_log1 << std::setw(datwidth) << "          time";
-              data_log1 << std::setw(datwidth) << "          mass";
-              data_log1 << std::setw(datwidth) << "          xmom";
-              data_log1 << std::setw(datwidth) << "          ymom";
-              data_log1 << std::setw(datwidth) << "          zmom";
-              data_log1 << std::setw(datwidth) << "         rho_K";
-              data_log1 << std::setw(datwidth) << "         rho_e";
-              data_log1 << std::setw(datwidth) << "         rho_E";
-              data_log1 << std::setw(datwidth) << "     fuel_prod";
-              data_log1 << std::setw(datwidth) << "          temp";
-              data_log1 << std::endl;
-            }
-
-            // Write the quantities at this time
-            const int datprecision = 6;
-            data_log1 << std::setw(datwidth) << time;
-            data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
-                      << mass;
-            data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
-                      << mom[0];
-            data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
-                      << mom[1];
-            data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
-                      << mom[2];
-            data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
-                      << rho_K;
-            data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
-                      << rho_e;
-            data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
-                      << rho_E;
-            data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
-                      << fuel_prod;
-            data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
-                      << temp;
+      const int log_index = find_datalog_index("datalog");
+      if (log_index >= 0) {
+        std::ostream& data_log1 = parent->DataLog(log_index);
+        if (data_log1.good()) {
+          const int datwidth = 14;
+          if (time == 0.0) {
+            data_log1 << std::setw(datwidth) << "          time";
+            data_log1 << std::setw(datwidth) << "          mass";
+            data_log1 << std::setw(datwidth) << "          xmom";
+            data_log1 << std::setw(datwidth) << "          ymom";
+            data_log1 << std::setw(datwidth) << "          zmom";
+            data_log1 << std::setw(datwidth) << "         rho_K";
+            data_log1 << std::setw(datwidth) << "         rho_e";
+            data_log1 << std::setw(datwidth) << "         rho_E";
+            data_log1 << std::setw(datwidth) << "     fuel_prod";
+            data_log1 << std::setw(datwidth) << "          temp";
             data_log1 << std::endl;
           }
+
+          // Write the quantities at this time
+          const int datprecision = 6;
+          data_log1 << std::setw(datwidth) << time;
+          data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
+                    << mass;
+          data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
+                    << mom[0];
+          data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
+                    << mom[1];
+          data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
+                    << mom[2];
+          data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
+                    << rho_K;
+          data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
+                    << rho_e;
+          data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
+                    << rho_E;
+          data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
+                    << fuel_prod;
+          data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
+                    << temp;
+          data_log1 << std::endl;
         }
       }
-#ifdef AMREX_LAZY
-    });
-#endif
+    }
   }
 }
 
@@ -222,64 +212,56 @@ PeleC::monitor_extrema()
   }
 
   if (verbose > 0) {
-#ifdef AMREX_LAZY
-    Lazy::QueueReduction([=]() mutable {
-#endif
-      amrex::ParallelDescriptor::ReduceRealMax(
-        maxima.data(), nextrema,
-        amrex::ParallelDescriptor::IOProcessorNumber());
+    amrex::ParallelDescriptor::ReduceRealMax(
+      maxima.data(), nextrema, amrex::ParallelDescriptor::IOProcessorNumber());
 
-      amrex::ParallelDescriptor::ReduceRealMin(
-        minima.data(), nextrema,
-        amrex::ParallelDescriptor::IOProcessorNumber());
+    amrex::ParallelDescriptor::ReduceRealMin(
+      minima.data(), nextrema, amrex::ParallelDescriptor::IOProcessorNumber());
 
-      if (amrex::ParallelDescriptor::IOProcessor()) {
+    if (amrex::ParallelDescriptor::IOProcessor()) {
 
-        amrex::Print() << std::endl;
-        for (int ii = 0; ii < nextrema; ++ii) {
-          const int datwidth = 15;
-          const int datwidth_txt = 10;
-          const int datprecision = 8;
-          amrex::Print() << "TIME = " << time << " " << std::left
-                         << std::setw(datwidth_txt) << extrema_vars[ii]
-                         << "  MIN = " << std::setw(datwidth)
-                         << std::setprecision(datprecision) << minima[ii]
-                         << "  MAX = " << std::setw(datwidth)
-                         << std::setprecision(datprecision) << maxima[ii]
-                         << std::endl;
-        }
+      amrex::Print() << std::endl;
+      for (int ii = 0; ii < nextrema; ++ii) {
+        const int datwidth = 15;
+        const int datwidth_txt = 10;
+        const int datprecision = 8;
+        amrex::Print() << "TIME = " << time << " " << std::left
+                       << std::setw(datwidth_txt) << extrema_vars[ii]
+                       << "  MIN = " << std::setw(datwidth)
+                       << std::setprecision(datprecision) << minima[ii]
+                       << "  MAX = " << std::setw(datwidth)
+                       << std::setprecision(datprecision) << maxima[ii]
+                       << std::endl;
+      }
 
-        const int log_index = find_datalog_index("extremalog");
-        if (log_index >= 0) {
-          std::ostream& data_log1 = parent->DataLog(log_index);
-          if (data_log1.good()) {
-            const int datwidth = 18;
-            if (time == 0.0) {
-              data_log1 << std::setw(datwidth) << "          time";
-              for (int ii = 0; ii < nextrema; ++ii) {
-                data_log1 << std::setw(datwidth - 4) << extrema_vars[ii]
-                          << "-min";
-                data_log1 << std::setw(datwidth - 4) << extrema_vars[ii]
-                          << "-max";
-              }
-              data_log1 << std::endl;
-            }
-
-            // Write the quantities at this time
-            const int datprecision = 10;
-            data_log1 << std::setw(datwidth) << time;
+      const int log_index = find_datalog_index("extremalog");
+      if (log_index >= 0) {
+        std::ostream& data_log1 = parent->DataLog(log_index);
+        if (data_log1.good()) {
+          const int datwidth = 18;
+          if (time == 0.0) {
+            data_log1 << std::setw(datwidth) << "          time";
             for (int ii = 0; ii < nextrema; ++ii) {
-              data_log1 << std::setw(datwidth)
-                        << std::setprecision(datprecision) << minima[ii];
-              data_log1 << std::setw(datwidth)
-                        << std::setprecision(datprecision) << maxima[ii];
+              data_log1 << std::setw(datwidth - 4) << extrema_vars[ii]
+                        << "-min";
+              data_log1 << std::setw(datwidth - 4) << extrema_vars[ii]
+                        << "-max";
             }
             data_log1 << std::endl;
           }
+
+          // Write the quantities at this time
+          const int datprecision = 10;
+          data_log1 << std::setw(datwidth) << time;
+          for (int ii = 0; ii < nextrema; ++ii) {
+            data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
+                      << minima[ii];
+            data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
+                      << maxima[ii];
+          }
+          data_log1 << std::endl;
         }
       }
-#ifdef AMREX_LAZY
-    });
-#endif
+    }
   }
 }

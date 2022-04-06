@@ -114,7 +114,8 @@ trace_ppm(
     // Calculate flattening in-place
     if (use_flattening) {
       for (int dir_flat = 0; dir_flat < AMREX_SPACEDIM; dir_flat++) {
-        flat = amrex::min<amrex::Real>(flat, flatten(i, j, k, dir_flat, q_arr));
+        flat = amrex::min<amrex::Real>(
+          flat, flatten(AMREX_D_DECL(i, j, k), dir_flat, q_arr));
       }
     }
 

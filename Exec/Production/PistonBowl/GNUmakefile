@@ -26,11 +26,10 @@ THREAD_SANITIZER = FALSE
 Eos_Model := Fuego
 Chemistry_Model := drm19
 Transport_Model := Simple
-USE_EB = TRUE
 USE_MASA = FALSE
 
 # GNU Make
 Bpack := ./Make.package
 Blocs := .
-PELEC_HOME := ../../../../PeleC
+PELEC_HOME := ../../..
 include $(PELEC_HOME)/Exec/Make.PeleC

@@ -1,5 +1,6 @@
 #include <memory>
 
+#include "hydro_redistribution.H"
 #include "EB.H"
 #include "prob.H"
 #include "Utilities.H"
@@ -20,6 +21,10 @@ PeleC::ebInitialized()
 void
 PeleC::init_eb()
 {
+  if (!eb_in_domain) {
+    return;
+  }
+
   // Build the geometry information; this is done for each new set of grids
   initialize_eb2_structs();
 
@@ -42,19 +47,13 @@ PeleC::initialize_eb2_structs()
     std::is_standard_layout<EBBndryGeom>::value,
     "EBBndryGeom is not standard layout");
 
-  const amrex::MultiCutFab* bndrycent;
-  std::array<const amrex::MultiCutFab*, AMREX_SPACEDIM> eb2areafrac;
-  std::array<const amrex::MultiCutFab*, AMREX_SPACEDIM> facecent;
-
   const auto& ebfactory =
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(Factory());
 
   // These are the data sources
-  vfrac.clear();
-  vfrac.define(grids, dmap, 1, numGrow(), amrex::MFInfo(), Factory());
   amrex::MultiFab::Copy(vfrac, ebfactory.getVolFrac(), 0, 0, 1, numGrow());
-  bndrycent = &(ebfactory.getBndryCent());
-  eb2areafrac = ebfactory.getAreaFrac();
+  const amrex::MultiCutFab* bndrycent = &(ebfactory.getBndryCent());
+  areafrac = ebfactory.getAreaFrac();
   facecent = ebfactory.getFaceCent();
 
   // First pass over fabs to fill sparse per cut-cell ebg structures
@@ -121,13 +120,12 @@ PeleC::initialize_eb2_structs()
       // Now fill the sv_eb_bndry_geom
       auto const& vfrac_arr = vfrac.array(mfi);
       auto const& bndrycent_arr = bndrycent->array(mfi);
-      AMREX_D_TERM(auto const& eb2areafrac_arr_0 = eb2areafrac[0]->array(mfi);
-                   , auto const& eb2areafrac_arr_1 = eb2areafrac[1]->array(mfi);
-                   ,
-                   auto const& eb2areafrac_arr_2 = eb2areafrac[2]->array(mfi);)
+      AMREX_D_TERM(auto const& areafrac_arr_0 = areafrac[0]->array(mfi);
+                   , auto const& areafrac_arr_1 = areafrac[1]->array(mfi);
+                   , auto const& areafrac_arr_2 = areafrac[2]->array(mfi);)
       pc_fill_sv_ebg(
         tbox, Ncut, vfrac_arr, bndrycent_arr,
-        AMREX_D_DECL(eb2areafrac_arr_0, eb2areafrac_arr_1, eb2areafrac_arr_2),
+        AMREX_D_DECL(areafrac_arr_0, areafrac_arr_1, areafrac_arr_2),
         sv_eb_bndry_geom[iLocal].data());
 
       sv_eb_bndry_grad_stencil[iLocal].resize(Ncut);
@@ -204,7 +202,7 @@ PeleC::initialize_eb2_structs()
 
       if (typ == amrex::FabType::regular || typ == amrex::FabType::covered) {
       } else if (typ == amrex::FabType::singlevalued) {
-        const auto afrac_arr = (*eb2areafrac[dir])[mfi].array();
+        const auto afrac_arr = (*areafrac[dir])[mfi].array();
         const auto facecent_arr = (*facecent[dir])[mfi].array();
 
         // This used to be an std::set for cut_faces (it ensured
@@ -372,19 +370,16 @@ PeleC::set_body_state(amrex::MultiFab& S)
   auto const& fact = dynamic_cast<amrex::EBFArrayBoxFactory const&>(Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
 
-#ifdef _OPENMP
-#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
-#endif
-  for (amrex::MFIter mfi(S, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
-    const amrex::Box& vbox = mfi.tilebox();
-    auto const& Sar = S.array(mfi);
-    auto const& flag_arr = flags.const_array(mfi);
-    auto const captured_body_state = body_state;
-    amrex::ParallelFor(
-      vbox, NVAR, [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
-        pc_set_body_state(i, j, k, n, flag_arr, captured_body_state, Sar);
-      });
-  }
+  auto const& sarrs = S.arrays();
+  auto const& flagarrs = flags.const_arrays();
+  auto const captured_body_state = body_state;
+  const amrex::IntVect ngs(0);
+  amrex::ParallelFor(
+    S, ngs, NVAR,
+    [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k, int n) noexcept {
+      pc_set_body_state(
+        i, j, k, n, flagarrs[nbx], captured_body_state, sarrs[nbx]);
+    });
 }
 
 void
@@ -400,30 +395,20 @@ PeleC::zero_in_body(amrex::MultiFab& S) const
   auto const& fact = dynamic_cast<amrex::EBFArrayBoxFactory const&>(Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
 
-#ifdef _OPENMP
-#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
-#endif
-  for (amrex::MFIter mfi(S, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
-    const amrex::Box& vbox = mfi.tilebox();
-    auto const& Sar = S.array(mfi);
-    auto const& flag_arr = flags.const_array(mfi);
-    amrex::ParallelFor(
-      vbox, NVAR, [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
-        pc_set_body_state(i, j, k, n, flag_arr, zeros, Sar);
-      });
-  }
+  auto const& sarrs = S.arrays();
+  auto const& flagarrs = flags.const_arrays();
+  const amrex::IntVect ngs(0);
+  amrex::ParallelFor(
+    S, ngs, NVAR,
+    [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k, int n) noexcept {
+      pc_set_body_state(i, j, k, n, flagarrs[nbx], zeros, sarrs[nbx]);
+    });
 }
 
 // Sets up implicit function using EB2 infrastructure
 void
 initialize_EB2(
-  const amrex::Geometry& geom,
-  const int
-#ifdef LinePistonCylinder
-    required_level
-#endif
-  /*unused*/,
-  const int max_level)
+  const amrex::Geometry& geom, const int /*unused*/, const int max_level)
 {
   BL_PROFILE("PeleC::initialize_EB2()");
 
@@ -481,25 +466,23 @@ PeleC::initialize_signed_distance()
       amrex::MFInfo(), ebfactory);
     amrex::FillSignedDistance(signDist, true);
 
-#ifdef _OPENMP
-#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
-#endif
-    for (amrex::MFIter mfi(signed_dist_0, amrex::TilingIfNotGPU());
-         mfi.isValid(); ++mfi) {
-      const amrex::Box& bx = mfi.growntilebox();
-      auto const& sd_cc = signed_dist_0.array(mfi);
-      auto const& sd_nd = signDist.const_array(mfi);
-      amrex::ParallelFor(
-        bx, [sd_cc, sd_nd] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-          const amrex::Real fac = AMREX_D_PICK(0.5, 0.25, 0.125);
-          sd_cc(i, j, k) = AMREX_D_TERM(
-            sd_nd(i, j, k) + sd_nd(i + 1, j, k),
-            +sd_nd(i, j + 1, k) + sd_nd(i + 1, j + 1, k),
-            +sd_nd(i, j, k + 1) + sd_nd(i + 1, j, k + 1) +
-              sd_nd(i, j + 1, k + 1) + sd_nd(i + 1, j + 1, k + 1));
-          sd_cc(i, j, k) *= fac;
-        });
-    }
+    const auto& sd_ccs = signed_dist_0.arrays();
+    const auto& sd_nds = signDist.const_arrays();
+    const amrex::IntVect ngs(signed_dist_0.nGrow());
+    amrex::ParallelFor(
+      signed_dist_0, ngs,
+      [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+        const auto& sd_cc = sd_ccs[nbx];
+        const auto& sd_nd = sd_nds[nbx];
+        const amrex::Real fac = AMREX_D_PICK(0.5, 0.25, 0.125);
+        sd_cc(i, j, k) = AMREX_D_TERM(
+          sd_nd(i, j, k) + sd_nd(i + 1, j, k),
+          +sd_nd(i, j + 1, k) + sd_nd(i + 1, j + 1, k),
+          +sd_nd(i, j, k + 1) + sd_nd(i + 1, j, k + 1) +
+            sd_nd(i, j + 1, k + 1) + sd_nd(i + 1, j + 1, k + 1));
+        sd_cc(i, j, k) *= fac;
+      });
+
     signed_dist_0.FillBoundary(parent->Geom(0).periodicity());
     extend_signed_distance(&signed_dist_0, extentFactor);
   }
@@ -585,20 +568,17 @@ PeleC::extend_signed_distance(
   int nGrowFac = flags.nGrow() + 1;
 
   // First set the region far away at the max value we need
-#ifdef _OPENMP
-#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
-#endif
-  for (amrex::MFIter mfi(*signDist, amrex::TilingIfNotGPU()); mfi.isValid();
-       ++mfi) {
-    const amrex::Box& bx = mfi.growntilebox();
-    auto const& sd_cc = signDist->array(mfi);
-    ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+  auto const& sd_ccs = signDist->arrays();
+  const amrex::IntVect ngs(signDist->nGrow());
+  amrex::ParallelFor(
+    *signDist, ngs,
+    [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+      const auto& sd_cc = sd_ccs[nbx];
       if (sd_cc(i, j, k) >= maxSignedDist - 1e-12) {
         const amrex::Real* dx = geomdata.CellSize();
         sd_cc(i, j, k) = nGrowFac * dx[0] * extendFactor;
       }
     });
-  }
 
   // Iteratively compute the distance function in boxes, propagating accross
   // boxes using ghost cells If needed, increase the number of loop to extend
@@ -651,4 +631,88 @@ PeleC::extend_signed_distance(
     }
     signDist->FillBoundary(parent->Geom(0).periodicity());
   }
+}
+
+void
+PeleC::InitialRedistribution(
+  const amrex::Real time,
+  const amrex::Vector<amrex::BCRec> bcs,
+  amrex::MultiFab& S_new)
+{
+  BL_PROFILE("PeleC::InitialRedistribution()");
+
+  // Don't redistribute if there is no EB or if the redistribution type is
+  // anything other than StateRedist
+  if (
+    (!eb_in_domain) ||
+    ((eb_in_domain) && (redistribution_type != "StateRedist"))) {
+    return;
+  }
+
+  if (verbose != 0) {
+    amrex::Print() << "Doing initial redistribution... " << std::endl;
+  }
+
+  // Initial data are set at new time step
+  amrex::MultiFab tmp(
+    grids, dmap, S_new.nComp(), numGrow(), amrex::MFInfo(), Factory());
+
+  amrex::MultiFab::Copy(tmp, S_new, 0, 0, S_new.nComp(), S_new.nGrow());
+  FillPatch(*this, tmp, numGrow(), time, State_Type, 0, S_new.nComp());
+  EB_set_covered(tmp, 0.0);
+
+  amrex::Gpu::DeviceVector<amrex::BCRec> d_bcs(bcs.size());
+  amrex::Gpu::copy(
+    amrex::Gpu::hostToDevice, bcs.begin(), bcs.end(), d_bcs.begin());
+
+  for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
+       ++mfi) {
+    const amrex::Box& bx = mfi.validbox();
+
+    auto const& fact =
+      dynamic_cast<amrex::EBFArrayBoxFactory const&>(S_new.Factory());
+
+    auto const& flags = fact.getMultiEBCellFlagFab()[mfi];
+    amrex::Array4<const amrex::EBCellFlag> const& flag_arr =
+      flags.const_array();
+
+    if (
+      (flags.getType(amrex::grow(bx, 1)) != amrex::FabType::covered) &&
+      (flags.getType(amrex::grow(bx, 1)) != amrex::FabType::regular)) {
+      amrex::Array4<const amrex::Real> AMREX_D_DECL(fcx, fcy, fcz), ccc,
+        AMREX_D_DECL(apx, apy, apz);
+
+      AMREX_D_TERM(fcx = facecent[0]->const_array(mfi);
+                   , fcy = facecent[1]->const_array(mfi);
+                   , fcz = facecent[2]->const_array(mfi););
+
+      ccc = fact.getCentroid().const_array(mfi);
+
+      AMREX_D_TERM(apx = areafrac[0]->const_array(mfi);
+                   , apy = areafrac[1]->const_array(mfi);
+                   , apz = areafrac[2]->const_array(mfi););
+
+      const auto& sarr = S_new.array(mfi);
+      const auto& tarr = tmp.array(mfi);
+      Redistribution::ApplyToInitialData(
+        bx, NVAR, sarr, tarr, flag_arr, AMREX_D_DECL(apx, apy, apz),
+        vfrac.const_array(mfi), AMREX_D_DECL(fcx, fcy, fcz), ccc,
+        d_bcs.dataPtr(), geom, redistribution_type, eb_srd_max_order);
+
+      // Make sure rho is same as sum rhoY after redistribution
+      amrex::ParallelFor(
+        bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+          amrex::Real drhoYsum = 0.0;
+          for (int n = 0; n < NUM_SPECIES; n++) {
+            drhoYsum += sarr(i, j, k, UFS + n) - tarr(i, j, k, UFS + n);
+          }
+          sarr(i, j, k, URHO) = tarr(i, j, k, URHO) + drhoYsum;
+        });
+      amrex::ParallelFor(
+        bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+          pc_check_initial_species(i, j, k, sarr);
+        });
+    }
+  }
+  set_body_state(S_new);
 }

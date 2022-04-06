@@ -1,0 +1,122 @@
+# ------------------  INPUTS TO MAIN PROGRAM  -------------------
+max_step = 1000000
+stop_time = 0.0006
+
+#amr.restart=chk05584
+
+# PROBLEM SIZE & GEOMETRY
+geometry.is_periodic =  0   0  0
+geometry.coord_sys   =  0       # 0 => cart
+geometry.prob_lo     =  -1.4 -1.4 -0.275
+geometry.prob_hi     =  1.4  1.4  0.425
+amr.n_cell           =  512 512 128
+
+# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
+# 0 = Interior           3 = Symmetry
+# 1 = Inflow             4 = SlipWall
+# 2 = Outflow            5 = NoSlipWall
+# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
+pelec.lo_bc       =  "NoSlipWall"  "NoSlipWall"  "NoSlipWall"
+pelec.hi_bc       =  "NoSlipWall"  "NoSlipWall"  "Hard"
+
+# WHICH PHYSICS
+pelec.do_hydro = 1
+pelec.do_mol = 1
+pelec.do_react = 1
+pelec.diffuse_temp = 1
+pelec.diffuse_vel  = 1
+pelec.diffuse_spec = 1
+pelec.diffuse_enth = 1
+pelec.sdc_iters = 2
+#pelec.adaptrk_nsubsteps_guess=50
+#pelec.adaptrk_nsubsteps_min=25
+#pelec.adaptrk_nsubsteps_max=100
+pelec.chem_integrator="ReactorCvode"
+cvode.solve_type=denseAJ_direct
+cvode.max_order = 4
+
+# TIME STEP CONTROL
+pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
+pelec.cfl            = 0.2     # cfl number for hyperbolic system
+pelec.init_shrink    = 0.01    # scale back initial timestep
+pelec.change_max     = 1.05     # maximum increase in dt over successive steps
+
+# DIAGNOSTICS & VERBOSITY
+pelec.sum_interval   = 1       # timesteps between computing mass
+pelec.v              = 1       # verbosity in PeleC cpp files
+amr.v                = 1       # verbosity in Amr.cpp
+#amr.grid_log         = grdlog  # name of grid logging file
+amr.data_log         = datlog extremalog
+
+# REFINEMENT / REGRIDDING
+amr.max_level       = 5       # maximum level number allowed
+amr.ref_ratio       = 2 2 2 2 # refinement ratio
+amr.regrid_int      = 2       # how often to regrid
+amr.blocking_factor = 8       # block factor in grid generation
+amr.max_grid_size   = 16
+amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
+#amr.hydro_tile_size = 8 8 8
+
+# LOAD BALANCE
+amr.loadbalance_with_workestimates = 1
+#amr.loadbalance_level0_int = 1000
+
+# CHECKPOINT FILES
+amr.checkpoint_files_output = 1
+amr.check_file      = chk      # root name of checkpoint file
+amr.check_int       = 400      # number of timesteps between checkpoints
+
+# PLOTFILES
+amr.plot_files_output = 1
+amr.plot_file        = plt
+amr.plot_int         = 400
+amr.derive_plot_vars = density x_velocity y_velocity z_velocity magvel Y(CH4) Y(O) Y(OH) Y(H) Y(NC12H26) Temp magvort pressure
+pelec.plot_rhoy = 0
+pelec.plot_massfrac = 1
+pelec.extrema_spec_name = ALL
+
+# PROBLEM PARAMETERS
+prob.P_mean = 6.0795e7
+prob.T_mean = 900.0
+prob.centx = 0.00
+prob.centy = 0.00
+prob.r_circ = 0.15
+prob.r_hole = 0.0085
+prob.nholes = 4
+prob.cone_angle= 45.0
+prob.T_jet = 470.0
+prob.vel_jet = 2800.0
+prob.Z = 0.45
+prob.injection_start = 0.0
+prob.injection_duration = 0.0005
+
+ic.hitIC = 1
+ic.inres = 128
+ic.binfmt = 1
+ic.iname = "hit_ic_ut_128.in"
+ic.uin_norm = 1.3231790983814187
+ic.lscale = 2.4166097335 # = 2*pi / domain length
+ic.offset = -3.1415926536
+ic.urms0 = 4000.0
+ic.win_lo = -0.7 -0.7 0.15
+ic.win_hi =  0.7 0.7 0.3
+ic.win_slope = 10.0
+
+# TAGGING
+tagging.temperr  = 1e20
+tagging.tempgrad = 50.0
+tagging.max_temperr_lev = 5
+tagging.max_tempgrad_lev = 3
+tagging.max_ftracerr_lev = 2
+tagging.ftracerr = 0.25
+tagging.vfracerr = 1e20
+tagging.max_vfracerr_lev = 2
+tagging.max_eb_refine_lev = 0
+pelec.flame_trac_name = CH4
+
+eb2.geom_type = "Line-Piston-Cylinder"
+#eb2.small_volfrac = 1.e-6
+pelec.eb_boundary_T = 1350.
+pelec.eb_isothermal = 0
+ebd.boundary_grad_stencil_type = 1
+pelec.eb_srd_max_order = 0

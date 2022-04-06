@@ -12,6 +12,8 @@ PeleC::read_tagging_params()
   pp.query("max_denerr_lev", tagging_parm->max_denerr_lev);
   pp.query("dengrad", tagging_parm->dengrad);
   pp.query("max_dengrad_lev", tagging_parm->max_dengrad_lev);
+  pp.query("denratio", tagging_parm->denratio);
+  pp.query("max_denratio_lev", tagging_parm->max_denratio_lev);
 
   pp.query("presserr", tagging_parm->presserr);
   pp.query("max_presserr_lev", tagging_parm->max_presserr_lev);
