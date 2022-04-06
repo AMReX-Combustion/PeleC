@@ -70,5 +70,4 @@ prob.rho_r_osc  = 5.0
 prob.idir = 1
 prob.frac=0.1
 
-eb2.geom_type = "all_regular"
 ebd.boundary_grad_stencil_type = 0

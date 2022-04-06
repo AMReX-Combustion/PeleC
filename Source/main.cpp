@@ -21,6 +21,16 @@ initialize_EB2(const amrex::Geometry& geom, int required_level, int max_level);
 
 amrex::LevelBld* getLevelBld();
 
+void
+override_default_parameters()
+{
+  amrex::ParmParse pp("eb2");
+  if (not pp.contains("geom_type")) {
+    std::string geom_type("all_regular");
+    pp.add("geom_type", geom_type);
+  }
+}
+
 int
 main(int argc, char* argv[])
 {
@@ -42,7 +52,8 @@ main(int argc, char* argv[])
   }
 
   // Make sure to catch new failures.
-  amrex::Initialize(argc, argv);
+  amrex::Initialize(
+    argc, argv, true, MPI_COMM_WORLD, override_default_parameters);
 // Defined and initialized when in gnumake, but not defined in cmake and
 // initialization done manually
 #ifndef AMREX_USE_SUNDIALS

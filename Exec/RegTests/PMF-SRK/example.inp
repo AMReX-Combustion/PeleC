@@ -67,4 +67,3 @@ pelec.sdc_iters = 2
 pelec.flame_trac_name = HO2
 amrex.signal_handling=0
 #amrex.throw_handling=0
-eb2.geom_type = all_regular
