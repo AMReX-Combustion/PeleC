@@ -1,6 +1,6 @@
 
 
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
 #include "PeleC.H"
 #include "SprayParticles.H"
 

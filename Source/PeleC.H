@@ -33,7 +33,7 @@ enum StateType { State_Type = 0, Reactions_Type, Work_Estimate_Type };
 enum sources {
   ext_src = 0,
   forcing_src,
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
   spray_src,
 #endif
   diff_src,
@@ -62,7 +62,7 @@ grow_box_by_one(const amrex::Box& b)
 */
 
 // Forward declarations
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
 class SprayParticleContainer;
 #endif
 #ifdef SOOT_MODEL
@@ -127,7 +127,7 @@ public:
   // Initialize grid data at problem start-up.
   void initData() override;
 
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
 
   // Read spray related inputs
   static void readSprayParams();
@@ -725,7 +725,7 @@ protected:
   // There can be only one Diffusion object, it covers all levels:
   static class Diffusion* diffusion;
 
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
   static int do_spray_particles;
   static SprayParticleContainer* theSprayPC();
   static SprayParticleContainer* theVirtPC();

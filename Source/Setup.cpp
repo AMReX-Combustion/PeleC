@@ -662,7 +662,7 @@ PeleC::variableSetUp()
 
   // Set list of active sources
   set_active_sources();
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
   if (do_spray_particles) {
     defineParticles();
   }
@@ -716,7 +716,7 @@ PeleC::set_active_sources()
   }
 #endif
 
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
   if (do_spray_particles) {
     src_list.push_back(spray_src);
   }

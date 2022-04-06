@@ -20,7 +20,7 @@
 #include "IO.H"
 #include "IndexDefines.H"
 
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
 #include "SprayParticles.H"
 #endif
 
@@ -284,7 +284,7 @@ PeleC::checkPoint(
 {
   amrex::AmrLevel::checkPoint(dir, os, how, dump_old);
 
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
   bool is_checkpoint = true;
   if (theSprayPC() != nullptr && do_spray_particles) {
     int write_ascii = 0; // Not for checkpoints
@@ -746,11 +746,11 @@ PeleC::writeBuildInfo(std::ostream& os)
      << std::endl;
 #endif
 
-#ifdef AMREX_PARTICLES
-  os << std::setw(35) << std::left << "AMREX_PARTICLES " << std::setw(6) << "ON"
+#ifdef SPRAY_PELEC
+  os << std::setw(35) << std::left << "SPRAY_PELEC " << std::setw(6) << "ON"
      << std::endl;
 #else
-  os << std::setw(35) << std::left << "AMREX_PARTICLES " << std::setw(6)
+  os << std::setw(35) << std::left << "SPRAY_PELEC " << std::setw(6)
      << "OFF" << std::endl;
 #endif
 
@@ -934,7 +934,7 @@ PeleC::writePlotFile(
   std::string TheFullPath = FullPath;
   TheFullPath += BaseName;
   amrex::VisMF::Write(plotMF, TheFullPath, how, true);
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
   bool is_checkpoint = false;
   if (theSprayPC() != nullptr) {
     theSprayPC()->SprayParticleIO(

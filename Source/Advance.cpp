@@ -3,7 +3,7 @@
 #include "PeleC.H"
 #include "IndexDefines.H"
 
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
 #include "SprayParticles.H"
 #endif
 
@@ -88,7 +88,7 @@ PeleC::do_mol_advance(
     amrex::Print() << "... Computing MOL source term at t^{n} " << std::endl;
   }
   int nGrow_Sborder = numGrow() + nGrowF;
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
   int ghost_width = 0;
   int spray_n_grow = 0;
   int tmp_src_width = 0;
@@ -115,7 +115,7 @@ PeleC::do_mol_advance(
   amrex::Real flux_factor = 0;
   getMOLSrcTerm(Sborder, molSrc, time, dt, flux_factor);
 
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
   // We must make a temporary spray source term to ensure number of ghost
   // cells are correct
   amrex::MultiFab tmp_spray_source(
@@ -132,7 +132,7 @@ PeleC::do_mol_advance(
   for (int n = 0; n < src_list.size(); ++n) {
     if (
       src_list[n] != diff_src
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
       && src_list[n] != spray_src
 #endif
     ) {
@@ -168,7 +168,7 @@ PeleC::do_mol_advance(
   flux_factor = mol_iters > 1 ? 0 : 1;
   getMOLSrcTerm(Sborder, molSrc, time, dt, flux_factor);
 
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
   if (do_spray_particles) {
     new_sources[spray_src]->setVal(0.);
     particleMK(time + dt, dt, spray_n_grow, tmp_src_width, tmp_spray_source);
@@ -180,7 +180,7 @@ PeleC::do_mol_advance(
   for (int n = 0; n < src_list.size(); ++n) {
     if (
       src_list[n] != diff_src
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
       && src_list[n] != spray_src
 #endif
     ) {
@@ -310,7 +310,7 @@ PeleC::do_sdc_iteration(
     fill_Sborder = true;
     nGrow_Sborder = numGrow();
   }
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
   int ghost_width = 0;
   int spray_n_grow = 0;
   int tmp_src_width = 0;
@@ -340,7 +340,7 @@ PeleC::do_sdc_iteration(
     FillPatch(*this, Sborder, nGrow_Sborder, time, State_Type, 0, NVAR);
   }
 
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
   // We must make a temporary spray source term to ensure number of ghost
   // cells are correct
   amrex::MultiFab tmp_spray_source(
@@ -348,7 +348,7 @@ PeleC::do_sdc_iteration(
   tmp_spray_source.setVal(0.);
 #endif
   if (sub_iteration == 0) {
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
     // Compute drag terms from particles at old positions, move particles to new
     // positions  based on old-time velocity field
     // TODO: Maybe move this mess into construct_old_source?
@@ -363,7 +363,7 @@ PeleC::do_sdc_iteration(
     for (int n = 0; n < src_list.size(); ++n) {
       if (
         src_list[n] != diff_src
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
         && src_list[n] != spray_src
 #endif
       ) {
@@ -413,7 +413,7 @@ PeleC::do_sdc_iteration(
                      << sub_iteration + 1 << ")" << std::endl;
     }
     int nGrowDiff = numGrow();
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
     if (do_spray_particles && level > 0) {
       int maxref = parent->MaxRefRatio(level - 1);
       if (maxref > 2) {
@@ -430,7 +430,7 @@ PeleC::do_sdc_iteration(
   for (int n = 0; n < src_list.size(); ++n) {
     if (
       src_list[n] != diff_src
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
       && src_list[n] != spray_src
 #endif
     ) {
@@ -440,7 +440,7 @@ PeleC::do_sdc_iteration(
     }
   }
 
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
   if (do_spray_particles && sub_iteration == sub_ncycle - 1) {
     new_sources[spray_src]->setVal(0.);
     // Advance the particle velocities by dt/2 to the new time.

@@ -39,7 +39,6 @@ SprayParticleContainer::InitSprayParticles(
   const int lev = 0;
   const int MyProc = amrex::ParallelDescriptor::MyProc();
   const int NProcs = amrex::ParallelDescriptor::NProcs();
-  const int IOProc = amrex::ParallelDescriptor::IOProcessorNumber();
   int NRedist = prob_parm.numRedist; // Number of times to redistribute
   // TODO: This might be overkill but issues persisted at high Summit node
   // counts
@@ -53,8 +52,6 @@ SprayParticleContainer::InitSprayParticles(
       NRedist = 8;
     }
   }
-  const SprayData* fdat = m_sprayData;
-  amrex::Real part_rho = fdat->rho[0];
   amrex::Real part_dia = prob_parm.partDia;
   amrex::Real T_ref = prob_parm.partTemp;
   const int pstateVel = m_sprayIndx.pstateVel;
