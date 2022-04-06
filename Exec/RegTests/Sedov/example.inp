@@ -62,4 +62,3 @@ prob.p_ambient = 1.e-5
 prob.dens_ambient = 1.0
 prob.exp_energy = 1.0
 prob.nsub = 10
-eb2.geom_type = all_regular

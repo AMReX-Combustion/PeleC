@@ -64,5 +64,4 @@ prob.prandtl = 0.71
 prob.inres = 32
 
 # EB
-eb2.geom_type = "all_regular"
 ebd.boundary_grad_stencil_type = 0

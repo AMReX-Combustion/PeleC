@@ -75,7 +75,6 @@ prob.a_wy = 0.0
 prob.a_wz = 2.0
 
 # EB
-eb2.geom_type = "all_regular"
 ebd.boundary_grad_stencil_type = 0
 
 # Tiling
