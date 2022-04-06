@@ -41,15 +41,15 @@ pc_srctoprim(
     qa(i, j, k, QDPDR) * srcrho;
 
   for (int n = 0; n < NUM_ADV; n++) {
-    srcq(i, j, k, UFA + n) =
+    srcq(i, j, k, QFA + n) =
       (src(i, j, k, UFA + n) - q(i, j, k, QFA + n) * srcrho) * rhoinv;
   }
   for (int n = 0; n < NUM_SPECIES; n++) {
-    srcq(i, j, k, UFS + n) =
+    srcq(i, j, k, QFS + n) =
       (src(i, j, k, UFS + n) - q(i, j, k, QFS + n) * srcrho) * rhoinv;
   }
   for (int n = 0; n < NUM_AUX; n++) {
-    srcq(i, j, k, UFX + n) =
+    srcq(i, j, k, QFX + n) =
       (src(i, j, k, UFX + n) - q(i, j, k, QFX + n) * srcrho) * rhoinv;
   }
 }
