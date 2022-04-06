@@ -938,8 +938,7 @@ PeleC::writePlotFile(
   bool is_checkpoint = false;
   if (theSprayPC() != nullptr) {
     theSprayPC()->SprayParticleIO(
-      level, is_checkpoint, write_spray_ascii_files, dir,
-      sprayFuelNames);
+      level, is_checkpoint, write_spray_ascii_files, dir, sprayFuelNames);
   }
 #endif
 }

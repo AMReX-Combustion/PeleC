@@ -81,11 +81,9 @@ SprayParticleContainer::InitSprayParticles(
     part_vals[pstateY + sp] = 0.;
   }
   part_vals[pstateY] = 1.; // Only use the first fuel species
-  AMREX_D_TERM(ULong np0 = num_part[0];,
-               ULong np1 = num_part[1];,
-               ULong np2 = num_part[2];);
-  const ULong total_part_num =
-    AMREX_D_TERM(np0, *np1, *np2);
+  AMREX_D_TERM(ULong np0 = num_part[0];, ULong np1 = num_part[1];
+               , ULong np2 = num_part[2];);
+  const ULong total_part_num = AMREX_D_TERM(np0, *np1, *np2);
   const RealVect dx_part(AMREX_D_DECL(
     Geom(lev).ProbLength(0) / Real(num_part[0]),
     Geom(lev).ProbLength(1) / Real(num_part[1]),
@@ -226,7 +224,8 @@ SprayParticleContainer::InitSprayParticles(
   if (m_verbose) {
     ByteSpread();
     auto runtime = amrex::second() - strttime;
-    ParallelDescriptor::ReduceRealMax(runtime, ParallelDescriptor::IOProcessorNumber());
+    ParallelDescriptor::ReduceRealMax(
+      runtime, ParallelDescriptor::IOProcessorNumber());
     amrex::Print() << "InitSprayParticles() time: " << runtime << '\n';
   }
   Gpu::streamSynchronize();

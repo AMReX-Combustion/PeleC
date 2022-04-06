@@ -45,29 +45,6 @@ amrex_probinit(
     PeleC::h_prob_parm_device->T0 * gamma0 * pele::physics::Constants::RU /
     wbar);
   PeleC::h_prob_parm_device->v0 = PeleC::h_prob_parm_device->mach * cs;
-
-  // Output IC
-  if (amrex::ParallelDescriptor::IOProcessor()) {
-    std::ofstream ofs("ic.txt", std::ofstream::out);
-    amrex::Print(ofs) << "number of particles: "
-                      << PeleC::prob_parm_host->partNum[0];
-    for (int dir = 1; dir < AMREX_SPACEDIM; ++dir) {
-      amrex::Print(ofs) << ", " << PeleC::prob_parm_host->partNum[dir];
-    }
-    amrex::Print(ofs) << std::endl;
-    amrex::Print(ofs) << "particle velocity: "
-                      << PeleC::prob_parm_host->partVel[0];
-    for (int dir = 1; dir < AMREX_SPACEDIM; ++dir) {
-      amrex::Print(ofs) << ", " << PeleC::prob_parm_host->partVel[dir];
-    }
-    amrex::Print(ofs) << std::endl;
-    amrex::Print(ofs) << "p0: " << PeleC::h_prob_parm_device->p0 << std::endl;
-    amrex::Print(ofs) << "cs: " << cs << std::endl;
-    amrex::Print(ofs) << "U: " << PeleC::h_prob_parm_device->v0 << std::endl;
-    amrex::Print(ofs) << "particle diameter: " << PeleC::prob_parm_host->partDia
-                      << std::endl;
-    ofs.close();
-  }
 }
 }
 

@@ -569,26 +569,6 @@ PeleC::variableSetUp()
     addSootDerivePlotVars(derive_lst, desc_lst);
   }
 #endif
-// #ifdef AMREX_PARTICLES
-//   // We want a derived type that corresponds to the number of particles
-//   // in each cell.  We only intend to use it in plotfiles for debugging
-//   // purposes. We'll actually set the values in writePlotFile().
-//   derive_lst.add(
-//     "particle_count", amrex::IndexType::TheCellType(), 1, pc_dernull,
-//     amrex::DeriveRec::TheSameBox);
-//   derive_lst.addComponent("particle_count", desc_lst, State_Type, Density, 1);
-
-//   derive_lst.add(
-//     "total_particle_count", amrex::IndexType::TheCellType(), 1, pc_dernull,
-//     amrex::DeriveRec::TheSameBox);
-//   derive_lst.addComponent(
-//     "total_particle_count", desc_lst, State_Type, Density, 1);
-
-//   derive_lst.add(
-//     "particle_density", amrex::IndexType::TheCellType(), 1, pc_dernull,
-//     amrex::DeriveRec::TheSameBox);
-//   derive_lst.addComponent("particle_density", desc_lst, State_Type, Density, 1);
-// #endif
 
   derive_lst.add(
     "cp", amrex::IndexType::TheCellType(), 1, pc_dercp,
