@@ -71,4 +71,3 @@ pelec.extrema_spec_name = H2O
 pelec.plot_massfrac = 1
 amrex.signal_handling=0
 #amrex.throw_handling=0
-eb2.geom_type = all_regular

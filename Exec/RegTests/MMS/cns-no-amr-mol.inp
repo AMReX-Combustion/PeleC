@@ -59,5 +59,4 @@ amr.derive_plot_vars = x_velocity y_velocity z_velocity magvel magvort pressure 
 # PROBLEM PARAMETERS
 
 # EB
-eb2.geom_type = "all_regular"
 ebd.boundary_grad_stencil_type = 0
