@@ -622,6 +622,11 @@ pc_transd(
   const amrex::Real c = qa(iv, QGAMC);
 
   // Update passive variables
+#if AMREX_SPACEDIM == 2
+  pc_transd_passive(
+      iv, ivp0, ivp1, 0, UMZ, QW, cdtdx, hdt, flxrho, srcQ, qyp, qym, flxx, qp,
+      qm);
+#endif
   for (int n = 0; n < NUM_ADV; n++) {
     pc_transd_passive(
       iv, ivp0, ivp1, n, UFA, QFA, cdtdx, hdt, flxrho, srcQ, qyp, qym, flxx, qp,
