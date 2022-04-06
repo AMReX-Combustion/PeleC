@@ -6,8 +6,6 @@
 #include "SootModel_derive.H"
 #include <Transport.H>
 
-using namespace amrex;
-
 void
 PeleC::setSootIndx()
 {
@@ -25,21 +23,21 @@ PeleC::setSootIndx()
 
 void
 PeleC::addSootDerivePlotVars(
-  DeriveList& derive_lst, const DescriptorList& desc_lst)
+  amrex::DeriveList& derive_lst, const amrex::DescriptorList& desc_lst)
 {
   // Add in soot variables
-  Vector<std::string> sootNames = {"rho_soot", "sum_rho_soot"};
+  amrex::Vector<std::string> sootNames = {"rho_soot", "sum_rho_soot"};
   derive_lst.add(
-    "soot_vars", IndexType::TheCellType(), sootNames.size(), sootNames,
+    "soot_vars", amrex::IndexType::TheCellType(), sootNames.size(), sootNames,
     soot_genvars, amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("soot_vars", desc_lst, State_Type, URHO, 1);
   derive_lst.addComponent(
     "soot_vars", desc_lst, State_Type, UFSOOT, NUM_SOOT_MOMENTS + 1);
 
   // Variables associated with the second mode (large particles)
-  Vector<std::string> large_part_names = {"NL", "soot_V_L", "soot_S_L"};
+  amrex::Vector<std::string> large_part_names = {"NL", "soot_V_L", "soot_S_L"};
   derive_lst.add(
-    "soot_large_particles", IndexType::TheCellType(), large_part_names.size(),
+    "soot_large_particles", amrex::IndexType::TheCellType(), large_part_names.size(),
     large_part_names, soot_largeparticledata, amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent(
     "soot_large_particles", desc_lst, State_Type, UFSOOT, NUM_SOOT_MOMENTS + 1);
@@ -86,19 +84,19 @@ PeleC::fill_soot_source(
   BL_PROFILE("PeleC::fill_soot_source()");
 
 #ifdef PELE_USE_EB
-  auto const& fact = dynamic_cast<EBFArrayBoxFactory const&>(state.Factory());
+  auto const& fact = dynamic_cast<amrex::EBFArrayBoxFactory const&>(state.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
 #endif
 
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-  for (MFIter mfi(soot_src, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
+  for (amrex::MFIter mfi(soot_src, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
     const amrex::Box& bx = mfi.growntilebox(ng);
 #ifdef PELE_USE_EB
     const auto& flag_fab = flags[mfi];
-    FabType typ = flag_fab.getType(bx);
-    if (typ == FabType::covered) {
+    amrex::FabType typ = flag_fab.getType(bx);
+    if (typ == amrex::FabType::covered) {
       continue;
     }
 #endif
@@ -139,14 +137,14 @@ PeleC::fill_soot_source(
       amrex::ParallelFor(
         bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
           auto trans = pele::physics::PhysicsType::transport();
-          Real T = qar_Tin(i, j, k);
-          Real rho = qar_rhoin(i, j, k);
-          GpuArray<Real, NUM_SPECIES> Y;
+          amrex::Real T = qar_Tin(i, j, k);
+          amrex::Real rho = qar_rhoin(i, j, k);
+          amrex::GpuArray<amrex::Real, NUM_SPECIES> Y = {{0.0}};
           for (int n = 0; n < NUM_SPECIES; ++n) {
             Y[n] = qar_yin(i, j, k, n);
           }
-          Real* diag = nullptr;
-          Real mu, xi, lam;
+          amrex::Real* diag = nullptr;
+          amrex::Real mu, xi, lam;
           trans.transport(
             get_xi, get_mu, get_lam, get_diag, T, rho, Y.data(), diag, mu, xi,
             lam, ltransparm);
@@ -161,13 +159,13 @@ PeleC::fill_soot_source(
 void
 PeleC::clipSootMoments(amrex::MultiFab& S_new, const int ng)
 {
-  for (MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
+  for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
     const amrex::Box& bx = mfi.growntilebox(ng);
     amrex::FArrayBox& Sfab = S_new[mfi];
     auto const& s_arr = Sfab.array(UFSOOT);
     SootData* sd = soot_model->getSootData_d();
     amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      GpuArray<Real, NUM_SOOT_MOMENTS + 1> moments;
+      amrex::GpuArray<amrex::Real, NUM_SOOT_MOMENTS + 1> moments = {{0.0}};
       for (int mom = 0; mom < NUM_SOOT_MOMENTS + 1; ++mom) {
         moments[mom] = s_arr(i, j, k, mom);
       }
@@ -185,19 +183,19 @@ PeleC::estSootDt(amrex::Real& estdt_soot)
   const amrex::MultiFab& state = get_new_data(State_Type);
   amrex::Real local_dt = 1.E20;
 #ifdef PELE_USE_EB
-  auto const& fact = dynamic_cast<EBFArrayBoxFactory const&>(state.Factory());
+  auto const& fact = dynamic_cast<amrex::EBFArrayBoxFactory const&>(state.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
 #endif
 
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-  for (MFIter mfi(state, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
+  for (amrex::MFIter mfi(state, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
     const amrex::Box& bx = mfi.tilebox();
 #ifdef PELE_USE_EB
     const auto& flag_fab = flags[mfi];
-    FabType typ = flag_fab.getType(bx);
-    if (typ == FabType::covered) {
+    amrex::FabType typ = flag_fab.getType(bx);
+    if (typ == amrex::FabType::covered) {
       continue;
     }
 #endif
@@ -218,10 +216,10 @@ PeleC::estSootDt(amrex::Real& estdt_soot)
           pc_ctoprim(i, j, k, s_arr, q_arr, qaux_arr, *lpmap);
         });
     }
-    Real sootdt = soot_model->estSootDt(bx, q_arr);
+    amrex::Real sootdt = soot_model->estSootDt(bx, q_arr);
     local_dt = amrex::min(sootdt, local_dt);
   }
-  ParallelDescriptor::ReduceRealMin(local_dt);
+  amrex::ParallelDescriptor::ReduceRealMin(local_dt);
   estdt_soot = amrex::min(estdt_soot, local_dt);
 }
 #endif

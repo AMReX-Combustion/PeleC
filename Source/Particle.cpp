@@ -3,7 +3,6 @@
 #ifdef AMREX_PARTICLES
 #include "PeleC.H"
 #include "SprayParticles.H"
-using namespace amrex;
 
 namespace {
 bool virtual_particles_set = false;
@@ -39,8 +38,8 @@ RemoveParticlesOnExit()
 std::string init_file;
 int init_function = 1;
 int particle_verbose = 0;
-Real particle_cfl = 0.5;
-Real wall_temp = 300.;
+amrex::Real particle_cfl = 0.5;
+amrex::Real wall_temp = 300.;
 int mass_trans = 1;
 int mom_trans = 1;
 int plot_spray_src = 0;
@@ -71,19 +70,19 @@ PeleC::theGhostPC()
 }
 
 void
-PeleC::particleEstTimeStep(Real& est_dt)
+PeleC::particleEstTimeStep(amrex::Real& est_dt)
 {
   if (do_spray_particles == 0) {
     return;
   }
   BL_PROFILE("PeleC::particleEstTimeStep()");
-  Real est_dt_particle = theSprayPC()->estTimestep(level, particle_cfl);
+  amrex::Real est_dt_particle = theSprayPC()->estTimestep(level, particle_cfl);
 
   if (est_dt_particle > 0) {
     est_dt = amrex::min<amrex::Real>(est_dt, est_dt_particle);
   }
 
-  if (verbose && ParallelDescriptor::IOProcessor()) {
+  if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
     if (est_dt_particle > 0) {
       amrex::Print() << "...estdt from particles at level " << level << ": "
                      << est_dt_particle << '\n';
@@ -96,7 +95,7 @@ PeleC::particleEstTimeStep(Real& est_dt)
 void
 PeleC::readSprayParams()
 {
-  ParmParse pp("pelec");
+  amrex::ParmParse pp("pelec");
 
   pp.query("do_spray_particles", do_spray_particles);
   SprayParticleContainer::readSprayParams(
@@ -137,7 +136,7 @@ PeleC::defineParticles()
       sprayData.indx[ns] = 0;
     }
   }
-  amrex::Vector<Real> fuelEnth(NUM_SPECIES);
+  amrex::Vector<amrex::Real> fuelEnth(NUM_SPECIES);
   auto eos = pele::physics::PhysicsType::eos();
   eos.T2Hi(sprayData.ref_T, fuelEnth.data());
   for (int ns = 0; ns < SPRAY_FUEL_NUM; ++ns) {
@@ -241,8 +240,9 @@ PeleC::initParticles()
       const ProbParmDevice* lprobparm_d = h_prob_parm_device;
       theSprayPC()->InitSprayParticles(*lprobparm, *lprobparm_d);
     } else {
-      Abort("Must initialize spray particles with particles.init_function or "
-            "particles.init_file");
+      amrex::Abort(
+        "Must initialize spray particles with particles.init_function or "
+        "particles.init_file");
     }
   }
 }
@@ -270,8 +270,8 @@ PeleC::particlePostRestart(bool is_checkpoint)
 
 void
 PeleC::particleMKD(
-  const Real time,
-  const Real dt,
+  const amrex::Real time,
+  const amrex::Real dt,
   const int ghost_width,
   const int spray_n_grow,
   const int tmp_src_width,
@@ -331,8 +331,8 @@ PeleC::particleMKD(
 
 void
 PeleC::particleMK(
-  const Real time,
-  const Real dt,
+  const amrex::Real time,
+  const amrex::Real dt,
   const int spray_n_grow,
   const int tmp_src_width,
   amrex::MultiFab& tmp_spray_source)
@@ -377,8 +377,8 @@ PeleC::particle_redistribute(int lbase, bool init_part)
     }
 
     // These are usually the BoxArray and DMap from the last regridding.
-    static Vector<BoxArray> ba;
-    static Vector<DistributionMapping> dm;
+    static amrex::Vector<amrex::BoxArray> ba;
+    static amrex::Vector<amrex::DistributionMapping> dm;
 
     bool changed = false;
 
@@ -412,7 +412,7 @@ PeleC::particle_redistribute(int lbase, bool init_part)
       // We also only call it for particles >= lbase. This is
       // because if we called redistribute during a subcycle, there may be
       // particles not in the proper position on coarser levels.
-      if (verbose && ParallelDescriptor::IOProcessor()) {
+      if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
         amrex::Print() << "Calling redistribute because grid has changed "
                        << '\n';
       }
@@ -429,7 +429,7 @@ PeleC::particle_redistribute(int lbase, bool init_part)
         dm[i] = parent->getLevel(i).get_new_data(0).DistributionMap();
       }
     } else {
-      if (verbose && ParallelDescriptor::IOProcessor()) {
+      if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
         amrex::Print()
           << "NOT calling redistribute because grid has NOT changed " << '\n';
       }
