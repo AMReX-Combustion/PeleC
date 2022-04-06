@@ -1,9 +1,6 @@
 #ifndef _INDEX_DEFINES_H_
 #define _INDEX_DEFINES_H_
 
-#include <AMReX_REAL.H>
-#include <AMReX_Arena.H>
-#include <AMReX_GpuMemory.H>
 #include "mechanism.H"
 
 #define URHO 0
