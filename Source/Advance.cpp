@@ -89,12 +89,7 @@ PeleC::do_mol_advance(
 
   // Build other (neither spray nor diffusion) sources at t_old
   for (int n = 0; n < src_list.size(); ++n) {
-    if (
-      src_list[n] != diff_src
-#ifdef PELEC_SPRAY
-      && src_list[n] != spray_src
-#endif
-    ) {
+    if (src_list[n] != diff_src && src_list[n] != spray_src) {
       construct_old_source(
         src_list[n], time, dt, amr_iteration, amr_ncycle, 0, 0);
 
@@ -129,12 +124,7 @@ PeleC::do_mol_advance(
 
   // Build other (neither spray nor diffusion) sources at t_new
   for (int n = 0; n < src_list.size(); ++n) {
-    if (
-      src_list[n] != diff_src
-#ifdef PELEC_SPRAY
-      && src_list[n] != spray_src
-#endif
-    ) {
+    if (src_list[n] != diff_src && src_list[n] != spray_src) {
       construct_new_source(
         src_list[n], time + dt, dt, amr_iteration, amr_ncycle, 0, 0);
 
@@ -373,12 +363,7 @@ PeleC::do_sdc_iteration(
 
     // Build other (neither spray nor diffusion) sources at t_old
     for (int n = 0; n < src_list.size(); ++n) {
-      if (
-        src_list[n] != diff_src
-#ifdef PELEC_SPRAY
-        && src_list[n] != spray_src
-#endif
-      ) {
+      if (src_list[n] != diff_src && src_list[n] != spray_src) {
         construct_old_source(
           src_list[n], time, dt, amr_iteration, amr_ncycle, sub_iteration,
           sub_ncycle);
@@ -431,12 +416,7 @@ PeleC::do_sdc_iteration(
 
   // Build other (neither spray nor diffusion) sources at t_new
   for (int n = 0; n < src_list.size(); ++n) {
-    if (
-      src_list[n] != diff_src
-#ifdef PELEC_SPRAY
-      && src_list[n] != spray_src
-#endif
-    ) {
+    if (src_list[n] != diff_src && src_list[n] != spray_src) {
       construct_new_source(
         src_list[n], time + dt, dt, amr_iteration, amr_ncycle, sub_iteration,
         sub_ncycle);

@@ -668,11 +668,9 @@ PeleC::set_active_sources()
     src_list.push_back(forcing_src);
   }
 
-#ifdef AMREX_PARTICLES
   if (do_spray_particles) {
     src_list.push_back(spray_src);
   }
-#endif
 
   // optional LES source
   if (do_les) {

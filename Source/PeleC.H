@@ -33,9 +33,7 @@ enum StateType { State_Type = 0, Reactions_Type, Work_Estimate_Type };
 enum sources {
   ext_src = 0,
   forcing_src,
-#ifdef PELEC_SPRAY
   spray_src,
-#endif
   diff_src,
   les_src,
 #ifdef PELEC_USE_MASA
@@ -668,8 +666,9 @@ protected:
   // There can be only one Diffusion object, it covers all levels:
   static class Diffusion* diffusion;
 
+  // Do spray particles
+  static bool do_spray_particles;
 #ifdef PELEC_SPRAY
-  static int do_spray_particles;
   static SprayParticleContainer* theSprayPC();
   static SprayParticleContainer* theVirtPC();
   static SprayParticleContainer* theGhostPC();

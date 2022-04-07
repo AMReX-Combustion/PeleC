@@ -54,6 +54,12 @@ int PeleC::FirstLin = -1;
 
 bool PeleC::do_diffuse = false;
 
+#ifdef PELEC_SPRAY
+bool PeleC::do_spray_particles = true;
+#else
+bool PeleC::do_spray_particles = false;
+#endif
+
 #ifdef PELEC_USE_MASA
 bool PeleC::mms_initialized = false;
 #endif
