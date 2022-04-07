@@ -12,7 +12,6 @@
 
 #ifdef AMREX_PARTICLES
 #include <AMReX_Particles.H>
-#include <SprayParticles.H>
 #endif
 
 #include "Filter.H"
@@ -34,7 +33,7 @@ enum StateType { State_Type = 0, Reactions_Type, Work_Estimate_Type };
 enum sources {
   ext_src = 0,
   forcing_src,
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
   spray_src,
 #endif
   diff_src,
@@ -58,6 +57,11 @@ grow_box_by_one(const amrex::Box& b)
   return amrex::grow(b, 1);
 }
 */
+
+// Forward declarations
+#ifdef SPRAY_PELEC
+class SprayParticleContainer;
+#endif
 
 // AmrLevel-derived class for hyperbolic conservation equations for stellar
 // media
@@ -117,7 +121,7 @@ public:
   // Initialize grid data at problem start-up.
   void initData() override;
 
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
 
   // Read particle-related inputs
   static void readParticleParams();
@@ -530,9 +534,7 @@ public:
   static int FirstAdv, NumAdv;
   static int FirstSpec;
   static int FirstAux;
-
-  /// Index locations into particle state
-  static int pstateVel, pstateT, pstateDia, pstateRho, pstateY, pstateNum;
+  static int FirstLin;
 
   // This MultiFab is on the coarser level.  This is useful for the coarser
   // level to mask out the finer level.  We only build this when it is needed.
@@ -693,7 +695,7 @@ protected:
   // There can be only one Diffusion object, it covers all levels:
   static class Diffusion* diffusion;
 
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
   static int do_spray_particles;
   static SprayParticleContainer* theSprayPC();
   static SprayParticleContainer* theVirtPC();

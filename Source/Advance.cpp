@@ -91,7 +91,7 @@ PeleC::do_mol_advance(
   for (int n = 0; n < src_list.size(); ++n) {
     if (
       src_list[n] != diff_src
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
       && src_list[n] != spray_src
 #endif
     ) {
@@ -131,7 +131,7 @@ PeleC::do_mol_advance(
   for (int n = 0; n < src_list.size(); ++n) {
     if (
       src_list[n] != diff_src
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
       && src_list[n] != spray_src
 #endif
     ) {
@@ -195,7 +195,7 @@ PeleC::do_mol_advance(
   return dt;
 }
 
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
 void
 PeleC::setSprayGridInfo(
   const int amr_iteration,
@@ -327,7 +327,7 @@ PeleC::do_sdc_iteration(
     fill_Sborder = true;
     nGrow_Sborder = numGrow();
   }
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
   bool use_ghost_parts = false; // Use ghost particles
   bool use_virt_parts = false;  // Use virtual particles
   if (parent->finestLevel() > 0 && level < parent->finestLevel()) {
@@ -360,7 +360,7 @@ PeleC::do_sdc_iteration(
   }
 
   if (sub_iteration == 0) {
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
 
     // Compute drag terms from particles at old positions, move particles to new
     // positions  based on old-time velocity field
@@ -440,7 +440,7 @@ PeleC::do_sdc_iteration(
     for (int n = 0; n < src_list.size(); ++n) {
       if (
         src_list[n] != diff_src
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
         && src_list[n] != spray_src
 #endif
       ) {
@@ -498,7 +498,7 @@ PeleC::do_sdc_iteration(
   for (int n = 0; n < src_list.size(); ++n) {
     if (
       src_list[n] != diff_src
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
       && src_list[n] != spray_src
 #endif
     ) {
@@ -508,7 +508,7 @@ PeleC::do_sdc_iteration(
     }
   }
 
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
   if (do_spray_particles) {
     // Advance the particle velocities by dt/2 to the new time.
     if (particle_verbose)

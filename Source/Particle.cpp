@@ -7,7 +7,7 @@
 
 using namespace amrex;
 
-#ifdef AMREX_PARTICLES
+#ifdef SPRAY_PELEC
 
 namespace {
 bool virtual_particles_set = false;

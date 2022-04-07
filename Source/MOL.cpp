@@ -142,6 +142,9 @@ pc_compute_hyp_mol_flux(
         for (int n = UFA; n < UFA + NUM_ADV; n++) {
           flux_tmp[n] = (NUM_ADV > 0) ? 0.0 : flux_tmp[n];
         }
+        for (int n = ULIN; n < ULIN + NUM_LIN; n++) {
+          flux_tmp[n] = (NUM_LIN > 0) ? 0.0 : flux_tmp[n];
+        }
 
         for (int ivar = 0; ivar < NVAR; ivar++) {
           flx[dir](iv, ivar) += flux_tmp[ivar] * area[dir](i, j, k);
