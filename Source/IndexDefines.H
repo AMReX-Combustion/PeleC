@@ -74,7 +74,6 @@
 #define QFSOOT QLIN
 #endif
 #define QVAR (QTHERM + NUM_ADV + NUM_SPECIES + NUM_AUX + NUM_LIN)
-#define NQ QVAR
 #define NQAUX 6
 #define NGDNV 6
 
