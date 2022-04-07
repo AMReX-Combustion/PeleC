@@ -12,7 +12,6 @@
 
 #ifdef AMREX_PARTICLES
 #include <AMReX_Particles.H>
-#include <SprayParticles.H>
 #endif
 
 #include "Filter.H"
@@ -34,9 +33,7 @@ enum StateType { State_Type = 0, Reactions_Type, Work_Estimate_Type };
 enum sources {
   ext_src = 0,
   forcing_src,
-#ifdef AMREX_PARTICLES
   spray_src,
-#endif
   diff_src,
   les_src,
 #ifdef PELEC_USE_MASA
@@ -58,6 +55,11 @@ grow_box_by_one(const amrex::Box& b)
   return amrex::grow(b, 1);
 }
 */
+
+// Forward declarations
+#ifdef PELEC_SPRAY
+class SprayParticleContainer;
+#endif
 
 // AmrLevel-derived class for hyperbolic conservation equations for stellar
 // media
@@ -117,7 +119,7 @@ public:
   // Initialize grid data at problem start-up.
   void initData() override;
 
-#ifdef AMREX_PARTICLES
+#ifdef PELEC_SPRAY
 
   // Read particle-related inputs
   static void readParticleParams();
@@ -156,33 +158,6 @@ public:
 
   // Time step control based on particles
   void particleEstTimeStep(amrex::Real& est_dt);
-
-  // Derived quantities associated with particles
-  std::unique_ptr<amrex::MultiFab>
-  particleDerive(const std::string& name, amrex::Real time, int ngrow);
-
-  // Default cfl of particles in Particle class
-  static amrex::Real particle_cfl;
-
-  // Should we write particles into plotfiles?
-  static int write_particle_plotfiles;
-
-  // Should we write particle ascii files?
-  static int write_spray_ascii_files;
-
-  void setSprayGridInfo(
-    const int amr_iteration,
-    const int amr_ncycle,
-    int& ghost_width,
-    int& where_width,
-    int& spray_n_grow,
-    int& tmp_src_width);
-
-  static int particle_mass_tran;
-  static int particle_heat_tran;
-  static int particle_mom_tran;
-  static amrex::Vector<std::string> sprayFuelNames;
-  static amrex::Real sprayRefT;
 #endif
 
   // Get problem metrics.
@@ -530,9 +505,7 @@ public:
   static int FirstAdv, NumAdv;
   static int FirstSpec;
   static int FirstAux;
-
-  /// Index locations into particle state
-  static int pstateVel, pstateT, pstateDia, pstateRho, pstateY, pstateNum;
+  static int FirstLin;
 
   // This MultiFab is on the coarser level.  This is useful for the coarser
   // level to mask out the finer level.  We only build this when it is needed.
@@ -693,8 +666,9 @@ protected:
   // There can be only one Diffusion object, it covers all levels:
   static class Diffusion* diffusion;
 
-#ifdef AMREX_PARTICLES
-  static int do_spray_particles;
+  // Do spray particles
+  static bool do_spray_particles;
+#ifdef PELEC_SPRAY
   static SprayParticleContainer* theSprayPC();
   static SprayParticleContainer* theVirtPC();
   static SprayParticleContainer* theGhostPC();

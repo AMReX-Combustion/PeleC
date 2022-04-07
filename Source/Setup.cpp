@@ -182,17 +182,13 @@ PeleC::variableSetUp()
     cnt += NUM_AUX;
   }
 
-  // NVAR = cnt;
+  if (NUM_LIN > 0) {
+    FirstLin = cnt;
+    cnt += NUM_LIN;
+  }
 
-#ifdef AMREX_PARTICLES
-  // Set index locations for particle state vector
-  pstateVel = 0;
-  pstateT = pstateVel + AMREX_SPACEDIM;
-  pstateDia = pstateT + 1;
-  pstateRho = pstateDia + 1;
-  pstateY = pstateRho + 1;
-  pstateNum = pstateY + SPRAY_FUEL_NUM;
-#endif
+  // NUM_LIN variables are will be added by the specific models
+  // NVAR = cnt;
 
   // const amrex::Real run_strt = amrex::ParallelDescriptor::second() ;
   // Real run_stop = ParallelDescriptor::second() - run_strt;
@@ -672,11 +668,9 @@ PeleC::set_active_sources()
     src_list.push_back(forcing_src);
   }
 
-#ifdef AMREX_PARTICLES
   if (do_spray_particles) {
     src_list.push_back(spray_src);
   }
-#endif
 
   // optional LES source
   if (do_les) {

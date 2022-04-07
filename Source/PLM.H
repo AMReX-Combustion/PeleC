@@ -240,6 +240,9 @@ pc_plm_d(
   for (int n = 0; n < NUM_AUX; n++) {
     pc_plm_d_passive(iv, ivp, QFX + n, spzerom, spzerop, slope, q, qp, qm);
   }
+  for (int n = 0; n < NUM_LIN; n++) {
+    pc_plm_d_passive(iv, ivp, QLIN + n, spzerom, spzerop, slope, q, qp, qm);
+  }
 }
 
 #endif

@@ -119,12 +119,6 @@ PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
   for (int n = 0; n < src_list.size(); ++n) {
     int oldGrow = numGrow();
     int newGrow = S_new.nGrow();
-#ifdef AMREX_PARTICLES
-    if (src_list[n] == spray_src) {
-      oldGrow = 1;
-      newGrow = 1;
-    }
-#endif
     old_sources[src_list[n]] = std::make_unique<amrex::MultiFab>(
       grids, dmap, NVAR, oldGrow, amrex::MFInfo(), Factory());
     new_sources[src_list[n]] = std::make_unique<amrex::MultiFab>(
@@ -285,26 +279,6 @@ PeleC::checkPoint(
   bool /*dump_old_default*/)
 {
   amrex::AmrLevel::checkPoint(dir, os, how, dump_old);
-
-#ifdef AMREX_PARTICLES
-  bool is_checkpoint = true;
-
-  amrex::Vector<std::string> real_comp_names(pstateNum);
-  AMREX_D_TERM(real_comp_names[pstateVel] = "xvel";
-               , real_comp_names[pstateVel + 1] = "yvel";
-               , real_comp_names[pstateVel + 2] = "zvel";);
-  real_comp_names[pstateT] = "temperature";
-  real_comp_names[pstateDia] = "diam";
-  real_comp_names[pstateRho] = "density";
-  for (int sp = 0; sp < SPRAY_FUEL_NUM; ++sp) {
-    real_comp_names[pstateY + sp] = "spray_mf_" + PeleC::sprayFuelNames[sp];
-  }
-  amrex::Vector<std::string> int_comp_names;
-  if (PeleC::theSprayPC()) {
-    PeleC::theSprayPC()->Checkpoint(
-      dir, "particles", is_checkpoint, real_comp_names, int_comp_names);
-  }
-#endif
 
   if (level == 0 && amrex::ParallelDescriptor::IOProcessor()) {
     {
@@ -728,6 +702,8 @@ PeleC::writeBuildInfo(std::ostream& os)
 
   os << std::setw(35) << std::left << "NUM_AUX=" << NUM_AUX << std::endl;
 
+  os << std::setw(35) << std::left << "NUM_LIN=" << NUM_LIN << std::endl;
+
 #ifdef PELEC_USE_MASA
   os << std::setw(35) << std::left << "PELEC_USE_MASA " << std::setw(6) << "ON"
      << std::endl;
@@ -736,12 +712,12 @@ PeleC::writeBuildInfo(std::ostream& os)
      << std::endl;
 #endif
 
-#ifdef AMREX_PARTICLES
-  os << std::setw(35) << std::left << "AMREX_PARTICLES " << std::setw(6) << "ON"
+#ifdef PELEC_SPRAY
+  os << std::setw(35) << std::left << "PELEC_SPRAY " << std::setw(6) << "ON"
      << std::endl;
 #else
-  os << std::setw(35) << std::left << "AMREX_PARTICLES " << std::setw(6)
-     << "OFF" << std::endl;
+  os << std::setw(35) << std::left << "PELEC_SPRAY " << std::setw(6) << "OFF"
+     << std::endl;
 #endif
 
   os << "\n\n";
@@ -771,21 +747,8 @@ PeleC::writePlotFile(
 
   for (const auto& it : dlist) {
     if (amrex::Amr::isDerivePlotVar(it.name())) {
-#ifdef AMREX_PARTICLES
-      if (
-        it->name() == "particle_count" ||
-        it->name() == "total_particle_count" ||
-        it->name() == "particle_density") {
-        if (PeleC::theSprayPC()) {
-          derive_names.push_back(it->name());
-          num_derive++;
-        }
-      } else
-#endif
-      {
-        derive_names.push_back(it.name());
-        num_derive += it.numDerive();
-      }
+      derive_names.push_back(it.name());
+      num_derive += it.numDerive();
     }
   }
 
@@ -937,40 +900,6 @@ PeleC::writePlotFile(
   std::string TheFullPath = FullPath;
   TheFullPath += BaseName;
   amrex::VisMF::Write(plotMF, TheFullPath, how, true);
-#ifdef AMREX_PARTICLES
-  bool is_checkpoint = false;
-
-  if (PeleC::theSprayPC()) {
-    amrex::Vector<std::string> real_comp_names(pstateNum);
-    AMREX_D_TERM(real_comp_names[pstateVel] = "xvel";
-                 , real_comp_names[pstateVel + 1] = "yvel";
-                 , real_comp_names[pstateVel + 2] = "zvel";);
-    real_comp_names[pstateT] = "temperature";
-    real_comp_names[pstateDia] = "diam";
-    real_comp_names[pstateRho] = "density";
-    for (int sp = 0; sp < SPRAY_FUEL_NUM; ++sp) {
-      real_comp_names[pstateY + sp] = "spray_mf_" + PeleC::sprayFuelNames[sp];
-    }
-    amrex::Vector<std::string> int_comp_names;
-    if (PeleC::theSprayPC()) {
-      PeleC::theSprayPC()->Checkpoint(
-        dir, "particles", is_checkpoint, real_comp_names, int_comp_names);
-      if (level == 0) {
-        if (do_spray_particles == 1 && write_spray_ascii_files == 1) {
-          // TODO: Would be nice to be able to use file_name_digits instead of
-          // doing this
-          int strlen = dir.length();
-          // Remove the ".temp" from the directory
-          std::string dirout = dir.substr(0, strlen - 5);
-          size_t num_start_loc = dirout.find_last_not_of("0123456789") + 1;
-          std::string fname =
-            "spray" + dirout.substr(num_start_loc, strlen) + ".p3d";
-          theSprayPC()->WriteAsciiFile(fname);
-        }
-      }
-    }
-  }
-#endif
 }
 
 void

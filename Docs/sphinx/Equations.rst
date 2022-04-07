@@ -70,6 +70,8 @@ Some notes:
 * There are ``NUM_AUX`` auxiliary variables, from :math:`{\tt UFX:UFX+NUM\_AUX-1}`. The auxiliary variables are passed into the equation
   of state routines along with the species.
 
+* There are ``NUM_LIN`` linear passive variables, from :math:`{\tt ULIN:ULIN+NUM\_LIN-1}`. The linear passive variables are scalar variables where :math:`\mathbf{U}=\mathbf{Q}` instead of :math:`\mathbf{U}=\rho\mathbf{Q}`
+
 
 
 Primitive Forms

@@ -7,7 +7,7 @@
 
 using namespace amrex;
 
-#ifdef AMREX_PARTICLES
+#ifdef PELEC_SPRAY
 
 namespace {
 bool virtual_particles_set = false;
@@ -39,7 +39,6 @@ RemoveParticlesOnExit()
 }
 } // namespace
 
-int PeleC::do_spray_particles = 0;
 int PeleC::particle_verbose = 0;
 Real PeleC::particle_cfl = 0.4;
 
