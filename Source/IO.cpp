@@ -724,12 +724,9 @@ PeleC::writeBuildInfo(std::ostream& os)
      << "UNDEFINED" << std::endl;
 #endif
 
-#ifdef NUM_ADV
   os << std::setw(35) << std::left << "NUM_ADV=" << NUM_ADV << std::endl;
-#else
-  os << std::setw(35) << std::left << "NUM_ADV"
-     << "is undefined (0)" << std::endl;
-#endif
+
+  os << std::setw(35) << std::left << "NUM_AUX=" << NUM_AUX << std::endl;
 
 #ifdef PELEC_USE_MASA
   os << std::setw(35) << std::left << "PELEC_USE_MASA " << std::setw(6) << "ON"

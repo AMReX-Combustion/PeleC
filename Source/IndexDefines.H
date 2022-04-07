@@ -1,9 +1,6 @@
 #ifndef _INDEX_DEFINES_H_
 #define _INDEX_DEFINES_H_
 
-#include <AMReX_REAL.H>
-#include <AMReX_Arena.H>
-#include <AMReX_GpuMemory.H>
 #include "mechanism.H"
 
 #define URHO 0
@@ -56,10 +53,8 @@
 #define NTHERM 7
 #define QTHERM 8
 
-#ifndef PELEC_USE_AUX
 #define NUM_ADV 0
 #define NUM_AUX 0
-#endif
 
 #define UFS (UFA + NUM_ADV)
 #define UFX (UFS + NUM_SPECIES)
