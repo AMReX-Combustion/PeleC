@@ -23,12 +23,12 @@ function(build_pelec_exe pelec_exe_name pelec_lib_name)
 
   # Set PeleMP flags
   set(PELEMP_SRC_DIR ${CMAKE_SOURCE_DIR}/Submodules/PeleMP/Source)
-  if(PELEC_ENABLE_AMREX_PARTICLES AND PELEMP_SPRAY_FUEL_NUM)
+  if(PELEC_ENABLE_AMREX_PARTICLES AND PELEMP_SPRAY_FUEL_NUM GREATER 0)
     target_sources(${pelec_exe_name}
       PRIVATE
 	SprayParticlesInitInsert.cpp
     )
-    target_compile_definitions(${pelec_exe_name} PRIVATE SPRAY_PELEC)
+    target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_SPRAY)
     target_compile_definitions(${pelec_exe_name} PRIVATE SPRAY_FUEL_NUM=${PELEMP_SPRAY_FUEL_NUM})
     target_sources(${pelec_exe_name} PRIVATE
                    ${PELEMP_SRC_DIR}/PP_Spray/SprayParticles.cpp

@@ -193,14 +193,19 @@ PeleC::variableSetUp()
     cnt += NUM_AUX;
   }
 
+  if (NUM_LIN > 0) {
+    FirstLin = cnt;
+    cnt += NUM_LIN;
+  }
+
+  // NUM_LIN variables are will be added by the specific models
+  // NVAR = cnt;
 #ifdef SOOT_MODEL
   // Set number of soot variables to be equal to the number of moments
   // plus a variable for the weight of the delta function
   NumSootVars = NUM_SOOT_MOMENTS + 1;
-  FirstSootVar = cnt;
-  cnt += NumSootVars;
+  FirstSootVar = FirstLin;
 #endif
-
   // const amrex::Real run_strt = amrex::ParallelDescriptor::second() ;
   // Real run_stop = ParallelDescriptor::second() - run_strt;
   // ParallelDescriptor::ReduceRealMax(run_stop,ParallelDescriptor::IOProcessorNumber());
@@ -648,10 +653,8 @@ PeleC::variableSetUp()
 
   // Set list of active sources
   set_active_sources();
-#ifdef SPRAY_PELEC
-  if (do_spray_particles) {
-    defineParticles();
-  }
+#ifdef PELEC_SPRAY
+  defineParticles();
 #endif
 }
 
@@ -700,11 +703,9 @@ PeleC::set_active_sources()
   }
 #endif
 
-#ifdef SPRAY_PELEC
   if (do_spray_particles) {
     src_list.push_back(spray_src);
   }
-#endif
 
   // optional LES source
   if (do_les) {

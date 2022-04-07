@@ -49,8 +49,9 @@ pc_initdata(
   state(i, j, k, UEDEN) =
     rho * (eint + 0.5 * (u[0] * u[0] + u[1] * u[1] + u[2] * u[2]));
   state(i, j, k, UTEMP) = prob_parm.T0;
-  for (int n = 0; n < NUM_SPECIES; n++)
+  for (int n = 0; n < NUM_SPECIES; n++) {
     state(i, j, k, UFS + n) = rho * massfrac[n];
+  }
 }
 
 AMREX_GPU_DEVICE
@@ -66,8 +67,9 @@ bcnormal(
   amrex::GeometryData const& /*geomdata*/,
   ProbParmDevice const& /*prob_parm*/)
 {
-  for (int i = 0; i != NVAR; ++i)
+  for (int i = 0; i != NVAR; ++i) {
     s_ext[i] = s_int[i];
+  }
 }
 
 void pc_prob_close();

@@ -26,21 +26,6 @@ pc_cmpflx_passive(
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
-pc_cmpflx_linpassive(
-  const amrex::Real ustar,
-  const amrex::Real qu,
-  const amrex::Real& ql,
-  const amrex::Real& qr,
-  amrex::Real& flx)
-{
-  flx = (ustar > 0.0)   ? qu * ql
-        : (ustar < 0.0) ? qu * qr
-                        : qu * 0.5 * (ql + qr);
-}
-
-AMREX_GPU_DEVICE
-AMREX_FORCE_INLINE
-void
 pc_transdo_passive(
   const amrex::IntVect iv,
   const amrex::IntVect ivp0,
@@ -50,6 +35,8 @@ pc_transdo_passive(
   const int q_offset,
   const amrex::Real cdtdx,
   const amrex::Real flxrho,
+  const amrex::Real rrr,
+  const amrex::Real rrl,
   amrex::Array4<const amrex::Real> const& qyp,
   amrex::Array4<const amrex::Real> const& qym,
   amrex::Array4<const amrex::Real> const& flxx,
@@ -59,42 +46,13 @@ pc_transdo_passive(
   const int uc = u_offset + n;
   const int qc = q_offset + n;
   const amrex::Real compn = cdtdx * (flxx(ivp0, uc) - flxx(iv, uc));
-  amrex::Real rr = qyp(iv, QRHO);
-  amrex::Real rrnew = rr - flxrho;
-  amrex::Real compo = rr * qyp(iv, qc) - compn;
+  amrex::Real rrnew = rrr - flxrho;
+  amrex::Real compo = rrr * qyp(iv, qc) - compn;
   qp(iv, qc) = compo / rrnew;
 
-  rr = qym(ivp1, QRHO);
-  rrnew = rr - flxrho;
-  compo = rr * qym(ivp1, qc) - compn;
+  rrnew = rrl - flxrho;
+  compo = rrl * qym(ivp1, qc) - compn;
   qm(ivp1, qc) = compo / rrnew;
-}
-
-AMREX_GPU_DEVICE
-AMREX_FORCE_INLINE
-void
-pc_transdo_linpassive(
-  const amrex::IntVect iv,
-  const amrex::IntVect ivp0,
-  const amrex::IntVect ivp1,
-  const int n,
-  const int u_offset,
-  const int q_offset,
-  const amrex::Real cdtdx,
-  amrex::Array4<const amrex::Real> const& qyp,
-  amrex::Array4<const amrex::Real> const& qym,
-  amrex::Array4<const amrex::Real> const& flxx,
-  amrex::Array4<amrex::Real> const& qp,
-  amrex::Array4<amrex::Real> const& qm)
-{
-  const int uc = u_offset + n;
-  const int qc = q_offset + n;
-  const amrex::Real compn = cdtdx * (flxx(ivp0, uc) - flxx(iv, uc));
-  amrex::Real compo = qyp(iv, qc) - compn;
-  qp(iv, qc) = compo;
-
-  compo = qym(ivp1, qc) - compn;
-  qm(ivp1, qc) = compo;
 }
 
 AMREX_GPU_DEVICE
@@ -140,42 +98,6 @@ pc_transdd_passive(
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
-pc_transdd_linpassive(
-  const amrex::IntVect iv,
-  const amrex::IntVect ivp0,
-  const amrex::IntVect ivp1,
-  const amrex::IntVect ivp2,
-  const int n,
-  const int u_offset,
-  const int q_offset,
-  const amrex::Real cdtdx,
-  const amrex::Real cdtdy,
-  const amrex::Real hdt,
-  amrex::Array4<const amrex::Real> const& srcq,
-  amrex::Array4<const amrex::Real> const& qzp,
-  amrex::Array4<const amrex::Real> const& qzm,
-  amrex::Array4<const amrex::Real> const& flxx,
-  amrex::Array4<const amrex::Real> const& flxy,
-  amrex::Array4<amrex::Real> const& qp,
-  amrex::Array4<amrex::Real> const& qm)
-{
-
-  const int uc = u_offset + n;
-  const int qc = q_offset + n;
-  const amrex::Real srcpass = srcq(iv, qc);
-  const amrex::Real compn = cdtdx * (flxx(ivp0, uc) - flxx(iv, uc)) +
-                            cdtdy * (flxy(ivp1, uc) - flxy(iv, uc));
-  // qp
-  amrex::Real compo = qzp(iv, qc) - compn;
-  qp(iv, qc) = compo + hdt * srcpass;
-  // qm
-  compo = qzm(ivp2, qc) - compn;
-  qm(ivp2, qc) = compo + hdt * srcpass;
-}
-
-AMREX_GPU_DEVICE
-AMREX_FORCE_INLINE
-void
 pc_transd_passive(
   const amrex::IntVect iv,
   const amrex::IntVect ivp0,
@@ -186,6 +108,8 @@ pc_transd_passive(
   const amrex::Real cdtdx,
   const amrex::Real hdt,
   const amrex::Real flxrho,
+  const amrex::Real rrr,
+  const amrex::Real rrl,
   amrex::Array4<const amrex::Real> const& srcQ,
   amrex::Array4<const amrex::Real> const& qyp,
   amrex::Array4<const amrex::Real> const& qym,
@@ -197,45 +121,13 @@ pc_transd_passive(
   const int qc = q_offset + n;
   const amrex::Real srcpass = srcQ(iv, qc);
   const amrex::Real compn = cdtdx * (flxx(ivp0, uc) - flxx(iv, uc));
-  amrex::Real rr = qyp(iv, QRHO);
-  amrex::Real rrnew = rr - flxrho;
-  amrex::Real compo = rr * qyp(iv, qc) - compn;
+  amrex::Real rrnew = rrr - flxrho;
+  amrex::Real compo = rrr * qyp(iv, qc) - compn;
   qp(iv, qc) = compo / rrnew + hdt * srcpass;
 
-  rr = qym(ivp1, QRHO);
-  rrnew = rr - flxrho;
-  compo = rr * qym(ivp1, qc) - compn;
+  rrnew = rrl - flxrho;
+  compo = rrl * qym(ivp1, qc) - compn;
   qm(ivp1, qc) = compo / rrnew + hdt * srcpass;
-}
-
-AMREX_GPU_DEVICE
-AMREX_FORCE_INLINE
-void
-pc_transd_linpassive(
-  const amrex::IntVect iv,
-  const amrex::IntVect ivp0,
-  const amrex::IntVect ivp1,
-  const int n,
-  const int u_offset,
-  const int q_offset,
-  const amrex::Real cdtdx,
-  const amrex::Real hdt,
-  amrex::Array4<const amrex::Real> const& srcQ,
-  amrex::Array4<const amrex::Real> const& qyp,
-  amrex::Array4<const amrex::Real> const& qym,
-  amrex::Array4<const amrex::Real> const& flxx,
-  amrex::Array4<amrex::Real> const& qp,
-  amrex::Array4<amrex::Real> const& qm)
-{
-  const int uc = u_offset + n;
-  const int qc = q_offset + n;
-  const amrex::Real srcpass = srcQ(iv, qc);
-  const amrex::Real compn = cdtdx * (flxx(ivp0, uc) - flxx(iv, uc));
-  amrex::Real compo = qyp(iv, qc) - compn;
-  qp(iv, qc) = compo + hdt * srcpass;
-
-  compo = qym(ivp1, qc) - compn;
-  qm(ivp1, qc) = compo + hdt * srcpass;
 }
 
 AMREX_GPU_DEVICE
@@ -434,7 +326,8 @@ pc_cmpflx(
   }
   for (int n = 0; n < NUM_LIN; n++) {
     const int qc = QLIN + n;
-    pc_cmpflx_linpassive(ustar, q(i, j, k, GU), ql(iv, qc), qr(iv, qc), flx(iv, ULIN + n));
+    pc_cmpflx_passive(
+      ustar, q(i, j, k, GU), ql(iv, qc), qr(iv, qc), flx(iv, ULIN + n));
   }
 }
 
@@ -465,24 +358,29 @@ pc_transdo(
   const amrex::Real flxv = cdtdx * (flxx(ivp0, UMY) - flxx(iv, UMY));
   const amrex::Real flxw = cdtdx * (flxx(ivp0, UMZ) - flxx(iv, UMZ));
   const amrex::Real flxe = cdtdx * (flxx(ivp0, UEDEN) - flxx(iv, UEDEN));
+  const amrex::Real rrr = qyp(iv, QRHO);
+  const amrex::Real rrl = qym(ivp1, QRHO);
   const amrex::Real c = qa(iv, QGAMC);
 
   // Update passive variables
   for (int n = 0; n < NUM_ADV; n++) {
     pc_transdo_passive(
-      iv, ivp0, ivp1, n, UFA, QFA, cdtdx, flxrho, qyp, qym, flxx, qp, qm);
+      iv, ivp0, ivp1, n, UFA, QFA, cdtdx, flxrho, rrr, rrl, qyp, qym, flxx, qp,
+      qm);
   }
   for (int n = 0; n < NUM_SPECIES; n++) {
     pc_transdo_passive(
-      iv, ivp0, ivp1, n, UFS, QFS, cdtdx, flxrho, qyp, qym, flxx, qp, qm);
+      iv, ivp0, ivp1, n, UFS, QFS, cdtdx, flxrho, rrr, rrl, qyp, qym, flxx, qp,
+      qm);
   }
   for (int n = 0; n < NUM_AUX; n++) {
     pc_transdo_passive(
-      iv, ivp0, ivp1, n, UFX, QFX, cdtdx, flxrho, qyp, qym, flxx, qp, qm);
+      iv, ivp0, ivp1, n, UFX, QFX, cdtdx, flxrho, rrr, rrl, qyp, qym, flxx, qp,
+      qm);
   }
   for (int n = 0; n < NUM_LIN; n++) {
-    pc_transdo_linpassive(
-      iv, ivp0, ivp1, n, ULIN, QLIN, cdtdx, qyp, qym, flxx, qp, qm);
+    pc_transdo_passive(
+      iv, ivp0, ivp1, n, ULIN, QLIN, cdtdx, 0., 1., 1., qyp, qym, flxx, qp, qm);
   }
 
   // Update hydro vars
@@ -498,7 +396,6 @@ pc_transdo(
   // QP
 
   // Convert to conservative
-  const amrex::Real rrr = qyp(iv, QRHO);
   amrex::Real rur = qyp(iv, QU);
   amrex::Real rvr = qyp(iv, QV);
   amrex::Real rwr = qyp(iv, QW);
@@ -529,7 +426,6 @@ pc_transdo(
   // QM
 
   // Conversion to Conservative
-  const amrex::Real rrl = qym(ivp1, QRHO);
   amrex::Real rul = qym(ivp1, QU);
   amrex::Real rvl = qym(ivp1, QV);
   amrex::Real rwl = qym(ivp1, QW);
@@ -634,8 +530,9 @@ pc_transdd(
       rrnewl, srcq, qzp, qzm, flxx, flxy, qp, qm);
   }
   for (int n = 0; n < NUM_LIN; n++) {
-    pc_transdd_linpassive(
-      iv, ivp0, ivp1, ivp2, n, ULIN, QLIN, cdtdx, cdtdy, hdt, srcq, qzp, qzm, flxx, flxy, qp, qm);
+    pc_transdd_passive(
+      iv, ivp0, ivp1, ivp2, n, ULIN, QLIN, cdtdx, cdtdy, hdt, 1., 1., 1., 1.,
+      srcq, qzp, qzm, flxx, flxy, qp, qm);
   }
 
   // Update hydro vars
@@ -739,34 +636,37 @@ pc_transd(
   const amrex::Real srcr = srcQ(iv, QRHO);
   const amrex::Real srce = srcQ(iv, QREINT);
   const amrex::Real srcp = srcQ(iv, QPRES);
+  const amrex::Real rrr = qyp(iv, QRHO);
+  const amrex::Real rrl = qym(ivp1, QRHO);
   const amrex::Real c = qa(iv, QGAMC);
 
   // Update passive variables
 #if AMREX_SPACEDIM == 2
   pc_transd_passive(
-    iv, ivp0, ivp1, 0, UMZ, QW, cdtdx, hdt, flxrho, srcQ, qyp, qym, flxx, qp,
-    qm);
+    iv, ivp0, ivp1, 0, UMZ, QW, cdtdx, hdt, flxrho, rrr, rrl, srcQ, qyp, qym,
+    flxx, qp, qm);
 #endif
   for (int n = 0; n < NUM_ADV; n++) {
     pc_transd_passive(
-      iv, ivp0, ivp1, n, UFA, QFA, cdtdx, hdt, flxrho, srcQ, qyp, qym, flxx, qp,
-      qm);
+      iv, ivp0, ivp1, n, UFA, QFA, cdtdx, hdt, flxrho, rrr, rrl, srcQ, qyp, qym,
+      flxx, qp, qm);
   }
   for (int n = 0; n < NUM_SPECIES; n++) {
     pc_transd_passive(
-      iv, ivp0, ivp1, n, UFS, QFS, cdtdx, hdt, flxrho, srcQ, qyp, qym, flxx, qp,
-      qm);
+      iv, ivp0, ivp1, n, UFS, QFS, cdtdx, hdt, flxrho, rrr, rrl, srcQ, qyp, qym,
+      flxx, qp, qm);
   }
   for (int n = 0; n < NUM_AUX; n++) {
     pc_transd_passive(
-      iv, ivp0, ivp1, n, UFX, QFX, cdtdx, hdt, flxrho, srcQ, qyp, qym, flxx, qp,
-      qm);
+      iv, ivp0, ivp1, n, UFX, QFX, cdtdx, hdt, flxrho, rrr, rrl, srcQ, qyp, qym,
+      flxx, qp, qm);
   }
   for (int n = 0; n < NUM_LIN; n++) {
-    pc_transd_linpassive(
-      iv, ivp0, ivp1, n, ULIN, QLIN, cdtdx, hdt, srcQ, qyp, qym, flxx, qp,
-      qm);
+    pc_transd_passive(
+      iv, ivp0, ivp1, n, ULIN, QLIN, cdtdx, hdt, 0., 1., 1., srcQ, qyp, qym,
+      flxx, qp, qm);
   }
+
   const amrex::Real pggp = qint(ivp0, GDPRES);
   const amrex::Real pggm = qint(iv, GDPRES);
   const amrex::Real ugp = qint(ivp0, qvidx);
@@ -779,7 +679,6 @@ pc_transd(
   // QP
 
   // Convert to conservative
-  const amrex::Real rrr = qyp(iv, QRHO);
   amrex::Real rur = qyp(iv, QU);
   amrex::Real rvr = qyp(iv, QV);
   const amrex::Real ekinr = 0.5 * rrr * (rur * rur + rvr * rvr);
@@ -808,7 +707,6 @@ pc_transd(
   // QM
 
   // Conversion to Conservative
-  const amrex::Real rrl = qym(ivp1, QRHO);
   amrex::Real rul = qym(ivp1, QU);
   amrex::Real rvl = qym(ivp1, QV);
   const amrex::Real ekinl = 0.5 * rrl * (rul * rul + rvl * rvl);

@@ -33,9 +33,7 @@ enum StateType { State_Type = 0, Reactions_Type, Work_Estimate_Type };
 enum sources {
   ext_src = 0,
   forcing_src,
-#ifdef SPRAY_PELEC
   spray_src,
-#endif
   diff_src,
   les_src,
 #ifdef SOOT_MODEL
@@ -62,11 +60,11 @@ grow_box_by_one(const amrex::Box& b)
 */
 
 // Forward declarations
-#ifdef SPRAY_PELEC
-class SprayParticleContainer;
-#endif
 #ifdef SOOT_MODEL
 class SootModel;
+#endif
+#ifdef PELEC_SPRAY
+class SprayParticleContainer;
 #endif
 
 // AmrLevel-derived class for hyperbolic conservation equations for stellar
@@ -127,7 +125,7 @@ public:
   // Initialize grid data at problem start-up.
   void initData() override;
 
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
 
   // Read spray related inputs
   static void readSprayParams();
@@ -139,10 +137,16 @@ public:
   void initParticles();
 
   // Create relevant particle data
-  void createParticleData();
+  void createDataParticles();
 
   // How to initialize at restart
-  void particlePostRestart(bool is_checkpoint = true);
+  void postRestartParticles(bool is_checkpoint = true);
+
+  // Post timestep particle functions
+  void postTimeStepParticles(int iteration);
+
+  // Post init for spray particles
+  void postInitParticles();
 
   // Redistribute
   virtual void
@@ -178,7 +182,7 @@ public:
   void removeGhostParticles();
 
   // Time step control based on particles
-  void particleEstTimeStep(amrex::Real& est_dt);
+  void estTimeStepParticles(amrex::Real& est_dt);
 
   // Number of source terms in temporary spray data
   static int num_spray_src;
@@ -556,6 +560,7 @@ public:
   static int FirstAdv, NumAdv;
   static int FirstSpec;
   static int FirstAux;
+  static int FirstLin;
 
   /// Index locations for soot modeling components
   static int FirstSootVar, NumSootVars;
@@ -723,8 +728,9 @@ protected:
   // There can be only one Diffusion object, it covers all levels:
   static class Diffusion* diffusion;
 
-#ifdef SPRAY_PELEC
-  static int do_spray_particles;
+  // Do spray particles
+  static bool do_spray_particles;
+#ifdef PELEC_SPRAY
   static SprayParticleContainer* theSprayPC();
   static SprayParticleContainer* theVirtPC();
   static SprayParticleContainer* theGhostPC();

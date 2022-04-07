@@ -3,7 +3,7 @@
 #include "PeleC.H"
 #include "IndexDefines.H"
 
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
 #include "SprayParticles.H"
 #endif
 
@@ -88,7 +88,7 @@ PeleC::do_mol_advance(
     amrex::Print() << "... Computing MOL source term at t^{n} " << std::endl;
   }
   int nGrow_Sborder = numGrow() + nGrowF;
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
   int ghost_width = 0;
   int spray_n_grow = 0;
   int tmp_src_width = 0;
@@ -110,17 +110,19 @@ PeleC::do_mol_advance(
       amrex::Abort(abortStr);
     }
   }
-#endif
-  FillPatch(*this, Sborder, nGrow_Sborder, time, State_Type, 0, NVAR);
-  amrex::Real flux_factor = 0;
-  getMOLSrcTerm(Sborder, molSrc, time, dt, flux_factor);
-
-#ifdef SPRAY_PELEC
   // We must make a temporary spray source term to ensure number of ghost
   // cells are correct
   amrex::MultiFab tmp_spray_source(
     grids, dmap, num_spray_src, tmp_src_width, amrex::MFInfo(), Factory());
   tmp_spray_source.setVal(0.);
+#endif
+
+  FillPatch(*this, Sborder, nGrow_Sborder, time, State_Type, 0, NVAR);
+  amrex::Real flux_factor = 0;
+  getMOLSrcTerm(Sborder, molSrc, time, dt, flux_factor);
+
+#ifdef PELEC_SPRAY
+
   if (do_spray_particles) {
     old_sources[spray_src]->setVal(0.);
     particleMKD(
@@ -130,12 +132,7 @@ PeleC::do_mol_advance(
 #endif
   // Build other (neither spray nor diffusion) sources at t_old
   for (int n = 0; n < src_list.size(); ++n) {
-    if (
-      src_list[n] != diff_src
-#ifdef SPRAY_PELEC
-      && src_list[n] != spray_src
-#endif
-    ) {
+    if (src_list[n] != diff_src && src_list[n] != spray_src) {
       construct_old_source(
         src_list[n], time, dt, amr_iteration, amr_ncycle, 0, 0);
 
@@ -168,7 +165,7 @@ PeleC::do_mol_advance(
   flux_factor = mol_iters > 1 ? 0 : 1;
   getMOLSrcTerm(Sborder, molSrc, time, dt, flux_factor);
 
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
   if (do_spray_particles) {
     new_sources[spray_src]->setVal(0.);
     particleMK(time + dt, dt, spray_n_grow, tmp_src_width, tmp_spray_source);
@@ -178,12 +175,7 @@ PeleC::do_mol_advance(
 
   // Build other (neither spray nor diffusion) sources at t_new
   for (int n = 0; n < src_list.size(); ++n) {
-    if (
-      src_list[n] != diff_src
-#ifdef SPRAY_PELEC
-      && src_list[n] != spray_src
-#endif
-    ) {
+    if (src_list[n] != diff_src && src_list[n] != spray_src) {
       construct_new_source(
         src_list[n], time + dt, dt, amr_iteration, amr_ncycle, 0, 0);
 
@@ -310,7 +302,7 @@ PeleC::do_sdc_iteration(
     fill_Sborder = true;
     nGrow_Sborder = numGrow();
   }
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
   int ghost_width = 0;
   int spray_n_grow = 0;
   int tmp_src_width = 0;
@@ -333,22 +325,19 @@ PeleC::do_sdc_iteration(
                            std::to_string(nGrow_Sborder);
     amrex::Abort(abortStr);
   }
-
-#endif
-
-  if (fill_Sborder) {
-    FillPatch(*this, Sborder, nGrow_Sborder, time, State_Type, 0, NVAR);
-  }
-
-#ifdef SPRAY_PELEC
   // We must make a temporary spray source term to ensure number of ghost
   // cells are correct
   amrex::MultiFab tmp_spray_source(
     grids, dmap, num_spray_src, tmp_src_width, amrex::MFInfo(), Factory());
   tmp_spray_source.setVal(0.);
 #endif
+
+  if (fill_Sborder) {
+    FillPatch(*this, Sborder, nGrow_Sborder, time, State_Type, 0, NVAR);
+  }
+
   if (sub_iteration == 0) {
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
     // Compute drag terms from particles at old positions, move particles to new
     // positions  based on old-time velocity field
     // TODO: Maybe move this mess into construct_old_source?
@@ -361,12 +350,7 @@ PeleC::do_sdc_iteration(
 
     // Build other (neither spray nor diffusion) sources at t_old
     for (int n = 0; n < src_list.size(); ++n) {
-      if (
-        src_list[n] != diff_src
-#ifdef SPRAY_PELEC
-        && src_list[n] != spray_src
-#endif
-      ) {
+      if (src_list[n] != diff_src && src_list[n] != spray_src) {
         construct_old_source(
           src_list[n], time, dt, amr_iteration, amr_ncycle, sub_iteration,
           sub_ncycle);
@@ -413,14 +397,12 @@ PeleC::do_sdc_iteration(
                      << sub_iteration + 1 << ")" << std::endl;
     }
     int nGrowDiff = numGrow();
-#ifdef SPRAY_PELEC
     if (do_spray_particles && level > 0) {
       int maxref = parent->MaxRefRatio(level - 1);
       if (maxref > 2) {
         nGrowDiff = nGrow_Sborder;
       }
     }
-#endif
     FillPatch(*this, Sborder, nGrowDiff, time + dt, State_Type, 0, NVAR);
     amrex::Real flux_factor_new = sub_iteration == sub_ncycle - 1 ? 0.5 : 0;
     getMOLSrcTerm(Sborder, *new_sources[diff_src], time, dt, flux_factor_new);
@@ -428,19 +410,14 @@ PeleC::do_sdc_iteration(
 
   // Build other (neither spray nor diffusion) sources at t_new
   for (int n = 0; n < src_list.size(); ++n) {
-    if (
-      src_list[n] != diff_src
-#ifdef SPRAY_PELEC
-      && src_list[n] != spray_src
-#endif
-    ) {
+    if (src_list[n] != diff_src && src_list[n] != spray_src) {
       construct_new_source(
         src_list[n], time + dt, dt, amr_iteration, amr_ncycle, sub_iteration,
         sub_ncycle);
     }
   }
 
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
   if (do_spray_particles && sub_iteration == sub_ncycle - 1) {
     new_sources[spray_src]->setVal(0.);
     // Advance the particle velocities by dt/2 to the new time.

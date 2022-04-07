@@ -20,7 +20,7 @@
 #include "IO.H"
 #include "IndexDefines.H"
 
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
 #include "SprayParticles.H"
 #endif
 
@@ -284,9 +284,9 @@ PeleC::checkPoint(
 {
   amrex::AmrLevel::checkPoint(dir, os, how, dump_old);
 
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
   bool is_checkpoint = true;
-  if (theSprayPC() != nullptr && do_spray_particles) {
+  if (theSprayPC() != nullptr) {
     int write_ascii = 0; // Not for checkpoints
     theSprayPC()->SprayParticleIO(
       level, is_checkpoint, write_ascii, dir, PeleC::sprayFuelNames);
@@ -735,6 +735,8 @@ PeleC::writeBuildInfo(std::ostream& os)
 
   os << std::setw(35) << std::left << "NUM_AUX=" << NUM_AUX << std::endl;
 
+  os << std::setw(35) << std::left << "NUM_LIN=" << NUM_LIN << std::endl;
+
 #ifdef PELEC_USE_MASA
   os << std::setw(35) << std::left << "PELEC_USE_MASA " << std::setw(6) << "ON"
      << std::endl;
@@ -743,12 +745,12 @@ PeleC::writeBuildInfo(std::ostream& os)
      << std::endl;
 #endif
 
-#ifdef SPRAY_PELEC
-  os << std::setw(35) << std::left << "SPRAY_PELEC " << std::setw(6) << "ON"
+#ifdef PELEC_SPRAY
+  os << std::setw(35) << std::left << "PELEC_SPRAY " << std::setw(6) << "ON"
      << std::endl;
 #else
-  os << std::setw(35) << std::left << "SPRAY_PELEC " << std::setw(6)
-     << "OFF" << std::endl;
+  os << std::setw(35) << std::left << "PELEC_SPRAY " << std::setw(6) << "OFF"
+     << std::endl;
 #endif
 
   os << "\n\n";
@@ -931,7 +933,7 @@ PeleC::writePlotFile(
   std::string TheFullPath = FullPath;
   TheFullPath += BaseName;
   amrex::VisMF::Write(plotMF, TheFullPath, how, true);
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
   bool is_checkpoint = false;
   if (theSprayPC() != nullptr) {
     theSprayPC()->SprayParticleIO(

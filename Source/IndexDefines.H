@@ -71,7 +71,7 @@
 #define QFX (QFS + NUM_SPECIES)
 #define QLIN (QFX + NUM_AUX)
 #ifdef SOOT_MODEL
-#define QFSOOT (QFX + NUM_AUX)
+#define QFSOOT QLIN
 #endif
 #define QVAR (QTHERM + NUM_ADV + NUM_SPECIES + NUM_AUX + NUM_LIN)
 #define NQ QVAR

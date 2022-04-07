@@ -1,6 +1,6 @@
 
 
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
 #include "PeleC.H"
 #include "SprayParticles.H"
 
@@ -45,7 +45,6 @@ int mom_trans = 1;
 int plot_spray_src = 0;
 } // namespace
 
-int PeleC::do_spray_particles = 1;
 int PeleC::write_spray_ascii_files = 0;
 // momentum + density + fuel species + energy
 int PeleC::num_spray_src = AMREX_SPACEDIM + 2 + SPRAY_FUEL_NUM;
@@ -70,9 +69,9 @@ PeleC::theGhostPC()
 }
 
 void
-PeleC::particleEstTimeStep(amrex::Real& est_dt)
+PeleC::estTimeStepParticles(amrex::Real& est_dt)
 {
-  if (do_spray_particles == 0) {
+  if (!do_spray_particles) {
     return;
   }
   BL_PROFILE("PeleC::particleEstTimeStep()");
@@ -107,6 +106,9 @@ PeleC::readSprayParams()
 void
 PeleC::defineParticles()
 {
+  if (!do_spray_particles) {
+    return;
+  }
   // There must be at least as many fuel species in the spray as
   // there are species in the fluid
   if (SPRAY_FUEL_NUM > NUM_SPECIES) {
@@ -205,7 +207,7 @@ PeleC::removeGhostParticles()
 
 // Create new particle data
 void
-PeleC::createParticleData()
+PeleC::createDataParticles()
 {
   SprayPC =
     new SprayParticleContainer(parent, &phys_bc, sprayData, scomps, wall_temp);
@@ -229,9 +231,9 @@ PeleC::initParticles()
   // Make sure to call RemoveParticlesOnExit() on exit.
   amrex::ExecOnFinalize(RemoveParticlesOnExit);
 
-  if (do_spray_particles == 1) {
+  if (do_spray_particles) {
     AMREX_ASSERT(theSprayPC() == 0);
-    createParticleData();
+    createDataParticles();
 
     if (!init_file.empty()) {
       theSprayPC()->InitFromAsciiFile(init_file, NSR_SPR + NAR_SPR);
@@ -248,15 +250,15 @@ PeleC::initParticles()
 }
 
 void
-PeleC::particlePostRestart(bool is_checkpoint)
+PeleC::postRestartParticles(bool is_checkpoint)
 {
   if (level > 0) {
     return;
   }
 
-  if (do_spray_particles == 1) {
+  if (do_spray_particles) {
     AMREX_ASSERT(SprayPC == 0);
-    createParticleData();
+    createDataParticles();
 
     // Make sure to call RemoveParticlesOnExit() on exit.
     amrex::ExecOnFinalize(RemoveParticlesOnExit);
@@ -361,9 +363,67 @@ PeleC::particleMK(
 }
 
 void
+PeleC::postTimeStepParticles(int iteration)
+{
+  const int finest_level = parent->finestLevel();
+  const int ncycle = parent->nCycle(level);
+  if (do_spray_particles) {
+    // Remove virtual particles at this level if we have any.
+    if (theVirtPC() != nullptr) {
+      removeVirtualParticles();
+    }
+
+    // Remove Ghost particles on the final iteration
+    if (iteration == ncycle) {
+      removeGhostParticles();
+    }
+
+    // Do particle injection
+    int nstep = parent->levelSteps(0);
+    amrex::Real dtlev = parent->dtLevel(0);
+    amrex::Real cumtime = parent->cumTime() + dtlev;
+    const ProbParmHost* lprobparm = prob_parm_host;
+    const ProbParmDevice* lprobparm_d = h_prob_parm_device;
+    BL_PROFILE_VAR("SprayParticles::injectParticles()", INJECT_SPRAY);
+    bool injectParts = theSprayPC()->injectParticles(
+      cumtime, dtlev, nstep, level, finest_level, *lprobparm, *lprobparm_d);
+    BL_PROFILE_VAR_STOP(INJECT_SPRAY);
+    // Sync up if we're level 0 or if we have particles that may have moved
+    // off the next finest level and need to be added to our own level, or
+    // if we injected particles
+    if (
+      (iteration < ncycle && level < finest_level) || level == 0 ||
+      injectParts) {
+      // TODO: Determine how many ghost cells to use here
+      int nGrow = iteration;
+      theSprayPC()->Redistribute(level, theSprayPC()->finestLevel(), nGrow);
+    }
+  }
+}
+
+void
+PeleC::postInitParticles()
+{
+  amrex::Real dtlev = parent->dtLevel(level);
+  amrex::Real cumtime = parent->cumTime();
+  if (do_spray_particles) {
+    const ProbParmHost* lprobparm = prob_parm_host;
+    const ProbParmDevice* lprobparm_d = h_prob_parm_device;
+    BL_PROFILE_VAR("SprayParticles::injectParticles()", INJECT_SPRAY);
+    bool injectParts = theSprayPC()->injectParticles(
+      cumtime, dtlev, 0, level, parent->finestLevel(), *lprobparm,
+      *lprobparm_d);
+    BL_PROFILE_VAR_STOP(INJECT_SPRAY);
+    if (injectParts) {
+      theSprayPC()->Redistribute(level, theSprayPC()->finestLevel(), 0);
+    }
+  }
+}
+
+void
 PeleC::particle_redistribute(int lbase, bool init_part)
 {
-  if (do_spray_particles == 0) {
+  if (!do_spray_particles) {
     return;
   }
   BL_PROFILE("PeleC::particle_redistribute()");

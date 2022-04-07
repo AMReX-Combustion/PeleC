@@ -9,7 +9,7 @@
 
 #ifdef AMREX_PARTICLES
 #include <AMReX_Particles.H>
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
 #include "SprayParticles.H"
 #endif
 #endif
@@ -55,12 +55,19 @@ int PeleC::FirstSpec = -1;
 int PeleC::FirstAux = -1;
 int PeleC::NumAdv = 0;
 int PeleC::FirstAdv = -1;
+int PeleC::FirstLin = -1;
 int PeleC::NumSootVars = 0;
 int PeleC::FirstSootVar = -1;
 
 #include "pelec_defaults.H"
 
 bool PeleC::do_diffuse = false;
+
+#ifdef PELEC_SPRAY
+bool PeleC::do_spray_particles = true;
+#else
+bool PeleC::do_spray_particles = false;
+#endif
 
 #ifdef PELEC_USE_MASA
 bool PeleC::mms_initialized = false;
@@ -296,7 +303,7 @@ PeleC::read_params()
     amrex::Error("Cannot have max_dt < fixed_dt");
   }
 
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
   readSprayParams();
 #endif
 
@@ -370,7 +377,6 @@ PeleC::PeleC(
   }
 
   int nGrowS = numGrow();
-#ifdef SPRAY_PELEC
   if (level > 0 && do_spray_particles) {
     int cRefRatio = papa.MaxRefRatio(level - 1);
     if (cRefRatio > 4) {
@@ -379,15 +385,9 @@ PeleC::PeleC(
       nGrowS = 7;
     }
   }
-#endif
-  if (do_hydro || do_diffuse) {
+  if (do_hydro || do_diffuse || do_spray_particles) {
     Sborder.define(grids, dmap, NVAR, nGrowS, amrex::MFInfo(), Factory());
   }
-#ifdef SPRAY_PELEC
-  else if (do_spray_particles) {
-    Sborder.define(grids, dmap, NVAR, nGrowS, amrex::MFInfo(), Factory());
-  }
-#endif
 
   if (!do_mol) {
     if (do_hydro) {
@@ -663,7 +663,7 @@ PeleC::initData()
   const auto& bcs = desc->getBCs();
   InitialRedistribution(cur_time, bcs, S_new);
 
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
   if (level == 0) {
     initParticles();
   } else {
@@ -866,10 +866,10 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
     }
   }
 
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
   amrex::Real estdt_particle = max_dt;
   if (do_spray_particles) {
-    particleEstTimeStep(estdt_particle);
+    estTimeStepParticles(estdt_particle);
     if (estdt_particle < estdt) {
       limiter = "particles";
       estdt = estdt_particle;
@@ -1011,7 +1011,7 @@ PeleC::computeInitialDt(
 
 void
 PeleC::post_timestep(int
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
                        iteration
 #endif
                      /*iteration*/)
@@ -1020,40 +1020,8 @@ PeleC::post_timestep(int
 
   const int finest_level = parent->finestLevel();
 
-#ifdef SPRAY_PELEC
-  const int ncycle = parent->nCycle(level);
-  if (do_spray_particles) {
-    // Remove virtual particles at this level if we have any.
-    if (theVirtPC() != nullptr) {
-      removeVirtualParticles();
-    }
-
-    // Remove Ghost particles on the final iteration
-    if (iteration == ncycle) {
-      removeGhostParticles();
-    }
-
-    // Do particle injection
-    int nstep = parent->levelSteps(0);
-    amrex::Real dtlev = parent->dtLevel(0);
-    amrex::Real cumtime = parent->cumTime() + dtlev;
-    const ProbParmHost* lprobparm = prob_parm_host;
-    const ProbParmDevice* lprobparm_d = h_prob_parm_device;
-    BL_PROFILE_VAR("SprayParticles::injectParticles()", INJECT_SPRAY);
-    bool injectParts = theSprayPC()->injectParticles(
-      cumtime, dtlev, nstep, level, finest_level, *lprobparm, *lprobparm_d);
-    BL_PROFILE_VAR_STOP(INJECT_SPRAY);
-    // Sync up if we're level 0 or if we have particles that may have moved
-    // off the next finest level and need to be added to our own level, or
-    // if we injected particles
-    if (
-      (iteration < ncycle && level < finest_level) || level == 0 ||
-      injectParts) {
-      // TODO: Determine how many ghost cells to use here
-      int nGrow = iteration;
-      theSprayPC()->Redistribute(level, theSprayPC()->finestLevel(), nGrow);
-    }
-  }
+#ifdef PELEC_SPRAY
+  postTimeStepParticles(iteration);
 #endif
 
   if (do_reflux && level < finest_level) {
@@ -1129,10 +1097,8 @@ PeleC::post_restart()
 
   // amrex::Real cur_time = state[State_Type].curTime();
 
-#ifdef SPRAY_PELEC
-  if (do_spray_particles) {
-    particlePostRestart();
-  }
+#ifdef PELEC_SPRAY
+  postRestartParticles();
 #endif
 
   // Don't need this in pure C++?
@@ -1175,7 +1141,7 @@ PeleC::postCoarseTimeStep(amrex::Real cumtime)
 void
 PeleC::post_regrid(
   int
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
     lbase
 #endif
   /*lbase*/,
@@ -1184,10 +1150,8 @@ PeleC::post_regrid(
   BL_PROFILE("PeleC::post_regrid()");
   fine_mask.clear();
 
-#ifdef SPRAY_PELEC
-  if (do_spray_particles && theSprayPC() != nullptr && level == lbase) {
-    particle_redistribute(lbase);
-  }
+#ifdef PELEC_SPRAY
+  particle_redistribute(lbase);
 #endif
 
   if (use_typical_vals_chem) {
@@ -1229,19 +1193,8 @@ void PeleC::post_init(amrex::Real /*stop_time*/)
   // Allow the user to define their own post_init functions.
   problem_post_init();
 
-#ifdef SPRAY_PELEC
-  if (do_spray_particles) {
-    const ProbParmHost* lprobparm = prob_parm_host;
-    const ProbParmDevice* lprobparm_d = h_prob_parm_device;
-    BL_PROFILE_VAR("SprayParticles::injectParticles()", INJECT_SPRAY);
-    bool injectParts = theSprayPC()->injectParticles(
-      cumtime, dtlev, 0, level, parent->finestLevel(), *lprobparm,
-      *lprobparm_d);
-    BL_PROFILE_VAR_STOP(INJECT_SPRAY);
-    if (injectParts) {
-      theSprayPC()->Redistribute(level, theSprayPC()->finestLevel(), 0);
-    }
-  }
+#ifdef PELEC_SPRAY
+  postInitParticles();
 #endif
 
   int nstep = parent->levelSteps(0);
