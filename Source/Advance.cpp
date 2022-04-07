@@ -91,7 +91,7 @@ PeleC::do_mol_advance(
   for (int n = 0; n < src_list.size(); ++n) {
     if (
       src_list[n] != diff_src
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
       && src_list[n] != spray_src
 #endif
     ) {
@@ -131,7 +131,7 @@ PeleC::do_mol_advance(
   for (int n = 0; n < src_list.size(); ++n) {
     if (
       src_list[n] != diff_src
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
       && src_list[n] != spray_src
 #endif
     ) {
@@ -194,71 +194,6 @@ PeleC::do_mol_advance(
 
   return dt;
 }
-
-#ifdef SPRAY_PELEC
-void
-PeleC::setSprayGridInfo(
-  const int amr_iteration,
-  const int amr_ncycle,
-  int& ghost_width,
-  int& where_width,
-  int& spray_n_grow,
-  int& tmp_src_width)
-{
-  // TODO: Re-evaluate these numbers and include the particle cfl into the
-  // calcuation A particle in cell (i) can affect cell values in (i-1) to (i+1)
-  int stencil_deposition_width = 1;
-
-  // A particle in cell (i) may need information from cell values in (i-1) to
-  // (i+1)
-  //   to update its position (typically via interpolation of the acceleration
-  //   from the grid)
-  int stencil_interpolation_width = 1;
-
-  // A particle that starts in cell (i + amr_ncycle) can reach
-  //   cell (i) in amr_ncycle number of steps .. after "amr_iteration" steps
-  //   the particle has to be within (i + amr_ncycle+1-amr_iteration) to reach
-  //   cell (i) in the remaining (amr_ncycle-amr_iteration) steps
-
-  // *** ghost_width ***  is used
-  //   *) to set how many cells are used to hold ghost particles i.e copies of
-  //   particles that live on (level-1) can affect the grid over all of the
-  //   amr_ncycle steps. We define ghost cells at the coarser level to cover all
-  //   iterations so we can't reduce this number as amr_iteration increases.
-
-  ghost_width = 0;
-  if (parent->subCycle() && parent->maxLevel() > 0)
-    ghost_width += amr_ncycle + stencil_deposition_width;
-
-  // *** where_width ***  is used
-  //   *) to set how many cells the Where call in moveKickDrift tests = max of
-  //     {ghost_width + (1-amr_iteration) - 1}:
-  //      the minus 1 arises because this occurs *after* the move} and
-  //     {amr_iteration}:
-  //     the number of cells out that a cell initially in the fine grid may
-  //     have moved and we don't want to just lose it (we will redistribute it
-  //     when we're done}
-
-  where_width = amrex::max<amrex::Real>(
-    ghost_width + (1 - amr_iteration) - 1, amr_iteration);
-
-  // *** spray_n_grow *** is used
-  //   *) to determine how many ghost cells we need to fill in the MultiFab from
-  //      which the particle interpolates its acceleration
-
-  spray_n_grow = ghost_width + stencil_interpolation_width;
-
-  // *** tmp_src_width ***  is used
-  //   *) to set how many ghost cells are needed in the tmp_src_ptr MultiFab
-  //   that we
-  //      define inside moveKickDrift and moveKick.   This needs to be big
-  //      enough to hold the contribution from all the particles within
-  //      ghost_width so that we don't have to test on whether the particles are
-  //      trying to write out of bounds
-
-  tmp_src_width = ghost_width + stencil_deposition_width;
-}
-#endif
 
 amrex::Real
 PeleC::do_sdc_advance(
@@ -327,7 +262,7 @@ PeleC::do_sdc_iteration(
     fill_Sborder = true;
     nGrow_Sborder = numGrow();
   }
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
   bool use_ghost_parts = false; // Use ghost particles
   bool use_virt_parts = false;  // Use virtual particles
   if (parent->finestLevel() > 0 && level < parent->finestLevel()) {
@@ -360,7 +295,7 @@ PeleC::do_sdc_iteration(
   }
 
   if (sub_iteration == 0) {
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
 
     // Compute drag terms from particles at old positions, move particles to new
     // positions  based on old-time velocity field
@@ -440,7 +375,7 @@ PeleC::do_sdc_iteration(
     for (int n = 0; n < src_list.size(); ++n) {
       if (
         src_list[n] != diff_src
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
         && src_list[n] != spray_src
 #endif
       ) {
@@ -498,7 +433,7 @@ PeleC::do_sdc_iteration(
   for (int n = 0; n < src_list.size(); ++n) {
     if (
       src_list[n] != diff_src
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
       && src_list[n] != spray_src
 #endif
     ) {
@@ -508,7 +443,7 @@ PeleC::do_sdc_iteration(
     }
   }
 
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
   if (do_spray_particles) {
     // Advance the particle velocities by dt/2 to the new time.
     if (particle_verbose)

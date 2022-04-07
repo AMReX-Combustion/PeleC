@@ -33,7 +33,7 @@ enum StateType { State_Type = 0, Reactions_Type, Work_Estimate_Type };
 enum sources {
   ext_src = 0,
   forcing_src,
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
   spray_src,
 #endif
   diff_src,
@@ -59,7 +59,7 @@ grow_box_by_one(const amrex::Box& b)
 */
 
 // Forward declarations
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
 class SprayParticleContainer;
 #endif
 
@@ -121,7 +121,7 @@ public:
   // Initialize grid data at problem start-up.
   void initData() override;
 
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
 
   // Read particle-related inputs
   static void readParticleParams();
@@ -160,33 +160,6 @@ public:
 
   // Time step control based on particles
   void particleEstTimeStep(amrex::Real& est_dt);
-
-  // Derived quantities associated with particles
-  std::unique_ptr<amrex::MultiFab>
-  particleDerive(const std::string& name, amrex::Real time, int ngrow);
-
-  // Default cfl of particles in Particle class
-  static amrex::Real particle_cfl;
-
-  // Should we write particles into plotfiles?
-  static int write_particle_plotfiles;
-
-  // Should we write particle ascii files?
-  static int write_spray_ascii_files;
-
-  void setSprayGridInfo(
-    const int amr_iteration,
-    const int amr_ncycle,
-    int& ghost_width,
-    int& where_width,
-    int& spray_n_grow,
-    int& tmp_src_width);
-
-  static int particle_mass_tran;
-  static int particle_heat_tran;
-  static int particle_mom_tran;
-  static amrex::Vector<std::string> sprayFuelNames;
-  static amrex::Real sprayRefT;
 #endif
 
   // Get problem metrics.
@@ -695,7 +668,7 @@ protected:
   // There can be only one Diffusion object, it covers all levels:
   static class Diffusion* diffusion;
 
-#ifdef SPRAY_PELEC
+#ifdef PELEC_SPRAY
   static int do_spray_particles;
   static SprayParticleContainer* theSprayPC();
   static SprayParticleContainer* theVirtPC();

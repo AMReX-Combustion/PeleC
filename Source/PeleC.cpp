@@ -284,7 +284,7 @@ PeleC::read_params()
     amrex::Error("Cannot have max_dt < fixed_dt");
   }
 
-#ifdef AMREX_PARTICLES
+#ifdef PELEC_SPRAY
   readParticleParams();
 #endif
 
@@ -347,12 +347,6 @@ PeleC::PeleC(
   for (int n = 0; n < src_list.size(); ++n) {
     int oldGrow = numGrow();
     int newGrow = S_new.nGrow();
-#ifdef AMREX_PARTICLES
-    if (src_list[n] == spray_src) {
-      oldGrow = 1;
-      newGrow = amrex::max<amrex::Real>(1, newGrow);
-    }
-#endif
     old_sources[src_list[n]] = std::make_unique<amrex::MultiFab>(
       grids, dmap, NVAR, oldGrow, amrex::MFInfo(), Factory());
     new_sources[src_list[n]] = std::make_unique<amrex::MultiFab>(
@@ -362,11 +356,6 @@ PeleC::PeleC(
   if (do_hydro || do_diffuse) {
     Sborder.define(grids, dmap, NVAR, numGrow(), amrex::MFInfo(), Factory());
   }
-#ifdef AMREX_PARTICLES
-  else if (do_spray_particles) {
-    Sborder.define(grids, dmap, NVAR, numGrow(), amrex::MFInfo(), Factory());
-  }
-#endif
 
   if (!do_mol) {
     if (do_hydro) {
@@ -642,16 +631,6 @@ PeleC::initData()
   const auto& bcs = desc->getBCs();
   InitialRedistribution(cur_time, bcs, S_new);
 
-#ifdef AMREX_PARTICLES
-  if (level == 0) {
-    initParticles();
-  } else {
-    // TODO: Determine how many ghost cells to use here
-    int nGrow = 0;
-    particleRedistribute(level - 1, nGrow, 0, false);
-  }
-#endif
-
   if (verbose != 0) {
     amrex::Print() << "Done initializing level " << level << " data "
                    << std::endl;
@@ -847,17 +826,6 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
     }
   }
 
-#ifdef AMREX_PARTICLES
-  amrex::Real estdt_particle = max_dt;
-  if (do_spray_particles) {
-    particleEstTimeStep(estdt_particle);
-    if (estdt_particle < estdt) {
-      limiter = "particles";
-      estdt = estdt_particle;
-    }
-  }
-#endif
-
   if (verbose != 0) {
     amrex::Print() << "PeleC::estTimeStep (" << limiter << "-limited) at level "
                    << level << ":  estdt = " << estdt << '\n';
@@ -982,7 +950,7 @@ PeleC::computeInitialDt(
 
 void
 PeleC::post_timestep(int
-#ifdef AMREX_PARTICLES
+#ifdef PELEC_SPRAY
                        iteration
 #endif
                      /*iteration*/)
@@ -990,27 +958,6 @@ PeleC::post_timestep(int
   BL_PROFILE("PeleC::post_timestep()");
 
   const int finest_level = parent->finestLevel();
-
-#ifdef AMREX_PARTICLES
-  const int ncycle = parent->nCycle(level);
-  if (do_spray_particles) {
-    // Remove virtual particles at this level if we have any.
-    if (theVirtPC() != 0)
-      removeVirtualParticles();
-
-    // Remove Ghost particles on the final iteration
-    if (iteration == ncycle)
-      removeGhostParticles();
-
-    // Sync up if we're level 0 or if we have particles that may have moved
-    // off the next finest level and need to be added to our own level.
-    if ((iteration < ncycle && level < finest_level) || level == 0) {
-      // TODO: Determine how many ghost cells to use here
-      int nGrow = iteration;
-      theSprayPC()->Redistribute(level, theSprayPC()->finestLevel(), nGrow);
-    }
-  }
-#endif
 
   if (do_reflux && level < finest_level) {
     reflux();
@@ -1081,12 +1028,6 @@ PeleC::post_restart()
 
   // amrex::Real cur_time = state[State_Type].curTime();
 
-#ifdef AMREX_PARTICLES
-  if (do_spray_particles) {
-    particlePostRestart(parent->theRestartFile());
-  }
-#endif
-
   // Don't need this in pure C++?
   // initialize the Godunov state array used in hydro -- we wait
   // until here so that ngroups is defined (if needed) in
@@ -1127,7 +1068,7 @@ PeleC::postCoarseTimeStep(amrex::Real cumtime)
 void
 PeleC::post_regrid(
   int
-#ifdef AMREX_PARTICLES
+#ifdef PELEC_SPRAY
     lbase
 #endif
   /*lbase*/,
@@ -1135,14 +1076,6 @@ PeleC::post_regrid(
 {
   BL_PROFILE("PeleC::post_regrid()");
   fine_mask.clear();
-
-#ifdef AMREX_PARTICLES
-  if (do_spray_particles && theSprayPC() != 0 && level == lbase) {
-    // TODO: Determine how many ghost cells to use here
-    int nGrow = 0;
-    particleRedistribute(lbase);
-  }
-#endif
 
   if (use_typical_vals_chem) {
     set_typical_values_chem();
@@ -1692,11 +1625,7 @@ PeleC::derive(const std::string& name, amrex::Real time, int ngrow)
     ngrow += 1;
   }
 
-#ifdef AMREX_PARTICLES
-  return particleDerive(name, time, ngrow);
-#else
   return AmrLevel::derive(name, time, ngrow);
-#endif
 }
 
 void

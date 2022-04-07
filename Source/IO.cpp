@@ -712,11 +712,11 @@ PeleC::writeBuildInfo(std::ostream& os)
      << std::endl;
 #endif
 
-#ifdef SPRAY_PELEC
-  os << std::setw(35) << std::left << "SPRAY_PELEC " << std::setw(6) << "ON"
+#ifdef PELEC_SPRAY
+  os << std::setw(35) << std::left << "PELEC_SPRAY " << std::setw(6) << "ON"
      << std::endl;
 #else
-  os << std::setw(35) << std::left << "SPRAY_PELEC " << std::setw(6) << "OFF"
+  os << std::setw(35) << std::left << "PELEC_SPRAY " << std::setw(6) << "OFF"
      << std::endl;
 #endif
 
@@ -747,21 +747,8 @@ PeleC::writePlotFile(
 
   for (const auto& it : dlist) {
     if (amrex::Amr::isDerivePlotVar(it.name())) {
-#ifdef SPRAY_PELEC
-      if (
-        it->name() == "particle_count" ||
-        it->name() == "total_particle_count" ||
-        it->name() == "particle_density") {
-        if (PeleC::theSprayPC()) {
-          derive_names.push_back(it->name());
-          num_derive++;
-        }
-      } else
-#endif
-      {
-        derive_names.push_back(it.name());
-        num_derive += it.numDerive();
-      }
+      derive_names.push_back(it.name());
+      num_derive += it.numDerive();
     }
   }
 
