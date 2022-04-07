@@ -52,6 +52,9 @@ pc_srctoprim(
     srcq(i, j, k, QFX + n) =
       (src(i, j, k, UFX + n) - q(i, j, k, QFX + n) * srcrho) * rhoinv;
   }
+  for (int n = 0; n < NUM_LIN; n++) {
+    srcq(i, j, k, QLIN + n) = src(i, j, k, ULIN + n);
+  }
 }
 
 AMREX_GPU_DEVICE

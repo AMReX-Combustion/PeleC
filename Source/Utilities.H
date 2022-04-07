@@ -206,6 +206,10 @@ pc_ctoprim(
   for (int n = 0; n < NUM_AUX; n++) {
     q(i, j, k, QFX + n) = u(i, j, k, UFX + n) / rho;
   }
+  // Handle passive variables that are not per unit mass
+  for (int n = 0; n < NUM_LIN; n++) {
+    q(i, j, k, QLIN + n) = u(i, j, k, ULIN + n);
+  }
 
   const amrex::Real e = (u(i, j, k, UEDEN) - kineng) * rhoinv;
   amrex::Real T = u(i, j, k, UTEMP);
