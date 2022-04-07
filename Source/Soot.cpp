@@ -115,10 +115,9 @@ PeleC::fill_soot_source(
     // required for D term
     {
       BL_PROFILE("PeleC::ctoprim()");
-      PassMap const* lpmap = d_pass_map;
       amrex::ParallelFor(
         bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-          pc_ctoprim(i, j, k, s_arr, q_arr, qaux_arr, *lpmap);
+          pc_ctoprim(i, j, k, s_arr, q_arr, qaux_arr);
         });
     }
 
@@ -210,10 +209,9 @@ PeleC::estSootDt(amrex::Real& estdt_soot)
     // required for D term
     {
       BL_PROFILE("PeleC::ctoprim()");
-      PassMap const* lpmap = d_pass_map;
       amrex::ParallelFor(
         bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-          pc_ctoprim(i, j, k, s_arr, q_arr, qaux_arr, *lpmap);
+          pc_ctoprim(i, j, k, s_arr, q_arr, qaux_arr);
         });
     }
     amrex::Real sootdt = soot_model->estSootDt(bx, q_arr);

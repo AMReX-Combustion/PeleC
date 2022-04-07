@@ -90,7 +90,6 @@ function(build_pelec_exe pelec_exe_name pelec_lib_name)
        ${SRC_DIR}/PPM.cpp
        ${SRC_DIR}/InitEB.cpp
        ${SRC_DIR}/IndexDefines.H
-       ${SRC_DIR}/IndexDefines.cpp
        ${SRC_DIR}/IO.H
        ${SRC_DIR}/IO.cpp
        ${SRC_DIR}/LES.H

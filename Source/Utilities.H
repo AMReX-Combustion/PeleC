@@ -184,8 +184,7 @@ pc_ctoprim(
   const int k,
   amrex::Array4<const amrex::Real> const& u,
   amrex::Array4<amrex::Real> const& q,
-  amrex::Array4<amrex::Real> const& qa,
-  PassMap const& pmap)
+  amrex::Array4<amrex::Real> const& qa)
 {
   auto eos = pele::physics::PhysicsType::eos();
   const amrex::Real rho = u(i, j, k, URHO);
@@ -198,16 +197,18 @@ pc_ctoprim(
   q(i, j, k, QU) = vx;
   q(i, j, k, QV) = vy;
   q(i, j, k, QW) = vz;
-  for (int ipassive = 0; ipassive < NPASSIVE; ++ipassive) {
-    const int n = pmap.upassMap[ipassive];
-    const int nq = pmap.qpassMap[ipassive];
-    q(i, j, k, nq) = u(i, j, k, n) / rho;
+  for (int n = 0; n < NUM_ADV; n++) {
+    q(i, j, k, QFA + n) = u(i, j, k, UFA + n) / rho;
+  }
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    q(i, j, k, QFS + n) = u(i, j, k, UFS + n) / rho;
+  }
+  for (int n = 0; n < NUM_AUX; n++) {
+    q(i, j, k, QFX + n) = u(i, j, k, UFX + n) / rho;
   }
   // Handle passive variables that are not per unit mass
-  for (int ipassive = NPASSIVE; ipassive < NPASSIVE + NPASSNM; ++ipassive) {
-    const int n = pmap.upassMap[ipassive];
-    const int nq = pmap.qpassMap[ipassive];
-    q(i, j, k, nq) = u(i, j, k, n);
+  for (int n = 0; n < NUM_LIN; n++) {
+    q(i, j, k, QLIN + n) = u(i, j, k, ULIN + n);
   }
 
   const amrex::Real e = (u(i, j, k, UEDEN) - kineng) * rhoinv;

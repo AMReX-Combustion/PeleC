@@ -187,8 +187,8 @@ pc_initdata(
   for (int n = 0; n < NUM_SPECIES; n++) {
     state(i, j, k, UFS + n) = rho * massfrac[n];
   }
-  for (int is = 0; is < NUM_SOOT_VARS; ++is) {
-    state(i, j, k, UFSOOT + is) = prob_parm.soot_vals[is];
+  for (int n = 0; n < NUM_SOOT_MOMENTS + 1; n++) {
+    state(i, j, k, UFSOOT + n) = prob_parm.soot_vals[n];
   }
 }
 
@@ -264,7 +264,7 @@ bcnormal(
       s_ext[UFS + n] = rho * massfrac[n];
     }
   }
-  for (int n = 0; n < NUM_SOOT_VARS; n++) {
+  for (int n = 0; n < NUM_SOOT_MOMENTS + 1; n++) {
     s_ext[UFSOOT + n] = s_int[UFSOOT + n];
   }
 }

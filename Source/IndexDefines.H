@@ -63,29 +63,25 @@
 
 #define UFS (UFA + NUM_ADV)
 #define UFX (UFS + NUM_SPECIES)
+#define ULIN (UFX + NUM_AUX)
 #ifdef SOOT_MODEL
-#define NUM_SOOT_VARS (NUM_SOOT_MOMENTS + 1)
-#define UFSOOT (UFX + NUM_AUX)
+#define NUM_LIN (NUM_SOOT_MOMENTS + 1)
+#define UFSOOT ULIN
 #else
-#define NUM_SOOT_VARS 0
+#define NUM_LIN 0
 #endif
-#define NVAR (NTHERM + NUM_ADV + NUM_SPECIES + NUM_AUX + NUM_SOOT_VARS)
+#define NVAR (NTHERM + NUM_ADV + NUM_SPECIES + NUM_AUX + NUM_LIN)
 
 #define QFS (QFA + NUM_ADV)
 #define QFX (QFS + NUM_SPECIES)
+#define QLIN (QFX + NUM_AUX)
 #ifdef SOOT_MODEL
 #define QFSOOT (QFX + NUM_AUX)
 #endif
-#define QVAR (QTHERM + NUM_ADV + NUM_SPECIES + NUM_AUX + NUM_SOOT_VARS)
+#define QVAR (QTHERM + NUM_ADV + NUM_SPECIES + NUM_AUX + NUM_LIN)
 #define NQ QVAR
 #define NQAUX 6
 #define NGDNV 6
-
-#define NPASSIVE (NUM_SPECIES + NUM_ADV + NUM_AUX + 3 - AMREX_SPACEDIM)
-
-// Number of passive variables that are not per unit mass, U = Q instead of U =
-// rho Q
-#define NPASSNM NUM_SOOT_VARS
 
 #if AMREX_SPACEDIM == 1
 // hopefully we wont do EB in 1D
@@ -103,13 +99,5 @@
 #define NEL_TRIMAT 6
 
 #endif
-
-struct PassMap
-{
-  amrex::GpuArray<int, NPASSIVE + NPASSNM> upassMap = {{0}};
-  amrex::GpuArray<int, NPASSIVE + NPASSNM> qpassMap = {{0}};
-};
-
-void init_pass_map(PassMap* pmap);
 
 #endif

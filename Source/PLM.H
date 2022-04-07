@@ -75,6 +75,27 @@ plm_slope(
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
+pc_plm_d_passive(
+  const amrex::IntVect iv,
+  const amrex::IntVect ivp,
+  const int n,
+  const amrex::Real spzerom,
+  const amrex::Real spzerop,
+  amrex::Real const slope[QVAR],
+  amrex::Array4<const amrex::Real> const& q,
+  amrex::Array4<amrex::Real> const& qp,
+  amrex::Array4<amrex::Real> const& qm)
+{
+  const amrex::Real acmprght = 0.5 * (-1.0 - spzerom) * slope[n];
+  qp(iv, n) = q(iv, n) + acmprght;
+
+  const amrex::Real acmpleft = 0.5 * (1.0 - spzerop) * slope[n];
+  qm(ivp, n) = q(iv, n) + acmpleft;
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
 pc_plm_d(
   AMREX_D_DECL(const int i, const int j, const int k),
   const int dir,
@@ -84,8 +105,7 @@ pc_plm_d(
   amrex::Array4<const amrex::Real> const& q,
   amrex::Real const cc,
   amrex::Real const dx,
-  amrex::Real const dt,
-  PassMap const& pmap)
+  amrex::Real const dt)
 {
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
   const amrex::IntVect ivp(iv + amrex::IntVect::TheDimensionVector(dir));
@@ -206,18 +226,22 @@ pc_plm_d(
   qm(ivp, QPRES) = amrex::max<amrex::Real>(
     qm(ivp, QPRES), std::numeric_limits<amrex::Real>::min());
   qm(ivp, QREINT) = rhoe_ref + (apleft + amleft) * enth * cs + azeleft;
-  // Upwind the passive variables
-  for (int ipassive = 0; ipassive < NPASSIVE + NPASSNM; ++ipassive) {
-    const int n = pmap.qpassMap[ipassive];
-    // Right state
-    const amrex::Real vel_ad = q(iv, QU + l_idx[0]);
-    amrex::Real spzero = (vel_ad > 0) ? -1.0 : vel_ad * dtdx;
-    const amrex::Real acmprght = 0.5 * (-1.0 - spzero) * slope[n];
-    qp(iv, n) = q(iv, n) + acmprght;
 
-    spzero = vel_ad >= 0 ? vel_ad * dtdx : 1.0;
-    const amrex::Real acmpleft = 0.5 * (1.0 - spzero) * slope[n];
-    qm(ivp, n) = q(iv, n) + acmpleft;
+  // Upwind the passive variables
+  const amrex::Real vel_ad = q(iv, QU + l_idx[0]);
+  const amrex::Real spzerom = (vel_ad > 0) ? -1.0 : vel_ad * dtdx;
+  const amrex::Real spzerop = (vel_ad >= 0) ? vel_ad * dtdx : 1.0;
+  for (int n = 0; n < NUM_ADV; n++) {
+    pc_plm_d_passive(iv, ivp, QFA + n, spzerom, spzerop, slope, q, qp, qm);
+  }
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    pc_plm_d_passive(iv, ivp, QFS + n, spzerom, spzerop, slope, q, qp, qm);
+  }
+  for (int n = 0; n < NUM_AUX; n++) {
+    pc_plm_d_passive(iv, ivp, QFX + n, spzerom, spzerop, slope, q, qp, qm);
+  }
+  for (int n = 0; n < NUM_LIN; n++) {
+    pc_plm_d_passive(iv, ivp, QLIN + n, spzerom, spzerop, slope, q, qp, qm);
   }
 }
 
