@@ -174,11 +174,7 @@ PeleC::variableSetUp()
   Eint = cnt++;
   Temp = cnt++;
 
-#ifdef NUM_ADV
   NumAdv = NUM_ADV;
-#else
-  NumAdv = 0;
-#endif
 
   if (NumAdv > 0) {
     FirstAdv = cnt;
