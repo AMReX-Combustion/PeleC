@@ -75,11 +75,9 @@ SprayParticleContainer::InitSprayParticles(
     Geom(lev).ProbLength(0) / amrex::Real(num_part[0]),
     Geom(lev).ProbLength(1) / amrex::Real(num_part[1]),
     Geom(lev).ProbLength(2) / amrex::Real(num_part[2])));
-  AMREX_D_TERM(amrex::ULong np0 = num_part[0];,
-               amrex::ULong np1 = num_part[1];,
-               amrex::ULong np2 = num_part[2];);
-  const amrex::ULong total_part_num =
-    AMREX_D_TERM(np0, *np1, *np2);
+  AMREX_D_TERM(amrex::ULong np0 = num_part[0];, amrex::ULong np1 = num_part[1];
+               , amrex::ULong np2 = num_part[2];);
+  const amrex::ULong total_part_num = AMREX_D_TERM(np0, *np1, *np2);
   amrex::ULong parts_pp = total_part_num / amrex::ULong(NProcs);
   // Number of particles per processor to be initialized
   amrex::ULong cur_parts_pp = parts_pp;
@@ -115,8 +113,11 @@ SprayParticleContainer::InitSprayParticles(
   // Only copy particle data for certain processors at a time
   int NRchunk = NProcs / NRedist;
   for (int nr = 0; nr < NRedist; ++nr) {
-    std::map<std::pair<int, int>, amrex::Gpu::HostVector<ParticleType>> host_particles;
-    std::map<std::pair<int, int>, std::array<amrex::Gpu::HostVector<amrex::Real>, NAR_SPR>>
+    std::map<std::pair<int, int>, amrex::Gpu::HostVector<ParticleType>>
+      host_particles;
+    std::map<
+      std::pair<int, int>,
+      std::array<amrex::Gpu::HostVector<amrex::Real>, NAR_SPR>>
       host_real_attribs;
     if (m_verbose > 0) {
       amrex::Print() << "Redistributing from processor " << nr * NRchunk
@@ -169,8 +170,11 @@ SprayParticleContainer::InitSprayParticles(
   } // for (int nr ...
   // Now copy over any remaining processors
   for (int which = NRedist * NRchunk; which < NProcs; ++which) {
-    std::map<std::pair<int, int>, amrex::Gpu::HostVector<ParticleType>> host_particles;
-    std::map<std::pair<int, int>, std::array<amrex::Gpu::HostVector<amrex::Real>, NAR_SPR>>
+    std::map<std::pair<int, int>, amrex::Gpu::HostVector<ParticleType>>
+      host_particles;
+    std::map<
+      std::pair<int, int>,
+      std::array<amrex::Gpu::HostVector<amrex::Real>, NAR_SPR>>
       host_real_attribs;
     if (m_verbose > 0) {
       amrex::Print() << "Redistributing from processor " << NRedist * NRchunk
