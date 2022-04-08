@@ -18,9 +18,8 @@ pc_cmpflx_passive(
   const amrex::Real& qr,
   amrex::Real& flx)
 {
-  flx = (ustar > 0.0)   ? flxrho * ql
-        : (ustar < 0.0) ? flxrho * qr
-                        : flxrho * 0.5 * (ql + qr);
+  flx = (ustar > 0.0) ? flxrho * ql
+                      : (ustar < 0.0) ? flxrho * qr : flxrho * 0.5 * (ql + qr);
 }
 
 AMREX_GPU_DEVICE

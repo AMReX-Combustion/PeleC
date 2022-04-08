@@ -1130,6 +1130,7 @@ PeleC::initLevelDataFromPlt(
 #endif
       }
     });
+  amrex::Gpu::synchronize();
 
   // Convert to conserved variables
   amrex::ParallelFor(
@@ -1158,4 +1159,5 @@ PeleC::initLevelDataFromPlt(
                          +sarr(i, j, k, UMZ) * sarr(i, j, k, UMZ))) /
                        rho;
     });
+  amrex::Gpu::synchronize();
 }

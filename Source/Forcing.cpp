@@ -75,4 +75,5 @@ PeleC::fill_forcing_source(
           force * sarr(i, j, k, URHO) * (sarr(i, j, k, UMZ) - w0);
       }
     });
+  amrex::Gpu::synchronize();
 }
