@@ -97,7 +97,7 @@ bcnormal(
     amrex::Real p_in = 0.0;
     if (prob_parm.inlet_type == 0) {
       eos.RTY2P(s_int[URHO], s_int[UTEMP], massfrac, p_in);
-    } else if (prob_parm.inlet_type == 1){
+    } else if (prob_parm.inlet_type == 1) {
       p_in = prob_parm.p_inlet;
     } else {
       amrex::Abort("Invalid inlet boundary type specified");
@@ -119,7 +119,8 @@ bcnormal(
     s_ext[UMY] = rho_in * v_in;
     s_ext[UMZ] = rho_in * w_in;
     s_ext[UEINT] = rho_in * eint_in;
-    s_ext[UEDEN] = rho_in * (eint_in + 0.5 * (u_in * u_in + v_in * v_in + w_in * w_in));
+    s_ext[UEDEN] =
+      rho_in * (eint_in + 0.5 * (u_in * u_in + v_in * v_in + w_in * w_in));
     s_ext[UTEMP] = T_in;
     for (int n = 0; n < NUM_SPECIES; n++) {
       s_ext[UFS + n] = rho_in * massfrac[n];
