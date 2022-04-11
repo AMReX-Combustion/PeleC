@@ -666,7 +666,6 @@ pc_transd(
       iv, ivp0, ivp1, n, ULIN, QLIN, cdtdx, hdt, 0., 1., 1., srcQ, qyp, qym,
       flxx, qp, qm);
   }
-
   const amrex::Real pggp = qint(ivp0, GDPRES);
   const amrex::Real pggm = qint(iv, GDPRES);
   const amrex::Real ugp = qint(ivp0, qvidx);

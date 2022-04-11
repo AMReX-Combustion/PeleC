@@ -78,10 +78,10 @@ nscbc_diff                  bool          false
 add_ext_src                 bool           false
 
 # if true, define an additional soot term
-add_soot_src                 int           1
+add_soot_src                bool           true
 
 # if true, plot soot variable data
-plot_soot                    int           1
+plot_soot                   bool           true
 
 # if true, define an additional forcing term
 add_forcing_src             bool           false

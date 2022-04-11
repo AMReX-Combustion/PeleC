@@ -285,8 +285,8 @@ PeleC::checkPoint(
   amrex::AmrLevel::checkPoint(dir, os, how, dump_old);
 
 #ifdef PELEC_SPRAY
-  bool is_checkpoint = true;
   if (theSprayPC() != nullptr) {
+    bool is_checkpoint = true;
     int write_ascii = 0; // Not for checkpoints
     theSprayPC()->SprayParticleIO(
       level, is_checkpoint, write_ascii, dir, PeleC::sprayFuelNames);
@@ -934,8 +934,8 @@ PeleC::writePlotFile(
   TheFullPath += BaseName;
   amrex::VisMF::Write(plotMF, TheFullPath, how, true);
 #ifdef PELEC_SPRAY
-  bool is_checkpoint = false;
   if (theSprayPC() != nullptr) {
+    bool is_checkpoint = false;
     theSprayPC()->SprayParticleIO(
       level, is_checkpoint, write_spray_ascii_files, dir, sprayFuelNames);
   }

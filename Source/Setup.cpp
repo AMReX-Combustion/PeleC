@@ -206,6 +206,7 @@ PeleC::variableSetUp()
   NumSootVars = NUM_SOOT_MOMENTS + 1;
   FirstSootVar = FirstLin;
 #endif
+
   // const amrex::Real run_strt = amrex::ParallelDescriptor::second() ;
   // Real run_stop = ParallelDescriptor::second() - run_strt;
   // ParallelDescriptor::ReduceRealMax(run_stop,ParallelDescriptor::IOProcessorNumber());
@@ -556,7 +557,7 @@ PeleC::variableSetUp()
     amrex::DeriveRec::TheSameBox);
 
 #ifdef SOOT_MODEL
-  if (add_soot_src == 1) {
+  if (add_soot_src) {
     addSootDerivePlotVars(derive_lst, desc_lst);
   }
 #endif
@@ -698,7 +699,7 @@ PeleC::set_active_sources()
   }
 
 #ifdef SOOT_MODEL
-  if (add_soot_src == 1) {
+  if (add_soot_src) {
     src_list.push_back(soot_src);
   }
 #endif
