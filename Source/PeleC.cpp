@@ -623,6 +623,7 @@ PeleC::initData()
         // Verify that the sum of (rho Y)_i = rho at every cell
         pc_check_initial_species(i, j, k, sarrs[nbx]);
       });
+    amrex::Gpu::synchronize();
   } else {
     initLevelDataFromPlt(level, init_pltfile, S_new);
   }
@@ -720,7 +721,8 @@ PeleC::initialTimeStep()
   return init_dt;
 }
 
-amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
+amrex::Real
+PeleC::estTimeStep(amrex::Real /*dt_old*/)
 {
   BL_PROFILE("PeleC::estTimeStep()");
 
@@ -1088,7 +1090,8 @@ PeleC::post_regrid(
   }
 }
 
-void PeleC::post_init(amrex::Real /*stop_time*/)
+void
+PeleC::post_init(amrex::Real /*stop_time*/)
 {
   BL_PROFILE("PeleC::post_init()");
 
@@ -1245,6 +1248,7 @@ PeleC::enforce_consistent_e(amrex::MultiFab& S)
       sarr(i, j, k, UEDEN) = sarr(i, j, k, UEINT) + 0.5 * sarr(i, j, k, URHO) *
                                                       (u * u + v * v + w * w);
     });
+  amrex::Gpu::synchronize();
 }
 
 void
@@ -1584,6 +1588,7 @@ PeleC::errorEst(
           tagarrs[nbx](i, j, k) = amrex::TagBox::CLEAR;
         }
       });
+    amrex::Gpu::synchronize();
   }
 }
 
@@ -1809,6 +1814,7 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
           captured_allow_negative_energy, captured_dual_energy_update_E_from_e,
           captured_dual_energy_eta2, captured_verbose);
       });
+    amrex::Gpu::synchronize();
   }
 
 #ifndef AMREX_USE_GPU
@@ -1845,6 +1851,7 @@ PeleC::computeTemp(amrex::MultiFab& S, int ng)
         pc_cmpTemp(i, j, k, sarrs[nbx]);
       }
     });
+  amrex::Gpu::synchronize();
 }
 
 amrex::Real
@@ -1890,6 +1897,7 @@ PeleC::build_fine_mask()
 #endif
       arrs[nbx](i, j, k) = iarrs[nbx](i, j, k);
     });
+  amrex::Gpu::synchronize();
   return fine_mask;
 }
 
