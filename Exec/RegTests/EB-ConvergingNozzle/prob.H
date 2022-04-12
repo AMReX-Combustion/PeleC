@@ -90,8 +90,9 @@ bcnormal(
     // Inlet conditions - use interior mass fraction
     auto eos = pele::physics::PhysicsType::eos();
     amrex::Real massfrac[NUM_SPECIES];
-    for (int n = 0; n < NUM_SPECIES; n++)
+    for (int n = 0; n < NUM_SPECIES; n++) {
       massfrac[n] = s_int[UFS + n] / s_int[URHO];
+    }
 
     // Apply different inlet types for pressure
     amrex::Real p_in = 0.0;
@@ -137,11 +138,11 @@ bcnormal(
     amrex::Real v = s_int[UMY] / rho;
     amrex::Real w = s_int[UMZ] / rho;
     amrex::Real eint = s_int[UEINT] / rho;
-    amrex::Real eden = s_int[UEDEN] / rho;
     amrex::Real T = s_int[UTEMP];
     amrex::Real massfrac[NUM_SPECIES];
-    for (int n = 0; n < NUM_SPECIES; n++)
+    for (int n = 0; n < NUM_SPECIES; n++) {
       massfrac[n] = s_int[UFS + n] / rho;
+    }
 
     // If using a pressure-based outlet, compute that
     if (prob_parm.outlet_type == 0) {
@@ -198,8 +199,9 @@ bcnormal(
     s_ext[UEINT] = rho * eint;
     s_ext[UEDEN] = rho * (eint + 0.5 * (u * u + v * v + w * w));
     s_ext[UTEMP] = T;
-    for (int n = 0; n < NUM_SPECIES; n++)
+    for (int n = 0; n < NUM_SPECIES; n++) {
       s_ext[UFS + n] = rho * massfrac[n];
+    }
   }
 }
 
