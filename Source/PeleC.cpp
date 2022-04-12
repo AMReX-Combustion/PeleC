@@ -9,12 +9,12 @@
 
 #ifdef AMREX_PARTICLES
 #include <AMReX_Particles.H>
-#ifdef PELEC_SPRAY
+#ifdef PELEC_USE_SPRAY
 #include "SprayParticles.H"
 #endif
 #endif
 
-#ifdef SOOT_MODEL
+#ifdef PELEC_USE_SOOT
 #include "SootModel.H"
 #endif
 
@@ -63,7 +63,7 @@ int PeleC::FirstSootVar = -1;
 
 bool PeleC::do_diffuse = false;
 
-#ifdef PELEC_SPRAY
+#ifdef PELEC_USE_SPRAY
 bool PeleC::do_spray_particles = true;
 #else
 bool PeleC::do_spray_particles = false;
@@ -303,11 +303,11 @@ PeleC::read_params()
     amrex::Error("Cannot have max_dt < fixed_dt");
   }
 
-#ifdef PELEC_SPRAY
+#ifdef PELEC_USE_SPRAY
   readSprayParams();
 #endif
 
-#ifdef SOOT_MODEL
+#ifdef PELEC_USE_SOOT
   soot_model->readSootParams();
 #endif
 
@@ -663,7 +663,7 @@ PeleC::initData()
   const auto& bcs = desc->getBCs();
   InitialRedistribution(cur_time, bcs, S_new);
 
-#ifdef PELEC_SPRAY
+#ifdef PELEC_USE_SPRAY
   if (level == 0) {
     initParticles();
   } else {
@@ -866,7 +866,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
     }
   }
 
-#ifdef PELEC_SPRAY
+#ifdef PELEC_USE_SPRAY
   amrex::Real estdt_particle = max_dt;
   if (do_spray_particles) {
     estTimeStepParticles(estdt_particle);
@@ -876,7 +876,7 @@ amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
     }
   }
 #endif
-#ifdef SOOT_MODEL
+#ifdef PELEC_USE_SOOT
   amrex::Real estdt_soot = max_dt;
   if (add_soot_src) {
     estSootDt(estdt_soot);
@@ -1011,7 +1011,7 @@ PeleC::computeInitialDt(
 
 void
 PeleC::post_timestep(int
-#ifdef PELEC_SPRAY
+#ifdef PELEC_USE_SPRAY
                        iteration
 #endif
                      /*iteration*/)
@@ -1020,7 +1020,7 @@ PeleC::post_timestep(int
 
   const int finest_level = parent->finestLevel();
 
-#ifdef PELEC_SPRAY
+#ifdef PELEC_USE_SPRAY
   postTimeStepParticles(iteration);
 #endif
 
@@ -1044,7 +1044,7 @@ PeleC::post_timestep(int
   int ng_pts = 0;
   computeTemp(S_new, ng_pts);
 
-#ifdef SOOT_MODEL
+#ifdef PELEC_USE_SOOT
   clipSootMoments(S_new, ng_pts);
 #endif
 
@@ -1097,7 +1097,7 @@ PeleC::post_restart()
 
   // amrex::Real cur_time = state[State_Type].curTime();
 
-#ifdef PELEC_SPRAY
+#ifdef PELEC_USE_SPRAY
   postRestartParticles();
 #endif
 
@@ -1141,7 +1141,7 @@ PeleC::postCoarseTimeStep(amrex::Real cumtime)
 void
 PeleC::post_regrid(
   int
-#ifdef PELEC_SPRAY
+#ifdef PELEC_USE_SPRAY
     lbase
 #endif
   /*lbase*/,
@@ -1150,7 +1150,7 @@ PeleC::post_regrid(
   BL_PROFILE("PeleC::post_regrid()");
   fine_mask.clear();
 
-#ifdef PELEC_SPRAY
+#ifdef PELEC_USE_SPRAY
   particle_redistribute(lbase);
 #endif
 
@@ -1193,7 +1193,7 @@ void PeleC::post_init(amrex::Real /*stop_time*/)
   // Allow the user to define their own post_init functions.
   problem_post_init();
 
-#ifdef PELEC_SPRAY
+#ifdef PELEC_USE_SPRAY
   postInitParticles();
 #endif
 

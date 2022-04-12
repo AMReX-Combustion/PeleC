@@ -36,7 +36,7 @@ enum sources {
   spray_src,
   diff_src,
   les_src,
-#ifdef SOOT_MODEL
+#ifdef PELEC_USE_SOOT
   soot_src,
 #endif
 #ifdef PELEC_USE_MASA
@@ -60,10 +60,10 @@ grow_box_by_one(const amrex::Box& b)
 */
 
 // Forward declarations
-#ifdef SOOT_MODEL
+#ifdef PELEC_USE_SOOT
 class SootModel;
 #endif
-#ifdef PELEC_SPRAY
+#ifdef PELEC_USE_SPRAY
 class SprayParticleContainer;
 #endif
 
@@ -125,7 +125,7 @@ public:
   // Initialize grid data at problem start-up.
   void initData() override;
 
-#ifdef PELEC_SPRAY
+#ifdef PELEC_USE_SPRAY
 
   // Read spray related inputs
   static void readSprayParams();
@@ -335,7 +335,7 @@ public:
     amrex::MultiFab& forcing_src,
     int ng);
 
-#ifdef SOOT_MODEL
+#ifdef PELEC_USE_SOOT
   static void setSootIndx();
 
   static void addSootDerivePlotVars(
@@ -604,7 +604,7 @@ public:
     trans_parms;
   static pele::physics::turbinflow::TurbInflow turb_inflow;
 
-#ifdef SOOT_MODEL
+#ifdef PELEC_USE_SOOT
   static SootModel* soot_model;
 #endif
 
@@ -730,7 +730,7 @@ protected:
 
   // Do spray particles
   static bool do_spray_particles;
-#ifdef PELEC_SPRAY
+#ifdef PELEC_USE_SPRAY
   static SprayParticleContainer* theSprayPC();
   static SprayParticleContainer* theVirtPC();
   static SprayParticleContainer* theGhostPC();

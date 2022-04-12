@@ -59,7 +59,7 @@
 #define UFS (UFA + NUM_ADV)
 #define UFX (UFS + NUM_SPECIES)
 #define ULIN (UFX + NUM_AUX)
-#ifdef SOOT_MODEL
+#ifdef PELEC_USE_SOOT
 #define NUM_LIN (NUM_SOOT_MOMENTS + 1)
 #define UFSOOT ULIN
 #else
@@ -70,7 +70,7 @@
 #define QFS (QFA + NUM_ADV)
 #define QFX (QFS + NUM_SPECIES)
 #define QLIN (QFX + NUM_AUX)
-#ifdef SOOT_MODEL
+#ifdef PELEC_USE_SOOT
 #define QFSOOT QLIN
 #endif
 #define QVAR (QTHERM + NUM_ADV + NUM_SPECIES + NUM_AUX + NUM_LIN)

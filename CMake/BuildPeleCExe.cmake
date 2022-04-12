@@ -28,7 +28,7 @@ function(build_pelec_exe pelec_exe_name pelec_lib_name)
       PRIVATE
 	SprayParticlesInitInsert.cpp
     )
-    target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_SPRAY)
+    target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_SPRAY)
     target_compile_definitions(${pelec_exe_name} PRIVATE SPRAY_FUEL_NUM=${PELEMP_SPRAY_FUEL_NUM})
     target_sources(${pelec_exe_name} PRIVATE
                    ${PELEMP_SRC_DIR}/PP_Spray/SprayParticles.cpp
@@ -39,8 +39,8 @@ function(build_pelec_exe pelec_exe_name pelec_lib_name)
                    ${PELEMP_SRC_DIR}/PP_Spray/WallFunctions.H)
     target_include_directories(${pelec_exe_name} PRIVATE ${PELEMP_SRC_DIR}/PP_Spray)
   endif()
-  if(PELEC_ENABLE_SOOT AND PELEC_SOOT_MODEL)
-    target_compile_definitions(${pelec_exe_name} PRIVATE SOOT_MODEL)
+  if(PELEC_ENABLE_SOOT)
+    target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_SOOT)
     target_compile_definitions(${pelec_exe_name} PRIVATE NUM_SOOT_MOMENTS=${PELEMP_NUM_SOOT_MOMENTS})
     set(SOOT_MOMENTS_VALUES 3 6)
     if(NOT PELEMP_NUM_SOOT_MOMENTS IN_LIST SOOT_MOMENTS_VALUES)

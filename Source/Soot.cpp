@@ -1,6 +1,6 @@
 
 
-#ifdef SOOT_MODEL
+#ifdef PELEC_USE_SOOT
 #include "PeleC.H"
 #include "SootModel.H"
 #include "SootModel_derive.H"

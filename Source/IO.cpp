@@ -20,7 +20,7 @@
 #include "IO.H"
 #include "IndexDefines.H"
 
-#ifdef PELEC_SPRAY
+#ifdef PELEC_USE_SPRAY
 #include "SprayParticles.H"
 #endif
 
@@ -284,7 +284,7 @@ PeleC::checkPoint(
 {
   amrex::AmrLevel::checkPoint(dir, os, how, dump_old);
 
-#ifdef PELEC_SPRAY
+#ifdef PELEC_USE_SPRAY
   if (theSprayPC() != nullptr) {
     bool is_checkpoint = true;
     int write_ascii = 0; // Not for checkpoints
@@ -409,7 +409,7 @@ PeleC::setPlotVariables()
     }
   }
 
-#ifdef SOOT_MODEL
+#ifdef PELEC_USE_SOOT
   if (plot_soot && add_soot_src) {
     for (int i = 0; i < NumSootVars; i++) {
       amrex::Amr::addStatePlotVar(desc_lst[State_Type].name(FirstSootVar + i));
@@ -745,11 +745,15 @@ PeleC::writeBuildInfo(std::ostream& os)
      << std::endl;
 #endif
 
-#ifdef PELEC_SPRAY
-  os << std::setw(35) << std::left << "PELEC_SPRAY " << std::setw(6) << "ON"
+#ifdef PELEC_USE_SPRAY
+  os << std::setw(35) << std::left << "PELEC_USE_SPRAY " << std::setw(6) << "ON"
      << std::endl;
 #else
-  os << std::setw(35) << std::left << "PELEC_SPRAY " << std::setw(6) << "OFF"
+  os << std::setw(35) << std::left << "PELEC_USE_SPRAY " << std::setw(6) << "OFF"
+     << std::endl;
+#endif
+#ifdef PELEC_USE_SOOT
+  os << std::setw(35) << std::left << "PELEC_USE_SOOT " << std::setw(6) << "ON"
      << std::endl;
 #endif
 
@@ -933,7 +937,7 @@ PeleC::writePlotFile(
   std::string TheFullPath = FullPath;
   TheFullPath += BaseName;
   amrex::VisMF::Write(plotMF, TheFullPath, how, true);
-#ifdef PELEC_SPRAY
+#ifdef PELEC_USE_SPRAY
   if (theSprayPC() != nullptr) {
     bool is_checkpoint = false;
     theSprayPC()->SprayParticleIO(

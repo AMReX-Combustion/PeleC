@@ -14,7 +14,7 @@ using namespace MASA;
 #include "IndexDefines.H"
 #include "prob.H"
 
-#ifdef SOOT_MODEL
+#ifdef PELEC_USE_SOOT
 #include "SootModel.H"
 #endif
 
@@ -22,7 +22,7 @@ ProbParmDevice* PeleC::d_prob_parm_device = nullptr;
 ProbParmDevice* PeleC::h_prob_parm_device = nullptr;
 ProbParmHost* PeleC::prob_parm_host = nullptr;
 TaggingParm* PeleC::tagging_parm = nullptr;
-#ifdef SOOT_MODEL
+#ifdef PELEC_USE_SOOT
 SootModel* PeleC::soot_model = nullptr;
 #endif
 
@@ -149,7 +149,7 @@ PeleC::variableSetUp()
   trans_parms.allocate();
   turb_inflow.init(amrex::DefaultGeometry());
 
-#ifdef SOOT_MODEL
+#ifdef PELEC_USE_SOOT
   soot_model = new SootModel{};
 #endif
 
@@ -200,7 +200,7 @@ PeleC::variableSetUp()
 
   // NUM_LIN variables are will be added by the specific models
   // NVAR = cnt;
-#ifdef SOOT_MODEL
+#ifdef PELEC_USE_SOOT
   // Set number of soot variables to be equal to the number of moments
   // plus a variable for the weight of the delta function
   NumSootVars = NUM_SOOT_MOMENTS + 1;
@@ -377,7 +377,7 @@ PeleC::variableSetUp()
     name[cnt] = "rho_" + aux_names[i];
   }
 
-#ifdef SOOT_MODEL
+#ifdef PELEC_USE_SOOT
   // Set the soot model names
   if (amrex::ParallelDescriptor::IOProcessor()) {
     amrex::Print() << NumSootVars << " Soot Variables: " << std::endl;
@@ -556,7 +556,7 @@ PeleC::variableSetUp()
     "vfrac", amrex::IndexType::TheCellType(), 1, pc_dermagvel,
     amrex::DeriveRec::TheSameBox);
 
-#ifdef SOOT_MODEL
+#ifdef PELEC_USE_SOOT
   if (add_soot_src) {
     addSootDerivePlotVars(derive_lst, desc_lst);
   }
@@ -648,7 +648,7 @@ PeleC::variableSetUp()
   // Problem-specific derives
   add_problem_derives<ProblemDerives>(derive_lst, desc_lst);
 
-#ifdef SOOT_MODEL
+#ifdef PELEC_USE_SOOT
   soot_model->define();
 #endif
 
@@ -670,7 +670,7 @@ PeleC::variableCleanUp()
 
   eb_initialized = false;
 
-#ifdef SOOT_MODEL
+#ifdef PELEC_USE_SOOT
   delete soot_model;
 #endif
 
@@ -698,7 +698,7 @@ PeleC::set_active_sources()
     src_list.push_back(forcing_src);
   }
 
-#ifdef SOOT_MODEL
+#ifdef PELEC_USE_SOOT
   if (add_soot_src) {
     src_list.push_back(soot_src);
   }

@@ -1,6 +1,6 @@
 
 
-#ifdef PELEC_SPRAY
+#ifdef PELEC_USE_SPRAY
 #include "PeleC.H"
 #include "SprayParticles.H"
 
