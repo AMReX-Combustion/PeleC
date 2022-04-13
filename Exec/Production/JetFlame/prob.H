@@ -67,7 +67,7 @@ pc_initdata(
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 amrex::Real
-time_func(
+time_eta(
   amrex::Real time, amrex::Real start, amrex::Real duration, amrex::Real tau)
 {
   amrex::Real eta_time;
@@ -133,7 +133,7 @@ bcnormal(
                                        2.0 * (radius - prob_parm.D * 0.5) /
                                        (0.1 * prob_parm.D * 0.5)));
       eta *=
-        time_func(time, prob_parm.inj_start, prob_parm.inj_dur, prob_parm.tau);
+        time_eta(time, prob_parm.inj_start, prob_parm.inj_dur, prob_parm.tau);
       for (int n = 0; n < NUM_SPECIES; n++) {
         massfrac[n] =
           eta * prob_parm.Y_fuel[n] + (1.0 - eta) * prob_parm.Y_ox[n];

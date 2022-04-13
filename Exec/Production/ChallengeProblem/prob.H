@@ -219,6 +219,20 @@ pc_initdata(
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
+amrex::Real
+time_eta(
+  amrex::Real time, amrex::Real start, amrex::Real duration, amrex::Real tau)
+{
+  amrex::Real eta_time;
+  eta_time = 0.5 * (std::tanh((time - start) / (duration * tau)) *
+                      std::tanh((-time + start + duration) / (duration * tau)) +
+                    1.0);
+  eta_time = std::min(std::max(eta_time, 0.0), 1.0);
+  return eta_time;
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
 void
 bcnormal(
   const amrex::Real x[AMREX_SPACEDIM],
@@ -232,13 +246,11 @@ bcnormal(
 {
   if (sgn == -1 && idir == 2) {
     // Save off the inflow velocity if specified
-    amrex::Real velx = 0.0, vely = 0.0, velz = 0.0;
+    amrex::Real fluc_velx = 0.0, fluc_vely = 0.0, fluc_velz = 0.0;
     if (prob_parm.turbulence) {
-      velx = s_ext[UMX];
-      vely = s_ext[UMY];
-      velz = s_ext[UMZ] + prob_parm.vel_jet;
-    } else {
-      velz += prob_parm.vel_jet;
+      fluc_velx = s_ext[UMX];
+      fluc_vely = s_ext[UMY];
+      fluc_velz = s_ext[UMZ];
     }
 
     // default wall condition
@@ -314,7 +326,9 @@ bcnormal(
         eos.RTY2P(s_int[URHO], s_int[UTEMP], massfrac_int, p_int);
 
         // Tanh profile
-        const amrex::Real eta = 0.5 * (1.0 - std::tanh((elrSq - 1.0) / 0.2));
+        const amrex::Real eta =
+          0.5 * (1.0 - std::tanh((elrSq - 1.0) / 0.2)) *
+          time_eta(time, prob_parm.inj_start, prob_parm.inj_dur, prob_parm.tau);
 
         // Composition
         amrex::Real massfrac[NUM_SPECIES] = {0.0};
@@ -327,14 +341,14 @@ bcnormal(
         eos.PYT2RE(p_int, massfrac, prob_parm.T_jet, rho, eint);
 
         // velocity
-        const amrex::Real vjet = velz * eta;
+        const amrex::Real vjet = prob_parm.vel_jet * eta;
         const amrex::Real vz_in =
-          -vjet *
-          cos(prob_parm.cone_angle * constants::PI() / 180.0); // top XY plane
+          -vjet * cos(prob_parm.cone_angle * constants::PI() / 180.0) +
+          fluc_velz * eta;
         const amrex::Real vr_in =
           vjet * sin(prob_parm.cone_angle * constants::PI() / 180.0);
-        const amrex::Real vx_in = vr_in * cos(phi_angle);
-        const amrex::Real vy_in = vr_in * sin(phi_angle);
+        const amrex::Real vx_in = vr_in * cos(phi_angle) + fluc_velx * eta;
+        const amrex::Real vy_in = vr_in * sin(phi_angle) + fluc_vely * eta;
 
         s_ext[URHO] = rho;
         s_ext[UMX] = rho * vx_in;
