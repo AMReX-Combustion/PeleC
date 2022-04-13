@@ -461,6 +461,7 @@ PeleC::getMOLSrcTerm(
                   valid_interped_flux_box, stencil_volume_box,
                   flux_interp_stencil[dir][local_i].data(), Nsten, dir, NVAR,
                   flx[dir]);
+                  amrex::Gpu::Device::streamSynchronize();
               }
             }
           }
