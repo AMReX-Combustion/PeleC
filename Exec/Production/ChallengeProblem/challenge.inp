@@ -89,6 +89,7 @@ prob.vel_jet = 2800.0
 prob.Z = 0.45
 prob.injection_start = 0.0
 prob.injection_duration = 0.0005
+prob.turbulence     = true
 
 ic.hitIC = 1
 ic.inres = 128

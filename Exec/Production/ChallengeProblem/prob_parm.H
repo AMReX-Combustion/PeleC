@@ -25,6 +25,7 @@ struct ProbParmDevice
   amrex::Real inj_dur = .5e-3;
   amrex::Real tau = 0.01;
   amrex::Real Z = 0.45;
+  bool turbulent_inflow = false;
 
   bool binfmt = false;
   bool hitIC = false;
