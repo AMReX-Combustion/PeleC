@@ -7,16 +7,18 @@
 
 struct ProbParmDevice
 {
-  amrex::Real d_cyl = 7.542;
-  amrex::Real l_nozzle = 4.789;
-  amrex::Real d_nozzle = 1.780;
-  amrex::Real l_combustor = 23.711;
-  amrex::Real l_exit = 1.0;
-  amrex::Real d_swirler = 2.8;
-  amrex::Real u_swirl_ax = 0.0;
-  amrex::Real T_swirl = 300.0;
+  amrex::Real d_inlet = 8;
+  amrex::Real l_inlet = 24;
+  amrex::Real M_inlet = 0.1;
+  amrex::Real T_inlet = 300.0;
+  amrex::Real p_inlet = 1.013e6;
+  amrex::Real l_nozzle = 5;
+  amrex::Real d_exit = 5;
+  amrex::Real p_exit = 1.013e6;
   amrex::Real p0 = 1.013e6; // [erg cm^-3]
   amrex::Real T0 = 300.0;
+  int inlet_type = 0;
+  int outlet_type = 1;
 };
 
 struct ProbParmHost
