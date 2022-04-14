@@ -40,8 +40,8 @@ amr.data_log         = datlog
 amr.max_level       = 1       # maximum level number allowed
 amr.ref_ratio       = 2 2 2 2 # refinement ratio
 amr.regrid_int      = 2 2 2 2 # how often to regrid
-amr.blocking_factor = 4       # block factor in grid generation
-amr.max_grid_size   = 8
+amr.blocking_factor = 8       # block factor in grid generation
+amr.max_grid_size   = 32
 
 # CHECKPOINT FILES
 amr.checkpoint_files_output = 0
