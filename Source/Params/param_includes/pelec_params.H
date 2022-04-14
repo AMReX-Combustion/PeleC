@@ -24,8 +24,6 @@ static int weno_scheme;
 static bool nscbc_adv;
 static bool nscbc_diff;
 static bool add_ext_src;
-static bool add_soot_src;
-static int plot_soot;
 static bool add_forcing_src;
 static amrex::Real forcing_u0;
 static amrex::Real forcing_v0;

@@ -69,6 +69,13 @@ bool PeleC::do_spray_particles = true;
 bool PeleC::do_spray_particles = false;
 #endif
 
+#ifdef PELEC_USE_SOOT
+bool PeleC::add_soot_src = true;
+bool PeleC::plot_soot = false;
+#else
+bool PeleC::add_soot_src = false;
+#endif
+
 #ifdef PELEC_USE_MASA
 bool PeleC::mms_initialized = false;
 #endif
@@ -377,14 +384,17 @@ PeleC::PeleC(
   }
 
   int nGrowS = numGrow();
-  if (level > 0 && do_spray_particles) {
-    int cRefRatio = papa.MaxRefRatio(level - 1);
-    if (cRefRatio > 4) {
-      amrex::Abort("Spray particles not supported for ref_ratio > 4");
-    } else if (cRefRatio > 2) {
-      nGrowS = 7;
+#ifdef PELEC_USE_SPRAY
+  if (do_spray_particles) {
+    if (level > 0) {
+      nGrowS =
+        amrex::max(nGrowS, sprayStateGhosts(parent->MaxRefRatio(level - 1)));
+      defineSpraySource(parent->MaxRefRatio(level - 1));
+    } else {
+      defineSpraySource(1);
     }
   }
+#endif
   if (do_hydro || do_diffuse || do_spray_particles) {
     Sborder.define(grids, dmap, NVAR, nGrowS, amrex::MFInfo(), Factory());
   }

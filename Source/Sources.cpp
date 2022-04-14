@@ -7,7 +7,7 @@ PeleC::construct_old_source(
   amrex::Real time,
   amrex::Real dt,
   int /*amr_iteration*/,
-  int /*amr_ncycle*/,
+  int amr_ncycle,
   int sub_iteration,
   int sub_ncycle)
 {
@@ -26,6 +26,14 @@ PeleC::construct_old_source(
   case forcing_src:
     construct_old_forcing_source(time, dt);
     break;
+
+#ifdef PELEC_USE_SPRAY
+  case spray_src:
+    particleMKD(time, dt, sub_iteration, sub_ncycle, amr_ncycle);
+    break;
+#else
+    amrex::ignore_unused(amr_ncycle);
+#endif
 
 #ifdef PELEC_USE_SOOT
   case soot_src:
@@ -47,7 +55,7 @@ PeleC::construct_new_source(
   amrex::Real time,
   amrex::Real dt,
   int /*amr_iteration*/,
-  int /*amr_ncycle*/,
+  int amr_ncycle,
   int sub_iteration,
   int sub_ncycle)
 {
@@ -66,6 +74,13 @@ PeleC::construct_new_source(
   case forcing_src:
     construct_new_forcing_source(time, dt);
     break;
+#ifdef PELEC_USE_SPRAY
+  case spray_src:
+    particleMK(time, dt, sub_iteration, sub_ncycle, amr_ncycle);
+    break;
+#else
+    amrex::ignore_unused(amr_ncycle);
+#endif
 
 #ifdef PELEC_USE_SOOT
   case soot_src:

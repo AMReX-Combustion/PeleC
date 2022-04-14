@@ -749,8 +749,8 @@ PeleC::writeBuildInfo(std::ostream& os)
   os << std::setw(35) << std::left << "PELEC_USE_SPRAY " << std::setw(6) << "ON"
      << std::endl;
 #else
-  os << std::setw(35) << std::left << "PELEC_USE_SPRAY " << std::setw(6) << "OFF"
-     << std::endl;
+  os << std::setw(35) << std::left << "PELEC_USE_SPRAY " << std::setw(6)
+     << "OFF" << std::endl;
 #endif
 #ifdef PELEC_USE_SOOT
   os << std::setw(35) << std::left << "PELEC_USE_SOOT " << std::setw(6) << "ON"

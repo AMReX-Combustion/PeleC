@@ -37,8 +37,9 @@ PeleC::addSootDerivePlotVars(
   // Variables associated with the second mode (large particles)
   amrex::Vector<std::string> large_part_names = {"NL", "soot_V_L", "soot_S_L"};
   derive_lst.add(
-    "soot_large_particles", amrex::IndexType::TheCellType(), large_part_names.size(),
-    large_part_names, soot_largeparticledata, amrex::DeriveRec::TheSameBox);
+    "soot_large_particles", amrex::IndexType::TheCellType(),
+    large_part_names.size(), large_part_names, soot_largeparticledata,
+    amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent(
     "soot_large_particles", desc_lst, State_Type, UFSOOT, NUM_SOOT_MOMENTS + 1);
 }
@@ -84,14 +85,16 @@ PeleC::fill_soot_source(
   BL_PROFILE("PeleC::fill_soot_source()");
 
 #ifdef PELE_USE_EB
-  auto const& fact = dynamic_cast<amrex::EBFArrayBoxFactory const&>(state.Factory());
+  auto const& fact =
+    dynamic_cast<amrex::EBFArrayBoxFactory const&>(state.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
 #endif
 
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-  for (amrex::MFIter mfi(soot_src, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
+  for (amrex::MFIter mfi(soot_src, amrex::TilingIfNotGPU()); mfi.isValid();
+       ++mfi) {
     const amrex::Box& bx = mfi.growntilebox(ng);
 #ifdef PELE_USE_EB
     const auto& flag_fab = flags[mfi];
@@ -158,7 +161,8 @@ PeleC::fill_soot_source(
 void
 PeleC::clipSootMoments(amrex::MultiFab& S_new, const int ng)
 {
-  for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
+  for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
+       ++mfi) {
     const amrex::Box& bx = mfi.growntilebox(ng);
     amrex::FArrayBox& Sfab = S_new[mfi];
     auto const& s_arr = Sfab.array(UFSOOT);
@@ -182,14 +186,16 @@ PeleC::estSootDt(amrex::Real& estdt_soot)
   const amrex::MultiFab& state = get_new_data(State_Type);
   amrex::Real local_dt = 1.E20;
 #ifdef PELE_USE_EB
-  auto const& fact = dynamic_cast<amrex::EBFArrayBoxFactory const&>(state.Factory());
+  auto const& fact =
+    dynamic_cast<amrex::EBFArrayBoxFactory const&>(state.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
 #endif
 
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-  for (amrex::MFIter mfi(state, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
+  for (amrex::MFIter mfi(state, amrex::TilingIfNotGPU()); mfi.isValid();
+       ++mfi) {
     const amrex::Box& bx = mfi.tilebox();
 #ifdef PELE_USE_EB
     const auto& flag_fab = flags[mfi];

@@ -36,9 +36,7 @@ enum sources {
   spray_src,
   diff_src,
   les_src,
-#ifdef PELEC_USE_SOOT
   soot_src,
-#endif
 #ifdef PELEC_USE_MASA
   mms_src,
 #endif
@@ -154,20 +152,19 @@ public:
 
   // Setup ghost and virtual particles and do moveKickDrift
   void particleMKD(
-    const amrex::Real time,
-    const amrex::Real dt,
-    const int ghost_width,
-    const int spray_n_grow,
-    const int tmp_src_width,
-    amrex::MultiFab& tmp_spray_source);
+    amrex::Real time,
+    amrex::Real dt,
+    int sub_iteration,
+    int sub_ncycle,
+    int amr_ncycle);
 
   // Do the moveKick for active and ghost particles
   void particleMK(
-    const amrex::Real time,
-    const amrex::Real dt,
-    const int spray_n_grow,
-    const int tmp_src_width,
-    amrex::MultiFab& tmp_spray_source);
+    amrex::Real time,
+    amrex::Real dt,
+    int sub_iteration,
+    int sub_ncycle,
+    int amr_ncycle);
 
   // Setup virtual particles if necessary
   void setupVirtualParticles();
@@ -183,6 +180,13 @@ public:
 
   // Time step control based on particles
   void estTimeStepParticles(amrex::Real& est_dt);
+
+  // Initialize the temporary spray source
+  void defineSpraySource(int amr_ncycle);
+  amrex::MultiFab tmp_spray_source;
+
+  // Determine the number of ghost cells for the state MF
+  int sprayStateGhosts(int amr_ncycle);
 
   // Number of source terms in temporary spray data
   static int num_spray_src;
@@ -335,6 +339,7 @@ public:
     amrex::MultiFab& forcing_src,
     int ng);
 
+  static bool add_soot_src;
 #ifdef PELEC_USE_SOOT
   static void setSootIndx();
 
@@ -355,6 +360,7 @@ public:
   void clipSootMoments(amrex::MultiFab& S_new, const int ng);
 
   void estSootDt(amrex::Real& estdt_soot);
+  static bool plot_soot;
 #endif
 
 #ifdef PELEC_USE_MASA

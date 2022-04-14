@@ -24,8 +24,6 @@ pp.query("weno_scheme", weno_scheme);
 pp.query("nscbc_adv", nscbc_adv);
 pp.query("nscbc_diff", nscbc_diff);
 pp.query("add_ext_src", add_ext_src);
-pp.query("add_soot_src", add_soot_src);
-pp.query("plot_soot", plot_soot);
 pp.query("add_forcing_src", add_forcing_src);
 pp.query("forcing_u0", forcing_u0);
 pp.query("forcing_v0", forcing_v0);

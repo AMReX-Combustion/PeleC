@@ -654,7 +654,7 @@ PeleC::variableSetUp()
 
   // Set list of active sources
   set_active_sources();
-#ifdef PELEC_SPRAY
+#ifdef PELEC_USE_SPRAY
   defineParticles();
 #endif
 }
@@ -698,11 +698,9 @@ PeleC::set_active_sources()
     src_list.push_back(forcing_src);
   }
 
-#ifdef PELEC_USE_SOOT
   if (add_soot_src) {
     src_list.push_back(soot_src);
   }
-#endif
 
   if (do_spray_particles) {
     src_list.push_back(spray_src);
