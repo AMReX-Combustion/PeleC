@@ -22,12 +22,19 @@ PeleC manages boundary conditions in a form consistent with many AMReX codes. Gh
 
 More complex boundary conditions require user input that is prescribed explicitly. Boundaries identified as ``UserBC`` or ``Hard`` in the inputs will be tagged as ``EXT_DIR`` in ``pc_hypfill``.  Users will then fill the Dirichlet boundary values, typically by calling the helper function, ``bcnormal``.
 
+Special care should be taken when prescribing subsonic ``Inflow`` or an ``Outflow`` boundary conditions. It might be tempting to directly impose target values in the boundary filler function (for ``Inflow``), or to perform a simple extrapolation (for ``Outflow``).  However, this approach would fail to correctly respect the flow of information along solution characteristics - the system would be ill-posed and would lead to unphysical behavior. In particular, at a subsonic inflow boundary, at a subsonic inlet there is one outgoing characteristic, so one flow variable must be specified using information from inside the domain. Similarly, there is one incoming characteristic at outflow boundaries. The NSCBC method, described below, is the preffered method to account for this, but has not been ported to the all C++ version of PeleC. In the meantime, the recommended strategy for subsonic inflow and outflow boundaries for confined geometries such as nozzles and combustors is as follows:
+
+* Subsonic Inflows: Specify the desired temperature, velocity, and composition (if relevant) in the ghost cells. Take the pressure from the domain interior. Based on these values, compute the density, internal energy, and total energy for the ghost cells.
+  
+* Subsonic Outflows: Specify the desired outlet pressure and extrapolate the other flow quantities. In particular, we recommend following the simple characteristic-based extrapolation proposed by Whitfield and Janus (`Three-Dimensional Unsteady Euler Equations Solution Using Flux Vector Splitting. AIAA Paper 84-1552, 1984. <https://arc.aiaa.org/doi/abs/10.2514/6.1984-1552>`_) and described in Ch. 8 of Blazek's textbook (`Computational Fluid Dunamics - Principles and Applications <https://www.sciencedirect.com/book/9780080445069/computational-fluid-dynamics-principles-and-applications>`_). Implementations of this method can be found in the ``bcnormal`` function in ``prob.H`` for various test cases, including EB-C10 and EB-ConvergingNozzle.
+
+A detailed analysis comparing various boundary condition strategies and demonstrating their implementation is available for the :ref:`EB-ConvergingNozzle` case. 
+
 .. warning::
 
    This following is currently deprecated as the GS-NSCBC boundary condition has not been ported from Fortran to C++.
 
-If a user wants to set an ``Inflow`` or an ``Outflow`` boundary condition for a subsonic problem, it might be tempting to directly impose target values in the boundary filler function (for ``Inflow``), or to perform a simple extrapolation (for ``Outflow``).  However, this approach would fail to correctly respect the flow of information along solution characteristics - the system would be ill-posed and would lead to unphysical behavior.  In this situation, the solution at the boundary should properly account for the flow of information from both inside and outside the computational domain. There are a number of approaches to do this numerically, each with its own set of assumptions about how the system couples to the external environment, and each having an impact on the resulting solution.
-A well-known approach to this problem is the Navier-Stokes Characteristic Boundary Conditions
+A well-known approach to the subsonic problem is the Navier-Stokes Characteristic Boundary Conditions
 (NSCBC) strategy, and is described in the paper `Poinsot and Lele (1992) JCP
 <https://www.sciencedirect.com/science/article/pii/0021999192900462>`_.  In the method, the hyperbolic structure is
 decomposed to identify incoming and outgoing waves, given a statement of the "external" state outside the domain, and

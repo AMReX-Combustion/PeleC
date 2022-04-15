@@ -437,6 +437,7 @@ Filter::apply_filter(
     [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k, int nc) noexcept {
       run_filter(i, j, k, nc, captured_ngrow, nstart, w, ins[nbx], outs[nbx]);
     });
+  amrex::Gpu::synchronize();
 }
 
 // Run the filtering operation on a FAB

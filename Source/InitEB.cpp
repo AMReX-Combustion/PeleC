@@ -380,6 +380,7 @@ PeleC::set_body_state(amrex::MultiFab& S)
       pc_set_body_state(
         i, j, k, n, flagarrs[nbx], captured_body_state, sarrs[nbx]);
     });
+  amrex::Gpu::synchronize();
 }
 
 void
@@ -403,6 +404,7 @@ PeleC::zero_in_body(amrex::MultiFab& S) const
     [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k, int n) noexcept {
       pc_set_body_state(i, j, k, n, flagarrs[nbx], zeros, sarrs[nbx]);
     });
+  amrex::Gpu::synchronize();
 }
 
 // Sets up implicit function using EB2 infrastructure
@@ -482,6 +484,7 @@ PeleC::initialize_signed_distance()
             sd_nd(i, j + 1, k + 1) + sd_nd(i + 1, j + 1, k + 1));
         sd_cc(i, j, k) *= fac;
       });
+    amrex::Gpu::synchronize();
 
     signed_dist_0.FillBoundary(parent->Geom(0).periodicity());
     extend_signed_distance(&signed_dist_0, extentFactor);
@@ -579,6 +582,7 @@ PeleC::extend_signed_distance(
         sd_cc(i, j, k) = nGrowFac * dx[0] * extendFactor;
       }
     });
+  amrex::Gpu::synchronize();
 
   // Iteratively compute the distance function in boxes, propagating accross
   // boxes using ghost cells If needed, increase the number of loop to extend

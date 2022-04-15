@@ -463,6 +463,7 @@ PeleC::getMOLSrcTerm(
                   flx[dir]);
               }
             }
+            amrex::Gpu::Device::streamSynchronize();
           }
 
           // Get "hybrid flux divergence" and redistribute
