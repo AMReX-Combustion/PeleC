@@ -57,7 +57,7 @@ tagging.ftracerr = 150.e-6
 
 extern.new_Jacobian_each_cell = 0
 
-amr.derive_plot_vars = density xmom ymom zmom eden Temp pressure x_velocity y_velocity z_velocity
+amr.plot_vars = density xmom ymom zmom rho_E rho_e Temp rho_omega_H2 rho_omega_O2 rho_omega_H2O rho_omega_H rho_omega_O rho_omega_OH rho_omega_HO2 rho_omega_H2O2 rho_omega_N2 pressure Y(H2) Y(O2) Y(H2O) Y(H) Y(O) Y(OH) Y(HO2) Y(H2O2) Y(N2) x_velocity y_velocity z_velocity
 pelec.plot_rhoy = 0
 pelec.plot_massfrac = 1
 pelec.do_hydro = 1
