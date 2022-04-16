@@ -10,8 +10,7 @@ Checks: 'bugprone-*,
          -readability-magic-numbers,
          -readability-identifier-naming,
          -readability-isolate-declaration,
-         -readability-avoid-const-params-in-decls,
-         -readability-convert-member-functions-to-static'
+         -readability-avoid-const-params-in-decls'
 WarningsAsErrors: ''
 HeaderFilterRegex: '.*'
 AnalyzeTemporaryDtors: false
