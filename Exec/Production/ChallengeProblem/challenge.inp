@@ -89,6 +89,7 @@ prob.vel_jet = 2800.0
 prob.Z = 0.45
 prob.injection_start = 0.0
 prob.injection_duration = 0.0005
+prob.turbulent_inflow = true
 
 ic.hitIC = 1
 ic.inres = 128
@@ -101,6 +102,49 @@ ic.urms0 = 4000.0
 ic.win_lo = -0.7 -0.7 0.15
 ic.win_hi =  0.7 0.7 0.3
 ic.win_slope = 10.0
+
+# NOTE: centers must be consistent with the injection data provided above.
+turbinflows= inj1 inj2 inj3 inj4
+
+turbinflow.inj1.turb_file      = Turb.test2
+turbinflow.inj1.dir            = 2
+turbinflow.inj1.side           = high
+turbinflow.inj1.turb_scale_loc = 1.0
+turbinflow.inj1.turb_scale_vel = 100.0
+turbinflow.inj1.turb_center    = 0.0 0.15
+turbinflow.inj1.turb_conv_vel  = 2800.0
+turbinflow.inj1.turb_nplane    = 32
+turbinflow.inj1.time_offset    = 0.0
+
+turbinflow.inj2.turb_file      = Turb.test2
+turbinflow.inj2.dir            = 2
+turbinflow.inj2.side           = high
+turbinflow.inj2.turb_scale_loc = 1.0
+turbinflow.inj2.turb_scale_vel = 100.0
+turbinflow.inj2.turb_center    = -0.15 0.0
+turbinflow.inj2.turb_conv_vel  = 2800.0
+turbinflow.inj2.turb_nplane    = 32
+turbinflow.inj2.time_offset    = 0.001
+
+turbinflow.inj3.turb_file      = Turb.test2
+turbinflow.inj3.dir            = 2
+turbinflow.inj3.side           = high
+turbinflow.inj3.turb_scale_loc = 1.0
+turbinflow.inj3.turb_scale_vel = 100.0
+turbinflow.inj3.turb_center    = 0.0 -0.15
+turbinflow.inj3.turb_conv_vel  = 2800.0
+turbinflow.inj3.turb_nplane    = 32
+turbinflow.inj3.time_offset    = 0.002
+
+turbinflow.inj4.turb_file      = Turb.test2
+turbinflow.inj4.dir            = 2
+turbinflow.inj4.side           = high
+turbinflow.inj4.turb_scale_loc = 1.0
+turbinflow.inj4.turb_scale_vel = 100.0
+turbinflow.inj4.turb_center    = 0.15 0.0
+turbinflow.inj4.turb_conv_vel  = 2800.0
+turbinflow.inj4.turb_nplane    = 32
+turbinflow.inj4.time_offset    = 0.003
 
 # TAGGING
 tagging.temperr  = 1e20
