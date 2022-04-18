@@ -67,7 +67,7 @@ struct PCHypFillExtDir
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
       }
-      if (m_do_turb_inflow && (iv[idir] == domlo[idir] + 1)) {
+      if (m_do_turb_inflow && (iv[idir] == domlo[idir] - 1)) {
         for (int n = 0; n < NVAR; n++) {
           s_ext[n] = dest(iv, n);
         }
@@ -101,7 +101,7 @@ struct PCHypFillExtDir
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
       }
-      if (m_do_turb_inflow && (iv[idir] == domlo[idir] + 1)) {
+      if (m_do_turb_inflow && (iv[idir] == domhi[idir] + 1)) {
         for (int n = 0; n < NVAR; n++) {
           s_ext[n] = dest(iv, n);
         }
@@ -119,7 +119,7 @@ struct PCHypFillExtDir
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
       }
-      if (m_do_turb_inflow && (iv[idir] == domlo[idir] - 1)) {
+      if (m_do_turb_inflow && (iv[idir] == domhi[idir] + 1)) {
         for (int n = 0; n < NVAR; n++) {
           s_ext[n] = dest(iv, n);
         }
@@ -135,7 +135,7 @@ struct PCHypFillExtDir
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
       }
-      if (m_do_turb_inflow && (iv[idir] == domlo[idir] + 1)) {
+      if (m_do_turb_inflow && (iv[idir] == domhi[idir] + 1)) {
         for (int n = 0; n < NVAR; n++) {
           s_ext[n] = dest(iv, n);
         }
