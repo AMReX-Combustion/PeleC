@@ -75,8 +75,8 @@ jobs:
       - name: TG debug single precision build
         working-directory: ./Exec/RegTests/TG
         run: |
-          echo "::remove-matcher::.github/problem-matchers/gcc.json"
-          make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE PRECISION=FLOAT 2>&1 | tee -a build-output.txt
+          echo "::add-matcher::.github/problem-matchers/gcc.json"
+          CXXFLAGS=-Wno-float-conversion make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE PRECISION=FLOAT 2>&1 | tee -a build-output.txt
       - name: TG debug single precision test
         working-directory: ./Exec/RegTests/TG
         run: ./PeleC3d.gnu.FLOAT.DEBUG.ex tg-2.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
