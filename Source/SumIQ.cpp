@@ -167,9 +167,9 @@ PeleC::monitor_extrema()
   for (int lev = 0; lev <= finest_level; lev++) {
     PeleC& pc_lev = getLevel(lev);
     for (int ii = 0; ii < nextrema - nspec_extrema; ++ii) {
-      maxima[ii] = amrex::max(
+      maxima[ii] = amrex::max<amrex::Real>(
         maxima[ii], pc_lev.maxDerive(extrema_vars[ii], time, local_flag));
-      minima[ii] = amrex::min(
+      minima[ii] = amrex::min<amrex::Real>(
         minima[ii], pc_lev.minDerive(extrema_vars[ii], time, local_flag));
     }
 
@@ -186,29 +186,33 @@ PeleC::monitor_extrema()
       amrex::MultiFab::Add(sumY, *mf, ispec, 0, 1, 0);
 
       // "massfrac" gets the extrema across all mass fractions
-      maxima[idx_massfrac] = amrex::max(maxima[idx_massfrac], maxval);
-      minima[idx_massfrac] = amrex::min(minima[idx_massfrac], minval);
+      maxima[idx_massfrac] =
+        amrex::max<amrex::Real>(maxima[idx_massfrac], maxval);
+      minima[idx_massfrac] =
+        amrex::min<amrex::Real>(minima[idx_massfrac], minval);
 
       // Get values for any individual species if relevant
       if (use_all_spec) {
         const auto idx_spec = idx_massfrac + ispec + 2;
-        maxima[idx_spec] = amrex::max(maxima[idx_spec], maxval);
-        minima[idx_spec] = amrex::min(minima[idx_spec], minval);
+        maxima[idx_spec] = amrex::max<amrex::Real>(maxima[idx_spec], maxval);
+        minima[idx_spec] = amrex::min<amrex::Real>(minima[idx_spec], minval);
       } else {
         for (int iext = 0; iext < nspec_extrema - 2; iext++) {
           const auto idx_spec = idx_massfrac + iext + 2;
           if (extrema_vars[idx_spec] == PeleC::spec_names[ispec]) {
-            maxima[idx_spec] = amrex::max(maxima[idx_spec], maxval);
-            minima[idx_spec] = amrex::min(minima[idx_spec], minval);
+            maxima[idx_spec] =
+              amrex::max<amrex::Real>(maxima[idx_spec], maxval);
+            minima[idx_spec] =
+              amrex::min<amrex::Real>(minima[idx_spec], minval);
           }
         }
       }
     }
     // sum of mass fractions
-    maxima[idx_massfrac + 1] =
-      amrex::max(maxima[idx_massfrac + 1], sumY.max(0, 0, local_flag) - 1.0);
-    minima[idx_massfrac + 1] =
-      amrex::min(minima[idx_massfrac + 1], sumY.min(0, 0, local_flag) - 1.0);
+    maxima[idx_massfrac + 1] = amrex::max<amrex::Real>(
+      maxima[idx_massfrac + 1], sumY.max(0, 0, local_flag) - 1.0);
+    minima[idx_massfrac + 1] = amrex::min<amrex::Real>(
+      minima[idx_massfrac + 1], sumY.min(0, 0, local_flag) - 1.0);
   }
 
   if (verbose > 0) {

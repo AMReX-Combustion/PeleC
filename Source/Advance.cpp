@@ -269,7 +269,7 @@ PeleC::do_sdc_iteration(
       amr_iteration, amr_ncycle, ghost_width, where_width, spray_n_grow,
       tmp_src_width);
     fill_Sborder = true;
-    nGrow_Sborder = std::max(nGrow_Sborder, spray_n_grow);
+    nGrow_Sborder = amrex::max<amrex::Real>(nGrow_Sborder, spray_n_grow);
   }
   if (fill_Sborder && Sborder.nGrow() < nGrow_Sborder) {
     Print() << "PeleC::do_sdc_iteration thinks Sborder needs " << nGrow_Sborder

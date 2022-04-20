@@ -60,18 +60,23 @@ EBConvergingNozzle::build(
   ProbParmDevice const* pp = PeleC::h_prob_parm_device;
 
   amrex::EB2::CylinderIF main(
-    0.5 * pp->d_inlet, 0, {AMREX_D_DECL(0.5 * pp->l_inlet, 0, 0)}, true);
+    0.5 * pp->d_inlet, 0,
+    {AMREX_D_DECL(static_cast<amrex::Real>(0.5 * pp->l_inlet), 0, 0)}, true);
 
   amrex::Real slope_nozzle =
     (0.5 * pp->d_inlet - 0.5 * pp->d_exit) / pp->l_nozzle;
   amrex::Real norm = -1.0 / slope_nozzle;
   amrex::Real nmag = std::sqrt(1 + 1 / (norm * norm));
   amrex::EB2::PlaneIF nozzle_plane(
-    {AMREX_D_DECL(0, 0, 0)}, {AMREX_D_DECL(1 / nmag, slope_nozzle / nmag, 0.0)},
+    {AMREX_D_DECL(0, 0, 0)},
+    {AMREX_D_DECL(
+      static_cast<amrex::Real>(1.0 / nmag), slope_nozzle / nmag, 0.0)},
     true);
   auto nozzle = amrex::EB2::translate(
     amrex::EB2::rotate(amrex::EB2::lathe(nozzle_plane), 90 * M_PI / 180, 1),
-    {AMREX_D_DECL(pp->l_inlet + 0.5 * pp->d_inlet / slope_nozzle, 0, 0)});
+    {AMREX_D_DECL(
+      pp->l_inlet + static_cast<amrex::Real>(0.5 * pp->d_inlet / slope_nozzle),
+      0, 0)});
 
   amrex::EB2::CylinderIF exit(
     0.5 * pp->d_exit, 0, {AMREX_D_DECL(pp->l_inlet + pp->l_nozzle, 0, 0)},
