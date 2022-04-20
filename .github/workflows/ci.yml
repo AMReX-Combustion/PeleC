@@ -75,7 +75,7 @@ jobs:
       - name: TG debug single precision build
         working-directory: ./Exec/RegTests/TG
         run: |
-          echo "::add-matcher::.github/problem-matchers/gcc.json"
+          echo "::remove-matcher::.github/problem-matchers/gcc.json"
           make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE PRECISION=FLOAT 2>&1 | tee -a build-output.txt
       - name: TG debug single precision test
         working-directory: ./Exec/RegTests/TG
