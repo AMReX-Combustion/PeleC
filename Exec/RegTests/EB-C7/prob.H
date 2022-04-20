@@ -11,6 +11,7 @@
 #include "PeleC.H"
 #include "IndexDefines.H"
 #include "Constants.H"
+#include "PhysicsConstants.H"
 #include "PelePhysics.H"
 #include "Tagging.H"
 #include "ProblemDerive.H"

@@ -73,8 +73,9 @@ amrex_probinit(
   amrex::Print(ofs).SetPrecision(17)
     << L << "," << PeleC::h_prob_parm_device->rho << ","
     << PeleC::h_prob_parm_device->umax << "," << PeleC::h_prob_parm_device->p
-    << "," << PeleC::h_prob_parm_device->T << "," << eos.gamma << ","
-    << trans_parm.const_viscosity << "," << trans_parm.const_conductivity << ","
+    << "," << PeleC::h_prob_parm_device->T << ","
+    << pele::physics::Constants::gamma << "," << trans_parm.const_viscosity
+    << "," << trans_parm.const_conductivity << ","
     << PeleC::h_prob_parm_device->Re << "," << PeleC::h_prob_parm_device->Ma
     << "," << PeleC::h_prob_parm_device->Pr << ","
     << PeleC::h_prob_parm_device->dpdx << "," << PeleC::h_prob_parm_device->G

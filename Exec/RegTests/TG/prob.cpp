@@ -66,9 +66,9 @@ amrex_probinit(
     << PeleC::h_prob_parm_device->L << "," << PeleC::h_prob_parm_device->rho0
     << "," << PeleC::h_prob_parm_device->v0 << ","
     << PeleC::h_prob_parm_device->p0 << "," << PeleC::h_prob_parm_device->T0
-    << "," << eos.gamma << "," << trans_parm.const_viscosity << ","
-    << trans_parm.const_conductivity << "," << cs << ","
-    << PeleC::h_prob_parm_device->reynolds << ","
+    << "," << pele::physics::Constants::gamma << ","
+    << trans_parm.const_viscosity << "," << trans_parm.const_conductivity << ","
+    << cs << "," << PeleC::h_prob_parm_device->reynolds << ","
     << PeleC::h_prob_parm_device->mach << ","
     << PeleC::h_prob_parm_device->prandtl << ","
     << PeleC::h_prob_parm_device->omega_x << ","

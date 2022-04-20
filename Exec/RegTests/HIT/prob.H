@@ -15,6 +15,7 @@
 #include "PelePhysics.H"
 #include "Tagging.H"
 #include "ProblemDerive.H"
+#include "PhysicsConstants.H"
 #include "prob_parm.H"
 #include "Utilities.H"
 

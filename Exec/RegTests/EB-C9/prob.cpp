@@ -43,9 +43,10 @@ amrex_probinit(
   amrex::Print(ofs).SetPrecision(17)
     << PeleC::h_prob_parm_device->L << "," << PeleC::h_prob_parm_device->rho
     << "," << PeleC::h_prob_parm_device->p << ","
-    << PeleC::h_prob_parm_device->T << "," << eos.gamma << ","
-    << PeleC::h_prob_parm_device->cs << "," << PeleC::h_prob_parm_device->radius
-    << "," << PeleC::h_prob_parm_device->alpha << ","
+    << PeleC::h_prob_parm_device->T << "," << pele::physics::Constants::gamma
+    << "," << PeleC::h_prob_parm_device->cs << ","
+    << PeleC::h_prob_parm_device->radius << ","
+    << PeleC::h_prob_parm_device->alpha << ","
     << PeleC::h_prob_parm_device->sigma << std::endl;
   ofs.close();
 }

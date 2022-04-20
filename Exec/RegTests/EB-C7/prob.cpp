@@ -54,8 +54,8 @@ amrex_probinit(
     << "," << PeleC::h_prob_parm_device->pl << ","
     << PeleC::h_prob_parm_device->Tl << "," << PeleC::h_prob_parm_device->rhor
     << "," << PeleC::h_prob_parm_device->pr << ","
-    << PeleC::h_prob_parm_device->Tr << "," << eos.gamma << ","
-    << PeleC::h_prob_parm_device->angle << std::endl;
+    << PeleC::h_prob_parm_device->Tr << "," << pele::physics::Constants::gamma
+    << "," << PeleC::h_prob_parm_device->angle << std::endl;
   ofs.close();
 }
 }

@@ -14,6 +14,7 @@
 #include "IndexDefines.H"
 #include "Constants.H"
 #include "PelePhysics.H"
+#include "PhysicsConstants.H"
 #include "Tagging.H"
 
 #include "ProblemDerive.H"
@@ -35,7 +36,8 @@ pc_initdata(
   auto eos = pele::physics::PhysicsType::eos();
   amrex::Real vctr =
     4.0 / 3.0 * M_PI * (prob_parm.r_init * prob_parm.r_init * prob_parm.r_init);
-  amrex::Real p_exp = (eos.gamma - 1.0) * prob_parm.exp_energy / vctr;
+  amrex::Real p_exp =
+    (pele::physics::Constants::gamma - 1.0) * prob_parm.exp_energy / vctr;
 
   // Geometry
   const amrex::Real* prob_lo = geomdata.ProbLo();
@@ -88,7 +90,7 @@ pc_initdata(
      static_cast<amrex::Real>(n_amb) * prob_parm.p_ambient) /
     static_cast<amrex::Real>(prob_parm.nsub * prob_parm.nsub * prob_parm.nsub);
 
-  amrex::Real eint = p_zone / (eos.gamma - 1.0);
+  amrex::Real eint = p_zone / (pele::physics::Constants::gamma - 1.0);
 
   state(i, j, k, URHO) = prob_parm.dens_ambient;
   state(i, j, k, UMX) = 0.0;
