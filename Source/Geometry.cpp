@@ -94,7 +94,9 @@ Combustor::build(const amrex::Geometry& geom, const int max_coarsening_level)
   amrex::Real lenx = amrex::DefaultGeometry().ProbLength(0);
   amrex::Real leny = amrex::DefaultGeometry().ProbLength(1);
   auto pr = amrex::EB2::translate(
-    amrex::EB2::lathe(polys), {AMREX_D_DECL(lenx * 0.5, leny * 0.5, 0.)});
+    amrex::EB2::lathe(polys), {AMREX_D_DECL(
+                                static_cast<amrex::Real>(lenx * 0.5),
+                                static_cast<amrex::Real>(leny * 0.5), 0.)});
 
   auto gshop = amrex::EB2::makeShop(pr);
   amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);

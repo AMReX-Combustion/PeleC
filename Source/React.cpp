@@ -19,8 +19,8 @@ PeleC::set_typical_values_chem()
     for (int sp = 0; sp < NUM_SPECIES; sp++) {
       amrex::Real rhoYs_min = S_new.min(UFS + sp);
       amrex::Real rhoYs_max = S_new.max(UFS + sp);
-      typical_values_chem[sp] =
-        std::max(0.5 * (rhoYs_min + rhoYs_max), typical_rhoY_val_min);
+      typical_values_chem[sp] = amrex::max<amrex::Real>(
+        0.5 * (rhoYs_min + rhoYs_max), typical_rhoY_val_min);
     }
     typical_values_chem[NUM_SPECIES] = 0.5 * (minTemp + maxTemp);
     reactor->set_typ_vals_ode(typical_values_chem);
