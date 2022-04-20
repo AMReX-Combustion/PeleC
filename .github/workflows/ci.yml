@@ -79,7 +79,7 @@ jobs:
           make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE PRECISION=FLOAT 2>&1 | tee -a build-output.txt
       - name: TG debug single precision test
         working-directory: ./Exec/RegTests/TG
-        run: ./PeleC3d.gnu.FLOAT.DEBUG.ex tg-1.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
+        run: ./PeleC3d.gnu.FLOAT.DEBUG.ex tg-2.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
       - name: TG debug single precision report
         working-directory: ./Exec/RegTests/TG
         run: |
