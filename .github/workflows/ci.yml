@@ -35,7 +35,7 @@ jobs:
           printf "CC=gcc-10\nCXX=g++-10\nFC=gfortran-10\nF90=gfortran-10" \
             >> ${{github.workspace}}/Submodules/AMReX/Tools/GNUMake/Make.local
           make COMP=gnu USE_MPI=FALSE DEBUG=TRUE TPL
-          make COMP=gnu USE_MPI=FALSE DEBUG=TRUE PRECISION=FLOAT TPL
+          make COMP=llvm USE_MPI=FALSE DEBUG=TRUE PRECISION=FLOAT TPL
       - name: PMF debug make
         working-directory: ./Exec/RegTests/PMF
         run: |
@@ -76,10 +76,10 @@ jobs:
         working-directory: ./Exec/RegTests/TG
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
-          CXXFLAGS=-Wno-float-conversion make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE PRECISION=FLOAT 2>&1 | tee -a build-output.txt
+          make -j ${{env.NPROCS}} COMP=llvm USE_MPI=FALSE DEBUG=TRUE PRECISION=FLOAT 2>&1 | tee -a build-output.txt
       - name: TG debug single precision test
         working-directory: ./Exec/RegTests/TG
-        run: ./PeleC3d.gnu.FLOAT.DEBUG.ex tg-2.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
+        run: ./PeleC3d.llvm.FLOAT.DEBUG.ex tg-2.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
       - name: TG debug single precision report
         working-directory: ./Exec/RegTests/TG
         run: |
