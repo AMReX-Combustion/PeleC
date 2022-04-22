@@ -8,7 +8,6 @@ ReadPipeInflow(const std::string iname)
     amrex::Abort("Unable to open input file " + iname);
   }
 
-  double tmp_double = 0.0; /*needs to be double */
   PeleC::h_prob_parm_device->inflowNtime = read_binary_int(infile);
   PeleC::h_prob_parm_device->nr = read_binary_int(infile);
   PeleC::h_prob_parm_device->nt = read_binary_int(infile);
@@ -186,11 +185,11 @@ EBLinePistonCylinder::build(
 extern "C" {
 void
 amrex_probinit(
-  const int* init,
-  const int* name,
-  const int* namelen,
-  const amrex::Real* problo,
-  const amrex::Real* probhi)
+  const int* /*init*/,
+  const int* /*name*/,
+  const int* /*namelen*/,
+  const amrex::Real* /*problo*/,
+  const amrex::Real* /*probhi*/)
 {
   // Parse params
   amrex::ParmParse pp("prob");

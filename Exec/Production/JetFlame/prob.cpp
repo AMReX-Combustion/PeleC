@@ -27,8 +27,8 @@ amrex_probinit(
   pp.query("tau", PeleC::h_prob_parm_device->tau);
   pp.query("turbulence", PeleC::h_prob_parm_device->turbulence);
 
-  std::string fu_spec = "";
-  std::string fu_ox_spec = "";
+  std::string fu_spec;
+  std::string fu_ox_spec;
   pp.query("fu_spec", fu_spec);
   pp.query("fu_ox_spec", fu_ox_spec);
   amrex::Real Y_O2_ox = {0.};
@@ -44,18 +44,23 @@ amrex_probinit(
   int n2_indx = -1;
   int fu_ox_indx = -1;
   for (int n = 0; n < sname.size(); n++) {
-    if (sname[n] == fu_spec)
+    if (sname[n] == fu_spec) {
       fu_indx = n;
-    if (sname[n] == "O2")
+    }
+    if (sname[n] == "O2") {
       o2_indx = n;
-    if (sname[n] == "N2")
+    }
+    if (sname[n] == "N2") {
       n2_indx = n;
-    if (sname[n] == fu_ox_spec)
+    }
+    if (sname[n] == fu_ox_spec) {
       fu_ox_indx = n;
+    }
   }
 
-  if (fu_indx < 0)
+  if (fu_indx < 0) {
     amrex::Abort("Fuel species not found.");
+  }
 
   Y_pure_fuel[fu_indx] = 1.0;
 

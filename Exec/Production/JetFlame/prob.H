@@ -31,7 +31,7 @@ pc_initdata(
   int j,
   int k,
   amrex::Array4<amrex::Real> const& state,
-  amrex::GeometryData const& geomdata,
+  amrex::GeometryData const& /*geomdata*/,
   ProbParmDevice const& prob_parm)
 {
   auto eos = pele::physics::PhysicsType::eos();
@@ -89,7 +89,7 @@ bcnormal(
   const int idir,
   const int sgn,
   const amrex::Real time,
-  amrex::GeometryData const& geomdata,
+  amrex::GeometryData const& /*geomdata*/,
   ProbParmDevice const& prob_parm)
 {
   if (sgn == 1 && idir == 2) {
@@ -112,8 +112,9 @@ bcnormal(
     s_ext[UEINT] = s_int[UEINT];
     s_ext[UEDEN] = s_int[UEDEN];
     s_ext[UTEMP] = s_int[UTEMP];
-    for (int n = 0; n < NUM_SPECIES; n++)
+    for (int n = 0; n < NUM_SPECIES; n++) {
       s_ext[UFS + n] = s_int[UFS + n];
+    }
 
     const amrex::Real radius = std::sqrt(
       (x[0] - prob_parm.center_xy[0]) * (x[0] - prob_parm.center_xy[0]) +
@@ -126,8 +127,9 @@ bcnormal(
       // interior pressure
       amrex::Real p_int;
       amrex::Real massfrac_int[NUM_SPECIES] = {0.0};
-      for (int n = 0; n < NUM_SPECIES; n++)
+      for (int n = 0; n < NUM_SPECIES; n++) {
         massfrac_int[n] = s_int[UFS + n] / s_int[URHO];
+      }
       eos.RTY2P(s_int[URHO], s_int[UTEMP], massfrac_int, p_int);
 
       amrex::Real eta = 0.5 * (1.0 - std::tanh(

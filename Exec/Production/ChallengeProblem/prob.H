@@ -48,7 +48,8 @@ class EBLinePistonCylinder
 public:
   static std::string identifier() { return "Line-Piston-Cylinder"; }
 
-  void build(const amrex::Geometry& geom, const int max_coarsening_level);
+  void
+  build(const amrex::Geometry& geom, const int max_coarsening_level) override;
 };
 
 AMREX_GPU_DEVICE
@@ -64,7 +65,6 @@ pc_initdata(
 {
   // Geometry
   const amrex::Real* prob_lo = geomdata.ProbLo();
-  const amrex::Real* prob_hi = geomdata.ProbHi();
   const amrex::Real* dx = geomdata.CellSize();
   amrex::Real x[3] = {
     prob_lo[0] + (i + 0.5) * dx[0], prob_lo[1] + (j + 0.5) * dx[1],
@@ -85,8 +85,9 @@ pc_initdata(
   state(i, j, k, UEINT) = rho * eint;
   state(i, j, k, UEDEN) = state(i, j, k, UEINT);
   state(i, j, k, UTEMP) = prob_parm.T_mean;
-  for (int n = 0; n < NUM_SPECIES; n++)
+  for (int n = 0; n < NUM_SPECIES; n++) {
     state(i, j, k, UFS + n) = rho * massfrac[n];
+  }
 
   if (prob_parm.hitIC) {
     amrex::Real u[3] = {0.0};
@@ -242,7 +243,7 @@ bcnormal(
   const int idir,
   const int sgn,
   const amrex::Real time,
-  amrex::GeometryData const& geomdata,
+  amrex::GeometryData const& /*geomdata*/,
   ProbParmDevice const& prob_parm)
 {
   if (sgn == -1 && idir == 2) {
@@ -262,8 +263,9 @@ bcnormal(
     s_ext[UEINT] = s_int[UEINT];
     s_ext[UEDEN] = s_int[UEDEN];
     s_ext[UTEMP] = s_int[UTEMP];
-    for (int n = 0; n < NUM_SPECIES; n++)
+    for (int n = 0; n < NUM_SPECIES; n++) {
       s_ext[UFS + n] = s_int[UFS + n];
+    }
 
     if (
       (time < prob_parm.inj_start) ||
@@ -322,8 +324,9 @@ bcnormal(
         // Interior pressure
         amrex::Real p_int;
         amrex::Real massfrac_int[NUM_SPECIES] = {0.0};
-        for (int n = 0; n < NUM_SPECIES; n++)
+        for (int n = 0; n < NUM_SPECIES; n++) {
           massfrac_int[n] = s_int[UFS + n] / s_int[URHO];
+        }
         eos.RTY2P(s_int[URHO], s_int[UTEMP], massfrac_int, p_int);
 
         // Tanh profile
@@ -359,8 +362,9 @@ bcnormal(
         s_ext[UEDEN] =
           rho * (eint + 0.5 * (vx_in * vx_in + vy_in * vy_in + vz_in * vz_in));
         s_ext[UTEMP] = prob_parm.T_jet;
-        for (int n = 0; n < NUM_SPECIES; n++)
+        for (int n = 0; n < NUM_SPECIES; n++) {
           s_ext[UFS + n] = rho * massfrac[n];
+        }
       }
     }
   }
@@ -387,7 +391,7 @@ struct MyProbTagStruct
   {
     AMREX_D_TERM(const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
                  , const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
-                 , const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];);
+                 , /*const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2]*/;);
 
     // Tag around the jets
     const amrex::Real dphi_angle = 2.0 * constants::PI() / prob_parm.nholes;
