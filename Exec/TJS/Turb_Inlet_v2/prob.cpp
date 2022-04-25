@@ -31,9 +31,8 @@ amrex_probinit(
   int max_level = 0;
   ppamr.query("max_level", max_level);
   
-  // Parse params
+  // Parse params for turbulence inlet. User can set u_in and I% at runtime
   amrex::ParmParse pp("prob");
-  // pp.query("turb_length_scale", PeleC::h_prob_parm_device->turb_length_scale);
   pp.query("turb_intensity", PeleC::h_prob_parm_device->turb_intensity);
   pp.query("u_in", PeleC::h_prob_parm_device->u_in);
   
@@ -41,16 +40,12 @@ amrex_probinit(
   // Currently computing as 1/4th of the domain size, can change if necessary
   PeleC::h_prob_parm_device->turb_length_scale = 0.25 * amrex::min<amrex::Real>(probhi[1]-problo[1], probhi[2]-problo[2]);
 
-  // Convert dimensions from PeleC default cgs units to mks units for method
-  amrex::Real u_in_ms = PeleC::h_prob_parm_device->u_in / 100;
-  amrex::Real L_in_ms = PeleC::h_prob_parm_device->turb_length_scale / 100;
-
   // largest length scale computed based on turb length scale 
-  const amrex::Real k_min = 1.0 / PeleC::h_prob_parm_device->turb_length_scale;
+  const amrex::Real k_lo = 1.0 / PeleC::h_prob_parm_device->turb_length_scale;
 
   // smallest length scale. 
   const amrex::Real dx_base = (probhi[1] - problo[1]) / n_cells[1];
-  const amrex::Real k_max = 1.0 / (dx_base);
+  const amrex::Real k_hi = 1.0 / (2.0 * dx_base);
 
   // Compute dk based on a discretization of M different discrete wavenumbers
   const amrex::Real dk = (k_max - k_min) / PeleC::h_prob_parm_device->turb_num_modes;
@@ -80,13 +75,14 @@ amrex_probinit(
     k_mag = k_min + (m * dk);
 
     // associated frequency. Should this be turbulence velocity???? SHRW to address.
-    f = k_mag * u_in_ms;
+    f = k_mag * PeleC::h_prob_parm_device->u_in;
 
     // Generate E for this wavenumber
-    E = 1.5 * (4.0 * std::pow(PeleC::h_prob_parm_device->turb_intensity * u_in_ms, 2.0)
-               * (L_in_ms / u_in_ms)
-         / std::pow(1.0 + 70.8 * std::pow(k_mag * L_in_ms, 2.0), 5.0/6.0));
+    E = 1.5 * (4.0 * std::pow(PeleC::h_prob_parm_device->turb_intensity * PeleC::h_prob_parm_device->u_in, 2.0)
+               * (PeleC::h_prob_parm_device->turb_length_scale / PeleC::h_prob_parm_device->u_in)
+         / std::pow(1.0 + 70.8 * std::pow(k_mag * PeleC::h_prob_parm_device->turb_length_scale, 2.0), 5.0/6.0));
 
+    omega_upper_bound = 2.0 * constants::PI() * f;
 
     for (int n = 0; n < PeleC::h_prob_parm_device->sampling_number; n++) {
 
@@ -100,9 +96,8 @@ amrex_probinit(
       PeleC::h_prob_parm_device->k[2][n][m] = k_mag * cos(phi);
 
       // Generate random values for getting p and q
-      randa = amrex::Random();
-      omega_upper_bound = 2.0 * constants::PI() * f;
       PeleC::h_prob_parm_device->omega[n][m] = amrex::RandomNormal(0.0, omega_upper_bound);
+      randa = amrex::Random();
 
       // Calculate p, q
 
@@ -141,7 +136,7 @@ amrex_probinit(
 
       // Normalize k to k_tilde using the lowest wave number (equation 21 Huang 2010)
       for (int i = 0; i < 3; i++) {
-	      PeleC::h_prob_parm_device->k[i][n][m] /= k_min;
+	      PeleC::h_prob_parm_device->k[i][n][m] /= k_lo;
 
       }
 

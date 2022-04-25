@@ -19,13 +19,14 @@ struct ProbParmDevice
   amrex::Real u_in = 1590.0;
   amrex::Real init_pert_mag = 0.02;
   amrex::Real turb_length_scale = 0.002;
-  amrex::Real turb_intensity = 10;
+  amrex::Real turb_intensity = 7;
+  amrex::Real Ls_prefactor = 1.5;
   static const int turb_num_modes = 100;
   static const int sampling_number = 100;
   amrex::GpuArray<amrex::Array<amrex::Array<amrex::Real, turb_num_modes>, sampling_number>, 3> k;
-  amrex::GpuArray<amrex::Array<amrex::Real, turb_num_modes>, sampling_number> omega;
   amrex::GpuArray<amrex::Array<amrex::Array<amrex::Real, turb_num_modes>, sampling_number>, 3> p;
   amrex::GpuArray<amrex::Array<amrex::Array<amrex::Real, turb_num_modes>, sampling_number>, 3> q;
+  amrex::GpuArray<amrex::Array<amrex::Real, turb_num_modes>, sampling_number> omega;
   amrex::GpuArray<amrex::Array<amrex::Real, sampling_number>, 3> xi;
   amrex::GpuArray<amrex::Array<amrex::Real, sampling_number>, 3> zeta;
   amrex::GpuArray<amrex::Real, NUM_SPECIES> massfrac;

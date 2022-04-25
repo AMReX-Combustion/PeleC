@@ -93,11 +93,11 @@ bcnormal(
       // convert to normalized turbulence terms
       for(int i = 0; i < AMREX_SPACEDIM; i++) {
       	// removing factor of 2.0 * constants::PI() for Huang et al. method (eq. 20)
-      	x_hat[i] = x[i] / PeleC::h_prob_parm_device->turb_length_scale;
+      	x_hat[i] = x[i] / (PeleC::h_prob_parm_device->Ls_prefactor * PeleC::h_prob_parm_device->turb_length_scale);
       }
       // assume inflow is purely x-dimensional. Correct for inflow speed.
-      //x_hat[0] -= (2.0 * constants::PI() * PeleC::h_prob_parm_device->u_in * time)
-      //             / PeleC::h_prob_parm_device->turb_length_scale;
+      x_hat[0] -= (2.0 * constants::PI() * PeleC::h_prob_parm_device->u_in * time)
+                   / (PeleC::h_prob_parm_device->Ls_prefactor * PeleC::h_prob_parm_device->turb_length_scale);
       
       //amrex::Print() << "bcnormal check #1 (before loop) " << '\n';
       
@@ -109,14 +109,15 @@ bcnormal(
 
             amrex::Real arg = PeleC::h_prob_parm_device->k[0][n][m] * x_hat[0]
                               + PeleC::h_prob_parm_device->k[1][n][m] * x_hat[1]
-                              + PeleC::h_prob_parm_device->k[2][n][m] * x_hat[2];
+                              + PeleC::h_prob_parm_device->k[2][n][m] * x_hat[2]
+                              + PeleC::h_prob_parm_device->omega[n][m] * time;
 	  
             // replace t_hat with time for the Huang et al. method.
-            arg += PeleC::h_prob_parm_device->omega[n][m] * time;
+            // arg += PeleC::h_prob_parm_device->omega[n][m] * time;
 
             // Compute turbulence and convert the value from mks to cgs
-            turb_u[i] += (PeleC::h_prob_parm_device->p[i][n][m] * cos(arg)
-	               + PeleC::h_prob_parm_device->q[i][n][m] * sin(arg)) * 100.0;
+            turb_u[i] += PeleC::h_prob_parm_device->p[i][n][m] * cos(arg)
+	               + PeleC::h_prob_parm_device->q[i][n][m] * sin(arg);
           }
         }
       }
