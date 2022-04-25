@@ -50,14 +50,14 @@ class EBLinePistonCylinder
 public:
   static std::string identifier() { return "Line-Piston-Cylinder"; }
 
-  void build(const amrex::Geometry& geom, const int max_coarsening_level);
+  void
+  build(const amrex::Geometry& geom, const int max_coarsening_level) override;
 };
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 InterpolateVelInflow(
-  const amrex::Real x[3],
   const amrex::Real radius,
   amrex::Real& theta,
   amrex::Real& u,
@@ -218,7 +218,6 @@ pc_initdata(
 {
   // Geometry
   const amrex::Real* prob_lo = geomdata.ProbLo();
-  const amrex::Real* prob_hi = geomdata.ProbHi();
   const amrex::Real* dx = geomdata.CellSize();
   amrex::Real x[3] = {
     prob_lo[0] + (i + 0.5) * dx[0], prob_lo[1] + (j + 0.5) * dx[1],
@@ -239,8 +238,9 @@ pc_initdata(
   state(i, j, k, UEINT) = rho * eint;
   state(i, j, k, UEDEN) = state(i, j, k, UEINT);
   state(i, j, k, UTEMP) = prob_parm.Temp_domain;
-  for (int n = 0; n < NUM_SPECIES; n++)
+  for (int n = 0; n < NUM_SPECIES; n++) {
     state(i, j, k, UFS + n) = rho * massfrac[n];
+  }
 
   if (prob_parm.hitIC) {
     amrex::Real u[3] = {0.0};
@@ -378,15 +378,12 @@ bcnormal(
   const amrex::Real x[AMREX_SPACEDIM],
   const amrex::Real s_int[NVAR],
   amrex::Real s_ext[NVAR],
-  const int idir,
-  const int sgn,
+  const int /*idir*/,
+  const int /*sgn*/,
   const amrex::Real time,
-  amrex::GeometryData const& geomdata,
+  amrex::GeometryData const& /*geomdata*/,
   ProbParmDevice const& prob_parm)
 {
-  const amrex::Real aYf = -33.33333333;
-  const amrex::Real bYf = -5.0 - aYf;
-
   // default wall condition
   s_ext[URHO] = s_int[URHO];
   s_ext[UMX] = -s_int[UMX];
@@ -395,8 +392,9 @@ bcnormal(
   s_ext[UEINT] = s_int[UEINT];
   s_ext[UEDEN] = s_int[UEDEN];
   s_ext[UTEMP] = s_int[UTEMP];
-  for (int n = 0; n < NUM_SPECIES; n++)
+  for (int n = 0; n < NUM_SPECIES; n++) {
     s_ext[UFS + n] = s_int[UFS + n];
+  }
 
   if (time > prob_parm.inj_time) {
     return;
@@ -425,8 +423,9 @@ bcnormal(
 
       amrex::Real p_int;
       amrex::Real massfrac[NUM_SPECIES] = {0.0};
-      for (int n = 0; n < NUM_SPECIES; n++)
+      for (int n = 0; n < NUM_SPECIES; n++) {
         massfrac[n] = s_int[UFS + n] / s_int[URHO];
+      }
       eos.RTY2P(s_int[URHO], s_int[UTEMP], massfrac, p_int);
 
       // subsonic velocity inlet
@@ -442,7 +441,7 @@ bcnormal(
           constants::PI() - atan2(x[1] - hole_cy, -(x[0] - hole_cx));
         amrex::Real vxPipe = 0.0, vyPipe = 0.0, vzPipe = 0.0;
         InterpolateVelInflow(
-          x, rad, angle, vxPipe, vyPipe, vzPipe, time, prob_parm);
+          rad, angle, vxPipe, vyPipe, vzPipe, time, prob_parm);
         vy_in = vxPipe * cos(phi_angle) -
                 vyPipe * sin(prob_parm.cone_angle * constants::PI() / 180.0) *
                   sin(phi_angle) +
@@ -480,8 +479,9 @@ bcnormal(
       s_ext[UEDEN] =
         rho * (eint + 0.5 * (vx_in * vx_in + vy_in * vy_in + vz_in * vz_in));
       s_ext[UTEMP] = T;
-      for (int n = 0; n < NUM_SPECIES; n++)
+      for (int n = 0; n < NUM_SPECIES; n++) {
         s_ext[UFS + n] = rho * jet_massfrac[n];
+      }
     }
   }
 }
