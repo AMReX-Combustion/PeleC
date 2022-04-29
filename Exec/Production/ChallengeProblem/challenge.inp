@@ -59,12 +59,12 @@ amr.loadbalance_with_workestimates = 1
 #amr.loadbalance_level0_int = 1000
 
 # CHECKPOINT FILES
-amr.checkpoint_files_output = 0
+amr.checkpoint_files_output = 1
 amr.check_file      = chk      # root name of checkpoint file
 amr.check_int       = 400      # number of timesteps between checkpoints
 
 # PLOTFILES
-amr.plot_files_output = 0
+amr.plot_files_output = 1
 amr.plot_file        = plt
 amr.plot_int         = 400
 amr.derive_plot_vars = density x_velocity y_velocity z_velocity magvel Y(CH4) Y(O) Y(OH) Y(H) Y(NC12H26) Temp magvort pressure
