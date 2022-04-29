@@ -2,8 +2,6 @@
 max_step = 1000000
 stop_time = 0.0006
 
-#amr.restart=chk05584
-
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic =  0   0  0
 geometry.coord_sys   =  0       # 0 => cart
@@ -32,7 +30,7 @@ pelec.sdc_iters = 2
 #pelec.adaptrk_nsubsteps_min=25
 #pelec.adaptrk_nsubsteps_max=100
 pelec.chem_integrator="ReactorCvode"
-cvode.solve_type=denseAJ_direct
+cvode.solve_type=GMRES
 cvode.max_order = 4
 
 # TIME STEP CONTROL
@@ -52,10 +50,9 @@ amr.data_log         = datlog extremalog
 amr.max_level       = 5       # maximum level number allowed
 amr.ref_ratio       = 2 2 2 2 2 2 # refinement ratio
 amr.regrid_int      = 2       # how often to regrid
-amr.blocking_factor = 8       # block factor in grid generation
-amr.max_grid_size   = 16
+amr.blocking_factor = 16       # block factor in grid generation
+amr.max_grid_size   = 64
 amr.n_error_buf     = 2 2 2 2 2 2 # number of buffer cells in error est
-#amr.hydro_tile_size = 8 8 8
 
 # LOAD BALANCE
 amr.loadbalance_with_workestimates = 1
@@ -164,3 +161,6 @@ pelec.eb_boundary_T = 1350.
 pelec.eb_isothermal = 0
 ebd.boundary_grad_stencil_type = 1
 pelec.eb_srd_max_order = 0
+
+amrex.the_arena_is_managed=0
+amrex.abort_on_out_of_gpu_memory=1
