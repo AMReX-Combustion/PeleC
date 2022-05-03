@@ -190,7 +190,7 @@ pc_bcfill_hyp(
         const amrex::Box modDom = amrex::grow(geom.Domain(), growVect);
         const auto bndryBoxLO_ghost =
           amrex::Box(amrex::adjCellLo(modDom, dir) & bx);
-        data.setVal<amrex::RunOn::Host>(
+        data.setVal<amrex::RunOn::Device>(
           0.0, bndryBoxLO_ghost, UMX, AMREX_SPACEDIM);
 
         PeleC::turb_inflow.add_turb(
@@ -205,7 +205,7 @@ pc_bcfill_hyp(
         const amrex::Box modDom = amrex::grow(geom.Domain(), growVect);
         const auto bndryBoxHI_ghost =
           amrex::Box(amrex::adjCellHi(modDom, dir) & bx);
-        data.setVal<amrex::RunOn::Host>(
+        data.setVal<amrex::RunOn::Device>(
           0.0, bndryBoxHI_ghost, UMX, AMREX_SPACEDIM);
 
         PeleC::turb_inflow.add_turb(
