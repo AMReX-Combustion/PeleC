@@ -381,16 +381,17 @@ PeleC::variableSetUp()
 
   desc_lst.setComponent(Reactions_Type, 0, react_name, react_bcs, bndryfunc2);
 
-  if (do_react_load_balance || do_mol_load_balance) {
-    desc_lst.addDescriptor(
-      Work_Estimate_Type, amrex::IndexType::TheCellType(),
-      amrex::StateDescriptor::Point, 0, 1, &amrex::pc_interp);
-    // Because we use piecewise constant interpolation, we do not use bc and
-    // BndryFunc.
-    desc_lst.setComponent(
-      Work_Estimate_Type, 0, "WorkEstimate", bc,
-      amrex::StateDescriptor::BndryFunc(pc_nullfill));
-  }
+  const bool workest_store_in_checkpoint = false;
+  const bool workest_data_extrap = false;
+  desc_lst.addDescriptor(
+    Work_Estimate_Type, amrex::IndexType::TheCellType(),
+    amrex::StateDescriptor::Point, 0, 1, &amrex::pc_interp, workest_data_extrap,
+    workest_store_in_checkpoint);
+  // Because we use piecewise constant interpolation, we do not use bc and
+  // BndryFunc.
+  desc_lst.setComponent(
+    Work_Estimate_Type, 0, "WorkEstimate", bc,
+    amrex::StateDescriptor::BndryFunc(pc_nullfill));
 
   num_state_type = desc_lst.size();
 

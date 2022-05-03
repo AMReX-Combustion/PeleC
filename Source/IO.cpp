@@ -372,10 +372,16 @@ PeleC::setPlotVariables()
   } else if (amrex::Amr::isDerivePlotVar("vfrac")) {
     amrex::Amr::deleteDerivePlotVar("vfrac");
   }
-  bool plot_cost = true;
+  bool plot_cost = do_react_load_balance || do_mol_load_balance;
   pp.query("plot_cost", plot_cost);
   if (plot_cost) {
-    amrex::Amr::addDerivePlotVar("WorkEstimate");
+    for (int i = 0; i < desc_lst[Work_Estimate_Type].nComp(); i++) {
+      amrex::Amr::addStatePlotVar(desc_lst[Work_Estimate_Type].name(i));
+    }
+  } else {
+    for (int i = 0; i < desc_lst[Work_Estimate_Type].nComp(); i++) {
+      amrex::Amr::deleteStatePlotVar(desc_lst[Work_Estimate_Type].name(i));
+    }
   }
 
   if (!do_react) {
