@@ -182,8 +182,6 @@ public:
   // other levels for the Amr class to do timed load balances.
   int WorkEstType() override { return Work_Estimate_Type; }
 
-  static bool DoMOLLoadBalance() { return do_mol_load_balance; }
-
   const amrex::MultiFab& volFrac() const { return vfrac; }
 
   void init_eb();

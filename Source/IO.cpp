@@ -372,7 +372,7 @@ PeleC::setPlotVariables()
   } else if (amrex::Amr::isDerivePlotVar("vfrac")) {
     amrex::Amr::deleteDerivePlotVar("vfrac");
   }
-  bool plot_cost = true;
+  bool plot_cost = do_react_load_balance || do_mol_load_balance;
   pp.query("plot_cost", plot_cost);
   if (plot_cost) {
     amrex::Amr::addDerivePlotVar("WorkEstimate");
