@@ -378,8 +378,7 @@ PeleC::setPlotVariables()
     for (int i = 0; i < desc_lst[Work_Estimate_Type].nComp(); i++) {
       amrex::Amr::addStatePlotVar(desc_lst[Work_Estimate_Type].name(i));
     }
-  }
-  else{
+  } else {
     for (int i = 0; i < desc_lst[Work_Estimate_Type].nComp(); i++) {
       amrex::Amr::deleteStatePlotVar(desc_lst[Work_Estimate_Type].name(i));
     }
