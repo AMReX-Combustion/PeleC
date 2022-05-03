@@ -383,14 +383,15 @@ PeleC::variableSetUp()
 
   store_in_checkpoint = false;
   desc_lst.addDescriptor(
-      Work_Estimate_Type, amrex::IndexType::TheCellType(),
-      amrex::StateDescriptor::Point, 0, 1, &amrex::pc_interp, state_data_extrap, store_in_checkpoint);
-    // Because we use piecewise constant interpolation, we do not use bc and
-    // BndryFunc.
+    Work_Estimate_Type, amrex::IndexType::TheCellType(),
+    amrex::StateDescriptor::Point, 0, 1, &amrex::pc_interp, state_data_extrap,
+    store_in_checkpoint);
+  // Because we use piecewise constant interpolation, we do not use bc and
+  // BndryFunc.
   desc_lst.setComponent(
-      Work_Estimate_Type, 0, "WorkEstimate", bc,
-      amrex::StateDescriptor::BndryFunc(pc_nullfill));
-  
+    Work_Estimate_Type, 0, "WorkEstimate", bc,
+    amrex::StateDescriptor::BndryFunc(pc_nullfill));
+
   num_state_type = desc_lst.size();
 
   // DEFINE DERIVED QUANTITIES
