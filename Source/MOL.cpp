@@ -173,17 +173,17 @@ pc_compute_hyp_mol_flux(
           for (int n = 0; n < NUM_ADV; n++) {
             lax_passive_flux(
               ul, ur, rl, rr, qtempl[R_ADV + n], qtempr[R_ADV + n],
-              flux_temp[UFA + n]);
+              flux_tmp[UFA + n]);
           }
           for (int n = 0; n < NUM_AUX; n++) {
             lax_passive_flux(
               ul, ur, rl, rr, qtempl[R_AUX + n], qtempr[R_AUX + n],
-              flux_temp[UFX + n]);
+              flux_tmp[UFX + n]);
           }
           for (int n = 0; n < NUM_LIN; n++) {
             lax_passive_flux(
               ul, ur, 1., 1., qtempl[R_LIN + n], qtempr[R_LIN + n],
-              flux_temp[ULIN + n]);
+              flux_tmp[ULIN + n]);
           }
         }
         flux_tmp[UTEMP] = 0.0;
