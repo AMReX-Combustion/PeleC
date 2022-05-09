@@ -12,7 +12,7 @@
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
-lax_passive_flux(
+pc_lax_cmpflx_passive(
   const amrex::Real ul,
   const amrex::Real ur,
   const amrex::Real rl,

@@ -171,18 +171,18 @@ pc_compute_hyp_mol_flux(
           const amrex::Real rl = qtempl[R_RHO];
           const amrex::Real rr = qtempr[R_RHO];
           for (int n = 0; n < NUM_ADV; n++) {
-            lax_passive_flux(
-              ul, ur, rl, rr, qtempl[R_ADV + n], qtempr[R_ADV + n],
+            pc_lax_cmpflx_passive(
+              ul, ur, rl, rr, qtempl[R_ADV + n], qtempr[R_ADV + n], maxeigval,
               flux_tmp[UFA + n]);
           }
           for (int n = 0; n < NUM_AUX; n++) {
-            lax_passive_flux(
-              ul, ur, rl, rr, qtempl[R_AUX + n], qtempr[R_AUX + n],
+            pc_lax_cmpflx_passive(
+              ul, ur, rl, rr, qtempl[R_AUX + n], qtempr[R_AUX + n], maxeigval,
               flux_tmp[UFX + n]);
           }
           for (int n = 0; n < NUM_LIN; n++) {
-            lax_passive_flux(
-              ul, ur, 1., 1., qtempl[R_LIN + n], qtempr[R_LIN + n],
+            pc_lax_cmpflx_passive(
+              ul, ur, 1., 1., qtempl[R_LIN + n], qtempr[R_LIN + n], maxeigval,
               flux_tmp[ULIN + n]);
           }
         }
