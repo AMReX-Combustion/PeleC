@@ -500,7 +500,7 @@ public:
   // static int NVAR;
   static int Density, Xmom, Ymom, Zmom, Eden, Eint, Temp;
 
-  static int FirstAdv, NumAdv;
+  static int FirstAdv;
   static int FirstSpec;
   static int FirstAux;
   static int FirstLin;

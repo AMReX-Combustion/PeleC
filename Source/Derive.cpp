@@ -224,6 +224,27 @@ pc_derspec(
 }
 
 void
+pc_deradv(
+  const amrex::Box& bx,
+  amrex::FArrayBox& derfab,
+  int /*dcomp*/,
+  int /*ncomp*/,
+  const amrex::FArrayBox& datfab,
+  const amrex::Geometry& /*geomdata*/,
+  amrex::Real /*time*/,
+  const int* /*bcrec*/,
+  const int /*level*/)
+{
+  auto const dat = datfab.const_array();
+  auto adv = derfab.array();
+
+  amrex::ParallelFor(
+    bx, NUM_ADV, [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
+      adv(i, j, k, n) = dat(i, j, k, UFA + n) / dat(i, j, k, URHO);
+    });
+}
+
+void
 pc_dermagvort(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,

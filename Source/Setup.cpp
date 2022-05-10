@@ -163,11 +163,9 @@ PeleC::variableSetUp()
   Eint = cnt++;
   Temp = cnt++;
 
-  NumAdv = NUM_ADV;
-
-  if (NumAdv > 0) {
+  if (NUM_ADV > 0) {
     FirstAdv = cnt;
-    cnt += NumAdv;
+    cnt += NUM_ADV;
   }
 
   // int dm = AMREX_SPACEDIM;
@@ -217,10 +215,6 @@ PeleC::variableSetUp()
   //}
 
   // int coord_type = amrex::DefaultGeometry().Coord();
-
-  amrex::Vector<amrex::Real> center(AMREX_SPACEDIM, 0.0);
-  amrex::ParmParse ppc("pelec");
-  ppc.queryarr("center", center, 0, AMREX_SPACEDIM);
 
   amrex::MFInterpolater* interp;
 
@@ -299,9 +293,9 @@ PeleC::variableSetUp()
   bcs[cnt] = bc;
   name[cnt] = "Temp";
 
-  for (int i = 0; i < NumAdv; ++i) {
+  for (int i = 0; i < NUM_ADV; ++i) {
     char buf[64];
-    sprintf(buf, "adv_%d", i);
+    sprintf(buf, "rho_adv_%d", i);
     cnt++;
     set_scalar_bc(bc, phys_bc);
     bcs[cnt] = bc;
@@ -473,6 +467,17 @@ PeleC::variableSetUp()
     "massfrac", amrex::IndexType::TheCellType(), NUM_SPECIES,
     var_names_massfrac, pc_derspec, amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("massfrac", desc_lst, State_Type, Density, NVAR);
+
+  // adv from rho_adv
+  amrex::Vector<std::string> var_names_adv(NUM_ADV);
+  for (int i = 0; i < NUM_ADV; i++) {
+    var_names_adv[i] = "adv_" + std::to_string(i);
+  }
+
+  derive_lst.add(
+    "adv", amrex::IndexType::TheCellType(), NUM_ADV, var_names_adv, pc_deradv,
+    amrex::DeriveRec::TheSameBox);
+  derive_lst.addComponent("adv", desc_lst, State_Type, Density, NVAR);
 
   // Species mole fractions
   amrex::Vector<std::string> var_names_molefrac(NUM_SPECIES);

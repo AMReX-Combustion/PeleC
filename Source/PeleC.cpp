@@ -46,7 +46,6 @@ int PeleC::Ymom = -1;
 int PeleC::Zmom = -1;
 int PeleC::FirstSpec = -1;
 int PeleC::FirstAux = -1;
-int PeleC::NumAdv = 0;
 int PeleC::FirstAdv = -1;
 int PeleC::FirstLin = -1;
 
