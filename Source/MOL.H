@@ -12,6 +12,23 @@
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
+pc_lax_cmpflx_passive(
+  const amrex::Real ul,
+  const amrex::Real ur,
+  const amrex::Real rl,
+  const amrex::Real rr,
+  const amrex::Real ql,
+  const amrex::Real qr,
+  const amrex::Real maxeigval,
+  amrex::Real& flux_tmp)
+{
+  flux_tmp =
+    0.5 * ((rl * ul * ql + rr * ur * qr) - maxeigval * (rr * qr - rl * ql));
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
 mol_slope(
   const int i,
   const int j,
@@ -58,20 +75,31 @@ mol_slope(
               : 0.0;
   drgt[2] = flagArrayR ? q(ivp, q_idx[1]) - q(iv, q_idx[1]) : 0.0;
   drgt[3] = flagArrayR ? q(ivp, q_idx[2]) - q(iv, q_idx[2]) : 0.0;
-
+  for (int n = 0; n < NUM_ADV; n++) {
+    dlft[QFA + n] = flagArrayL ? q(iv, QFA + n) - q(ivm, QFA + n) : 0.0;
+    drgt[QFA + n] = flagArrayR ? q(ivp, QFA + n) - q(iv, QFA + n) : 0.0;
+  }
   for (int n = 0; n < NUM_SPECIES; n++) {
-    dlft[4 + n] = flagArrayL
-                    ? q(iv, QRHO) * q(iv, QFS + n) -
-                        q(ivm, QRHO) * q(ivm, QFS + n) -
-                        q(iv, QFS + n) * (q(iv, QPRES) - q(ivm, QPRES)) /
-                          (qaux(iv, QC) * qaux(iv, QC))
-                    : 0.0;
-    drgt[4 + n] = flagArrayR
-                    ? q(ivp, QRHO) * q(ivp, QFS + n) -
-                        q(iv, QRHO) * q(iv, QFS + n) -
-                        q(iv, QFS + n) * (q(ivp, QPRES) - q(iv, QPRES)) /
-                          (qaux(iv, QC) * qaux(iv, QC))
-                    : 0.0;
+    dlft[QFS + n] = flagArrayL
+                      ? q(iv, QRHO) * q(iv, QFS + n) -
+                          q(ivm, QRHO) * q(ivm, QFS + n) -
+                          q(iv, QFS + n) * (q(iv, QPRES) - q(ivm, QPRES)) /
+                            (qaux(iv, QC) * qaux(iv, QC))
+                      : 0.0;
+    drgt[QFS + n] = flagArrayR
+                      ? q(ivp, QRHO) * q(ivp, QFS + n) -
+                          q(iv, QRHO) * q(iv, QFS + n) -
+                          q(iv, QFS + n) * (q(ivp, QPRES) - q(iv, QPRES)) /
+                            (qaux(iv, QC) * qaux(iv, QC))
+                      : 0.0;
+  }
+  for (int n = 0; n < NUM_AUX; n++) {
+    dlft[QFX + n] = flagArrayL ? q(iv, QFX + n) - q(ivm, QFX + n) : 0.0;
+    drgt[QFX + n] = flagArrayR ? q(ivp, QFX + n) - q(iv, QFX + n) : 0.0;
+  }
+  for (int n = 0; n < NUM_LIN; n++) {
+    dlft[QLIN + n] = flagArrayL ? q(iv, QLIN + n) - q(ivm, QLIN + n) : 0.0;
+    drgt[QLIN + n] = flagArrayR ? q(ivp, QLIN + n) - q(iv, QLIN + n) : 0.0;
   }
 
   for (int n = 0; n < QVAR; n++) {
