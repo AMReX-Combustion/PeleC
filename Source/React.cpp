@@ -7,7 +7,6 @@
 void
 PeleC::set_typical_values_chem()
 {
-
   if (use_typical_vals_chem_usr) {
     reactor->set_typ_vals_ode(typical_values_chem_usr);
   } else {
@@ -19,18 +18,11 @@ PeleC::set_typical_values_chem()
     for (int sp = 0; sp < NUM_SPECIES; sp++) {
       amrex::Real rhoYs_min = S_new.min(UFS + sp);
       amrex::Real rhoYs_max = S_new.max(UFS + sp);
-      typical_values_chem[sp] =
-        std::max(0.5 * (rhoYs_min + rhoYs_max), typical_rhoY_val_min);
+      typical_values_chem[sp] = amrex::max<amrex::Real>(
+        0.5 * (rhoYs_min + rhoYs_max), typical_rhoY_val_min);
     }
     typical_values_chem[NUM_SPECIES] = 0.5 * (minTemp + maxTemp);
     reactor->set_typ_vals_ode(typical_values_chem);
-
-    amrex::Print() << "\nSetting typical values for level \n" << level << "\n";
-    amrex::Print() << "pelec.typical_values_chem =";
-    for (int i = 0; i < (NUM_SPECIES + 1); i++) {
-      amrex::Print() << typical_values_chem[i] << "   ";
-    }
-    amrex::Print() << "\n-------------\n";
   }
 }
 

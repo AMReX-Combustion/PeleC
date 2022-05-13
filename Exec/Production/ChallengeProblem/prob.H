@@ -48,7 +48,8 @@ class EBLinePistonCylinder
 public:
   static std::string identifier() { return "Line-Piston-Cylinder"; }
 
-  void build(const amrex::Geometry& geom, const int max_coarsening_level);
+  void
+  build(const amrex::Geometry& geom, const int max_coarsening_level) override;
 };
 
 AMREX_GPU_DEVICE
@@ -64,7 +65,6 @@ pc_initdata(
 {
   // Geometry
   const amrex::Real* prob_lo = geomdata.ProbLo();
-  const amrex::Real* prob_hi = geomdata.ProbHi();
   const amrex::Real* dx = geomdata.CellSize();
   amrex::Real x[3] = {
     prob_lo[0] + (i + 0.5) * dx[0], prob_lo[1] + (j + 0.5) * dx[1],
@@ -85,8 +85,9 @@ pc_initdata(
   state(i, j, k, UEINT) = rho * eint;
   state(i, j, k, UEDEN) = state(i, j, k, UEINT);
   state(i, j, k, UTEMP) = prob_parm.T_mean;
-  for (int n = 0; n < NUM_SPECIES; n++)
+  for (int n = 0; n < NUM_SPECIES; n++) {
     state(i, j, k, UFS + n) = rho * massfrac[n];
+  }
 
   if (prob_parm.hitIC) {
     amrex::Real u[3] = {0.0};
@@ -219,6 +220,21 @@ pc_initdata(
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
+amrex::Real
+time_eta(
+  amrex::Real time, amrex::Real start, amrex::Real duration, amrex::Real tau)
+{
+  amrex::Real eta_time;
+  eta_time = 0.5 * (std::tanh((time - start) / (duration * tau)) *
+                      std::tanh((-time + start + duration) / (duration * tau)) +
+                    1.0);
+  eta_time =
+    amrex::min<amrex::Real>(amrex::max<amrex::Real>(eta_time, 0.0), 1.0);
+  return eta_time;
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
 void
 bcnormal(
   const amrex::Real x[AMREX_SPACEDIM],
@@ -227,113 +243,129 @@ bcnormal(
   const int idir,
   const int sgn,
   const amrex::Real time,
-  amrex::GeometryData const& geomdata,
+  amrex::GeometryData const& /*geomdata*/,
   ProbParmDevice const& prob_parm)
 {
-  // default wall condition
-  s_ext[URHO] = s_int[URHO];
-  s_ext[UMX] = -s_int[UMX];
-  s_ext[UMY] = -s_int[UMY];
-  s_ext[UMZ] = -s_int[UMZ];
-  s_ext[UEINT] = s_int[UEINT];
-  s_ext[UEDEN] = s_int[UEDEN];
-  s_ext[UTEMP] = s_int[UTEMP];
-  for (int n = 0; n < NUM_SPECIES; n++)
-    s_ext[UFS + n] = s_int[UFS + n];
+  if (sgn == -1 && idir == 2) {
+    // Save off the inflow velocity if specified
+    amrex::Real fluc_velx = 0.0, fluc_vely = 0.0, fluc_velz = 0.0;
+    if (prob_parm.turbulent_inflow) {
+      fluc_velx = s_ext[UMX];
+      fluc_vely = s_ext[UMY];
+      fluc_velz = s_ext[UMZ];
+    }
 
-  if (
-    (time < prob_parm.inj_start) ||
-    (prob_parm.inj_start + prob_parm.inj_dur < time)) {
-    return;
-  }
+    // default wall condition
+    s_ext[URHO] = s_int[URHO];
+    s_ext[UMX] = -s_int[UMX];
+    s_ext[UMY] = -s_int[UMY];
+    s_ext[UMZ] = -s_int[UMZ];
+    s_ext[UEINT] = s_int[UEINT];
+    s_ext[UEDEN] = s_int[UEDEN];
+    s_ext[UTEMP] = s_int[UTEMP];
+    for (int n = 0; n < NUM_SPECIES; n++) {
+      s_ext[UFS + n] = s_int[UFS + n];
+    }
 
-  // Chamber composition
-  amrex::Real massfrac_ch[NUM_SPECIES] = {0.0};
-  massfrac_ch[CH4_ID] = prob_parm.Y_CH4_chamber;
-  massfrac_ch[O2_ID] = prob_parm.Y_O2_chamber;
-  massfrac_ch[N2_ID] = 1.0 - massfrac_ch[O2_ID] - massfrac_ch[CH4_ID];
+    if (
+      (time < prob_parm.inj_start) ||
+      (prob_parm.inj_start + prob_parm.inj_dur < time)) {
+      return;
+    }
 
-  // Pure fuel composition
-  amrex::Real massfrac_fuel[NUM_SPECIES] = {0.0};
-  massfrac_fuel[NC12H26_ID] = 1.0;
+    // Chamber composition
+    amrex::Real massfrac_ch[NUM_SPECIES] = {0.0};
+    massfrac_ch[CH4_ID] = prob_parm.Y_CH4_chamber;
+    massfrac_ch[O2_ID] = prob_parm.Y_O2_chamber;
+    massfrac_ch[N2_ID] = 1.0 - massfrac_ch[O2_ID] - massfrac_ch[CH4_ID];
 
-  // Jet composition
-  amrex::Real massfrac_jet[NUM_SPECIES] = {0.0};
-  for (int n = 0; n < NUM_SPECIES; n++) {
-    massfrac_jet[n] =
-      prob_parm.Z * massfrac_fuel[n] + (1.0 - prob_parm.Z) * massfrac_ch[n];
-  }
+    // Pure fuel composition
+    amrex::Real massfrac_fuel[NUM_SPECIES] = {0.0};
+    massfrac_fuel[NC12H26_ID] = 1.0;
 
-  // Assuming this boundary is the top XY plane
-  // and in-plane angle is measured from X axis
-  const amrex::Real dphi_angle = 2.0 * constants::PI() / prob_parm.nholes;
-  auto eos = pele::physics::PhysicsType::eos();
+    // Jet composition
+    amrex::Real massfrac_jet[NUM_SPECIES] = {0.0};
+    for (int n = 0; n < NUM_SPECIES; n++) {
+      massfrac_jet[n] =
+        prob_parm.Z * massfrac_fuel[n] + (1.0 - prob_parm.Z) * massfrac_ch[n];
+    }
 
-  for (int nh = 1; nh <= prob_parm.nholes; nh++) {
-    // Current hole center
-    const amrex::Real phi_angle = nh * dphi_angle;
-    const amrex::Real cx = prob_parm.centx + prob_parm.r_circ * cos(phi_angle);
-    const amrex::Real cy = prob_parm.centy + prob_parm.r_circ * sin(phi_angle);
+    // Assuming this boundary is the top XY plane
+    // and in-plane angle is measured from X axis
+    const amrex::Real dphi_angle = 2.0 * constants::PI() / prob_parm.nholes;
+    auto eos = pele::physics::PhysicsType::eos();
 
-    // Injecting on an ellipse with R_minor = prob_parm.r_hole and R_major =
-    // prob_parm.r_hole / cos(prob_parm.cone_angle)
-    // Local coordinates:
-    const amrex::Real n_loc =
-      (x[0] - cx) * cos(phi_angle) - (x[1] - cy) * sin(phi_angle);
-    const amrex::Real t_loc =
-      (x[0] - cx) * sin(phi_angle) + (x[1] - cy) * cos(phi_angle);
+    for (int nh = 1; nh <= prob_parm.nholes; nh++) {
+      // Current hole center
+      const amrex::Real phi_angle = nh * dphi_angle;
+      const amrex::Real cx =
+        prob_parm.centx + prob_parm.r_circ * cos(phi_angle);
+      const amrex::Real cy =
+        prob_parm.centy + prob_parm.r_circ * sin(phi_angle);
 
-    // Ellipse: major in normal, minor is tangential
-    const amrex::Real elrSq =
-      n_loc * n_loc /
-        (prob_parm.r_hole /
-         cos(prob_parm.cone_angle * constants::PI() / 180.0) *
-         prob_parm.r_hole /
-         cos(prob_parm.cone_angle * constants::PI() / 180.0)) +
-      t_loc * t_loc / (prob_parm.r_hole * prob_parm.r_hole);
+      // Injecting on an ellipse with R_minor = prob_parm.r_hole and R_major =
+      // prob_parm.r_hole / cos(prob_parm.cone_angle)
+      // Local coordinates:
+      const amrex::Real n_loc =
+        (x[0] - cx) * cos(phi_angle) - (x[1] - cy) * sin(phi_angle);
+      const amrex::Real t_loc =
+        (x[0] - cx) * sin(phi_angle) + (x[1] - cy) * cos(phi_angle);
 
-    if (elrSq < 1.2) {
-      // Interior pressure
-      amrex::Real p_int;
-      amrex::Real massfrac_int[NUM_SPECIES] = {0.0};
-      for (int n = 0; n < NUM_SPECIES; n++)
-        massfrac_int[n] = s_int[UFS + n] / s_int[URHO];
-      eos.RTY2P(s_int[URHO], s_int[UTEMP], massfrac_int, p_int);
+      // Ellipse: major in normal, minor is tangential
+      const amrex::Real elrSq =
+        n_loc * n_loc /
+          (prob_parm.r_hole /
+           cos(prob_parm.cone_angle * constants::PI() / 180.0) *
+           prob_parm.r_hole /
+           cos(prob_parm.cone_angle * constants::PI() / 180.0)) +
+        t_loc * t_loc / (prob_parm.r_hole * prob_parm.r_hole);
 
-      // Tanh profile
-      const amrex::Real eta = 0.5 * (1.0 - std::tanh((elrSq - 1.0) / 0.2));
+      if (elrSq < 1.2) {
+        // Interior pressure
+        amrex::Real p_int;
+        amrex::Real massfrac_int[NUM_SPECIES] = {0.0};
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          massfrac_int[n] = s_int[UFS + n] / s_int[URHO];
+        }
+        eos.RTY2P(s_int[URHO], s_int[UTEMP], massfrac_int, p_int);
 
-      // Composition
-      amrex::Real massfrac[NUM_SPECIES] = {0.0};
-      for (int n = 0; n < NUM_SPECIES; n++) {
-        massfrac[n] = eta * massfrac_jet[n] + (1.0 - eta) * massfrac_ch[n];
+        // Tanh profile
+        const amrex::Real eta =
+          0.5 * (1.0 - std::tanh((elrSq - 1.0) / 0.2)) *
+          time_eta(time, prob_parm.inj_start, prob_parm.inj_dur, prob_parm.tau);
+
+        // Composition
+        amrex::Real massfrac[NUM_SPECIES] = {0.0};
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          massfrac[n] = eta * massfrac_jet[n] + (1.0 - eta) * massfrac_ch[n];
+        }
+
+        // subsonic inlet
+        amrex::Real rho, eint;
+        eos.PYT2RE(p_int, massfrac, prob_parm.T_jet, rho, eint);
+
+        // velocity
+        const amrex::Real vjet = prob_parm.vel_jet * eta;
+        const amrex::Real vz_in =
+          -vjet * cos(prob_parm.cone_angle * constants::PI() / 180.0) +
+          fluc_velz * eta;
+        const amrex::Real vr_in =
+          vjet * sin(prob_parm.cone_angle * constants::PI() / 180.0);
+        const amrex::Real vx_in = vr_in * cos(phi_angle) + fluc_velx * eta;
+        const amrex::Real vy_in = vr_in * sin(phi_angle) + fluc_vely * eta;
+
+        s_ext[URHO] = rho;
+        s_ext[UMX] = rho * vx_in;
+        s_ext[UMY] = rho * vy_in;
+        s_ext[UMZ] = rho * vz_in;
+        s_ext[UEINT] = rho * eint;
+        s_ext[UEDEN] =
+          rho * (eint + 0.5 * (vx_in * vx_in + vy_in * vy_in + vz_in * vz_in));
+        s_ext[UTEMP] = prob_parm.T_jet;
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          s_ext[UFS + n] = rho * massfrac[n];
+        }
       }
-
-      // subsonic inlet
-      amrex::Real rho, eint;
-      eos.PYT2RE(p_int, massfrac, prob_parm.T_jet, rho, eint);
-
-      // velocity
-      amrex::Real vx_in = 0.0, vy_in = 0.0, vz_in = 0.0;
-      const amrex::Real vjet_pipeflow = prob_parm.vel_jet * eta;
-      vz_in =
-        -vjet_pipeflow *
-        cos(prob_parm.cone_angle * constants::PI() / 180.0); // top XY plane
-      const amrex::Real vr_in =
-        vjet_pipeflow * sin(prob_parm.cone_angle * constants::PI() / 180.0);
-      vx_in = vr_in * cos(phi_angle);
-      vy_in = vr_in * sin(phi_angle);
-
-      s_ext[URHO] = rho;
-      s_ext[UMX] = rho * vx_in;
-      s_ext[UMY] = rho * vy_in;
-      s_ext[UMZ] = rho * vz_in;
-      s_ext[UEINT] = rho * eint;
-      s_ext[UEDEN] =
-        rho * (eint + 0.5 * (vx_in * vx_in + vy_in * vy_in + vz_in * vz_in));
-      s_ext[UTEMP] = prob_parm.T_jet;
-      for (int n = 0; n < NUM_SPECIES; n++)
-        s_ext[UFS + n] = rho * massfrac[n];
     }
   }
 }
@@ -359,7 +391,7 @@ struct MyProbTagStruct
   {
     AMREX_D_TERM(const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
                  , const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
-                 , const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];);
+                 , /*const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2]*/;);
 
     // Tag around the jets
     const amrex::Real dphi_angle = 2.0 * constants::PI() / prob_parm.nholes;

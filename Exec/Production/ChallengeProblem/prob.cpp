@@ -67,11 +67,11 @@ EBLinePistonCylinder::build(
 extern "C" {
 void
 amrex_probinit(
-  const int* init,
-  const int* name,
-  const int* namelen,
-  const amrex::Real* problo,
-  const amrex::Real* probhi)
+  const int* /*init*/,
+  const int* /*name*/,
+  const int* /*namelen*/,
+  const amrex::Real* /*problo*/,
+  const amrex::Real* /*probhi*/)
 {
   amrex::ParmParse pp("prob");
 
@@ -94,6 +94,7 @@ amrex_probinit(
   pp.query("injection_duration", PeleC::h_prob_parm_device->inj_dur);
   pp.query("tau", PeleC::h_prob_parm_device->tau);
   pp.query("Z", PeleC::h_prob_parm_device->Z);
+  pp.query("turbulent_inflow", PeleC::h_prob_parm_device->turbulent_inflow);
 
   amrex::ParmParse ppic("ic");
   ppic.query("hitIC", PeleC::h_prob_parm_device->hitIC);

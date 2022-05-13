@@ -1,4 +1,5 @@
 #include "MOL.H"
+#include "Godunov.H"
 
 void
 pc_compute_hyp_mol_flux(
@@ -23,7 +24,11 @@ pc_compute_hyp_mol_flux(
   const int R_UT1 = 2;
   const int R_UT2 = 3;
   const int R_P = 4;
-  const int R_Y = 5;
+  const int R_ADV = 5;
+  const int R_Y = R_ADV + NUM_ADV;
+  const int R_AUX = R_Y + NUM_SPECIES;
+  const int R_LIN = R_AUX + NUM_AUX;
+  const int R_NUM = 5 + NUM_SPECIES + NUM_ADV + NUM_LIN + NUM_AUX;
   const int bc_test_val = 1;
 
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
@@ -58,7 +63,7 @@ pc_compute_hyp_mol_flux(
         const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
         const amrex::IntVect ivm(iv - amrex::IntVect::TheDimensionVector(dir));
 
-        amrex::Real qtempl[5 + NUM_SPECIES] = {0.0};
+        amrex::Real qtempl[R_NUM] = {0.0};
         qtempl[R_UN] =
           q(ivm, q_idx[0]) + 0.5 * ((dq(ivm, 1) - dq(ivm, 0)) / q(ivm, QRHO));
         qtempl[R_P] =
@@ -70,7 +75,7 @@ pc_compute_hyp_mol_flux(
         for (int n = 0; n < NUM_SPECIES; n++) {
           qtempl[R_Y + n] =
             q(ivm, QFS + n) * q(ivm, QRHO) +
-            0.5 * (dq(ivm, 4 + n) +
+            0.5 * (dq(ivm, QFS + n) +
                    q(ivm, QFS + n) * (dq(ivm, 0) + dq(ivm, 1)) / qaux(ivm, QC));
           qtempl[R_RHO] += qtempl[R_Y + n];
         }
@@ -79,7 +84,7 @@ pc_compute_hyp_mol_flux(
           qtempl[R_Y + n] = qtempl[R_Y + n] / qtempl[R_RHO];
         }
 
-        amrex::Real qtempr[5 + NUM_SPECIES] = {0.0};
+        amrex::Real qtempr[R_NUM] = {0.0};
         qtempr[R_UN] =
           q(iv, q_idx[0]) - 0.5 * ((dq(iv, 1) - dq(iv, 0)) / q(iv, QRHO));
         qtempr[R_P] =
@@ -91,7 +96,7 @@ pc_compute_hyp_mol_flux(
         for (int n = 0; n < NUM_SPECIES; n++) {
           qtempr[R_Y + n] =
             q(iv, QFS + n) * q(iv, QRHO) -
-            0.5 * (dq(iv, 4 + n) +
+            0.5 * (dq(iv, QFS + n) +
                    q(iv, QFS + n) * (dq(iv, 0) + dq(iv, 1)) / qaux(iv, QC));
           qtempr[R_RHO] += qtempr[R_Y + n];
         }
@@ -99,6 +104,18 @@ pc_compute_hyp_mol_flux(
           qtempr[R_Y + n] = qtempr[R_Y + n] / qtempr[R_RHO];
         }
 
+        for (int n = 0; n < NUM_ADV; n++) {
+          qtempl[R_ADV + n] = q(ivm, QFA + n) + 0.5 * dq(ivm, QFA + n);
+          qtempr[R_ADV + n] = q(iv, QFA + n) - 0.5 * dq(iv, QFA + n);
+        }
+        for (int n = 0; n < NUM_AUX; n++) {
+          qtempl[R_AUX + n] = q(ivm, QFX + n) + 0.5 * dq(ivm, QFX + n);
+          qtempr[R_AUX + n] = q(iv, QFX + n) - 0.5 * dq(iv, QFX + n);
+        }
+        for (int n = 0; n < NUM_LIN; n++) {
+          qtempl[R_LIN + n] = q(ivm, QLIN + n) + 0.5 * dq(ivm, QLIN + n);
+          qtempr[R_LIN + n] = q(iv, QLIN + n) - 0.5 * dq(iv, QLIN + n);
+        }
         const amrex::Real cavg = 0.5 * (qaux(iv, QC) + qaux(ivm, QC));
 
         amrex::Real spl[NUM_SPECIES];
@@ -115,7 +132,7 @@ pc_compute_hyp_mol_flux(
         amrex::Real ustar = 0.0;
 
         if (!use_laxf_flux) {
-          amrex::Real tmp0 = 0.0, tmp1 = 0.0, tmp2 = 0.0, tmp3 = 0.0,
+          amrex::Real qint_iu = 0.0, tmp1 = 0.0, tmp2 = 0.0, tmp3 = 0.0,
                       tmp4 = 0.0;
           riemann(
             qtempl[R_RHO], qtempl[R_UN], qtempl[R_UT1], qtempl[R_UT2],
@@ -123,7 +140,23 @@ pc_compute_hyp_mol_flux(
             qtempr[R_UT2], qtempr[R_P], spr, bc_test_val, cavg, ustar,
             flux_tmp[URHO], &flux_tmp[UFS], flux_tmp[f_idx[0]],
             flux_tmp[f_idx[1]], flux_tmp[f_idx[2]], flux_tmp[UEDEN],
-            flux_tmp[UEINT], tmp0, tmp1, tmp2, tmp3, tmp4);
+            flux_tmp[UEINT], qint_iu, tmp1, tmp2, tmp3, tmp4);
+          const amrex::Real flxrho = flux_tmp[URHO];
+          for (int n = 0; n < NUM_ADV; n++) {
+            pc_cmpflx_passive(
+              ustar, flxrho, qtempl[R_ADV + n], qtempr[R_ADV + n],
+              flux_tmp[UFA + n]);
+          }
+          for (int n = 0; n < NUM_AUX; n++) {
+            pc_cmpflx_passive(
+              ustar, flxrho, qtempl[R_AUX + n], qtempr[R_AUX + n],
+              flux_tmp[UFX + n]);
+          }
+          for (int n = 0; n < NUM_LIN; n++) {
+            pc_cmpflx_passive(
+              ustar, qint_iu, qtempl[R_LIN + n], qtempr[R_LIN + n],
+              flux_tmp[ULIN + n]);
+          }
         } else {
           amrex::Real maxeigval = 0.0;
           laxfriedrich_flux(
@@ -133,19 +166,27 @@ pc_compute_hyp_mol_flux(
             maxeigval, flux_tmp[URHO], &flux_tmp[UFS], flux_tmp[f_idx[0]],
             flux_tmp[f_idx[1]], flux_tmp[f_idx[2]], flux_tmp[UEDEN],
             flux_tmp[UEINT]);
+          const amrex::Real ul = qtempl[R_UN];
+          const amrex::Real ur = qtempr[R_UN];
+          const amrex::Real rl = qtempl[R_RHO];
+          const amrex::Real rr = qtempr[R_RHO];
+          for (int n = 0; n < NUM_ADV; n++) {
+            pc_lax_cmpflx_passive(
+              ul, ur, rl, rr, qtempl[R_ADV + n], qtempr[R_ADV + n], maxeigval,
+              flux_tmp[UFA + n]);
+          }
+          for (int n = 0; n < NUM_AUX; n++) {
+            pc_lax_cmpflx_passive(
+              ul, ur, rl, rr, qtempl[R_AUX + n], qtempr[R_AUX + n], maxeigval,
+              flux_tmp[UFX + n]);
+          }
+          for (int n = 0; n < NUM_LIN; n++) {
+            pc_lax_cmpflx_passive(
+              ul, ur, 1., 1., qtempl[R_LIN + n], qtempr[R_LIN + n], maxeigval,
+              flux_tmp[ULIN + n]);
+          }
         }
-
         flux_tmp[UTEMP] = 0.0;
-        for (int n = UFX; n < UFX + NUM_AUX; n++) {
-          flux_tmp[n] = (NUM_AUX > 0) ? 0.0 : flux_tmp[n];
-        }
-        for (int n = UFA; n < UFA + NUM_ADV; n++) {
-          flux_tmp[n] = (NUM_ADV > 0) ? 0.0 : flux_tmp[n];
-        }
-        for (int n = ULIN; n < ULIN + NUM_LIN; n++) {
-          flux_tmp[n] = (NUM_LIN > 0) ? 0.0 : flux_tmp[n];
-        }
-
         for (int ivar = 0; ivar < NVAR; ivar++) {
           flx[dir](iv, ivar) += flux_tmp[ivar] * area[dir](i, j, k);
         }

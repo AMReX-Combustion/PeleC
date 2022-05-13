@@ -84,7 +84,8 @@ Combustor::build(const amrex::Geometry& geom, const int max_coarsening_level)
   amrex::Real secty = pl2pt[1] + k2 * (pl3pt[0] - pl2pt[0]);
   // How much do we cut?
   amrex::Real dx = geom.CellSize(0);
-  amrex::Real dycut = 4. * (1. + max_coarsening_level) * std::min(dx, k2 * dx);
+  amrex::Real dycut =
+    4. * (1. + max_coarsening_level) * amrex::min<amrex::Real>(dx, k2 * dx);
   amrex::EB2::BoxIF flat_corner(
     {AMREX_D_DECL(pl3pt[0], 0., -1.)}, {AMREX_D_DECL(1.e10, secty + dycut, 1.)},
     false);
@@ -94,7 +95,9 @@ Combustor::build(const amrex::Geometry& geom, const int max_coarsening_level)
   amrex::Real lenx = amrex::DefaultGeometry().ProbLength(0);
   amrex::Real leny = amrex::DefaultGeometry().ProbLength(1);
   auto pr = amrex::EB2::translate(
-    amrex::EB2::lathe(polys), {AMREX_D_DECL(lenx * 0.5, leny * 0.5, 0.)});
+    amrex::EB2::lathe(polys), {AMREX_D_DECL(
+                                static_cast<amrex::Real>(lenx * 0.5),
+                                static_cast<amrex::Real>(leny * 0.5), 0.)});
 
   auto gshop = amrex::EB2::makeShop(pr);
   amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
@@ -162,8 +165,9 @@ ExtrudedTriangles::build(
   problo = geom.ProbLo();
   probhi = geom.ProbHi();
 
-  maxlen = std::max(
-    std::max(geom.ProbLength(0), geom.ProbLength(1)), geom.ProbLength(2));
+  maxlen = amrex::max<amrex::Real>(
+    amrex::max<amrex::Real>(geom.ProbLength(0), geom.ProbLength(1)),
+    geom.ProbLength(2));
 
   // setting all triangles to be waaay outside the domain initially
   for (int itri = 0; itri < max_tri; itri++) {

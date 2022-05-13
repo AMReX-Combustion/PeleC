@@ -385,10 +385,16 @@ PeleC::setPlotVariables()
   } else if (amrex::Amr::isDerivePlotVar("vfrac")) {
     amrex::Amr::deleteDerivePlotVar("vfrac");
   }
-  bool plot_cost = true;
+  bool plot_cost = do_react_load_balance || do_mol_load_balance;
   pp.query("plot_cost", plot_cost);
   if (plot_cost) {
-    amrex::Amr::addDerivePlotVar("WorkEstimate");
+    for (int i = 0; i < desc_lst[Work_Estimate_Type].nComp(); i++) {
+      amrex::Amr::addStatePlotVar(desc_lst[Work_Estimate_Type].name(i));
+    }
+  } else {
+    for (int i = 0; i < desc_lst[Work_Estimate_Type].nComp(); i++) {
+      amrex::Amr::deleteStatePlotVar(desc_lst[Work_Estimate_Type].name(i));
+    }
   }
 
   if (!do_react) {
@@ -435,6 +441,26 @@ PeleC::setPlotVariables()
     amrex::Amr::addDerivePlotVar("massfrac");
   } else {
     amrex::Amr::deleteDerivePlotVar("massfrac");
+  }
+
+  bool plot_rho_adv = true;
+  pp.query("plot_rho_adv", plot_rho_adv);
+  if (plot_rho_adv) {
+    for (int i = 0; i < NUM_ADV; i++) {
+      amrex::Amr::addStatePlotVar(desc_lst[State_Type].name(FirstAdv + i));
+    }
+  } else {
+    for (int i = 0; i < NUM_ADV; i++) {
+      amrex::Amr::deleteStatePlotVar(desc_lst[State_Type].name(FirstAdv + i));
+    }
+  }
+
+  bool plot_adv = false;
+  pp.query("plot_adv", plot_adv);
+  if (plot_adv) {
+    amrex::Amr::addDerivePlotVar("adv");
+  } else {
+    amrex::Amr::deleteDerivePlotVar("adv");
   }
 
   bool plot_moleFrac = false;

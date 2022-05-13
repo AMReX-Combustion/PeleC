@@ -29,14 +29,17 @@ jobs:
         with:
           submodules: true
       - name: Setup
+        working-directory: ./Exec/RegTests/PMF
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
-          printf "CC=gcc-10\nCXX=g++-10\nFC=gfortran-10\nF90=gfortran-10" >> ./Submodules/AMReX/Tools/GNUMake/Make.local
+          #printf "CC=gcc-10\nCXX=g++-10\nFC=gfortran-10\nF90=gfortran-10" \
+          #  >> ${{github.workspace}}/Submodules/AMReX/Tools/GNUMake/Make.local
+          make COMP=gnu USE_MPI=FALSE DEBUG=TRUE TPL
+          make COMP=llvm USE_MPI=FALSE DEBUG=TRUE PRECISION=FLOAT TPL
       - name: PMF debug make
         working-directory: ./Exec/RegTests/PMF
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
-          make COMP=gnu USE_MPI=FALSE DEBUG=TRUE TPL
           make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
       - name: PMF debug test
         working-directory: ./Exec/RegTests/PMF
@@ -61,6 +64,24 @@ jobs:
         run: ./PeleC3d.gnu.DEBUG.ex eb-c10.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
       - name: EB debug report
         working-directory: ./Exec/RegTests/EB-C10
+        run: |
+          egrep "warning:|error:" build-output.txt \
+            | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|GNUmakefile" \
+            | egrep -v "Submodules/PelePhysics/Support/Fuego/Mechanism/Models" | sort | uniq \
+            | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
+          cat warnings.txt
+          export return=$(tail -n 1 warnings.txt | awk '{print $2}')
+          exit ${return}
+      - name: TG debug single precision build
+        working-directory: ./Exec/RegTests/TG
+        run: |
+          echo "::add-matcher::.github/problem-matchers/gcc.json"
+          make -j ${{env.NPROCS}} COMP=llvm USE_MPI=FALSE DEBUG=TRUE PRECISION=FLOAT 2>&1 | tee -a build-output.txt
+      - name: TG debug single precision test
+        working-directory: ./Exec/RegTests/TG
+        run: ./PeleC3d.llvm.FLOAT.DEBUG.ex tg-2.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
+      - name: TG debug single precision report
+        working-directory: ./Exec/RegTests/TG
         run: |
           egrep "warning:|error:" build-output.txt \
             | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|GNUmakefile" \
@@ -197,8 +218,7 @@ jobs:
           submodules: true
       - name: Dependencies
         run: |
-          sudo wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub
-          sudo apt-key add 7fa2af80.pub
+          sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
           echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /" \
               | sudo tee /etc/apt/sources.list.d/cuda.list
           sudo apt-get update
@@ -382,7 +402,7 @@ jobs:
         run: |
           cmake --build . --parallel ${{env.NPROCS}} 2>&1 | tee -a clang-tidy-full-report.txt
           egrep "warning:|error:" clang-tidy-full-report.txt \
-            | egrep -v "Submodules/PelePhysics|Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest" \
+            | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest" \
             | egrep -v "Submodules/PelePhysics/Support/Fuego/Mechanism/Models" | sort | uniq \
             | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > clang-tidy-warnings.txt
       - name: Full report

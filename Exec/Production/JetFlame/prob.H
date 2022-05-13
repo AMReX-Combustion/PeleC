@@ -31,7 +31,7 @@ pc_initdata(
   int j,
   int k,
   amrex::Array4<amrex::Real> const& state,
-  amrex::GeometryData const& geomdata,
+  amrex::GeometryData const& /*geomdata*/,
   ProbParmDevice const& prob_parm)
 {
   auto eos = pele::physics::PhysicsType::eos();
@@ -67,14 +67,15 @@ pc_initdata(
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 amrex::Real
-time_func(
+time_eta(
   amrex::Real time, amrex::Real start, amrex::Real duration, amrex::Real tau)
 {
   amrex::Real eta_time;
   eta_time = 0.5 * (std::tanh((time - start) / (duration * tau)) *
                       std::tanh((-time + start + duration) / (duration * tau)) +
                     1.0);
-  eta_time = std::min(std::max(eta_time, 0.0), 1.0);
+  eta_time =
+    amrex::min<amrex::Real>(amrex::max<amrex::Real>(eta_time, 0.0), 1.0);
   return eta_time;
 }
 
@@ -88,7 +89,7 @@ bcnormal(
   const int idir,
   const int sgn,
   const amrex::Real time,
-  amrex::GeometryData const& geomdata,
+  amrex::GeometryData const& /*geomdata*/,
   ProbParmDevice const& prob_parm)
 {
   if (sgn == 1 && idir == 2) {
@@ -111,8 +112,9 @@ bcnormal(
     s_ext[UEINT] = s_int[UEINT];
     s_ext[UEDEN] = s_int[UEDEN];
     s_ext[UTEMP] = s_int[UTEMP];
-    for (int n = 0; n < NUM_SPECIES; n++)
+    for (int n = 0; n < NUM_SPECIES; n++) {
       s_ext[UFS + n] = s_int[UFS + n];
+    }
 
     const amrex::Real radius = std::sqrt(
       (x[0] - prob_parm.center_xy[0]) * (x[0] - prob_parm.center_xy[0]) +
@@ -125,15 +127,16 @@ bcnormal(
       // interior pressure
       amrex::Real p_int;
       amrex::Real massfrac_int[NUM_SPECIES] = {0.0};
-      for (int n = 0; n < NUM_SPECIES; n++)
+      for (int n = 0; n < NUM_SPECIES; n++) {
         massfrac_int[n] = s_int[UFS + n] / s_int[URHO];
+      }
       eos.RTY2P(s_int[URHO], s_int[UTEMP], massfrac_int, p_int);
 
       amrex::Real eta = 0.5 * (1.0 - std::tanh(
                                        2.0 * (radius - prob_parm.D * 0.5) /
                                        (0.1 * prob_parm.D * 0.5)));
       eta *=
-        time_func(time, prob_parm.inj_start, prob_parm.inj_dur, prob_parm.tau);
+        time_eta(time, prob_parm.inj_start, prob_parm.inj_dur, prob_parm.tau);
       for (int n = 0; n < NUM_SPECIES; n++) {
         massfrac[n] =
           eta * prob_parm.Y_fuel[n] + (1.0 - eta) * prob_parm.Y_ox[n];
