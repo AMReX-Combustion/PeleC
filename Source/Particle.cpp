@@ -48,7 +48,8 @@ int plot_spray_src = 0;
 int PeleC::write_spray_ascii_files = 0;
 // momentum + density + fuel species + energy
 int PeleC::num_spray_src = AMREX_SPACEDIM + 2 + SPRAY_FUEL_NUM;
-std::string PeleC::sprayFuelNames[SPRAY_FUEL_NUM];
+std::string PeleC::spray_fuel_names[SPRAY_FUEL_NUM];
+amrex::Vector<std::string> PeleC::spray_derive_vars;
 
 SprayParticleContainer*
 PeleC::theSprayPC()
@@ -100,7 +101,7 @@ PeleC::readSprayParams()
   SprayParticleContainer::readSprayParams(
     particle_verbose, particle_cfl, wall_temp, mass_trans, mom_trans,
     write_spray_ascii_files, plot_spray_src, init_function, init_file,
-    sprayData, sprayFuelNames);
+    sprayData, spray_fuel_names, spray_derive_vars);
 }
 
 void
@@ -123,12 +124,12 @@ PeleC::defineParticles()
     for (int i = 0; i < SPRAY_FUEL_NUM; ++i) {
       for (int ns = 0; ns < NUM_SPECIES; ++ns) {
         std::string gas_spec = spec_names[ns];
-        if (gas_spec == sprayFuelNames[i]) {
+        if (gas_spec == spray_fuel_names[i]) {
           sprayData.indx[i] = ns;
         }
       }
       if (sprayData.indx[i] < 0) {
-        amrex::Print() << "Fuel " << sprayFuelNames[i]
+        amrex::Print() << "Fuel " << spray_fuel_names[i]
                        << " not found in species list" << std::endl;
         amrex::Abort();
       }

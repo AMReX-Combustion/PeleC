@@ -266,7 +266,7 @@ PeleC::do_sdc_iteration(
   if (do_spray_particles) {
     int spray_state_ghosts = sprayStateGhosts(amr_ncycle);
     fill_Sborder = true;
-    nGrow_Sborder = amrex::max<amrex::Real>(nGrow_Sborder, spray_n_grow);
+    nGrow_Sborder = amrex::max(nGrow_Sborder, spray_state_ghosts);
     AMREX_ASSERT(Sborder.nGrow() >= nGrow_Sborder);
   }
 #endif

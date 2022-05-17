@@ -289,7 +289,7 @@ PeleC::checkPoint(
     bool is_checkpoint = true;
     int write_ascii = 0; // Not for checkpoints
     theSprayPC()->SprayParticleIO(
-      level, is_checkpoint, write_ascii, dir, PeleC::sprayFuelNames);
+      level, is_checkpoint, write_ascii, dir, PeleC::spray_fuel_names);
   }
 #endif
 
@@ -815,6 +815,12 @@ PeleC::writePlotFile(
     }
   }
 
+#ifdef PELEC_USE_SPRAY
+  if (do_spray_particles && spray_derive_vars.size() > 0) {
+    num_derive += spray_derive_vars.size();
+  }
+#endif
+
   const auto n_data_items = plot_var_map.size() + num_derive;
 
   amrex::Real cur_time = state[State_Type].curTime();
@@ -842,6 +848,14 @@ PeleC::writePlotFile(
         os << rec->variableName(i) << '\n';
       }
     }
+
+#ifdef PELEC_USE_SPRAY
+    if (do_spray_particles && spray_derive_vars.size() > 0) {
+      for (int i = 0; i < spray_derive_vars.size(); i++) {
+        os << spray_derive_vars[i] << '\n';
+      }
+    }
+#endif
 
     os << AMREX_SPACEDIM << '\n';
     os << parent->cumTime() << '\n';
@@ -959,6 +973,20 @@ PeleC::writePlotFile(
     }
   }
 
+#ifdef PELEC_USE_SPRAY
+  if (do_spray_particles && spray_derive_vars.size() > 0) {
+    setupVirtualParticles();
+    theSprayPC()->computeDerivedVars(
+      plotMF, level, cnt, spray_derive_vars, spray_fuel_names);
+    if (level != parent->finestLevel()) {
+      theVirtPC()->computeDerivedVars(
+        plotMF, level, cnt, spray_derive_vars, spray_fuel_names);
+    }
+    removeVirtualParticles();
+    cnt += spray_derive_vars.size();
+  }
+#endif
+
   // Use the Full pathname when naming the MultiFab.
   std::string TheFullPath = FullPath;
   TheFullPath += BaseName;
@@ -967,7 +995,7 @@ PeleC::writePlotFile(
   if (theSprayPC() != nullptr) {
     bool is_checkpoint = false;
     theSprayPC()->SprayParticleIO(
-      level, is_checkpoint, write_spray_ascii_files, dir, sprayFuelNames);
+      level, is_checkpoint, write_spray_ascii_files, dir, spray_fuel_names);
   }
 #endif
 }
