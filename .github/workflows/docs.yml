@@ -18,7 +18,8 @@ jobs:
   Docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Clone
+        uses: actions/checkout@v3
       - name: Python
         uses: actions/setup-python@v2
         with:
@@ -26,7 +27,6 @@ jobs:
       - name: Dependencies
         run: |
           #Currently ignoring doxygen
-          #export DEBIAN_FRONTEND=noninteractive
           #sudo apt-get update
           #sudo apt-get install -y --no-install-recommends doxygen graphviz
           python -m pip install --upgrade pip
