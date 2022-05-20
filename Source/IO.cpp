@@ -974,13 +974,19 @@ PeleC::writePlotFile(
   }
 
 #ifdef PELEC_USE_SPRAY
-  if (do_spray_particles && spray_derive_vars.size() > 0) {
+  if (spray_derive_vars.size() > 0) {
     setupVirtualParticles();
+    int num_spray_derive = spray_derive_vars.size();
+    plotMF.setVal(0., cnt, num_spray_derive);
     theSprayPC()->computeDerivedVars(
       plotMF, level, cnt, spray_derive_vars, spray_fuel_names);
-    if (level != parent->finestLevel()) {
+    if (level < parent->finestLevel()) {
+      amrex::MultiFab tmp_plt(
+        grids, dmap, num_spray_derive, 0, amrex::MFInfo(), Factory());
+      tmp_plt.setVal(0.);
       theVirtPC()->computeDerivedVars(
-        plotMF, level, cnt, spray_derive_vars, spray_fuel_names);
+        tmp_plt, level, 0, spray_derive_vars, spray_fuel_names);
+      amrex::MultiFab::Add(plotMF, tmp_plt, 0, cnt, num_spray_derive, 0);
     }
     removeVirtualParticles();
     cnt += spray_derive_vars.size();
