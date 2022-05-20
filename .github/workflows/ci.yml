@@ -10,8 +10,10 @@ jobs:
   Formatting:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: DoozyX/clang-format-lint-action@v0.13
+    - name: Clone
+      uses: actions/checkout@v3
+    - name: Check formatting
+      uses: DoozyX/clang-format-lint-action@v0.13
       with:
         source: './Source ./Exec'
         exclude: '.'
@@ -25,7 +27,8 @@ jobs:
         uses: styfle/cancel-workflow-action@0.6.0
         with:
           access_token: ${{github.token}}
-      - uses: actions/checkout@v2
+      - name: Clone
+        uses: actions/checkout@v3
         with:
           submodules: true
       - name: Setup
@@ -118,11 +121,12 @@ jobs:
         uses: styfle/cancel-workflow-action@0.6.0
         with:
           access_token: ${{github.token}}
-      - uses: actions/checkout@v2
+      - name: Clone
+        uses: actions/checkout@v3
         with:
           submodules: true
       - name: Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: '3.8'
       - name: Setup
@@ -213,7 +217,8 @@ jobs:
         uses: styfle/cancel-workflow-action@0.6.0
         with:
           access_token: ${{github.token}}
-      - uses: actions/checkout@v2
+      - name: Clone
+        uses: actions/checkout@v3
         with:
           submodules: true
       - name: Dependencies
@@ -252,14 +257,15 @@ jobs:
         uses: styfle/cancel-workflow-action@0.6.0
         with:
           access_token: ${{github.token}}
-      - uses: actions/checkout@v2
+      - name: Clone
+        uses: actions/checkout@v3
         with:
           submodules: true
       - name: Dependencies
         run: |
-          sudo wget http://repo.radeon.com/rocm/rocm.gpg.key
+          sudo wget https://repo.radeon.com/rocm/rocm.gpg.key
           sudo apt-key add rocm.gpg.key
-          echo 'deb [arch=amd64] http://repo.radeon.com/rocm/apt/debian/ ubuntu main' \
+          echo 'deb [arch=amd64] https://repo.radeon.com/rocm/apt/debian/ ubuntu main' \
               | sudo tee /etc/apt/sources.list.d/rocm.list
           echo 'export PATH=/opt/rocm/llvm/bin:/opt/rocm/bin:/opt/rocm/profiler/bin:/opt/rocm/opencl/bin:$PATH' \
               | sudo tee -a /etc/profile.d/rocm.sh
@@ -300,7 +306,8 @@ jobs:
         uses: styfle/cancel-workflow-action@0.6.0
         with:
           access_token: ${{github.token}}
-      - uses: actions/checkout@v2
+      - name: Clone
+        uses: actions/checkout@v3
         with:
           submodules: true
       - name: Dependencies
@@ -341,7 +348,8 @@ jobs:
         uses: styfle/cancel-workflow-action@0.6.0
         with:
           access_token: ${{github.token}}
-      - uses: actions/checkout@v2
+      - name: Clone
+        uses: actions/checkout@v3
         with:
           submodules: true
       - name: Dependencies
@@ -377,7 +385,8 @@ jobs:
         uses: styfle/cancel-workflow-action@0.6.0
         with:
           access_token: ${{github.token}}
-      - uses: actions/checkout@v2
+      - name: Clone
+        uses: actions/checkout@v3
         with:
           submodules: true
       - name: Dependencies
