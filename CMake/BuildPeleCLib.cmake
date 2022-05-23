@@ -5,7 +5,7 @@ function(build_pelec_lib pelec_lib_name)
     set(PELE_PHYSICS_SRC_DIR ${CMAKE_SOURCE_DIR}/Submodules/PelePhysics)
     set(PELE_PHYSICS_TRANSPORT_DIR "${PELE_PHYSICS_SRC_DIR}/Transport")
     set(PELE_PHYSICS_EOS_DIR "${PELE_PHYSICS_SRC_DIR}/Eos")
-    set(PELE_PHYSICS_MECHANISM_DIR "${PELE_PHYSICS_SRC_DIR}/Support/Fuego/Mechanism/Models/${PELEC_CHEMISTRY_MODEL}")
+    set(PELE_PHYSICS_MECHANISM_DIR "${PELE_PHYSICS_SRC_DIR}/Support/Mechanism/Models/${PELEC_CHEMISTRY_MODEL}")
     set(AMREX_SUNDIALS_DIR ${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS)
 
     if(CLANG_TIDY_EXE)
