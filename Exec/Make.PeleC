@@ -79,8 +79,7 @@ Blocs += $(REACTIONS_HOME)
 include $(PELE_PHYSICS_HOME)/ThirdParty/Make.ThirdParty
 
 ifdef Chemistry_Model
-  CHEM_HOME = $(PELE_PHYSICS_HOME)/Support/Fuego/Mechanism/Models/$(Chemistry_Model)
-  Blocs += $(PELE_PHYSICS_HOME)/Support/Fuego/Evaluation
+  CHEM_HOME = $(PELE_PHYSICS_HOME)/Support/Mechanism/Models/$(Chemistry_Model)
 endif
 VPATH_LOCATIONS += $(CHEM_HOME)
 Bpack += $(CHEM_HOME)/Make.package
