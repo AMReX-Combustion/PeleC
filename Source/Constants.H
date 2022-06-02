@@ -1,5 +1,5 @@
-#ifndef _CONSTANTS_H_
-#define _CONSTANTS_H_
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
 
 namespace constants {
 AMREX_GPU_HOST_DEVICE constexpr amrex::Real

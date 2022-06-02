@@ -1,5 +1,5 @@
-#ifndef _WENO_H_
-#define _WENO_H_
+#ifndef WENO_H
+#define WENO_H
 
 #include <AMReX_FArrayBox.H>
 #include <AMReX_IArrayBox.H>

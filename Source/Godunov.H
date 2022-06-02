@@ -1,5 +1,5 @@
-#ifndef _GODUNOV_H_
-#define _GODUNOV_H_
+#ifndef GODUNOV_H
+#define GODUNOV_H
 
 #include <AMReX_FArrayBox.H>
 #include <AMReX_IArrayBox.H>

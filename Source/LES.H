@@ -1,5 +1,5 @@
-#ifndef _LES_H_
-#define _LES_H_
+#ifndef LES_H
+#define LES_H
 
 #include "PeleC.H"
 #include "Utilities.H"

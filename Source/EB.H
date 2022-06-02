@@ -1,5 +1,5 @@
-#ifndef _EB_H_
-#define _EB_H_
+#ifndef EB_H
+#define EB_H
 
 #include <AMReX_ParmParse.H>
 #include <AMReX_Geometry.H>

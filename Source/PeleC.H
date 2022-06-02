@@ -1,5 +1,5 @@
-#ifndef _PELEC_H_
-#define _PELEC_H_
+#ifndef PELEC_H
+#define PELEC_H
 
 #include <AMReX_BC_TYPES.H>
 #include <AMReX_AmrLevel.H>

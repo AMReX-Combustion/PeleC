@@ -1,5 +1,5 @@
-#ifndef _INDEX_DEFINES_H_
-#define _INDEX_DEFINES_H_
+#ifndef INDEX_DEFINES_H
+#define INDEX_DEFINES_H
 
 #include "mechanism.H"
 
