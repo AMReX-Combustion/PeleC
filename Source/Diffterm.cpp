@@ -32,9 +32,11 @@ pc_compute_diffusion_flux(
       amrex::Real d2 = 0.0;
       amrex::Box ebox = amrex::surroundingNodes(box, dir);
       if (dir == 0) {
-        AMREX_D_TERM(d2 = 1.;, d1 = del[1];, d2 = del[2];);
+        // cppcheck-suppress redundantAssignment
+        AMREX_D_TERM(d2 = 1.0;, d1 = del[1];, d2 = del[2];);
       } else if (dir == 1) {
-        AMREX_D_TERM(d2 = 1.;, d1 = del[0];, d2 = del[2];);
+        // cppcheck-suppress redundantAssignment
+        AMREX_D_TERM(d2 = 1.0;, d1 = del[0];, d2 = del[2];);
       } else if (dir == 2) {
         d1 = del[0];
         d2 = del[1];
