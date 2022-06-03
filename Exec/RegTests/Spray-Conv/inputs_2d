@@ -1,5 +1,5 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
-max_step = 1000
+max_step = 10
 stop_time = 8.E-2
 
 # PROBLEM SIZE & GEOMETRY
@@ -9,8 +9,8 @@ geometry.prob_lo     = 0. 0. 0.
 geometry.prob_hi     = 100. 100. 100.
 
 # use with single level
-amr.n_cell = 128 128 128
-prob.num_particles = (300, 300, 300)
+amr.n_cell = 64 64 64
+prob.num_particles = (256, 256, 256)
 
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
@@ -42,16 +42,18 @@ amr.v                = 1   # verbosity in Amr.cpp
 amr.max_level       = 2       # maximum level number allowed
 amr.ref_ratio       = 2 2 2 2 # refinement ratio
 amr.max_grid_size     = 32
-amr.initial_grid_file = two_d_gridfiles/gridfile_32
+amr.initial_grid_file = two_d_gridfiles/gridfile_32_1
+amr.regrid_file = two_d_gridfiles/gridfile_32_2
 amr.blocking_factor   = 32
 # amr.max_grid_size     = 128
 # amr.initial_grid_file = two_d_gridfiles/gridfile_128
 # amr.blocking_factor   = 128
-amr.regrid_int        = -1 -1 -1 -1
+amr.regrid_int        = 2 2 2 2
 amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
 
 # PARTICLES / SPRAY
 pelec.do_spray_particles = 1
+particles.derive_plot_vars = 1
 particles.v = 0
 particles.mom_transfer = 1
 particles.mass_transfer = 1
@@ -73,6 +75,8 @@ particles.fuel_rho = 0.640
 # Last coefficient converts units, in this case bar, to dyne/cm^2
 particles.NC10H22_psat = 4.07857 1501.268 -78.67 1.E6
 
+particles.parcel_size = 10.
+
 particles.use_splash_model = false
 
 # CHECKPOINT FILES
@@ -84,6 +88,7 @@ amr.check_int       = 10000   # number of timesteps between checkpoints
 # PLOTFILES
 #amr.plot_files_output = 0
 amr.plot_file = plt
+amr.plot_int = 1
 amr.plot_vars = density Temp rho_E xmom ymom rho_N2 rho_O2 rho_NC10H22
 amr.derive_plot_vars = x_velocity y_velocity pressure MachNumber magvel
 amr.file_name_digits = 4
@@ -95,7 +100,7 @@ prob.ref_T = 500.
 # Only used if particles are initialized from a function
 # and not a file
 prob.part_temp = 300.
-prob.part_dia = 0.001
-prob.part_vel = 1400000. 1400000. 0.
+prob.part_dia = 1.E-2
+prob.part_vel = 14000. 14000. 0.
 amrex.abort_on_out_of_gpu_memory = 1
 fabarray.mfiter_tile_size = 1024 1024 1024
