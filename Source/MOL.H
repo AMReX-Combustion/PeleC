@@ -1,5 +1,5 @@
-#ifndef _MOL_H_
-#define _MOL_H_
+#ifndef MOL_H
+#define MOL_H
 
 #include <AMReX_EBCellFlag.H>
 

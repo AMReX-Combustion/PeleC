@@ -1,5 +1,5 @@
-#ifndef _DIFFTERM_H_
-#define _DIFFTERM_H_
+#ifndef DIFFTERM_H
+#define DIFFTERM_H
 
 #include <AMReX_FArrayBox.H>
 #include <AMReX_EBCellFlag.H>

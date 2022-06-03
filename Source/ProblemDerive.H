@@ -1,6 +1,6 @@
 // Problem-specific derives
-#ifndef _PROBLEMDERIVE_H_
-#define _PROBLEMDERIVE_H_
+#ifndef PROBLEMDERIVE_H
+#define PROBLEMDERIVE_H
 
 #include <AMReX_Derive.H>
 #include <AMReX_FArrayBox.H>

@@ -1,5 +1,5 @@
-#ifndef _PLM_H_
-#define _PLM_H_
+#ifndef PLM_H
+#define PLM_H
 
 #include <cmath>
 
