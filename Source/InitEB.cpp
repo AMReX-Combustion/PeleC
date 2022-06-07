@@ -647,9 +647,7 @@ PeleC::InitialRedistribution(
 
   // Don't redistribute if there is no EB or if the redistribution type is
   // anything other than StateRedist
-  if (
-    (!eb_in_domain) ||
-    ((eb_in_domain) && (redistribution_type != "StateRedist"))) {
+  if ((!eb_in_domain) || (redistribution_type != "StateRedist")) {
     return;
   }
 
