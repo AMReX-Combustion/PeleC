@@ -22,9 +22,9 @@ PeleC advances the following set of fully compressible equations for the conserv
  
   \frac{\partial \rho}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u}) + S_{{\rm ext},\rho},
 
-  \frac{\partial (\rho \mathbf{u})}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} \mathbf{u} -p{\mathcal I} + \Pi) - \nabla p +\rho \mathbf{g} + \mathbf{S}_{{\rm ext},\rho\mathbf{u}},
+  \frac{\partial (\rho \mathbf{u})}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} \mathbf{u} + \Pi) - \nabla p +\rho \mathbf{g} + \mathbf{S}_{{\rm ext},\rho\mathbf{u}},
 
-  \frac{\partial (\rho E)}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} E + p \mathbf{u}) + \rho \mathbf{u} \cdot \mathbf{g} + \nabla\cdot \boldsymbol{\mathcal{Q}}+ S_{{\rm ext},\rho E},
+  \frac{\partial (\rho E)}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} E + p \mathbf{u}) - \nabla \cdot (\Pi \mathbf{u}) + \rho \mathbf{(u+u_{d})} \cdot \mathbf{g} + \nabla\cdot \boldsymbol{\mathcal{Q}}+ S_{{\rm ext},\rho E},
 
   \frac{\partial (\rho Y_k)}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} Y_k)
   - \nabla \cdot \boldsymbol{\mathcal{F}}_{k} + \rho \dot\omega_k + S_{{\rm ext},\rho Y_k},
@@ -32,14 +32,12 @@ PeleC advances the following set of fully compressible equations for the conserv
   \frac{\partial (\rho A_k)}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} A_k) + S_{{\rm ext},\rho A_k},
 
   \frac{\partial (\rho B_k)}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} B_k) + S_{{\rm ext},\rho B_k}.
-  
 
 
 Here :math:`\rho, \mathbf{u}, T`, and :math:`p` are the density, velocity,
 temperature and pressure, respectively. :math:`E
-= e + \mathbf{u} \cdot \mathbf{u} / 2` is the total energy with :math:`e` representing the
-internal energy, which is defined as in the CHEMKIN standard to include both sensible
-and chemical energy (species heats of formation) and is conserved across chemical reactions.
+= e + \mathbf{u} \cdot \mathbf{u} / 2` is the total energy with :math:`e` representing the internal energy, which is defined as in the CHEMKIN standard to include both sensible
+and chemical energy (species heats of formation) and is conserved across chemical reactions. :math:`q_k` on the right hand side of the energy equation is the heat of formation of species :math:`k`.
 :math:`Y_k` is the mass fraction of the :math:`k^{\rm th}` species,
 with associated production rate, :math:`\dot\omega_k`.  Here :math:`\mathbf{g}` is the gravitational vector, and
 :math:`S_{{\rm ext},\rho}, \mathbf{S}_{{\rm ext},\rho\mathbf{u}}`, etc., are user-specified
@@ -47,7 +45,7 @@ source terms.  :math:`A_k` is an advected quantity, i.e., a tracer.  Also
 :math:`\boldsymbol{\mathcal{F}}_{m}, \Pi`, and :math:`\boldsymbol{\mathcal{Q}}` are
 the diffusive transport fluxes for species, momentum and heat.  Note that the internal
 energy for species :math:`k` includes its heat of formation (and can therefore take on negative and
-positive values).  The auxiliary fields, :math:`B_k`, have a user-defined
+positive values).  It is also to be noted that the viscous dissipation (:math:`\nabla \cdot (\Pi \mathbf{u})`) and the work done by diffusion velocity (:math:`\rho \mathbf{u_{d}} \cdot \mathbf{g}`) are often small and are neglected in the solver. The auxiliary fields, :math:`B_k`, have a user-defined
 evolution equation, but by default are treated as advected quantities.
 
 In the code we carry around :math:`T` and :math:`\rho e` in the
@@ -61,14 +59,13 @@ Some notes:
   all 3 components of the velocity. You should always initialize all velocity components to zero, and
   always construct the kinetic energy with all three velocity components.
 
-* There are ``NUM_ADV`` advected quantities, which range from :math:`{\tt
-  UFA: UFA+NUM\_ADV-1}`.  The advected quantities have no effect at all on
+* There are ``NUM_ADV`` advected quantities, whose indices in the state vector range from :math:`{\tt
+  UFA: UFA+nadv-1}`.  Here, ``UFA(=7)`` refers to the number of conserverd variables not including the transported species. The advected quantities have no effect at all on
   the rest of the solution but can be useful as tracer quantities.
 
-* There are ``NUM_SPECIES`` species defined in the chemistry model, which range from :math:`{\tt UFS: UFS+NUM\_SPECIES-1}`.
+* There are ``NUM_SPECIES`` species defined in the chemistry model, whose indices in the state vector range from :math:`{\tt UFS: UFS+nspecies-1}` where ``UFS=UFA+nadv``.
 
-* There are ``NUM_AUX`` auxiliary variables, from :math:`{\tt UFX:UFX+NUM\_AUX-1}`. The auxiliary variables are passed into the equation
-  of state routines along with the species.
+* There are ``NUM_AUX`` auxiliary variables, from :math:`{\tt UFX:UFX+naux-1}`. Here, ``UFX=UFS+NUM_SPECIES``. The auxiliary variables are passed into the equation of state routines along with the species.
 
 * There are ``NUM_LIN`` linear passive variables, from :math:`{\tt ULIN:ULIN+NUM\_LIN-1}`. The linear passive variables are scalar variables where :math:`\mathbf{U}=\mathbf{Q}` instead of :math:`\mathbf{U}=\rho\mathbf{Q}`
 
@@ -77,12 +74,12 @@ Some notes:
 Primitive Forms
 ---------------
 
-PeleC uses the primitive form of the fluid equations, defined in terms of
+PeleC uses the primitive form of the inviscid fluid equations, defined in terms of
 the state :math:`\mathbf{Q} = (\rho, \mathbf{u}, p, \rho e, Y_k, A_k, B_k)`, to construct the
 interface states that are input to the Riemann problem. All of the primitive variables are derived from the conservative state
 vector. This task is performed in the routine ``ctoprim`` located in ``Src_nd/advection_util_nd.F90``.
 
-The primitive variable equations for density, velocity, and pressure are:
+The invisicd equations for primitive variables namely density, velocity, and pressure are:
 
 .. math::
   
@@ -154,6 +151,7 @@ accounted for in the characteristic integration in the PPM algorithm.  The sourc
     
     \mathbf{S}_{\mathbf{U}}^n =
     \left(\begin{array}{c}
+    \mathbf{S}_{\rho}\\
     \mathbf{S}_{\rho\mathbf{u}}\\
     S_{\rho E} \\
     S_{\rho Y_k} \\
@@ -162,6 +160,7 @@ accounted for in the characteristic integration in the PPM algorithm.  The sourc
     \end{array}\right)^n
     =
     \left(\begin{array}{c}
+    \mathbf{S}_{{\rm ext},\rho} \\
     \rho \mathbf{g} + \mathbf{S}_{{\rm ext},\rho\mathbf{u}} \\
     \rho \mathbf{u} \cdot \mathbf{g} + \nabla\cdot k_{\rm th} \nabla T + S_{{\rm ext},\rho E} \\
     S_{{\rm ext},\rho Y_k} \\
