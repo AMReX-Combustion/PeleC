@@ -95,7 +95,7 @@ ic.iname = "hit_ic_ut_128.in"
 ic.uin_norm = 1.3231790983814187
 ic.lscale = 2.4166097335 # = 2*pi / domain length
 ic.offset = -3.1415926536
-ic.urms0 = 4000.0
+ic.urms0 = 400.0
 ic.win_lo = -0.7 -0.7 0.15
 ic.win_hi =  0.7 0.7 0.3
 ic.win_slope = 10.0
