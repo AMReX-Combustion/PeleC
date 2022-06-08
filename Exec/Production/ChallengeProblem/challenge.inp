@@ -30,6 +30,7 @@ pelec.sdc_iters = 2
 #pelec.adaptrk_nsubsteps_min=25
 #pelec.adaptrk_nsubsteps_max=100
 pelec.chem_integrator="ReactorCvode"
+pelec.use_typ_vals_chem = 1
 cvode.solve_type=GMRES
 cvode.max_order = 4
 
@@ -153,6 +154,7 @@ tagging.ftracerr = 0.25
 tagging.vfracerr = 1e20
 tagging.max_vfracerr_lev = 2
 tagging.max_eb_refine_lev = 0
+tagging.eb_detag_factor = 1.5
 pelec.flame_trac_name = CH4
 
 eb2.geom_type = "Line-Piston-Cylinder"
