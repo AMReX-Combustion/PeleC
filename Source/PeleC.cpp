@@ -1567,7 +1567,7 @@ PeleC::errorEst(
     eb_distance(level, signDist);
 
     // Estimate how far I need to derefine
-    const amrex::Real diagFac = std::sqrt(2.0) * 3.0;
+    const amrex::Real diagFac = std::sqrt(2.0) * tagging_parm->detag_eb_factor;
     amrex::Real clearTagDist =
       parent->Geom(tagging_parm->max_eb_refine_lev).CellSize(0) *
       static_cast<amrex::Real>(
