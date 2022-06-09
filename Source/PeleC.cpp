@@ -1572,7 +1572,7 @@ PeleC::errorEst(
       parent->Geom(tagging_parm->max_eb_refine_lev).CellSize(0) *
       static_cast<amrex::Real>(
         parent->nErrorBuf(tagging_parm->max_eb_refine_lev)) *
-      diagFac;
+      safetyFac;
     const int finest_level = parent->finestLevel();
     for (int ilev = tagging_parm->max_eb_refine_lev + 1; ilev <= finest_level;
          ++ilev) {
