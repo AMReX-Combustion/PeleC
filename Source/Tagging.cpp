@@ -44,6 +44,7 @@ PeleC::read_tagging_params()
   pp.query("eb_refine_type", tagging_parm->eb_refine_type);
   pp.query("max_eb_refine_lev", tagging_parm->max_eb_refine_lev);
   pp.query("eb_detag_factor", tagging_parm->detag_eb_factor);
+  tagging_parm->detag_eb_factor *= std::sqrt(2.0);
   if (
     (tagging_parm->eb_refine_type != "static") &&
     (tagging_parm->eb_refine_type != "adaptive")) {
