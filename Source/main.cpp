@@ -70,7 +70,7 @@ public:
         amrex::Concatenate(plot_file_root, level_steps[0], file_name_digits);
 
       if (verbose > 0) {
-        amrex::Print() << "HELLO PLOTFILE: file = " << pltfile << '\n';
+        amrex::Print() << "PLOTFILE: file = " << pltfile << '\n';
       }
 
       if (record_run_info && amrex::ParallelDescriptor::IOProcessor()) {
