@@ -31,6 +31,143 @@ override_default_parameters()
   }
 }
 
+// FIXMEs:
+// this is a stupid name
+// put it somewhere else?
+// need to do writeSmallPlotFile as well
+// consolidate
+// make it work with HDF5
+// parmparse the HDF5 flag
+// rename the bl_profile region
+class myamr : public amrex::Amr
+{
+  using amrex::Amr::Amr;
+
+public:
+  void writePlotFile() override
+  {
+    const bool hdf5 = true;
+    if (hdf5) {
+      if (!Plot_Files_Output()) {
+        return;
+      }
+
+      BL_PROFILE_REGION_START("Amr::writePlotFile()");
+      BL_PROFILE("Amr::writePlotFile()");
+
+      if (first_plotfile) {
+        first_plotfile = false;
+        amr_level[0]->setPlotVariables();
+      }
+
+      // Don't continue if we have no variables to plot.
+
+      if (statePlotVars().size() == 0) {
+        return;
+      }
+
+      const std::string& pltfile =
+        amrex::Concatenate(plot_file_root, level_steps[0], file_name_digits);
+
+      if (verbose > 0) {
+        amrex::Print() << "HELLO PLOTFILE: file = " << pltfile << '\n';
+      }
+
+      if (record_run_info && amrex::ParallelDescriptor::IOProcessor()) {
+        runlog << "PLOTFILE: file = " << pltfile << '\n';
+      }
+
+      // FIXME: make this common with the other
+      const auto& desc_lst = amrex::AmrLevel::get_desc_lst();
+      auto& derive_lst = amrex::AmrLevel::get_derive_lst();
+
+      amrex::Vector<std::pair<int, int>> plot_var_map;
+      for (int typ = 0; typ < desc_lst.size(); typ++) {
+        for (int comp = 0; comp < desc_lst[typ].nComp(); comp++) {
+          if (
+            amrex::Amr::isStatePlotVar(desc_lst[typ].name(comp)) &&
+            desc_lst[typ].getType() == amrex::IndexType::TheCellType()) {
+            plot_var_map.push_back(std::pair<int, int>(typ, comp));
+          }
+        }
+      }
+
+      int num_derive = 0;
+      std::list<std::string> derive_names;
+      const std::list<amrex::DeriveRec>& dlist = derive_lst.dlist();
+
+      for (const auto& it : dlist) {
+        if (amrex::Amr::isDerivePlotVar(it.name())) {
+          derive_names.push_back(it.name());
+          num_derive += it.numDerive();
+        }
+      }
+
+      const auto n_data_items = plot_var_map.size() + num_derive;
+
+      int cnt = 0;
+      const int nGrow = 0;
+      const amrex::Real cur_time =
+        (amr_level[0]->get_state_data(State_Type)).curTime();
+
+      // // amrex::Vector<const amrex::MultiFab*> plotMFs(finestLevel() + 1);
+      // for (int lev = 0; lev < finestLevel() + 1; ++lev) {
+      //   amrex::MultiFab plotMF(
+      //     boxArray(lev), DistributionMap(lev), n_data_items, nGrow,
+      //     amrex::MFInfo(), amr_level[lev]->Factory());
+
+      //   // Cull data from state variables -- use no ghost cells.
+      //   for (int i = 0; i < plot_var_map.size(); i++) {
+      //     int typ = plot_var_map[i].first;
+      //     int comp = plot_var_map[i].second;
+      //     amrex::MultiFab& this_dat = amr_level[lev]->get_new_data(typ);
+      //     amrex::MultiFab::Copy(plotMF, this_dat, comp, cnt, 1, nGrow);
+      //     cnt++;
+      //   }
+
+      //   // Cull data from derived variables.
+      //   if (!derive_names.empty()) {
+      //     for (const auto& derive_name : derive_names) {
+      //       const amrex::DeriveRec* rec = derive_lst.get(derive_name);
+      //       int ncomp = rec->numDerive();
+
+      //       auto derive_dat =
+      //         amr_level[lev]->derive(derive_name, cur_time, nGrow);
+      //       amrex::MultiFab::Copy(plotMF, *derive_dat, 0, cnt, ncomp, nGrow);
+      //       cnt += ncomp;
+      //     }
+      //   }
+      // }
+
+      amrex::Vector<std::string> plt_var_names;
+      for (int i = 0; i < plot_var_map.size(); i++) {
+        int typ = plot_var_map[i].first;
+        int comp = plot_var_map[i].second;
+        plt_var_names.push_back(desc_lst[typ].name(comp));
+      }
+
+      for (const auto& derive_name : derive_names) {
+        const amrex::DeriveRec* rec = derive_lst.get(derive_name);
+        for (int i = 0; i < rec->numDerive(); i++) {
+          plt_var_names.push_back(rec->variableName(i));
+        }
+      }
+
+      // amrex::WriteMultiLevelPlotfile(
+      //   pltfile, finestLevel() + 1, plotMFs, plt_var_names,
+      //   Geom(), cur_time, istep, refRatio());
+
+      // if (level == 0 && amrex::ParallelDescriptor::IOProcessor()) {
+      //   amr_level[0]->writeJobInfo(pltfile);
+      // }
+      
+      BL_PROFILE_REGION_STOP("Amr::writePlotFile()");
+    } else {
+      amrex::Amr::writePlotFile();
+    }
+  }
+};
+
 int
 main(int argc, char* argv[])
 {
@@ -121,7 +258,7 @@ main(int argc, char* argv[])
   }
 
   // Initialize random seed after we're running in parallel.
-  auto* amrptr = new amrex::Amr(getLevelBld());
+  auto* amrptr = new myamr(getLevelBld());
 
   amrex::AmrLevel::SetEBSupportLevel(
     amrex::EBSupport::full); // need both area and volume fractions
