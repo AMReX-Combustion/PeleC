@@ -925,7 +925,11 @@ PeleC::writePlotFile(
   // Use the Full pathname when naming the MultiFab.
   std::string TheFullPath = FullPath;
   TheFullPath += BaseName;
-  amrex::VisMF::Write(plotMF, TheFullPath, how, true);
+  if (amrex::AsyncOut::UseAsyncOut()) {
+    amrex::VisMF::AsyncWrite(plotMF, TheFullPath);
+  } else {
+    amrex::VisMF::Write(plotMF, TheFullPath, how, true);
+  }
 }
 
 void
@@ -1000,7 +1004,6 @@ PeleC::writeSmallPlotFile(
     os << (int)amrex::DefaultGeometry().Coord() << '\n';
     os << "0\n"; // Write bndry data.
 
-    // job_info file with details about the run
     writeJobInfo(dir);
   }
 
@@ -1048,7 +1051,10 @@ PeleC::writeSmallPlotFile(
       PathNameInHeader += BaseName;
       os << PathNameInHeader << '\n';
     }
-    os << vfraceps << '\n';
+
+    if (eb_in_domain && level == parent->finestLevel()) {
+      os << vfraceps << '\n';
+    }
   }
 
   // We combine all of the multifabs -- state, derived, etc -- into one
@@ -1072,7 +1078,11 @@ PeleC::writeSmallPlotFile(
   // Use the Full pathname when naming the MultiFab.
   std::string TheFullPath = FullPath;
   TheFullPath += BaseName;
-  amrex::VisMF::Write(plotMF, TheFullPath, how, true);
+  if (amrex::AsyncOut::UseAsyncOut()) {
+    amrex::VisMF::AsyncWrite(plotMF, TheFullPath);
+  } else {
+    amrex::VisMF::Write(plotMF, TheFullPath, how, true);
+  }
 }
 
 void
