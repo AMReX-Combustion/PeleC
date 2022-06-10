@@ -160,7 +160,7 @@ public:
       // if (level == 0 && amrex::ParallelDescriptor::IOProcessor()) {
       //   amr_level[0]->writeJobInfo(pltfile);
       // }
-      
+
       BL_PROFILE_REGION_STOP("Amr::writePlotFile()");
     } else {
       amrex::Amr::writePlotFile();
