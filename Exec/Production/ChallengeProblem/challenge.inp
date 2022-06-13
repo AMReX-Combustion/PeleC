@@ -30,6 +30,7 @@ pelec.sdc_iters = 2
 #pelec.adaptrk_nsubsteps_min=25
 #pelec.adaptrk_nsubsteps_max=100
 pelec.chem_integrator="ReactorCvode"
+pelec.use_typ_vals_chem = 1
 cvode.solve_type=GMRES
 cvode.max_order = 4
 
@@ -52,6 +53,7 @@ amr.ref_ratio       = 2 2 2 2 2 2 # refinement ratio
 amr.regrid_int      = 2       # how often to regrid
 amr.blocking_factor = 16       # block factor in grid generation
 amr.max_grid_size   = 64
+amr.grid_eff        = 0.9
 amr.n_error_buf     = 2 2 2 2 2 2 # number of buffer cells in error est
 
 # LOAD BALANCE
@@ -95,7 +97,7 @@ ic.iname = "hit_ic_ut_128.in"
 ic.uin_norm = 1.3231790983814187
 ic.lscale = 2.4166097335 # = 2*pi / domain length
 ic.offset = -3.1415926536
-ic.urms0 = 4000.0
+ic.urms0 = 400.0
 ic.win_lo = -0.7 -0.7 0.15
 ic.win_hi =  0.7 0.7 0.3
 ic.win_slope = 10.0
@@ -153,6 +155,7 @@ tagging.ftracerr = 0.25
 tagging.vfracerr = 1e20
 tagging.max_vfracerr_lev = 2
 tagging.max_eb_refine_lev = 0
+tagging.eb_detag_factor = 1.5
 pelec.flame_trac_name = CH4
 
 eb2.geom_type = "Line-Piston-Cylinder"

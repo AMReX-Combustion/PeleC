@@ -1567,18 +1567,18 @@ PeleC::errorEst(
     eb_distance(level, signDist);
 
     // Estimate how far I need to derefine
-    const amrex::Real diagFac = std::sqrt(2.0) * 3.0;
+    const amrex::Real safetyFac = tagging_parm->detag_eb_factor;
     amrex::Real clearTagDist =
       parent->Geom(tagging_parm->max_eb_refine_lev).CellSize(0) *
       static_cast<amrex::Real>(
         parent->nErrorBuf(tagging_parm->max_eb_refine_lev)) *
-      diagFac;
+      safetyFac;
     const int finest_level = parent->finestLevel();
     for (int ilev = tagging_parm->max_eb_refine_lev + 1; ilev <= finest_level;
          ++ilev) {
       clearTagDist +=
         static_cast<amrex::Real>(parent->nErrorBuf(ilev)) *
-        parent->Geom(tagging_parm->max_eb_refine_lev).CellSize(0) * diagFac;
+        parent->Geom(tagging_parm->max_eb_refine_lev).CellSize(0) * safetyFac;
     }
 
     // Untag cells too close to EB

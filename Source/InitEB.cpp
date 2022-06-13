@@ -461,7 +461,7 @@ PeleC::initialize_signed_distance()
                         static_cast<amrex::Real>(parent->refRatio(ilev - 1)[0]),
                         static_cast<amrex::Real>(ilev));
     }
-    extentFactor *= std::sqrt(2.0); // Account for diagonals
+    extentFactor *= tagging_parm->detag_eb_factor;
 
     amrex::MultiFab signDist(
       convert(grids, amrex::IntVect::TheUnitVector()), dmap, 1, 1,
