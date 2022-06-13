@@ -33,7 +33,6 @@ namespace {
 int input_version = -1;
 int current_version = 1;
 std::string body_state_filename = "body_state.fab";
-amrex::Real vfraceps = 0.000001;
 } // namespace
 
 // I/O routines for PeleC
