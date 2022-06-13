@@ -180,20 +180,6 @@ public:
       }
     }
 
-    amrex::VisMF::IO_Buffer io_buffer(amrex::VisMF::GetIOBufferSize());
-    std::ofstream HeaderFile;
-    HeaderFile.rdbuf()->pubsetbuf(io_buffer.dataPtr(), io_buffer.size());
-    if (amrex::ParallelDescriptor::IOProcessor()) {
-      // Only the IOProcessor() writes to the header file.
-      std::string HeaderFileName(pltfile + "/Header");
-      HeaderFile.open(
-        HeaderFileName.c_str(),
-        std::ios::out | std::ios::trunc | std::ios::binary);
-      if (!HeaderFile.good()) {
-        amrex::FileOpenFailed(HeaderFileName);
-      }
-    }
-
     amrex::Vector<std::string> plt_var_names;
     for (int i = 0; i < plot_var_map.size(); i++) {
       int typ = plot_var_map[i].first;
@@ -217,7 +203,7 @@ public:
 
     if (regular) {
       for (int lev = 0; lev < nlevels; ++lev) {
-        amr_level[lev]->writePlotFilePre(pltfile, HeaderFile);
+        //amr_level[lev]->writePlotFilePre(pltfile, HeaderFile);
       }
     }
 
@@ -227,6 +213,20 @@ public:
       amrex::WriteMultiLevelPlotfile(
         pltfile, nlevels, plotMFs_constvec, plt_var_names, Geom(), cur_time,
         istep, refRatio());
+    }
+
+    amrex::VisMF::IO_Buffer io_buffer(amrex::VisMF::GetIOBufferSize());
+    std::ofstream HeaderFile;
+    HeaderFile.rdbuf()->pubsetbuf(io_buffer.dataPtr(), io_buffer.size());
+    if (amrex::ParallelDescriptor::IOProcessor()) {
+      // Only the IOProcessor() writes to the header file.
+      std::string HeaderFileName(pltfile + "/Header");
+      HeaderFile.open(
+        HeaderFileName.c_str(),
+        std::ios::out | std::ios::trunc | std::ios::binary);
+      if (!HeaderFile.good()) {
+        amrex::FileOpenFailed(HeaderFileName);
+      }
     }
 
     if (regular) {
