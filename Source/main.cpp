@@ -5,6 +5,7 @@
 #include <AMReX_ParallelDescriptor.H>
 #include <AMReX_AmrLevel.H>
 #include <AMReX_EB2.H>
+#include <AMReX_PlotFileUtil.H>
 
 // Defined and initialized when in gnumake, but not defined in cmake and
 // initialization done manually
@@ -52,8 +53,10 @@ public:
         return;
       }
 
-      BL_PROFILE_REGION_START("Amr::writePlotFile()");
-      BL_PROFILE("Amr::writePlotFile()");
+      BL_PROFILE_REGION_START("MyAmr::writePlotFile()");
+      BL_PROFILE("MyAmr::writePlotFile()");
+
+      auto dPlotFileTime0 = amrex::second();
 
       if (first_plotfile) {
         first_plotfile = false;
@@ -109,9 +112,13 @@ public:
       const amrex::Real cur_time =
         (amr_level[0]->get_state_data(State_Type)).curTime();
 
-      amrex::Vector<std::unique_ptr<amrex::MultiFab>> plotMFs(
-        finestLevel() + 1);
-      for (int lev = 0; lev < finestLevel() + 1; ++lev) {
+      const int nlevels = finestLevel() + 1;
+      amrex::Vector<std::unique_ptr<amrex::MultiFab>> plotMFs(nlevels);
+      amrex::Vector<int> istep(nlevels);
+      for (int lev = 0; lev < nlevels; ++lev) {
+
+        istep[lev] = levelSteps(lev);
+
         plotMFs[lev] = std::make_unique<amrex::MultiFab>(
           boxArray(lev), DistributionMap(lev), n_data_items, nGrow,
           amrex::MFInfo(), amr_level[lev]->Factory());
@@ -155,15 +162,31 @@ public:
         }
       }
 
-      // amrex::WriteMultiLevelPlotfile(
-      //   pltfile, finestLevel() + 1, plotMFs, plt_var_names,
-      //   Geom(), cur_time, istep, refRatio());
+      amrex::Vector<const amrex::MultiFab*> plotMFs_constvec;
+      plotMFs_constvec.reserve(nlevels);
+      for (int lev = 0; lev < nlevels; ++lev) {
+        plotMFs_constvec.push_back(
+          static_cast<const amrex::MultiFab*>(plotMFs[lev].get()));
+      }
+
+      amrex::WriteMultiLevelPlotfile(
+        pltfile, nlevels, plotMFs_constvec, plt_var_names, Geom(), cur_time,
+        istep, refRatio());
 
       // if (level == 0 && amrex::ParallelDescriptor::IOProcessor()) {
       //   amr_level[0]->writeJobInfo(pltfile);
       // }
 
-      BL_PROFILE_REGION_STOP("Amr::writePlotFile()");
+      if (verbose > 0) {
+        const int IOProc = amrex::ParallelDescriptor::IOProcessorNumber();
+        auto dPlotFileTime = amrex::second() - dPlotFileTime0;
+        amrex::ParallelDescriptor::ReduceRealMax(dPlotFileTime, IOProc);
+        amrex::Print() << "Write plotfile time = " << dPlotFileTime
+                       << "  seconds"
+                       << "\n\n";
+      }
+
+      BL_PROFILE_REGION_STOP("MyAmr::writePlotFile()");
     } else {
       amrex::Amr::writePlotFile();
     }
