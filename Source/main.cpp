@@ -35,8 +35,6 @@ override_default_parameters()
 // FIXMEs:
 // this is a stupid name
 // put it somewhere else?
-// need to do writeSmallPlotFile as well
-// consolidate
 // make it work with HDF5
 // parmparse the HDF5 flag
 // rename the bl_profile region
