@@ -173,10 +173,6 @@ public:
         pltfile, nlevels, plotMFs_constvec, plt_var_names, Geom(), cur_time,
         istep, refRatio());
 
-      // if (level == 0 && amrex::ParallelDescriptor::IOProcessor()) {
-      //   amr_level[0]->writeJobInfo(pltfile);
-      // }
-
       if (verbose > 0) {
         const int IOProc = amrex::ParallelDescriptor::IOProcessorNumber();
         auto dPlotFileTime = amrex::second() - dPlotFileTime0;

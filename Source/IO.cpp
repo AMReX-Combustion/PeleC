@@ -440,6 +440,14 @@ PeleC::setPlotVariables()
 }
 
 void
+PeleC::writePlotFilePost(const std::string& dir, std::ostream& /*os*/)
+{
+  if (level == 0 && amrex::ParallelDescriptor::IOProcessor()) {
+    writeJobInfo(dir);
+  }
+}
+
+void
 PeleC::writeJobInfo(const std::string& dir)
 {
   // job_info file with details about the run
@@ -838,8 +846,6 @@ PeleC::writePlotFile(
     }
     os << (int)amrex::DefaultGeometry().Coord() << '\n';
     os << "0\n"; // Write bndry data.
-
-    writeJobInfo(dir);
   }
 
   // Build the directory to hold the MultiFab at this level.
@@ -999,9 +1005,6 @@ PeleC::writeSmallPlotFile(
     }
     os << (int)amrex::DefaultGeometry().Coord() << '\n';
     os << "0\n"; // Write bndry data.
-
-    // job_info file with details about the run
-    writeJobInfo(dir);
   }
 
   // Build the directory to hold the MultiFab at this level.
