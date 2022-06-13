@@ -99,10 +99,6 @@ public:
   void setPlotVariables() override;
 
   // Write a plotfile to specified directory.
-  void writePlotFile(
-    const std::string& dir, std::ostream& os, amrex::VisMF::How how) override;
-  void writeSmallPlotFile(
-    const std::string& dir, std::ostream& os, amrex::VisMF::How how) override;
   void writePlotFilePost(const std::string& dir, std::ostream& os) override;
   void writeJobInfo(const std::string& dir);
   static void writeBuildInfo(std::ostream& os);
