@@ -110,34 +110,33 @@ public:
       const amrex::Real cur_time =
         (amr_level[0]->get_state_data(State_Type)).curTime();
 
-      // // amrex::Vector<const amrex::MultiFab*> plotMFs(finestLevel() + 1);
-      // for (int lev = 0; lev < finestLevel() + 1; ++lev) {
-      //   amrex::MultiFab plotMF(
-      //     boxArray(lev), DistributionMap(lev), n_data_items, nGrow,
-      //     amrex::MFInfo(), amr_level[lev]->Factory());
+      amrex::Vector<std::unique_ptr<amrex::MultiFab>> plotMFs(finestLevel() + 1);
+      for (int lev = 0; lev < finestLevel() + 1; ++lev) {
+       plotMFs[lev] = std::make_unique<amrex::MultiFab>(boxArray(lev), DistributionMap(lev), n_data_items, nGrow,
+                                                        amrex::MFInfo(), amr_level[lev]->Factory());
 
-      //   // Cull data from state variables -- use no ghost cells.
-      //   for (int i = 0; i < plot_var_map.size(); i++) {
-      //     int typ = plot_var_map[i].first;
-      //     int comp = plot_var_map[i].second;
-      //     amrex::MultiFab& this_dat = amr_level[lev]->get_new_data(typ);
-      //     amrex::MultiFab::Copy(plotMF, this_dat, comp, cnt, 1, nGrow);
-      //     cnt++;
-      //   }
+        // // Cull data from state variables -- use no ghost cells.
+        // for (int i = 0; i < plot_var_map.size(); i++) {
+        //   int typ = plot_var_map[i].first;
+        //   int comp = plot_var_map[i].second;
+        //   amrex::MultiFab& this_dat = amr_level[lev]->get_new_data(typ);
+        //   amrex::MultiFab::Copy(*plotMFs[lev], this_dat, comp, cnt, 1, nGrow);
+        //   cnt++;
+        // }
 
-      //   // Cull data from derived variables.
-      //   if (!derive_names.empty()) {
-      //     for (const auto& derive_name : derive_names) {
-      //       const amrex::DeriveRec* rec = derive_lst.get(derive_name);
-      //       int ncomp = rec->numDerive();
+        // // Cull data from derived variables.
+        // if (!derive_names.empty()) {
+        //   for (const auto& derive_name : derive_names) {
+        //     const amrex::DeriveRec* rec = derive_lst.get(derive_name);
+        //     int ncomp = rec->numDerive();
 
-      //       auto derive_dat =
-      //         amr_level[lev]->derive(derive_name, cur_time, nGrow);
-      //       amrex::MultiFab::Copy(plotMF, *derive_dat, 0, cnt, ncomp, nGrow);
-      //       cnt += ncomp;
-      //     }
-      //   }
-      // }
+        //     auto derive_dat =
+        //       amr_level[lev]->derive(derive_name, cur_time, nGrow);
+        //     amrex::MultiFab::Copy(plotMF, *derive_dat, 0, cnt, ncomp, nGrow);
+        //     cnt += ncomp;
+        //   }
+        // }
+      }
 
       amrex::Vector<std::string> plt_var_names;
       for (int i = 0; i < plot_var_map.size(); i++) {
