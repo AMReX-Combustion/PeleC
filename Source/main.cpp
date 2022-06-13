@@ -173,6 +173,24 @@ public:
         pltfile, nlevels, plotMFs_constvec, plt_var_names, Geom(), cur_time,
         istep, refRatio());
 
+      std::string HeaderFileName(pltfile + "/Header");
+      amrex::VisMF::IO_Buffer io_buffer(amrex::VisMF::GetIOBufferSize());
+      std::ofstream HeaderFile;
+      HeaderFile.rdbuf()->pubsetbuf(io_buffer.dataPtr(), io_buffer.size());
+      if (amrex::ParallelDescriptor::IOProcessor()) {
+        // Only the IOProcessor() writes to the header file.
+        HeaderFile.open(
+          HeaderFileName.c_str(),
+          std::ios::out | std::ios::trunc | std::ios::binary);
+        if (!HeaderFile.good()) {
+          amrex::FileOpenFailed(HeaderFileName);
+        }
+      }
+
+      for (int lev = 0; lev < nlevels; ++lev) {
+        amr_level[lev]->writePlotFilePost(pltfile, HeaderFile);
+      }
+
       if (verbose > 0) {
         const int IOProc = amrex::ParallelDescriptor::IOProcessorNumber();
         auto dPlotFileTime = amrex::second() - dPlotFileTime0;
