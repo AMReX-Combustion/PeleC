@@ -51,7 +51,7 @@ public:
     }
 
     // Don't continue if we have no variables to plot.
-    if (statePlotVars().size() == 0) {
+    if (statePlotVars().empty()) {
       return;
     }
 
@@ -62,7 +62,7 @@ public:
       amrex::Print() << "PLOTFILE: file = " << pltfile << '\n';
     }
 
-    if (record_run_info && amrex::ParallelDescriptor::IOProcessor()) {
+    if ((record_run_info == 0) && amrex::ParallelDescriptor::IOProcessor()) {
       runlog << "PLOTFILE: file = " << pltfile << '\n';
     }
 
@@ -88,7 +88,7 @@ public:
 
     // Don't continue if we have no variables to plot.
 
-    if (stateSmallPlotVars().size() == 0) {
+    if (stateSmallPlotVars().empty()) {
       return;
     }
 
@@ -99,7 +99,7 @@ public:
       amrex::Print() << "SMALL PLOTFILE: file = " << pltfile << '\n';
     }
 
-    if (record_run_info && amrex::ParallelDescriptor::IOProcessor()) {
+    if ((record_run_info == 0) && amrex::ParallelDescriptor::IOProcessor()) {
       runlog << "SMALL PLOTFILE: file = " << pltfile << '\n';
     }
 
@@ -110,7 +110,7 @@ public:
   }
 
   void writePlotFileDoit(
-    std::string const pltfile, const bool regular, const bool hdf5)
+    const std::string& pltfile, const bool regular, const bool hdf5)
   {
 
     auto dPlotFileTime0 = amrex::second();
@@ -180,12 +180,12 @@ public:
       }
     }
 
-    std::string HeaderFileName(pltfile + "/Header");
     amrex::VisMF::IO_Buffer io_buffer(amrex::VisMF::GetIOBufferSize());
     std::ofstream HeaderFile;
     HeaderFile.rdbuf()->pubsetbuf(io_buffer.dataPtr(), io_buffer.size());
     if (amrex::ParallelDescriptor::IOProcessor()) {
       // Only the IOProcessor() writes to the header file.
+      std::string HeaderFileName(pltfile + "/Header");
       HeaderFile.open(
         HeaderFileName.c_str(),
         std::ios::out | std::ios::trunc | std::ios::binary);
@@ -233,9 +233,6 @@ public:
       for (int lev = 0; lev < nlevels; ++lev) {
         amr_level[lev]->writePlotFilePost(pltfile, HeaderFile);
       }
-    }
-
-    if (regular) {
       last_plotfile = level_steps[0];
     } else {
       last_smallplotfile = level_steps[0];
