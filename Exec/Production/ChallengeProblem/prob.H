@@ -391,7 +391,7 @@ struct MyProbTagStruct
   {
     AMREX_D_TERM(const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
                  , const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
-                 , /*const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2]*/;);
+                 , const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];);
 
     // Tag around the jets
     const amrex::Real dphi_angle = 2.0 * constants::PI() / prob_parm.nholes;
@@ -415,7 +415,8 @@ struct MyProbTagStruct
            cos(prob_parm.cone_angle * constants::PI() / 180.0)) +
         t_loc * t_loc / (prob_parm.r_hole * prob_parm.r_hole);
 
-      if (elrSq < 1.2) {
+      // ProbHi[2] is 0.425 for this problem
+      if (elrSq < 1.2 && z > 0.41) {
         tag(i, j, k) = tagval;
       }
     }

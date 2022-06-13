@@ -20,6 +20,7 @@ struct TaggingParm
   amrex::Real ftracerr = 1.0e10;
   amrex::Real ftracgrad = 1.0e10;
   amrex::Real vfracerr = 1.0e10;
+  amrex::Real detag_eb_factor = 3.0;
 
   std::string eb_refine_type = "static";
 
