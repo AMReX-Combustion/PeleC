@@ -157,37 +157,41 @@ PeleC::problem_post_timestep()
 
       const bool local_flag = true;
       rho_mms_err += pc_lev.volWgtSquaredSum("rhommserror", time, local_flag);
-      u_mms_err += pc_lev.volWgtSquaredSum("ummserror", time, local_flag);
-      v_mms_err += pc_lev.volWgtSquaredSum("vmmserror", time, local_flag);
-      w_mms_err += pc_lev.volWgtSquaredSum("wmmserror", time, local_flag);
+      AMREX_D_TERM(
+        u_mms_err += pc_lev.volWgtSquaredSum("ummserror", time, local_flag);
+        , v_mms_err += pc_lev.volWgtSquaredSum("vmmserror", time, local_flag);
+        , w_mms_err += pc_lev.volWgtSquaredSum("wmmserror", time, local_flag);)
       p_mms_err += pc_lev.volWgtSquaredSum("pmmserror", time, local_flag);
 
       rho_residual += pc_lev.volWgtSquaredSumDiff(Density, time, local_flag);
-      rhou_residual += pc_lev.volWgtSquaredSumDiff(Xmom, time, local_flag);
-      rhov_residual += pc_lev.volWgtSquaredSumDiff(Ymom, time, local_flag);
-      rhow_residual += pc_lev.volWgtSquaredSumDiff(Zmom, time, local_flag);
+      AMREX_D_TERM(
+        rhou_residual += pc_lev.volWgtSquaredSumDiff(Xmom, time, local_flag);
+        , rhov_residual += pc_lev.volWgtSquaredSumDiff(Ymom, time, local_flag);
+        , rhow_residual += pc_lev.volWgtSquaredSumDiff(Zmom, time, local_flag);)
       rhoE_residual += pc_lev.volWgtSquaredSumDiff(Eden, time, local_flag);
     }
 
     // Reductions
     amrex::ParallelDescriptor::ReduceRealSum(
       &rho_mms_err, 1, amrex::ParallelDescriptor::IOProcessorNumber());
-    amrex::ParallelDescriptor::ReduceRealSum(
-      &u_mms_err, 1, amrex::ParallelDescriptor::IOProcessorNumber());
-    amrex::ParallelDescriptor::ReduceRealSum(
-      &v_mms_err, 1, amrex::ParallelDescriptor::IOProcessorNumber());
-    amrex::ParallelDescriptor::ReduceRealSum(
-      &w_mms_err, 1, amrex::ParallelDescriptor::IOProcessorNumber());
+    AMREX_D_TERM(
+      amrex::ParallelDescriptor::ReduceRealSum(
+        &u_mms_err, 1, amrex::ParallelDescriptor::IOProcessorNumber());
+      , amrex::ParallelDescriptor::ReduceRealSum(
+          &v_mms_err, 1, amrex::ParallelDescriptor::IOProcessorNumber());
+      , amrex::ParallelDescriptor::ReduceRealSum(
+          &w_mms_err, 1, amrex::ParallelDescriptor::IOProcessorNumber());)
     amrex::ParallelDescriptor::ReduceRealSum(
       &p_mms_err, 1, amrex::ParallelDescriptor::IOProcessorNumber());
     amrex::ParallelDescriptor::ReduceRealSum(
       &rho_residual, 1, amrex::ParallelDescriptor::IOProcessorNumber());
-    amrex::ParallelDescriptor::ReduceRealSum(
-      &rhou_residual, 1, amrex::ParallelDescriptor::IOProcessorNumber());
-    amrex::ParallelDescriptor::ReduceRealSum(
-      &rhov_residual, 1, amrex::ParallelDescriptor::IOProcessorNumber());
-    amrex::ParallelDescriptor::ReduceRealSum(
-      &rhow_residual, 1, amrex::ParallelDescriptor::IOProcessorNumber());
+    AMREX_D_TERM(
+      amrex::ParallelDescriptor::ReduceRealSum(
+        &rhou_residual, 1, amrex::ParallelDescriptor::IOProcessorNumber());
+      , amrex::ParallelDescriptor::ReduceRealSum(
+          &rhov_residual, 1, amrex::ParallelDescriptor::IOProcessorNumber());
+      , amrex::ParallelDescriptor::ReduceRealSum(
+          &rhow_residual, 1, amrex::ParallelDescriptor::IOProcessorNumber());)
     amrex::ParallelDescriptor::ReduceRealSum(
       &rhoE_residual, 1, amrex::ParallelDescriptor::IOProcessorNumber());
 
@@ -199,9 +203,9 @@ PeleC::problem_post_timestep()
     }
     amrex::Real V = vol.sum(0, false);
     rho_mms_err = std::sqrt(rho_mms_err / V);
-    u_mms_err = std::sqrt(u_mms_err / V);
-    v_mms_err = std::sqrt(v_mms_err / V);
-    w_mms_err = std::sqrt(w_mms_err / V);
+    AMREX_D_TERM(u_mms_err = std::sqrt(u_mms_err / V);
+                 , v_mms_err = std::sqrt(v_mms_err / V);
+                 , w_mms_err = std::sqrt(w_mms_err / V);)
     p_mms_err = std::sqrt(p_mms_err / V);
     rho_residual = std::sqrt(rho_residual / V);
     rhou_residual = std::sqrt(rhou_residual / V);
@@ -212,22 +216,22 @@ PeleC::problem_post_timestep()
     if (amrex::ParallelDescriptor::IOProcessor()) {
       amrex::Print() << "TIME= " << time << " RHO MMS ERROR  = " << rho_mms_err
                      << '\n';
-      amrex::Print() << "TIME= " << time << " U MMS ERROR    = " << u_mms_err
-                     << '\n';
-      amrex::Print() << "TIME= " << time << " V MMS ERROR    = " << v_mms_err
-                     << '\n';
-      amrex::Print() << "TIME= " << time << " W MMS ERROR    = " << w_mms_err
-                     << '\n';
+      AMREX_D_TERM(amrex::Print() << "TIME= " << time
+                                  << " U MMS ERROR    = " << u_mms_err << '\n';
+                   , amrex::Print() << "TIME= " << time << " V MMS ERROR    = "
+                                    << v_mms_err << '\n';
+                   , amrex::Print() << "TIME= " << time << " W MMS ERROR    = "
+                                    << w_mms_err << '\n';)
       amrex::Print() << "TIME= " << time << " P MMS ERROR    = " << p_mms_err
                      << '\n';
       amrex::Print() << "TIME= " << time << " RHO RESIDUAL   = " << rho_residual
                      << '\n';
-      amrex::Print() << "TIME= " << time
-                     << " RHO*U RESIDUAL = " << rhou_residual << '\n';
-      amrex::Print() << "TIME= " << time
-                     << " RHO*V RESIDUAL = " << rhov_residual << '\n';
-      amrex::Print() << "TIME= " << time
-                     << " RHO*W RESIDUAL = " << rhow_residual << '\n';
+      AMREX_D_TERM(amrex::Print() << "TIME= " << time << " RHO*U RESIDUAL = "
+                                  << rhou_residual << '\n';
+                   , amrex::Print() << "TIME= " << time << " RHO*V RESIDUAL = "
+                                    << rhov_residual << '\n';
+                   , amrex::Print() << "TIME= " << time << " RHO*W RESIDUAL = "
+                                    << rhow_residual << '\n';)
       amrex::Print() << "TIME= " << time
                      << " RHO*E RESIDUAL = " << rhoE_residual << '\n';
 
@@ -242,22 +246,24 @@ PeleC::problem_post_timestep()
         data_log2 << std::setw(datwidth) << time;
         data_log2 << std::setw(datwidth) << std::setprecision(datprecision)
                   << rho_mms_err;
-        data_log2 << std::setw(datwidth) << std::setprecision(datprecision)
-                  << u_mms_err;
-        data_log2 << std::setw(datwidth) << std::setprecision(datprecision)
-                  << v_mms_err;
-        data_log2 << std::setw(datwidth) << std::setprecision(datprecision)
-                  << w_mms_err;
+        AMREX_D_TERM(
+          data_log2 << std::setw(datwidth) << std::setprecision(datprecision)
+                    << u_mms_err;
+          , data_log2 << std::setw(datwidth) << std::setprecision(datprecision)
+                      << v_mms_err;
+          , data_log2 << std::setw(datwidth) << std::setprecision(datprecision)
+                      << w_mms_err;)
         data_log2 << std::setw(datwidth) << std::setprecision(datprecision)
                   << p_mms_err;
         data_log2 << std::setw(datwidth) << std::setprecision(datprecision)
                   << rho_residual;
-        data_log2 << std::setw(datwidth) << std::setprecision(datprecision)
-                  << rhou_residual;
-        data_log2 << std::setw(datwidth) << std::setprecision(datprecision)
-                  << rhov_residual;
-        data_log2 << std::setw(datwidth) << std::setprecision(datprecision)
-                  << rhow_residual;
+        AMREX_D_TERM(
+          data_log2 << std::setw(datwidth) << std::setprecision(datprecision)
+                    << rhou_residual;
+          , data_log2 << std::setw(datwidth) << std::setprecision(datprecision)
+                      << rhov_residual;
+          , data_log2 << std::setw(datwidth) << std::setprecision(datprecision)
+                      << rhow_residual;)
         data_log2 << std::setw(datwidth) << std::setprecision(datprecision)
                   << rhoE_residual;
         data_log2 << std::endl;
@@ -288,14 +294,14 @@ PeleC::problem_post_init()
           const int datwidth = 14;
           data_log2 << std::setw(datwidth) << "          time";
           data_log2 << std::setw(datwidth) << "   rho_mms_err";
-          data_log2 << std::setw(datwidth) << "     u_mms_err";
-          data_log2 << std::setw(datwidth) << "     v_mms_err";
-          data_log2 << std::setw(datwidth) << "     w_mms_err";
+          AMREX_D_TERM(data_log2 << std::setw(datwidth) << "     u_mms_err";
+                       , data_log2 << std::setw(datwidth) << "     v_mms_err";
+                       , data_log2 << std::setw(datwidth) << "     w_mms_err";)
           data_log2 << std::setw(datwidth) << "     p_mms_err";
           data_log2 << std::setw(datwidth) << "  rho_residual";
-          data_log2 << std::setw(datwidth) << " rhou_residual";
-          data_log2 << std::setw(datwidth) << " rhov_residual";
-          data_log2 << std::setw(datwidth) << " rhow_residual";
+          AMREX_D_TERM(data_log2 << std::setw(datwidth) << " rhou_residual";
+                       , data_log2 << std::setw(datwidth) << " rhov_residual";
+                       , data_log2 << std::setw(datwidth) << " rhow_residual";)
           data_log2 << std::setw(datwidth) << " rhoE_residual";
           data_log2 << std::endl;
         }
