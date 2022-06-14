@@ -213,7 +213,7 @@ public:
       amrex::Abort("Not implemented yet");
     } else {
 #ifdef AMREX_USE_EB
-      if (amrex::EB2::TopIndexSpaceIfPresent()) {
+      if (amrex::EB2::TopIndexSpaceIfPresent() != nullptr) {
         amrex::EB_WriteMultiLevelPlotfile(
           pltfile, nlevels, plotMFs_constvec, plt_var_names, Geom(), cur_time,
           istep, refRatio());
