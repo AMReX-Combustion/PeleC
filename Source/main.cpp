@@ -212,29 +212,38 @@ public:
     if (hdf5) {
       amrex::Abort("Not implemented yet");
     } else {
-      amrex::WriteMultiLevelPlotfile(
-        pltfile, nlevels, plotMFs_constvec, plt_var_names, Geom(), cur_time,
-        istep, refRatio());
-    }
-
-    amrex::VisMF::IO_Buffer io_buffer(amrex::VisMF::GetIOBufferSize());
-    std::ofstream HeaderFile;
-    HeaderFile.rdbuf()->pubsetbuf(io_buffer.dataPtr(), io_buffer.size());
-    if (amrex::ParallelDescriptor::IOProcessor()) {
-      // Only the IOProcessor() writes to the header file.
-      std::string HeaderFileName(pltfile + "/Header");
-      HeaderFile.open(
-        HeaderFileName.c_str(),
-        std::ios::out | std::ios::trunc | std::ios::binary);
-      if (!HeaderFile.good()) {
-        amrex::FileOpenFailed(HeaderFileName);
+#ifdef AMREX_USE_EB
+      if (amrex::EB2::TopIndexSpaceIfPresent()) {
+        amrex::EB_WriteMultiLevelPlotfile(
+          pltfile, nlevels, plotMFs_constvec, plt_var_names, Geom(), cur_time,
+          istep, refRatio());
+      } else {
+#endif
+        amrex::WriteMultiLevelPlotfile(
+          pltfile, nlevels, plotMFs_constvec, plt_var_names, Geom(), cur_time,
+          istep, refRatio());
+#ifdef AMREX_USE_EB
       }
+#endif
     }
 
     if (regular) {
+      amrex::VisMF::IO_Buffer io_buffer(amrex::VisMF::GetIOBufferSize());
+      std::ofstream HeaderFile;
+      HeaderFile.rdbuf()->pubsetbuf(io_buffer.dataPtr(), io_buffer.size());
+      if (amrex::ParallelDescriptor::IOProcessor()) {
+        // Only the IOProcessor() writes to the header file.
+        std::string HeaderFileName(pltfile + "/Header");
+        HeaderFile.open(
+          HeaderFileName.c_str(), std::ios::app | std::ios::binary);
+        if (!HeaderFile.good()) {
+          amrex::FileOpenFailed(HeaderFileName);
+        }
+      }
       for (int lev = 0; lev < nlevels; ++lev) {
         amr_level[lev]->writePlotFilePost(pltfile, HeaderFile);
       }
+
       last_plotfile = level_steps[0];
     } else {
       last_smallplotfile = level_steps[0];

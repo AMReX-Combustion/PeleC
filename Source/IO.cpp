@@ -364,13 +364,6 @@ PeleC::setPlotVariables()
 
   amrex::ParmParse pp("pelec");
 
-  bool plot_vfrac = eb_in_domain;
-  pp.query("plot_vfrac ", plot_vfrac);
-  if (plot_vfrac) {
-    amrex::Amr::addDerivePlotVar("vfrac");
-  } else if (amrex::Amr::isDerivePlotVar("vfrac")) {
-    amrex::Amr::deleteDerivePlotVar("vfrac");
-  }
   bool plot_cost = do_react_load_balance || do_mol_load_balance;
   pp.query("plot_cost", plot_cost);
   if (plot_cost) {
