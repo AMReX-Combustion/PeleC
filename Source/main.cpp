@@ -127,6 +127,7 @@ public:
       }
     }
 
+    int num_derive = 0;
     auto& derive_lst = amrex::AmrLevel::get_derive_lst();
     std::list<std::string> derive_names;
     const std::list<amrex::DeriveRec>& dlist = derive_lst.dlist();
@@ -134,11 +135,12 @@ public:
       for (const auto& it : dlist) {
         if (amrex::Amr::isDerivePlotVar(it.name())) {
           derive_names.push_back(it.name());
+          num_derive += it.numDerive();
         }
       }
     }
 
-    const auto n_data_items = plot_var_map.size() + derive_names.size();
+    const auto n_data_items = plot_var_map.size() + num_derive;
 
     const int nGrow = 0;
     const amrex::Real cur_time =
