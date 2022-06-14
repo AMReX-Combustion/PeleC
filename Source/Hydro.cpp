@@ -63,26 +63,20 @@ PeleC::construct_hydro_source(
     amrex::MultiFab& S_new = get_new_data(State_Type);
 
     // note: the radiation consup currently does not fill these
-    amrex::Real E_added_flux = 0.;
-    amrex::Real mass_added_flux = 0.;
-    amrex::Real xmom_added_flux = 0.;
-    amrex::Real ymom_added_flux = 0.;
-    amrex::Real zmom_added_flux = 0.;
-    amrex::Real mass_lost = 0.;
-    amrex::Real xmom_lost = 0.;
-    amrex::Real ymom_lost = 0.;
-    amrex::Real zmom_lost = 0.;
-    amrex::Real eden_lost = 0.;
-    amrex::Real xang_lost = 0.;
-    amrex::Real yang_lost = 0.;
-    amrex::Real zang_lost = 0.;
+    amrex::Real E_added_flux = 0.0;
+    amrex::Real mass_added_flux = 0.0;
+    AMREX_D_TERM(amrex::Real xmom_added_flux = 0.0;, amrex::Real ymom_added_flux = 0.0;, amrex::Real zmom_added_flux = 0.0;)
+    amrex::Real mass_lost = 0.0;
+    AMREX_D_TERM(amrex::Real xmom_lost = 0.0;, amrex::Real ymom_lost = 0.0;, amrex::Real zmom_lost = 0.0;)
+    amrex::Real eden_lost = 0.0;
+    AMREX_D_TERM(amrex::Real xang_lost = 0.0;, amrex::Real yang_lost = 0.0;, amrex::Real zang_lost = 0.0;)
 
 #ifdef _OPENMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())               \
     reduction(+:E_added_flux,mass_added_flux)                           \
-    reduction(+:xmom_added_flux,ymom_added_flux,zmom_added_flux)	\
-    reduction(+:mass_lost,xmom_lost,ymom_lost,zmom_lost)		\
-    reduction(+:eden_lost,xang_lost,yang_lost,zang_lost) 		\
+    reduction(+:AMREX_D_DECL(xmom_added_flux,ymom_added_flux,zmom_added_flux))	\
+    reduction(+:mass_lost,AMREX_D_DECL(xmom_lost,ymom_lost,zmom_lost))		\
+    reduction(+:eden_lost,AMREX_D_DECL(xang_lost,yang_lost,zang_lost)) 		\
     reduction(max:courno)
 #endif
     {
@@ -269,18 +263,14 @@ PeleC::construct_hydro_source(
 
     if (track_grid_losses) {
       material_lost_through_boundary_temp[0] += mass_lost;
-      material_lost_through_boundary_temp[1] += xmom_lost;
-      material_lost_through_boundary_temp[2] += ymom_lost;
-      material_lost_through_boundary_temp[3] += zmom_lost;
+      AMREX_D_TERM(material_lost_through_boundary_temp[1] += xmom_lost;, material_lost_through_boundary_temp[2] += ymom_lost;, material_lost_through_boundary_temp[3] += zmom_lost;)
       material_lost_through_boundary_temp[4] += eden_lost;
-      material_lost_through_boundary_temp[5] += xang_lost;
-      material_lost_through_boundary_temp[6] += yang_lost;
-      material_lost_through_boundary_temp[7] += zang_lost;
+      AMREX_D_TERM(material_lost_through_boundary_temp[5] += xang_lost;, material_lost_through_boundary_temp[6] += yang_lost;, material_lost_through_boundary_temp[7] += zang_lost;)
     }
 
     if (print_energy_diagnostics) {
       amrex::Real foo[5] = {
-        E_added_flux, xmom_added_flux, ymom_added_flux, zmom_added_flux,
+        E_added_flux, AMREX_D_DECL(xmom_added_flux, ymom_added_flux, zmom_added_flux),
         mass_added_flux};
 
       amrex::ParallelDescriptor::ReduceRealSum(
@@ -289,9 +279,7 @@ PeleC::construct_hydro_source(
 #ifdef AMREX_DEBUG
       if (amrex::ParallelDescriptor::IOProcessor()) {
         E_added_flux = foo[0];
-        xmom_added_flux = foo[1];
-        ymom_added_flux = foo[2];
-        zmom_added_flux = foo[3];
+        AMREX_D_TERM(xmom_added_flux = foo[1];, ymom_added_flux = foo[2];, zmom_added_flux = foo[3];)
         mass_added_flux = foo[4];
         amrex::Print() << "mass added from fluxes                      : "
                        << mass_added_flux << std::endl;
@@ -299,8 +287,10 @@ PeleC::construct_hydro_source(
                        << xmom_added_flux << std::endl;
         amrex::Print() << "ymom added from fluxes                      : "
                        << ymom_added_flux << std::endl;
+#if (AMREX_SPACEDIM > 2)
         amrex::Print() << "zmom added from fluxes                      : "
                        << zmom_added_flux << std::endl;
+#endif
         amrex::Print() << "(rho E) added from fluxes                   : "
                        << E_added_flux << std::endl;
       }

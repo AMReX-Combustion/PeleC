@@ -76,6 +76,7 @@ void pc_dervely(
   const int* bcrec,
   const int level);
 
+#if (AMREX_SPACEDIM > 2)
 void pc_dervelz(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -86,6 +87,7 @@ void pc_dervelz(
   amrex::Real time,
   const int* bcrec,
   const int level);
+#endif
 
 void pc_dermagvel(
   const amrex::Box& bx,
@@ -364,6 +366,7 @@ void pc_dervmmserror(
   const int* bcrec,
   const int level);
 
+#if (AMREX_SPACEDIM > 2)
 void pc_derwmmserror(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -374,6 +377,7 @@ void pc_derwmmserror(
   amrex::Real time,
   const int* bcrec,
   const int level);
+#endif
 
 void pc_derpmmserror(
   const amrex::Box& bx,

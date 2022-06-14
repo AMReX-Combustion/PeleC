@@ -1424,6 +1424,7 @@ PeleC::errorEst(
           });
       }
 
+#if (AMREX_SPACEDIM > 2)
       // Tagging vel_z
       S_derData.setVal<amrex::RunOn::Device>(0.0, datbox);
       pc_dervelz(
@@ -1443,6 +1444,7 @@ PeleC::errorEst(
             tag_graderror(i, j, k, tag_arr, S_derarr, captured_velgrad, tagval);
           });
       }
+#endif
 
       // Tagging magnitude of vorticity
       S_derData.setVal<amrex::RunOn::Device>(0.0, datbox);

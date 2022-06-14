@@ -45,6 +45,7 @@ pc_dervely(
   });
 }
 
+#if (AMREX_SPACEDIM > 2)
 void
 pc_dervelz(
   const amrex::Box& bx,
@@ -64,6 +65,7 @@ pc_dervelz(
     velz(i, j, k) = dat(i, j, k, UMZ) / dat(i, j, k, URHO);
   });
 }
+#endif
 
 void
 pc_dermagvel(
@@ -981,6 +983,7 @@ pc_dervmmserror(
   });
 }
 
+#if (AMREX_SPACEDIM > 2)
 void
 pc_derwmmserror(
   const amrex::Box& bx,
@@ -1012,6 +1015,7 @@ pc_derwmmserror(
     wmmserror(i, j, k) = dat(i, j, k, UMZ) / dat(i, j, k, URHO) - w;
   });
 }
+#endif
 
 void
 pc_derpmmserror(
