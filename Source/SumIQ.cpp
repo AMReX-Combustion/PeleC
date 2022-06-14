@@ -27,7 +27,9 @@ PeleC::sum_integrated_quantities()
     PeleC& pc_lev = getLevel(lev);
 
     mass += pc_lev.volWgtSum("density", time, local_flag);
-    AMREX_D_TERM(mom[0] += pc_lev.volWgtSum("xmom", time, local_flag);, mom[1] += pc_lev.volWgtSum("ymom", time, local_flag);, mom[2] += pc_lev.volWgtSum("zmom", time, local_flag);)
+    AMREX_D_TERM(mom[0] += pc_lev.volWgtSum("xmom", time, local_flag);
+                 , mom[1] += pc_lev.volWgtSum("ymom", time, local_flag);
+                 , mom[2] += pc_lev.volWgtSum("zmom", time, local_flag);)
     rho_e += pc_lev.volWgtSum("rho_e", time, local_flag);
     rho_K += pc_lev.volWgtSum("kineng", time, local_flag);
     rho_E += pc_lev.volWgtSum("rho_E", time, local_flag);
@@ -41,8 +43,10 @@ PeleC::sum_integrated_quantities()
 
   if (verbose > 0) {
     const int nfoo = 10;
-    amrex::Real foo[nfoo] = {mass,  AMREX_D_DECL(mom[0], mom[1], mom[2]), rho_e,
-                             rho_K, rho_E,  fuel_prod, temp};
+    amrex::Real foo[nfoo] = {mass,  AMREX_D_DECL(mom[0], mom[1], mom[2]),
+                             rho_e, rho_K,
+                             rho_E, fuel_prod,
+                             temp};
     amrex::ParallelDescriptor::ReduceRealSum(
       foo, nfoo, amrex::ParallelDescriptor::IOProcessorNumber());
 
@@ -134,11 +138,18 @@ PeleC::monitor_extrema()
   const int finest_level = parent->finestLevel();
   const amrex::Real time = state[State_Type].curTime();
   amrex::Vector<std::string> extrema_vars = {
-    "density", "x_velocity", "y_velocity", 
+    "density",
+    "x_velocity",
+    "y_velocity",
 #if (AMREX_SPACEDIM > 2)
     "z_velocity",
 #endif
-    "eint_e", "Temp",    "pressure",   "massfrac",   "sumYminus1"};
+    "eint_e",
+    "Temp",
+    "pressure",
+    "massfrac",
+    "sumYminus1"
+  };
 
   int nspec_extrema = 2;
   bool use_all_spec = false;
