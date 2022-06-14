@@ -277,12 +277,10 @@ PeleC::variableSetUp()
   bcs[cnt] = bc;
   name[cnt] = "ymom";
   cnt++;
-#if (AMREX_SPACEDIM > 2)
   set_z_vel_bc(bc, phys_bc);
   bcs[cnt] = bc;
   name[cnt] = "zmom";
   cnt++;
-#endif
   set_scalar_bc(bc, phys_bc);
   bcs[cnt] = bc;
   name[cnt] = "rho_E";
@@ -503,12 +501,10 @@ PeleC::variableSetUp()
     amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("y_velocity", desc_lst, State_Type, Density, NVAR);
 
-#if (AMREX_SPACEDIM > 2)
   derive_lst.add(
     "z_velocity", amrex::IndexType::TheCellType(), 1, pc_dervelz,
     amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("z_velocity", desc_lst, State_Type, Density, NVAR);
-#endif
 
   derive_lst.add(
     "magvel", amrex::IndexType::TheCellType(), 1, pc_dermagvel,
@@ -621,12 +617,10 @@ PeleC::variableSetUp()
       amrex::DeriveRec::TheSameBox);
     derive_lst.addComponent("vmmserror", desc_lst, State_Type, Density, NVAR);
 
-#if (AMREX_SPACEDIM > 2)
     derive_lst.add(
       "wmmserror", amrex::IndexType::TheCellType(), 1, pc_derwmmserror,
       amrex::DeriveRec::TheSameBox);
     derive_lst.addComponent("wmmserror", desc_lst, State_Type, Density, NVAR);
-#endif
 
     derive_lst.add(
       "pmmserror", amrex::IndexType::TheCellType(), 1, pc_derpmmserror,

@@ -16,7 +16,7 @@ PeleC::sum_integrated_quantities()
   int finest_level = parent->finestLevel();
   amrex::Real time = state[State_Type].curTime();
   amrex::Real mass = 0.0;
-  amrex::Real mom[AMREX_SPACEDIM] = {0.0};
+  amrex::Real mom[3] = {0.0};
   amrex::Real rho_e = 0.0;
   amrex::Real rho_K = 0.0;
   amrex::Real rho_E = 0.0;
@@ -27,7 +27,9 @@ PeleC::sum_integrated_quantities()
     PeleC& pc_lev = getLevel(lev);
 
     mass += pc_lev.volWgtSum("density", time, local_flag);
-    AMREX_D_TERM(mom[0] += pc_lev.volWgtSum("xmom", time, local_flag);, mom[1] += pc_lev.volWgtSum("ymom", time, local_flag);, mom[2] += pc_lev.volWgtSum("zmom", time, local_flag);)
+    mom[0] += pc_lev.volWgtSum("xmom", time, local_flag);
+    mom[1] += pc_lev.volWgtSum("ymom", time, local_flag);
+    mom[2] += pc_lev.volWgtSum("zmom", time, local_flag);
     rho_e += pc_lev.volWgtSum("rho_e", time, local_flag);
     rho_K += pc_lev.volWgtSum("kineng", time, local_flag);
     rho_E += pc_lev.volWgtSum("rho_E", time, local_flag);
@@ -41,7 +43,7 @@ PeleC::sum_integrated_quantities()
 
   if (verbose > 0) {
     const int nfoo = 10;
-    amrex::Real foo[nfoo] = {mass,  AMREX_D_DECL(mom[0], mom[1], mom[2]), rho_e,
+    amrex::Real foo[nfoo] = {mass,  mom[0], mom[1],    mom[2], rho_e,
                              rho_K, rho_E,  fuel_prod, temp};
     amrex::ParallelDescriptor::ReduceRealSum(
       foo, nfoo, amrex::ParallelDescriptor::IOProcessorNumber());
@@ -49,7 +51,9 @@ PeleC::sum_integrated_quantities()
     if (amrex::ParallelDescriptor::IOProcessor()) {
       int i = 0;
       mass = foo[i++];
-      AMREX_D_TERM(mom[0] = foo[i++];, mom[1] = foo[i++];, mom[2] = foo[i++];)
+      mom[0] = foo[i++];
+      mom[1] = foo[i++];
+      mom[2] = foo[i++];
       rho_e = foo[i++];
       rho_K = foo[i++];
       rho_E = foo[i++];
@@ -62,10 +66,8 @@ PeleC::sum_integrated_quantities()
                      << '\n';
       amrex::Print() << "TIME = " << time << " YMOM        = " << mom[1]
                      << '\n';
-#if (AMREX_SPACEDIM > 2)
       amrex::Print() << "TIME = " << time << " ZMOM        = " << mom[2]
                      << '\n';
-#endif
       amrex::Print() << "TIME = " << time << " RHO*e       = " << rho_e << '\n';
       amrex::Print() << "TIME = " << time << " RHO*K       = " << rho_K << '\n';
       amrex::Print() << "TIME = " << time << " RHO*E       = " << rho_E << '\n';
@@ -100,10 +102,8 @@ PeleC::sum_integrated_quantities()
                     << mom[0];
           data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
                     << mom[1];
-#if (AMREX_SPACEDIM > 2)
           data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
                     << mom[2];
-#endif
           data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
                     << rho_K;
           data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
@@ -134,11 +134,8 @@ PeleC::monitor_extrema()
   const int finest_level = parent->finestLevel();
   const amrex::Real time = state[State_Type].curTime();
   amrex::Vector<std::string> extrema_vars = {
-    "density", "x_velocity", "y_velocity", 
-#if (AMREX_SPACEDIM > 2)
-    "z_velocity",
-#endif
-    "eint_e", "Temp",    "pressure",   "massfrac",   "sumYminus1"};
+    "density", "x_velocity", "y_velocity", "z_velocity", "eint_e",
+    "Temp",    "pressure",   "massfrac",   "sumYminus1"};
 
   int nspec_extrema = 2;
   bool use_all_spec = false;
