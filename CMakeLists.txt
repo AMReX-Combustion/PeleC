@@ -129,5 +129,5 @@ add_subdirectory(Exec)
 
 enable_testing()
 include(CTest)
-add_subdirectory("Submodules/GoogleTest")
+#add_subdirectory("Submodules/GoogleTest")
 add_subdirectory(Tests)
