@@ -165,7 +165,6 @@ These parameters, once read, are available in the `PeleC` object for use from c+
 
     pelec.eb_isothermal = 1     # isothermal wall at EB
     pelec.eb_boundary_T = 300.  # EB wall temperature    
-    eb_verbosity = 1            # verbosity of EB data
 
     
     #------------------------

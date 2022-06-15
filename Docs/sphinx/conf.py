@@ -9,7 +9,6 @@ copyright = u'AMReX Copyright (c) 2021, The Regents of the University of Califor
 author = u'J.B. Bell, M.S. Day, E. Motheau, D. Graves, M. Henry de Frahan, R.W. Grout, J. Rood'
 version = u'0.1'
 release = u'0.1'
-language = None
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 pygments_style = 'sphinx'
 todo_include_todos = False
