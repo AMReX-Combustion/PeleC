@@ -236,7 +236,7 @@ PeleCAmr::writePlotFileDoit(
   }
 #endif
 
-  if (regular) {
+  if (regular && !write_hdf5_plots) {
     amrex::VisMF::IO_Buffer io_buffer(amrex::VisMF::GetIOBufferSize());
     std::ofstream HeaderFile;
     HeaderFile.rdbuf()->pubsetbuf(io_buffer.dataPtr(), io_buffer.size());

@@ -73,7 +73,7 @@ macro(setup_test)
       unset(MPI_COMMANDS)
     endif()
     # Use fcompare to test diffs in plots against gold files
-    if(PELEC_ENABLE_FCOMPARE_FOR_TESTS)
+    if(PELEC_ENABLE_FCOMPARE_FOR_TESTS AND (NOT "${TEST_NAME}" MATCHES "hdf5$"))
       if(PELEC_ENABLE_CUDA)
         set(FCOMPARE_TOLERANCE "-r 1e-12 --abs_tol 1.0e-12")
       endif()
