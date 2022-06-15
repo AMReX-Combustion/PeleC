@@ -21,6 +21,7 @@ option(PELEC_SAVE_GOLDS "Enable saving of gold files to a specified directory" O
 option(PELEC_ENABLE_SANITIZE_FOR_TESTS "Currently only disables certain long running MMS tests if set" OFF)
 option(PELEC_ENABLE_FPE_TRAP_FOR_TESTS "Enable FPE trapping in tests" ON)
 option(PELEC_ENABLE_TINY_PROFILE "Enable tiny profiler in AMReX" OFF)
+option(PELEC_ENABLE_HDF5 "Enable plot file output using HDF5" OFF)
 set(PELEC_PRECISION "DOUBLE" CACHE STRING "Floating point precision SINGLE or DOUBLE")
 
 #Options for performance
@@ -95,7 +96,6 @@ add_subdirectory(${SUNDIALS_SUBMOD_LOCATION})
 
 if(PELEC_ENABLE_MASA)
   message(STATUS "MASA Configure Section")
-  set(CMAKE_PREFIX_PATH ${MASA_DIR} ${CMAKE_PREFIX_PATH})
   find_package(MASA QUIET REQUIRED)
   if(MASA_FOUND)
     message(STATUS "Found MASA = ${MASA_DIR}")

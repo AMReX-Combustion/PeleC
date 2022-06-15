@@ -1,6 +1,6 @@
 # Find MASA library
 #
-# Set MASA_DIR to the base directory where the package is installed
+# Set MASA_ROOT to the base directory where the package is installed
 #
 # Sets 3 variables
 #   - MASA_INCLUDE_DIRS
@@ -15,13 +15,13 @@ pkg_check_modules(PC_MASA QUIET MASA)
 find_path(MASA_INCLUDE_DIRS
     NAMES masa.h
     PATHS ${PC_MASA_INCLUDE_DIRS}
-    HINTS ${MASA_DIR} ${CMAKE_INSTALL_PREFIX}
+    HINTS ${MASA_ROOT} ${CMAKE_INSTALL_PREFIX}
     PATH_SUFFIXES include
 )
 
 find_library(MASA_LIBRARY
   NAMES masa
-  HINTS ${MASA_DIR} ${CMAKE_INSTALL_PREFIX}
+  HINTS ${MASA_ROOT} ${CMAKE_INSTALL_PREFIX}
   PATH_SUFFIXES lib)
 
 set(MASA_VERSION ${PC_MASA_VERSION})

@@ -204,6 +204,9 @@ if(PELEC_ENABLE_MASA)
     add_test_r(mms-5 MMS)
   endif()
 endif()
+if(PELEC_ENABLE_HDF5)
+  add_test_r(pmf-hdf5 PMF)
+endif()
 
 # Not run in CI
 add_test_re(pmf-lidryer-rk64 PMF)
