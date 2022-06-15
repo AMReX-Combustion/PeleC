@@ -13,7 +13,7 @@
 #endif
 
 #include "PeleC.H"
-#include "IO.H"
+#include "PeleCAmr.H"
 
 std::string inputs_name;
 

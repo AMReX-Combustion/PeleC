@@ -62,6 +62,8 @@ function(build_pelec_exe pelec_exe_name pelec_lib_name)
        ${SRC_DIR}/Particle.cpp
        ${SRC_DIR}/PeleC.H
        ${SRC_DIR}/PeleC.cpp
+       ${SRC_DIR}/PeleCAmr.H
+       ${SRC_DIR}/PeleCAmr.cpp
        ${SRC_DIR}/Problem.H
        ${SRC_DIR}/ProblemDerive.H
        ${SRC_DIR}/React.cpp
