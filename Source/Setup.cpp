@@ -521,10 +521,6 @@ PeleC::variableSetUp()
     amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("magmom", desc_lst, State_Type, Density, NVAR);
 
-  derive_lst.add(
-    "vfrac", amrex::IndexType::TheCellType(), 1, pc_dermagvel,
-    amrex::DeriveRec::TheSameBox);
-
 #ifdef AMREX_PARTICLES
   // We want a derived type that corresponds to the number of particles
   // in each cell.  We only intend to use it in plotfiles for debugging
