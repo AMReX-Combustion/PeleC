@@ -110,9 +110,14 @@ PeleCAmr::writePlotFileDoit(
     }
   }
 
+  // Decide to plot vfrac
+  bool plot_vfrac =
+    ebInDomain() && (amrex::EB2::TopIndexSpaceIfPresent() != nullptr);
+  amrex::ParmParse pp("pelec");
+  pp.query("plot_vfrac", plot_vfrac);
+
   const auto n_data_items =
-    plot_var_map.size() + num_derive +
-    static_cast<int>(amrex::EB2::TopIndexSpaceIfPresent() != nullptr);
+    plot_var_map.size() + num_derive + static_cast<int>(plot_vfrac);
 
   const int nGrow = 0;
   const amrex::Real cur_time =
@@ -151,8 +156,7 @@ PeleCAmr::writePlotFileDoit(
       }
     }
 
-    // Add vfrac
-    if (amrex::EB2::TopIndexSpaceIfPresent() != nullptr) {
+    if (plot_vfrac) {
       const auto& ebfactory = dynamic_cast<amrex::EBFArrayBoxFactory const&>(
         amr_level[lev]->Factory());
       amrex::MultiFab::Copy(
@@ -175,7 +179,7 @@ PeleCAmr::writePlotFileDoit(
     }
   }
 
-  if (amrex::EB2::TopIndexSpaceIfPresent() != nullptr) {
+  if (plot_vfrac) {
     plt_var_names.push_back("vfrac");
   }
 
@@ -230,6 +234,10 @@ PeleCAmr::writePlotFileDoit(
     last_plotfile = level_steps[0];
   } else {
     last_smallplotfile = level_steps[0];
+  }
+
+  if (amrex::ParallelDescriptor::IOProcessor()) {
+    HeaderFile.close();
   }
 
   if (verbose > 0) {
