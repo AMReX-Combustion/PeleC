@@ -20,7 +20,9 @@ public:
   void writePlotFileDoit(
     const std::string& pltfile,
     const bool regular,
-    const bool write_hdf5_plots);
+    // Optional arguments
+    const bool write_hdf5_plots = false,
+    const std::string& hdf5_compression = "None@0");
 };
 
 #endif

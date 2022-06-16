@@ -76,8 +76,7 @@ PeleCAmr::writeSmallPlotFile()
     runlog << "SMALL PLOTFILE: file = " << pltfile << '\n';
   }
 
-  const bool write_hdf5_plots = false;
-  writePlotFileDoit(pltfile, false, write_hdf5_plots);
+  writePlotFileDoit(pltfile, false);
 
   BL_PROFILE_REGION_STOP("PeleCAmr::writeSmallPlotFile()");
 }
@@ -202,12 +201,7 @@ PeleCAmr::writePlotFileDoit(
   if (write_hdf5_plots) {
     amrex::WriteMultiLevelPlotfileHDF5SingleDset(
       pltfile, nlevels, plotMFs_constvec, plt_var_names, Geom(), cur_time,
-      istep, refRatio()
-#ifdef PELEC_USE_HDF5_ZFP
-               ,
-      hdf5_compression
-#endif
-    );
+      istep, refRatio(), hdf5_compression);
   } else {
 #endif
     amrex::WriteMultiLevelPlotfile(
