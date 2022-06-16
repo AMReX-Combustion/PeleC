@@ -174,6 +174,12 @@ PeleCAmr::writePlotFileDoit(
     }
   }
 
+  if (amrex::EB2::TopIndexSpaceIfPresent() != nullptr) {
+    plt_var_names.push_back("vfrac");
+  }
+
+  AMREX_ASSERT(n_data_items == plt_var_names.size());
+
   amrex::Vector<const amrex::MultiFab*> plotMFs_constvec;
   plotMFs_constvec.reserve(nlevels);
   for (int lev = 0; lev < nlevels; ++lev) {
