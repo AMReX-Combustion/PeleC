@@ -207,6 +207,10 @@ endif()
 if(PELEC_ENABLE_HDF5)
   add_test_r(pmf-hdf5 PMF)
   add_test_r(eb-converging-nozzle-hdf5 EB-ConvergingNozzle)
+  if(PELEC_ENABLE_HDF5_ZFP)
+    add_test_r(pmf-hdf5-zfp PMF)
+    add_test_r(eb-converging-nozzle-hdf5-zfp EB-ConvergingNozzle)
+  endif()
 endif()
 
 # Not run in CI

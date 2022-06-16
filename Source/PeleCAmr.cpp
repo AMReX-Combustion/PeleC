@@ -31,11 +31,15 @@ PeleCAmr::writePlotFile()
   }
 
   bool write_hdf5_plots = false;
+  std::string hdf5_compression{"None@0"};
 #ifdef PELEC_USE_HDF5
   amrex::ParmParse pp("pelec");
   pp.query("write_hdf5_plots", write_hdf5_plots);
+#ifdef PELEC_USE_HDF5_ZFP
+  pp.query("hdf5_compression", hdf5_compression);
 #endif
-  writePlotFileDoit(pltfile, true, write_hdf5_plots);
+#endif
+  writePlotFileDoit(pltfile, true, write_hdf5_plots, hdf5_compression);
 
   BL_PROFILE_REGION_STOP("PeleCAmr::writePlotFile()");
 }
@@ -80,7 +84,10 @@ PeleCAmr::writeSmallPlotFile()
 
 void
 PeleCAmr::writePlotFileDoit(
-  const std::string& pltfile, const bool regular, const bool write_hdf5_plots)
+  const std::string& pltfile,
+  const bool regular,
+  const bool write_hdf5_plots,
+  const std::string& hdf5_compression)
 {
 
   auto dPlotFileTime0 = amrex::second();
@@ -161,7 +168,6 @@ PeleCAmr::writePlotFileDoit(
         amr_level[lev]->Factory());
       amrex::MultiFab::Copy(
         *plotMFs[lev], ebfactory.getVolFrac(), 0, cnt, 1, nGrow);
-      cnt++;
     }
   }
 
@@ -194,9 +200,14 @@ PeleCAmr::writePlotFileDoit(
 
 #ifdef PELEC_USE_HDF5
   if (write_hdf5_plots) {
-    amrex::WriteMultiLevelPlotfileHDF5(
+    amrex::WriteMultiLevelPlotfileHDF5SingleDset(
       pltfile, nlevels, plotMFs_constvec, plt_var_names, Geom(), cur_time,
-      istep, refRatio());
+      istep, refRatio()
+#ifdef PELEC_USE_HDF5_ZFP
+               ,
+      hdf5_compression
+#endif
+    );
   } else {
 #endif
     amrex::WriteMultiLevelPlotfile(

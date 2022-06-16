@@ -92,6 +92,9 @@ function(build_pelec_exe pelec_exe_name pelec_lib_name)
 
   if(PELEC_ENABLE_HDF5)
     target_compile_definitions(${pelec_exe_name} PUBLIC PELEC_USE_HDF5)
+    if(PELEC_ENABLE_HDF5_ZFP)
+      target_compile_definitions(${pelec_exe_name} PUBLIC PELEC_USE_HDF5_ZFP)
+    endif()
   endif()
 
   if(NOT "${pelec_exe_name}" STREQUAL "PeleC-UnitTests")
