@@ -204,6 +204,7 @@ PeleCAmr::writePlotFileDoit(
       istep, refRatio(), hdf5_compression);
   } else {
 #endif
+    (void)hdf5_compression; // Avoid unused warning
     amrex::WriteMultiLevelPlotfile(
       pltfile, nlevels, plotMFs_constvec, plt_var_names, Geom(), cur_time,
       istep, refRatio());
