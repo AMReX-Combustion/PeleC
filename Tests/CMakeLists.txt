@@ -206,6 +206,7 @@ if(PELEC_ENABLE_MASA)
 endif()
 if(PELEC_ENABLE_HDF5)
   add_test_r(pmf-hdf5 PMF)
+  add_test_r(eb-converging-nozzle-hdf5 EB-ConvergingNozzle)
 endif()
 
 # Not run in CI

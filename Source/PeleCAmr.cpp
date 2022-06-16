@@ -110,7 +110,9 @@ PeleCAmr::writePlotFileDoit(
     }
   }
 
-  const auto n_data_items = plot_var_map.size() + num_derive;
+  const auto n_data_items =
+    plot_var_map.size() + num_derive +
+    static_cast<int>(amrex::EB2::TopIndexSpaceIfPresent() != nullptr);
 
   const int nGrow = 0;
   const amrex::Real cur_time =
@@ -148,6 +150,14 @@ PeleCAmr::writePlotFileDoit(
         cnt += ncomp;
       }
     }
+
+    if (amrex::EB2::TopIndexSpaceIfPresent() != nullptr) {
+      const auto& ebfactory = dynamic_cast<amrex::EBFArrayBoxFactory const&>(
+        amr_level[lev]->Factory());
+      amrex::MultiFab::Copy(
+        *plotMFs[lev], ebfactory.getVolFrac(), 0, cnt, 1, nGrow);
+      cnt++;
+    }
   }
 
   amrex::Vector<std::string> plt_var_names;
@@ -171,14 +181,6 @@ PeleCAmr::writePlotFileDoit(
       static_cast<const amrex::MultiFab*>(plotMFs[lev].get()));
   }
 
-  /*
-      if (regular) {
-        for (int lev = 0; lev < nlevels; ++lev) {
-          // amr_level[lev]->writePlotFilePre(pltfile, HeaderFile);
-        }
-      }
-  */
-
 #ifdef PELEC_USE_HDF5
   if (write_hdf5_plots) {
     amrex::WriteMultiLevelPlotfileHDF5(
@@ -186,15 +188,9 @@ PeleCAmr::writePlotFileDoit(
       istep, refRatio());
   } else {
 #endif
-    if (amrex::EB2::TopIndexSpaceIfPresent() != nullptr) {
-      amrex::EB_WriteMultiLevelPlotfile(
-        pltfile, nlevels, plotMFs_constvec, plt_var_names, Geom(), cur_time,
-        istep, refRatio());
-    } else {
-      amrex::WriteMultiLevelPlotfile(
-        pltfile, nlevels, plotMFs_constvec, plt_var_names, Geom(), cur_time,
-        istep, refRatio());
-    }
+    amrex::WriteMultiLevelPlotfile(
+      pltfile, nlevels, plotMFs_constvec, plt_var_names, Geom(), cur_time,
+      istep, refRatio());
 #ifdef PELEC_USE_HDF5
   }
 #endif
