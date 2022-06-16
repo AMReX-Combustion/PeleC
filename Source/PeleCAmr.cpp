@@ -201,9 +201,9 @@ PeleCAmr::writePlotFileDoit(
   }
 #endif
 
-  if (regular && !write_hdf5_plots) {
-    amrex::VisMF::IO_Buffer io_buffer(amrex::VisMF::GetIOBufferSize());
-    std::ofstream HeaderFile;
+  amrex::VisMF::IO_Buffer io_buffer(amrex::VisMF::GetIOBufferSize());
+  std::ofstream HeaderFile;
+  if (!write_hdf5_plots) {
     HeaderFile.rdbuf()->pubsetbuf(io_buffer.dataPtr(), io_buffer.size());
     if (amrex::ParallelDescriptor::IOProcessor()) {
       // Only the IOProcessor() writes to the header file.
@@ -213,6 +213,15 @@ PeleCAmr::writePlotFileDoit(
         amrex::FileOpenFailed(HeaderFileName);
       }
     }
+
+    if (amrex::EB2::TopIndexSpaceIfPresent()) {
+      for (int lev = 0; lev < nlevels; ++lev) {
+        HeaderFile << "1.0e-6\n";
+      }
+    }
+  }
+
+  if (regular && !write_hdf5_plots) {
     for (int lev = 0; lev < nlevels; ++lev) {
       amr_level[lev]->writePlotFilePost(pltfile, HeaderFile);
     }
