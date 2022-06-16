@@ -28,6 +28,10 @@ Chemistry_Model := dodmethair_4sp
 Transport_Model := Simple
 USE_MASA = FALSE
 
+# Libraries
+USE_HDF5  = FALSE
+HDF5_HOME = $(HDF5_ROOT)
+
 # GNU Make
 Bpack := ./Make.package
 Blocs := .

@@ -61,6 +61,15 @@ grow_box_by_one(const amrex::Box& b)
 class SprayParticleContainer;
 #endif
 
+AMREX_FORCE_INLINE static bool
+ebInDomain()
+{
+  amrex::ParmParse pp("eb2");
+  std::string geom_type("all_regular");
+  pp.query("geom_type", geom_type);
+  return (geom_type != "all_regular");
+}
+
 // AmrLevel-derived class for hyperbolic conservation equations for stellar
 // media
 
@@ -510,13 +519,6 @@ public:
   amrex::MultiFab& build_fine_mask();
 
   static bool eb_in_domain;
-  AMREX_FORCE_INLINE static bool ebInDomain()
-  {
-    amrex::ParmParse pp("eb2");
-    std::string geom_type("all_regular");
-    pp.query("geom_type", geom_type);
-    return (geom_type != "all_regular");
-  }
 
   amrex::EBFluxRegister flux_reg;
   amrex::EBFluxRegister& getFluxReg();
