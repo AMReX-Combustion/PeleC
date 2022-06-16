@@ -816,7 +816,7 @@ PeleC::writePlotFile(
   }
 
 #ifdef PELEC_USE_SPRAY
-  if (do_spray_particles && spray_derive_vars.size() > 0) {
+  if (do_spray_particles && !spray_derive_vars.empty()) {
     num_derive += spray_derive_vars.size();
   }
 #endif
@@ -850,9 +850,9 @@ PeleC::writePlotFile(
     }
 
 #ifdef PELEC_USE_SPRAY
-    if (do_spray_particles && spray_derive_vars.size() > 0) {
-      for (int i = 0; i < spray_derive_vars.size(); i++) {
-        os << spray_derive_vars[i] << '\n';
+    if (do_spray_particles) {
+      for (const auto& derive_name : spray_derive_vars) {
+        os << derive_name << '\n';
       }
     }
 #endif
@@ -974,8 +974,8 @@ PeleC::writePlotFile(
   }
 
 #ifdef PELEC_USE_SPRAY
-  if (spray_derive_vars.size() > 0) {
-    setupVirtualParticles();
+  if (!spray_derive_vars.empty()) {
+    setupVirtualParticles(level, parent->finestLevel());
     int num_spray_derive = spray_derive_vars.size();
     plotMF.setVal(0., cnt, num_spray_derive);
     theSprayPC()->computeDerivedVars(
@@ -988,7 +988,7 @@ PeleC::writePlotFile(
         tmp_plt, level, 0, spray_derive_vars, spray_fuel_names);
       amrex::MultiFab::Add(plotMF, tmp_plt, 0, cnt, num_spray_derive, 0);
     }
-    removeVirtualParticles();
+    removeVirtualParticles(level);
     cnt += spray_derive_vars.size();
   }
 #endif
@@ -998,7 +998,7 @@ PeleC::writePlotFile(
   TheFullPath += BaseName;
   amrex::VisMF::Write(plotMF, TheFullPath, how, true);
 #ifdef PELEC_USE_SPRAY
-  if (theSprayPC() != nullptr) {
+  if (do_spray_particles) {
     bool is_checkpoint = false;
     theSprayPC()->SprayParticleIO(
       level, is_checkpoint, write_spray_ascii_files, dir, spray_fuel_names);

@@ -40,8 +40,8 @@ int init_function = 1;
 int particle_verbose = 0;
 amrex::Real particle_cfl = 0.5;
 amrex::Real wall_temp = 300.;
-int mass_trans = 1;
-int mom_trans = 1;
+bool mass_trans = true;
+bool mom_trans = true;
 int plot_spray_src = 0;
 } // namespace
 
@@ -82,8 +82,8 @@ PeleC::estTimeStepParticles(amrex::Real& est_dt)
     est_dt = amrex::min<amrex::Real>(est_dt, est_dt_particle);
   }
 
-  if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
-    if (est_dt_particle > 0) {
+  if (particle_verbose >= 2 && amrex::ParallelDescriptor::IOProcessor()) {
+    if (est_dt_particle > 0.) {
       amrex::Print() << "...estdt from particles at level " << level << ": "
                      << est_dt_particle << '\n';
     } else {
@@ -146,8 +146,8 @@ PeleC::defineParticles()
     const int fspec = sprayData.indx[ns];
     sprayData.latent[ns] -= fuelEnth[fspec];
   }
-  scomps.mass_tran = mass_trans;
-  scomps.mom_tran = mom_trans;
+  scomps.mass_trans = mass_trans;
+  scomps.mom_trans = mom_trans;
   scomps.rhoIndx = PeleC::Density;
   scomps.momIndx = PeleC::Xmom;
   scomps.engIndx = PeleC::Eden;
@@ -184,13 +184,13 @@ PeleC::defineSpraySource(const int amr_ncycle)
 }
 
 void
-PeleC::setupVirtualParticles()
+PeleC::setupVirtualParticles(const int level, const int finest_level)
 {
   BL_PROFILE("PeleC::setupVirtualParticles()");
   if (theSprayPC() != nullptr && !virtual_particles_set) {
-    if (level < parent->finestLevel()) {
+    if (level < finest_level) {
       SprayParticleContainer::AoS virts;
-      ((PeleC*)&parent->getLevel(level + 1))->setupVirtualParticles();
+      setupVirtualParticles(level + 1, finest_level);
       theVirtPC()->CreateVirtualParticles(level + 1, virts);
       theVirtPC()->AddParticlesAtLevel(virts, level);
 
@@ -202,7 +202,7 @@ PeleC::setupVirtualParticles()
 }
 
 void
-PeleC::removeVirtualParticles()
+PeleC::removeVirtualParticles(const int level)
 {
   if (theVirtPC() != nullptr) {
     theVirtPC()->RemoveParticlesAtLevel(level);
@@ -211,11 +211,11 @@ PeleC::removeVirtualParticles()
 }
 
 void
-PeleC::setupGhostParticles(int ngrow)
+PeleC::setupGhostParticles(
+  const int level, const int finest_level, const int ngrow)
 {
   BL_PROFILE("PeleC::setupGhostParticles()");
-  AMREX_ASSERT(level < parent->finestLevel());
-  if (PeleC::theSprayPC() != nullptr) {
+  if (theSprayPC() != nullptr && level < finest_level) {
     SprayParticleContainer::AoS ghosts;
     theSprayPC()->CreateGhostParticles(level, ngrow, ghosts);
     theGhostPC()->AddParticlesAtLevel(ghosts, level + 1, ngrow);
@@ -223,7 +223,7 @@ PeleC::setupGhostParticles(int ngrow)
 }
 
 void
-PeleC::removeGhostParticles()
+PeleC::removeGhostParticles(const int level)
 {
   if (theGhostPC() != nullptr) {
     theGhostPC()->RemoveParticlesAtLevel(level);
@@ -257,7 +257,7 @@ PeleC::initParticles()
   amrex::ExecOnFinalize(RemoveParticlesOnExit);
 
   if (do_spray_particles) {
-    AMREX_ASSERT(theSprayPC() == 0);
+    AMREX_ASSERT(theSprayPC() == nullptr);
     createDataParticles();
 
     if (!init_file.empty()) {
@@ -284,7 +284,7 @@ PeleC::postRestartParticles(bool is_checkpoint)
 
   if (do_spray_particles) {
     defineSpraySource(1);
-    AMREX_ASSERT(SprayPC == 0);
+    AMREX_ASSERT(SprayPC == nullptr);
     createDataParticles();
 
     // Make sure to call RemoveParticlesOnExit() on exit.
@@ -317,7 +317,7 @@ PeleC::particleMKD(
 
   if (level < finest_level) {
     // Setup the virtual particles that represent particles on finer levels
-    setupVirtualParticles();
+    setupVirtualParticles(level, finest_level);
     // Make a copy of the particles on this level into ghost particles
     // for the finer level
     int finer_ref = parent->MaxRefRatio(level);
@@ -325,12 +325,12 @@ PeleC::particleMKD(
     // ghost particles
     int ghost_width = SprayParticleContainer::getGhostPartCells(
       level + 1, finest_level, finer_ref);
-    setupGhostParticles(ghost_width);
+    setupGhostParticles(level, finest_level, ghost_width);
   }
 
   // Advance the particle velocities to the half-time and the positions to
   // the new time
-  if (particle_verbose) {
+  if (particle_verbose >= 1) {
     amrex::Print()
       << "moveKickDrift ... updating particle positions and velocity\n";
   }
@@ -389,7 +389,7 @@ PeleC::particleMK(
   int spray_source_ghosts = tmp_spray_source.nGrow();
   new_sources[spray_src]->setVal(0.);
   auto const* ltransparm = PeleC::trans_parms.device_trans_parm();
-  if (particle_verbose) {
+  if (particle_verbose >= 1) {
     amrex::Print() << "moveKick ... updating velocity only\n";
   }
   bool isVirt = false;
@@ -425,12 +425,12 @@ PeleC::postTimeStepParticles(int iteration)
   if (do_spray_particles) {
     // Remove virtual particles at this level if we have any.
     if (theVirtPC() != nullptr) {
-      removeVirtualParticles();
+      removeVirtualParticles(level);
     }
 
     // Remove Ghost particles on the final iteration
     if (iteration == ncycle) {
-      removeGhostParticles();
+      removeGhostParticles(level);
     }
 
     // Do particle injection
@@ -483,7 +483,7 @@ PeleC::particle_redistribute(int lbase, bool init_part)
   }
   BL_PROFILE("PeleC::particle_redistribute()");
   int flev = parent->finestLevel();
-  if (theSprayPC()) {
+  if (theSprayPC() != nullptr) {
     // If we are calling with init_part = true, then we want to force the
     // redistribute without checking whether the grids have changed.
     if (init_part) {
@@ -527,7 +527,7 @@ PeleC::particle_redistribute(int lbase, bool init_part)
       // We also only call it for particles >= lbase. This is
       // because if we called redistribute during a subcycle, there may be
       // particles not in the proper position on coarser levels.
-      if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
+      if (particle_verbose >= 2 && amrex::ParallelDescriptor::IOProcessor()) {
         amrex::Print() << "Calling redistribute because grid has changed "
                        << '\n';
       }
@@ -544,7 +544,7 @@ PeleC::particle_redistribute(int lbase, bool init_part)
         dm[i] = parent->getLevel(i).get_new_data(0).DistributionMap();
       }
     } else {
-      if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
+      if (particle_verbose >= 2 && amrex::ParallelDescriptor::IOProcessor()) {
         amrex::Print()
           << "NOT calling redistribute because grid has NOT changed " << '\n';
       }

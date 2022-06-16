@@ -147,8 +147,7 @@ public:
   void postInitParticles();
 
   // Redistribute
-  virtual void
-  particle_redistribute(int lbase = 0, bool init_part = false) override;
+  void particle_redistribute(int lbase = 0, bool init_part = false) override;
 
   // Setup ghost and virtual particles and do moveKickDrift
   void particleMKD(
@@ -167,16 +166,17 @@ public:
     int amr_ncycle);
 
   // Setup virtual particles if necessary
-  void setupVirtualParticles();
+  static void setupVirtualParticles(const int level, const int finest_level);
 
   // Remove virtual particles if necessary
-  void removeVirtualParticles();
+  static void removeVirtualParticles(const int level);
 
   // Setup ghost particles (for finer levels) if necessary
-  void setupGhostParticles(int ngrow);
+  static void
+  setupGhostParticles(const int level, const int finest_level, const int ngrow);
 
   // Remove ghost particles (for this level) if necessary
-  void removeGhostParticles();
+  static void removeGhostParticles(const int level);
 
   // Time step control based on particles
   void estTimeStepParticles(amrex::Real& est_dt);
