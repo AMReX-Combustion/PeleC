@@ -151,6 +151,7 @@ PeleCAmr::writePlotFileDoit(
       }
     }
 
+    // Add vfrac
     if (amrex::EB2::TopIndexSpaceIfPresent() != nullptr) {
       const auto& ebfactory = dynamic_cast<amrex::EBFArrayBoxFactory const&>(
         amr_level[lev]->Factory());
