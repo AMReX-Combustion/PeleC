@@ -4,7 +4,7 @@
 #include <AMReX_ParmParse.H>
 #include <AMReX_EB2.H>
 #include <AMReX_PlotFileUtil.H>
-#ifdef PELEC_USE_HDF5
+#ifdef AMREX_USE_HDF5
 #include <AMReX_PlotFileUtilHDF5.H>
 #endif
 

@@ -32,10 +32,10 @@ PeleCAmr::writePlotFile()
 
   bool write_hdf5_plots = false;
   std::string hdf5_compression{"None@0"};
-#ifdef PELEC_USE_HDF5
+#ifdef AMREX_USE_HDF5
   amrex::ParmParse pp("pelec");
   pp.query("write_hdf5_plots", write_hdf5_plots);
-#ifdef PELEC_USE_HDF5_ZFP
+#ifdef AMREX_USE_HDF5_ZFP
   pp.query("hdf5_compression", hdf5_compression);
 #endif
 #endif
@@ -197,7 +197,7 @@ PeleCAmr::writePlotFileDoit(
       static_cast<const amrex::MultiFab*>(plotMFs[lev].get()));
   }
 
-#ifdef PELEC_USE_HDF5
+#ifdef AMREX_USE_HDF5
   if (write_hdf5_plots) {
     amrex::WriteMultiLevelPlotfileHDF5SingleDset(
       pltfile, nlevels, plotMFs_constvec, plt_var_names, Geom(), cur_time,
@@ -208,7 +208,7 @@ PeleCAmr::writePlotFileDoit(
     amrex::WriteMultiLevelPlotfile(
       pltfile, nlevels, plotMFs_constvec, plt_var_names, Geom(), cur_time,
       istep, refRatio());
-#ifdef PELEC_USE_HDF5
+#ifdef AMREX_USE_HDF5
   }
 #endif
 
