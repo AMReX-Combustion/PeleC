@@ -236,7 +236,7 @@ PeleCAmr::writePlotFileDoit(
     last_smallplotfile = level_steps[0];
   }
 
-  if (amrex::ParallelDescriptor::IOProcessor()) {
+  if ((amrex::ParallelDescriptor::IOProcessor()) && (HeaderFile.is_open())) {
     HeaderFile.close();
   }
 
