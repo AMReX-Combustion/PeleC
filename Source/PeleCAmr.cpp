@@ -214,7 +214,7 @@ PeleCAmr::writePlotFileDoit(
       }
     }
 
-    if (amrex::EB2::TopIndexSpaceIfPresent()) {
+    if (amrex::EB2::TopIndexSpaceIfPresent() != nullptr) {
       for (int lev = 0; lev < nlevels; ++lev) {
         HeaderFile << "1.0e-6\n";
       }
