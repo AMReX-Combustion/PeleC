@@ -22,6 +22,7 @@ option(PELEC_ENABLE_SANITIZE_FOR_TESTS "Currently only disables certain long run
 option(PELEC_ENABLE_FPE_TRAP_FOR_TESTS "Enable FPE trapping in tests" ON)
 option(PELEC_ENABLE_TINY_PROFILE "Enable tiny profiler in AMReX" OFF)
 option(PELEC_ENABLE_HDF5 "Enable plot file output using HDF5" OFF)
+option(PELEC_ENABLE_HDF5_ZFP "Enable ZFP compression in HDF5" OFF)
 set(PELEC_PRECISION "DOUBLE" CACHE STRING "Floating point precision SINGLE or DOUBLE")
 
 #Options for performance
@@ -62,6 +63,10 @@ endif()
 if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
   set(PELEC_ENABLE_FPE_TRAP_FOR_TESTS OFF)
   message(WARNING "Disabling FPE trapping for tests when using AppleClang.")
+endif()
+
+if(PELEC_ENABLE_HDF5_ZFP AND (NOT PELEC_ENABLE_HDF5))
+   message(FATAL_ERROR "HDF5 must be enabled to use ZFP compression in HDF5 plot files")
 endif()
 
 ########################### AMReX #####################################
