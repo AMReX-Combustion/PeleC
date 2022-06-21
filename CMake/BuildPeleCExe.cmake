@@ -129,10 +129,6 @@ function(build_pelec_exe pelec_exe_name pelec_lib_name)
     endif()
   endif()
 
-  if(PELEC_ENABLE_HDF5)
-    target_compile_definitions(${pelec_exe_name} PUBLIC PELEC_USE_HDF5)
-  endif()
-
   if(NOT "${pelec_exe_name}" STREQUAL "PeleC-UnitTests")
     target_sources(${pelec_exe_name}
        PRIVATE
