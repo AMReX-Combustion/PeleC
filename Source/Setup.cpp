@@ -558,10 +558,6 @@ PeleC::variableSetUp()
     amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("magmom", desc_lst, State_Type, Density, NVAR);
 
-  derive_lst.add(
-    "vfrac", amrex::IndexType::TheCellType(), 1, pc_dermagvel,
-    amrex::DeriveRec::TheSameBox);
-
 #ifdef PELEC_USE_SOOT
   if (add_soot_src) {
     addSootDerivePlotVars(derive_lst, desc_lst);

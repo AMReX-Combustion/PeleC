@@ -803,7 +803,8 @@ PeleC::estTimeStep(amrex::Real /*dt_old*/)
     amrex::Real AMREX_D_DECL(dx1 = dx[0], dx2 = dx[1], dx3 = dx[2]);
 
     if (do_hydro) {
-      amrex::Real dt = amrex::ReduceMin(
+      amrex::Real dt = 0.0;
+      dt = amrex::ReduceMin(
         stateMF, flags, 0,
         [=] AMREX_GPU_HOST_DEVICE(
           amrex::Box const& bx, const amrex::Array4<const amrex::Real>& fab_arr,
@@ -817,7 +818,8 @@ PeleC::estTimeStep(amrex::Real /*dt_old*/)
 
     if (diffuse_vel) {
       auto const* ltransparm = trans_parms.device_trans_parm();
-      amrex::Real dt = amrex::ReduceMin(
+      amrex::Real dt = 0.0;
+      dt = amrex::ReduceMin(
         stateMF, flags, 0,
         [=] AMREX_GPU_HOST_DEVICE(
           amrex::Box const& bx, const amrex::Array4<const amrex::Real>& fab_arr,
@@ -831,7 +833,8 @@ PeleC::estTimeStep(amrex::Real /*dt_old*/)
 
     if (diffuse_temp) {
       auto const* ltransparm = trans_parms.device_trans_parm();
-      amrex::Real dt = amrex::ReduceMin(
+      amrex::Real dt = 0.0;
+      dt = amrex::ReduceMin(
         stateMF, flags, 0,
         [=] AMREX_GPU_HOST_DEVICE(
           amrex::Box const& bx, const amrex::Array4<const amrex::Real>& fab_arr,
@@ -845,7 +848,8 @@ PeleC::estTimeStep(amrex::Real /*dt_old*/)
 
     if (diffuse_enth) {
       auto const* ltransparm = trans_parms.device_trans_parm();
-      amrex::Real dt = amrex::ReduceMin(
+      amrex::Real dt = 0.0;
+      dt = amrex::ReduceMin(
         stateMF, flags, 0,
         [=] AMREX_GPU_HOST_DEVICE(
           amrex::Box const& bx, const amrex::Array4<const amrex::Real>& fab_arr,
@@ -1162,7 +1166,9 @@ PeleC::post_regrid(
   fine_mask.clear();
 
 #ifdef PELEC_USE_SPRAY
-  particle_redistribute(lbase);
+  if (lbase == level) {
+    particle_redistribute(lbase);
+  }
 #endif
 
   if (use_typical_vals_chem) {
@@ -1605,8 +1611,7 @@ PeleC::errorEst(
             });
 
           const int local_i = mfi.LocalIndex();
-          const auto Nebg =
-            (!eb_in_domain) ? 0 : sv_eb_bndry_geom[local_i].size();
+          const auto Nebg = sv_eb_bndry_geom[local_i].size();
           EBBndryGeom* ebg = sv_eb_bndry_geom[local_i].data();
           amrex::ParallelFor(Nebg, [=] AMREX_GPU_DEVICE(int L) {
             const auto& iv = ebg[L].iv;
@@ -1649,18 +1654,18 @@ PeleC::errorEst(
     eb_distance(level, signDist);
 
     // Estimate how far I need to derefine
-    const amrex::Real diagFac = std::sqrt(2.0) * 3.0;
+    const amrex::Real safetyFac = tagging_parm->detag_eb_factor;
     amrex::Real clearTagDist =
       parent->Geom(tagging_parm->max_eb_refine_lev).CellSize(0) *
       static_cast<amrex::Real>(
         parent->nErrorBuf(tagging_parm->max_eb_refine_lev)) *
-      diagFac;
+      safetyFac;
     const int finest_level = parent->finestLevel();
     for (int ilev = tagging_parm->max_eb_refine_lev + 1; ilev <= finest_level;
          ++ilev) {
       clearTagDist +=
         static_cast<amrex::Real>(parent->nErrorBuf(ilev)) *
-        parent->Geom(tagging_parm->max_eb_refine_lev).CellSize(0) * diagFac;
+        parent->Geom(tagging_parm->max_eb_refine_lev).CellSize(0) * safetyFac;
     }
 
     // Untag cells too close to EB

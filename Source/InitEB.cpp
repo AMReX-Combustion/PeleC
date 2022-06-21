@@ -461,7 +461,7 @@ PeleC::initialize_signed_distance()
                         static_cast<amrex::Real>(parent->refRatio(ilev - 1)[0]),
                         static_cast<amrex::Real>(ilev));
     }
-    extentFactor *= std::sqrt(2.0); // Account for diagonals
+    extentFactor *= tagging_parm->detag_eb_factor;
 
     amrex::MultiFab signDist(
       convert(grids, amrex::IntVect::TheUnitVector()), dmap, 1, 1,
@@ -647,9 +647,7 @@ PeleC::InitialRedistribution(
 
   // Don't redistribute if there is no EB or if the redistribution type is
   // anything other than StateRedist
-  if (
-    (!eb_in_domain) ||
-    ((eb_in_domain) && (redistribution_type != "StateRedist"))) {
+  if ((!eb_in_domain) || (redistribution_type != "StateRedist")) {
     return;
   }
 

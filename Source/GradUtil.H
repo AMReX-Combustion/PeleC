@@ -1,5 +1,5 @@
-#ifndef _GRADUTIL_H_
-#define _GRADUTIL_H_
+#ifndef GRADUTIL_H
+#define GRADUTIL_H
 
 #include <AMReX_FArrayBox.H>
 #include "IndexDefines.H"

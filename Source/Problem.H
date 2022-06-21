@@ -1,5 +1,5 @@
-//#ifndef _PROBLEM_H_
-//#define _PROBLEM_H_
+//#ifndef PROBLEM_H
+//#define PROBLEM_H
 
 // problem-specific PeleC:: declarations go here
 

@@ -1,5 +1,5 @@
-#ifndef _PELEC_H_
-#define _PELEC_H_
+#ifndef PELEC_H
+#define PELEC_H
 
 #include <AMReX_BC_TYPES.H>
 #include <AMReX_AmrLevel.H>
@@ -65,6 +65,15 @@ class SootModel;
 class SprayParticleContainer;
 #endif
 
+AMREX_FORCE_INLINE static bool
+ebInDomain()
+{
+  amrex::ParmParse pp("eb2");
+  std::string geom_type("all_regular");
+  pp.query("geom_type", geom_type);
+  return (geom_type != "all_regular");
+}
+
 // AmrLevel-derived class for hyperbolic conservation equations for stellar
 // media
 
@@ -103,10 +112,7 @@ public:
   void setPlotVariables() override;
 
   // Write a plotfile to specified directory.
-  void writePlotFile(
-    const std::string& dir, std::ostream& os, amrex::VisMF::How how) override;
-  void writeSmallPlotFile(
-    const std::string& dir, std::ostream& os, amrex::VisMF::How how) override;
+  void writePlotFilePost(const std::string& dir, std::ostream& os) override;
   void writeJobInfo(const std::string& dir);
   static void writeBuildInfo(std::ostream& os);
 
@@ -196,6 +202,9 @@ public:
 
   static std::string spray_fuel_names[SPRAY_FUEL_NUM];
   static amrex::Vector<std::string> spray_derive_vars;
+  static SprayParticleContainer* theSprayPC();
+  static SprayParticleContainer* theVirtPC();
+  static SprayParticleContainer* theGhostPC();
 #endif
 
   // Get problem metrics.
@@ -578,13 +587,6 @@ public:
   amrex::MultiFab& build_fine_mask();
 
   static bool eb_in_domain;
-  AMREX_FORCE_INLINE static bool ebInDomain()
-  {
-    amrex::ParmParse pp("eb2");
-    std::string geom_type("all_regular");
-    pp.query("geom_type", geom_type);
-    return (geom_type != "all_regular");
-  }
 
   amrex::EBFluxRegister flux_reg;
   amrex::EBFluxRegister& getFluxReg();
@@ -735,11 +737,6 @@ protected:
 
   // Do spray particles
   static bool do_spray_particles;
-#ifdef PELEC_USE_SPRAY
-  static SprayParticleContainer* theSprayPC();
-  static SprayParticleContainer* theVirtPC();
-  static SprayParticleContainer* theGhostPC();
-#endif
 
   static int num_state_type;
 

@@ -1,5 +1,5 @@
-#ifndef _FILTER_H_
-#define _FILTER_H_
+#ifndef FILTER_H
+#define FILTER_H
 
 #include <AMReX_REAL.H>
 #include <AMReX_Array.H>
@@ -168,4 +168,4 @@ private:
   void set_gaussian_5pt_optimized_approx_weights();
 };
 
-#endif /*_FILTER_H_*/
+#endif /*_FILTER_H*/

@@ -1,5 +1,5 @@
-#ifndef _PPM_H_
-#define _PPM_H_
+#ifndef PPM_H
+#define PPM_H
 
 #include <AMReX_FArrayBox.H>
 #include <AMReX_IArrayBox.H>

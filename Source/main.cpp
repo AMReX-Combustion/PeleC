@@ -13,6 +13,7 @@
 #endif
 
 #include "PeleC.H"
+#include "PeleCAmr.H"
 
 std::string inputs_name;
 
@@ -34,9 +35,6 @@ override_default_parameters()
 int
 main(int argc, char* argv[])
 {
-  // Use this to trap NaNs in C++
-  // feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW);
-
   if (argc <= 1) {
     amrex::Abort("Error: no inputs file provided on command line.");
   }
@@ -121,7 +119,7 @@ main(int argc, char* argv[])
   }
 
   // Initialize random seed after we're running in parallel.
-  auto* amrptr = new amrex::Amr(getLevelBld());
+  auto* amrptr = new PeleCAmr(getLevelBld());
 
   amrex::AmrLevel::SetEBSupportLevel(
     amrex::EBSupport::full); // need both area and volume fractions

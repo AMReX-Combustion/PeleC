@@ -98,10 +98,12 @@ PeleC::readSprayParams()
   amrex::ParmParse pp("pelec");
 
   pp.query("do_spray_particles", do_spray_particles);
-  SprayParticleContainer::readSprayParams(
-    particle_verbose, particle_cfl, wall_temp, mass_trans, mom_trans,
-    write_spray_ascii_files, plot_spray_src, init_function, init_file,
-    sprayData, spray_fuel_names, spray_derive_vars);
+  if (do_spray_particles) {
+    SprayParticleContainer::readSprayParams(
+      particle_verbose, particle_cfl, wall_temp, mass_trans, mom_trans,
+      write_spray_ascii_files, plot_spray_src, init_function, init_file,
+      sprayData, spray_fuel_names, spray_derive_vars);
+  }
 }
 
 void
@@ -284,7 +286,7 @@ PeleC::postRestartParticles(bool is_checkpoint)
 
   if (do_spray_particles) {
     defineSpraySource(1);
-    AMREX_ASSERT(SprayPC == nullptr);
+    AMREX_ASSERT(theSprayPC() == nullptr);
     createDataParticles();
 
     // Make sure to call RemoveParticlesOnExit() on exit.
@@ -314,7 +316,6 @@ PeleC::particleMKD(
   // particles that will be used by this level have already been created,
   // the particles being set here are only used by finer levels.
   int finest_level = parent->finestLevel();
-
   if (level < finest_level) {
     // Setup the virtual particles that represent particles on finer levels
     setupVirtualParticles(level, finest_level);

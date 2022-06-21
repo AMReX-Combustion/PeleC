@@ -172,7 +172,7 @@ jobs:
             -DPELEC_ENABLE_MPI:BOOL=ON \
             -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
             -DPELEC_ENABLE_MASA:BOOL=ON \
-            -DMASA_DIR:PATH=${{runner.workspace}}/deps/install/MASA \
+            -DMASA_ROOT:PATH=${{runner.workspace}}/deps/install/MASA \
             ${{github.workspace}}; \
             if [ $? -ne 0 ]; then exit 1; fi \
           done)

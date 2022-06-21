@@ -1,5 +1,5 @@
-#ifndef _TIMESTEP_H_
-#define _TIMESTEP_H_
+#ifndef TIMESTEP_H
+#define TIMESTEP_H
 
 #include <AMReX_FArrayBox.H>
 #include <AMReX_EBFArrayBox.H>

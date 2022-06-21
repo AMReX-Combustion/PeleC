@@ -1,4 +1,6 @@
-#ifndef _IO_H_
-#define _IO_H_
+#ifndef IO_H
+#define IO_H
+
 extern std::string inputs_name;
+
 #endif

@@ -1,5 +1,5 @@
-#ifndef _SparseData_H_
-#define _SparseData_H_
+#ifndef SparseData_H
+#define SparseData_H
 
 #include <AMReX_Vector.H>
 

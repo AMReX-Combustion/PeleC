@@ -1,5 +1,5 @@
-#ifndef _DIFFUSION_H_
-#define _DIFFUSION_H_
+#ifndef DIFFUSION_H
+#define DIFFUSION_H
 
 #ifdef _OPENMP
 #include <omp.h>

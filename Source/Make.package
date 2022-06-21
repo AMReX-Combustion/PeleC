@@ -1,5 +1,6 @@
 #C++ files
 CEXE_sources += PeleC.cpp
+CEXE_sources += PeleCAmr.cpp
 CEXE_sources += Advance.cpp
 CEXE_sources += Derive.cpp
 CEXE_sources += Bld.cpp
@@ -31,6 +32,7 @@ CEXE_sources += InitEB.cpp
 
 #C++ headers
 CEXE_headers += PeleC.H
+CEXE_headers += PeleCAmr.H
 CEXE_headers += IO.H
 CEXE_headers += Problem.H
 CEXE_headers += ProblemDerive.H
