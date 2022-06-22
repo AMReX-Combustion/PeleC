@@ -130,7 +130,7 @@ PeleC::getLESTerm(
   amrex::Print() << "WARNING -- Need to implement LES extrap " << std::endl;
   //   // Extrapolate to GhostCells
   //   if (LESTerm.nGrow() > 0) {
-  // #ifdef _OPENMP
+  // #ifdef AMREX_USE_OMP
   // #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
   // #endif
   //     // for (MFIter mfi(LESTerm, TilingIfNotGPU()); mfi.isValid(); ++mfi) {
@@ -209,7 +209,7 @@ PeleC::getSmagorinskyLESTerm(
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(S.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
 
-#ifdef _OPENMP
+#ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
   {
@@ -424,7 +424,7 @@ PeleC::getDynamicSmagorinskyLESTerm(
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(S.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
 
-#ifdef _OPENMP
+#ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
   {

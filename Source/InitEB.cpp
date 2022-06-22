@@ -80,7 +80,7 @@ PeleC::initialize_eb2_structs()
     amrex::Abort();
   }
 
-#ifdef _OPENMP
+#ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
   for (amrex::MFIter mfi(vfrac, false); mfi.isValid(); ++mfi) {
@@ -191,7 +191,7 @@ PeleC::initialize_eb2_structs()
       }
     }
 
-#ifdef _OPENMP
+#ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
     for (amrex::MFIter mfi(vfrac, false); mfi.isValid(); ++mfi) {
@@ -589,7 +589,7 @@ PeleC::extend_signed_distance(
   // the reach of the distance function
   const int nMaxLoop = 4;
   for (int dloop = 1; dloop <= nMaxLoop; dloop++) {
-#ifdef _OPENMP
+#ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
     for (amrex::MFIter mfi(*signDist, amrex::TilingIfNotGPU()); mfi.isValid();

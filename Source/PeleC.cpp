@@ -1,5 +1,5 @@
 #include <memory>
-#ifdef _OPENMP
+#ifdef AMREX_USE_OMP
 #include <omp.h>
 #endif
 
@@ -1321,7 +1321,7 @@ PeleC::errorEst(
   amrex::Vector<amrex::BCRec> bcs(NVAR);
   const char tagval = amrex::TagBox::SET;
 
-#ifdef _OPENMP
+#ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
   {
@@ -1797,7 +1797,7 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
 #endif
 
   // Ensure (rho e) isn't too small or negative
-#ifdef _OPENMP
+#ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
   {
@@ -1860,7 +1860,7 @@ amrex::Real
 PeleC::getCPUTime()
 {
   int numCores = amrex::ParallelDescriptor::NProcs();
-#ifdef _OPENMP
+#ifdef AMREX_USE_OMP
   numCores = numCores * omp_get_max_threads();
 #endif
 
@@ -1894,7 +1894,7 @@ PeleC::build_fine_mask()
   const auto& iarrs = ifine_mask.const_arrays();
   amrex::ParallelFor(
     fine_mask, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
-#ifdef _OPENMP
+#ifdef AMREX_USE_OMP
 #pragma omp atomic write
 #endif
       arrs[nbx](i, j, k) = iarrs[nbx](i, j, k);

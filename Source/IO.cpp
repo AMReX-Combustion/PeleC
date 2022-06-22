@@ -4,7 +4,7 @@
 #include <string>
 #include <ctime>
 
-#ifdef _OPENMP
+#ifdef AMREX_USE_OMP
 #include <omp.h>
 #endif
 
@@ -464,7 +464,7 @@ PeleC::writeJobInfo(const std::string& dir)
 
   jobInfoFile << "number of MPI processes: "
               << amrex::ParallelDescriptor::NProcs() << "\n";
-#ifdef _OPENMP
+#ifdef AMREX_USE_OMP
   jobInfoFile << "number of threads:       " << omp_get_max_threads() << "\n";
 #endif
 
@@ -700,11 +700,11 @@ PeleC::writeBuildInfo(std::ostream& os)
 
   os << "\n";
   os << " PeleC Defines: \n";
-#ifdef _OPENMP
-  os << std::setw(35) << std::left << "_OPENMP " << std::setw(6) << "ON"
+#ifdef AMREX_USE_OMP
+  os << std::setw(35) << std::left << "AMREX_USE_OMP " << std::setw(6) << "ON"
      << std::endl;
 #else
-  os << std::setw(35) << std::left << "_OPENMP " << std::setw(6) << "OFF"
+  os << std::setw(35) << std::left << "AMREX_USE_OMP " << std::setw(6) << "OFF"
      << std::endl;
 #endif
 
