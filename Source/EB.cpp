@@ -526,7 +526,7 @@ pc_eb_div(
         const amrex::Real kappa_inv =
           1.0 / amrex::max<amrex::Real>(vf(iv), 1.0e-12);
         amrex::Real tmp;
-#ifdef _OPENMP
+#ifdef AMREX_USE_OMP
 #pragma omp atomic read
 #endif
         tmp = ebflux[n * Ncut + L];

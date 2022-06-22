@@ -124,7 +124,7 @@ PeleC::react_state(
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(S_new.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
 
-#ifdef _OPENMP
+#ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
   {
