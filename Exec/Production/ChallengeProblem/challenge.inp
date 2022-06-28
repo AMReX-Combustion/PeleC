@@ -73,6 +73,8 @@ amr.derive_plot_vars = density x_velocity y_velocity z_velocity magvel Y(CH4) Y(
 pelec.plot_rhoy = 0
 pelec.plot_massfrac = 1
 pelec.extrema_spec_name = ALL
+pelec.write_hdf5_plots=true
+pelec.hdf5_compression="ZFP_REVERSIBLE@reversible"
 
 # PROBLEM PARAMETERS
 prob.P_mean = 6.0795e7
