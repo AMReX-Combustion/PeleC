@@ -24,7 +24,6 @@ elif [ "${LMOD_SYSTEM_NAME}" == 'crusher' ]; then
   BASE_DIR="${PROJWORK}/cfd116/jrood/spack-manager-crusher/spack/opt/spack/cray-sles15-zen3/clang-14.0.0"
   H5Z_HOME="${BASE_DIR}/h5z-zfp-develop-y7qstijn2lvrhdvhswgxfnzcyh2nctfg"
   ZFP_HOME="${BASE_DIR}/zfp-0.5.5-dxggbklt74oeev6xtnici2mjq4zh2oqx"
-  ARGS="USE_HIP=TRUE USE_HDF5=TRUE USE_HDF5_ZFP=TRUE HDF5_HOME=${OLCF_HDF5_ROOT} H5Z_HOME=${H5Z_HOME} ZFP_HOME=${ZFP_HOME}"
 fi
 
 ARGS="USE_HDF5=TRUE USE_HDF5_ZFP=TRUE HDF5_HOME=${OLCF_HDF5_ROOT} H5Z_HOME=${H5Z_HOME} ZFP_HOME=${ZFP_HOME}"
