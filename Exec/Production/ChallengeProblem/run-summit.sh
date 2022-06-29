@@ -14,9 +14,8 @@ cmd() {
 
 cmd "module unload xl"
 cmd "module load gcc/9.3.0"
-cmd "module load cuda/11.4.2"
-cmd "module load hdf5/1.10.7"
-cmd "export SPACK_MANAGER=${PROJWORK}/cfd116/jrood/spack-manager-${LMOD_SYSTEM_NAME}"
+
+cmd "export SPACK_MANAGER=${PROJWORK}/cmb138/jrood/spack-manager-${LMOD_SYSTEM_NAME}"
 cmd "source ${SPACK_MANAGER}/start.sh && spack-start"
 cmd "spack env activate -d ${SPACK_MANAGER}/environments/exawind-${LMOD_SYSTEM_NAME}"
 cmd "spack load exawind+amr_wind_gpu~nalu_wind_gpu"
