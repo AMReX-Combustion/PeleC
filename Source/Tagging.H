@@ -16,6 +16,7 @@ struct TaggingParm
   amrex::Real velgrad = 1.0e10;
   amrex::Real vorterr = 1.0e10;
   amrex::Real temperr = 1.0e10;
+  amrex::Real lotemperr = -1.0e10;
   amrex::Real tempgrad = 1.0e10;
   amrex::Real ftracerr = 1.0e10;
   amrex::Real ftracgrad = 1.0e10;
@@ -33,6 +34,7 @@ struct TaggingParm
   int max_velgrad_lev = 10;
   int max_vorterr_lev = 10;
   int max_temperr_lev = 10;
+  int max_lotemperr_lev = 10;
   int max_tempgrad_lev = 10;
   int max_ftracerr_lev = 10;
   int max_ftracgrad_lev = 10;
@@ -56,6 +58,24 @@ tag_error(
 {
   // Tag on regions of high field values
   if (field(i, j, k) >= fielderr) {
+    tag(i, j, k) = tagval;
+  }
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+tag_loerror(
+  const int i,
+  const int j,
+  const int k,
+  amrex::Array4<char> const& tag,
+  amrex::Array4<amrex::Real const> const& field,
+  const amrex::Real fielderr,
+  char tagval) noexcept
+{
+  // Tag on regions of low field values
+  if (field(i, j, k) <= fielderr) {
     tag(i, j, k) = tagval;
   }
 }

@@ -30,6 +30,8 @@ PeleC::read_tagging_params()
 
   pp.query("temperr", tagging_parm->temperr);
   pp.query("max_temperr_lev", tagging_parm->max_temperr_lev);
+  pp.query("lotemperr", tagging_parm->lotemperr);
+  pp.query("max_lotemperr_lev", tagging_parm->max_lotemperr_lev);
   pp.query("tempgrad", tagging_parm->tempgrad);
   pp.query("max_tempgrad_lev", tagging_parm->max_tempgrad_lev);
 
