@@ -22,6 +22,7 @@ elif [ "${LMOD_SYSTEM_NAME}" == 'crusher' ]; then
   ARGS="USE_HIP=TRUE"
 elif [ "${NREL_CLUSTER}" == 'eagle' ]; then
   cmd "source /nopt/nrel/ecom/hpacf/env.sh"
+  cmd "module load gcc/9.3.0"
   cmd "module load intel-parallel-studio/cluster.2020.2"
   cmd "module load binutils"
   cmd "module load python"
@@ -35,8 +36,10 @@ cmd "source ${SPACK_MANAGER}/start.sh && spack-start"
 HDF5_HOME=$(spack location -i hdf5)
 H5Z_HOME=$(spack location -i h5z-zfp)
 ZFP_HOME=$(spack location -i zfp)
+ASCENT_DIR=$(spack location -i ascent)
+CONDUIT_DIR=$(spack location -i conduit)
 
-ARGS="USE_MPI=TRUE TINY_PROFILE=TRUE USE_HDF5=TRUE USE_HDF5_ZFP=TRUE HDF5_HOME=${HDF5_HOME} H5Z_HOME=${H5Z_HOME} ZFP_HOME=${ZFP_HOME} ${ARGS}"
+ARGS="USE_MPI=TRUE TINY_PROFILE=TRUE USE_HDF5=TRUE USE_HDF5_ZFP=TRUE USE_ASCENT=TRUE USE_CONDUIT=TRUE HDF5_HOME=${HDF5_HOME} H5Z_HOME=${H5Z_HOME} ZFP_HOME=${ZFP_HOME} ASCENT_DIR=${ASCENT_DIR} CONDUIT_DIR=${CONDUIT_DIR} ${ARGS}"
 
 cmd "make ${ARGS} TPLrealclean"
 cmd "make ${ARGS} realclean"
