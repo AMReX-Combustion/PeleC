@@ -14,13 +14,9 @@ cmd() {
 }
 
 cmd "source /nopt/nrel/ecom/hpacf/env.sh"
+cmd "module load intel-parallel-studio/cluster.2020.2"
 cmd "module load binutils"
 cmd "module load python"
 cmd "module load mpt"
-
-cmd "export SPACK_MANAGER=/scratch/jrood/spack-manager-${NREL_CLUSTER}"
-cmd "source ${SPACK_MANAGER}/start.sh && spack-start"
-cmd "spack env activate -d ${SPACK_MANAGER}/environments/exawind-${NREL_CLUSTER}"
-cmd "spack load exawind~amr_wind_gpu~nalu_wind_gpu"
-
+cmd "module load cmake"
 cmd "mpirun -np 2304 ./PeleC3d.hip.x86-trento.TPROF.MPI.HIP.ex challenge.inp"
