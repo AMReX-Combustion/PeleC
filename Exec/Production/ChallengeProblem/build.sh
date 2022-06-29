@@ -10,7 +10,7 @@ if [ "${LMOD_SYSTEM_NAME}" == 'summit' ]; then
   cmd "module load gcc/9.3.0"
   cmd "module load cuda/11.4.2"
   cmd "module load cmake"
-  cmd "module load binutls"
+  cmd "module load binutils"
   cmd "export SPACK_MANAGER=${PROJWORK}/cmb138/jrood/spack-manager-${LMOD_SYSTEM_NAME}"
   ARGS="USE_CUDA=TRUE"
 elif [ "${LMOD_SYSTEM_NAME}" == 'crusher' ]; then
