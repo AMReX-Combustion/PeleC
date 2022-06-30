@@ -1470,6 +1470,13 @@ PeleC::errorEst(
             tag_error(i, j, k, tag_arr, S_derarr, captured_temperr, tagval);
           });
       }
+      if (level < tagging_parm->max_lotemperr_lev) {
+        const amrex::Real captured_lotemperr = tagging_parm->lotemperr;
+        amrex::ParallelFor(
+          tilebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+            tag_loerror(i, j, k, tag_arr, S_derarr, captured_lotemperr, tagval);
+          });
+      }
       if (level < tagging_parm->max_tempgrad_lev) {
         const amrex::Real captured_tempgrad = tagging_parm->tempgrad;
         amrex::ParallelFor(
