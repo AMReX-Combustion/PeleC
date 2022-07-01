@@ -6,7 +6,7 @@ stop_time = 8.E-2
 geometry.is_periodic = 1 1 1
 geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
 geometry.prob_lo     = 0. 0. 0.
-geometry.prob_hi     = 100. 100. 100.
+geometry.prob_hi     = 10. 10. 10.
 
 # use with single level
 amr.n_cell = 64 64 64
@@ -42,12 +42,14 @@ amr.v                = 1   # verbosity in Amr.cpp
 amr.max_level       = 2       # maximum level number allowed
 amr.ref_ratio       = 2 2 2 2 # refinement ratio
 amr.max_grid_size     = 32
+amr.blocking_factor   = 32
 amr.initial_grid_file = two_d_gridfiles/gridfile_32_1
 amr.regrid_file = two_d_gridfiles/gridfile_32_2
-amr.blocking_factor   = 32
-# amr.max_grid_size     = 128
-# amr.initial_grid_file = two_d_gridfiles/gridfile_128
-# amr.blocking_factor   = 128
+# amr.max_grid_size     = 64
+# amr.blocking_factor   = 64
+# amr.initial_grid_file = two_d_gridfiles/gridfile_64_1
+# amr.regrid_file = two_d_gridfiles/gridfile_64_2
+
 amr.regrid_int        = 2 2 2 2
 amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
 
@@ -75,12 +77,12 @@ particles.fuel_rho = 0.640
 # Last coefficient converts units, in this case bar, to dyne/cm^2
 particles.NC10H22_psat = 4.07857 1501.268 -78.67 1.E6
 
-particles.parcel_size = 10.
+particles.parcel_size = 100.
 
 particles.use_splash_model = false
 
 # CHECKPOINT FILES
-amr.checkpoint_files_output = 0
+amr.checkpoint_files_output = 1
 amr.check_file      = chk        # root name of checkpoint file
 amr.check_int       = 10000   # number of timesteps between checkpoints
 #amr.restart         = chk0000100
@@ -94,8 +96,8 @@ amr.derive_plot_vars = x_velocity y_velocity pressure MachNumber magvel
 amr.file_name_digits = 4
 
 # PROBLEM PARAMETERS
-prob.mach = 0.
-prob.ref_T = 500.
+prob.mach = 0.1
+prob.ref_T = 900.
 
 # Only used if particles are initialized from a function
 # and not a file

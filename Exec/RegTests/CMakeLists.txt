@@ -12,7 +12,7 @@ if(PELEC_ENABLE_AMREX_PARTICLES)
   add_subdirectory(Spray-Conv)
 endif()
 
-if(PELEC_ENABLE_SOOT)
+if(PELEC_ENABLE_SOOT_TEST)
   add_subdirectory(Soot-Flame)
 endif()
 

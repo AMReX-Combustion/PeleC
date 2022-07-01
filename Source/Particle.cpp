@@ -304,7 +304,7 @@ PeleC::particleMKD(
   amrex::Real time,
   amrex::Real dt,
   int sub_iteration,
-  int sub_ncycle,
+  int /*sub_ncycle*/,
   int amr_ncycle)
 {
   if (sub_iteration != 0) {

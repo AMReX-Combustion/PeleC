@@ -1025,11 +1025,7 @@ PeleC::computeInitialDt(
 }
 
 void
-PeleC::post_timestep(int
-#ifdef PELEC_USE_SPRAY
-                       iteration
-#endif
-                     /*iteration*/)
+PeleC::post_timestep(int iteration)
 {
   BL_PROFILE("PeleC::post_timestep()");
 
@@ -1037,6 +1033,8 @@ PeleC::post_timestep(int
 
 #ifdef PELEC_USE_SPRAY
   postTimeStepParticles(iteration);
+#else
+  amrex::ignore_unused(iteration);
 #endif
 
   if (do_reflux && level < finest_level) {
@@ -1154,13 +1152,7 @@ PeleC::postCoarseTimeStep(amrex::Real cumtime)
 }
 
 void
-PeleC::post_regrid(
-  int
-#ifdef PELEC_USE_SPRAY
-    lbase
-#endif
-  /*lbase*/,
-  int /*new_finest*/)
+PeleC::post_regrid(int lbase, int /*new_finest*/)
 {
   BL_PROFILE("PeleC::post_regrid()");
   fine_mask.clear();
@@ -1169,6 +1161,8 @@ PeleC::post_regrid(
   if (lbase == level) {
     particle_redistribute(lbase);
   }
+#else
+  amrex::ignore_unused(lbase);
 #endif
 
   if (use_typical_vals_chem) {
