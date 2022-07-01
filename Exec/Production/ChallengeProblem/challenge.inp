@@ -73,6 +73,8 @@ amr.derive_plot_vars = density x_velocity y_velocity z_velocity magvel Y(CH4) Y(
 pelec.plot_rhoy = 0
 pelec.plot_massfrac = 1
 pelec.extrema_spec_name = ALL
+pelec.write_hdf5_plots=true
+pelec.hdf5_compression="ZFP_REVERSIBLE@reversible"
 
 # PROBLEM PARAMETERS
 prob.P_mean = 6.0795e7
@@ -146,17 +148,19 @@ turbinflow.inj4.turb_nplane    = 32
 turbinflow.inj4.time_offset    = 0.003
 
 # TAGGING
-tagging.temperr  = 1e20
+tagging.temperr  = 920.0
+tagging.lotemperr  = 850.0
 tagging.tempgrad = 50.0
 tagging.max_temperr_lev = 5
+tagging.max_lotemperr_lev = 5
 tagging.max_tempgrad_lev = 3
 tagging.max_ftracerr_lev = 2
-tagging.ftracerr = 0.25
+tagging.ftracerr = 1.e-5
 tagging.vfracerr = 1e20
 tagging.max_vfracerr_lev = 2
 tagging.max_eb_refine_lev = 0
 tagging.eb_detag_factor = 1.5
-pelec.flame_trac_name = CH4
+pelec.flame_trac_name = CH2O
 
 eb2.geom_type = "Line-Piston-Cylinder"
 #eb2.small_volfrac = 1.e-6

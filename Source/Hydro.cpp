@@ -77,7 +77,7 @@ PeleC::construct_hydro_source(
     amrex::Real yang_lost = 0.;
     amrex::Real zang_lost = 0.;
 
-#ifdef _OPENMP
+#ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())               \
     reduction(+:E_added_flux,mass_added_flux)                           \
     reduction(+:xmom_added_flux,ymom_added_flux,zmom_added_flux)	\
