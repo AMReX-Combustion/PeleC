@@ -26,14 +26,13 @@ THREAD_SANITIZER = FALSE
 # PeleC
 USE_EXPLICIT_REACT = FALSE
 ifeq ($(USE_EXPLICIT_REACT), TRUE)
-Eos_dir := Fuego
-Reactions_dir := Fuego
+Eos_Model := Fuego
 Chemistry_Model := LiDryer
-Transport_dir := Simple
+Transport_Model := Simple
 else
-Eos_dir := GammaLaw
-Reactions_dir := Null
-Transport_dir := Constant
+Eos_Model := GammaLaw
+Chemistry_Model := Null
+Transport_Model := Constant
 endif
 
 # GNU Make

@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 
-# ========================================================================
-#
-# Imports
-#
-# ========================================================================
 import argparse
 import os
 import re
@@ -15,11 +10,6 @@ from matplotlib.backends.backend_pdf import PdfPages
 import pandas as pd
 
 
-# ========================================================================
-#
-# Some defaults variables
-#
-# ========================================================================
 plt.rc("text", usetex=True)
 plt.rc("figure", max_open_warning=100)
 cmap_med = [
@@ -54,11 +44,6 @@ dashseq = [
 markertype = ["s", "d", "o", "p", "h"]
 
 
-# ========================================================================
-#
-# Function definitions
-#
-# ========================================================================
 def parse_ic(fname):
     """
     Parse the file written by PeleC to understand the initial condition
@@ -74,12 +59,11 @@ def parse_ic(fname):
     return df.to_dict("records")[0]
 
 
-# ========================================================================
 def plot_2d_refdata(ics):
 
     time = 10 * ics["tau"]
     decay = np.exp(
-        -8 * (np.pi ** 2) * (ics["mu"] / ics["rho0"]) * time / (ics["L"] ** 2)
+        -8 * (np.pi**2) * (ics["mu"] / ics["rho0"]) * time / (ics["L"] ** 2)
     )
 
     x = np.linspace(0, ics["L"], 100)
@@ -105,7 +89,6 @@ def plot_2d_refdata(ics):
     plt.plot(y / ics["L"], uy / ics["u0"], ls="-", color=cmap[-1], lw=1, label="Ref.")
 
 
-# ========================================================================
 def plot_cold3d_refdata(refdir, ics):
     m2cm = 100
 
@@ -158,7 +141,6 @@ def plot_cold3d_refdata(refdir, ics):
     )
 
 
-# ========================================================================
 def plot_nonreacting3d_refdata(refdir, ics):
     ms2s = 1e-3
     u0 = 4  # m/s
@@ -203,7 +185,6 @@ def plot_nonreacting3d_refdata(refdir, ics):
     plt.plot(YO2.x / ics["L"], YO2.YO2, ls="-", color=cmap[-1], lw=1, label="Ref.")
 
 
-# ========================================================================
 def plot_reacting3d_refdata(refdir, ics):
     ms2s = 1e-3
     u0 = 4  # m/s
@@ -256,11 +237,6 @@ def plot_reacting3d_refdata(refdir, ics):
     plt.plot(YO2.x / ics["L"], YO2.YO2, ls="-", color=cmap[-1], lw=1, label="Ref.")
 
 
-# ========================================================================
-#
-# Main
-#
-# ========================================================================
 if __name__ == "__main__":
 
     # Parse arguments

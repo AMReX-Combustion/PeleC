@@ -1,12 +1,12 @@
-#ifndef _PROB_H_
-#define _PROB_H_
+#ifndef PROB_H
+#define PROB_H
 
 #include <AMReX_Print.H>
 #include <AMReX_ParmParse.H>
 #include <AMReX_Geometry.H>
 #include <AMReX_FArrayBox.H>
 
-#include "mechanism.h"
+#include "mechanism.H"
 
 #include "IndexDefines.H"
 #include "Constants.H"
@@ -24,7 +24,8 @@ pc_initdata(
   int j,
   int k,
   amrex::Array4<amrex::Real> const& state,
-  amrex::GeometryData const& geomdata)
+  amrex::GeometryData const& geomdata,
+  ProbParmDevice const& prob_parm)
 {
 
   // Geometry
@@ -38,79 +39,83 @@ pc_initdata(
 
   // TG functions
   amrex::Real u[3] = {0.0};
-  u[0] = ProbParm::u0 * sin(ProbParm::omega_x * x / ProbParm::L_x) *
-         cos(ProbParm::omega_y * y / ProbParm::L_y) *
-         cos(ProbParm::omega_z * z / ProbParm::L_z);
-  u[1] = -ProbParm::u0 * cos(ProbParm::omega_x * x / ProbParm::L_x) *
-         sin(ProbParm::omega_y * y / ProbParm::L_y) *
-         cos(ProbParm::omega_z * z / ProbParm::L_z);
+  u[0] = prob_parm.u0 * sin(prob_parm.omega_x * x / prob_parm.L_x) *
+         cos(prob_parm.omega_y * y / prob_parm.L_y) *
+         cos(prob_parm.omega_z * z / prob_parm.L_z);
+  u[1] = -prob_parm.u0 * cos(prob_parm.omega_x * x / prob_parm.L_x) *
+         sin(prob_parm.omega_y * y / prob_parm.L_y) *
+         cos(prob_parm.omega_z * z / prob_parm.L_z);
   amrex::Real rho, eint, p, T;
   amrex::Real massfrac[NUM_SPECIES] = {0.0};
+  auto eos = pele::physics::PhysicsType::eos();
 
-  if ((ProbParm::case_type_int == 1) || (ProbParm::case_type_int == 2)) {
-    amrex::Real xmod = std::fmod(x, ProbParm::L_x);
+  if ((prob_parm.case_type_int == 1) || (prob_parm.case_type_int == 2)) {
+    amrex::Real xmod = std::fmod(x, prob_parm.L_x);
     int m = 0;
-    locate(ProbParm::xarray, ProbParm::nx, xmod, m);
-    const int mp1 = (m + 1) % ProbParm::nx;
+    locate(prob_parm.d_xarray, prob_parm.nx, xmod, m);
+    const int mp1 = (m + 1) % prob_parm.nx;
     const amrex::Real fact =
-      (x - ProbParm::input[ProbParm::input_x + m * ProbParm::nvars]) /
-      ProbParm::dxinput[m];
+      (x - prob_parm.d_input[prob_parm.input_x + m * prob_parm.nvars]) /
+      prob_parm.d_dxinput[m];
     const amrex::Real f0 = (1 - fact);
     const amrex::Real f1 = fact;
 
-    p = (ProbParm::input[ProbParm::input_p + m * ProbParm::nvars] * f0 +
-         ProbParm::input[ProbParm::input_p + mp1 * ProbParm::nvars] * f1) *
+    p = (prob_parm.d_input[prob_parm.input_p + m * prob_parm.nvars] * f0 +
+         prob_parm.d_input[prob_parm.input_p + mp1 * prob_parm.nvars] * f1) *
         p_si2cgs;
-    T = ProbParm::input[ProbParm::input_Tad + m * ProbParm::nvars] * f0 +
-        ProbParm::input[ProbParm::input_Tad + mp1 * ProbParm::nvars] * f1;
-#ifdef PELEC_USE_REACTIONS
-    if (ProbParm::case_type_int == 1) {
+    T = prob_parm.d_input[prob_parm.input_Tad + m * prob_parm.nvars] * f0 +
+        prob_parm.d_input[prob_parm.input_Tad + mp1 * prob_parm.nvars] * f1;
+    if (prob_parm.case_type_int == 1) {
+#ifdef USE_FUEGO_EOS
       massfrac[H2_ID] =
-        ProbParm::input[ProbParm::input_H2_init + m * ProbParm::nvars] * f0 +
-        ProbParm::input[ProbParm::input_H2_init + mp1 * ProbParm::nvars] * f1;
+        prob_parm.d_input[prob_parm.input_H2_init + m * prob_parm.nvars] * f0 +
+        prob_parm.d_input[prob_parm.input_H2_init + mp1 * prob_parm.nvars] * f1;
       massfrac[O2_ID] =
-        ProbParm::input[ProbParm::input_O2_init + m * ProbParm::nvars] * f0 +
-        ProbParm::input[ProbParm::input_O2_init + mp1 * ProbParm::nvars] * f1;
+        prob_parm.d_input[prob_parm.input_O2_init + m * prob_parm.nvars] * f0 +
+        prob_parm.d_input[prob_parm.input_O2_init + mp1 * prob_parm.nvars] * f1;
       massfrac[N2_ID] =
-        ProbParm::input[ProbParm::input_N2_init + m * ProbParm::nvars] * f0 +
-        ProbParm::input[ProbParm::input_N2_init + mp1 * ProbParm::nvars] * f1;
-    } else if (ProbParm::case_type_int == 2) {
-      massfrac[H2_ID] =
-        ProbParm::input[ProbParm::input_H2 + m * ProbParm::nvars] * f0 +
-        ProbParm::input[ProbParm::input_H2 + mp1 * ProbParm::nvars] * f1;
-      massfrac[O2_ID] =
-        ProbParm::input[ProbParm::input_O2 + m * ProbParm::nvars] * f0 +
-        ProbParm::input[ProbParm::input_O2 + mp1 * ProbParm::nvars] * f1;
-      massfrac[N2_ID] =
-        ProbParm::input[ProbParm::input_N2 + m * ProbParm::nvars] * f0 +
-        ProbParm::input[ProbParm::input_N2 + mp1 * ProbParm::nvars] * f1;
-      massfrac[H2O_ID] =
-        ProbParm::input[ProbParm::input_H2O + m * ProbParm::nvars] * f0 +
-        ProbParm::input[ProbParm::input_H2O + mp1 * ProbParm::nvars] * f1;
-      massfrac[H_ID] =
-        ProbParm::input[ProbParm::input_H + m * ProbParm::nvars] * f0 +
-        ProbParm::input[ProbParm::input_H + mp1 * ProbParm::nvars] * f1;
-      massfrac[O_ID] =
-        ProbParm::input[ProbParm::input_O + m * ProbParm::nvars] * f0 +
-        ProbParm::input[ProbParm::input_O + mp1 * ProbParm::nvars] * f1;
-      massfrac[OH_ID] =
-        ProbParm::input[ProbParm::input_OH + m * ProbParm::nvars] * f0 +
-        ProbParm::input[ProbParm::input_OH + mp1 * ProbParm::nvars] * f1;
-      massfrac[HO2_ID] =
-        ProbParm::input[ProbParm::input_HO2 + m * ProbParm::nvars] * f0 +
-        ProbParm::input[ProbParm::input_HO2 + mp1 * ProbParm::nvars] * f1;
-      massfrac[H2O2_ID] =
-        ProbParm::input[ProbParm::input_H2O2 + m * ProbParm::nvars] * f0 +
-        ProbParm::input[ProbParm::input_H2O2 + mp1 * ProbParm::nvars] * f1;
-    }
+        prob_parm.d_input[prob_parm.input_N2_init + m * prob_parm.nvars] * f0 +
+        prob_parm.d_input[prob_parm.input_N2_init + mp1 * prob_parm.nvars] * f1;
+      eos.PYT2RE(p, massfrac, T, rho, eint);
 #endif
-    EOS::PYT2RE(p, massfrac, T, rho, eint);
+    } else if (prob_parm.case_type_int == 2) {
+#ifdef USE_FUEGO_EOS
+      massfrac[H2_ID] =
+        prob_parm.d_input[prob_parm.input_H2 + m * prob_parm.nvars] * f0 +
+        prob_parm.d_input[prob_parm.input_H2 + mp1 * prob_parm.nvars] * f1;
+      massfrac[O2_ID] =
+        prob_parm.d_input[prob_parm.input_O2 + m * prob_parm.nvars] * f0 +
+        prob_parm.d_input[prob_parm.input_O2 + mp1 * prob_parm.nvars] * f1;
+      massfrac[N2_ID] =
+        prob_parm.d_input[prob_parm.input_N2 + m * prob_parm.nvars] * f0 +
+        prob_parm.d_input[prob_parm.input_N2 + mp1 * prob_parm.nvars] * f1;
+      massfrac[H2O_ID] =
+        prob_parm.d_input[prob_parm.input_H2O + m * prob_parm.nvars] * f0 +
+        prob_parm.d_input[prob_parm.input_H2O + mp1 * prob_parm.nvars] * f1;
+      massfrac[H_ID] =
+        prob_parm.d_input[prob_parm.input_H + m * prob_parm.nvars] * f0 +
+        prob_parm.d_input[prob_parm.input_H + mp1 * prob_parm.nvars] * f1;
+      massfrac[O_ID] =
+        prob_parm.d_input[prob_parm.input_O + m * prob_parm.nvars] * f0 +
+        prob_parm.d_input[prob_parm.input_O + mp1 * prob_parm.nvars] * f1;
+      massfrac[OH_ID] =
+        prob_parm.d_input[prob_parm.input_OH + m * prob_parm.nvars] * f0 +
+        prob_parm.d_input[prob_parm.input_OH + mp1 * prob_parm.nvars] * f1;
+      massfrac[HO2_ID] =
+        prob_parm.d_input[prob_parm.input_HO2 + m * prob_parm.nvars] * f0 +
+        prob_parm.d_input[prob_parm.input_HO2 + mp1 * prob_parm.nvars] * f1;
+      massfrac[H2O2_ID] =
+        prob_parm.d_input[prob_parm.input_H2O2 + m * prob_parm.nvars] * f0 +
+        prob_parm.d_input[prob_parm.input_H2O2 + mp1 * prob_parm.nvars] * f1;
+      eos.PYT2RE(p, massfrac, T, rho, eint);
+#endif
+    }
   } else {
     massfrac[0] = 1.0;
-    rho = ProbParm::rho0;
-    T = ProbParm::T0;
-    p = ProbParm::p0;
-    EOS::RYP2E(rho, massfrac, p, eint);
+    rho = prob_parm.rho0;
+    T = prob_parm.T0;
+    p = prob_parm.p0;
+    eos.RYP2E(rho, massfrac, p, eint);
   }
 
   // Set the state
@@ -130,13 +135,14 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 bcnormal(
-  const amrex::Real x[AMREX_SPACEDIM],
-  const amrex::Real s_int[NVAR],
-  amrex::Real s_ext[NVAR],
-  const int idir,
-  const int sgn,
-  const amrex::Real time,
-  amrex::GeometryData const& geomdata)
+  const amrex::Real* /*x[AMREX_SPACEDIM]*/,
+  const amrex::Real* /*s_int[NVAR]*/,
+  amrex::Real* /*s_ext[NVAR]*/,
+  const int /*idir*/,
+  const int /*sgn*/,
+  const amrex::Real /*time*/,
+  amrex::GeometryData const& /*geomdata*/,
+  ProbParmDevice const& /*prob_parm*/)
 {
 }
 
@@ -149,7 +155,7 @@ struct MyProbDeriveStruct
   {
     derive_lst.add(
       "z_vorticity", amrex::IndexType::TheCellType(), 1, pc_dervortz,
-      grow_box_by_one);
+      amrex::DeriveRec::GrowBoxByOne);
     derive_lst.addComponent("z_vorticity", desc_lst, State_Type, 0, NVAR);
 
 #ifdef PELEC_USE_REACTIONS
@@ -226,8 +232,9 @@ struct MyProbDeriveStruct
         massfrac[n] = dat(i, j, k, UFS + n) * rhoInv;
       amrex::Real wdot[NUM_SPECIES] = {0.0};
       amrex::Real hi[NUM_SPECIES] = {0.0};
-      EOS::RTY2WDOT(rho, T, massfrac, wdot);
-      EOS::T2Hi(T, hi);
+      auto eos = pele::physics::PhysicsType::eos();
+      eos.RTY2WDOT(rho, T, massfrac, wdot);
+      eos.T2Hi(T, hi);
 
       hr(i, j, k) = 0.0;
       for (int n = 0; n < NUM_SPECIES; n++)
