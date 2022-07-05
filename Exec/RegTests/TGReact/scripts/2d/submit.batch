@@ -13,10 +13,8 @@ echo "Num. MPI Ranks = $mpi_ranks"
 
 # Location of input files and executable
 pele_exec=${dirname}/PeleC2d.intel.MPI.ex
-iname="inputs_2d"
-pname="probin_2d"
+iname="inputs_2d.inp"
 input="${dirname}/${iname}"
-probin="${dirname}/${pname}"
 
 # Compile executable
 cd "${dirname}" || exit
@@ -32,7 +30,7 @@ do
     workdir="${paren}/${res}"
     mkdir -p "${workdir}"
     cd "${workdir}" || exit
-    cp "${probin}" "${input}" "${workdir}"
+    cp "${input}" "${workdir}"
     cp "${pele_exec}" "${workdir}/PeleC"
     rm -rf plt* chk* datlog extralog ic.txt data
 
