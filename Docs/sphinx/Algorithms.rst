@@ -514,9 +514,11 @@ The mixture-averaged transport coefficients discussed above (:math:`\mu`, :math:
 
 The following choices are currently implemented in `PeleC`
 
-* The viscosity, :math:`\mu`, is estimated based 
+* The viscosity, :math:`\mu`, is estimated based on an empirical mixture formula (with :math:`\alpha = 6`):
+.. math::
 
-* The conductivity, :math:`\lambda`, is based on an empirical mixture formula (with :math:`\alpha = 1/4`):
+    \mu = \Big( \sum_m X_m (\mu_m)^{\alpha} \Big)^{1/\alpha}
+* The conductivity, :math:`\lambda`, is also calculated using a similar formula as that :math:`\mu` but with :math:`\alpha = 1/4`:
 
 .. math::
 

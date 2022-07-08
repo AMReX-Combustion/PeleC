@@ -22,9 +22,9 @@ PeleC advances the following set of fully compressible equations for the conserv
  
   \frac{\partial \rho}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u}) + S_{{\rm ext},\rho},
 
-  \frac{\partial (\rho \mathbf{u})}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} \mathbf{u} + \Pi) - \nabla p +\rho \mathbf{g} + \mathbf{S}_{{\rm ext},\rho\mathbf{u}},
+  \frac{\partial (\rho \mathbf{u})}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} \otimes \mathbf{u} + \mathbf{\Pi}) - \nabla p +\rho \mathbf{g} + \mathbf{S}_{{\rm ext},\rho\mathbf{u}},
 
-  \frac{\partial (\rho E)}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} E + p \mathbf{u}) - \nabla \cdot (\Pi \mathbf{u}) + \rho \mathbf{(u+u_{d})} \cdot \mathbf{g} + \nabla\cdot \boldsymbol{\mathcal{Q}}+ S_{{\rm ext},\rho E},
+  \frac{\partial (\rho E)}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} E + p \mathbf{u}) - \nabla \cdot (\mathbf{\Pi} \cdot \mathbf{u}) + \rho \mathbf{u} \cdot \mathbf{g} + \nabla\cdot \boldsymbol{\mathcal{Q}}+ S_{{\rm ext},\rho E},
 
   \frac{\partial (\rho Y_k)}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} Y_k)
   - \nabla \cdot \boldsymbol{\mathcal{F}}_{k} + \rho \dot\omega_k + S_{{\rm ext},\rho Y_k},
@@ -37,21 +37,21 @@ PeleC advances the following set of fully compressible equations for the conserv
 Here :math:`\rho, \mathbf{u}, T`, and :math:`p` are the density, velocity,
 temperature and pressure, respectively. :math:`E
 = e + \mathbf{u} \cdot \mathbf{u} / 2` is the total energy with :math:`e` representing the internal energy, which is defined as in the CHEMKIN standard to include both sensible
-and chemical energy (species heats of formation) and is conserved across chemical reactions. :math:`q_k` on the right hand side of the energy equation is the heat of formation of species :math:`k`.
+and chemical energy (species heats of formation) and is conserved across chemical reactions. 
 :math:`Y_k` is the mass fraction of the :math:`k^{\rm th}` species,
 with associated production rate, :math:`\dot\omega_k`.  Here :math:`\mathbf{g}` is the gravitational vector, and
 :math:`S_{{\rm ext},\rho}, \mathbf{S}_{{\rm ext},\rho\mathbf{u}}`, etc., are user-specified
 source terms.  :math:`A_k` is an advected quantity, i.e., a tracer.  Also
-:math:`\boldsymbol{\mathcal{F}}_{m}, \Pi`, and :math:`\boldsymbol{\mathcal{Q}}` are
+:math:`\boldsymbol{\mathcal{F}}_{m}, \mathbf{\Pi}`, and :math:`\boldsymbol{\mathcal{Q}}` are
 the diffusive transport fluxes for species, momentum and heat.  Note that the internal
 energy for species :math:`k` includes its heat of formation (and can therefore take on negative and
-positive values).  It is also to be noted that the viscous dissipation (:math:`\nabla \cdot (\Pi \mathbf{u})`) and the work done by diffusion velocity (:math:`\rho \mathbf{u_{d}} \cdot \mathbf{g}`) are often small and are neglected in the solver. The auxiliary fields, :math:`B_k`, have a user-defined
+positive values). The auxiliary fields, :math:`B_k`, have a user-defined
 evolution equation, but by default are treated as advected quantities.
 
 In the code we carry around :math:`T` and :math:`\rho e` in the
 state vector even though they are redundant with the state since they may be derived from the other conserved
 quantities.  The ordering of the elements within :math:`\mathbf{U}` is defined
-by integer variables in the routine ``set_method_params`` in ``Src_nd/PeleC_nd.F90``.
+by integer variables in the header file ``Source/IndexDefines.H``.
 
 Some notes:
 
@@ -77,9 +77,9 @@ Primitive Forms
 PeleC uses the primitive form of the inviscid fluid equations, defined in terms of
 the state :math:`\mathbf{Q} = (\rho, \mathbf{u}, p, \rho e, Y_k, A_k, B_k)`, to construct the
 interface states that are input to the Riemann problem. All of the primitive variables are derived from the conservative state
-vector. This task is performed in the routine ``ctoprim`` located in ``Src_nd/advection_util_nd.F90``.
+vector. This task is performed in the function ``pc_ctoprim`` located in ``Source/Utilities.H``.
 
-The invisicd equations for primitive variables namely density, velocity, and pressure are:
+The inviscid equations for primitive variables namely density, velocity, and pressure are:
 
 .. math::
   
@@ -114,7 +114,7 @@ The advected quantities appear as:
 
 
 When accessing the primitive variable state vector, the integer variable
-keys for the different quantities are listed in the routine ``set_method_params`` in ``Src_nd/PeleC_nd.F90``.
+keys for the different quantities are listed in the header file ``Source/IndexDefines.H``.
 
 
 Source Terms
@@ -123,7 +123,7 @@ Source Terms
 We now compute explicit source terms for each variable in :math:`\mathbf{Q}` and
 :math:`\mathbf{U}`.  The primitive variable source terms will be used to construct
 time-centered fluxes.  The conserved variable source will be used to
-advance the solution. This task is performed in the routine ``srctoprim`` located in ``Src_nd/advection_util_nd.F90``. We neglect reaction source terms since they are
+advance the solution. This task is performed in the function ``pc_srctoprim`` located in ``Source/Hydro.H``. We neglect reaction source terms since they are
 accounted for in the characteristic integration in the PPM algorithm.  The source terms are:
 
 .. math::
