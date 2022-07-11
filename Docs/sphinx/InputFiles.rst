@@ -14,7 +14,7 @@ Also, any entry that can be specified in the inputs file can also be specified o
 
 ::
 
-	mpirun -np 64 ./Pele2d.gnu.DEBUG.MPI.ex inputs amr.restart=sod_x_chk0030 pelec.riemann_solver=3
+	mpirun -np 64 ./Pele2d.gnu.DEBUG.MPI.ex inputs amr.restart=sod_x_chk0030
 
 The available options are divided into groups: those that control primarily AMReX are prefaced with `amr.` while those that are specific to Pele are prefaced with `pelec.`.
 
@@ -54,11 +54,6 @@ These parameters, once read, are available in the `PeleC` object for use from c+
     # ---------------------------------------------------------------
     PeleC specific inputs
     # ---------------------------------------------------------------
-
-    # 0: Collela, Glaz and Ferguson (default)
-    # 1: Collela and Glaz  
-    # 2: HLLC
-    pelec.riemann_solver    = 0     
 
     # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
     # Interior, UserBC, Symmetry, SlipWall, NoSlipWall

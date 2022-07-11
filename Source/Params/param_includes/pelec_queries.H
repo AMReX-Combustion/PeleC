@@ -33,7 +33,6 @@ pp.query("ppm_type", ppm_type);
 pp.query("ppm_trace_sources", ppm_trace_sources);
 pp.query("plm_iorder", plm_iorder);
 pp.query("use_laxf_flux", use_laxf_flux);
-pp.query("riemann_solver", riemann_solver);
 pp.query("use_flattening", use_flattening);
 pp.query("dual_energy_update_E_from_e", dual_energy_update_E_from_e);
 pp.query("dual_energy_eta2", dual_energy_eta2);

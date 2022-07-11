@@ -33,7 +33,6 @@ static int ppm_type;
 static bool ppm_trace_sources;
 static int plm_iorder;
 static bool use_laxf_flux;
-static int riemann_solver;
 static bool use_flattening;
 static bool dual_energy_update_E_from_e;
 static amrex::Real dual_energy_eta2;
