@@ -164,6 +164,8 @@ pelec.flame_trac_name = CH2O
 
 eb2.geom_type = "Line-Piston-Cylinder"
 #eb2.small_volfrac = 1.e-6
+eb2.num_coarsen_opt = 3
+eb2.max_grid_size = 64
 pelec.eb_boundary_T = 1350.
 pelec.eb_isothermal = 0
 ebd.boundary_grad_stencil_type = 1
