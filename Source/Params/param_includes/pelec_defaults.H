@@ -33,7 +33,6 @@ int PeleC::ppm_type = 0;
 bool PeleC::ppm_trace_sources = false;
 int PeleC::plm_iorder = 2;
 bool PeleC::use_laxf_flux = false;
-int PeleC::riemann_solver = 0;
 bool PeleC::use_flattening = true;
 bool PeleC::dual_energy_update_E_from_e = true;
 amrex::Real PeleC::dual_energy_eta2 = 1.0e-4;

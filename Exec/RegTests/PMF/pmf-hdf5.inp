@@ -9,7 +9,6 @@ geometry.prob_lo     =   0.0        0.0       1.0
 geometry.prob_hi     =   0.3125     0.3125    6.0
 amr.n_cell           =   8          8         128
 
-#pelec.Riemann    = 0     # 0: HLL,  1: JBB,  2: HLLC
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<

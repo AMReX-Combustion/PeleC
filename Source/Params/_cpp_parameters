@@ -104,12 +104,6 @@ plm_iorder                   int           2
 # Lax Friedrich's flux
 use_laxf_flux               bool           false
 
-# which Riemann solver do we use:
-# 0: Colella, Glaz, \& Ferguson (a two-shock solver);
-# 1: Colella \& Glaz (a two-shock solver)
-# 2: HLLC
-riemann_solver               int           0
-
 # flatten the reconstructed profiles around shocks to prevent them
 # from becoming too thin
 use_flattening              bool           true

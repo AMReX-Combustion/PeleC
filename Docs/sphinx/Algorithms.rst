@@ -87,16 +87,18 @@ The actual implementation in PeleC is described in the paper `Motheau and Wakefi
 and the following description is taken from that paper. Note that the algorithm is presented here in 1D
 for simplicity, but can be trivially extended to 2D and 3D. 
 
-Note also that the hybrid PPM/WENO method is described in the aforementioned paper. This hybrid strategy presents far better 
-results in terms of capture of turbulent spectra rather than the other PPM methods. When ``ppm_type = 3`` is chosen, the WENO reconstruction
-method can be selected with ``weno_variant``:
+Note also that the hybrid PPM/WENO method is described in the
+aforementioned paper. This hybrid strategy presents far better results
+in terms of capture of turbulent spectra rather than the other PPM
+methods. When ``ppm_type = 1`` and `use_hybrid_weno = true` is used, the
+WENO reconstruction method can be selected with ``weno_scheme``:
 
-* ``weno_variant = 0`` is the classical 5th order WENO-JS of Jiang and Shu [JCP 1996].
-* ``weno_variant = 1`` is the 5th order WENO-Z method of Borges et al. [JCP 2008].
-* ``weno_variant = 2`` is the 7th order WENO-Z.
-* ``weno_variant = 3`` is the 3rd order WENO-Z.
+* ``weno_scheme = 0`` is the classical 5th order WENO-JS of Jiang and Shu [JCP 1996].
+* ``weno_scheme = 1`` is the 5th order WENO-Z method of Borges et al. [JCP 2008].
+* ``weno_scheme = 2`` is the 7th order WENO-Z.
+* ``weno_scheme = 3`` is the 3rd order WENO-Z.
 
-By default, ``weno_variant = 1`` is selected.
+By default, ``weno_scheme = 1`` is selected and `use_hybrid_weno = false`.
 
 
 System of primitive variables
