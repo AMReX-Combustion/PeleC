@@ -764,8 +764,7 @@ PeleC::initialTimeStep()
   return init_dt;
 }
 
-amrex::Real
-PeleC::estTimeStep(amrex::Real /*dt_old*/)
+amrex::Real PeleC::estTimeStep(amrex::Real /*dt_old*/)
 {
   BL_PROFILE("PeleC::estTimeStep()");
 
@@ -888,16 +887,6 @@ PeleC::estTimeStep(amrex::Real /*dt_old*/)
     if (estdt_particle < estdt) {
       limiter = "particles";
       estdt = estdt_particle;
-    }
-  }
-#endif
-#ifdef PELEC_USE_SOOT
-  amrex::Real estdt_soot = max_dt;
-  if (add_soot_src) {
-    estSootDt(estdt_soot);
-    if (estdt_soot < estdt) {
-      limiter = "soot";
-      estdt = estdt_soot;
     }
   }
 #endif
@@ -1170,8 +1159,7 @@ PeleC::post_regrid(int lbase, int /*new_finest*/)
   }
 }
 
-void
-PeleC::post_init(amrex::Real /*stop_time*/)
+void PeleC::post_init(amrex::Real /*stop_time*/)
 {
   BL_PROFILE("PeleC::post_init()");
 

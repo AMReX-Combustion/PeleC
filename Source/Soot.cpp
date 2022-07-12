@@ -84,11 +84,9 @@ PeleC::fill_soot_source(
 {
   BL_PROFILE("PeleC::fill_soot_source()");
 
-#ifdef PELE_USE_EB
   auto const& fact =
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(state.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
-#endif
 
 #ifdef _OPENMP
 #pragma omp parallel
@@ -96,13 +94,11 @@ PeleC::fill_soot_source(
   for (amrex::MFIter mfi(soot_src, amrex::TilingIfNotGPU()); mfi.isValid();
        ++mfi) {
     const amrex::Box& bx = mfi.growntilebox(ng);
-#ifdef PELE_USE_EB
     const auto& flag_fab = flags[mfi];
     amrex::FabType typ = flag_fab.getType(bx);
     if (typ == amrex::FabType::covered) {
       continue;
     }
-#endif
     amrex::FArrayBox& Sfab = state[mfi];
     amrex::FArrayBox& soot_fab = soot_src[mfi];
     auto const& s_arr = Sfab.array();
@@ -146,7 +142,8 @@ PeleC::fill_soot_source(
             Y[n] = qar_yin(i, j, k, n);
           }
           amrex::Real* diag = nullptr;
-          amrex::Real mu, xi, lam;
+          amrex::Real mu = 0.;
+          amrex::Real xi, lam;
           trans.transport(
             get_xi, get_mu, get_lam, get_diag, T, rho, Y.data(), diag, mu, xi,
             lam, ltransparm);
@@ -178,52 +175,5 @@ PeleC::clipSootMoments(amrex::MultiFab& S_new, const int ng)
       }
     });
   }
-}
-
-void
-PeleC::estSootDt(amrex::Real& estdt_soot)
-{
-  const amrex::MultiFab& state = get_new_data(State_Type);
-  amrex::Real local_dt = 1.E20;
-#ifdef PELE_USE_EB
-  auto const& fact =
-    dynamic_cast<amrex::EBFArrayBoxFactory const&>(state.Factory());
-  auto const& flags = fact.getMultiEBCellFlagFab();
-#endif
-
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
-  for (amrex::MFIter mfi(state, amrex::TilingIfNotGPU()); mfi.isValid();
-       ++mfi) {
-    const amrex::Box& bx = mfi.tilebox();
-#ifdef PELE_USE_EB
-    const auto& flag_fab = flags[mfi];
-    amrex::FabType typ = flag_fab.getType(bx);
-    if (typ == amrex::FabType::covered) {
-      continue;
-    }
-#endif
-    const amrex::FArrayBox& Sfab = state[mfi];
-    auto const& s_arr = Sfab.array();
-    const int nqaux = NQAUX > 0 ? NQAUX : 1;
-    amrex::FArrayBox q(bx, QVAR, amrex::The_Async_Arena());
-    auto const& q_arr = q.array();
-    amrex::FArrayBox qaux(bx, nqaux, amrex::The_Async_Arena());
-    auto const& qaux_arr = qaux.array();
-    // Get primitives, Q, including (Y, T, p, rho) from conserved state
-    // required for D term
-    {
-      BL_PROFILE("PeleC::ctoprim()");
-      amrex::ParallelFor(
-        bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-          pc_ctoprim(i, j, k, s_arr, q_arr, qaux_arr);
-        });
-    }
-    amrex::Real sootdt = soot_model->estSootDt(bx, q_arr);
-    local_dt = amrex::min(sootdt, local_dt);
-  }
-  amrex::ParallelDescriptor::ReduceRealMin(local_dt);
-  estdt_soot = amrex::min(estdt_soot, local_dt);
 }
 #endif

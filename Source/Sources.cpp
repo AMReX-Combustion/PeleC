@@ -13,6 +13,9 @@ PeleC::construct_old_source(
 {
   AMREX_ASSERT(src >= 0 && src < num_src);
 
+#ifndef PELEC_USE_SPRAY
+  amrex::ignore_unused(amr_ncycle);
+#endif
   switch (src) {
 
   case ext_src:
@@ -31,8 +34,6 @@ PeleC::construct_old_source(
   case spray_src:
     particleMKD(time, dt, sub_iteration, sub_ncycle, amr_ncycle);
     break;
-#else
-    amrex::ignore_unused(amr_ncycle);
 #endif
 
 #ifdef PELEC_USE_SOOT
@@ -61,6 +62,9 @@ PeleC::construct_new_source(
 {
   AMREX_ASSERT(src >= 0 && src < num_src);
 
+#ifndef PELEC_USE_SPRAY
+  amrex::ignore_unused(amr_ncycle);
+#endif
   switch (src) {
 
   case ext_src:
@@ -78,8 +82,6 @@ PeleC::construct_new_source(
   case spray_src:
     particleMK(time, dt, sub_iteration, sub_ncycle, amr_ncycle);
     break;
-#else
-    amrex::ignore_unused(amr_ncycle);
 #endif
 
 #ifdef PELEC_USE_SOOT

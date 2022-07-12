@@ -367,7 +367,6 @@ public:
 
   void clipSootMoments(amrex::MultiFab& S_new, const int ng);
 
-  void estSootDt(amrex::Real& estdt_soot);
   static bool plot_soot;
 #endif
 
