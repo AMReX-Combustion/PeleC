@@ -186,7 +186,8 @@ PeleCAmr::writePlotFileDoit(
           boxArray(lev), DistributionMap(lev), num_spray_derive, 0,
           amrex::MFInfo(), amr_level[lev]->Factory());
         tmp_plt.setVal(0.);
-        // Compute derived spray variables for virtual particles under refined regions
+        // Compute derived spray variables for virtual particles under refined
+        // regions
         PeleC::theVirtPC()->computeDerivedVars(
           tmp_plt, lev, 0, PeleC::spray_derive_vars, PeleC::spray_fuel_names);
         amrex::MultiFab::Add(
