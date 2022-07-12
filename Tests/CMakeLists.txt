@@ -194,7 +194,6 @@ function(add_test_spray TEST_EXE_DIR)
     # Copy files to test working directory
     file(COPY ${CURRENT_TEST_SOURCE_DIR}/${TEST_NAME}.inp DESTINATION "${CURRENT_TEST_BINARY_DIR}/")
     file(COPY ${TEST_FILES} DESTINATION "${CURRENT_TEST_BINARY_DIR}/")
-    message("python3 ${CURRENT_TEST_BINARY_DIR}/multiRuns.py ${MULTIRUN_FLAGS}")
     add_test(${TEST_NAME} sh -c "python3 ${CURRENT_TEST_BINARY_DIR}/multiRuns.py ${MULTIRUN_FLAGS}")
 endfunction(add_test_spray)
 
