@@ -27,8 +27,8 @@ read_pmf(const std::string& myfile)
   std::string firstline;
   std::string secondline;
   std::string remaininglines;
-  unsigned int pos1;
-  unsigned int pos2;
+  int pos1;
+  int pos2;
   int variable_count;
   int line_count;
 
@@ -105,11 +105,11 @@ read_pmf(const std::string& myfile)
   iss.clear();
   iss.seekg(0, std::ios::beg);
   std::getline(iss, firstline);
-  for (unsigned int i = 0; i < PeleC::h_prob_parm_device->pmf_N; i++) {
+  for (int i = 0; i < PeleC::h_prob_parm_device->pmf_N; i++) {
     std::getline(iss, remaininglines);
     std::istringstream sinput(remaininglines);
     sinput >> PeleC::prob_parm_host->h_pmf_X[i];
-    for (unsigned int j = 0; j < PeleC::h_prob_parm_device->pmf_M; j++) {
+    for (int j = 0; j < PeleC::h_prob_parm_device->pmf_M; j++) {
       sinput >> PeleC::prob_parm_host
                   ->h_pmf_Y[j * PeleC::h_prob_parm_device->pmf_N + i];
     }
@@ -117,7 +117,7 @@ read_pmf(const std::string& myfile)
 
   // Renormalize the mass fractions so they sum to 1
   const int N = PeleC::h_prob_parm_device->pmf_N;
-  for (unsigned int i = 0; i < PeleC::h_prob_parm_device->pmf_N; i++) {
+  for (int i = 0; i < PeleC::h_prob_parm_device->pmf_N; i++) {
     amrex::Real sumY = 0.;
     for (int n = 0; n < NUM_SPECIES; n++) {
       const int col = specCol + n;
@@ -178,7 +178,7 @@ amrex_probinit(
   read_pmf(pmf_datafile);
 
   amrex::Real moments[NUM_SOOT_MOMENTS + 1] = {0.0};
-  if (PeleC::soot_model) {
+  if (PeleC::soot_model != nullptr) {
     SootData* const sd = PeleC::soot_model->getSootData();
     sd->initialSmallMomVals(moments);
     for (int n = 0; n < NUM_SOOT_MOMENTS + 1; ++n) {
