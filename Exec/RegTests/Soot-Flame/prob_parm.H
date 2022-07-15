@@ -15,8 +15,8 @@ struct ProbParmDevice
   int tempCol = -1;
   int velCol = -1;
   int specCol = -1;
-  unsigned int pmf_N = 0;
-  unsigned int pmf_M = 0;
+  int pmf_N = 0;
+  int pmf_M = 0;
   int pmf_do_average = 0;
   amrex::Real standoff = 0.;
 

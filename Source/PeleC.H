@@ -365,7 +365,7 @@ public:
     amrex::MultiFab& soot_src,
     int ng);
 
-  void clipSootMoments(amrex::MultiFab& S_new, const int ng);
+  static void clipSootMoments(amrex::MultiFab& S_new, const int ng);
 
   static bool plot_soot;
 #endif

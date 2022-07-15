@@ -28,7 +28,7 @@ pmf(
   amrex::GpuArray<amrex::Real, NUM_SPECIES + 4>& y_vector,
   const ProbParmDevice& prob_parm)
 {
-  if (prob_parm.pmf_do_average) {
+  if (prob_parm.pmf_do_average == 1) {
     int lo_loside = 0;
     int lo_hiside = 0;
     int hi_loside = 0;
@@ -171,8 +171,8 @@ pc_initdata(
     massfrac[n] = amrex::max(0., amrex::min(1., pmf_vals[specCol + n]));
     norm += massfrac[n];
   }
-  for (int n = 0; n < NUM_SPECIES; ++n) {
-    massfrac[n] = massfrac[n] / norm;
+  for (auto& mf : massfrac) {
+    mf /= norm;
   }
 
   amrex::Real rho = 0.0;
