@@ -27,8 +27,8 @@ read_pmf(const std::string& myfile)
   std::string firstline;
   std::string secondline;
   std::string remaininglines;
-  int pos1;
-  int pos2;
+  unsigned int pos1;
+  unsigned int pos2;
   int variable_count;
   int line_count;
 

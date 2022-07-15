@@ -1,5 +1,5 @@
-#ifndef _PROB_H_
-#define _PROB_H_
+#ifndef PROB_H
+#define PROB_H
 
 #include <AMReX_ParmParse.H>
 #include <AMReX_Geometry.H>
@@ -15,9 +15,7 @@
 #include "prob_parm.H"
 #include "Constants.H"
 
-#ifdef SOOT_MODEL
 #include "SootModel.H"
-#endif
 
 AMREX_GPU_HOST_DEVICE
 AMREX_FORCE_INLINE
