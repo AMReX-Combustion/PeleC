@@ -20,7 +20,7 @@ unflatten_particles(const amrex::ULong idx, const amrex::IntVect& max_parts)
 }
 
 bool
-SprayParticleContainer::injectParticles( //NOLINT
+SprayParticleContainer::injectParticles( // NOLINT
   amrex::Real /*time*/,
   amrex::Real /*dt*/,
   int /*nstep*/,
