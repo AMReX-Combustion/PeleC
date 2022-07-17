@@ -188,7 +188,7 @@ PeleC::variableSetUp()
 
   if (NUM_AUX > 0) {
     FirstAux = cnt;
-    cnt += NUM_AUX;
+    cnt += NUM_AUX; // NOLINT
   }
 
   if (NUM_LIN > 0) {
@@ -281,7 +281,7 @@ PeleC::variableSetUp()
   amrex::Vector<std::string> react_name(NUM_SPECIES + 2);
 
   amrex::BCRec bc;
-  cnt = 0;
+  cnt = 0; // NOLINT
   set_scalar_bc(bc, phys_bc);
   bcs[cnt] = bc;
   name[cnt] = "density";
