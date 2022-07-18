@@ -164,46 +164,47 @@ PeleC::variableSetUp()
 #endif
 
   // Set number of state variables and pointers to components
+  {
+    int cnt = 0;
+    Density = cnt++;
+    Xmom = cnt++;
+    Ymom = cnt++;
+    Zmom = cnt++;
+    Eden = cnt++;
+    Eint = cnt++;
+    Temp = cnt++;
 
-  int cnt = 0;
-  Density = cnt++;
-  Xmom = cnt++;
-  Ymom = cnt++;
-  Zmom = cnt++;
-  Eden = cnt++;
-  Eint = cnt++;
-  Temp = cnt++;
+    if (NUM_ADV > 0) {
+      FirstAdv = cnt;
+      cnt += NUM_ADV;
+    }
 
-  if (NUM_ADV > 0) {
-    FirstAdv = cnt;
-    cnt += NUM_ADV;
-  }
+    // int dm = AMREX_SPACEDIM;
 
-  // int dm = AMREX_SPACEDIM;
+    if (NUM_SPECIES > 0) {
+      FirstSpec = cnt;
+      cnt += NUM_SPECIES; // NOLINT
+    }
 
-  if (NUM_SPECIES > 0) {
-    FirstSpec = cnt;
-    cnt += NUM_SPECIES; // NOLINT
-  }
+    if (NUM_AUX > 0) {
+      FirstAux = cnt;
+      cnt += NUM_AUX; // NOLINT
+    }
 
-  if (NUM_AUX > 0) {
-    FirstAux = cnt;
-    cnt += NUM_AUX; // NOLINT
-  }
+    if (NUM_LIN > 0) {
+      FirstLin = cnt;
+      cnt += NUM_LIN; // NOLINT
+    }
 
-  if (NUM_LIN > 0) {
-    FirstLin = cnt;
-    cnt += NUM_LIN; // NOLINT
-  }
-
-  // NUM_LIN variables are will be added by the specific models
-  // NVAR = cnt;
+    // NUM_LIN variables are will be added by the specific models
+    // NVAR = cnt;
 #ifdef PELEC_USE_SOOT
-  // Set number of soot variables to be equal to the number of moments
-  // plus a variable for the weight of the delta function
-  NumSootVars = NUM_SOOT_MOMENTS + 1;
-  FirstSootVar = FirstLin;
+    // Set number of soot variables to be equal to the number of moments
+    // plus a variable for the weight of the delta function
+    NumSootVars = NUM_SOOT_MOMENTS + 1;
+    FirstSootVar = FirstLin;
 #endif
+  }
 
   // const amrex::Real run_strt = amrex::ParallelDescriptor::second() ;
   // Real run_stop = ParallelDescriptor::second() - run_strt;
@@ -281,7 +282,7 @@ PeleC::variableSetUp()
   amrex::Vector<std::string> react_name(NUM_SPECIES + 2);
 
   amrex::BCRec bc;
-  cnt = 0; // NOLINT
+  int cnt = 0;
   set_scalar_bc(bc, phys_bc);
   bcs[cnt] = bc;
   name[cnt] = "density";
