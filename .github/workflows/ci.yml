@@ -442,7 +442,7 @@ jobs:
           cmake --build . --parallel ${{env.NPROCS}} 2>&1 | tee -a clang-tidy-full-report.txt
           egrep "warning:|error:" clang-tidy-full-report.txt \
             | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest" \
-            | egrep -v "Submodules/PelePhysics/Reactions|Submodules/PelePhysics/Support/Mechanism/Models" | sort | uniq \
+            | egrep -v "Submodules/PelePhysics/Support/Mechanism/Models" | sort | uniq \
             | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > clang-tidy-warnings.txt
       - name: Full report
         working-directory: ${{runner.workspace}}/build-clang-tidy

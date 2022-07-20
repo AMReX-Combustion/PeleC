@@ -285,10 +285,7 @@ PeleC::checkPoint(
 
 #ifdef PELEC_USE_SPRAY
   if (theSprayPC() != nullptr) {
-    bool is_checkpoint = true;
-    int write_ascii = 0; // Not for checkpoints
-    theSprayPC()->SprayParticleIO(
-      level, is_checkpoint, write_ascii, dir, PeleC::spray_fuel_names);
+    theSprayPC()->SprayParticleIO(level, true, 0, dir, PeleC::spray_fuel_names);
   }
 #endif
 
@@ -418,6 +415,7 @@ PeleC::setPlotVariables()
         desc_lst[State_Type].name(FirstSootVar + i));
     }
   }
+#endif
   int plot_reactions = 1;
   pp.query("plot_reactions", plot_reactions);
   if (plot_reactions == 0) {
@@ -425,7 +423,6 @@ PeleC::setPlotVariables()
       amrex::Amr::deleteStatePlotVar(desc_lst[Reactions_Type].name(i));
     }
   }
-#endif
 
   bool plot_massfrac = false;
   pp.query("plot_massfrac", plot_massfrac);
@@ -780,6 +777,9 @@ PeleC::writeBuildInfo(std::ostream& os)
 #endif
 #ifdef PELEC_USE_SOOT
   os << std::setw(35) << std::left << "PELEC_USE_SOOT " << std::setw(6) << "ON"
+     << std::endl;
+#else
+  os << std::setw(35) << std::left << "PELEC_USE_SOOT " << std::setw(6) << "OFF"
      << std::endl;
 #endif
 

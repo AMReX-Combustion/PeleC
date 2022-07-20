@@ -21,7 +21,6 @@ import sys
 import os
 import shutil
 import argparse
-import numpy as np
 
 USAGE = """
     A script for doing CI with PeleC coupled with PeleMP sprays

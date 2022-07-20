@@ -4,7 +4,7 @@
 #include "PeleC.H"
 #include "SootModel.H"
 #include "SootModel_derive.H"
-#include <Transport.H>
+#include "Transport.H"
 
 void
 PeleC::setSootIndx()
@@ -18,7 +18,7 @@ PeleC::setSootIndx()
   sc.engIndx = UEDEN;
   sc.specIndx = UFS;
   sc.sootIndx = UFSOOT;
-  soot_model->setIndices(sc);
+  soot_model.setIndices(sc);
 }
 
 void
@@ -88,7 +88,8 @@ PeleC::fill_soot_source(
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(state.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
 
-#ifdef _OPENMP
+  // TODO: Change to use new ParallelFor type
+#ifdef AMREX_USE_OMP
 #pragma omp parallel
 #endif
   for (amrex::MFIter mfi(soot_src, amrex::TilingIfNotGPU()); mfi.isValid();
@@ -151,29 +152,27 @@ PeleC::fill_soot_source(
         });
     }
     auto const& soot_arr = soot_fab.array();
-    soot_model->computeSootSourceTerm(bx, q_arr, mu_arr, soot_arr, time, dt);
+    soot_model.computeSootSourceTerm(bx, q_arr, mu_arr, soot_arr, time, dt);
   }
 }
 
 void
 PeleC::clipSootMoments(amrex::MultiFab& S_new, const int ng)
 {
-  for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
-       ++mfi) {
-    const amrex::Box& bx = mfi.growntilebox(ng);
-    amrex::FArrayBox& Sfab = S_new[mfi];
-    auto const& s_arr = Sfab.array(UFSOOT);
-    SootData* sd = soot_model->getSootData_d();
-    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+  SootData* sd = soot_model.getSootData_d();
+  auto const& s_arr = S_new.arrays();
+  const amrex::IntVect ngs(ng);
+  amrex::ParallelFor(
+    S_new, ngs, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
       amrex::GpuArray<amrex::Real, NUM_SOOT_MOMENTS + 1> moments = {{0.0}};
       for (int mom = 0; mom < NUM_SOOT_MOMENTS + 1; ++mom) {
-        moments[mom] = s_arr(i, j, k, mom);
+        moments[mom] = s_arr[nbx](i, j, k, UFSOOT + mom);
       }
       sd->momConvClipConv(moments.data());
       for (int mom = 0; mom < NUM_SOOT_MOMENTS + 1; ++mom) {
-        s_arr(i, j, k, mom) = moments[mom];
+        s_arr[nbx](i, j, k, UFSOOT + mom) = moments[mom];
       }
     });
-  }
+  amrex::Gpu::synchronize();
 }
 #endif

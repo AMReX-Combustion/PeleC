@@ -314,7 +314,7 @@ PeleC::read_params()
 #endif
 
 #ifdef PELEC_USE_SOOT
-  soot_model->readSootParams();
+  soot_model.readSootParams();
 #endif
 
   if ((!do_mol) && eb_in_domain) {

@@ -174,7 +174,8 @@ PeleCAmr::writePlotFileDoit(
 
 #ifdef PELEC_USE_SPRAY
     if (!PeleC::spray_derive_vars.empty() && regular) {
-      int num_spray_derive = int(PeleC::spray_derive_vars.size());
+      const int num_spray_derive =
+        static_cast<int>(PeleC::spray_derive_vars.size());
       PeleC::setupVirtualParticles(lev, finestLevel());
       plotMFs[lev]->setVal(0., cnt, num_spray_derive);
       // Compute derived spray variables for active particles
@@ -293,10 +294,9 @@ PeleCAmr::writePlotFileDoit(
 #ifdef PELEC_USE_SPRAY
   // TODO: Include option for writing HDF5 particle data
   if (PeleC::theSprayPC() != nullptr && regular) {
-    bool is_checkpoint = false;
     for (int lev = 0; lev < nlevels; ++lev) {
       PeleC::theSprayPC()->SprayParticleIO(
-        lev, is_checkpoint, PeleC::write_spray_ascii_files, pltfile,
+        lev, false, PeleC::write_spray_ascii_files, pltfile,
         PeleC::spray_fuel_names);
     }
   }

@@ -23,7 +23,7 @@ ProbParmDevice* PeleC::h_prob_parm_device = nullptr;
 ProbParmHost* PeleC::prob_parm_host = nullptr;
 TaggingParm* PeleC::tagging_parm = nullptr;
 #ifdef PELEC_USE_SOOT
-SootModel* PeleC::soot_model = nullptr;
+SootModel PeleC::soot_model;
 #endif
 
 // Components are:
@@ -149,10 +149,6 @@ PeleC::variableSetUp()
   trans_parms.allocate();
   turb_inflow.init(amrex::DefaultGeometry());
 
-#ifdef PELEC_USE_SOOT
-  soot_model = new SootModel{};
-#endif
-
   // Get options, set phys_bc
   eb_in_domain = ebInDomain();
   read_params();
@@ -164,47 +160,45 @@ PeleC::variableSetUp()
 #endif
 
   // Set number of state variables and pointers to components
-  {
-    int cnt = 0;
-    Density = cnt++;
-    Xmom = cnt++;
-    Ymom = cnt++;
-    Zmom = cnt++;
-    Eden = cnt++;
-    Eint = cnt++;
-    Temp = cnt++;
+  int cnt = 0;
+  Density = cnt++;
+  Xmom = cnt++;
+  Ymom = cnt++;
+  Zmom = cnt++;
+  Eden = cnt++;
+  Eint = cnt++;
+  Temp = cnt++;
 
-    if (NUM_ADV > 0) {
-      FirstAdv = cnt;
-      cnt += NUM_ADV;
-    }
-
-    // int dm = AMREX_SPACEDIM;
-
-    if (NUM_SPECIES > 0) {
-      FirstSpec = cnt;
-      cnt += NUM_SPECIES; // NOLINT
-    }
-
-    if (NUM_AUX > 0) {
-      FirstAux = cnt;
-      cnt += NUM_AUX; // NOLINT
-    }
-
-    if (NUM_LIN > 0) {
-      FirstLin = cnt;
-      cnt += NUM_LIN; // NOLINT
-    }
-
-    // NUM_LIN variables are will be added by the specific models
-    // NVAR = cnt;
-#ifdef PELEC_USE_SOOT
-    // Set number of soot variables to be equal to the number of moments
-    // plus a variable for the weight of the delta function
-    NumSootVars = NUM_SOOT_MOMENTS + 1;
-    FirstSootVar = FirstLin;
-#endif
+  if (NUM_ADV > 0) {
+    FirstAdv = cnt;
+    cnt += NUM_ADV;
   }
+
+  // int dm = AMREX_SPACEDIM;
+
+  if (NUM_SPECIES > 0) {
+    FirstSpec = cnt;
+    cnt += NUM_SPECIES; // NOLINT
+  }
+
+  if (NUM_AUX > 0) {
+    FirstAux = cnt;
+    cnt += NUM_AUX;
+  }
+
+  if (NUM_LIN > 0) {
+    FirstLin = cnt;
+    cnt += NUM_LIN;
+  }
+
+  // NUM_LIN variables are will be added by the specific models
+  // NVAR = cnt;
+#ifdef PELEC_USE_SOOT
+  // Set number of soot variables to be equal to the number of moments
+  // plus a variable for the weight of the delta function
+  NumSootVars = NUM_SOOT_MOMENTS + 1;
+  FirstSootVar = FirstLin;
+#endif
 
   // const amrex::Real run_strt = amrex::ParallelDescriptor::second() ;
   // Real run_stop = ParallelDescriptor::second() - run_strt;
@@ -282,7 +276,7 @@ PeleC::variableSetUp()
   amrex::Vector<std::string> react_name(NUM_SPECIES + 2);
 
   amrex::BCRec bc;
-  int cnt = 0;
+  cnt = 0;
   set_scalar_bc(bc, phys_bc);
   bcs[cnt] = bc;
   name[cnt] = "density";
@@ -377,7 +371,7 @@ PeleC::variableSetUp()
   if (amrex::ParallelDescriptor::IOProcessor()) {
     amrex::Print() << NumSootVars << " Soot Variables: " << std::endl;
     for (int i = 0; i < NumSootVars; ++i) {
-      amrex::Print() << soot_model->sootVariableName(i) << ' ' << ' ';
+      amrex::Print() << soot_model.sootVariableName(i) << ' ' << ' ';
     }
     amrex::Print() << std::endl;
   }
@@ -386,7 +380,7 @@ PeleC::variableSetUp()
     cnt++;
     set_scalar_bc(bc, phys_bc);
     bcs[cnt] = bc;
-    name[cnt] = soot_model->sootVariableName(i);
+    name[cnt] = soot_model.sootVariableName(i);
   }
   // Set soot indices
   PeleC::setSootIndx();
@@ -652,7 +646,7 @@ PeleC::variableSetUp()
   add_problem_derives<ProblemDerives>(derive_lst, desc_lst);
 
 #ifdef PELEC_USE_SOOT
-  soot_model->define();
+  soot_model.define();
 #endif
 
   // Set list of active sources
@@ -672,10 +666,6 @@ PeleC::variableCleanUp()
   clear_prob();
 
   eb_initialized = false;
-
-#ifdef PELEC_USE_SOOT
-  delete soot_model;
-#endif
 
   delete prob_parm_host;
   delete tagging_parm;

@@ -89,8 +89,8 @@ PeleC::do_mol_advance(
   }
   int nGrow_Sborder = numGrow() + nGrowF;
 #ifdef PELEC_USE_SPRAY
-  int spray_state_ghosts = sprayStateGhosts(amr_ncycle);
-  nGrow_Sborder = std::max(nGrow_Sborder, spray_state_ghosts);
+  const int spray_state_ghosts = sprayStateGhosts(amr_ncycle);
+  nGrow_Sborder = amrex::max(nGrow_Sborder, spray_state_ghosts);
   AMREX_ASSERT(Sborder.nGrow() >= nGrow_Sborder);
 #endif
 
@@ -264,7 +264,7 @@ PeleC::do_sdc_iteration(
   }
 #ifdef PELEC_USE_SPRAY
   if (do_spray_particles) {
-    int spray_state_ghosts = sprayStateGhosts(amr_ncycle);
+    const int spray_state_ghosts = sprayStateGhosts(amr_ncycle);
     fill_Sborder = true;
     nGrow_Sborder = amrex::max(nGrow_Sborder, spray_state_ghosts);
     AMREX_ASSERT(Sborder.nGrow() >= nGrow_Sborder);
@@ -321,19 +321,19 @@ PeleC::do_sdc_iteration(
   // Now update t_new sources (diffusion separate because it requires a fill
   // patch)
   if (do_diffuse || do_spray_particles) {
-    if (verbose != 0) {
-      amrex::Print() << "... Computing diffusion terms at t^(n+1,"
-                     << sub_iteration + 1 << ")" << std::endl;
-    }
     int nGrowDiff = numGrow();
     if (do_spray_particles && level > 0) {
       nGrowDiff = amrex::max(nGrowDiff, nGrow_Sborder);
     }
     FillPatch(*this, Sborder, nGrowDiff, time + dt, State_Type, 0, NVAR);
-    if (do_diffuse) {
-      amrex::Real flux_factor_new = sub_iteration == sub_ncycle - 1 ? 0.5 : 0;
-      getMOLSrcTerm(Sborder, *new_sources[diff_src], time, dt, flux_factor_new);
+  }
+  if (do_diffuse) {
+    if (verbose != 0) {
+      amrex::Print() << "... Computing diffusion terms at t^(n+1,"
+                     << sub_iteration + 1 << ")" << std::endl;
     }
+    amrex::Real flux_factor_new = sub_iteration == sub_ncycle - 1 ? 0.5 : 0;
+    getMOLSrcTerm(Sborder, *new_sources[diff_src], time, dt, flux_factor_new);
   }
 
   // Build other (non-diffusion) sources at t_new

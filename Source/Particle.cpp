@@ -315,16 +315,16 @@ PeleC::particleMKD(
   // Setup ghost particles for use in finer levels. Note that ghost
   // particles that will be used by this level have already been created,
   // the particles being set here are only used by finer levels.
-  int finest_level = parent->finestLevel();
+  const int finest_level = parent->finestLevel();
   if (level < finest_level) {
     // Setup the virtual particles that represent particles on finer levels
     setupVirtualParticles(level, finest_level);
     // Make a copy of the particles on this level into ghost particles
     // for the finer level
-    int finer_ref = parent->MaxRefRatio(level);
+    const int finer_ref = parent->MaxRefRatio(level);
     // Determine the number of ghost cells on the next level we need for making
     // ghost particles
-    int ghost_width = SprayParticleContainer::getGhostPartCells(
+    const int ghost_width = SprayParticleContainer::getGhostPartCells(
       level + 1, finest_level, finer_ref);
     setupGhostParticles(level, finest_level, ghost_width);
   }
@@ -335,8 +335,8 @@ PeleC::particleMKD(
     amrex::Print()
       << "moveKickDrift ... updating particle positions and velocity\n";
   }
-  int spray_state_ghosts = sprayStateGhosts(amr_ncycle);
-  int spray_source_ghosts = tmp_spray_source.nGrow();
+  const int spray_state_ghosts = sprayStateGhosts(amr_ncycle);
+  const int spray_source_ghosts = tmp_spray_source.nGrow();
   auto const* ltransparm = PeleC::trans_parms.device_trans_parm();
   // We will make a temporary copy of the source term array inside
   // moveKickDrift and we are only going to use the spray force out to one ghost
@@ -345,29 +345,22 @@ PeleC::particleMKD(
   AMREX_ASSERT(old_sources[spray_src]->nGrow() >= 1);
 
   // Do the valid particles themselves
-  bool isVirt = false;
-  bool isGhost = false;
-  bool doMove = true;
   theSprayPC()->moveKickDrift(
-    Sborder, tmp_spray_source, level, dt, time, isVirt, isGhost,
-    spray_state_ghosts, spray_source_ghosts, doMove, ltransparm);
+    Sborder, tmp_spray_source, level, dt, time, false, false,
+    spray_state_ghosts, spray_source_ghosts, true, ltransparm);
 
   // Only need the coarsest virtual particles here.
   if (level < finest_level) {
-    isVirt = true;
-    isGhost = false;
     theVirtPC()->moveKickDrift(
-      Sborder, tmp_spray_source, level, dt, time, isVirt, isGhost,
-      spray_state_ghosts, spray_source_ghosts, doMove, ltransparm);
+      Sborder, tmp_spray_source, level, dt, time, true, false,
+      spray_state_ghosts, spray_source_ghosts, true, ltransparm);
   }
 
   // Miiiight need all Ghosts
   if (theGhostPC() != nullptr && level != 0) {
-    isVirt = false;
-    isGhost = true;
     theGhostPC()->moveKickDrift(
-      Sborder, tmp_spray_source, level, dt, time, isVirt, isGhost,
-      spray_state_ghosts, spray_source_ghosts, doMove, ltransparm);
+      Sborder, tmp_spray_source, level, dt, time, false, true,
+      spray_state_ghosts, spray_source_ghosts, true, ltransparm);
   }
   // Must call transfer source after moveKick and moveKickDrift
   // on all particle types
@@ -386,32 +379,26 @@ PeleC::particleMK(
   if (sub_iteration != sub_ncycle - 1 && sub_ncycle != 0) {
     return;
   }
-  int spray_state_ghosts = sprayStateGhosts(amr_ncycle);
-  int spray_source_ghosts = tmp_spray_source.nGrow();
+  const int spray_state_ghosts = sprayStateGhosts(amr_ncycle);
+  const int spray_source_ghosts = tmp_spray_source.nGrow();
   new_sources[spray_src]->setVal(0.);
   auto const* ltransparm = PeleC::trans_parms.device_trans_parm();
   if (particle_verbose >= 1) {
     amrex::Print() << "moveKick ... updating velocity only\n";
   }
-  bool isVirt = false;
-  bool isGhost = false;
   theSprayPC()->moveKick(
-    Sborder, tmp_spray_source, level, dt, time, isVirt, isGhost,
+    Sborder, tmp_spray_source, level, dt, time, false, false,
     spray_state_ghosts, spray_source_ghosts, ltransparm);
 
   if (level < parent->finestLevel()) {
-    isVirt = true;
-    isGhost = false;
     theVirtPC()->moveKick(
-      Sborder, tmp_spray_source, level, dt, time, isVirt, isGhost,
+      Sborder, tmp_spray_source, level, dt, time, true, false,
       spray_state_ghosts, spray_source_ghosts, ltransparm);
   }
 
   if (theGhostPC() != nullptr && level != 0) {
-    isVirt = false;
-    isGhost = true;
     theGhostPC()->moveKick(
-      Sborder, tmp_spray_source, level, dt, time, isVirt, isGhost,
+      Sborder, tmp_spray_source, level, dt, time, false, true,
       spray_state_ghosts, spray_source_ghosts, ltransparm);
   }
   theSprayPC()->transferSource(
@@ -435,13 +422,13 @@ PeleC::postTimeStepParticles(int iteration)
     }
 
     // Do particle injection
-    int nstep = parent->levelSteps(0);
-    amrex::Real dtlev = parent->dtLevel(0);
-    amrex::Real cumtime = parent->cumTime() + dtlev;
+    const int nstep = parent->levelSteps(0);
+    const amrex::Real dtlev = parent->dtLevel(0);
+    const amrex::Real cumtime = parent->cumTime() + dtlev;
     const ProbParmHost* lprobparm = prob_parm_host;
     const ProbParmDevice* lprobparm_d = h_prob_parm_device;
     BL_PROFILE_VAR("SprayParticles::injectParticles()", INJECT_SPRAY);
-    bool injectParts = theSprayPC()->injectParticles(
+    const bool injectParts = theSprayPC()->injectParticles(
       cumtime, dtlev, nstep, level, finest_level, *lprobparm, *lprobparm_d);
     BL_PROFILE_VAR_STOP(INJECT_SPRAY);
     // Sync up if we're level 0 or if we have particles that may have moved
@@ -451,7 +438,7 @@ PeleC::postTimeStepParticles(int iteration)
       (iteration < ncycle && level < finest_level) || level == 0 ||
       injectParts) {
       // TODO: Determine how many ghost cells to use here
-      int nGrow = iteration;
+      const int nGrow = iteration;
       theSprayPC()->Redistribute(level, theSprayPC()->finestLevel(), nGrow);
     }
   }
@@ -460,13 +447,13 @@ PeleC::postTimeStepParticles(int iteration)
 void
 PeleC::postInitParticles()
 {
-  amrex::Real dtlev = parent->dtLevel(level);
-  amrex::Real cumtime = parent->cumTime();
+  const amrex::Real dtlev = parent->dtLevel(level);
+  const amrex::Real cumtime = parent->cumTime();
   if (do_spray_particles) {
     const ProbParmHost* lprobparm = prob_parm_host;
     const ProbParmDevice* lprobparm_d = h_prob_parm_device;
     BL_PROFILE_VAR("SprayParticles::injectParticles()", INJECT_SPRAY);
-    bool injectParts = theSprayPC()->injectParticles(
+    const bool injectParts = theSprayPC()->injectParticles(
       cumtime, dtlev, 0, level, parent->finestLevel(), *lprobparm,
       *lprobparm_d);
     BL_PROFILE_VAR_STOP(INJECT_SPRAY);

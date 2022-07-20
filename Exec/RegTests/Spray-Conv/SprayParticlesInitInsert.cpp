@@ -1,6 +1,6 @@
 
 #include "SprayParticles.H"
-#include <PeleC.H>
+#include "PeleC.H"
 #include "prob.H"
 
 amrex::IntVect

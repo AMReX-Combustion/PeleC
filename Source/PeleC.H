@@ -611,7 +611,7 @@ public:
   static pele::physics::turbinflow::TurbInflow turb_inflow;
 
 #ifdef PELEC_USE_SOOT
-  static SootModel* soot_model;
+  static SootModel soot_model;
 #endif
 
 protected:
