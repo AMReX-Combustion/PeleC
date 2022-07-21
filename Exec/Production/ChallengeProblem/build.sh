@@ -53,8 +53,8 @@ cmd "source ${SPACK_MANAGER}/start.sh && spack-start"
 HDF5_ROOT=$(spack location -i hdf5 ${SPACK_COMPILER})
 H5Z_ROOT=$(spack location -i h5z-zfp ${SPACK_COMPILER})
 ZFP_ROOT=$(spack location -i zfp ${SPACK_COMPILER})
+CONDUIT_ROOT=$(spack location -i conduit ${SPACK_COMPILER})
 ASCENT_ROOT=$(spack location -i ascent ${SPACK_VARIANTS} ${SPACK_COMPILER})
-CONDUIT_ROOT=$(spack location -i conduit ${SPACK_VARIANTS} ${SPACK_COMPILER})
 
 GNUMAKE_ARGS="USE_HDF5=TRUE USE_HDF5_ZFP=TRUE USE_ASCENT=TRUE USE_CONDUIT=TRUE ${GNUMAKE_ARGS}"
 
