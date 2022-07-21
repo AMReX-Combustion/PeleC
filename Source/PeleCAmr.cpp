@@ -383,7 +383,6 @@ PeleCAmr::doInSituViz(const int step)
       static_cast<const amrex::MultiFab*>(plotMFs[lev].get()));
   }
 
-  amrex::Print() << "Calling Ascent at time " << std::endl;
   conduit::Node bp_mesh;
   amrex::MultiLevelToBlueprint(
     nlevels, plotMFs_constvec, plt_var_names, Geom(), cur_time, istep,
@@ -415,7 +414,7 @@ PeleCAmr::doInSituViz(const int step)
     auto dPlotFileTime = amrex::second() - dPlotFileTime0;
     amrex::ParallelDescriptor::ReduceRealMax(dPlotFileTime, IOProc);
     amrex::Print() << "Ascent write time = " << dPlotFileTime << "  seconds"
-                   << "\n\n";
+                   << std::endl;
   }
 }
 #endif
