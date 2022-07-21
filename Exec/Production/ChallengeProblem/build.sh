@@ -25,7 +25,7 @@ elif [ "${LMOD_SYSTEM_NAME}" == 'crusher' ]; then
   cmd "module load cmake"
   cmd "export SPACK_MANAGER=${WORLDWORK}/cmb138/software/spack-manager-${LMOD_SYSTEM_NAME}"
   GNUMAKE_ARGS="USE_HIP=TRUE PELE_USE_MAGMA=TRUE"
-  SPACK_COMPILER="%gcc"
+  SPACK_COMPILER="%clang"
   SPACK_VARIANTS=""
 elif [ "${NREL_CLUSTER}" == 'eagle' ]; then
   cmd "source /nopt/nrel/ecom/hpacf/env.sh"
