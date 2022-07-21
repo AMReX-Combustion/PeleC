@@ -2,7 +2,7 @@
   action: "add_scenes"
   scenes: 
     scene1: 
-      image_prefix: "pressure_"
+      image_prefix: "temperature_"
       plots: 
         plt1: 
           type: "pseudocolor"
