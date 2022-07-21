@@ -7,6 +7,10 @@
 #ifdef AMREX_USE_HDF5
 #include <AMReX_PlotFileUtilHDF5.H>
 #endif
+#ifdef AMREX_USE_ASCENT
+#include <AMReX_Conduit_Blueprint.H>
+#include <ascent.hpp>
+#endif
 
 #include "PeleC.H"
 
@@ -23,6 +27,9 @@ public:
     // Optional arguments
     const bool write_hdf5_plots = false,
     const std::string& hdf5_compression = "None@0");
+#ifdef AMREX_USE_ASCENT
+  void doInSituViz(const int step);
+#endif
 };
 
 #endif

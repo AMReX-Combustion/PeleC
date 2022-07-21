@@ -6,7 +6,6 @@ PeleCAmr::writePlotFile()
   if (!Plot_Files_Output()) {
     return;
   }
-  BL_PROFILE_REGION_START("PeleCAmr::writePlotFile()");
   BL_PROFILE("PeleCAmr::writePlotFile()");
 
   if (first_plotfile) {
@@ -40,8 +39,6 @@ PeleCAmr::writePlotFile()
 #endif
 #endif
   writePlotFileDoit(pltfile, true, write_hdf5_plots, hdf5_compression);
-
-  BL_PROFILE_REGION_STOP("PeleCAmr::writePlotFile()");
 }
 
 void
@@ -51,7 +48,6 @@ PeleCAmr::writeSmallPlotFile()
     return;
   }
 
-  BL_PROFILE_REGION_START("PeleCAmr::writeSmallPlotFile()");
   BL_PROFILE("PeleCAmr::writeSmallPlotFile()");
 
   if (first_smallplotfile) {
@@ -60,7 +56,6 @@ PeleCAmr::writeSmallPlotFile()
   }
 
   // Don't continue if we have no variables to plot.
-
   if (stateSmallPlotVars().empty()) {
     return;
   }
@@ -77,8 +72,6 @@ PeleCAmr::writeSmallPlotFile()
   }
 
   writePlotFileDoit(pltfile, false);
-
-  BL_PROFILE_REGION_STOP("PeleCAmr::writeSmallPlotFile()");
 }
 
 void
@@ -88,7 +81,6 @@ PeleCAmr::writePlotFileDoit(
   const bool write_hdf5_plots,
   const std::string& hdf5_compression)
 {
-
   auto dPlotFileTime0 = amrex::second();
 
   const auto& desc_lst = amrex::AmrLevel::get_desc_lst();
@@ -260,3 +252,170 @@ PeleCAmr::writePlotFileDoit(
     }
   }
 }
+
+#ifdef AMREX_USE_ASCENT
+void
+PeleCAmr::doInSituViz(const int step)
+{
+  BL_PROFILE("PeleCAmr::doInSituViz()");
+
+  int plot_int = -1;
+  {
+    amrex::ParmParse pp("ascent");
+    pp.query("plot_int", plot_int);
+  }
+
+  // Output only on given frequency
+  if (!(step % plot_int == 0)) {
+    return;
+  }
+
+  if (step == 0) {
+    amr_level[0]->setPlotVariables();
+  }
+
+  if (statePlotVars().empty()) {
+    return;
+  }
+
+  auto dPlotFileTime0 = amrex::second();
+
+  const auto& desc_lst = amrex::AmrLevel::get_desc_lst();
+  amrex::Vector<std::pair<int, int>> plot_var_map;
+  for (int typ = 0; typ < desc_lst.size(); typ++) {
+    for (int comp = 0; comp < desc_lst[typ].nComp(); comp++) {
+      if (
+        amrex::Amr::isStatePlotVar(desc_lst[typ].name(comp)) &&
+        desc_lst[typ].getType() == amrex::IndexType::TheCellType()) {
+        plot_var_map.push_back(std::pair<int, int>(typ, comp));
+      }
+    }
+  }
+
+  int num_derive = 0;
+  auto& derive_lst = amrex::AmrLevel::get_derive_lst();
+  std::list<std::string> derive_names;
+  const std::list<amrex::DeriveRec>& dlist = derive_lst.dlist();
+  for (const auto& it : dlist) {
+    if (amrex::Amr::isDerivePlotVar(it.name())) {
+      derive_names.push_back(it.name());
+      num_derive += it.numDerive();
+    }
+  }
+
+  // Decide to plot vfrac
+  bool plot_vfrac =
+    ebInDomain() && (amrex::EB2::TopIndexSpaceIfPresent() != nullptr);
+  amrex::ParmParse pp("pelec");
+  pp.query("plot_vfrac", plot_vfrac);
+
+  const auto n_data_items =
+    plot_var_map.size() + num_derive + static_cast<int>(plot_vfrac);
+
+  const int nGrow = 0;
+  const amrex::Real cur_time =
+    (amr_level[0]->get_state_data(State_Type)).curTime();
+
+  const int nlevels = finestLevel() + 1;
+  amrex::Vector<std::unique_ptr<amrex::MultiFab>> plotMFs(nlevels);
+  amrex::Vector<int> istep(nlevels);
+  for (int lev = 0; lev < nlevels; ++lev) {
+    istep[lev] = levelSteps(lev);
+
+    plotMFs[lev] = std::make_unique<amrex::MultiFab>(
+      boxArray(lev), DistributionMap(lev), n_data_items, nGrow, amrex::MFInfo(),
+      amr_level[lev]->Factory());
+
+    // Cull data from state variables -- use no ghost cells.
+    int cnt = 0;
+    for (int i = 0; i < plot_var_map.size(); i++) {
+      int typ = plot_var_map[i].first;
+      int comp = plot_var_map[i].second;
+      amrex::MultiFab& this_dat = amr_level[lev]->get_new_data(typ);
+      amrex::MultiFab::Copy(*plotMFs[lev], this_dat, comp, cnt, 1, nGrow);
+      cnt++;
+    }
+
+    // Cull data from derived variables.
+    if ((!derive_names.empty())) {
+      for (const auto& derive_name : derive_names) {
+        const amrex::DeriveRec* rec = derive_lst.get(derive_name);
+        int ncomp = rec->numDerive();
+
+        auto derive_dat = amr_level[lev]->derive(derive_name, cur_time, nGrow);
+        amrex::MultiFab::Copy(*plotMFs[lev], *derive_dat, 0, cnt, ncomp, nGrow);
+        cnt += ncomp;
+      }
+    }
+
+    if (plot_vfrac) {
+      const auto& ebfactory = dynamic_cast<amrex::EBFArrayBoxFactory const&>(
+        amr_level[lev]->Factory());
+      amrex::MultiFab::Copy(
+        *plotMFs[lev], ebfactory.getVolFrac(), 0, cnt, 1, nGrow);
+    }
+  }
+
+  amrex::Vector<std::string> plt_var_names;
+  for (int i = 0; i < plot_var_map.size(); i++) {
+    int typ = plot_var_map[i].first;
+    int comp = plot_var_map[i].second;
+    plt_var_names.push_back(desc_lst[typ].name(comp));
+  }
+
+  for (const auto& derive_name : derive_names) {
+    const amrex::DeriveRec* rec = derive_lst.get(derive_name);
+    for (int i = 0; i < rec->numDerive(); i++) {
+      plt_var_names.push_back(rec->variableName(i));
+    }
+  }
+
+  if (plot_vfrac) {
+    plt_var_names.push_back("vfrac");
+  }
+
+  AMREX_ASSERT(n_data_items == plt_var_names.size());
+
+  amrex::Vector<const amrex::MultiFab*> plotMFs_constvec;
+  plotMFs_constvec.reserve(nlevels);
+  for (int lev = 0; lev < nlevels; ++lev) {
+    plotMFs_constvec.push_back(
+      static_cast<const amrex::MultiFab*>(plotMFs[lev].get()));
+  }
+
+  amrex::Print() << "Calling Ascent at time " << std::endl;
+  conduit::Node bp_mesh;
+  amrex::MultiLevelToBlueprint(
+    nlevels, plotMFs_constvec, plt_var_names, Geom(), cur_time, istep,
+    refRatio(), bp_mesh);
+
+  ascent::Ascent ascent;
+  conduit::Node open_opts;
+
+#ifdef AMREX_USE_MPI
+  open_opts["mpi_comm"] =
+    MPI_Comm_c2f(amrex::ParallelDescriptor::Communicator());
+#endif
+  ascent.open(open_opts);
+  conduit::Node verify_info;
+  if (!conduit::blueprint::mesh::verify(bp_mesh, verify_info)) {
+    ASCENT_INFO("Error: Mesh Blueprint Verify Failed!");
+    verify_info.print();
+  }
+
+  conduit::Node actions;
+  ascent.publish(bp_mesh);
+
+  ascent.execute(actions);
+
+  ascent.close();
+
+  if (verbose > 0) {
+    const int IOProc = amrex::ParallelDescriptor::IOProcessorNumber();
+    auto dPlotFileTime = amrex::second() - dPlotFileTime0;
+    amrex::ParallelDescriptor::ReduceRealMax(dPlotFileTime, IOProc);
+    amrex::Print() << "Ascent write time = " << dPlotFileTime << "  seconds"
+                   << "\n\n";
+  }
+}
+#endif

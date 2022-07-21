@@ -153,6 +153,9 @@ main(int argc, char* argv[])
          (amrptr->cumTime() < stop_time || stop_time < 0.0)) {
     // Do a timestep
     amrptr->coarseTimeStep(stop_time);
+#ifdef AMREX_USE_ASCENT
+    amrptr->doInSituViz(amrptr->levelSteps(0));
+#endif
   }
 
   // Write final checkpoint
