@@ -1,0 +1,9 @@
+- 
+  action: "add_scenes"
+  scenes: 
+    scene1: 
+      image_prefix: "temperature_"
+      plots: 
+        plt1: 
+          type: "pseudocolor"
+          field: "Temp"
