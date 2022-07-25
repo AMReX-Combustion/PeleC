@@ -70,7 +70,7 @@ bool PeleC::do_spray_particles = false;
 
 #ifdef PELEC_USE_SOOT
 bool PeleC::add_soot_src = true;
-bool PeleC::plot_soot = false;
+bool PeleC::plot_soot = true;
 #else
 bool PeleC::add_soot_src = false;
 #endif
@@ -314,6 +314,8 @@ PeleC::read_params()
 #endif
 
 #ifdef PELEC_USE_SOOT
+  pp.query("add_soot_src", add_soot_src);
+  pp.query("plot_soot", plot_soot);
   soot_model.readSootParams();
 #endif
 
