@@ -29,7 +29,6 @@ Transport_Model := Simple
 USE_MASA = FALSE
 
 # Libraries
-PELE_USE_MAGMA = TRUE
 USE_HDF5  = FALSE
 USE_HDF5_ZFP = FALSE
 USE_ASCENT = FALSE

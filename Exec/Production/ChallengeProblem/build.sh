@@ -12,14 +12,14 @@ if [ "${LMOD_SYSTEM_NAME}" == 'summit' ]; then
   cmd "module load cmake"
   cmd "module load binutils"
   cmd "export SPACK_MANAGER=${WORLDWORK}/cmb138/software/spack-manager-${LMOD_SYSTEM_NAME}"
-  ARGS="USE_CUDA=TRUE"
+  ARGS="USE_CUDA=TRUE PELE_USE_MAGMA=TRUE"
 elif [ "${LMOD_SYSTEM_NAME}" == 'crusher' ]; then
   cmd "module unload PrgEnv-cray"
   cmd "module load PrgEnv-amd"
   cmd "module load rocm/5.1.0"
   cmd "module load cmake"
   cmd "export SPACK_MANAGER=${WORLDWORK}/cmb138/software/spack-manager-${LMOD_SYSTEM_NAME}"
-  ARGS="USE_HIP=TRUE"
+  ARGS="USE_HIP=TRUE PELE_USE_MAGMA=TRUE"
 elif [ "${NREL_CLUSTER}" == 'eagle' ]; then
   cmd "source /nopt/nrel/ecom/hpacf/env.sh"
   cmd "module load gcc/9.3.0"
