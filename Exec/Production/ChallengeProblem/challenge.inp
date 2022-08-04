@@ -1,6 +1,6 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
-max_step = 1000000
-stop_time = 0.0006
+max_step = 100000
+stop_time = 0.005
 
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic =  0   0  0
@@ -31,7 +31,8 @@ pelec.sdc_iters = 2
 #pelec.adaptrk_nsubsteps_max=100
 pelec.chem_integrator="ReactorCvode"
 pelec.use_typ_vals_chem = 1
-cvode.solve_type=GMRES
+#cvode.solve_type = GMRES
+cvode.solve_type = magma_direct
 cvode.max_order = 4
 
 # TIME STEP CONTROL
@@ -48,7 +49,7 @@ amr.v                = 1       # verbosity in Amr.cpp
 amr.data_log         = datlog extremalog
 
 # REFINEMENT / REGRIDDING
-amr.max_level       = 5       # maximum level number allowed
+amr.max_level       = 3       # maximum level number allowed
 amr.ref_ratio       = 2 2 2 2 2 2 # refinement ratio
 amr.regrid_int      = 2       # how often to regrid
 amr.blocking_factor = 16       # block factor in grid generation
@@ -64,6 +65,9 @@ amr.loadbalance_with_workestimates = 1
 amr.checkpoint_files_output = 1
 amr.check_file      = chk      # root name of checkpoint file
 amr.check_int       = 400      # number of timesteps between checkpoints
+
+# Restart
+#amr.restart = chk53200
 
 # PLOTFILES
 amr.plot_files_output = 1
@@ -148,19 +152,17 @@ turbinflow.inj4.turb_nplane    = 32
 turbinflow.inj4.time_offset    = 0.003
 
 # TAGGING
-tagging.temperr  = 920.0
-tagging.lotemperr  = 850.0
+tagging.temperr  = 1e20
 tagging.tempgrad = 50.0
 tagging.max_temperr_lev = 5
-tagging.max_lotemperr_lev = 5
-tagging.max_tempgrad_lev = 3
-tagging.max_ftracerr_lev = 2
-tagging.ftracerr = 1.e-5
+tagging.max_tempgrad_lev = 5
+tagging.max_ftracerr_lev = 5
+tagging.ftracerr = 0.25
 tagging.vfracerr = 1e20
 tagging.max_vfracerr_lev = 2
 tagging.max_eb_refine_lev = 0
 tagging.eb_detag_factor = 1.5
-pelec.flame_trac_name = CH2O
+pelec.flame_trac_name = CH4
 
 eb2.geom_type = "Line-Piston-Cylinder"
 #eb2.small_volfrac = 1.e-6
