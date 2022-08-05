@@ -125,11 +125,11 @@ PeleC::getEBMaxLevel()
 
   // Get the level in the restart file if present
   std::string restart_file{""};
-  ppa.query("restart" , restart_file);
+  ppa.query("restart", restart_file);
   if (!restart_file.empty()) {
     std::string FullPathEBLevelFile = restart_file;
     FullPathEBLevelFile += "/EBMaxLevel";
-    std::ifstream EBLevelFile(FullPathEBLevelFile);;
+    std::ifstream EBLevelFile(FullPathEBLevelFile);
     if (!EBLevelFile.fail()) {
       EBLevelFile >> max_eb_level;
       EBLevelFile.close();
@@ -138,7 +138,7 @@ PeleC::getEBMaxLevel()
 
   // Allow manual overwrite
   amrex::ParmParse ppeb("eb2");
-  ppeb.query("max_level_generation",max_eb_level);
+  ppeb.query("max_level_generation", max_eb_level);
 
   return max_eb_level;
 }
