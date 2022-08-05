@@ -301,6 +301,16 @@ PeleC::checkPoint(
       CPUFile.close();
     }
 
+    {
+      // Store the level at which EB was generated
+      std::ofstream EBLevelFile;
+      std::string FullPathEBLevelFile = dir;
+      FullPathEBLevelFile += "/EBMaxLevel";
+      EBLevelFile.open(FullPathEBLevelFile.c_str(), std::ios::out);
+      EBLevelFile << eb_max_lvl_gen;
+      EBLevelFile.close();
+    }
+
     if (track_grid_losses) {
       // store diagnostic quantities
       std::ofstream DiagFile;

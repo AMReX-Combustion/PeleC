@@ -389,6 +389,9 @@ PeleC::variableSetUp()
 
   num_state_type = desc_lst.size();
 
+  // Get the level at which EB is generated
+  eb_max_lvl_gen = getEBMaxLevel();
+
   // DEFINE DERIVED QUANTITIES
 
   // Pressure
