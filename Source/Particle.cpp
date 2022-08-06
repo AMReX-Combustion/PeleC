@@ -262,13 +262,12 @@ PeleC::initParticles()
     AMREX_ASSERT(theSprayPC() == nullptr);
     createDataParticles();
 
+    const ProbParmHost* lprobparm = prob_parm_host;
+    const ProbParmDevice* lprobparm_d = h_prob_parm_device;
+    theSprayPC()->InitSprayParticles(true, *lprobparm, *lprobparm_d);
     if (!init_file.empty()) {
       theSprayPC()->InitFromAsciiFile(init_file, NSR_SPR + NAR_SPR);
-    } else if (init_function > 0) {
-      const ProbParmHost* lprobparm = prob_parm_host;
-      const ProbParmDevice* lprobparm_d = h_prob_parm_device;
-      theSprayPC()->InitSprayParticles(*lprobparm, *lprobparm_d);
-    } else {
+    } else if (init_function == 0) {
       amrex::Abort(
         "Must initialize spray particles with particles.init_function or "
         "particles.init_file");
@@ -290,6 +289,9 @@ PeleC::postRestartParticles(bool is_checkpoint)
     createDataParticles();
 
     // Make sure to call RemoveParticlesOnExit() on exit.
+    const ProbParmHost* lprobparm = prob_parm_host;
+    const ProbParmDevice* lprobparm_d = h_prob_parm_device;
+    theSprayPC()->InitSprayParticles(false, *lprobparm, *lprobparm_d);
     amrex::ExecOnFinalize(RemoveParticlesOnExit);
     {
       theSprayPC()->Restart(

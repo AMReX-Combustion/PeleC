@@ -38,7 +38,12 @@ function(build_pelec_exe pelec_exe_name pelec_lib_name)
                    ${PELEMP_SRC_DIR}/PP_Spray/Drag.H
                    ${PELEMP_SRC_DIR}/PP_Spray/SprayInjectTemplate.H
                    ${PELEMP_SRC_DIR}/PP_Spray/SprayDerive.cpp
-                   ${PELEMP_SRC_DIR}/PP_Spray/WallFunctions.H)
+                   ${PELEMP_SRC_DIR}/PP_Spray/SprayJet.cpp
+                   ${PELEMP_SRC_DIR}/PP_Spray/WallFunctions.H
+                   ${PELEMP_SRC_DIR}/PP_Spray/Distribution/DistBase.H
+                   ${PELEMP_SRC_DIR}/PP_Spray/Distribution/Distributions.H
+                   ${PELEMP_SRC_DIR}/PP_Spray/Distribution/Distributions.cpp)
+
     target_include_directories(${pelec_exe_name} PRIVATE ${PELEMP_SRC_DIR}/PP_Spray)
   endif()
   if(PELEC_ENABLE_SOOT)
