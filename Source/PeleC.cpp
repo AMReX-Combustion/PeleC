@@ -124,7 +124,7 @@ PeleC::getEBMaxLevel()
   ppa.query("max_level", max_eb_level);
 
   // Get the level in the restart file if present
-  std::string restart_file{""};
+  std::string restart_file;
   ppa.query("restart", restart_file);
   if (!restart_file.empty()) {
     std::string FullPathEBLevelFile = restart_file;
