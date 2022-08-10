@@ -7,10 +7,11 @@ cmd() {
 
 if [ "${LMOD_SYSTEM_NAME}" == 'summit' ]; then
   cmd "module unload xl"
-  cmd "module load gcc/9.3.0"
+  cmd "module load gcc/10.2.0"
   cmd "module load cuda/11.4.2"
   cmd "module load cmake"
   cmd "module load binutils"
+  cmd "module load netlib-lapack/3.9.1"
   cmd "export SPACK_MANAGER=${WORLDWORK}/cmb138/software/spack-manager-${LMOD_SYSTEM_NAME}"
   ARGS="USE_CUDA=TRUE PELE_USE_MAGMA=TRUE"
 elif [ "${LMOD_SYSTEM_NAME}" == 'crusher' ]; then
