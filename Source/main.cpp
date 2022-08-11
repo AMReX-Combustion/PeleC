@@ -126,8 +126,14 @@ main(int argc, char* argv[])
   amrex::AmrLevel::SetEBMaxGrowCells(
     5, 5,
     5); // 5 focdr ebcellflags, 4 for vfrac, 2 is not used for EBSupport::volume
+
   initialize_EB2(
-    amrptr->Geom(amrptr->maxLevel()), amrptr->maxLevel(), amrptr->maxLevel());
+    amrptr->Geom(PeleC::getEBMaxLevel()), PeleC::getEBMaxLevel(),
+    amrptr->maxLevel());
+
+  // Add finer level, might be inconsistent with the coarser level created
+  // above.
+  amrex::EB2::addFineLevels(amrptr->maxLevel() - PeleC::getEBMaxLevel());
 
   amrptr->init(strt_time, stop_time);
 
