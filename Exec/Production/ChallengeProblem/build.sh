@@ -36,7 +36,6 @@ elif [ "${NREL_CLUSTER}" == 'eagle' ]; then
   cmd "module load mpt"
   cmd "module load cmake"
   cmd "export SPACK_MANAGER=/nopt/nrel/ecom/hpacf/spack-manager/2022-07-22/spack-manager"
-  ARGS="COMP=intel"
   GNUMAKE_ARGS="COMP=intel"
   SPACK_COMPILER="%intel"
   SPACK_VARIANTS="~cuda"
@@ -46,7 +45,9 @@ elif [ "${OS}" == 'Darwin' ]; then
   cmd "source ${SPACK_MANAGER}/start.sh && spack-start"
   cmd "spack load cmake"
   cmd "spack load mpich"
-  ARGS="COMP=llvm"
+  GNUMAKE_ARGS="COMP=llvm"
+  SPACK_COMPILER="%apple-clang"
+  SPACK_VARIANTS=""
 fi
 
 cmd "source ${SPACK_MANAGER}/start.sh && spack-start"
@@ -56,7 +57,7 @@ ZFP_ROOT=$(spack location -i zfp ${SPACK_COMPILER})
 CONDUIT_ROOT=$(spack location -i conduit ${SPACK_COMPILER})
 ASCENT_ROOT=$(spack location -i ascent ${SPACK_VARIANTS} ${SPACK_COMPILER})
 
-GNUMAKE_ARGS="USE_HDF5=TRUE USE_HDF5_ZFP=TRUE USE_ASCENT=TRUE USE_CONDUIT=TRUE ${GNUMAKE_ARGS}"
+GNUMAKE_ARGS="USE_HDF5=TRUE USE_HDF5_ZFP=TRUE USE_ASCENT=TRUE USE_CONDUIT=TRUE HDF5_HOME=${HDF5_ROOT} H5Z_HOME=${H5Z_ROOT} ZFP_HOME=${ZFP_ROOT} ASCENT_DIR=${ASCENT_ROOT} CONDUIT_DIR=${CONDUIT_ROOT} ${GNUMAKE_ARGS}"
 
 cmd "make ${GNUMAKE_ARGS} TPLrealclean"
 cmd "make ${GNUMAKE_ARGS} realclean"
