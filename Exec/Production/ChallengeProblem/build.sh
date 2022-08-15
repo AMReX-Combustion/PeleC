@@ -5,6 +5,8 @@ cmd() {
   eval "$@"
 }
 
+OS=$(uname -s)
+
 if [ "${LMOD_SYSTEM_NAME}" == 'summit' ]; then
   cmd "module unload xl"
   cmd "module load gcc/10.2.0"
@@ -31,6 +33,13 @@ elif [ "${NREL_CLUSTER}" == 'eagle' ]; then
   cmd "module load cmake"
   cmd "export SPACK_MANAGER=/scratch/jrood/spack-manager-${NREL_CLUSTER}"
   ARGS="COMP=intel"
+elif [ "${OS}" == 'Darwin' ]; then
+  # Not the best assumption, but change this to wherever spack-manager is
+  cmd "export SPACK_MANAGER=${HOME}/exawind/spack-manager"
+  cmd "source ${SPACK_MANAGER}/start.sh && spack-start"
+  cmd "spack load cmake"
+  cmd "spack load mpich"
+  ARGS="COMP=llvm"
 fi
 
 cmd "source ${SPACK_MANAGER}/start.sh && spack-start"
