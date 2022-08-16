@@ -138,7 +138,7 @@ main(int argc, char* argv[])
   amrptr->init(strt_time, stop_time);
 
 #ifdef AMREX_USE_ASCENT
-    amrptr->doInSituViz(amrptr->levelSteps(0));
+  amrptr->doInSituViz(amrptr->levelSteps(0));
 #endif
 
   // If we set the regrid_on_restart flag and if we are *not* going to take

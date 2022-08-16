@@ -28,12 +28,15 @@ public:
     // Optional arguments
     const bool write_hdf5_plots = false,
     const std::string& hdf5_compression = "None@0");
-  #ifdef AMREX_USE_ASCENT
+#ifdef AMREX_USE_ASCENT
   void doInSituViz(const int step);
   pele::PeleAscent pele_ascent;
 #endif
 private:
-  void constructPlotMF(const bool regular, amrex::Vector<const amrex::MultiFab*> &plotMFs_constvec,   amrex::Vector<std::string> &plt_var_names);
+  void constructPlotMF(
+    const bool regular,
+    amrex::Vector<std::unique_ptr<amrex::MultiFab>>& plotMFs,
+    amrex::Vector<std::string>& plt_var_names);
 };
 
 #endif

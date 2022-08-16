@@ -74,7 +74,12 @@ PeleCAmr::writeSmallPlotFile()
   writePlotFileDoit(pltfile, false);
 }
 
-void PeleCAmr::constructPlotMF(const bool regular, amrex::Vector<const amrex::MultiFab*> &plotMFs_constvec,   amrex::Vector<std::string> &plt_var_names){
+void
+PeleCAmr::constructPlotMF(
+  const bool regular,
+  amrex::Vector<std::unique_ptr<amrex::MultiFab>>& plotMFs,
+  amrex::Vector<std::string>& plt_var_names)
+{
 
   const auto& desc_lst = amrex::AmrLevel::get_desc_lst();
   amrex::Vector<std::pair<int, int>> plot_var_map;
@@ -115,7 +120,6 @@ void PeleCAmr::constructPlotMF(const bool regular, amrex::Vector<const amrex::Mu
     (amr_level[0]->get_state_data(State_Type)).curTime();
 
   const int nlevels = finestLevel() + 1;
-  amrex::Vector<std::unique_ptr<amrex::MultiFab>> plotMFs(nlevels);
   for (int lev = 0; lev < nlevels; ++lev) {
 
     plotMFs[lev] = std::make_unique<amrex::MultiFab>(
@@ -170,11 +174,6 @@ void PeleCAmr::constructPlotMF(const bool regular, amrex::Vector<const amrex::Mu
   }
 
   AMREX_ASSERT(n_data_items == plt_var_names.size());
-
-  for (int lev = 0; lev < nlevels; ++lev) {
-    plotMFs_constvec.push_back(
-      static_cast<const amrex::MultiFab*>(plotMFs[lev].get()));
-  }
 }
 
 void
@@ -187,10 +186,16 @@ PeleCAmr::writePlotFileDoit(
   auto dPlotFileTime0 = amrex::second();
 
   const int nlevels = finestLevel() + 1;
-  amrex::Vector<const amrex::MultiFab*> plotMFs_constvec;
   amrex::Vector<std::string> plt_var_names;
+  amrex::Vector<std::unique_ptr<amrex::MultiFab>> plotMFs(nlevels);
+  constructPlotMF(regular, plotMFs, plt_var_names);
+
+  amrex::Vector<const amrex::MultiFab*> plotMFs_constvec(nlevels);
   plotMFs_constvec.reserve(nlevels);
-  constructPlotMF(regular, plotMFs_constvec, plt_var_names);
+  for (int lev = 0; lev < nlevels; ++lev) {
+    plotMFs_constvec.push_back(
+      static_cast<const amrex::MultiFab*>(plotMFs[lev].get()));
+  }
 
   const amrex::Real cur_time =
     (amr_level[0]->get_state_data(State_Type)).curTime();
@@ -285,10 +290,16 @@ PeleCAmr::doInSituViz(const int step)
   auto dPlotFileTime0 = amrex::second();
 
   const int nlevels = finestLevel() + 1;
-  amrex::Vector<const amrex::MultiFab*> plotMFs_constvec;
   amrex::Vector<std::string> plt_var_names;
+  amrex::Vector<std::unique_ptr<amrex::MultiFab>> plotMFs(nlevels);
+  constructPlotMF(true, plotMFs, plt_var_names);
+
+  amrex::Vector<const amrex::MultiFab*> plotMFs_constvec;
   plotMFs_constvec.reserve(nlevels);
-  constructPlotMF(true, plotMFs_constvec, plt_var_names);
+  for (int lev = 0; lev < nlevels; ++lev) {
+    plotMFs_constvec.push_back(
+      static_cast<const amrex::MultiFab*>(plotMFs[lev].get()));
+  }
 
   const amrex::Real cur_time =
     (amr_level[0]->get_state_data(State_Type)).curTime();
