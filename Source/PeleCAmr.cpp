@@ -190,7 +190,7 @@ PeleCAmr::writePlotFileDoit(
   amrex::Vector<std::unique_ptr<amrex::MultiFab>> plotMFs(nlevels);
   constructPlotMF(regular, plotMFs, plt_var_names);
 
-  amrex::Vector<const amrex::MultiFab*> plotMFs_constvec(nlevels);
+  amrex::Vector<const amrex::MultiFab*> plotMFs_constvec;
   plotMFs_constvec.reserve(nlevels);
   for (int lev = 0; lev < nlevels; ++lev) {
     plotMFs_constvec.push_back(
@@ -275,7 +275,7 @@ PeleCAmr::doInSituViz(const int step)
   BL_PROFILE("PeleCAmr::doInSituViz()");
 
   // Output only on given frequency
-  if (!(step % plot_int == 0)) {
+  if (!(step % pele_ascent.plot_int == 0)) {
     return;
   }
 
