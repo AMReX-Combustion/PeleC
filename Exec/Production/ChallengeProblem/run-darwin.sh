@@ -9,4 +9,4 @@ cmd() {
 cmd "export SPACK_MANAGER=${HOME}/exawind/spack-manager"
 cmd "source ${SPACK_MANAGER}/start.sh && spack-start"
 cmd "spack load mpich"
-cmd "mpirun -np 8 ./PeleC3d.llvm.TPROF.MPI.ex challenge.inp amr.max_level=1"
+cmd "mpirun -np 8 ./PeleC3d.llvm.TPROF.MPI.ex challenge.inp amr.n_cell=128 128 32 amr.max_level=2 amr.checkpoint_files_output=0 cvode.solve_type=GMRES max_step=2"
