@@ -212,6 +212,9 @@ if(PELEC_ENABLE_HDF5)
     add_test_r(eb-converging-nozzle-hdf5-zfp EB-ConvergingNozzle)
   endif()
 endif()
+if(PELEC_ENABLE_ASCENT)
+  add_test_r(pmf-ascent PMF)
+endif()
 
 # Not run in CI
 add_test_re(pmf-lidryer-rk64 PMF)

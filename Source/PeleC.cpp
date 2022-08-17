@@ -1119,7 +1119,7 @@ PeleC::post_regrid(
   BL_PROFILE("PeleC::post_regrid()");
   fine_mask.clear();
 
-  if (use_typical_vals_chem) {
+  if ((do_react) && (use_typical_vals_chem)) {
     set_typical_values_chem();
   }
 }

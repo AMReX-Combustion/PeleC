@@ -1,0 +1,17 @@
+-
+  action: "add_scenes"
+  scenes:
+    scene1:
+      image_prefix: "temperature_"
+      plots:
+        plt1:
+          type: "pseudocolor"
+          field: "Temp"
+    scene2:
+      image_prefix: "x_velocity_"
+      plots:
+        p1:
+          type: "pseudocolor"
+          field: "x_velocity"
+          min_value: -100.0
+          max_value: 100.0

@@ -137,6 +137,10 @@ main(int argc, char* argv[])
 
   amrptr->init(strt_time, stop_time);
 
+#ifdef AMREX_USE_ASCENT
+  amrptr->doInSituViz(amrptr->levelSteps(0));
+#endif
+
   // If we set the regrid_on_restart flag and if we are *not* going to take
   // a time step then we want to go ahead and regrid here.
   if (
@@ -153,6 +157,9 @@ main(int argc, char* argv[])
          (amrptr->cumTime() < stop_time || stop_time < 0.0)) {
     // Do a timestep
     amrptr->coarseTimeStep(stop_time);
+#ifdef AMREX_USE_ASCENT
+    amrptr->doInSituViz(amrptr->levelSteps(0));
+#endif
   }
 
   // Write final checkpoint

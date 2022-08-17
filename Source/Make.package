@@ -65,3 +65,8 @@ endif
 ifeq ($(USE_MASA), TRUE)
   CEXE_sources += MMS.cpp
 endif
+
+ifeq ($(USE_ASCENT), TRUE)
+  CEXE_sources += PeleAscent.cpp
+  CEXE_headers += PeleAscent.H
+endif
