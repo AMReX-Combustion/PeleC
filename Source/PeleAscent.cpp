@@ -1,4 +1,3 @@
-#ifdef AMREX_USE_ASCENT
 #include <AMReX_ParmParse.H>
 #include "PeleAscent.H"
 
@@ -11,4 +10,3 @@ PeleAscent::PeleAscent()
   }
 }
 } // namespace pele
-#endif
