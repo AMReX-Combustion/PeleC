@@ -126,10 +126,20 @@ main(int argc, char* argv[])
   amrex::AmrLevel::SetEBMaxGrowCells(
     5, 5,
     5); // 5 focdr ebcellflags, 4 for vfrac, 2 is not used for EBSupport::volume
+
   initialize_EB2(
-    amrptr->Geom(amrptr->maxLevel()), amrptr->maxLevel(), amrptr->maxLevel());
+    amrptr->Geom(PeleC::getEBMaxLevel()), PeleC::getEBMaxLevel(),
+    amrptr->maxLevel());
+
+  // Add finer level, might be inconsistent with the coarser level created
+  // above.
+  amrex::EB2::addFineLevels(amrptr->maxLevel() - PeleC::getEBMaxLevel());
 
   amrptr->init(strt_time, stop_time);
+
+#ifdef AMREX_USE_ASCENT
+  amrptr->doInSituViz(amrptr->levelSteps(0));
+#endif
 
   // If we set the regrid_on_restart flag and if we are *not* going to take
   // a time step then we want to go ahead and regrid here.
@@ -147,6 +157,9 @@ main(int argc, char* argv[])
          (amrptr->cumTime() < stop_time || stop_time < 0.0)) {
     // Do a timestep
     amrptr->coarseTimeStep(stop_time);
+#ifdef AMREX_USE_ASCENT
+    amrptr->doInSituViz(amrptr->levelSteps(0));
+#endif
   }
 
   // Write final checkpoint

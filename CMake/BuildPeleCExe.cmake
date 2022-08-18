@@ -125,7 +125,15 @@ function(build_pelec_exe pelec_exe_name pelec_lib_name)
        ${SRC_DIR}/Utilities.cpp
        ${SRC_DIR}/WENO.H
   )
-  
+
+  if(PELEC_ENABLE_ASCENT)
+    target_sources(${pelec_exe_name}
+      PRIVATE
+        ${SRC_DIR}/PeleAscent.H
+        ${SRC_DIR}/PeleAscent.cpp
+    )
+  endif()
+
   if(PELEC_ENABLE_MASA)
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_MASA)
     target_sources(${pelec_exe_name} PRIVATE ${SRC_DIR}/MMS.cpp)

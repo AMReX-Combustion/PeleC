@@ -24,20 +24,20 @@ THREAD_SANITIZER = FALSE
 
 # PeleC
 Eos_Model := Fuego
-Chemistry_Model := dodmethair_4sp
+Chemistry_Model := dodecane_lu_qss
 Transport_Model := Simple
 USE_MASA = FALSE
 
 # Libraries
 USE_HDF5  = FALSE
-HDF5_HOME = $(HDF5_ROOT)
-# Or on Summit:
-# HDF5_HOME = /gpfs/alpine/csc300/world-shared/gnu_build/hdf5/develop_build/hdf5
-# To use HDF5 with ZFP compression, follow the instructions at https://h5z-zfp.readthedocs.io
-# to compile ZFP and H5Z_ZFP plugin, or use the following gcc build on Summit:
 USE_HDF5_ZFP = FALSE
-H5Z_HOME  = /gpfs/alpine/csc300/world-shared/gnu_build/H5Z-ZFP/install
-ZFP_HOME  = /gpfs/alpine/csc300/world-shared/gnu_build/zfp
+USE_ASCENT = FALSE
+USE_CONDUIT = FALSE
+HDF5_HOME = $(HDF5_ROOT)
+H5Z_HOME  = $(H5Z_ROOT)
+ZFP_HOME  = $(ZFP_ROOT)
+ASCENT_DIR = $(ASCENT_ROOT)
+CONDUIT_DIR = $(CONDUIT_ROOT)
 
 # GNU Make
 Bpack := ./Make.package

@@ -592,6 +592,7 @@ public:
   amrex::EBFluxRegister& getFluxReg(int lev);
 
   static bool ebInitialized();
+  static int getEBMaxLevel();
 
   void InitialRedistribution(
     const amrex::Real time,
@@ -755,6 +756,7 @@ protected:
   static amrex::GpuArray<amrex::Real, NVAR> body_state;
   static bool body_state_set;
   static bool eb_initialized;
+  static int eb_max_lvl_gen;
 
   amrex::MultiFab vfrac;
 

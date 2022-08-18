@@ -87,6 +87,7 @@ int PeleC::les_test_filter_fgr = 2;
 
 bool PeleC::eb_in_domain = false;
 bool PeleC::eb_initialized = false;
+int PeleC::eb_max_lvl_gen = -1;
 bool PeleC::body_state_set = false;
 amrex::GpuArray<amrex::Real, NVAR> PeleC::body_state;
 
@@ -126,6 +127,36 @@ void
 ebInitialized(bool eb_init_val)
 {
   eb_initialized = eb_init_val;
+}
+
+int
+PeleC::getEBMaxLevel()
+{
+  // Look into amr PP
+  amrex::ParmParse ppa("amr");
+  int max_eb_level = -1;
+
+  // Default to amr.max_level
+  ppa.query("max_level", max_eb_level);
+
+  // Get the level in the restart file if present
+  std::string restart_file;
+  ppa.query("restart", restart_file);
+  if (!restart_file.empty()) {
+    std::string FullPathEBLevelFile = restart_file;
+    FullPathEBLevelFile += "/EBMaxLevel";
+    std::ifstream EBLevelFile(FullPathEBLevelFile);
+    if (!EBLevelFile.fail()) {
+      EBLevelFile >> max_eb_level;
+      EBLevelFile.close();
+    }
+  }
+
+  // Allow manual overwrite
+  amrex::ParmParse ppeb("eb2");
+  ppeb.query("max_level_generation", max_eb_level);
+
+  return max_eb_level;
 }
 
 void
@@ -1157,7 +1188,7 @@ PeleC::post_regrid(int lbase, int /*new_finest*/)
   amrex::ignore_unused(lbase);
 #endif
 
-  if (use_typical_vals_chem) {
+  if ((do_react) && (use_typical_vals_chem)) {
     set_typical_values_chem();
   }
 }
@@ -1404,11 +1435,9 @@ PeleC::errorEst(
       const auto Sfab = S_data.array(mfi);
       auto tag_arr = tags.array(mfi);
       const auto datbox = amrex::grow(tilebox, 1);
-      amrex::Elixir S_data_mfi_eli = S_data[mfi].elixir();
       const auto vfrac_arr = vfrac.array(mfi);
 
-      amrex::FArrayBox S_derData(datbox, 1);
-      amrex::Elixir S_derData_eli = S_derData.elixir();
+      amrex::FArrayBox S_derData(datbox, 1, amrex::The_Async_Arena());
       auto S_derarr = S_derData.array();
       const int ncp = S_derData.nComp();
       const int* bc = bcs[0].data();
@@ -1631,8 +1660,6 @@ PeleC::errorEst(
 
       // Now update the tags in the TagBox.
       // tag_arr.tags(itags, tilebox);
-      // rho_eli.clear();
-      // temp_eli.clear();
     }
   }
 
