@@ -17,7 +17,7 @@ if [ "${LMOD_SYSTEM_NAME}" == 'summit' ]; then
   cmd "export SPACK_MANAGER=${WORLDWORK}/cmb138/software/spack-manager-${LMOD_SYSTEM_NAME}"
   GNUMAKE_ARGS="USE_CUDA=TRUE PELE_USE_MAGMA=TRUE"
   SPACK_COMPILER="%gcc"
-  SPACK_VARIANTS="+cuda"
+  SPACK_VARIANTS=""
 elif [ "${LMOD_SYSTEM_NAME}" == 'crusher' ]; then
   cmd "module unload PrgEnv-cray"
   cmd "module load PrgEnv-amd"
