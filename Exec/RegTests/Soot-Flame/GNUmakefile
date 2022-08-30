@@ -23,7 +23,6 @@ FSANITIZER = FALSE
 THREAD_SANITIZER = FALSE
 
 # PeleC
-USE_EB = FALSE
 Eos_Model := Fuego
 Chemistry_Model := SootReaction
 Transport_Model := Simple
