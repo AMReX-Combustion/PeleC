@@ -45,6 +45,7 @@ function(build_pelec_exe pelec_exe_name pelec_lib_name)
                    ${PELEMP_SRC_DIR}/PP_Spray/Distribution/Distributions.cpp)
 
     target_include_directories(${pelec_exe_name} PRIVATE ${PELEMP_SRC_DIR}/PP_Spray)
+    target_include_directories(${pelec_exe_name} PRIVATE ${PELEMP_SRC_DIR}/PP_Spray/Distribution)
   endif()
   if(PELEC_ENABLE_SOOT)
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_SOOT)
