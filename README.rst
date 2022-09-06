@@ -4,7 +4,7 @@ PeleC: An adaptive mesh refinement solver for compressible reacting flows
 `PeleC` is an adaptive-mesh compressible hydrodynamics code for reacting
 flows.
 
-`Documentation <https://amrex-combustion.github.io/PeleC/>`_ | `Nightly Test Results <https://my.cdash.org/index.php?project=PeleC>`_ | `Citation <https://doi.org/10.1177/10943420221121151>_`
+`Documentation <https://amrex-combustion.github.io/PeleC/>`_ | `Nightly Test Results <https://my.cdash.org/index.php?project=PeleC>`_ | `Citation <https://doi.org/10.1177/10943420221121151>`_
 
 Getting Started
 ~~~~~~~~~~~~~~~
@@ -98,7 +98,7 @@ available to get started. One gotcha is that indentation matters.
 Citation
 ~~~~~~~~
 
-To cite PeleC, use the following `journal article <https://doi.org/10.1177/10943420221121151>_`:
+To cite PeleC, use the following `journal article <https://doi.org/10.1177/10943420221121151>`_:
 
 ```
 @article{PeleC_IJHPCA,
