@@ -1,11 +1,7 @@
-PeleC 
------
-*A compressible AMR combustion code*
+PeleC: An adaptive mesh refinement solver for compressible reacting flows
+-------------------------------------------------------------------------
 
-`PeleC` is an adaptive-mesh compressible hydrodynamics code for reacting
-flows.
-
-`Documentation <https://amrex-combustion.github.io/PeleC/>`_ | `Nightly Test Results <https://my.cdash.org/index.php?project=PeleC>`_
+`Documentation <https://amrex-combustion.github.io/PeleC/>`_ | `Nightly Test Results <https://my.cdash.org/index.php?project=PeleC>`_ | `Citation <https://doi.org/10.1177/10943420221121151>`_
 
 Getting Started
 ~~~~~~~~~~~~~~~
@@ -94,6 +90,39 @@ are several `primers <http://thomas-cokelaer.info/tutorials/sphinx/rest_syntax.h
 available to get started. One gotcha is that indentation matters.
 
     cd Docs && mkdir build && cd build && cmake .. && make
+
+
+Citation
+~~~~~~~~
+
+To cite the PeleC software and refer to its computational performance, use the following `journal article <https://doi.org/10.1177/10943420221121151>`_::
+
+    @article{PeleC_IJHPCA,
+      author = {Marc T {Henry de Frahan} and Jon S Rood and Marc S Day and Hariswaran Sitaraman and Shashank Yellapantula and Bruce A Perry and Ray W Grout and Ann Almgren and Weiqun Zhang and John B Bell and Jacqueline H Chen},
+      title = {{PeleC: An adaptive mesh refinement solver for compressible reacting flows}},
+      journal = {The International Journal of High Performance Computing Applications},
+      volume = {0},
+      number = {0},
+      pages = {10943420221121151},
+      year = {2022},
+      doi = {10.1177/10943420221121151},
+      url = {https://doi.org/10.1177/10943420221121151}
+    }
+
+Additionally, to cite the application of PeleC to compressible reacting flows, use the following `Combustion and Flame journal article <https://doi.org/10.1016/j.combustflame.2021.111531>`_::
+
+  @article{Sitaraman2021,
+    author = {Hariswaran Sitaraman and Shashank Yellapantula and Marc T. {Henry de Frahan} and Bruce Perry and Jon Rood and Ray Grout and Marc Day}
+    title = {Adaptive mesh based combustion simulations of direct fuel injection effects in a supersonic cavity flame-holder},
+    journal = {Combustion and Flame},
+    volume = {232},
+    pages = {111531},
+    year = {2021},
+    issn = {0010-2180},
+    doi = {https://doi.org/10.1016/j.combustflame.2021.111531},
+    url = {https://www.sciencedirect.com/science/article/pii/S0010218021002741},
+  }
+
 
 Acknowledgment
 ~~~~~~~~~~~~~~
