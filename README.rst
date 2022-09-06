@@ -95,7 +95,7 @@ available to get started. One gotcha is that indentation matters.
 Citation
 ~~~~~~~~
 
-To cite PeleC, use the following `journal article <https://doi.org/10.1177/10943420221121151>`_::
+To cite the use of PeleC software and refer to its computational performance, use the following `journal article <https://doi.org/10.1177/10943420221121151>`_::
 
     @article{PeleC_IJHPCA,
       author = {Marc T Henry de Frahan and Jon S Rood and Marc S Day and Hariswaran Sitaraman and Shashank Yellapantula and Bruce A Perry and Ray W Grout and Ann Almgren and Weiqun Zhang and John B Bell and Jacqueline H Chen},
@@ -110,7 +110,7 @@ To cite PeleC, use the following `journal article <https://doi.org/10.1177/10943
       eprint = {https://doi.org/10.1177/10943420221121151}
     }
 
-`This application of PeleC to compressible reacting flow <https://doi.org/10.1016/j.combustflame.2021.111531>`_ may also be useful to cite::
+Additionally, to cite the application of PeleC to compressible reacting flows, use the following `journal article<https://doi.org/10.1016/j.combustflame.2021.111531>`_::
 
   @article{Sitaraman2021,
     title = {Adaptive mesh based combustion simulations of direct fuel injection effects in a supersonic cavity flame-holder},
