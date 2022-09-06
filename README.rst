@@ -110,7 +110,7 @@ To cite the use of PeleC software and refer to its computational performance, us
       eprint = {https://doi.org/10.1177/10943420221121151}
     }
 
-Additionally, to cite the application of PeleC to compressible reacting flows, use the following `journal article<https://doi.org/10.1016/j.combustflame.2021.111531>`_::
+Additionally, to cite the application of PeleC to compressible reacting flows, use the following `journal article <https://doi.org/10.1016/j.combustflame.2021.111531>`_::
 
   @article{Sitaraman2021,
     title = {Adaptive mesh based combustion simulations of direct fuel injection effects in a supersonic cavity flame-holder},
