@@ -98,22 +98,20 @@ available to get started. One gotcha is that indentation matters.
 Citation
 ~~~~~~~~
 
-To cite PeleC, use the following `journal article <https://doi.org/10.1177/10943420221121151>`_:
+To cite PeleC, use the following `journal article <https://doi.org/10.1177/10943420221121151>`_::
 
-```
-@article{PeleC_IJHPCA,
-  author = {Marc T Henry de Frahan and Jon S Rood and Marc S Day and Hariswaran Sitaraman and Shashank Yellapantula and Bruce A Perry and Ray W Grout and Ann Almgren and Weiqun Zhang and John B Bell and Jacqueline H Chen},
-  title = {{PeleC: An adaptive mesh refinement solver for compressible reacting flows}},
-  journal = {The International Journal of High Performance Computing Applications},
-  volume = {0},
-  number = {0},
-  pages = {10943420221121151},
-  year = {0},
-  doi = {10.1177/10943420221121151},
-  URL = {https://doi.org/10.1177/10943420221121151},
-  eprint = {https://doi.org/10.1177/10943420221121151}
-}
-```
+    @article{PeleC_IJHPCA,
+      author = {Marc T Henry de Frahan and Jon S Rood and Marc S Day and Hariswaran Sitaraman and Shashank Yellapantula and Bruce A Perry and Ray W Grout and Ann Almgren and Weiqun Zhang and John B Bell and Jacqueline H Chen},
+      title = {{PeleC: An adaptive mesh refinement solver for compressible reacting flows}},
+      journal = {The International Journal of High Performance Computing Applications},
+      volume = {0},
+      number = {0},
+      pages = {10943420221121151},
+      year = {0},
+      doi = {10.1177/10943420221121151},
+      URL = {https://doi.org/10.1177/10943420221121151},
+      eprint = {https://doi.org/10.1177/10943420221121151}
+    }
 
 Acknowledgment
 ~~~~~~~~~~~~~~
