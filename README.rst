@@ -110,6 +110,21 @@ To cite PeleC, use the following `journal article <https://doi.org/10.1177/10943
       eprint = {https://doi.org/10.1177/10943420221121151}
     }
 
+`This application of PeleC to compressible reacting flow <https://doi.org/10.1016/j.combustflame.2021.111531>`_ may also be useful to cite::
+
+  @article{Sitaraman2021,
+    title = {Adaptive mesh based combustion simulations of direct fuel injection effects in a supersonic cavity flame-holder},
+    journal = {Combustion and Flame},
+    volume = {232},
+    pages = {111531},
+    year = {2021},
+    issn = {0010-2180},
+    doi = {https://doi.org/10.1016/j.combustflame.2021.111531},
+    url = {https://www.sciencedirect.com/science/article/pii/S0010218021002741},
+    author = {Hariswaran Sitaraman and Shashank Yellapantula and Marc T. {Henry de Frahan} and Bruce Perry and Jon Rood and Ray Grout and Marc Day}
+  }
+
+
 Acknowledgment
 ~~~~~~~~~~~~~~
 
