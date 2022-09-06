@@ -109,7 +109,7 @@ To cite the PeleC software and refer to its computational performance, use the f
       url = {https://doi.org/10.1177/10943420221121151}
     }
 
-Additionally, to cite the application of PeleC to compressible reacting flows, use the following `journal article <https://doi.org/10.1016/j.combustflame.2021.111531>`_::
+Additionally, to cite the application of PeleC to compressible reacting flows, use the following `Combustion and Flame journal article <https://doi.org/10.1016/j.combustflame.2021.111531>`_::
 
   @article{Sitaraman2021,
     author = {Hariswaran Sitaraman and Shashank Yellapantula and Marc T. {Henry de Frahan} and Bruce Perry and Jon Rood and Ray Grout and Marc Day}
