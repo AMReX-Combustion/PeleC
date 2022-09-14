@@ -110,8 +110,8 @@ PeleCAmr::constructPlotMF(
     }
 #ifdef PELEC_USE_SPRAY
     // Add spray derive variables
-    if (!PeleC::spray_derive_vars.empty()) {
-      num_derive += PeleC::spray_derive_vars.size();
+    if (!SprayParticleContainer::spray_derive_vars.empty()) {
+      num_derive += SprayParticleContainer::spray_derive_vars.size();
     }
 #endif
   }
@@ -159,15 +159,13 @@ PeleCAmr::constructPlotMF(
     }
 
 #ifdef PELEC_USE_SPRAY
-    if (!PeleC::spray_derive_vars.empty() && regular) {
+    if (!SprayParticleContainer::spray_derive_vars.empty() && regular) {
       const int num_spray_derive =
-        static_cast<int>(PeleC::spray_derive_vars.size());
+        static_cast<int>(SprayParticleContainer::spray_derive_vars.size());
       PeleC::setupVirtualParticles(lev, finestLevel());
       plotMFs[lev]->setVal(0., cnt, num_spray_derive);
       // Compute derived spray variables for active particles
-      PeleC::theSprayPC()->computeDerivedVars(
-        *plotMFs[lev], lev, cnt, PeleC::spray_derive_vars,
-        PeleC::spray_fuel_names);
+      PeleC::theSprayPC()->computeDerivedVars(*plotMFs[lev], lev, cnt);
       if (lev < finestLevel()) {
         amrex::MultiFab tmp_plt(
           boxArray(lev), DistributionMap(lev), num_spray_derive, 0,
@@ -175,8 +173,7 @@ PeleCAmr::constructPlotMF(
         tmp_plt.setVal(0.);
         // Compute derived spray variables for virtual particles under refined
         // regions
-        PeleC::theVirtPC()->computeDerivedVars(
-          tmp_plt, lev, 0, PeleC::spray_derive_vars, PeleC::spray_fuel_names);
+        PeleC::theVirtPC()->computeDerivedVars(tmp_plt, lev, 0);
         amrex::MultiFab::Add(
           *plotMFs[lev], tmp_plt, 0, cnt, num_spray_derive, 0);
       }
@@ -303,8 +300,7 @@ PeleCAmr::writePlotFileDoit(
   if (PeleC::theSprayPC() != nullptr && regular) {
     for (int lev = 0; lev < nlevels; ++lev) {
       PeleC::theSprayPC()->SprayParticleIO(
-        lev, false, PeleC::write_spray_ascii_files, pltfile,
-        PeleC::spray_fuel_names);
+        lev, false, PeleC::write_spray_ascii_files, pltfile);
     }
   }
 #endif

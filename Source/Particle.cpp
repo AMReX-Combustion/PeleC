@@ -46,8 +46,6 @@ int plot_spray_src = 0;
 int PeleC::write_spray_ascii_files = 0;
 // momentum + density + fuel species + energy
 int PeleC::num_spray_src = AMREX_SPACEDIM + 2 + SPRAY_FUEL_NUM;
-std::string PeleC::spray_fuel_names[SPRAY_FUEL_NUM];
-amrex::Vector<std::string> PeleC::spray_derive_vars;
 
 SprayParticleContainer*
 PeleC::theSprayPC()
@@ -99,8 +97,7 @@ PeleC::readSprayParams()
   if (do_spray_particles) {
     SprayParticleContainer::readSprayParams(
       particle_verbose, particle_cfl, wall_temp, write_spray_ascii_files,
-      plot_spray_src, init_function, init_file, sprayData, spray_fuel_names,
-      spray_derive_vars);
+      plot_spray_src, init_function, init_file, sprayData);
   }
 }
 
@@ -115,37 +112,7 @@ PeleC::defineParticles()
   if (SPRAY_FUEL_NUM > NUM_SPECIES) {
     amrex::Abort("Cannot have more spray fuel species than fluid species");
   }
-  if (
-    (std::is_same<
-      pele::physics::PhysicsType::eos_type, pele::physics::eos::SRK>::value) ||
-    (std::is_same<
-      pele::physics::PhysicsType::eos_type,
-      pele::physics::eos::Fuego>::value)) {
-    for (int i = 0; i < SPRAY_FUEL_NUM; ++i) {
-      for (int ns = 0; ns < NUM_SPECIES; ++ns) {
-        std::string gas_spec = spec_names[ns];
-        if (gas_spec == spray_fuel_names[i]) {
-          sprayData.indx[i] = ns;
-        }
-      }
-      if (sprayData.indx[i] < 0) {
-        amrex::Print() << "Fuel " << spray_fuel_names[i]
-                       << " not found in species list" << std::endl;
-        amrex::Abort();
-      }
-    }
-  } else {
-    for (int ns = 0; ns < SPRAY_FUEL_NUM; ++ns) {
-      sprayData.indx[ns] = 0;
-    }
-  }
-  amrex::Vector<amrex::Real> fuelEnth(NUM_SPECIES);
-  auto eos = pele::physics::PhysicsType::eos();
-  eos.T2Hi(sprayData.ref_T, fuelEnth.data());
-  for (int ns = 0; ns < SPRAY_FUEL_NUM; ++ns) {
-    const int fspec = sprayData.indx[ns];
-    sprayData.latent[ns] -= fuelEnth[fspec];
-  }
+  SprayParticleContainer::spraySetup(sprayData);
   scomps.rhoIndx = PeleC::Density;
   scomps.momIndx = PeleC::Xmom;
   scomps.engIndx = PeleC::Eden;

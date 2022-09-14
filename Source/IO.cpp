@@ -285,7 +285,7 @@ PeleC::checkPoint(
 
 #ifdef PELEC_USE_SPRAY
   if (theSprayPC() != nullptr) {
-    theSprayPC()->SprayParticleIO(level, true, 0, dir, PeleC::spray_fuel_names);
+    theSprayPC()->SprayParticleIO(level, true, 0, dir);
   }
 #endif
 

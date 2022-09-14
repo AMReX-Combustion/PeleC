@@ -200,8 +200,6 @@ public:
   // Should we write particle ascii files?
   static int write_spray_ascii_files;
 
-  static std::string spray_fuel_names[SPRAY_FUEL_NUM];
-  static amrex::Vector<std::string> spray_derive_vars;
   static SprayParticleContainer* theSprayPC();
   static SprayParticleContainer* theVirtPC();
   static SprayParticleContainer* theGhostPC();
