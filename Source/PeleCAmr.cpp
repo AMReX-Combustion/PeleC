@@ -204,8 +204,9 @@ PeleCAmr::constructPlotMF(
   }
 
 #ifdef PELEC_USE_SPRAY
-  if (!PeleC::spray_derive_vars.empty() && regular) {
-    for (const auto& spray_derive_name : PeleC::spray_derive_vars) {
+  if (!SprayParticleContainer::spray_derive_vars.empty() && regular) {
+    for (const auto& spray_derive_name :
+         SprayParticleContainer::spray_derive_vars) {
       plt_var_names.push_back(spray_derive_name);
     }
   }
