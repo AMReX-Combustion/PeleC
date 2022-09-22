@@ -39,7 +39,6 @@ std::string init_file;
 int init_function = 1;
 int particle_verbose = 0;
 amrex::Real particle_cfl = 0.5;
-amrex::Real wall_temp = 300.;
 int plot_spray_src = 0;
 } // namespace
 
@@ -96,8 +95,8 @@ PeleC::readSprayParams()
   pp.query("do_spray_particles", do_spray_particles);
   if (do_spray_particles) {
     SprayParticleContainer::readSprayParams(
-      particle_verbose, particle_cfl, wall_temp, write_spray_ascii_files,
-      plot_spray_src, init_function, init_file, sprayData);
+      particle_verbose, particle_cfl, write_spray_ascii_files, plot_spray_src,
+      init_function, init_file, sprayData);
   }
 }
 
@@ -199,13 +198,10 @@ PeleC::removeGhostParticles(const int level)
 void
 PeleC::createDataParticles()
 {
-  SprayPC =
-    new SprayParticleContainer(parent, &phys_bc, sprayData, scomps, wall_temp);
+  SprayPC = new SprayParticleContainer(parent, &phys_bc, sprayData, scomps);
   theSprayPC()->SetVerbose(particle_verbose);
-  VirtPC =
-    new SprayParticleContainer(parent, &phys_bc, sprayData, scomps, wall_temp);
-  GhostPC =
-    new SprayParticleContainer(parent, &phys_bc, sprayData, scomps, wall_temp);
+  VirtPC = new SprayParticleContainer(parent, &phys_bc, sprayData, scomps);
+  GhostPC = new SprayParticleContainer(parent, &phys_bc, sprayData, scomps);
 }
 
 // Initialize the particles on the grid at level 0
