@@ -417,7 +417,7 @@ PeleC::PeleC(
   }
 
   if (do_reflux && level > 0) {
-    flux_reg.define(
+    flux_reg = std::make_unique<amrex::EBFluxRegister>(
       bl, papa.boxArray(level - 1), dm, papa.DistributionMap(level - 1),
       level_geom, papa.Geom(level - 1), papa.refRatio(level - 1), level, NVAR);
 
@@ -1230,7 +1230,7 @@ PeleC::reflux()
   PeleC& fine_level = getLevel(level + 1);
   amrex::MultiFab& S_crse = get_new_data(State_Type);
   amrex::MultiFab& S_fine = fine_level.get_new_data(State_Type);
-  fine_level.flux_reg.Reflux(S_crse, vfrac, S_fine, fine_level.vfrac);
+  getFluxReg(level + 1).Reflux(S_crse, vfrac, S_fine, fine_level.vfrac);
 
   if (!amrex::DefaultGeometry().IsCartesian() && eb_in_domain) {
     amrex::Abort("rz not yet compatible with EB");

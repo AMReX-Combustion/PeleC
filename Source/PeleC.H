@@ -520,7 +520,7 @@ public:
 
   static bool eb_in_domain;
 
-  amrex::EBFluxRegister flux_reg;
+  std::unique_ptr<amrex::EBFluxRegister> flux_reg;
   amrex::EBFluxRegister& getFluxReg();
   amrex::EBFluxRegister& getFluxReg(int lev);
 
@@ -812,7 +812,7 @@ AMREX_FORCE_INLINE
 amrex::EBFluxRegister&
 PeleC::getFluxReg()
 {
-  return flux_reg;
+  return *flux_reg;
 }
 
 AMREX_FORCE_INLINE
