@@ -659,8 +659,6 @@ protected:
   amrex::MultiFab mms_source;
 #endif
 
-  // bool FillPatchedOldState_ok;
-
   // There can be only one Diffusion object, it covers all levels:
   static class Diffusion* diffusion;
 
