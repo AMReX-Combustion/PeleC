@@ -83,7 +83,7 @@ PeleC::do_mol_advance(
   if (verbose != 0) {
     amrex::Print() << "... Computing MOL source term at t^{n} " << std::endl;
   }
-  FillPatcherFill(Sborder, numGrow() + nGrowF, time, State_Type);
+  FillPatcherFill(Sborder, 0, NVAR, numGrow() + nGrowF, time, State_Type, 0);
   amrex::Real flux_factor = 0;
   getMOLSrcTerm(Sborder, molSrc, time, dt, flux_factor);
 
@@ -118,7 +118,8 @@ PeleC::do_mol_advance(
   if (verbose != 0) {
     amrex::Print() << "... Computing MOL source term at t^{n+1} " << std::endl;
   }
-  FillPatcherFill(Sborder, numGrow() + nGrowF, time + dt, State_Type);
+  FillPatcherFill(
+    Sborder, 0, NVAR, numGrow() + nGrowF, time + dt, State_Type, 0);
   flux_factor = mol_iters > 1 ? 0 : 1;
   getMOLSrcTerm(Sborder, molSrc, time, dt, flux_factor);
 
@@ -164,7 +165,8 @@ PeleC::do_mol_advance(
         amrex::Print() << "... Re-computing MOL source term at t^{n+1} (iter = "
                        << mol_iter << " of " << mol_iters << ")" << std::endl;
       }
-      FillPatcherFill(Sborder, numGrow() + nGrowF, time + dt, State_Type);
+      FillPatcherFill(
+        Sborder, 0, NVAR, numGrow() + nGrowF, time + dt, State_Type, 0);
       flux_factor = mol_iter == mol_iters ? 1 : 0;
       getMOLSrcTerm(Sborder, molSrc_new, time, dt, flux_factor);
 
@@ -280,7 +282,7 @@ PeleC::do_sdc_iteration(
 #endif
 
   if (fill_Sborder) {
-    FillPatcherFill(Sborder, nGrow_Sborder, time, State_Type);
+    FillPatcherFill(Sborder, 0, NVAR, nGrow_Sborder, time, State_Type, 0);
   }
 
   if (sub_iteration == 0) {
@@ -408,7 +410,7 @@ PeleC::do_sdc_iteration(
       amrex::Print() << "... Computing diffusion terms at t^(n+1,"
                      << sub_iteration + 1 << ")" << std::endl;
     }
-    FillPatcherFill(Sborder, numGrow(), time + dt, State_Type);
+    FillPatcherFill(Sborder, 0, NVAR, numGrow(), time + dt, State_Type, 0);
     amrex::Real flux_factor_new = sub_iteration == sub_ncycle - 1 ? 0.5 : 0;
     getMOLSrcTerm(Sborder, *new_sources[diff_src], time, dt, flux_factor_new);
   }
@@ -429,7 +431,8 @@ PeleC::do_sdc_iteration(
       amrex::Print() << "moveKick ... updating velocity only\n";
 
     if (!do_diffuse) { // Else, this was already done above.  No need to redo
-      FillPatcherFill(Sborder, nGrow_Sborder, time + dt, State_Type);
+      FillPatcherFill(
+        Sborder, 0, NVAR, nGrow_Sborder, time + dt, State_Type, 0);
     }
 
     new_sources[spray_src]->setVal(0.);
