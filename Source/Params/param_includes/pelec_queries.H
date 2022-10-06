@@ -60,6 +60,7 @@ pp.query("redistribution_type", redistribution_type);
 pp.query("eb_clean_massfrac", eb_clean_massfrac);
 pp.query("eb_clean_massfrac_threshold", eb_clean_massfrac_threshold);
 pp.query("eb_srd_max_order", eb_srd_max_order);
+pp.query("write_chk_geom", write_chk_geom);
 pp.query("do_mms", do_mms);
 pp.query("masa_solution_name", masa_solution_name);
 pp.query("fixed_dt", fixed_dt);

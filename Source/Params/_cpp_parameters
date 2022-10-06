@@ -203,6 +203,9 @@ eb_clean_massfrac_threshold  Real         0.0
 # Max order used for SRD slopes
 eb_srd_max_order             int          2
 
+# flag from writing an EB chk file
+write_chk_geom              bool          false
+
 #-----------------------------------------------------------------------------
 # category: method of manufactured solution
 #-----------------------------------------------------------------------------
