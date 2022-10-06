@@ -521,7 +521,7 @@ public:
   static bool eb_in_domain;
 
   std::unique_ptr<amrex::EBFluxRegister> flux_reg;
-  amrex::EBFluxRegister& getFluxReg();
+  amrex::EBFluxRegister& getFluxReg() const;
   amrex::EBFluxRegister& getFluxReg(int lev);
 
   static bool ebInitialized();
@@ -808,7 +808,7 @@ pc_check_initial_species(
 
 AMREX_FORCE_INLINE
 amrex::EBFluxRegister&
-PeleC::getFluxReg()
+PeleC::getFluxReg() const
 {
   return *flux_reg;
 }
