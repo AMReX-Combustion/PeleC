@@ -410,7 +410,11 @@ PeleC::zero_in_body(amrex::MultiFab& S) const
 // Sets up implicit function using EB2 infrastructure
 void
 initialize_EB2(
-  const amrex::Geometry& geom, const int /*unused*/, const int max_level)
+  const amrex::Geometry& geom,
+  const int eb_max_level,
+  const int max_level,
+  const amrex::Vector<amrex::IntVect>& ref_ratio,
+  const amrex::IntVect max_grid_size)
 {
   BL_PROFILE("PeleC::initialize_EB2()");
 
@@ -421,9 +425,6 @@ initialize_EB2(
   ppeb2.query("geom_type", geom_type);
 
   int max_coarsening_level = 0;
-  amrex::ParmParse ppamr("amr");
-  amrex::Vector<int> ref_ratio(max_level, 2);
-  ppamr.queryarr("ref_ratio", ref_ratio, 0, max_level);
   for (int lev = 0; lev < max_level; ++lev) {
     max_coarsening_level +=
       (ref_ratio[lev] == 2 ? 1
@@ -441,6 +442,24 @@ initialize_EB2(
     geometry->build(geom, max_coarsening_level);
   } else {
     amrex::EB2::Build(geom, max_level, max_level);
+  }
+
+  // Add finer level, might be inconsistent with the coarser level created
+  // above.
+  if (geom_type != "chkfile") {
+    amrex::EB2::addFineLevels(max_level - eb_max_level);
+  }
+
+  bool write_chk_geom = false;
+  ppeb2.query("write_chk_geom", write_chk_geom);
+  if (write_chk_geom) {
+    const auto& is = amrex::EB2::IndexSpace::top();
+    const auto& eb_level = is.getLevel(geom);
+    std::string chkfile = "chk_geom";
+    ppeb2.query("chkfile", chkfile);
+
+    eb_level.write_to_chkpt_file(
+      chkfile, amrex::EB2::ExtendDomainFace(), max_grid_size[0]);
   }
 }
 
