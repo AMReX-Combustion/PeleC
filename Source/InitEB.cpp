@@ -414,7 +414,7 @@ initialize_EB2(
   const int eb_max_level,
   const int max_level,
   const amrex::Vector<amrex::IntVect>& ref_ratio,
-  const amrex::IntVect max_grid_size)
+  const amrex::IntVect& max_grid_size)
 {
   BL_PROFILE("PeleC::initialize_EB2()");
 
