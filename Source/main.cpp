@@ -17,8 +17,12 @@
 
 std::string inputs_name;
 
-void
-initialize_EB2(const amrex::Geometry& geom, int required_level, int max_level);
+void initialize_EB2(
+  const amrex::Geometry& geom,
+  const int eb_max_level,
+  const int max_level,
+  const amrex::Vector<amrex::IntVect>& ref_ratio,
+  const amrex::IntVect& max_grid_size);
 
 amrex::LevelBld* getLevelBld();
 
@@ -129,11 +133,8 @@ main(int argc, char* argv[])
 
   initialize_EB2(
     amrptr->Geom(PeleC::getEBMaxLevel()), PeleC::getEBMaxLevel(),
-    amrptr->maxLevel());
-
-  // Add finer level, might be inconsistent with the coarser level created
-  // above.
-  amrex::EB2::addFineLevels(amrptr->maxLevel() - PeleC::getEBMaxLevel());
+    amrptr->maxLevel(), amrptr->refRatio(),
+    amrptr->maxGridSize(amrptr->maxLevel()));
 
   amrptr->init(strt_time, stop_time);
 
