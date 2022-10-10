@@ -540,14 +540,14 @@ PeleC::getMOLSrcTerm(
             });
         }
 
-        if (level < parent->finestLevel()) {
-          getFluxReg(level + 1).CrseAdd(
+        if ((level < parent->finestLevel()) && (fr_as_crse != nullptr)) {
+          fr_as_crse->CrseAdd(
             mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}},
             dxD.data(), dt, amrex::RunOn::Device);
         }
 
-        if (level > 0) {
-          getFluxReg(level).FineAdd(
+        if ((level > 0) && (fr_as_fine != nullptr)) {
+          fr_as_fine->FineAdd(
             mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}},
             dxD.data(), dt, amrex::RunOn::Device);
         }
