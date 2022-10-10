@@ -60,7 +60,7 @@ PeleC::construct_hydro_source(
 
     amrex::Real courno = std::numeric_limits<amrex::Real>::lowest();
 
-    amrex::MultiFab& S_new = get_new_data(State_Type);
+    const amrex::MultiFab& S_new = get_new_data(State_Type);
 
     // note: the radiation consup currently does not fill these
     amrex::Real E_added_flux = 0.;

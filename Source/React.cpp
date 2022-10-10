@@ -10,7 +10,7 @@ PeleC::set_typical_values_chem()
   if (use_typical_vals_chem_usr) {
     reactor->set_typ_vals_ode(typical_values_chem_usr);
   } else {
-    amrex::MultiFab& S_new = get_new_data(State_Type);
+    const amrex::MultiFab& S_new = get_new_data(State_Type);
     amrex::Real minTemp = S_new.min(UTEMP);
     amrex::Real maxTemp = S_new.max(UTEMP);
     amrex::Vector<amrex::Real> typical_values_chem(NUM_SPECIES + 1, 1e-10);
@@ -88,7 +88,7 @@ PeleC::react_state(
     }
 
     // S_new = S_old + dt*(non reacting source terms)
-    amrex::MultiFab& S_old = get_old_data(State_Type);
+    const amrex::MultiFab& S_old = get_old_data(State_Type);
     amrex::MultiFab::Copy(S_new, S_old, 0, 0, NVAR, ng);
     amrex::MultiFab::Saxpy(S_new, dt, *non_react_src, 0, 0, NVAR, ng);
   }
@@ -106,7 +106,7 @@ PeleC::react_state(
   dummyMask.setVal(1);
 
   if (!react_init) {
-    amrex::MultiFab& S_old = get_old_data(State_Type);
+    const amrex::MultiFab& S_old = get_old_data(State_Type);
     amrex::MultiFab::Copy(STemp, S_old, UFS, 0, NUM_SPECIES, STemp.nGrow());
     amrex::MultiFab::Copy(STemp, S_old, UTEMP, NUM_SPECIES, 1, STemp.nGrow());
     amrex::MultiFab::Copy(
