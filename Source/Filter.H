@@ -56,8 +56,8 @@ class Filter
 {
 
 public:
-  // Default constructor
-  Filter(const int type = box, const int fgr = 2) : _type(type), _fgr(fgr)
+  explicit Filter(const int type = box, const int fgr = 2)
+    : _type(type), _fgr(fgr)
   {
 
     switch (_type) {

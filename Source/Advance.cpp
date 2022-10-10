@@ -484,7 +484,7 @@ PeleC::construct_Snew(
   }
 
   if (do_react) {
-    amrex::MultiFab& I_R = get_new_data(Reactions_Type);
+    const amrex::MultiFab& I_R = get_new_data(Reactions_Type);
     amrex::MultiFab::Saxpy(S_new, dt, I_R, 0, FirstSpec, NUM_SPECIES, 0);
     amrex::MultiFab::Saxpy(S_new, dt, I_R, NUM_SPECIES, Eden, 1, 0);
   }
