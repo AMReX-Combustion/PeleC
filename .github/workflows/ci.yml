@@ -208,10 +208,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        cuda_ver: [11.2]
+        cuda_ver: [11.4]
         include:
-          - cuda_ver: "11.2"
-            cuda_pkg: 11-2
+          - cuda_ver: "11.4"
+            cuda_pkg: 11-4
     steps:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.6.0

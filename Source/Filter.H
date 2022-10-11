@@ -114,7 +114,7 @@ public:
   // Default destructor
   ~Filter() = default;
 
-  int get_filter_ngrow() const { return _ngrow; }
+  [[nodiscard]] int get_filter_ngrow() const { return _ngrow; }
 
   void apply_filter(const amrex::MultiFab& in, amrex::MultiFab& out);
 
