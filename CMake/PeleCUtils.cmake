@@ -30,17 +30,18 @@ macro(init_code_checks)
     if(CPPCHECK_EXE)
       message(STATUS "cppcheck found: ${CPPCHECK_EXE}")
       include(ProcessorCount)
-      ProcessorCount(NP)
-      if(NP EQUAL 0)
-        set(NP 1)
-      endif()
+      #ProcessorCount(NP)
+      #if(NP EQUAL 0)
+      #  set(NP 1)
+      #endif()
+      set(NP 1)
       add_custom_target(cppcheck ALL
           COMMAND ${CMAKE_COMMAND} -E echo "Running cppcheck on project using ${NP} cores..."
           COMMAND ${CMAKE_COMMAND} -E make_directory cppcheck
           # cppcheck ignores -isystem directories, so we change them to regular -I include directories (with no spaces either)
           COMMAND sed "s/isystem /I/g" compile_commands.json > cppcheck/cppcheck_compile_commands.json
           COMMAND ${CPPCHECK_EXE} --version
-          COMMAND ${CPPCHECK_EXE} --template=gcc --inline-suppr --suppress=unusedFunction --suppress=useStlAlgorithm --std=c++14 --language=c++ --enable=all --project=cppcheck/cppcheck_compile_commands.json --output-file=cppcheck/cppcheck-full-report.txt -j ${NP}
+          COMMAND ${CPPCHECK_EXE} --template=gcc --inline-suppr --suppress=unusedFunction --suppress=useStlAlgorithm --std=c++17 --language=c++ --enable=all --project=cppcheck/cppcheck_compile_commands.json --output-file=cppcheck/cppcheck-full-report.txt -j ${NP}
           COMMAND egrep "information:|error:|performance:|portability:|style:|warning:" cppcheck/cppcheck-full-report.txt | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|Submodules/PelePhysics/Support/Mechanism/Models" | sort | uniq > cppcheck/cppcheck-report.txt
           COMMAND wc -l cppcheck/cppcheck-report.txt
           COMMENT "Run cppcheck on project compile_commands.json"
