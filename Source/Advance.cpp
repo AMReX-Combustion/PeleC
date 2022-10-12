@@ -178,7 +178,8 @@ PeleC::do_mol_advance(
                        << mol_iter << " of " << mol_iters << ")" << std::endl;
       }
 
-      FillPatcherFill(Sborder, 0, NVAR, nGrow_Sborder, time + dt, State_Type, 0);
+      FillPatcherFill(
+        Sborder, 0, NVAR, nGrow_Sborder, time + dt, State_Type, 0);
       flux_factor = mol_iter == mol_iters ? 1 : 0;
       getMOLSrcTerm(Sborder, molSrc_new, time, dt, flux_factor);
 
