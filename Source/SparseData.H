@@ -36,7 +36,7 @@ public:
     return &(m_data.data()[getIndex(0, comp, m_region_size)]);
   }
 
-  [[nodiscard]] const T* dataPtr(int comp = 0) const
+  const T* dataPtr(int comp = 0) const
   {
     return &(m_data.data()[getIndex(0, comp, m_region_size)]);
   }
@@ -51,9 +51,9 @@ public:
     int ncomp,
     const amrex::Gpu::DeviceVector<int> mask);
 
-  [[nodiscard]] int numPts() const { return m_region_size; }
+  int numPts() const { return m_region_size; }
 
-  [[nodiscard]] int nComp() const { return m_ncomp; }
+  int nComp() const { return m_ncomp; }
 
 private:
   int m_ncomp = 0;

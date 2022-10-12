@@ -240,8 +240,8 @@ jobs:
           export PATH=/usr/local/nvidia/bin:/usr/local/cuda-${{matrix.cuda_ver}}/bin:${PATH}
           export LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/cuda-${{matrix.cuda_ver}}/lib:${LD_LIBRARY_PATH}
           cmake -G "Unix Makefiles" -Bbuild-${{matrix.cuda_pkg}} \
-            -DCMAKE_CXX_COMPILER:STRING=g++-10 \
-            -DCMAKE_C_COMPILER:STRING=gcc-10 \
+            -DCMAKE_CXX_COMPILER:STRING=g++-11 \
+            -DCMAKE_C_COMPILER:STRING=gcc-11 \
             -DCMAKE_BUILD_TYPE:STRING=Release \
             -DPELEC_ENABLE_MPI:BOOL=OFF \
             -DPELEC_ENABLE_CUDA:BOOL=ON \
