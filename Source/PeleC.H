@@ -585,8 +585,8 @@ public:
 
   static bool eb_in_domain;
 
-  amrex::EBFluxRegister flux_reg;
-  amrex::EBFluxRegister& getFluxReg();
+  std::unique_ptr<amrex::EBFluxRegister> flux_reg;
+  amrex::EBFluxRegister& getFluxReg() const;
   amrex::EBFluxRegister& getFluxReg(int lev);
 
   static bool ebInitialized();
@@ -727,8 +727,6 @@ protected:
   bool mms_src_evaluated;
   amrex::MultiFab mms_source;
 #endif
-
-  // bool FillPatchedOldState_ok;
 
   // There can be only one Diffusion object, it covers all levels:
   static class Diffusion* diffusion;
@@ -874,9 +872,9 @@ pc_check_initial_species(
 
 AMREX_FORCE_INLINE
 amrex::EBFluxRegister&
-PeleC::getFluxReg()
+PeleC::getFluxReg() const
 {
-  return flux_reg;
+  return *flux_reg;
 }
 
 AMREX_FORCE_INLINE

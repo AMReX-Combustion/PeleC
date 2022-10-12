@@ -88,6 +88,15 @@ public:
   build(const amrex::Geometry& geom, const int max_coarsening_level) override;
 };
 
+class CheckpointFile : public Geometry::Register<CheckpointFile>
+{
+public:
+  static std::string identifier() { return "chkfile"; }
+
+  void
+  build(const amrex::Geometry& geom, const int max_coarsening_level) override;
+};
+
 } // namespace pelec
 } // namespace pele
 #endif

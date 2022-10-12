@@ -375,5 +375,16 @@ QuarterCircle::build(
   amrex::EB2::Build(
     gshop, geom, max_coarsening_level, max_coarsening_level, 4, false);
 }
+
+void
+CheckpointFile::build(
+  const amrex::Geometry& geom, const int max_coarsening_level)
+{
+  std::string chkfile = "chk_geom";
+  amrex::ParmParse pp("eb2");
+  pp.query("chkfile", chkfile);
+
+  amrex::EB2::BuildFromChkptFile(chkfile, geom, 0, max_coarsening_level);
+}
 } // namespace pelec
 } // namespace pele

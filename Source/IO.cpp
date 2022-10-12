@@ -203,7 +203,7 @@ PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
   */
 
   if (level > 0 && do_reflux) {
-    flux_reg.define(
+    flux_reg = std::make_unique<amrex::EBFluxRegister>(
       grids, papa.boxArray(level - 1), dmap, papa.DistributionMap(level - 1),
       geom, papa.Geom(level - 1), papa.refRatio(level - 1), level, NVAR);
 

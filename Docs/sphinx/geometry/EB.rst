@@ -293,3 +293,20 @@ Then iterate over MultiFabs
                                        BL_TO_FORTRAN_3D(tander_ec[d]),
                                        geom.CellSize(),&d);
     }
+
+Saving and reloading an EB geometry
+-----------------------------------
+
+These are the input option to save an EB geometry:
+
+::
+
+   eb2.write_chk_geom=1   # defaults to 0
+   eb2.chkfile="chk_geom" # optional, defaults to "chk_geom"
+
+These are the input options to read from a saved EB geometry:
+
+::
+
+   eb2.geom_type="chkfile"
+   eb2.chkfile="chk_geom" # optional, defaults to "chk_geom"

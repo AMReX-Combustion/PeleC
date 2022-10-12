@@ -87,6 +87,7 @@ PeleC::do_mol_advance(
   if (verbose != 0) {
     amrex::Print() << "... Computing MOL source term at t^{n} " << std::endl;
   }
+
   int nGrow_Sborder = numGrow() + nGrowF;
 #ifdef PELEC_USE_SPRAY
   const int spray_state_ghosts = sprayStateGhosts(amr_ncycle);
@@ -94,7 +95,7 @@ PeleC::do_mol_advance(
   AMREX_ASSERT(Sborder.nGrow() >= nGrow_Sborder);
 #endif
 
-  FillPatch(*this, Sborder, nGrow_Sborder, time, State_Type, 0, NVAR);
+  FillPatcherFill(Sborder, 0, NVAR, nGrow_Sborder, time, State_Type, 0);
   amrex::Real flux_factor = 0;
   getMOLSrcTerm(Sborder, molSrc, time, dt, flux_factor);
 
@@ -129,7 +130,8 @@ PeleC::do_mol_advance(
   if (verbose != 0) {
     amrex::Print() << "... Computing MOL source term at t^{n+1} " << std::endl;
   }
-  FillPatch(*this, Sborder, nGrow_Sborder, time + dt, State_Type, 0, NVAR);
+
+  FillPatcherFill(Sborder, 0, NVAR, nGrow_Sborder, time + dt, State_Type, 0);
   flux_factor = mol_iters > 1 ? 0 : 1;
   getMOLSrcTerm(Sborder, molSrc, time, dt, flux_factor);
 
@@ -175,7 +177,8 @@ PeleC::do_mol_advance(
         amrex::Print() << "... Re-computing MOL source term at t^{n+1} (iter = "
                        << mol_iter << " of " << mol_iters << ")" << std::endl;
       }
-      FillPatch(*this, Sborder, nGrow_Sborder, time + dt, State_Type, 0, NVAR);
+
+      FillPatcherFill(Sborder, 0, NVAR, nGrow_Sborder, time + dt, State_Type, 0);
       flux_factor = mol_iter == mol_iters ? 1 : 0;
       getMOLSrcTerm(Sborder, molSrc_new, time, dt, flux_factor);
 
@@ -272,7 +275,7 @@ PeleC::do_sdc_iteration(
 #endif
 
   if (fill_Sborder) {
-    FillPatch(*this, Sborder, nGrow_Sborder, time, State_Type, 0, NVAR);
+    FillPatcherFill(Sborder, 0, NVAR, nGrow_Sborder, time, State_Type, 0);
   }
 
   if (sub_iteration == 0) {
@@ -325,7 +328,7 @@ PeleC::do_sdc_iteration(
     if (do_spray_particles && level > 0) {
       nGrowDiff = amrex::max(nGrowDiff, nGrow_Sborder);
     }
-    FillPatch(*this, Sborder, nGrowDiff, time + dt, State_Type, 0, NVAR);
+    FillPatcherFill(Sborder, 0, NVAR, nGrowDiff, time + dt, State_Type, 0);
   }
   if (do_diffuse) {
     if (verbose != 0) {
@@ -379,7 +382,7 @@ PeleC::construct_Snew(
   }
 
   if (do_react) {
-    amrex::MultiFab& I_R = get_new_data(Reactions_Type);
+    const amrex::MultiFab& I_R = get_new_data(Reactions_Type);
     amrex::MultiFab::Saxpy(S_new, dt, I_R, 0, FirstSpec, NUM_SPECIES, 0);
     amrex::MultiFab::Saxpy(S_new, dt, I_R, NUM_SPECIES, Eden, 1, 0);
   }
