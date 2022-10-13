@@ -792,7 +792,7 @@ PeleC::estTimeStep(amrex::Real /*dt_old*/)
     if (do_hydro) {
       amrex::Real dt = amrex::ReduceMin(
         stateMF, flags, 0,
-        [=] AMREX_GPU_DEVICE(
+        [=] AMREX_GPU_HOST_DEVICE(
           amrex::Box const& bx, const amrex::Array4<const amrex::Real>& fab_arr,
           const amrex::Array4<const amrex::EBCellFlag>& flag_arr)
           -> amrex::Real {
@@ -806,7 +806,7 @@ PeleC::estTimeStep(amrex::Real /*dt_old*/)
       auto const* ltransparm = trans_parms.device_trans_parm();
       amrex::Real dt = amrex::ReduceMin(
         stateMF, flags, 0,
-        [=] AMREX_GPU_DEVICE(
+        [=] AMREX_GPU_HOST_DEVICE(
           amrex::Box const& bx, const amrex::Array4<const amrex::Real>& fab_arr,
           const amrex::Array4<const amrex::EBCellFlag>& flag_arr)
           -> amrex::Real {
@@ -820,7 +820,7 @@ PeleC::estTimeStep(amrex::Real /*dt_old*/)
       auto const* ltransparm = trans_parms.device_trans_parm();
       amrex::Real dt = amrex::ReduceMin(
         stateMF, flags, 0,
-        [=] AMREX_GPU_DEVICE(
+        [=] AMREX_GPU_HOST_DEVICE(
           amrex::Box const& bx, const amrex::Array4<const amrex::Real>& fab_arr,
           const amrex::Array4<const amrex::EBCellFlag>& flag_arr)
           -> amrex::Real {
@@ -834,7 +834,7 @@ PeleC::estTimeStep(amrex::Real /*dt_old*/)
       auto const* ltransparm = trans_parms.device_trans_parm();
       amrex::Real dt = amrex::ReduceMin(
         stateMF, flags, 0,
-        [=] AMREX_GPU_DEVICE(
+        [=] AMREX_GPU_HOST_DEVICE(
           amrex::Box const& bx, const amrex::Array4<const amrex::Real>& fab_arr,
           const amrex::Array4<const amrex::EBCellFlag>& flag_arr)
           -> amrex::Real {
