@@ -797,8 +797,7 @@ PeleC::estTimeStep(amrex::Real /*dt_old*/)
           amrex::Box const& bx, const amrex::Array4<const amrex::Real>& fab_arr,
           const amrex::Array4<const amrex::EBCellFlag>& flag_arr) noexcept
         -> amrex::Real {
-          return pc_estdt_hydro(
-            bx, fab_arr, flag_arr, dx1, dx2, dx3);
+          return pc_estdt_hydro(bx, fab_arr, flag_arr, dx1, dx2, dx3);
         });
       estdt_hydro = amrex::min<amrex::Real>(estdt_hydro, dt);
     }
