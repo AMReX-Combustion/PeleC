@@ -8,6 +8,10 @@ cmd() {
 OS=$(uname -s)
 
 if [ "${LMOD_SYSTEM_NAME}" == 'summit' ]; then
+  GNUMAKE_ARGS="USE_CUDA=TRUE PELE_USE_MAGMA=TRUE"
+  SPACK_COMPILER="%gcc"
+  SPACK_VARIANTS=""
+  MACHINE="summit"
   cmd "module unload xl"
   cmd "module load gcc/10.2.0"
   cmd "module load cuda/11.4.2"
@@ -15,19 +19,25 @@ if [ "${LMOD_SYSTEM_NAME}" == 'summit' ]; then
   cmd "module load binutils"
   cmd "module load netlib-lapack/3.9.1"
   cmd "export SPACK_MANAGER=${WORLDWORK}/cmb138/software/spack-manager-${LMOD_SYSTEM_NAME}"
-  GNUMAKE_ARGS="USE_CUDA=TRUE PELE_USE_MAGMA=TRUE"
-  SPACK_COMPILER="%gcc"
-  SPACK_VARIANTS=""
+  cmd "source ${SPACK_MANAGER}/start.sh && spack-start"
+  cmd "spack env activate -d ${SPACK_MANAGER}/environments/exawind-${MACHINE}"
 elif [ "${LMOD_SYSTEM_NAME}" == 'crusher' ]; then
+  GNUMAKE_ARGS="USE_HIP=TRUE PELE_USE_MAGMA=TRUE"
+  SPACK_COMPILER="%clang"
+  SPACK_VARIANTS=""
+  MACHINE="crusher"
   cmd "module unload PrgEnv-cray"
   cmd "module load PrgEnv-amd"
   cmd "module load rocm/5.1.0"
   cmd "module load cmake"
   cmd "export SPACK_MANAGER=${WORLDWORK}/cmb138/software/spack-manager-${LMOD_SYSTEM_NAME}"
-  GNUMAKE_ARGS="USE_HIP=TRUE PELE_USE_MAGMA=TRUE"
-  SPACK_COMPILER="%clang"
-  SPACK_VARIANTS=""
+  cmd "source ${SPACK_MANAGER}/start.sh && spack-start"
+  cmd "spack env activate -d ${SPACK_MANAGER}/environments/exawind-${MACHINE}"
 elif [ "${NREL_CLUSTER}" == 'eagle' ]; then
+  GNUMAKE_ARGS="COMP=intel"
+  SPACK_COMPILER="%intel"
+  SPACK_VARIANTS="~cuda"
+  MACHINE="eagle"
   cmd "source /nopt/nrel/ecom/hpacf/env.sh"
   cmd "module load gcc/9.3.0"
   cmd "module load intel-parallel-studio/cluster.2020.2"
@@ -36,21 +46,21 @@ elif [ "${NREL_CLUSTER}" == 'eagle' ]; then
   cmd "module load mpt"
   cmd "module load cmake"
   cmd "export SPACK_MANAGER=/nopt/nrel/ecom/hpacf/spack-manager/2022-07-22/spack-manager"
-  GNUMAKE_ARGS="COMP=intel"
-  SPACK_COMPILER="%intel"
-  SPACK_VARIANTS="~cuda"
-elif [ "${OS}" == 'Darwin' ]; then
-  # Not the best assumption, but change this to wherever spack-manager is
-  cmd "export SPACK_MANAGER=${HOME}/exawind/spack-manager"
   cmd "source ${SPACK_MANAGER}/start.sh && spack-start"
-  cmd "spack load cmake"
-  cmd "spack load mpich"
+  cmd "spack env activate -d ${SPACK_MANAGER}/environments/exawind-${MACHINE}"
+elif [ "${OS}" == 'Darwin' ]; then
   GNUMAKE_ARGS="COMP=llvm"
   SPACK_COMPILER="%apple-clang"
   SPACK_VARIANTS=""
+  MACHINE="darwin"
+  # Not the best assumption, but change this to wherever spack-manager is
+  cmd "export SPACK_MANAGER=${HOME}/exawind/spack-manager"
+  cmd "source ${SPACK_MANAGER}/start.sh && spack-start"
+  cmd "spack env activate -d ${SPACK_MANAGER}/environments/exawind-${MACHINE}"
+  cmd "spack load cmake"
+  cmd "spack load mpich"
 fi
 
-cmd "source ${SPACK_MANAGER}/start.sh && spack-start"
 HDF5_ROOT=$(spack location -i hdf5 ${SPACK_COMPILER})
 H5Z_ROOT=$(spack location -i h5z-zfp ${SPACK_COMPILER})
 ZFP_ROOT=$(spack location -i zfp ${SPACK_COMPILER})
