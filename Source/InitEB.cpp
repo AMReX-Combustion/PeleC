@@ -262,7 +262,7 @@ PeleC::initialize_eb2_structs()
           });
 #else
         sort<amrex::Gpu::DeviceVector<amrex::IntVect>>(v_all_cut_faces);
-        amrex::Gpu::DeviceVector<amrex::IntVect> v_cut_faces =
+        auto v_cut_faces =
           unique<amrex::Gpu::DeviceVector<amrex::IntVect>>(v_all_cut_faces);
 #endif
 

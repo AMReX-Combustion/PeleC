@@ -44,6 +44,8 @@ ifeq ($(USE_CUDA),TRUE)
    CXXFLAGS+=-Xptxas --disable-optimizer-constants
 endif
 
+CXXFLAGS+=-std=c++17
+
 # PelePhysics
 PP_SRC_HOME = $(PELE_PHYSICS_HOME)/Source
 EXTERN_CORE       += $(PP_SRC_HOME)
