@@ -1,7 +1,6 @@
 #include "Geometry.H"
 
-namespace pele {
-namespace pelec {
+namespace pele::pelec {
 
 void
 FlatPlate::build(
@@ -386,5 +385,4 @@ CheckpointFile::build(
 
   amrex::EB2::BuildFromChkptFile(chkfile, geom, 0, max_coarsening_level);
 }
-} // namespace pelec
-} // namespace pele
+} // namespace pele::pelec

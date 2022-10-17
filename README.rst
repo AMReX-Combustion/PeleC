@@ -6,7 +6,7 @@ PeleC: An adaptive mesh refinement solver for compressible reacting flows
 Getting Started
 ~~~~~~~~~~~~~~~
 
-* To compile and run the `Pele` suite of codes, one needs a C++ compiler that supports the C++14 standard.  A hierarchical strategy for parallelism is supported, based MPI + OpenMP, or MPI + CUDA.  The codes work with all major MPI and OpenMP implementations.  The codes should build and run with no modifications to the `make` system if using a Linux system with the GNU compilers, version 4.9.4 and above.
+* To compile and run `PeleC`, one needs a C++ compiler that supports the C++17 standard.  A hierarchical strategy for parallelism is supported, based on MPI, MPI + OpenMP, or MPI + GPU (CUDA/HIP/DPC++).  The code should work with all major MPI and OpenMP implementations.  PeleC should build and run with no modifications to the `make` system if using a Linux system with the GNU compilers, version 7 and above.  CMake, although used mostly for testing, is also an option for building the code.
 
 To build `PeleC` and run a sample 3D flame problem:
 
@@ -14,12 +14,12 @@ To build `PeleC` and run a sample 3D flame problem:
 
     git clone --recursive git@github.com:AMReX-Combustion/PeleC.git
     cd PeleC/Exec/RegTests/PMF
-    make TPL && make -j
+    make TPLrealclean && make realclean && make TPL && make -j
     ./Pele3d.xxx.yyy.ex example.inp
 
 * Notes
 
-   A. In the exec line above, xxx.yyy is a tag identifying your compiler and various build options, and will vary across pltaform.  (Note that GNU compilers must be at least 4.8.4, and MPI should be at least version 3).
+   A. In the exec line above, xxx.yyy is a tag identifying your compiler and various build options, and will vary across pltaform.  (Note that GNU compilers must be at least version 7, and MPI should be at least of standard version 3).
    B. The example is 3D premixed flame, flowing vertically upward through the domain with no gravity. The lateral boundaries are periodic.  A detailed hydrogen model is used.  The solution is initialized with a wrinkled (perturbed) 2D steady flame solution computed using the PREMIX code.  Two levels of solution-adaptive refinement are automatically triggered by the presence of the flame intermediate, HO2.
    C. In addition to informative output to the terminal, periodic plotfiles are written in the run folder.  These may be viewed with CCSE's Amrvis (<https://ccse.lbl.gov/Downloads/downloadAmrvis.html>) or Vis-It (<http://vis.lbl.gov/NERSC/Software/visit/>):
 
