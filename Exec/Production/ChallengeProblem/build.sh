@@ -45,6 +45,7 @@ elif [ "${NREL_CLUSTER}" == 'eagle' ]; then
   cmd "module load python"
   cmd "module load mpt"
   cmd "module load cmake"
+  cmd "module load git"
   cmd "export SPACK_MANAGER=/nopt/nrel/ecom/hpacf/spack-manager/2022-10-14/spack-manager"
   cmd "source ${SPACK_MANAGER}/start.sh && spack-start"
   cmd "spack env activate -d ${SPACK_MANAGER}/environments/exawind-${MACHINE}"
