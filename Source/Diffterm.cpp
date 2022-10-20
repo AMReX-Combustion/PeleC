@@ -42,8 +42,8 @@ pc_compute_diffusion_flux(
         d2 = del[1];
       }
 
-      amrex::FArrayBox tander_ec(
-        ebox, GradUtils::nCompTan, amrex::The_Async_Arena());
+      amrex::FArrayBox tander_ec(ebox, GradUtils::nCompTan);
+      amrex::Elixir tander_eli = tander_ec.elixir();
       auto const& tander = tander_ec.array();
       amrex::ParallelFor(
         ebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
