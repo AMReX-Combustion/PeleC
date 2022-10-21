@@ -107,8 +107,8 @@ Blocs             += $(TRANSPORT_HOME)
 Bdirs := $(PELEC_HOME)/Source $(PELEC_HOME)/Source/Params/param_includes
 
 Pdirs := Base Amr Boundary AmrCore EB
-Bpack += $(AMREX_HYDRO_HOME)/BDS/Make.package $(AMREX_HYDRO_HOME)/EBGodunov/Make.package $(AMREX_HYDRO_HOME)/EBMOL/Make.package $(AMREX_HYDRO_HOME)/Godunov/Make.package $(AMREX_HYDRO_HOME)/MOL/Make.package $(AMREX_HYDRO_HOME)/Redistribution/Make.package $(AMREX_HYDRO_HOME)/Slopes/Make.package $(AMREX_HYDRO_HOME)/Utils/Make.package
-Blocs += $(AMREX_HYDRO_HOME)/BDS $(AMREX_HYDRO_HOME)/EBGodunov $(AMREX_HYDRO_HOME)/EBMOL $(AMREX_HYDRO_HOME)/Godunov $(AMREX_HYDRO_HOME)/Redistribution $(AMREX_HYDRO_HOME)/MOL $(AMREX_HYDRO_HOME)/Slopes $(AMREX_HYDRO_HOME)/Utils
+Bpack += $(AMREX_HYDRO_HOME)/Redistribution/Make.package $(AMREX_HYDRO_HOME)/Slopes/Make.package
+Blocs += $(AMREX_HYDRO_HOME)/Redistribution $(AMREX_HYDRO_HOME)/Slopes
 
 Bpack += $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir)/Make.package)
 Blocs += $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir))
