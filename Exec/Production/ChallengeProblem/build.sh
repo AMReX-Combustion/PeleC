@@ -45,6 +45,7 @@ elif [ "${NREL_CLUSTER}" == 'eagle' ]; then
   cmd "module load python"
   cmd "module load mpt"
   cmd "module load cmake"
+  cmd "module load git"
   cmd "export SPACK_MANAGER=/nopt/nrel/ecom/hpacf/spack-manager/2022-10-14/spack-manager"
   cmd "source ${SPACK_MANAGER}/start.sh && spack-start"
   cmd "spack env activate -d ${SPACK_MANAGER}/environments/exawind-${MACHINE}"
@@ -72,4 +73,8 @@ GNUMAKE_ARGS="USE_HDF5=TRUE USE_HDF5_ZFP=TRUE USE_ASCENT=TRUE USE_CONDUIT=TRUE H
 cmd "make ${GNUMAKE_ARGS} TPLrealclean"
 cmd "make ${GNUMAKE_ARGS} realclean"
 cmd "make ${GNUMAKE_ARGS} TPL"
-cmd "make ${GNUMAKE_ARGS} -j16"
+if [ "${LMOD_SYSTEM_NAME}" == 'summit' ]; then
+  cmd "make ${GNUMAKE_ARGS} -j4"
+else
+  cmd "make ${GNUMAKE_ARGS} -j16"
+fi

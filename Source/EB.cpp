@@ -735,7 +735,8 @@ pc_eb_clean_massfrac(
   amrex::Array4<amrex::Real> const& div)
 {
   // Compute the new state and the mask
-  amrex::IArrayBox mask(bx, 1, amrex::The_Async_Arena());
+  amrex::IArrayBox mask(bx);
+  amrex::Elixir mask_eli = mask.elixir();
   mask.setVal<amrex::RunOn::Device>(0, mask.box());
   const auto& mask_arr = mask.array();
   amrex::ParallelFor(

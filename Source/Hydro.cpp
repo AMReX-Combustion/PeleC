@@ -111,18 +111,24 @@ PeleC::construct_hydro_source(
         // const int* hi = bx.hiVect();
 
         amrex::GpuArray<amrex::FArrayBox, AMREX_SPACEDIM> flux;
+        amrex::Elixir flux_eli[AMREX_SPACEDIM];
         for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
           const amrex::Box& efbx = surroundingNodes(fbx, dir);
-          flux[dir].resize(efbx, NVAR, amrex::The_Async_Arena());
+          flux[dir].resize(efbx, NVAR);
+          flux_eli[dir] = flux[dir].elixir();
         }
 
         auto const& s = S.array(mfi);
         auto const& hyd_src = hydro_source.array(mfi);
 
         // Resize Temporary Fabs
-        amrex::FArrayBox q(qbx, QVAR, amrex::The_Async_Arena());
-        amrex::FArrayBox qaux(qbx, NQAUX, amrex::The_Async_Arena());
-        amrex::FArrayBox src_q(qbx, QVAR, amrex::The_Async_Arena());
+        amrex::FArrayBox q(qbx, QVAR);
+        amrex::FArrayBox qaux(qbx, NQAUX);
+        amrex::FArrayBox src_q(qbx, QVAR);
+        // Use Elixir Construct to steal the Fabs metadata
+        amrex::Elixir qeli = q.elixir();
+        amrex::Elixir qauxeli = qaux.elixir();
+        amrex::Elixir src_qeli = src_q.elixir();
         // Get Arrays to pass to the gpu.
         auto const& qarr = q.array();
         auto const& qauxar = qaux.array();
@@ -154,7 +160,7 @@ PeleC::construct_hydro_source(
                 for(int d=0; d<AMREX_SPACEDIM; ++d) {
                   if (dir!=d) TestBox.grow(d,1);
                 }
-                bcMask[dir].resize(TestBox,1, amrex::The_Async_Arena());
+                bcMask[dir].resize(TestBox,1);
                 bcMask[dir].setVal(0);
               }
 
@@ -187,12 +193,11 @@ PeleC::construct_hydro_source(
             });
         }
 
-        amrex::FArrayBox pradial(
-          amrex::Box::TheUnitBox(), 1, amrex::The_Async_Arena());
+        amrex::FArrayBox pradial(amrex::Box::TheUnitBox(), 1);
         if (!amrex::DefaultGeometry().IsCartesian()) {
-          pradial.resize(
-            amrex::surroundingNodes(bx, 0), 1, amrex::The_Async_Arena());
+          pradial.resize(amrex::surroundingNodes(bx, 0), 1);
         }
+        amrex::Elixir pradial_eli = pradial.elixir();
 
         const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>
           flx_arr{
@@ -217,8 +222,8 @@ PeleC::construct_hydro_source(
           BL_PROFILE("PeleC::apply_filter()");
           for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
             const amrex::Box& bxtmp = amrex::surroundingNodes(bx, dir);
-            amrex::FArrayBox filtered_flux(
-              bxtmp, NVAR, amrex::The_Async_Arena());
+            amrex::FArrayBox filtered_flux(bxtmp, NVAR);
+            amrex::Elixir filtered_flux_eli = filtered_flux.elixir();
             les_filter.apply_filter(
               bxtmp, flux[dir], filtered_flux, Density, NVAR);
 
@@ -227,8 +232,8 @@ PeleC::construct_hydro_source(
               bxtmp, flux[dir].nComp(), filtered_flux.array(), flx_arr[dir]);
           }
 
-          amrex::FArrayBox filtered_source_out(
-            bx, NVAR, amrex::The_Async_Arena());
+          amrex::FArrayBox filtered_source_out(bx, NVAR);
+          amrex::Elixir filtered_source_out_eli = filtered_source_out.elixir();
           les_filter.apply_filter(
             bx, hydro_source[mfi], filtered_source_out, Density, NVAR);
 
@@ -344,16 +349,20 @@ pc_umdrv(
   // Set Up for Hydro Flux Calculations
   auto const& bxg2 = grow(bx, 2);
   amrex::FArrayBox qec[AMREX_SPACEDIM];
+  amrex::Elixir qec_eli[AMREX_SPACEDIM];
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
     const amrex::Box eboxes = amrex::surroundingNodes(bxg2, dir);
-    qec[dir].resize(eboxes, NGDNV, amrex::The_Async_Arena());
+    qec[dir].resize(eboxes, NGDNV);
+    qec_eli[dir] = qec[dir].elixir();
   }
   amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> qec_arr{
     {AMREX_D_DECL(qec[0].array(), qec[1].array(), qec[2].array())}};
 
   // Temporary FArrayBoxes
-  amrex::FArrayBox divu(bxg2, 1, amrex::The_Async_Arena());
-  amrex::FArrayBox pdivu(bx, 1, amrex::The_Async_Arena());
+  amrex::FArrayBox divu(bxg2, 1);
+  amrex::FArrayBox pdivu(bx, 1);
+  amrex::Elixir divueli = divu.elixir();
+  amrex::Elixir pdiveli = pdivu.elixir();
   auto const& divuarr = divu.array();
   auto const& pdivuarr = pdivu.array();
 
@@ -376,6 +385,9 @@ pc_umdrv(
       a[2], pdivuarr, vol, dx, dt, ppm_type, use_flattening, use_hybrid_weno,
       weno_scheme);
 #endif
+  }
+  for (auto& dir : qec_eli) {
+    dir.clear();
   }
 
   // divu
