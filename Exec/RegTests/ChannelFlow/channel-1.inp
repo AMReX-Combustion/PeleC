@@ -1,0 +1,81 @@
+# ------------------  INPUTS TO MAIN PROGRAM  -------------------
+max_step = 10
+stop_time =  0.2
+
+# PROBLEM SIZE & GEOMETRY
+geometry.is_periodic = 1 0 1
+geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
+geometry.prob_lo     = 0.0 -0.5 -0.75
+geometry.prob_hi     = 3.0 0.5 0.75
+
+#amr.n_cell           = 576  192 288
+amr.n_cell           = 72  24 36
+
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+# Interior, UserBC, Symmetry, SlipWall, NoSlipWall
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+pelec.lo_bc       = "Interior"   "NoSlipWall"   "Interior"
+pelec.hi_bc       = "Interior"   "NoSlipWall"   "Interior"
+
+# WHICH PHYSICS
+pelec.do_hydro = 1
+pelec.do_mol = 0
+pelec.diffuse_vel = 1
+pelec.diffuse_temp = 1
+pelec.diffuse_spec = 1
+pelec.do_react = 0
+pelec.diffuse_enth = 0
+pelec.add_ext_src = 1
+pelec.external_forcing = 70.979 0.0 0.0
+
+# TIME STEP CONTROL
+pelec.cfl            = 0.9     # cfl number for hyperbolic system
+pelec.init_shrink    = 0.1     # scale back initial timestep
+pelec.change_max     = 1.05    # scale back initial timestep
+pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
+
+# DIAGNOSTICS & VERBOSITY
+pelec.sum_interval   = 1       # timesteps between computing mass
+pelec.v              = 1       # verbosity in PeleC.cpp
+amr.v                = 1       # verbosity in Amr.cpp
+amr.data_log         = datlog
+
+# REFINEMENT / REGRIDDING
+amr.max_level       = 1       # maximum level number allowed
+amr.ref_ratio       = 2 2 2 2 # refinement ratio
+amr.regrid_int      = 2 2 2 2 # how often to regrid
+amr.blocking_factor = 4       # block factor in grid generation
+amr.max_grid_size   = 64
+amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
+
+# CHECKPOINT FILES
+amr.checkpoint_files_output = 1
+amr.check_file      = chk        # root name of checkpoint file
+amr.check_int       = 500        # number of timesteps between checkpoints
+
+# PLOTFILES
+amr.plot_files_output = 1
+amr.plot_file       = plt        # root name of plotfile
+amr.plot_int        = 10       # number of timesteps between plotfiles
+amr.plot_vars  =  density Temp
+amr.derive_plot_vars = x_velocity y_velocity z_velocity magvel magvort pressure
+pelec.plot_rhoy = 0
+pelec.plot_massfrac = 1
+
+# PROBLEM PARAMETERS
+prob.T_mean = 750.0
+prob.dpdx = 70.979
+
+# TAGGING PARAMETERS
+tagging.refinement_indicators = yLow yHigh
+tagging.yLow.in_box_lo = -0.1  -0.52  -0.85
+tagging.yLow.in_box_hi =  3.1 -0.45    0.85
+tagging.yHigh.in_box_lo = -0.1  0.45  -0.85
+tagging.yHigh.in_box_hi =  3.1  0.52    0.85
+
+# Problem setup
+eb2.geom_type = "all_regular"
+
+# amrex.fpe_trap_invalid = 1
+# amrex.fpe_trap_zero = 1
+# amrex.fpe_trap_overflow = 1

@@ -60,10 +60,10 @@ param_include_dir = "param_includes/"
 
 
 class Param(object):
-    """ the basic parameter class.  For each parameter, we hold the name,
-        type, and default.  For some parameters, we also take a second
-        value of the default, for use in debug mode (delimited via
-        #ifdef AMREX_DEBUG)
+    """the basic parameter class.  For each parameter, we hold the name,
+    type, and default.  For some parameters, we also take a second
+    value of the default, for use in debug mode (delimited via
+    #ifdef AMREX_DEBUG)
 
     """
 
@@ -112,6 +112,10 @@ class Param(object):
             tstr = "std::string {}::{}".format(self.cpp_class, self.cpp_var_name)
         elif self.dtype == "bool":
             tstr = "bool {}::{}".format(self.cpp_class, self.cpp_var_name)
+        elif self.dtype == "dim_array":
+            tstr = "amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> {}::{}".format(
+                self.cpp_class, self.cpp_var_name
+            )
         else:
             sys.exit("invalid data type for parameter {}".format(self.name))
 
@@ -129,6 +133,8 @@ class Param(object):
         else:
             if self.dtype == "string" and self.default == '""':
                 ostr += "{};\n".format(tstr)
+            elif self.dtype == "dim_array":
+                ostr += "{} = {{{}}};\n".format(tstr, self.default)
             else:
                 ostr += "{} = {};\n".format(tstr, self.default)
 
@@ -147,7 +153,17 @@ class Param(object):
             ostr += "#ifdef {}\n".format(self.ifdef)
 
         if language == "C++":
-            ostr += 'pp.query("{}", {});\n'.format(self.name, self.cpp_var_name)
+            if self.dtype == "dim_array":
+                ostr += "{\n  amrex::Vector<amrex::Real> tmp(AMREX_SPACEDIM, 0.0);\n"
+                ostr += '  pp.queryarr("{}", tmp, 0, AMREX_SPACEDIM);\n'.format(
+                    self.name
+                )
+                ostr += "  for (int i = 0; i < tmp.size(); i++) {{\n    {}[i] = tmp[i];\n  }}\n".format(
+                    self.cpp_var_name
+                )
+                ostr += "}\n"
+            else:
+                ostr += 'pp.query("{}", {});\n'.format(self.name, self.cpp_var_name)
         else:
             sys.exit("invalid language choice in get_query_string")
 
@@ -172,6 +188,10 @@ class Param(object):
             tstr = "{} std::string {};\n".format(static, self.cpp_var_name)
         elif self.dtype == "bool":
             tstr = "{} bool {};\n".format(static, self.cpp_var_name)
+        elif self.dtype == "dim_array":
+            tstr = "{} amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> {};\n".format(
+                static, self.cpp_var_name
+            )
         else:
             sys.exit("invalid data type for parameter {}".format(self.name))
 

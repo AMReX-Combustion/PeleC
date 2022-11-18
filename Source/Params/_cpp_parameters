@@ -74,8 +74,11 @@ weno_scheme                  int           1
 nscbc_adv                   bool          true
 nscbc_diff                  bool          false
 
-# if true, define an additional source term
+# if true, define an external source term
 add_ext_src                 bool           false
+
+# external source term value
+external_forcing       dim_array           0.0
 
 # if true, define an additional forcing term
 add_forcing_src             bool           false

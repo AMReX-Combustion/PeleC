@@ -24,6 +24,7 @@ int PeleC::weno_scheme = 1;
 bool PeleC::nscbc_adv = true;
 bool PeleC::nscbc_diff = false;
 bool PeleC::add_ext_src = false;
+amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> PeleC::external_forcing = {0.0};
 bool PeleC::add_forcing_src = false;
 amrex::Real PeleC::forcing_u0 = 0.0;
 amrex::Real PeleC::forcing_v0 = 0.0;
