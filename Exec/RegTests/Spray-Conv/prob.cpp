@@ -21,15 +21,6 @@ amrex_probinit(
   pp.query("ref_T", PeleC::h_prob_parm_device->T0);
   pp.query("init_O2", PeleC::h_prob_parm_device->Y_O2);
   pp.query("init_N2", PeleC::h_prob_parm_device->Y_N2);
-  pp.query("init_redist", PeleC::prob_parm_host->numRedist);
-  pp.query("num_particles", PeleC::prob_parm_host->partNum);
-  std::array<amrex::Real, AMREX_SPACEDIM> pvel = {{0.0}};
-  pp.query<amrex::Real>("part_vel", pvel);
-  for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
-    PeleC::prob_parm_host->partVel[dir] = pvel[dir];
-  }
-  pp.get("part_dia", PeleC::prob_parm_host->partDia);
-  pp.get("part_temp", PeleC::prob_parm_host->partTemp);
 
   // Initial density, velocity, and material properties
   amrex::Real cs;
