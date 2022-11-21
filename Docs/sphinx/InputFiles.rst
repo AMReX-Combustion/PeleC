@@ -240,7 +240,7 @@ In addition to these tagging criteria, one can use tagging functionality provide
    tagging.magvel.value_greater = 1.2e4
    tagging.magvel.field_name    = magvel
 
-The following keys are implemented: `value_greater`, `value_less`, `vorticity_greater`, `adjacent_difference_greater`, `in_box_lo` and `in_box_hi` (to specify a refinement region), `max_level`, `start_time`, and `end_time`.
+The following keys are implemented: `value_greater`, `value_less`, `vorticity_greater`, `adjacent_difference_greater`, `in_box_lo` and `in_box_hi` (to specify a refinement region), `max_level`, `start_time`, and `end_time`. The `field_name` key can be any derived or state variable.
 
    
 Diagnostic Output
