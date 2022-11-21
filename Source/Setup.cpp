@@ -636,6 +636,8 @@ PeleC::variableSetUp()
 #ifdef AMREX_PARTICLES
   defineParticles();
 #endif
+
+  read_tagging_params();
 }
 
 void

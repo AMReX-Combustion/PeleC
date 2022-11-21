@@ -6,7 +6,8 @@
 void
 PeleC::read_tagging_params()
 {
-  amrex::ParmParse pp("tagging");
+  const std::string tag_prefix = "tagging";
+  amrex::ParmParse pp(tag_prefix);
 
   pp.query("denerr", tagging_parm->denerr);
   pp.query("max_denerr_lev", tagging_parm->max_denerr_lev);
@@ -56,5 +57,101 @@ PeleC::read_tagging_params()
     tagging_parm->min_eb_refine_lev = 0;
     pp.query("min_eb_refine_lev", tagging_parm->min_eb_refine_lev);
     tagging_parm->adapt_eb_refined_lev = tagging_parm->min_eb_refine_lev;
+  }
+
+  // amrex tagging
+  amrex::Vector<std::string> refinement_indicators;
+  pp.queryarr(
+    "refinement_indicators", refinement_indicators, 0,
+    pp.countval("refinement_indicators"));
+  for (int n = 0; n < refinement_indicators.size(); ++n) {
+    std::string ref_prefix = tag_prefix + "." + refinement_indicators[n];
+    amrex::ParmParse ppr(ref_prefix);
+
+    // Tag a given box
+    amrex::RealBox realbox;
+    if (ppr.countval("in_box_lo")) {
+      amrex::Vector<amrex::Real> box_lo(AMREX_SPACEDIM);
+      amrex::Vector<amrex::Real> box_hi(AMREX_SPACEDIM);
+      ppr.getarr("in_box_lo", box_lo, 0, box_lo.size());
+      ppr.getarr("in_box_hi", box_hi, 0, box_hi.size());
+      realbox = amrex::RealBox(&(box_lo[0]), &(box_hi[0]));
+    }
+
+    amrex::AMRErrorTagInfo info;
+
+    if (realbox.ok()) {
+      info.SetRealBox(realbox);
+    }
+
+    if (ppr.countval("start_time") > 0) {
+      amrex::Real min_time;
+      ppr.get("start_time", min_time);
+      info.SetMinTime(min_time);
+    }
+
+    if (ppr.countval("end_time") > 0) {
+      amrex::Real max_time;
+      ppr.get("end_time", max_time);
+      info.SetMaxTime(max_time);
+    }
+
+    if (ppr.countval("max_level") > 0) {
+      int tag_max_level;
+      ppr.get("max_level", tag_max_level);
+      info.SetMaxLevel(tag_max_level);
+    }
+
+    bool itexists = false;
+    int index = State_Type;
+    int scomp = 0;
+    if (ppr.countval("value_greater")) {
+      amrex::Real value;
+      ppr.get("value_greater", value);
+      std::string field;
+      ppr.get("field_name", field);
+      tagging_parm->err_tags.push_back(
+        amrex::AMRErrorTag(value, amrex::AMRErrorTag::GREATER, field, info));
+      itexists =
+        derive_lst.canDerive(field) || isStateVariable(field, index, scomp);
+    } else if (ppr.countval("value_less")) {
+      amrex::Real value;
+      ppr.get("value_less", value);
+      std::string field;
+      ppr.get("field_name", field);
+      tagging_parm->err_tags.push_back(
+        amrex::AMRErrorTag(value, amrex::AMRErrorTag::LESS, field, info));
+      itexists =
+        derive_lst.canDerive(field) || isStateVariable(field, index, scomp);
+    } else if (ppr.countval("vorticity_greater")) {
+      amrex::Real value;
+      ppr.get("vorticity_greater", value);
+      const std::string field = "magvort";
+      tagging_parm->err_tags.push_back(
+        amrex::AMRErrorTag(value, amrex::AMRErrorTag::VORT, field, info));
+      itexists =
+        derive_lst.canDerive(field) || isStateVariable(field, index, scomp);
+    } else if (ppr.countval("adjacent_difference_greater")) {
+      amrex::Real value;
+      ppr.get("adjacent_difference_greater", value);
+      std::string field;
+      ppr.get("field_name", field);
+      tagging_parm->err_tags.push_back(
+        amrex::AMRErrorTag(value, amrex::AMRErrorTag::GRAD, field, info));
+      itexists =
+        derive_lst.canDerive(field) || isStateVariable(field, index, scomp);
+    } else if (realbox.ok()) {
+      tagging_parm->err_tags.push_back(amrex::AMRErrorTag(info));
+      itexists = true;
+    } else {
+      amrex::Abort(
+        "Unrecognized refinement indicator for " + refinement_indicators[n]);
+    }
+
+    if (!itexists) {
+      amrex::Error(
+        "PeleC::read_tagging_params(): unknown variable field for criteria " +
+        refinement_indicators[n]);
+    }
   }
 }

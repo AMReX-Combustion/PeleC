@@ -3,6 +3,7 @@
 
 #include <AMReX_FArrayBox.H>
 #include <AMReX_TagBox.H>
+#include <AMReX_ErrorList.H>
 #include "prob_parm.H"
 
 struct TaggingParm
@@ -42,6 +43,8 @@ struct TaggingParm
   int max_eb_refine_lev = 10;
   int min_eb_refine_lev = -1;
   int adapt_eb_refined_lev = -1;
+
+  amrex::Vector<amrex::AMRErrorTag> err_tags;
 };
 
 AMREX_GPU_DEVICE

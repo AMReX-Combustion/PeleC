@@ -6,6 +6,7 @@
 #include <AMReX_Vector.H>
 #include <AMReX_TagBox.H>
 #include <AMReX_EBMultiFabUtil.H>
+#include <AMReX_EBAmrUtil.H>
 
 #ifdef AMREX_PARTICLES
 #include <AMReX_Particles.H>
@@ -327,9 +328,6 @@ PeleC::read_params()
   if ((!do_mol) && eb_in_domain) {
     amrex::Abort("Must do_mol = 1 when using EB\n");
   }
-
-  // Read tagging parameters
-  read_tagging_params();
 
   // TODO: What is this?
   amrex::StateDescriptor::setBndryFuncThreadSafety(
@@ -1352,6 +1350,17 @@ PeleC::errorEst(
   amrex::Vector<amrex::BCRec> bcs(NVAR);
   const char tagval = amrex::TagBox::SET;
 
+  // Tag EB
+  if (eb_in_domain) {
+    if (
+      ((tagging_parm->eb_refine_type == "static") &&
+       (level < tagging_parm->max_eb_refine_lev)) ||
+      ((tagging_parm->eb_refine_type == "adaptive") &&
+       (level < tagging_parm->adapt_eb_refined_lev))) {
+      amrex::TagCutCells(tags, S_data);
+    }
+  }
+
 #ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
@@ -1573,6 +1582,37 @@ PeleC::errorEst(
         }
       }
 
+      // Now update the tags in the TagBox.
+      // tag_arr.tags(itags, tilebox);
+      // rho_eli.clear();
+      // temp_eli.clear();
+    }
+  }
+
+  // amrex tagging utils
+  for (int n = 0; n < tagging_parm->err_tags.size(); ++n) {
+    std::unique_ptr<amrex::MultiFab> mf;
+    if (tagging_parm->err_tags[n].Field() != std::string()) {
+      mf = derive(
+        tagging_parm->err_tags[n].Field(), time,
+        tagging_parm->err_tags[n].NGrow());
+    }
+    tagging_parm->err_tags[n](
+      tags, mf.get(), amrex::TagBox::CLEAR, amrex::TagBox::SET, time, level,
+      geom);
+  }
+
+#ifdef AMREX_USE_OMP
+#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
+#endif
+  {
+    for (amrex::MFIter mfi(S_data, amrex::TilingIfNotGPU()); mfi.isValid();
+         ++mfi) {
+      const amrex::Box& tilebox = mfi.tilebox();
+      const auto Sfab = S_data.array(mfi);
+      auto tag_arr = tags.array(mfi);
+      amrex::Elixir S_data_mfi_eli = S_data[mfi].elixir();
+
       // Problem specific tagging
       const ProbParmDevice* lprobparm = d_prob_parm_device;
       const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx =
@@ -1586,11 +1626,6 @@ PeleC::errorEst(
             i, j, k, tag_arr, Sfab, tagval, dx, prob_lo, time, captured_level,
             *lprobparm);
         });
-
-      // Now update the tags in the TagBox.
-      // tag_arr.tags(itags, tilebox);
-      // rho_eli.clear();
-      // temp_eli.clear();
     }
   }
 
