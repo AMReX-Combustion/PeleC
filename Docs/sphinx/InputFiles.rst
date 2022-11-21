@@ -227,7 +227,7 @@ Additionally, tagging is supported for a user-specified species which can functi
 
 Users can specify their own tagging criteria in the `prob.H` of their case. An example of this is provided in the Taylor-Green regression test.
 
-In addition to these tagging criteria, one can use tagging functionality provided by AMReX. Here are examples of how that is done:
+The above tagging criteria are implemented in PeleC. However, the user is encouraged to use the tagging functionality provided by AMReX and exposed in PeleC. Here are examples of how that is done:
 
 ::
 
