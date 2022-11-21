@@ -105,7 +105,7 @@ PeleC::read_tagging_params()
     bool itexists = false;
     int index = State_Type;
     int scomp = 0;
-    if (ppr.countval("value_greater")) {
+    if (ppr.countval("value_greater") > 0) {
       amrex::Real value;
       ppr.get("value_greater", value);
       std::string field;
@@ -114,7 +114,7 @@ PeleC::read_tagging_params()
         amrex::AMRErrorTag(value, amrex::AMRErrorTag::GREATER, field, info));
       itexists =
         derive_lst.canDerive(field) || isStateVariable(field, index, scomp);
-    } else if (ppr.countval("value_less")) {
+    } else if (ppr.countval("value_less") > 0) {
       amrex::Real value;
       ppr.get("value_less", value);
       std::string field;
@@ -123,7 +123,7 @@ PeleC::read_tagging_params()
         amrex::AMRErrorTag(value, amrex::AMRErrorTag::LESS, field, info));
       itexists =
         derive_lst.canDerive(field) || isStateVariable(field, index, scomp);
-    } else if (ppr.countval("vorticity_greater")) {
+    } else if (ppr.countval("vorticity_greater") > 0) {
       amrex::Real value;
       ppr.get("vorticity_greater", value);
       const std::string field = "magvort";
@@ -131,7 +131,7 @@ PeleC::read_tagging_params()
         amrex::AMRErrorTag(value, amrex::AMRErrorTag::VORT, field, info));
       itexists =
         derive_lst.canDerive(field) || isStateVariable(field, index, scomp);
-    } else if (ppr.countval("adjacent_difference_greater")) {
+    } else if (ppr.countval("adjacent_difference_greater") > 0) {
       amrex::Real value;
       ppr.get("adjacent_difference_greater", value);
       std::string field;

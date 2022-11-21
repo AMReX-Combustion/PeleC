@@ -1592,7 +1592,7 @@ PeleC::errorEst(
   // amrex tagging utils
   for (int n = 0; n < tagging_parm->err_tags.size(); ++n) {
     std::unique_ptr<amrex::MultiFab> mf;
-    if (tagging_parm->err_tags[n].Field() != std::string()) {
+    if (!tagging_parm->err_tags[n].Field().empty()) {
       mf = derive(
         tagging_parm->err_tags[n].Field(), time,
         tagging_parm->err_tags[n].NGrow());
