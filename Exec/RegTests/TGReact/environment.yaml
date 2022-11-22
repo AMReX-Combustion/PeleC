@@ -1,0 +1,11 @@
+# Install with conda env create --file environment.yaml
+name: tgreact
+channels:
+  - cantera
+  - defaults
+dependencies:
+  - cantera
+  - ipython
+  - matplotlib
+  - numpy
+  - pandas

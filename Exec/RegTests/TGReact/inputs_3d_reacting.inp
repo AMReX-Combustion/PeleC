@@ -1,0 +1,65 @@
+# ------------------  INPUTS TO MAIN PROGRAM  -------------------
+max_step = 100000000
+stop_time = 0.0005
+
+# PROBLEM SIZE & GEOMETRY
+geometry.is_periodic = 1 1 1
+geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
+geometry.prob_lo     =   0.0 0.0 0.0
+geometry.prob_hi     =   0.62831853071795864  0.62831853071795864  0.62831853071795864
+# use with single level
+amr.n_cell           =  32    32    32
+
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+# Interior, UserBC, Symmetry, SlipWall, NoSlipWall
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+pelec.lo_bc       =  "Interior"  "Interior"  "Interior" 
+pelec.hi_bc       =  "Interior"  "Interior"  "Interior"
+
+# WHICH PHYSICS
+pelec.do_hydro = 1
+pelec.diffuse_vel = 1
+pelec.diffuse_temp = 1
+pelec.diffuse_spec = 1
+pelec.diffuse_enth = 1
+pelec.do_react = 1
+pelec.allow_negative_energy = 0
+pelec.chem_integrator = 2
+
+# TIME STEP CONTROL
+pelec.cfl            = 0.25     # cfl number for hyperbolic system
+pelec.init_shrink    = 0.3     # scale back initial timestep
+pelec.change_max     = 1.1     # max time step growth
+pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
+
+# DIAGNOSTICS & VERBOSITY
+pelec.sum_interval   = 1       # timesteps between computing mass
+pelec.v              = 1       # verbosity in Castro.cpp
+amr.v                = 1       # verbosity in Amr.cpp
+amr.data_log         = datlog extralog
+#amr.grid_log        = grdlog  # name of grid logging file
+
+# REFINEMENT / REGRIDDING 
+amr.max_level       = 0       # maximum level number allowed
+amr.ref_ratio       = 2 2 2 2 # refinement ratio
+amr.regrid_int      = 2 2 2 2 # how often to regrid
+amr.blocking_factor = 4       # block factor in grid generation
+amr.max_grid_size   = 64
+amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
+
+# CHECKPOINT FILES
+amr.check_file      = chk        # root name of checkpoint file
+amr.check_int       = 1000        # number of timesteps between checkpoints
+
+# PLOTFILES
+amr.plot_file       = plt        # root name of plotfile
+amr.plot_int        = 1000        # number of timesteps between plotfiles
+amr.derive_plot_vars = density xmom ymom zmom eden Temp pressure x_velocity y_velocity z_velocity magvel magvort z_vorticity heat_release
+pelec.plot_rhoy = 0
+pelec.plot_massfrac = 1
+
+# PROBLEM PARAMETERS
+prob.u0 = 400.0
+prob.iname = "cantera/profiles.dat"
+prob.case_type = "reacting"
+prob.nx = 2048
