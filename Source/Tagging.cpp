@@ -70,7 +70,7 @@ PeleC::read_tagging_params()
 
     // Tag a given box
     amrex::RealBox realbox;
-    if (ppr.countval("in_box_lo")) {
+    if (ppr.countval("in_box_lo") > 0) {
       amrex::Vector<amrex::Real> box_lo(AMREX_SPACEDIM);
       amrex::Vector<amrex::Real> box_hi(AMREX_SPACEDIM);
       ppr.getarr("in_box_lo", box_lo, 0, box_lo.size());
