@@ -55,14 +55,18 @@ PeleC::fill_ext_source(
   auto const& Farrs = ext_src.arrays();
   auto const& flagarrs = flags.const_arrays();
   const amrex::IntVect ngs(ng);
+  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> ext_force = {0.0};
+  for (int i = 0; i < external_forcing.size(); i++) {
+    ext_force[i] = external_forcing[i];
+  }
   amrex::ParallelFor(
     ext_src, ngs, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
       if (!flagarrs[nbx](i, j, k).isCovered()) {
         amrex::Real e_force = 0.0;
         for (int idir = 0; idir < AMREX_SPACEDIM; idir++) {
-          Farrs[nbx](i, j, k, UMX + idir) = external_forcing[idir];
+          Farrs[nbx](i, j, k, UMX + idir) = ext_force[idir];
           e_force += Sns[nbx](i, j, k, UMX + idir) / Sns[nbx](i, j, k, URHO) *
-                     external_forcing[idir];
+                     ext_force[idir];
         }
         Farrs[nbx](i, j, k, UEDEN) = e_force;
       }
