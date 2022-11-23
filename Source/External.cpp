@@ -56,7 +56,7 @@ PeleC::fill_ext_source(
   auto const& flagarrs = flags.const_arrays();
   const amrex::IntVect ngs(ng);
   amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> ext_force = {0.0};
-  for (int i = 0; i < external_forcing.size(); i++) {
+  for (unsigned int i = 0; i < external_forcing.size(); i++) {
     ext_force[i] = external_forcing[i];
   }
   amrex::ParallelFor(
