@@ -657,6 +657,8 @@ PeleC::variableSetUp()
 #ifdef PELEC_USE_SPRAY
   defineParticles();
 #endif
+
+  read_tagging_params();
 }
 
 void

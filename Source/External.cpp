@@ -42,7 +42,7 @@ PeleC::fill_ext_source(
   amrex::Real /*dt*/,
   const amrex::MultiFab& state_old
   /*unused*/,
-  const amrex::MultiFab& /*state_new*/,
+  const amrex::MultiFab& state_new,
   amrex::MultiFab& ext_src,
   int ng)
 {
@@ -51,15 +51,24 @@ PeleC::fill_ext_source(
   auto const& flags = fact.getMultiEBCellFlagFab();
 
   // auto const& Sos = state_old.const_arrays();
-  // auto const& Sns = state_new.const_arrays();
+  auto const& Sns = state_new.const_arrays();
   auto const& Farrs = ext_src.arrays();
   auto const& flagarrs = flags.const_arrays();
   const amrex::IntVect ngs(ng);
+  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> ext_force = {0.0};
+  for (int i = 0; i < static_cast<int>(external_forcing.size()); i++) {
+    ext_force[i] = external_forcing[i];
+  }
   amrex::ParallelFor(
-    ext_src, ngs, NVAR,
-    [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k, int n) noexcept {
+    ext_src, ngs, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
       if (!flagarrs[nbx](i, j, k).isCovered()) {
-        Farrs[nbx](i, j, k, n) = 0.0;
+        amrex::Real e_force = 0.0;
+        for (int idir = 0; idir < AMREX_SPACEDIM; idir++) {
+          Farrs[nbx](i, j, k, UMX + idir) = ext_force[idir];
+          e_force += Sns[nbx](i, j, k, UMX + idir) / Sns[nbx](i, j, k, URHO) *
+                     ext_force[idir];
+        }
+        Farrs[nbx](i, j, k, UEDEN) = e_force;
       }
     });
   amrex::Gpu::synchronize();

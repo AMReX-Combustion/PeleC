@@ -24,6 +24,13 @@ pp.query("weno_scheme", weno_scheme);
 pp.query("nscbc_adv", nscbc_adv);
 pp.query("nscbc_diff", nscbc_diff);
 pp.query("add_ext_src", add_ext_src);
+{
+  amrex::Vector<amrex::Real> tmp(AMREX_SPACEDIM, 0.0);
+  pp.queryarr("external_forcing", tmp, 0, AMREX_SPACEDIM);
+  for (int i = 0; i < tmp.size(); i++) {
+    external_forcing[i] = tmp[i];
+  }
+}
 pp.query("add_forcing_src", add_forcing_src);
 pp.query("forcing_u0", forcing_u0);
 pp.query("forcing_v0", forcing_v0);

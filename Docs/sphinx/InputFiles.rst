@@ -215,7 +215,7 @@ Tagging criteria are used to inform the refinement of flow features. They are ad
 
 - `max_*_level`: maximum level for use of this tag (beyond this level, this tag will not be used for refinement).
 
-The default values for tagging are defined in :code:`struct TaggingParm` in the `Tagging.H` file. Currently, the code supports tagging on density, pressure, velocity, vorticity, temperature, and volume fraction.
+The default values for tagging are defined in :code:`struct TaggingParm` in the `Tagging.H` file. Currently, the code supports tagging on density, pressure, velocity, vorticity, temperature, and volume fraction. However, additional tagging on fields can be leveraged through AMReX's tagging utility, see below for more details.
 
 Additionally, tagging is supported for a user-specified species which can function as a "flame tracer" using the keyword `ftrac` and selecting the species with `pelec.flame_trac_name`. For example, the following text in the input file would tag cells for refinement where the HO2 mass fraction exceeded :math:`150 \times 10^{-6}` up to a maximum of 4 levels of refinement:
 
@@ -226,6 +226,22 @@ Additionally, tagging is supported for a user-specified species which can functi
    tagging.ftracerr = 150.e-6
 
 Users can specify their own tagging criteria in the `prob.H` of their case. An example of this is provided in the Taylor-Green regression test.
+
+The above tagging criteria are implemented in PeleC. However, the user is encouraged to use the tagging functionality provided by AMReX and exposed in PeleC. Here are examples of how that is done:
+
+::
+
+   # Tag inside a box and a velocity magnitude value
+   tagging.refinement_indicators = yLow magvel
+   tagging.yLow.in_box_lo = -0.1  -0.52  -0.85
+   tagging.yLow.in_box_hi =  3.1 -0.45    0.85
+
+   tagging.magvel.max_level     = 2
+   tagging.magvel.value_greater = 1.2e4
+   tagging.magvel.field_name    = magvel
+
+The following keys are implemented: `value_greater`, `value_less`, `vorticity_greater`, `adjacent_difference_greater`, `in_box_lo` and `in_box_hi` (to specify a refinement region), `max_level`, `start_time`, and `end_time`. The `field_name` key can be any derived or state variable.
+
    
 Diagnostic Output
 ~~~~~~~~~~~~~~~~~

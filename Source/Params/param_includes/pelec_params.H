@@ -24,6 +24,7 @@ static int weno_scheme;
 static bool nscbc_adv;
 static bool nscbc_diff;
 static bool add_ext_src;
+static amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> external_forcing;
 static bool add_forcing_src;
 static amrex::Real forcing_u0;
 static amrex::Real forcing_v0;
