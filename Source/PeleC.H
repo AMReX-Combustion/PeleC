@@ -292,7 +292,7 @@ public:
     amrex::Real time,
     amrex::Real dt,
     const amrex::MultiFab& state_old,
-    const amrex::MultiFab& S_new,
+    const amrex::MultiFab& state_new,
     amrex::MultiFab& ext_src,
     int ng);
 
