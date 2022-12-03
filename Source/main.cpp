@@ -100,8 +100,8 @@ main(int argc, char* argv[])
   }
 
   if (max_step < 0 && stop_time < 0.0 && max_wall_time) {
-    amrex::Abort(
-      "Exiting because neither max_step nor stop_time nor max_wall_time is non-negative.");
+    amrex::Abort("Exiting because neither max_step nor stop_time nor "
+                 "max_wall_time is non-negative.");
   }
 
   // Print the current date and time
@@ -155,7 +155,7 @@ main(int argc, char* argv[])
   while ((amrptr->okToContinue() != 0) &&
          (amrptr->levelSteps(0) < max_step || max_step < 0) &&
          (amrptr->cumTime() < stop_time || stop_time < 0.0) &&
-         (wall_time_elapsed < (max_wall_time*3600) || max_wall_time < 0.0)) {
+         (wall_time_elapsed < (max_wall_time * 3600) || max_wall_time < 0.0)) {
     // Do a timestep
     amrptr->coarseTimeStep(stop_time);
 #ifdef AMREX_USE_ASCENT
