@@ -152,10 +152,11 @@ main(int argc, char* argv[])
   amrex::Real dRunTime2 = amrex::ParallelDescriptor::second();
   amrex::Real wall_time_elapsed{0.0};
 
-  while ((amrptr->okToContinue() != 0) &&
-         (amrptr->levelSteps(0) < max_step || max_step < 0) &&
-         (amrptr->cumTime() < stop_time || stop_time < 0.0) &&
-         (wall_time_elapsed < (max_wall_time * 3600.0) || max_wall_time < 0.0)) {
+  while (
+    (amrptr->okToContinue() != 0) &&
+    (amrptr->levelSteps(0) < max_step || max_step < 0) &&
+    (amrptr->cumTime() < stop_time || stop_time < 0.0) &&
+    (wall_time_elapsed < (max_wall_time * 3600.0) || max_wall_time < 0.0)) {
     // Do a timestep
     amrptr->coarseTimeStep(stop_time);
 #ifdef AMREX_USE_ASCENT
