@@ -24,11 +24,18 @@ These parameters, once read, are available in the `PeleC` object for use from c+
 ::
 
     # ------------------  INPUTS TO MAIN PROGRAM  -------------------
-    #absolute stop time for the simulation
+    #Stopping criteria: at least one must be specified, simulation
+    #will stop when the first is met.
+
+    #absolute stop time (s) for the simulation
     stop_time = 6 
 
     #maximum number of time steps at base AMR level
-    max_step = 30 
+    max_step = 30
+
+    #maximum wall time (hr) after which simulation will be stopped
+    max_wall_time = 1.0
+
     # ---------------------------------------------------------------
     
     #------------------------

@@ -1,6 +1,7 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
-stop_time = 6
-max_step = 2
+stop_time = 6         # simulation time (seconds)
+max_step = 2          # number of coarse steps after which to stop
+max_wall_time = 0.1   # wall clock time (hours)
 
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic = 1 1 0
