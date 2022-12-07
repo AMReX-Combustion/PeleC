@@ -295,7 +295,7 @@ PeleC::variableSetUp()
 
   for (int i = 0; i < NUM_ADV; ++i) {
     char buf[64];
-    sprintf(buf, "rho_adv_%d", i);
+    snprintf(buf, 64, "rho_adv_%d", i);
     cnt++;
     set_scalar_bc(bc, phys_bc);
     bcs[cnt] = bc;
