@@ -7,7 +7,6 @@
 #include <AMReX_FArrayBox.H>
 #include <AMReX_REAL.H>
 #include <AMReX_GpuMemory.H>
-#include <AMReX_ParmParse.H>
 
 #include "IndexDefines.H"
 #include "Constants.H"

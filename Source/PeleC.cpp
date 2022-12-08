@@ -465,7 +465,7 @@ PeleC::~PeleC()
 void
 PeleC::buildMetrics()
 {
-  const int ngrd = grids.size();
+  const int ngrd = static_cast<int>(grids.size());
 
   radius.resize(ngrd);
 

@@ -333,7 +333,7 @@ PeleC::variableSetUp()
 
     char* char_aux_names = new char[len + 1];
     for (int j = 0; j < len; j++) {
-      char_aux_names[j] = int_aux_names[j];
+      char_aux_names[j] = static_cast<char>(int_aux_names[j]);
     }
     char_aux_names[len] = '\0';
     aux_names.push_back(std::string(char_aux_names));
