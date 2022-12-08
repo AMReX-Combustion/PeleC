@@ -345,7 +345,7 @@ jobs:
           cmake --build . --parallel ${{env.NPROCS}}
   Lint-cppcheck:
     needs: Formatting
-    runs-on: macos-latest
+    runs-on: macos-12
     steps:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.6.0
