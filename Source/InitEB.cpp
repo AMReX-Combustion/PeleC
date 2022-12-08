@@ -341,7 +341,8 @@ PeleC::define_body_state()
     // Find proc with lowest rank to find valid point, use that for all
     amrex::Vector<int> found(amrex::ParallelDescriptor::NProcs(), 0);
     found[amrex::ParallelDescriptor::MyProc()] = (int)foundPt;
-    amrex::ParallelDescriptor::ReduceIntSum(found.data(), found.size());
+    amrex::ParallelDescriptor::ReduceIntSum(
+      found.data(), static_cast<int>(found.size()));
     int body_rank = -1;
     for (int i = 0; i < found.size(); ++i) {
       if (found[i] == 1) {
