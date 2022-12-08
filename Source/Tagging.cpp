@@ -75,7 +75,7 @@ PeleC::read_tagging_params()
       amrex::Vector<amrex::Real> box_hi(AMREX_SPACEDIM);
       ppr.getarr("in_box_lo", box_lo, 0, static_cast<int>(box_lo.size()));
       ppr.getarr("in_box_hi", box_hi, 0, static_cast<int>(box_hi.size()));
-      realbox = amrex::RealBox(&(box_lo[0]), &(box_hi[0]));
+      realbox = amrex::RealBox(box_lo.data(), box_hi.data());
     }
 
     amrex::AMRErrorTagInfo info;
