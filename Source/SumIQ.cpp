@@ -159,7 +159,7 @@ PeleC::monitor_extrema()
     }
   }
 
-  const auto nextrema = extrema_vars.size();
+  const auto nextrema = static_cast<int>(extrema_vars.size());
   constexpr amrex::Real neg_huge = std::numeric_limits<amrex::Real>::lowest();
   constexpr amrex::Real huge = std::numeric_limits<amrex::Real>::max();
   amrex::Vector<amrex::Real> minima(nextrema, huge), maxima(nextrema, neg_huge);
