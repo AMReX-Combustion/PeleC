@@ -226,7 +226,8 @@ PeleC::initialize_eb2_structs()
           Nall_cut_faces);
         amrex::IntVect* all_cut_faces = v_all_cut_faces.data();
 
-        const int sv_eb_bndry_geom_size = sv_eb_bndry_geom[iLocal].size();
+        const int sv_eb_bndry_geom_size =
+          static_cast<int>(sv_eb_bndry_geom[iLocal].size());
         // Serial loop on the GPU
         amrex::ParallelFor(1, [=] AMREX_GPU_DEVICE(int /*dummy*/) {
           int cnt = 0;
@@ -266,7 +267,7 @@ PeleC::initialize_eb2_structs()
           unique<amrex::Gpu::DeviceVector<amrex::IntVect>>(v_all_cut_faces);
 #endif
 
-        const int Nsten = v_cut_faces.size();
+        const int Nsten = static_cast<int>(v_cut_faces.size());
         if (Nsten > 0) {
           flux_interp_stencil[dir][iLocal].resize(Nsten);
 
@@ -340,7 +341,8 @@ PeleC::define_body_state()
     // Find proc with lowest rank to find valid point, use that for all
     amrex::Vector<int> found(amrex::ParallelDescriptor::NProcs(), 0);
     found[amrex::ParallelDescriptor::MyProc()] = (int)foundPt;
-    amrex::ParallelDescriptor::ReduceIntSum(&(found[0]), found.size());
+    amrex::ParallelDescriptor::ReduceIntSum(
+      found.data(), static_cast<int>(found.size()));
     int body_rank = -1;
     for (int i = 0; i < found.size(); ++i) {
       if (found[i] == 1) {
@@ -541,7 +543,7 @@ PeleC::eb_distance(const int lev, amrex::MultiFab& signDistLev)
     const auto& grids_ilev = pc_ilev.grids;
     const auto& dmap_ilev = pc_ilev.DistributionMap();
     amrex::BoxArray coarsenBA(grids_ilev.size());
-    for (int j = 0, N = coarsenBA.size(); j < N; ++j) {
+    for (int j = 0, N = static_cast<int>(coarsenBA.size()); j < N; ++j) {
       coarsenBA.set(
         j, interpolater.CoarseBox(grids_ilev[j], parent->refRatio(ilev - 1)));
     }

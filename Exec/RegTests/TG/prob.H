@@ -7,8 +7,6 @@
 #include <AMReX_FArrayBox.H>
 #include <AMReX_REAL.H>
 #include <AMReX_GpuMemory.H>
-#include <AMReX_REAL.H>
-#include <AMReX_GpuMemory.H>
 
 #include "mechanism.H"
 

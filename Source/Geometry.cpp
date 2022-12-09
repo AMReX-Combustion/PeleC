@@ -309,7 +309,8 @@ PolygonRevolution::build(
   amrex::Vector<amrex::EB2::PlaneIF> planes;
   for (int ipoly = 0; ipoly < num_poly; ipoly++) {
     const amrex::Vector<amrex::RealArray>& polygon = polygons[ipoly];
-    int numPts = polygon.size(); // Number of pts in this polygon
+    int numPts =
+      static_cast<int>(polygon.size()); // Number of pts in this polygon
     for (int n = 0; n < numPts; n++) {
       // The normal and point is space used to specify each half plane/space
       amrex::RealArray normal;
