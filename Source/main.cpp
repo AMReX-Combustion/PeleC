@@ -73,9 +73,10 @@ main(int argc, char* argv[])
 
   amrex::Print() << std::setprecision(10);
 
-  int max_step;
-  amrex::Real strt_time;
-  amrex::Real stop_time;
+  int max_step{-1};
+  amrex::Real strt_time{0.0};
+  amrex::Real stop_time{-1.0};
+  amrex::Real max_wall_time{-1.0};
   amrex::ParmParse pp;
 
   bool pause_for_debug = false;
@@ -89,21 +90,18 @@ main(int argc, char* argv[])
     amrex::ParallelDescriptor::Barrier();
   }
 
-  max_step = -1;
-  strt_time = 0.0;
-  stop_time = -1.0;
-
   pp.query("max_step", max_step);
   pp.query("strt_time", strt_time);
   pp.query("stop_time", stop_time);
+  pp.query("max_wall_time", max_wall_time);
 
   if (strt_time < 0.0) {
     amrex::Abort("MUST SPECIFY a non-negative strt_time");
   }
 
-  if (max_step < 0 && stop_time < 0.0) {
-    amrex::Abort(
-      "Exiting because neither max_step nor stop_time is non-negative.");
+  if (max_step < 0 && stop_time < 0.0 && max_wall_time < 0.0) {
+    amrex::Abort("Exiting because neither max_step nor stop_time nor "
+                 "max_wall_time is non-negative.");
   }
 
   // Print the current date and time
@@ -152,15 +150,21 @@ main(int argc, char* argv[])
   }
 
   amrex::Real dRunTime2 = amrex::ParallelDescriptor::second();
+  amrex::Real wall_time_elapsed{0.0};
 
-  while ((amrptr->okToContinue() != 0) &&
-         (amrptr->levelSteps(0) < max_step || max_step < 0) &&
-         (amrptr->cumTime() < stop_time || stop_time < 0.0)) {
+  while (
+    (amrptr->okToContinue() != 0) &&
+    (amrptr->levelSteps(0) < max_step || max_step < 0) &&
+    (amrptr->cumTime() < stop_time || stop_time < 0.0) &&
+    (wall_time_elapsed < (max_wall_time * 3600.0) || max_wall_time < 0.0)) {
     // Do a timestep
     amrptr->coarseTimeStep(stop_time);
 #ifdef AMREX_USE_ASCENT
     amrptr->doInSituViz(amrptr->levelSteps(0));
 #endif
+    // Get the elapsed time
+    wall_time_elapsed = amrex::ParallelDescriptor::second() - dRunTime1;
+    amrex::ParallelDescriptor::ReduceRealMax(wall_time_elapsed);
   }
 
   // Write final checkpoint
@@ -212,8 +216,8 @@ main(int argc, char* argv[])
     // It's actually the high water mark of heap space required by FABs.
     char buf[256];
 
-    sprintf(
-      buf, "CPU(%d): Heap Space (bytes) used by Coalescing FAB Arena: %zu",
+    snprintf(
+      buf, 256, "CPU(%d): Heap Space (bytes) used by Coalescing FAB Arena: %zu",
       amrex::ParallelDescriptor::MyProc(), arena->heap_space_used());
 
     amrex::Print() << buf << std::endl;

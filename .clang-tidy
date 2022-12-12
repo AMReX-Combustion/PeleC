@@ -1,5 +1,8 @@
 ---
 Checks: 'bugprone-*,
+         -bugprone-easily-swappable-parameters,
+         -bugprone-implicit-widening-of-multiplication-result,
+         -bugprone-exception-escape,
          clang-diagnostic-*,
          clang-analyzer-*,
          corecppguidelines-*,
@@ -7,12 +10,15 @@ Checks: 'bugprone-*,
          -modernize-avoid-c-arrays,
          -modernize-use-trailing-return-type,
          -modernize-use-nodiscard,
+         -modernize-macro-to-enum,
          readability-*,
          -readability-magic-numbers,
          -readability-identifier-naming,
          -readability-isolate-declaration,
          -readability-avoid-const-params-in-decls,
-         -readability-static-accessed-through-instance'
+         -readability-static-accessed-through-instance,
+         -readability-identifier-length,
+         -readability-function-cognitive-complexity'
 WarningsAsErrors: ''
 HeaderFilterRegex: '.*'
 AnalyzeTemporaryDtors: false

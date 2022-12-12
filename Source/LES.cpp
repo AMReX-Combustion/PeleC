@@ -196,7 +196,7 @@ PeleC::getSmagorinskyLESTerm(
   }
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dxD = {
     {AMREX_D_DECL(dx1, dx1, dx1)}};
-  const amrex::Real* dxDp = &(dxD[0]);
+  const amrex::Real* dxDp = dxD.data();
 
   amrex::MultiFab S(grids, dmap, NVAR, ngrow, amrex::MFInfo(), Factory());
   FillPatch(*this, S, ngrow, time, State_Type, 0, NVAR); // FIXME: time+dt?
@@ -404,7 +404,7 @@ PeleC::getDynamicSmagorinskyLESTerm(
   }
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dxD = {
     {AMREX_D_DECL(dx1, dx1, dx1)}};
-  const amrex::Real* dxDp = &(dxD[0]);
+  const amrex::Real* dxDp = dxD.data();
 
   // 1. Get state variable data
   amrex::MultiFab S(

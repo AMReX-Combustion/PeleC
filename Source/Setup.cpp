@@ -307,7 +307,7 @@ PeleC::variableSetUp()
 
   for (int i = 0; i < NUM_ADV; ++i) {
     char buf[64];
-    sprintf(buf, "rho_adv_%d", i);
+    snprintf(buf, 64, "rho_adv_%d", i);
     cnt++;
     set_scalar_bc(bc, phys_bc);
     bcs[cnt] = bc;
@@ -345,7 +345,7 @@ PeleC::variableSetUp()
 
     char* char_aux_names = new char[len + 1];
     for (int j = 0; j < len; j++) {
-      char_aux_names[j] = int_aux_names[j];
+      char_aux_names[j] = static_cast<char>(int_aux_names[j]);
     }
     char_aux_names[len] = '\0';
     aux_names.push_back(std::string(char_aux_names));

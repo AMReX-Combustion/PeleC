@@ -56,7 +56,7 @@ PeleC::construct_hydro_source(
 
     std::array<amrex::Real, AMREX_SPACEDIM> dxD = {
       {AMREX_D_DECL(dx1, dx1, dx1)}};
-    const amrex::Real* dxDp = &(dxD[0]);
+    const amrex::Real* dxDp = dxD.data();
 
     amrex::Real courno = std::numeric_limits<amrex::Real>::lowest();
 
@@ -246,7 +246,7 @@ PeleC::construct_hydro_source(
           BL_PROFILE("PeleC::reflux()");
           if (level < finest_level) {
             getFluxReg(level + 1).CrseAdd(
-              mfi, {{AMREX_D_DECL(&(flux[0]), &(flux[1]), &(flux[2]))}}, dxDp,
+              mfi, {{AMREX_D_DECL(flux.data(), &(flux[1]), &(flux[2]))}}, dxDp,
               dt, amrex::RunOn::Device);
 
             if (!amrex::DefaultGeometry().IsCartesian()) {
@@ -256,7 +256,7 @@ PeleC::construct_hydro_source(
 
           if (level > 0) {
             getFluxReg(level).FineAdd(
-              mfi, {{AMREX_D_DECL(&(flux[0]), &(flux[1]), &(flux[2]))}}, dxDp,
+              mfi, {{AMREX_D_DECL(flux.data(), &(flux[1]), &(flux[2]))}}, dxDp,
               dt, amrex::RunOn::Device);
 
             if (!amrex::DefaultGeometry().IsCartesian()) {

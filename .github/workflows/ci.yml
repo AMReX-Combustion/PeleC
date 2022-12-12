@@ -52,6 +52,7 @@ jobs:
         run: |
           egrep "warning:|error:" build-output.txt \
             | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|GNUmakefile" \
+            | egrep -v "ld: warning:" \
             | egrep -v "Submodules/PelePhysics/Support/Mechanism/Models" | sort | uniq \
             | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
           cat warnings.txt
@@ -70,6 +71,7 @@ jobs:
         run: |
           egrep "warning:|error:" build-output.txt \
             | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|GNUmakefile" \
+            | egrep -v "ld: warning:" \
             | egrep -v "Submodules/PelePhysics/Support/Mechanism/Models" | sort | uniq \
             | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
           cat warnings.txt
@@ -88,6 +90,7 @@ jobs:
         run: |
           egrep "warning:|error:" build-output.txt \
             | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|GNUmakefile" \
+            | egrep -v "ld: warning:" \
             | egrep -v "Submodules/PelePhysics/Support/Mechanism/Models" | sort | uniq \
             | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
           cat warnings.txt
@@ -219,6 +222,7 @@ jobs:
           echo "::add-matcher::.github/problem-matchers/gcc.json"
           egrep "warning:|error:" ${{runner.workspace}}/build-output.txt \
             | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest" \
+            | egrep -v "ld: warning:" \
             | egrep -v "Submodules/PelePhysics/Support/Mechanism/Models" | sort | uniq \
             | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > ${{runner.workspace}}/build-output-warnings.txt
           cat ${{runner.workspace}}/build-output-warnings.txt
@@ -235,7 +239,7 @@ jobs:
   GPU-Nvidia:
     name: GPU-CUDA
     needs: [Formatting, CPU-GNUmake]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         cuda_ver: [11.4]
@@ -253,9 +257,8 @@ jobs:
           submodules: true
       - name: Dependencies
         run: |
-          sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
-          echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /" \
-              | sudo tee /etc/apt/sources.list.d/cuda.list
+          curl -O https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.0-1_all.deb
+          sudo dpkg -i cuda-keyring_1.0-1_all.deb
           sudo apt-get update
           sudo apt-get install -y ninja-build \
               cuda-command-line-tools-${{matrix.cuda_pkg}} \
@@ -281,7 +284,7 @@ jobs:
   GPU-AMD:
     name: GPU-HIP
     needs: [Formatting, CPU-GNUmake]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.6.0
@@ -293,7 +296,7 @@ jobs:
           submodules: true
       - name: Dependencies
         run: |
-          sudo wget https://repo.radeon.com/rocm/rocm.gpg.key
+          curl -O https://repo.radeon.com/rocm/rocm.gpg.key
           sudo apt-key add rocm.gpg.key
           echo 'deb [arch=amd64] https://repo.radeon.com/rocm/apt/debian/ ubuntu main' \
               | sudo tee /etc/apt/sources.list.d/rocm.list
@@ -372,7 +375,7 @@ jobs:
           cmake --build . --parallel ${{env.NPROCS}}
   Lint-cppcheck:
     needs: Formatting
-    runs-on: macos-latest
+    runs-on: macos-12
     steps:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.6.0
@@ -441,6 +444,7 @@ jobs:
           cmake --build . --parallel ${{env.NPROCS}} 2>&1 | tee -a clang-tidy-full-report.txt
           egrep "warning:|error:" clang-tidy-full-report.txt \
             | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest" \
+            | egrep -v "ld: warning:" \
             | egrep -v "Submodules/PelePhysics/Support/Mechanism/Models" | sort | uniq \
             | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > clang-tidy-warnings.txt
       - name: Full report
