@@ -29,7 +29,7 @@ elif [ "${LMOD_SYSTEM_NAME}" == 'crusher' ]; then
   cmd "module load rocm/5.4.0"
   cmd "module load cray-python"
   cmd "module unload cray-libsci"
-  cmd "module load cray-libsci/21.08.1.2"
+  cmd "module load cray-libsci/22.11.1.2"
   cmd "module load cmake"
   cmd "export SPACK_MANAGER=${WORLDWORK}/cmb138/software/spack-manager-${LMOD_SYSTEM_NAME}"
   cmd "source ${SPACK_MANAGER}/start.sh && spack-start"

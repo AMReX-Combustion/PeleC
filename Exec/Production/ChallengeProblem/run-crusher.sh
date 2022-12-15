@@ -13,9 +13,5 @@ cmd() {
   eval "$@"
 }
 
-cmd "module unload PrgEnv-cray"
-cmd "module load PrgEnv-amd"
-cmd "module unload amd"
-cmd "module load amd/5.4.0"
 cmd "module load rocm/5.4.0"
-cmd "srun -N32 -n256 -c1 --gpus-per-node=8 --gpu-bind=closest ./PeleC3d.hip.x86-trento.TPROF.MPI.HIP.ex challenge.inp max_step=10"
+cmd "srun -N32 -n256 -c1 --gpus-per-node=8 --gpu-bind=closest ./PeleC3d.hip.x86-trento.TPROF.MPI.HIP.ex challenge.inp max_step=53210"
