@@ -261,8 +261,7 @@ pc_dermagvort(
 
   const amrex::Box& gbx = amrex::grow(bx, 1);
 
-  amrex::FArrayBox local(gbx, 3);
-  amrex::Elixir local_eli = local.elixir();
+  amrex::FArrayBox local(gbx, 3, amrex::The_Async_Arena());
   auto larr = local.array();
 
   const auto& flag_fab = amrex::getEBCellFlagFab(datfab);
@@ -383,8 +382,7 @@ pc_derenstrophy(
 
   const amrex::Box& gbx = amrex::grow(bx, 1);
 
-  amrex::FArrayBox local(gbx, 3);
-  amrex::Elixir local_eli = local.elixir();
+  amrex::FArrayBox local(gbx, 3, amrex::The_Async_Arena());
   auto larr = local.array();
 
   const auto& flag_fab = amrex::getEBCellFlagFab(datfab);
