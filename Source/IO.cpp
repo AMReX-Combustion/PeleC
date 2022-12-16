@@ -412,6 +412,7 @@ PeleC::setPlotVariables()
     amrex::Amr::deleteDerivePlotVar("massfrac");
   }
 
+#if NUM_ADV > 0
   bool plot_rho_adv = true;
   pp.query("plot_rho_adv", plot_rho_adv);
   if (plot_rho_adv) {
@@ -431,6 +432,7 @@ PeleC::setPlotVariables()
   } else {
     amrex::Amr::deleteDerivePlotVar("adv");
   }
+#endif
 
   bool plot_moleFrac = false;
   pp.query("plot_molefrac", plot_moleFrac);

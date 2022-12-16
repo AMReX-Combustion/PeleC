@@ -197,19 +197,25 @@ pc_ctoprim(
   q(i, j, k, QU) = vx;
   q(i, j, k, QV) = vy;
   q(i, j, k, QW) = vz;
+#if NUM_ADV > 0
   for (int n = 0; n < NUM_ADV; n++) {
     q(i, j, k, QFA + n) = u(i, j, k, UFA + n) / rho;
   }
+#endif
   for (int n = 0; n < NUM_SPECIES; n++) {
     q(i, j, k, QFS + n) = u(i, j, k, UFS + n) / rho;
   }
+#if NUM_AUX > 0
   for (int n = 0; n < NUM_AUX; n++) {
     q(i, j, k, QFX + n) = u(i, j, k, UFX + n) / rho;
   }
+#endif
   // Handle passive variables that are not per unit mass
+#if NUM_LIN > 0
   for (int n = 0; n < NUM_LIN; n++) {
     q(i, j, k, QLIN + n) = u(i, j, k, ULIN + n);
   }
+#endif
 
   const amrex::Real e = (u(i, j, k, UEDEN) - kineng) * rhoinv;
   amrex::Real T = u(i, j, k, UTEMP);

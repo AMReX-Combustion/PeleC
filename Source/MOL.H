@@ -75,10 +75,12 @@ mol_slope(
               : 0.0;
   drgt[2] = flagArrayR ? q(ivp, q_idx[1]) - q(iv, q_idx[1]) : 0.0;
   drgt[3] = flagArrayR ? q(ivp, q_idx[2]) - q(iv, q_idx[2]) : 0.0;
+#if NUM_ADV > 0
   for (int n = 0; n < NUM_ADV; n++) {
     dlft[QFA + n] = flagArrayL ? q(iv, QFA + n) - q(ivm, QFA + n) : 0.0;
     drgt[QFA + n] = flagArrayR ? q(ivp, QFA + n) - q(iv, QFA + n) : 0.0;
   }
+#endif
   for (int n = 0; n < NUM_SPECIES; n++) {
     dlft[QFS + n] = flagArrayL
                       ? q(iv, QRHO) * q(iv, QFS + n) -
@@ -93,14 +95,18 @@ mol_slope(
                             (qaux(iv, QC) * qaux(iv, QC))
                       : 0.0;
   }
+#if NUM_AUX > 0
   for (int n = 0; n < NUM_AUX; n++) {
     dlft[QFX + n] = flagArrayL ? q(iv, QFX + n) - q(ivm, QFX + n) : 0.0;
     drgt[QFX + n] = flagArrayR ? q(ivp, QFX + n) - q(iv, QFX + n) : 0.0;
   }
+#endif
+#if NUM_LIN > 0
   for (int n = 0; n < NUM_LIN; n++) {
     dlft[QLIN + n] = flagArrayL ? q(iv, QLIN + n) - q(ivm, QLIN + n) : 0.0;
     drgt[QLIN + n] = flagArrayR ? q(ivp, QLIN + n) - q(iv, QLIN + n) : 0.0;
   }
+#endif
 
   for (int n = 0; n < QVAR; n++) {
     const amrex::Real dcen = 0.5 * (dlft[n] + drgt[n]);

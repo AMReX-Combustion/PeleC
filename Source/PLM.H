@@ -231,18 +231,24 @@ pc_plm_d(
   const amrex::Real vel_ad = q(iv, QU + l_idx[0]);
   const amrex::Real spzerom = (vel_ad > 0) ? -1.0 : vel_ad * dtdx;
   const amrex::Real spzerop = (vel_ad >= 0) ? vel_ad * dtdx : 1.0;
+#if NUM_ADV > 0
   for (int n = 0; n < NUM_ADV; n++) {
     pc_plm_d_passive(iv, ivp, QFA + n, spzerom, spzerop, slope, q, qp, qm);
   }
+#endif
   for (int n = 0; n < NUM_SPECIES; n++) {
     pc_plm_d_passive(iv, ivp, QFS + n, spzerom, spzerop, slope, q, qp, qm);
   }
+#if NUM_AUX > 0
   for (int n = 0; n < NUM_AUX; n++) {
     pc_plm_d_passive(iv, ivp, QFX + n, spzerom, spzerop, slope, q, qp, qm);
   }
+#endif
+#if NUM_LIN > 0
   for (int n = 0; n < NUM_LIN; n++) {
     pc_plm_d_passive(iv, ivp, QLIN + n, spzerom, spzerop, slope, q, qp, qm);
   }
+#endif
 }
 
 #endif
