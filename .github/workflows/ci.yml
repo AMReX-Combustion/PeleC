@@ -476,6 +476,7 @@ jobs:
           patterns: |
             -**/Submodules/sundials/**
             -**/Submodules/AMReX/**
+            -**/Submodules/AMReX-Hydro/**
           input: sarif-results/cpp.sarif
           output: sarif-results/cpp.sarif
       - name: Upload CodeQL sarif
