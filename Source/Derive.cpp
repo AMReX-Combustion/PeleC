@@ -525,7 +525,6 @@ pc_derentropy(
   const int* /*bcrec*/,
   const int /*level*/)
 {
-  // auto const dat = datfab.const_array();
   auto sfab = derfab.array();
 
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -588,7 +587,6 @@ pc_derpres(
     const amrex::Real rho = dat(i, j, k, URHO);
     const amrex::Real rhoInv = 1.0 / rho;
     amrex::Real T = dat(i, j, k, UTEMP);
-    // amrex::Real e = dat(i, j, k, UEINT) * rhoInv;
     amrex::Real p;
     amrex::Real massfrac[NUM_SPECIES];
     for (int n = 0; n < NUM_SPECIES; ++n) {

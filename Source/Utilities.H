@@ -444,7 +444,6 @@ sort(T& vec)
     for (int i = 0; i < vec_size - 1; i++) {
       for (int j = 0; j < vec_size - i - 1; j++) {
         if (d_vec[j + 1] < d_vec[j]) {
-          // swap<typename T::value_type>(&d_vec[j], &d_vec[j + 1]);
           typename T::value_type temp = d_vec[j];
           d_vec[j] = d_vec[j + 1];
           d_vec[j + 1] = temp;

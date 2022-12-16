@@ -547,18 +547,13 @@ PeleC::setGridInfo()
     const int nlevs = max_level + 1;
     const int size = 3 * nlevs;
 
-    // amrex::Vector<amrex::Real> dx_level(size);
     amrex::Vector<int> domlo_level(size);
     amrex::Vector<int> domhi_level(size);
-
-    // const amrex::Real* dx_coarse = geom.CellSize();
 
     const int* domlo_coarse = geom.Domain().loVect();
     const int* domhi_coarse = geom.Domain().hiVect();
 
     for (int dir = 0; dir < 3; dir++) {
-      // dx_level[dir] = (ZFILL(dx_coarse))[dir];
-
       domlo_level[dir] = (ARLIM_3D(domlo_coarse))[dir];
       domhi_level[dir] = (ARLIM_3D(domhi_coarse))[dir];
     }
@@ -608,7 +603,6 @@ PeleC::initData()
     amrex::Gpu::hostToDevice, PeleC::h_prob_parm_device,
     PeleC::h_prob_parm_device + 1, PeleC::d_prob_parm_device);
 
-  // int ns = NVAR;
   amrex::MultiFab& S_new = get_new_data(State_Type);
 
   S_new.setVal(0.0);
@@ -653,8 +647,6 @@ PeleC::initData()
   }
 
   enforce_consistent_e(S_new);
-
-  // computeTemp(S_new,0);
 
   set_body_state(S_new);
   amrex::Real cur_time = state[State_Type].curTime();
@@ -753,8 +745,6 @@ PeleC::estTimeStep(amrex::Real /*dt_old*/)
   if (fixed_dt > 0.0) {
     return fixed_dt;
   }
-
-  // set_amr_info(level, -1, -1, -1.0, -1.0);
 
   amrex::Real estdt = max_dt;
 
@@ -1061,16 +1051,6 @@ PeleC::post_restart()
   amrex::Gpu::copy(
     amrex::Gpu::hostToDevice, PeleC::h_prob_parm_device,
     PeleC::h_prob_parm_device + 1, PeleC::d_prob_parm_device);
-
-  // amrex::Real cur_time = state[State_Type].curTime();
-
-  // Don't need this in pure C++?
-  // initialize the Godunov state array used in hydro -- we wait
-  // until here so that ngroups is defined (if needed) in
-  // rad_params_module
-  // if (do_hydro) {
-  //  init_godunov_indices();
-  //}
 
   // Initialize the reactor
   if (do_react) {
@@ -1525,10 +1505,6 @@ PeleC::errorEst(
         int idx = find_position(spec_names, flame_trac_name);
 
         if (idx >= 0) {
-          // const std::string name = "Y("+flame_trac_name+")";
-          // if (amrex::ParallelDescriptor::IOProcessor())
-          // amrex::Print() << " Flame tracer will be " << name << '\n';
-
           S_derData.setVal<amrex::RunOn::Device>(0.0, datbox);
           pc_derspectrac(
             datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
@@ -1575,11 +1551,6 @@ PeleC::errorEst(
           });
         }
       }
-
-      // Now update the tags in the TagBox.
-      // tag_arr.tags(itags, tilebox);
-      // rho_eli.clear();
-      // temp_eli.clear();
     }
   }
 
@@ -1605,7 +1576,6 @@ PeleC::errorEst(
       const amrex::Box& tilebox = mfi.tilebox();
       const auto Sfab = S_data.array(mfi);
       auto tag_arr = tags.array(mfi);
-      amrex::Elixir S_data_mfi_eli = S_data[mfi].elixir();
 
       // Problem specific tagging
       const ProbParmDevice* lprobparm = d_prob_parm_device;

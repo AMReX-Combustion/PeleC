@@ -36,9 +36,6 @@ trace_ppm(
   // amrex::Real hdt = 0.5 * dt;
   amrex::Real dtdx = dt / dx[idir];
 
-  // auto lo = bx.loVect3d();
-  // auto hi = bx.hiVect3d();
-
   auto vlo = vbx.loVect3d();
   auto vhi = vbx.hiVect3d();
 
@@ -83,8 +80,6 @@ trace_ppm(
 
   // Trace to left and right edges using upwind PPM
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    // amrex::Real rho = q_arr(i, j, k, QRHO);
-
     const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
     const amrex::IntVect ivm2(
       iv - 2 * amrex::IntVect::TheDimensionVector(idir));
@@ -206,23 +201,6 @@ trace_ppm(
     // to do the tracing here, we would have to 1) remove the tracing
     // in the trans routines AND 2) add the tracing in the pc_plm_x,
     // pc_plm_y, pc_plm_z routines.
-    //
-    // To do the tracing here: Uncomment the chunk below and
-    // anything that uses Im_src and Ip_src.
-
-    // // source terms
-    // amrex::Real Ip_src[QVAR][3];
-    // amrex::Real Im_src[QVAR][3];
-
-    // for (int n = 0; n < QVAR; n++) {
-    //   s[im2] = srcQ(ivm2, n);
-    //   s[im1] = srcQ(ivm1, n);
-    //   s[i0] = srcQ(iv, n);
-    //   s[ip1] = srcQ(ivp1, n);
-    //   s[ip2] = srcQ(ivp2, n);
-    //   ppm_reconstruct(s, flat, sm, sp);
-    //   ppm_int_profile(sm, sp, s[i0], un, cc, dtdx, Ip_src[n], Im_src[n]);
-    // }
 
     for (int n = QFS; n < NUM_SPECIES + QFS; n++) {
       // Plus state on face i

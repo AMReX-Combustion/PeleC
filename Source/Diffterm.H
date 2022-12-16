@@ -184,15 +184,12 @@ pc_diffusion_flux(
   amrex::Real taux = 0.0, tauy = 0.0, tauz = 0.0;
 
   if (dir == 0) {
-    AMREX_D_TERM(const amrex::Real dudx = dxinv * (q(iv, QU) - q(ivm, QU));
-                 , const amrex::Real dvdx = dxinv * (q(iv, QV) - q(ivm, QV));
-                 const amrex::Real dudy = td(iv, 0);
-                 const amrex::Real dvdy = td(iv, 1);
-                 , const amrex::Real dwdx = dxinv * (q(iv, QW) - q(ivm, QW));
-                 // const amrex::Real dwdy = td(iv, 2);
-                 const amrex::Real dudz = td(iv, 3);
-                 // const amrex::Real dvdz = td(iv, 4);
-                 const amrex::Real dwdz = td(iv, 5););
+    AMREX_D_TERM(
+      const amrex::Real dudx = dxinv * (q(iv, QU) - q(ivm, QU));
+      , const amrex::Real dvdx = dxinv * (q(iv, QV) - q(ivm, QV));
+      const amrex::Real dudy = td(iv, 0); const amrex::Real dvdy = td(iv, 1);
+      , const amrex::Real dwdx = dxinv * (q(iv, QW) - q(ivm, QW));
+      const amrex::Real dudz = td(iv, 3); const amrex::Real dwdz = td(iv, 5););
     const amrex::Real divu = AMREX_D_TERM(dudx, +dvdy, +dwdz);
 
     taux =
@@ -206,8 +203,6 @@ pc_diffusion_flux(
     const amrex::Real dvdy = dxinv * (q(iv, QV) - q(ivm, QV));
 #if AMREX_SPACEDIM == 3
     const amrex::Real dwdy = dxinv * (q(iv, QW) - q(ivm, QW));
-    // const amrex::Real dwdx = td(iv, 2);
-    // const amrex::Real dudz = td(iv, 3);
     const amrex::Real dvdz = td(iv, 4);
     const amrex::Real dwdz = td(iv, 5);
     tauz = coef[dComp_mu] * (dwdy + dvdz);
@@ -219,9 +214,7 @@ pc_diffusion_flux(
       coef[dComp_mu] * (2.0 * dvdy - 2.0 / 3.0 * divu) + coef[dComp_xi] * divu;
   } else if (dir == 2) {
     const amrex::Real dudx = td(iv, 0);
-    // const amrex::Real dvdx = td(iv, 1);
     const amrex::Real dwdx = td(iv, 2);
-    // const amrex::Real dudy = td(iv, 3);
     const amrex::Real dvdy = td(iv, 4);
     const amrex::Real dwdy = td(iv, 5);
     const amrex::Real dudz = dxinv * (q(iv, QU) - q(ivm, QU));

@@ -115,8 +115,6 @@ PeleC::initialize_eb2_structs()
         }
       });
 
-      // int Nebg = sv_eb_bndry_geom[iLocal].size();
-
       // Now fill the sv_eb_bndry_geom
       auto const& vfrac_arr = vfrac.array(mfi);
       auto const& bndrycent_arr = bndrycent->array(mfi);

@@ -86,16 +86,8 @@ PeleC::construct_hydro_source(
     reduction(max:courno)
 #endif
     {
-      // amrex::IArrayBox bcMask[AMREX_SPACEDIM];
       amrex::Real cflLoc = std::numeric_limits<amrex::Real>::lowest();
       int is_finest_level = (level == finest_level) ? 1 : 0;
-      // int flag_nscbc_isAnyPerio = (geom.isAnyPeriodic()) ? 1 : 0;
-      // int flag_nscbc_perio[AMREX_SPACEDIM] = {0}; // For 3D, we will know
-      // which corners have a periodicity
-      // for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
-      //  flag_nscbc_perio[dir] =
-      //    (amrex::DefaultGeometry().isPeriodic(dir)) ? 1 : 0;
-      // }
 
       const int* domain_lo = geom.Domain().loVect();
       const int* domain_hi = geom.Domain().hiVect();
@@ -107,8 +99,6 @@ PeleC::construct_hydro_source(
         const amrex::Box& bx = mfi.tilebox();
         const amrex::Box& qbx = amrex::grow(bx, numGrow() + nGrowF);
         const amrex::Box& fbx = amrex::grow(bx, nGrowF);
-        // const int* lo = bx.loVect();
-        // const int* hi = bx.hiVect();
 
         amrex::GpuArray<amrex::FArrayBox, AMREX_SPACEDIM> flux;
         for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {

@@ -144,9 +144,8 @@ PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
     Sborder.define(grids, dmap, NVAR, numGrow(), amrex::MFInfo(), Factory());
   }
 
-  // get the elapsed CPU time to now;
+  // get the elapsed CPU time to now
   if (level == 0 && amrex::ParallelDescriptor::IOProcessor()) {
-    // get elapsed CPU time
     std::ifstream CPUFile;
     std::string FullPathCPUFile = parent->theRestartFile();
     FullPathCPUFile += "/CPUtime";
@@ -172,31 +171,6 @@ PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
 
     DiagFile.close();
   }
-
-  /* Not implemented for GPU
-        if (level == 0)
-        {
-      // get problem-specific stuff -- note all processors do this,
-      // eliminating the need for a broadcast
-      std::string dir = parent->theRestartFile();
-
-      char * dir_for_pass = new char[dir.size() + 1];
-      std::copy(dir.begin(), dir.end(), dir_for_pass);
-      dir_for_pass[dir.size()] = '\0';
-
-      int len = dir.size();
-
-      Vector<int> int_dir_name(len);
-      for (int j = 0; j < len; j++)
-          int_dir_name[j] = (int) dir_for_pass[j];
-
-      AMREX_FORT_PROC_CALL(PROBLEM_RESTART,problem_restart)(int_dir_name.dataPtr(),
-      &len);
-
-      delete [] dir_for_pass;
-
-      }
-  */
 
   if (level > 0 && do_reflux) {
     flux_reg = std::make_unique<amrex::EBFluxRegister>(
@@ -324,25 +298,6 @@ PeleC::checkPoint(
 
       DiagFile.close();
     }
-
-    /* Not implemented for GPU{
-            // store any problem-specific stuff
-            char * dir_for_pass = new char[dir.size() + 1];
-            std::copy(dir.begin(), dir.end(), dir_for_pass);
-            dir_for_pass[dir.size()] = '\0';
-
-            int len = dir.size();
-
-            Vector<int> int_dir_name(len);
-            for (int j = 0; j < len; j++)
-            int_dir_name[j] = (int) dir_for_pass[j];
-
-            AMREX_FORT_PROC_CALL(PROBLEM_CHECKPOINT,problem_checkpoint)(int_dir_name.dataPtr(),
-       &len);
-
-            delete [] dir_for_pass;
-        }
-    */
   }
 
   if (current_version > 0) {
@@ -572,7 +527,6 @@ PeleC::writeJobInfo(const std::string& dir)
     jobInfoFile << "   maximum zones   = ";
     for (int n = 0; n < AMREX_SPACEDIM; n++) {
       jobInfoFile << parent->Geom(i).Domain().length(n) << " ";
-      // jobInfoFile << parent->Geom(i).ProbHi(n) << " ";
     }
     jobInfoFile << "\n\n";
   }
@@ -629,8 +583,6 @@ void
 PeleC::writeBuildInfo(std::ostream& os)
 {
   std::string PrettyLine = std::string(78, '=') + "\n";
-  // std::string OtherLine = std::string(78, '-') + "\n";
-  // std::string SkipSpace = std::string(8, ' ');
 
   // build information
   os << PrettyLine;
