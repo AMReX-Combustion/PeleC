@@ -526,26 +526,32 @@ pc_transdd(
   const amrex::Real rrl = qzm(ivp2, QRHO);
   const amrex::Real rrnewl = rrl - flxrho;
   const amrex::Real rrnewr = rrr - flxrho;
+#if NUM_ADV > 0
   for (int n = 0; n < NUM_ADV; n++) {
     pc_transdd_passive(
       iv, ivp0, ivp1, ivp2, n, UFA, QFA, cdtdx0, cdtdx1, hdt, rrr, rrl, rrnewr,
       rrnewl, srcq, qzp, qzm, flxx, flxy, qp, qm);
   }
+#endif
   for (int n = 0; n < NUM_SPECIES; n++) {
     pc_transdd_passive(
       iv, ivp0, ivp1, ivp2, n, UFS, QFS, cdtdx0, cdtdx1, hdt, rrr, rrl, rrnewr,
       rrnewl, srcq, qzp, qzm, flxx, flxy, qp, qm);
   }
+#if NUM_AUX > 0
   for (int n = 0; n < NUM_AUX; n++) {
     pc_transdd_passive(
       iv, ivp0, ivp1, ivp2, n, UFX, QFX, cdtdx0, cdtdx1, hdt, rrr, rrl, rrnewr,
       rrnewl, srcq, qzp, qzm, flxx, flxy, qp, qm);
   }
+#endif
+#if NUM_LIN > 0
   for (int n = 0; n < NUM_LIN; n++) {
     pc_transdd_passive(
       iv, ivp0, ivp1, ivp2, n, ULIN, QLIN, cdtdx0, cdtdx1, hdt, 1., 1., 1., 1.,
       srcq, qzp, qzm, flxx, flxy, qp, qm);
   }
+#endif
 
   // Update hydro vars
   const amrex::Real pggpx = qx(ivp0, GDPRES);
