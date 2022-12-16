@@ -34,7 +34,6 @@ CEXE_sources += InitEB.cpp
 CEXE_headers += PeleC.H
 CEXE_headers += PeleCAmr.H
 CEXE_headers += IO.H
-CEXE_headers += Problem.H
 CEXE_headers += ProblemDerive.H
 CEXE_headers += Constants.H
 CEXE_headers += Hydro.H
