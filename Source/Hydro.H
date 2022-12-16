@@ -152,7 +152,7 @@ pc_update(
   const int j,
   const int k,
   amrex::Array4<amrex::Real> const& update,
-  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flx,
   amrex::Array4<const amrex::Real> const& vol,
   amrex::Array4<const amrex::Real> const& pdivu)
 {
@@ -200,8 +200,8 @@ void pc_consup(
   amrex::Box const& bx,
   amrex::Array4<const amrex::Real> const& u,
   amrex::Array4<amrex::Real> const& update,
-  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
-  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flx,
+  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>&
     a,
   amrex::Array4<const amrex::Real> const& vol,
   amrex::Array4<const amrex::Real> const& div,
