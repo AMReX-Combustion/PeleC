@@ -26,7 +26,6 @@ pc_compute_hyp_mol_flux(
   const int R_P = 4;
   const int R_ADV = 5;
   const int R_Y = R_ADV + NUM_ADV;
-  const int R_AUX = R_Y + NUM_SPECIES;
   const int R_NUM = 5 + NUM_SPECIES + NUM_ADV + NUM_LIN + NUM_AUX;
   const int bc_test_val = 1;
 
@@ -109,6 +108,7 @@ pc_compute_hyp_mol_flux(
         }
 #endif
 #if NUM_AUX > 0
+        const int R_AUX = R_Y + NUM_SPECIES;
         for (int n = 0; n < NUM_AUX; n++) {
           qtempl[R_AUX + n] = q(ivm, QFX + n) + 0.5 * dq(ivm, QFX + n);
           qtempr[R_AUX + n] = q(iv, QFX + n) - 0.5 * dq(iv, QFX + n);
