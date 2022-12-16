@@ -61,8 +61,7 @@ jobs:
             -DPELEC_DIM:STRING=${DIM} \
             -DPELEC_ENABLE_MPI:BOOL=ON \
             -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
-            -DPELEC_ENABLE_MASA:BOOL=ON \
-            -DMASA_ROOT:PATH=${{runner.workspace}}/deps/install/MASA \
+            -DPELEC_ENABLE_MASA:BOOL=OFF \
             ${{github.workspace}}; \
             if [ $? -ne 0 ]; then exit 1; fi \
           done)
