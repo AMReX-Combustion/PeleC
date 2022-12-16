@@ -572,16 +572,15 @@ PeleC::setGridInfo()
       // refined levels may not exist at the beginning of the simulation.
 
       for (int dir = 0; dir < 3; dir++) {
-        if (dir < AMREX_SPACEDIM) {
-          int ncell = (domhi_level[3 * (lev - 1) + dir] -
-                       domlo_level[3 * (lev - 1) + dir] + 1) *
-                      ref_ratio[dir];
-          domlo_level[3 * lev + dir] = domlo_level[dir];
-          domhi_level[3 * lev + dir] = domlo_level[3 * lev + dir] + ncell - 1;
-        } else {
-          domlo_level[3 * lev + dir] = 0;
-          domhi_level[3 * lev + dir] = 0;
-        }
+        domlo_level[3 * lev + dir] = 0;
+        domhi_level[3 * lev + dir] = 0;
+      }
+      for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
+        int ncell = (domhi_level[3 * (lev - 1) + dir] -
+                     domlo_level[3 * (lev - 1) + dir] + 1) *
+                    ref_ratio[dir];
+        domlo_level[3 * lev + dir] = domlo_level[dir];
+        domhi_level[3 * lev + dir] = domlo_level[3 * lev + dir] + ncell - 1;
       }
     }
 
