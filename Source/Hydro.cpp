@@ -335,8 +335,8 @@ pc_umdrv(
   const bool use_hybrid_weno,
   const int weno_scheme,
   const amrex::Real difmag,
-  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
-  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flx,
+  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>&
     a,
   amrex::Array4<amrex::Real> const& vol,
   amrex::Real /*cflLoc*/)
