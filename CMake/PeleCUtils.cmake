@@ -29,11 +29,7 @@ macro(init_code_checks)
     find_program(CPPCHECK_EXE NAMES "cppcheck")
     if(CPPCHECK_EXE)
       message(STATUS "cppcheck found: ${CPPCHECK_EXE}")
-      include(ProcessorCount)
-      ProcessorCount(NP)
-      if(NP EQUAL 0)
-        set(NP 1)
-      endif()
+      set(NP 1)
       add_custom_target(cppcheck ALL
           COMMAND ${CMAKE_COMMAND} -E echo "Running cppcheck on project using ${NP} cores..."
           COMMAND ${CMAKE_COMMAND} -E make_directory cppcheck
