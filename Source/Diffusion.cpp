@@ -149,7 +149,9 @@ PeleC::getMOLSrcTerm(
 
       const int local_i = mfi.LocalIndex();
       const auto Ncut =
-        (!eb_in_domain) ? 0 : sv_eb_bndry_grad_stencil[local_i].size();
+        (!eb_in_domain)
+          ? 0
+          : static_cast<int>(sv_eb_bndry_grad_stencil[local_i].size());
       SparseData<amrex::Real, EBBndrySten> eb_flux_thdlocal;
       if (Ncut > 0) {
         eb_flux_thdlocal.define(sv_eb_bndry_grad_stencil[local_i], NVAR);
@@ -293,14 +295,14 @@ PeleC::getMOLSrcTerm(
       // Set extensive flux at embedded boundary, potentially
       // non-zero only for heat flux on isothermal boundaries,
       // and momentum fluxes at no-slip walls
-      const int nFlux = sv_eb_flux.empty() ? 0 : sv_eb_flux[local_i].numPts();
+      const auto nFlux = sv_eb_flux.empty() ? 0 : sv_eb_flux[local_i].numPts();
       if (typ == amrex::FabType::singlevalued && Ncut > 0) {
         eb_flux_thdlocal.setVal(0); // Default to Neumann for all fields
 
-        int Nvals = sv_eb_bcval[local_i].numPts();
+        const auto Nvals = sv_eb_bcval[local_i].numPts();
 
-        AMREX_ASSERT(static_cast<unsigned long>(Nvals) == Ncut);
-        AMREX_ASSERT(static_cast<unsigned long>(nFlux) == Ncut);
+        AMREX_ASSERT(Nvals == Ncut);
+        AMREX_ASSERT(nFlux == Ncut);
 
         if (eb_isothermal && (diffuse_temp || diffuse_enth)) {
           {
@@ -437,7 +439,8 @@ PeleC::getMOLSrcTerm(
           {
             BL_PROFILE("PeleC::pc_apply_face_stencil()");
             for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
-              int Nsten = flux_interp_stencil[dir][local_i].size();
+              const auto Nsten =
+                static_cast<int>(flux_interp_stencil[dir][local_i].size());
               // int in_place = 1;
               const amrex::Box valid_interped_flux_box =
                 amrex::Box(ebfluxbox).surroundingNodes(dir);
