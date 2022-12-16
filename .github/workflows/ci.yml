@@ -343,43 +343,43 @@ jobs:
           source /opt/intel/oneapi/setvars.sh
           set -e
           cmake --build . --parallel ${{env.NPROCS}}
-  Lint-cppcheck:
-    needs: Formatting
-    runs-on: macos-12
-    steps:
-      - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.6.0
-        with:
-          access_token: ${{github.token}}
-      - name: Clone
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-      - name: Dependencies
-        run: |
-          brew install cppcheck
-      - name: Configure
-        run: |
-          cmake -B${{runner.workspace}}/build-cppcheck \
-          -DPELEC_ENABLE_MPI:BOOL=OFF \
-          -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
-          -DPELEC_ENABLE_MASA:BOOL=OFF \
-          -DPELEC_ENABLE_CPPCHECK:BOOL=ON \
-          ${{github.workspace}}
-      - name: Check
-        working-directory: ${{runner.workspace}}/build-cppcheck
-        run: make cppcheck
-      - name: Full report
-        working-directory: ${{runner.workspace}}/build-cppcheck/cppcheck
-        run: cat cppcheck-full-report.txt
-      - name: Short report
-        working-directory: ${{runner.workspace}}/build-cppcheck/cppcheck
-        run: |
-          echo "::add-matcher::.github/problem-matchers/cppcheck.json"
-          awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' < cppcheck-report.txt > cppcheck-warnings.txt
-          cat cppcheck-warnings.txt
-          export return=$(tail -n 1 cppcheck-warnings.txt | awk '{print $2}')
-          exit ${return}
+  #Lint-cppcheck:
+  #  needs: Formatting
+  #  runs-on: macos-12
+  #  steps:
+  #    - name: Cancel previous runs
+  #      uses: styfle/cancel-workflow-action@0.6.0
+  #      with:
+  #        access_token: ${{github.token}}
+  #    - name: Clone
+  #      uses: actions/checkout@v3
+  #      with:
+  #        submodules: true
+  #    - name: Dependencies
+  #      run: |
+  #        brew install cppcheck
+  #    - name: Configure
+  #      run: |
+  #        cmake -B${{runner.workspace}}/build-cppcheck \
+  #        -DPELEC_ENABLE_MPI:BOOL=OFF \
+  #        -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
+  #        -DPELEC_ENABLE_MASA:BOOL=OFF \
+  #        -DPELEC_ENABLE_CPPCHECK:BOOL=ON \
+  #        ${{github.workspace}}
+  #    - name: Check
+  #      working-directory: ${{runner.workspace}}/build-cppcheck
+  #      run: make cppcheck
+  #    - name: Full report
+  #      working-directory: ${{runner.workspace}}/build-cppcheck/cppcheck
+  #      run: cat cppcheck-full-report.txt
+  #    - name: Short report
+  #      working-directory: ${{runner.workspace}}/build-cppcheck/cppcheck
+  #      run: |
+  #        echo "::add-matcher::.github/problem-matchers/cppcheck.json"
+  #        awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' < cppcheck-report.txt > cppcheck-warnings.txt
+  #        cat cppcheck-warnings.txt
+  #        export return=$(tail -n 1 cppcheck-warnings.txt | awk '{print $2}')
+  #        exit ${return}
   Lint-clang-tidy:
     needs: Formatting
     runs-on: ubuntu-latest
