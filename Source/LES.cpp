@@ -252,23 +252,13 @@ PeleC::getSmagorinskyLESTerm(
       amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> tanders;
       {
         BL_PROFILE("PeleC::pc_compute_tangential_vel_derivs()");
-        amrex::Real d1;
-        amrex::Real d2;
         for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
           tander_ec[dir].resize(
             eboxes[dir], GradUtils::nCompTan, amrex::The_Async_Arena());
           tanders[dir] = tander_ec[dir].array();
           setV(eboxes[dir], GradUtils::nCompTan, tanders[dir], 0);
-          if (dir == 0) {
-            d1 = dx[1];
-            d2 = dx[2];
-          } else if (dir == 1) {
-            d1 = dx[0];
-            d2 = dx[2];
-          } else if (dir == 2) {
-            d1 = dx[0];
-            d2 = dx[1];
-          }
+          const amrex::Real d1 = dir == 0 ? dx[1] : dx[0];
+          const amrex::Real d2 = dir == 2 ? dx[1] : dx[2];
           amrex::ParallelFor(
             eboxes[dir], [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
               pc_compute_tangential_vel_derivs(
