@@ -448,6 +448,7 @@ jobs:
         with:
           languages: cpp
           queries: +security-and-quality
+          config-file: ./.github/codeql/codeql-config.yml
       - name: Configure
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
