@@ -345,7 +345,7 @@ jobs:
           cmake --build . --parallel ${{env.NPROCS}}
   Lint-cppcheck:
     needs: Formatting
-    runs-on: macos-12
+    runs-on: ubuntu-latest
     steps:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.6.0
@@ -357,7 +357,8 @@ jobs:
           submodules: true
       - name: Dependencies
         run: |
-          brew install cppcheck
+          sudo apt-get update
+          sudo apt-get install -y cppcheck
       - name: Configure
         run: |
           cmake -B${{runner.workspace}}/build-cppcheck \
