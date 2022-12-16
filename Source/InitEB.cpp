@@ -201,6 +201,7 @@ PeleC::initialize_eb2_structs()
       int iLocal = mfi.LocalIndex();
 
       if (typ == amrex::FabType::regular || typ == amrex::FabType::covered) {
+        continue;
       } else if (typ == amrex::FabType::singlevalued) {
         const auto afrac_arr = (*areafrac[dir])[mfi].array();
         const auto facecent_arr = (*facecent[dir])[mfi].array();
