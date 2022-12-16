@@ -29,7 +29,14 @@ macro(init_code_checks)
     find_program(CPPCHECK_EXE NAMES "cppcheck")
     if(CPPCHECK_EXE)
       message(STATUS "cppcheck found: ${CPPCHECK_EXE}")
-      set(NP 1)
+      include(ProcessorCount)
+      ProcessorCount(NP)
+      if(NP EQUAL 0)
+        set(NP 1)
+      endif()
+      if("${CMAKE_SYSTEM_NAME}" MATCHES "Darwin")
+        set(NP 1)
+      endif()
       add_custom_target(cppcheck ALL
           COMMAND ${CMAKE_COMMAND} -E echo "Running cppcheck on project using ${NP} cores..."
           COMMAND ${CMAKE_COMMAND} -E make_directory cppcheck
