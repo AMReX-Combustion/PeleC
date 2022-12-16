@@ -573,15 +573,12 @@ PeleC::setGridInfo()
 
       for (int dir = 0; dir < 3; dir++) {
         if (dir < AMREX_SPACEDIM) {
-          // dx_level[3 * lev + dir] = dx_level[3 * (lev - 1) + dir] /
-          // ref_ratio[dir];
           int ncell = (domhi_level[3 * (lev - 1) + dir] -
                        domlo_level[3 * (lev - 1) + dir] + 1) *
                       ref_ratio[dir];
           domlo_level[3 * lev + dir] = domlo_level[dir];
           domhi_level[3 * lev + dir] = domlo_level[3 * lev + dir] + ncell - 1;
         } else {
-          // dx_level[3 * lev + dir] = 0.0;
           domlo_level[3 * lev + dir] = 0;
           domhi_level[3 * lev + dir] = 0;
         }
