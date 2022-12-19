@@ -27,14 +27,6 @@ pc_initdata(
   amrex::GeometryData const& /*geomdata*/,
   ProbParmDevice const& prob_parm)
 {
-  // Geometry
-  // const amrex::Real* prob_lo = geomdata.ProbLo();
-  // const amrex::Real* dx = geomdata.CellSize();
-
-  // const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
-  // const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
-  // const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];
-
   state(i, j, k, URHO) = prob_parm.rho;
   state(i, j, k, UMX) = prob_parm.rho * prob_parm.vx_in;
   state(i, j, k, UMY) = prob_parm.rho * prob_parm.vy_in;
