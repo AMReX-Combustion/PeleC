@@ -65,7 +65,7 @@ pc_compute_diffusion_flux(
       amrex::ParallelFor(
         ebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
           amrex::GpuArray<amrex::Real, dComp_lambda + 1> cf = {0.0};
-          for (int n = 0; n < cf.size(); n++) {
+          for (int n = 0; n < static_cast<int>(cf.size()); n++) {
             pc_move_transcoefs_to_ec(
               i, j, k, n, coef, cf.data(), dir, do_harmonic);
           }
