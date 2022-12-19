@@ -464,7 +464,7 @@ jobs:
       - name: Build
         working-directory: ${{runner.workspace}}/build-codeql
         run: |
-          cmake --build . --parallel ${{env.NPROCS}} --target PeleC-HIT
+          cmake --build . --parallel ${{env.NPROCS}}
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
         with:
