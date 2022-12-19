@@ -69,7 +69,7 @@ pc_set_body_state(
   const int k,
   const int n,
   const amrex::Array4<const amrex::EBCellFlag>& flags,
-  const amrex::GpuArray<amrex::Real, NVAR> body_state,
+  const amrex::GpuArray<amrex::Real, NVAR>& body_state,
   const amrex::Array4<amrex::Real>& S)
 {
   if (flags(i, j, k).isCovered()) {
