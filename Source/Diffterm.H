@@ -29,7 +29,7 @@ struct SpeciesEnergyFlux
     const amrex::IntVect iv,
     const amrex::IntVect ivm,
     const amrex::Real dxinv,
-    const amrex::Real coef[],
+    const amrex::GpuArray<amrex::Real, dComp_lambda + 1>& coef,
     const amrex::Array4<const amrex::Real>& q,
     const amrex::Array4<amrex::Real>& flx)
   {
@@ -86,7 +86,7 @@ struct SpeciesEnergyFlux<pele::physics::eos::SRK>
     const amrex::IntVect iv,
     const amrex::IntVect ivm,
     const amrex::Real dxinv,
-    const amrex::Real coef[],
+    const amrex::GpuArray<amrex::Real, dComp_lambda + 1>& coef,
     const amrex::Array4<const amrex::Real>& q,
     const amrex::Array4<amrex::Real>& flx)
   {
@@ -171,7 +171,7 @@ pc_diffusion_flux(
   const int j,
   const int k,
   const amrex::Array4<const amrex::Real>& q,
-  const amrex::Real coef[],
+  const amrex::GpuArray<amrex::Real, dComp_lambda + 1>& coef,
   const amrex::Array4<const amrex::Real>& td,
   const amrex::Array4<const amrex::Real>& area,
   const amrex::Array4<amrex::Real>& flx,
