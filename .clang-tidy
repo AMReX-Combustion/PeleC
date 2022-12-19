@@ -18,7 +18,8 @@ Checks: 'bugprone-*,
          -readability-avoid-const-params-in-decls,
          -readability-static-accessed-through-instance,
          -readability-identifier-length,
-         -readability-function-cognitive-complexity'
+         -readability-function-cognitive-complexity,
+         -readability-function-size'
 WarningsAsErrors: ''
 HeaderFilterRegex: '.*'
 AnalyzeTemporaryDtors: false
