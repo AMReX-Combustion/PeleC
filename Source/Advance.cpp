@@ -49,7 +49,7 @@ PeleC::do_mol_advance(
   // into MOL advance yet");
 
   for (int i = 0; i < num_state_type; ++i) {
-    if (!(i == Reactions_Type && do_react)) {
+    if ((i != Reactions_Type) || (!do_react)) {
       state[i].allocOldData();
       state[i].swapTimeLevels(dt);
     }

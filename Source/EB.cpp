@@ -306,9 +306,9 @@ pc_fill_bndry_grad_stencil_ls(
 
             if (bx.contains(sten_iv)) {
               if (
-                !(AMREX_D_TERM(
-                  sten_iv[0] == ivs[0], &&sten_iv[1] == ivs[1],
-                  &&sten_iv[2] == ivs[2])) &&
+                (AMREX_D_TERM(
+                  sten_iv[0] != ivs[0], || sten_iv[1] != ivs[1],
+                  || sten_iv[2] != ivs[2])) &&
                 !flags(sten_iv).isCovered()) {
                 AMREX_D_TERM(xi[0] = sten_iv[0] - ivs[0];
                              , xi[1] = sten_iv[1] - ivs[1];
@@ -347,9 +347,9 @@ pc_fill_bndry_grad_stencil_ls(
 
               if (bx.contains(sten_iv)) {
                 if (
-                  !(AMREX_D_TERM(
-                    sten_iv[0] == ivs[0], &&sten_iv[1] == ivs[1],
-                    &&sten_iv[2] == ivs[2])) &&
+                  (AMREX_D_TERM(
+                    sten_iv[0] != ivs[0], || sten_iv[1] != ivs[1],
+                    || sten_iv[2] != ivs[2])) &&
                   !flags(sten_iv).isCovered()) {
                   grad_stencil[L].val AMREX_D_TERM([ii], [jj], [kk]) =
                     fac * ebg[L].eb_area *
