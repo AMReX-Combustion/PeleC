@@ -1,5 +1,5 @@
 set(PELEC_ENABLE_PARTICLES OFF)
 set(PELEC_EOS_MODEL Fuego)
-set(PELEC_CHEMISTRY_MODEL dodmethair_4sp)
+set(PELEC_CHEMISTRY_MODEL dodecane_lu_qss)
 set(PELEC_TRANSPORT_MODEL Simple)
 include(BuildExeAndLib)
