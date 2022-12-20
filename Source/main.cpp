@@ -106,18 +106,17 @@ main(int argc, char* argv[])
 
   // Print the current date and time
   time_t time_type;
-  struct tm* time_pointer;
+  struct tm time_now;
   time(&time_type);
-  time_pointer = gmtime(&time_type);
+  gmtime_r(&time_type, &time_now);
 
   if (amrex::ParallelDescriptor::IOProcessor()) {
     amrex::Print() << std::setfill('0') << "\nStarting run at " << std::setw(2)
-                   << time_pointer->tm_hour << ":" << std::setw(2)
-                   << time_pointer->tm_min << ":" << std::setw(2)
-                   << time_pointer->tm_sec << " UTC on "
-                   << time_pointer->tm_year + 1900 << "-" << std::setw(2)
-                   << time_pointer->tm_mon + 1 << "-" << std::setw(2)
-                   << time_pointer->tm_mday << "." << std::endl;
+                   << time_now.tm_hour << ":" << std::setw(2) << time_now.tm_min
+                   << ":" << std::setw(2) << time_now.tm_sec << " UTC on "
+                   << time_now.tm_year + 1900 << "-" << std::setw(2)
+                   << time_now.tm_mon + 1 << "-" << std::setw(2)
+                   << time_now.tm_mday << "." << std::endl;
   }
 
   // Initialize random seed after we're running in parallel.
@@ -178,16 +177,15 @@ main(int argc, char* argv[])
   }
 
   time(&time_type);
-  time_pointer = gmtime(&time_type);
+  gmtime_r(&time_type, &time_now);
 
   if (amrex::ParallelDescriptor::IOProcessor()) {
     amrex::Print() << std::setfill('0') << "\nEnding run at " << std::setw(2)
-                   << time_pointer->tm_hour << ":" << std::setw(2)
-                   << time_pointer->tm_min << ":" << std::setw(2)
-                   << time_pointer->tm_sec << " UTC on "
-                   << time_pointer->tm_year + 1900 << "-" << std::setw(2)
-                   << time_pointer->tm_mon + 1 << "-" << std::setw(2)
-                   << time_pointer->tm_mday << "." << std::endl;
+                   << time_now.tm_hour << ":" << std::setw(2) << time_now.tm_min
+                   << ":" << std::setw(2) << time_now.tm_sec << " UTC on "
+                   << time_now.tm_year + 1900 << "-" << std::setw(2)
+                   << time_now.tm_mon + 1 << "-" << std::setw(2)
+                   << time_now.tm_mday << "." << std::endl;
   }
 
   delete amrptr;

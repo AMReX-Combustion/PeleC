@@ -32,7 +32,6 @@ pc_initdata(
 {
   // Geometry
   const amrex::Real* prob_lo = geomdata.ProbLo();
-  // const amrex::Real* prob_hi = geomdata.ProbHi();
   const amrex::Real* dx = geomdata.CellSize();
   const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
   const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
@@ -107,7 +106,7 @@ struct MyProbTagStruct
     const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> /*prob_lo*/,
     const amrex::Real /*time*/,
     const int /*level*/,
-    ProbParmDevice /*const& d_prob_parm_device*/) noexcept
+    ProbParmDevice const& /*d_prob_parm_device*/) noexcept
   {
     // could do problem specific tagging here
   }
@@ -138,11 +137,6 @@ struct MyProbDeriveStruct
     const int* /*bcrec*/,
     int /*level*/)
   {
-    // auto const dat = datfab.array();
-    // auto arr = derfab.array();
-    // amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept
-    // { do something with arr
-    // });
   }
 };
 

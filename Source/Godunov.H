@@ -301,7 +301,7 @@ pc_cmpflx(
   }
 
   const int bc_test_val = 1;
-  amrex::Real dummy_flx[NUM_SPECIES] = {0.0}; // FIXME later
+  amrex::Real dummy_flx[NUM_SPECIES] = {0.0};
   riemann(
     ql(i, j, k, QRHO), ul, vl, v2l, ql(i, j, k, QPRES), spl, qr(i, j, k, QRHO),
     ur, vr, v2r, qr(i, j, k, QPRES), spr, bc_test_val, cav, ustar,
@@ -312,23 +312,29 @@ pc_cmpflx(
 
   amrex::Real flxrho = flx(i, j, k, URHO);
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
+#if NUM_ADV > 0
   for (int n = 0; n < NUM_ADV; n++) {
     const int qc = QFA + n;
     pc_cmpflx_passive(ustar, flxrho, ql(iv, qc), qr(iv, qc), flx(iv, UFA + n));
   }
+#endif
   for (int n = 0; n < NUM_SPECIES; n++) {
     const int qc = QFS + n;
     pc_cmpflx_passive(ustar, flxrho, ql(iv, qc), qr(iv, qc), flx(iv, UFS + n));
   }
+#if NUM_AUX > 0
   for (int n = 0; n < NUM_AUX; n++) {
     const int qc = QFX + n;
     pc_cmpflx_passive(ustar, flxrho, ql(iv, qc), qr(iv, qc), flx(iv, UFX + n));
   }
+#endif
+#if NUM_LIN > 0
   for (int n = 0; n < NUM_LIN; n++) {
     const int qc = QLIN + n;
     pc_cmpflx_passive(
       ustar, q(i, j, k, GU), ql(iv, qc), qr(iv, qc), flx(iv, ULIN + n));
   }
+#endif
 }
 
 // Transverse Correction for Predicted dir-states, using other_dir-Flux
@@ -363,25 +369,31 @@ pc_transdo(
   const amrex::Real c = qa(iv, QGAMC);
 
   // Update passive variables
+#if NUM_ADV > 0
   for (int n = 0; n < NUM_ADV; n++) {
     pc_transdo_passive(
       iv, ivp0, ivp1, n, UFA, QFA, cdtdx, flxrho, rrr, rrl, qyp, qym, flxx, qp,
       qm);
   }
+#endif
   for (int n = 0; n < NUM_SPECIES; n++) {
     pc_transdo_passive(
       iv, ivp0, ivp1, n, UFS, QFS, cdtdx, flxrho, rrr, rrl, qyp, qym, flxx, qp,
       qm);
   }
+#if NUM_AUX > 0
   for (int n = 0; n < NUM_AUX; n++) {
     pc_transdo_passive(
       iv, ivp0, ivp1, n, UFX, QFX, cdtdx, flxrho, rrr, rrl, qyp, qym, flxx, qp,
       qm);
   }
+#endif
+#if NUM_LIN > 0
   for (int n = 0; n < NUM_LIN; n++) {
     pc_transdo_passive(
       iv, ivp0, ivp1, n, ULIN, QLIN, cdtdx, 0., 1., 1., qyp, qym, flxx, qp, qm);
   }
+#endif
 
   // Update hydro vars
   const amrex::Real pggp = qint(ivp0, GDPRES);
@@ -514,26 +526,32 @@ pc_transdd(
   const amrex::Real rrl = qzm(ivp2, QRHO);
   const amrex::Real rrnewl = rrl - flxrho;
   const amrex::Real rrnewr = rrr - flxrho;
+#if NUM_ADV > 0
   for (int n = 0; n < NUM_ADV; n++) {
     pc_transdd_passive(
       iv, ivp0, ivp1, ivp2, n, UFA, QFA, cdtdx0, cdtdx1, hdt, rrr, rrl, rrnewr,
       rrnewl, srcq, qzp, qzm, flxx, flxy, qp, qm);
   }
+#endif
   for (int n = 0; n < NUM_SPECIES; n++) {
     pc_transdd_passive(
       iv, ivp0, ivp1, ivp2, n, UFS, QFS, cdtdx0, cdtdx1, hdt, rrr, rrl, rrnewr,
       rrnewl, srcq, qzp, qzm, flxx, flxy, qp, qm);
   }
+#if NUM_AUX > 0
   for (int n = 0; n < NUM_AUX; n++) {
     pc_transdd_passive(
       iv, ivp0, ivp1, ivp2, n, UFX, QFX, cdtdx0, cdtdx1, hdt, rrr, rrl, rrnewr,
       rrnewl, srcq, qzp, qzm, flxx, flxy, qp, qm);
   }
+#endif
+#if NUM_LIN > 0
   for (int n = 0; n < NUM_LIN; n++) {
     pc_transdd_passive(
       iv, ivp0, ivp1, ivp2, n, ULIN, QLIN, cdtdx0, cdtdx1, hdt, 1., 1., 1., 1.,
       srcq, qzp, qzm, flxx, flxy, qp, qm);
   }
+#endif
 
   // Update hydro vars
   const amrex::Real pggpx = qx(ivp0, GDPRES);

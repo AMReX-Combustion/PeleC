@@ -40,8 +40,7 @@ void
 PeleC::fill_ext_source(
   amrex::Real /*time*/,
   amrex::Real /*dt*/,
-  const amrex::MultiFab& state_old
-  /*unused*/,
+  const amrex::MultiFab& state_old,
   const amrex::MultiFab& state_new,
   amrex::MultiFab& ext_src,
   int ng)
@@ -50,7 +49,6 @@ PeleC::fill_ext_source(
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(state_old.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
 
-  // auto const& Sos = state_old.const_arrays();
   auto const& Sns = state_new.const_arrays();
   auto const& Farrs = ext_src.arrays();
   auto const& flagarrs = flags.const_arrays();

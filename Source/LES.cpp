@@ -127,38 +127,9 @@ PeleC::getLESTerm(
     break;
   }
 
-  amrex::Print() << "WARNING -- Need to implement LES extrap " << std::endl;
-  //   // Extrapolate to GhostCells
-  //   if (LESTerm.nGrow() > 0) {
-  // #ifdef AMREX_USE_OMP
-  // #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
-  // #endif
-  //     // for (MFIter mfi(LESTerm, TilingIfNotGPU()); mfi.isValid(); ++mfi) {
-  //     for (MFIter mfi(LESTerm, false); mfi.isValid(); ++mfi) {
-  //       BL_PROFILE("PeleC::diffextrap()");
-  //       auto const& Lterm = LESTerm.array(mfi);
-  //       const int mg = LESTerm.nGrow();
-  //       const Box& bx = mfi.tilebox();
-  //       auto lo = bx.loVect();
-  //       auto hi = bx.hiVect();
-  //       auto dlo = Lterm.begin;
-  //       auto dhi = Lterm.end;
-  //       const int AMREX_D_DECL(lx = lo[0], ly = lo[1], lz = lo[2]);
-  //       const int AMREX_D_DECL(hx = hi[0], hy = hi[1], hz = hi[2]);
-  //       amrex::ParallelFor(
-  //         bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-  //           pc_diffextrap(
-  //             i, j, k, Lterm, mg, UMX, UMZ + 1, AMREX_D_DECL(lx, ly, lz),
-  //             AMREX_D_DECL(hx, hy, hz), dlo, dhi);
-  //           pc_diffextrap(
-  //             i, j, k, Lterm, mg, UFS, UFS + NUM_SPECIES,
-  //             AMREX_D_DECL(lx, ly, lz), AMREX_D_DECL(hx, hy, hz), dlo, dhi);
-  //           pc_diffextrap(
-  //             i, j, k, Lterm, mg, UEDEN, UEDEN + 1, AMREX_D_DECL(lx, ly, lz),
-  //             AMREX_D_DECL(hx, hy, hz), dlo, dhi);
-  //         });
-  //     }
-  //  }
+  amrex::Print()
+    << "WARNING -- Need to implement LES extrap here, see diffusion"
+    << std::endl;
 
   // Filter the SGS source term
   if (use_explicit_filter) {
@@ -199,7 +170,7 @@ PeleC::getSmagorinskyLESTerm(
   const amrex::Real* dxDp = dxD.data();
 
   amrex::MultiFab S(grids, dmap, NVAR, ngrow, amrex::MFInfo(), Factory());
-  FillPatch(*this, S, ngrow, time, State_Type, 0, NVAR); // FIXME: time+dt?
+  FillPatch(*this, S, ngrow, time, State_Type, 0, NVAR);
 
   // Fetch some gpu arrays
   prefetchToDevice(S);
@@ -252,23 +223,13 @@ PeleC::getSmagorinskyLESTerm(
       amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> tanders;
       {
         BL_PROFILE("PeleC::pc_compute_tangential_vel_derivs()");
-        amrex::Real d1;
-        amrex::Real d2;
         for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
           tander_ec[dir].resize(
             eboxes[dir], GradUtils::nCompTan, amrex::The_Async_Arena());
           tanders[dir] = tander_ec[dir].array();
           setV(eboxes[dir], GradUtils::nCompTan, tanders[dir], 0);
-          if (dir == 0) {
-            d1 = dx[1];
-            d2 = dx[2];
-          } else if (dir == 1) {
-            d1 = dx[0];
-            d2 = dx[2];
-          } else if (dir == 2) {
-            d1 = dx[0];
-            d2 = dx[1];
-          }
+          const amrex::Real d1 = dir == 0 ? dx[1] : dx[0];
+          const amrex::Real d2 = dir == 2 ? dx[1] : dx[2];
           amrex::ParallelFor(
             eboxes[dir], [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
               pc_compute_tangential_vel_derivs(
@@ -405,9 +366,7 @@ PeleC::getDynamicSmagorinskyLESTerm(
   amrex::MultiFab S(
     grids, dmap, NVAR, nGrowD + nGrowC + nGrowT + 1, amrex::MFInfo(),
     Factory());
-  FillPatch(
-    *this, S, nGrowD + nGrowC + nGrowT + 1, time, State_Type, 0,
-    NVAR); // FIXME: time+dt?
+  FillPatch(*this, S, nGrowD + nGrowC + nGrowT + 1, time, State_Type, 0, NVAR);
   LES_Coeffs.setVal(0.0);
 
   // Fetch some gpu arrays

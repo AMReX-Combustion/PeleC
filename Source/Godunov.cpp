@@ -58,7 +58,6 @@ pc_umeth_3D(
   const int dhy = domhi[1];
   const int dhz = domhi[2];
 
-  // auto const& bcMaskarr = bcMask.array();
   const amrex::Box& bxg1 = grow(bx, 1);
   const amrex::Box& bxg2 = grow(bx, 2);
 
@@ -430,7 +429,6 @@ pc_umeth_2D(
   const int dhx = domhi[0];
   const int dhy = domhi[1];
 
-  // auto const& bcMaskarr = bcMask.array();
   const amrex::Box& bxg1 = grow(bx, 1);
   const amrex::Box& bxg2 = grow(bx, 2);
 

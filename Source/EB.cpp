@@ -195,7 +195,7 @@ pc_fill_bndry_grad_stencil_quadratic(
 
       for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
         grad_stencil[L].iv[dir] = ebg[L].iv[dir];
-        // Shift base down, if required;
+        // Shift base down, if required
         grad_stencil[L].iv_base[dir] = baseiv[dir] + sh[dir];
       }
 

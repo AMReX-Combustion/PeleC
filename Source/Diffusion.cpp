@@ -106,18 +106,6 @@ PeleC::getMOLSrcTerm(
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
   {
-    // amrex::IArrayBox bcMask[AMREX_SPACEDIM];
-
-    // int flag_nscbc_isAnyPerio = (geom.isAnyPeriodic()) ? 1 : 0;
-    // int flag_nscbc_perio[AMREX_SPACEDIM] = {0}; // For 3D, we will know which
-    // corners have a periodicity
-    // for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
-    //   flag_nscbc_perio[dir] =
-    //     (amrex::DefaultGeometry().isPeriodic(dir)) ? 1 : 0;
-    // }
-    // const int* domain_lo = geom.Domain().loVect();
-    // const int* domain_hi = geom.Domain().hiVect();
-
     for (amrex::MFIter mfi(MOLSrcTerm, amrex::TilingIfNotGPU()); mfi.isValid();
          ++mfi) {
       const amrex::Box vbox = mfi.tilebox();
@@ -441,7 +429,6 @@ PeleC::getMOLSrcTerm(
             for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
               const auto Nsten =
                 static_cast<int>(flux_interp_stencil[dir][local_i].size());
-              // int in_place = 1;
               const amrex::Box valid_interped_flux_box =
                 amrex::Box(ebfluxbox).surroundingNodes(dir);
               if (Nsten > 0) {
@@ -506,11 +493,6 @@ PeleC::getMOLSrcTerm(
                   &((*areafrac[0])[mfi]), &((*areafrac[1])[mfi]),
                   &((*areafrac[2])[mfi]))},
                 amrex::RunOn::Device);
-              // if (AMREX_SPACEDIM <= 2) {
-              //   amrex::Print()
-              //     << "WARNING:Re redistribution crseadd for EB not tested "
-              //        "in 2D\n";
-              // }
             }
 
             if (fr_as_fine != nullptr) {
@@ -521,12 +503,6 @@ PeleC::getMOLSrcTerm(
                   &((*areafrac[0])[mfi]), &((*areafrac[1])[mfi]),
                   &((*areafrac[2])[mfi]))},
                 dm_as_fine, amrex::RunOn::Device);
-
-              // if (AMREX_SPACEDIM <= 2) {
-              //   amrex::Print()
-              //     << "WARNING:Re redistribution fineadd for EB not tested "
-              //        "in 2D\n";
-              // }
             }
           }
         } else if (typ != amrex::FabType::regular) { // Single valued if loop

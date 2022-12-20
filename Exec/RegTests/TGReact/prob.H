@@ -182,8 +182,7 @@ struct MyProbDeriveStruct
 
     const amrex::Box& gbx = amrex::grow(bx, 1);
 
-    amrex::FArrayBox local(gbx, 2);
-    amrex::Elixir local_eli = local.elixir();
+    amrex::FArrayBox local(gbx, 2, amrex::The_Async_Arena());
     auto larr = local.array();
 
     // Convert momentum to velocity.

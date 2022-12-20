@@ -40,21 +40,27 @@ pc_srctoprim(
       (srcq(i, j, k, QREINT) - q(i, j, k, QREINT) * srcrho * rhoinv) * rhoinv +
     qa(i, j, k, QDPDR) * srcrho;
 
+#if NUM_ADV > 0
   for (int n = 0; n < NUM_ADV; n++) {
     srcq(i, j, k, QFA + n) =
       (src(i, j, k, UFA + n) - q(i, j, k, QFA + n) * srcrho) * rhoinv;
   }
+#endif
   for (int n = 0; n < NUM_SPECIES; n++) {
     srcq(i, j, k, QFS + n) =
       (src(i, j, k, UFS + n) - q(i, j, k, QFS + n) * srcrho) * rhoinv;
   }
+#if NUM_AUX > 0
   for (int n = 0; n < NUM_AUX; n++) {
     srcq(i, j, k, QFX + n) =
       (src(i, j, k, UFX + n) - q(i, j, k, QFX + n) * srcrho) * rhoinv;
   }
+#endif
+#if NUM_LIN > 0
   for (int n = 0; n < NUM_LIN; n++) {
     srcq(i, j, k, QLIN + n) = src(i, j, k, ULIN + n);
   }
+#endif
 }
 
 AMREX_GPU_DEVICE
@@ -146,7 +152,7 @@ pc_update(
   const int j,
   const int k,
   amrex::Array4<amrex::Real> const& update,
-  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flx,
   amrex::Array4<const amrex::Real> const& vol,
   amrex::Array4<const amrex::Real> const& pdivu)
 {
@@ -184,8 +190,8 @@ void pc_umdrv(
   const bool use_hybrid_weno,
   const int weno_scheme,
   const amrex::Real difmag,
-  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
-  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flx,
+  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>&
     a,
   amrex::Array4<amrex::Real> const& vol,
   amrex::Real cflLoc);
@@ -194,8 +200,8 @@ void pc_consup(
   amrex::Box const& bx,
   amrex::Array4<const amrex::Real> const& u,
   amrex::Array4<amrex::Real> const& update,
-  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
-  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flx,
+  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>&
     a,
   amrex::Array4<const amrex::Real> const& vol,
   amrex::Array4<const amrex::Real> const& div,

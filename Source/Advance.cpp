@@ -568,6 +568,4 @@ PeleC::finalize_sdc_advance(
         material_lost_through_boundary_temp[i];
     }
   }
-
-  // amrex::Real cur_time = state[State_Type].curTime();
 }
