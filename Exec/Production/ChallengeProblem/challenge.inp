@@ -67,7 +67,7 @@ amr.check_file      = chk      # root name of checkpoint file
 amr.check_int       = 400      # number of timesteps between checkpoints
 
 # Restart
-#amr.restart = chk53200
+#amr.restart = /gpfs/alpine/cmb138/world-shared/jrood/hackathon-8-2022/PeleC/Exec/Production/ChallengeProblem/chk53200
 
 # PLOTFILES
 amr.plot_files_output = 1

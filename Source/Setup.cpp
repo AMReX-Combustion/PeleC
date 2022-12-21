@@ -174,8 +174,6 @@ PeleC::variableSetUp()
     cnt += NUM_ADV;
   }
 
-  // int dm = AMREX_SPACEDIM;
-
   if (NUM_SPECIES > 0) {
     FirstSpec = cnt;
     cnt += NUM_SPECIES; // NOLINT
@@ -191,43 +189,12 @@ PeleC::variableSetUp()
     cnt += NUM_LIN;
   }
 
-  // NUM_LIN variables are will be added by the specific models
-  // NVAR = cnt;
 #ifdef PELEC_USE_SOOT
   // Set number of soot variables to be equal to the number of moments
   // plus a variable for the weight of the delta function
   NumSootVars = NUM_SOOT_MOMENTS + 1;
   FirstSootVar = FirstLin;
 #endif
-
-  // const amrex::Real run_strt = amrex::ParallelDescriptor::second() ;
-  // Real run_stop = ParallelDescriptor::second() - run_strt;
-  // ParallelDescriptor::ReduceRealMax(run_stop,ParallelDescriptor::IOProcessorNumber());
-
-  // if (ParallelDescriptor::IOProcessor())
-  //    amrex::Print() << "\nTime in set_method_params: " << run_stop << '\n'
-  //    ;
-
-  // if (nscbc_adv == 1 && amrex::ParallelDescriptor::IOProcessor()) {
-  //  amrex::Print() << "Using Ghost-Cells Navier-Stokes Characteristic BCs
-  //  for
-  //  "
-  //                    "advection: nscbc_adv = "
-  //                 << nscbc_adv << '\n'
-  //                 << '\n';
-  //}
-
-  // if (nscbc_diff == 1 && amrex::ParallelDescriptor::IOProcessor()) {
-  //  amrex::Print() << "Using Ghost-Cells Navier-Stokes Characteristic BCs
-  //  for
-  //  "
-  //                    "diffusion: nscbc_diff = "
-  //                 << nscbc_diff << '\n'
-  //                 << '\n';
-  //}
-
-  // int coord_type = amrex::DefaultGeometry().Coord();
-
   amrex::MFInterpolater* interp;
 
   if (state_interp_order == 0) {

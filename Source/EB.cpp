@@ -195,7 +195,7 @@ pc_fill_bndry_grad_stencil_quadratic(
 
       for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
         grad_stencil[L].iv[dir] = ebg[L].iv[dir];
-        // Shift base down, if required;
+        // Shift base down, if required
         grad_stencil[L].iv_base[dir] = baseiv[dir] + sh[dir];
       }
 
@@ -306,9 +306,9 @@ pc_fill_bndry_grad_stencil_ls(
 
             if (bx.contains(sten_iv)) {
               if (
-                !(AMREX_D_TERM(
-                  sten_iv[0] == ivs[0], &&sten_iv[1] == ivs[1],
-                  &&sten_iv[2] == ivs[2])) &&
+                (AMREX_D_TERM(
+                  sten_iv[0] != ivs[0], || sten_iv[1] != ivs[1],
+                  || sten_iv[2] != ivs[2])) &&
                 !flags(sten_iv).isCovered()) {
                 AMREX_D_TERM(xi[0] = sten_iv[0] - ivs[0];
                              , xi[1] = sten_iv[1] - ivs[1];
@@ -347,9 +347,9 @@ pc_fill_bndry_grad_stencil_ls(
 
               if (bx.contains(sten_iv)) {
                 if (
-                  !(AMREX_D_TERM(
-                    sten_iv[0] == ivs[0], &&sten_iv[1] == ivs[1],
-                    &&sten_iv[2] == ivs[2])) &&
+                  (AMREX_D_TERM(
+                    sten_iv[0] != ivs[0], || sten_iv[1] != ivs[1],
+                    || sten_iv[2] != ivs[2])) &&
                   !flags(sten_iv).isCovered()) {
                   grad_stencil[L].val AMREX_D_TERM([ii], [jj], [kk]) =
                     fac * ebg[L].eb_area *
@@ -735,8 +735,7 @@ pc_eb_clean_massfrac(
   amrex::Array4<amrex::Real> const& div)
 {
   // Compute the new state and the mask
-  amrex::IArrayBox mask(bx);
-  amrex::Elixir mask_eli = mask.elixir();
+  amrex::IArrayBox mask(bx, 1, amrex::The_Async_Arena());
   mask.setVal<amrex::RunOn::Device>(0, mask.box());
   const auto& mask_arr = mask.array();
   amrex::ParallelFor(

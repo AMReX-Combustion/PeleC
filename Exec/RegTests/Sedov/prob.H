@@ -8,8 +8,6 @@
 #include <AMReX_REAL.H>
 #include <AMReX_GpuMemory.H>
 
-// #include "mechanism.H"
-
 #include "PeleC.H"
 #include "IndexDefines.H"
 #include "Constants.H"

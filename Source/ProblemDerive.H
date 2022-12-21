@@ -13,11 +13,6 @@ struct EmptyProbDeriveStruct
   static void
   add(amrex::DeriveList& /*derive_lst*/, amrex::DescriptorList& /*desc_lst*/)
   {
-    // Add derives as follows and define the derive function below:
-    // derive_lst.add(
-    //  "varname", amrex::IndexType::TheCellType(), 1, pc_varname,
-    //  the_same_box);
-    // derive_lst.addComponent("varname", desc_lst, State_Type, 0, NVAR);
   }
 
   static void pc_varname(
@@ -31,12 +26,6 @@ struct EmptyProbDeriveStruct
     const int* /*bcrec*/,
     int /*level*/)
   {
-    // auto const dat = datfab.array();
-    // auto arr = derfab.array();
-    // amrex::ParallelFor(
-    //  bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    // do something with arr
-    //      });
   }
 };
 

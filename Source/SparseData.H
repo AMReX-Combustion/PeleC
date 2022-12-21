@@ -89,7 +89,7 @@ SparseData<T, Cell>::define(
   m_region = _region;
   m_region_size = m_region.size();
   m_ncomp = _nComp;
-  m_data.resize(numPts() * m_ncomp);
+  m_data.resize(static_cast<long>(numPts()) * m_ncomp);
 }
 
 template <class T, class Cell>

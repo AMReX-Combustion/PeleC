@@ -32,7 +32,6 @@ pc_initdata(
 
   // Geometry
   const amrex::Real* prob_lo = geomdata.ProbLo();
-  // const amrex::Real* prob_hi = geomdata.ProbHi();
   const amrex::Real* dx = geomdata.CellSize();
   amrex::Real x[3] = {
     prob_lo[0] + static_cast<amrex::Real>(i + 0.5) * dx[0],

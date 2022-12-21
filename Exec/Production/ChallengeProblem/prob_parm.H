@@ -61,7 +61,7 @@ struct ProbParmHost
   amrex::Gpu::DeviceVector<amrex::Real> winput;
   amrex::Gpu::DeviceVector<amrex::Real> xarray;
   amrex::Gpu::DeviceVector<amrex::Real> xdiff;
-  std::string iname = "";
+  std::string iname;
 
   ProbParmHost()
     : xinput(0), uinput(0), vinput(0), winput(0), xarray(0), xdiff(0)

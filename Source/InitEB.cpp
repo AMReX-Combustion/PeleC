@@ -115,8 +115,6 @@ PeleC::initialize_eb2_structs()
         }
       });
 
-      // int Nebg = sv_eb_bndry_geom[iLocal].size();
-
       // Now fill the sv_eb_bndry_geom
       auto const& vfrac_arr = vfrac.array(mfi);
       auto const& bndrycent_arr = bndrycent->array(mfi);
@@ -200,8 +198,7 @@ PeleC::initialize_eb2_structs()
       amrex::FabType typ = flagfab.getType(tbox);
       int iLocal = mfi.LocalIndex();
 
-      if (typ == amrex::FabType::regular || typ == amrex::FabType::covered) {
-      } else if (typ == amrex::FabType::singlevalued) {
+      if (typ == amrex::FabType::singlevalued) {
         const auto afrac_arr = (*areafrac[dir])[mfi].array();
         const auto facecent_arr = (*facecent[dir])[mfi].array();
 
@@ -282,7 +279,8 @@ PeleC::initialize_eb2_structs()
             tbox, fbox[dir], Nsten, facecent_arr, afrac_arr,
             flux_interp_stencil[dir][iLocal].data());
         }
-      } else {
+      } else if (
+        (typ != amrex::FabType::regular) && (typ != amrex::FabType::covered)) {
         amrex::Abort("multi-valued flux interp stencil to be implemented");
       }
     }

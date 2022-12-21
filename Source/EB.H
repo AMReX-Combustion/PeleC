@@ -36,7 +36,7 @@ argmax(const amrex::Real array[AMREX_SPACEDIM])
   const amrex::Real max_num =
     amrex::max<amrex::Real>(AMREX_D_DECL(array[0], array[1], array[2]));
   for (int i = 0; i < AMREX_SPACEDIM; i++) {
-    if (max_num == array[i]) {
+    if (amrex::Math::abs(max_num - array[i]) < constants::very_small_num()) {
       return i;
     }
   }
@@ -69,7 +69,7 @@ pc_set_body_state(
   const int k,
   const int n,
   const amrex::Array4<const amrex::EBCellFlag>& flags,
-  const amrex::GpuArray<amrex::Real, NVAR> body_state,
+  const amrex::GpuArray<amrex::Real, NVAR>& body_state,
   const amrex::Array4<amrex::Real>& S)
 {
   if (flags(i, j, k).isCovered()) {

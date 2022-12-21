@@ -106,7 +106,8 @@ Bdirs := $(PELEC_HOME)/Source $(PELEC_HOME)/Source/Params/param_includes
 
 Pdirs := Base Amr Boundary AmrCore EB
 Bpack += $(AMREX_HYDRO_HOME)/Redistribution/Make.package $(AMREX_HYDRO_HOME)/Slopes/Make.package
-Blocs += $(AMREX_HYDRO_HOME)/Redistribution $(AMREX_HYDRO_HOME)/Slopes
+Blocs += $(AMREX_HYDRO_HOME)/Redistribution $(AMREX_HYDRO_HOME)/Slopes $(AMREX_HYDRO_HOME)/Utils
+CEXE_headers += $(AMREX_HYDRO_HOME)/Utils/hydro_constants.H
 
 ifeq ($(USE_PARTICLES), TRUE)
   Pdirs += Particle

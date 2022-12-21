@@ -35,8 +35,6 @@ pc_initdata(
   const amrex::Real* dx = geomdata.CellSize();
 
   const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
-  // const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
-  // const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];
 
   const amrex::Real rho_p =
     prob_parm.alpha * std::exp(-(x / prob_parm.sigma) * (x / prob_parm.sigma));

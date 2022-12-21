@@ -261,8 +261,7 @@ pc_dermagvort(
 
   const amrex::Box& gbx = amrex::grow(bx, 1);
 
-  amrex::FArrayBox local(gbx, 3);
-  amrex::Elixir local_eli = local.elixir();
+  amrex::FArrayBox local(gbx, 3, amrex::The_Async_Arena());
   auto larr = local.array();
 
   const auto& flag_fab = amrex::getEBCellFlagFab(datfab);
@@ -383,8 +382,7 @@ pc_derenstrophy(
 
   const amrex::Box& gbx = amrex::grow(bx, 1);
 
-  amrex::FArrayBox local(gbx, 3);
-  amrex::Elixir local_eli = local.elixir();
+  amrex::FArrayBox local(gbx, 3, amrex::The_Async_Arena());
   auto larr = local.array();
 
   const auto& flag_fab = amrex::getEBCellFlagFab(datfab);
@@ -527,7 +525,6 @@ pc_derentropy(
   const int* /*bcrec*/,
   const int /*level*/)
 {
-  // auto const dat = datfab.const_array();
   auto sfab = derfab.array();
 
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -590,7 +587,6 @@ pc_derpres(
     const amrex::Real rho = dat(i, j, k, URHO);
     const amrex::Real rhoInv = 1.0 / rho;
     amrex::Real T = dat(i, j, k, UTEMP);
-    // amrex::Real e = dat(i, j, k, UEINT) * rhoInv;
     amrex::Real p;
     amrex::Real massfrac[NUM_SPECIES];
     for (int n = 0; n < NUM_SPECIES; ++n) {

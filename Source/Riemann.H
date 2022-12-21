@@ -120,7 +120,9 @@ riemann(
   spin = mask ? spin : ushock;
 
   const amrex::Real scr =
-    (spout == spin) ? constants::small_num() * cav : spout - spin;
+    (amrex::Math::abs(spout - spin) < constants::very_small_num())
+      ? constants::small_num() * cav
+      : spout - spin;
   const amrex::Real frac = amrex::max<amrex::Real>(
     0.0, amrex::min<amrex::Real>(1.0, (1.0 + (spout + spin) / scr) * 0.5));
 

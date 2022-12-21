@@ -43,20 +43,6 @@ enum sources {
   num_src
 };
 
-/*
-static amrex::Box
-the_same_box(const amrex::Box& b)
-{
-  return b;
-}
-
-static amrex::Box
-grow_box_by_one(const amrex::Box& b)
-{
-  return amrex::grow(b, 1);
-}
-*/
-
 // Forward declarations
 #ifdef PELEC_USE_SOOT
 class SootModel;
@@ -565,7 +551,6 @@ public:
     const int* bcrec,
     const int level);
 
-  // static int NVAR;
   static int Density, Xmom, Ymom, Zmom, Eden, Eint, Temp;
 
   static int FirstAdv;
@@ -684,7 +669,6 @@ protected:
   amrex::MultiFab area[AMREX_SPACEDIM];
   amrex::MultiFab dLogArea[1];
   amrex::Vector<amrex::Vector<amrex::Real>> radius;
-  // int m_ngrow;
 
   // Static data members.
 #include "pelec_params.H"
@@ -746,8 +730,9 @@ protected:
   static int reset_typical_vals_int;
   static amrex::Vector<amrex::Real> typical_values_chem_usr;
 
-  // problem-specific includes
-#include <Problem.H>
+  void problem_post_timestep();
+  void problem_post_restart();
+  void problem_post_init();
 
   static amrex::GpuArray<amrex::Real, NVAR> body_state;
   static bool body_state_set;

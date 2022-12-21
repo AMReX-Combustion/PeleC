@@ -58,7 +58,6 @@ pc_umeth_3D(
   const int dhy = domhi[1];
   const int dhz = domhi[2];
 
-  // auto const& bcMaskarr = bcMask.array();
   const amrex::Box& bxg1 = grow(bx, 1);
   const amrex::Box& bxg2 = grow(bx, 2);
 
@@ -66,10 +65,8 @@ pc_umeth_3D(
   int cdir = 0;
   const amrex::Box& xmbx = growHi(bxg2, cdir, 1);
   const amrex::Box& xflxbx = surroundingNodes(grow(bxg2, cdir, -1), cdir);
-  amrex::FArrayBox qxm(xmbx, QVAR);
-  amrex::FArrayBox qxp(bxg2, QVAR);
-  amrex::Elixir qxmeli = qxm.elixir();
-  amrex::Elixir qxpeli = qxp.elixir();
+  amrex::FArrayBox qxm(xmbx, QVAR, amrex::The_Async_Arena());
+  amrex::FArrayBox qxp(bxg2, QVAR, amrex::The_Async_Arena());
   auto const& qxmarr = qxm.array();
   auto const& qxparr = qxp.array();
 
@@ -77,10 +74,8 @@ pc_umeth_3D(
   cdir = 1;
   const amrex::Box& ymbx = growHi(bxg2, cdir, 1);
   const amrex::Box& yflxbx = surroundingNodes(grow(bxg2, cdir, -1), cdir);
-  amrex::FArrayBox qym(ymbx, QVAR);
-  amrex::FArrayBox qyp(bxg2, QVAR);
-  amrex::Elixir qymeli = qym.elixir();
-  amrex::Elixir qypeli = qyp.elixir();
+  amrex::FArrayBox qym(ymbx, QVAR, amrex::The_Async_Arena());
+  amrex::FArrayBox qyp(bxg2, QVAR, amrex::The_Async_Arena());
   auto const& qymarr = qym.array();
   auto const& qyparr = qyp.array();
 
@@ -88,10 +83,8 @@ pc_umeth_3D(
   cdir = 2;
   const amrex::Box& zmbx = growHi(bxg2, cdir, 1);
   const amrex::Box& zflxbx = surroundingNodes(grow(bxg2, cdir, -1), cdir);
-  amrex::FArrayBox qzm(zmbx, QVAR);
-  amrex::FArrayBox qzp(bxg2, QVAR);
-  amrex::Elixir qzmeli = qzm.elixir();
-  amrex::Elixir qzpeli = qzp.elixir();
+  amrex::FArrayBox qzm(zmbx, QVAR, amrex::The_Async_Arena());
+  amrex::FArrayBox qzp(bxg2, QVAR, amrex::The_Async_Arena());
   auto const& qzmarr = qzm.array();
   auto const& qzparr = qzp.array();
 
@@ -157,11 +150,9 @@ pc_umeth_3D(
   // These are the first flux estimates as per the corner-transport-upwind
   // method X initial fluxes
   cdir = 0;
-  amrex::FArrayBox fx(xflxbx, NVAR);
-  amrex::Elixir fxeli = fx.elixir();
+  amrex::FArrayBox fx(xflxbx, NVAR, amrex::The_Async_Arena());
   auto const& fxarr = fx.array();
-  amrex::FArrayBox qgdx(xflxbx, NGDNV);
-  amrex::Elixir qgdxeli = qgdx.elixir();
+  amrex::FArrayBox qgdx(xflxbx, NGDNV, amrex::The_Async_Arena());
   auto const& gdtempx = qgdx.array();
   amrex::ParallelFor(
     xflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -172,11 +163,9 @@ pc_umeth_3D(
 
   // Y initial fluxes
   cdir = 1;
-  amrex::FArrayBox fy(yflxbx, NVAR);
-  amrex::Elixir fyeli = fy.elixir();
+  amrex::FArrayBox fy(yflxbx, NVAR, amrex::The_Async_Arena());
   auto const& fyarr = fy.array();
-  amrex::FArrayBox qgdy(yflxbx, NGDNV);
-  amrex::Elixir qgdyeli = qgdy.elixir();
+  amrex::FArrayBox qgdy(yflxbx, NGDNV, amrex::The_Async_Arena());
   auto const& gdtempy = qgdy.array();
   amrex::ParallelFor(
     yflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -187,11 +176,9 @@ pc_umeth_3D(
 
   // Z initial fluxes
   cdir = 2;
-  amrex::FArrayBox fz(zflxbx, NVAR);
-  amrex::Elixir fzeli = fz.elixir();
+  amrex::FArrayBox fz(zflxbx, NVAR, amrex::The_Async_Arena());
   auto const& fzarr = fz.array();
-  amrex::FArrayBox qgdz(zflxbx, NGDNV);
-  amrex::Elixir qgdzeli = qgdz.elixir();
+  amrex::FArrayBox qgdz(zflxbx, NGDNV, amrex::The_Async_Arena());
   auto const& gdtempz = qgdz.array();
   amrex::ParallelFor(
     zflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -204,17 +191,13 @@ pc_umeth_3D(
   cdir = 0;
   const amrex::Box& txbx = grow(bxg1, cdir, 1);
   const amrex::Box& txbxm = growHi(txbx, cdir, 1);
-  amrex::FArrayBox qxym(txbxm, QVAR);
-  amrex::Elixir qxymeli = qxym.elixir();
-  amrex::FArrayBox qxyp(txbx, QVAR);
-  amrex::Elixir qxypeli = qxyp.elixir();
+  amrex::FArrayBox qxym(txbxm, QVAR, amrex::The_Async_Arena());
+  amrex::FArrayBox qxyp(txbx, QVAR, amrex::The_Async_Arena());
   auto const& qmxy = qxym.array();
   auto const& qpxy = qxyp.array();
 
-  amrex::FArrayBox qxzm(txbxm, QVAR);
-  amrex::Elixir qxzmeli = qxzm.elixir();
-  amrex::FArrayBox qxzp(txbx, QVAR);
-  amrex::Elixir qxzpeli = qxzp.elixir();
+  amrex::FArrayBox qxzm(txbxm, QVAR, amrex::The_Async_Arena());
+  amrex::FArrayBox qxzp(txbx, QVAR, amrex::The_Async_Arena());
   auto const& qmxz = qxzm.array();
   auto const& qpxz = qxzp.array();
 
@@ -230,14 +213,10 @@ pc_umeth_3D(
   });
 
   const amrex::Box& txfxbx = surroundingNodes(bxg1, cdir);
-  amrex::FArrayBox fluxxy(txfxbx, NVAR);
-  amrex::FArrayBox fluxxz(txfxbx, NVAR);
-  amrex::FArrayBox gdvxyfab(txfxbx, NGDNV);
-  amrex::FArrayBox gdvxzfab(txfxbx, NGDNV);
-  amrex::Elixir fluxxyeli = fluxxy.elixir();
-  amrex::Elixir gdvxyeli = gdvxyfab.elixir();
-  amrex::Elixir fluxxzeli = fluxxz.elixir();
-  amrex::Elixir gdvxzeli = gdvxzfab.elixir();
+  amrex::FArrayBox fluxxy(txfxbx, NVAR, amrex::The_Async_Arena());
+  amrex::FArrayBox fluxxz(txfxbx, NVAR, amrex::The_Async_Arena());
+  amrex::FArrayBox gdvxyfab(txfxbx, NGDNV, amrex::The_Async_Arena());
+  amrex::FArrayBox gdvxzfab(txfxbx, NGDNV, amrex::The_Async_Arena());
 
   auto const& flxy = fluxxy.array();
   auto const& flxz = fluxxz.array();
@@ -255,23 +234,14 @@ pc_umeth_3D(
         i, j, k, bclx, bchx, dlx, dhx, qmxz, qpxz, flxz, qxz, qaux, cdir);
     });
 
-  qxymeli.clear();
-  qxypeli.clear();
-  qxzmeli.clear();
-  qxzpeli.clear();
-
   // Y interface corrections
   cdir = 1;
   const amrex::Box& tybx = grow(bxg1, cdir, 1);
   const amrex::Box& tybxm = growHi(tybx, cdir, 1);
-  amrex::FArrayBox qyxm(tybxm, QVAR);
-  amrex::FArrayBox qyxp(tybx, QVAR);
-  amrex::FArrayBox qyzm(tybxm, QVAR);
-  amrex::FArrayBox qyzp(tybx, QVAR);
-  amrex::Elixir qyxmeli = qyxm.elixir();
-  amrex::Elixir qyxpeli = qyxp.elixir();
-  amrex::Elixir qyzmeli = qyzm.elixir();
-  amrex::Elixir qyzpeli = qyzp.elixir();
+  amrex::FArrayBox qyxm(tybxm, QVAR, amrex::The_Async_Arena());
+  amrex::FArrayBox qyxp(tybx, QVAR, amrex::The_Async_Arena());
+  amrex::FArrayBox qyzm(tybxm, QVAR, amrex::The_Async_Arena());
+  amrex::FArrayBox qyzp(tybx, QVAR, amrex::The_Async_Arena());
   auto const& qmyx = qyxm.array();
   auto const& qpyx = qyxp.array();
   auto const& qmyz = qyzm.array();
@@ -288,19 +258,12 @@ pc_umeth_3D(
       gdtempz, cdtdz);
   });
 
-  fzeli.clear();
-  qgdzeli.clear();
-
   // Riemann problem Y|X Y|Z
   const amrex::Box& tyfxbx = surroundingNodes(bxg1, cdir);
-  amrex::FArrayBox fluxyx(tyfxbx, NVAR);
-  amrex::FArrayBox fluxyz(tyfxbx, NVAR);
-  amrex::FArrayBox gdvyxfab(tyfxbx, NGDNV);
-  amrex::FArrayBox gdvyzfab(tyfxbx, NGDNV);
-  amrex::Elixir fluxyxeli = fluxyx.elixir();
-  amrex::Elixir gdvyxeli = gdvyxfab.elixir();
-  amrex::Elixir fluxyzeli = fluxyz.elixir();
-  amrex::Elixir gdvyzeli = gdvyzfab.elixir();
+  amrex::FArrayBox fluxyx(tyfxbx, NVAR, amrex::The_Async_Arena());
+  amrex::FArrayBox fluxyz(tyfxbx, NVAR, amrex::The_Async_Arena());
+  amrex::FArrayBox gdvyxfab(tyfxbx, NGDNV, amrex::The_Async_Arena());
+  amrex::FArrayBox gdvyzfab(tyfxbx, NGDNV, amrex::The_Async_Arena());
 
   auto const& flyx = fluxyx.array();
   auto const& flyz = fluxyz.array();
@@ -317,23 +280,14 @@ pc_umeth_3D(
         i, j, k, bcly, bchy, dly, dhy, qmyz, qpyz, flyz, qyz, qaux, cdir);
     });
 
-  qyxmeli.clear();
-  qyxpeli.clear();
-  qyzmeli.clear();
-  qyzpeli.clear();
-
   // Z interface corrections
   cdir = 2;
   const amrex::Box& tzbx = grow(bxg1, cdir, 1);
   const amrex::Box& tzbxm = growHi(tzbx, cdir, 1);
-  amrex::FArrayBox qzxm(tzbxm, QVAR);
-  amrex::FArrayBox qzxp(tzbx, QVAR);
-  amrex::FArrayBox qzym(tzbxm, QVAR);
-  amrex::FArrayBox qzyp(tzbx, QVAR);
-  amrex::Elixir qzxmeli = qzxm.elixir();
-  amrex::Elixir qzxpeli = qzxp.elixir();
-  amrex::Elixir qzymeli = qzym.elixir();
-  amrex::Elixir qzypeli = qzyp.elixir();
+  amrex::FArrayBox qzxm(tzbxm, QVAR, amrex::The_Async_Arena());
+  amrex::FArrayBox qzxp(tzbx, QVAR, amrex::The_Async_Arena());
+  amrex::FArrayBox qzym(tzbxm, QVAR, amrex::The_Async_Arena());
+  amrex::FArrayBox qzyp(tzbx, QVAR, amrex::The_Async_Arena());
 
   auto const& qmzx = qzxm.array();
   auto const& qpzx = qzxp.array();
@@ -351,21 +305,12 @@ pc_umeth_3D(
       gdtempy, cdtdy);
   });
 
-  fxeli.clear();
-  fyeli.clear();
-  qgdxeli.clear();
-  qgdyeli.clear();
-
   // Riemann problem Z|X Z|Y
   const amrex::Box& tzfxbx = surroundingNodes(bxg1, cdir);
-  amrex::FArrayBox fluxzx(tzfxbx, NVAR);
-  amrex::FArrayBox fluxzy(tzfxbx, NVAR);
-  amrex::FArrayBox gdvzxfab(tzfxbx, NGDNV);
-  amrex::FArrayBox gdvzyfab(tzfxbx, NGDNV);
-  amrex::Elixir fluxzxeli = fluxzx.elixir();
-  amrex::Elixir gdvzxeli = gdvzxfab.elixir();
-  amrex::Elixir fluxzyeli = fluxzy.elixir();
-  amrex::Elixir gdvzyeli = gdvzyfab.elixir();
+  amrex::FArrayBox fluxzx(tzfxbx, NVAR, amrex::The_Async_Arena());
+  amrex::FArrayBox fluxzy(tzfxbx, NVAR, amrex::The_Async_Arena());
+  amrex::FArrayBox gdvzxfab(tzfxbx, NGDNV, amrex::The_Async_Arena());
+  amrex::FArrayBox gdvzyfab(tzfxbx, NGDNV, amrex::The_Async_Arena());
 
   auto const& flzx = fluxzx.array();
   auto const& flzy = fluxzy.array();
@@ -382,16 +327,9 @@ pc_umeth_3D(
         i, j, k, bclz, bchz, dlz, dhz, qmzy, qpzy, flzy, qzy, qaux, cdir);
     });
 
-  qzxmeli.clear();
-  qzxpeli.clear();
-  qzymeli.clear();
-  qzypeli.clear();
-
   // Temp Fabs for Final Fluxes
-  amrex::FArrayBox qmfab(bxg2, QVAR);
-  amrex::FArrayBox qpfab(bxg1, QVAR);
-  amrex::Elixir qmeli = qmfab.elixir();
-  amrex::Elixir qpeli = qpfab.elixir();
+  amrex::FArrayBox qmfab(bxg2, QVAR, amrex::The_Async_Arena());
+  amrex::FArrayBox qpfab(bxg1, QVAR, amrex::The_Async_Arena());
   auto const& qm = qmfab.array();
   auto const& qp = qpfab.array();
 
@@ -405,12 +343,6 @@ pc_umeth_3D(
       qaux, srcQ, hdt, hdtdy, hdtdz);
   });
 
-  fluxzyeli.clear();
-  gdvzyeli.clear();
-  gdvyzeli.clear();
-  fluxyzeli.clear();
-  qxmeli.clear();
-  qxpeli.clear();
   // Final X flux
   amrex::ParallelFor(xfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_cmpflx(i, j, k, bclx, bchx, dlx, dhx, qm, qp, flx1, q1, qaux, cdir);
@@ -426,12 +358,6 @@ pc_umeth_3D(
       qaux, srcQ, hdt, hdtdx, hdtdz);
   });
 
-  fluxzxeli.clear();
-  gdvzxeli.clear();
-  gdvxzeli.clear();
-  fluxxzeli.clear();
-  qymeli.clear();
-  qypeli.clear();
   // Final Y flux
   amrex::ParallelFor(yfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_cmpflx(i, j, k, bcly, bchy, dly, dhy, qm, qp, flx2, q2, qaux, cdir);
@@ -447,19 +373,11 @@ pc_umeth_3D(
       qaux, srcQ, hdt, hdtdx, hdtdy);
   });
 
-  gdvyxeli.clear();
-  fluxyxeli.clear();
-  gdvxyeli.clear();
-  fluxxyeli.clear();
-  qzmeli.clear();
-  qzpeli.clear();
   // Final Z flux
   amrex::ParallelFor(zfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_cmpflx(i, j, k, bclz, bchz, dlz, dhz, qm, qp, flx3, q3, qaux, cdir);
   });
 
-  qmeli.clear();
-  qpeli.clear();
   // Construct p div{U}
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_pdivu(
@@ -511,7 +429,6 @@ pc_umeth_2D(
   const int dhx = domhi[0];
   const int dhy = domhi[1];
 
-  // auto const& bcMaskarr = bcMask.array();
   const amrex::Box& bxg1 = grow(bx, 1);
   const amrex::Box& bxg2 = grow(bx, 2);
 
@@ -519,10 +436,8 @@ pc_umeth_2D(
   int cdir = 0;
   const amrex::Box& xmbx = growHi(bxg2, cdir, 1);
   const amrex::Box& xflxbx = surroundingNodes(grow(bxg2, cdir, -1), cdir);
-  amrex::FArrayBox qxm(xmbx, QVAR);
-  amrex::FArrayBox qxp(bxg2, QVAR);
-  amrex::Elixir qxmeli = qxm.elixir();
-  amrex::Elixir qxpeli = qxp.elixir();
+  amrex::FArrayBox qxm(xmbx, QVAR, amrex::The_Async_Arena());
+  amrex::FArrayBox qxp(bxg2, QVAR, amrex::The_Async_Arena());
   auto const& qxmarr = qxm.array();
   auto const& qxparr = qxp.array();
 
@@ -530,10 +445,8 @@ pc_umeth_2D(
   cdir = 1;
   const amrex::Box& ymbx = growHi(bxg2, cdir, 1);
   const amrex::Box& yflxbx = surroundingNodes(grow(bxg2, cdir, -1), cdir);
-  amrex::FArrayBox qym(ymbx, QVAR);
-  amrex::FArrayBox qyp(bxg2, QVAR);
-  amrex::Elixir qymeli = qym.elixir();
-  amrex::Elixir qypeli = qyp.elixir();
+  amrex::FArrayBox qym(ymbx, QVAR, amrex::The_Async_Arena());
+  amrex::FArrayBox qyp(bxg2, QVAR, amrex::The_Async_Arena());
   auto const& qymarr = qym.array();
   auto const& qyparr = qyp.array();
 
@@ -577,11 +490,9 @@ pc_umeth_2D(
   // These are the first flux estimates as per the corner-transport-upwind
   // method X initial fluxes
   cdir = 0;
-  amrex::FArrayBox fx(xflxbx, NVAR);
-  amrex::Elixir fxeli = fx.elixir();
+  amrex::FArrayBox fx(xflxbx, NVAR, amrex::The_Async_Arena());
   auto const& fxarr = fx.array();
-  amrex::FArrayBox qgdx(bxg2, NGDNV);
-  amrex::Elixir qgdxeli = qgdx.elixir();
+  amrex::FArrayBox qgdx(bxg2, NGDNV, amrex::The_Async_Arena());
   auto const& gdtemp = qgdx.array();
   amrex::ParallelFor(
     xflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -592,8 +503,7 @@ pc_umeth_2D(
 
   // Y initial fluxes
   cdir = 1;
-  amrex::FArrayBox fy(yflxbx, NVAR);
-  amrex::Elixir fyeli = fy.elixir();
+  amrex::FArrayBox fy(yflxbx, NVAR, amrex::The_Async_Arena());
   auto const& fyarr = fy.array();
   amrex::ParallelFor(
     yflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -604,10 +514,8 @@ pc_umeth_2D(
   // X interface corrections
   cdir = 0;
   const amrex::Box& tybx = grow(bx, cdir, 1);
-  amrex::FArrayBox qm(bxg2, QVAR);
-  amrex::Elixir qmeli = qm.elixir();
-  amrex::FArrayBox qp(bxg1, QVAR);
-  amrex::Elixir qpeli = qp.elixir();
+  amrex::FArrayBox qm(bxg2, QVAR, amrex::The_Async_Arena());
+  amrex::FArrayBox qp(bxg1, QVAR, amrex::The_Async_Arena());
   auto const& qmarr = qm.array();
   auto const& qparr = qp.array();
 
@@ -619,9 +527,6 @@ pc_umeth_2D(
         qaux, q2, hdt, hdtdy);
     });
 
-  fyeli.clear();
-  qxmeli.clear();
-  qxpeli.clear();
   const amrex::Box& xfxbx = surroundingNodes(bx, cdir);
 
   // Final Riemann problem X
@@ -641,9 +546,6 @@ pc_umeth_2D(
         AMREX_D_DECL(i, j, k), cdir, qmarr, qparr, qymarr, qyparr, fxarr, srcQ,
         qaux, gdtemp, hdt, hdtdx);
     });
-  fxeli.clear();
-  qymeli.clear();
-  qypeli.clear();
 
   // Final Riemann problem Y
   const amrex::Box& yfxbx = surroundingNodes(bx, cdir);

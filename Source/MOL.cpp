@@ -6,10 +6,10 @@ pc_compute_hyp_mol_flux(
   const amrex::Box& cbox,
   const amrex::Array4<const amrex::Real>& q,
   const amrex::Array4<const amrex::Real>& qaux,
-  const amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
-  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
+  const amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flx,
+  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>&
     area,
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> del
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& del
   /*unused*/,
   const int plm_iorder,
   const bool use_laxf_flux,
@@ -26,14 +26,11 @@ pc_compute_hyp_mol_flux(
   const int R_P = 4;
   const int R_ADV = 5;
   const int R_Y = R_ADV + NUM_ADV;
-  const int R_AUX = R_Y + NUM_SPECIES;
-  const int R_LIN = R_AUX + NUM_AUX;
   const int R_NUM = 5 + NUM_SPECIES + NUM_ADV + NUM_LIN + NUM_AUX;
   const int bc_test_val = 1;
 
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-    amrex::FArrayBox dq_fab(cbox, QVAR);
-    amrex::Elixir dq_fab_eli = dq_fab.elixir();
+    amrex::FArrayBox dq_fab(cbox, QVAR, amrex::The_Async_Arena());
     auto const& dq = dq_fab.array();
     setV(cbox, QVAR, dq, 0.0);
 
@@ -104,18 +101,27 @@ pc_compute_hyp_mol_flux(
           qtempr[R_Y + n] = qtempr[R_Y + n] / qtempr[R_RHO];
         }
 
+#if NUM_ADV > 0
         for (int n = 0; n < NUM_ADV; n++) {
           qtempl[R_ADV + n] = q(ivm, QFA + n) + 0.5 * dq(ivm, QFA + n);
           qtempr[R_ADV + n] = q(iv, QFA + n) - 0.5 * dq(iv, QFA + n);
         }
+#endif
+#if NUM_AUX > 0
+        const int R_AUX = R_Y + NUM_SPECIES;
         for (int n = 0; n < NUM_AUX; n++) {
           qtempl[R_AUX + n] = q(ivm, QFX + n) + 0.5 * dq(ivm, QFX + n);
           qtempr[R_AUX + n] = q(iv, QFX + n) - 0.5 * dq(iv, QFX + n);
         }
+#endif
+#if NUM_LIN > 0
+        const int R_LIN = R_AUX + NUM_AUX;
         for (int n = 0; n < NUM_LIN; n++) {
           qtempl[R_LIN + n] = q(ivm, QLIN + n) + 0.5 * dq(ivm, QLIN + n);
           qtempr[R_LIN + n] = q(iv, QLIN + n) - 0.5 * dq(iv, QLIN + n);
         }
+#endif
+
         const amrex::Real cavg = 0.5 * (qaux(iv, QC) + qaux(ivm, QC));
 
         amrex::Real spl[NUM_SPECIES];
@@ -141,22 +147,27 @@ pc_compute_hyp_mol_flux(
             flux_tmp[URHO], &flux_tmp[UFS], flux_tmp[f_idx[0]],
             flux_tmp[f_idx[1]], flux_tmp[f_idx[2]], flux_tmp[UEDEN],
             flux_tmp[UEINT], qint_iu, tmp1, tmp2, tmp3, tmp4);
-          const amrex::Real flxrho = flux_tmp[URHO];
+#if NUM_ADV > 0
           for (int n = 0; n < NUM_ADV; n++) {
             pc_cmpflx_passive(
-              ustar, flxrho, qtempl[R_ADV + n], qtempr[R_ADV + n],
+              ustar, flux_tmp[URHO], qtempl[R_ADV + n], qtempr[R_ADV + n],
               flux_tmp[UFA + n]);
           }
+#endif
+#if NUM_AUX > 0
           for (int n = 0; n < NUM_AUX; n++) {
             pc_cmpflx_passive(
-              ustar, flxrho, qtempl[R_AUX + n], qtempr[R_AUX + n],
+              ustar, flux_tmp[URHO], qtempl[R_AUX + n], qtempr[R_AUX + n],
               flux_tmp[UFX + n]);
           }
+#endif
+#if NUM_LIN > 0
           for (int n = 0; n < NUM_LIN; n++) {
             pc_cmpflx_passive(
               ustar, qint_iu, qtempl[R_LIN + n], qtempr[R_LIN + n],
               flux_tmp[ULIN + n]);
           }
+#endif
         } else {
           amrex::Real maxeigval = 0.0;
           laxfriedrich_flux(
@@ -166,25 +177,29 @@ pc_compute_hyp_mol_flux(
             maxeigval, flux_tmp[URHO], &flux_tmp[UFS], flux_tmp[f_idx[0]],
             flux_tmp[f_idx[1]], flux_tmp[f_idx[2]], flux_tmp[UEDEN],
             flux_tmp[UEINT]);
-          const amrex::Real ul = qtempl[R_UN];
-          const amrex::Real ur = qtempr[R_UN];
-          const amrex::Real rl = qtempl[R_RHO];
-          const amrex::Real rr = qtempr[R_RHO];
+#if NUM_ADV > 0
           for (int n = 0; n < NUM_ADV; n++) {
             pc_lax_cmpflx_passive(
-              ul, ur, rl, rr, qtempl[R_ADV + n], qtempr[R_ADV + n], maxeigval,
+              qtempl[R_UN], qtempr[R_UN], qtempl[R_RHO], qtempr[R_RHO],
+              qtempl[R_ADV + n], qtempr[R_ADV + n], maxeigval,
               flux_tmp[UFA + n]);
           }
+#endif
+#if NUM_AUX > 0
           for (int n = 0; n < NUM_AUX; n++) {
             pc_lax_cmpflx_passive(
-              ul, ur, rl, rr, qtempl[R_AUX + n], qtempr[R_AUX + n], maxeigval,
+              qtempl[R_UN], qtempr[R_UN], qtempl[R_RHO], qtempr[R_RHO],
+              qtempl[R_AUX + n], qtempr[R_AUX + n], maxeigval,
               flux_tmp[UFX + n]);
           }
+#endif
+#if NUM_LIN > 0
           for (int n = 0; n < NUM_LIN; n++) {
             pc_lax_cmpflx_passive(
-              ul, ur, 1., 1., qtempl[R_LIN + n], qtempr[R_LIN + n], maxeigval,
-              flux_tmp[ULIN + n]);
+              qtempl[R_UN], qtempr[R_UN], 1., 1., qtempl[R_LIN + n],
+              qtempr[R_LIN + n], maxeigval, flux_tmp[ULIN + n]);
           }
+#endif
         }
         flux_tmp[UTEMP] = 0.0;
         for (int ivar = 0; ivar < NVAR; ivar++) {

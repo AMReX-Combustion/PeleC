@@ -457,3 +457,60 @@ jobs:
           cat clang-tidy-warnings.txt
           export return=$(tail -n 1 clang-tidy-warnings.txt | awk '{print $2}')
           exit ${return}
+  Lint-codeql:
+    needs: Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.6.0
+        with:
+          access_token: ${{github.token}}
+      - name: Clone
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: cpp
+          queries: +security-and-quality
+          config-file: ./.github/codeql/codeql-config.yml
+      - name: Configure
+        run: |
+          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
+          cmake -G Ninja -B${{runner.workspace}}/build-codeql \
+          -DCMAKE_BUILD_TYPE:STRING=Debug \
+          -DCMAKE_CXX_COMPILER:STRING=clang++ \
+          -DCMAKE_C_COMPILER:STRING=clang \
+          -DPELEC_ENABLE_MPI:BOOL=OFF \
+          -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
+          -DPELEC_ENABLE_MASA:BOOL=OFF \
+          -DPELEC_ENABLE_CLANG_TIDY:BOOL=OFF \
+          ${{github.workspace}}
+      - name: Build
+        working-directory: ${{runner.workspace}}/build-codeql
+        run: |
+          cmake --build . --parallel ${{env.NPROCS}}
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          category: "/language:cpp"
+          upload: False
+          output: sarif-results
+      - name: Filter CodeQL sarif
+        uses: advanced-security/filter-sarif@v1
+        with:
+          patterns: |
+            -**/Submodules/sundials/**
+            -**/Submodules/AMReX/**
+            -**/Submodules/AMReX-Hydro/**
+          input: sarif-results/cpp.sarif
+          output: sarif-results/cpp.sarif
+      - name: Upload CodeQL sarif
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: sarif-results/cpp.sarif

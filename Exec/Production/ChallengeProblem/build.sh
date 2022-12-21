@@ -26,9 +26,10 @@ elif [ "${LMOD_SYSTEM_NAME}" == 'crusher' ]; then
   SPACK_COMPILER="%clang"
   SPACK_VARIANTS=""
   MACHINE="crusher"
-  cmd "module unload PrgEnv-cray"
-  cmd "module load PrgEnv-amd"
-  cmd "module load rocm/5.1.0"
+  cmd "module load rocm/5.4.0"
+  cmd "module load cray-python"
+  cmd "module unload cray-libsci"
+  cmd "module load cray-libsci/22.11.1.2"
   cmd "module load cmake"
   cmd "export SPACK_MANAGER=${WORLDWORK}/cmb138/software/spack-manager-${LMOD_SYSTEM_NAME}"
   cmd "source ${SPACK_MANAGER}/start.sh && spack-start"
@@ -62,13 +63,14 @@ elif [ "${OS}" == 'Darwin' ]; then
   cmd "spack load mpich"
 fi
 
-HDF5_ROOT=$(spack location -i hdf5 ${SPACK_COMPILER})
-H5Z_ROOT=$(spack location -i h5z-zfp ${SPACK_COMPILER})
-ZFP_ROOT=$(spack location -i zfp ${SPACK_COMPILER})
+#HDF5_ROOT=$(spack location -i hdf5 ${SPACK_COMPILER})
+#H5Z_ROOT=$(spack location -i h5z-zfp ${SPACK_COMPILER})
+#ZFP_ROOT=$(spack location -i zfp ${SPACK_COMPILER})
 CONDUIT_ROOT=$(spack location -i conduit ${SPACK_COMPILER})
 ASCENT_ROOT=$(spack location -i ascent ${SPACK_VARIANTS} ${SPACK_COMPILER})
 
-GNUMAKE_ARGS="USE_HDF5=TRUE USE_HDF5_ZFP=TRUE USE_ASCENT=TRUE USE_CONDUIT=TRUE HDF5_HOME=${HDF5_ROOT} H5Z_HOME=${H5Z_ROOT} ZFP_HOME=${ZFP_ROOT} ASCENT_DIR=${ASCENT_ROOT} CONDUIT_DIR=${CONDUIT_ROOT} ${GNUMAKE_ARGS}"
+#GNUMAKE_ARGS="USE_HDF5=FALSE USE_HDF5_ZFP=FALSE USE_ASCENT=TRUE USE_CONDUIT=TRUE HDF5_HOME=${HDF5_ROOT} H5Z_HOME=${H5Z_ROOT} ZFP_HOME=${ZFP_ROOT} ASCENT_DIR=${ASCENT_ROOT} CONDUIT_DIR=${CONDUIT_ROOT} ${GNUMAKE_ARGS}"
+GNUMAKE_ARGS="USE_ASCENT=TRUE USE_CONDUIT=TRUE ASCENT_DIR=${ASCENT_ROOT} CONDUIT_DIR=${CONDUIT_ROOT} ${GNUMAKE_ARGS}"
 
 cmd "make ${GNUMAKE_ARGS} TPLrealclean"
 cmd "make ${GNUMAKE_ARGS} realclean"

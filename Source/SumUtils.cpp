@@ -26,7 +26,6 @@ PeleC::volWgtSum(
   BL_PROFILE("PeleC::volWgtSum()");
 
   amrex::Real sum = 0.0;
-  // const amrex::Real* dx = geom.CellSize();
   auto mf = derive(name, time, 0);
 
   AMREX_ASSERT(mf != nullptr);
@@ -87,7 +86,6 @@ PeleC ::volWgtSquaredSumDiff(int comp, amrex::Real /*time*/, bool local)
   // between the old and new quantity
 
   amrex::Real sum = 0.0;
-  // const amrex::Real* dx = geom.CellSize();
   const amrex::MultiFab& S_old = get_old_data(State_Type);
   const amrex::MultiFab& S_new = get_new_data(State_Type);
   amrex::MultiFab diff(grids, dmap, 1, 0);
@@ -124,7 +122,6 @@ PeleC::volWgtSumMF(
   BL_PROFILE("PeleC::volWgtSumMF()");
 
   amrex::Real sum = 0.0;
-  // const amrex::Real* dx = geom.CellSize();
   amrex::MultiFab vol(grids, dmap, 1, 0);
   amrex::MultiFab::Copy(vol, mf, comp, 0, 1, 0);
 

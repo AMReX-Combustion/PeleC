@@ -13,10 +13,10 @@ pc_compute_diffusion_flux(
   const amrex::Box& box,
   const amrex::Array4<const amrex::Real>& q,
   const amrex::Array4<const amrex::Real>& coef,
-  const amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
-  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
+  const amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flx,
+  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>&
     area,
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> del,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& del,
   const int do_harmonic,
   const amrex::FabType typ,
   const int Ncut,
@@ -42,8 +42,8 @@ pc_compute_diffusion_flux(
         d2 = del[1];
       }
 
-      amrex::FArrayBox tander_ec(ebox, GradUtils::nCompTan);
-      amrex::Elixir tander_eli = tander_ec.elixir();
+      amrex::FArrayBox tander_ec(
+        ebox, GradUtils::nCompTan, amrex::The_Async_Arena());
       auto const& tander = tander_ec.array();
       amrex::ParallelFor(
         ebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -64,12 +64,13 @@ pc_compute_diffusion_flux(
 
       amrex::ParallelFor(
         ebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-          amrex::Real c[dComp_lambda + 1];
-          for (int n = 0; n < dComp_lambda + 1; n++) {
-            pc_move_transcoefs_to_ec(i, j, k, n, coef, c, dir, do_harmonic);
+          amrex::GpuArray<amrex::Real, dComp_lambda + 1> cf = {0.0};
+          for (int n = 0; n < static_cast<int>(cf.size()); n++) {
+            pc_move_transcoefs_to_ec(
+              i, j, k, n, coef, cf.data(), dir, do_harmonic);
           }
           pc_diffusion_flux(
-            i, j, k, q, c, tander, area[dir], flx[dir], delta, dir);
+            i, j, k, q, cf, tander, area[dir], flx[dir], delta, dir);
         });
     }
   }

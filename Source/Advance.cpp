@@ -53,7 +53,7 @@ PeleC::do_mol_advance(
   // into MOL advance yet");
 
   for (int i = 0; i < num_state_type; ++i) {
-    if (!(i == Reactions_Type && do_react)) {
+    if ((i != Reactions_Type) || (!do_react)) {
       state[i].allocOldData();
       state[i].swapTimeLevels(dt);
     }
@@ -465,6 +465,4 @@ PeleC::finalize_sdc_advance(
         material_lost_through_boundary_temp[i];
     }
   }
-
-  // amrex::Real cur_time = state[State_Type].curTime();
 }
