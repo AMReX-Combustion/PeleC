@@ -111,7 +111,8 @@ PeleCAmr::constructPlotMF(
 #ifdef PELEC_USE_SPRAY
     // Add spray derive variables
     if (!SprayParticleContainer::spray_derive_vars.empty()) {
-      num_derive += SprayParticleContainer::spray_derive_vars.size();
+      num_derive +=
+        static_cast<int>(SprayParticleContainer::spray_derive_vars.size());
     }
 #endif
   }
