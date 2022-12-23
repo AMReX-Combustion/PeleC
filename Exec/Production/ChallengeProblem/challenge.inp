@@ -31,8 +31,8 @@ pelec.sdc_iters = 2
 #pelec.adaptrk_nsubsteps_max=100
 pelec.chem_integrator="ReactorCvode"
 pelec.use_typ_vals_chem = 1
-#cvode.solve_type = GMRES
-cvode.solve_type = magma_direct
+cvode.solve_type = GMRES
+#cvode.solve_type = magma_direct
 cvode.max_order = 4
 
 # TIME STEP CONTROL
