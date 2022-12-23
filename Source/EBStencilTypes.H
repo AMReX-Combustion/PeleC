@@ -1,5 +1,5 @@
-#ifndef EBStencilTypes_H
-#define EBStencilTypes_H
+#ifndef EBSTENCILTYPES_H
+#define EBSTENCILTYPES_H
 
 #include <AMReX_REAL.H>
 #include <AMReX_IntVect.H>
