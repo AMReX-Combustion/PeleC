@@ -258,8 +258,8 @@ PeleC::checkPoint(
   amrex::AmrLevel::checkPoint(dir, os, how, dump_old);
 
 #ifdef PELEC_USE_SPRAY
-  if (theSprayPC() != nullptr) {
-    theSprayPC()->SprayParticleIO(level, true, 0, dir);
+  if (SprayPC != nullptr) {
+    SprayPC->SprayParticleIO(level, true, 0, dir);
   }
 #endif
 

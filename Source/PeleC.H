@@ -186,9 +186,9 @@ public:
   // Should we write particle ascii files?
   static int write_spray_ascii_files;
 
-  static SprayParticleContainer* theSprayPC();
-  static SprayParticleContainer* theVirtPC();
-  static SprayParticleContainer* theGhostPC();
+  static std::unique_ptr<SprayParticleContainer> SprayPC;
+  static std::unique_ptr<SprayParticleContainer> VirtPC;
+  static std::unique_ptr<SprayParticleContainer> GhostPC;
 #endif
 
   // Get problem metrics.

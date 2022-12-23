@@ -296,10 +296,6 @@ PeleC::read_params()
                    << std::endl;
   }
 
-  if (cfl > 0.3 && do_mol) {
-    amrex::Error("CFL must be <= 0.3 for MOL time-stepping");
-  }
-
   if ((do_les || use_explicit_filter) && (AMREX_SPACEDIM != 3)) {
     amrex::Abort("Using LES/filtering currently requires 3d.");
   }

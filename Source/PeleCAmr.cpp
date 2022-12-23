@@ -166,7 +166,7 @@ PeleCAmr::constructPlotMF(
       PeleC::setupVirtualParticles(lev, finestLevel());
       plotMFs[lev]->setVal(0., cnt, num_spray_derive);
       // Compute derived spray variables for active particles
-      PeleC::theSprayPC()->computeDerivedVars(*plotMFs[lev], lev, cnt);
+      PeleC::SprayPC->computeDerivedVars(*plotMFs[lev], lev, cnt);
       if (lev < finestLevel()) {
         amrex::MultiFab tmp_plt(
           boxArray(lev), DistributionMap(lev), num_spray_derive, 0,
@@ -174,7 +174,7 @@ PeleCAmr::constructPlotMF(
         tmp_plt.setVal(0.);
         // Compute derived spray variables for virtual particles under refined
         // regions
-        PeleC::theVirtPC()->computeDerivedVars(tmp_plt, lev, 0);
+        PeleC::VirtPC->computeDerivedVars(tmp_plt, lev, 0);
         amrex::MultiFab::Add(
           *plotMFs[lev], tmp_plt, 0, cnt, num_spray_derive, 0);
       }
@@ -298,10 +298,10 @@ PeleCAmr::writePlotFileDoit(
   }
 
 #ifdef PELEC_USE_SPRAY
-  // TODO: Include option for writing HDF5 particle data
-  if (PeleC::theSprayPC() != nullptr && regular) {
+  // FIXME: Include option for writing HDF5 particle data
+  if (PeleC::SprayPC != nullptr && regular) {
     for (int lev = 0; lev < nlevels; ++lev) {
-      PeleC::theSprayPC()->SprayParticleIO(
+      PeleC::SprayPC->SprayParticleIO(
         lev, false, PeleC::write_spray_ascii_files, pltfile);
     }
   }

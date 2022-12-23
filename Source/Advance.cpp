@@ -88,14 +88,14 @@ PeleC::do_mol_advance(
     amrex::Print() << "... Computing MOL source term at t^{n} " << std::endl;
   }
 
-  int nGrow_Sborder = numGrow() + nGrowF;
+  int nGrow_FP_border = numGrow() + nGrowF;
 #ifdef PELEC_USE_SPRAY
   const int spray_state_ghosts = sprayStateGhosts(amr_ncycle);
-  nGrow_Sborder = amrex::max(nGrow_Sborder, spray_state_ghosts);
-  AMREX_ASSERT(Sborder.nGrow() >= nGrow_Sborder);
+  nGrow_FP_border = amrex::max(nGrow_FP_border, spray_state_ghosts);
+  AMREX_ASSERT(Sborder.nGrow() >= nGrow_FP_border);
 #endif
 
-  FillPatcherFill(Sborder, 0, NVAR, nGrow_Sborder, time, State_Type, 0);
+  FillPatcherFill(Sborder, 0, NVAR, nGrow_FP_border, time, State_Type, 0);
   amrex::Real flux_factor = 0;
   getMOLSrcTerm(Sborder, molSrc, time, dt, flux_factor);
 
@@ -131,7 +131,7 @@ PeleC::do_mol_advance(
     amrex::Print() << "... Computing MOL source term at t^{n+1} " << std::endl;
   }
 
-  FillPatcherFill(Sborder, 0, NVAR, nGrow_Sborder, time + dt, State_Type, 0);
+  FillPatcherFill(Sborder, 0, NVAR, nGrow_FP_border, time + dt, State_Type, 0);
   flux_factor = mol_iters > 1 ? 0 : 1;
   getMOLSrcTerm(Sborder, molSrc, time, dt, flux_factor);
 
@@ -179,7 +179,7 @@ PeleC::do_mol_advance(
       }
 
       FillPatcherFill(
-        Sborder, 0, NVAR, nGrow_Sborder, time + dt, State_Type, 0);
+        Sborder, 0, NVAR, nGrow_FP_border, time + dt, State_Type, 0);
       flux_factor = mol_iter == mol_iters ? 1 : 0;
       getMOLSrcTerm(Sborder, molSrc_new, time, dt, flux_factor);
 
@@ -256,27 +256,27 @@ PeleC::do_sdc_iteration(
 
   // Create Sborder if hydro or diffuse, with the appropriate number of grow
   // cells
-  int nGrow_Sborder = 0;
+  int nGrow_FP_border = 0;
   bool fill_Sborder = false;
 
   if (do_hydro) {
     fill_Sborder = true;
-    nGrow_Sborder = numGrow() + nGrowF;
+    nGrow_FP_border = numGrow() + nGrowF;
   } else if (do_diffuse) {
     fill_Sborder = true;
-    nGrow_Sborder = numGrow();
+    nGrow_FP_border = numGrow();
   }
 #ifdef PELEC_USE_SPRAY
   if (do_spray_particles) {
     const int spray_state_ghosts = sprayStateGhosts(amr_ncycle);
     fill_Sborder = true;
-    nGrow_Sborder = amrex::max(nGrow_Sborder, spray_state_ghosts);
-    AMREX_ASSERT(Sborder.nGrow() >= nGrow_Sborder);
+    nGrow_FP_border = amrex::max(nGrow_FP_border, spray_state_ghosts);
+    AMREX_ASSERT(Sborder.nGrow() >= nGrow_FP_border);
   }
 #endif
 
   if (fill_Sborder) {
-    FillPatcherFill(Sborder, 0, NVAR, nGrow_Sborder, time, State_Type, 0);
+    FillPatcherFill(Sborder, 0, NVAR, nGrow_FP_border, time, State_Type, 0);
   }
 
   if (sub_iteration == 0) {
@@ -327,7 +327,7 @@ PeleC::do_sdc_iteration(
   if (do_diffuse || do_spray_particles) {
     int nGrowDiff = numGrow();
     if (do_spray_particles && level > 0) {
-      nGrowDiff = amrex::max(nGrowDiff, nGrow_Sborder);
+      nGrowDiff = amrex::max(nGrowDiff, nGrow_FP_border);
     }
     FillPatcherFill(Sborder, 0, NVAR, nGrowDiff, time + dt, State_Type, 0);
   }
