@@ -1,5 +1,5 @@
-#ifndef Derive_H
-#define Derive_H
+#ifndef DERIVE_H
+#define DERIVE_H
 
 #include <AMReX_FArrayBox.H>
 #include <AMReX_Geometry.H>
