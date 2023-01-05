@@ -47,9 +47,6 @@
 #define comp_Cs2ovPrT comp_PrT
 #define nCompC (comp_PrT + 1)
 
-#define SlipWall 4
-#define NoSlipWall 5
-
 #define NTHERM 7
 #define QTHERM 8
 

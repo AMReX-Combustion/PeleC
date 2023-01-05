@@ -24,8 +24,6 @@
 #include "SparseData.H"
 #include "EBStencilTypes.H"
 
-#define UserBC 6
-
 enum StateType { State_Type = 0, Reactions_Type, Work_Estimate_Type };
 
 // Create storage for all source terms.
