@@ -213,11 +213,9 @@ PeleC::postRestartParticles(bool is_checkpoint)
     AMREX_ASSERT(SprayPC == nullptr);
     createDataParticles();
 
-    // Make sure to call RemoveParticlesOnExit() on exit.
     const ProbParmHost* lprobparm = prob_parm_host;
     const ProbParmDevice* lprobparm_d = h_prob_parm_device;
     SprayPC->InitSprayParticles(false, *lprobparm, *lprobparm_d);
-    amrex::ExecOnFinalize(RemoveParticlesOnExit);
     {
       SprayPC->Restart(parent->theRestartFile(), "particles", is_checkpoint);
       amrex::Gpu::Device::streamSynchronize();
