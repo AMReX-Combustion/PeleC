@@ -22,9 +22,9 @@ amrex::Real particle_cfl = 0.5;
 int plot_spray_src = 0;
 } // namespace
 
-std::unique_ptr<SprayParticleContainer> SprayPC = nullptr;
-std::unique_ptr<SprayParticleContainer> VirtPC = nullptr;
-std::unique_ptr<SprayParticleContainer> GhostPC = nullptr;
+std::unique_ptr<SprayParticleContainer> PeleC::SprayPC = nullptr;
+std::unique_ptr<SprayParticleContainer> PeleC::VirtPC = nullptr;
+std::unique_ptr<SprayParticleContainer> PeleC::GhostPC = nullptr;
 
 int PeleC::write_spray_ascii_files = 0;
 // momentum + density + fuel species + energy
