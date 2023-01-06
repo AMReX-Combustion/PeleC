@@ -114,10 +114,9 @@ ifeq ($(USE_PARTICLES), TRUE)
   ifeq ($(shell test $(SPRAY_FUEL_NUM) -gt 0; echo $$?), 0)
     DEFINES+=-DPELEC_USE_SPRAY
     DEFINES+=-DSPRAY_FUEL_NUM=$(SPRAY_FUEL_NUM)
-    Bpack   += $(PELEMP_HOME)/Source/PP_Spray/Make.package
-    Blocs   += $(PELEMP_HOME)/Source/PP_Spray
-    Bpack   += $(PELEMP_HOME)/Source/PP_Spray/Distribution/Make.package
-    Blocs   += $(PELEMP_HOME)/Source/PP_Spray/Distribution
+    MPdirs := PP_Spray PP_Spray/Distribution
+    Bpack  += $(foreach dir, $(MPdirs), $(PELEMP_HOME)/Source/$(dir)/Make.package)
+    Blocs  += $(foreach dir, $(MPdirs), $(PELEMP_HOME)/Source/$(dir))
   endif
 endif
 

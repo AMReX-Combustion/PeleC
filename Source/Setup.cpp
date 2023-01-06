@@ -186,7 +186,7 @@ PeleC::variableSetUp()
 
   if (NUM_LIN > 0) {
     FirstLin = cnt;
-    cnt += NUM_LIN;
+    cnt += NUM_LIN; // NOLINT
   }
 
 #ifdef PELEC_USE_SOOT

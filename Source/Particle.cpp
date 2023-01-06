@@ -191,7 +191,7 @@ PeleC::initParticles()
     const ProbParmDevice* lprobparm_d = h_prob_parm_device;
     SprayPC->InitSprayParticles(true, *lprobparm, *lprobparm_d);
     if (!init_file.empty()) {
-      SprayPC->InitFromAsciiFile(init_file, NSR_SPR + NAR_SPR);
+      SprayPC->InitFromAsciiFile(init_file, NSR_SPR);
     } else if (init_function == 0) {
       amrex::Abort(
         "Must initialize spray particles with particles.init_function or "
