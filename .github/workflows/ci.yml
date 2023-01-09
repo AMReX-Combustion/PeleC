@@ -93,6 +93,36 @@ jobs:
           cat warnings.txt
           export return=$(tail -n 1 warnings.txt | awk '{print $2}')
           exit ${return}
+      - name: Soot debug build
+        working-directory: ./Exec/RegTests/Soot-Flame
+        run: |
+          echo "::add-matcher::.github/problem-matchers/gcc.json"
+          make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
+      - name: Soot debug report
+        working-directory: ./Exec/RegTests/Soot-Flame
+        run: |
+          egrep "warning:|error:" build-output.txt \
+            | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|GNUmakefile|Submodules/PeleMP" \
+            | egrep -v "Submodules/PelePhysics/Support/Mechanism/Models" | sort | uniq \
+            | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
+          cat warnings.txt
+          export return=$(tail -n 1 warnings.txt | awk '{print $2}')
+          exit ${return}
+      - name: Spray debug build
+        working-directory: ./Exec/RegTests/Spray-Conv
+        run: |
+          echo "::add-matcher::.github/problem-matchers/gcc.json"
+          make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
+      - name: Spray debug report
+        working-directory: ./Exec/RegTests/Spray-Conv
+        run: |
+          egrep "warning:|error:" build-output.txt \
+            | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|GNUmakefile|Submodules/PeleMP" \
+            | egrep -v "Submodules/PelePhysics/Support/Mechanism/Models" | sort | uniq \
+            | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
+          cat warnings.txt
+          export return=$(tail -n 1 warnings.txt | awk '{print $2}')
+          exit ${return}
   CPU-CMake:
     needs: Formatting
     runs-on: ${{matrix.os}}

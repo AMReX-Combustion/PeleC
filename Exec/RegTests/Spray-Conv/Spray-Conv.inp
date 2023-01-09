@@ -1,0 +1,107 @@
+# ------------------  INPUTS TO MAIN PROGRAM  -------------------
+max_step = 10
+stop_time = 8.E-2
+
+# PROBLEM SIZE & GEOMETRY
+geometry.is_periodic = 1 1 1
+geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
+geometry.prob_lo     = 0. 0. 0.
+geometry.prob_hi     = 10. 10. 10.
+
+# use with single level
+amr.n_cell = 64 64 64
+prob.num_particles = (256, 256, 256)
+
+# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
+# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
+pelec.lo_bc       =  "Interior" "Interior" "Interior"
+pelec.hi_bc       =  "Interior" "Interior" "Interior"
+
+# WHICH PHYSICS
+pelec.do_hydro = 1
+pelec.diffuse_vel = 1
+pelec.diffuse_temp = 1
+pelec.diffuse_enth = 1
+pelec.diffuse_spec = 1
+pelec.do_react = 0
+pelec.allow_negative_energy = 1
+
+# TIME STEP CONTROL
+pelec.cfl            = 0.8     # cfl number for hyperbolic system
+pelec.init_shrink    = 1.     # scale back initial timestep
+pelec.change_max     = 1.1     # max time step growth
+pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
+#pelec.fixed_dt       = 1.e-8
+
+# DIAGNOSTICS & VERBOSITY
+pelec.sum_interval   = -1  # timesteps between computing mass
+pelec.v              = 0   # verbosity in Castro.cpp
+amr.v                = 1   # verbosity in Amr.cpp
+
+# REFINEMENT / REGRIDDING
+amr.max_level       = 2       # maximum level number allowed
+amr.ref_ratio       = 2 2 2 2 # refinement ratio
+amr.max_grid_size     = 32
+amr.blocking_factor   = 32
+amr.initial_grid_file = two_d_gridfiles/gridfile_32_1
+amr.regrid_file = two_d_gridfiles/gridfile_32_2
+# amr.max_grid_size     = 64
+# amr.blocking_factor   = 64
+# amr.initial_grid_file = two_d_gridfiles/gridfile_64_1
+# amr.regrid_file = two_d_gridfiles/gridfile_64_2
+
+amr.regrid_int        = 2 2 2 2
+amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
+
+# PARTICLES / SPRAY
+pelec.do_spray_particles = 1
+particles.derive_plot_vars = 1
+particles.v = 0
+particles.mom_transfer = 1
+particles.mass_transfer = 1
+particles.cfl = 0.5
+#particles.init_file = "initspraydata"
+particles.init_function = 1 # Use SprayParticlesInitInsert.cpp for initialization
+particles.write_spray_ascii_files = 0 # Do not write ascii output files
+
+particles.fuel_species = NC10H22
+# properties for decane
+particles.fuel_crit_temp = 617.8 # K
+particles.fuel_boil_temp = 447.27 # K
+particles.fuel_ref_temp = 298.15
+particles.fuel_latent = 3.5899E9
+particles.fuel_cp = 2.1921E7 # Cp at 298 K
+particles.fuel_rho = 0.640
+# Coefficients for saturation pressure using Antoine equation
+# These are from the NIST website
+# Last coefficient converts units, in this case bar, to dyne/cm^2
+particles.NC10H22_psat = 4.07857 1501.268 -78.67 1.E6
+
+particles.parcel_size = 100.
+
+particles.use_splash_model = false
+
+# CHECKPOINT FILES
+amr.checkpoint_files_output = 1
+amr.check_file      = chk        # root name of checkpoint file
+amr.check_int       = 10000   # number of timesteps between checkpoints
+#amr.restart         = chk0000100
+
+# PLOTFILES
+#amr.plot_files_output = 0
+amr.plot_file = plt
+amr.plot_int = 1
+amr.plot_vars = density Temp rho_E xmom ymom rho_N2 rho_O2 rho_NC10H22
+amr.derive_plot_vars = x_velocity y_velocity pressure MachNumber magvel
+amr.file_name_digits = 4
+
+# PROBLEM PARAMETERS
+prob.mach = 0.1
+prob.ref_T = 900.
+
+# Only used if particles are initialized from a function
+# and not a file
+prob.part_temp = 300.
+prob.part_dia = 1.E-2
+prob.part_vel = 14000. 14000. 0.
+amrex.abort_on_out_of_gpu_memory = 1

@@ -1,5 +1,9 @@
 #include "PeleCAmr.H"
 
+#ifdef PELEC_USE_SPRAY
+#include "SprayParticles.H"
+#endif
+
 void
 PeleCAmr::writePlotFile()
 {
@@ -104,6 +108,13 @@ PeleCAmr::constructPlotMF(
         num_derive += it.numDerive();
       }
     }
+#ifdef PELEC_USE_SPRAY
+    // Add spray derive variables
+    if (!SprayParticleContainer::spray_derive_vars.empty()) {
+      num_derive +=
+        static_cast<int>(SprayParticleContainer::spray_derive_vars.size());
+    }
+#endif
   }
 
   // Decide to plot vfrac
@@ -148,6 +159,30 @@ PeleCAmr::constructPlotMF(
       }
     }
 
+#ifdef PELEC_USE_SPRAY
+    if (!SprayParticleContainer::spray_derive_vars.empty() && regular) {
+      const int num_spray_derive =
+        static_cast<int>(SprayParticleContainer::spray_derive_vars.size());
+      PeleC::setupVirtualParticles(lev, finestLevel());
+      plotMFs[lev]->setVal(0., cnt, num_spray_derive);
+      // Compute derived spray variables for active particles
+      PeleC::SprayPC->computeDerivedVars(*plotMFs[lev], lev, cnt);
+      if (lev < finestLevel()) {
+        amrex::MultiFab tmp_plt(
+          boxArray(lev), DistributionMap(lev), num_spray_derive, 0,
+          amrex::MFInfo(), amr_level[lev]->Factory());
+        tmp_plt.setVal(0.);
+        // Compute derived spray variables for virtual particles under refined
+        // regions
+        PeleC::VirtPC->computeDerivedVars(tmp_plt, lev, 0);
+        amrex::MultiFab::Add(
+          *plotMFs[lev], tmp_plt, 0, cnt, num_spray_derive, 0);
+      }
+      PeleC::removeVirtualParticles(lev);
+      cnt += num_spray_derive;
+    }
+#endif
+
     if (plot_vfrac) {
       const auto& ebfactory = dynamic_cast<amrex::EBFArrayBoxFactory const&>(
         amr_level[lev]->Factory());
@@ -168,6 +203,15 @@ PeleCAmr::constructPlotMF(
       plt_var_names.push_back(rec->variableName(i));
     }
   }
+
+#ifdef PELEC_USE_SPRAY
+  if (!SprayParticleContainer::spray_derive_vars.empty() && regular) {
+    for (const auto& spray_derive_name :
+         SprayParticleContainer::spray_derive_vars) {
+      plt_var_names.push_back(spray_derive_name);
+    }
+  }
+#endif
 
   if (plot_vfrac) {
     plt_var_names.push_back("vfrac");
@@ -252,6 +296,17 @@ PeleCAmr::writePlotFileDoit(
   if ((amrex::ParallelDescriptor::IOProcessor()) && (HeaderFile.is_open())) {
     HeaderFile.close();
   }
+
+#ifdef PELEC_USE_SPRAY
+  if (PeleC::SprayPC != nullptr && regular) {
+    for (int lev = 0; lev < nlevels; ++lev) {
+      PeleC::SprayPC->SprayParticleIO(
+        lev, false, PeleC::write_spray_ascii_files, pltfile);
+    }
+  } else {
+    amrex::Abort("HDF5 particle writing incomplete");
+  }
+#endif
 
   if (verbose > 0) {
     const int IOProc = amrex::ParallelDescriptor::IOProcessorNumber();

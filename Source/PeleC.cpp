@@ -10,6 +10,13 @@
 
 #ifdef AMREX_PARTICLES
 #include <AMReX_Particles.H>
+#ifdef PELEC_USE_SPRAY
+#include "SprayParticles.H"
+#endif
+#endif
+
+#ifdef PELEC_USE_SOOT
+#include "SootModel.H"
 #endif
 
 #ifdef PELEC_USE_MASA
@@ -49,15 +56,24 @@ int PeleC::FirstSpec = -1;
 int PeleC::FirstAux = -1;
 int PeleC::FirstAdv = -1;
 int PeleC::FirstLin = -1;
+int PeleC::NumSootVars = 0;
+int PeleC::FirstSootVar = -1;
 
 #include "pelec_defaults.H"
 
 bool PeleC::do_diffuse = false;
 
-#ifdef PELEC_SPRAY
+#ifdef PELEC_USE_SPRAY
 bool PeleC::do_spray_particles = true;
 #else
 bool PeleC::do_spray_particles = false;
+#endif
+
+#ifdef PELEC_USE_SOOT
+bool PeleC::add_soot_src = true;
+bool PeleC::plot_soot = true;
+#else
+bool PeleC::add_soot_src = false;
 #endif
 
 #ifdef PELEC_USE_MASA
@@ -321,8 +337,14 @@ PeleC::read_params()
     amrex::Error("Cannot have max_dt < fixed_dt");
   }
 
-#ifdef PELEC_SPRAY
-  readParticleParams();
+#ifdef PELEC_USE_SPRAY
+  readSprayParams();
+#endif
+
+#ifdef PELEC_USE_SOOT
+  pp.query("add_soot_src", add_soot_src);
+  pp.query("plot_soot", plot_soot);
+  soot_model.readSootParams();
 #endif
 
   if ((!do_mol) && eb_in_domain) {
@@ -387,8 +409,20 @@ PeleC::PeleC(
       grids, dmap, NVAR, newGrow, amrex::MFInfo(), Factory());
   }
 
-  if (do_hydro || do_diffuse) {
-    Sborder.define(grids, dmap, NVAR, numGrow(), amrex::MFInfo(), Factory());
+  int nGrowS = numGrow();
+#ifdef PELEC_USE_SPRAY
+  if (do_spray_particles) {
+    if (level > 0) {
+      nGrowS =
+        amrex::max(nGrowS, sprayStateGhosts(parent->MaxRefRatio(level - 1)));
+      defineSpraySource(parent->MaxRefRatio(level - 1));
+    } else {
+      defineSpraySource(1);
+    }
+  }
+#endif
+  if (do_hydro || do_diffuse || do_spray_particles) {
+    Sborder.define(grids, dmap, NVAR, nGrowS, amrex::MFInfo(), Factory());
   }
 
   if (!do_mol) {
@@ -405,7 +439,7 @@ PeleC::PeleC(
         grids, dmap, NVAR, numGrow(), amrex::MFInfo(), Factory());
     }
   } else {
-    Sborder.define(grids, dmap, NVAR, numGrow(), amrex::MFInfo(), Factory());
+    Sborder.define(grids, dmap, NVAR, nGrowS, amrex::MFInfo(), Factory());
   }
 
   // Is this relevant for PeleC?
@@ -654,6 +688,14 @@ PeleC::initData()
   const auto& bcs = desc->getBCs();
   InitialRedistribution(cur_time, bcs, S_new);
 
+#ifdef PELEC_USE_SPRAY
+  if (level == 0) {
+    initParticles();
+  } else {
+    particle_redistribute(level - 1);
+  }
+#endif
+
   if (verbose != 0) {
     amrex::Print() << "Done initializing level " << level << " data "
                    << std::endl;
@@ -848,6 +890,17 @@ PeleC::estTimeStep(amrex::Real /*dt_old*/)
     }
   }
 
+#ifdef PELEC_USE_SPRAY
+  amrex::Real estdt_particle = max_dt;
+  if (do_spray_particles) {
+    estTimeStepParticles(estdt_particle);
+    if (estdt_particle < estdt) {
+      limiter = "particles";
+      estdt = estdt_particle;
+    }
+  }
+#endif
+
   if (verbose != 0) {
     amrex::Print() << "PeleC::estTimeStep (" << limiter << "-limited) at level "
                    << level << ":  estdt = " << estdt << '\n';
@@ -971,15 +1024,17 @@ PeleC::computeInitialDt(
 }
 
 void
-PeleC::post_timestep(int
-#ifdef PELEC_SPRAY
-                       iteration
-#endif
-                     /*iteration*/)
+PeleC::post_timestep(int iteration)
 {
   BL_PROFILE("PeleC::post_timestep()");
 
   const int finest_level = parent->finestLevel();
+
+#ifdef PELEC_USE_SPRAY
+  postTimeStepParticles(iteration);
+#else
+  amrex::ignore_unused(iteration);
+#endif
 
   if (do_reflux && level < finest_level) {
     reflux();
@@ -1004,6 +1059,10 @@ PeleC::post_timestep(int
   amrex::MultiFab& S_new = get_new_data(State_Type);
   int ng_pts = 0;
   computeTemp(S_new, ng_pts);
+
+#ifdef PELEC_USE_SOOT
+  clipSootMoments(S_new, ng_pts);
+#endif
 
   problem_post_timestep();
 
@@ -1052,6 +1111,9 @@ PeleC::post_restart()
     amrex::Gpu::hostToDevice, PeleC::h_prob_parm_device,
     PeleC::h_prob_parm_device + 1, PeleC::d_prob_parm_device);
 
+#ifdef PELEC_USE_SPRAY
+  postRestartParticles();
+#endif
   // Initialize the reactor
   if (do_react) {
     init_reactor();
@@ -1082,16 +1144,18 @@ PeleC::postCoarseTimeStep(amrex::Real cumtime)
 }
 
 void
-PeleC::post_regrid(
-  int
-#ifdef PELEC_SPRAY
-    lbase
-#endif
-  /*lbase*/,
-  int /*new_finest*/)
+PeleC::post_regrid(int lbase, int /*new_finest*/)
 {
   BL_PROFILE("PeleC::post_regrid()");
   fine_mask.clear();
+
+#ifdef PELEC_USE_SPRAY
+  if (lbase == level) {
+    particle_redistribute(lbase);
+  }
+#else
+  amrex::ignore_unused(lbase);
+#endif
 
   if ((do_react) && (use_typical_vals_chem)) {
     set_typical_values_chem();
@@ -1132,6 +1196,10 @@ PeleC::post_init(amrex::Real /*stop_time*/)
 
   // Allow the user to define their own post_init functions.
   problem_post_init();
+
+#ifdef PELEC_USE_SPRAY
+  postInitParticles();
+#endif
 
   int nstep = parent->levelSteps(0);
   if (cumtime != 0.0) {

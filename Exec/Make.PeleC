@@ -109,6 +109,28 @@ Bpack += $(AMREX_HYDRO_HOME)/Redistribution/Make.package $(AMREX_HYDRO_HOME)/Slo
 Blocs += $(AMREX_HYDRO_HOME)/Redistribution $(AMREX_HYDRO_HOME)/Slopes $(AMREX_HYDRO_HOME)/Utils
 CEXE_headers += $(AMREX_HYDRO_HOME)/Utils/hydro_constants.H
 
+ifeq ($(USE_PARTICLES), TRUE)
+  Pdirs += Particle
+  ifeq ($(shell test $(SPRAY_FUEL_NUM) -gt 0; echo $$?), 0)
+    DEFINES+=-DPELEC_USE_SPRAY
+    DEFINES+=-DSPRAY_FUEL_NUM=$(SPRAY_FUEL_NUM)
+    MPdirs := PP_Spray PP_Spray/Distribution
+    Bpack  += $(foreach dir, $(MPdirs), $(PELEMP_HOME)/Source/$(dir)/Make.package)
+    Blocs  += $(foreach dir, $(MPdirs), $(PELEMP_HOME)/Source/$(dir))
+  endif
+endif
+
+ifeq ($(USE_SOOT), TRUE)
+# Ensure the number of soot moments is correct
+    ifeq (,$(filter $(NUM_SOOT_MOMENTS),3 6))
+        $(error NUM_SOOT_MOMENTS must be 3 or 6)
+    endif
+  DEFINES+=-DPELEC_USE_SOOT
+  DEFINES+=-DNUM_SOOT_MOMENTS=$(NUM_SOOT_MOMENTS)
+  Bpack   += $(PELEMP_HOME)/Source/Soot_Models/Make.package
+  Blocs   += $(PELEMP_HOME)/Source/Soot_Models
+endif
+
 Bpack += $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir)/Make.package)
 Blocs += $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir))
 

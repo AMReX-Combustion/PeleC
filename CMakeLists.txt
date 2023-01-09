@@ -11,7 +11,7 @@ include(PeleCUtils)
 
 #General options for all executables in the project
 set(PELEC_DIM "3" CACHE STRING "Number of physical dimensions")
-option(PELEC_ENABLE_AMREX_PARTICLES "Enable particles in AMReX library" OFF)
+option(PELEC_ENABLE_AMREX_PARTICLES "Enable particles in AMReX library" ON)
 option(PELEC_ENABLE_CLANG_TIDY "Enable clang-tidy analysis" OFF)
 option(PELEC_ENABLE_CPPCHECK "Enable cppcheck analysis" OFF)
 option(PELEC_ENABLE_MASA "Enable tests that require MASA" OFF)
@@ -38,7 +38,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if(PELEC_ENABLE_FCOMPARE_FOR_TESTS)
+if(PELEC_ENABLE_FCOMPARE_FOR_TESTS OR PELEC_ENABLE_AMREX_PARTICLES)
   set(PELEC_ENABLE_FCOMPARE ON)
 endif()
 

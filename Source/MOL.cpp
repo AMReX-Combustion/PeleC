@@ -115,7 +115,7 @@ pc_compute_hyp_mol_flux(
         }
 #endif
 #if NUM_LIN > 0
-        const int R_LIN = R_AUX + NUM_AUX;
+        const int R_LIN = R_Y + NUM_SPECIES + NUM_AUX;
         for (int n = 0; n < NUM_LIN; n++) {
           qtempl[R_LIN + n] = q(ivm, QLIN + n) + 0.5 * dq(ivm, QLIN + n);
           qtempr[R_LIN + n] = q(iv, QLIN + n) - 0.5 * dq(iv, QLIN + n);

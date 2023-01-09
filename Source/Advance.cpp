@@ -3,6 +3,10 @@
 #include "PeleC.H"
 #include "IndexDefines.H"
 
+#ifdef PELEC_USE_SPRAY
+#include "SprayParticles.H"
+#endif
+
 amrex::Real
 PeleC::advance(
   amrex::Real time, amrex::Real dt, int amr_iteration, int amr_ncycle)
@@ -83,13 +87,21 @@ PeleC::do_mol_advance(
   if (verbose != 0) {
     amrex::Print() << "... Computing MOL source term at t^{n} " << std::endl;
   }
-  FillPatcherFill(Sborder, 0, NVAR, numGrow() + nGrowF, time, State_Type, 0);
+
+  int nGrow_FP_border = numGrow() + nGrowF;
+#ifdef PELEC_USE_SPRAY
+  const int spray_state_ghosts = sprayStateGhosts(amr_ncycle);
+  nGrow_FP_border = amrex::max(nGrow_FP_border, spray_state_ghosts);
+  AMREX_ASSERT(Sborder.nGrow() >= nGrow_FP_border);
+#endif
+
+  FillPatcherFill(Sborder, 0, NVAR, nGrow_FP_border, time, State_Type, 0);
   amrex::Real flux_factor = 0;
   getMOLSrcTerm(Sborder, molSrc, time, dt, flux_factor);
 
-  // Build other (neither spray nor diffusion) sources at t_old
+  // Build other (non-diffusion) sources at t_old
   for (int n = 0; n < src_list.size(); ++n) {
-    if (src_list[n] != diff_src && src_list[n] != spray_src) {
+    if (src_list[n] != diff_src) {
       construct_old_source(
         src_list[n], time, dt, amr_iteration, amr_ncycle, 0, 0);
 
@@ -118,14 +130,14 @@ PeleC::do_mol_advance(
   if (verbose != 0) {
     amrex::Print() << "... Computing MOL source term at t^{n+1} " << std::endl;
   }
-  FillPatcherFill(
-    Sborder, 0, NVAR, numGrow() + nGrowF, time + dt, State_Type, 0);
+
+  FillPatcherFill(Sborder, 0, NVAR, nGrow_FP_border, time + dt, State_Type, 0);
   flux_factor = mol_iters > 1 ? 0 : 1;
   getMOLSrcTerm(Sborder, molSrc, time, dt, flux_factor);
 
-  // Build other (neither spray nor diffusion) sources at t_new
+  // Build other (non-diffusion) sources at t_new
   for (int n = 0; n < src_list.size(); ++n) {
-    if (src_list[n] != diff_src && src_list[n] != spray_src) {
+    if (src_list[n] != diff_src) {
       construct_new_source(
         src_list[n], time + dt, dt, amr_iteration, amr_ncycle, 0, 0);
 
@@ -165,8 +177,9 @@ PeleC::do_mol_advance(
         amrex::Print() << "... Re-computing MOL source term at t^{n+1} (iter = "
                        << mol_iter << " of " << mol_iters << ")" << std::endl;
       }
+
       FillPatcherFill(
-        Sborder, 0, NVAR, numGrow() + nGrowF, time + dt, State_Type, 0);
+        Sborder, 0, NVAR, nGrow_FP_border, time + dt, State_Type, 0);
       flux_factor = mol_iter == mol_iters ? 1 : 0;
       getMOLSrcTerm(Sborder, molSrc_new, time, dt, flux_factor);
 
@@ -243,128 +256,34 @@ PeleC::do_sdc_iteration(
 
   // Create Sborder if hydro or diffuse, with the appropriate number of grow
   // cells
-  int nGrow_Sborder = 0;
+  int nGrow_FP_border = 0;
   bool fill_Sborder = false;
 
   if (do_hydro) {
     fill_Sborder = true;
-    nGrow_Sborder = numGrow() + nGrowF;
+    nGrow_FP_border = numGrow() + nGrowF;
   } else if (do_diffuse) {
     fill_Sborder = true;
-    nGrow_Sborder = numGrow();
+    nGrow_FP_border = numGrow();
   }
-#ifdef PELEC_SPRAY
-  bool use_ghost_parts = false; // Use ghost particles
-  bool use_virt_parts = false;  // Use virtual particles
-  if (parent->finestLevel() > 0 && level < parent->finestLevel()) {
-    use_ghost_parts = true;
-    use_virt_parts = true;
-  }
-  int ghost_width = 0;
-  int where_width = 0;
-  int spray_n_grow = 0;
-  int tmp_src_width = 0;
-
+#ifdef PELEC_USE_SPRAY
   if (do_spray_particles) {
-    setSprayGridInfo(
-      amr_iteration, amr_ncycle, ghost_width, where_width, spray_n_grow,
-      tmp_src_width);
+    const int spray_state_ghosts = sprayStateGhosts(amr_ncycle);
     fill_Sborder = true;
-    nGrow_Sborder = amrex::max<amrex::Real>(nGrow_Sborder, spray_n_grow);
+    nGrow_FP_border = amrex::max(nGrow_FP_border, spray_state_ghosts);
+    AMREX_ASSERT(Sborder.nGrow() >= nGrow_FP_border);
   }
-  if (fill_Sborder && Sborder.nGrow() < nGrow_Sborder) {
-    Print() << "PeleC::do_sdc_iteration thinks Sborder needs " << nGrow_Sborder
-            << " grow cells, but Sborder defined with only " << Sborder.nGrow()
-            << std::endl;
-    Abort();
-  }
-
 #endif
 
   if (fill_Sborder) {
-    FillPatcherFill(Sborder, 0, NVAR, nGrow_Sborder, time, State_Type, 0);
+    FillPatcherFill(Sborder, 0, NVAR, nGrow_FP_border, time, State_Type, 0);
   }
 
   if (sub_iteration == 0) {
-#ifdef PELEC_SPRAY
 
-    // Compute drag terms from particles at old positions, move particles to new
-    // positions  based on old-time velocity field
-    // TODO: Maybe move this mess into construct_old_source?
-    if (do_spray_particles) {
-      amrex::Gpu::LaunchSafeGuard lsg(true);
-
-      // Setup ghost particles for use in finer levels. Note that ghost
-      // particles that will be used by this level have already been created,
-      // the particles being set here are only used by finer levels.
-      int finest_level = parent->finestLevel();
-
-      // Setup the virtual particles that particles on finer levels
-      if (level < finest_level && use_virt_parts)
-        setupVirtualParticles();
-
-      // Check if I need to insert new particles
-      amrex::Real cur_time = state[State_Type].curTime();
-      int nstep = parent->levelSteps(0);
-
-      bool injectParts = false;
-      bool insertParts = false;
-      if (level == finest_level)
-        injectParts = theSprayPC()->injectParticles(cur_time, nstep, level);
-      if (level == finest_level)
-        insertParts = theSprayPC()->insertParticles(cur_time, nstep, level);
-
-      // Only redistribute if we injected or inserted particles
-      if (injectParts || insertParts) {
-        // TODO: Determine the number of ghost cells needed here
-        int nGrow = 1;
-        particleRedistribute(level, nGrow, 0);
-      }
-
-      // Make a copy of the particles on this level into ghost particles
-      // for the finer level
-      if (use_ghost_parts)
-        setupGhostParticles(ghost_width);
-
-      // Advance the particle velocities to the half-time and the positions to
-      // the new time
-      if (particle_verbose)
-        amrex::Print()
-          << "moveKickDrift ... updating particle positions and velocity\n";
-
-      // We will make a temporary copy of the source term array inside
-      // moveKickDrift and we are only going to use the spray force out to one
-      // ghost cell so we need only define spray_force_old with one ghost cell
-
-      AMREX_ASSERT(old_sources[spray_src]->nGrow() >= 1);
-      old_sources[spray_src]->setVal(0.);
-
-      // Do the valid particles themselves
-      theSprayPC()->moveKickDrift(
-        Sborder, *old_sources[spray_src], level, dt, cur_time,
-        false, // not virtual particles
-        false, // not ghost particles
-        tmp_src_width,
-        true, // Move the particles
-        where_width);
-
-      // Only need the coarsest virtual particles here.
-      if (level < finest_level && use_virt_parts)
-        theVirtPC()->moveKickDrift(
-          Sborder, *old_sources[spray_src], level, dt, cur_time, true, false,
-          tmp_src_width, true, where_width);
-
-      // Might need all Ghosts
-      if (use_ghost_parts && theGhostPC() != 0)
-        theGhostPC()->moveKickDrift(
-          Sborder, *old_sources[spray_src], level, dt, cur_time, false, true,
-          tmp_src_width, true, where_width);
-    }
-#endif
-
-    // Build other (neither spray nor diffusion) sources at t_old
+    // Build other (non-diffusion) sources at t_old
     for (int n = 0; n < src_list.size(); ++n) {
-      if (src_list[n] != diff_src && src_list[n] != spray_src) {
+      if (src_list[n] != diff_src) {
         construct_old_source(
           src_list[n], time, dt, amr_iteration, amr_ncycle, sub_iteration,
           sub_ncycle);
@@ -405,52 +324,30 @@ PeleC::do_sdc_iteration(
 
   // Now update t_new sources (diffusion separate because it requires a fill
   // patch)
+  if (do_diffuse || do_spray_particles) {
+    int nGrowDiff = numGrow();
+    if (do_spray_particles && level > 0) {
+      nGrowDiff = amrex::max(nGrowDiff, nGrow_FP_border);
+    }
+    FillPatcherFill(Sborder, 0, NVAR, nGrowDiff, time + dt, State_Type, 0);
+  }
   if (do_diffuse) {
     if (verbose != 0) {
       amrex::Print() << "... Computing diffusion terms at t^(n+1,"
                      << sub_iteration + 1 << ")" << std::endl;
     }
-    FillPatcherFill(Sborder, 0, NVAR, numGrow(), time + dt, State_Type, 0);
     amrex::Real flux_factor_new = sub_iteration == sub_ncycle - 1 ? 0.5 : 0;
     getMOLSrcTerm(Sborder, *new_sources[diff_src], time, dt, flux_factor_new);
   }
 
-  // Build other (neither spray nor diffusion) sources at t_new
+  // Build other (non-diffusion) sources at t_new
   for (int n = 0; n < src_list.size(); ++n) {
-    if (src_list[n] != diff_src && src_list[n] != spray_src) {
+    if (src_list[n] != diff_src) {
       construct_new_source(
         src_list[n], time + dt, dt, amr_iteration, amr_ncycle, sub_iteration,
         sub_ncycle);
     }
   }
-
-#ifdef PELEC_SPRAY
-  if (do_spray_particles) {
-    // Advance the particle velocities by dt/2 to the new time.
-    if (particle_verbose)
-      amrex::Print() << "moveKick ... updating velocity only\n";
-
-    if (!do_diffuse) { // Else, this was already done above.  No need to redo
-      FillPatcherFill(
-        Sborder, 0, NVAR, nGrow_Sborder, time + dt, State_Type, 0);
-    }
-
-    new_sources[spray_src]->setVal(0.);
-
-    theSprayPC()->moveKick(
-      Sborder, *new_sources[spray_src], level, dt, time + dt, false, false,
-      tmp_src_width);
-
-    // Virtual particles will be recreated, so we need not kick them.
-    // TODO: Is this true with SDC iterations??
-
-    // Ghost particles need to be kicked except during the final iteration.
-    if (amr_iteration != amr_ncycle && use_ghost_parts && theGhostPC() != 0)
-      theGhostPC()->moveKick(
-        Sborder, *new_sources[spray_src], level, dt, time + dt, false, true,
-        tmp_src_width);
-  }
-#endif
 
   // Update I_R and rebuild S_new accordingly
   if (do_react) {
