@@ -1,6 +1,3 @@
-
-
-#ifdef PELEC_USE_SOOT
 #include "PeleC.H"
 #include "SootModel.H"
 #include "SootModel_derive.H"
@@ -176,4 +173,3 @@ PeleC::clipSootMoments(amrex::MultiFab& S_new, const int ng)
     });
   amrex::Gpu::synchronize();
 }
-#endif

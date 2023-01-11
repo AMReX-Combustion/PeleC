@@ -57,6 +57,7 @@ function(build_pelec_exe pelec_exe_name pelec_lib_name)
       message(FATAL_ERROR "NUM_SOOT_MOMENTS must be either 3 or 6")
     endif()
     target_sources(${pelec_exe_name} PRIVATE
+                   ${SRC_DIR}/Soot.cpp
                    ${PELEMP_SRC_DIR}/Soot_Models/SootModel.cpp
                    ${PELEMP_SRC_DIR}/Soot_Models/SootModel_react.cpp
                    ${PELEMP_SRC_DIR}/Soot_Models/SootModel_derive.cpp
@@ -115,7 +116,6 @@ function(build_pelec_exe pelec_exe_name pelec_lib_name)
        ${SRC_DIR}/React.cpp
        ${SRC_DIR}/Riemann.H
        ${SRC_DIR}/Setup.cpp
-       ${SRC_DIR}/Soot.cpp
        ${SRC_DIR}/Sources.cpp
        ${SRC_DIR}/SparseData.H
        ${SRC_DIR}/SumIQ.cpp
