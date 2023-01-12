@@ -1,6 +1,3 @@
-
-
-#ifdef PELEC_USE_SPRAY
 #include "PeleC.H"
 #include "SprayParticles.H"
 
@@ -463,5 +460,3 @@ PeleC::particle_redistribute(int lbase, bool init_part)
     }
   }
 }
-
-#endif
