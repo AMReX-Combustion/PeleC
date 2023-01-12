@@ -24,13 +24,11 @@ function(build_pelec_exe pelec_exe_name pelec_lib_name)
   # Set PeleMP flags
   set(PELEMP_SRC_DIR ${CMAKE_SOURCE_DIR}/Submodules/PeleMP/Source)
   if(PELEC_ENABLE_AMREX_PARTICLES AND PELEMP_SPRAY_FUEL_NUM GREATER 0)
-    target_sources(${pelec_exe_name}
-      PRIVATE
-	SprayParticlesInitInsert.cpp
-    )
     target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_SPRAY)
     target_compile_definitions(${pelec_exe_name} PRIVATE SPRAY_FUEL_NUM=${PELEMP_SPRAY_FUEL_NUM})
     target_sources(${pelec_exe_name} PRIVATE
+	           SprayParticlesInitInsert.cpp
+                   ${SRC_DIR}/Particle.cpp
                    ${PELEMP_SRC_DIR}/PP_Spray/SprayParticles.cpp
                    ${PELEMP_SRC_DIR}/PP_Spray/SprayParticles.H
                    ${PELEMP_SRC_DIR}/PP_Spray/SprayFuelData.H
@@ -45,7 +43,6 @@ function(build_pelec_exe pelec_exe_name pelec_lib_name)
                    ${PELEMP_SRC_DIR}/PP_Spray/Distribution/DistBase.H
                    ${PELEMP_SRC_DIR}/PP_Spray/Distribution/Distributions.H
                    ${PELEMP_SRC_DIR}/PP_Spray/Distribution/Distributions.cpp)
-
     target_include_directories(${pelec_exe_name} PRIVATE ${PELEMP_SRC_DIR}/PP_Spray)
     target_include_directories(${pelec_exe_name} PRIVATE ${PELEMP_SRC_DIR}/PP_Spray/Distribution)
   endif()
@@ -107,7 +104,6 @@ function(build_pelec_exe pelec_exe_name pelec_lib_name)
        ${SRC_DIR}/LES.cpp
        ${SRC_DIR}/MOL.H
        ${SRC_DIR}/MOL.cpp
-       ${SRC_DIR}/Particle.cpp
        ${SRC_DIR}/PeleC.H
        ${SRC_DIR}/PeleC.cpp
        ${SRC_DIR}/PeleCAmr.H
