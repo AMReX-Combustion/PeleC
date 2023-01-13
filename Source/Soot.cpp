@@ -20,26 +20,28 @@ PeleC::setSootIndx()
 
 void
 PeleC::addSootDerivePlotVars(
-  amrex::DeriveList& derive_lst, const amrex::DescriptorList& desc_lst)
+  amrex::DeriveList& soot_derive_lst,
+  const amrex::DescriptorList& soot_desc_lst)
 {
   // Add in soot variables
   amrex::Vector<std::string> sootNames = {"rho_soot", "sum_rho_soot"};
-  derive_lst.add(
+  soot_derive_lst.add(
     "soot_vars", amrex::IndexType::TheCellType(),
     static_cast<int>(sootNames.size()), sootNames, soot_genvars,
     amrex::DeriveRec::TheSameBox);
-  derive_lst.addComponent("soot_vars", desc_lst, State_Type, URHO, 1);
-  derive_lst.addComponent(
-    "soot_vars", desc_lst, State_Type, UFSOOT, NUM_SOOT_MOMENTS + 1);
+  soot_derive_lst.addComponent("soot_vars", soot_desc_lst, State_Type, URHO, 1);
+  soot_derive_lst.addComponent(
+    "soot_vars", soot_desc_lst, State_Type, UFSOOT, NUM_SOOT_MOMENTS + 1);
 
   // Variables associated with the second mode (large particles)
   amrex::Vector<std::string> large_part_names = {"NL", "soot_V_L", "soot_S_L"};
-  derive_lst.add(
+  soot_derive_lst.add(
     "soot_large_particles", amrex::IndexType::TheCellType(),
     static_cast<int>(large_part_names.size()), large_part_names,
     soot_largeparticledata, amrex::DeriveRec::TheSameBox);
-  derive_lst.addComponent(
-    "soot_large_particles", desc_lst, State_Type, UFSOOT, NUM_SOOT_MOMENTS + 1);
+  soot_derive_lst.addComponent(
+    "soot_large_particles", soot_desc_lst, State_Type, UFSOOT,
+    NUM_SOOT_MOMENTS + 1);
 }
 
 void
