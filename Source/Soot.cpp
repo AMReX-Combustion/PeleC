@@ -130,6 +130,7 @@ PeleC::fill_soot_source(
       bool get_mu = true;
       bool get_lam = false;
       bool get_diag = false;
+      bool get_chi = false;
       BL_PROFILE("PeleC::get_transport_coeffs()");
       // Get Transport coefs on GPU.
       auto const* ltransparm = trans_parms.device_trans_parm();
@@ -146,8 +147,8 @@ PeleC::fill_soot_source(
           amrex::Real mu = 0.;
           amrex::Real xi, lam;
           trans.transport(
-            get_xi, get_mu, get_lam, get_diag, T, rho, Y.data(), diag, mu, xi,
-            lam, ltransparm);
+            get_xi, get_mu, get_lam, get_diag, get_chi, T, rho, Y.data(), diag,
+            nullptr, mu, xi, lam, ltransparm);
           mu_arr(i, j, k) = mu;
         });
     }
