@@ -213,8 +213,9 @@ PeleC::getMOLSrcTerm(
         amrex::launch(gbox, [=] AMREX_GPU_DEVICE(amrex::Box const& tbx) {
           auto trans = pele::physics::PhysicsType::transport();
           trans.get_transport_coeffs(
-            tbx, qar_yin, qar_Tin, qar_rhoin, coe_rhoD, coe_mu, coe_xi,
-            coe_lambda, ltransparm);
+            tbx, qar_yin, qar_Tin, qar_rhoin, coe_rhoD,
+            amrex::Array4<amrex::Real>(), coe_mu, coe_xi, coe_lambda,
+            ltransparm);
         });
       }
 
