@@ -147,6 +147,9 @@ PeleC::variableSetUp()
   d_prob_parm_device = static_cast<ProbParmDevice*>(
     amrex::The_Arena()->alloc(sizeof(ProbParmDevice)));
   trans_parms.allocate();
+  if (trans_parms.host_trans_parm().use_soret) {
+    amrex::Abort("PeleC does not support Soret effects yet.");
+  }
   turb_inflow.init(amrex::DefaultGeometry());
 
   // Get options, set phys_bc
