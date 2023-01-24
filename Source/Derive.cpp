@@ -763,10 +763,10 @@ PeleC::pc_derviscosity(
     auto trans = pele::physics::PhysicsType::transport();
     amrex::Real mu = 0.0, dum1 = 0.0, dum2 = 0.0;
     const bool get_xi = false, get_mu = true, get_lam = false,
-               get_Ddiag = false;
+               get_Ddiag = false, get_chi = false;
     trans.transport(
-      get_xi, get_mu, get_lam, get_Ddiag, T, rho, massfrac, nullptr, mu, dum1,
-      dum2, ltransparm);
+      get_xi, get_mu, get_lam, get_Ddiag, get_chi, T, rho, massfrac, nullptr,
+      nullptr, mu, dum1, dum2, ltransparm);
     mu_arr(i, j, k) = mu;
   });
 }
@@ -799,10 +799,10 @@ PeleC::pc_derbulkviscosity(
     auto trans = pele::physics::PhysicsType::transport();
     amrex::Real xi = 0.0, dum1 = 0.0, dum2 = 0.0;
     const bool get_xi = true, get_mu = false, get_lam = false,
-               get_Ddiag = false;
+               get_Ddiag = false, get_chi = false;
     trans.transport(
-      get_xi, get_mu, get_lam, get_Ddiag, T, rho, massfrac, nullptr, dum1, xi,
-      dum2, ltransparm);
+      get_xi, get_mu, get_lam, get_Ddiag, get_chi, T, rho, massfrac, nullptr,
+      nullptr, dum1, xi, dum2, ltransparm);
     xi_arr(i, j, k) = xi;
   });
 }
@@ -835,10 +835,10 @@ PeleC::pc_derconductivity(
     auto trans = pele::physics::PhysicsType::transport();
     amrex::Real lam = 0.0, dum1 = 0.0, dum2 = 0.0;
     const bool get_xi = false, get_mu = false, get_lam = true,
-               get_Ddiag = false;
+               get_Ddiag = false, get_chi = false;
     trans.transport(
-      get_xi, get_mu, get_lam, get_Ddiag, T, rho, massfrac, nullptr, dum1, dum2,
-      lam, ltransparm);
+      get_xi, get_mu, get_lam, get_Ddiag, get_chi, T, rho, massfrac, nullptr,
+      nullptr, dum1, dum2, lam, ltransparm);
     lam_arr(i, j, k) = lam;
   });
 }
@@ -872,10 +872,10 @@ PeleC::pc_derdiffusivity(
     auto trans = pele::physics::PhysicsType::transport();
     amrex::Real dum1 = 0.0, dum2 = 0.0, dum3 = 0.0;
     const bool get_xi = false, get_mu = false, get_lam = false,
-               get_Ddiag = true;
+               get_Ddiag = true, get_chi = false;
     trans.transport(
-      get_xi, get_mu, get_lam, get_Ddiag, T, rho, massfrac, ddiag, dum1, dum2,
-      dum3, ltransparm);
+      get_xi, get_mu, get_lam, get_Ddiag, get_chi, T, rho, massfrac, ddiag,
+      nullptr, dum1, dum2, dum3, ltransparm);
     for (int n = 0; n < NUM_SPECIES; n++) {
       d_arr(i, j, k, n) = ddiag[n];
     }

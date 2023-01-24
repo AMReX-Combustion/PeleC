@@ -24,21 +24,22 @@ pc_trans4dt(
     pele::physics::PhysicsType::eos_type,
     pele::physics::PhysicsType::transport_type> const* trans_parm)
 {
-  bool get_xi = false, get_mu = false, get_lam = false, get_Ddiag = false;
+  bool get_xi = false, get_mu = false, get_lam = false, get_Ddiag = false,
+       get_chi = false;
   amrex::Real dum1 = 0., dum2 = 0.;
 
   if (which_trans == 0) {
     get_mu = true;
     auto trans = pele::physics::PhysicsType::transport();
     trans.transport(
-      get_xi, get_mu, get_lam, get_Ddiag, T, rho, massfrac, nullptr, D, dum1,
-      dum2, trans_parm);
+      get_xi, get_mu, get_lam, get_Ddiag, get_chi, T, rho, massfrac, nullptr,
+      nullptr, D, dum1, dum2, trans_parm);
   } else if (which_trans == 1) {
     get_lam = true;
     auto trans = pele::physics::PhysicsType::transport();
     trans.transport(
-      get_xi, get_mu, get_lam, get_Ddiag, T, rho, massfrac, nullptr, dum1, dum2,
-      D, trans_parm);
+      get_xi, get_mu, get_lam, get_Ddiag, get_chi, T, rho, massfrac, nullptr,
+      nullptr, dum1, dum2, D, trans_parm);
   }
 }
 
