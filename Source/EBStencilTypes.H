@@ -40,8 +40,8 @@ struct EBBndryGeom
   bool operator<(const EBBndryGeom& rhs) const { return iv < rhs.iv; }
 };
 
-#if defined(AMREX_USE_CUDA) || defined(AMREX_USE_HIP)
-// Comparison operator for thrust sort
+#ifdef AMREX_USE_GPU
+// Comparison operator for device sort
 struct EBBndryGeomCmp
 {
   AMREX_GPU_DEVICE
