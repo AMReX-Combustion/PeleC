@@ -114,7 +114,7 @@ function(build_pelec_lib pelec_lib_name)
       target_link_libraries(${pelec_lib_name} PUBLIC sundials_nveccuda sundials_sunlinsolcusolversp sundials_sunmatrixcusparse)
     elseif(PELEC_ENABLE_HIP)
       target_link_libraries(${pelec_lib_name} PUBLIC sundials_nvechip)
-    elseif(PELEC_ENABLE_DPCPP)
+    elseif(PELEC_ENABLE_SYCL)
       target_link_libraries(${pelec_lib_name} PUBLIC sundials_nvecsycl)
     endif()
     
