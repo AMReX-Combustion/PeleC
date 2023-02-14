@@ -353,17 +353,17 @@ jobs:
           set +e
           source /opt/intel/oneapi/setvars.sh
           set -e
-          cmake -G Ninja -B${{runner.workspace}}/build-dpcpp \
+          cmake -G Ninja -B${{runner.workspace}}/build-sycl \
             -DCMAKE_BUILD_TYPE:STRING=Release \
-            -DCMAKE_CXX_COMPILER:STRING=$(which dpcpp) \
-            -DCMAKE_C_COMPILER:STRING=$(which clang) \
+            -DCMAKE_CXX_COMPILER:STRING=$(which icpx) \
+            -DCMAKE_C_COMPILER:STRING=$(which icx) \
             -DPELEC_ENABLE_MPI:BOOL=OFF \
             -DPELEC_ENABLE_MASA:BOOL=OFF \
             -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
             -DPELEC_ENABLE_DPCPP:BOOL=ON \
             ${{github.workspace}}
       - name: Build
-        working-directory: ${{runner.workspace}}/build-dpcpp
+        working-directory: ${{runner.workspace}}/build-sycl
         run: |
           set +e
           source /opt/intel/oneapi/setvars.sh
