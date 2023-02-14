@@ -12,7 +12,7 @@
 #include <thrust/execution_policy.h>
 #endif
 
-#ifdef AMREX_USE_DPCPP
+#ifdef AMREX_USE_SYCL
 #include <oneapi/dpl/execution>
 #include <oneapi/dpl/algorithm>
 #endif
@@ -141,7 +141,7 @@ PeleC::initialize_eb2_structs()
         thrust::device, sv_eb_bndry_geom[iLocal].data(),
         sv_eb_bndry_geom[iLocal].data() + sv_eb_bndry_geom_size,
         EBBndryGeomCmp());
-#elif defined(AMREX_USE_DPCPP)
+#elif defined(AMREX_USE_SYCL)
       const int sv_eb_bndry_geom_size = sv_eb_bndry_geom[iLocal].size();
       auto policy =
         dpl::execution::make_device_policy(amrex::Gpu::Device::streamQueue());
@@ -271,7 +271,7 @@ PeleC::initialize_eb2_structs()
           v_cut_faces.size(), [=] AMREX_GPU_DEVICE(int i) noexcept {
             d_cut_faces[i] = d_all_cut_faces[i];
           });
-#elif defined(AMREX_USE_DPCPP)
+#elif defined(AMREX_USE_SYCL)
         const int v_all_cut_faces_size = v_all_cut_faces.size();
         auto policy =
           dpl::execution::make_device_policy(amrex::Gpu::Device::streamQueue());
