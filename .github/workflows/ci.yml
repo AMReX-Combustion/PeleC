@@ -327,7 +327,7 @@ jobs:
           source /etc/profile.d/rocm.sh
           cmake --build . --parallel ${{env.NPROCS}}
   GPU-Intel:
-    name: GPU-DPCPP
+    name: GPU-SYCL
     needs: [Formatting, CPU-GNUmake]
     runs-on: ubuntu-latest
     steps:
@@ -360,7 +360,7 @@ jobs:
             -DPELEC_ENABLE_MPI:BOOL=OFF \
             -DPELEC_ENABLE_MASA:BOOL=OFF \
             -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
-            -DPELEC_ENABLE_DPCPP:BOOL=ON \
+            -DPELEC_ENABLE_SYCL:BOOL=ON \
             ${{github.workspace}}
       - name: Build
         working-directory: ${{runner.workspace}}/build-sycl
