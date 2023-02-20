@@ -327,7 +327,7 @@ jobs:
           source /etc/profile.d/rocm.sh
           cmake --build . --parallel ${{env.NPROCS}}
   GPU-Intel:
-    name: GPU-DPCPP
+    name: GPU-SYCL
     needs: [Formatting, CPU-GNUmake]
     runs-on: ubuntu-latest
     steps:
@@ -353,17 +353,18 @@ jobs:
           set +e
           source /opt/intel/oneapi/setvars.sh
           set -e
-          cmake -G Ninja -B${{runner.workspace}}/build-dpcpp \
+          cmake -G Ninja -B${{runner.workspace}}/build-sycl \
             -DCMAKE_BUILD_TYPE:STRING=Release \
-            -DCMAKE_CXX_COMPILER:STRING=$(which dpcpp) \
-            -DCMAKE_C_COMPILER:STRING=$(which clang) \
+            -DCMAKE_CXX_COMPILER:STRING=$(which icpx) \
+            -DCMAKE_C_COMPILER:STRING=$(which icx) \
+            -DCMAKE_CXX_FLAGS:STRING=-fsycl \
             -DPELEC_ENABLE_MPI:BOOL=OFF \
             -DPELEC_ENABLE_MASA:BOOL=OFF \
             -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
-            -DPELEC_ENABLE_DPCPP:BOOL=ON \
+            -DPELEC_ENABLE_SYCL:BOOL=ON \
             ${{github.workspace}}
       - name: Build
-        working-directory: ${{runner.workspace}}/build-dpcpp
+        working-directory: ${{runner.workspace}}/build-sycl
         run: |
           set +e
           source /opt/intel/oneapi/setvars.sh
