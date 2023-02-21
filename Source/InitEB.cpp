@@ -12,6 +12,11 @@
 #include <thrust/execution_policy.h>
 #endif
 
+#ifdef AMREX_USE_SYCL
+#include <oneapi/dpl/execution>
+#include <oneapi/dpl/algorithm>
+#endif
+
 inline bool
 PeleC::ebInitialized()
 {
@@ -136,6 +141,14 @@ PeleC::initialize_eb2_structs()
         thrust::device, sv_eb_bndry_geom[iLocal].data(),
         sv_eb_bndry_geom[iLocal].data() + sv_eb_bndry_geom_size,
         EBBndryGeomCmp());
+#elif defined(AMREX_USE_SYCL)
+      const int sv_eb_bndry_geom_size = sv_eb_bndry_geom[iLocal].size();
+      auto policy =
+        dpl::execution::make_device_policy(amrex::Gpu::Device::streamQueue());
+      std::sort(
+        policy, sv_eb_bndry_geom[iLocal].data(),
+        sv_eb_bndry_geom[iLocal].data() + sv_eb_bndry_geom_size,
+        EBBndryGeomCmp());
 #else
       sort<amrex::Gpu::DeviceVector<EBBndryGeom>>(sv_eb_bndry_geom[iLocal]);
 #endif
@@ -251,6 +264,26 @@ PeleC::initialize_eb2_structs()
           thrust::equal_to<amrex::IntVect>());
         const int count_result =
           thrust::distance(v_all_cut_faces.data(), unique_result_end);
+        amrex::Gpu::DeviceVector<amrex::IntVect> v_cut_faces(count_result);
+        amrex::IntVect* d_all_cut_faces = v_all_cut_faces.data();
+        amrex::IntVect* d_cut_faces = v_cut_faces.data();
+        amrex::ParallelFor(
+          v_cut_faces.size(), [=] AMREX_GPU_DEVICE(int i) noexcept {
+            d_cut_faces[i] = d_all_cut_faces[i];
+          });
+#elif defined(AMREX_USE_SYCL)
+        const int v_all_cut_faces_size = v_all_cut_faces.size();
+        auto policy =
+          dpl::execution::make_device_policy(amrex::Gpu::Device::streamQueue());
+        std::sort(
+          policy, v_all_cut_faces.data(),
+          v_all_cut_faces.data() + v_all_cut_faces_size);
+        amrex::IntVect* unique_result_end = std::unique(
+          policy, v_all_cut_faces.data(),
+          v_all_cut_faces.data() + v_all_cut_faces_size,
+          std::equal_to<amrex::IntVect>());
+        const int count_result =
+          std::distance(v_all_cut_faces.data(), unique_result_end);
         amrex::Gpu::DeviceVector<amrex::IntVect> v_cut_faces(count_result);
         amrex::IntVect* d_all_cut_faces = v_all_cut_faces.data();
         amrex::IntVect* d_cut_faces = v_cut_faces.data();
