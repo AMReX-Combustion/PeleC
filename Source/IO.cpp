@@ -684,7 +684,7 @@ PeleC::writeBuildInfo(std::ostream& os)
   int kk;
   int ii;
   int nfit;
-  CKINDX(&mm, &kk, &ii, &nfit);
+  CKINDX(mm, kk, ii, nfit);
   os << std::setw(40) << std::left << "Number elements from chem cpp : " << mm
      << std::endl;
   os << std::setw(40) << std::left << "Number species from chem cpp : " << kk
