@@ -52,6 +52,10 @@ VPATH_LOCATIONS   += $(PP_SRC_HOME)
 Bpack             += $(PP_SRC_HOME)/Make.package
 Blocs             += $(PP_SRC_HOME)
 
+ifeq ($(PELE_COMPILE_AJACOBIAN), TRUE)
+  DEFINES += -DPELE_COMPILE_AJACOBIAN
+endif
+
 # EOS
 EOS_HOME = $(PELE_PHYSICS_HOME)/Eos/
 ifeq ($(Eos_Model),$(filter $(Eos_Model),GammaLaw))
