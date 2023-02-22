@@ -815,7 +815,7 @@ PeleC::initLevelDataFromPlt(
       }
 
       // If the sumY isn't too far from 1, renormalize
-      if (amrex::Math::abs(1.0 - sumY) < tol) {
+      if (std::abs(1.0 - sumY) < tol) {
         for (int n = 0; n < NUM_SPECIES; n++) {
           sarr(i, j, k, UFS + n) /= sumY;
         }

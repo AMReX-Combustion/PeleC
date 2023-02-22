@@ -845,7 +845,7 @@ pc_check_initial_species(
     spec_sum = spec_sum + Sfab(i, j, k, UFS + n);
   }
   if (
-    amrex::Math::abs(Sfab(i, j, k, URHO) - spec_sum) >
+    std::abs(Sfab(i, j, k, URHO) - spec_sum) >
     1.e-8 * Sfab(i, j, k, URHO)) {
     // print *,'Sum of (rho X)_i vs rho at (i,j,k):
     // ',i,j,k,spec_sum,state(i,j,k,URHO)

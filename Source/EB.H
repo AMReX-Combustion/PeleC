@@ -36,7 +36,7 @@ argmax(const amrex::Real array[AMREX_SPACEDIM])
   const amrex::Real max_num =
     amrex::max<amrex::Real>(AMREX_D_DECL(array[0], array[1], array[2]));
   for (int i = 0; i < AMREX_SPACEDIM; i++) {
-    if (amrex::Math::abs(max_num - array[i]) < constants::very_small_num()) {
+    if (std::abs(max_num - array[i]) < constants::very_small_num()) {
       return i;
     }
   }
@@ -50,7 +50,7 @@ idxsort(const amrex::Real array[AMREX_SPACEDIM], int idx[AMREX_SPACEDIM])
 {
   amrex::Real absarray[AMREX_SPACEDIM] = {0.0};
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-    absarray[dir] = amrex::Math::abs(array[dir]);
+    absarray[dir] = std::abs(array[dir]);
   }
 
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {

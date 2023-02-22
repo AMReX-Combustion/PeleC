@@ -70,8 +70,8 @@ riemann(
   amrex::Real po = mask ? pl : pr;
 
   mask =
-    amrex::Math::abs(ustar) < constants::smallu() * 0.5 *
-                                (amrex::Math::abs(ul) + amrex::Math::abs(ur)) ||
+    std::abs(ustar) < constants::smallu() * 0.5 *
+                                (std::abs(ul) + std::abs(ur)) ||
     ustar == 0.0;
   ustar = mask ? 0.0 : ustar;
   ro = 0.0;
@@ -109,7 +109,7 @@ riemann(
   amrex::Real cstar;
   eos.RPY2Cs(gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, cstar);
 
-  const amrex::Real sgnm = amrex::Math::copysign(1.0, ustar);
+  const amrex::Real sgnm = std::copysign(1.0, ustar);
 
   amrex::Real spout = co - sgnm * uo;
   amrex::Real spin = cstar - sgnm * ustar;
@@ -120,7 +120,7 @@ riemann(
   spin = mask ? spin : ushock;
 
   const amrex::Real scr =
-    (amrex::Math::abs(spout - spin) < constants::very_small_num())
+    (std::abs(spout - spin) < constants::very_small_num())
       ? constants::small_num() * cav
       : spout - spin;
   const amrex::Real frac = amrex::max<amrex::Real>(
@@ -250,13 +250,13 @@ laxfriedrich_flux(
   ustar = ((wl * ul + wr * ur) + (pl - pr)) / (wl + wr);
 
   bool mask =
-    amrex::Math::abs(ustar) < constants::smallu() * 0.5 *
-                                (amrex::Math::abs(ul) + amrex::Math::abs(ur)) ||
+    std::abs(ustar) < constants::smallu() * 0.5 *
+                                (std::abs(ul) + std::abs(ur)) ||
     ustar == 0.0;
   ustar = mask ? 0.0 : ustar;
 
   amrex::Real chalf = 0.5 * (cr + cl);
-  amrex::Real max_wavespd = amrex::Math::abs(ustar) + chalf;
+  amrex::Real max_wavespd = std::abs(ustar) + chalf;
 
   maxeigval = max_wavespd;
 
