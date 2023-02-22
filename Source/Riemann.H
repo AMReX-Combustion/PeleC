@@ -69,10 +69,9 @@ riemann(
   amrex::Real uo = mask ? ul : ur;
   amrex::Real po = mask ? pl : pr;
 
-  mask =
-    amrex::Math::abs(ustar) < constants::smallu() * 0.5 *
-                                (amrex::Math::abs(ul) + amrex::Math::abs(ur)) ||
-    ustar == 0.0;
+  mask = std::abs(ustar) <
+           constants::smallu() * 0.5 * (std::abs(ul) + std::abs(ur)) ||
+         ustar == 0.0;
   ustar = mask ? 0.0 : ustar;
   ro = 0.0;
   for (int n = 0; n < NUM_SPECIES; n++) {
@@ -109,7 +108,7 @@ riemann(
   amrex::Real cstar;
   eos.RPY2Cs(gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, cstar);
 
-  const amrex::Real sgnm = amrex::Math::copysign(1.0, ustar);
+  const amrex::Real sgnm = std::copysign(1.0, ustar);
 
   amrex::Real spout = co - sgnm * uo;
   amrex::Real spin = cstar - sgnm * ustar;
@@ -119,10 +118,9 @@ riemann(
   spout = mask ? spout : ushock;
   spin = mask ? spin : ushock;
 
-  const amrex::Real scr =
-    (amrex::Math::abs(spout - spin) < constants::very_small_num())
-      ? constants::small_num() * cav
-      : spout - spin;
+  const amrex::Real scr = (std::abs(spout - spin) < constants::very_small_num())
+                            ? constants::small_num() * cav
+                            : spout - spin;
   const amrex::Real frac = amrex::max<amrex::Real>(
     0.0, amrex::min<amrex::Real>(1.0, (1.0 + (spout + spin) / scr) * 0.5));
 
@@ -249,14 +247,13 @@ laxfriedrich_flux(
   const amrex::Real wr = amrex::max<amrex::Real>(wsmall, cr * rr);
   ustar = ((wl * ul + wr * ur) + (pl - pr)) / (wl + wr);
 
-  bool mask =
-    amrex::Math::abs(ustar) < constants::smallu() * 0.5 *
-                                (amrex::Math::abs(ul) + amrex::Math::abs(ur)) ||
-    ustar == 0.0;
+  bool mask = std::abs(ustar) <
+                constants::smallu() * 0.5 * (std::abs(ul) + std::abs(ur)) ||
+              ustar == 0.0;
   ustar = mask ? 0.0 : ustar;
 
   amrex::Real chalf = 0.5 * (cr + cl);
-  amrex::Real max_wavespd = amrex::Math::abs(ustar) + chalf;
+  amrex::Real max_wavespd = std::abs(ustar) + chalf;
 
   maxeigval = max_wavespd;
 

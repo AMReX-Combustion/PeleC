@@ -58,7 +58,7 @@ pc_initdata(
   const amrex::Real c_f = 0.0062418;
   amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> vel = {0.0};
   vel[0] = std::sqrt(prob_parm.dpdx * Ly / (1e-3 * 0.4688 * c_f)) *
-           (1.0 - std::pow(amrex::Math::abs(2.0 * y / Ly), 10.0));
+           (1.0 - std::pow(std::abs(2.0 * y / Ly), 10.0));
 
   AMREX_D_TERM(const amrex::Real u =
                  vel[0] *

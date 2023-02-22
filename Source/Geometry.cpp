@@ -77,7 +77,7 @@ Combustor::build(const amrex::Geometry& geom, const int max_coarsening_level)
     {AMREX_D_DECL(pipehi[0], pipehi[1], 1.)}, false);
 
   // where does plane 1 and plane 2 intersect?
-  amrex::Real k2 = amrex::Math::abs(pl2nm[0] / pl2nm[1]);
+  amrex::Real k2 = std::abs(pl2nm[0] / pl2nm[1]);
   amrex::Real secty = pl2pt[1] + k2 * (pl3pt[0] - pl2pt[0]);
   // How much do we cut?
   amrex::Real dx = geom.CellSize(0);

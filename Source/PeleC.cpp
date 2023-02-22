@@ -648,9 +648,8 @@ PeleC::initData()
   if (
     amrex::max<amrex::Real>(AMREX_D_DECL(
       static_cast<amrex::Real>(0.0),
-      static_cast<amrex::Real>(amrex::Math::abs(dx[0] - dx[1])),
-      static_cast<amrex::Real>(amrex::Math::abs(dx[0] - dx[2])))) >
-    small * dx[0]) {
+      static_cast<amrex::Real>(std::abs(dx[0] - dx[1])),
+      static_cast<amrex::Real>(std::abs(dx[0] - dx[2])))) > small * dx[0]) {
     amrex::Abort("dx != dy != dz not supported");
   }
 #endif
@@ -1077,9 +1076,8 @@ PeleC::post_timestep(int iteration)
 
     if (sum_per > 0.0) {
       const int num_per_old =
-        static_cast<int>(amrex::Math::floor((cumtime - dtlev) / sum_per));
-      const int num_per_new =
-        static_cast<int>(amrex::Math::floor((cumtime) / sum_per));
+        static_cast<int>(std::floor((cumtime - dtlev) / sum_per));
+      const int num_per_new = static_cast<int>(std::floor((cumtime) / sum_per));
 
       if (num_per_old != num_per_new) {
         sum_per_test = true;
@@ -1218,9 +1216,8 @@ PeleC::post_init(amrex::Real /*stop_time*/)
 
   if (sum_per > 0.0) {
     const int num_per_old =
-      static_cast<int>(amrex::Math::floor((cumtime - dtlev) / sum_per));
-    const int num_per_new =
-      static_cast<int>(amrex::Math::floor((cumtime) / sum_per));
+      static_cast<int>(std::floor((cumtime - dtlev) / sum_per));
+    const int num_per_new = static_cast<int>(std::floor((cumtime) / sum_per));
 
     if (num_per_old != num_per_new) {
       sum_per_test = true;
@@ -1930,9 +1927,7 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
     amrex::Real sum = volWgtSumMF(S_new, Eden, true);
     amrex::ParallelDescriptor::ReduceRealSum(sum0);
     amrex::ParallelDescriptor::ReduceRealSum(sum);
-    if (
-      amrex::ParallelDescriptor::IOProcessor() &&
-      amrex::Math::abs(sum - sum0) > 0) {
+    if (amrex::ParallelDescriptor::IOProcessor() && std::abs(sum - sum0) > 0) {
       amrex::Print() << "(rho E) added from reset terms                 : "
                      << sum - sum0 << " out of " << sum0 << std::endl;
     }
