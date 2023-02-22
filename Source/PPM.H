@@ -42,8 +42,7 @@ ppm_reconstruct(
     dsvl_l =
       std::copysign(1.0, dsc) *
       amrex::min<amrex::Real>(
-        std::abs(dsc),
-        amrex::min<amrex::Real>(std::abs(dsl), std::abs(dsr)));
+        std::abs(dsc), amrex::min<amrex::Real>(std::abs(dsl), std::abs(dsr)));
   }
 
   dsl = 2.0 * (s[i0] - s[im1]);
@@ -55,8 +54,7 @@ ppm_reconstruct(
     dsvl_r =
       std::copysign(1.0, dsc) *
       amrex::min<amrex::Real>(
-        std::abs(dsc),
-        amrex::min<amrex::Real>(std::abs(dsl), std::abs(dsr)));
+        std::abs(dsc), amrex::min<amrex::Real>(std::abs(dsl), std::abs(dsr)));
   }
 
   // Interpolate s to edges
@@ -76,8 +74,7 @@ ppm_reconstruct(
     dsvl_l =
       std::copysign(1.0, dsc) *
       amrex::min<amrex::Real>(
-        std::abs(dsc),
-        amrex::min<amrex::Real>(std::abs(dsl), std::abs(dsr)));
+        std::abs(dsc), amrex::min<amrex::Real>(std::abs(dsl), std::abs(dsr)));
   }
 
   dsl = 2.0 * (s[ip1] - s[i0]);
@@ -89,8 +86,7 @@ ppm_reconstruct(
     dsvl_r =
       std::copysign(1.0, dsc) *
       amrex::min<amrex::Real>(
-        std::abs(dsc),
-        amrex::min<amrex::Real>(std::abs(dsl), std::abs(dsr)));
+        std::abs(dsc), amrex::min<amrex::Real>(std::abs(dsl), std::abs(dsr)));
   }
 
   // Interpolate s to edges
@@ -110,12 +106,10 @@ ppm_reconstruct(
     sp = s[i0];
     sm = s[i0];
 
-  } else if (
-    std::abs(sp - s[i0]) >= 2.0 * std::abs(sm - s[i0])) {
+  } else if (std::abs(sp - s[i0]) >= 2.0 * std::abs(sm - s[i0])) {
     sp = 3.0 * s[i0] - 2.0 * sm;
 
-  } else if (
-    std::abs(sm - s[i0]) >= 2.0 * std::abs(sp - s[i0])) {
+  } else if (std::abs(sm - s[i0]) >= 2.0 * std::abs(sp - s[i0])) {
     sm = 3.0 * s[i0] - 2.0 * sp;
   }
 }

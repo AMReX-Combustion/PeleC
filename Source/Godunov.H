@@ -173,8 +173,7 @@ flatten(
 
   const int ishft = (dp > 0.0) ? 1 : -1;
 
-  amrex::Real denom =
-    amrex::max<amrex::Real>(small_pres, std::abs(qpp - qmm));
+  amrex::Real denom = amrex::max<amrex::Real>(small_pres, std::abs(qpp - qmm));
   amrex::Real zeta = std::abs(dp) / denom;
   const amrex::Real z = amrex::min<amrex::Real>(
     1.0, amrex::max<amrex::Real>(0.0, dzcut * (zeta - zcut1)));
@@ -194,8 +193,7 @@ flatten(
 
   dp = qpshft - qmshft;
 
-  denom =
-    amrex::max<amrex::Real>(small_pres, std::abs(qppshft - qmmshft));
+  denom = amrex::max<amrex::Real>(small_pres, std::abs(qppshft - qmmshft));
   zeta = std::abs(dp) / denom;
   const amrex::Real z2 = amrex::min<amrex::Real>(
     1.0, amrex::max<amrex::Real>(0.0, dzcut * (zeta - zcut1)));

@@ -83,8 +83,7 @@ pc_fill_bndry_grad_stencil_quadratic(
       const int ivs[AMREX_SPACEDIM] = {
         AMREX_D_DECL(ebg[L].iv[0], ebg[L].iv[1], ebg[L].iv[2])};
       const int s[AMREX_SPACEDIM] = {AMREX_D_DECL(
-        (int)std::copysign(1.0, n[c[0]]),
-        (int)std::copysign(1.0, n[c[1]]),
+        (int)std::copysign(1.0, n[c[0]]), (int)std::copysign(1.0, n[c[1]]),
         (int)std::copysign(1.0, n[c[2]]))};
       amrex::Real b[AMREX_SPACEDIM] = {AMREX_D_DECL(
         ebg[L].eb_centroid[c[0]] * s[0], ebg[L].eb_centroid[c[1]] * s[1],

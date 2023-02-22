@@ -69,10 +69,9 @@ riemann(
   amrex::Real uo = mask ? ul : ur;
   amrex::Real po = mask ? pl : pr;
 
-  mask =
-    std::abs(ustar) < constants::smallu() * 0.5 *
-                                (std::abs(ul) + std::abs(ur)) ||
-    ustar == 0.0;
+  mask = std::abs(ustar) <
+           constants::smallu() * 0.5 * (std::abs(ul) + std::abs(ur)) ||
+         ustar == 0.0;
   ustar = mask ? 0.0 : ustar;
   ro = 0.0;
   for (int n = 0; n < NUM_SPECIES; n++) {
@@ -119,10 +118,9 @@ riemann(
   spout = mask ? spout : ushock;
   spin = mask ? spin : ushock;
 
-  const amrex::Real scr =
-    (std::abs(spout - spin) < constants::very_small_num())
-      ? constants::small_num() * cav
-      : spout - spin;
+  const amrex::Real scr = (std::abs(spout - spin) < constants::very_small_num())
+                            ? constants::small_num() * cav
+                            : spout - spin;
   const amrex::Real frac = amrex::max<amrex::Real>(
     0.0, amrex::min<amrex::Real>(1.0, (1.0 + (spout + spin) / scr) * 0.5));
 
@@ -249,10 +247,9 @@ laxfriedrich_flux(
   const amrex::Real wr = amrex::max<amrex::Real>(wsmall, cr * rr);
   ustar = ((wl * ul + wr * ur) + (pl - pr)) / (wl + wr);
 
-  bool mask =
-    std::abs(ustar) < constants::smallu() * 0.5 *
-                                (std::abs(ul) + std::abs(ur)) ||
-    ustar == 0.0;
+  bool mask = std::abs(ustar) <
+                constants::smallu() * 0.5 * (std::abs(ul) + std::abs(ur)) ||
+              ustar == 0.0;
   ustar = mask ? 0.0 : ustar;
 
   amrex::Real chalf = 0.5 * (cr + cl);
