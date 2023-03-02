@@ -9,7 +9,8 @@ function(build_pelec_lib pelec_lib_name)
     set(AMREX_SUNDIALS_DIR ${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS)
 
     if(CLANG_TIDY_EXE)
-      set_target_properties(${pelec_lib_name} PROPERTIES CXX_CLANG_TIDY ${CLANG_TIDY_EXE})
+      set_target_properties(${pelec_lib_name} PROPERTIES CXX_CLANG_TIDY
+                            "${CLANG_TIDY_EXE};--config-file=${CMAKE_SOURCE_DIR}/.clang-tidy")
     endif()
 
     include(SetPeleCCompileFlags)
