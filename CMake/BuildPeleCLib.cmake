@@ -29,7 +29,8 @@ function(build_pelec_lib pelec_lib_name)
     target_include_directories(${pelec_lib_name} PUBLIC ${PELE_PHYSICS_SRC_DIR}/Utility/PltFileManager)
     
     target_sources(${pelec_lib_name} PRIVATE ${AMREX_SUNDIALS_DIR}/AMReX_Sundials.H
-                                             ${AMREX_SUNDIALS_DIR}/AMReX_Sundials.cpp
+                                             ${AMREX_SUNDIALS_DIR}/AMReX_Sundials_Core.cpp
+                                             ${AMREX_SUNDIALS_DIR}/AMReX_Sundials_Core.H
                                              ${AMREX_SUNDIALS_DIR}/AMReX_NVector_MultiFab.cpp
                                              ${AMREX_SUNDIALS_DIR}/AMReX_NVector_MultiFab.H
                                              ${AMREX_SUNDIALS_DIR}/AMReX_SUNMemory.cpp
