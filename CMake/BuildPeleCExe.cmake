@@ -40,6 +40,7 @@ function(build_pelec_exe pelec_exe_name pelec_lib_name)
                    ${PELEMP_SRC_DIR}/PP_Spray/SprayDerive.cpp
                    ${PELEMP_SRC_DIR}/PP_Spray/SprayJet.H
                    ${PELEMP_SRC_DIR}/PP_Spray/SprayJet.cpp
+                   ${PELEMP_SRC_DIR}/PP_Spray/SprayIO.cpp
                    ${PELEMP_SRC_DIR}/PP_Spray/WallFunctions.H
                    ${PELEMP_SRC_DIR}/PP_Spray/Distribution/DistBase.H
                    ${PELEMP_SRC_DIR}/PP_Spray/Distribution/Distributions.H

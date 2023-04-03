@@ -194,6 +194,7 @@ PeleC::initParticles()
         "Must initialize spray particles with particles.init_function or "
         "particles.init_file");
     }
+    SprayPC->PostInitRestart();
   }
 }
 
@@ -215,6 +216,7 @@ PeleC::postRestartParticles(bool is_checkpoint)
     SprayPC->InitSprayParticles(false, *lprobparm, *lprobparm_d);
     {
       SprayPC->Restart(parent->theRestartFile(), "particles", is_checkpoint);
+      SprayPC->PostInitRestart(parent->theRestartFile());
       amrex::Gpu::Device::streamSynchronize();
     }
   }
