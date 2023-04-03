@@ -314,6 +314,299 @@ pc_dermagvort(
   });
 }
 
+// *******************************************************************************
+// JS
+void
+pc_dervortz(
+  const amrex::Box& bx,
+  amrex::FArrayBox& derfab,
+  int /*dcomp*/,
+  int /*ncomp*/,
+  const amrex::FArrayBox& datfab,
+  const amrex::Geometry& geomdata,
+  amrex::Real /*time*/,
+  const int* /*bcrec*/,
+  int /*level*/)
+{
+  auto const dat = datfab.const_array();
+  auto vortz = derfab.array();
+
+  const amrex::Box& gbx = amrex::grow(bx, 1);
+
+  amrex::FArrayBox local(gbx, 3, amrex::The_Async_Arena());
+  auto larr = local.array();
+
+  const auto& flag_fab = amrex::getEBCellFlagFab(datfab);
+  const auto& typ = flag_fab.getType(bx);
+  if (typ == amrex::FabType::covered) {
+    derfab.setVal<amrex::RunOn::Device>(0.0, bx);
+    return;
+  }
+  const auto& flags = flag_fab.const_array();
+  const bool all_regular = typ == amrex::FabType::regular;
+
+  // Convert momentum to velocity.
+  amrex::ParallelFor(gbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    const amrex::Real rhoInv = 1.0 / dat(i, j, k, URHO);
+    AMREX_D_TERM(larr(i, j, k, 0) = dat(i, j, k, UMX) * rhoInv;
+                 , larr(i, j, k, 1) = dat(i, j, k, UMY) * rhoInv;
+                 , larr(i, j, k, 2) = dat(i, j, k, UMZ) * rhoInv;)
+  });
+
+  AMREX_D_TERM(const amrex::Real dx = geomdata.CellSize(0);
+               , const amrex::Real dy = geomdata.CellSize(1);
+               , const amrex::Real dz = geomdata.CellSize(2););
+
+  // Calculate vorticity.
+  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    AMREX_D_TERM(int im; int ip;, int jm; int jp;, int km; int kp;)
+
+    // if fab is all regular -> call regular idx and weights
+    // otherwise
+    AMREX_D_TERM(get_idx(i, 0, all_regular, flags(i, j, k), im, ip);
+                 , get_idx(j, 1, all_regular, flags(i, j, k), jm, jp);
+                 , get_idx(k, 2, all_regular, flags(i, j, k), km, kp);)
+    AMREX_D_TERM(const amrex::Real wi = get_weight(im, ip);
+                 , const amrex::Real wj = get_weight(jm, jp);
+                 , const amrex::Real wk = get_weight(km, kp);)
+
+    AMREX_D_TERM(
+      vortz(i, j, k) = 0.0 * dx;
+      ,
+      const amrex::Real vx = wi * (larr(ip, j, k, 1) - larr(im, j, k, 1)) / dx;
+      const amrex::Real uy = wj * (larr(i, jp, k, 0) - larr(i, jm, k, 0)) / dy;
+      const amrex::Real v3 = vx - uy;
+      ,
+      const amrex::Real wx = wi * (larr(ip, j, k, 2) - larr(im, j, k, 2)) / dx;
+      const amrex::Real wy = wj * (larr(i, jp, k, 2) - larr(i, jm, k, 2)) / dy;
+      const amrex::Real uz = wk * (larr(i, j, kp, 0) - larr(i, j, km, 0)) / dz;
+      const amrex::Real vz = wk * (larr(i, j, kp, 1) - larr(i, j, km, 1)) / dz;
+      const amrex::Real v1 = wy - vz; const amrex::Real v2 = uz - wx;);
+    vortz(i, j, k) = AMREX_D_TERM(0., +v3, +.0);
+  });
+}
+
+void
+pc_derenthalpy(
+  const amrex::Box& bx,
+  amrex::FArrayBox& derfab,
+  int /*dcomp*/,
+  int /*ncomp*/,
+  const amrex::FArrayBox& datfab,
+  const amrex::Geometry& /*geomdata*/,
+  amrex::Real /*time*/,
+  const int* /*bcrec*/,
+  int /*level*/)
+{
+  auto const dat = datfab.const_array();
+  auto h_arr = derfab.array();
+
+  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    amrex::Real mass[NUM_SPECIES];
+    const amrex::Real rhoInv = 1.0 / dat(i, j, k, URHO);
+
+    for (int n = 0; n < NUM_SPECIES; n++) {
+      mass[n] = dat(i, j, k, UFS + n) * rhoInv;
+    }
+    auto eos = pele::physics::PhysicsType::eos();
+    amrex::Real h = 0.0;
+    eos.RTY2H(dat(i, j, k, URHO), dat(i, j, k, UTEMP), mass, h);
+    h_arr(i, j, k) = h;
+  });
+}
+
+void
+pc_dertotenthalpy(
+  const amrex::Box& bx,
+  amrex::FArrayBox& derfab,
+  int /*dcomp*/,
+  int /*ncomp*/,
+  const amrex::FArrayBox& datfab,
+  const amrex::Geometry& /*geomdata*/,
+  amrex::Real /*time*/,
+  const int* /*bcrec*/,
+  int /*level*/)
+{
+  auto const dat = datfab.const_array();
+  auto h_arr = derfab.array();
+
+  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    amrex::Real mass[NUM_SPECIES];
+    const amrex::Real rhoInv = 1.0 / dat(i, j, k, URHO);
+    const amrex::Real datxsq = dat(i, j, k, UMX) * dat(i, j, k, UMX);
+    const amrex::Real datysq = dat(i, j, k, UMY) * dat(i, j, k, UMY);
+    const amrex::Real datzsq = dat(i, j, k, UMZ) * dat(i, j, k, UMZ);
+
+    for (int n = 0; n < NUM_SPECIES; n++) {
+      mass[n] = dat(i, j, k, UFS + n) * rhoInv;
+    }
+    auto eos = pele::physics::PhysicsType::eos();
+    amrex::Real h = 0.0;
+    eos.RTY2H(dat(i, j, k, URHO), dat(i, j, k, UTEMP), mass, h);
+    amrex::Real ke = 0.5 * rhoInv * rhoInv * (datxsq + datysq + datzsq);
+    h_arr(i, j, k) = h + ke;
+  });
+}
+
+void
+pc_derqcriterion(
+  const amrex::Box& bx,
+  amrex::FArrayBox& derfab,
+  int /*dcomp*/,
+  int /*ncomp*/,
+  const amrex::FArrayBox& datfab,
+  const amrex::Geometry& geomdata,
+  amrex::Real /*time*/,
+  const int* /*bcrec*/,
+  int /*level*/)
+{
+  auto const dat = datfab.const_array();
+  auto qcriterion = derfab.array();
+
+  const amrex::Box& gbx = amrex::grow(bx, 1);
+
+  amrex::FArrayBox local(gbx, 3, amrex::The_Async_Arena());
+  auto larr = local.array();
+
+  const auto& flag_fab = amrex::getEBCellFlagFab(datfab);
+  const auto& typ = flag_fab.getType(bx);
+  if (typ == amrex::FabType::covered) {
+    derfab.setVal<amrex::RunOn::Device>(0.0, bx);
+    return;
+  }
+  const auto& flags = flag_fab.const_array();
+  const bool all_regular = typ == amrex::FabType::regular;
+
+  // Convert momentum to velocity.
+  amrex::ParallelFor(gbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    const amrex::Real rhoInv = 1.0 / dat(i, j, k, URHO);
+    AMREX_D_TERM(larr(i, j, k, 0) = dat(i, j, k, UMX) * rhoInv;
+                 , larr(i, j, k, 1) = dat(i, j, k, UMY) * rhoInv;
+                 , larr(i, j, k, 2) = dat(i, j, k, UMZ) * rhoInv;)
+  });
+
+  AMREX_D_TERM(const amrex::Real dx = geomdata.CellSize(0);
+               , const amrex::Real dy = geomdata.CellSize(1);
+               , const amrex::Real dz = geomdata.CellSize(2););
+
+  // Calculate vorticity.
+  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    AMREX_D_TERM(int im; int ip;, int jm; int jp;, int km; int kp;)
+
+    // if fab is all regular -> call regular idx and weights
+    // otherwise
+    AMREX_D_TERM(get_idx(i, 0, all_regular, flags(i, j, k), im, ip);
+                 , get_idx(j, 1, all_regular, flags(i, j, k), jm, jp);
+                 , get_idx(k, 2, all_regular, flags(i, j, k), km, kp);)
+    AMREX_D_TERM(const amrex::Real wi = get_weight(im, ip);
+                 , const amrex::Real wj = get_weight(jm, jp);
+                 , const amrex::Real wk = get_weight(km, kp);)
+
+    AMREX_D_TERM(
+      qcriterion(i, j, k) = 0.0 * dx;
+      ,
+      const amrex::Real ux = wi * (larr(ip, j, k, 0) - larr(im, j, k, 0)) / dx;
+      const amrex::Real vx = wi * (larr(ip, j, k, 1) - larr(im, j, k, 1)) / dx;
+      const amrex::Real uy = wj * (larr(i, jp, k, 0) - larr(i, jm, k, 0)) / dy;
+      const amrex::Real vy = wj * (larr(i, jp, k, 1) - larr(i, jm, k, 1)) / dy;
+      ,
+      const amrex::Real wx = wi * (larr(ip, j, k, 2) - larr(im, j, k, 2)) / dx;
+      const amrex::Real wy = wj * (larr(i, jp, k, 2) - larr(i, jm, k, 2)) / dy;
+      const amrex::Real uz = wk * (larr(i, j, kp, 0) - larr(i, j, km, 0)) / dz;
+      const amrex::Real vz = wk * (larr(i, j, kp, 1) - larr(i, j, km, 1)) / dz;
+      const amrex::Real wz = wk * (larr(i, j, kp, 2) - larr(i, j, km, 2)) / dz;
+      );
+    qcriterion(i, j, k) = AMREX_D_TERM(0.
+		                     , +ux*vy-uy*vx + 0.5*((ux + vy) * (ux + vy))
+				     , +vy*wz+ux*wz-vz*wy-uz*wx + 0.5 * wz * (2.0*ux+2.0*vy+wz));
+  });
+}
+
+void
+pc_dermagstrain(
+  const amrex::Box& bx,
+  amrex::FArrayBox& derfab,
+  int /*dcomp*/,
+  int /*ncomp*/,
+  const amrex::FArrayBox& datfab,
+  const amrex::Geometry& geomdata,
+  amrex::Real /*time*/,
+  const int* /*bcrec*/,
+  int /*level*/)
+{
+  auto const dat = datfab.const_array();
+  auto mags = derfab.array();
+
+  const amrex::Box& gbx = amrex::grow(bx, 1);
+
+  amrex::FArrayBox local(gbx, 3, amrex::The_Async_Arena());
+  auto larr = local.array();
+
+  const auto& flag_fab = amrex::getEBCellFlagFab(datfab);
+  const auto& typ = flag_fab.getType(bx);
+  if (typ == amrex::FabType::covered) {
+    derfab.setVal<amrex::RunOn::Device>(0.0, bx);
+    return;
+  }
+  const auto& flags = flag_fab.const_array();
+  const bool all_regular = typ == amrex::FabType::regular;
+
+  // Convert momentum to velocity.
+  amrex::ParallelFor(gbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    const amrex::Real rhoInv = 1.0 / dat(i, j, k, URHO);
+    AMREX_D_TERM(larr(i, j, k, 0) = dat(i, j, k, UMX) * rhoInv;
+                 , larr(i, j, k, 1) = dat(i, j, k, UMY) * rhoInv;
+                 , larr(i, j, k, 2) = dat(i, j, k, UMZ) * rhoInv;)
+  });
+
+  AMREX_D_TERM(const amrex::Real dx = geomdata.CellSize(0);
+               , const amrex::Real dy = geomdata.CellSize(1);
+               , const amrex::Real dz = geomdata.CellSize(2););
+
+  // Calculate vorticity.
+  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    AMREX_D_TERM(int im; int ip;, int jm; int jp;, int km; int kp;)
+
+    // if fab is all regular -> call regular idx and weights
+    // otherwise
+    AMREX_D_TERM(get_idx(i, 0, all_regular, flags(i, j, k), im, ip);
+                 , get_idx(j, 1, all_regular, flags(i, j, k), jm, jp);
+                 , get_idx(k, 2, all_regular, flags(i, j, k), km, kp);)
+    AMREX_D_TERM(const amrex::Real wi = get_weight(im, ip);
+                 , const amrex::Real wj = get_weight(jm, jp);
+                 , const amrex::Real wk = get_weight(km, kp);)
+
+    AMREX_D_TERM(
+      mags(i, j, k) = 0.0 * dx;
+      ,
+      const amrex::Real ux = wi * (larr(ip, j, k, 0) - larr(im, j, k, 0)) / dx;
+      const amrex::Real vx = wi * (larr(ip, j, k, 1) - larr(im, j, k, 1)) / dx;
+      const amrex::Real uy = wj * (larr(i, jp, k, 0) - larr(i, jm, k, 0)) / dy;
+      const amrex::Real vy = wj * (larr(i, jp, k, 1) - larr(i, jm, k, 1)) / dy;
+      const amrex::Real s11 = 0.5*(ux+ux);
+      const amrex::Real s12 = 0.5*(uy+vx);
+      const amrex::Real s21 = 0.5*(vx+uy);
+      const amrex::Real s22 = 0.5*(vy+vy);
+      ,
+      const amrex::Real wx = wi * (larr(ip, j, k, 2) - larr(im, j, k, 2)) / dx;
+      const amrex::Real wy = wj * (larr(i, jp, k, 2) - larr(i, jm, k, 2)) / dy;
+      const amrex::Real uz = wk * (larr(i, j, kp, 0) - larr(i, j, km, 0)) / dz;
+      const amrex::Real vz = wk * (larr(i, j, kp, 1) - larr(i, j, km, 1)) / dz;
+      const amrex::Real wz = wk * (larr(i, j, kp, 2) - larr(i, j, km, 2)) / dz;
+      const amrex::Real s13 = 0.5*(uz+wx);
+      const amrex::Real s23 = 0.5*(vz+wy);
+      const amrex::Real s31 = 0.5*(wx+uz);
+      const amrex::Real s32 = 0.5*(wy+vz);
+      const amrex::Real s33 = 0.5*(wz+wz);
+      );
+    mags(i, j, k) = sqrt(AMREX_D_TERM(0.
+		                     , +2.0*s11*s11+2.0*s12*s12+2.0*s21*s21+2.0*s22*s22
+				     , +2.0*s13*s13+2.0*s23*s23+2.0*s31*s31+2.0*s32*s32+2.0*s33*s33));
+  });
+}
+// JS
+// *******************************************************************************
+
 void
 pc_derdivu(
   const amrex::Box& bx,

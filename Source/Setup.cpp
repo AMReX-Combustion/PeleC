@@ -438,6 +438,40 @@ PeleC::variableSetUp()
     amrex::DeriveRec::GrowBoxByOne);
   derive_lst.addComponent("magvort", desc_lst, State_Type, Density, NVAR);
 
+  // ********************************************************************
+  // JS
+  // Vorticity z
+  derive_lst.add(
+    "z_vort", amrex::IndexType::TheCellType(), 1, pc_dervortz,
+    amrex::DeriveRec::GrowBoxByOne);
+  derive_lst.addComponent("z_vort", desc_lst, State_Type, Density, NVAR);
+
+  // Enthalpy  
+  derive_lst.add(
+    "enthalpy", amrex::IndexType::TheCellType(), 1, pc_derenthalpy,
+    amrex::DeriveRec::TheSameBox);
+  derive_lst.addComponent("enthalpy", desc_lst, State_Type, Density, NVAR);
+
+  // Total Enthalpy  
+  derive_lst.add(
+    "totenthalpy", amrex::IndexType::TheCellType(), 1, pc_dertotenthalpy,
+    amrex::DeriveRec::TheSameBox);
+  derive_lst.addComponent("totenthalpy", desc_lst, State_Type, Density, NVAR);
+
+  // Q Criterion
+  derive_lst.add(
+    "qcriterion", amrex::IndexType::TheCellType(), 1, pc_derqcriterion,
+    amrex::DeriveRec::GrowBoxByOne);
+  derive_lst.addComponent("qcriterion", desc_lst, State_Type, Density, NVAR);
+
+  // Strain
+  derive_lst.add(
+    "magstrain", amrex::IndexType::TheCellType(), 1, pc_dermagstrain,
+    amrex::DeriveRec::GrowBoxByOne);
+  derive_lst.addComponent("magstrain", desc_lst, State_Type, Density, NVAR);
+  // JS
+  // ********************************************************************
+
   // Div(u)
   derive_lst.add(
     "divu", amrex::IndexType::TheCellType(), 1, pc_derdivu,

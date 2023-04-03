@@ -158,6 +158,7 @@ main(int argc, char* argv[])
     (wall_time_elapsed < (max_wall_time * 3600.0) || max_wall_time < 0.0)) {
     // Do a timestep
     amrptr->coarseTimeStep(stop_time);
+    amrptr->writeBasePlotFile(amrptr->levelSteps(0));
 #ifdef AMREX_USE_ASCENT
     amrptr->doInSituViz(amrptr->levelSteps(0));
 #endif
