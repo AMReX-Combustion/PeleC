@@ -23,6 +23,7 @@
 #include "turbinflow.H"
 #include "SparseData.H"
 #include "EBStencilTypes.H"
+#include "DiagBase.H"
 
 enum StateType { State_Type = 0, Reactions_Type, Work_Estimate_Type };
 
@@ -591,6 +592,10 @@ public:
     pele::physics::PhysicsType::transport_type>
     trans_parms;
   static pele::physics::turbinflow::TurbInflow turb_inflow;
+
+  // A set of runtime diagnostics from PelePhysics lib
+  static amrex::Vector<std::unique_ptr<DiagBase>> m_diagnostics;
+  static amrex::Vector<std::string> m_diagVars;
 
 #ifdef PELEC_USE_SOOT
   static SootModel soot_model;
