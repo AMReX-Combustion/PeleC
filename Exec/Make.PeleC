@@ -36,6 +36,9 @@ Blocs += $(PELE_PHYSICS_HOME)/Utility/TurbInflow
 Bpack += $(PELE_PHYSICS_HOME)/Utility/PltFileManager/Make.package
 Blocs += $(PELE_PHYSICS_HOME)/Utility/PltFileManager
 
+Bpack += $(PELE_PHYSICS_HOME)/Utility/Diagnostics/Make.package
+Blocs += $(PELE_PHYSICS_HOME)/Utility/Diagnostics
+
 all: $(executable)
 	$(SILENT) $(RM) AMReX_buildInfo.cpp
 	@echo SUCCESS
