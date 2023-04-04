@@ -167,7 +167,7 @@ PeleC::variableSetUp()
       amrex::ParmParse ppd(diag_prefix);
       std::string diag_type; ppd.get("type", diag_type);
       m_diagnostics[n] = DiagBase::create(diag_type);
-      m_diagnostics[n]->init(diag_prefix);
+      m_diagnostics[n]->init(diag_prefix, diags[n]);
       m_diagnostics[n]->addVars(m_diagVars);
   }
 
@@ -175,10 +175,12 @@ PeleC::variableSetUp()
   std::sort(m_diagVars.begin(), m_diagVars.end());
   auto last = std::unique(m_diagVars.begin(), m_diagVars.end());
   m_diagVars.erase(last, m_diagVars.end());
+  int index = State_Type;
+  int scomp = 0;
   for (auto &v : m_diagVars) {
-      bool itexists = derive_lst.canDerive(v) || isStateVariable(v);
+      bool itexists = derive_lst.canDerive(v) || isStateVariable(v, index, scomp);
       if (!itexists) {
-          Abort("Field "+v+" is not available");
+          amrex::Abort("Field "+v+" is not available");
       }
   }
 
