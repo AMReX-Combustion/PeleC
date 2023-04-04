@@ -74,7 +74,11 @@ PeleC::defineParticles()
   if (SPRAY_FUEL_NUM > NUM_SPECIES) {
     amrex::Abort("Cannot have more spray fuel species than fluid species");
   }
-  SprayParticleContainer::spraySetup(sprayData);
+  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> ext_force = {0.0};
+  for (int i = 0; i < static_cast<int>(external_forcing.size()); i++) {
+    ext_force[i] = external_forcing[i];
+  }
+  SprayParticleContainer::spraySetup(sprayData, ext_force.data());
   scomps.rhoIndx = PeleC::Density;
   scomps.momIndx = PeleC::Xmom;
   scomps.engIndx = PeleC::Eden;
