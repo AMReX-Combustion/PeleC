@@ -1,3 +1,8 @@
+#ifdef AMREX_USE_SYCL
+#include <oneapi/dpl/execution>
+#include <oneapi/dpl/algorithm>
+#endif
+
 #include <memory>
 
 #include "hydro_redistribution.H"
@@ -10,11 +15,6 @@
 #include <thrust/unique.h>
 #include <thrust/sort.h>
 #include <thrust/execution_policy.h>
-#endif
-
-#ifdef AMREX_USE_SYCL
-#include <oneapi/dpl/execution>
-#include <oneapi/dpl/algorithm>
 #endif
 
 inline bool
