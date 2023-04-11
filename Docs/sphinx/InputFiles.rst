@@ -258,7 +258,7 @@ The verbosity flags `pelec.v` and `amr.v` control the extent of output related t
 To aid in the analysis of the diagnostic data, it can also be saved to log files. To do this, set `amr.data_log = datlog extremalog`, which will save the integrated values to `datlog` and the extrema to `extremalog`, if they are being computed based on the values of the flags described above. Additional problem-specific logs can also be created. Gridding information can also be recorded to a file specified with the `amr.grid_log` option. 
 
 Analyzing the data *a-posteriori* can become extremely cumbersome when dealing with extreme datasets.
-PeleLMeX offers a set of diagnostics available at runtime and more are under development.
+PeleC offers a set of diagnostics available at runtime and more are under development.
 Currently, the list of diagnostic contains:
 
 * `DiagFramePlane` : extract a plane aligned in the 'x','y' or 'z' direction across the AMR hierarchy, writing
