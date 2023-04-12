@@ -19,313 +19,313 @@ jobs:
         exclude: '.'
         extensions: 'H,h,cpp'
         clangFormatVersion: 14
-  CPU-GNUmake:
-    needs: Formatting
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.6.0
-        with:
-          access_token: ${{github.token}}
-      - name: Clone
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-      - name: Setup
-        working-directory: ./Exec/RegTests/PMF
-        run: |
-          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
-          #printf "CC=gcc-10\nCXX=g++-10\nFC=gfortran-10\nF90=gfortran-10" \
-          #  >> ${{github.workspace}}/Submodules/AMReX/Tools/GNUMake/Make.local
-          make COMP=gnu USE_MPI=FALSE DEBUG=TRUE TPL
-          make COMP=llvm USE_MPI=FALSE DEBUG=TRUE PRECISION=FLOAT TPL
-      - name: PMF debug make
-        working-directory: ./Exec/RegTests/PMF
-        run: |
-          echo "::add-matcher::.github/problem-matchers/gcc.json"
-          make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
-      - name: PMF debug test
-        working-directory: ./Exec/RegTests/PMF
-        run: ./PeleC3d.gnu.DEBUG.ex pmf-lidryer-arkode.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
-      - name: PMF debug report
-        working-directory: ./Exec/RegTests/PMF
-        run: |
-          egrep "warning:|error:" build-output.txt \
-            | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|GNUmakefile" \
-            | egrep -v "ld: warning:" | sort | uniq \
-            | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
-          cat warnings.txt
-          export return=$(tail -n 1 warnings.txt | awk '{print $2}')
-          exit ${return}
-      - name: EB debug build
-        working-directory: ./Exec/RegTests/EB-C10
-        run: |
-          echo "::add-matcher::.github/problem-matchers/gcc.json"
-          make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
-      - name: EB debug test
-        working-directory: ./Exec/RegTests/EB-C10
-        run: ./PeleC3d.gnu.DEBUG.ex eb-c10.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
-      - name: EB debug report
-        working-directory: ./Exec/RegTests/EB-C10
-        run: |
-          egrep "warning:|error:" build-output.txt \
-            | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|GNUmakefile" \
-            | egrep -v "ld: warning:" | sort | uniq \
-            | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
-          cat warnings.txt
-          export return=$(tail -n 1 warnings.txt | awk '{print $2}')
-          exit ${return}
-      - name: TG debug single precision build
-        working-directory: ./Exec/RegTests/TG
-        run: |
-          echo "::add-matcher::.github/problem-matchers/gcc.json"
-          make -j ${{env.NPROCS}} COMP=llvm USE_MPI=FALSE DEBUG=TRUE PRECISION=FLOAT 2>&1 | tee -a build-output.txt
-      - name: TG debug single precision test
-        working-directory: ./Exec/RegTests/TG
-        run: ./PeleC3d.llvm.FLOAT.DEBUG.ex tg-2.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
-      - name: TG debug single precision report
-        working-directory: ./Exec/RegTests/TG
-        run: |
-          egrep "warning:|error:" build-output.txt \
-            | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|GNUmakefile" \
-            | egrep -v "ld: warning:" | sort | uniq \
-            | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
-          cat warnings.txt
-          export return=$(tail -n 1 warnings.txt | awk '{print $2}')
-          exit ${return}
-      - name: Soot debug build
-        working-directory: ./Exec/RegTests/Soot-Flame
-        run: |
-          echo "::add-matcher::.github/problem-matchers/gcc.json"
-          make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
-      - name: Soot debug report
-        working-directory: ./Exec/RegTests/Soot-Flame
-        run: |
-          egrep "warning:|error:" build-output.txt \
-            | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|GNUmakefile|Submodules/PeleMP" \
-            | egrep -v "Submodules/PelePhysics/Support/Mechanism/Models" | sort | uniq \
-            | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
-          cat warnings.txt
-          export return=$(tail -n 1 warnings.txt | awk '{print $2}')
-          exit ${return}
-      - name: Spray debug build
-        working-directory: ./Exec/RegTests/Spray-Conv
-        run: |
-          echo "::add-matcher::.github/problem-matchers/gcc.json"
-          make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
-      - name: Spray debug report
-        working-directory: ./Exec/RegTests/Spray-Conv
-        run: |
-          egrep "warning:|error:" build-output.txt \
-            | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|GNUmakefile|Submodules/PeleMP" \
-            | egrep -v "Submodules/PelePhysics/Support/Mechanism/Models" | sort | uniq \
-            | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
-          cat warnings.txt
-          export return=$(tail -n 1 warnings.txt | awk '{print $2}')
-          exit ${return}
-  CPU-CMake:
-    needs: Formatting
-    runs-on: ${{matrix.os}}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-        build_type: [Release, Debug]
-        include:
-          - os: macos-latest
-            install_deps: brew install mpich automake ninja
-            comp: llvm
-            procs: $(sysctl -n hw.ncpu)
-          - os: ubuntu-latest
-            install_deps: sudo apt-get update && sudo apt-get install mpich libmpich-dev ninja-build
-            comp: gnu
-            procs: $(nproc)
-          - build_type: Release
-            ctest_args: -LE no-ci
-          - build_type: Debug
-            ctest_args: -R eb-c12
-        exclude:
-          - os: macos-latest
-            build_type: Debug
-    steps:
-      - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.6.0
-        with:
-          access_token: ${{github.token}}
-      - name: Clone
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-      - name: Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: '3.8'
-      - name: Setup
-        run: |
-          echo "NPROCS=${{matrix.procs}}" >> $GITHUB_ENV
-          cmake -E make_directory ${{runner.workspace}}/deps
-      - name: Dependencies
-        run: |
-          # Install MPI
-          ${{matrix.install_deps}}
-          # Install Python packages
-          python -m pip install --upgrade pip
-          pip install nose numpy pandas
-      - name: MASA
-        run: |
-          # Install MetaPhysicL
-          cd ${{runner.workspace}}/deps
-          git clone --recursive https://github.com/roystgnr/MetaPhysicL.git ${{runner.workspace}}/deps/MetaPhysicL
-          cd ${{runner.workspace}}/deps/MetaPhysicL
-          ./bootstrap
-          ./configure --prefix="${{runner.workspace}}/deps/install/MetaPhysicL"
-          make -j ${{env.NPROCS}}
-          make install
-          # Install MASA
-          cd ${{runner.workspace}}/deps
-          git clone --recursive https://github.com/manufactured-solutions/MASA.git ${{runner.workspace}}/deps/MASA
-          cd ${{runner.workspace}}/deps/MASA
-          ./bootstrap
-          ./configure CXX='mpicxx -std=c++11' CC=mpicc \
-            METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" \
-            --prefix="${{runner.workspace}}/deps/install/MASA"
-          make -j ${{env.NPROCS}}
-          make install
-      - name: Configure
-        run: |
-          (for DIM in 2 3; do \
-            printf "\n-------- Configuring ${DIM}D --------\n"; \
-            cmake -G Ninja \
-            -B${{runner.workspace}}/build-${DIM}d-${{matrix.os}}-${{matrix.build_type}} \
-            -DCMAKE_INSTALL_PREFIX:PATH=${{runner.workspace}}/install-${DIM}d-${{matrix.os}}-${{matrix.build_type}} \
-            -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} \
-            -DPELEC_DIM:STRING=${DIM} \
-            -DPELEC_ENABLE_MPI:BOOL=ON \
-            -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
-            -DPELEC_ENABLE_MASA:BOOL=ON \
-            -DMASA_ROOT:PATH=${{runner.workspace}}/deps/install/MASA \
-            ${{github.workspace}}; \
-            if [ $? -ne 0 ]; then exit 1; fi \
-          done)
-      - name: Build
-        run: |
-          (for DIM in 2 3; do \
-            printf "\n-------- Building ${DIM}D --------\n"; \
-            cmake --build ${{runner.workspace}}/build-${DIM}d-${{matrix.os}}-${{matrix.build_type}} \
-              --parallel ${{env.NPROCS}} 2>&1 | tee -a ${{runner.workspace}}/build-output.txt; \
-            if [ ${PIPESTATUS[0]} -ne 0 ]; then exit 1; fi \
-          done)
-      - name: Report
-        run: |
-          echo "::add-matcher::.github/problem-matchers/gcc.json"
-          egrep "warning:|error:" ${{runner.workspace}}/build-output.txt \
-            | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest" \
-            | egrep -v "ld: warning:" | sort | uniq \
-            | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > ${{runner.workspace}}/build-output-warnings.txt
-          cat ${{runner.workspace}}/build-output-warnings.txt
-          export return=$(tail -n 1 ${{runner.workspace}}/build-output-warnings.txt | awk '{print $2}')
-          exit ${return}
-      - name: Test
-        run: |
-          (for DIM in 2 3; do \
-            printf "\n-------- Testing ${DIM}D --------\n"; \
-            cd ${{runner.workspace}}/build-${DIM}d-${{matrix.os}}-${{matrix.build_type}}; \
-            ctest -j ${{env.NPROCS}} ${{matrix.ctest_args}} --output-on-failure; \
-            if [ $? -ne 0 ]; then exit 1; fi \
-          done)
-  GPU-Nvidia:
-    name: GPU-CUDA
-    needs: [Formatting, CPU-GNUmake]
-    runs-on: ubuntu-20.04
-    strategy:
-      matrix:
-        cuda_ver: [11.4]
-        include:
-          - cuda_ver: "11.4"
-            cuda_pkg: 11-4
-    steps:
-      - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.6.0
-        with:
-          access_token: ${{github.token}}
-      - name: Clone
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-      - name: Dependencies
-        run: |
-          curl -O https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.0-1_all.deb
-          sudo dpkg -i cuda-keyring_1.0-1_all.deb
-          sudo apt-get update
-          sudo apt-get install -y ninja-build \
-              cuda-command-line-tools-${{matrix.cuda_pkg}} \
-              cuda-compiler-${{matrix.cuda_pkg}} cuda-minimal-build-${{matrix.cuda_pkg}} \
-              cuda-nvml-dev-${{matrix.cuda_pkg}} cuda-nvtx-${{matrix.cuda_pkg}} \
-              libcurand-dev-${{matrix.cuda_pkg}} cuda-cupti-dev-${{matrix.cuda_pkg}} \
-              libcusolver-dev-${{matrix.cuda_pkg}} libcusparse-dev-${{matrix.cuda_pkg}} \
-              libcublas-dev-${{matrix.cuda_pkg}}
-      - name: Configure
-        run: |
-          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
-          export PATH=/usr/local/nvidia/bin:/usr/local/cuda-${{matrix.cuda_ver}}/bin:${PATH}
-          export LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/cuda-${{matrix.cuda_ver}}/lib:${LD_LIBRARY_PATH}
-          cmake -G "Unix Makefiles" -Bbuild-${{matrix.cuda_pkg}} \
-            -DCMAKE_BUILD_TYPE:STRING=Release \
-            -DPELEC_ENABLE_MPI:BOOL=OFF \
-            -DPELEC_ENABLE_CUDA:BOOL=ON \
-            -DAMReX_CUDA_ERROR_CAPTURE_THIS:BOOL=ON \
-            -DCMAKE_CUDA_ARCHITECTURES:STRING=70 \
-            ${{github.workspace}}
-      - name: Build
-        run: cmake --build build-${{matrix.cuda_pkg}} --parallel ${{env.NPROCS}}
-  GPU-AMD:
-    name: GPU-HIP
-    needs: [Formatting, CPU-GNUmake]
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.6.0
-        with:
-          access_token: ${{github.token}}
-      - name: Clone
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-      - name: Dependencies
-        run: |
-          curl -O https://repo.radeon.com/rocm/rocm.gpg.key
-          sudo apt-key add rocm.gpg.key
-          echo 'deb [arch=amd64] https://repo.radeon.com/rocm/apt/debian/ ubuntu main' \
-              | sudo tee /etc/apt/sources.list.d/rocm.list
-          echo 'export PATH=/opt/rocm/llvm/bin:/opt/rocm/bin:/opt/rocm/profiler/bin:/opt/rocm/opencl/bin:$PATH' \
-              | sudo tee -a /etc/profile.d/rocm.sh
-          sudo apt-get update
-          sudo apt-get install -y ninja-build rocm-dev roctracer-dev rocprofiler-dev rocrand-dev rocprim-dev rocm-libs
-      - name: Configure
-        run: |
-          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
-          source /etc/profile.d/rocm.sh
-          which clang
-          which hipcc
-          cmake -G Ninja -B${{runner.workspace}}/build-hip \
-          -DCMAKE_BUILD_TYPE:STRING=Release \
-          -DCMAKE_CXX_COMPILER:STRING=$(which hipcc) \
-          -DCMAKE_C_COMPILER:STRING=$(which clang) \
-          -DCMAKE_CXX_STANDARD:STRING=17 \
-          -DPELEC_ENABLE_MPI:BOOL=OFF \
-          -DPELEC_ENABLE_HIP:BOOL=ON \
-          -DAMReX_AMD_ARCH:STRING=gfx908 \
-          -DCMAKE_HIP_ARCHITECTURES:STRING=gfx908 \
-          -DAMDGPU_TARGETS:STRING=gfx908 \
-          -DGPU_TARGETS:STRING=gfx908 \
-          -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
-          -DPELEC_ENABLE_MASA:BOOL=OFF \
-          ${{github.workspace}}
-      - name: Build
-        working-directory: ${{runner.workspace}}/build-hip
-        run: |
-          echo "::add-matcher::.github/problem-matchers/gcc.json"
-          source /etc/profile.d/rocm.sh
-          cmake --build . --parallel ${{env.NPROCS}}
+  #CPU-GNUmake:
+  #  needs: Formatting
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #    - name: Cancel previous runs
+  #      uses: styfle/cancel-workflow-action@0.6.0
+  #      with:
+  #        access_token: ${{github.token}}
+  #    - name: Clone
+  #      uses: actions/checkout@v3
+  #      with:
+  #        submodules: true
+  #    - name: Setup
+  #      working-directory: ./Exec/RegTests/PMF
+  #      run: |
+  #        echo "NPROCS=$(nproc)" >> $GITHUB_ENV
+  #        #printf "CC=gcc-10\nCXX=g++-10\nFC=gfortran-10\nF90=gfortran-10" \
+  #        #  >> ${{github.workspace}}/Submodules/AMReX/Tools/GNUMake/Make.local
+  #        make COMP=gnu USE_MPI=FALSE DEBUG=TRUE TPL
+  #        make COMP=llvm USE_MPI=FALSE DEBUG=TRUE PRECISION=FLOAT TPL
+  #    - name: PMF debug make
+  #      working-directory: ./Exec/RegTests/PMF
+  #      run: |
+  #        echo "::add-matcher::.github/problem-matchers/gcc.json"
+  #        make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
+  #    - name: PMF debug test
+  #      working-directory: ./Exec/RegTests/PMF
+  #      run: ./PeleC3d.gnu.DEBUG.ex pmf-lidryer-arkode.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
+  #    - name: PMF debug report
+  #      working-directory: ./Exec/RegTests/PMF
+  #      run: |
+  #        egrep "warning:|error:" build-output.txt \
+  #          | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|GNUmakefile" \
+  #          | egrep -v "ld: warning:" | sort | uniq \
+  #          | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
+  #        cat warnings.txt
+  #        export return=$(tail -n 1 warnings.txt | awk '{print $2}')
+  #        exit ${return}
+  #    - name: EB debug build
+  #      working-directory: ./Exec/RegTests/EB-C10
+  #      run: |
+  #        echo "::add-matcher::.github/problem-matchers/gcc.json"
+  #        make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
+  #    - name: EB debug test
+  #      working-directory: ./Exec/RegTests/EB-C10
+  #      run: ./PeleC3d.gnu.DEBUG.ex eb-c10.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
+  #    - name: EB debug report
+  #      working-directory: ./Exec/RegTests/EB-C10
+  #      run: |
+  #        egrep "warning:|error:" build-output.txt \
+  #          | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|GNUmakefile" \
+  #          | egrep -v "ld: warning:" | sort | uniq \
+  #          | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
+  #        cat warnings.txt
+  #        export return=$(tail -n 1 warnings.txt | awk '{print $2}')
+  #        exit ${return}
+  #    - name: TG debug single precision build
+  #      working-directory: ./Exec/RegTests/TG
+  #      run: |
+  #        echo "::add-matcher::.github/problem-matchers/gcc.json"
+  #        make -j ${{env.NPROCS}} COMP=llvm USE_MPI=FALSE DEBUG=TRUE PRECISION=FLOAT 2>&1 | tee -a build-output.txt
+  #    - name: TG debug single precision test
+  #      working-directory: ./Exec/RegTests/TG
+  #      run: ./PeleC3d.llvm.FLOAT.DEBUG.ex tg-2.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
+  #    - name: TG debug single precision report
+  #      working-directory: ./Exec/RegTests/TG
+  #      run: |
+  #        egrep "warning:|error:" build-output.txt \
+  #          | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|GNUmakefile" \
+  #          | egrep -v "ld: warning:" | sort | uniq \
+  #          | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
+  #        cat warnings.txt
+  #        export return=$(tail -n 1 warnings.txt | awk '{print $2}')
+  #        exit ${return}
+  #    - name: Soot debug build
+  #      working-directory: ./Exec/RegTests/Soot-Flame
+  #      run: |
+  #        echo "::add-matcher::.github/problem-matchers/gcc.json"
+  #        make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
+  #    - name: Soot debug report
+  #      working-directory: ./Exec/RegTests/Soot-Flame
+  #      run: |
+  #        egrep "warning:|error:" build-output.txt \
+  #          | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|GNUmakefile|Submodules/PeleMP" \
+  #          | egrep -v "Submodules/PelePhysics/Support/Mechanism/Models" | sort | uniq \
+  #          | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
+  #        cat warnings.txt
+  #        export return=$(tail -n 1 warnings.txt | awk '{print $2}')
+  #        exit ${return}
+  #    - name: Spray debug build
+  #      working-directory: ./Exec/RegTests/Spray-Conv
+  #      run: |
+  #        echo "::add-matcher::.github/problem-matchers/gcc.json"
+  #        make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
+  #    - name: Spray debug report
+  #      working-directory: ./Exec/RegTests/Spray-Conv
+  #      run: |
+  #        egrep "warning:|error:" build-output.txt \
+  #          | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|GNUmakefile|Submodules/PeleMP" \
+  #          | egrep -v "Submodules/PelePhysics/Support/Mechanism/Models" | sort | uniq \
+  #          | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
+  #        cat warnings.txt
+  #        export return=$(tail -n 1 warnings.txt | awk '{print $2}')
+  #        exit ${return}
+  #CPU-CMake:
+  #  needs: Formatting
+  #  runs-on: ${{matrix.os}}
+  #  strategy:
+  #    matrix:
+  #      os: [ubuntu-latest, macos-latest]
+  #      build_type: [Release, Debug]
+  #      include:
+  #        - os: macos-latest
+  #          install_deps: brew install mpich automake ninja
+  #          comp: llvm
+  #          procs: $(sysctl -n hw.ncpu)
+  #        - os: ubuntu-latest
+  #          install_deps: sudo apt-get update && sudo apt-get install mpich libmpich-dev ninja-build
+  #          comp: gnu
+  #          procs: $(nproc)
+  #        - build_type: Release
+  #          ctest_args: -LE no-ci
+  #        - build_type: Debug
+  #          ctest_args: -R eb-c12
+  #      exclude:
+  #        - os: macos-latest
+  #          build_type: Debug
+  #  steps:
+  #    - name: Cancel previous runs
+  #      uses: styfle/cancel-workflow-action@0.6.0
+  #      with:
+  #        access_token: ${{github.token}}
+  #    - name: Clone
+  #      uses: actions/checkout@v3
+  #      with:
+  #        submodules: true
+  #    - name: Python
+  #      uses: actions/setup-python@v3
+  #      with:
+  #        python-version: '3.8'
+  #    - name: Setup
+  #      run: |
+  #        echo "NPROCS=${{matrix.procs}}" >> $GITHUB_ENV
+  #        cmake -E make_directory ${{runner.workspace}}/deps
+  #    - name: Dependencies
+  #      run: |
+  #        # Install MPI
+  #        ${{matrix.install_deps}}
+  #        # Install Python packages
+  #        python -m pip install --upgrade pip
+  #        pip install nose numpy pandas
+  #    - name: MASA
+  #      run: |
+  #        # Install MetaPhysicL
+  #        cd ${{runner.workspace}}/deps
+  #        git clone --recursive https://github.com/roystgnr/MetaPhysicL.git ${{runner.workspace}}/deps/MetaPhysicL
+  #        cd ${{runner.workspace}}/deps/MetaPhysicL
+  #        ./bootstrap
+  #        ./configure --prefix="${{runner.workspace}}/deps/install/MetaPhysicL"
+  #        make -j ${{env.NPROCS}}
+  #        make install
+  #        # Install MASA
+  #        cd ${{runner.workspace}}/deps
+  #        git clone --recursive https://github.com/manufactured-solutions/MASA.git ${{runner.workspace}}/deps/MASA
+  #        cd ${{runner.workspace}}/deps/MASA
+  #        ./bootstrap
+  #        ./configure CXX='mpicxx -std=c++11' CC=mpicc \
+  #          METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" \
+  #          --prefix="${{runner.workspace}}/deps/install/MASA"
+  #        make -j ${{env.NPROCS}}
+  #        make install
+  #    - name: Configure
+  #      run: |
+  #        (for DIM in 2 3; do \
+  #          printf "\n-------- Configuring ${DIM}D --------\n"; \
+  #          cmake -G Ninja \
+  #          -B${{runner.workspace}}/build-${DIM}d-${{matrix.os}}-${{matrix.build_type}} \
+  #          -DCMAKE_INSTALL_PREFIX:PATH=${{runner.workspace}}/install-${DIM}d-${{matrix.os}}-${{matrix.build_type}} \
+  #          -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} \
+  #          -DPELEC_DIM:STRING=${DIM} \
+  #          -DPELEC_ENABLE_MPI:BOOL=ON \
+  #          -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
+  #          -DPELEC_ENABLE_MASA:BOOL=ON \
+  #          -DMASA_ROOT:PATH=${{runner.workspace}}/deps/install/MASA \
+  #          ${{github.workspace}}; \
+  #          if [ $? -ne 0 ]; then exit 1; fi \
+  #        done)
+  #    - name: Build
+  #      run: |
+  #        (for DIM in 2 3; do \
+  #          printf "\n-------- Building ${DIM}D --------\n"; \
+  #          cmake --build ${{runner.workspace}}/build-${DIM}d-${{matrix.os}}-${{matrix.build_type}} \
+  #            --parallel ${{env.NPROCS}} 2>&1 | tee -a ${{runner.workspace}}/build-output.txt; \
+  #          if [ ${PIPESTATUS[0]} -ne 0 ]; then exit 1; fi \
+  #        done)
+  #    - name: Report
+  #      run: |
+  #        echo "::add-matcher::.github/problem-matchers/gcc.json"
+  #        egrep "warning:|error:" ${{runner.workspace}}/build-output.txt \
+  #          | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest" \
+  #          | egrep -v "ld: warning:" | sort | uniq \
+  #          | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > ${{runner.workspace}}/build-output-warnings.txt
+  #        cat ${{runner.workspace}}/build-output-warnings.txt
+  #        export return=$(tail -n 1 ${{runner.workspace}}/build-output-warnings.txt | awk '{print $2}')
+  #        exit ${return}
+  #    - name: Test
+  #      run: |
+  #        (for DIM in 2 3; do \
+  #          printf "\n-------- Testing ${DIM}D --------\n"; \
+  #          cd ${{runner.workspace}}/build-${DIM}d-${{matrix.os}}-${{matrix.build_type}}; \
+  #          ctest -j ${{env.NPROCS}} ${{matrix.ctest_args}} --output-on-failure; \
+  #          if [ $? -ne 0 ]; then exit 1; fi \
+  #        done)
+  #GPU-Nvidia:
+  #  name: GPU-CUDA
+  #  needs: [Formatting, CPU-GNUmake]
+  #  runs-on: ubuntu-20.04
+  #  strategy:
+  #    matrix:
+  #      cuda_ver: [11.4]
+  #      include:
+  #        - cuda_ver: "11.4"
+  #          cuda_pkg: 11-4
+  #  steps:
+  #    - name: Cancel previous runs
+  #      uses: styfle/cancel-workflow-action@0.6.0
+  #      with:
+  #        access_token: ${{github.token}}
+  #    - name: Clone
+  #      uses: actions/checkout@v3
+  #      with:
+  #        submodules: true
+  #    - name: Dependencies
+  #      run: |
+  #        curl -O https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.0-1_all.deb
+  #        sudo dpkg -i cuda-keyring_1.0-1_all.deb
+  #        sudo apt-get update
+  #        sudo apt-get install -y ninja-build \
+  #            cuda-command-line-tools-${{matrix.cuda_pkg}} \
+  #            cuda-compiler-${{matrix.cuda_pkg}} cuda-minimal-build-${{matrix.cuda_pkg}} \
+  #            cuda-nvml-dev-${{matrix.cuda_pkg}} cuda-nvtx-${{matrix.cuda_pkg}} \
+  #            libcurand-dev-${{matrix.cuda_pkg}} cuda-cupti-dev-${{matrix.cuda_pkg}} \
+  #            libcusolver-dev-${{matrix.cuda_pkg}} libcusparse-dev-${{matrix.cuda_pkg}} \
+  #            libcublas-dev-${{matrix.cuda_pkg}}
+  #    - name: Configure
+  #      run: |
+  #        echo "NPROCS=$(nproc)" >> $GITHUB_ENV
+  #        export PATH=/usr/local/nvidia/bin:/usr/local/cuda-${{matrix.cuda_ver}}/bin:${PATH}
+  #        export LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/cuda-${{matrix.cuda_ver}}/lib:${LD_LIBRARY_PATH}
+  #        cmake -G "Unix Makefiles" -Bbuild-${{matrix.cuda_pkg}} \
+  #          -DCMAKE_BUILD_TYPE:STRING=Release \
+  #          -DPELEC_ENABLE_MPI:BOOL=OFF \
+  #          -DPELEC_ENABLE_CUDA:BOOL=ON \
+  #          -DAMReX_CUDA_ERROR_CAPTURE_THIS:BOOL=ON \
+  #          -DCMAKE_CUDA_ARCHITECTURES:STRING=70 \
+  #          ${{github.workspace}}
+  #    - name: Build
+  #      run: cmake --build build-${{matrix.cuda_pkg}} --parallel ${{env.NPROCS}}
+  #GPU-AMD:
+  #  name: GPU-HIP
+  #  needs: [Formatting, CPU-GNUmake]
+  #  runs-on: ubuntu-20.04
+  #  steps:
+  #    - name: Cancel previous runs
+  #      uses: styfle/cancel-workflow-action@0.6.0
+  #      with:
+  #        access_token: ${{github.token}}
+  #    - name: Clone
+  #      uses: actions/checkout@v3
+  #      with:
+  #        submodules: true
+  #    - name: Dependencies
+  #      run: |
+  #        curl -O https://repo.radeon.com/rocm/rocm.gpg.key
+  #        sudo apt-key add rocm.gpg.key
+  #        echo 'deb [arch=amd64] https://repo.radeon.com/rocm/apt/debian/ ubuntu main' \
+  #            | sudo tee /etc/apt/sources.list.d/rocm.list
+  #        echo 'export PATH=/opt/rocm/llvm/bin:/opt/rocm/bin:/opt/rocm/profiler/bin:/opt/rocm/opencl/bin:$PATH' \
+  #            | sudo tee -a /etc/profile.d/rocm.sh
+  #        sudo apt-get update
+  #        sudo apt-get install -y ninja-build rocm-dev roctracer-dev rocprofiler-dev rocrand-dev rocprim-dev rocm-libs
+  #    - name: Configure
+  #      run: |
+  #        echo "NPROCS=$(nproc)" >> $GITHUB_ENV
+  #        source /etc/profile.d/rocm.sh
+  #        which clang
+  #        which hipcc
+  #        cmake -G Ninja -B${{runner.workspace}}/build-hip \
+  #        -DCMAKE_BUILD_TYPE:STRING=Release \
+  #        -DCMAKE_CXX_COMPILER:STRING=$(which hipcc) \
+  #        -DCMAKE_C_COMPILER:STRING=$(which clang) \
+  #        -DCMAKE_CXX_STANDARD:STRING=17 \
+  #        -DPELEC_ENABLE_MPI:BOOL=OFF \
+  #        -DPELEC_ENABLE_HIP:BOOL=ON \
+  #        -DAMReX_AMD_ARCH:STRING=gfx908 \
+  #        -DCMAKE_HIP_ARCHITECTURES:STRING=gfx908 \
+  #        -DAMDGPU_TARGETS:STRING=gfx908 \
+  #        -DGPU_TARGETS:STRING=gfx908 \
+  #        -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
+  #        -DPELEC_ENABLE_MASA:BOOL=OFF \
+  #        ${{github.workspace}}
+  #    - name: Build
+  #      working-directory: ${{runner.workspace}}/build-hip
+  #      run: |
+  #        echo "::add-matcher::.github/problem-matchers/gcc.json"
+  #        source /etc/profile.d/rocm.sh
+  #        cmake --build . --parallel ${{env.NPROCS}}
   GPU-Intel:
     name: GPU-SYCL
     needs: [Formatting, CPU-GNUmake]
@@ -351,7 +351,7 @@ jobs:
           echo "deb https://apt.repos.intel.com/oneapi all main" \
               | sudo tee /etc/apt/sources.list.d/oneAPI.list
           sudo apt-get update
-          sudo apt-get install -y ninja-build libstdc++-11-dev intel-oneapi-dpcpp-cpp-compiler intel-oneapi-mkl-devel
+          sudo apt-get install -y ninja-build build-essential intel-oneapi-dpcpp-cpp-compiler intel-oneapi-mkl-devel
       - name: Configure
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
@@ -375,143 +375,143 @@ jobs:
           source /opt/intel/oneapi/setvars.sh
           set -e
           cmake --build . --parallel ${{env.NPROCS}}
-  Lint-cppcheck:
-    needs: Formatting
-    runs-on: macos-12
-    steps:
-      - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.6.0
-        with:
-          access_token: ${{github.token}}
-      - name: Clone
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-      - name: Dependencies
-        run: |
-          brew install cppcheck
-      - name: Configure
-        run: |
-          cmake -B${{runner.workspace}}/build-cppcheck \
-          -DPELEC_ENABLE_MPI:BOOL=OFF \
-          -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
-          -DPELEC_ENABLE_MASA:BOOL=OFF \
-          -DPELEC_ENABLE_CPPCHECK:BOOL=ON \
-          ${{github.workspace}}
-      - name: Check
-        working-directory: ${{runner.workspace}}/build-cppcheck
-        run: make cppcheck
-      - name: Full report
-        working-directory: ${{runner.workspace}}/build-cppcheck/cppcheck
-        run: cat cppcheck-full-report.txt
-      - name: Short report
-        working-directory: ${{runner.workspace}}/build-cppcheck/cppcheck
-        run: |
-          echo "::add-matcher::.github/problem-matchers/cppcheck.json"
-          awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' < cppcheck-report.txt > cppcheck-warnings.txt
-          cat cppcheck-warnings.txt
-          export return=$(tail -n 1 cppcheck-warnings.txt | awk '{print $2}')
-          exit ${return}
-  Lint-clang-tidy:
-    needs: Formatting
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.6.0
-        with:
-          access_token: ${{github.token}}
-      - name: Clone
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-      - name: Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build
-      - name: Configure
-        run: |
-          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
-          cmake -G Ninja -B${{runner.workspace}}/build-clang-tidy \
-          -DCMAKE_BUILD_TYPE:STRING=Debug \
-          -DCMAKE_CXX_COMPILER:STRING=clang++ \
-          -DCMAKE_C_COMPILER:STRING=clang \
-          -DPELEC_ENABLE_MPI:BOOL=OFF \
-          -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
-          -DPELEC_ENABLE_MASA:BOOL=OFF \
-          -DPELEC_ENABLE_CLANG_TIDY:BOOL=ON \
-          ${{github.workspace}}
-      - name: Check
-        working-directory: ${{runner.workspace}}/build-clang-tidy
-        run: |
-          cmake --build . --parallel ${{env.NPROCS}} 2>&1 | tee -a clang-tidy-full-report.txt
-          egrep "warning:|error:" clang-tidy-full-report.txt \
-            | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest" \
-            | egrep -v "ld: warning:" | sort | uniq \
-            | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > clang-tidy-warnings.txt
-      - name: Full report
-        working-directory: ${{runner.workspace}}/build-clang-tidy
-        run: cat clang-tidy-full-report.txt
-      - name: Short report
-        working-directory: ${{runner.workspace}}/build-clang-tidy
-        run: |
-          echo "::add-matcher::.github/problem-matchers/gcc.json"
-          cat clang-tidy-warnings.txt
-          export return=$(tail -n 1 clang-tidy-warnings.txt | awk '{print $2}')
-          exit ${return}
-  Lint-codeql:
-    needs: Formatting
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.6.0
-        with:
-          access_token: ${{github.token}}
-      - name: Clone
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-      - name: Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
-        with:
-          languages: cpp
-          queries: +security-and-quality
-          config-file: ./.github/codeql/codeql-config.yml
-      - name: Configure
-        run: |
-          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
-          cmake -G Ninja -B${{runner.workspace}}/build-codeql \
-          -DCMAKE_BUILD_TYPE:STRING=Debug \
-          -DCMAKE_CXX_COMPILER:STRING=clang++ \
-          -DCMAKE_C_COMPILER:STRING=clang \
-          -DPELEC_ENABLE_MPI:BOOL=OFF \
-          -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
-          -DPELEC_ENABLE_MASA:BOOL=OFF \
-          -DPELEC_ENABLE_CLANG_TIDY:BOOL=OFF \
-          ${{github.workspace}}
-      - name: Build
-        working-directory: ${{runner.workspace}}/build-codeql
-        run: |
-          cmake --build . --parallel ${{env.NPROCS}}
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
-        with:
-          category: "/language:cpp"
-          upload: False
-          output: sarif-results
-      - name: Filter CodeQL sarif
-        uses: advanced-security/filter-sarif@v1
-        with:
-          patterns: |
-            -**/Submodules/sundials/**
-            -**/Submodules/AMReX/**
-            -**/Submodules/AMReX-Hydro/**
-          input: sarif-results/cpp.sarif
-          output: sarif-results/cpp.sarif
-      - name: Upload CodeQL sarif
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: sarif-results/cpp.sarif
+  #Lint-cppcheck:
+  #  needs: Formatting
+  #  runs-on: macos-12
+  #  steps:
+  #    - name: Cancel previous runs
+  #      uses: styfle/cancel-workflow-action@0.6.0
+  #      with:
+  #        access_token: ${{github.token}}
+  #    - name: Clone
+  #      uses: actions/checkout@v3
+  #      with:
+  #        submodules: true
+  #    - name: Dependencies
+  #      run: |
+  #        brew install cppcheck
+  #    - name: Configure
+  #      run: |
+  #        cmake -B${{runner.workspace}}/build-cppcheck \
+  #        -DPELEC_ENABLE_MPI:BOOL=OFF \
+  #        -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
+  #        -DPELEC_ENABLE_MASA:BOOL=OFF \
+  #        -DPELEC_ENABLE_CPPCHECK:BOOL=ON \
+  #        ${{github.workspace}}
+  #    - name: Check
+  #      working-directory: ${{runner.workspace}}/build-cppcheck
+  #      run: make cppcheck
+  #    - name: Full report
+  #      working-directory: ${{runner.workspace}}/build-cppcheck/cppcheck
+  #      run: cat cppcheck-full-report.txt
+  #    - name: Short report
+  #      working-directory: ${{runner.workspace}}/build-cppcheck/cppcheck
+  #      run: |
+  #        echo "::add-matcher::.github/problem-matchers/cppcheck.json"
+  #        awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' < cppcheck-report.txt > cppcheck-warnings.txt
+  #        cat cppcheck-warnings.txt
+  #        export return=$(tail -n 1 cppcheck-warnings.txt | awk '{print $2}')
+  #        exit ${return}
+  #Lint-clang-tidy:
+  #  needs: Formatting
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #    - name: Cancel previous runs
+  #      uses: styfle/cancel-workflow-action@0.6.0
+  #      with:
+  #        access_token: ${{github.token}}
+  #    - name: Clone
+  #      uses: actions/checkout@v3
+  #      with:
+  #        submodules: true
+  #    - name: Dependencies
+  #      run: |
+  #        sudo apt-get update
+  #        sudo apt-get install -y ninja-build
+  #    - name: Configure
+  #      run: |
+  #        echo "NPROCS=$(nproc)" >> $GITHUB_ENV
+  #        cmake -G Ninja -B${{runner.workspace}}/build-clang-tidy \
+  #        -DCMAKE_BUILD_TYPE:STRING=Debug \
+  #        -DCMAKE_CXX_COMPILER:STRING=clang++ \
+  #        -DCMAKE_C_COMPILER:STRING=clang \
+  #        -DPELEC_ENABLE_MPI:BOOL=OFF \
+  #        -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
+  #        -DPELEC_ENABLE_MASA:BOOL=OFF \
+  #        -DPELEC_ENABLE_CLANG_TIDY:BOOL=ON \
+  #        ${{github.workspace}}
+  #    - name: Check
+  #      working-directory: ${{runner.workspace}}/build-clang-tidy
+  #      run: |
+  #        cmake --build . --parallel ${{env.NPROCS}} 2>&1 | tee -a clang-tidy-full-report.txt
+  #        egrep "warning:|error:" clang-tidy-full-report.txt \
+  #          | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest" \
+  #          | egrep -v "ld: warning:" | sort | uniq \
+  #          | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > clang-tidy-warnings.txt
+  #    - name: Full report
+  #      working-directory: ${{runner.workspace}}/build-clang-tidy
+  #      run: cat clang-tidy-full-report.txt
+  #    - name: Short report
+  #      working-directory: ${{runner.workspace}}/build-clang-tidy
+  #      run: |
+  #        echo "::add-matcher::.github/problem-matchers/gcc.json"
+  #        cat clang-tidy-warnings.txt
+  #        export return=$(tail -n 1 clang-tidy-warnings.txt | awk '{print $2}')
+  #        exit ${return}
+  #Lint-codeql:
+  #  needs: Formatting
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #    - name: Cancel previous runs
+  #      uses: styfle/cancel-workflow-action@0.6.0
+  #      with:
+  #        access_token: ${{github.token}}
+  #    - name: Clone
+  #      uses: actions/checkout@v3
+  #      with:
+  #        submodules: true
+  #    - name: Dependencies
+  #      run: |
+  #        sudo apt-get update
+  #        sudo apt-get install -y ninja-build
+  #    - name: Initialize CodeQL
+  #      uses: github/codeql-action/init@v2
+  #      with:
+  #        languages: cpp
+  #        queries: +security-and-quality
+  #        config-file: ./.github/codeql/codeql-config.yml
+  #    - name: Configure
+  #      run: |
+  #        echo "NPROCS=$(nproc)" >> $GITHUB_ENV
+  #        cmake -G Ninja -B${{runner.workspace}}/build-codeql \
+  #        -DCMAKE_BUILD_TYPE:STRING=Debug \
+  #        -DCMAKE_CXX_COMPILER:STRING=clang++ \
+  #        -DCMAKE_C_COMPILER:STRING=clang \
+  #        -DPELEC_ENABLE_MPI:BOOL=OFF \
+  #        -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
+  #        -DPELEC_ENABLE_MASA:BOOL=OFF \
+  #        -DPELEC_ENABLE_CLANG_TIDY:BOOL=OFF \
+  #        ${{github.workspace}}
+  #    - name: Build
+  #      working-directory: ${{runner.workspace}}/build-codeql
+  #      run: |
+  #        cmake --build . --parallel ${{env.NPROCS}}
+  #    - name: Perform CodeQL Analysis
+  #      uses: github/codeql-action/analyze@v2
+  #      with:
+  #        category: "/language:cpp"
+  #        upload: False
+  #        output: sarif-results
+  #    - name: Filter CodeQL sarif
+  #      uses: advanced-security/filter-sarif@v1
+  #      with:
+  #        patterns: |
+  #          -**/Submodules/sundials/**
+  #          -**/Submodules/AMReX/**
+  #          -**/Submodules/AMReX-Hydro/**
+  #        input: sarif-results/cpp.sarif
+  #        output: sarif-results/cpp.sarif
+  #    - name: Upload CodeQL sarif
+  #      uses: github/codeql-action/upload-sarif@v2
+  #      with:
+  #        sarif_file: sarif-results/cpp.sarif
