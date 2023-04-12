@@ -1,7 +1,8 @@
 // Need to include these before any other headers
 #ifdef AMREX_USE_SYCL
-#include <oneapi/dpl/execution>
 #include <oneapi/dpl/algorithm>
+#include <oneapi/dpl/execution>
+#include <oneapi/dpl/numeric>
 #endif
 
 #include <memory>
