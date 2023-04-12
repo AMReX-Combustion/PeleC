@@ -328,7 +328,7 @@ jobs:
   #        cmake --build . --parallel ${{env.NPROCS}}
   GPU-Intel:
     name: GPU-SYCL
-    needs: [Formatting, CPU-GNUmake]
+    #needs: [Formatting, CPU-GNUmake]
     runs-on: ubuntu-latest
     steps:
       - name: Cancel previous runs
