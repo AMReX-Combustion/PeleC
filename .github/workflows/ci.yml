@@ -350,6 +350,8 @@ jobs:
       - name: Configure
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
+          export CC=gcc-11
+          export CXX=g++-11
           set +e
           source /opt/intel/oneapi/setvars.sh
           set -e
