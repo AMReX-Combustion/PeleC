@@ -43,14 +43,14 @@ amr.max_level       = 2       # maximum level number allowed
 amr.ref_ratio       = 2 2 2 2 # refinement ratio
 amr.max_grid_size     = 32
 amr.blocking_factor   = 32
-amr.initial_grid_file = two_d_gridfiles/gridfile_32_1
-amr.regrid_file = two_d_gridfiles/gridfile_32_2
+amr.initial_grid_file = gridfile_32_1.dat
+amr.regrid_file = gridfile_32_2.dat
 # amr.max_grid_size     = 64
 # amr.blocking_factor   = 64
-# amr.initial_grid_file = two_d_gridfiles/gridfile_64_1
-# amr.regrid_file = two_d_gridfiles/gridfile_64_2
+# amr.initial_grid_file = gridfile_64_1.dat
+# amr.regrid_file = gridfile_64_2.dat
 
-amr.regrid_int        = 2 2 2 2
+amr.regrid_int      = 2 2 2 2
 amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
 
 # PARTICLES / SPRAY
@@ -60,18 +60,18 @@ particles.v = 0
 particles.mom_transfer = 1
 particles.mass_transfer = 1
 particles.cfl = 0.5
-#particles.init_file = "initspraydata"
 particles.init_function = 1 # Use SprayParticlesInitInsert.cpp for initialization
-particles.write_spray_ascii_files = 0 # Do not write ascii output files
+particles.write_ascii_files = 0 # Do not write ascii output files
 
 particles.fuel_species = NC10H22
-# properties for decane
-particles.fuel_crit_temp = 617.8 # K
-particles.fuel_boil_temp = 447.27 # K
 particles.fuel_ref_temp = 298.15
-particles.fuel_latent = 3.5899E9
-particles.fuel_cp = 2.1921E7 # Cp at 298 K
-particles.fuel_rho = 0.640
+
+# properties for decane
+particles.NC10H22_crit_temp = 617.8 # K
+particles.NC10H22_boil_temp = 447.27 # K
+particles.NC10H22_latent = 3.5899E9
+particles.NC10H22_cp = 2.1921E7 # Cp at 298 K
+particles.NC10H22_rho = 0.640
 # Coefficients for saturation pressure using Antoine equation
 # These are from the NIST website
 # Last coefficient converts units, in this case bar, to dyne/cm^2
