@@ -110,9 +110,8 @@ PeleCAmr::constructPlotMF(
     }
 #ifdef PELEC_USE_SPRAY
     // Add spray derive variables
-    if (!SprayParticleContainer::spray_derive_vars.empty()) {
-      num_derive +=
-        static_cast<int>(SprayParticleContainer::spray_derive_vars.size());
+    if (SprayParticleContainer::NumDeriveVars() > 0) {
+      num_derive += SprayParticleContainer::NumDeriveVars();
     }
 #endif
   }
@@ -160,9 +159,8 @@ PeleCAmr::constructPlotMF(
     }
 
 #ifdef PELEC_USE_SPRAY
-    if (!SprayParticleContainer::spray_derive_vars.empty() && regular) {
-      const int num_spray_derive =
-        static_cast<int>(SprayParticleContainer::spray_derive_vars.size());
+    if (SprayParticleContainer::NumDeriveVars() > 0 && regular) {
+      const int num_spray_derive = SprayParticleContainer::NumDeriveVars();
       PeleC::setupVirtualParticles(lev, finestLevel());
       plotMFs[lev]->setVal(0., cnt, num_spray_derive);
       // Compute derived spray variables for active particles
@@ -205,9 +203,9 @@ PeleCAmr::constructPlotMF(
   }
 
 #ifdef PELEC_USE_SPRAY
-  if (!SprayParticleContainer::spray_derive_vars.empty() && regular) {
+  if (SprayParticleContainer::NumDeriveVars() > 0 && regular) {
     for (const auto& spray_derive_name :
-         SprayParticleContainer::spray_derive_vars) {
+         SprayParticleContainer::DeriveVarNames()) {
       plt_var_names.push_back(spray_derive_name);
     }
   }
