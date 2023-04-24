@@ -1,3 +1,9 @@
+// Need to include these before any other headers
+#ifdef AMREX_USE_SYCL
+#include <oneapi/dpl/algorithm>
+#include <oneapi/dpl/execution>
+#endif
+
 #include <memory>
 
 #include "hydro_redistribution.H"
@@ -10,11 +16,6 @@
 #include <thrust/unique.h>
 #include <thrust/sort.h>
 #include <thrust/execution_policy.h>
-#endif
-
-#ifdef AMREX_USE_SYCL
-#include <oneapi/dpl/execution>
-#include <oneapi/dpl/algorithm>
 #endif
 
 inline bool
@@ -143,8 +144,8 @@ PeleC::initialize_eb2_structs()
         EBBndryGeomCmp());
 #elif defined(AMREX_USE_SYCL)
       const int sv_eb_bndry_geom_size = sv_eb_bndry_geom[iLocal].size();
-      auto policy =
-        dpl::execution::make_device_policy(amrex::Gpu::Device::streamQueue());
+      auto policy = oneapi::dpl::execution::make_device_policy(
+        amrex::Gpu::Device::streamQueue());
       std::sort(
         policy, sv_eb_bndry_geom[iLocal].data(),
         sv_eb_bndry_geom[iLocal].data() + sv_eb_bndry_geom_size,
@@ -273,8 +274,8 @@ PeleC::initialize_eb2_structs()
           });
 #elif defined(AMREX_USE_SYCL)
         const int v_all_cut_faces_size = v_all_cut_faces.size();
-        auto policy =
-          dpl::execution::make_device_policy(amrex::Gpu::Device::streamQueue());
+        auto policy = oneapi::dpl::execution::make_device_policy(
+          amrex::Gpu::Device::streamQueue());
         std::sort(
           policy, v_all_cut_faces.data(),
           v_all_cut_faces.data() + v_all_cut_faces_size);
