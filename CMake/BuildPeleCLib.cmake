@@ -20,6 +20,20 @@ function(build_pelec_lib pelec_lib_name)
       ${PELE_PHYSICS_SRC_DIR}/Utility/TurbInflow/turbinflow.cpp
       ${PELE_PHYSICS_SRC_DIR}/Utility/TurbInflow/turbinflow.H)
     target_include_directories(${pelec_lib_name} PUBLIC ${PELE_PHYSICS_SRC_DIR}/Utility/TurbInflow)
+
+    target_sources(${pelec_lib_name}
+      PRIVATE
+      ${PELE_PHYSICS_SRC_DIR}/Utility/Diagnostics/DiagBase.H
+      ${PELE_PHYSICS_SRC_DIR}/Utility/Diagnostics/DiagBase.cpp
+      ${PELE_PHYSICS_SRC_DIR}/Utility/Diagnostics/DiagConditional.H
+      ${PELE_PHYSICS_SRC_DIR}/Utility/Diagnostics/DiagConditional.cpp
+      ${PELE_PHYSICS_SRC_DIR}/Utility/Diagnostics/DiagFilter.H
+      ${PELE_PHYSICS_SRC_DIR}/Utility/Diagnostics/DiagFilter.cpp
+      ${PELE_PHYSICS_SRC_DIR}/Utility/Diagnostics/DiagFramePlane.H
+      ${PELE_PHYSICS_SRC_DIR}/Utility/Diagnostics/DiagFramePlane.cpp
+      ${PELE_PHYSICS_SRC_DIR}/Utility/Diagnostics/DiagPDF.H
+      ${PELE_PHYSICS_SRC_DIR}/Utility/Diagnostics/DiagPDF.cpp)
+    target_include_directories(${pelec_lib_name} PUBLIC ${PELE_PHYSICS_SRC_DIR}/Utility/Diagnostics)
     
     target_sources(${pelec_lib_name}
       PRIVATE
