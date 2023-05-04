@@ -1165,17 +1165,15 @@ PeleC::post_timestep(int iteration)
                 break;
               }
             }
-            amrex::MultiFab::Copy(*diagMFVec[lev].get(), *mf, varIdx, v, 1, 1);
+            amrex::MultiFab::Copy(*diagMFVec[lev], *mf, varIdx, v, 1, 1);
           } else {
             int StIndex = 0;
             int scomp = 0;
             isStateVariable(m_diagVars[v], StIndex, scomp);
             if (StIndex == State_Type) {
-              amrex::MultiFab::Copy(
-                *diagMFVec[lev].get(), S_data, scomp, v, 1, 1);
+              amrex::MultiFab::Copy(*diagMFVec[lev], S_data, scomp, v, 1, 1);
             } else if (StIndex == Reactions_Type) {
-              amrex::MultiFab::Copy(
-                *diagMFVec[lev].get(), R_data, scomp, v, 1, 1);
+              amrex::MultiFab::Copy(*diagMFVec[lev], R_data, scomp, v, 1, 1);
             }
           }
         }
