@@ -1991,9 +1991,6 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
 #endif
 
   // Ensure (rho e) isn't too small or negative
-#ifdef AMREX_USE_OMP
-#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
-#endif
   {
     const auto captured_allow_small_energy = allow_small_energy;
     const auto captured_allow_negative_energy = allow_negative_energy;
