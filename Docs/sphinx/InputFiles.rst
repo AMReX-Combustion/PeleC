@@ -256,3 +256,56 @@ Diagnostic Output
 The verbosity flags `pelec.v` and `amr.v` control the extent of output related to the reacting flow solver and AMR grid printed during the simulation. When `pelec.v >= 1`, additional controls allow for fine tuning of the diagnostic output. The input flags `pelec.sum_interval` (number of coarse steps) and `pelec.sum_per` (simulation time) control how often integrals of conserved state quantities over the domain are computed and output. Additionally, if the `pelec.track_extrema` flag is set, the minima and maxima of several important derived quantities will be output whenever the integrals are output. By default, this includes the minimum and maximum across all massfractions, indicated by `massfrac`, but the `pelec.extrema_spec_name` can be set to `ALL` or an individual species name if this diagnostic for indiviudal species is of interest.
 
 To aid in the analysis of the diagnostic data, it can also be saved to log files. To do this, set `amr.data_log = datlog extremalog`, which will save the integrated values to `datlog` and the extrema to `extremalog`, if they are being computed based on the values of the flags described above. Additional problem-specific logs can also be created. Gridding information can also be recorded to a file specified with the `amr.grid_log` option. 
+
+Analyzing the data *a-posteriori* can become extremely cumbersome when dealing with extreme datasets.
+PeleC offers a set of diagnostics available at runtime and more are under development.
+Currently, the list of diagnostic contains:
+
+* `DiagFramePlane` : extract a plane aligned in the 'x','y' or 'z' direction across the AMR hierarchy, writing
+  a 2D plotfile compatible with Amrvis, Paraview or yt. Only available for 3D simulations.
+* `DiagPDF` : extract the PDF of a given variable and write it to an ASCII file.
+* `DiagConditional` : extract statistics (average and standard deviation, integral or sum) of a
+  set of variables conditioned on the value of given variable and write it to an ASCII file.
+
+When using `DiagPDF` or `DiagConditional`, it is possible to narrow down the diagnostic to a region of interest
+by specifying a set of filters, defining a range of interest for a variable. Note also the for these two diagnostics,
+fine-covered regions are masked. The following provide examples for each diagnostic:
+
+::
+
+   #--------------------------DIAGNOSTICS------------------------
+
+    pelec.diagnostics = xnormP condT pdfTest
+
+    pelec.xnormP.type = DiagFramePlane                             # Diagnostic type
+    pelec.xnormP.file = xNorm5mm                                   # Output file prefix
+    pelec.xnormP.normal = 0                                        # Plane normal (0, 1 or 2 for x, y or z)
+    pelec.xnormP.center = 0.5                                      # Coordinate in the normal direction
+    pelec.xnormP.int    = 5                                        # Frequency (as step #) for performing the diagnostic
+    pelec.xnormP.interpolation = Linear                            # [OPT, DEF=Linear] Interpolation type : Linear or Quadratic
+    pelec.xnormP.field_names = x_velocity magvort density          # List of variables outputed to the 2D pltfile
+
+    pelec.condT.type = DiagConditional                             # Diagnostic type
+    pelec.condT.file = condTest                                    # Output file prefix
+    pelec.condT.int  = 5                                           # Frequency (as step #) for performing the diagnostic
+    pelec.condT.filters = xHigh stoich                             # [OPT, DEF=None] List of filters
+    pelec.condT.xHigh.field_name = x                               # Filter field
+    pelec.condT.xHigh.value_greater = 0.006                        # Filter definition : value_greater, value_less, value_inrange
+    pelec.condT.stoich.field_name = mixture_fraction               # Filter field
+    pelec.condT.stoich.value_inrange = 0.053 0.055                 # Filter definition : value_greater, value_less, value_inrange
+    pelec.condT.conditional_type = Average                         # Conditional type : Average, Integral or Sum
+    pelec.condT.nBins = 50                                         # Number of bins for the conditioning variable
+    pelec.condT.condition_field_name = temp                        # Conditioning variable name
+    pelec.condT.field_names = heatRelease rho_omega_CH4            # List of variables to be treated
+
+    pelec.pdfTest.type = DiagPDF                                   # Diagnostic type
+    pelec.pdfTest.file = PDFTest                                   # Output file prefix
+    pelec.pdfTest.int  = 5                                         # Frequency (as step #) for performing the diagnostic
+    pelec.pdfTest.filters = innerFlame                             # [OPT, DEF=None] List of filters
+    pelec.pdfTest.innerFlame.field_name = temp                     # Filter field
+    pelec.pdfTest.innerFlame.value_inrange = 450.0 1500.0          # Filter definition : value_greater, value_less, value_inrange
+    pelec.pdfTest.nBins = 50                                       # Number of bins for the PDF
+    pelec.pdfTest.normalized = 1                                   # [OPT, DEF=1] PDF is normalized (i.e. integral is unity) ?
+    pelec.pdfTest.volume_weighted = 1                              # [OPT, DEF=1] Computation of the PDF is volume weighted ?
+    pelec.pdfTest.range = 0.0 2.0                                  # [OPT, DEF=data min/max] Specify the range of the PDF
+    pelec.pdfTest.field_name = x_velocity                          # Variable of interest
