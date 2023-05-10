@@ -754,9 +754,9 @@ pc_dercoord(
     geomdata.CellSizeArray();
 
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    AMREX_D_TERM(coord_arr(i,j,k,0) = prob_lo[0] + (i+0.5)*dx[0];,
-                 coord_arr(i,j,k,1) = prob_lo[1] + (j+0.5)*dx[1];,
-                 coord_arr(i,j,k,2) = prob_lo[2] + (k+0.5)*dx[2];);
+    AMREX_D_TERM(coord_arr(i, j, k, 0) = prob_lo[0] + (i + 0.5) * dx[0];
+                 , coord_arr(i, j, k, 1) = prob_lo[1] + (j + 0.5) * dx[1];
+                 , coord_arr(i, j, k, 2) = prob_lo[2] + (k + 0.5) * dx[2];);
   });
 }
 

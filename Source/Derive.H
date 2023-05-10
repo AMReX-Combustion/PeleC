@@ -341,7 +341,6 @@ void pc_dercoord(
   const int* bcrec,
   const int level);
 
-
 #ifdef PELEC_USE_MASA
 void pc_derrhommserror(
   const amrex::Box& bx,
