@@ -542,6 +542,12 @@ PeleC::variableSetUp()
     amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("cv", desc_lst, State_Type, Density, NVAR);
 
+  amrex::Vector<std::string> var_names({AMREX_D_DECL("x","y","z")});;
+  derive_lst.add(
+    "coordinates", amrex::IndexType::TheCellType(), AMREX_SPACEDIM, var_names,
+    pc_dercoord, amrex::DeriveRec::TheSameBox);
+  derive_lst.addComponent("coordinates", desc_lst, State_Type, Density, NVAR);
+
   derive_lst.add(
     "viscosity", amrex::IndexType::TheCellType(), 1, pc_derviscosity,
     amrex::DeriveRec::TheSameBox);
