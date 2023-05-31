@@ -70,7 +70,7 @@ PeleC::defineParticles()
     ext_force[i] = external_forcing[i];
   }
   SprayParticleContainer::spraySetup(ext_force.data());
-  SprayData scomps;
+  SprayComps scomps;
   scomps.rhoIndx = PeleC::Density;
   scomps.momIndx = PeleC::Xmom;
   scomps.engIndx = PeleC::Eden;
@@ -185,7 +185,7 @@ PeleC::initParticles()
 }
 
 void
-PeleC::postRestartParticles(bool is_checkpoint)
+PeleC::postRestartParticles()
 {
   if (level > 0) {
     defineSpraySource(parent->MaxRefRatio(level - 1));
@@ -199,7 +199,7 @@ PeleC::postRestartParticles(bool is_checkpoint)
 
     const ProbParmHost* lprobparm = prob_parm_host;
     const ProbParmDevice* lprobparm_d = h_prob_parm_device;
-    SprayPC->InitSprayParticles(
+    SprayPC->SprayInitialize(
       *lprobparm, *lprobparm_d, parent->theRestartFile());
     amrex::Gpu::Device::streamSynchronize();
   }
