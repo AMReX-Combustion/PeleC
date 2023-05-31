@@ -199,7 +199,8 @@ PeleC::postRestartParticles(bool is_checkpoint)
 
     const ProbParmHost* lprobparm = prob_parm_host;
     const ProbParmDevice* lprobparm_d = h_prob_parm_device;
-    SprayPC->InitSprayParticles(*lprobparm, *lprobparm_d, parent->theRestartFile());
+    SprayPC->InitSprayParticles(
+      *lprobparm, *lprobparm_d, parent->theRestartFile());
     amrex::Gpu::Device::streamSynchronize();
   }
 }
