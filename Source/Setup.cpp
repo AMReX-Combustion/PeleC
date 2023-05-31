@@ -14,6 +14,10 @@ using namespace MASA;
 #include "IndexDefines.H"
 #include "prob.H"
 
+#ifdef PELEC_USE_SPRAY
+#include "SprayParticles.H"
+#endif
+
 #ifdef PELEC_USE_SOOT
 #include "SootModel.H"
 #endif
