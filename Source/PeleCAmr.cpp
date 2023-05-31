@@ -296,8 +296,8 @@ PeleCAmr::writePlotFileDoit(
   }
 
 #ifdef PELEC_USE_SPRAY
-  if (do_spray_particles) {
-    if (PeleC::SprayPC != nullptr && regular) {
+  if (PeleC::SprayPC != nullptr) {
+    if (regular) {
       for (int lev = 0; lev < nlevels; ++lev) {
         PeleC::SprayPC->SprayParticleIO(lev, false, pltfile);
       }
