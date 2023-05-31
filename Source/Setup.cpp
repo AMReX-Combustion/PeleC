@@ -686,6 +686,9 @@ PeleC::variableCleanUp()
   delete h_prob_parm_device;
   amrex::The_Arena()->free(d_prob_parm_device);
   trans_parms.deallocate();
+#ifdef PELEC_USE_SPRAY
+  SprayParticleContainer::SprayCleanUp();
+#endif
 }
 
 void

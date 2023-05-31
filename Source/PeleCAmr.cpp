@@ -298,8 +298,7 @@ PeleCAmr::writePlotFileDoit(
 #ifdef PELEC_USE_SPRAY
   if (PeleC::SprayPC != nullptr && regular) {
     for (int lev = 0; lev < nlevels; ++lev) {
-      PeleC::SprayPC->SprayParticleIO(
-        lev, false, PeleC::write_spray_ascii_files, pltfile);
+      PeleC::SprayPC->SprayParticleIO(lev, false, pltfile);
     }
   } else {
     amrex::Abort("HDF5 particle writing incomplete");
