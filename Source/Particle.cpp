@@ -4,26 +4,19 @@
 namespace {
 bool virtual_particles_set = false;
 
-SprayData sprayData;
 // Indices for spray source MultiFab
 int sprayRhoSrcIndx = 0;
 int sprayMomSrcIndx = 1;
 int sprayEngSrcIndx = 1 + AMREX_SPACEDIM;
 int spraySpecSrcIndx = 2 + AMREX_SPACEDIM;
-SprayComps scomps;
 
-std::string init_file;
-int init_function = 1;
 int particle_verbose = 0;
-amrex::Real particle_cfl = 0.5;
-int plot_spray_src = 0;
 } // namespace
 
 std::unique_ptr<SprayParticleContainer> PeleC::SprayPC = nullptr;
 std::unique_ptr<SprayParticleContainer> PeleC::VirtPC = nullptr;
 std::unique_ptr<SprayParticleContainer> PeleC::GhostPC = nullptr;
 
-int PeleC::write_spray_ascii_files = 0;
 // momentum + density + fuel species + energy
 int PeleC::num_spray_src = AMREX_SPACEDIM + 2 + SPRAY_FUEL_NUM;
 
@@ -34,7 +27,7 @@ PeleC::estTimeStepParticles(amrex::Real& est_dt)
     return;
   }
   BL_PROFILE("PeleC::particleEstTimeStep()");
-  amrex::Real est_dt_particle = SprayPC->estTimestep(level, particle_cfl);
+  amrex::Real est_dt_particle = SprayPC->estTimestep(level);
 
   if (est_dt_particle > 0) {
     est_dt = amrex::min<amrex::Real>(est_dt, est_dt_particle);
@@ -57,9 +50,7 @@ PeleC::readSprayParams()
 
   pp.query("do_spray_particles", do_spray_particles);
   if (do_spray_particles) {
-    SprayParticleContainer::readSprayParams(
-      particle_verbose, particle_cfl, write_spray_ascii_files, plot_spray_src,
-      init_function, init_file, sprayData);
+    SprayParticleContainer::readSprayParams(particle_verbose);
   }
 }
 
@@ -78,7 +69,8 @@ PeleC::defineParticles()
   for (int i = 0; i < static_cast<int>(external_forcing.size()); i++) {
     ext_force[i] = external_forcing[i];
   }
-  SprayParticleContainer::spraySetup(sprayData, ext_force.data());
+  SprayParticleContainer::spraySetup(ext_force.data());
+  SprayComps scomps;
   scomps.rhoIndx = PeleC::Density;
   scomps.momIndx = PeleC::Xmom;
   scomps.engIndx = PeleC::Eden;
@@ -88,6 +80,7 @@ PeleC::defineParticles()
   scomps.momSrcIndx = sprayMomSrcIndx;
   scomps.specSrcIndx = spraySpecSrcIndx;
   scomps.engSrcIndx = sprayEngSrcIndx;
+  SprayParticleContainer::AssignSprayComps(scomps);
 }
 
 int
@@ -165,13 +158,10 @@ PeleC::removeGhostParticles(const int level)
 void
 PeleC::createDataParticles()
 {
-  SprayPC = std::make_unique<SprayParticleContainer>(
-    parent, &phys_bc, sprayData, scomps);
+  SprayPC = std::make_unique<SprayParticleContainer>(parent, &phys_bc);
   SprayPC->SetVerbose(particle_verbose);
-  VirtPC = std::make_unique<SprayParticleContainer>(
-    parent, &phys_bc, sprayData, scomps);
-  GhostPC = std::make_unique<SprayParticleContainer>(
-    parent, &phys_bc, sprayData, scomps);
+  VirtPC = std::make_unique<SprayParticleContainer>(parent, &phys_bc);
+  GhostPC = std::make_unique<SprayParticleContainer>(parent, &phys_bc);
 }
 
 // Initialize the particles on the grid at level 0
@@ -190,20 +180,12 @@ PeleC::initParticles()
 
     const ProbParmHost* lprobparm = prob_parm_host;
     const ProbParmDevice* lprobparm_d = h_prob_parm_device;
-    SprayPC->InitSprayParticles(true, *lprobparm, *lprobparm_d);
-    if (!init_file.empty()) {
-      SprayPC->InitFromAsciiFile(init_file, NSR_SPR);
-    } else if (init_function == 0) {
-      amrex::Abort(
-        "Must initialize spray particles with particles.init_function or "
-        "particles.init_file");
-    }
-    SprayPC->PostInitRestart();
+    SprayPC->SprayInitialize(*lprobparm, *lprobparm_d);
   }
 }
 
 void
-PeleC::postRestartParticles(bool is_checkpoint)
+PeleC::postRestartParticles()
 {
   if (level > 0) {
     defineSpraySource(parent->MaxRefRatio(level - 1));
@@ -217,12 +199,9 @@ PeleC::postRestartParticles(bool is_checkpoint)
 
     const ProbParmHost* lprobparm = prob_parm_host;
     const ProbParmDevice* lprobparm_d = h_prob_parm_device;
-    SprayPC->InitSprayParticles(false, *lprobparm, *lprobparm_d);
-    {
-      SprayPC->Restart(parent->theRestartFile(), "particles", is_checkpoint);
-      SprayPC->PostInitRestart(parent->theRestartFile());
-      amrex::Gpu::Device::streamSynchronize();
-    }
+    SprayPC->SprayInitialize(
+      *lprobparm, *lprobparm_d, parent->theRestartFile());
+    amrex::Gpu::Device::streamSynchronize();
   }
 }
 

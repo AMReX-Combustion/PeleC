@@ -14,6 +14,10 @@ using namespace MASA;
 #include "IndexDefines.H"
 #include "prob.H"
 
+#ifdef PELEC_USE_SPRAY
+#include "SprayParticles.H"
+#endif
+
 #ifdef PELEC_USE_SOOT
 #include "SootModel.H"
 #endif
@@ -686,6 +690,9 @@ PeleC::variableCleanUp()
   delete h_prob_parm_device;
   amrex::The_Arena()->free(d_prob_parm_device);
   trans_parms.deallocate();
+#ifdef PELEC_USE_SPRAY
+  SprayParticleContainer::SprayCleanUp();
+#endif
 }
 
 void
