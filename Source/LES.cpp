@@ -522,6 +522,7 @@ PeleC::getDynamicSmagorinskyLESTerm(
       amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> alpha_ec_arr;
       amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flux_T_ec_arr;
 
+      const bool l_transport_harmonic_mean = transport_harmonic_mean;
       for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
         coeff_ec[dir].resize(eboxes[dir], nCompC, amrex::The_Async_Arena());
         alphaij_ec[dir].resize(
@@ -538,7 +539,7 @@ PeleC::getDynamicSmagorinskyLESTerm(
             for (int n = 0; n < nCompC; n++) {
               pc_move_transcoefs_to_ec(
                 AMREX_D_DECL(i, j, k), n, LES_Coeffs_ar, c, dir,
-                transport_harmonic_mean);
+                l_transport_harmonic_mean);
               coeff_ec_arr[dir](i, j, k, n) = c[n];
             }
 
@@ -546,20 +547,20 @@ PeleC::getDynamicSmagorinskyLESTerm(
             for (int n = 0; n < AMREX_SPACEDIM; n++) {
               pc_move_transcoefs_to_ec(
                 AMREX_D_DECL(i, j, k), dir * AMREX_SPACEDIM + n, alphaij_ar,
-                aijc, dir, transport_harmonic_mean);
+                aijc, dir, l_transport_harmonic_mean);
               alphaij_ec_arr[dir](i, j, k, n) = aijc[dir * AMREX_SPACEDIM + n];
             }
 
             amrex::Real ac[1] = {0.0};
             pc_move_transcoefs_to_ec(
               AMREX_D_DECL(i, j, k), 0, alpha_ar, ac, dir,
-              transport_harmonic_mean);
+              l_transport_harmonic_mean);
             alpha_ec_arr[dir](i, j, k, 0) = ac[0];
 
             amrex::Real tc[1] = {0.0};
             pc_move_transcoefs_to_ec(
               AMREX_D_DECL(i, j, k), 0, flux_T_ar, tc, dir,
-              transport_harmonic_mean);
+              l_transport_harmonic_mean);
             flux_T_ec_arr[dir](i, j, k, 0) = tc[0];
           });
       }
