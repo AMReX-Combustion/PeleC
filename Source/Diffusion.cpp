@@ -243,6 +243,7 @@ PeleC::getMOLSrcTerm(
       {
         // Compute Extensive diffusion fluxes for X, Y, Z
         BL_PROFILE("PeleC::diffusion_flux()");
+        const bool l_transport_harmonic_mean = transport_harmonic_mean;
         for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
           if (
             (typ == amrex::FabType::singlevalued) ||
@@ -253,7 +254,7 @@ PeleC::getMOLSrcTerm(
                 for (int n = 0; n < static_cast<int>(cf.size()); n++) {
                   pc_move_transcoefs_to_ec(
                     AMREX_D_DECL(i, j, k), n, coe_cc, cf.data(), dir,
-                    transport_harmonic_mean);
+                    l_transport_harmonic_mean);
                 }
                 if (typ == amrex::FabType::singlevalued) {
                   pc_diffusion_flux_eb(
