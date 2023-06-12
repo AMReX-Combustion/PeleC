@@ -62,7 +62,6 @@ PeleC::getMOLSrcTerm(
   */
 
   const int nCompTr = dComp_lambda + 1;
-  const int do_harmonic = 1; // TODO: parmparse this
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx = geom.CellSizeArray();
 
   amrex::Real dx1 = dx[0];
@@ -239,8 +238,8 @@ PeleC::getMOLSrcTerm(
       setV(cbox, NVAR, Dterm, 0.0);
 
       pc_compute_diffusion_flux(
-        cbox, qar, coe_cc, flx, area_arr, dx, do_harmonic, typ, Ncut,
-        d_sv_eb_bndry_geom, flags.array(mfi));
+        cbox, qar, coe_cc, flx, area_arr, dx, transport_harmonic_mean, typ,
+        Ncut, d_sv_eb_bndry_geom, flags.array(mfi));
 
       // Compute flux divergence (1/Vol).Div(F.A)
       {

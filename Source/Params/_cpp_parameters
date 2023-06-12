@@ -162,6 +162,9 @@ diffuse_spec                  bool         false
 # flag for diffusion for velocity
 diffuse_vel                   bool         false
 
+# flag for harmonic averaging of transport coefficients to the face
+transport_harmonic_mean       bool         true
+
 #-----------------------------------------------------------------------------
 # category: large eddy simulation
 #-----------------------------------------------------------------------------
