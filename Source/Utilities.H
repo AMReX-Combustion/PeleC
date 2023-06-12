@@ -265,7 +265,6 @@ pc_move_transcoefs_to_ec(
   amrex::Real* earr,
   const int dir,
   const bool harmonic_mean)
-
 {
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
   const amrex::IntVect ivm(iv - amrex::IntVect::TheDimensionVector(dir));
