@@ -244,17 +244,16 @@ PeleC::getMOLSrcTerm(
         // Compute Extensive diffusion fluxes for X, Y, Z
         BL_PROFILE("PeleC::diffusion_flux()");
         for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-          amrex::Box ebox = amrex::surroundingNodes(cbox, dir);
           if (
             (typ == amrex::FabType::singlevalued) ||
             (typ == amrex::FabType::regular)) {
             amrex::ParallelFor(
-              ebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+              eboxes[dir], [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
                 amrex::GpuArray<amrex::Real, dComp_lambda + 1> cf = {0.0};
                 for (int n = 0; n < static_cast<int>(cf.size()); n++) {
                   pc_move_transcoefs_to_ec(
                     AMREX_D_DECL(i, j, k), n, coe_cc, cf.data(), dir,
-                    do_harmonic);
+                    transport_harmonic_mean);
                 }
                 if (typ == amrex::FabType::singlevalued) {
                   pc_diffusion_flux_eb(
