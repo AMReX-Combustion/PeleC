@@ -259,9 +259,7 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 pc_move_transcoefs_to_ec(
-  const int i,
-  const int j,
-  const int k,
+  AMREX_D_DECL(const int i, const int j, const int k),
   const int n,
   const amrex::Array4<const amrex::Real>& carr,
   amrex::Real* earr,
