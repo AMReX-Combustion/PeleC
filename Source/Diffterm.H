@@ -166,67 +166,164 @@ struct FluxTypes
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
-pc_diffusion_flux(
+pc_diffusion_flux_eb(
   const int i,
   const int j,
   const int k,
   const amrex::Array4<const amrex::Real>& q,
   const amrex::GpuArray<amrex::Real, dComp_lambda + 1>& coef,
-  const amrex::Array4<const amrex::Real>& td,
+  const amrex::Array4<amrex::EBCellFlag const>& flags,
   const amrex::Array4<const amrex::Real>& area,
   const amrex::Array4<amrex::Real>& flx,
-  const amrex::Real delta,
+  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> const& dxinv,
   const int dir)
 {
+  const amrex::GpuArray<const amrex::Real, 3> weights{0.0, 1.0, 0.5};
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
   const amrex::IntVect ivm(iv - amrex::IntVect::TheDimensionVector(dir));
-  const amrex::Real dxinv = 1.0 / delta;
   amrex::Real taux = 0.0, tauy = 0.0, tauz = 0.0;
+  const bool update = flags(iv).isRegular() || flags(iv).isSingleValued();
 
-  if (dir == 0) {
-    AMREX_D_TERM(
-      const amrex::Real dudx = dxinv * (q(iv, QU) - q(ivm, QU));
-      , const amrex::Real dvdx = dxinv * (q(iv, QV) - q(ivm, QV));
-      const amrex::Real dudy = td(iv, 0); const amrex::Real dvdy = td(iv, 1);
-      , const amrex::Real dwdx = dxinv * (q(iv, QW) - q(ivm, QW));
-      const amrex::Real dudz = td(iv, 3); const amrex::Real dwdz = td(iv, 5););
-    const amrex::Real divu = AMREX_D_TERM(dudx, +dvdy, +dwdz);
+  if (update) {
+    if (dir == 0) {
+      AMREX_D_TERM(
+        const amrex::Real dudx = dxinv[dir] * (q(iv, QU) - q(ivm, QU));
+        , const amrex::Real dvdx = dxinv[dir] * (q(iv, QV) - q(ivm, QV));
+        , const amrex::Real dwdx = dxinv[dir] * (q(iv, QW) - q(ivm, QW)););
 
-    taux =
-      coef[dComp_mu] * (2.0 * dudx - 2.0 / 3.0 * divu) + coef[dComp_xi] * divu;
-    AMREX_D_TERM(, tauy = coef[dComp_mu] * (dudy + dvdx);
-                 , tauz = coef[dComp_mu] * (dudz + dwdx););
-  } else if (dir == 1) {
-    const amrex::Real dudx = td(iv, 0);
-    const amrex::Real dvdx = td(iv, 1);
-    const amrex::Real dudy = dxinv * (q(iv, QU) - q(ivm, QU));
-    const amrex::Real dvdy = dxinv * (q(iv, QV) - q(ivm, QV));
+      const int jhip = j + static_cast<int>(flags(iv).isConnected(0, 1, 0));
+      const int jhim = j - static_cast<int>(flags(iv).isConnected(0, -1, 0));
+      const int jlop = j + static_cast<int>(flags(ivm).isConnected(0, 1, 0));
+      const int jlom = j - static_cast<int>(flags(ivm).isConnected(0, -1, 0));
+      const amrex::Real wjhi = weights[jhip - jhim];
+      const amrex::Real wjlo = weights[jlop - jlom];
+
+      const amrex::Real dudy =
+        (0.5 * dxinv[1]) *
+        ((q(i, jhip, k, QU) - q(i, jhim, k, QU)) * wjhi +
+         (q(i - 1, jlop, k, QU) - q(i - 1, jlom, k, QU)) * wjlo);
+
+      const amrex::Real dvdy =
+        (0.5 * dxinv[1]) *
+        ((q(i, jhip, k, QV) - q(i, jhim, k, QV)) * wjhi +
+         (q(i - 1, jlop, k, QV) - q(i - 1, jlom, k, QV)) * wjlo);
+
 #if AMREX_SPACEDIM == 3
-    const amrex::Real dwdy = dxinv * (q(iv, QW) - q(ivm, QW));
-    const amrex::Real dvdz = td(iv, 4);
-    const amrex::Real dwdz = td(iv, 5);
-    tauz = coef[dComp_mu] * (dwdy + dvdz);
+      const int khip = k + static_cast<int>(flags(iv).isConnected(0, 0, 1));
+      const int khim = k - static_cast<int>(flags(iv).isConnected(0, 0, -1));
+      const int klop = k + static_cast<int>(flags(ivm).isConnected(0, 0, 1));
+      const int klom = k - static_cast<int>(flags(ivm).isConnected(0, 0, -1));
+      const amrex::Real wkhi = weights[khip - khim];
+      const amrex::Real wklo = weights[klop - klom];
+
+      const amrex::Real dudz =
+        (0.5 * dxinv[2]) *
+        ((q(i, j, khip, QU) - q(i, j, khim, QU)) * wkhi +
+         (q(i - 1, j, klop, QU) - q(i - 1, j, klom, QU)) * wklo);
+      const amrex::Real dwdz =
+        (0.5 * dxinv[2]) *
+        ((q(i, j, khip, QW) - q(i, j, khim, QW)) * wkhi +
+         (q(i - 1, j, klop, QW) - q(i - 1, j, klom, QW)) * wklo);
 #endif
-    const amrex::Real divu = AMREX_D_TERM(dudx, +dvdy, +dwdz);
+      const amrex::Real divu = AMREX_D_TERM(dudx, +dvdy, +dwdz);
 
-    taux = coef[dComp_mu] * (dudy + dvdx);
-    tauy =
-      coef[dComp_mu] * (2.0 * dvdy - 2.0 / 3.0 * divu) + coef[dComp_xi] * divu;
-  } else if (dir == 2) {
-    const amrex::Real dudx = td(iv, 0);
-    const amrex::Real dwdx = td(iv, 2);
-    const amrex::Real dvdy = td(iv, 4);
-    const amrex::Real dwdy = td(iv, 5);
-    const amrex::Real dudz = dxinv * (q(iv, QU) - q(ivm, QU));
-    const amrex::Real dvdz = dxinv * (q(iv, QV) - q(ivm, QV));
-    const amrex::Real dwdz = dxinv * (q(iv, QW) - q(ivm, QW));
-    const amrex::Real divu = dudx + dvdy + dwdz;
+      AMREX_D_TERM(taux = coef[dComp_mu] * (2.0 * dudx - 2.0 / 3.0 * divu) +
+                          coef[dComp_xi] * divu;
+                   , tauy = coef[dComp_mu] * (dudy + dvdx);
+                   , tauz = coef[dComp_mu] * (dudz + dwdx););
+    } else if (dir == 1) {
+      AMREX_D_TERM(
+        const amrex::Real dudy = dxinv[dir] * (q(iv, QU) - q(ivm, QU));
+        , const amrex::Real dvdy = dxinv[dir] * (q(iv, QV) - q(ivm, QV));
+        , const amrex::Real dwdy = dxinv[dir] * (q(iv, QW) - q(ivm, QW));)
 
-    taux = coef[dComp_mu] * (dudz + dwdx);
-    tauy = coef[dComp_mu] * (dvdz + dwdy);
-    tauz =
-      coef[dComp_mu] * (2.0 * dwdz - 2.0 / 3.0 * divu) + coef[dComp_xi] * divu;
+      const int ihip = i + static_cast<int>(flags(iv).isConnected(1, 0, 0));
+      const int ihim = i - static_cast<int>(flags(iv).isConnected(-1, 0, 0));
+      const int ilop = i + static_cast<int>(flags(ivm).isConnected(1, 0, 0));
+      const int ilom = i - static_cast<int>(flags(ivm).isConnected(-1, 0, 0));
+      const amrex::Real wihi = weights[ihip - ihim];
+      const amrex::Real wilo = weights[ilop - ilom];
+
+      const amrex::Real dudx =
+        (0.5 * dxinv[0]) *
+        ((q(ihip, j, k, QU) - q(ihim, j, k, QU)) * wihi +
+         (q(ilop, j - 1, k, QU) - q(ilom, j - 1, k, QU)) * wilo);
+      const amrex::Real dvdx =
+        (0.5 * dxinv[0]) *
+        ((q(ihip, j, k, QV) - q(ihim, j, k, QV)) * wihi +
+         (q(ilop, j - 1, k, QV) - q(ilom, j - 1, k, QV)) * wilo);
+
+#if AMREX_SPACEDIM == 3
+      const int khip = k + static_cast<int>(flags(iv).isConnected(0, 0, 1));
+      const int khim = k - static_cast<int>(flags(iv).isConnected(0, 0, -1));
+      const int klop = k + static_cast<int>(flags(ivm).isConnected(0, 0, 1));
+      const int klom = k - static_cast<int>(flags(ivm).isConnected(0, 0, -1));
+      const amrex::Real wkhi = weights[khip - khim];
+      const amrex::Real wklo = weights[klop - klom];
+
+      const amrex::Real dvdz =
+        (0.5 * dxinv[2]) *
+        ((q(i, j, khip, QV) - q(i, j, khim, QV)) * wkhi +
+         (q(i, j - 1, klop, QV) - q(i, j - 1, klom, QV)) * wklo);
+      const amrex::Real dwdz =
+        (0.5 * dxinv[2]) *
+        ((q(i, j, khip, QW) - q(i, j, khim, QW)) * wkhi +
+         (q(i, j - 1, klop, QW) - q(i, j - 1, klom, QW)) * wklo);
+#endif
+
+      const amrex::Real divu = AMREX_D_TERM(dudx, +dvdy, +dwdz);
+      AMREX_D_TERM(taux = coef[dComp_mu] * (dudy + dvdx);
+                   , tauy = coef[dComp_mu] * (2.0 * dvdy - 2.0 / 3.0 * divu) +
+                            coef[dComp_xi] * divu;
+                   , tauz = coef[dComp_mu] * (dwdy + dvdz);)
+    } else if (dir == 2) {
+      const amrex::Real dudz = dxinv[dir] * (q(iv, QU) - q(ivm, QU));
+
+      const amrex::Real dvdz = dxinv[dir] * (q(iv, QV) - q(ivm, QV));
+      const amrex::Real dwdz = dxinv[dir] * (q(iv, QW) - q(ivm, QW));
+
+      const int ihip = i + static_cast<int>(flags(iv).isConnected(1, 0, 0));
+      const int ihim = i - static_cast<int>(flags(iv).isConnected(-1, 0, 0));
+      const int ilop = i + static_cast<int>(flags(ivm).isConnected(1, 0, 0));
+      const int ilom = i - static_cast<int>(flags(ivm).isConnected(-1, 0, 0));
+      const amrex::Real wihi = weights[ihip - ihim];
+      const amrex::Real wilo = weights[ilop - ilom];
+
+      const amrex::Real dudx =
+        (0.5 * dxinv[0]) *
+        ((q(ihip, j, k, QU) - q(ihim, j, k, QU)) * wihi +
+         (q(ilop, j, k - 1, QU) - q(ilom, j, k - 1, QU)) * wilo);
+      const amrex::Real dwdx =
+        (0.5 * dxinv[0]) *
+        ((q(ihip, j, k, QW) - q(ihim, j, k, QW)) * wihi +
+         (q(ilop, j, k - 1, QW) - q(ilom, j, k - 1, QW)) * wilo);
+
+      const int jhip = j + static_cast<int>(flags(iv).isConnected(0, 1, 0));
+      const int jhim = j - static_cast<int>(flags(iv).isConnected(0, -1, 0));
+      const int jlop = j + static_cast<int>(flags(ivm).isConnected(0, 1, 0));
+      const int jlom = j - static_cast<int>(flags(ivm).isConnected(0, -1, 0));
+      const amrex::Real wjhi = weights[jhip - jhim];
+      const amrex::Real wjlo = weights[jlop - jlom];
+
+      const amrex::Real dvdy =
+        (0.5 * dxinv[1]) *
+        ((q(i, jhip, k, QV) - q(i, jhim, k, QV)) * wjhi +
+         (q(i, jlop, k - 1, QV) - q(i, jlom, k - 1, QV)) * wjlo);
+      const amrex::Real dwdy =
+        (0.5 * dxinv[1]) *
+        ((q(i, jhip, k, QW) - q(i, jhim, k, QW)) * wjhi +
+         (q(i, jlop, k - 1, QW) - q(i, jlom, k - 1, QW)) * wjlo);
+
+      const amrex::Real divu = dudx + dvdy + dwdz;
+      taux = coef[dComp_mu] * (dudz + dwdx);
+      tauy = coef[dComp_mu] * (dvdz + dwdy);
+      tauz = coef[dComp_mu] * (2.0 * dwdz - 2.0 / 3.0 * divu) +
+             coef[dComp_xi] * divu;
+    }
   }
+  const amrex::Real dTdd =
+    update ? dxinv[dir] * (q(iv, QTEMP) - q(ivm, QTEMP)) : 0.0;
+
   flx(iv, UMX) = -taux;
   flx(iv, UMY) = -tauy;
   flx(iv, UMZ) = -tauz;
@@ -234,16 +331,135 @@ pc_diffusion_flux(
     0.5 * (AMREX_D_TERM(
             -taux * (q(iv, QU) + q(ivm, QU)), -tauy * (q(iv, QV) + q(ivm, QV)),
             -tauz * (q(iv, QW) + q(ivm, QW)))) -
-    coef[dComp_lambda] * (dxinv * (q(iv, QTEMP) - q(ivm, QTEMP)));
+    coef[dComp_lambda] * dTdd;
 
-  FluxTypes::SpeciesEnergyFluxType()(iv, ivm, dxinv, coef, q, flx);
+  if (update) {
+    FluxTypes::SpeciesEnergyFluxType()(iv, ivm, dxinv[dir], coef, q, flx);
+  }
 
   // Scale by area
-  AMREX_D_TERM(flx(iv, UMX) *= area(i, j, k);, flx(iv, UMY) *= area(i, j, k);
-               , flx(iv, UMZ) *= area(i, j, k););
-  flx(iv, UEDEN) *= area(i, j, k);
+  AMREX_D_TERM(flx(iv, UMX) *= area(iv);, flx(iv, UMY) *= area(iv);
+               , flx(iv, UMZ) *= area(iv););
+  flx(iv, UEDEN) *= area(iv);
   for (int ns = 0; ns < NUM_SPECIES; ++ns) {
-    flx(iv, UFS + ns) *= area(i, j, k);
+    flx(iv, UFS + ns) *= area(iv);
+  }
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+pc_diffusion_flux(
+  const int i,
+  const int j,
+  const int k,
+  const amrex::Array4<const amrex::Real>& q,
+  const amrex::GpuArray<amrex::Real, dComp_lambda + 1>& coef,
+  const amrex::Array4<const amrex::Real>& area,
+  const amrex::Array4<amrex::Real>& flx,
+  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> const& dxinv,
+  const int dir)
+{
+  const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
+  const amrex::IntVect ivm(iv - amrex::IntVect::TheDimensionVector(dir));
+  amrex::Real taux = 0.0, tauy = 0.0, tauz = 0.0;
+
+  if (dir == 0) {
+    AMREX_D_TERM(
+      const amrex::Real dudx = dxinv[dir] * (q(iv, QU) - q(ivm, QU));
+      , const amrex::Real dvdx = dxinv[dir] * (q(iv, QV) - q(ivm, QV));
+      , const amrex::Real dwdx = dxinv[dir] * (q(iv, QW) - q(ivm, QW)););
+    const amrex::Real dudy = (q(i, j + 1, k, QU) + q(i - 1, j + 1, k, QU) -
+                              q(i, j - 1, k, QU) - q(i - 1, j - 1, k, QU)) *
+                             (0.25 * dxinv[1]);
+    const amrex::Real dvdy = (q(i, j + 1, k, QV) + q(i - 1, j + 1, k, QV) -
+                              q(i, j - 1, k, QV) - q(i - 1, j - 1, k, QV)) *
+                             (0.25 * dxinv[1]);
+
+#if (AMREX_SPACEDIM == 3)
+    const amrex::Real dudz = (q(i, j, k + 1, QU) + q(i - 1, j, k + 1, QU) -
+                              q(i, j, k - 1, QU) - q(i - 1, j, k - 1, QU)) *
+                             (0.25 * dxinv[2]);
+    const amrex::Real dwdz = (q(i, j, k + 1, QW) + q(i - 1, j, k + 1, QW) -
+                              q(i, j, k - 1, QW) - q(i - 1, j, k - 1, QW)) *
+                             (0.250 * dxinv[2]);
+#endif
+    const amrex::Real divu = AMREX_D_TERM(dudx, +dvdy, +dwdz);
+
+    taux =
+      coef[dComp_mu] * (2.0 * dudx - 2.0 / 3.0 * divu) + coef[dComp_xi] * divu;
+    AMREX_D_TERM(, tauy = coef[dComp_mu] * (dudy + dvdx);
+                 , tauz = coef[dComp_mu] * (dudz + dwdx););
+  } else if (dir == 1) {
+
+    AMREX_D_TERM(
+      const amrex::Real dudy = dxinv[dir] * (q(iv, QU) - q(ivm, QU));
+      , const amrex::Real dvdy = dxinv[dir] * (q(iv, QV) - q(ivm, QV));
+      , const amrex::Real dwdy = dxinv[dir] * (q(iv, QW) - q(ivm, QW)););
+
+    const amrex::Real dudx = (q(i + 1, j, k, QU) + q(i + 1, j - 1, k, QU) -
+                              q(i - 1, j, k, QU) - q(i - 1, j - 1, k, QU)) *
+                             (0.25 * dxinv[0]);
+    const amrex::Real dvdx = (q(i + 1, j, k, QV) + q(i + 1, j - 1, k, QV) -
+                              q(i - 1, j, k, QV) - q(i - 1, j - 1, k, QV)) *
+                             (0.25 * dxinv[0]);
+#if (AMREX_SPACEDIM == 3)
+    const amrex::Real dvdz = (q(i, j, k + 1, QV) + q(i, j - 1, k + 1, QV) -
+                              q(i, j, k - 1, QV) - q(i, j - 1, k - 1, QV)) *
+                             (0.25 * dxinv[2]);
+    const amrex::Real dwdz = (q(i, j, k + 1, QW) + q(i, j - 1, k + 1, QW) -
+                              q(i, j, k - 1, QW) - q(i, j - 1, k - 1, QW)) *
+                             (0.25 * dxinv[2]);
+#endif
+
+    const amrex::Real divu = AMREX_D_TERM(dudx, +dvdy, +dwdz);
+
+    taux = coef[dComp_mu] * (dudy + dvdx);
+    tauy =
+      coef[dComp_mu] * (2.0 * dvdy - 2.0 / 3.0 * divu) + coef[dComp_xi] * divu;
+    AMREX_D_TERM(, , tauz = coef[dComp_mu] * (dwdy + dvdz););
+  } else if (dir == 2) {
+    const amrex::Real dudz = dxinv[dir] * (q(iv, QU) - q(ivm, QU));
+    const amrex::Real dvdz = dxinv[dir] * (q(iv, QV) - q(ivm, QV));
+    const amrex::Real dwdz = dxinv[dir] * (q(iv, QW) - q(ivm, QW));
+    const amrex::Real dudx = (q(i + 1, j, k, QU) + q(i + 1, j, k - 1, QU) -
+                              q(i - 1, j, k, QU) - q(i - 1, j, k - 1, QU)) *
+                             (0.25 * dxinv[0]);
+    const amrex::Real dwdx = (q(i + 1, j, k, QW) + q(i + 1, j, k - 1, QW) -
+                              q(i - 1, j, k, QW) - q(i - 1, j, k - 1, QW)) *
+                             (0.25 * dxinv[0]);
+    const amrex::Real dvdy = (q(i, j + 1, k, QV) + q(i, j + 1, k - 1, QV) -
+                              q(i, j - 1, k, QV) - q(i, j - 1, k - 1, QV)) *
+                             (0.25 * dxinv[1]);
+    const amrex::Real dwdy = (q(i, j + 1, k, QW) + q(i, j + 1, k - 1, QW) -
+                              q(i, j - 1, k, QW) - q(i, j - 1, k - 1, QW)) *
+                             (0.25 * dxinv[1]);
+    const amrex::Real divu = dudx + dvdy + dwdz;
+
+    taux = coef[dComp_mu] * (dudz + dwdx);
+    tauy = coef[dComp_mu] * (dvdz + dwdy);
+    tauz =
+      coef[dComp_mu] * (2.0 * dwdz - 2.0 / 3.0 * divu) + coef[dComp_xi] * divu;
+  }
+  const amrex::Real dTdd = dxinv[dir] * (q(iv, QTEMP) - q(ivm, QTEMP));
+
+  flx(iv, UMX) = -taux;
+  flx(iv, UMY) = -tauy;
+  flx(iv, UMZ) = -tauz;
+  flx(iv, UEDEN) =
+    0.5 * (AMREX_D_TERM(
+            -taux * (q(iv, QU) + q(ivm, QU)), -tauy * (q(iv, QV) + q(ivm, QV)),
+            -tauz * (q(iv, QW) + q(ivm, QW)))) -
+    coef[dComp_lambda] * dTdd;
+
+  FluxTypes::SpeciesEnergyFluxType()(iv, ivm, dxinv[dir], coef, q, flx);
+
+  // Scale by area
+  AMREX_D_TERM(flx(iv, UMX) *= area(iv);, flx(iv, UMY) *= area(iv);
+               , flx(iv, UMZ) *= area(iv););
+  flx(iv, UEDEN) *= area(iv);
+  for (int ns = 0; ns < NUM_SPECIES; ++ns) {
+    flx(iv, UFS + ns) *= area(iv);
   }
 }
 
@@ -269,19 +485,5 @@ pc_flux_div(
       +fz(i, j, k + 1, n) - fz(i, j, k, n))) /
     V(i, j, k);
 }
-
-void pc_compute_diffusion_flux(
-  const amrex::Box& box,
-  const amrex::Array4<const amrex::Real>& q,
-  const amrex::Array4<const amrex::Real>& coef,
-  const amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flx,
-  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>&
-    area,
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& del,
-  const bool transport_harmonic_mean,
-  const amrex::FabType typ,
-  const int Ncut,
-  const EBBndryGeom* ebg,
-  const amrex::Array4<amrex::EBCellFlag const>& flags);
 
 #endif
