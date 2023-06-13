@@ -55,6 +55,7 @@ pp.query("diffuse_temp", diffuse_temp);
 pp.query("diffuse_enth", diffuse_enth);
 pp.query("diffuse_spec", diffuse_spec);
 pp.query("diffuse_vel", diffuse_vel);
+pp.query("transport_harmonic_mean", transport_harmonic_mean);
 pp.query("do_les", do_les);
 pp.query("use_explicit_filter", use_explicit_filter);
 pp.query("Cs", Cs);

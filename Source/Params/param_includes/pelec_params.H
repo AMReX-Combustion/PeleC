@@ -49,6 +49,7 @@ static bool diffuse_temp;
 static bool diffuse_enth;
 static bool diffuse_spec;
 static bool diffuse_vel;
+static bool transport_harmonic_mean;
 static bool do_les;
 static bool use_explicit_filter;
 static amrex::Real Cs;

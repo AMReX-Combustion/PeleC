@@ -17,7 +17,7 @@ pc_compute_diffusion_flux(
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>&
     area,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& del,
-  const int do_harmonic,
+  const bool transport_harmonic_mean,
   const amrex::FabType typ,
   const int Ncut,
   const EBBndryGeom* ebg,
@@ -67,7 +67,8 @@ pc_compute_diffusion_flux(
           amrex::GpuArray<amrex::Real, dComp_lambda + 1> cf = {0.0};
           for (int n = 0; n < static_cast<int>(cf.size()); n++) {
             pc_move_transcoefs_to_ec(
-              i, j, k, n, coef, cf.data(), dir, do_harmonic);
+              AMREX_D_DECL(i, j, k), n, coef, cf.data(), dir,
+              transport_harmonic_mean);
           }
           pc_diffusion_flux(
             i, j, k, q, cf, tander, area[dir], flx[dir], delta, dir);

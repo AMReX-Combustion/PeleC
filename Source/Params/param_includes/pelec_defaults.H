@@ -49,6 +49,7 @@ bool PeleC::diffuse_temp = false;
 bool PeleC::diffuse_enth = false;
 bool PeleC::diffuse_spec = false;
 bool PeleC::diffuse_vel = false;
+bool PeleC::transport_harmonic_mean = true;
 bool PeleC::do_les = false;
 bool PeleC::use_explicit_filter = false;
 amrex::Real PeleC::Cs = 0.0;

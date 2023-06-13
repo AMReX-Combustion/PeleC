@@ -259,48 +259,21 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 pc_move_transcoefs_to_ec(
-  const int i,
-  const int j,
-  const int k,
+  AMREX_D_DECL(const int i, const int j, const int k),
   const int n,
   const amrex::Array4<const amrex::Real>& carr,
   amrex::Real* earr,
   const int dir,
-  const int do_harmonic)
-
+  const bool harmonic_mean)
 {
-  if (do_harmonic == 0) {
-    if (dir == 0) {
-      earr[n] = 0.5 * (carr(i, j, k, n) + carr(i - 1, j, k, n));
-    } else if (dir == 1) {
-      earr[n] = 0.5 * (carr(i, j, k, n) + carr(i, j - 1, k, n));
-    } else {
-      earr[n] = 0.5 * (carr(i, j, k, n) + carr(i, j, k - 1, n));
-    }
+  const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
+  const amrex::IntVect ivm(iv - amrex::IntVect::TheDimensionVector(dir));
+  if (harmonic_mean) {
+    const amrex::Real a = carr(iv, n);
+    const amrex::Real b = carr(ivm, n);
+    earr[n] = (a * b > 0.0) ? 2.0 * (a * b) / (a + b) : 0.0;
   } else {
-    amrex::Real a = carr(i, j, k, n);
-    if (dir == 0) {
-      amrex::Real b = carr(i - 1, j, k, n);
-      if (a * b > 0.0) {
-        earr[n] = 2.0 * (a * b) / (a + b);
-      } else {
-        earr[n] = 0.0;
-      }
-    } else if (dir == 1) {
-      amrex::Real b = carr(i, j - 1, k, n);
-      if (a * b > 0.0) {
-        earr[n] = 2.0 * (a * b) / (a + b);
-      } else {
-        earr[n] = 0.0;
-      }
-    } else {
-      amrex::Real b = carr(i, j, k - 1, n);
-      if (a * b > 0.0) {
-        earr[n] = 2.0 * (a * b) / (a + b);
-      } else {
-        earr[n] = 0.0;
-      }
-    }
+    earr[n] = 0.5 * (carr(iv, n) + carr(ivm, n));
   }
 }
 
