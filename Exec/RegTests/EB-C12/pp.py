@@ -36,7 +36,7 @@ if __name__ == "__main__":
             ray = ds.ortho_ray(0, (0, 0))
             srt = np.argsort(ray[("boxlib", "x")])
 
-            df = pd.DataFrame({f: np.array(ray[("boxlib",f)][srt]) for f in fields})
+            df = pd.DataFrame({f: np.array(ray[("boxlib", f)][srt]) for f in fields})
             df["time"] = ds.current_time
             lst.append(df)
 

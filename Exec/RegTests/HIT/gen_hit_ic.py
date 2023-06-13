@@ -97,7 +97,7 @@ markertype = ["s", "d", "o", "p", "h"]
 #
 # ========================================================================
 def div0(a, b):
-    """ Ignore division by 0, just replace it by 0,
+    """Ignore division by 0, just replace it by 0,
 
     From: http://stackoverflow.com/questions/26248654/numpy-return-0-with-divide-by-zero
     e.g. div0( [-1, 0, 1], 0 ) -> [0, 0, 0]
@@ -116,7 +116,7 @@ def abs2(x):
     import numba
     @numba.vectorize([numba.float64(numba.complex128),numba.float32(numba.complex64)])
     """
-    return x.real ** 2 + x.imag ** 2
+    return x.real**2 + x.imag**2
 
 
 # ========================================================================
@@ -153,8 +153,8 @@ X, Y, Z = np.meshgrid(xc, xc, xc, indexing="ij")
 k = np.concatenate((np.arange(halfN), np.arange(-halfN, 0, 1)), axis=0)
 khalf = np.arange(halfN + 1)
 k1, k2, k3 = np.meshgrid(k, k, khalf, indexing="ij")
-kmag = np.sqrt(k1 ** 2 + k2 ** 2 + k3 ** 2)
-k12 = np.sqrt(k1 ** 2 + k2 ** 2)
+kmag = np.sqrt(k1**2 + k2**2 + k3**2)
+k12 = np.sqrt(k1**2 + k2**2)
 k1k12 = div0(k1, k12)
 k2k12 = div0(k2, k12)
 k3kmag = div0(k3, kmag)
@@ -172,9 +172,9 @@ k12kmag = div0(k12, kmag)
 Ek = (
     16.0
     * np.sqrt(2.0 / np.pi)
-    * (kmag ** 4)
-    / (args.k0 ** 5)
-    * np.exp(-2.0 * (kmag ** 2) / (args.k0 ** 2))
+    * (kmag**4)
+    / (args.k0**5)
+    * np.exp(-2.0 * (kmag**2) / (args.k0**2))
 )
 
 # Draw random numbers
@@ -184,7 +184,7 @@ phi2 = np.random.uniform(0, 2 * np.pi, np.shape(kmag))
 phi3 = np.random.uniform(0, 2 * np.pi, np.shape(kmag))
 
 # the random quantities
-prefix = np.sqrt(2.0 * div0(Ek, 4.0 * np.pi * (kmag ** 2)))
+prefix = np.sqrt(2.0 * div0(Ek, 4.0 * np.pi * (kmag**2)))
 a = prefix * np.exp(1j * phi1) * np.cos(phi3)
 b = prefix * np.exp(1j * phi2) * np.sin(phi3)
 
@@ -222,9 +222,9 @@ wf[0, N:halfN:-1, 0] = np.conj(wf[0, 1:halfN, 0])
 # Normalize. Because we are generating the data in wavenumber space,
 # we have to multiply by N**3 because in the definition of the numpy
 # ifftn there is a 1/N**n.
-uf = uf * N ** 3
-vf = vf * N ** 3
-wf = wf * N ** 3
+uf = uf * N**3
+vf = vf * N**3
+wf = wf * N**3
 
 # # Quick check on energy content (make sure you add both the current
 # # contribution and the one we are neglecting because we are assuming
@@ -240,9 +240,9 @@ if args.plot:
     Eko = (
         16.0
         * np.sqrt(2.0 / np.pi)
-        * (khalf ** 4)
-        / (args.k0 ** 5)
-        * np.exp(-2.0 * (khalf ** 2) / (args.k0 ** 2))
+        * (khalf**4)
+        / (args.k0**5)
+        * np.exp(-2.0 * (khalf**2) / (args.k0**2))
     )
 
     # Get the spectrum from 3D velocity field
@@ -251,11 +251,11 @@ if args.plot:
     whichbin = np.digitize(kmag.flat, kbins)
     ncount = np.bincount(whichbin)
 
-    KI = (abs2(uf) + abs2(vf) + abs2(wf)) * 0.5 / N ** 6
+    KI = (abs2(uf) + abs2(vf) + abs2(wf)) * 0.5 / N**6
     KI[:, :, 1:-1] += (
         (abs2(uf[:, :, 1:-1]) + abs2(vf[:, :, 1:-1]) + abs2(wf[:, :, 1:-1]))
         * 0.5
-        / N ** 6
+        / N**6
     )
 
     Eku = np.zeros(len(ncount) - 1)
@@ -284,7 +284,7 @@ w = np.fft.irfftn(wf, s=(N, N, N))
 # Another energy content check
 print(
     "Energy = 1/V * int E(x,y,z) dV = 0.5/V * int (u**2 + v**2 + w**2) dx dy dz = {0:.10f} ~= 3/2".format(
-        np.sum(u ** 2 + v ** 2 + w ** 2) * 0.5 * (dx / L) ** 3
+        np.sum(u**2 + v**2 + w**2) * 0.5 * (dx / L) ** 3
     )
 )
 
