@@ -23,16 +23,15 @@ PeleC::getMOLSrcTerm(
      boundaries actually are assumed to live on the inflow face.
 
      1. Convert S to Q, primitive variables (since the transport coefficients
-     typically depend on mass fractions and temperature). Q then will be
-     face-centered on Dirichlet faces.
+     typically depend on mass fractions and temperature).
 
-     2. Evaluate transport coefficients (these also will be face-centered, if Q
-     is).
+     2. Evaluate transport coefficients
 
      3. Evaluate the diffusion operator over all components
 
-     a. Evaluate face-centered diffusion fluxes
-     b. Zero fluxes and divergence after the fact if subset of components have
+     a. Compute face-centered transport coefficients
+     b. Evaluate face-centered diffusion fluxes
+     c. Zero fluxes and divergence after the fact if subset of components have
      diffuse shut off (this allows that T be diffused alone)
 
      4. (optional) evaluate face-centered MOL hydro fluxes
