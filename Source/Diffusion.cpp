@@ -69,13 +69,6 @@ PeleC::getMOLSrcTerm(
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dxD = {
     {AMREX_D_DECL(dx1, dx1, dx1)}};
 
-  // BCs
-  const amrex::StateDescriptor* desc = state[State_Type].descriptor();
-  const auto& bcs = desc->getBCs();
-  amrex::Gpu::DeviceVector<amrex::BCRec> d_bcs(desc->nComp());
-  amrex::Gpu::copy(
-    amrex::Gpu::hostToDevice, bcs.begin(), bcs.end(), d_bcs.begin());
-
   auto const& fact =
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(S.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
@@ -577,6 +570,13 @@ PeleC::getMOLSrcTerm(
           Dfab.box(), S.nComp(), amrex::The_Async_Arena());
         amrex::Array4<amrex::Real> Dterm_tmp = Dterm_tmpfab.array();
         copy_array4(Dfab.box(), NVAR, Dterm, Dterm_tmp);
+
+        // BCs
+        const amrex::StateDescriptor* desc = state[State_Type].descriptor();
+        const auto& bcs = desc->getBCs();
+        amrex::Gpu::DeviceVector<amrex::BCRec> d_bcs(desc->nComp());
+        amrex::Gpu::copy(
+          amrex::Gpu::hostToDevice, bcs.begin(), bcs.end(), d_bcs.begin());
 
         {
           BL_PROFILE("Redistribution::Apply()");
