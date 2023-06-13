@@ -63,6 +63,8 @@ PeleC::getMOLSrcTerm(
 
   const int nCompTr = dComp_lambda + 1;
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx = geom.CellSizeArray();
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dxinv =
+    geom.InvCellSizeArray();
 
   amrex::Real dx1 = dx[0];
   for (int dir = 1; dir < AMREX_SPACEDIM; ++dir) {
@@ -236,10 +238,38 @@ PeleC::getMOLSrcTerm(
       amrex::FArrayBox Dfab(cbox, NVAR, amrex::The_Async_Arena());
       auto const& Dterm = Dfab.array();
       setV(cbox, NVAR, Dterm, 0.0);
+      auto flag_arr = flags.const_array(mfi);
 
-      pc_compute_diffusion_flux(
-        cbox, qar, coe_cc, flx, area_arr, dx, transport_harmonic_mean, typ,
-        Ncut, d_sv_eb_bndry_geom, flags.array(mfi));
+      {
+        // Compute Extensive diffusion fluxes for X, Y, Z
+        BL_PROFILE("PeleC::diffusion_flux()");
+        const bool l_transport_harmonic_mean = transport_harmonic_mean;
+        for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
+          if (
+            (typ == amrex::FabType::singlevalued) ||
+            (typ == amrex::FabType::regular)) {
+            amrex::ParallelFor(
+              eboxes[dir], [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+                amrex::GpuArray<amrex::Real, dComp_lambda + 1> cf = {0.0};
+                for (int n = 0; n < static_cast<int>(cf.size()); n++) {
+                  pc_move_transcoefs_to_ec(
+                    AMREX_D_DECL(i, j, k), n, coe_cc, cf.data(), dir,
+                    l_transport_harmonic_mean);
+                }
+                if (typ == amrex::FabType::singlevalued) {
+                  pc_diffusion_flux_eb(
+                    i, j, k, qar, cf, flag_arr, area_arr[dir], flx[dir], dxinv,
+                    dir);
+                } else if (typ == amrex::FabType::regular) {
+                  pc_diffusion_flux(
+                    i, j, k, qar, cf, area_arr[dir], flx[dir], dxinv, dir);
+                }
+              });
+          } else if (typ == amrex::FabType::multivalued) {
+            amrex::Abort("multi-valued cells are not supported");
+          }
+        }
+      }
 
       // Compute flux divergence (1/Vol).Div(F.A)
       {
@@ -578,7 +608,6 @@ PeleC::getMOLSrcTerm(
         amrex::Array4<amrex::Real> Dterm_tmp = Dterm_tmpfab.array();
         copy_array4(Dfab.box(), NVAR, Dterm, Dterm_tmp);
 
-        auto flag_arr = flags.const_array(mfi);
         {
           BL_PROFILE("Redistribution::Apply()");
           Redistribution::Apply(

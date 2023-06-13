@@ -77,7 +77,6 @@ function(build_pelec_exe pelec_exe_name pelec_lib_name)
        ${SRC_DIR}/Derive.H
        ${SRC_DIR}/Derive.cpp
        ${SRC_DIR}/Diffterm.H
-       ${SRC_DIR}/Diffterm.cpp
        ${SRC_DIR}/Diffusion.H
        ${SRC_DIR}/Diffusion.cpp
        ${SRC_DIR}/EB.H
@@ -88,7 +87,6 @@ function(build_pelec_exe pelec_exe_name pelec_lib_name)
        ${SRC_DIR}/Filter.cpp
        ${SRC_DIR}/Forcing.cpp
        ${SRC_DIR}/GradUtil.H
-       ${SRC_DIR}/GradUtil.cpp
        ${SRC_DIR}/Hydro.H
        ${SRC_DIR}/Hydro.cpp
        ${SRC_DIR}/Geometry.H
