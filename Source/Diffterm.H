@@ -278,7 +278,7 @@ void pc_compute_diffusion_flux(
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>&
     area,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& del,
-  const int do_harmonic,
+  const bool transport_harmonic_mean,
   const amrex::FabType typ,
   const int Ncut,
   const EBBndryGeom* ebg,
