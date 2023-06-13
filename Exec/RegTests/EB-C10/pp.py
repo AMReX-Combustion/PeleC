@@ -43,9 +43,9 @@ if __name__ == "__main__":
         lst = []
         for xloc in xlocs:
             ray = ds.ortho_ray(1, (0, xloc))
-            srt = np.argsort(ray["y"])
+            srt = np.argsort(ray[("boxlib", "y")])
 
-            df = pd.DataFrame({f: np.array(ray[f][srt]) for f in fields})
+            df = pd.DataFrame({f: np.array(ray[("boxlib", f)][srt]) for f in fields})
             df["xloc"] = xloc
             df = df[df.vfrac > 0]
             lst.append(df)
