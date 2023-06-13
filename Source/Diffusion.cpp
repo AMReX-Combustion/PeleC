@@ -77,9 +77,6 @@ PeleC::getMOLSrcTerm(
   amrex::Gpu::copy(
     amrex::Gpu::hostToDevice, bcs.begin(), bcs.end(), d_bcs.begin());
 
-  prefetchToDevice(S);
-  prefetchToDevice(MOLSrcTerm);
-
   auto const& fact =
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(S.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
