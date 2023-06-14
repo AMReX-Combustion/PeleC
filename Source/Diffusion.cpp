@@ -251,10 +251,14 @@ PeleC::getMOLSrcTerm(
             amrex::ParallelFor(
               eboxes[dir], [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
                 amrex::GpuArray<amrex::Real, dComp_lambda + 1> cf = {0.0};
-                for (int n = 0; n < static_cast<int>(cf.size()); n++) {
-                  pc_move_transcoefs_to_ec(
-                    AMREX_D_DECL(i, j, k), n, coe_cc, cf.data(), dir,
-                    l_transport_harmonic_mean);
+                if (
+                  flag_arr(i, j, k).isRegular() ||
+                  flag_arr(i, j, k).isSingleValued()) {
+                  for (int n = 0; n < static_cast<int>(cf.size()); n++) {
+                    pc_move_transcoefs_to_ec(
+                      AMREX_D_DECL(i, j, k), n, coe_cc, cf.data(), dir,
+                      l_transport_harmonic_mean);
+                  }
                 }
                 if (typ == amrex::FabType::singlevalued) {
                   pc_diffusion_flux_eb(
