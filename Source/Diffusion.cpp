@@ -382,14 +382,16 @@ PeleC::getMOLSrcTerm(
                 eb_flux_thdlocal.dataPtr(Xmom), nFlux);
             }
           }
-        }
-
-        { // Get hyp flux at EB wall
-          BL_PROFILE("PeleC::pc_hyp_mol_flux_eb()");
-          amrex::Real* d_eb_flux_thdlocal =
-            (nFlux > 0 ? eb_flux_thdlocal.dataPtr() : nullptr);
-          pc_compute_hyp_mol_flux_eb(
-            cbox, qar, dx, d_sv_eb_bndry_geom, Ncut, d_eb_flux_thdlocal, nFlux);
+          if (do_hydro && do_mol) {
+            { // Get hyp flux at EB wall
+              BL_PROFILE("PeleC::pc_hyp_mol_flux_eb()");
+              amrex::Real* d_eb_flux_thdlocal =
+                (nFlux > 0 ? eb_flux_thdlocal.dataPtr() : nullptr);
+              pc_compute_hyp_mol_flux_eb(
+                cbox, qar, dx, d_sv_eb_bndry_geom, Ncut, d_eb_flux_thdlocal,
+                nFlux);
+            }
+          }
         }
 
         amrex::Gpu::DeviceVector<int> v_eb_tile_mask(Ncut, 0);
