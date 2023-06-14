@@ -19,8 +19,8 @@ outfile = open(fname, "w")
 for i, fn in enumerate(fn_list):
     ds = yt.load(fn)
     ad = ds.all_data()
-    meanTemp = np.mean(ad["Temp"]*ad["vfrac"])
-    meanvfrac=np.mean(ad["vfrac"])
-    outfile.write("%e\t%e\n" % (ds.current_time, meanTemp/meanvfrac))
+    meanTemp = np.mean(ad["Temp"] * ad["vfrac"])
+    meanvfrac = np.mean(ad["vfrac"])
+    outfile.write("%e\t%e\n" % (ds.current_time, meanTemp / meanvfrac))
 
 outfile.close()

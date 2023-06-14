@@ -44,7 +44,7 @@ def parse_ic(fname):
 
 
 def eval_u_exact(ics, r, factor):
-    return factor * ics["G"] / (4.0 * ics["mu"]) * (ics["radius"] ** 2 - r ** 2)
+    return factor * ics["G"] / (4.0 * ics["mu"]) * (ics["radius"] ** 2 - r**2)
 
 
 def theory_ooa(order, res, orig):

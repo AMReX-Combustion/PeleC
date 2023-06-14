@@ -34,9 +34,9 @@ if __name__ == "__main__":
         for idx in idxs:
             ds = yt.load(pltfiles[idx])
             ray = ds.ortho_ray(0, (0, 0))
-            srt = np.argsort(ray["x"])
+            srt = np.argsort(ray[("boxlib", "x")])
 
-            df = pd.DataFrame({f: np.array(ray[f][srt]) for f in fields})
+            df = pd.DataFrame({f: np.array(ray[("boxlib", f)][srt]) for f in fields})
             df["time"] = ds.current_time
             lst.append(df)
 

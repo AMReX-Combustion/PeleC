@@ -45,9 +45,9 @@ if __name__ == "__main__":
         start = [0.0, 0.0, 0.0]
         end = [length, length * tant, 0.0]
         ray = ds.r[start:end]
-        srt = np.argsort(ray["x"])
+        srt = np.argsort(ray[("boxlib", "x")])
 
-        df = pd.DataFrame({f: np.array(ray[f][srt]) for f in fields})
+        df = pd.DataFrame({f: np.array(ray[("boxlib", f)][srt]) for f in fields})
         df.Temp /= 3.48429e-07
         df["time"] = ds.current_time
         df["levels"] = ds.max_level + 1
