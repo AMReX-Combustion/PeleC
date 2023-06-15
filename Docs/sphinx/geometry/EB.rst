@@ -310,3 +310,4 @@ These are the input options to read from a saved EB geometry:
 
    eb2.geom_type="chkfile"
    eb2.chkfile="chk_geom" # optional, defaults to "chk_geom"
+   eb2.max_grid_size=32 # optional, defaults to 64, must match the max_grid_size used to generate the EB in the first place
