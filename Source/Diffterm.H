@@ -14,7 +14,9 @@
 // This header file contains functions and declarations for diffterm.
 
 namespace {
+#ifdef AMREX_USE_GPU
 AMREX_GPU_CONSTANT const amrex::Real d_weights[3] = {0.0, 1.0, 0.5};
+#endif
 const amrex::Real h_weights[3] = {0.0, 1.0, 0.5};
 
 AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE amrex::Real
