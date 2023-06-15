@@ -11,15 +11,22 @@
 #include "GradUtil.H"
 #include "Diffusion.H"
 
-// This header file contains functions and declarations for diffterm in 3D for
-// PeleC GPU. As per the convention of AMReX, inlined device functions are
-// defined here. Where as non-inline host functions are declared here.
+// This header file contains functions and declarations for diffterm.
 
-// The original Diffterm function passes too many arguments, which contribute to
-// kernel launch overhead. In order to combat this, we split some of the
-// computation up into separate Device functions which will then be launched by
-// a CPU function called pc_diffterm. pc_diffusion_flux calculates the diffusion
-// flux per diction.
+namespace {
+AMREX_GPU_CONSTANT const amrex::Real d_weights[3] = {0.0, 1.0, 0.5};
+const amrex::Real h_weights[3] = {0.0, 1.0, 0.5};
+
+AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE amrex::Real
+weight(const int n)
+{
+#if AMREX_DEVICE_COMPILE
+  return d_weights[n];
+#else
+  return h_weights[n];
+#endif
+}
+} // namespace
 
 template <typename EOSType>
 struct SpeciesEnergyFlux
@@ -178,7 +185,6 @@ pc_diffusion_flux_eb(
   amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> const& dxinv,
   const int dir)
 {
-  const amrex::GpuArray<const amrex::Real, 3> weights{0.0, 1.0, 0.5};
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
   const amrex::IntVect ivm(iv - amrex::IntVect::TheDimensionVector(dir));
   amrex::Real taux = 0.0, tauy = 0.0, tauz = 0.0;
@@ -195,8 +201,8 @@ pc_diffusion_flux_eb(
       const int jhim = j - static_cast<int>(flags(iv).isConnected(0, -1, 0));
       const int jlop = j + static_cast<int>(flags(ivm).isConnected(0, 1, 0));
       const int jlom = j - static_cast<int>(flags(ivm).isConnected(0, -1, 0));
-      const amrex::Real wjhi = weights[jhip - jhim];
-      const amrex::Real wjlo = weights[jlop - jlom];
+      const amrex::Real wjhi = weight(jhip - jhim);
+      const amrex::Real wjlo = weight(jlop - jlom);
 
       const amrex::Real dudy =
         (0.5 * dxinv[1]) *
@@ -213,8 +219,8 @@ pc_diffusion_flux_eb(
       const int khim = k - static_cast<int>(flags(iv).isConnected(0, 0, -1));
       const int klop = k + static_cast<int>(flags(ivm).isConnected(0, 0, 1));
       const int klom = k - static_cast<int>(flags(ivm).isConnected(0, 0, -1));
-      const amrex::Real wkhi = weights[khip - khim];
-      const amrex::Real wklo = weights[klop - klom];
+      const amrex::Real wkhi = weight(khip - khim);
+      const amrex::Real wklo = weight(klop - klom);
 
       const amrex::Real dudz =
         (0.5 * dxinv[2]) *
@@ -241,8 +247,8 @@ pc_diffusion_flux_eb(
       const int ihim = i - static_cast<int>(flags(iv).isConnected(-1, 0, 0));
       const int ilop = i + static_cast<int>(flags(ivm).isConnected(1, 0, 0));
       const int ilom = i - static_cast<int>(flags(ivm).isConnected(-1, 0, 0));
-      const amrex::Real wihi = weights[ihip - ihim];
-      const amrex::Real wilo = weights[ilop - ilom];
+      const amrex::Real wihi = weight(ihip - ihim);
+      const amrex::Real wilo = weight(ilop - ilom);
 
       const amrex::Real dudx =
         (0.5 * dxinv[0]) *
@@ -258,8 +264,8 @@ pc_diffusion_flux_eb(
       const int khim = k - static_cast<int>(flags(iv).isConnected(0, 0, -1));
       const int klop = k + static_cast<int>(flags(ivm).isConnected(0, 0, 1));
       const int klom = k - static_cast<int>(flags(ivm).isConnected(0, 0, -1));
-      const amrex::Real wkhi = weights[khip - khim];
-      const amrex::Real wklo = weights[klop - klom];
+      const amrex::Real wkhi = weight(khip - khim);
+      const amrex::Real wklo = weight(klop - klom);
 
       const amrex::Real dvdz =
         (0.5 * dxinv[2]) *
@@ -286,8 +292,8 @@ pc_diffusion_flux_eb(
       const int ihim = i - static_cast<int>(flags(iv).isConnected(-1, 0, 0));
       const int ilop = i + static_cast<int>(flags(ivm).isConnected(1, 0, 0));
       const int ilom = i - static_cast<int>(flags(ivm).isConnected(-1, 0, 0));
-      const amrex::Real wihi = weights[ihip - ihim];
-      const amrex::Real wilo = weights[ilop - ilom];
+      const amrex::Real wihi = weight(ihip - ihim);
+      const amrex::Real wilo = weight(ilop - ilom);
 
       const amrex::Real dudx =
         (0.5 * dxinv[0]) *
@@ -302,8 +308,8 @@ pc_diffusion_flux_eb(
       const int jhim = j - static_cast<int>(flags(iv).isConnected(0, -1, 0));
       const int jlop = j + static_cast<int>(flags(ivm).isConnected(0, 1, 0));
       const int jlom = j - static_cast<int>(flags(ivm).isConnected(0, -1, 0));
-      const amrex::Real wjhi = weights[jhip - jhim];
-      const amrex::Real wjlo = weights[jlop - jlom];
+      const amrex::Real wjhi = weight(jhip - jhim);
+      const amrex::Real wjlo = weight(jlop - jlom);
 
       const amrex::Real dvdy =
         (0.5 * dxinv[1]) *
