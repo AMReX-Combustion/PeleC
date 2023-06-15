@@ -17,7 +17,6 @@ namespace {
 AMREX_GPU_CONSTANT const amrex::Real weights[3] = {0.0, 1.0, 0.5};
 } // namespace
 
-
 template <typename EOSType>
 struct SpeciesEnergyFlux
 {
