@@ -11,15 +11,11 @@
 #include "GradUtil.H"
 #include "Diffusion.H"
 
-// This header file contains functions and declarations for diffterm in 3D for
-// PeleC GPU. As per the convention of AMReX, inlined device functions are
-// defined here. Where as non-inline host functions are declared here.
+// This header file contains functions and declarations for diffterm.
 
-// The original Diffterm function passes too many arguments, which contribute to
-// kernel launch overhead. In order to combat this, we split some of the
-// computation up into separate Device functions which will then be launched by
-// a CPU function called pc_diffterm. pc_diffusion_flux calculates the diffusion
-// flux per diction.
+namespace {
+AMREX_GPU_CONSTANT const amrex::Real weights[3] = {0.0, 1.0, 0.5};
+} // namespace
 
 template <typename EOSType>
 struct SpeciesEnergyFlux
@@ -178,7 +174,6 @@ pc_diffusion_flux_eb(
   amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> const& dxinv,
   const int dir)
 {
-  const amrex::GpuArray<const amrex::Real, 3> weights{0.0, 1.0, 0.5};
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
   const amrex::IntVect ivm(iv - amrex::IntVect::TheDimensionVector(dir));
   amrex::Real taux = 0.0, tauy = 0.0, tauz = 0.0;

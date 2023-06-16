@@ -3,7 +3,6 @@
 
 #include <AMReX_EBCellFlag.H>
 
-#include "Diffterm.H"
 #include "IndexDefines.H"
 #include "PeleC.H"
 #include "Riemann.H"
