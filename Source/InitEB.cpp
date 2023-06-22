@@ -185,11 +185,6 @@ PeleC::initialize_eb2_structs()
       if (typ == amrex::FabType::singlevalued) {
         const auto afrac_arr = (*areafrac[dir])[mfi].array();
         const auto facecent_arr = (*facecent[dir])[mfi].array();
-
-        // This used to be an std::set for cut_faces (it ensured
-        // sorting and uniqueness)
-        EBBndryGeom* d_sv_eb_bndry_geom = sv_eb_bndry_geom[iLocal].data();
-
         const auto fbox = amrex::surroundingNodes(tbox, dir);
         const auto nallfaces = static_cast<int>(fbox.numPts());
         amrex::Gpu::DeviceVector<int> cutfaces_offset(nallfaces);
