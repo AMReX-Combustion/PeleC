@@ -406,69 +406,6 @@ locate(const amrex::Real* xtable, const int n, const amrex::Real& x, int& idxlo)
   }
 }
 
-template <typename T>
-void
-sort(T& vec)
-{
-  typename T::value_type* d_vec = vec.data();
-  const int vec_size = vec.size();
-  // Serial loop on the GPU
-  amrex::ParallelFor(1, [=] AMREX_GPU_DEVICE(int /*dummy*/) {
-    for (int i = 0; i < vec_size - 1; i++) {
-      for (int j = 0; j < vec_size - i - 1; j++) {
-        if (d_vec[j + 1] < d_vec[j]) {
-          typename T::value_type temp = d_vec[j];
-          d_vec[j] = d_vec[j + 1];
-          d_vec[j + 1] = temp;
-        }
-      }
-    }
-  });
-}
-
-// Return vector of unique elements in input. Assume input is sorted. This is
-// device safe code
-template <typename T>
-T
-unique(T input)
-{
-  typename T::value_type* d_input = input.data();
-  const int input_size = input.size();
-  if (input_size == 0) {
-    T output(input_size);
-    return output;
-  }
-
-  // count the number of uniques
-  const int Nunique = amrex::Reduce::Sum<int>(
-    input.size() - 1,
-    [=] AMREX_GPU_DEVICE(int i) noexcept -> int {
-      return (d_input[i] != d_input[i + 1]);
-    },
-    1);
-
-  // allocate the memory
-  T output(Nunique);
-  if (output.empty()) {
-    return output;
-  }
-  typename T::value_type* d_output = output.data();
-
-  // get the uniques
-  amrex::ParallelFor(1, [=] AMREX_GPU_DEVICE(int /*dummy*/) {
-    int cnt = 1;
-    d_output[0] = d_input[0];
-    for (int i = 0; i < input_size - 1; i++) {
-      if (d_input[i] != d_input[i + 1]) {
-        d_output[cnt] = d_input[i + 1];
-        cnt++;
-      }
-    }
-  });
-
-  return output;
-}
-
 // Find position of element in vector
 template <typename T>
 int
