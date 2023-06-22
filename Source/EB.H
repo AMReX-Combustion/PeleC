@@ -231,7 +231,6 @@ void pc_fill_bndry_grad_stencil_quadratic(
 
 void pc_fill_flux_interp_stencil(
   const amrex::Box& /*bx*/,
-  const amrex::Box /*unused*/,
   const int /*Nsten*/,
   const amrex::Array4<const amrex::Real>& /*fc*/,
   const amrex::Array4<const amrex::Real>& /*fa*/,

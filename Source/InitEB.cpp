@@ -103,23 +103,31 @@ PeleC::initialize_eb2_structs()
       sv_eb_bndry_geom[iLocal].resize(Ncut);
       auto const& flag_arr = flags.const_array(mfi);
       EBBndryGeom* d_sv_eb_bndry_geom = sv_eb_bndry_geom[iLocal].data();
-      const auto lo = amrex::lbound(tbox);
-      const auto hi = amrex::ubound(tbox);
-      amrex::ParallelFor(1, [=] AMREX_GPU_DEVICE(int /*dummy*/) noexcept {
-        int ivec = 0;
-        for (int i = lo.x; i <= hi.x; ++i) {
-          for (int j = lo.y; j <= hi.y; ++j) {
-            for (int k = lo.z; k <= hi.z; ++k) {
-              const amrex::IntVect iv(AMREX_D_DECL(i, j, k));
-              const amrex::EBCellFlag& flag = flag_arr(iv);
-              if (!(flag.isRegular() || flag.isCovered())) {
-                d_sv_eb_bndry_geom[ivec].iv = iv;
-                ivec++;
-              }
+
+      const auto nallcells = static_cast<int>(tbox.numPts());
+      amrex::Gpu::DeviceVector<int> cutcell_offset(nallcells);
+      int* d_cutcell_offset = cutcell_offset.data();
+      amrex::Scan::PrefixSum<int>(
+        nallcells,
+        [=] AMREX_GPU_DEVICE(int icell) -> int {
+          const auto iv = tbox.atOffset(icell);
+          return static_cast<int>(flag_arr(iv).isSingleValued());
+        },
+        [=] AMREX_GPU_DEVICE(int icell, int const& x) {
+          d_cutcell_offset[icell] = x;
+        },
+        amrex::Scan::Type::exclusive);
+      if (Ncut > 0) {
+        amrex::ParallelFor(
+          tbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+            amrex::IntVect iv(amrex::IntVect(AMREX_D_DECL(i, j, k)));
+            if (flag_arr(iv).isSingleValued()) {
+              const auto icell = tbox.index(iv);
+              const auto idx = d_cutcell_offset[icell];
+              d_sv_eb_bndry_geom[idx].iv = iv;
             }
-          }
-        }
-      });
+          });
+      }
 
       // Now fill the sv_eb_bndry_geom
       auto const& vfrac_arr = vfrac.array(mfi);
@@ -136,23 +144,24 @@ PeleC::initialize_eb2_structs()
 
       // Fill in boundary gradient for cut cells in this grown tile
       const amrex::Real dx = geom.CellSize()[0];
-#if defined(AMREX_USE_CUDA) || defined(AMREX_USE_HIP)
-      const int sv_eb_bndry_geom_size = sv_eb_bndry_geom[iLocal].size();
-      thrust::sort(
-        thrust::device, sv_eb_bndry_geom[iLocal].data(),
-        sv_eb_bndry_geom[iLocal].data() + sv_eb_bndry_geom_size,
-        EBBndryGeomCmp());
-#elif defined(AMREX_USE_SYCL)
-      const int sv_eb_bndry_geom_size = sv_eb_bndry_geom[iLocal].size();
-      auto policy = oneapi::dpl::execution::make_device_policy(
-        amrex::Gpu::Device::streamQueue());
-      std::sort(
-        policy, sv_eb_bndry_geom[iLocal].data(),
-        sv_eb_bndry_geom[iLocal].data() + sv_eb_bndry_geom_size,
-        EBBndryGeomCmp());
-#else
-      sort<amrex::Gpu::DeviceVector<EBBndryGeom>>(sv_eb_bndry_geom[iLocal]);
-#endif
+      // I think this is unnecessary
+// #if defined(AMREX_USE_CUDA) || defined(AMREX_USE_HIP)
+//       const int sv_eb_bndry_geom_size = sv_eb_bndry_geom[iLocal].size();
+//       thrust::sort(
+//         thrust::device, sv_eb_bndry_geom[iLocal].data(),
+//         sv_eb_bndry_geom[iLocal].data() + sv_eb_bndry_geom_size,
+//         EBBndryGeomCmp());
+// #elif defined(AMREX_USE_SYCL)
+//       const int sv_eb_bndry_geom_size = sv_eb_bndry_geom[iLocal].size();
+//       auto policy = oneapi::dpl::execution::make_device_policy(
+//         amrex::Gpu::Device::streamQueue());
+//       std::sort(
+//         policy, sv_eb_bndry_geom[iLocal].data(),
+//         sv_eb_bndry_geom[iLocal].data() + sv_eb_bndry_geom_size,
+//         EBBndryGeomCmp());
+// #else
+//       sort<amrex::Gpu::DeviceVector<EBBndryGeom>>(sv_eb_bndry_geom[iLocal]);
+// #endif
 
       if (bgs == 0) {
         pc_fill_bndry_grad_stencil_quadratic(
@@ -186,22 +195,9 @@ PeleC::initialize_eb2_structs()
   }
 
   // Second pass over dirs and fabs to fill flux interpolation stencils
-  amrex::Box fbox[AMREX_SPACEDIM];
-
   for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
     flux_interp_stencil[dir].resize(vfrac.local_size());
 
-    fbox[dir] = amrex::bdryLo(
-      amrex::Box(
-        amrex::IntVect(AMREX_D_DECL(0, 0, 0)),
-        amrex::IntVect(AMREX_D_DECL(0, 0, 0))),
-      dir, 1);
-
-    for (int dir1 = 0; dir1 < AMREX_SPACEDIM; ++dir1) {
-      if (dir1 != dir) {
-        fbox[dir].grow(dir1, 1);
-      }
-    }
 
 #ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
@@ -310,7 +306,7 @@ PeleC::initialize_eb2_structs()
             });
 
           pc_fill_flux_interp_stencil(
-            tbox, fbox[dir], Nsten, facecent_arr, afrac_arr,
+            tbox, Nsten, facecent_arr, afrac_arr,
             flux_interp_stencil[dir][iLocal].data());
         }
       } else if (
