@@ -12,12 +12,6 @@
 #include "Utilities.H"
 #include "Geometry.H"
 
-#if defined(AMREX_USE_CUDA) || defined(AMREX_USE_HIP)
-#include <thrust/unique.h>
-#include <thrust/sort.h>
-#include <thrust/execution_policy.h>
-#endif
-
 inline bool
 PeleC::ebInitialized()
 {
@@ -144,25 +138,6 @@ PeleC::initialize_eb2_structs()
 
       // Fill in boundary gradient for cut cells in this grown tile
       const amrex::Real dx = geom.CellSize()[0];
-      // I think this is unnecessary
-// #if defined(AMREX_USE_CUDA) || defined(AMREX_USE_HIP)
-//       const int sv_eb_bndry_geom_size = sv_eb_bndry_geom[iLocal].size();
-//       thrust::sort(
-//         thrust::device, sv_eb_bndry_geom[iLocal].data(),
-//         sv_eb_bndry_geom[iLocal].data() + sv_eb_bndry_geom_size,
-//         EBBndryGeomCmp());
-// #elif defined(AMREX_USE_SYCL)
-//       const int sv_eb_bndry_geom_size = sv_eb_bndry_geom[iLocal].size();
-//       auto policy = oneapi::dpl::execution::make_device_policy(
-//         amrex::Gpu::Device::streamQueue());
-//       std::sort(
-//         policy, sv_eb_bndry_geom[iLocal].data(),
-//         sv_eb_bndry_geom[iLocal].data() + sv_eb_bndry_geom_size,
-//         EBBndryGeomCmp());
-// #else
-//       sort<amrex::Gpu::DeviceVector<EBBndryGeom>>(sv_eb_bndry_geom[iLocal]);
-// #endif
-
       if (bgs == 0) {
         pc_fill_bndry_grad_stencil_quadratic(
           tbox, dx, Ncut, sv_eb_bndry_geom[iLocal].data(), Ncut,
@@ -198,7 +173,6 @@ PeleC::initialize_eb2_structs()
   for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
     flux_interp_stencil[dir].resize(vfrac.local_size());
 
-
 #ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
@@ -215,98 +189,37 @@ PeleC::initialize_eb2_structs()
         // This used to be an std::set for cut_faces (it ensured
         // sorting and uniqueness)
         EBBndryGeom* d_sv_eb_bndry_geom = sv_eb_bndry_geom[iLocal].data();
-        const int Nall_cut_faces = amrex::Reduce::Sum<int>(
-          sv_eb_bndry_geom[iLocal].size(),
-          [=] AMREX_GPU_DEVICE(int i) noexcept -> int {
-            int r = 0;
-            const amrex::IntVect& iv = d_sv_eb_bndry_geom[i].iv;
-            for (int iside = 0; iside <= 1; iside++) {
-              const amrex::IntVect iv_face = iv + iside * amrex::BASISV(dir);
-              if (afrac_arr(iv_face) < 1.0) {
-                r++;
-              }
-            }
-            return r;
-          });
 
-        amrex::Gpu::DeviceVector<amrex::IntVect> v_all_cut_faces(
-          Nall_cut_faces);
-        amrex::IntVect* all_cut_faces = v_all_cut_faces.data();
+        const auto fbox = amrex::surroundingNodes(tbox, dir);
+        const auto nallfaces = static_cast<int>(fbox.numPts());
+        amrex::Gpu::DeviceVector<int> cutfaces_offset(nallfaces);
+        int* d_cutface_offset = cutfaces_offset.data();
+        int ncutfaces = amrex::Scan::PrefixSum<int>(
+          nallfaces,
+          [=] AMREX_GPU_DEVICE(int iface) -> int {
+            const auto iv = fbox.atOffset(iface);
+            return static_cast<int>(afrac_arr(iv) < 1.0);
+          },
+          [=] AMREX_GPU_DEVICE(int iface, int const& x) {
+            d_cutface_offset[iface] = x;
+          },
+          amrex::Scan::Type::exclusive, amrex::Scan::retSum);
 
-        const int sv_eb_bndry_geom_size =
-          static_cast<int>(sv_eb_bndry_geom[iLocal].size());
-        // Serial loop on the GPU
-        amrex::ParallelFor(1, [=] AMREX_GPU_DEVICE(int /*dummy*/) {
-          int cnt = 0;
-          for (int i = 0; i < sv_eb_bndry_geom_size; i++) {
-            const amrex::IntVect& iv = d_sv_eb_bndry_geom[i].iv;
-            for (int iside = 0; iside <= 1; iside++) {
-              const amrex::IntVect iv_face = iv + iside * amrex::BASISV(dir);
-              if (afrac_arr(iv_face) < 1.0) {
-                all_cut_faces[cnt] = iv_face;
-                cnt++;
-              }
-            }
-          }
-        });
-
-#if defined(AMREX_USE_CUDA) || defined(AMREX_USE_HIP)
-        const int v_all_cut_faces_size = v_all_cut_faces.size();
-        thrust::sort(
-          thrust::device, v_all_cut_faces.data(),
-          v_all_cut_faces.data() + v_all_cut_faces_size);
-        amrex::IntVect* unique_result_end = thrust::unique(
-          thrust::device, v_all_cut_faces.data(),
-          v_all_cut_faces.data() + v_all_cut_faces_size,
-          thrust::equal_to<amrex::IntVect>());
-        const int count_result =
-          thrust::distance(v_all_cut_faces.data(), unique_result_end);
-        amrex::Gpu::DeviceVector<amrex::IntVect> v_cut_faces(count_result);
-        amrex::IntVect* d_all_cut_faces = v_all_cut_faces.data();
-        amrex::IntVect* d_cut_faces = v_cut_faces.data();
-        amrex::ParallelFor(
-          v_cut_faces.size(), [=] AMREX_GPU_DEVICE(int i) noexcept {
-            d_cut_faces[i] = d_all_cut_faces[i];
-          });
-#elif defined(AMREX_USE_SYCL)
-        const int v_all_cut_faces_size = v_all_cut_faces.size();
-        auto policy = oneapi::dpl::execution::make_device_policy(
-          amrex::Gpu::Device::streamQueue());
-        std::sort(
-          policy, v_all_cut_faces.data(),
-          v_all_cut_faces.data() + v_all_cut_faces_size);
-        amrex::IntVect* unique_result_end = std::unique(
-          policy, v_all_cut_faces.data(),
-          v_all_cut_faces.data() + v_all_cut_faces_size,
-          std::equal_to<amrex::IntVect>());
-        const int count_result =
-          std::distance(v_all_cut_faces.data(), unique_result_end);
-        amrex::Gpu::DeviceVector<amrex::IntVect> v_cut_faces(count_result);
-        amrex::IntVect* d_all_cut_faces = v_all_cut_faces.data();
-        amrex::IntVect* d_cut_faces = v_cut_faces.data();
-        amrex::ParallelFor(
-          v_cut_faces.size(), [=] AMREX_GPU_DEVICE(int i) noexcept {
-            d_cut_faces[i] = d_all_cut_faces[i];
-          });
-#else
-        sort<amrex::Gpu::DeviceVector<amrex::IntVect>>(v_all_cut_faces);
-        auto v_cut_faces =
-          unique<amrex::Gpu::DeviceVector<amrex::IntVect>>(v_all_cut_faces);
-#endif
-
-        const int Nsten = static_cast<int>(v_cut_faces.size());
-        if (Nsten > 0) {
-          flux_interp_stencil[dir][iLocal].resize(Nsten);
-
-          amrex::IntVect* cut_faces = v_cut_faces.data();
+        if (ncutfaces > 0) {
+          flux_interp_stencil[dir][iLocal].resize(ncutfaces);
           auto* d_flux_interp_stencil = flux_interp_stencil[dir][iLocal].data();
           amrex::ParallelFor(
-            v_cut_faces.size(), [=] AMREX_GPU_DEVICE(int i) noexcept {
-              d_flux_interp_stencil[i].iv = cut_faces[i];
+            fbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+              amrex::IntVect iv(amrex::IntVect(AMREX_D_DECL(i, j, k)));
+              if (afrac_arr(iv) < 1.0) {
+                const auto iface = fbox.index(iv);
+                const auto idx = d_cutface_offset[iface];
+                d_flux_interp_stencil[idx].iv = iv;
+              }
             });
 
           pc_fill_flux_interp_stencil(
-            tbox, Nsten, facecent_arr, afrac_arr,
+            tbox, ncutfaces, facecent_arr, afrac_arr,
             flux_interp_stencil[dir][iLocal].data());
         }
       } else if (
