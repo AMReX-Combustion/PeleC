@@ -80,22 +80,18 @@ PeleC::initialize_eb2_structs()
   for (amrex::MFIter mfi(vfrac, false); mfi.isValid(); ++mfi) {
     const amrex::Box tbox = mfi.growntilebox();
     const amrex::EBCellFlagFab& flagfab = flags[mfi];
-
-    amrex::FabType typ = flagfab.getType(tbox);
-    int iLocal = mfi.LocalIndex();
+    const amrex::FabType typ = flagfab.getType(tbox);
+    const int iLocal = mfi.LocalIndex();
 
     if ((typ == amrex::FabType::regular) || (typ == amrex::FabType::covered)) {
       // do nothing
     } else if (typ == amrex::FabType::singlevalued) {
-      const int Ncut = flagfab.getNumCutCells(tbox);
-      sv_eb_bndry_geom[iLocal].resize(Ncut);
       auto const& flag_arr = flags.const_array(mfi);
-      EBBndryGeom* d_sv_eb_bndry_geom = sv_eb_bndry_geom[iLocal].data();
 
       const auto nallcells = static_cast<int>(tbox.numPts());
       amrex::Gpu::DeviceVector<int> cutcell_offset(nallcells);
-      int* d_cutcell_offset = cutcell_offset.data();
-      amrex::Scan::PrefixSum<int>(
+      auto* d_cutcell_offset = cutcell_offset.data();
+      const auto ncutcells = amrex::Scan::PrefixSum<int>(
         nallcells,
         [=] AMREX_GPU_DEVICE(int icell) -> int {
           const auto iv = tbox.atOffset(icell);
@@ -104,8 +100,13 @@ PeleC::initialize_eb2_structs()
         [=] AMREX_GPU_DEVICE(int icell, int const& x) {
           d_cutcell_offset[icell] = x;
         },
-        amrex::Scan::Type::exclusive);
-      if (Ncut > 0) {
+        amrex::Scan::Type::exclusive, amrex::Scan::retSum);
+
+      AMREX_ASSERT(ncutcells == flagfab.getNumCutCells(tbox));
+
+      sv_eb_bndry_geom[iLocal].resize(ncutcells);
+      if (ncutcells > 0) {
+        EBBndryGeom* d_sv_eb_bndry_geom = sv_eb_bndry_geom[iLocal].data();
         amrex::ParallelFor(
           tbox,
           [=] AMREX_GPU_DEVICE(int i, int j, int AMREX_D_PICK(, , k)) noexcept {
@@ -125,21 +126,20 @@ PeleC::initialize_eb2_structs()
                    , auto const& areafrac_arr_1 = areafrac[1]->array(mfi);
                    , auto const& areafrac_arr_2 = areafrac[2]->array(mfi);)
       pc_fill_sv_ebg(
-        tbox, Ncut, vfrac_arr, bndrycent_arr,
+        tbox, ncutcells, vfrac_arr, bndrycent_arr,
         AMREX_D_DECL(areafrac_arr_0, areafrac_arr_1, areafrac_arr_2),
         sv_eb_bndry_geom[iLocal].data());
 
-      sv_eb_bndry_grad_stencil[iLocal].resize(Ncut);
-
       // Fill in boundary gradient for cut cells in this grown tile
+      sv_eb_bndry_grad_stencil[iLocal].resize(ncutcells);
       const amrex::Real dx = geom.CellSize()[0];
       if (bgs == 0) {
         pc_fill_bndry_grad_stencil_quadratic(
-          tbox, dx, Ncut, sv_eb_bndry_geom[iLocal].data(), Ncut,
+          tbox, dx, ncutcells, sv_eb_bndry_geom[iLocal].data(), ncutcells,
           sv_eb_bndry_grad_stencil[iLocal].data());
       } else if (bgs == 1) {
         pc_fill_bndry_grad_stencil_ls(
-          tbox, dx, Ncut, sv_eb_bndry_geom[iLocal].data(), Ncut,
+          tbox, dx, ncutcells, sv_eb_bndry_geom[iLocal].data(), ncutcells,
           flags.array(mfi), sv_eb_bndry_grad_stencil[iLocal].data());
       } else {
         amrex::Print()
@@ -174,8 +174,8 @@ PeleC::initialize_eb2_structs()
     for (amrex::MFIter mfi(vfrac, false); mfi.isValid(); ++mfi) {
       const amrex::Box tbox = mfi.growntilebox(numGrow());
       const auto& flagfab = flags[mfi];
-      amrex::FabType typ = flagfab.getType(tbox);
-      int iLocal = mfi.LocalIndex();
+      const amrex::FabType typ = flagfab.getType(tbox);
+      const int iLocal = mfi.LocalIndex();
 
       if (typ == amrex::FabType::singlevalued) {
         const auto afrac_arr = (*areafrac[dir])[mfi].array();
@@ -183,8 +183,8 @@ PeleC::initialize_eb2_structs()
         const auto fbox = amrex::surroundingNodes(tbox, dir);
         const auto nallfaces = static_cast<int>(fbox.numPts());
         amrex::Gpu::DeviceVector<int> cutfaces_offset(nallfaces);
-        int* d_cutface_offset = cutfaces_offset.data();
-        int ncutfaces = amrex::Scan::PrefixSum<int>(
+        auto* d_cutface_offset = cutfaces_offset.data();
+        const auto ncutfaces = amrex::Scan::PrefixSum<int>(
           nallfaces,
           [=] AMREX_GPU_DEVICE(int iface) -> int {
             const auto iv = fbox.atOffset(iface);
@@ -210,8 +210,7 @@ PeleC::initialize_eb2_structs()
             });
 
           pc_fill_flux_interp_stencil(
-            tbox, ncutfaces, facecent_arr, afrac_arr,
-            flux_interp_stencil[dir][iLocal].data());
+            tbox, ncutfaces, facecent_arr, afrac_arr, d_flux_interp_stencil);
         }
       } else if (
         (typ != amrex::FabType::regular) && (typ != amrex::FabType::covered)) {
