@@ -107,7 +107,8 @@ PeleC::initialize_eb2_structs()
         amrex::Scan::Type::exclusive);
       if (Ncut > 0) {
         amrex::ParallelFor(
-          tbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+          tbox,
+          [=] AMREX_GPU_DEVICE(int i, int j, int AMREX_D_PICK(, , k)) noexcept {
             amrex::IntVect iv(amrex::IntVect(AMREX_D_DECL(i, j, k)));
             if (flag_arr(iv).isSingleValued()) {
               const auto icell = tbox.index(iv);
@@ -198,7 +199,8 @@ PeleC::initialize_eb2_structs()
           flux_interp_stencil[dir][iLocal].resize(ncutfaces);
           auto* d_flux_interp_stencil = flux_interp_stencil[dir][iLocal].data();
           amrex::ParallelFor(
-            fbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+            fbox, [=] AMREX_GPU_DEVICE(
+                    int i, int j, int AMREX_D_PICK(, , k)) noexcept {
               amrex::IntVect iv(amrex::IntVect(AMREX_D_DECL(i, j, k)));
               if (afrac_arr(iv) < 1.0) {
                 const auto iface = fbox.index(iv);
