@@ -170,6 +170,8 @@ PeleC::getEBCoarsening()
   ppa.query("restart", restart_file);
 
   if (restart_file.empty() and !(init_pltfile.empty())) {
+    // init_pltfile can be coarser than current sim but not finer
+    AMREX_ALWAYS_ASSERT(init_pltfile_coarse_levels >= 0);
     return init_pltfile_coarse_levels;
   }
   return 0;

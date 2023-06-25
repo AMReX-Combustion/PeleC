@@ -474,7 +474,8 @@ initialize_EB2(
         amrex_defaults.end())) {
     std::unique_ptr<pele::pelec::Geometry> geometry(
       pele::pelec::Geometry::create(geom_type));
-    geometry->build(geom, max_coarsening_level);
+    geometry->build(
+      geom, max_coarsening_level, max_coarsening_level + coarsening);
   } else {
     amrex::EB2::Build(geom, max_level, max_level + coarsening);
   }
