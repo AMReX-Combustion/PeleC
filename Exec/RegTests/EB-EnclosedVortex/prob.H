@@ -21,17 +21,6 @@
 #include "Utilities.H"
 #include "Geometry.H"
 
-void parse_params(std::unique_ptr<ProbParmDevice>& prob_parm_device);
-
-class EBConvergingNozzle
-  : public pele::pelec::Geometry::Register<EBConvergingNozzle>
-{
-public:
-  static std::string identifier() { return "converging-nozzle"; }
-
-  void build(const amrex::Geometry& geom, const int max_coarsening_level);
-};
-
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
