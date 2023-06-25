@@ -447,6 +447,7 @@ initialize_EB2(
   const amrex::Geometry& geom,
   const int eb_max_level,
   const int max_level,
+  const int coarsening,
   const amrex::Vector<amrex::IntVect>& ref_ratio,
   const amrex::IntVect& max_grid_size)
 {
@@ -475,7 +476,7 @@ initialize_EB2(
       pele::pelec::Geometry::create(geom_type));
     geometry->build(geom, max_coarsening_level);
   } else {
-    amrex::EB2::Build(geom, max_level, max_level);
+    amrex::EB2::Build(geom, max_level, max_level + coarsening);
   }
 
   // Add finer level, might be inconsistent with the coarser level created
