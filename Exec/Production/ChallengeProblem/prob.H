@@ -48,10 +48,8 @@ class EBLinePistonCylinder
 public:
   static std::string identifier() { return "Line-Piston-Cylinder"; }
 
-  void build(
-    const amrex::Geometry& geom,
-    const int max_coarsening_level,
-    const int additional_coarsening_level) override;
+  void
+  build(const amrex::Geometry& geom, const int max_coarsening_level) override;
 };
 
 AMREX_GPU_DEVICE

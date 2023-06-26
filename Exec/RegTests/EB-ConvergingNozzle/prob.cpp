@@ -54,9 +54,7 @@ PeleC::problem_post_restart()
 
 void
 EBConvergingNozzle::build(
-  const amrex::Geometry& geom,
-  const int max_coarsening_level,
-  const int additional_coarsening_level)
+  const amrex::Geometry& geom, const int max_coarsening_level)
 {
   parse_params(PeleC::h_prob_parm_device);
   ProbParmDevice const* pp = PeleC::h_prob_parm_device;
@@ -88,5 +86,5 @@ EBConvergingNozzle::build(
   auto polys = amrex::EB2::makeUnion(main, nozzle_exit);
   auto gshop = amrex::EB2::makeShop(polys);
   amrex::EB2::Build(
-    gshop, geom, max_coarsening_level, additional_coarsening_level, 4, false);
+    gshop, geom, max_coarsening_level, max_coarsening_level, 4, false);
 }

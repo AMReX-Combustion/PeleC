@@ -2,9 +2,7 @@
 
 void
 EBLinePistonCylinder::build(
-  const amrex::Geometry& geom,
-  const int max_coarsening_level,
-  const int additional_coarsening_level)
+  const amrex::Geometry& geom, const int max_coarsening_level)
 {
   amrex::EB2::SplineIF Piston;
   std::vector<amrex::RealVect> lnpts;
@@ -63,8 +61,7 @@ EBLinePistonCylinder::build(
   auto revolvePiston = amrex::EB2::lathe(Piston);
   auto PistonCylinder = amrex::EB2::makeUnion(revolvePiston, cylinder);
   auto gshop = amrex::EB2::makeShop(PistonCylinder);
-  amrex::EB2::Build(
-    gshop, geom, max_coarsening_level, additional_coarsening_level);
+  amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
 }
 
 extern "C" {

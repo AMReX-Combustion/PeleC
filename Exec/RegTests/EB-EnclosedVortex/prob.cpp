@@ -45,3 +45,9 @@ void
 PeleC::problem_post_restart()
 {
 }
+
+void
+EBConvergingNozzle::build(
+  const amrex::Geometry& geom, const int max_coarsening_level)
+{
+}
