@@ -4,19 +4,14 @@ namespace pele::pelec {
 
 void
 FlatPlate::build(
-  const amrex::Geometry& /*geom*/,
-  const int /*max_coarsening_level*/,
-  const int /*additional_coarsening_level*/)
+  const amrex::Geometry& /*geom*/, const int /*max_coarsening_level*/)
 {
   amrex::Print() << "flat plate  geometry not currently supported. \n";
   amrex::Abort();
 }
 
 void
-Ramp::build(
-  const amrex::Geometry& geom,
-  const int max_coarsening_level,
-  const int additional_coarsening_level)
+Ramp::build(const amrex::Geometry& geom, const int max_coarsening_level)
 {
   amrex::Print() << "ramp geometry\n";
   int upDir;
@@ -40,15 +35,11 @@ Ramp::build(
 
   amrex::EB2::PlaneIF ramp(point, normal);
   auto gshop = amrex::EB2::makeShop(ramp);
-  amrex::EB2::Build(
-    gshop, geom, max_coarsening_level, additional_coarsening_level);
+  amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
 }
 
 void
-Combustor::build(
-  const amrex::Geometry& geom,
-  const int max_coarsening_level,
-  const int additional_coarsening_level)
+Combustor::build(const amrex::Geometry& geom, const int max_coarsening_level)
 {
   amrex::ParmParse pp("combustor");
 
@@ -106,15 +97,12 @@ Combustor::build(
                                 static_cast<amrex::Real>(leny * 0.5), 0.)});
 
   auto gshop = amrex::EB2::makeShop(pr);
-  amrex::EB2::Build(
-    gshop, geom, max_coarsening_level, additional_coarsening_level);
+  amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
 }
 
 void
 ICEPistonBowl::build(
-  const amrex::Geometry& geom,
-  const int max_coarsening_level,
-  const int additional_coarsening_level)
+  const amrex::Geometry& geom, const int max_coarsening_level)
 {
   amrex::RealArray center({AMREX_D_DECL(0.04 - 0.0125 - 0.02, 0.0, 0.0)});
 
@@ -143,14 +131,11 @@ ICEPistonBowl::build(
   auto polys = amrex::EB2::makeUnion(cf1, pipe, cf4, sf, sf2);
 
   auto gshop = amrex::EB2::makeShop(polys);
-  amrex::EB2::Build(
-    gshop, geom, max_coarsening_level, additional_coarsening_level, 4);
+  amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level, 4);
 }
 void
 ExtrudedTriangles::build(
-  const amrex::Geometry& geom,
-  const int max_coarsening_level,
-  const int additional_coarsening_level)
+  const amrex::Geometry& geom, const int max_coarsening_level)
 {
   // setting some constants
   // the polygon is triangle
@@ -276,14 +261,11 @@ ExtrudedTriangles::build(
   auto alltri_extrude_IF = amrex::EB2::extrude(alltri_IF, 2); // along z
 
   auto gshop = amrex::EB2::makeShop(alltri_extrude_IF);
-  amrex::EB2::Build(
-    gshop, geom, max_coarsening_level, additional_coarsening_level);
+  amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
 }
 void
 PolygonRevolution::build(
-  const amrex::Geometry& /*geom*/,
-  const int /*max_coarsening_level*/,
-  const int /*additional_coarsening_level*/)
+  const amrex::Geometry& /*geom*/, const int /*max_coarsening_level*/)
 {
   amrex::Print() << "polygon_revolution  geometry not currently supported. "
                     " combustor?\n";
@@ -291,10 +273,7 @@ PolygonRevolution::build(
 }
 
 void
-MovingPlane::build(
-  const amrex::Geometry& geom,
-  const int max_coarsening_level,
-  const int additional_coarsening_level)
+MovingPlane::build(const amrex::Geometry& geom, const int max_coarsening_level)
 {
   amrex::RealArray point;
   point[0] = 0.5;
@@ -312,15 +291,12 @@ MovingPlane::build(
     {AMREX_D_DECL(-1.0, 0.25, -1.)}, {AMREX_D_DECL(1.5, 0.5, 1.)}, false);
   auto gshop = amrex::EB2::makeShop(pipe);
 
-  amrex::EB2::Build(
-    gshop, geom, max_coarsening_level, additional_coarsening_level);
+  amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
 }
 
 void
 QuarterCircle::build(
-  const amrex::Geometry& geom,
-  const int max_coarsening_level,
-  const int additional_coarsening_level)
+  const amrex::Geometry& geom, const int max_coarsening_level)
 {
   amrex::Real r_inner = 1.0;
   amrex::Real r_outer = 2.0;
@@ -334,17 +310,13 @@ QuarterCircle::build(
   auto polys = amrex::EB2::makeUnion(inner, outer);
   auto gshop = amrex::EB2::makeShop(polys);
   amrex::EB2::Build(
-    gshop, geom, max_coarsening_level, additional_coarsening_level, 4, false);
+    gshop, geom, max_coarsening_level, max_coarsening_level, 4, false);
 }
 
 void
 CheckpointFile::build(
-  const amrex::Geometry& geom,
-  const int max_coarsening_level,
-  const int /*additional_coarsening_level*/)
+  const amrex::Geometry& geom, const int max_coarsening_level)
 {
-  // Note: if restarting from a chkfile, we aren't using init_pltfile, so don't
-  // need coarse EB levels
   std::string chkfile = "chk_geom";
   amrex::ParmParse pp("eb2");
   pp.query("chkfile", chkfile);
