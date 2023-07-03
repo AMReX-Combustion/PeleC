@@ -159,7 +159,7 @@ function(build_pelec_exe pelec_exe_name pelec_lib_name)
     target_compile_options(${pelec_exe_name} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xptxas --disable-optimizer-constants>)
   endif()
  
-  target_link_libraries(${pelec_exe_name} PRIVATE ${pelec_lib_name} AMReX-Hydro::amrex_hydro_api AMReX::amrex)
+  target_link_libraries(${pelec_exe_name} PRIVATE ${pelec_lib_name} AMReX::amrex)
 
   #Define what we want to be installed during a make install 
   install(TARGETS ${pelec_exe_name}
