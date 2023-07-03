@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "hydro_redistribution.H"
+#include "AMReX_EB_Redistribution.H"
 #include "EB.H"
 #include "prob.H"
 #include "Utilities.H"
@@ -749,7 +749,7 @@ PeleC::InitialRedistribution(
 
       const auto& sarr = S_new.array(mfi);
       const auto& tarr = tmp.array(mfi);
-      Redistribution::ApplyToInitialData(
+      ApplyInitialRedistribution(
         bx, NVAR, sarr, tarr, flag_arr, AMREX_D_DECL(apx, apy, apz),
         vfrac.const_array(mfi), AMREX_D_DECL(fcx, fcy, fcz), ccc,
         d_bcs.dataPtr(), geom, redistribution_type, eb_srd_max_order);

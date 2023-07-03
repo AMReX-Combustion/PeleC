@@ -613,8 +613,8 @@ PeleC::getMOLSrcTerm(
         copy_array4(Dfab.box(), NVAR, Dterm, Dterm_tmp);
 
         {
-          BL_PROFILE("Redistribution::Apply()");
-          Redistribution::Apply(
+          BL_PROFILE("ApplyRedistribution()");
+          ApplyRedistribution(
             vbox, S.nComp(), Dterm, Dterm_tmp, S.const_array(mfi), scratch,
             flag_arr, AMREX_D_DECL(apx, apy, apz), vfrac.const_array(mfi),
             AMREX_D_DECL(fcx, fcy, fcz), ccc, d_bcs.dataPtr(), geom, dt,
