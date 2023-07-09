@@ -15,18 +15,18 @@ struct ProbParmDevice
   amrex::Real vel_jet = 5000.0;
   amrex::Real Yox_channel = 0.23;
   amrex::Real Yfuel_jet = 1.0;
-  
-  //C1 case
+
+  // C1 case
   amrex::Real centx = 1.0;
   amrex::Real centz = 0.225;
-  
-  //C2 case
-  //amrex::Real centx = 1.5;
-  //amrex::Real centz = 0.0;
-  
+
+  // C2 case
+  // amrex::Real centx = 1.5;
+  // amrex::Real centz = 0.0;
+
   amrex::Real r_hole = 0.05;
   int inject_fuel = 0;
-  amrex::Real Mach_channel=1.5;
+  amrex::Real Mach_channel = 1.5;
 };
 
 struct ProbParmHost
