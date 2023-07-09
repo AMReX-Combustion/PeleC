@@ -258,8 +258,6 @@ ExtrudedTriangles::build(
     *impfunc_triangles[0], *impfunc_triangles[1], *impfunc_triangles[2],
     *impfunc_triangles[3], *impfunc_triangles[4]);
 
-  //auto alltri_extrude_IF = amrex::EB2::extrude(alltri_IF, 2); // along z
-
   auto gshop = amrex::EB2::makeShop(alltri_IF);
   amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
 }
