@@ -15,9 +15,10 @@ extern "C" {
         const amrex::Real* probhi)
     {
         amrex::ParmParse pp("prob");
-
-        //pp.query("T_ox", PeleC::h_prob_parm_device->T_ox);
-
+        pp.query("inject_fuel",PeleC::h_prob_parm_device->inject_fuel);
+        pp.query("centx",PeleC::h_prob_parm_device->centx);
+        pp.query("centz",PeleC::h_prob_parm_device->centz);
+        pp.query("r_hole",PeleC::h_prob_parm_device->r_hole);
     }
 
     void

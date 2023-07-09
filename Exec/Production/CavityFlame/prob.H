@@ -94,12 +94,10 @@ bcnormal(
             s_ext[UFS + n] = s_int[UFS + n];
         }
 
-        for(int nh=0;nh<prob_parm.nholes;nh++)
+        if(prob_parm.inject_fuel)
         {
-            amrex::Real dphi_angle=2.0*M_PI/amrex::Real(prob_parm.nholes);
-            amrex::Real phi_angle = nh*dphi_angle;
-            amrex::Real hole_cx = prob_parm.centx + prob_parm.r_circ*cos(phi_angle);
-            amrex::Real hole_cz = prob_parm.centz + prob_parm.r_circ*sin(phi_angle);
+            amrex::Real hole_cx = prob_parm.centx;
+            amrex::Real hole_cz = prob_parm.centz;
 
             const amrex::Real radius = std::sqrt(
                 (x[0] - hole_cx) * (x[0] - hole_cx) +
@@ -107,7 +105,6 @@ bcnormal(
 
             if (radius < prob_parm.r_hole) 
             {
-                amrex::Real massfrac[NUM_SPECIES] = {0.0};
                 auto eos = pele::physics::PhysicsType::eos();
 
                 // interior pressure
@@ -119,26 +116,23 @@ bcnormal(
                 }
                 eos.RTY2P(s_int[URHO], s_int[UTEMP], massfrac_int, p_int);
 
-                amrex::Real decayfac=0.0;
-                amrex::Real eta = (1.0 - std::pow(std::tanh(decayfac*radius/prob_parm.r_hole),2.0));
-                massfrac_ext[H2_ID]=prob_parm.Yfuel_jet*eta;
-                massfrac_ext[O2_ID]=0.0;
+                massfrac_ext[H2_ID]=prob_parm.Yfuel_jet;
+                massfrac_ext[O2_ID]=(1.0-massfrac_ext[H2_ID])*0.23; //making the rest air
                 massfrac_ext[N2_ID]=1.0-massfrac_ext[H2_ID]-massfrac_ext[O2_ID];
                 amrex::Real vjet_pipeflow = prob_parm.vel_jet*(1.0 - std::pow(radius/prob_parm.r_hole,2.0));
-                amrex::Real vy_in = vjet_pipeflow*cos(prob_parm.cone_angle*M_PI/180.0);
-                amrex::Real vr_in = vjet_pipeflow*sin(prob_parm.cone_angle*M_PI/180.0);
-                amrex::Real vx_in = vr_in*cos(phi_angle);
-                amrex::Real vz_in = vr_in*sin(phi_angle);
+                amrex::Real vx_in = 0.0;
+                amrex::Real vy_in = vjet_pipeflow;
+                amrex::Real vz_in = 0.0;
 
                 s_ext[UTEMP] = prob_parm.temp_jet; 
                 amrex::Real rho, eint;
-                eos.PYT2RE(p_int, massfrac, s_ext[UTEMP],rho,eint);
+                eos.PYT2RE(p_int, massfrac_ext, s_ext[UTEMP],rho,eint);
 
                 s_ext[URHO] = rho;
                 s_ext[UEINT] = rho * eint;
 
                 for (int n = 0; n < NUM_SPECIES; n++) {
-                    s_ext[UFS + n] = rho * massfrac[n];
+                    s_ext[UFS + n] = rho * massfrac_ext[n];
                 }
                 // Velocity
                 s_ext[UMX] = rho * vx_in;

@@ -94,3 +94,18 @@ extruded_triangles.tri_1_point_2 =   2.478    0.305  0.0
 extruded_triangles.tri_2_point_0 =  12.0      0.305  0.0
 extruded_triangles.tri_2_point_1 =  2.478    0.305  0.0
 extruded_triangles.tri_2_point_2 =  2.478   -0.392  0.0
+
+#nonreacting case
+prob.inject_fuel=0
+
+#c1 injection case
+#prob.inject_fuel=1
+#prob.centx=1.0
+#prob.centz=0.225
+#prob.r_hole=0.05
+
+#c2 injection case
+#prob.inject_fuel=1.5
+#prob.centx=1.0
+#prob.centz=0.225
+#prob.r_hole=0.05
