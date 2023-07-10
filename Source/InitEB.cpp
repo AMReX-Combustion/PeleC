@@ -447,6 +447,7 @@ initialize_EB2(
   const amrex::Geometry& geom,
   const int eb_max_level,
   const int max_level,
+  const int coarsening,
   const amrex::Vector<amrex::IntVect>& ref_ratio,
   const amrex::IntVect& max_grid_size)
 {
@@ -460,9 +461,14 @@ initialize_EB2(
 
   int max_coarsening_level = 0;
   for (int lev = 0; lev < max_level; ++lev) {
-    max_coarsening_level +=
-      (ref_ratio[lev] == 2 ? 1
-                           : 2); // Since EB always coarsening by factor of 2
+    // Since EB always coarsens by a factor of 2
+    if (ref_ratio[lev] == 2) {
+      max_coarsening_level += 1;
+    } else if (ref_ratio[lev] == 4) {
+      max_coarsening_level += 2;
+    } else {
+      amrex::Abort("initalize_EB2: Refinement ratio must be 2 or 4");
+    }
   }
 
   // Custom types defined here - all_regular, plane, sphere, etc, will get
@@ -473,9 +479,11 @@ initialize_EB2(
         amrex_defaults.end())) {
     std::unique_ptr<pele::pelec::Geometry> geometry(
       pele::pelec::Geometry::create(geom_type));
-    geometry->build(geom, max_coarsening_level);
+    geometry->build(geom, max_coarsening_level + coarsening);
   } else {
-    amrex::EB2::Build(geom, max_level, max_level);
+    amrex::EB2::Build(
+      geom, max_coarsening_level + coarsening,
+      max_coarsening_level + coarsening);
   }
 
   // Add finer level, might be inconsistent with the coarser level created

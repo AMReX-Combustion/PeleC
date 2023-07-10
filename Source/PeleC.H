@@ -572,6 +572,7 @@ public:
 
   static bool ebInitialized();
   static int getEBMaxLevel();
+  static int getEBCoarsening();
 
   void InitialRedistribution(
     const amrex::Real time,

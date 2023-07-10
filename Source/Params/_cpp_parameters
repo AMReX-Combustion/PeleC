@@ -40,6 +40,9 @@ init_pltfile              string          ""
 # Acceptable tolerance for species mass fraction when initializing from a plot file
 init_pltfile_massfrac_tol   Real         1e-8
 
+# Number of coarser levels in the init pltfile vs present simulation
+init_pltfile_coarse_levels  int         0
+
 # Checkpoint old state
 dump_old                   bool          false
 
