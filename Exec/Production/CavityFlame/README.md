@@ -10,7 +10,9 @@ is 512 x 128 x 32 and simulations are performed with 3 levels (max_level=2).
 
 First a non-reacting simulation is performed and then reacting cases for 
 C1 and C2 are restarted from the non-reacting checkpoint file with 
-inject_fuel=1 and appropriate injection location set by centx.
+inject_fuel=1 and appropriate injection location set by centx. The 
+fuel autoignites because of the high stagnation temperature near the injection
+location.
 
 Further information is also available in the youtube video from 
 APS gallery of fluid motion:
