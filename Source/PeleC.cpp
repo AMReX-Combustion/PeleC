@@ -162,6 +162,19 @@ PeleC::getEBMaxLevel()
   return max_eb_level;
 }
 
+int
+PeleC::getEBCoarsening()
+{
+  amrex::ParmParse ppa("amr");
+  std::string restart_file;
+  ppa.query("restart", restart_file);
+
+  if (restart_file.empty() and !(init_pltfile.empty())) {
+    return init_pltfile_coarse_levels;
+  }
+  return 0;
+}
+
 void
 PeleC::read_params()
 {
