@@ -31,7 +31,7 @@ pc_initdata(
   int j,
   int k,
   amrex::Array4<amrex::Real> const& state,
-  amrex::GeometryData const& /*geomdata*/,
+  amrex::GeometryData const& geomdata,
   ProbParmDevice const& prob_parm)
 {
   auto eos = pele::physics::PhysicsType::eos();
@@ -45,9 +45,34 @@ pc_initdata(
   eos.RTY2E(rho, prob_parm.Temp_amb, massfrac, eint);
   eos.RTY2Cs(rho, prob_parm.Temp_amb, massfrac, Cs);
 
-  amrex::Real x_velocity = Cs * prob_parm.Mach_channel;
+  // Init options
+  // 0 : uniform x_vel everywhere
+  // 1 : zero velocity in cavity region
+  // 2 : linear velocity profile in cavity region
+  amrex::Real x_velocity = 0.0;
   amrex::Real y_velocity = 0.0;
   amrex::Real z_velocity = 0.0;
+  const amrex::Real cavity_height = prob_parm.cavity_depth;
+  if (prob_parm.init_type == 0) {
+    x_velocity = Cs * prob_parm.Mach_channel;
+    // Do nothing - constant velocity
+  } else if (prob_parm.init_type == 1) {
+    // Zero velocity in cavity
+    amrex::Real yval =
+      geomdata.ProbLo(1) + (amrex::Real(j) + 0.5) * geomdata.CellSize(1);
+    x_velocity = yval <= cavity_height ? 0.0 : Cs * prob_parm.Mach_channel;
+  } else if (prob_parm.init_type == 2) {
+    // Velocity gradient in cavity
+    amrex::Real yval =
+      geomdata.ProbLo(1) + (amrex::Real(j) + 0.5) * geomdata.CellSize(1);
+    amrex::Real interp = amrex::min(
+      amrex::max((yval - 0.5 * cavity_height) / (0.5 * cavity_height), -1.0),
+      1.0);
+    x_velocity = interp * Cs * prob_parm.Mach_channel;
+  } else {
+    amrex::Abort("prob.init_type must be 0 (uniform velocity), 1 (quiescent "
+                 "cavity), or 2 (linear velocity in cavity)");
+  }
 
   // Set the state
   state(i, j, k, URHO) = rho;

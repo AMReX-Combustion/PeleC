@@ -27,6 +27,8 @@ struct ProbParmDevice
   amrex::Real r_hole = 0.05;
   int inject_fuel = 0;
   amrex::Real Mach_channel = 1.5;
+  int init_type = 0;
+  amrex::Real cavity_depth = 0.305;
 };
 
 struct ProbParmHost

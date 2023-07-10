@@ -8,6 +8,13 @@ Combustion and Flame, 232, 111531.
 The runs from the paper are quite expensive. The baseline grid 
 is 512 x 128 x 32 and simulations are performed with 3 levels (max_level=2).
 
+When running on coarser grids, there may be numerical stability issues
+depending on how the velocity field is initialized. Three options for velocity
+initialization are available; setting `prob.init_type = 1` or `2` may help
+simulations stably get through the initial transient. These
+options apply reduced velocities in the cavity region; in the default (0)
+there is a uniform initial x velocity everywhere.
+
 First a non-reacting simulation is performed and then reacting cases for 
 C1 and C2 are restarted from the non-reacting checkpoint file with 
 inject_fuel=1 and appropriate injection location set by centx. The 

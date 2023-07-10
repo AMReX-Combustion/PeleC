@@ -19,6 +19,8 @@ amrex_probinit(
   pp.query("centx", PeleC::h_prob_parm_device->centx);
   pp.query("centz", PeleC::h_prob_parm_device->centz);
   pp.query("r_hole", PeleC::h_prob_parm_device->r_hole);
+  pp.query("init_type", PeleC::h_prob_parm_device->init_type);
+  pp.query("cavity_depth", PeleC::h_prob_parm_device->cavity_depth);
 }
 
 void
