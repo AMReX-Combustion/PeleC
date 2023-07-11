@@ -23,23 +23,23 @@ PeleC::getMOLSrcTerm(
      boundaries actually are assumed to live on the inflow face.
 
      1. Convert S to Q, primitive variables (since the transport coefficients
-     typically depend on mass fractions and temperature). Q then will be
-     face-centered on Dirichlet faces.
+     typically depend on mass fractions and temperature).
 
-     2. Evaluate transport coefficients (these also will be face-centered, if Q
-     is).
+     2. Evaluate transport coefficients
 
      3. Evaluate the diffusion operator over all components
 
-     a. Evaluate tangential derivatives for strain terms, over all cells
-     b. Replace these with versions that avoid covered cells, if present
-     c. Evaluate face-centered diffusion fluxes, and their divergence
-     d. Zero fluxes and divergence after the fact if subset of components have
-     diffuse shut off (this allows that T be diffused alone, in order to support
-     simple tests)
+     a. Compute face-centered transport coefficients
+     b. Evaluate face-centered diffusion fluxes
+     c. Zero fluxes and divergence after the fact if subset of components have
+     diffuse shut off (this allows that T be diffused alone)
 
-     4. Replace divergence of face-centered fluxes with hybrid divergence
-     operator, and weigthed redistribution.
+     4. (optional) evaluate face-centered MOL hydro fluxes
+
+     5. Compute divergence of face-centered fluxes with hybrid divergence
+     operator, include wall fluxes for diffusion and hydro,
+
+     6. Perform weigthed redistribution at the EB
 
      Extra notes:
 
@@ -53,12 +53,8 @@ PeleC::getMOLSrcTerm(
      arithmetic average of cell values on either side.  Similarly, mass
      fractions at cell faces are needed to compute the barodiffusion and
      correction velocity expressions. Arithmetic averages are used there as
-     well.  Thus, these face values are thermodynamically inconsistent.  Note
+     well.  Thus, these face values are thermodynamically inconsistent.  Not
      sure what are the consequences of that.
-
-     The non-GPU version has EB, this does not at the moment. The Techniques for
-     EB will need to be carefully considered before implementation for
-     accelerators.
   */
 
   const int nCompTr = dComp_lambda + 1;
@@ -72,17 +68,6 @@ PeleC::getMOLSrcTerm(
   }
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dxD = {
     {AMREX_D_DECL(dx1, dx1, dx1)}};
-
-  // Grab the BCs
-  const amrex::StateDescriptor* desc = state[State_Type].descriptor();
-  const auto& bcs = desc->getBCs();
-  amrex::Gpu::DeviceVector<amrex::BCRec> d_bcs(desc->nComp());
-  amrex::Gpu::copy(
-    amrex::Gpu::hostToDevice, bcs.begin(), bcs.end(), d_bcs.begin());
-
-  // Fetch some gpu arrays
-  prefetchToDevice(S);
-  prefetchToDevice(MOLSrcTerm);
 
   auto const& fact =
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(S.Factory());
@@ -131,9 +116,6 @@ PeleC::getMOLSrcTerm(
       // cut cells within 1 grow cell (cbox) due to EB redistribute
       typ = flag_fab.getType(cbox);
 
-      // TODO: Add check that this is nextra-1
-      //       (better: fix bounds on ebflux computation in hyperbolic routine
-      //                to be a constant, and make sure this matches it)
       const amrex::Box ebfluxbox = amrex::grow(vbox, 2);
 
       const int local_i = mfi.LocalIndex();
@@ -157,7 +139,6 @@ PeleC::getMOLSrcTerm(
       auto const& qauxar = qaux.array();
 
       // Get primitives, Q, including (Y, T, p, rho) from conserved state
-      // required for D term
       {
         BL_PROFILE("PeleC::ctoprim()");
         amrex::ParallelFor(
@@ -198,6 +179,7 @@ PeleC::getMOLSrcTerm(
                            &time, dx, &dt);
             }
       */
+
       // Compute transport coefficients, coincident with Q
       auto const& coe_cc = coeff_cc.array();
       {
@@ -209,7 +191,6 @@ PeleC::getMOLSrcTerm(
         auto const& coe_xi = coeff_cc.array(dComp_xi);
         auto const& coe_lambda = coeff_cc.array(dComp_lambda);
         BL_PROFILE("PeleC::get_transport_coeffs()");
-        // Get Transport coefs on GPU.
         auto const* ltransparm = trans_parms.device_trans_parm();
         amrex::launch(gbox, [=] AMREX_GPU_DEVICE(amrex::Box const& tbx) {
           auto trans = pele::physics::PhysicsType::transport();
@@ -275,91 +256,34 @@ PeleC::getMOLSrcTerm(
         }
       }
 
-      // Compute flux divergence (1/Vol).Div(F.A)
-      {
-        BL_PROFILE("PeleC::pc_flux_div()");
-        auto const& vol = volume.array(mfi);
-        amrex::ParallelFor(
-          cbox, NVAR,
-          [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
-            pc_flux_div(
-              i, j, k, n, AMREX_D_DECL(flx[0], flx[1], flx[2]), vol, Dterm);
-          });
-      }
-
       // Shut off unwanted diffusion after the fact.
       //      Under normal conditions, you either have diffusion on all or
       //      none, so this shouldn't be done this way.  However, the regression
       //      test for diffusion works by diffusing only temperature through
       //      this process.  Ideally, we'd redo that test to diffuse a passive
       //      scalar instead....
-
       if ((!diffuse_temp) && (!diffuse_enth)) {
-        setC(cbox, Eden, Eint, Dterm, 0.0);
         for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
           setC(eboxes[dir], Eden, Eint, flx[dir], 0.0);
         }
       }
       if (!diffuse_spec) {
-        setC(cbox, FirstSpec, FirstSpec + NUM_SPECIES, Dterm, 0.0);
         for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
           setC(eboxes[dir], FirstSpec, FirstSpec + NUM_SPECIES, flx[dir], 0.0);
         }
       }
-
       if (!diffuse_vel) {
-        setC(cbox, Xmom, Xmom + 3, Dterm, 0.0);
         for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
           setC(eboxes[dir], Xmom, Xmom + 3, flx[dir], 0.0);
         }
       }
 
-      // Set extensive flux at embedded boundary, potentially
-      // non-zero only for heat flux on isothermal boundaries,
-      // and momentum fluxes at no-slip walls
-      const auto nFlux = sv_eb_flux.empty() ? 0 : sv_eb_flux[local_i].numPts();
-      if (typ == amrex::FabType::singlevalued && Ncut > 0) {
-        eb_flux_thdlocal.setVal(0); // Default to Neumann for all fields
-
-        const auto Nvals = sv_eb_bcval[local_i].numPts();
-
-        AMREX_ASSERT(Nvals == Ncut);
-        AMREX_ASSERT(nFlux == Ncut);
-
-        if (eb_isothermal && (diffuse_temp || diffuse_enth)) {
-          {
-            BL_PROFILE("PeleC::pc_apply_eb_boundry_flux_stencil()");
-            pc_apply_eb_boundry_flux_stencil(
-              ebfluxbox, sv_eb_bndry_grad_stencil[local_i].data(), Ncut, qar,
-              QTEMP, coe_cc, dComp_lambda, sv_eb_bcval[local_i].dataPtr(QTEMP),
-              Nvals, eb_flux_thdlocal.dataPtr(Eden), nFlux, 1);
-          }
-        }
-        // Compute momentum transfer at no-slip EB wall
-        if (eb_noslip && diffuse_vel) {
-          {
-            BL_PROFILE("PeleC::pc_apply_eb_boundry_visc_flux_stencil()");
-            pc_apply_eb_boundry_visc_flux_stencil(
-              ebfluxbox, sv_eb_bndry_grad_stencil[local_i].data(), Ncut,
-              d_sv_eb_bndry_geom, Ncut, qar, coe_cc,
-              sv_eb_bcval[local_i].dataPtr(QU), Nvals,
-              eb_flux_thdlocal.dataPtr(Xmom), nFlux);
-          }
-        }
-      }
-
-      // At this point flux_ec contains the diffusive fluxes in each direction
-      // at face centers for the (potentially partially covered) grid-aligned
-      // faces and eb_flux_thdlocal contains the flux for the cut faces. Before
-      // computing hybrid divergence, comptue and add in the hydro fluxes.
-      // Also, Dterm currently contains the divergence of the face-centered
-      // diffusion fluxes.  Increment this with the divergence of the
-      // face-centered hyperbloic fluxes.
+      // Compute and add in the hydro fluxes.
       if (do_hydro && do_mol) {
         // amrex::FArrayBox flatn(cbox, 1, amrex::The_Async_Arena());
         // flatn.setVal(1.0); // Set flattening to 1.0
 
-        // save off the diffusion source term and fluxes (don't want to filter
+        // If filtering, save off the diffusion fluxes (don't want to filter
         // these)
         amrex::FArrayBox diffusion_flux[AMREX_SPACEDIM];
         amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM>
@@ -375,18 +299,14 @@ PeleC::getMOLSrcTerm(
           }
         }
 
-        { // Get face-centered hyperbolic fluxes and their divergences.
-          // Get hyp flux at EB wall
+        { // Get face-centered hyperbolic fluxes
           BL_PROFILE("PeleC::pc_hyp_mol_flux()");
-          amrex::Real* d_eb_flux_thdlocal =
-            (nFlux > 0 ? eb_flux_thdlocal.dataPtr() : nullptr);
           pc_compute_hyp_mol_flux(
-            cbox, qar, qauxar, flx, area_arr, dx, plm_iorder, use_laxf_flux,
-            flags.array(mfi), d_sv_eb_bndry_geom, Ncut, d_eb_flux_thdlocal,
-            nFlux);
+            cbox, qar, qauxar, flx, area_arr, plm_iorder, use_laxf_flux,
+            flags.array(mfi));
         }
 
-        // Filter hydro source term and fluxes here
+        // Filter hydro fluxes
         if (use_explicit_filter) {
           // Get the hydro term
           amrex::FArrayBox hydro_flux[AMREX_SPACEDIM];
@@ -423,6 +343,89 @@ PeleC::getMOLSrcTerm(
               hydro_flux_arr[dir], 1.0, 1.0, flx[dir]);
           }
         }
+      }
+
+      // Compute divergence and refluxing
+      if (typ == amrex::FabType::singlevalued) {
+
+        // Set extensive diffusive flux at embedded boundary, potentially
+        // non-zero only for heat flux on isothermal boundaries,
+        // and momentum fluxes at no-slip walls
+        const auto nFlux =
+          sv_eb_flux.empty() ? 0 : sv_eb_flux[local_i].numPts();
+        if (Ncut > 0) {
+          eb_flux_thdlocal.setVal(0); // Default to Neumann for all fields
+
+          const auto Nvals = sv_eb_bcval[local_i].numPts();
+
+          AMREX_ASSERT(Nvals == Ncut);
+          AMREX_ASSERT(nFlux == Ncut);
+
+          if (eb_isothermal && (diffuse_temp || diffuse_enth)) {
+            {
+              BL_PROFILE("PeleC::pc_apply_eb_boundry_flux_stencil()");
+              pc_apply_eb_boundry_flux_stencil(
+                ebfluxbox, sv_eb_bndry_grad_stencil[local_i].data(), Ncut, qar,
+                QTEMP, coe_cc, dComp_lambda,
+                sv_eb_bcval[local_i].dataPtr(QTEMP), Nvals,
+                eb_flux_thdlocal.dataPtr(Eden), nFlux, 1);
+            }
+          }
+          // Compute momentum transfer at no-slip EB wall
+          if (eb_noslip && diffuse_vel) {
+            {
+              BL_PROFILE("PeleC::pc_apply_eb_boundry_visc_flux_stencil()");
+              pc_apply_eb_boundry_visc_flux_stencil(
+                ebfluxbox, sv_eb_bndry_grad_stencil[local_i].data(), Ncut,
+                d_sv_eb_bndry_geom, Ncut, qar, coe_cc,
+                sv_eb_bcval[local_i].dataPtr(QU), Nvals,
+                eb_flux_thdlocal.dataPtr(Xmom), nFlux);
+            }
+          }
+          if (do_hydro && do_mol) {
+            { // Get hyp flux at EB wall
+              BL_PROFILE("PeleC::pc_hyp_mol_flux_eb()");
+              amrex::Real* d_eb_flux_thdlocal =
+                (nFlux > 0 ? eb_flux_thdlocal.dataPtr() : nullptr);
+              pc_compute_hyp_mol_flux_eb(
+                cbox, qar, dx, d_sv_eb_bndry_geom, Ncut, d_eb_flux_thdlocal,
+                nFlux);
+            }
+          }
+        }
+
+        amrex::Gpu::DeviceVector<int> v_eb_tile_mask(Ncut, 0);
+        int* eb_tile_mask = v_eb_tile_mask.dataPtr();
+        amrex::ParallelFor(Ncut, [=] AMREX_GPU_DEVICE(int icut) {
+          if (ebfluxbox.contains(d_sv_eb_bndry_geom[icut].iv)) {
+            eb_tile_mask[icut] = 1;
+          }
+        });
+        if (typ == amrex::FabType::singlevalued && Ncut > 0) {
+          sv_eb_flux[local_i].merge(eb_flux_thdlocal, 0, NVAR, v_eb_tile_mask);
+        }
+
+        // Interpolate fluxes from face centers to face centroids
+        // Note that hybrid divergence and redistribution algorithms require
+        // that we be able to compute the conservative divergence on 2 grow
+        // cells, so we need interpolated fluxes on 2 grow cells, and
+        // therefore we need face centered fluxes on 3.
+        {
+          BL_PROFILE("PeleC::pc_apply_face_stencil()");
+          for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
+            const auto Nsten =
+              static_cast<int>(flux_interp_stencil[dir][local_i].size());
+            const amrex::Box valid_interped_flux_box =
+              amrex::Box(ebfluxbox).surroundingNodes(dir);
+            if (Nsten > 0) {
+              pc_apply_face_stencil(
+                valid_interped_flux_box, stencil_volume_box,
+                flux_interp_stencil[dir][local_i].data(), Nsten, dir, NVAR,
+                flx[dir]);
+            }
+          }
+          amrex::Gpu::Device::streamSynchronize();
+        }
 
         // Compute flux divergence (1/Vol).Div(F.A)
         {
@@ -435,135 +438,93 @@ PeleC::getMOLSrcTerm(
                 i, j, k, n, AMREX_D_DECL(flx[0], flx[1], flx[2]), vol, Dterm);
             });
         }
-      }
 
-      if (eb_in_domain) {
-        amrex::Gpu::DeviceVector<int> v_eb_tile_mask(Ncut, 0);
-        int* eb_tile_mask = v_eb_tile_mask.dataPtr();
-        amrex::ParallelFor(Ncut, [=] AMREX_GPU_DEVICE(int icut) {
-          if (ebfluxbox.contains(d_sv_eb_bndry_geom[icut].iv)) {
-            eb_tile_mask[icut] = 1;
-          }
-        });
-        if (typ == amrex::FabType::singlevalued && Ncut > 0) {
-          sv_eb_flux[local_i].merge(eb_flux_thdlocal, 0, NVAR, v_eb_tile_mask);
+        // Get "hybrid flux divergence"
+        //
+        // This operation takes as input centroid-centered fluxes and a
+        // corresponding
+        //  divergence on three grid cells.  Actually, we assume that
+        //  div=(1/VOL)Div(flux) (VOL = volume of the full cells), and that
+        //  flux is EXTENSIVE, weighted with the full face areas.
+        //
+        // Upon return:
+        // div = kappa.(1/Vol) Div(FluxC.Area)  Vol = kappa.VOL,
+        // Area=aperture.AREA, defined over the valid box
+
+        // TODO: Rework this for r-z, if applicable
+        amrex::Real vol = 1;
+        for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
+          vol *= geom.CellSize()[dir];
         }
 
-        amrex::FArrayBox dm_as_fine;
-        amrex::FArrayBox fab_drho_as_crse;
-        amrex::IArrayBox fab_rrflag_as_crse;
-        if (typ == amrex::FabType::singlevalued) {
-          // Interpolate fluxes from face centers to face centroids
-          // Note that hybrid divergence and redistribution algorithms require
-          // that we be able to compute the conservative divergence on 2 grow
-          // cells, so we need interpolated fluxes on 2 grow cells, and
-          // therefore we need face centered fluxes on 3.
-          {
-            BL_PROFILE("PeleC::pc_apply_face_stencil()");
-            for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
-              const auto Nsten =
-                static_cast<int>(flux_interp_stencil[dir][local_i].size());
-              const amrex::Box valid_interped_flux_box =
-                amrex::Box(ebfluxbox).surroundingNodes(dir);
-              if (Nsten > 0) {
-                pc_apply_face_stencil(
-                  valid_interped_flux_box, stencil_volume_box,
-                  flux_interp_stencil[dir][local_i].data(), Nsten, dir, NVAR,
-                  flx[dir]);
-              }
-            }
-            amrex::Gpu::Device::streamSynchronize();
-          }
-
-          // Get "hybrid flux divergence" and redistribute
-          //
-          // This operation takes as input centroid-centered fluxes and a
-          // corresponding
-          //  divergence on three grid cells.  Actually, we assume that
-          //  div=(1/VOL)Div(flux) (VOL = volume of the full cells), and that
-          //  flux is EXTENSIVE, weighted with the full face areas.
-          //
-          // Upon return:
-          // div = kappa.(1/Vol) Div(FluxC.Area)  Vol = kappa.VOL,
-          // Area=aperture.AREA, defined over the valid box
-
-          // TODO: Rework this for r-z, if applicable
-          amrex::Real vol = 1;
-          for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
-            vol *= geom.CellSize()[dir];
-          }
-
-          dm_as_fine.resize(
-            amrex::Box::TheUnitBox(), NVAR, amrex::The_Async_Arena());
-          fab_drho_as_crse.resize(
-            amrex::Box::TheUnitBox(), NVAR, amrex::The_Async_Arena());
-          fab_rrflag_as_crse.resize(
-            amrex::Box::TheUnitBox(), 1, amrex::The_Async_Arena());
-          {
-            if (fr_as_fine != nullptr) {
-              dm_as_fine.resize(
-                amrex::grow(vbox, 1), NVAR, amrex::The_Async_Arena());
-              dm_as_fine.setVal<amrex::RunOn::Device>(0.0);
-            }
-            if (Ncut > 0) {
-              BL_PROFILE("PeleC::pc_eb_div()");
-              pc_eb_div(
-                vbox, vol, NVAR, d_sv_eb_bndry_geom, Ncut,
-                AMREX_D_DECL(flx[0], flx[1], flx[2]),
-                sv_eb_flux[local_i].dataPtr(), vfrac.array(mfi), Dterm);
-            }
-          }
-
-          if (do_reflux && flux_factor != 0) {
-            for (auto& dir : flux_ec) {
-              dir.mult<amrex::RunOn::Device>(flux_factor, dir.box());
-            }
-
-            if (fr_as_crse != nullptr) {
-              fr_as_crse->CrseAdd(
-                mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])},
-                dxD.data(), dt, vfrac[mfi],
-                {AMREX_D_DECL(
-                  &((*areafrac[0])[mfi]), &((*areafrac[1])[mfi]),
-                  &((*areafrac[2])[mfi]))},
-                amrex::RunOn::Device);
-            }
-
-            if (fr_as_fine != nullptr) {
-              fr_as_fine->FineAdd(
-                mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])},
-                dxD.data(), dt, vfrac[mfi],
-                {AMREX_D_DECL(
-                  &((*areafrac[0])[mfi]), &((*areafrac[1])[mfi]),
-                  &((*areafrac[2])[mfi]))},
-                dm_as_fine, amrex::RunOn::Device);
-            }
-          }
-        } else if (typ != amrex::FabType::regular) { // Single valued if loop
-          amrex::Abort("multi-valued eb boundary fluxes to be implemented");
+        if (Ncut > 0) {
+          BL_PROFILE("PeleC::pc_eb_div()");
+          pc_eb_div(
+            vbox, vol, NVAR, d_sv_eb_bndry_geom, Ncut,
+            AMREX_D_DECL(flx[0], flx[1], flx[2]), sv_eb_flux[local_i].dataPtr(),
+            vfrac.array(mfi), Dterm);
         }
-      }
 
-      if (do_reflux && flux_factor != 0 && typ == amrex::FabType::regular) {
-        for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
+        if (do_reflux && flux_factor != 0) {
+          for (auto& dir : flux_ec) {
+            dir.mult<amrex::RunOn::Device>(flux_factor, dir.box());
+          }
+
+          if (fr_as_crse != nullptr) {
+            fr_as_crse->CrseAdd(
+              mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])},
+              dxD.data(), dt, vfrac[mfi],
+              {AMREX_D_DECL(
+                &((*areafrac[0])[mfi]), &((*areafrac[1])[mfi]),
+                &((*areafrac[2])[mfi]))},
+              amrex::RunOn::Device);
+          }
+
+          if (fr_as_fine != nullptr) {
+            amrex::FArrayBox dm_as_fine(
+              amrex::grow(vbox, 1), NVAR, amrex::The_Async_Arena());
+            dm_as_fine.setVal<amrex::RunOn::Device>(0.0);
+            fr_as_fine->FineAdd(
+              mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])},
+              dxD.data(), dt, vfrac[mfi],
+              {AMREX_D_DECL(
+                &((*areafrac[0])[mfi]), &((*areafrac[1])[mfi]),
+                &((*areafrac[2])[mfi]))},
+              dm_as_fine, amrex::RunOn::Device);
+          }
+        }
+      } else if (typ == amrex::FabType::regular) {
+        // Compute flux divergence (1/Vol).Div(F.A)
+        {
+          BL_PROFILE("PeleC::pc_flux_div()");
+          auto const& vol = volume.array(mfi);
           amrex::ParallelFor(
-            eboxes[dir], NVAR,
+            cbox, NVAR,
             [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
-              flx[dir](i, j, k, n) *= flux_factor;
+              pc_flux_div(
+                i, j, k, n, AMREX_D_DECL(flx[0], flx[1], flx[2]), vol, Dterm);
             });
         }
 
-        if ((level < parent->finestLevel()) && (fr_as_crse != nullptr)) {
-          fr_as_crse->CrseAdd(
-            mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}},
-            dxD.data(), dt, amrex::RunOn::Device);
-        }
+        if (do_reflux && flux_factor != 0) {
+          for (auto& dir : flux_ec) {
+            dir.mult<amrex::RunOn::Device>(flux_factor, dir.box());
+          }
 
-        if ((level > 0) && (fr_as_fine != nullptr)) {
-          fr_as_fine->FineAdd(
-            mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}},
-            dxD.data(), dt, amrex::RunOn::Device);
+          if ((level < parent->finestLevel()) && (fr_as_crse != nullptr)) {
+            fr_as_crse->CrseAdd(
+              mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}},
+              dxD.data(), dt, amrex::RunOn::Device);
+          }
+
+          if ((level > 0) && (fr_as_fine != nullptr)) {
+            fr_as_fine->FineAdd(
+              mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}},
+              dxD.data(), dt, amrex::RunOn::Device);
+          }
         }
+      } else if (typ == amrex::FabType::multivalued) {
+        amrex::Abort("multi-valued eb boundary fluxes to be implemented");
       }
 
       // Extrapolate to GhostCells
@@ -611,6 +572,13 @@ PeleC::getMOLSrcTerm(
           Dfab.box(), S.nComp(), amrex::The_Async_Arena());
         amrex::Array4<amrex::Real> Dterm_tmp = Dterm_tmpfab.array();
         copy_array4(Dfab.box(), NVAR, Dterm, Dterm_tmp);
+
+        // BCs
+        const amrex::StateDescriptor* desc = state[State_Type].descriptor();
+        const auto& bcs = desc->getBCs();
+        amrex::Gpu::DeviceVector<amrex::BCRec> d_bcs(desc->nComp());
+        amrex::Gpu::copy(
+          amrex::Gpu::hostToDevice, bcs.begin(), bcs.end(), d_bcs.begin());
 
         {
           BL_PROFILE("Redistribution::Apply()");
