@@ -826,7 +826,6 @@ PeleC::estTimeStep(amrex::Real /*dt_old*/)
       dynamic_cast<amrex::EBFArrayBoxFactory const&>(stateMF.Factory());
     auto const& flags = fact.getMultiEBCellFlagFab();
 
-    prefetchToDevice(stateMF); // This should accelerate the below operations.
     amrex::Real AMREX_D_DECL(dx1 = dx[0], dx2 = dx[1], dx3 = dx[2]);
 
     if (do_hydro) {

@@ -125,10 +125,14 @@ void pc_compute_hyp_mol_flux(
   const amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flx,
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>&
     area,
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& del,
   const int plm_iorder,
   const bool use_laxf_flux,
-  const amrex::Array4<amrex::EBCellFlag const>& flags,
+  const amrex::Array4<amrex::EBCellFlag const>& flags);
+
+void pc_compute_hyp_mol_flux_eb(
+  const amrex::Box& cbox,
+  const amrex::Array4<const amrex::Real>& q,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& dx,
   const EBBndryGeom* ebg,
   const int Nebg,
   amrex::Real* ebflux,

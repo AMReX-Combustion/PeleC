@@ -172,10 +172,6 @@ PeleC::getSmagorinskyLESTerm(
   amrex::MultiFab S(grids, dmap, NVAR, ngrow, amrex::MFInfo(), Factory());
   FillPatch(*this, S, ngrow, time, State_Type, 0, NVAR);
 
-  // Fetch some gpu arrays
-  prefetchToDevice(S);
-  prefetchToDevice(LESTerm);
-
   auto const& fact =
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(S.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
@@ -368,11 +364,6 @@ PeleC::getDynamicSmagorinskyLESTerm(
     Factory());
   FillPatch(*this, S, nGrowD + nGrowC + nGrowT + 1, time, State_Type, 0, NVAR);
   LES_Coeffs.setVal(0.0);
-
-  // Fetch some gpu arrays
-  prefetchToDevice(S);
-  prefetchToDevice(LESTerm);
-  prefetchToDevice(LES_Coeffs);
 
   auto const& fact =
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(S.Factory());
