@@ -177,7 +177,8 @@ PeleC::initialize_eb2_structs()
       const amrex::FabType typ = flagfab.getType(tbox);
       const int iLocal = mfi.LocalIndex();
 
-      if (typ == amrex::FabType::singlevalued) {
+     if (typ == amrex::FabType::singlevalued) {
+        auto const& flag_arr = flagfab.const_array();
         const auto afrac_arr = (*areafrac[dir])[mfi].array();
         const auto facecent_arr = (*facecent[dir])[mfi].array();
         const auto fbox = amrex::surroundingNodes(tbox, dir);
@@ -188,7 +189,8 @@ PeleC::initialize_eb2_structs()
           nallfaces,
           [=] AMREX_GPU_DEVICE(int iface) -> int {
             const auto iv = fbox.atOffset(iface);
-            return static_cast<int>(afrac_arr(iv) < 1.0);
+            const bool covered_cells = flag_arr(iv).isCovered() && flag_arr(iv-amrex::IntVect::TheDimensionVector(dir)).isCovered();
+            return static_cast<int>((afrac_arr(iv) < 1.0) && (!covered_cells));
           },
           [=] AMREX_GPU_DEVICE(int iface, int const& x) {
             d_cutface_offset[iface] = x;
