@@ -201,7 +201,7 @@ PeleC::initialize_eb2_structs()
           amrex::ParallelFor(
             fbox, [=] AMREX_GPU_DEVICE(
                     int i, int j, int AMREX_D_PICK(, , k)) noexcept {
-              amrex::IntVect iv(amrex::IntVect(AMREX_D_DECL(i, j, k)));
+              const amrex::IntVect iv(amrex::IntVect(AMREX_D_DECL(i, j, k)));
               if (afrac_arr(iv) < 1.0) {
                 const auto iface = fbox.index(iv);
                 const auto idx = d_cutface_offset[iface];
