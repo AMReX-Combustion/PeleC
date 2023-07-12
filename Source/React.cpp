@@ -51,7 +51,6 @@ PeleC::react_state(
 
   amrex::MultiFab& S_new = get_new_data(State_Type);
   const int ng = S_new.nGrow();
-  prefetchToDevice(S_new);
 
   // Create a MultiFab with all of the non-reacting source terms.
   amrex::MultiFab non_react_src_tmp;
@@ -95,7 +94,6 @@ PeleC::react_state(
 
   amrex::MultiFab& react_src = get_new_data(Reactions_Type);
   react_src.setVal(0.0);
-  prefetchToDevice(react_src);
 
   // for sundials box integration
   amrex::MultiFab STemp(grids, dmap, NUM_SPECIES + 2, 0);
