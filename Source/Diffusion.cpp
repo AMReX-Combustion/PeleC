@@ -466,8 +466,12 @@ PeleC::getMOLSrcTerm(
         }
 
         if (do_reflux && flux_factor != 0) {
-          for (auto& dir : flux_ec) {
-            dir.mult<amrex::RunOn::Device>(flux_factor, dir.box());
+          for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
+            amrex::ParallelFor(
+              eboxes[dir], NVAR,
+              [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
+                flx[dir](i, j, k, n) *= flux_factor;
+              });
           }
 
           if (fr_as_crse != nullptr) {
@@ -507,8 +511,12 @@ PeleC::getMOLSrcTerm(
         }
 
         if (do_reflux && flux_factor != 0) {
-          for (auto& dir : flux_ec) {
-            dir.mult<amrex::RunOn::Device>(flux_factor, dir.box());
+          for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
+            amrex::ParallelFor(
+              eboxes[dir], NVAR,
+              [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
+                flx[dir](i, j, k, n) *= flux_factor;
+              });
           }
 
           if ((level < parent->finestLevel()) && (fr_as_crse != nullptr)) {
