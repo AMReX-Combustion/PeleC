@@ -122,13 +122,11 @@ PeleC::initialize_eb2_structs()
       // Now fill the sv_eb_bndry_geom
       auto const& vfrac_arr = vfrac.const_array(mfi);
       auto const& bndrycent_arr = bndrycent->const_array(mfi);
-      AMREX_D_TERM(auto const& areafrac_arr_0 = areafrac[0]->const_array(mfi);
-                   , auto const& areafrac_arr_1 = areafrac[1]->const_array(mfi);
-                   ,
-                   auto const& areafrac_arr_2 = areafrac[2]->const_array(mfi);)
+      AMREX_D_TERM(auto const& apx = areafrac[0]->const_array(mfi);
+                   , auto const& apy = areafrac[1]->const_array(mfi);
+                   , auto const& apz = areafrac[2]->const_array(mfi);)
       pc_fill_sv_ebg(
-        tbox, ncutcells, vfrac_arr, bndrycent_arr,
-        AMREX_D_DECL(areafrac_arr_0, areafrac_arr_1, areafrac_arr_2),
+        tbox, ncutcells, vfrac_arr, bndrycent_arr, AMREX_D_DECL(apx, apy, apz),
         sv_eb_bndry_geom[iLocal].data());
 
       // Fill in boundary gradient for cut cells in this grown tile
