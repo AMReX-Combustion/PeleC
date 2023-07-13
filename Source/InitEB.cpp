@@ -206,7 +206,11 @@ PeleC::initialize_eb2_structs()
             fbox, [=] AMREX_GPU_DEVICE(
                     int i, int j, int AMREX_D_PICK(, , k)) noexcept {
               const amrex::IntVect iv(amrex::IntVect(AMREX_D_DECL(i, j, k)));
-              if (afrac_arr(iv) < 1.0) {
+              const bool covered_cells =
+                flag_arr(iv).isCovered() &&
+                flag_arr(iv - amrex::IntVect::TheDimensionVector(dir))
+                .isCovered();
+              if ((afrac_arr(iv) < 1.0) && (!covered_cells)){
                 const auto iface = fbox.index(iv);
                 const auto idx = d_cutface_offset[iface];
                 d_flux_interp_stencil[idx].iv = iv;
