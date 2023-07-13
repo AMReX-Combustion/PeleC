@@ -14,6 +14,7 @@ pp.query("do_reflux", do_reflux);
 pp.query("do_avg_down", do_avg_down);
 pp.query("init_pltfile", init_pltfile);
 pp.query("init_pltfile_massfrac_tol", init_pltfile_massfrac_tol);
+pp.query("init_pltfile_coarse_levels", init_pltfile_coarse_levels);
 pp.query("dump_old", dump_old);
 pp.query("difmag", difmag);
 pp.query("small_pres", small_pres);
