@@ -46,7 +46,7 @@ PeleC::initialize_eb2_structs()
 
   // These are the data sources
   amrex::MultiFab::Copy(vfrac, ebfactory.getVolFrac(), 0, 0, 1, numGrow());
-  const amrex::MultiCutFab* bndrycent = &(ebfactory.getBndryCent());
+  const auto* bndrycent = &(ebfactory.getBndryCent());
   areafrac = ebfactory.getAreaFrac();
   facecent = ebfactory.getFaceCent();
 
@@ -106,11 +106,11 @@ PeleC::initialize_eb2_structs()
 
       sv_eb_bndry_geom[iLocal].resize(ncutcells);
       if (ncutcells > 0) {
-        EBBndryGeom* d_sv_eb_bndry_geom = sv_eb_bndry_geom[iLocal].data();
+        auto* d_sv_eb_bndry_geom = sv_eb_bndry_geom[iLocal].data();
         amrex::ParallelFor(
           tbox,
           [=] AMREX_GPU_DEVICE(int i, int j, int AMREX_D_PICK(, , k)) noexcept {
-            amrex::IntVect iv(amrex::IntVect(AMREX_D_DECL(i, j, k)));
+            const amrex::IntVect iv(amrex::IntVect(AMREX_D_DECL(i, j, k)));
             if (flag_arr(iv).isSingleValued()) {
               const auto icell = tbox.index(iv);
               const auto idx = d_cutcell_offset[icell];
@@ -120,11 +120,12 @@ PeleC::initialize_eb2_structs()
       }
 
       // Now fill the sv_eb_bndry_geom
-      auto const& vfrac_arr = vfrac.array(mfi);
-      auto const& bndrycent_arr = bndrycent->array(mfi);
-      AMREX_D_TERM(auto const& areafrac_arr_0 = areafrac[0]->array(mfi);
-                   , auto const& areafrac_arr_1 = areafrac[1]->array(mfi);
-                   , auto const& areafrac_arr_2 = areafrac[2]->array(mfi);)
+      auto const& vfrac_arr = vfrac.const_array(mfi);
+      auto const& bndrycent_arr = bndrycent->const_array(mfi);
+      AMREX_D_TERM(auto const& areafrac_arr_0 = areafrac[0]->const_array(mfi);
+                   , auto const& areafrac_arr_1 = areafrac[1]->const_array(mfi);
+                   ,
+                   auto const& areafrac_arr_2 = areafrac[2]->const_array(mfi);)
       pc_fill_sv_ebg(
         tbox, ncutcells, vfrac_arr, bndrycent_arr,
         AMREX_D_DECL(areafrac_arr_0, areafrac_arr_1, areafrac_arr_2),
@@ -179,8 +180,8 @@ PeleC::initialize_eb2_structs()
 
       if (typ == amrex::FabType::singlevalued) {
         auto const& flag_arr = flagfab.const_array();
-        const auto afrac_arr = (*areafrac[dir])[mfi].array();
-        const auto facecent_arr = (*facecent[dir])[mfi].array();
+        const auto afrac_arr = (*areafrac[dir])[mfi].const_array();
+        const auto facecent_arr = (*facecent[dir])[mfi].const_array();
         const auto fbox = amrex::surroundingNodes(tbox, dir);
         const auto nallfaces = static_cast<int>(fbox.numPts());
         amrex::Gpu::DeviceVector<int> cutfaces_offset(nallfaces);
