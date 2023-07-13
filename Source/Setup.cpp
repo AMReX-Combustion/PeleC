@@ -640,26 +640,6 @@ PeleC::variableSetUp()
 
   read_tagging_params();
 
-  std::string pele_prefix = "pelec";
-  amrex::ParmParse pp(pele_prefix);
-  int n_diags = 0;
-  n_diags = pp.countval("diagnostics");
-  amrex::Vector<std::string> diags;
-  if (n_diags > 0) {
-    m_diagnostics.resize(n_diags);
-    diags.resize(n_diags);
-  }
-  for (int n = 0; n < n_diags; ++n) {
-    pp.get("diagnostics", diags[n], n);
-    std::string diag_prefix = pele_prefix + "." + diags[n];
-    amrex::ParmParse ppd(diag_prefix);
-    std::string diag_type;
-    ppd.get("type", diag_type);
-    m_diagnostics[n] = DiagBase::create(diag_type);
-    m_diagnostics[n]->init(diag_prefix, diags[n]);
-    m_diagnostics[n]->addVars(m_diagVars);
-  }
-
   // Remove duplicates from m_diagVars and check that all the variables exists
   std::sort(m_diagVars.begin(), m_diagVars.end());
   auto last = std::unique(m_diagVars.begin(), m_diagVars.end());
@@ -667,7 +647,8 @@ PeleC::variableSetUp()
   int index = 0;
   int scomp = 0;
   for (auto& v : m_diagVars) {
-    bool itexists = derive_lst.canDerive(v) || isStateVariable(v, index, scomp);
+    const bool itexists =
+      derive_lst.canDerive(v) || isStateVariable(v, index, scomp);
     if (!itexists) {
       amrex::Abort("Field " + v + " is not available");
     }

@@ -102,7 +102,6 @@ pele::physics::transport::TransportParams<
   PeleC::trans_parms;
 
 pele::physics::turbinflow::TurbInflow PeleC::turb_inflow;
-amrex::Vector<std::unique_ptr<DiagBase>> PeleC::m_diagnostics;
 amrex::Vector<std::string> PeleC::m_diagVars;
 
 amrex::Vector<int> PeleC::src_list;
@@ -501,6 +500,24 @@ PeleC::PeleC(
   nGrowF = 0;
   if (use_explicit_filter) {
     init_filters();
+  }
+
+  // initialize diagnostics (only level 0 calls them)
+  if (lev == 0) {
+    const std::string pele_prefix = "pelec";
+    amrex::ParmParse pp(pele_prefix);
+    const int n_diags = pp.countval("diagnostics");
+    amrex::Vector<std::string> diags(n_diags);
+    for (int n = 0; n < n_diags; ++n) {
+      pp.get("diagnostics", diags[n], n);
+      const std::string diag_prefix = pele_prefix + "." + diags[n];
+      amrex::ParmParse ppd(diag_prefix);
+      std::string diag_type;
+      ppd.get("type", diag_type);
+      m_diagnostics.emplace_back(DiagBase::create(diag_type));
+      m_diagnostics[n]->init(diag_prefix, diags[n]);
+      m_diagnostics[n]->addVars(m_diagVars);
+    }
   }
 }
 
