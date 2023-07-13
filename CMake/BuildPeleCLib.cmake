@@ -139,7 +139,7 @@ function(build_pelec_lib pelec_lib_name)
     endif()
     
     #Link to amrex libraries
-    target_link_libraries(${pelec_lib_name} PUBLIC AMReX-Hydro::amrex_hydro_api AMReX::amrex)
+    target_link_libraries(${pelec_lib_name} PUBLIC AMReX::amrex)
 
   endif()
 endfunction()

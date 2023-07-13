@@ -13,7 +13,7 @@
 #include "Diffterm.H"
 #include "MOL.H"
 #include "EB.H"
-#include "hydro_redistribution.H"
+#include "AMReX_EB_Redistribution.H"
 
 // This header file contains functions and declarations for the diffusion
 // portion of PeleC GPU. As per the convention of AMReX, inlined functions are
