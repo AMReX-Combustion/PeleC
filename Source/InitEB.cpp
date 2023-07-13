@@ -209,8 +209,8 @@ PeleC::initialize_eb2_structs()
               const bool covered_cells =
                 flag_arr(iv).isCovered() &&
                 flag_arr(iv - amrex::IntVect::TheDimensionVector(dir))
-                .isCovered();
-              if ((afrac_arr(iv) < 1.0) && (!covered_cells)){
+                  .isCovered();
+              if ((afrac_arr(iv) < 1.0) && (!covered_cells)) {
                 const auto iface = fbox.index(iv);
                 const auto idx = d_cutface_offset[iface];
                 d_flux_interp_stencil[idx].iv = iv;
