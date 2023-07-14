@@ -125,9 +125,7 @@ main(int argc, char* argv[])
 
   amrex::AmrLevel::SetEBSupportLevel(
     amrex::EBSupport::full); // need both area and volume fractions
-  amrex::AmrLevel::SetEBMaxGrowCells(
-    5, 5,
-    5); // 5 focdr ebcellflags, 4 for vfrac, 2 is not used for EBSupport::volume
+  amrex::AmrLevel::SetEBMaxGrowCells(6, 6, 6);
 
   initialize_EB2(
     amrptr->Geom(PeleC::getEBMaxLevel()), PeleC::getEBMaxLevel(),
