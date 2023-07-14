@@ -592,7 +592,7 @@ public:
   static pele::physics::turbinflow::TurbInflow turb_inflow;
 
   // A set of runtime diagnostics from PelePhysics lib
-  static amrex::Vector<std::unique_ptr<DiagBase>> m_diagnostics;
+  amrex::Vector<std::unique_ptr<DiagBase>> m_diagnostics;
   static amrex::Vector<std::string> m_diagVars;
 
 #ifdef PELEC_USE_SOOT
