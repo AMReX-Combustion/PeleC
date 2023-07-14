@@ -78,13 +78,6 @@ list(APPEND CMAKE_MODULE_PATH "${AMREX_SUBMOD_LOCATION}/Tools/CMake")
 add_subdirectory(${AMREX_SUBMOD_LOCATION})
 include(SetAmrexCompileFlags)
 
-########################### AMReX-Hydro ###############################
-
-message(STATUS "AMReX-Hydro Configure Section")
-set(AMREX_HYDRO_SUBMOD_LOCATION "${CMAKE_SOURCE_DIR}/Submodules/AMReX-Hydro")
-include(SetAmrexHydroOptions)
-add_subdirectory(${AMREX_HYDRO_SUBMOD_LOCATION})
-
 ########################## SUNDIALS ###################################
 
 message(STATUS "SUNDIALS Configure Section")

@@ -588,13 +588,15 @@ PeleC::getMOLSrcTerm(
         amrex::Gpu::copy(
           amrex::Gpu::hostToDevice, bcs.begin(), bcs.end(), d_bcs.begin());
 
+        bool use_wts_in_divnc = false;
+
         {
-          BL_PROFILE("Redistribution::Apply()");
-          Redistribution::Apply(
+          BL_PROFILE("ApplyRedistribution()");
+          ApplyRedistribution(
             vbox, S.nComp(), Dterm, Dterm_tmp, S.const_array(mfi), scratch,
             flag_arr, AMREX_D_DECL(apx, apy, apz), vfrac.const_array(mfi),
             AMREX_D_DECL(fcx, fcy, fcz), ccc, d_bcs.dataPtr(), geom, dt,
-            redistribution_type, eb_srd_max_order);
+            redistribution_type, use_wts_in_divnc, eb_srd_max_order);
         }
 
         // Make sure div is zero in covered cells
