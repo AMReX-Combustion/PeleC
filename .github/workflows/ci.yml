@@ -389,7 +389,8 @@ jobs:
           submodules: true
       - name: Dependencies
         run: |
-          brew install cppcheck
+          wget https://github.com/Homebrew/homebrew-core/blob/9b0e3d32f590458ae9e5dbf01943b39845b5315e/Formula/cppcheck.rb
+          brew install -s cppcheck.rb
       - name: Configure
         run: |
           cmake -B${{runner.workspace}}/build-cppcheck \
