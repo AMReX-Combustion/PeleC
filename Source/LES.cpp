@@ -285,17 +285,9 @@ PeleC::getSmagorinskyLESTerm(
             });
         }
 
-        if (level < parent->finestLevel()) {
-          getFluxReg(level + 1).CrseAdd(
-            mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}}, dxDp,
-            dt, amrex::RunOn::Device);
-        }
-
-        if (level > 0) {
-          getFluxReg(level).FineAdd(
-            mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}}, dxDp,
-            dt, amrex::RunOn::Device);
-        }
+        update_flux_registers(
+            dt, vbox, mfi, typ,
+            {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])});
       }
     } // End of MFIter scope
   }   // End of OMP scope
