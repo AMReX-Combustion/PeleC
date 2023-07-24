@@ -78,16 +78,6 @@ PeleC::getMOLSrcTerm(
     cost = &(get_new_data(Work_Estimate_Type));
   }
 
-  amrex::EBFluxRegister* fr_as_crse = nullptr;
-  if (do_reflux && level < parent->finestLevel()) {
-    fr_as_crse = &getFluxReg(level + 1);
-  }
-
-  amrex::EBFluxRegister* fr_as_fine = nullptr;
-  if (do_reflux && level > 0) {
-    fr_as_fine = &getFluxReg(level);
-  }
-
 #ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
@@ -474,28 +464,7 @@ PeleC::getMOLSrcTerm(
               });
           }
 
-          if (fr_as_crse != nullptr) {
-            fr_as_crse->CrseAdd(
-              mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])},
-              dxD.data(), dt, vfrac[mfi],
-              {AMREX_D_DECL(
-                &((*areafrac[0])[mfi]), &((*areafrac[1])[mfi]),
-                &((*areafrac[2])[mfi]))},
-              amrex::RunOn::Device);
-          }
-
-          if (fr_as_fine != nullptr) {
-            amrex::FArrayBox dm_as_fine(
-              amrex::grow(vbox, 1), NVAR, amrex::The_Async_Arena());
-            dm_as_fine.setVal<amrex::RunOn::Device>(0.0);
-            fr_as_fine->FineAdd(
-              mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])},
-              dxD.data(), dt, vfrac[mfi],
-              {AMREX_D_DECL(
-                &((*areafrac[0])[mfi]), &((*areafrac[1])[mfi]),
-                &((*areafrac[2])[mfi]))},
-              dm_as_fine, amrex::RunOn::Device);
-          }
+          update_flux_registers(dt, vbox, mfi, typ, flux_ec);
         }
       } else if (typ == amrex::FabType::regular) {
         // Compute flux divergence (1/Vol).Div(F.A)
@@ -519,17 +488,7 @@ PeleC::getMOLSrcTerm(
               });
           }
 
-          if ((level < parent->finestLevel()) && (fr_as_crse != nullptr)) {
-            fr_as_crse->CrseAdd(
-              mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}},
-              dxD.data(), dt, amrex::RunOn::Device);
-          }
-
-          if ((level > 0) && (fr_as_fine != nullptr)) {
-            fr_as_fine->FineAdd(
-              mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}},
-              dxD.data(), dt, amrex::RunOn::Device);
-          }
+          update_flux_registers(dt, vbox, mfi, typ, flux_ec);
         }
       } else if (typ == amrex::FabType::multivalued) {
         amrex::Abort("multi-valued eb boundary fluxes to be implemented");

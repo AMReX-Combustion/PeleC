@@ -1373,6 +1373,66 @@ PeleC::okToContinue()
 }
 
 void
+PeleC::update_flux_registers(
+  const amrex::Real dt,
+  const amrex::Box& bx,
+  const amrex::MFIter& mfi,
+  const amrex::FabType& typ,
+  const amrex::FArrayBox flux_ec[AMREX_SPACEDIM])
+{
+  BL_PROFILE("PeleC::update_flux_registers()");
+  if (!do_reflux) {
+    return;
+  }
+  amrex::EBFluxRegister* fr_as_crse =
+    (do_reflux && (level < parent->finestLevel())) ? &getFluxReg(level + 1)
+                                                   : nullptr;
+  amrex::EBFluxRegister* fr_as_fine =
+    (do_reflux && (level > 0)) ? &getFluxReg(level) : nullptr;
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx = geom.CellSizeArray();
+
+  if (typ == amrex::FabType::singlevalued) {
+    if (fr_as_crse != nullptr) {
+      fr_as_crse->CrseAdd(
+        mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dx.data(),
+        dt, vfrac[mfi],
+        {AMREX_D_DECL(
+          &((*areafrac[0])[mfi]), &((*areafrac[1])[mfi]),
+          &((*areafrac[2])[mfi]))},
+        amrex::RunOn::Device);
+    }
+
+    if (fr_as_fine != nullptr) {
+      amrex::FArrayBox dm_as_fine(
+        amrex::grow(bx, 1), NVAR, amrex::The_Async_Arena());
+      dm_as_fine.setVal<amrex::RunOn::Device>(0.0);
+      fr_as_fine->FineAdd(
+        mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dx.data(),
+        dt, vfrac[mfi],
+        {AMREX_D_DECL(
+          &((*areafrac[0])[mfi]), &((*areafrac[1])[mfi]),
+          &((*areafrac[2])[mfi]))},
+        dm_as_fine, amrex::RunOn::Device);
+    }
+
+  } else if (typ == amrex::FabType::regular) {
+    if ((level < parent->finestLevel()) && (fr_as_crse != nullptr)) {
+      fr_as_crse->CrseAdd(
+        mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}}, dx.data(),
+        dt, amrex::RunOn::Device);
+    }
+
+    if ((level > 0) && (fr_as_fine != nullptr)) {
+      fr_as_fine->FineAdd(
+        mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}}, dx.data(),
+        dt, amrex::RunOn::Device);
+    }
+  } else if (typ == amrex::FabType::multivalued) {
+    amrex::Abort("multi-valued EB flux register update to be implemented");
+  }
+}
+
+void
 PeleC::reflux()
 {
   BL_PROFILE("PeleC::reflux()");

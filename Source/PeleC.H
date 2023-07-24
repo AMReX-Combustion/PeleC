@@ -641,6 +641,13 @@ protected:
 
   PeleC& getLevel(int lev);
 
+  void update_flux_registers(
+    const amrex::Real dt,
+    const amrex::Box& bx,
+    const amrex::MFIter& mfi,
+    const amrex::FabType& typ,
+    const amrex::FArrayBox flux_ec[AMREX_SPACEDIM]);
+
   void reflux();
 
   static amrex::Real clean_state(const amrex::MultiFab& S);
