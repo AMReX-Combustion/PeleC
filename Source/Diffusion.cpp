@@ -581,15 +581,16 @@ PeleC::getMOLSrcTerm(
         amrex::Array4<amrex::Real> Dterm_tmp = Dterm_tmpfab.array();
         copy_array4(Dfab.box(), NVAR, Dterm, Dterm_tmp);
 
+        const amrex::StateDescriptor* desc = state[State_Type].descriptor();
+        const auto& bcs = desc->getBCs();
+        amrex::Gpu::DeviceVector<amrex::BCRec> d_bcs(desc->nComp());
+        amrex::Gpu::copy(
+          amrex::Gpu::hostToDevice, bcs.begin(), bcs.end(), d_bcs.begin());
+
+        const bool use_wts_in_divnc = false;
+
         {
           BL_PROFILE("ApplyRedistribution()");
-          const amrex::StateDescriptor* desc = state[State_Type].descriptor();
-          const auto& bcs = desc->getBCs();
-          amrex::Gpu::DeviceVector<amrex::BCRec> d_bcs(desc->nComp());
-          amrex::Gpu::copy(
-            amrex::Gpu::hostToDevice, bcs.begin(), bcs.end(), d_bcs.begin());
-          const bool use_wts_in_divnc = false;
-
           ApplyRedistribution(
             vbox, S.nComp(), Dterm, Dterm_tmp, S.const_array(mfi), scratch,
             flag_arr, AMREX_D_DECL(apx, apy, apz), vfrac.const_array(mfi),
