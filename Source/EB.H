@@ -295,4 +295,15 @@ void pc_eb_clean_massfrac(
   amrex::Array4<amrex::Real> const& /*scratch*/,
   amrex::Array4<amrex::Real> const& /*div*/);
 
+void pc_post_eb_redistribution(
+  const amrex::Box& /*bx*/,
+  const amrex::Real /*dt*/,
+  const bool /*eb_clean_massfrac*/,
+  const amrex::Real /*threshold*/,
+  amrex::Array4<const amrex::Real> const& /*state*/,
+  const amrex::FabType& /*typ*/,
+  const amrex::Array4<amrex::EBCellFlag const>& /*flags*/,
+  amrex::Array4<amrex::Real> const& /*scratch*/,
+  amrex::Array4<amrex::Real> const& /*div*/);
+
 #endif

@@ -581,17 +581,15 @@ PeleC::getMOLSrcTerm(
         amrex::Array4<amrex::Real> Dterm_tmp = Dterm_tmpfab.array();
         copy_array4(Dfab.box(), NVAR, Dterm, Dterm_tmp);
 
-        // BCs
-        const amrex::StateDescriptor* desc = state[State_Type].descriptor();
-        const auto& bcs = desc->getBCs();
-        amrex::Gpu::DeviceVector<amrex::BCRec> d_bcs(desc->nComp());
-        amrex::Gpu::copy(
-          amrex::Gpu::hostToDevice, bcs.begin(), bcs.end(), d_bcs.begin());
-
-        bool use_wts_in_divnc = false;
-
         {
           BL_PROFILE("ApplyRedistribution()");
+          const amrex::StateDescriptor* desc = state[State_Type].descriptor();
+          const auto& bcs = desc->getBCs();
+          amrex::Gpu::DeviceVector<amrex::BCRec> d_bcs(desc->nComp());
+          amrex::Gpu::copy(
+            amrex::Gpu::hostToDevice, bcs.begin(), bcs.end(), d_bcs.begin());
+          const bool use_wts_in_divnc = false;
+
           ApplyRedistribution(
             vbox, S.nComp(), Dterm, Dterm_tmp, S.const_array(mfi), scratch,
             flag_arr, AMREX_D_DECL(apx, apy, apz), vfrac.const_array(mfi),
@@ -599,30 +597,7 @@ PeleC::getMOLSrcTerm(
             redistribution_type, use_wts_in_divnc, eb_srd_max_order);
         }
 
-        // Make sure div is zero in covered cells
-        amrex::ParallelFor(
-          vbox, S.nComp(),
-          [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
-            if (flag_arr(i, j, k).isCovered()) {
-              Dterm(i, j, k, n) = 0.0;
-            }
-          });
-
-        // Make sure rho div is same as sum rhoY div
-        amrex::ParallelFor(
-          vbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            Dterm(i, j, k, URHO) = 0.0;
-            for (int n = 0; n < NUM_SPECIES; n++) {
-              Dterm(i, j, k, URHO) += Dterm(i, j, k, UFS + n);
-            }
-          });
-
-        // Make sure the massfractions are ok in cut cells
-        if ((eb_clean_massfrac) && (typ != amrex::FabType::covered)) {
-          pc_eb_clean_massfrac(
-            vbox, dt, eb_clean_massfrac_threshold, S.const_array(mfi), flag_arr,
-            scratch, Dterm);
-        }
+        pc_post_eb_redistribution(vbox, dt, eb_clean_massfrac, eb_clean_massfrac_threshold, S.const_array(mfi), typ, flag_arr, scratch, Dterm);
       }
 
       copy_array4(vbox, NVAR, Dterm, MOLSrc);
