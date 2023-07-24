@@ -1385,10 +1385,9 @@ PeleC::update_flux_registers(
     return;
   }
   amrex::EBFluxRegister* fr_as_crse =
-    (do_reflux && (level < parent->finestLevel())) ? &getFluxReg(level + 1)
-                                                   : nullptr;
+    (level < parent->finestLevel()) ? &getFluxReg(level + 1) : nullptr;
   amrex::EBFluxRegister* fr_as_fine =
-    (do_reflux && (level > 0)) ? &getFluxReg(level) : nullptr;
+    (level > 0) ? &getFluxReg(level) : nullptr;
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx = geom.CellSizeArray();
 
   if (typ == amrex::FabType::singlevalued) {
