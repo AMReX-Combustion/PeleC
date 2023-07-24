@@ -1381,6 +1381,11 @@ PeleC::update_flux_registers(
   const std::array<amrex::FArrayBox const*, AMREX_SPACEDIM>& flux)
 {
   BL_PROFILE("PeleC::update_flux_registers()");
+
+  if (!amrex::DefaultGeometry().IsCartesian()) {
+    amrex::Abort("Flux registers not r-z compatible yet");
+  }
+
   if (!do_reflux) {
     return;
   }
