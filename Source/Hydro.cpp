@@ -49,18 +49,13 @@ PeleC::construct_hydro_source(
 
     const amrex::Real* dx = geom.CellSize();
 
-    amrex::Real dx1 = dx[0];
-    for (int dir = 1; dir < AMREX_SPACEDIM; ++dir) {
-      dx1 *= dx[dir];
-    }
-
-    std::array<amrex::Real, AMREX_SPACEDIM> dxD = {
-      {AMREX_D_DECL(dx1, dx1, dx1)}};
-    const amrex::Real* dxDp = dxD.data();
-
     amrex::Real courno = std::numeric_limits<amrex::Real>::lowest();
 
     const amrex::MultiFab& S_new = get_new_data(State_Type);
+
+    auto const& fact =
+      dynamic_cast<amrex::EBFArrayBoxFactory const&>(S.Factory());
+    auto const& flags = fact.getMultiEBCellFlagFab();
 
     // note: the radiation consup currently does not fill these
     amrex::Real E_added_flux = 0.;
@@ -99,6 +94,9 @@ PeleC::construct_hydro_source(
         const amrex::Box& bx = mfi.tilebox();
         const amrex::Box& qbx = amrex::grow(bx, numGrow() + nGrowF);
         const amrex::Box& fbx = amrex::grow(bx, nGrowF);
+
+        const auto& flag_fab = flags[mfi];
+        amrex::FabType typ = flag_fab.getType(bx);
 
         amrex::GpuArray<amrex::FArrayBox, AMREX_SPACEDIM> flux;
         for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
@@ -228,26 +226,9 @@ PeleC::construct_hydro_source(
         }
 
         if (do_reflux && sub_iteration == sub_ncycle - 1) {
-          BL_PROFILE("PeleC::reflux()");
-          if (level < finest_level) {
-            getFluxReg(level + 1).CrseAdd(
-              mfi, {{AMREX_D_DECL(flux.data(), &(flux[1]), &(flux[2]))}}, dxDp,
-              dt, amrex::RunOn::Device);
-
-            if (!amrex::DefaultGeometry().IsCartesian()) {
-              amrex::Abort("Flux registers not r-z compatible yet");
-            }
-          }
-
-          if (level > 0) {
-            getFluxReg(level).FineAdd(
-              mfi, {{AMREX_D_DECL(flux.data(), &(flux[1]), &(flux[2]))}}, dxDp,
-              dt, amrex::RunOn::Device);
-
-            if (!amrex::DefaultGeometry().IsCartesian()) {
-              amrex::Abort("Flux registers not r-z compatible yet");
-            }
-          }
+          update_flux_registers(
+            dt, bx, mfi, typ,
+            {{AMREX_D_DECL(flux.data(), &(flux[1]), &(flux[2]))}});
         }
       }
     }

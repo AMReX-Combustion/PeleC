@@ -161,13 +161,6 @@ PeleC::getSmagorinskyLESTerm(
   // Only use this functionality for 3D
   const int ngrow = 1;
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx = geom.CellSizeArray();
-  amrex::Real dx1 = dx[0];
-  for (int dir = 1; dir < AMREX_SPACEDIM; ++dir) {
-    dx1 *= dx[dir];
-  }
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dxD = {
-    {AMREX_D_DECL(dx1, dx1, dx1)}};
-  const amrex::Real* dxDp = dxD.data();
 
   amrex::MultiFab S(grids, dmap, NVAR, ngrow, amrex::MFInfo(), Factory());
   FillPatch(*this, S, ngrow, time, State_Type, 0, NVAR);
@@ -285,17 +278,9 @@ PeleC::getSmagorinskyLESTerm(
             });
         }
 
-        if (level < parent->finestLevel()) {
-          getFluxReg(level + 1).CrseAdd(
-            mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}}, dxDp,
-            dt, amrex::RunOn::Device);
-        }
-
-        if (level > 0) {
-          getFluxReg(level).FineAdd(
-            mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}}, dxDp,
-            dt, amrex::RunOn::Device);
-        }
+        update_flux_registers(
+          dt, vbox, mfi, typ,
+          {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])});
       }
     } // End of MFIter scope
   }   // End of OMP scope
