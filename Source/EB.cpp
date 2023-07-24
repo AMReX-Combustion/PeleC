@@ -761,3 +761,38 @@ pc_eb_clean_massfrac(
       }
     });
 }
+
+void
+pc_post_eb_redistribution(
+  const amrex::Box& bx,
+  const amrex::Real dt,
+  const bool eb_clean_massfrac,
+  const amrex::Real threshold,
+  amrex::Array4<const amrex::Real> const& state,
+  const amrex::FabType& typ,
+  const amrex::Array4<amrex::EBCellFlag const>& flags,
+  amrex::Array4<amrex::Real> const& scratch,
+  amrex::Array4<amrex::Real> const& div)
+{
+  // Make sure div is zero in covered cells
+  amrex::ParallelFor(
+    bx, state.nComp(),
+    [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
+      if (flags(i, j, k).isCovered()) {
+        div(i, j, k, n) = 0.0;
+      }
+    });
+
+  // Make sure rho div is same as sum rhoY div
+  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    div(i, j, k, URHO) = 0.0;
+    for (int n = 0; n < NUM_SPECIES; n++) {
+      div(i, j, k, URHO) += div(i, j, k, UFS + n);
+    }
+  });
+
+  // Make sure the massfractions are ok in cut cells
+  if ((eb_clean_massfrac) && (typ != amrex::FabType::covered)) {
+    pc_eb_clean_massfrac(bx, dt, threshold, state, flags, scratch, div);
+  }
+}
