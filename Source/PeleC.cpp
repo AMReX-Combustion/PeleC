@@ -1384,17 +1384,21 @@ PeleC::update_flux_registers(
   if (!do_reflux) {
     return;
   }
+
   amrex::EBFluxRegister* fr_as_crse =
     (level < parent->finestLevel()) ? &getFluxReg(level + 1) : nullptr;
   amrex::EBFluxRegister* fr_as_fine =
     (level > 0) ? &getFluxReg(level) : nullptr;
+
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx = geom.CellSizeArray();
+  const amrex::Real dx1 = AMREX_D_TERM(dx[0], *dx[1], *dx[2]);
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dxD = {
+    {AMREX_D_DECL(dx1, dx1, dx1)}};
 
   if (typ == amrex::FabType::singlevalued) {
     if (fr_as_crse != nullptr) {
       fr_as_crse->CrseAdd(
-        mfi, flux, dx.data(),
-        dt, vfrac[mfi],
+        mfi, flux, dxD.data(), dt, vfrac[mfi],
         {AMREX_D_DECL(
           &((*areafrac[0])[mfi]), &((*areafrac[1])[mfi]),
           &((*areafrac[2])[mfi]))},
@@ -1406,8 +1410,7 @@ PeleC::update_flux_registers(
         amrex::grow(bx, 1), NVAR, amrex::The_Async_Arena());
       dm_as_fine.setVal<amrex::RunOn::Device>(0.0);
       fr_as_fine->FineAdd(
-        mfi, flux, dx.data(),
-        dt, vfrac[mfi],
+        mfi, flux, dxD.data(), dt, vfrac[mfi],
         {AMREX_D_DECL(
           &((*areafrac[0])[mfi]), &((*areafrac[1])[mfi]),
           &((*areafrac[2])[mfi]))},
@@ -1416,15 +1419,11 @@ PeleC::update_flux_registers(
 
   } else if (typ == amrex::FabType::regular) {
     if ((level < parent->finestLevel()) && (fr_as_crse != nullptr)) {
-      fr_as_crse->CrseAdd(
-        mfi, flux, dx.data(),
-        dt, amrex::RunOn::Device);
+      fr_as_crse->CrseAdd(mfi, flux, dxD.data(), dt, amrex::RunOn::Device);
     }
 
     if ((level > 0) && (fr_as_fine != nullptr)) {
-      fr_as_fine->FineAdd(
-        mfi, flux, dx.data(),
-        dt, amrex::RunOn::Device);
+      fr_as_fine->FineAdd(mfi, flux, dxD.data(), dt, amrex::RunOn::Device);
     }
   } else if (typ == amrex::FabType::multivalued) {
     amrex::Abort("multi-valued EB flux register update to be implemented");

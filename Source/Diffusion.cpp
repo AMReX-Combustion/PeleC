@@ -62,13 +62,6 @@ PeleC::getMOLSrcTerm(
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dxinv =
     geom.InvCellSizeArray();
 
-  amrex::Real dx1 = dx[0];
-  for (int dir = 1; dir < AMREX_SPACEDIM; ++dir) {
-    dx1 *= dx[dir];
-  }
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dxD = {
-    {AMREX_D_DECL(dx1, dx1, dx1)}};
-
   auto const& fact =
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(S.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
@@ -464,7 +457,9 @@ PeleC::getMOLSrcTerm(
               });
           }
 
-          update_flux_registers(dt, vbox, mfi, typ, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])});
+          update_flux_registers(
+            dt, vbox, mfi, typ,
+            {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])});
         }
       } else if (typ == amrex::FabType::regular) {
         // Compute flux divergence (1/Vol).Div(F.A)
@@ -488,7 +483,9 @@ PeleC::getMOLSrcTerm(
               });
           }
 
-          update_flux_registers(dt, vbox, mfi, typ, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])});
+          update_flux_registers(
+            dt, vbox, mfi, typ,
+            {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])});
         }
       } else if (typ == amrex::FabType::multivalued) {
         amrex::Abort("multi-valued eb boundary fluxes to be implemented");
