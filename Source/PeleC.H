@@ -646,7 +646,7 @@ protected:
     const amrex::Box& bx,
     const amrex::MFIter& mfi,
     const amrex::FabType& typ,
-    const amrex::FArrayBox flux_ec[AMREX_SPACEDIM]);
+    const std::array<amrex::FArrayBox const*, AMREX_SPACEDIM>& flux);
 
   void reflux();
 

@@ -1378,7 +1378,7 @@ PeleC::update_flux_registers(
   const amrex::Box& bx,
   const amrex::MFIter& mfi,
   const amrex::FabType& typ,
-  const amrex::FArrayBox flux_ec[AMREX_SPACEDIM])
+  const std::array<amrex::FArrayBox const*, AMREX_SPACEDIM>& flux)
 {
   BL_PROFILE("PeleC::update_flux_registers()");
   if (!do_reflux) {
@@ -1393,7 +1393,7 @@ PeleC::update_flux_registers(
   if (typ == amrex::FabType::singlevalued) {
     if (fr_as_crse != nullptr) {
       fr_as_crse->CrseAdd(
-        mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dx.data(),
+        mfi, flux, dx.data(),
         dt, vfrac[mfi],
         {AMREX_D_DECL(
           &((*areafrac[0])[mfi]), &((*areafrac[1])[mfi]),
@@ -1406,7 +1406,7 @@ PeleC::update_flux_registers(
         amrex::grow(bx, 1), NVAR, amrex::The_Async_Arena());
       dm_as_fine.setVal<amrex::RunOn::Device>(0.0);
       fr_as_fine->FineAdd(
-        mfi, {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dx.data(),
+        mfi, flux, dx.data(),
         dt, vfrac[mfi],
         {AMREX_D_DECL(
           &((*areafrac[0])[mfi]), &((*areafrac[1])[mfi]),
@@ -1417,13 +1417,13 @@ PeleC::update_flux_registers(
   } else if (typ == amrex::FabType::regular) {
     if ((level < parent->finestLevel()) && (fr_as_crse != nullptr)) {
       fr_as_crse->CrseAdd(
-        mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}}, dx.data(),
+        mfi, flux, dx.data(),
         dt, amrex::RunOn::Device);
     }
 
     if ((level > 0) && (fr_as_fine != nullptr)) {
       fr_as_fine->FineAdd(
-        mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}}, dx.data(),
+        mfi, flux, dx.data(),
         dt, amrex::RunOn::Device);
     }
   } else if (typ == amrex::FabType::multivalued) {
