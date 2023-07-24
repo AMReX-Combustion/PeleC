@@ -279,8 +279,8 @@ PeleC::getSmagorinskyLESTerm(
         }
 
         update_flux_registers(
-            dt, vbox, mfi, typ,
-            {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])});
+          dt, vbox, mfi, typ,
+          {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])});
       }
     } // End of MFIter scope
   }   // End of OMP scope
