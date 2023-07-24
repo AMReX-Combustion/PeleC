@@ -597,7 +597,9 @@ PeleC::getMOLSrcTerm(
             redistribution_type, use_wts_in_divnc, eb_srd_max_order);
         }
 
-        pc_post_eb_redistribution(vbox, dt, eb_clean_massfrac, eb_clean_massfrac_threshold, S.const_array(mfi), typ, flag_arr, scratch, Dterm);
+        pc_post_eb_redistribution(
+          vbox, dt, eb_clean_massfrac, eb_clean_massfrac_threshold,
+          S.const_array(mfi), typ, flag_arr, scratch, Dterm);
       }
 
       copy_array4(vbox, NVAR, Dterm, MOLSrc);
