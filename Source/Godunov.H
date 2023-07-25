@@ -307,14 +307,14 @@ pc_cmpflx(
       rhol = rhor;
     }
   } else if (idx == domhi + 1) {
-    if (bchi == NoSlipWall || bchi == SlipWall || bclo == Symmetry) {
+    if (bchi == NoSlipWall || bchi == SlipWall || bchi == Symmetry) {
       ur = -ul;
       vr = vl;
       v2r =
         v2l; // NoSlip: this is fine because Godunov velocity normal will be 0
       pr = pl;
       rhor = rhol;
-    } else if (bclo == Outflow) {
+    } else if (bchi == Outflow) {
       ur = ul;
       vr = vl;
       v2r = v2l;
