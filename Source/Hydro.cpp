@@ -351,20 +351,14 @@ pc_umdrv(
   }
 
   // divu
-  AMREX_D_TERM(const amrex::Real dx0 = dx[0];, const amrex::Real dx1 = dx[1];
-               , const amrex::Real dx2 = dx[2];);
   amrex::ParallelFor(bxg2, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_divu(i, j, k, q, AMREX_D_DECL(dx0, dx1, dx2), divuarr);
+    pc_divu(i, j, k, q, AMREX_D_DECL(dx[0], dx[1], dx[2]), divuarr);
   });
 
   pc_adjust_fluxes(bx, uin, flx, a, divuarr, dx, difmag);
-  //  adjust fluxes (move stuff from consup into here, move divu calc into here
-  //  too)
 
   // consup
-
-  // consup
-  pc_consup(bx, uin, uout, flx, a, vol, divuarr, pdivuarr, dx, difmag);
+  pc_consup(bx, uout, flx, vol, pdivuarr);
 }
 
 void
@@ -395,17 +389,11 @@ pc_adjust_fluxes(
 
 void
 pc_consup(
-  amrex::Box const& bx,
-  amrex::Array4<const amrex::Real> const& u,
-  amrex::Array4<amrex::Real> const& update,
+  const amrex::Box& bx,
+  const amrex::Array4<amrex::Real>& update,
   const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flx,
-  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>&
-    a,
-  amrex::Array4<const amrex::Real> const& vol,
-  amrex::Array4<const amrex::Real> const& divu,
-  amrex::Array4<const amrex::Real> const& pdivu,
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& del,
-  amrex::Real const difmag)
+  const amrex::Array4<const amrex::Real>& vol,
+  const amrex::Array4<const amrex::Real>& pdivu)
 {
   BL_PROFILE("PeleC::pc_consup()");
   // Combine for Hydro Sources

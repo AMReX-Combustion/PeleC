@@ -207,15 +207,9 @@ void pc_adjust_fluxes(
   const amrex::Real difmag);
 
 void pc_consup(
-  amrex::Box const& bx,
-  amrex::Array4<const amrex::Real> const& u,
-  amrex::Array4<amrex::Real> const& update,
+  const amrex::Box& bx,
+  const amrex::Array4<amrex::Real>& update,
   const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flx,
-  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>&
-    a,
-  amrex::Array4<const amrex::Real> const& vol,
-  amrex::Array4<const amrex::Real> const& div,
-  amrex::Array4<const amrex::Real> const& pdivu,
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& del,
-  amrex::Real const difmag);
+  const amrex::Array4<const amrex::Real>& vol,
+  const amrex::Array4<const amrex::Real>& pdivu);
 #endif
