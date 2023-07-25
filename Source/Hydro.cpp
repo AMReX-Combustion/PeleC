@@ -17,7 +17,7 @@ PeleC::construct_hydro_source(
     }
     hydro_source.setVal(0);
   } else {
-    BL_PROFILE("PeleC::advance_hydro_pc_umdrv()");
+    BL_PROFILE("PeleC::construct_hydro_source()");
 
     if ((verbose != 0) && amrex::ParallelDescriptor::IOProcessor()) {
       amrex::Print() << "... Computing hydro advance" << std::endl;
@@ -47,7 +47,8 @@ PeleC::construct_hydro_source(
 
     int finest_level = parent->finestLevel();
 
-    const amrex::Real* dx = geom.CellSize();
+    const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx =
+      geom.CellSizeArray();
 
     amrex::Real courno = std::numeric_limits<amrex::Real>::lowest();
 
@@ -299,7 +300,7 @@ pc_umdrv(
   amrex::Array4<const amrex::Real> const& qaux,
   amrex::Array4<const amrex::Real> const&
     src_q, // amrex::IArrayBox const& bcMask,
-  const amrex::Real* dx,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& dx,
   const amrex::Real dt,
   const int ppm_type,
   const bool use_flattening,
@@ -356,8 +357,40 @@ pc_umdrv(
     pc_divu(i, j, k, q, AMREX_D_DECL(dx0, dx1, dx2), divuarr);
   });
 
+  pc_adjust_fluxes(bx, uin, flx, a, divuarr, dx, difmag);
+  //  adjust fluxes (move stuff from consup into here, move divu calc into here
+  //  too)
+
+  // consup
+
   // consup
   pc_consup(bx, uin, uout, flx, a, vol, divuarr, pdivuarr, dx, difmag);
+}
+
+void
+pc_adjust_fluxes(
+  const amrex::Box& bx,
+  const amrex::Array4<const amrex::Real>& u,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flx,
+  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>&
+    a,
+  const amrex::Array4<const amrex::Real>& divu,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& del,
+  const amrex::Real difmag)
+{
+  BL_PROFILE("PeleC::pc_adjust_fluxes()");
+  // Flux alterations
+  for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
+    amrex::Box const& fbx = surroundingNodes(bx, dir);
+    const amrex::Real dx = del[dir];
+    amrex::ParallelFor(fbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      pc_artif_visc(AMREX_D_DECL(i, j, k), flx[dir], divu, u, dx, difmag, dir);
+      // Normalize Species Flux
+      pc_norm_spec_flx(i, j, k, flx[dir]);
+      // Make flux extensive
+      pc_ext_flx(i, j, k, flx[dir], a[dir]);
+    });
+  }
 }
 
 void
@@ -371,23 +404,10 @@ pc_consup(
   amrex::Array4<const amrex::Real> const& vol,
   amrex::Array4<const amrex::Real> const& divu,
   amrex::Array4<const amrex::Real> const& pdivu,
-  amrex::Real const* del,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& del,
   amrex::Real const difmag)
 {
-  BL_PROFILE("PeleC::consup()");
-  // Flux alterations
-  for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-    amrex::Box const& fbx = surroundingNodes(bx, dir);
-    const amrex::Real dx = del[dir];
-    amrex::ParallelFor(fbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      pc_artif_visc(AMREX_D_DECL(i, j, k), flx[dir], divu, u, dx, difmag, dir);
-      // Normalize Species Flux
-      pc_norm_spec_flx(i, j, k, flx[dir]);
-      // Make flux extensive
-      pc_ext_flx(i, j, k, flx[dir], a[dir]);
-    });
-  }
-
+  BL_PROFILE("PeleC::pc_consup()");
   // Combine for Hydro Sources
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_update(i, j, k, update, flx, vol, pdivu);
