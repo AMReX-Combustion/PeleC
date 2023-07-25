@@ -279,7 +279,6 @@ PeleC::checkPoint(
       EBLevelFile << eb_max_lvl_gen;
       EBLevelFile.close();
     }
-
   }
 
   if (current_version > 0) {
