@@ -84,7 +84,6 @@ pp.query("do_react", do_react);
 pp.query("chem_integrator", chem_integrator);
 pp.query("bndry_func_thread_safe", bndry_func_thread_safe);
 pp.query("print_energy_diagnostics", print_energy_diagnostics);
-pp.query("track_grid_losses", track_grid_losses);
 pp.query("sum_interval", sum_interval);
 pp.query("track_extrema", track_extrema);
 pp.query("extrema_spec_name", extrema_spec_name);

@@ -402,13 +402,6 @@ PeleC::initialize_sdc_iteration(
 
   // Reset the change from density resets
   frac_change = 1;
-
-  // Reset the grid loss tracking.
-  if (track_grid_losses) {
-    for (amrex::Real& i : material_lost_through_boundary_temp) {
-      i = 0.0;
-    }
-  }
 }
 
 void
@@ -454,15 +447,4 @@ PeleC::finalize_sdc_advance(
   int /*amr_ncycle*/)
 {
   BL_PROFILE("PeleC::finalize_sdc_advance()");
-
-  // Add the material lost in this timestep to the cumulative losses.
-  if (track_grid_losses) {
-    amrex::ParallelDescriptor::ReduceRealSum(
-      material_lost_through_boundary_temp, n_lost);
-
-    for (int i = 0; i < n_lost; i++) {
-      material_lost_through_boundary_cumulative[i] +=
-        material_lost_through_boundary_temp[i];
-    }
-  }
 }

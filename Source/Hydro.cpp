@@ -57,27 +57,8 @@ PeleC::construct_hydro_source(
       dynamic_cast<amrex::EBFArrayBoxFactory const&>(S.Factory());
     auto const& flags = fact.getMultiEBCellFlagFab();
 
-    // note: the radiation consup currently does not fill these
-    amrex::Real E_added_flux = 0.;
-    amrex::Real mass_added_flux = 0.;
-    amrex::Real xmom_added_flux = 0.;
-    amrex::Real ymom_added_flux = 0.;
-    amrex::Real zmom_added_flux = 0.;
-    amrex::Real mass_lost = 0.;
-    amrex::Real xmom_lost = 0.;
-    amrex::Real ymom_lost = 0.;
-    amrex::Real zmom_lost = 0.;
-    amrex::Real eden_lost = 0.;
-    amrex::Real xang_lost = 0.;
-    amrex::Real yang_lost = 0.;
-    amrex::Real zang_lost = 0.;
-
 #ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())               \
-    reduction(+:E_added_flux,mass_added_flux)                           \
-    reduction(+:xmom_added_flux,ymom_added_flux,zmom_added_flux)	\
-    reduction(+:mass_lost,xmom_lost,ymom_lost,zmom_lost)		\
-    reduction(+:eden_lost,xang_lost,yang_lost,zang_lost) 		\
     reduction(max:courno)
 #endif
     {
@@ -249,46 +230,6 @@ PeleC::construct_hydro_source(
             {{AMREX_D_DECL(flux.data(), &(flux[1]), &(flux[2]))}});
         }
       }
-    }
-
-    if (track_grid_losses) {
-      material_lost_through_boundary_temp[0] += mass_lost;
-      material_lost_through_boundary_temp[1] += xmom_lost;
-      material_lost_through_boundary_temp[2] += ymom_lost;
-      material_lost_through_boundary_temp[3] += zmom_lost;
-      material_lost_through_boundary_temp[4] += eden_lost;
-      material_lost_through_boundary_temp[5] += xang_lost;
-      material_lost_through_boundary_temp[6] += yang_lost;
-      material_lost_through_boundary_temp[7] += zang_lost;
-    }
-
-    if (print_energy_diagnostics) {
-      amrex::Real foo[5] = {
-        E_added_flux, xmom_added_flux, ymom_added_flux, zmom_added_flux,
-        mass_added_flux};
-
-      amrex::ParallelDescriptor::ReduceRealSum(
-        foo, 5, amrex::ParallelDescriptor::IOProcessorNumber());
-
-#ifdef AMREX_DEBUG
-      if (amrex::ParallelDescriptor::IOProcessor()) {
-        E_added_flux = foo[0];
-        xmom_added_flux = foo[1];
-        ymom_added_flux = foo[2];
-        zmom_added_flux = foo[3];
-        mass_added_flux = foo[4];
-        amrex::Print() << "mass added from fluxes                      : "
-                       << mass_added_flux << std::endl;
-        amrex::Print() << "xmom added from fluxes                      : "
-                       << xmom_added_flux << std::endl;
-        amrex::Print() << "ymom added from fluxes                      : "
-                       << ymom_added_flux << std::endl;
-        amrex::Print() << "zmom added from fluxes                      : "
-                       << zmom_added_flux << std::endl;
-        amrex::Print() << "(rho E) added from fluxes                   : "
-                       << E_added_flux << std::endl;
-      }
-#endif
     }
 
     if (courno > 1.0) {
