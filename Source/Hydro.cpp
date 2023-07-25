@@ -204,6 +204,7 @@ PeleC::construct_hydro_source(
             area[2].const_array(mfi))}};
 
         if (typ == amrex::FabType::singlevalued) {
+          amrex::Abort("EB Godunov not implemented yet");
         } else if (typ == amrex::FabType::regular) {
           BL_PROFILE("PeleC::umdrv()");
           pc_umdrv(
