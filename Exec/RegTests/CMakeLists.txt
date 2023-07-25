@@ -8,6 +8,7 @@ add_subdirectory(Sod)
 add_subdirectory(ChannelFlow)
 add_subdirectory(TG)
 add_subdirectory(zeroD)
+add_subdirectory(MassCons)
 
 if(PELEC_ENABLE_AMREX_PARTICLES)
   add_subdirectory(Spray-Conv)
