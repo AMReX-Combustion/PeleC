@@ -24,15 +24,16 @@ PeleC::construct_hydro_source(
     }
 
     AMREX_ASSERT(S.nGrow() >= numGrow() + nGrowF);
+
+    const int ng = 0;
     sources_for_hydro.setVal(0.0);
-    int ng = 0; // TODO: This is currently the largest ngrow of the source
-                // data...maybe this needs fixing?
     for (int n = 0; n < src_list.size(); ++n) {
       amrex::MultiFab::Saxpy(
         sources_for_hydro, 0.5, *new_sources[src_list[n]], 0, 0, NVAR, ng);
       amrex::MultiFab::Saxpy(
         sources_for_hydro, 0.5, *old_sources[src_list[n]], 0, 0, NVAR, ng);
     }
+
     // Add I_R terms to advective forcing
     if (do_react) {
       amrex::MultiFab::Add(
@@ -45,7 +46,7 @@ PeleC::construct_hydro_source(
     sources_for_hydro.FillBoundary(geom.periodicity());
     hydro_source.setVal(0);
 
-    int finest_level = parent->finestLevel();
+    const int finest_level = parent->finestLevel();
 
     const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx =
       geom.CellSizeArray();
@@ -83,12 +84,10 @@ PeleC::construct_hydro_source(
 #endif
     {
       amrex::Real cflLoc = std::numeric_limits<amrex::Real>::lowest();
-      int is_finest_level = (level == finest_level) ? 1 : 0;
 
       const int* domain_lo = geom.Domain().loVect();
       const int* domain_hi = geom.Domain().hiVect();
 
-      // Temporary Fabs needed for Hydro Computation
       for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
            ++mfi) {
 
@@ -98,20 +97,28 @@ PeleC::construct_hydro_source(
 
         const auto& flag_fab = flags[mfi];
         amrex::FabType typ = flag_fab.getType(bx);
+        const amrex::Array4<amrex::EBCellFlag const>& flag_arr =
+          flag_fab.const_array();
+
+        if (typ == amrex::FabType::covered) {
+          continue;
+        }
 
         amrex::GpuArray<amrex::FArrayBox, AMREX_SPACEDIM> flux;
         for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
           const amrex::Box& efbx = surroundingNodes(fbx, dir);
           flux[dir].resize(efbx, NVAR, amrex::The_Async_Arena());
+          flux[dir].setVal<amrex::RunOn::Device>(0.0);
         }
 
-        auto const& s = S.array(mfi);
+        auto const& sarr = S.array(mfi);
         auto const& hyd_src = hydro_source.array(mfi);
 
         // Resize Temporary Fabs
         amrex::FArrayBox q(qbx, QVAR, amrex::The_Async_Arena());
         amrex::FArrayBox qaux(qbx, NQAUX, amrex::The_Async_Arena());
         amrex::FArrayBox src_q(qbx, QVAR, amrex::The_Async_Arena());
+
         // Get Arrays to pass to the gpu.
         auto const& qarr = q.array();
         auto const& qauxar = qaux.array();
@@ -121,7 +128,13 @@ PeleC::construct_hydro_source(
           BL_PROFILE("PeleC::ctoprim()");
           amrex::ParallelFor(
             qbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-              pc_ctoprim(i, j, k, s, qarr, qauxar);
+              if (!flag_arr(i, j, k).isCovered()) {
+                pc_ctoprim(i, j, k, sarr, qarr, qauxar);
+              } else {
+                for (int n = 0; n < QVAR; n++) {
+                  qarr(i, j, k, n) = 0.0;
+                }
+              }
             });
         }
 
@@ -172,31 +185,34 @@ PeleC::construct_hydro_source(
           const auto& src_in = sources_for_hydro.array(mfi);
           amrex::ParallelFor(
             qbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-              pc_srctoprim(i, j, k, qarr, qauxar, src_in, srcqarr);
+              if (!flag_arr(i, j, k).isCovered()) {
+                pc_srctoprim(i, j, k, qarr, qauxar, src_in, srcqarr);
+              } else {
+                for (int n = 0; n < QVAR; n++) {
+                  srcqarr(i, j, k, n) = 0.0;
+                }
+              }
             });
         }
-
-        amrex::FArrayBox pradial(
-          amrex::Box::TheUnitBox(), 1, amrex::The_Async_Arena());
-        if (!amrex::DefaultGeometry().IsCartesian()) {
-          pradial.resize(
-            amrex::surroundingNodes(bx, 0), 1, amrex::The_Async_Arena());
-        }
-
         const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>
           flx_arr{
             {AMREX_D_DECL(flux[0].array(), flux[1].array(), flux[2].array())}};
         const amrex::GpuArray<
           const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
           a{{AMREX_D_DECL(
-            area[0].array(mfi), area[1].array(mfi), area[2].array(mfi))}};
-        {
+            area[0].const_array(mfi), area[1].const_array(mfi),
+            area[2].const_array(mfi))}};
+
+        if (typ == amrex::FabType::singlevalued) {
+        } else if (typ == amrex::FabType::regular) {
           BL_PROFILE("PeleC::umdrv()");
           pc_umdrv(
-            is_finest_level, time, fbx, domain_lo, domain_hi, phys_bc.lo(),
-            phys_bc.hi(), s, hyd_src, qarr, qauxar, srcqarr, dx, dt, ppm_type,
-            use_flattening, use_hybrid_weno, weno_scheme, difmag, flx_arr, a,
-            volume.array(mfi), cflLoc);
+            time, fbx, domain_lo, domain_hi, phys_bc.lo(), phys_bc.hi(), sarr,
+            hyd_src, qarr, qauxar, srcqarr, dx, dt, ppm_type, use_flattening,
+            use_hybrid_weno, weno_scheme, difmag, flx_arr, a, volume.array(mfi),
+            cflLoc);
+        } else if (typ == amrex::FabType::multivalued) {
+          amrex::Abort("multi-valued cells are not supported");
         }
 
         courno = amrex::max<amrex::Real>(courno, cflLoc);
@@ -226,9 +242,11 @@ PeleC::construct_hydro_source(
             bx, hyd_src.nComp(), filtered_source_out.array(), hyd_src);
         }
 
+        // Reflux
         if (do_reflux && sub_iteration == sub_ncycle - 1) {
+          const amrex::FabType gtyp = flag_fab.getType(amrex::grow(bx, 1));
           update_flux_registers(
-            dt, bx, mfi, typ,
+            dt, bx, mfi, gtyp,
             {{AMREX_D_DECL(flux.data(), &(flux[1]), &(flux[2]))}});
         }
       }
@@ -287,7 +305,6 @@ PeleC::construct_hydro_source(
 
 void
 pc_umdrv(
-  const int /*is_finest_level*/,
   const amrex::Real /*time*/,
   amrex::Box const& bx,
   const int* domlo,

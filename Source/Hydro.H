@@ -170,7 +170,6 @@ pc_update(
 
 // Host functions
 void pc_umdrv(
-  const int is_finest_level,
   const amrex::Real time,
   amrex::Box const& bx,
   const int* domlo,
