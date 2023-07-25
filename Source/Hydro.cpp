@@ -46,8 +46,6 @@ PeleC::construct_hydro_source(
     sources_for_hydro.FillBoundary(geom.periodicity());
     hydro_source.setVal(0);
 
-    const int finest_level = parent->finestLevel();
-
     const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx =
       geom.CellSizeArray();
 
