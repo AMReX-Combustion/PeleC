@@ -78,7 +78,7 @@ PeleC::sum_integrated_quantities()
       if (log_index >= 0) {
         std::ostream& data_log1 = parent->DataLog(log_index);
         if (data_log1.good()) {
-          const int datwidth = 14;
+          const int datwidth = 18;
           if (time == 0.0) {
             data_log1 << std::setw(datwidth) << "          time";
             data_log1 << std::setw(datwidth) << "          mass";
@@ -94,7 +94,7 @@ PeleC::sum_integrated_quantities()
           }
 
           // Write the quantities at this time
-          const int datprecision = 6;
+          const int datprecision = 10;
           data_log1 << std::setw(datwidth) << time;
           data_log1 << std::setw(datwidth) << std::setprecision(datprecision)
                     << mass;

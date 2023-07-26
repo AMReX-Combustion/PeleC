@@ -229,7 +229,6 @@ pc_cmpflx(
   amrex::Real cav, ustar;
   amrex::Real spl[NUM_SPECIES];
   amrex::Real spr[NUM_SPECIES];
-  amrex::Real ul, ur, vl, vr, v2l, v2r;
   int idx;
   int IU, IV, IV2;
   int GU, GV, GV2;
@@ -273,37 +272,62 @@ pc_cmpflx(
     spl[sp] = ql(i, j, k, QFS + sp);
     spr[sp] = qr(i, j, k, QFS + sp);
   }
-  ul = ql(i, j, k, IU);
-  vl = ql(i, j, k, IV);
-  v2l = ql(i, j, k, IV2);
 
-  ur = qr(i, j, k, IU);
-  vr = qr(i, j, k, IV);
-  v2r = qr(i, j, k, IV2);
+  amrex::Real ul = ql(i, j, k, IU);
+  amrex::Real vl = ql(i, j, k, IV);
+  amrex::Real v2l = ql(i, j, k, IV2);
+  amrex::Real pl = ql(i, j, k, QPRES);
+  amrex::Real rhol = ql(i, j, k, QRHO);
 
-  // Outflow Hack
+  amrex::Real ur = qr(i, j, k, IU);
+  amrex::Real vr = qr(i, j, k, IV);
+  amrex::Real v2r = qr(i, j, k, IV2);
+  amrex::Real pr = qr(i, j, k, QPRES);
+  amrex::Real rhor = qr(i, j, k, QRHO);
+
+  // Boundary condition corrections
   if (dir == 2) {
     idx = k;
   } else {
     idx = (dir == 0) ? i : j;
   }
-  if (bclo == Outflow && idx == domlo) {
-    ul = ur;
-    vl = vr;
-    v2l = v2r;
-  }
-  if (bchi == Outflow && idx == domhi + 1) {
-    ur = ul;
-    vr = vl;
-    v2r = v2l;
+  if (idx == domlo) {
+    if (bclo == NoSlipWall || bclo == SlipWall || bclo == Symmetry) {
+      ul = -ur;
+      vl = vr;
+      v2l =
+        v2r; // NoSlip: this is fine because Godunov velocity normal will be 0
+      pl = pr;
+      rhol = rhor;
+    } else if (bclo == Outflow) {
+      ul = ur;
+      vl = vr;
+      v2l = v2r;
+      pl = pr;
+      rhol = rhor;
+    }
+  } else if (idx == domhi + 1) {
+    if (bchi == NoSlipWall || bchi == SlipWall || bchi == Symmetry) {
+      ur = -ul;
+      vr = vl;
+      v2r =
+        v2l; // NoSlip: this is fine because Godunov velocity normal will be 0
+      pr = pl;
+      rhor = rhol;
+    } else if (bchi == Outflow) {
+      ur = ul;
+      vr = vl;
+      v2r = v2l;
+      pr = pl;
+      rhor = rhol;
+    }
   }
 
   const int bc_test_val = 1;
   amrex::Real dummy_flx[NUM_SPECIES] = {0.0};
   riemann(
-    ql(i, j, k, QRHO), ul, vl, v2l, ql(i, j, k, QPRES), spl, qr(i, j, k, QRHO),
-    ur, vr, v2r, qr(i, j, k, QPRES), spr, bc_test_val, cav, ustar,
-    flx(i, j, k, URHO), dummy_flx, flx(i, j, k, f_idx[0]),
+    rhol, ul, vl, v2l, pl, spl, rhor, ur, vr, v2r, pr, spr, bc_test_val, cav,
+    ustar, flx(i, j, k, URHO), dummy_flx, flx(i, j, k, f_idx[0]),
     flx(i, j, k, f_idx[1]), flx(i, j, k, f_idx[2]), flx(i, j, k, UEDEN),
     flx(i, j, k, UEINT), q(i, j, k, GU), q(i, j, k, GV), q(i, j, k, GV2),
     q(i, j, k, GDPRES), q(i, j, k, GDGAME));
