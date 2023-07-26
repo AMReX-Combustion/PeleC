@@ -45,12 +45,12 @@ struct PCHypFillExtDir
     amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> turb_fluc{0.0};
 
     // Fill external boundaries:
-    // bcnormal populates s_ext based on s_int (the state in the 1st domain cell)
-    // s_ext is initialized to a reflection (odd for velocity, even for all others)
-    // of the interior state, such that if bcnormal does nothing the boundary
-    // is equivalent to an adiabatic NoSlipWall. The user can provide any arbitrary
-    // bcnormal in the prob.H for each case to define custom combinations of
-    // inflows, outflows, and walls on the boundary face.
+    // bcnormal populates s_ext based on s_int (the state in the 1st domain
+    // cell) s_ext is initialized to a reflection (odd for velocity, even for
+    // all others) of the interior state, such that if bcnormal does nothing the
+    // boundary is equivalent to an adiabatic NoSlipWall. The user can provide
+    // any arbitrary bcnormal in the prob.H for each case to define custom
+    // combinations of inflows, outflows, and walls on the boundary face.
 
     // boundary conditions in x, y, [z if 3D]
     for (int idir = 0; idir < AMREX_SPACEDIM; ++idir) {
@@ -64,7 +64,8 @@ struct PCHypFillExtDir
           s_int[n] = dest(loc_e, n);
         }
 
-        // interior reflected position state (odd for velocity to make NoSlipWall)
+        // interior reflected position state (odd for velocity to make
+        // NoSlipWall)
         amrex::IntVect loc_r{iv};
         loc_r[idir] = domlo[idir] + (domlo[idir] - iv[idir] - 1);
         for (int n = 0; n < NVAR; n++) {
@@ -88,8 +89,8 @@ struct PCHypFillExtDir
         }
 
       } else if (
-                 (bc[idir + AMREX_SPACEDIM] == amrex::BCType::ext_dir) &&
-                 (iv[idir] > domhi[idir])) {
+        (bc[idir + AMREX_SPACEDIM] == amrex::BCType::ext_dir) &&
+        (iv[idir] > domhi[idir])) {
         // xhi, yhi, [zhi if 3D]
 
         // interior state at edge of domain
@@ -99,7 +100,8 @@ struct PCHypFillExtDir
           s_int[n] = dest(loc_e, n);
         }
 
-        // interior reflected position state (odd for velocity to make NoSlipWall)
+        // interior reflected position state (odd for velocity to make
+        // NoSlipWall)
         amrex::IntVect loc_r{iv};
         loc_r[idir] = domhi[idir] - (iv[idir] - domhi[idir] - 1);
         for (int n = 0; n < NVAR; n++) {

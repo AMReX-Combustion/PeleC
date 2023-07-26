@@ -23,7 +23,7 @@ amrex_probinit(
   pp.query("w0", PeleC::h_prob_parm_device->w0);
   amrex::Vector<int> wall_type_tmp;
   if (pp.contains("wall_type")) {
-    pp.queryarr("wall_type",wall_type_tmp);
+    pp.queryarr("wall_type", wall_type_tmp);
     for (int i = 0; i < AMREX_SPACEDIM; ++i) {
       PeleC::h_prob_parm_device->wall_type[i] = wall_type_tmp[i];
     }

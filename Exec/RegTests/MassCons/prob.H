@@ -68,7 +68,7 @@ bcnormal(
   ProbParmDevice const& prob_parm,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& /*turb_fluc*/)
 {
-  if( prob_parm.wall_type[idir] == 1) {
+  if (prob_parm.wall_type[idir] == 1) {
     // SlipWall: flip tangential velocities so they are reflected even
     for (int i = 0; i < AMREX_SPACEDIM; i++) {
       amrex::Real flip = (i == idir) ? 1.0 : -1.0;
