@@ -42,110 +42,87 @@ struct PCHypFillExtDir
 
     amrex::Real s_int[NVAR] = {0.0};
     amrex::Real s_ext[NVAR] = {0.0};
+    amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> turb_fluc{0.0};
 
-    // xlo and xhi
-    int idir = 0;
-    if ((bc[idir] == amrex::BCType::ext_dir) && (iv[idir] < domlo[idir])) {
-      const amrex::IntVect loc(AMREX_D_DECL(domlo[idir], iv[1], iv[2]));
-      for (int n = 0; n < NVAR; n++) {
-        s_int[n] = dest(loc, n);
-      }
-      if (m_do_turb_inflow && (iv[idir] == domlo[idir] - 1)) {
+    // Fill external boundaries:
+    // bcnormal populates s_ext based on s_int (the state in the 1st domain cell)
+    // s_ext is initialized to a reflection (odd for velocity, even for all others)
+    // of the interior state, such that if bcnormal does nothing the boundary
+    // is equivalent to an adiabatic NoSlipWall. The user can provide any arbitrary
+    // bcnormal in the prob.H for each case to define custom combinations of
+    // inflows, outflows, and walls on the boundary face.
+
+    // boundary conditions in x, y, [z if 3D]
+    for (int idir = 0; idir < AMREX_SPACEDIM; ++idir) {
+      if ((bc[idir] == amrex::BCType::ext_dir) && (iv[idir] < domlo[idir])) {
+        // xlo, ylo, [zlo if 3D]
+
+        // interior state at edge of domain
+        amrex::IntVect loc_e{iv};
+        loc_e[idir] = domlo[idir];
         for (int n = 0; n < NVAR; n++) {
-          s_ext[n] = dest(iv, n);
+          s_int[n] = dest(loc_e, n);
         }
-      }
-      bcnormal(x, s_int, s_ext, idir, +1, time, geom, *lprobparm);
-      for (int n = 0; n < NVAR; n++) {
-        dest(iv, n) = s_ext[n];
-      }
-    } else if (
-      (bc[idir + AMREX_SPACEDIM] == amrex::BCType::ext_dir) &&
-      (iv[idir] > domhi[idir])) {
-      const amrex::IntVect loc(AMREX_D_DECL(domhi[idir], iv[1], iv[2]));
-      for (int n = 0; n < NVAR; n++) {
-        s_int[n] = dest(loc, n);
-      }
-      if (m_do_turb_inflow && (iv[idir] == domlo[idir] - 1)) {
+
+        // interior reflected position state (odd for velocity to make NoSlipWall)
+        amrex::IntVect loc_r{iv};
+        loc_r[idir] = domlo[idir] + (domlo[idir] - iv[idir] - 1);
         for (int n = 0; n < NVAR; n++) {
-          s_ext[n] = dest(iv, n);
+          s_ext[n] = dest(loc_r, n);
         }
-      }
-      bcnormal(x, s_int, s_ext, idir, -1, time, geom, *lprobparm);
-      for (int n = 0; n < NVAR; n++) {
-        dest(iv, n) = s_ext[n];
+        for (int n = UMX; n < UMX + AMREX_SPACEDIM; n++) {
+          s_ext[n] *= -1.0;
+        }
+
+        // turbulent fluctuations
+        if (m_do_turb_inflow && (iv[idir] == domlo[idir] - 1)) {
+          for (int n = 0; n < AMREX_SPACEDIM; n++) {
+            turb_fluc[n] = dest(iv, UMX + n);
+          }
+        }
+
+        // Compute and populate ghost cells
+        bcnormal(x, s_int, s_ext, idir, +1, time, geom, *lprobparm, turb_fluc);
+        for (int n = 0; n < NVAR; n++) {
+          dest(iv, n) = s_ext[n];
+        }
+
+      } else if (
+                 (bc[idir + AMREX_SPACEDIM] == amrex::BCType::ext_dir) &&
+                 (iv[idir] > domhi[idir])) {
+        // xhi, yhi, [zhi if 3D]
+
+        // interior state at edge of domain
+        amrex::IntVect loc_e{iv};
+        loc_e[idir] = domhi[idir];
+        for (int n = 0; n < NVAR; n++) {
+          s_int[n] = dest(loc_e, n);
+        }
+
+        // interior reflected position state (odd for velocity to make NoSlipWall)
+        amrex::IntVect loc_r{iv};
+        loc_r[idir] = domhi[idir] - (iv[idir] - domhi[idir] - 1);
+        for (int n = 0; n < NVAR; n++) {
+          s_ext[n] = dest(loc_r, n);
+        }
+        for (int n = UMX; n < UMX + AMREX_SPACEDIM; n++) {
+          s_ext[n] *= -1.0;
+        }
+
+        // turbulent fluctuations
+        if (m_do_turb_inflow && (iv[idir] == domlo[idir] - 1)) {
+          for (int n = 0; n < AMREX_SPACEDIM; n++) {
+            turb_fluc[n] = dest(iv, UMX + n);
+          }
+        }
+
+        // Compute and populate ghost cells
+        bcnormal(x, s_int, s_ext, idir, -1, time, geom, *lprobparm, turb_fluc);
+        for (int n = 0; n < NVAR; n++) {
+          dest(iv, n) = s_ext[n];
+        }
       }
     }
-#if AMREX_SPACEDIM > 1
-    // ylo and yhi
-    idir = 1;
-    if ((bc[idir] == amrex::BCType::ext_dir) && (iv[idir] < domlo[idir])) {
-      const amrex::IntVect loc(AMREX_D_DECL(iv[0], domlo[idir], iv[2]));
-      for (int n = 0; n < NVAR; n++) {
-        s_int[n] = dest(loc, n);
-      }
-      if (m_do_turb_inflow && (iv[idir] == domlo[idir] - 1)) {
-        for (int n = 0; n < NVAR; n++) {
-          s_ext[n] = dest(iv, n);
-        }
-      }
-      bcnormal(x, s_int, s_ext, idir, +1, time, geom, *lprobparm);
-      for (int n = 0; n < NVAR; n++) {
-        dest(iv, n) = s_ext[n];
-      }
-    } else if (
-      (bc[idir + AMREX_SPACEDIM] == amrex::BCType::ext_dir) &&
-      (iv[idir] > domhi[idir])) {
-      const amrex::IntVect loc(AMREX_D_DECL(iv[0], domhi[idir], iv[2]));
-      for (int n = 0; n < NVAR; n++) {
-        s_int[n] = dest(loc, n);
-      }
-      if (m_do_turb_inflow && (iv[idir] == domhi[idir] + 1)) {
-        for (int n = 0; n < NVAR; n++) {
-          s_ext[n] = dest(iv, n);
-        }
-      }
-      bcnormal(x, s_int, s_ext, idir, -1, time, geom, *lprobparm);
-      for (int n = 0; n < NVAR; n++) {
-        dest(iv, n) = s_ext[n];
-      }
-    }
-#if AMREX_SPACEDIM == 3
-    // zlo and zhi
-    idir = 2;
-    if ((bc[idir] == amrex::BCType::ext_dir) && (iv[idir] < domlo[idir])) {
-      const amrex::IntVect loc(AMREX_D_DECL(iv[0], iv[1], domlo[idir]));
-      for (int n = 0; n < NVAR; n++) {
-        s_int[n] = dest(loc, n);
-      }
-      if (m_do_turb_inflow && (iv[idir] == domhi[idir] + 1)) {
-        for (int n = 0; n < NVAR; n++) {
-          s_ext[n] = dest(iv, n);
-        }
-      }
-      bcnormal(x, s_int, s_ext, idir, +1, time, geom, *lprobparm);
-      for (int n = 0; n < NVAR; n++) {
-        dest(iv, n) = s_ext[n];
-      }
-    } else if (
-      (bc[idir + AMREX_SPACEDIM] == amrex::BCType::ext_dir) &&
-      (iv[idir] > domhi[idir])) {
-      const amrex::IntVect loc(AMREX_D_DECL(iv[0], iv[1], domhi[idir]));
-      for (int n = 0; n < NVAR; n++) {
-        s_int[n] = dest(loc, n);
-      }
-      if (m_do_turb_inflow && (iv[idir] == domhi[idir] + 1)) {
-        for (int n = 0; n < NVAR; n++) {
-          s_ext[n] = dest(iv, n);
-        }
-      }
-      bcnormal(x, s_int, s_ext, idir, -1, time, geom, *lprobparm);
-      for (int n = 0; n < NVAR; n++) {
-        dest(iv, n) = s_ext[n];
-      }
-    }
-#endif
-#endif
   }
 };
 
