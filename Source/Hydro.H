@@ -170,7 +170,6 @@ pc_update(
 
 // Host functions
 void pc_umdrv(
-  const int is_finest_level,
   const amrex::Real time,
   amrex::Box const& bx,
   const int* domlo,
@@ -183,7 +182,7 @@ void pc_umdrv(
   amrex::Array4<const amrex::Real> const& qaux,
   amrex::Array4<const amrex::Real> const&
     src_q, // amrex::IArrayBox const& bcMask,
-  const amrex::Real* dx,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& dx,
   const amrex::Real dt,
   const int ppm_type,
   const bool use_flattening,
@@ -196,16 +195,20 @@ void pc_umdrv(
   amrex::Array4<amrex::Real> const& vol,
   amrex::Real cflLoc);
 
-void pc_consup(
-  amrex::Box const& bx,
-  amrex::Array4<const amrex::Real> const& u,
-  amrex::Array4<amrex::Real> const& update,
+void pc_adjust_fluxes(
+  const amrex::Box& bx,
+  const amrex::Array4<const amrex::Real>& u,
   const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flx,
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>&
     a,
-  amrex::Array4<const amrex::Real> const& vol,
-  amrex::Array4<const amrex::Real> const& div,
-  amrex::Array4<const amrex::Real> const& pdivu,
-  amrex::Real const* del,
-  amrex::Real const difmag);
+  const amrex::Array4<const amrex::Real>& divu,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& del,
+  const amrex::Real difmag);
+
+void pc_consup(
+  const amrex::Box& bx,
+  const amrex::Array4<amrex::Real>& update,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flx,
+  const amrex::Array4<const amrex::Real>& vol,
+  const amrex::Array4<const amrex::Real>& pdivu);
 #endif

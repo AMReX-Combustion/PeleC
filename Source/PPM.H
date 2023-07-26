@@ -242,7 +242,7 @@ void trace_ppm(
   amrex::Array4<amrex::Real> const& qp,
   const amrex::Box& vbx,
   const amrex::Real dt,
-  const amrex::Real* dx,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& dx,
   const bool use_flattening,
   const bool use_hybrid_weno,
   const int weno_scheme);
