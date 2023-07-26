@@ -212,7 +212,7 @@ void pc_umdrv_eb(
   const amrex::Array4<amrex::EBCellFlag const>& flag,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& dx,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& dxInv,
-  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flx,
   const int as_crse,
   const amrex::Array4<amrex::Real>& drho_as_crse,
   const amrex::Array4<int const>& rrflag_as_crse,
