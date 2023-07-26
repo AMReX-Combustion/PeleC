@@ -593,7 +593,7 @@ PeleC::getMOLSrcTerm(
             redistribution_type, as_crse, drho_as_crse->array(),
             rrflag_as_crse->array(), as_fine, dm_as_fine.array(),
             level_mask.const_array(mfi), level_mask_not_covered,
-            use_wts_in_divnc, eb_srd_max_order);
+            use_wts_in_divnc, 0, eb_srd_max_order);
         }
 
         pc_post_eb_redistribution(
