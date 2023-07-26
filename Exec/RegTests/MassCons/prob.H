@@ -39,8 +39,9 @@ pc_initdata(
 
   const amrex::Real u = prob_parm.u0;
   const amrex::Real v = prob_parm.v0;
+#if AMREX_SPACEDIM == 3
   const amrex::Real w = prob_parm.w0;
-
+#endif
   state(i, j, k, URHO) = rho;
   AMREX_D_TERM(state(i, j, k, UMX) = rho * u;, state(i, j, k, UMY) = rho * v;
                , state(i, j, k, UMZ) = rho * w;)
