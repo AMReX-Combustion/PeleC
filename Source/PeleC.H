@@ -243,7 +243,7 @@ public:
   amrex::Real do_sdc_advance(
     amrex::Real time, amrex::Real dt, int amr_iteration, int amr_ncycle);
 
-  static void initialize_sdc_advance(
+  void initialize_sdc_advance(
     amrex::Real time, amrex::Real dt, int amr_iteration, int amr_ncycle);
 
   static void finalize_sdc_advance(
@@ -257,7 +257,7 @@ public:
     int sub_iteration,
     int sub_ncycle);
 
-  void initialize_sdc_iteration(
+  static void initialize_sdc_iteration(
     amrex::Real time,
     amrex::Real dt,
     int amr_iteration,
