@@ -60,14 +60,25 @@ void
 bcnormal(
   const amrex::Real* /*x[AMREX_SPACEDIM]*/,
   const amrex::Real* /*s_int[NVAR]*/,
-  amrex::Real* /*s_ext[NVAR]*/,
-  const int /*idir*/,
+  amrex::Real s_ext[NVAR],
+  const int idir,
   const int /*sgn*/,
   const amrex::Real /*time*/,
   amrex::GeometryData const& /*geomdata*/,
-  ProbParmDevice const& /*prob_parm*/)
+  ProbParmDevice const& prob_parm,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& /*turb_fluc*/)
 {
-  amrex::Abort("bcnormal not implemented for this case");
+  if( prob_parm.wall_type[idir] == 1) {
+    // SlipWall: flip tangential velocities so they are reflected even
+    for (int i = 0; i < AMREX_SPACEDIM; i++) {
+      amrex::Real flip = (i == idir) ? 1.0 : -1.0;
+      s_ext[UMX + i] *= flip;
+    }
+  } else if (prob_parm.wall_type[idir] == 0) {
+    // NoSlipWall: do nothing, s_ext comes pre-filled for NoSlip wall
+  } else {
+    amrex::Abort("prob.wall_type mus be 0 (NoSlip) or 1 (Slip/Symmetry)");
+  }
 }
 
 void pc_prob_close();
