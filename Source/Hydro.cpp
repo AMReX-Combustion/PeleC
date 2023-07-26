@@ -79,11 +79,9 @@ PeleC::construct_hydro_source(
         const amrex::Box& fbx = amrex::grow(bx, nGrowF);
 
         const auto& flag_fab = flags[mfi];
-        amrex::FabType typ = flag_fab.getType(bx);
         const amrex::Array4<amrex::EBCellFlag const>& flag_arr =
           flag_fab.const_array();
-
-        if (typ == amrex::FabType::covered) {
+        if (flag_fab.getType(bx) == amrex::FabType::covered) {
           continue;
         }
 
@@ -186,16 +184,16 @@ PeleC::construct_hydro_source(
             area[0].const_array(mfi), area[1].const_array(mfi),
             area[2].const_array(mfi))}};
 
-        if (typ == amrex::FabType::singlevalued) {
+        if (flag_fab.getType(bxg_i) == amrex::FabType::singlevalued) {
           amrex::Abort("EB Godunov not implemented yet");
-        } else if (typ == amrex::FabType::regular) {
+        } else if (flag_fab.getType(bxg_i) == amrex::FabType::regular) {
           BL_PROFILE("PeleC::umdrv()");
           pc_umdrv(
             time, fbx, domain_lo, domain_hi, phys_bc.lo(), phys_bc.hi(), sarr,
             hyd_src, qarr, qauxar, srcqarr, dx, dt, ppm_type, use_flattening,
             use_hybrid_weno, weno_scheme, difmag, flx_arr, a, volume.array(mfi),
             cflLoc);
-        } else if (typ == amrex::FabType::multivalued) {
+        } else if (flag_fab.getType(bxg_i) == amrex::FabType::multivalued) {
           amrex::Abort("multi-valued cells are not supported");
         }
 
