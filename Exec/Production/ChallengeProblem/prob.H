@@ -244,15 +244,16 @@ bcnormal(
   const int sgn,
   const amrex::Real time,
   amrex::GeometryData const& /*geomdata*/,
-  ProbParmDevice const& prob_parm)
+  ProbParmDevice const& prob_parm,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& turb_fluc)
 {
   if (sgn == -1 && idir == 2) {
     // Save off the inflow velocity if specified
     amrex::Real fluc_velx = 0.0, fluc_vely = 0.0, fluc_velz = 0.0;
     if (prob_parm.turbulent_inflow) {
-      fluc_velx = s_ext[UMX];
-      fluc_vely = s_ext[UMY];
-      fluc_velz = s_ext[UMZ];
+      fluc_velx = turb_fluc[0];
+      fluc_vely = turb_fluc[1];
+      fluc_velz = turb_fluc[2];
     }
 
     // default wall condition

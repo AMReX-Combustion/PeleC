@@ -90,16 +90,17 @@ bcnormal(
   const int sgn,
   const amrex::Real time,
   amrex::GeometryData const& /*geomdata*/,
-  ProbParmDevice const& prob_parm)
+  ProbParmDevice const& prob_parm,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& turb_fluc)
 {
   if (sgn == 1 && idir == 2) {
 
     // Save off the inflow velocity if specified
     amrex::Real velx = 0.0, vely = 0.0, velz = 0.0;
     if (prob_parm.turbulence) {
-      velx = s_ext[UMX];
-      vely = s_ext[UMY];
-      velz = s_ext[UMZ] + prob_parm.v_in;
+      velx = turb_fluc[0];
+      vely = turb_fluc[1];
+      velz = turb_fluc[2] + prob_parm.v_in;
     } else {
       velz += prob_parm.v_in;
     }

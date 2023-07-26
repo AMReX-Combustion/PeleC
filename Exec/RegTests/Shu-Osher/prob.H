@@ -140,7 +140,8 @@ bcnormal(
   const int /*sgn*/,
   const amrex::Real /*time*/,
   amrex::GeometryData const& /*geomdata*/,
-  ProbParmDevice const& /*prob_parm*/)
+  ProbParmDevice const& /*prob_parm*/,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& /*turb_fluc*/)
 {
   for (int n = 0; n < NVAR; n++) {
     s_ext[n] = s_int[n];

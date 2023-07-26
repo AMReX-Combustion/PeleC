@@ -88,7 +88,8 @@ bcnormal(
   const int /*sgn*/,
   const amrex::Real /*time*/,
   amrex::GeometryData const& /*geomdata*/,
-  ProbParmDevice const& /*prob_parm*/)
+  ProbParmDevice const& /*prob_parm*/,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& /*turb_fluc*/)
 {
   amrex::Real x0 = 0.0, x1 = 0.0, x2 = 0.0;
   AMREX_D_TERM(x0 = x[0];, x1 = x[1];, x2 = x[2];)

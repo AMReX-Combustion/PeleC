@@ -53,7 +53,8 @@ bcnormal(
   const int /*sgn*/,
   const amrex::Real /*time*/,
   amrex::GeometryData const& /*geomdata*/,
-  ProbParmDevice const& prob_parm)
+  ProbParmDevice const& prob_parm,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& /*turb_fluc*/)
 {
   s_ext[URHO] = prob_parm.rho;
   s_ext[UMX] = prob_parm.rho * prob_parm.vx_in;
