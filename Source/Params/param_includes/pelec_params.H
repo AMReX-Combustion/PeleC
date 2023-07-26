@@ -78,7 +78,6 @@ static bool do_react;
 static std::string chem_integrator;
 static bool bndry_func_thread_safe;
 static bool print_energy_diagnostics;
-static bool track_grid_losses;
 static int sum_interval;
 static bool track_extrema;
 static std::string extrema_spec_name;

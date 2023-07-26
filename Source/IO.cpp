@@ -161,21 +161,6 @@ PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
     amrex::Print() << "read CPU time: " << previousCPUTimeUsed << "\n";
   }
 
-  if (track_grid_losses && level == 0) {
-
-    // get the current value of the diagnostic quantities
-    std::ifstream DiagFile;
-    std::string FullPathDiagFile = parent->theRestartFile();
-    FullPathDiagFile += "/Diagnostics";
-    DiagFile.open(FullPathDiagFile.c_str(), std::ios::in);
-
-    for (amrex::Real& i : material_lost_through_boundary_cumulative) {
-      DiagFile >> i;
-    }
-
-    DiagFile.close();
-  }
-
   if (level > 0 && do_reflux) {
     flux_reg = std::make_unique<amrex::EBFluxRegister>(
       grids, papa.boxArray(level - 1), dmap, papa.DistributionMap(level - 1),
@@ -293,20 +278,6 @@ PeleC::checkPoint(
       EBLevelFile.open(FullPathEBLevelFile.c_str(), std::ios::out);
       EBLevelFile << eb_max_lvl_gen;
       EBLevelFile.close();
-    }
-
-    if (track_grid_losses) {
-      // store diagnostic quantities
-      std::ofstream DiagFile;
-      std::string FullPathDiagFile = dir;
-      FullPathDiagFile += "/Diagnostics";
-      DiagFile.open(FullPathDiagFile.c_str(), std::ios::out);
-
-      for (amrex::Real i : material_lost_through_boundary_cumulative) {
-        DiagFile << std::setprecision(15) << i << std::endl;
-      }
-
-      DiagFile.close();
     }
   }
 

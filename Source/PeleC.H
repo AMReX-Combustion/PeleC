@@ -246,7 +246,7 @@ public:
   void initialize_sdc_advance(
     amrex::Real time, amrex::Real dt, int amr_iteration, int amr_ncycle);
 
-  void finalize_sdc_advance(
+  static void finalize_sdc_advance(
     amrex::Real time, amrex::Real dt, int amr_iteration, int amr_ncycle);
 
   amrex::Real do_sdc_iteration(
@@ -257,7 +257,7 @@ public:
     int sub_iteration,
     int sub_ncycle);
 
-  void initialize_sdc_iteration(
+  static void initialize_sdc_iteration(
     amrex::Real time,
     amrex::Real dt,
     int amr_iteration,
@@ -688,12 +688,6 @@ protected:
 
   // for keeping track of mass changes from negative density resets
   static amrex::Real frac_change;
-
-  // For keeping track of fluid quantities lost at physical grid boundaries.
-  // This should persist through restarts, but right now only on level 0.
-  static const int n_lost = 8;
-  amrex::Real material_lost_through_boundary_cumulative[n_lost];
-  amrex::Real material_lost_through_boundary_temp[n_lost];
 
   // for keeping track of the amount of CPU time used -- this will persist
   // after restarts

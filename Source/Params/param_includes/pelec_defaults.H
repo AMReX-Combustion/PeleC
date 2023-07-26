@@ -82,7 +82,6 @@ bool PeleC::print_energy_diagnostics = true;
 #else
 bool PeleC::print_energy_diagnostics = false;
 #endif
-bool PeleC::track_grid_losses = false;
 int PeleC::sum_interval = -1;
 bool PeleC::track_extrema = true;
 std::string PeleC::extrema_spec_name;

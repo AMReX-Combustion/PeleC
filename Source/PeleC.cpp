@@ -386,11 +386,6 @@ PeleC::PeleC()
 #endif
 {
   nGrowF = 0;
-  // Is this relevant for PeleC?
-  for (int i = 0; i < n_lost; i++) {
-    material_lost_through_boundary_cumulative[i] = 0.0;
-    material_lost_through_boundary_temp[i] = 0.0;
-  }
 }
 
 PeleC::PeleC(
@@ -454,12 +449,6 @@ PeleC::PeleC(
     }
   } else {
     Sborder.define(grids, dmap, NVAR, nGrowS, amrex::MFInfo(), Factory());
-  }
-
-  // Is this relevant for PeleC?
-  for (int i = 0; i < n_lost; i++) {
-    material_lost_through_boundary_cumulative[i] = 0.0;
-    material_lost_through_boundary_temp[i] = 0.0;
   }
 
   if (do_reflux && level > 0) {
