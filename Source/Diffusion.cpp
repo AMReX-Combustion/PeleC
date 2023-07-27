@@ -581,13 +581,7 @@ PeleC::getMOLSrcTerm(
         const int level_mask_not_covered = constants::level_mask_notcovered();
 
         {
-          BL_PROFILE("ApplyRedistribution()");
-          // ApplyRedistribution(
-          //   vbox, S.nComp(), Dterm, Dterm_tmp, S.const_array(mfi), scratch,
-          //   flag_arr, AMREX_D_DECL(apx, apy, apz), vfrac.const_array(mfi),
-          //   AMREX_D_DECL(fcx, fcy, fcz), ccc, d_bcs.dataPtr(), geom, dt,
-          //   redistribution_type, use_wts_in_divnc, eb_srd_max_order);
-
+          BL_PROFILE("ApplyMLRedistribution()");
           ApplyMLRedistribution(
             vbox, S.nComp(), Dterm, Dterm_tmp, S.const_array(mfi), scratch,
             flag_arr, AMREX_D_DECL(apx, apy, apz), vfrac.const_array(mfi),
