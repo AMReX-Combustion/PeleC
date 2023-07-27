@@ -258,6 +258,7 @@ jobs:
             -B${{runner.workspace}}/build-${DIM}d-${{matrix.os}}-${{matrix.build_type}} \
             -DCMAKE_INSTALL_PREFIX:PATH=${{runner.workspace}}/install-${DIM}d-${{matrix.os}}-${{matrix.build_type}} \
             -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} \
+            -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
             -DPELEC_DIM:STRING=${DIM} \
             -DPELEC_ENABLE_MPI:BOOL=ON \
             -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
@@ -412,15 +413,17 @@ jobs:
           which hipcc
           cmake -G Ninja -B${{runner.workspace}}/build-hip \
           -DCMAKE_BUILD_TYPE:STRING=Release \
+          -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
           -DCMAKE_CXX_COMPILER:STRING=$(which hipcc) \
           -DCMAKE_C_COMPILER:STRING=$(which clang) \
           -DCMAKE_CXX_STANDARD:STRING=17 \
           -DPELEC_ENABLE_MPI:BOOL=OFF \
           -DPELEC_ENABLE_HIP:BOOL=ON \
-          -DAMReX_AMD_ARCH:STRING=gfx908 \
-          -DCMAKE_HIP_ARCHITECTURES:STRING=gfx908 \
-          -DAMDGPU_TARGETS:STRING=gfx908 \
-          -DGPU_TARGETS:STRING=gfx908 \
+          -DAMReX_AMD_ARCH:STRING=gfx90a \
+          -DCMAKE_HIP_ARCHITECTURES:STRING=gfx90a \
+          -DAMDGPU_TARGETS:STRING=gfx90a \
+          -DGPU_TARGETS:STRING=gfx90a \
+          -DAMReX_GPU_RDC:BOOL=OFF \
           -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
           -DPELEC_ENABLE_MASA:BOOL=OFF \
           -DCMAKE_CXX_COMPILER_LAUNCHER:STRING=ccache \
@@ -452,6 +455,7 @@ jobs:
           echo "CCACHE_COMPRESSLEVEL=1" >> $GITHUB_ENV
           echo "CCACHE_LOGFILE=${{github.workspace}}/ccache.log.txt" >> $GITHUB_ENV
           echo "CCACHE_MAXSIZE=1G" >> $GITHUB_ENV
+          echo "CCACHE_DEPEND=1" >> $GITHUB_ENV
       - name: Dependencies
         run: |
           sudo wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
@@ -479,6 +483,7 @@ jobs:
           set -e
           cmake -G Ninja -B${{runner.workspace}}/build-sycl \
             -DCMAKE_BUILD_TYPE:STRING=Release \
+            -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
             -DCMAKE_CXX_COMPILER:STRING=$(which icpx) \
             -DCMAKE_C_COMPILER:STRING=$(which icx) \
             -DCMAKE_CXX_FLAGS:STRING=-fsycl \
