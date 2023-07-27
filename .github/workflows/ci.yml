@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [development]
 
+concurrency:
+  group: ${{github.ref}}-${{github.head_ref}}-ci
+  cancel-in-progress: true
+
 jobs:
   Formatting:
     runs-on: ubuntu-latest
@@ -13,20 +17,16 @@ jobs:
     - name: Clone
       uses: actions/checkout@v3
     - name: Check formatting
-      uses: DoozyX/clang-format-lint-action@v0.14
+      uses: DoozyX/clang-format-lint-action@v0.16.2
       with:
         source: './Source ./Exec'
         exclude: '.'
         extensions: 'H,h,cpp'
-        clangFormatVersion: 14
+        clangFormatVersion: 16
   CPU-GNUmake:
     needs: Formatting
     runs-on: ubuntu-latest
     steps:
-      - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.6.0
-        with:
-          access_token: ${{github.token}}
       - name: Clone
         uses: actions/checkout@v3
         with:
@@ -35,15 +35,37 @@ jobs:
         working-directory: ./Exec/RegTests/PMF
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
+          echo "CCACHE_COMPRESS=1" >> $GITHUB_ENV
+          echo "CCACHE_COMPRESSLEVEL=1" >> $GITHUB_ENV
+          echo "CCACHE_LOGFILE=${{github.workspace}}/ccache.log.txt" >> $GITHUB_ENV
+          echo "CCACHE_MAXSIZE=1G" >> $GITHUB_ENV
           #printf "CC=gcc-10\nCXX=g++-10\nFC=gfortran-10\nF90=gfortran-10" \
           #  >> ${{github.workspace}}/Submodules/AMReX/Tools/GNUMake/Make.local
           make COMP=gnu USE_MPI=FALSE DEBUG=TRUE TPL
           make COMP=llvm USE_MPI=FALSE DEBUG=TRUE PRECISION=FLOAT TPL
+      - name: Install Ccache
+        run: |
+          wget https://github.com/ccache/ccache/releases/download/v4.8/ccache-4.8-linux-x86_64.tar.xz
+          tar xvf ccache-4.8-linux-x86_64.tar.xz
+          sudo cp -f ccache-4.8-linux-x86_64/ccache /usr/local/bin/
+      - name: Set Up Ccache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/ccache
+          key: ccache-${{github.workflow}}-${{github.job}}-git-${{github.sha}}
+          restore-keys: |
+               ccache-${{github.workflow}}-${{github.job}}-git-
       - name: PMF debug make
         working-directory: ./Exec/RegTests/PMF
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
-          make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
+          ccache -z
+          make -j ${{env.NPROCS}} KEEP_BUILDINFO_CPP=TRUE USE_CCACHE=TRUE COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
+      - name: PMF ccache report
+        working-directory: ./Exec/RegTests/PMF
+        run: |
+          ccache -s
+          du -hs ${HOME}/.cache/ccache
       - name: PMF debug test
         working-directory: ./Exec/RegTests/PMF
         run: ./PeleC3d.gnu.DEBUG.ex pmf-lidryer-arkode.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
@@ -61,7 +83,13 @@ jobs:
         working-directory: ./Exec/RegTests/EB-C10
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
-          make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
+          ccache -z
+          make -j ${{env.NPROCS}} KEEP_BUILDINFO_CPP=TRUE USE_CCACHE=TRUE COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
+      - name: EB debug ccache report
+        working-directory: ./Exec/RegTests/EB-C10
+        run: |
+          ccache -s
+          du -hs ${HOME}/.cache/ccache
       - name: EB debug test
         working-directory: ./Exec/RegTests/EB-C10
         run: ./PeleC3d.gnu.DEBUG.ex eb-c10.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
@@ -79,7 +107,13 @@ jobs:
         working-directory: ./Exec/RegTests/TG
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
-          make -j ${{env.NPROCS}} COMP=llvm USE_MPI=FALSE DEBUG=TRUE PRECISION=FLOAT 2>&1 | tee -a build-output.txt
+          ccache -z
+          make -j ${{env.NPROCS}} KEEP_BUILDINFO_CPP=TRUE USE_CCACHE=TRUE COMP=llvm USE_MPI=FALSE DEBUG=TRUE PRECISION=FLOAT 2>&1 | tee -a build-output.txt
+      - name: TG debug single precision ccache report
+        working-directory: ./Exec/RegTests/TG
+        run: |
+          ccache -s
+          du -hs ${HOME}/.cache/ccache
       - name: TG debug single precision test
         working-directory: ./Exec/RegTests/TG
         run: ./PeleC3d.llvm.FLOAT.DEBUG.ex tg-2.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
@@ -97,7 +131,13 @@ jobs:
         working-directory: ./Exec/RegTests/Soot-Flame
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
-          make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
+          ccache -z
+          make -j ${{env.NPROCS}} KEEP_BUILDINFO_CPP=TRUE USE_CCACHE=TRUE COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
+      - name: Soot debug ccache report
+        working-directory: ./Exec/RegTests/Soot-Flame
+        run: |
+          ccache -s
+          du -hs ${HOME}/.cache/ccache
       - name: Soot debug report
         working-directory: ./Exec/RegTests/Soot-Flame
         run: |
@@ -112,7 +152,13 @@ jobs:
         working-directory: ./Exec/RegTests/Spray-Conv
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
-          make -j ${{env.NPROCS}} COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
+          ccache -z
+          make -j ${{env.NPROCS}} KEEP_BUILDINFO_CPP=TRUE USE_CCACHE=TRUE COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
+      - name: Spray debug ccache report
+        working-directory: ./Exec/RegTests/Soot-Flame
+        run: |
+          ccache -s
+          du -hs ${HOME}/.cache/ccache
       - name: Spray debug report
         working-directory: ./Exec/RegTests/Spray-Conv
         run: |
@@ -132,7 +178,7 @@ jobs:
         build_type: [Release, Debug]
         include:
           - os: macos-latest
-            install_deps: brew install mpich automake ninja
+            install_deps: brew install mpich automake ninja ccache
             comp: llvm
             procs: $(sysctl -n hw.ncpu)
           - os: ubuntu-latest
@@ -147,10 +193,6 @@ jobs:
           - os: macos-latest
             build_type: Debug
     steps:
-      - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.6.0
-        with:
-          access_token: ${{github.token}}
       - name: Clone
         uses: actions/checkout@v3
         with:
@@ -162,6 +204,10 @@ jobs:
       - name: Setup
         run: |
           echo "NPROCS=${{matrix.procs}}" >> $GITHUB_ENV
+          echo "CCACHE_COMPRESS=1" >> $GITHUB_ENV
+          echo "CCACHE_COMPRESSLEVEL=1" >> $GITHUB_ENV
+          echo "CCACHE_LOGFILE=${{github.workspace}}/ccache.log.txt" >> $GITHUB_ENV
+          echo "CCACHE_MAXSIZE=1G" >> $GITHUB_ENV
           cmake -E make_directory ${{runner.workspace}}/deps
       - name: Dependencies
         run: |
@@ -170,6 +216,20 @@ jobs:
           # Install Python packages
           python -m pip install --upgrade pip
           pip install nose numpy pandas
+      - name: Install Ccache
+        run: |
+          if [ "${RUNNER_OS}" != "macOS" ]; then
+            wget https://github.com/ccache/ccache/releases/download/v4.8/ccache-4.8-linux-x86_64.tar.xz
+            tar xvf ccache-4.8-linux-x86_64.tar.xz
+            sudo cp -f ccache-4.8-linux-x86_64/ccache /usr/local/bin/
+          fi
+      - name: Set Up Ccache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/ccache
+          key: ccache-${{github.workflow}}-${{github.job}}-git-${{github.sha}}
+          restore-keys: |
+               ccache-${{github.workflow}}-${{github.job}}-git-
       - name: MASA
         run: |
           # Install MetaPhysicL
@@ -203,17 +263,25 @@ jobs:
             -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
             -DPELEC_ENABLE_MASA:BOOL=ON \
             -DMASA_ROOT:PATH=${{runner.workspace}}/deps/install/MASA \
+            -DCMAKE_CXX_COMPILER_LAUNCHER:STRING=ccache \
             ${{github.workspace}}; \
             if [ $? -ne 0 ]; then exit 1; fi \
           done)
       - name: Build
         run: |
+          ccache -z
           (for DIM in 2 3; do \
             printf "\n-------- Building ${DIM}D --------\n"; \
             cmake --build ${{runner.workspace}}/build-${DIM}d-${{matrix.os}}-${{matrix.build_type}} \
               --parallel ${{env.NPROCS}} 2>&1 | tee -a ${{runner.workspace}}/build-output.txt; \
             if [ ${PIPESTATUS[0]} -ne 0 ]; then exit 1; fi \
           done)
+      - name: Ccache Report
+        run: |
+          ccache -s
+          if [ "${RUNNER_OS}" != "macOS" ]; then
+            du -hs ${HOME}/.cache/ccache
+          fi
       - name: Report
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
@@ -243,14 +311,17 @@ jobs:
           - cuda_ver: "11.4"
             cuda_pkg: 11-4
     steps:
-      - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.6.0
-        with:
-          access_token: ${{github.token}}
       - name: Clone
         uses: actions/checkout@v3
         with:
           submodules: true
+      - name: Setup
+        run: |
+          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
+          echo "CCACHE_COMPRESS=1" >> $GITHUB_ENV
+          echo "CCACHE_COMPRESSLEVEL=1" >> $GITHUB_ENV
+          echo "CCACHE_LOGFILE=${{github.workspace}}/ccache.log.txt" >> $GITHUB_ENV
+          echo "CCACHE_MAXSIZE=1G" >> $GITHUB_ENV
       - name: Dependencies
         run: |
           curl -O https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.0-1_all.deb
@@ -263,33 +334,55 @@ jobs:
               libcurand-dev-${{matrix.cuda_pkg}} cuda-cupti-dev-${{matrix.cuda_pkg}} \
               libcusolver-dev-${{matrix.cuda_pkg}} libcusparse-dev-${{matrix.cuda_pkg}} \
               libcublas-dev-${{matrix.cuda_pkg}}
+      - name: Install Ccache
+        run: |
+          wget https://github.com/ccache/ccache/releases/download/v4.8/ccache-4.8-linux-x86_64.tar.xz
+          tar xvf ccache-4.8-linux-x86_64.tar.xz
+          sudo cp -f ccache-4.8-linux-x86_64/ccache /usr/local/bin/
+      - name: Set Up Ccache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/ccache
+          key: ccache-${{github.workflow}}-${{github.job}}-git-${{github.sha}}
+          restore-keys: |
+               ccache-${{github.workflow}}-${{github.job}}-git-
       - name: Configure
         run: |
-          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
           export PATH=/usr/local/nvidia/bin:/usr/local/cuda-${{matrix.cuda_ver}}/bin:${PATH}
           export LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/cuda-${{matrix.cuda_ver}}/lib:${LD_LIBRARY_PATH}
-          cmake -G "Unix Makefiles" -Bbuild-${{matrix.cuda_pkg}} \
+          cmake -G Ninja -Bbuild-${{matrix.cuda_pkg}} \
             -DCMAKE_BUILD_TYPE:STRING=Release \
             -DPELEC_ENABLE_MPI:BOOL=OFF \
             -DPELEC_ENABLE_CUDA:BOOL=ON \
             -DAMReX_CUDA_ERROR_CAPTURE_THIS:BOOL=ON \
             -DCMAKE_CUDA_ARCHITECTURES:STRING=70 \
+            -DCMAKE_CUDA_COMPILER_LAUNCHER:STRING=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER:STRING=ccache \
             ${{github.workspace}}
       - name: Build
-        run: cmake --build build-${{matrix.cuda_pkg}} --parallel ${{env.NPROCS}}
+        run: |
+          ccache -z
+          cmake --build build-${{matrix.cuda_pkg}} --parallel ${{env.NPROCS}}
+      - name: Ccache Report
+        run: |
+          ccache -s
+          du -hs ${HOME}/.cache/ccache
   GPU-AMD:
     name: GPU-HIP
     needs: [Formatting, CPU-GNUmake]
     runs-on: ubuntu-20.04
     steps:
-      - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.6.0
-        with:
-          access_token: ${{github.token}}
       - name: Clone
         uses: actions/checkout@v3
         with:
           submodules: true
+      - name: Setup
+        run: |
+          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
+          echo "CCACHE_COMPRESS=1" >> $GITHUB_ENV
+          echo "CCACHE_COMPRESSLEVEL=1" >> $GITHUB_ENV
+          echo "CCACHE_LOGFILE=${{github.workspace}}/ccache.log.txt" >> $GITHUB_ENV
+          echo "CCACHE_MAXSIZE=1G" >> $GITHUB_ENV
       - name: Dependencies
         run: |
           curl -O https://repo.radeon.com/rocm/rocm.gpg.key
@@ -300,9 +393,20 @@ jobs:
               | sudo tee -a /etc/profile.d/rocm.sh
           sudo apt-get update
           sudo apt-get install -y ninja-build rocm-dev roctracer-dev rocprofiler-dev rocrand-dev rocprim-dev rocm-libs
+      - name: Install Ccache
+        run: |
+          wget https://github.com/ccache/ccache/releases/download/v4.8/ccache-4.8-linux-x86_64.tar.xz
+          tar xvf ccache-4.8-linux-x86_64.tar.xz
+          sudo cp -f ccache-4.8-linux-x86_64/ccache /usr/local/bin/
+      - name: Set Up Ccache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/ccache
+          key: ccache-${{github.workflow}}-${{github.job}}-git-${{github.sha}}
+          restore-keys: |
+               ccache-${{github.workflow}}-${{github.job}}-git-
       - name: Configure
         run: |
-          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
           source /etc/profile.d/rocm.sh
           which clang
           which hipcc
@@ -319,31 +423,35 @@ jobs:
           -DGPU_TARGETS:STRING=gfx908 \
           -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
           -DPELEC_ENABLE_MASA:BOOL=OFF \
+          -DCMAKE_CXX_COMPILER_LAUNCHER:STRING=ccache \
           ${{github.workspace}}
       - name: Build
         working-directory: ${{runner.workspace}}/build-hip
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
           source /etc/profile.d/rocm.sh
+          ccache -z
           cmake --build . --parallel ${{env.NPROCS}}
+      - name: Ccache Report
+        run: |
+          ccache -s
+          du -hs ${HOME}/.cache/ccache
   GPU-Intel:
     name: GPU-SYCL
     needs: [Formatting, CPU-GNUmake]
     runs-on: ubuntu-latest
     steps:
-      - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.6.0
-        with:
-          access_token: ${{github.token}}
       - name: Clone
         uses: actions/checkout@v3
         with:
           submodules: true
-      #- name: Update GCC
-      #  uses: egor-tensin/setup-gcc@v1
-      #  with:
-      #    version: 11
-      #    platform: x64
+      - name: Setup
+        run: |
+          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
+          echo "CCACHE_COMPRESS=1" >> $GITHUB_ENV
+          echo "CCACHE_COMPRESSLEVEL=1" >> $GITHUB_ENV
+          echo "CCACHE_LOGFILE=${{github.workspace}}/ccache.log.txt" >> $GITHUB_ENV
+          echo "CCACHE_MAXSIZE=1G" >> $GITHUB_ENV
       - name: Dependencies
         run: |
           sudo wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
@@ -352,9 +460,20 @@ jobs:
               | sudo tee /etc/apt/sources.list.d/oneAPI.list
           sudo apt-get update
           sudo apt-get install -y ninja-build intel-oneapi-compiler-dpcpp-cpp intel-oneapi-mkl-devel
+      - name: Install Ccache
+        run: |
+          wget https://github.com/ccache/ccache/releases/download/v4.8/ccache-4.8-linux-x86_64.tar.xz
+          tar xvf ccache-4.8-linux-x86_64.tar.xz
+          sudo cp -f ccache-4.8-linux-x86_64/ccache /usr/local/bin/
+      - name: Set Up Ccache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/ccache
+          key: ccache-${{github.workflow}}-${{github.job}}-git-${{github.sha}}
+          restore-keys: |
+               ccache-${{github.workflow}}-${{github.job}}-git-
       - name: Configure
         run: |
-          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
           set +e
           source /opt/intel/oneapi/setvars.sh
           set -e
@@ -367,6 +486,7 @@ jobs:
             -DPELEC_ENABLE_MASA:BOOL=OFF \
             -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
             -DPELEC_ENABLE_SYCL:BOOL=ON \
+            -DCMAKE_CXX_COMPILER_LAUNCHER:STRING=ccache \
             ${{github.workspace}}
       - name: Build
         working-directory: ${{runner.workspace}}/build-sycl
@@ -374,15 +494,16 @@ jobs:
           set +e
           source /opt/intel/oneapi/setvars.sh
           set -e
+          ccache -z
           cmake --build . --parallel ${{env.NPROCS}}
+      - name: Ccache Report
+        run: |
+          ccache -s
+          du -hs ${HOME}/.cache/ccache
   Lint-cppcheck:
     needs: Formatting
     runs-on: macos-12
     steps:
-      - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.6.0
-        with:
-          access_token: ${{github.token}}
       - name: Clone
         uses: actions/checkout@v3
         with:
@@ -418,10 +539,6 @@ jobs:
     needs: Formatting
     runs-on: ubuntu-latest
     steps:
-      - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.6.0
-        with:
-          access_token: ${{github.token}}
       - name: Clone
         uses: actions/checkout@v3
         with:
@@ -464,10 +581,6 @@ jobs:
     needs: Formatting
     runs-on: ubuntu-latest
     steps:
-      - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.6.0
-        with:
-          access_token: ${{github.token}}
       - name: Clone
         uses: actions/checkout@v3
         with:
@@ -517,3 +630,17 @@ jobs:
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: sarif-results/cpp.sarif
+  Save-PR-Number:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Save PR number
+        env:
+          PR_NUMBER: ${{ github.event.number }}
+        run: |
+          echo $PR_NUMBER > pr_number.txt
+      - uses: actions/upload-artifact@v3
+        with:
+          name: pr_number
+          path: pr_number.txt
+          retention-days: 1

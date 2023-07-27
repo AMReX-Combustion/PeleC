@@ -40,7 +40,9 @@ Bpack += $(PELE_PHYSICS_HOME)/Utility/Diagnostics/Make.package
 Blocs += $(PELE_PHYSICS_HOME)/Utility/Diagnostics
 
 all: $(executable)
+ifneq ($(KEEP_BUILDINFO_CPP),TRUE)
 	$(SILENT) $(RM) AMReX_buildInfo.cpp
+endif
 	@echo SUCCESS
 
 ifeq ($(USE_CUDA),TRUE)

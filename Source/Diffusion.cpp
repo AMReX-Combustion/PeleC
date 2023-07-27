@@ -18,7 +18,7 @@ PeleC::getMOLSrcTerm(
 
   /*
      Across all conserved state components, compute the method of lines rhs
-     = -Div(Flux).  The input state, S, contained the conserved variables, and
+     = -Div(Flux). The input state, S, contained the conserved variables, and
      is "fill patched" in the usual AMReX way, where values at Dirichlet
      boundaries actually are assumed to live on the inflow face.
 
