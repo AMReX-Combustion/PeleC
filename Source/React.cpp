@@ -28,9 +28,9 @@ PeleC::set_typical_values_chem()
 
 void
 PeleC::react_state(
-  const amrex::Real /*time*/,
-  const amrex::Real dt,
-  const bool react_init,
+  amrex::Real /*time*/,
+  amrex::Real dt,
+  bool react_init,
   amrex::MultiFab* aux_src)
 {
   // Update I_R, and recompute S_new

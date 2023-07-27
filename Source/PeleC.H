@@ -468,9 +468,9 @@ public:
   static int numGrow();
 
   void react_state(
-    const amrex::Real time,
-    const amrex::Real dt,
-    const bool init = false,
+    amrex::Real time,
+    amrex::Real dt,
+    bool init = false,
     amrex::MultiFab* aux_src = nullptr);
 
   void reset_internal_energy(amrex::MultiFab& S_new, int ng);
