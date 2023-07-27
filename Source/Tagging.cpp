@@ -64,8 +64,8 @@ PeleC::read_tagging_params()
   pp.queryarr(
     "refinement_indicators", refinement_indicators, 0,
     pp.countval("refinement_indicators"));
-  for (int n = 0; n < refinement_indicators.size(); ++n) {
-    std::string ref_prefix = tag_prefix + "." + refinement_indicators[n];
+  for (const auto& refinement_indicator : refinement_indicators) {
+    std::string ref_prefix = tag_prefix + "." + refinement_indicator;
     amrex::ParmParse ppr(ref_prefix);
 
     // Tag a given box
@@ -145,13 +145,13 @@ PeleC::read_tagging_params()
       itexists = true;
     } else {
       amrex::Abort(
-        "Unrecognized refinement indicator for " + refinement_indicators[n]);
+        "Unrecognized refinement indicator for " + refinement_indicator);
     }
 
     if (!itexists) {
       amrex::Error(
         "PeleC::read_tagging_params(): unknown variable field for criteria " +
-        refinement_indicators[n]);
+        refinement_indicator);
     }
   }
 }

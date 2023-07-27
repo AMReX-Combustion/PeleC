@@ -409,12 +409,12 @@ PeleC::PeleC(
 
   const amrex::MultiFab& S_new = get_new_data(State_Type);
 
-  for (int n = 0; n < src_list.size(); ++n) {
+  for (int src : src_list) {
     int oldGrow = numGrow();
     int newGrow = S_new.nGrow();
-    old_sources[src_list[n]] = std::make_unique<amrex::MultiFab>(
+    old_sources[src] = std::make_unique<amrex::MultiFab>(
       grids, dmap, NVAR, oldGrow, amrex::MFInfo(), Factory());
-    new_sources[src_list[n]] = std::make_unique<amrex::MultiFab>(
+    new_sources[src] = std::make_unique<amrex::MultiFab>(
       grids, dmap, NVAR, newGrow, amrex::MFInfo(), Factory());
   }
 
@@ -1123,8 +1123,8 @@ PeleC::post_timestep(int iteration)
     amrex::Real cumtime = parent->cumTime() + dtlev;
 
     bool do_diags = false;
-    for (int n = 0; n < m_diagnostics.size(); ++n) {
-      do_diags = do_diags || m_diagnostics[n]->doDiag(cumtime, nstep);
+    for (const auto& m_diagnostic : m_diagnostics) {
+      do_diags = do_diags || m_diagnostic->doDiag(cumtime, nstep);
     }
 
     if (do_diags) {
@@ -1139,8 +1139,8 @@ PeleC::post_timestep(int iteration)
         gridAll[lev] = amrlevel.boxArray();
         dmapAll[lev] = amrlevel.DistributionMap();
       }
-      for (int n = 0; n < m_diagnostics.size(); ++n) {
-        m_diagnostics[n]->prepare(
+      for (const auto& m_diagnostic : m_diagnostics) {
+        m_diagnostic->prepare(
           finest_level + 1, geomAll, gridAll, dmapAll, m_diagVars);
       }
 
@@ -1193,9 +1193,9 @@ PeleC::post_timestep(int iteration)
         }
       }
 
-      for (int n = 0; n < m_diagnostics.size(); ++n) {
-        if (m_diagnostics[n]->doDiag(cumtime, nstep)) {
-          m_diagnostics[n]->processDiag(
+      for (const auto& m_diagnostic : m_diagnostics) {
+        if (m_diagnostic->doDiag(cumtime, nstep)) {
+          m_diagnostic->processDiag(
             nstep, cumtime, amrex::GetVecOfConstPtrs(diagMFVec), m_diagVars);
         }
       }
@@ -1787,14 +1787,12 @@ PeleC::errorEst(
   }
 
   // amrex tagging utils
-  for (int n = 0; n < tagging_parm->err_tags.size(); ++n) {
+  for (const auto& err_tag : tagging_parm->err_tags) {
     std::unique_ptr<amrex::MultiFab> mf;
-    if (!tagging_parm->err_tags[n].Field().empty()) {
-      mf = derive(
-        tagging_parm->err_tags[n].Field(), time,
-        tagging_parm->err_tags[n].NGrow());
+    if (!err_tag.Field().empty()) {
+      mf = derive(err_tag.Field(), time, err_tag.NGrow());
     }
-    tagging_parm->err_tags[n](
+    err_tag(
       tags, mf.get(), amrex::TagBox::CLEAR, amrex::TagBox::SET, time, level,
       geom);
   }
@@ -2170,9 +2168,9 @@ PeleC::build_fine_mask()
 const amrex::iMultiFab*
 PeleC::build_interior_boundary_mask(int ng)
 {
-  for (int i = 0; i < ib_mask.size(); ++i) {
-    if (ib_mask[i]->nGrow() == ng) {
-      return ib_mask[i].get();
+  for (const auto& ibm : ib_mask) {
+    if (ibm->nGrow() == ng) {
+      return ibm.get();
     }
   }
 

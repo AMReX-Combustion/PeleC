@@ -119,12 +119,12 @@ PeleC::restart(amrex::Amr& papa, std::istream& is, bool bReadSpecial)
 
   const amrex::MultiFab& S_new = get_new_data(State_Type);
 
-  for (int n = 0; n < src_list.size(); ++n) {
+  for (int src : src_list) {
     int oldGrow = numGrow();
     int newGrow = S_new.nGrow();
-    old_sources[src_list[n]] = std::make_unique<amrex::MultiFab>(
+    old_sources[src] = std::make_unique<amrex::MultiFab>(
       grids, dmap, NVAR, oldGrow, amrex::MFInfo(), Factory());
-    new_sources[src_list[n]] = std::make_unique<amrex::MultiFab>(
+    new_sources[src] = std::make_unique<amrex::MultiFab>(
       grids, dmap, NVAR, newGrow, amrex::MFInfo(), Factory());
   }
 
