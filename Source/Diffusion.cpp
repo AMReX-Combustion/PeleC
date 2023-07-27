@@ -554,10 +554,10 @@ PeleC::getMOLSrcTerm(
         const int as_fine = static_cast<int>(fr_as_fine != nullptr);
 
         amrex::FArrayBox dm_as_fine(
-          amrex::Box::TheUnitBox(), hydro_source.nComp(),
+          amrex::Box::TheUnitBox(), MOLSrcTerm.nComp(),
           amrex::The_Async_Arena());
         amrex::FArrayBox fab_drho_as_crse(
-          amrex::Box::TheUnitBox(), hydro_source.nComp(),
+          amrex::Box::TheUnitBox(), MOLSrcTerm.nComp(),
           amrex::The_Async_Arena());
         amrex::IArrayBox fab_rrflag_as_crse(
           amrex::Box::TheUnitBox(), 1, amrex::The_Async_Arena());
@@ -572,7 +572,7 @@ PeleC::getMOLSrcTerm(
         if (fr_as_fine != nullptr) {
           const amrex::Box dbox1 = geom.growPeriodicDomain(1);
           const amrex::Box bx_for_dm(amrex::grow(vbox, 1) & dbox1);
-          dm_as_fine.resize(bx_for_dm, hydro_source.nComp());
+          dm_as_fine.resize(bx_for_dm, MOLSrcTerm.nComp());
           dm_as_fine.setVal<amrex::RunOn::Device>(0.0);
         }
 
