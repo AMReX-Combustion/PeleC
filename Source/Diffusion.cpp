@@ -562,12 +562,14 @@ PeleC::getMOLSrcTerm(
         amrex::IArrayBox fab_rrflag_as_crse(
           amrex::Box::TheUnitBox(), 1, amrex::The_Async_Arena());
 
-        auto* drho_as_crse =
-          (fr_as_crse) ? fr_as_crse->getCrseData(mfi) : &fab_drho_as_crse;
-        auto* rrflag_as_crse =
-          (fr_as_crse) ? fr_as_crse->getCrseFlag(mfi) : &fab_rrflag_as_crse;
+        auto* drho_as_crse = (fr_as_crse != nullptr)
+                               ? fr_as_crse->getCrseData(mfi)
+                               : &fab_drho_as_crse;
+        const auto* rrflag_as_crse = (fr_as_crse != nullptr)
+                                       ? fr_as_crse->getCrseFlag(mfi)
+                                       : &fab_rrflag_as_crse;
 
-        if (fr_as_fine) {
+        if (fr_as_fine != nullptr) {
           const amrex::Box dbox1 = geom.growPeriodicDomain(1);
           const amrex::Box bx_for_dm(amrex::grow(vbox, 1) & dbox1);
           dm_as_fine.resize(bx_for_dm, hydro_source.nComp());
