@@ -222,7 +222,7 @@ void pc_umdrv_eb(
   const amrex::Real dt,
   const int ppm_type,
   const int plm_iorder,
-  const int use_flattening,
+  const bool use_flattening,
   const amrex::Real difmag,
   amrex::BCRec const* bcs_d_ptr,
   const std::string& redistribution_type,

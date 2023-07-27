@@ -210,11 +210,11 @@ PeleC::construct_hydro_source(
             amrex::Box::TheUnitBox(), 1, amrex::The_Async_Arena());
 
           auto* p_drho_as_crse =
-            (fr_as_crse) ? fr_as_crse->getCrseData(mfi) : &fab_drho_as_crse;
-          auto* p_rrflag_as_crse =
-            (fr_as_crse) ? fr_as_crse->getCrseFlag(mfi) : &fab_rrflag_as_crse;
+            (fr_as_crse != nullptr) ? fr_as_crse->getCrseData(mfi) : &fab_drho_as_crse;
+          const auto* p_rrflag_as_crse =
+            (fr_as_crse != nullptr) ? fr_as_crse->getCrseFlag(mfi) : &fab_rrflag_as_crse;
 
-          if (fr_as_fine) {
+          if (fr_as_fine != nullptr) {
             const amrex::Box dbox1 = geom.growPeriodicDomain(1);
             const amrex::Box bx_for_dm(amrex::grow(fbx, 1) & dbox1);
             dm_as_fine.resize(bx_for_dm, hydro_source.nComp());
@@ -442,7 +442,7 @@ pc_umdrv_eb(
   const amrex::Real /*dt*/,
   const int /*ppm_type*/,
   const int /*plm_iorder*/,
-  const int /*use_flattening*/,
+  const bool /*use_flattening*/,
   const amrex::Real /*difmag*/,
   amrex::BCRec const* /*bcs_d_ptr*/,
   const std::string& /*redistribution_type*/,
