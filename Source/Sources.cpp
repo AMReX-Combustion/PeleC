@@ -106,15 +106,15 @@ PeleC::sum_of_sources(amrex::MultiFab& source)
 
   source.setVal(0.0);
 
-  for (int n = 0; n < src_list.size(); ++n) {
-    amrex::MultiFab::Add(source, *old_sources[src_list[n]], 0, 0, NVAR, ng);
+  for (int src : src_list) {
+    amrex::MultiFab::Add(source, *old_sources[src], 0, 0, NVAR, ng);
   }
 
   if (do_hydro) {
     amrex::MultiFab::Add(source, hydro_source, 0, 0, NVAR, ng);
   }
 
-  for (int n = 0; n < src_list.size(); ++n) {
-    amrex::MultiFab::Add(source, *new_sources[src_list[n]], 0, 0, NVAR, ng);
+  for (int src : src_list) {
+    amrex::MultiFab::Add(source, *new_sources[src], 0, 0, NVAR, ng);
   }
 }

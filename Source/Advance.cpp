@@ -100,14 +100,14 @@ PeleC::do_mol_advance(
   getMOLSrcTerm(Sborder, molSrc, time, dt, flux_factor);
 
   // Build other (non-diffusion) sources at t_old
-  for (int n = 0; n < src_list.size(); ++n) {
-    if (src_list[n] != diff_src) {
+  for (int src : src_list) {
+    if (src != diff_src) {
       construct_old_source(
-        src_list[n], time, dt, amr_iteration, amr_ncycle, 0, 0);
+        src, time, dt, amr_iteration, amr_ncycle, 0, 0);
 
       // add sources to molsrc
       amrex::MultiFab::Saxpy(
-        molSrc, 1.0, *old_sources[src_list[n]], 0, 0, NVAR, 0);
+        molSrc, 1.0, *old_sources[src], 0, 0, NVAR, 0);
     }
   }
 
@@ -136,14 +136,14 @@ PeleC::do_mol_advance(
   getMOLSrcTerm(Sborder, molSrc, time, dt, flux_factor);
 
   // Build other (non-diffusion) sources at t_new
-  for (int n = 0; n < src_list.size(); ++n) {
-    if (src_list[n] != diff_src) {
+  for (int src : src_list) {
+    if (src != diff_src) {
       construct_new_source(
-        src_list[n], time + dt, dt, amr_iteration, amr_ncycle, 0, 0);
+        src, time + dt, dt, amr_iteration, amr_ncycle, 0, 0);
 
       // add sources to molsrc
       amrex::MultiFab::Saxpy(
-        molSrc, 1.0, *new_sources[src_list[n]], 0, 0, NVAR, 0);
+        molSrc, 1.0, *new_sources[src], 0, 0, NVAR, 0);
     }
   }
 
@@ -282,10 +282,10 @@ PeleC::do_sdc_iteration(
   if (sub_iteration == 0) {
 
     // Build other (non-diffusion) sources at t_old
-    for (int n = 0; n < src_list.size(); ++n) {
-      if (src_list[n] != diff_src) {
+    for (int n : src_list) {
+      if (n != diff_src) {
         construct_old_source(
-          src_list[n], time, dt, amr_iteration, amr_ncycle, sub_iteration,
+          n, time, dt, amr_iteration, amr_ncycle, sub_iteration,
           sub_ncycle);
       }
     }
@@ -304,9 +304,9 @@ PeleC::do_sdc_iteration(
     }
 
     // Initialize sources at t_new by copying from t_old
-    for (int n = 0; n < src_list.size(); ++n) {
+    for (int src : src_list) {
       amrex::MultiFab::Copy(
-        *new_sources[src_list[n]], *old_sources[src_list[n]], 0, 0, NVAR, 0);
+        *new_sources[src], *old_sources[src], 0, 0, NVAR, 0);
     }
   }
 
@@ -341,10 +341,10 @@ PeleC::do_sdc_iteration(
   }
 
   // Build other (non-diffusion) sources at t_new
-  for (int n = 0; n < src_list.size(); ++n) {
-    if (src_list[n] != diff_src) {
+  for (int n : src_list) {
+    if (n != diff_src) {
       construct_new_source(
-        src_list[n], time + dt, dt, amr_iteration, amr_ncycle, sub_iteration,
+        n, time + dt, dt, amr_iteration, amr_ncycle, sub_iteration,
         sub_ncycle);
     }
   }
@@ -372,11 +372,11 @@ PeleC::construct_Snew(
   int ng = 0;
 
   amrex::MultiFab::Copy(S_new, S_old, 0, 0, NVAR, ng);
-  for (int n = 0; n < src_list.size(); ++n) {
+  for (int src : src_list) {
     amrex::MultiFab::Saxpy(
-      S_new, 0.5 * dt, *new_sources[src_list[n]], 0, 0, NVAR, ng);
+      S_new, 0.5 * dt, *new_sources[src], 0, 0, NVAR, ng);
     amrex::MultiFab::Saxpy(
-      S_new, 0.5 * dt, *old_sources[src_list[n]], 0, 0, NVAR, ng);
+      S_new, 0.5 * dt, *old_sources[src], 0, 0, NVAR, ng);
   }
   if (do_hydro) {
     amrex::MultiFab::Saxpy(S_new, dt, hydro_source, 0, 0, NVAR, ng);

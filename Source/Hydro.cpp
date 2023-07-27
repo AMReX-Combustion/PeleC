@@ -27,11 +27,11 @@ PeleC::construct_hydro_source(
 
     const int ng = 0;
     sources_for_hydro.setVal(0.0);
-    for (int n = 0; n < src_list.size(); ++n) {
+    for (int src : src_list) {
       amrex::MultiFab::Saxpy(
-        sources_for_hydro, 0.5, *new_sources[src_list[n]], 0, 0, NVAR, ng);
+        sources_for_hydro, 0.5, *new_sources[src], 0, 0, NVAR, ng);
       amrex::MultiFab::Saxpy(
-        sources_for_hydro, 0.5, *old_sources[src_list[n]], 0, 0, NVAR, ng);
+        sources_for_hydro, 0.5, *old_sources[src], 0, 0, NVAR, ng);
     }
 
     // Add I_R terms to advective forcing
