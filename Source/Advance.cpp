@@ -102,12 +102,10 @@ PeleC::do_mol_advance(
   // Build other (non-diffusion) sources at t_old
   for (int src : src_list) {
     if (src != diff_src) {
-      construct_old_source(
-        src, time, dt, amr_iteration, amr_ncycle, 0, 0);
+      construct_old_source(src, time, dt, amr_iteration, amr_ncycle, 0, 0);
 
       // add sources to molsrc
-      amrex::MultiFab::Saxpy(
-        molSrc, 1.0, *old_sources[src], 0, 0, NVAR, 0);
+      amrex::MultiFab::Saxpy(molSrc, 1.0, *old_sources[src], 0, 0, NVAR, 0);
     }
   }
 
@@ -138,12 +136,10 @@ PeleC::do_mol_advance(
   // Build other (non-diffusion) sources at t_new
   for (int src : src_list) {
     if (src != diff_src) {
-      construct_new_source(
-        src, time + dt, dt, amr_iteration, amr_ncycle, 0, 0);
+      construct_new_source(src, time + dt, dt, amr_iteration, amr_ncycle, 0, 0);
 
       // add sources to molsrc
-      amrex::MultiFab::Saxpy(
-        molSrc, 1.0, *new_sources[src], 0, 0, NVAR, 0);
+      amrex::MultiFab::Saxpy(molSrc, 1.0, *new_sources[src], 0, 0, NVAR, 0);
     }
   }
 
@@ -285,8 +281,7 @@ PeleC::do_sdc_iteration(
     for (int n : src_list) {
       if (n != diff_src) {
         construct_old_source(
-          n, time, dt, amr_iteration, amr_ncycle, sub_iteration,
-          sub_ncycle);
+          n, time, dt, amr_iteration, amr_ncycle, sub_iteration, sub_ncycle);
       }
     }
 
@@ -344,8 +339,7 @@ PeleC::do_sdc_iteration(
   for (int n : src_list) {
     if (n != diff_src) {
       construct_new_source(
-        n, time + dt, dt, amr_iteration, amr_ncycle, sub_iteration,
-        sub_ncycle);
+        n, time + dt, dt, amr_iteration, amr_ncycle, sub_iteration, sub_ncycle);
     }
   }
 
@@ -373,10 +367,8 @@ PeleC::construct_Snew(
 
   amrex::MultiFab::Copy(S_new, S_old, 0, 0, NVAR, ng);
   for (int src : src_list) {
-    amrex::MultiFab::Saxpy(
-      S_new, 0.5 * dt, *new_sources[src], 0, 0, NVAR, ng);
-    amrex::MultiFab::Saxpy(
-      S_new, 0.5 * dt, *old_sources[src], 0, 0, NVAR, ng);
+    amrex::MultiFab::Saxpy(S_new, 0.5 * dt, *new_sources[src], 0, 0, NVAR, ng);
+    amrex::MultiFab::Saxpy(S_new, 0.5 * dt, *old_sources[src], 0, 0, NVAR, ng);
   }
   if (do_hydro) {
     amrex::MultiFab::Saxpy(S_new, dt, hydro_source, 0, 0, NVAR, ng);

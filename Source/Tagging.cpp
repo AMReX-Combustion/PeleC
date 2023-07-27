@@ -64,7 +64,7 @@ PeleC::read_tagging_params()
   pp.queryarr(
     "refinement_indicators", refinement_indicators, 0,
     pp.countval("refinement_indicators"));
-  for (const auto & refinement_indicator : refinement_indicators) {
+  for (const auto& refinement_indicator : refinement_indicators) {
     std::string ref_prefix = tag_prefix + "." + refinement_indicator;
     amrex::ParmParse ppr(ref_prefix);
 

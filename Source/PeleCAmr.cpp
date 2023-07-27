@@ -138,7 +138,7 @@ PeleCAmr::constructPlotMF(
 
     // Cull data from state variables -- use no ghost cells.
     int cnt = 0;
-    for (auto & pv : plot_var_map) {
+    for (auto& pv : plot_var_map) {
       int typ = pv.first;
       int comp = pv.second;
       amrex::MultiFab& this_dat = amr_level[lev]->get_new_data(typ);
@@ -189,7 +189,7 @@ PeleCAmr::constructPlotMF(
     }
   }
 
-  for (auto & pv : plot_var_map) {
+  for (auto& pv : plot_var_map) {
     int typ = pv.first;
     int comp = pv.second;
     plt_var_names.push_back(desc_lst[typ].name(comp));
