@@ -70,11 +70,11 @@ PeleC::react_state(
       non_react_src_tmp.setVal(0);
       non_react_src = &non_react_src_tmp;
 
-      for (int n = 0; n < src_list.size(); ++n) {
+      for (int src : src_list) {
         amrex::MultiFab::Saxpy(
-          non_react_src_tmp, 0.5, *new_sources[src_list[n]], 0, 0, NVAR, ng);
+          non_react_src_tmp, 0.5, *new_sources[src], 0, 0, NVAR, ng);
         amrex::MultiFab::Saxpy(
-          non_react_src_tmp, 0.5, *old_sources[src_list[n]], 0, 0, NVAR, ng);
+          non_react_src_tmp, 0.5, *old_sources[src], 0, 0, NVAR, ng);
       }
 
       if (do_hydro && !do_mol) {
