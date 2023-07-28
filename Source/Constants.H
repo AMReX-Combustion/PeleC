@@ -22,5 +22,10 @@ very_small_num()
 {
   return std::numeric_limits<amrex::Real>::epsilon() * 1e-100;
 }
+AMREX_GPU_HOST_DEVICE constexpr int
+level_mask_notcovered()
+{
+  return 2;
+}
 } // namespace constants
 #endif
