@@ -26,7 +26,7 @@ plm_slope(
   const int order)
 {
   if (order == 1) {
-    return 0.;
+    return 0.0;
   }
 
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
