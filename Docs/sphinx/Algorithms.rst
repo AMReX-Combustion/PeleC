@@ -67,6 +67,13 @@ chosen through the ``ppm_type`` flag:
 * ``ppm_type = 0`` (default) uses a piecewise linear interpolation to reconstruct values at face. This is denoted PLM in the source code.
 * ``ppm_type = 1`` is the original PPM method presented in Colella and Woodward [JCP 1984].
 
+
+For ``ppm_type = 0``, one can control the order of the construction of the slopes with the ``plm_iorder`` flag:
+
+* ``plm_iorder = 1`` sets the slopes to zero;
+* ``plm_iorder = 2`` uses the :math:`i-1`, :math:`i`, and :math:`i+1` cells to form a slope;
+* ``plm_iorder = 4`` (default) uses the :math:`i-2`, :math:`i-1`, :math:`i`, :math:`i+1`, and :math:`i+2` cells to form a slope.
+  
 .. note::
 
    The following description of PPM implementations are only available
