@@ -338,7 +338,7 @@ PeleC::read_params()
 
   if (do_hydro) {
     if (do_mol || ppm_type == 0) {
-      if ((!(plm_iorder == 1)) || (!(plm_iorder == 2)) || (!(plm_iorder == 4)))
+      if ((plm_iorder != 1) && (plm_iorder != 2) && (plm_iorder != 4))
         amrex::Error("PeleC::plm_iorder must be 1, 2, or 4");
     }
   }
