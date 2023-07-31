@@ -18,7 +18,7 @@ PeleC::getMOLSrcTerm(
 
   /*
      Across all conserved state components, compute the method of lines rhs
-     = -Div(Flux).  The input state, S, contained the conserved variables, and
+     = -Div(Flux). The input state, S, contained the conserved variables, and
      is "fill patched" in the usual AMReX way, where values at Dirichlet
      boundaries actually are assumed to live on the inflow face.
 
@@ -543,15 +543,53 @@ PeleC::getMOLSrcTerm(
         amrex::Gpu::copy(
           amrex::Gpu::hostToDevice, bcs.begin(), bcs.end(), d_bcs.begin());
 
+        amrex::EBFluxRegister* fr_as_crse =
+          (do_reflux && (level < parent->finestLevel()))
+            ? &getFluxReg(level + 1)
+            : nullptr;
+        amrex::EBFluxRegister* fr_as_fine =
+          (do_reflux && (level > 0)) ? &getFluxReg(level) : nullptr;
+
+        const int as_crse = static_cast<int>(fr_as_crse != nullptr);
+        const int as_fine = static_cast<int>(fr_as_fine != nullptr);
+
+        amrex::FArrayBox dm_as_fine(
+          amrex::Box::TheUnitBox(), MOLSrcTerm.nComp(),
+          amrex::The_Async_Arena());
+        amrex::FArrayBox fab_drho_as_crse(
+          amrex::Box::TheUnitBox(), MOLSrcTerm.nComp(),
+          amrex::The_Async_Arena());
+        amrex::IArrayBox fab_rrflag_as_crse(
+          amrex::Box::TheUnitBox(), 1, amrex::The_Async_Arena());
+
+        auto* drho_as_crse = (fr_as_crse != nullptr)
+                               ? fr_as_crse->getCrseData(mfi)
+                               : &fab_drho_as_crse;
+        const auto* rrflag_as_crse = (fr_as_crse != nullptr)
+                                       ? fr_as_crse->getCrseFlag(mfi)
+                                       : &fab_rrflag_as_crse;
+
+        if (fr_as_fine != nullptr) {
+          const amrex::Box dbox1 = geom.growPeriodicDomain(1);
+          const amrex::Box bx_for_dm(amrex::grow(vbox, 1) & dbox1);
+          dm_as_fine.resize(bx_for_dm, MOLSrcTerm.nComp());
+          dm_as_fine.setVal<amrex::RunOn::Device>(0.0);
+        }
+
         const bool use_wts_in_divnc = false;
 
+        const int level_mask_not_covered = constants::level_mask_notcovered();
+
         {
-          BL_PROFILE("ApplyRedistribution()");
-          ApplyRedistribution(
+          BL_PROFILE("ApplyMLRedistribution()");
+          ApplyMLRedistribution(
             vbox, S.nComp(), Dterm, Dterm_tmp, S.const_array(mfi), scratch,
             flag_arr, AMREX_D_DECL(apx, apy, apz), vfrac.const_array(mfi),
             AMREX_D_DECL(fcx, fcy, fcz), ccc, d_bcs.dataPtr(), geom, dt,
-            redistribution_type, use_wts_in_divnc, eb_srd_max_order);
+            redistribution_type, as_crse, drho_as_crse->array(),
+            rrflag_as_crse->array(), as_fine, dm_as_fine.array(),
+            level_mask.const_array(mfi), level_mask_not_covered,
+            use_wts_in_divnc, 0, eb_srd_max_order);
         }
 
         pc_post_eb_redistribution(

@@ -27,11 +27,11 @@ PeleC::construct_hydro_source(
 
     const int ng = 0;
     sources_for_hydro.setVal(0.0);
-    for (int n = 0; n < src_list.size(); ++n) {
+    for (int src : src_list) {
       amrex::MultiFab::Saxpy(
-        sources_for_hydro, 0.5, *new_sources[src_list[n]], 0, 0, NVAR, ng);
+        sources_for_hydro, 0.5, *new_sources[src], 0, 0, NVAR, ng);
       amrex::MultiFab::Saxpy(
-        sources_for_hydro, 0.5, *old_sources[src_list[n]], 0, 0, NVAR, ng);
+        sources_for_hydro, 0.5, *old_sources[src], 0, 0, NVAR, ng);
     }
 
     // Add I_R terms to advective forcing
@@ -58,8 +58,12 @@ PeleC::construct_hydro_source(
     auto const& flags = fact.getMultiEBCellFlagFab();
 
 #ifdef AMREX_USE_OMP
-#pragma omp parallel if (amrex::Gpu::notInLaunchRegion()) reduction(max \
-                                                                    : courno)
+#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())          \
+  reduction(+ : E_added_flux, mass_added_flux)                     \
+  reduction(+ : xmom_added_flux, ymom_added_flux, zmom_added_flux) \
+  reduction(+ : mass_lost, xmom_lost, ymom_lost, zmom_lost)        \
+  reduction(+ : eden_lost, xang_lost, yang_lost, zang_lost)        \
+  reduction(max : courno)
 #endif
     {
       amrex::Real cflLoc = std::numeric_limits<amrex::Real>::lowest();
@@ -75,11 +79,9 @@ PeleC::construct_hydro_source(
         const amrex::Box& fbx = amrex::grow(bx, nGrowF);
 
         const auto& flag_fab = flags[mfi];
-        amrex::FabType typ = flag_fab.getType(bx);
         const amrex::Array4<amrex::EBCellFlag const>& flag_arr =
           flag_fab.const_array();
-
-        if (typ == amrex::FabType::covered) {
+        if (flag_fab.getType(bx) == amrex::FabType::covered) {
           continue;
         }
 
@@ -93,7 +95,7 @@ PeleC::construct_hydro_source(
         auto const& sarr = S.array(mfi);
         auto const& hyd_src = hydro_source.array(mfi);
 
-        // Resize Temporary Fabs
+        // Temporary Fabs
         amrex::FArrayBox q(qbx, QVAR, amrex::The_Async_Arena());
         amrex::FArrayBox qaux(qbx, NQAUX, amrex::The_Async_Arena());
         amrex::FArrayBox src_q(qbx, QVAR, amrex::The_Async_Arena());
@@ -182,16 +184,70 @@ PeleC::construct_hydro_source(
             area[0].const_array(mfi), area[1].const_array(mfi),
             area[2].const_array(mfi))}};
 
-        if (typ == amrex::FabType::singlevalued) {
-          amrex::Abort("EB Godunov not implemented yet");
-        } else if (typ == amrex::FabType::regular) {
+        const int ngrow_bx = (redistribution_type == "StateRedist") ? 3 : 2;
+        const amrex::Box& fbxg_i = grow(fbx, ngrow_bx);
+        if (flag_fab.getType(fbxg_i) == amrex::FabType::singlevalued) {
+
+          auto const& vfrac_arr = vfrac.const_array(mfi);
+
+          amrex::EBFluxRegister* fr_as_crse =
+            (do_reflux && (level < parent->finestLevel()))
+              ? &getFluxReg(level + 1)
+              : nullptr;
+          amrex::EBFluxRegister* fr_as_fine =
+            (do_reflux && (level > 0)) ? &getFluxReg(level) : nullptr;
+
+          const int as_crse = static_cast<int>(fr_as_crse != nullptr);
+          const int as_fine = static_cast<int>(fr_as_fine != nullptr);
+
+          amrex::FArrayBox dm_as_fine(
+            amrex::Box::TheUnitBox(), hydro_source.nComp(),
+            amrex::The_Async_Arena());
+          amrex::FArrayBox fab_drho_as_crse(
+            amrex::Box::TheUnitBox(), hydro_source.nComp(),
+            amrex::The_Async_Arena());
+          amrex::IArrayBox fab_rrflag_as_crse(
+            amrex::Box::TheUnitBox(), 1, amrex::The_Async_Arena());
+
+          auto* p_drho_as_crse = (fr_as_crse != nullptr)
+                                   ? fr_as_crse->getCrseData(mfi)
+                                   : &fab_drho_as_crse;
+          const auto* p_rrflag_as_crse = (fr_as_crse != nullptr)
+                                           ? fr_as_crse->getCrseFlag(mfi)
+                                           : &fab_rrflag_as_crse;
+
+          if (fr_as_fine != nullptr) {
+            const amrex::Box dbox1 = geom.growPeriodicDomain(1);
+            const amrex::Box bx_for_dm(amrex::grow(fbx, 1) & dbox1);
+            dm_as_fine.resize(bx_for_dm, hydro_source.nComp());
+            dm_as_fine.setVal<amrex::RunOn::Device>(0.0);
+          }
+
+          const amrex::StateDescriptor* desc = state[State_Type].descriptor();
+          const auto& bcs = desc->getBCs();
+          amrex::Gpu::DeviceVector<amrex::BCRec> bcs_d(desc->nComp());
+          amrex::Gpu::copy(
+            amrex::Gpu::hostToDevice, bcs.begin(), bcs.end(), bcs_d.begin());
+
+          const auto& dxInv = geom.InvCellSizeArray();
+
+          pc_umdrv_eb(
+            fbx, fbxg_i, mfi, geom, &fact, phys_bc.lo(), phys_bc.hi(), sarr,
+            hyd_src, qarr, qauxar, srcqarr, vfrac_arr, flag_arr, dx, dxInv,
+            flx_arr, as_crse, p_drho_as_crse->array(),
+            p_rrflag_as_crse->array(), as_fine, dm_as_fine.array(),
+            level_mask.const_array(mfi), dt, ppm_type, plm_iorder,
+            use_flattening, difmag, bcs_d.data(), redistribution_type,
+            eb_weights_type, cflLoc);
+
+        } else if (flag_fab.getType(fbxg_i) == amrex::FabType::regular) {
           BL_PROFILE("PeleC::umdrv()");
           pc_umdrv(
             time, fbx, domain_lo, domain_hi, phys_bc.lo(), phys_bc.hi(), sarr,
             hyd_src, qarr, qauxar, srcqarr, dx, dt, ppm_type, use_flattening,
             use_hybrid_weno, weno_scheme, difmag, flx_arr, a, volume.array(mfi),
             cflLoc);
-        } else if (typ == amrex::FabType::multivalued) {
+        } else if (flag_fab.getType(fbxg_i) == amrex::FabType::multivalued) {
           amrex::Abort("multi-valued cells are not supported");
         }
 
@@ -357,4 +413,43 @@ pc_consup(
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_update(i, j, k, update, flx, vol, pdivu);
   });
+}
+
+void
+pc_umdrv_eb(
+  const amrex::Box& /*bx*/,
+  const amrex::Box& /*bxg_i*/,
+  const amrex::MFIter& /*mfi*/,
+  const amrex::Geometry& /*geom*/,
+  const amrex::EBFArrayBoxFactory* /*fact*/,
+  const int* /*bclo*/,
+  const int* /*bchi*/,
+  const amrex::Array4<const amrex::Real>& /*uin*/,
+  const amrex::Array4<amrex::Real>& /*uout*/,
+  const amrex::Array4<const amrex::Real>& /*q*/,
+  const amrex::Array4<const amrex::Real>& /*qaux*/,
+  const amrex::Array4<const amrex::Real>& /*src_q*/,
+  const amrex::Array4<const amrex::Real>& /*vf*/,
+  const amrex::Array4<amrex::EBCellFlag const>& /*flag*/,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& /*dx*/,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& /*dxInv*/,
+  const amrex::
+    GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& /*flx*/,
+  const int /*as_crse*/,
+  const amrex::Array4<amrex::Real>& /*drho_as_crse*/,
+  const amrex::Array4<int const>& /*rrflag_as_crse*/,
+  const int /*as_fine*/,
+  const amrex::Array4<amrex::Real>& /*dm_as_fine*/,
+  const amrex::Array4<int const>& /*lev_mask*/,
+  const amrex::Real /*dt*/,
+  const int /*ppm_type*/,
+  const int /*plm_iorder*/,
+  const bool /*use_flattening*/,
+  const amrex::Real /*difmag*/,
+  amrex::BCRec const* /*bcs_d_ptr*/,
+  const std::string& /*redistribution_type*/,
+  const int /*eb_weights_type*/,
+  amrex::Real /*cflLoc*/)
+{
+  amrex::Abort("EB Godunov not implemented yet");
 }
