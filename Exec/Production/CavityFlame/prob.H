@@ -106,17 +106,8 @@ bcnormal(
 
   if (idir == 1) {
 
-    // default wall condition
-    s_ext[URHO] = s_int[URHO];
-    s_ext[UMX] = -s_int[UMX];
-    s_ext[UMY] = -s_int[UMY];
-    s_ext[UMZ] = -s_int[UMZ];
-    s_ext[UEINT] = s_int[UEINT];
-    s_ext[UEDEN] = s_int[UEDEN];
-    s_ext[UTEMP] = s_int[UTEMP];
-    for (int n = 0; n < NUM_SPECIES; n++) {
-      s_ext[UFS + n] = s_int[UFS + n];
-    }
+    // default noslip wall condition is prepopulated in s_ext
+    // only need to edit for inflows
 
     if (prob_parm.inject_fuel) {
       amrex::Real hole_cx = prob_parm.centx;
