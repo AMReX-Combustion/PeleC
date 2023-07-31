@@ -336,6 +336,13 @@ PeleC::read_params()
     amrex::Error("PeleC::ppm_type must be 1 (PPM) to use WENO method");
   }
 
+  if (do_hydro) {
+    if (do_mol || ppm_type == 0) {
+      if ((!(plm_iorder == 1)) || (!(plm_iorder == 2)) || (!(plm_iorder == 4)))
+        amrex::Error("PeleC::plm_iorder must be 1, 2, or 4");
+    }
+  }
+
   // for the moment, ppm_type = 0 does not support ppm_trace_sources --
   // we need to add the momentum sources to the states (and not
   // add it in trans_3d
