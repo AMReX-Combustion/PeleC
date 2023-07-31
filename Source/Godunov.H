@@ -876,6 +876,7 @@ void pc_umeth_3D(
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& del,
   const amrex::Real dt,
   const int ppm_type,
+  const int plm_iorder,
   const bool use_flattening,
   const bool use_hybrid_weno,
   const int weno_scheme);
@@ -903,6 +904,7 @@ void pc_umeth_2D(
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& del,
   const amrex::Real dt,
   const int ppm_type,
+  const int plm_iorder,
   const bool use_flattening,
   const bool use_hybrid_weno,
   const int weno_scheme);

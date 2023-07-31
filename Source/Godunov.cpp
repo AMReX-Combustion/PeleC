@@ -30,6 +30,7 @@ pc_umeth_3D(
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& del,
   const amrex::Real dt,
   const int ppm_type,
+  const int plm_iorder,
   const bool use_flattening,
   const bool use_hybrid_weno,
   const int weno_scheme)
@@ -98,7 +99,7 @@ pc_umeth_3D(
         // X slopes and interp
         int idir = 0;
         for (int n = 0; n < QVAR; ++n) {
-          slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, 0, q);
+          slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, 0, q, plm_iorder);
         }
         pc_plm_d(
           AMREX_D_DECL(i, j, k), idir, qxmarr, qxparr, slope, q,
@@ -107,7 +108,7 @@ pc_umeth_3D(
         // Y slopes and interp
         idir = 1;
         for (int n = 0; n < QVAR; n++) {
-          slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, 1, q);
+          slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, 1, q, plm_iorder);
         }
         pc_plm_d(
           AMREX_D_DECL(i, j, k), idir, qymarr, qyparr, slope, q,
@@ -116,7 +117,7 @@ pc_umeth_3D(
         // Z slopes and interp
         idir = 2;
         for (int n = 0; n < QVAR; ++n) {
-          slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, 2, q);
+          slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, 2, q, plm_iorder);
         }
         pc_plm_d(
           AMREX_D_DECL(i, j, k), idir, qzmarr, qzparr, slope, q,
@@ -410,6 +411,7 @@ pc_umeth_2D(
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& del,
   const amrex::Real dt,
   const int ppm_type,
+  const int plm_iorder,
   const bool use_flattening,
   const bool use_hybrid_weno,
   const int weno_scheme)
@@ -456,14 +458,14 @@ pc_umeth_2D(
         amrex::Real slope[QVAR];
         // X slopes and interp
         for (int n = 0; n < QVAR; ++n)
-          slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, 0, q);
+          slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, 0, q, plm_iorder);
         pc_plm_d(
           AMREX_D_DECL(i, j, k), 0, qxmarr, qxparr, slope, q, qaux(i, j, k, QC),
           dx, dt);
 
         // Y slopes and interp
         for (int n = 0; n < QVAR; n++)
-          slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, 1, q);
+          slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, 1, q, plm_iorder);
         pc_plm_d(
           AMREX_D_DECL(i, j, k), 1, qymarr, qyparr, slope, q, qaux(i, j, k, QC),
           dy, dt);

@@ -244,9 +244,9 @@ PeleC::construct_hydro_source(
           BL_PROFILE("PeleC::umdrv()");
           pc_umdrv(
             time, fbx, domain_lo, domain_hi, phys_bc.lo(), phys_bc.hi(), sarr,
-            hyd_src, qarr, qauxar, srcqarr, dx, dt, ppm_type, use_flattening,
-            use_hybrid_weno, weno_scheme, difmag, flx_arr, a, volume.array(mfi),
-            cflLoc);
+            hyd_src, qarr, qauxar, srcqarr, dx, dt, ppm_type, plm_iorder,
+            use_flattening, use_hybrid_weno, weno_scheme, difmag, flx_arr, a,
+            volume.array(mfi), cflLoc);
         } else if (flag_fab.getType(fbxg_i) == amrex::FabType::multivalued) {
           amrex::Abort("multi-valued cells are not supported");
         }
@@ -316,6 +316,7 @@ pc_umdrv(
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& dx,
   const amrex::Real dt,
   const int ppm_type,
+  const int plm_iorder,
   const bool use_flattening,
   const bool use_hybrid_weno,
   const int weno_scheme,
@@ -353,13 +354,13 @@ pc_umdrv(
     pc_umeth_2D(
       bx, bclo, bchi, domlo, domhi, q, qaux, src_q, // bcMask,
       flx[0], flx[1], qec_arr[0], qec_arr[1], a[0], a[1], pdivuarr, vol, dx, dt,
-      ppm_type, use_flattening, use_hybrid_weno, weno_scheme);
+      ppm_type, plm_iorder, use_flattening, use_hybrid_weno, weno_scheme);
 #elif AMREX_SPACEDIM == 3
     pc_umeth_3D(
       bx, bclo, bchi, domlo, domhi, q, qaux, src_q, // bcMask,
       flx[0], flx[1], flx[2], qec_arr[0], qec_arr[1], qec_arr[2], a[0], a[1],
-      a[2], pdivuarr, vol, dx, dt, ppm_type, use_flattening, use_hybrid_weno,
-      weno_scheme);
+      a[2], pdivuarr, vol, dx, dt, ppm_type, plm_iorder, use_flattening,
+      use_hybrid_weno, weno_scheme);
 #endif
   }
 
