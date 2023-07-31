@@ -73,7 +73,7 @@ For ``ppm_type = 0``, one can control the order of the construction of the slope
 * ``plm_iorder = 1`` sets the slopes to zero;
 * ``plm_iorder = 2`` uses the :math:`i-1`, :math:`i`, and :math:`i+1` cells to form a slope;
 * ``plm_iorder = 4`` (default) uses the :math:`i-2`, :math:`i-1`, :math:`i`, :math:`i+1`, and :math:`i+2` cells to form a slope.
-  
+
 .. note::
 
    The following description of PPM implementations are only available
