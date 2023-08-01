@@ -12,6 +12,7 @@ struct ProbParmDevice
   amrex::Real u0 = 1000.0;
   amrex::Real v0 = 1000.0;
   amrex::Real w0 = 1000.0;
+  int wall_type[AMREX_SPACEDIM] = {0};
 };
 
 struct ProbParmHost

@@ -204,7 +204,8 @@ bcnormal(
   const int sgn,
   const amrex::Real /*time*/,
   amrex::GeometryData const& geomdata,
-  ProbParmDevice const& prob_parm)
+  ProbParmDevice const& prob_parm,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& /*turb_fluc*/)
 {
   const int tempCol = prob_parm.tempCol;
   const int velCol = prob_parm.velCol;

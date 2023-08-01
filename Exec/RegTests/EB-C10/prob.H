@@ -66,7 +66,8 @@ bcnormal(
   const int sgn,
   const amrex::Real /*time*/,
   amrex::GeometryData const& geomdata,
-  ProbParmDevice const& prob_parm)
+  ProbParmDevice const& prob_parm,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& /*turb_fluc*/)
 {
   if (idir == 0) {
     amrex::Real rho = 0.0, u = 0.0, v = 0.0, w = 0.0, eint = 0.0, T = 0.0;

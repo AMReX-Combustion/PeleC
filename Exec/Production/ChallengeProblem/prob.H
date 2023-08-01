@@ -244,28 +244,20 @@ bcnormal(
   const int sgn,
   const amrex::Real time,
   amrex::GeometryData const& /*geomdata*/,
-  ProbParmDevice const& prob_parm)
+  ProbParmDevice const& prob_parm,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& turb_fluc)
 {
   if (sgn == -1 && idir == 2) {
     // Save off the inflow velocity if specified
     amrex::Real fluc_velx = 0.0, fluc_vely = 0.0, fluc_velz = 0.0;
     if (prob_parm.turbulent_inflow) {
-      fluc_velx = s_ext[UMX];
-      fluc_vely = s_ext[UMY];
-      fluc_velz = s_ext[UMZ];
+      fluc_velx = turb_fluc[0];
+      fluc_vely = turb_fluc[1];
+      fluc_velz = turb_fluc[2];
     }
 
-    // default wall condition
-    s_ext[URHO] = s_int[URHO];
-    s_ext[UMX] = -s_int[UMX];
-    s_ext[UMY] = -s_int[UMY];
-    s_ext[UMZ] = -s_int[UMZ];
-    s_ext[UEINT] = s_int[UEINT];
-    s_ext[UEDEN] = s_int[UEDEN];
-    s_ext[UTEMP] = s_int[UTEMP];
-    for (int n = 0; n < NUM_SPECIES; n++) {
-      s_ext[UFS + n] = s_int[UFS + n];
-    }
+    // default noslip wall condition is prepopulated in s_ext
+    // only need to edit for inflows
 
     if (
       (time < prob_parm.inj_start) ||

@@ -90,31 +90,23 @@ bcnormal(
   const int sgn,
   const amrex::Real time,
   amrex::GeometryData const& /*geomdata*/,
-  ProbParmDevice const& prob_parm)
+  ProbParmDevice const& prob_parm,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& turb_fluc)
 {
   if (sgn == 1 && idir == 2) {
 
     // Save off the inflow velocity if specified
     amrex::Real velx = 0.0, vely = 0.0, velz = 0.0;
     if (prob_parm.turbulence) {
-      velx = s_ext[UMX];
-      vely = s_ext[UMY];
-      velz = s_ext[UMZ] + prob_parm.v_in;
+      velx = turb_fluc[0];
+      vely = turb_fluc[1];
+      velz = turb_fluc[2] + prob_parm.v_in;
     } else {
       velz += prob_parm.v_in;
     }
 
-    // default wall condition
-    s_ext[URHO] = s_int[URHO];
-    s_ext[UMX] = -s_int[UMX];
-    s_ext[UMY] = -s_int[UMY];
-    s_ext[UMZ] = -s_int[UMZ];
-    s_ext[UEINT] = s_int[UEINT];
-    s_ext[UEDEN] = s_int[UEDEN];
-    s_ext[UTEMP] = s_int[UTEMP];
-    for (int n = 0; n < NUM_SPECIES; n++) {
-      s_ext[UFS + n] = s_int[UFS + n];
-    }
+    // default noslip wall condition is prepopulated in s_ext
+    // only need to edit for inflows
 
     const amrex::Real radius = std::sqrt(
       (x[0] - prob_parm.center_xy[0]) * (x[0] - prob_parm.center_xy[0]) +

@@ -14,7 +14,8 @@ amr.n_cell           = 8 8 8
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 
 pelec.lo_bc       = "SlipWall"   "NoSlipWall" "Symmetry"
-pelec.hi_bc       = "SlipWall"   "NoSlipWall" "Symmetry"
+pelec.hi_bc       = "Hard"       "Hard"       "Hard"
+prob.wall_type    = 1            0            1
 
 # WHICH PHYSICS
 pelec.plm_iorder = 1
