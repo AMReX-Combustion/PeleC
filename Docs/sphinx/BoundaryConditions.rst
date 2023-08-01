@@ -1,7 +1,7 @@
 
  .. role:: cpp(code)
     :language: c++
- 
+
  .. role:: fortran(code)
     :language: fortran
 
@@ -13,22 +13,22 @@ Boundary Conditions
 PeleC manages boundary conditions in a form consistent with many AMReX codes. Ghost cell data are updated over an AMR level during a ``FillPatch`` operation and fluxes are then computed over the entire box without specifically recognizing boundary cells. A generic boundary filler function fills standard boundary condition types that do not require user input, including:
 
 * *Interior* - Copy-in-intersect in index space (same as periodic boundary conditions). Periodic boundaries are set in the PeleC inputs file
-* *Symmetry* - All conserved quantities and the tangential momentum component are reflected from interior cells without 
+* *Symmetry* - All conserved quantities and the tangential momentum component are reflected from interior cells without
   sign change (REFLECT_EVEN) while the normal component is reflected with a sign change (REFLECT_ODD)
-* *NoSlipWall* - REFLECT_EVEN is applied to all conserved quantities except for both tangential and normal momentum components which are updated 
+* *NoSlipWall* - REFLECT_EVEN is applied to all conserved quantities except for both tangential and normal momentum components which are updated
   using REFLECT_ODD
 * *SlipWall*  - SlipWall is identical to Symmetry
 * *FOExtrap* - First-order extrapolation: the value in the ghost-cells are a copy of the last interior cell.
 
-More complex boundary conditions require user input that is prescribed explicitly. Boundaries identified as ``UserBC`` or ``Hard`` in the inputs will be tagged as ``EXT_DIR`` in ``pc_hypfill``.  Users will then fill the Dirichlet boundary values, typically by calling the helper function, ``bcnormal``.
+More complex boundary conditions require user input that is prescribed explicitly. Boundaries identified as ``UserBC`` or ``Hard`` in the inputs will be tagged as ``EXT_DIR`` in ``pc_hypfill``.  Users will then fill the boundary values, by calling the helper function, ``bcnormal``. The ``bcnormal`` function fills an exterior (ghost) cell based on the value of the outermost interior cell. Its arguments include a problem-specific data structure, the location, direction, and orientation of the boundary being filled, and potentially fluctuating turbulent velocities from the `TurbInflow <https://amrex-combustion.github.io/PelePhysics/Utility.html#turbulent-inflows>`_ utility in PelePhysics. This gives the user flexibility to specify a variety of boundary conditions, including faces that contain both walls and inflow regions. Note that the external state ``s_ext`` is prepopulated with the same values as are used for the ``NoSlipWall`` condition, so the default if the ``bcnormal`` function does nothing is to specify a ``NoSlipWall``.
 
 Special care should be taken when prescribing subsonic ``Inflow`` or an ``Outflow`` boundary conditions. It might be tempting to directly impose target values in the boundary filler function (for ``Inflow``), or to perform a simple extrapolation (for ``Outflow``).  However, this approach would fail to correctly respect the flow of information along solution characteristics - the system would be ill-posed and would lead to unphysical behavior. In particular, at a subsonic inflow boundary, at a subsonic inlet there is one outgoing characteristic, so one flow variable must be specified using information from inside the domain. Similarly, there is one incoming characteristic at outflow boundaries. The NSCBC method, described below, is the preffered method to account for this, but has not been ported to the all C++ version of PeleC. In the meantime, the recommended strategy for subsonic inflow and outflow boundaries for confined geometries such as nozzles and combustors is as follows:
 
 * Subsonic Inflows: Specify the desired temperature, velocity, and composition (if relevant) in the ghost cells. Take the pressure from the domain interior. Based on these values, compute the density, internal energy, and total energy for the ghost cells.
-  
+
 * Subsonic Outflows: Specify the desired outlet pressure and extrapolate the other flow quantities. In particular, we recommend following the simple characteristic-based extrapolation proposed by Whitfield and Janus (`Three-Dimensional Unsteady Euler Equations Solution Using Flux Vector Splitting. AIAA Paper 84-1552, 1984. <https://arc.aiaa.org/doi/abs/10.2514/6.1984-1552>`_) and described in Ch. 8 of Blazek's textbook (`Computational Fluid Dunamics - Principles and Applications <https://www.sciencedirect.com/book/9780080445069/computational-fluid-dynamics-principles-and-applications>`_). Implementations of this method can be found in the ``bcnormal`` function in ``prob.H`` for various test cases, including EB-C10 and EB-ConvergingNozzle.
 
-A detailed analysis comparing various boundary condition strategies and demonstrating their implementation is available for the :ref:`EB-ConvergingNozzle` case. 
+A detailed analysis comparing various boundary condition strategies and demonstrating their implementation is available for the :ref:`EB-ConvergingNozzle` case.
 
 .. warning::
 
@@ -39,7 +39,7 @@ A well-known approach to the subsonic problem is the Navier-Stokes Characteristi
 <https://www.sciencedirect.com/science/article/pii/0021999192900462>`_.  In the method, the hyperbolic structure is
 decomposed to identify incoming and outgoing waves, given a statement of the "external" state outside the domain, and
 then to construct a model that gives "desired" behavior at the interface.  One issue with direct application of
-the NSCBC treatment in PeleC is that it is formulated to impose boundary fluxes directly. In PeleC however, the 
+the NSCBC treatment in PeleC is that it is formulated to impose boundary fluxes directly. In PeleC however, the
 Godunov approach that is implemented makes use of boundary data specified via grow cell values, and reconstructs fluxes at faces when required. Thus, the NSCBC strategy has been reformulated to provide the grow cell data required in PeleC. The strategy,
 the Ghost-Cells Navier-Stokes Boundary Conditions (GC-NSCBC) method, is described in `Motheau et al. (2017) AIAA Journal
 <https://ccse.lbl.gov/people/motheau/Manuscripts_website/2017_AIAA_CFD_Motheau.pdf>`_.
@@ -57,7 +57,7 @@ A precomputed 1D flame profile is interpolated onto a uniform PeleC grid. Becaus
        :align: center
        :figwidth: 40%
 
-  
+
    No GC-NSCBC treatment, hard values set at the left boundary for the inflow, and first order extrapolation in the right boundary to mimic an outflow. The unphysical reflections of the acoustic wave at boundary can be clearly seen.
 
 .. only:: html
@@ -76,18 +76,18 @@ In PeleC, the subroutine ``bcnormal`` is used to provide the target state for th
     subroutine bcnormal(x,u_int,u_ext,dir,sgn,time,bc_type,bc_params,bc_target)
 
     ...
-   
+
     integer, optional, intent(out) :: bc_type
     double precision, optional, intent(out) :: bc_params(6)
     double precision, optional, intent(out) :: bc_target(5)
-    
+
     ...
-    
+
     double precision :: relax_U, relax_V, relax_W, relax_T, beta, sigma_out
     integer :: flag_nscbc, which_bc_type
-  
+
     flag_nscbc = 0
-    
+
     ! When optional arguments are present, GC-NSCBC is activated
     ! Generic values are auto-filled for numerical parameters,
     ! but should be set by the user for each BC
@@ -140,10 +140,10 @@ Below is an example to achieve an inflow/outflow along the x-axis of a channel, 
     use network, only: nspecies, naux, molec_wt
     use prob_params_module, only : Interior, Inflow, Outflow, SlipWall, NoSlipWall, &
                                    problo, probhi
-    
-    
+
+
     use bl_constants_module, only: M_PI
-    
+
     implicit none
 
     double precision :: x(3), time
@@ -160,13 +160,13 @@ Below is an example to achieve an inflow/outflow along the x-axis of a channel, 
     integer :: flag_nscbc, which_bc_type
 
     flag_nscbc = 0
-    
+
     ! When optional arguments are present, GC-NSCBC is activated
     ! Generic values are auto-filled for numerical parameters,
     ! but should be set by the user for each BC
     ! Note that in the impose_NSCBC_xD.f90 routine, not all parameters are used in same time
     if (present(bc_type).and.present(bc_params).and.present(bc_target)) then
-     
+
       flag_nscbc = 1
       relax_U = 0.5d0 ! For inflow only, relax parameter for x_velocity
       relax_V = 0.5d0 ! For inflow only, relax parameter for y_velocity
@@ -176,20 +176,20 @@ Below is an example to achieve an inflow/outflow along the x-axis of a channel, 
       sigma_out = 0.25d0 ! For outflow only, relax parameter
       which_bc_type = Interior ! This is to ensure that nothing will be done if the user don't set anything
     endif
-    
+
     call build(eos_state)
 
     ! at low X
     if (dir == 1) then
       if (sgn == 1) then
-      
+
         relax_U = 10.0d0
         relax_V = 2.0d0
         relax_T = - relax_V
-        beta = 0.6d0  
-           
+        beta = 0.6d0
+
         which_bc_type = Inflow
-           
+
         u(1) = u_ref
         u(2) = 0.0d0
         u(3) = 0.0d0
@@ -197,37 +197,37 @@ Below is an example to achieve an inflow/outflow along the x-axis of a channel, 
         eos_state % p = p_ref
         eos_state % T = T_ref
         call eos_tp(eos_state)
-    
+
       end if
 
     ! at hi X
       if (sgn == -1) then
-      
+
         ! Set outflow pressure
-        which_bc_type = Outflow      
+        which_bc_type = Outflow
         sigma_out = 0.28d0
         beta = -0.60d0
-       
+
         u(1:3) = 0.d0
         eos_state % massfrac(1) = 1.d0
         eos_state % p = p_ref
         eos_state % T = T_ref
         call eos_tp(eos_state)
-        
+
       end if
     end if
-    
+
     ! at low Y
     if (dir == 2) then
       if (sgn == 1) then
-      
+
         ! Do nothing, this is periodic
-    
+
       end if
 
     ! at hi Y
       if (sgn == -1) then
-      
+
        ! Do nothing, this is periodic
 
       end if
@@ -250,16 +250,16 @@ Below is an example to achieve an inflow/outflow along the x-axis of a channel, 
       bc_params(2) = relax_U ! For inflow only, relax parameter for x_velocity
       bc_params(3) = relax_V ! For inflow only, relax parameter for y_velocity
       bc_params(4) = relax_W ! For inflow only, relax parameter for z_velocity
-      bc_params(5) = beta  ! Control the contribution of transverse terms. 
+      bc_params(5) = beta  ! Control the contribution of transverse terms.
       bc_params(6) = sigma_out ! For outflow only, relax parameter
       bc_target(1) = U_ext(UMX)/U_ext(URHO)  ! Target for Inflow
       bc_target(2) = U_ext(UMY)/U_ext(URHO)  ! Target for Inflow
       bc_target(3) = U_ext(UMZ)/U_ext(URHO)  ! Target for Inflow
       bc_target(4) = U_ext(UTEMP)            ! Target for Inflow
       bc_target(5) = eos_state%p             ! Target for Outflow
-    end if 
-    
-    call destroy(eos_state)  
+    end if
+
+    call destroy(eos_state)
 
   end subroutine bcnormal
 
