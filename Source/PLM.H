@@ -22,38 +22,45 @@ plm_slope(
   AMREX_D_DECL(const int i, const int j, const int k),
   const int n,
   const int dir,
-  amrex::Array4<const amrex::Real> const& q)
+  amrex::Array4<const amrex::Real> const& q,
+  const int order)
 {
+  if (order == 1) {
+    return 0.0;
+  }
+
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
   const amrex::IntVect ivm2(iv - 2 * amrex::IntVect::TheDimensionVector(dir));
   const amrex::IntVect ivm(iv - amrex::IntVect::TheDimensionVector(dir));
   const amrex::IntVect ivp(iv + amrex::IntVect::TheDimensionVector(dir));
   const amrex::IntVect ivp2(iv + 2 * amrex::IntVect::TheDimensionVector(dir));
 
-  amrex::Real dlft, drgt, dcen, dfm, dfp, dlim, dsgn, dtemp;
+  amrex::Real dlft, drgt, dcen, dfm = 0.0, dfp = 0.0, dlim, dsgn, dtemp;
   const amrex::Real qc = q(iv, n);
   const amrex::Real qm2 = q(ivm2, n);
   const amrex::Real qm = q(ivm, n);
   const amrex::Real qp = q(ivp, n);
   const amrex::Real qp2 = q(ivp2, n);
 
-  dlft = qm - qm2;
-  drgt = qc - qm;
-  dcen = 0.5 * (dlft + drgt);
-  dsgn = std::copysign(1.0, dcen);
-  dlim = (dlft * drgt >= 0.0)
-           ? 2.0 * amrex::min<amrex::Real>(std::abs(dlft), std::abs(drgt))
-           : 0.0;
-  dfm = dsgn * amrex::min<amrex::Real>(dlim, std::abs(dcen));
+  if (order == 4) {
+    dlft = qm - qm2;
+    drgt = qc - qm;
+    dcen = 0.5 * (dlft + drgt);
+    dsgn = std::copysign(1.0, dcen);
+    dlim = (dlft * drgt >= 0.0)
+             ? 2.0 * amrex::min<amrex::Real>(std::abs(dlft), std::abs(drgt))
+             : 0.0;
+    dfm = dsgn * amrex::min<amrex::Real>(dlim, std::abs(dcen));
 
-  dlft = qp - qc;
-  drgt = qp2 - qp;
-  dcen = 0.5 * (dlft + drgt);
-  dsgn = std::copysign(1.0, dcen);
-  dlim = (dlft * drgt >= 0.0)
-           ? 2.0 * amrex::min<amrex::Real>(std::abs(dlft), std::abs(drgt))
-           : 0.0;
-  dfp = dsgn * amrex::min<amrex::Real>(dlim, std::abs(dcen));
+    dlft = qp - qc;
+    drgt = qp2 - qp;
+    dcen = 0.5 * (dlft + drgt);
+    dsgn = std::copysign(1.0, dcen);
+    dlim = (dlft * drgt >= 0.0)
+             ? 2.0 * amrex::min<amrex::Real>(std::abs(dlft), std::abs(drgt))
+             : 0.0;
+    dfp = dsgn * amrex::min<amrex::Real>(dlim, std::abs(dcen));
+  }
 
   dlft = qc - qm;
   drgt = qp - qc;

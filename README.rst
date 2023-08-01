@@ -17,14 +17,13 @@ To build `PeleC` and run a sample 3D flame problem:
     make TPLrealclean && make realclean && make TPL && make -j
     ./Pele3d.xxx.yyy.ex example.inp
 
-* Notes
-
+.. note::
    A. In the exec line above, xxx.yyy is a tag identifying your compiler and various build options, and will vary across pltaform.  (Note that GNU compilers must be at least version 7, and MPI should be at least of standard version 3).
    B. The example is 3D premixed flame, flowing vertically upward through the domain with no gravity. The lateral boundaries are periodic.  A detailed hydrogen model is used.  The solution is initialized with a wrinkled (perturbed) 2D steady flame solution computed using the PREMIX code.  Two levels of solution-adaptive refinement are automatically triggered by the presence of the flame intermediate, HO2.
-   C. In addition to informative output to the terminal, periodic plotfiles are written in the run folder.  These may be viewed with CCSE's Amrvis (<https://ccse.lbl.gov/Downloads/downloadAmrvis.html>) or Vis-It (<http://vis.lbl.gov/NERSC/Software/visit/>):
+   C. In addition to informative output to the terminal, periodic plotfiles are written in the run folder.  These may be viewed with AMReX's `Amrvis <https://amrex-codes.github.io/amrex/docs_html/Visualization.html>`_ or `VisIt <https://visit-dav.github.io/visit-website/>`_:
 
       1. In VisIt, direct the File->Open dialogue to select the file named "Header" that is inside each plotfile folder..
-      2. With Amrvis, "amrvis3d plt00030", for example.
+      2. With Amrvis, `$ amrvis3d plt00030`, for example.
 
 
 Dependencies
@@ -87,9 +86,9 @@ Sphinx  `Sphinx <http://www.sphinx-doc.org>`_. With
 Sphinx, documentation is written in *Restructured Text*. reST is a markup language
 similar to Markdown, but with somewhat greater capabilities (and idiosyncrasies). There
 are several `primers <http://thomas-cokelaer.info/tutorials/sphinx/rest_syntax.html>`_
-available to get started. One gotcha is that indentation matters.
+available to get started. One gotcha is that indentation matters. To build ::
 
-    cd Docs && mkdir build && cd build && cmake .. && make
+    $ cd Docs && mkdir build && cd build && sphinx-build -M html ../sphinx .
 
 
 Citation
