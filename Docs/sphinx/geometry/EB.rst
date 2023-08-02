@@ -136,19 +136,19 @@ presented in `Pember et al. <https://www.sciencedirect.com/science/article/pii/S
 Date Structures and utility functions
 -------------------------------------
 
-Several structures exist to store geometry dependent information. These are populated on creation of a new AMRLevel and stored in the PeleC object so that they are available for computation. These facilitate accessing the EB data from the fortran layer and have equivalent C++ struct and fortran types definitions so that they can be passed between the languages. The C++ struct definitions are in the file EBStencilTypes.H and the fortran type definitions are in the file EBStencilTypes_mod.F90 within the pelec_eb_stencil_types_module module. The datatypes are:
+Several structures exist to store geometry dependent information. These are populated on creation of a new AMRLevel and stored in the PeleC object so that they are available for computation. These facilitate accessing the EB data from the fortran layer and have equivalent C++ struct and fortran types definitions so that they can be passed between the languages. The datatypes are:
 
-+----------------+----------------+--------------------------------------------------------------------------------------+
-| C++ struct     | fortran type   | Contents                                                                             |
-+================+================+======================================================================================+
-| EBBoundaryGeom | eb_bndry_geom  |Cut face normal, centroid, area, index into FAB                                       |
-+----------------+----------------+--------------------------------------------------------------------------------------+
-| EBBndrySten    | eb_bndry_sten  |:math:`3^3` matrix of weights to apply cell based stencil, BC value, index into FAB   |
-+----------------+----------------+--------------------------------------------------------------------------------------+
-| FaceSten       | face_sten      |:math:`3^2` matrix of weights to apply face-based stencil                             |
-+----------------+----------------+--------------------------------------------------------------------------------------+
++----------------+--------------------------------------------------------------------------------------+
+| C++ struct     | Contents                                                                             |
++================+======================================================================================+
+| EBBoundaryGeom |Cut face normal, centroid, area, index into FAB                                       |
++----------------+--------------------------------------------------------------------------------------+
+| EBBndrySten    |:math:`3^3` matrix of weights to apply cell based stencil, BC value, index into FAB   |
++----------------+--------------------------------------------------------------------------------------+
+| FaceSten       |:math:`3^2` matrix of weights to apply face-based stencil                             |
++----------------+--------------------------------------------------------------------------------------+
 
-Routines to fill and apply these as necessary can be found in the dimension specific files in e.g. Source/Src_3d/PeleC_init_eb_3d.f90 within the `nbrsTest_nd_module` module. An array of structures is created on level creation by copying data from the AMReX dense datastrcutures on a per-FAB basis as indicated in Figure :ref:`eb_structs` .
+An array of structures is created on level creation by copying data from the AMReX dense datastrcutures on a per-FAB basis as indicated in Figure :ref:`eb_structs` .
 
 
 .. _eb_structs:

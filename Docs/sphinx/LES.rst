@@ -2,9 +2,6 @@
  .. role:: cpp(code)
     :language: c++
  
- .. role:: fortran(code)
-    :language: fortran
-
  .. _LES:
 
 LES and Hybrid LES/DNS Support
@@ -70,13 +67,6 @@ ratio of 2. An example for activating the dynamic Smagorinsky model is:
    pelec.les_test_filter_fgr = 2
 
 
-Developing
-##########
-
-The LES models are implemented as source terms in `PeleC_les.cpp` and
-the kernels are implemented in ``Src_DIMd/lesterm_DIMd.f90``.
-
-
 Explicit filtering of the hydrodynamic source terms
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -134,8 +124,7 @@ filter type, one needs to add an enum to the ``filter_types`` and
 define a corresponding ``set_NAME_weights`` function to be called at
 initialization.
 
-The application of a filter can be done on a Fab or MultiFab. The
-implementation is done in ``filter_DIMd.f90``. The loop nesting
+The application of a filter can be done on a Fab or MultiFab. The loop nesting
 ordering was chosen to be performant on existing HPC architectures and
 discussed in PeleC milestone reports. An example call to the filtering operation is
 

@@ -2,9 +2,6 @@
  .. role:: cpp(code)
     :language: c++
 
- .. role:: f(code)
-    :language: fortran
-
  
 .. _EBVerification:
 

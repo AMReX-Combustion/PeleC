@@ -14,7 +14,6 @@ An example ``cmake`` configure command performed in the ``Build`` directory in P
         -DPELEC_ENABLE_MPI:BOOL=ON \
         -DCMAKE_CXX_COMPILER:STRING=mpicxx \
         -DCMAKE_C_COMPILER:STRING=mpicc \
-        -DCMAKE_Fortran_COMPILER:STRING=mpifort \
         -DENABLE_FCOMPARE:BOOL=ON \
         -DENABLE_TESTS:BOOL=ON \
         -DENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
@@ -39,7 +38,7 @@ While performing a ``cmake -LAH ..`` command will give descriptions of every opt
 Building the Tests
 ~~~~~~~~~~~~~~~~~~
 
-Once the user has performed the CMake configure step, the ``make`` command will build every executable required for each test. In this step, it is highly beneficial for the user to use the ``-j`` option for ``make`` to build source files in parallel. It is also beneficial if the user has access to the Ninja build system with Fortran support which is described in the section on building PeleC.
+Once the user has performed the CMake configure step, the ``make`` command will build every executable required for each test. In this step, it is highly beneficial for the user to use the ``-j`` option for ``make`` to build source files in parallel. It is also beneficial if the user has access to the Ninja build system which is described in the section on building PeleC.
 
 Running the Tests
 ~~~~~~~~~~~~~~~~~

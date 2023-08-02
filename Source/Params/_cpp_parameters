@@ -107,6 +107,9 @@ ppm_trace_sources           bool           false
 # for piecewise linear, reconstruction order to use
 plm_iorder                   int           4
 
+# for mol, reconstruction order to use
+mol_iorder                   int           2
+
 # Lax Friedrich's flux
 use_laxf_flux               bool           false
 

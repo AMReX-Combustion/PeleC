@@ -18,7 +18,7 @@ pelec.hi_bc       = "Hard"       "Hard"       "Hard"
 prob.wall_type    = 1            0            1
 
 # WHICH PHYSICS
-pelec.plm_iorder = 1
+pelec.mol_iorder = 1
 pelec.do_hydro = 1
 pelec.do_mol = 1
 pelec.diffuse_vel = 1
