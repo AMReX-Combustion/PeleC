@@ -19,7 +19,7 @@ be.
 
 1. Get [MASA](https://github.com/manufactured-solutions/MASA)
 2. `./bootstrap` (on Eagle, do  `spack load autoconf` first)
-3. `./configure --enable-fortran-interfaces METAPHYSICL_DIR=${HOME}/combustion/install/MetaPhysicL --prefix=${HOME}/combustion/install/MASA --enable-python-interfaces`
+3. `./configure METAPHYSICL_DIR=${HOME}/combustion/install/MetaPhysicL --prefix=${HOME}/combustion/install/MASA --enable-python-interfaces`
 4. `make`
 5. `make check`
 6. `make install`

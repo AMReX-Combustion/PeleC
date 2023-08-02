@@ -605,7 +605,7 @@ PeleC::setTimeLevel(amrex::Real time, amrex::Real dt_old, amrex::Real dt_new)
 void
 PeleC::setGridInfo()
 {
-  // Send refinement data to Fortran. We do it here
+  // Send refinement data. We do it here
   // because now the grids have been initialized and
   // we need this data for setting up the problem.
   // Note that this routine will always get called
@@ -647,9 +647,6 @@ PeleC::setGridInfo()
         domhi_level[3 * lev + dir] = domlo_level[3 * lev + dir] + ncell - 1;
       }
     }
-
-    // Old fortran call
-    // set_grid_info(max_level, dx_level, domlo_level, domhi_level);
   }
 }
 
