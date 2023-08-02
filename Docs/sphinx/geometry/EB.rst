@@ -158,42 +158,7 @@ An array of structures is created on level creation by copying data from the AMR
    Storage for sparse EB structures 
 
            
-On creation of a new AMRLevel, data is cached from the *dense* AMReX structures in the *sparse* PeleC structures. For example, in *PeleC_init_eb.cpp* within the function initialize_eb2_structs():
-
-.. highlight:: c++
-
-::
-
-   pc_fill_sv_ebg(BL_TO_FORTRAN_BOX(tbox),
-   sv_eb_bndry_geom[iLocal].data(), &Ncut,
-   BL_TO_FORTRAN_ANYD((*volfrac)[mfi]),
-   BL_TO_FORTRAN_ANYD((*bndrycent)[mfi]),
-   D_DECL(BL_TO_FORTRAN_ANYD((*eb2areafrac[0])[mfi]),
-          BL_TO_FORTRAN_ANYD((*eb2areafrac[1])[mfi]),
-          BL_TO_FORTRAN_ANYD((*eb2areafrac[2])[mfi])));
-
-
-Where the argument FABS AMReX datastructures, e.g.:
-
-.. highlight:: c++
-
-::
-
-  const amrex::MultiFab* volfrac;
-  const amrex::MultiCutFab* bndrycent;
-  std::array<const amrex::MultiCutFab*, AMREX_SPACEDIM> eb2areafrac;
-  std::array<const amrex::MultiCutFab*, AMREX_SPACEDIM> facecent;
-
-  const auto& ebfactory = dynamic_cast<EBFArrayBoxFactory const&>(Factory());
-
-  // These are the data sources
-  volfrac = &(ebfactory.getVolFrac());
-  bndrycent = &(ebfactory.getBndryCent());
-  eb2areafrac = ebfactory.getAreaFrac();
-  facecent = ebfactory.getFaceCent();
-
-
-
+On creation of a new AMRLevel, data is cached from the *dense* AMReX structures in the *sparse* PeleC structures. 
 
 
 Applying boundary and face stencils
