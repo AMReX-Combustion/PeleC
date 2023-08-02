@@ -9,7 +9,7 @@ pc_compute_hyp_mol_flux(
   const amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flx,
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>&
     area,
-  const int mol_iorder,
+  const int plm_iorder,
   const bool use_laxf_flux,
   const amrex::Array4<amrex::EBCellFlag const>& flags)
 {
@@ -41,7 +41,7 @@ pc_compute_hyp_mol_flux(
        bdim[0] * UMY + bdim[1] * UMX + bdim[2] * UMX,
        bdim[0] * UMZ + bdim[1] * UMZ + bdim[2] * UMY}};
 
-    if (mol_iorder != 1) {
+    if (plm_iorder != 1) {
       amrex::ParallelFor(
         cbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
           mol_slope(i, j, k, dir, q_idx, q, qaux, dq, flags);

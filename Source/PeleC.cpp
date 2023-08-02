@@ -338,12 +338,14 @@ PeleC::read_params()
 
   if (do_hydro) {
     if (do_mol) {
-      if ((mol_iorder != 1) && (mol_iorder != 2)) {
-        amrex::Error("PeleC::mol_iorder must be 1, or 2.");
+      if ((plm_iorder != 1) && (plm_iorder != 2)) {
+        amrex::Warning(
+          "PeleC::plm_iorder for MOL must be 1, or 2. Setting it to 2.");
+        plm_iorder = 2;
       }
     } else if (ppm_type == 0) {
       if ((plm_iorder != 1) && (plm_iorder != 2) && (plm_iorder != 4)) {
-        amrex::Error("PeleC::plm_iorder must be 1, 2, or 4");
+        amrex::Error("PeleC::plm_iorder for ppm_type = 0 must be 1, 2, or 4");
       }
     }
   }

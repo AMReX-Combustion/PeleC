@@ -34,7 +34,6 @@ static amrex::Real forcing_force;
 static int ppm_type;
 static bool ppm_trace_sources;
 static int plm_iorder;
-static int mol_iorder;
 static bool use_laxf_flux;
 static bool use_flattening;
 static bool dual_energy_update_E_from_e;

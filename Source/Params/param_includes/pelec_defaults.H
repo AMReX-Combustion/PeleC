@@ -34,7 +34,6 @@ amrex::Real PeleC::forcing_force = 0.0;
 int PeleC::ppm_type = 0;
 bool PeleC::ppm_trace_sources = false;
 int PeleC::plm_iorder = 4;
-int PeleC::mol_iorder = 2;
 bool PeleC::use_laxf_flux = false;
 bool PeleC::use_flattening = true;
 bool PeleC::dual_energy_update_E_from_e = true;

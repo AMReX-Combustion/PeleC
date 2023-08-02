@@ -40,7 +40,6 @@ pp.query("forcing_force", forcing_force);
 pp.query("ppm_type", ppm_type);
 pp.query("ppm_trace_sources", ppm_trace_sources);
 pp.query("plm_iorder", plm_iorder);
-pp.query("mol_iorder", mol_iorder);
 pp.query("use_laxf_flux", use_laxf_flux);
 pp.query("use_flattening", use_flattening);
 pp.query("dual_energy_update_E_from_e", dual_energy_update_E_from_e);
