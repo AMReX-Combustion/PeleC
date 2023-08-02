@@ -6,9 +6,6 @@
  .. role:: c(code)
     :language: c
 
- .. role:: fortran(code)
-    :language: fortran
-
  .. _EB:
 
 
@@ -136,7 +133,7 @@ presented in `Pember et al. <https://www.sciencedirect.com/science/article/pii/S
 Date Structures and utility functions
 -------------------------------------
 
-Several structures exist to store geometry dependent information. These are populated on creation of a new AMRLevel and stored in the PeleC object so that they are available for computation. These facilitate accessing the EB data from the fortran layer and have equivalent C++ struct and fortran types definitions so that they can be passed between the languages. The datatypes are:
+Several structures exist to store geometry dependent information. These are populated on creation of a new AMRLevel and stored in the PeleC object so that they are available for computation. These facilitate accessing the EB data. The datatypes are:
 
 +----------------+--------------------------------------------------------------------------------------+
 | C++ struct     | Contents                                                                             |
