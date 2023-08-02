@@ -10,6 +10,7 @@ pc_low_order_boundary(
   const int bchi,
   const int domlo,
   const int domhi,
+  const int plm_iorder,
   const int idir,
   const amrex::Real dx,
   const amrex::Real dt,
@@ -28,7 +29,7 @@ pc_low_order_boundary(
   amrex::ParallelFor(bdbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     amrex::Real slope[QVAR];
     for (int n = 0; n < QVAR; ++n)
-      slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, idir, q);
+      slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, idir, q, plm_iorder);
     pc_plm_d(
       AMREX_D_DECL(i, j, k), idir, qbmarr, qbparr, slope, q, qa(i, j, k, QC),
       dx, dt);
@@ -422,16 +423,16 @@ pc_umeth_3D(
       amrex::Box bfbx = surroundingNodes(bx, idir);
       bfbx.setBig(idir, domlo[idir]);
       pc_low_order_boundary(
-        bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], idir, del[idir],
-        dt, q, qaux, flx[idir], qec[idir]);
+        bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], plm_iorder,
+        idir, del[idir], dt, q, qaux, flx[idir], qec[idir]);
     }
     if (bchi[idir] == Inflow || bchi[idir] == 6) {
       // Box for fluxes at this boundary
       amrex::Box bfbx = surroundingNodes(bx, idir);
       bfbx.setSmall(idir, domhi[idir] + 1);
       pc_low_order_boundary(
-        bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], idir, del[idir],
-        dt, q, qaux, flx[idir], qec[idir]);
+        bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], plm_iorder,
+        idir, del[idir], dt, q, qaux, flx[idir], qec[idir]);
     }
   }
 
@@ -618,16 +619,16 @@ pc_umeth_2D(
       amrex::Box bfbx = surroundingNodes(bx, idir);
       bfbx.setBig(idir, domlo[idir]);
       pc_low_order_boundary(
-        bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], idir, del[idir],
-        dt, q, qaux, flx[idir], qec[idir]);
+        bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], plm_iorder,
+        idir, del[idir], dt, q, qaux, flx[idir], qec[idir]);
     }
     if (bchi[idir] == Inflow || bchi[idir] == 6) {
       // Box for fluxes at this boundary
       amrex::Box bfbx = surroundingNodes(bx, idir);
       bfbx.setSmall(idir, domhi[idir] + 1);
       pc_low_order_boundary(
-        bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], idir, del[idir],
-        dt, q, qaux, flx[idir], qec[idir]);
+        bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], plm_iorder,
+        idir, del[idir], dt, q, qaux, flx[idir], qec[idir]);
     }
   }
 

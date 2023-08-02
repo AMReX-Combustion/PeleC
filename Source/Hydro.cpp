@@ -352,25 +352,14 @@ pc_umdrv(
     //  flx[0], qec_arr[0], a[0], pdivuarr, vol, dx, dt);
 #elif AMREX_SPACEDIM == 2
     pc_umeth_2D(
-      bx, bclo, bchi, domlo, domhi, q, qaux, src_q, // bcMask,
-<<<<<<< HEAD
-      flx[0], flx[1], qec_arr[0], qec_arr[1], a[0], a[1], pdivuarr, vol, dx, dt,
-      ppm_type, plm_iorder, use_flattening, use_hybrid_weno, weno_scheme);
-#elif AMREX_SPACEDIM == 3
-    pc_umeth_3D(
-      bx, bclo, bchi, domlo, domhi, q, qaux, src_q, // bcMask,
-      flx[0], flx[1], flx[2], qec_arr[0], qec_arr[1], qec_arr[2], a[0], a[1],
-      a[2], pdivuarr, vol, dx, dt, ppm_type, plm_iorder, use_flattening,
-      use_hybrid_weno, weno_scheme);
-=======
-      flx, qec_arr, a, pdivuarr, vol, dx, dt, ppm_type, plm_iorder,
-      use_flattening, use_hybrid_weno, weno_scheme);
-#elif AMREX_SPACEDIM == 3
-    pc_umeth_3D(
-      bx, bclo, bchi, domlo, domhi, q, qaux, src_q, // bcMask,
-      flx, qec_arr, a, pdivuarr, vol, dx, dt, ppm_type, plm_iorder, use_flattening, use_hybrid_weno,
+      bx, bclo, bchi, domlo, domhi, q, qaux, src_q, flx, qec_arr, a, pdivuarr,
+      vol, dx, dt, ppm_type, plm_iorder, use_flattening, use_hybrid_weno,
       weno_scheme);
->>>>>>> bcnormal hack for Godunov
+#elif AMREX_SPACEDIM == 3
+    pc_umeth_3D(
+      bx, bclo, bchi, domlo, domhi, q, qaux, src_q, flx, qec_arr, a, pdivuarr,
+      vol, dx, dt, ppm_type, plm_iorder, use_flattening, use_hybrid_weno,
+      weno_scheme);
 #endif
   }
 
