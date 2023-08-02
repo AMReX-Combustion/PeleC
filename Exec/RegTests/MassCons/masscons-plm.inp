@@ -13,8 +13,9 @@ amr.n_cell           = 8 8 8
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 
-pelec.lo_bc       = "SlipWall"   "NoSlipWall" "Symmetry"
-pelec.hi_bc       = "SlipWall"   "NoSlipWall" "Symmetry"
+pelec.lo_bc       = "SlipWall"  "NoSlipWall" "Symmetry"
+pelec.hi_bc       = "UserBC"    "UserBC"     "UserBC"
+prob.wall_type    = 1            0            1
 
 # WHICH PHYSICS
 pelec.ppm_type = 0
