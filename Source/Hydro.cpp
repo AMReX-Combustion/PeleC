@@ -363,8 +363,8 @@ pc_umdrv(
       a[2], pdivuarr, vol, dx, dt, ppm_type, plm_iorder, use_flattening,
       use_hybrid_weno, weno_scheme);
 =======
-      flx, qec_arr, a, pdivuarr, vol, dx, dt,
-      ppm_type, plm_iorder, use_flattening, use_hybrid_weno, weno_scheme);
+      flx, qec_arr, a, pdivuarr, vol, dx, dt, ppm_type, plm_iorder,
+      use_flattening, use_hybrid_weno, weno_scheme);
 #elif AMREX_SPACEDIM == 3
     pc_umeth_3D(
       bx, bclo, bchi, domlo, domhi, q, qaux, src_q, // bcMask,

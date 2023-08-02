@@ -5,43 +5,41 @@
 // Host function that overwrites fluxes with lower-order approximation
 void
 pc_low_order_boundary(
-                      amrex::Box const& bfbx,
-                      const int bclo,
-                      const int bchi,
-                      const int domlo,
-                      const int domhi,
-                      const int idir,
-                      const amrex::Real dx,
-                      const amrex::Real dt,
-                      amrex::Array4<const amrex::Real> const& q,
-                      amrex::Array4<const amrex::Real> const& qa,
-                      amrex::Array4<amrex::Real> const& flx,
-                      amrex::Array4<amrex::Real> const& qdir
-                      )
+  amrex::Box const& bfbx,
+  const int bclo,
+  const int bchi,
+  const int domlo,
+  const int domhi,
+  const int idir,
+  const amrex::Real dx,
+  const amrex::Real dt,
+  amrex::Array4<const amrex::Real> const& q,
+  amrex::Array4<const amrex::Real> const& qa,
+  amrex::Array4<amrex::Real> const& flx,
+  amrex::Array4<amrex::Real> const& qdir)
 {
   // Compute left and right states
-  amrex::Box bdbx = enclosedCells(bfbx).grow(idir,1);
-  amrex::Box bdbx2 = growHi(bdbx,idir,1);
+  amrex::Box bdbx = enclosedCells(bfbx).grow(idir, 1);
+  amrex::Box bdbx2 = growHi(bdbx, idir, 1);
   amrex::FArrayBox qbm(bdbx2, QVAR, amrex::The_Async_Arena());
   amrex::FArrayBox qbp(bdbx, QVAR, amrex::The_Async_Arena());
   auto const& qbmarr = qbm.array();
   auto const& qbparr = qbp.array();
   amrex::ParallelFor(bdbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-                       amrex::Real slope[QVAR];
-                       for (int n = 0; n < QVAR; ++n)
-                         slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, idir, q);
-                       pc_plm_d(
-                                AMREX_D_DECL(i, j, k), idir, qbmarr, qbparr, slope, q, qa(i, j, k, QC),
-                                dx, dt);
-                     });
+    amrex::Real slope[QVAR];
+    for (int n = 0; n < QVAR; ++n)
+      slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, idir, q);
+    pc_plm_d(
+      AMREX_D_DECL(i, j, k), idir, qbmarr, qbparr, slope, q, qa(i, j, k, QC),
+      dx, dt);
+  });
 
   // Recompute fluxes
   amrex::ParallelFor(bfbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_cmpflx(
-              i, j, k, bclo, bchi, domlo, domhi, qbmarr, qbparr, flx, qdir, qa, idir);
+      i, j, k, bclo, bchi, domlo, domhi, qbmarr, qbparr, flx, qdir, qa, idir);
   });
 }
-
 
 // Host function to call gpu hydro functions
 #if AMREX_SPACEDIM == 3
@@ -379,7 +377,8 @@ pc_umeth_3D(
 
   // Final X flux
   amrex::ParallelFor(xfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_cmpflx(i, j, k, bclx, bchx, dlx, dhx, qm, qp, flx[0], qec[0], qaux, cdir);
+    pc_cmpflx(
+      i, j, k, bclx, bchx, dlx, dhx, qm, qp, flx[0], qec[0], qaux, cdir);
   });
 
   // Y | X&Z
@@ -394,7 +393,8 @@ pc_umeth_3D(
 
   // Final Y flux
   amrex::ParallelFor(yfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_cmpflx(i, j, k, bcly, bchy, dly, dhy, qm, qp, flx[1], qec[1], qaux, cdir);
+    pc_cmpflx(
+      i, j, k, bcly, bchy, dly, dhy, qm, qp, flx[1], qec[1], qaux, cdir);
   });
 
   // Z | X&Y
@@ -409,31 +409,37 @@ pc_umeth_3D(
 
   // Final Z flux
   amrex::ParallelFor(zfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_cmpflx(i, j, k, bclz, bchz, dlz, dhz, qm, qp, flx[2], qec[2], qaux, cdir);
+    pc_cmpflx(
+      i, j, k, bclz, bchz, dlz, dhz, qm, qp, flx[2], qec[2], qaux, cdir);
   });
 
   // Fix bcnormal boundaries - always use PLM and don't do N+1/2 predictor
   // because the user specifies conditions at N
   // bcnormal used for "Hard" (Inflow=1) and "UserBC" (6)
   for (int idir = 0; idir < 3; idir++) {
-    if (bclo[idir] == Inflow || bclo[idir] == 6 ) {
+    if (bclo[idir] == Inflow || bclo[idir] == 6) {
       // Box for fluxes at this boundary
       amrex::Box bfbx = surroundingNodes(bx, idir);
       bfbx.setBig(idir, domlo[idir]);
-      pc_low_order_boundary(bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], idir, del[idir], dt, q, qaux, flx[idir], qec[idir]);
+      pc_low_order_boundary(
+        bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], idir, del[idir],
+        dt, q, qaux, flx[idir], qec[idir]);
     }
-    if (bchi[idir] == Inflow || bchi[idir] == 6 ) {
+    if (bchi[idir] == Inflow || bchi[idir] == 6) {
       // Box for fluxes at this boundary
       amrex::Box bfbx = surroundingNodes(bx, idir);
-      bfbx.setSmall(idir, domhi[idir]+1);
-      pc_low_order_boundary(bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], idir, del[idir], dt, q, qaux, flx[idir], qec[idir]);
+      bfbx.setSmall(idir, domhi[idir] + 1);
+      pc_low_order_boundary(
+        bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], idir, del[idir],
+        dt, q, qaux, flx[idir], qec[idir]);
     }
   }
 
   // Construct p div{U}
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_pdivu(
-      i, j, k, pdivu, AMREX_D_DECL(qec[0], qec[1], qec[2]), AMREX_D_DECL(a[0], a[1], a[2]), vol);
+      i, j, k, pdivu, AMREX_D_DECL(qec[0], qec[1], qec[2]),
+      AMREX_D_DECL(a[0], a[1], a[2]), vol);
   });
 }
 
@@ -556,7 +562,8 @@ pc_umeth_2D(
   amrex::ParallelFor(
     yflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       pc_cmpflx(
-        i, j, k, bcly, bchy, dly, dhy, qymarr, qyparr, fyarr, gdtemp, qaux, cdir);
+        i, j, k, bcly, bchy, dly, dhy, qymarr, qyparr, fyarr, gdtemp, qaux,
+        cdir);
     });
 
   // X interface corrections
@@ -606,17 +613,21 @@ pc_umeth_2D(
   // because the user specifies conditions at N
   // bcnormal used for "Hard" (Inflow=1) and "UserBC" (6)
   for (int idir = 0; idir < 2; idir++) {
-    if (bclo[idir] == Inflow || bclo[idir] == 6 ) {
+    if (bclo[idir] == Inflow || bclo[idir] == 6) {
       // Box for fluxes at this boundary
       amrex::Box bfbx = surroundingNodes(bx, idir);
       bfbx.setBig(idir, domlo[idir]);
-      pc_low_order_boundary(bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], idir, del[idir], dt, q, qaux, flx[idir], qec[idir]);
+      pc_low_order_boundary(
+        bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], idir, del[idir],
+        dt, q, qaux, flx[idir], qec[idir]);
     }
-    if (bchi[idir] == Inflow || bchi[idir] == 6 ) {
+    if (bchi[idir] == Inflow || bchi[idir] == 6) {
       // Box for fluxes at this boundary
       amrex::Box bfbx = surroundingNodes(bx, idir);
-      bfbx.setSmall(idir, domhi[idir]+1);
-      pc_low_order_boundary(bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], idir, del[idir], dt, q, qaux, flx[idir], qec[idir]);
+      bfbx.setSmall(idir, domhi[idir] + 1);
+      pc_low_order_boundary(
+        bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], idir, del[idir],
+        dt, q, qaux, flx[idir], qec[idir]);
     }
   }
 
