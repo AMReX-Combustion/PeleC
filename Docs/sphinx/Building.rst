@@ -41,7 +41,6 @@ An example CMake configure command to build PeleC with MPI is listed below:
           -DPELEC_ENABLE_MPI:BOOL=ON \
           -DCMAKE_CXX_COMPILER:STRING=mpicxx \
           -DCMAKE_C_COMPILER:STRING=mpicc \
-          -DCMAKE_Fortran_COMPILER:STRING=mpifort \
           .. && make
 
 Note that CMake is able to generate makefiles for the Ninja build system as well which will allow for faster building of the executable(s).

@@ -2,9 +2,6 @@
  .. role:: cpp(code)
     :language: c++
 
- .. role:: f(code)
-    :language: fortran
-
  
 .. _Verification:
 
@@ -56,7 +53,7 @@ The user must build both `Metaphysicl
 
    $ git clone https://github.com/manufactured-solutions/MASA
    $ ./bootstrap
-   $ ./configure --enable-fortran-interfaces METAPHYSICL_DIR=$METAPHYSICL_ROOT_DIR --prefix=$MASA_ROOT_DIR --enable-python-interfaces
+   $ ./configure METAPHYSICL_DIR=$METAPHYSICL_ROOT_DIR --prefix=$MASA_ROOT_DIR --enable-python-interfaces
    $ make
    $ make check
    $ make install

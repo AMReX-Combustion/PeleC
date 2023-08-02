@@ -104,8 +104,7 @@ struct SpeciesEnergyFlux<pele::physics::eos::SRK>
     // Compute species and enthalpy fluxes accounting for nonideal EOS
     // Implementation note: nonideal EOS coeffs are evaluated at cell centers,
     // then inteprolated to faces. Could be slightly more efficient to
-    // interpolate state to face, then do the EOS calls. Current implementation
-    // matches old Fortran code.
+    // interpolate state to face, then do the EOS calls.
 
     const amrex::Real rho1 = q(iv, QRHO);
     const amrex::Real rho2 = q(ivm, QRHO);

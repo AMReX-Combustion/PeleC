@@ -6,9 +6,6 @@
  .. role:: c(code)
     :language: c
 
- .. role:: fortran(code)
-    :language: fortran
-
  .. _EB:
 
 
@@ -136,19 +133,19 @@ presented in `Pember et al. <https://www.sciencedirect.com/science/article/pii/S
 Date Structures and utility functions
 -------------------------------------
 
-Several structures exist to store geometry dependent information. These are populated on creation of a new AMRLevel and stored in the PeleC object so that they are available for computation. These facilitate accessing the EB data from the fortran layer and have equivalent C++ struct and fortran types definitions so that they can be passed between the languages. The C++ struct definitions are in the file EBStencilTypes.H and the fortran type definitions are in the file EBStencilTypes_mod.F90 within the pelec_eb_stencil_types_module module. The datatypes are:
+Several structures exist to store geometry dependent information. These are populated on creation of a new AMRLevel and stored in the PeleC object so that they are available for computation. These facilitate accessing the EB data. The datatypes are:
 
-+----------------+----------------+--------------------------------------------------------------------------------------+
-| C++ struct     | fortran type   | Contents                                                                             |
-+================+================+======================================================================================+
-| EBBoundaryGeom | eb_bndry_geom  |Cut face normal, centroid, area, index into FAB                                       |
-+----------------+----------------+--------------------------------------------------------------------------------------+
-| EBBndrySten    | eb_bndry_sten  |:math:`3^3` matrix of weights to apply cell based stencil, BC value, index into FAB   |
-+----------------+----------------+--------------------------------------------------------------------------------------+
-| FaceSten       | face_sten      |:math:`3^2` matrix of weights to apply face-based stencil                             |
-+----------------+----------------+--------------------------------------------------------------------------------------+
++----------------+--------------------------------------------------------------------------------------+
+| C++ struct     | Contents                                                                             |
++================+======================================================================================+
+| EBBoundaryGeom |Cut face normal, centroid, area, index into FAB                                       |
++----------------+--------------------------------------------------------------------------------------+
+| EBBndrySten    |:math:`3^3` matrix of weights to apply cell based stencil, BC value, index into FAB   |
++----------------+--------------------------------------------------------------------------------------+
+| FaceSten       |:math:`3^2` matrix of weights to apply face-based stencil                             |
++----------------+--------------------------------------------------------------------------------------+
 
-Routines to fill and apply these as necessary can be found in the dimension specific files in e.g. Source/Src_3d/PeleC_init_eb_3d.f90 within the `nbrsTest_nd_module` module. An array of structures is created on level creation by copying data from the AMReX dense datastrcutures on a per-FAB basis as indicated in Figure :ref:`eb_structs` .
+An array of structures is created on level creation by copying data from the AMReX dense datastrcutures on a per-FAB basis as indicated in Figure :ref:`eb_structs` .
 
 
 .. _eb_structs:
@@ -161,138 +158,15 @@ Routines to fill and apply these as necessary can be found in the dimension spec
    Storage for sparse EB structures 
 
            
-On creation of a new AMRLevel, data is cached from the *dense* AMReX structures in the *sparse* PeleC structures. For example, in *PeleC_init_eb.cpp* within the function initialize_eb2_structs():
-
-.. highlight:: c++
-
-::
-
-   pc_fill_sv_ebg(BL_TO_FORTRAN_BOX(tbox),
-   sv_eb_bndry_geom[iLocal].data(), &Ncut,
-   BL_TO_FORTRAN_ANYD((*volfrac)[mfi]),
-   BL_TO_FORTRAN_ANYD((*bndrycent)[mfi]),
-   D_DECL(BL_TO_FORTRAN_ANYD((*eb2areafrac[0])[mfi]),
-          BL_TO_FORTRAN_ANYD((*eb2areafrac[1])[mfi]),
-          BL_TO_FORTRAN_ANYD((*eb2areafrac[2])[mfi])));
-
-
-Where the argument FABS AMReX datastructures, e.g.:
-
-.. highlight:: c++
-
-::
-
-  const amrex::MultiFab* volfrac;
-  const amrex::MultiCutFab* bndrycent;
-  std::array<const amrex::MultiCutFab*, AMREX_SPACEDIM> eb2areafrac;
-  std::array<const amrex::MultiCutFab*, AMREX_SPACEDIM> facecent;
-
-  const auto& ebfactory = dynamic_cast<EBFArrayBoxFactory const&>(Factory());
-
-  // These are the data sources
-  volfrac = &(ebfactory.getVolFrac());
-  bndrycent = &(ebfactory.getBndryCent());
-  eb2areafrac = ebfactory.getAreaFrac();
-  facecent = ebfactory.getFaceCent();
-
-
-
+On creation of a new AMRLevel, data is cached from the *dense* AMReX structures in the *sparse* PeleC structures. 
 
 
 Applying boundary and face stencils
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When processing geometry cells, the cached datastructures can be applied efficiently, for example, to interpolate fluxes from face centers to face centroids in cut cells:
-
-.. highlight:: c++
-
-::
-
-          for (int idir=0; idir < BL_SPACEDIM; ++idir) {
-              int Nsten = flux_interp_stencil[idir][local_i].size();
-              int in_place = 1;
-              const Box valid_interped_flux_box =
-              Box(amrex::grow(vbox, 2)).surroundingNodes(idir);
-              {
-                BL_PROFILE("PeleC::pc_apply_face_stencil call");
-                pc_apply_face_stencil(BL_TO_FORTRAN_BOX(valid_interped_flux_box),
-                                      BL_TO_FORTRAN_BOX(stencil_volume_box),
-                                      flux_interp_stencil[idir][local_i].data(),
-                                      &Nsten, &idir,
-                                      BL_TO_FORTRAN_ANYD(flux_ec[idir]),
-                                      BL_TO_FORTRAN_ANYD(flux_ec[idir]),
-                                      &NUM_STATE, &in_place);
-             }
-        }
-
-Other similar routines incldue:
-
-* pc_apply_face_stencil
-* pc_apply_eb_boundry_flux_stencil
-* pc_apply_eb_boundry_visc_flux_stencil
-* pc_eb_div
+When processing geometry cells, the cached datastructures can be applied efficiently, for example, to interpolate fluxes from face centers to face centroids in cut cells.
 
 .. include:: /geometry/geometry_init.rst
-
-Basic work iterator for for EB geometry
----------------------------------------
-
-First fillpatch
-
-
-.. code-block:: c
-
-    {
-      FillPatchIterator fpi(*this, coeff_cc, nGrowTr, time, State_Type, 0, NUM_STATE);
-      MultiFab& S = fpi.get_mf(); 
-    
-      cons_to_prim(S,Q,Qaux);
-    
-      if (level > 0) 
-      {   
-        const BoxArray& crse_grids = getLevel(level-1).boxArray();
-        const DistributionMapping& dmc = getLevel(level-1).DistributionMap();
-        MultiFab Sc(crse_grids,dmc,NUM_STATE,nGrowTr);
-        FillPatch(getLevel(level-1),Sc,nGrowTr,time,State_Type,0,NUM_STATE);
-    
-        Qc.define(crse_grids,dmc,QVAR,nGrowTr);
-        Qcaux.define(crse_grids,dmc,NQAUX>0?NQAUX:1,nGrowTr);
-        cons_to_prim(Sc,Qc,Qcaux);
-      }
-    }
-
-
-
-Then iterate over MultiFabs
-
-
-.. code-block:: c
-
-    EBFArrayBox& feb = static_cast<EBFArrayBox&>(Q[mfi]);
-    const auto& flag_fab = feb.getEBCellFlagFab();
-    FabType typ = flag_fab.getType(cbox);
-    if (typ == FabType::covered)
-    {
-    }
-    else if (typ == FabType::singlevalued)
-    {
-      pc_compute_tangential_vel_derivs_eb(cbox.loVect(), cbox.hiVect(),
-                                          BL_TO_FORTRAN_3D(Q[mfi]),
-                                          BL_TO_FORTRAN_3D(tander_ec[d]),
-                                          BL_TO_FORTRAN_ANYD(flag_fab),
-                                          geom.CellSize(),&d);
-    }
-    else if (typ == FabType::multivalued)
-    {
-      amrex::Abort("multi-valued eb tangential derivatives to be implemented");
-    }
-    else
-    {
-      pc_compute_tangential_vel_derivs(cbox.loVect(), cbox.hiVect(),
-                                       BL_TO_FORTRAN_3D(Q[mfi]),
-                                       BL_TO_FORTRAN_3D(tander_ec[d]),
-                                       geom.CellSize(),&d);
-    }
 
 Saving and reloading an EB geometry
 -----------------------------------

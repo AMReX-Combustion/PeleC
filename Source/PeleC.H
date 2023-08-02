@@ -420,7 +420,7 @@ public:
   // Remove data at old time.
   void removeOldData() override;
 
-  // Passes some data about the grid to a Fortran module.
+  // Passes some data about the grid
   void setGridInfo();
 
   // Print information about energy budget.

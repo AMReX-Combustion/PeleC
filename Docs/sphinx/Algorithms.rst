@@ -2,9 +2,6 @@
  .. role:: cpp(code)
     :language: c++
 
- .. role:: f(code)
-    :language: fortran
-
  
 .. _Algorithms:
 
@@ -369,26 +366,7 @@ Method of Lines with Characteristic Extrapolation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. _MOL: 
 
-An alternative formulation well suited to Embedded Boundary geometry treatment and also available for regular grids is available and based on a method of lines approach. The advective (hyperbolic) fluxes computation is driven by the routine pc_hyp_mol_flux found in the file Hyp_pele_MOL_3d.F90, with call signature:
-
-.. code-block:: fortran
-
-    :p q: Input state
-    :p qaux: Augmented state
-    :p Ax: Apertures for X edges
-    :p flux1: Flux in X direction on X edges
-    :p Ay: Apertures for Y edges
-    :p flux2: Flux in Y direction on Y edges
-    :p Az: Apertures for Z edges
-    :p flux3: Flux in Z direction on Z edges
-    :p flatn: Flattening parameter (not used; passed to slope routines)
-    :p V: Cell volumes
-    :p D: Divergence (hyperbolic fluxes added to input divergence on output)
-    :p flag: Cell type flag
-    :p ebflux: Flux across EB face
-    :p h: Grid spacing
-
-Within this routine, for each direction, characteristic extrapolation is used to compute left and right states at the cell faces:
+An alternative formulation well suited to Embedded Boundary geometry treatment and also available for regular grids is available and based on a method of lines approach. For each direction, characteristic extrapolation is used to compute left and right states at the cell faces:
 
 .. math::
   {u^l_\perp} = u^- + \frac{1}{2\rho^-}\left( \alpha^-_2 - \alpha^-_1\right)
@@ -442,18 +420,7 @@ and, as noted the right state is identical except for:
 
 Once the left and right states are computed, a Riemann solver (in this case one preserving the physical constraints on the intermediate state) is used to compute fluxes that are assembled into a conservative and non-conservative update for the regular and cut cells.
 
-The characteristic extrapolation requires (slope limited) fluxes; these are found in the file slope_mol_3d_EB.f90. The call signature for the slope computation is:
-
-
-.. code-block:: fortran
-
-    :p q: Input state
-    :p flatn: Flattening coefficient (not used)
-    :p qaux: Augmented state (used for sound speed)
-    :p flag: Cell type flag
-
-      
-Which computes the slope routines compute (limited) slopes as:
+The characteristic extrapolation requires (slope limited) fluxes, which computes the slope routines compute (limited) slopes as:
 
 .. math::
   \Delta_1^- = 0.5\frac{1}{c}\left(p-p^-\right) - 0.5 \rho \left( u - u^-\right)  
@@ -492,7 +459,8 @@ where:
 .. math::
   \Delta^{lim} = \left\{ \begin{aligned} {} 2 \min\left\{ |\Delta^-|,|\Delta^+|\right\} \quad& \mathrm{if} \Delta^- \cdot \Delta^+ \ge 0 \\ 0 & \quad \mathrm{otherwise}\end{aligned}\right.
 
-The formulation of the y- and z-directions is analogous to the x-direction. 
+The formulation of the y- and z-directions is analogous to the x-direction.
+
 
 Comparison of PPM and MOL for the decay of homogeneous isotropic turbulence
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
