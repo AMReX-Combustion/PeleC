@@ -459,7 +459,10 @@ where:
 .. math::
   \Delta^{lim} = \left\{ \begin{aligned} {} 2 \min\left\{ |\Delta^-|,|\Delta^+|\right\} \quad& \mathrm{if} \Delta^- \cdot \Delta^+ \ge 0 \\ 0 & \quad \mathrm{otherwise}\end{aligned}\right.
 
-The formulation of the y- and z-directions is analogous to the x-direction.
+The formulation of the y- and z-directions is analogous to the x-direction. One can control the order of the construction of the slopes with the ``mol_iorder`` flag:
+
+* ``mol_iorder = 1`` sets the slopes to zero;
+* ``mol_iorder = 2`` uses the procedure described above.
 
 
 Comparison of PPM and MOL for the decay of homogeneous isotropic turbulence
