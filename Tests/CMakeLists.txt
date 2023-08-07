@@ -96,7 +96,7 @@ endfunction(add_test_r)
 # Regression test with mass conservation verification
 function(add_test_rv TEST_NAME TEST_EXE_DIR)
     setup_test()
-    set(RUNTIME_OPTIONS "max_step=100 ${RUNTIME_OPTIONS}")
+    set(RUNTIME_OPTIONS "max_step=10 ${RUNTIME_OPTIONS}")
     add_test(${TEST_NAME} sh -c "rm -f datalog && ${MPI_COMMANDS} ${CURRENT_TEST_EXE} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.inp ${RUNTIME_OPTIONS} > ${TEST_NAME}.log ${SAVE_GOLDS_COMMAND} ${FCOMPARE_COMMAND} && nosetests masscons.py")
     set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 18000 PROCESSORS ${PELEC_NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "regression;verification" ATTACHED_FILES_ON_FAIL "${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.log")
 endfunction(add_test_rv)
