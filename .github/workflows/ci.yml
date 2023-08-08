@@ -59,6 +59,7 @@ jobs:
         working-directory: ./Exec/RegTests/PMF
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
+          set -eu -o pipefail
           ccache -z
           make -j ${{env.NPROCS}} KEEP_BUILDINFO_CPP=TRUE USE_CCACHE=TRUE COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
       - name: PMF ccache report
@@ -83,6 +84,7 @@ jobs:
         working-directory: ./Exec/RegTests/EB-C10
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
+          set -eu -o pipefail
           ccache -z
           make -j ${{env.NPROCS}} KEEP_BUILDINFO_CPP=TRUE USE_CCACHE=TRUE COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
       - name: EB debug ccache report
@@ -107,6 +109,7 @@ jobs:
         working-directory: ./Exec/RegTests/TG
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
+          set -eu -o pipefail
           ccache -z
           make -j ${{env.NPROCS}} KEEP_BUILDINFO_CPP=TRUE USE_CCACHE=TRUE COMP=llvm USE_MPI=FALSE DEBUG=TRUE PRECISION=FLOAT 2>&1 | tee -a build-output.txt
       - name: TG debug single precision ccache report
@@ -131,6 +134,7 @@ jobs:
         working-directory: ./Exec/RegTests/Soot-Flame
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
+          set -eu -o pipefail
           ccache -z
           make -j ${{env.NPROCS}} KEEP_BUILDINFO_CPP=TRUE USE_CCACHE=TRUE COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
       - name: Soot debug ccache report
@@ -152,6 +156,7 @@ jobs:
         working-directory: ./Exec/RegTests/Spray-Conv
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
+          set -eu -o pipefail
           ccache -z
           make -j ${{env.NPROCS}} KEEP_BUILDINFO_CPP=TRUE USE_CCACHE=TRUE COMP=gnu USE_MPI=FALSE DEBUG=TRUE 2>&1 | tee -a build-output.txt
       - name: Spray debug ccache report
@@ -562,6 +567,7 @@ jobs:
       - name: Check
         working-directory: ${{runner.workspace}}/build-clang-tidy
         run: |
+          #set -eu -o pipefail
           cmake --build . --parallel ${{env.NPROCS}} 2>&1 | tee -a clang-tidy-full-report.txt
           egrep "warning:|error:" clang-tidy-full-report.txt \
             | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest" \
