@@ -28,8 +28,9 @@ pc_low_order_boundary(
   auto const& qbparr = qbp.array();
   amrex::ParallelFor(bdbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     amrex::Real slope[QVAR];
-    for (int n = 0; n < QVAR; ++n)
+    for (int n = 0; n < QVAR; ++n) {
       slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, idir, q, plm_iorder);
+    }
     pc_plm_d(
       AMREX_D_DECL(i, j, k), idir, qbmarr, qbparr, slope, q, qa(i, j, k, QC),
       dx, dt);
@@ -417,7 +418,7 @@ pc_umeth_3D(
   // Fix bcnormal boundaries - always use PLM and don't do N+1/2 predictor
   // because the user specifies conditions at N
   // bcnormal used for "Hard" (Inflow=1) and "UserBC" (6)
-  for (int idir = 0; idir < 3; idir++) {
+  for (int idir = 0; idir < AMREX_SPACEDIM; idir++) {
     if (bclo[idir] == Inflow || bclo[idir] == 6) {
       // Box for fluxes at this boundary
       amrex::Box bfbx = surroundingNodes(bx, idir);
@@ -613,7 +614,7 @@ pc_umeth_2D(
   // Fix bcnormal boundaries - always use PLM and don't do N+1/2 predictor
   // because the user specifies conditions at N
   // bcnormal used for "Hard" (Inflow=1) and "UserBC" (6)
-  for (int idir = 0; idir < 2; idir++) {
+  for (int idir = 0; idir < AMREX_SPACEDIM; idir++) {
     if (bclo[idir] == Inflow || bclo[idir] == 6) {
       // Box for fluxes at this boundary
       amrex::Box bfbx = surroundingNodes(bx, idir);
