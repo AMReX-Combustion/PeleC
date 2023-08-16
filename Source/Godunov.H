@@ -292,14 +292,16 @@ pc_cmpflx(
     idx = (dir == 0) ? i : j;
   }
   if (idx == domlo) {
-    if (bclo == NoSlipWall || bclo == SlipWall || bclo == Symmetry) {
+    if (
+      bclo == PCPhysBCType::no_slip_wall || bclo == PCPhysBCType::slip_wall ||
+      bclo == PCPhysBCType::symmetry) {
       ul = -ur;
       vl = vr;
       v2l =
         v2r; // NoSlip: this is fine because Godunov velocity normal will be 0
       pl = pr;
       rhol = rhor;
-    } else if (bclo == Outflow) {
+    } else if (bclo == PCPhysBCType::outflow) {
       ul = ur;
       vl = vr;
       v2l = v2r;
@@ -307,14 +309,16 @@ pc_cmpflx(
       rhol = rhor;
     }
   } else if (idx == domhi + 1) {
-    if (bchi == NoSlipWall || bchi == SlipWall || bchi == Symmetry) {
+    if (
+      bchi == PCPhysBCType::no_slip_wall || bchi == PCPhysBCType::slip_wall ||
+      bchi == PCPhysBCType::symmetry) {
       ur = -ul;
       vr = vl;
       v2r =
         v2l; // NoSlip: this is fine because Godunov velocity normal will be 0
       pr = pl;
       rhor = rhol;
-    } else if (bchi == Outflow) {
+    } else if (bchi == PCPhysBCType::outflow) {
       ur = ul;
       vr = vl;
       v2r = v2l;

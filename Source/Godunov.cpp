@@ -417,9 +417,11 @@ pc_umeth_3D(
 
   // Fix bcnormal boundaries - always use PLM and don't do N+1/2 predictor
   // because the user specifies conditions at N
-  // bcnormal used for "Hard" (Inflow=1) and "UserBC" (6)
+  // bcnormal used for "Hard" (inflow) and "UserBC" (user_bc)
   for (int idir = 0; idir < AMREX_SPACEDIM; idir++) {
-    if (bclo[idir] == Inflow || bclo[idir] == 6) {
+    if (
+      bclo[idir] == PCPhysBCType::inflow ||
+      bclo[idir] == PCPhysBCType::user_bc) {
       // Box for fluxes at this boundary
       amrex::Box bfbx = surroundingNodes(bx, idir);
       bfbx.setBig(idir, domlo[idir]);
@@ -429,7 +431,9 @@ pc_umeth_3D(
           idir, del[idir], dt, q, qaux, flx[idir], qec[idir]);
       }
     }
-    if (bchi[idir] == Inflow || bchi[idir] == 6) {
+    if (
+      bchi[idir] == PCPhysBCType::inflow ||
+      bchi[idir] == PCPhysBCType::user_bc) {
       // Box for fluxes at this boundary
       amrex::Box bfbx = surroundingNodes(bx, idir);
       bfbx.setSmall(idir, domhi[idir] + 1);
@@ -617,9 +621,11 @@ pc_umeth_2D(
 
   // Fix bcnormal boundaries - always use PLM and don't do N+1/2 predictor
   // because the user specifies conditions at N
-  // bcnormal used for "Hard" (Inflow=1) and "UserBC" (6)
+  // bcnormal used for "Hard" (inflow) and "UserBC" (user_bc)
   for (int idir = 0; idir < AMREX_SPACEDIM; idir++) {
-    if (bclo[idir] == Inflow || bclo[idir] == 6) {
+    if (
+      bclo[idir] == PCPhysBCType::inflow ||
+      bclo[idir] == PCPhysBCType::user_bc) {
       // Box for fluxes at this boundary
       amrex::Box bfbx = surroundingNodes(bx, idir);
       bfbx.setBig(idir, domlo[idir]);
@@ -629,7 +635,9 @@ pc_umeth_2D(
           idir, del[idir], dt, q, qaux, flx[idir], qec[idir]);
       }
     }
-    if (bchi[idir] == Inflow || bchi[idir] == 6) {
+    if (
+      bchi[idir] == PCPhysBCType::inflow ||
+      bchi[idir] == PCPhysBCType::user_bc) {
       // Box for fluxes at this boundary
       amrex::Box bfbx = surroundingNodes(bx, idir);
       bfbx.setSmall(idir, domhi[idir] + 1);

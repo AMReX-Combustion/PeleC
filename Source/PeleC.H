@@ -42,6 +42,19 @@ enum sources {
   num_src
 };
 
+// These match AMReX_BC_TYPES.H, except user_bc is added
+namespace PCPhysBCType {
+enum phys_bc_type {
+  interior = 0,
+  inflow,
+  outflow,
+  symmetry,
+  slip_wall,
+  no_slip_wall,
+  user_bc
+};
+}
+
 // Forward declarations
 #ifdef PELEC_USE_SOOT
 class SootModel;
