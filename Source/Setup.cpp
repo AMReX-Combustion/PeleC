@@ -30,7 +30,7 @@ TaggingParm* PeleC::tagging_parm = nullptr;
 SootModel PeleC::soot_model;
 #endif
 
-// Components are:
+// Components are defined in PCPhysBCType enum in PeleC.H:
 // Interior, Inflow, Outflow,  Symmetry,     SlipWall,     NoSlipWall, UserBC
 static int scalar_bc[] = {INT_DIR,      EXT_DIR,      FOEXTRAP, REFLECT_EVEN,
                           REFLECT_EVEN, REFLECT_EVEN, EXT_DIR};
