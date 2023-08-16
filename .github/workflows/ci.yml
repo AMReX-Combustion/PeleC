@@ -294,7 +294,7 @@ jobs:
           echo "::add-matcher::.github/problem-matchers/gcc.json"
           egrep "warning:|error:" ${{runner.workspace}}/build-output.txt \
             | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest" \
-            | egrep -v "ld: warning:" | sort | uniq \
+            | egrep -v "ld: warning:" | egrep -v "lto-wrapper: warning:" | sort | uniq \
             | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > ${{runner.workspace}}/build-output-warnings.txt
           cat ${{runner.workspace}}/build-output-warnings.txt
           export return=$(tail -n 1 ${{runner.workspace}}/build-output-warnings.txt | awk '{print $2}')
