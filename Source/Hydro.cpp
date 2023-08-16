@@ -334,7 +334,7 @@ pc_umdrv(
     const amrex::Box eboxes = amrex::surroundingNodes(bxg2, dir);
     qec[dir].resize(eboxes, NGDNV, amrex::The_Async_Arena());
   }
-  amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> qec_arr{
+  amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> qec_arr{
     {AMREX_D_DECL(qec[0].array(), qec[1].array(), qec[2].array())}};
 
   // Temporary FArrayBoxes
@@ -352,15 +352,14 @@ pc_umdrv(
     //  flx[0], qec_arr[0], a[0], pdivuarr, vol, dx, dt);
 #elif AMREX_SPACEDIM == 2
     pc_umeth_2D(
-      bx, bclo, bchi, domlo, domhi, q, qaux, src_q, // bcMask,
-      flx[0], flx[1], qec_arr[0], qec_arr[1], a[0], a[1], pdivuarr, vol, dx, dt,
-      ppm_type, plm_iorder, use_flattening, use_hybrid_weno, weno_scheme);
+      bx, bclo, bchi, domlo, domhi, q, qaux, src_q, flx, qec_arr, a, pdivuarr,
+      vol, dx, dt, ppm_type, plm_iorder, use_flattening, use_hybrid_weno,
+      weno_scheme);
 #elif AMREX_SPACEDIM == 3
     pc_umeth_3D(
-      bx, bclo, bchi, domlo, domhi, q, qaux, src_q, // bcMask,
-      flx[0], flx[1], flx[2], qec_arr[0], qec_arr[1], qec_arr[2], a[0], a[1],
-      a[2], pdivuarr, vol, dx, dt, ppm_type, plm_iorder, use_flattening,
-      use_hybrid_weno, weno_scheme);
+      bx, bclo, bchi, domlo, domhi, q, qaux, src_q, flx, qec_arr, a, pdivuarr,
+      vol, dx, dt, ppm_type, plm_iorder, use_flattening, use_hybrid_weno,
+      weno_scheme);
 #endif
   }
 

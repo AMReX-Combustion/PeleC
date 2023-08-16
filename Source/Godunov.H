@@ -292,14 +292,16 @@ pc_cmpflx(
     idx = (dir == 0) ? i : j;
   }
   if (idx == domlo) {
-    if (bclo == NoSlipWall || bclo == SlipWall || bclo == Symmetry) {
+    if (
+      bclo == PCPhysBCType::no_slip_wall || bclo == PCPhysBCType::slip_wall ||
+      bclo == PCPhysBCType::symmetry) {
       ul = -ur;
       vl = vr;
       v2l =
         v2r; // NoSlip: this is fine because Godunov velocity normal will be 0
       pl = pr;
       rhol = rhor;
-    } else if (bclo == Outflow) {
+    } else if (bclo == PCPhysBCType::outflow) {
       ul = ur;
       vl = vr;
       v2l = v2r;
@@ -307,14 +309,16 @@ pc_cmpflx(
       rhol = rhor;
     }
   } else if (idx == domhi + 1) {
-    if (bchi == NoSlipWall || bchi == SlipWall || bchi == Symmetry) {
+    if (
+      bchi == PCPhysBCType::no_slip_wall || bchi == PCPhysBCType::slip_wall ||
+      bchi == PCPhysBCType::symmetry) {
       ur = -ul;
       vr = vl;
       v2r =
         v2l; // NoSlip: this is fine because Godunov velocity normal will be 0
       pr = pl;
       rhor = rhol;
-    } else if (bchi == Outflow) {
+    } else if (bchi == PCPhysBCType::outflow) {
       ur = ul;
       vr = vl;
       v2r = v2l;
@@ -866,15 +870,9 @@ void pc_umeth_3D(
   amrex::Array4<const amrex::Real> const& q,
   amrex::Array4<const amrex::Real> const& qaux,
   amrex::Array4<const amrex::Real> const& srcQ,
-  amrex::Array4<amrex::Real> const& flx1,
-  amrex::Array4<amrex::Real> const& flx2,
-  amrex::Array4<amrex::Real> const& flx3,
-  amrex::Array4<amrex::Real> const& q1,
-  amrex::Array4<amrex::Real> const& q2,
-  amrex::Array4<amrex::Real> const& q3,
-  amrex::Array4<const amrex::Real> const& a1,
-  amrex::Array4<const amrex::Real> const& a2,
-  amrex::Array4<const amrex::Real> const& a3,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, 3>& flx,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, 3>& qec,
+  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, 3>& a,
   amrex::Array4<amrex::Real> const& pdivu,
   amrex::Array4<const amrex::Real> const& vol,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& del,
@@ -896,13 +894,9 @@ void pc_umeth_2D(
   amrex::Array4<const amrex::Real> const& q,
   amrex::Array4<const amrex::Real> const& qaux,
   amrex::Array4<const amrex::Real> const& srcQ,
-  amrex::Array4<amrex::Real> const& flx1,
-  amrex::Array4<amrex::Real> const& flx2,
-  // amrex::Array4<const amrex::Real> const& dloga,
-  amrex::Array4<amrex::Real> const& q1,
-  amrex::Array4<amrex::Real> const& q2,
-  amrex::Array4<const amrex::Real> const& a1,
-  amrex::Array4<const amrex::Real> const& a2,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, 2>& flx,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, 2>& qec,
+  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, 2>& a,
   amrex::Array4<amrex::Real> const& pdivu,
   amrex::Array4<const amrex::Real> const& vol,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& del,

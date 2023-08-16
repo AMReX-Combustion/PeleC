@@ -262,24 +262,32 @@ PeleC::read_params()
   // Check, periodic means interior in those directions.
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
     if (amrex::DefaultGeometry().isPeriodic(dir)) {
-      if (lo_bc[dir] != Interior && amrex::ParallelDescriptor::IOProcessor()) {
+      if (
+        lo_bc[dir] != PCPhysBCType::interior &&
+        amrex::ParallelDescriptor::IOProcessor()) {
         std::cerr << "PeleC::read_params:periodic in direction " << dir
                   << " but low BC is not Interior\n";
         amrex::Error();
       }
-      if (hi_bc[dir] != Interior && amrex::ParallelDescriptor::IOProcessor()) {
+      if (
+        hi_bc[dir] != PCPhysBCType::interior &&
+        amrex::ParallelDescriptor::IOProcessor()) {
         std::cerr << "PeleC::read_params:periodic in direction " << dir
                   << " but high BC is not Interior\n";
         amrex::Error();
       }
     } else {
       // If not periodic, should not be interior.
-      if (lo_bc[dir] == Interior && amrex::ParallelDescriptor::IOProcessor()) {
+      if (
+        lo_bc[dir] == PCPhysBCType::interior &&
+        amrex::ParallelDescriptor::IOProcessor()) {
         std::cerr << "PeleC::read_params:interior bc in direction " << dir
                   << " but not periodic\n";
         amrex::Error();
       }
-      if (hi_bc[dir] == Interior && amrex::ParallelDescriptor::IOProcessor()) {
+      if (
+        hi_bc[dir] == PCPhysBCType::interior &&
+        amrex::ParallelDescriptor::IOProcessor()) {
         std::cerr << "PeleC::read_params:interior bc in direction " << dir
                   << " but not periodic\n";
         amrex::Error();
@@ -287,7 +295,7 @@ PeleC::read_params()
     }
   }
 
-  if (amrex::DefaultGeometry().IsRZ() && (lo_bc[0] != Symmetry)) {
+  if (amrex::DefaultGeometry().IsRZ() && (lo_bc[0] != PCPhysBCType::symmetry)) {
     amrex::Error("PeleC::read_params: must set r=0 boundary condition to "
                  "Symmetry for r-z");
   }

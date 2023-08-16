@@ -2,6 +2,47 @@
 #include "PLM.H"
 #include "PPM.H"
 
+// Host function that overwrites fluxes with lower-order approximation
+void
+pc_low_order_boundary(
+  amrex::Box const& bfbx,
+  const int bclo,
+  const int bchi,
+  const int domlo,
+  const int domhi,
+  const int plm_iorder,
+  const int idir,
+  const amrex::Real dx,
+  const amrex::Real dt,
+  amrex::Array4<const amrex::Real> const& q,
+  amrex::Array4<const amrex::Real> const& qa,
+  amrex::Array4<amrex::Real> const& flx,
+  amrex::Array4<amrex::Real> const& qdir)
+{
+  // Compute left and right states
+  amrex::Box bdbx = enclosedCells(bfbx).grow(idir, 1);
+  amrex::Box bdbx2 = growHi(bdbx, idir, 1);
+  amrex::FArrayBox qbm(bdbx2, QVAR, amrex::The_Async_Arena());
+  amrex::FArrayBox qbp(bdbx, QVAR, amrex::The_Async_Arena());
+  auto const& qbmarr = qbm.array();
+  auto const& qbparr = qbp.array();
+  amrex::ParallelFor(bdbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    amrex::Real slope[QVAR];
+    for (int n = 0; n < QVAR; ++n) {
+      slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, idir, q, plm_iorder);
+    }
+    pc_plm_d(
+      AMREX_D_DECL(i, j, k), idir, qbmarr, qbparr, slope, q, qa(i, j, k, QC),
+      dx, dt);
+  });
+
+  // Recompute fluxes
+  amrex::ParallelFor(bfbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    pc_cmpflx(
+      i, j, k, bclo, bchi, domlo, domhi, qbmarr, qbparr, flx, qdir, qa, idir);
+  });
+}
+
 // Host function to call gpu hydro functions
 #if AMREX_SPACEDIM == 3
 void
@@ -13,18 +54,10 @@ pc_umeth_3D(
   const int* domhi,
   amrex::Array4<const amrex::Real> const& q,
   amrex::Array4<const amrex::Real> const& qaux,
-  amrex::Array4<const amrex::Real> const&
-    srcQ, // amrex::IArrayBox const& bcMask,
-  amrex::Array4<amrex::Real> const& flx1,
-  amrex::Array4<amrex::Real> const& flx2,
-  amrex::Array4<amrex::Real> const&
-    flx3, // amrex::Array4<const amrex::Real> const& dloga,
-  amrex::Array4<amrex::Real> const& q1,
-  amrex::Array4<amrex::Real> const& q2,
-  amrex::Array4<amrex::Real> const& q3,
-  amrex::Array4<const amrex::Real> const& a1,
-  amrex::Array4<const amrex::Real> const& a2,
-  amrex::Array4<const amrex::Real> const& a3,
+  amrex::Array4<const amrex::Real> const& srcQ,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, 3>& flx,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, 3>& qec,
+  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, 3>& a,
   amrex::Array4<amrex::Real> const& pdivu,
   amrex::Array4<const amrex::Real> const& vol,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& del,
@@ -346,7 +379,8 @@ pc_umeth_3D(
 
   // Final X flux
   amrex::ParallelFor(xfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_cmpflx(i, j, k, bclx, bchx, dlx, dhx, qm, qp, flx1, q1, qaux, cdir);
+    pc_cmpflx(
+      i, j, k, bclx, bchx, dlx, dhx, qm, qp, flx[0], qec[0], qaux, cdir);
   });
 
   // Y | X&Z
@@ -361,7 +395,8 @@ pc_umeth_3D(
 
   // Final Y flux
   amrex::ParallelFor(yfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_cmpflx(i, j, k, bcly, bchy, dly, dhy, qm, qp, flx2, q2, qaux, cdir);
+    pc_cmpflx(
+      i, j, k, bcly, bchy, dly, dhy, qm, qp, flx[1], qec[1], qaux, cdir);
   });
 
   // Z | X&Y
@@ -376,13 +411,45 @@ pc_umeth_3D(
 
   // Final Z flux
   amrex::ParallelFor(zfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_cmpflx(i, j, k, bclz, bchz, dlz, dhz, qm, qp, flx3, q3, qaux, cdir);
+    pc_cmpflx(
+      i, j, k, bclz, bchz, dlz, dhz, qm, qp, flx[2], qec[2], qaux, cdir);
   });
+
+  // Fix bcnormal boundaries - always use PLM and don't do N+1/2 predictor
+  // because the user specifies conditions at N
+  // bcnormal used for "Hard" (inflow) and "UserBC" (user_bc)
+  for (int idir = 0; idir < AMREX_SPACEDIM; idir++) {
+    if (
+      bclo[idir] == PCPhysBCType::inflow ||
+      bclo[idir] == PCPhysBCType::user_bc) {
+      // Box for fluxes at this boundary
+      amrex::Box bfbx = surroundingNodes(bx, idir);
+      bfbx.setBig(idir, domlo[idir]);
+      if (bfbx.ok()) {
+        pc_low_order_boundary(
+          bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], plm_iorder,
+          idir, del[idir], dt, q, qaux, flx[idir], qec[idir]);
+      }
+    }
+    if (
+      bchi[idir] == PCPhysBCType::inflow ||
+      bchi[idir] == PCPhysBCType::user_bc) {
+      // Box for fluxes at this boundary
+      amrex::Box bfbx = surroundingNodes(bx, idir);
+      bfbx.setSmall(idir, domhi[idir] + 1);
+      if (bfbx.ok()) {
+        pc_low_order_boundary(
+          bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], plm_iorder,
+          idir, del[idir], dt, q, qaux, flx[idir], qec[idir]);
+      }
+    }
+  }
 
   // Construct p div{U}
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_pdivu(
-      i, j, k, pdivu, AMREX_D_DECL(q1, q2, q3), AMREX_D_DECL(a1, a2, a3), vol);
+      i, j, k, pdivu, AMREX_D_DECL(qec[0], qec[1], qec[2]),
+      AMREX_D_DECL(a[0], a[1], a[2]), vol);
   });
 }
 
@@ -397,15 +464,10 @@ pc_umeth_2D(
   const int* domhi,
   amrex::Array4<const amrex::Real> const& q,
   amrex::Array4<const amrex::Real> const& qaux,
-  amrex::Array4<const amrex::Real> const&
-    srcQ, // amrex::IArrayBox const& bcMask,
-  amrex::Array4<amrex::Real> const& flx1,
-  amrex::Array4<amrex::Real> const& flx2,
-  // amrex::Array4<const amrex::Real> const& dloga,
-  amrex::Array4<amrex::Real> const& q1,
-  amrex::Array4<amrex::Real> const& q2,
-  amrex::Array4<const amrex::Real> const& a1,
-  amrex::Array4<const amrex::Real> const& a2,
+  amrex::Array4<const amrex::Real> const& srcQ,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, 2>& flx,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, 2>& qec,
+  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, 2>& a,
   amrex::Array4<amrex::Real> const& pdivu,
   amrex::Array4<const amrex::Real> const& vol,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& del,
@@ -510,7 +572,8 @@ pc_umeth_2D(
   amrex::ParallelFor(
     yflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       pc_cmpflx(
-        i, j, k, bcly, bchy, dly, dhy, qymarr, qyparr, fyarr, q2, qaux, cdir);
+        i, j, k, bcly, bchy, dly, dhy, qymarr, qyparr, fyarr, qec[1], qaux,
+        cdir);
     });
 
   // X interface corrections
@@ -526,7 +589,7 @@ pc_umeth_2D(
             int i, int j, AMREX_D_PICK(int /*k*/, int /*k*/, int k)) noexcept {
       pc_transd(
         AMREX_D_DECL(i, j, k), cdir, qmarr, qparr, qxmarr, qxparr, fyarr, srcQ,
-        qaux, q2, hdt, hdtdy);
+        qaux, qec[1], hdt, hdtdy);
     });
 
   const amrex::Box& xfxbx = surroundingNodes(bx, cdir);
@@ -534,7 +597,7 @@ pc_umeth_2D(
   // Final Riemann problem X
   amrex::ParallelFor(xfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_cmpflx(
-      i, j, k, bclx, bchx, dlx, dhx, qmarr, qparr, flx1, q1, qaux, cdir);
+      i, j, k, bclx, bchx, dlx, dhx, qmarr, qparr, flx[0], qec[0], qaux, cdir);
   });
 
   // Y interface corrections
@@ -553,12 +616,42 @@ pc_umeth_2D(
   const amrex::Box& yfxbx = surroundingNodes(bx, cdir);
   amrex::ParallelFor(yfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_cmpflx(
-      i, j, k, bcly, bchy, dly, dhy, qmarr, qparr, flx2, q2, qaux, cdir);
+      i, j, k, bcly, bchy, dly, dhy, qmarr, qparr, flx[1], qec[1], qaux, cdir);
   });
+
+  // Fix bcnormal boundaries - always use PLM and don't do N+1/2 predictor
+  // because the user specifies conditions at N
+  // bcnormal used for "Hard" (inflow) and "UserBC" (user_bc)
+  for (int idir = 0; idir < AMREX_SPACEDIM; idir++) {
+    if (
+      bclo[idir] == PCPhysBCType::inflow ||
+      bclo[idir] == PCPhysBCType::user_bc) {
+      // Box for fluxes at this boundary
+      amrex::Box bfbx = surroundingNodes(bx, idir);
+      bfbx.setBig(idir, domlo[idir]);
+      if (bfbx.ok()) {
+        pc_low_order_boundary(
+          bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], plm_iorder,
+          idir, del[idir], dt, q, qaux, flx[idir], qec[idir]);
+      }
+    }
+    if (
+      bchi[idir] == PCPhysBCType::inflow ||
+      bchi[idir] == PCPhysBCType::user_bc) {
+      // Box for fluxes at this boundary
+      amrex::Box bfbx = surroundingNodes(bx, idir);
+      bfbx.setSmall(idir, domhi[idir] + 1);
+      if (bfbx.ok()) {
+        pc_low_order_boundary(
+          bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], plm_iorder,
+          idir, del[idir], dt, q, qaux, flx[idir], qec[idir]);
+      }
+    }
+  }
 
   // Construct p div{U}
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_pdivu(i, j, k, pdivu, q1, q2, a1, a2, vol);
+    pc_pdivu(i, j, k, pdivu, qec[0], qec[1], a[0], a[1], vol);
   });
 }
 #endif
