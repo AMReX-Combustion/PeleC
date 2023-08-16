@@ -568,7 +568,7 @@ pc_umeth_2D(
   amrex::ParallelFor(
     yflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       pc_cmpflx(
-        i, j, k, bcly, bchy, dly, dhy, qymarr, qyparr, fyarr, gdtemp, qaux,
+        i, j, k, bcly, bchy, dly, dhy, qymarr, qyparr, fyarr, qec[1], qaux,
         cdir);
     });
 
