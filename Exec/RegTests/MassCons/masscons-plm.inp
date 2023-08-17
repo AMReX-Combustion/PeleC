@@ -42,7 +42,7 @@ pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
 pelec.sum_interval   = 1       # timesteps between computing mass
 pelec.v              = 1       # verbosity in PeleC.cpp
 amr.v                = 1       # verbosity in Amr.cpp
-amr.data_log         = datalog
+amr.data_log         = datlog
 
 # REFINEMENT / REGRIDDING
 amr.max_level       = 0       # maximum level number allowed
