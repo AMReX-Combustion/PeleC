@@ -395,6 +395,15 @@ PeleC::read_params()
   // whether to gather data
   ppa.query("loadbalance_with_workestimates", do_mol_load_balance);
   ppa.query("loadbalance_with_workestimates", do_react_load_balance);
+
+  if (eb_in_domain) {
+    int local_bf;
+    if (ppa.query("blocking_factor", local_bf)) {
+      if (local_bf < 8) {
+        amrex::Error("Blocking factor must be at least 8 for EB");
+      }
+    }
+  }
 }
 
 PeleC::PeleC()
@@ -1381,10 +1390,10 @@ PeleC::okToContinue()
 void
 PeleC::update_flux_registers(
   const amrex::Real dt,
-  const amrex::Box& bx,
   const amrex::MFIter& mfi,
   const amrex::FabType& typ,
-  const std::array<amrex::FArrayBox const*, AMREX_SPACEDIM>& flux)
+  const std::array<amrex::FArrayBox const*, AMREX_SPACEDIM>& flux,
+  const amrex::FArrayBox& dm_as_fine)
 {
   BL_PROFILE("PeleC::update_flux_registers()");
 
@@ -1417,9 +1426,6 @@ PeleC::update_flux_registers(
     }
 
     if (fr_as_fine != nullptr) {
-      amrex::FArrayBox dm_as_fine(
-        amrex::grow(bx, 1), NVAR, amrex::The_Async_Arena());
-      dm_as_fine.setVal<amrex::RunOn::Device>(0.0);
       fr_as_fine->FineAdd(
         mfi, flux, dxD.data(), dt, vfrac[mfi],
         {AMREX_D_DECL(

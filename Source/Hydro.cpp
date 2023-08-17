@@ -278,12 +278,15 @@ PeleC::construct_hydro_source(
             bx, hyd_src.nComp(), filtered_source_out.array(), hyd_src);
         }
 
-        // Reflux
+        // Refluxing
         if (do_reflux && sub_iteration == sub_ncycle - 1) {
           const amrex::FabType gtyp = flag_fab.getType(amrex::grow(bx, 1));
+          amrex::FArrayBox dm_as_fine(
+            amrex::Box::TheUnitBox(), hyd_src.nComp(),
+            amrex::The_Async_Arena());
           update_flux_registers(
-            dt, bx, mfi, gtyp,
-            {{AMREX_D_DECL(flux.data(), &(flux[1]), &(flux[2]))}});
+            dt, mfi, gtyp,
+            {{AMREX_D_DECL(flux.data(), &(flux[1]), &(flux[2]))}}, dm_as_fine);
         }
       }
     }
