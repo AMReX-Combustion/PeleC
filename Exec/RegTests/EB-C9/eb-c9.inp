@@ -41,6 +41,7 @@ pelec.sum_interval   = 1       # timesteps between computing mass
 pelec.v              = 1       # verbosity in PeleC cpp files
 amr.v                = 1       # verbosity in Amr.cpp
 #amr.grid_log         = grdlog  # name of grid logging file
+amr.data_log         = datlog
 
 # REFINEMENT / REGRIDDING
 amr.max_level       = 0       # maximum level number allowed
