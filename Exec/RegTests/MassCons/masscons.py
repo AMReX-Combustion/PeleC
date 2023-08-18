@@ -22,7 +22,7 @@ class ConsTestCase(unittest.TestCase):
 
         # Load the data
         fdir = os.path.abspath(".")
-        fname = os.path.join(fdir, "datalog")
+        fname = os.path.join(fdir, "datlog")
         df = pd.read_csv(fname, delim_whitespace=True)
         npt.assert_allclose(df.mass, df.mass[0], rtol=1e-13)
         npt.assert_allclose(df.rho_E, df.rho_E[0], rtol=1e-13)
