@@ -41,6 +41,7 @@ struct MyProbTagStruct
     const int /*i*/,
     const int /*j*/,
     const int /*k*/,
+    amrex::Array4<amrex::EBCellFlag const> const& /*flags*/,
     amrex::Array4<char> const& /*tag*/,
     amrex::Array4<amrex::Real const> const& /*field*/,
     char /*tagval*/,
