@@ -93,6 +93,6 @@ pelec.eb_isothermal = 1
 ebd.boundary_grad_stencil_type = 0
 pelec.eb_srd_max_order = 2
 
-amrex.fpe_trap_invalid = 1
-amrex.fpe_trap_zero = 1
-amrex.fpe_trap_overflow = 1
+# amrex.fpe_trap_invalid = 1
+# amrex.fpe_trap_zero = 1
+# amrex.fpe_trap_overflow = 1
