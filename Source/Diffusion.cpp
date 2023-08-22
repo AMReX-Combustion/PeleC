@@ -6,7 +6,7 @@ PeleC::getMOLSrcTerm(
   amrex::MultiFab& MOLSrcTerm,
   const amrex::Real /*time*/,
   const amrex::Real dt,
-  const amrex::Real flux_factor)
+  const amrex::Real reflux_factor)
 {
   BL_PROFILE("PeleC::getMOLSrcTerm()");
   if (
@@ -448,12 +448,12 @@ PeleC::getMOLSrcTerm(
             vfrac.array(mfi), Dterm);
         }
 
-        if (do_reflux && flux_factor != 0) {
+        if (do_reflux && reflux_factor != 0) {
           for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
             amrex::ParallelFor(
               eboxes[dir], NVAR,
               [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
-                flx[dir](i, j, k, n) *= flux_factor;
+                flx[dir](i, j, k, n) *= reflux_factor;
               });
           }
 
@@ -474,12 +474,12 @@ PeleC::getMOLSrcTerm(
             });
         }
 
-        if (do_reflux && flux_factor != 0) {
+        if (do_reflux && reflux_factor != 0) {
           for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
             amrex::ParallelFor(
               eboxes[dir], NVAR,
               [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
-                flx[dir](i, j, k, n) *= flux_factor;
+                flx[dir](i, j, k, n) *= reflux_factor;
               });
           }
 

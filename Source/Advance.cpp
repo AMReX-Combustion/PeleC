@@ -96,8 +96,8 @@ PeleC::do_mol_advance(
 #endif
 
   FillPatcherFill(Sborder, 0, NVAR, nGrow_FP_border, time, State_Type, 0);
-  amrex::Real flux_factor = 0;
-  getMOLSrcTerm(Sborder, molSrc, time, dt, flux_factor);
+  amrex::Real reflux_factor = 0.5;
+  getMOLSrcTerm(Sborder, molSrc, time, dt, reflux_factor);
 
   // Build other (non-diffusion) sources at t_old
   for (int src : src_list) {
@@ -130,8 +130,8 @@ PeleC::do_mol_advance(
   }
 
   FillPatcherFill(Sborder, 0, NVAR, nGrow_FP_border, time + dt, State_Type, 0);
-  flux_factor = mol_iters > 1 ? 0 : 1;
-  getMOLSrcTerm(Sborder, molSrc, time, dt, flux_factor);
+  reflux_factor = mol_iters > 1 ? 0 : 0.5;
+  getMOLSrcTerm(Sborder, molSrc, time, dt, reflux_factor);
 
   // Build other (non-diffusion) sources at t_new
   for (int src : src_list) {
@@ -176,8 +176,8 @@ PeleC::do_mol_advance(
 
       FillPatcherFill(
         Sborder, 0, NVAR, nGrow_FP_border, time + dt, State_Type, 0);
-      flux_factor = mol_iter == mol_iters ? 1 : 0;
-      getMOLSrcTerm(Sborder, molSrc_new, time, dt, flux_factor);
+      reflux_factor = mol_iter == mol_iters ? 0.5 : 0;
+      getMOLSrcTerm(Sborder, molSrc_new, time, dt, reflux_factor);
 
       // F_{AD} = (1/2)(molSrc_old + molSrc_new)
       amrex::MultiFab::LinComb(
@@ -293,9 +293,10 @@ PeleC::do_sdc_iteration(
       }
       AMREX_ASSERT(
         !do_mol); // Currently this combo only managed through MOL integrator
-      amrex::Real flux_factor_old = 0.5;
+      amrex::Real reflux_factor_old = 0.5;
 
-      getMOLSrcTerm(Sborder, *old_sources[diff_src], time, dt, flux_factor_old);
+      getMOLSrcTerm(
+        Sborder, *old_sources[diff_src], time, dt, reflux_factor_old);
     }
 
     // Initialize sources at t_new by copying from t_old
@@ -331,8 +332,8 @@ PeleC::do_sdc_iteration(
       amrex::Print() << "... Computing diffusion terms at t^(n+1,"
                      << sub_iteration + 1 << ")" << std::endl;
     }
-    amrex::Real flux_factor_new = sub_iteration == sub_ncycle - 1 ? 0.5 : 0;
-    getMOLSrcTerm(Sborder, *new_sources[diff_src], time, dt, flux_factor_new);
+    amrex::Real reflux_factor_new = sub_iteration == sub_ncycle - 1 ? 0.5 : 0;
+    getMOLSrcTerm(Sborder, *new_sources[diff_src], time, dt, reflux_factor_new);
   }
 
   // Build other (non-diffusion) sources at t_new

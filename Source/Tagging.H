@@ -54,7 +54,7 @@ tag_error(
   const int i,
   const int j,
   const int k,
-  amrex::Array4<amrex::EBCellFlag const> const& /*flags*/,
+  amrex::Array4<amrex::EBCellFlag const> const& flags,
   amrex::Array4<char> const& tag,
   amrex::Array4<amrex::Real const> const& field,
   const amrex::Real fielderr,
@@ -63,7 +63,7 @@ tag_error(
   // Tag on regions of high field values
   amrex::ignore_unused(k);
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-  if (field(iv) >= fielderr) {
+  if ((field(iv) >= fielderr) && (!flags(iv).isCovered())) {
     tag(iv) = tagval;
   }
 }
@@ -75,7 +75,7 @@ tag_loerror(
   const int i,
   const int j,
   const int k,
-  amrex::Array4<amrex::EBCellFlag const> const& /*flags*/,
+  amrex::Array4<amrex::EBCellFlag const> const& flags,
   amrex::Array4<char> const& tag,
   amrex::Array4<amrex::Real const> const& field,
   const amrex::Real fielderr,
@@ -84,7 +84,7 @@ tag_loerror(
   // Tag on regions of low field values
   amrex::ignore_unused(k);
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-  if (field(iv) <= fielderr) {
+  if ((field(iv) <= fielderr) && (!flags(iv).isCovered())) {
     tag(iv) = tagval;
   }
 }
@@ -96,7 +96,7 @@ tag_graderror(
   const int i,
   const int j,
   const int k,
-  amrex::Array4<amrex::EBCellFlag const> const& /*flags*/,
+  amrex::Array4<amrex::EBCellFlag const> const& flags,
   amrex::Array4<char> const& tag,
   amrex::Array4<amrex::Real const> const& field,
   const amrex::Real fieldgrad,
@@ -105,25 +105,22 @@ tag_graderror(
   // Tag on regions of high field gradient
   amrex::ignore_unused(k);
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-  AMREX_D_TERM(const auto ivp0 = iv + amrex::IntVect::TheDimensionVector(0);
-               const auto ivm0 = iv - amrex::IntVect::TheDimensionVector(0);
-               const amrex::Real axp = std::abs(field(ivp0) - field(iv));
-               const amrex::Real axm = std::abs(field(iv) - field(ivm0));
-               const amrex::Real ax = amrex::max<amrex::Real>(axp, axm);
-               , const auto ivp1 = iv + amrex::IntVect::TheDimensionVector(1);
-               const auto ivm1 = iv - amrex::IntVect::TheDimensionVector(1);
-               const amrex::Real ayp = std::abs(field(ivp1) - field(iv));
-               const amrex::Real aym = std::abs(field(iv) - field(ivm1));
-               const amrex::Real ay = amrex::max<amrex::Real>(ayp, aym);
-               , const auto ivp2 = iv + amrex::IntVect::TheDimensionVector(2);
-               const auto ivm2 = iv - amrex::IntVect::TheDimensionVector(2);
-               const amrex::Real azp = std::abs(field(ivp2) - field(iv));
-               const amrex::Real azm = std::abs(field(iv) - field(ivm2));
-               const amrex::Real az = amrex::max<amrex::Real>(azp, azm);)
+  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> as = {{0.0}};
+
+  for (int idir = 0; idir < AMREX_SPACEDIM; idir++) {
+    const auto ivp = iv + amrex::IntVect::TheDimensionVector(idir);
+    const auto ivm = iv - amrex::IntVect::TheDimensionVector(idir);
+    const bool cp = flags(iv).isCovered() || flags(ivp).isCovered();
+    const bool cm = flags(iv).isCovered() || flags(ivm).isCovered();
+    const amrex::Real ap = !cp ? std::abs(field(ivp) - field(iv)) : 0.0;
+    const amrex::Real am = !cm ? std::abs(field(iv) - field(ivm)) : 0.0;
+    as[idir] = amrex::max<amrex::Real>(ap, am);
+  }
+
 #if AMREX_SPACEDIM > 1
-  if (amrex::max<amrex::Real>(AMREX_D_DECL(ax, ay, az)) >= fieldgrad)
+  if (amrex::max<amrex::Real>(AMREX_D_DECL(as[0], as[1], as[2])) >= fieldgrad)
 #elif AMREX_SPACEDIM == 1
-  if (ax >= fieldgrad)
+  if (as[0] >= fieldgrad)
 #endif
   {
     tag(iv) = tagval;
@@ -137,7 +134,7 @@ tag_ratioerror(
   const int i,
   const int j,
   const int k,
-  amrex::Array4<amrex::EBCellFlag const> const& /*flags*/,
+  amrex::Array4<amrex::EBCellFlag const> const& flags,
   amrex::Array4<char> const& tag,
   amrex::Array4<amrex::Real const> const& field,
   const amrex::Real fieldratio,
@@ -146,31 +143,24 @@ tag_ratioerror(
   // Tag on regions of high ratio of adjacent cell values in field
   amrex::ignore_unused(k);
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-  AMREX_D_TERM(const auto ivp0 = iv + amrex::IntVect::TheDimensionVector(0);
-               const auto ivm0 = iv - amrex::IntVect::TheDimensionVector(0);
-               amrex::Real axp1 = std::abs(field(ivp0) / field(iv));
-               axp1 = amrex::max<amrex::Real>(axp1, 1.0 / axp1);
-               amrex::Real axm1 = std::abs(field(ivm0) / field(iv));
-               axm1 = amrex::max<amrex::Real>(axm1, 1.0 / axm1);
-               const amrex::Real ax = amrex::max<amrex::Real>(axm1, axp1);
-               , const auto ivp1 = iv + amrex::IntVect::TheDimensionVector(1);
-               const auto ivm1 = iv - amrex::IntVect::TheDimensionVector(1);
-               amrex::Real ayp1 = std::abs(field(ivp1) / field(iv));
-               ayp1 = amrex::max<amrex::Real>(ayp1, 1.0 / ayp1);
-               amrex::Real aym1 = std::abs(field(ivm1) / field(iv));
-               aym1 = amrex::max<amrex::Real>(aym1, 1.0 / aym1);
-               const amrex::Real ay = amrex::max<amrex::Real>(aym1, ayp1);
-               , const auto ivp2 = iv + amrex::IntVect::TheDimensionVector(2);
-               const auto ivm2 = iv - amrex::IntVect::TheDimensionVector(2);
-               amrex::Real azp1 = std::abs(field(ivp2) / field(iv));
-               azp1 = amrex::max<amrex::Real>(azp1, 1.0 / azp1);
-               amrex::Real azm1 = std::abs(field(ivm2) / field(iv));
-               azm1 = amrex::max<amrex::Real>(azm1, 1.0 / azm1);
-               const amrex::Real az = amrex::max<amrex::Real>(azm1, azp1);)
+  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> as = {{0.0}};
+
+  for (int idir = 0; idir < AMREX_SPACEDIM; idir++) {
+    const auto ivp = iv + amrex::IntVect::TheDimensionVector(idir);
+    const auto ivm = iv - amrex::IntVect::TheDimensionVector(idir);
+    const bool cp = flags(iv).isCovered() || flags(ivp).isCovered();
+    const bool cm = flags(iv).isCovered() || flags(ivm).isCovered();
+    amrex::Real ap = !cp ? std::abs(field(ivp) / field(iv)) : 0.0;
+    ap = !cp ? amrex::max<amrex::Real>(ap, 1.0 / ap) : 0.0;
+    amrex::Real am = !cm ? std::abs(field(ivm) / field(iv)) : 0.0;
+    am = !cm ? amrex::max<amrex::Real>(am, 1.0 / am) : 0.0;
+    as[idir] = amrex::max<amrex::Real>(am, ap);
+  }
+
 #if AMREX_SPACEDIM > 1
-  if (amrex::max<amrex::Real>(AMREX_D_DECL(ax, ay, az)) >= fieldratio)
+  if (amrex::max<amrex::Real>(AMREX_D_DECL(as[0], as[1], as[2])) >= fieldratio)
 #elif AMREX_SPACEDIM == 1
-  if (ax >= fieldratio)
+  if (as[0] >= fieldratio)
 #endif
   {
     tag(iv) = tagval;
@@ -184,7 +174,7 @@ tag_abserror(
   const int i,
   const int j,
   const int k,
-  amrex::Array4<amrex::EBCellFlag const> const& /*flags*/,
+  amrex::Array4<amrex::EBCellFlag const> const& flags,
   amrex::Array4<char> const& tag,
   amrex::Array4<amrex::Real const> const& field,
   const amrex::Real fielderr,
@@ -193,7 +183,7 @@ tag_abserror(
   // Tag on regions of high field values
   amrex::ignore_unused(k);
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-  if (std::abs(field(iv)) >= fielderr) {
+  if ((std::abs(field(iv)) >= fielderr) && (!flags(iv).isCovered())) {
     tag(iv) = tagval;
   }
 }
@@ -205,7 +195,7 @@ tag_error_bounds(
   const int i,
   const int j,
   const int k,
-  amrex::Array4<amrex::EBCellFlag const> const& /*flags*/,
+  amrex::Array4<amrex::EBCellFlag const> const& flags,
   amrex::Array4<char> const& tag,
   amrex::Array4<amrex::Real const> const& field,
   const amrex::Real lbnd,
@@ -215,7 +205,7 @@ tag_error_bounds(
   // Tag on regions inside bounds
   amrex::ignore_unused(k);
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-  if ((lbnd < field(iv)) && (field(iv) < ubnd)) {
+  if (((lbnd < field(iv)) && (field(iv) < ubnd)) && (!flags(iv).isCovered())) {
     tag(iv) = tagval;
   }
 }
