@@ -398,7 +398,7 @@ PeleC::read_params()
 
   if (eb_in_domain) {
     int local_bf;
-    if (ppa.query("blocking_factor", local_bf)) {
+    if (static_cast<bool>(ppa.query("blocking_factor", local_bf))) {
       if (local_bf < 8) {
         amrex::Error("Blocking factor must be at least 8 for EB");
       }
