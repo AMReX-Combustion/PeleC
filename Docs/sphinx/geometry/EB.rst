@@ -100,9 +100,6 @@ This can be controlled in the code with:
 Re-redistribution
 -----------------
 
-.. note::
-   This used to be supported when PeleC had it's own redistribution procedure. This is no longer the case now that we use the redistribution procedure highlighted above. This section is kept for historical purposes.
-   
 .. _eb_re_redist:
 
 .. figure:: EB_re_redist.png
@@ -127,7 +124,7 @@ advanced a single time step, which we refer to as re-redistribution. Specificall
 
 The re-redistribution is implemented as a book-keeping step where the mass distributed are stored during MOL divergence calculation and given to the coarse and fine flux registers to reflux at 
 the end of each time step. The re-redistribution is performed every time the reflux function is called in post_timestep. More details regarding re-redistribution are 
-presented in `Pember et al. <https://www.sciencedirect.com/science/article/pii/S0021999185711655>`_. 
+presented in `Pember et al. <https://www.sciencedirect.com/science/article/pii/S0021999185711655>`_. A forthcoming paper will describe the methodology for this procedure when using state redistribution.
 
 
 Date Structures and utility functions

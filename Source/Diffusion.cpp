@@ -99,7 +99,7 @@ PeleC::getMOLSrcTerm(
       // cut cells within 1 grow cell (cbox) due to EB redistribute
       typ = flag_fab.getType(cbox);
 
-      const amrex::Box ebfluxbox = amrex::grow(vbox, 2);
+      const amrex::Box ebfluxbox = amrex::grow(vbox, 3);
 
       const int local_i = mfi.LocalIndex();
       const auto Ncut =
@@ -447,20 +447,6 @@ PeleC::getMOLSrcTerm(
             AMREX_D_DECL(flx[0], flx[1], flx[2]), sv_eb_flux[local_i].dataPtr(),
             vfrac.array(mfi), Dterm);
         }
-
-        if (do_reflux && reflux_factor != 0) {
-          for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-            amrex::ParallelFor(
-              eboxes[dir], NVAR,
-              [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
-                flx[dir](i, j, k, n) *= reflux_factor;
-              });
-          }
-
-          update_flux_registers(
-            dt, vbox, mfi, typ,
-            {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])});
-        }
       } else if (typ == amrex::FabType::regular) {
         // Compute flux divergence (1/Vol).Div(F.A)
         {
@@ -472,20 +458,6 @@ PeleC::getMOLSrcTerm(
               pc_flux_div(
                 i, j, k, n, AMREX_D_DECL(flx[0], flx[1], flx[2]), vol, Dterm);
             });
-        }
-
-        if (do_reflux && reflux_factor != 0) {
-          for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-            amrex::ParallelFor(
-              eboxes[dir], NVAR,
-              [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
-                flx[dir](i, j, k, n) *= reflux_factor;
-              });
-          }
-
-          update_flux_registers(
-            dt, vbox, mfi, typ,
-            {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])});
         }
       } else if (typ == amrex::FabType::multivalued) {
         amrex::Abort("multi-valued eb boundary fluxes to be implemented");
@@ -516,6 +488,8 @@ PeleC::getMOLSrcTerm(
       }
 
       // EB redistribution
+      amrex::FArrayBox dm_as_fine(
+        amrex::Box::TheUnitBox(), MOLSrcTerm.nComp(), amrex::The_Async_Arena());
       if (eb_in_domain && (typ != amrex::FabType::regular)) {
         AMREX_D_TERM(auto apx = areafrac[0]->const_array(mfi);
                      , auto apy = areafrac[1]->const_array(mfi);
@@ -553,9 +527,6 @@ PeleC::getMOLSrcTerm(
         const int as_crse = static_cast<int>(fr_as_crse != nullptr);
         const int as_fine = static_cast<int>(fr_as_fine != nullptr);
 
-        amrex::FArrayBox dm_as_fine(
-          amrex::Box::TheUnitBox(), MOLSrcTerm.nComp(),
-          amrex::The_Async_Arena());
         amrex::FArrayBox fab_drho_as_crse(
           amrex::Box::TheUnitBox(), MOLSrcTerm.nComp(),
           amrex::The_Async_Arena());
@@ -582,20 +553,40 @@ PeleC::getMOLSrcTerm(
 
         {
           BL_PROFILE("ApplyMLRedistribution()");
+          const amrex::Real fac_for_redist = (do_mol) ? 0.5 : 1.0;
           ApplyMLRedistribution(
             vbox, S.nComp(), Dterm, Dterm_tmp, S.const_array(mfi), scratch,
             flag_arr, AMREX_D_DECL(apx, apy, apz), vfrac.const_array(mfi),
             AMREX_D_DECL(fcx, fcy, fcz), ccc, d_bcs.dataPtr(), geom, dt,
             redistribution_type, as_crse, drho_as_crse->array(),
             rrflag_as_crse->array(), as_fine, dm_as_fine.array(),
-            level_mask.const_array(mfi),
-            level_mask_not_covered, /*fac_for_redist,*/
+            level_mask.const_array(mfi), level_mask_not_covered, fac_for_redist,
             use_wts_in_divnc, 0, eb_srd_max_order);
         }
 
         pc_post_eb_redistribution(
           vbox, dt, eb_clean_massfrac, eb_clean_massfrac_threshold,
           S.const_array(mfi), typ, flag_arr, scratch, Dterm);
+      }
+
+      // Refluxing
+      if (do_reflux && reflux_factor != 0) {
+        if (typ == amrex::FabType::singlevalued) {
+          for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
+            const auto& ap = areafrac[dir]->const_array(mfi);
+            amrex::ParallelFor(
+              eboxes[dir], NVAR,
+              [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
+                if (ap(i, j, k) > 0.0) {
+                  flx[dir](i, j, k, n) /= ap(i, j, k);
+                }
+              });
+          }
+        }
+
+        update_flux_registers(
+          reflux_factor * dt, mfi, typ,
+          {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dm_as_fine);
       }
 
       copy_array4(vbox, NVAR, Dterm, MOLSrc);

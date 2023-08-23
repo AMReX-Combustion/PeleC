@@ -656,10 +656,10 @@ protected:
 
   void update_flux_registers(
     const amrex::Real dt,
-    const amrex::Box& bx,
     const amrex::MFIter& mfi,
     const amrex::FabType& typ,
-    const std::array<amrex::FArrayBox const*, AMREX_SPACEDIM>& flux);
+    const std::array<amrex::FArrayBox const*, AMREX_SPACEDIM>& flux,
+    const amrex::FArrayBox& dm_as_fine);
 
   void reflux();
 
@@ -810,8 +810,24 @@ int
 PeleC::numGrow()
 {
   int ng = 4;
-  if ((eb_in_domain) && (redistribution_type == "StateRedist")) {
-    ng += 1;
+  if (eb_in_domain) {
+    // IF MOL     + FRD then 5
+    // IF Godunov + FRD then 6
+    // IF MOL     + SRD then 6
+    // IF Godunov + SRD then 7
+    if (do_mol) {
+      if (redistribution_type == "FluxRedist") {
+        ng += 1;
+      } else if (redistribution_type == "StateRedist") {
+        ng += 2;
+      }
+    } else {
+      if (redistribution_type == "FluxRedist") {
+        ng += 2;
+      } else if (redistribution_type == "StateRedist") {
+        ng += 3;
+      }
+    }
   }
   return ng;
 }

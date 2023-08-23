@@ -65,8 +65,8 @@ PeleC::construct_old_les_source(
 
   old_sources[les_src]->setVal(0.0);
 
-  amrex::Real flux_factor_old = 0.5;
-  getLESTerm(time, dt, *old_sources[les_src], flux_factor_old);
+  amrex::Real reflux_factor_old = 0.5;
+  getLESTerm(time, dt, *old_sources[les_src], reflux_factor_old);
 
   old_sources[les_src]->FillBoundary(geom.periodicity());
 }
@@ -87,8 +87,8 @@ PeleC::construct_new_les_source(
 
   new_sources[les_src]->setVal(0.0);
 
-  amrex::Real flux_factor_new = sub_iteration == sub_ncycle - 1 ? 0.5 : 0;
-  getLESTerm(time, dt, *new_sources[les_src], flux_factor_new);
+  amrex::Real reflux_factor_new = sub_iteration == sub_ncycle - 1 ? 0.5 : 0;
+  getLESTerm(time, dt, *new_sources[les_src], reflux_factor_new);
 }
 
 // Calculate the LES term by calling an SFS model
@@ -99,7 +99,7 @@ PeleC::getLESTerm(
   amrex::Real time,
   amrex::Real dt,
   amrex::MultiFab& LESTerm,
-  amrex::Real flux_factor)
+  amrex::Real reflux_factor)
 {
   BL_PROFILE("PeleC::getLESTerm()");
 
@@ -115,11 +115,11 @@ PeleC::getLESTerm(
   switch (les_model) {
 
   case 0:
-    getSmagorinskyLESTerm(time, dt, LESTerm, flux_factor);
+    getSmagorinskyLESTerm(time, dt, LESTerm, reflux_factor);
     break;
 
   case 1:
-    getDynamicSmagorinskyLESTerm(time, dt, LESTerm, flux_factor);
+    getDynamicSmagorinskyLESTerm(time, dt, LESTerm, reflux_factor);
     break;
 
   default:
@@ -149,14 +149,14 @@ PeleC::getSmagorinskyLESTerm(
   amrex::Real /*time*/,
   amrex::Real /*dt*/,
   amrex::MultiFab& /*LESTerm*/,
-  amrex::Real /*flux_factor*/)
+  amrex::Real /*reflux_factor*/)
 {
   amrex::Abort("LES only implemented in 3D for now");
 #else
   amrex::Real time,
   amrex::Real dt,
   amrex::MultiFab& LESTerm,
-  amrex::Real flux_factor)
+  amrex::Real reflux_factor)
 {
   // Only use this functionality for 3D
   const int ngrow = 1;
@@ -268,19 +268,13 @@ PeleC::getSmagorinskyLESTerm(
           });
       }
 
-      if (do_reflux && flux_factor != 0) // no eb in problem
-      {
-        for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-          amrex::ParallelFor(
-            eboxes[dir], NVAR,
-            [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
-              flx[dir](i, j, k, n) *= flux_factor;
-            });
-        }
-
+      // Refluxing
+      if (do_reflux && reflux_factor != 0) {
+        amrex::FArrayBox dm_as_fine(
+          amrex::Box::TheUnitBox(), LESTerm.nComp(), amrex::The_Async_Arena());
         update_flux_registers(
-          dt, vbox, mfi, typ,
-          {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])});
+          reflux_factor * dt, mfi, typ,
+          {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dm_as_fine);
       }
     } // End of MFIter scope
   }   // End of OMP scope
@@ -294,14 +288,14 @@ PeleC::getDynamicSmagorinskyLESTerm(
   amrex::Real /*time*/,
   amrex::Real /*dt*/,
   amrex::MultiFab& /*LESTerm*/,
-  amrex::Real /*flux_factor*/)
+  amrex::Real /*reflux_factor*/)
 {
   amrex::Abort("LES only implemented in 3D for now");
 #else
   amrex::Real time,
   amrex::Real dt,
   amrex::MultiFab& LESTerm,
-  amrex::Real flux_factor)
+  amrex::Real reflux_factor)
 {
   // clang-format off
   /*
@@ -335,13 +329,6 @@ PeleC::getDynamicSmagorinskyLESTerm(
   const int nGrowT = test_filter.get_filter_ngrow();
 
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx = geom.CellSizeArray();
-  amrex::Real dx1 = dx[0];
-  for (int dir = 1; dir < AMREX_SPACEDIM; ++dir) {
-    dx1 *= dx[dir];
-  }
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dxD = {
-    {AMREX_D_DECL(dx1, dx1, dx1)}};
-  const amrex::Real* dxDp = dxD.data();
 
   // 1. Get state variable data
   amrex::MultiFab S(
@@ -580,27 +567,13 @@ PeleC::getDynamicSmagorinskyLESTerm(
           });
       }
 
-      if (do_reflux && flux_factor != 0) // no eb in problem
-      {
-        for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-          amrex::ParallelFor(
-            eboxes[dir], NVAR,
-            [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
-              flx[dir](i, j, k, n) *= flux_factor;
-            });
-        }
-
-        if (level < parent->finestLevel()) {
-          getFluxReg(level + 1).CrseAdd(
-            mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}}, dxDp,
-            dt, amrex::RunOn::Device);
-        }
-
-        if (level > 0) {
-          getFluxReg(level).FineAdd(
-            mfi, {{AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}}, dxDp,
-            dt, amrex::RunOn::Device);
-        }
+      // Refluxing
+      if (do_reflux && reflux_factor != 0) {
+        amrex::FArrayBox dm_as_fine(
+          amrex::Box::TheUnitBox(), LESTerm.nComp(), amrex::The_Async_Arena());
+        update_flux_registers(
+          reflux_factor * dt, mfi, typ,
+          {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dm_as_fine);
       }
     }
   }
