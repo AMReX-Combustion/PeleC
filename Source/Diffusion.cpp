@@ -553,14 +553,14 @@ PeleC::getMOLSrcTerm(
 
         {
           BL_PROFILE("ApplyMLRedistribution()");
+          const amrex::Real fac_for_redist = (do_mol) ? 0.5 : 1.0;
           ApplyMLRedistribution(
             vbox, S.nComp(), Dterm, Dterm_tmp, S.const_array(mfi), scratch,
             flag_arr, AMREX_D_DECL(apx, apy, apz), vfrac.const_array(mfi),
             AMREX_D_DECL(fcx, fcy, fcz), ccc, d_bcs.dataPtr(), geom, dt,
             redistribution_type, as_crse, drho_as_crse->array(),
             rrflag_as_crse->array(), as_fine, dm_as_fine.array(),
-            level_mask.const_array(mfi),
-            level_mask_not_covered, /*fac_for_redist,*/
+            level_mask.const_array(mfi), level_mask_not_covered, fac_for_redist,
             use_wts_in_divnc, 0, eb_srd_max_order);
         }
 
