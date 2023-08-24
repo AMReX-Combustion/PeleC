@@ -58,6 +58,21 @@ pp.query("diffuse_enth", diffuse_enth);
 pp.query("diffuse_spec", diffuse_spec);
 pp.query("diffuse_vel", diffuse_vel);
 pp.query("transport_harmonic_mean", transport_harmonic_mean);
+pp.query("do_isothermal_walls", do_isothermal_walls);
+{
+  amrex::Vector<amrex::Real> tmp(AMREX_SPACEDIM, -1.0);
+  pp.queryarr("domlo_isothermal_temp", tmp, 0, AMREX_SPACEDIM);
+  for (int i = 0; i < tmp.size(); i++) {
+    domlo_isothermal_temp[i] = tmp[i];
+  }
+}
+{
+  amrex::Vector<amrex::Real> tmp(AMREX_SPACEDIM, -1.0);
+  pp.queryarr("domhi_isothermal_temp", tmp, 0, AMREX_SPACEDIM);
+  for (int i = 0; i < tmp.size(); i++) {
+    domhi_isothermal_temp[i] = tmp[i];
+  }
+}
 pp.query("do_les", do_les);
 pp.query("use_explicit_filter", use_explicit_filter);
 pp.query("Cs", Cs);

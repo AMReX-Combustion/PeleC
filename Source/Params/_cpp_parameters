@@ -171,6 +171,15 @@ diffuse_vel                   bool         false
 # flag for harmonic averaging of transport coefficients to the face
 transport_harmonic_mean       bool         true
 
+# flag for isothermal walls
+do_isothermal_walls           bool         false
+
+# low domain boundary isothermal temperature [K] (negative = adiabatic)
+domlo_isothermal_temp         dim_array    -1.0
+
+# hi domain boundary isothermal temperature [K] (negative = adiabatic)
+domhi_isothermal_temp         dim_array    -1.0
+
 #-----------------------------------------------------------------------------
 # category: large eddy simulation
 #-----------------------------------------------------------------------------
