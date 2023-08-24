@@ -41,7 +41,7 @@ for ngrid in npoints:
         plt.figure(idir)
         plt.plot(data[coord], data['Temp'], '-',label=ngrid)
         if ngrid == npoints[-1]:
-            plt.plot(data[coord], data['Ttrue'], 'k-', label ='analytical')
+            plt.plot(data[coord], data['Ttrue'], 'k:', label ='analytical')
             plt.legend(frameon=False)
             plt.xlabel('x (cm)')
             plt.ylabel('T (K)')

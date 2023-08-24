@@ -41,7 +41,7 @@ pelec.cfl            = 0.8     # cfl number for hyperbolic system
 pelec.init_shrink    = 1.0     # scale back initial timestep
 pelec.change_max     = 1.05    # scale back initial timestep
 pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
-#pelec.fixed_dt = 0.4e-6
+pelec.fixed_dt = 0.4e-6
 
 # DIAGNOSTICS & VERBOSITY
 pelec.sum_interval   = 1       # timesteps between computing mass
