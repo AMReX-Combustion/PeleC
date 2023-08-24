@@ -239,6 +239,49 @@ PeleC::getMOLSrcTerm(
         }
       }
 
+      if (do_isothermal_walls) {
+        // Compute extensive diffusion flux at domain boundaries
+        BL_PROFILE("PeleC::isothermal_wall_fluxes()");
+        for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
+          if (
+              (typ == amrex::FabType::singlevalued) ||
+              (typ == amrex::FabType::regular)) {
+            if (domlo_isothermal_temp[dir] > 0.0) {
+              amrex::Box bbox = surroundingNodes(vbox, dir);
+              bbox.setBig(dir, geom.Domain().smallEnd(dir));
+              if (bbox.ok()) {
+                int normal = -1;
+                amrex::FArrayBox tmpfabtemp(bbox, 1, amrex::The_Async_Arena());
+                amrex::Array4<amrex::Real> temp_arr = tmpfabtemp.array();
+                const ProbParmDevice* lprobparm = PeleC::d_prob_parm_device;
+                auto const* ltransparm = trans_parms.device_trans_parm();
+                const auto geomdata = geom.data();
+                amrex::ParallelFor(bbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+                  pc_set_wall_temperature(i, j, k, dir, normal, domlo_isothermal_temp[dir], geomdata, *lprobparm, qar, temp_arr);
+                  pc_isothermal_wall_fluxes(i,j,k,dir, normal, qar, temp_arr, flag_arr, area_arr[dir], flx[dir], dxinv, ltransparm);
+                });
+              }
+            }
+            if (domhi_isothermal_temp[dir] > 0.0) {
+              amrex::Box bbox = surroundingNodes(vbox, dir);
+              bbox.setSmall(dir, geom.Domain().bigEnd(dir)+1);
+              if (bbox.ok()) {
+                int normal = 1;
+                amrex::FArrayBox tmpfabtemp(bbox, 1, amrex::The_Async_Arena());
+                amrex::Array4<amrex::Real> temp_arr = tmpfabtemp.array();
+                const ProbParmDevice* lprobparm = PeleC::d_prob_parm_device;
+                auto const* ltransparm = trans_parms.device_trans_parm();
+                const auto geomdata = geom.data();
+                amrex::ParallelFor(bbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+                  pc_set_wall_temperature(i, j, k, dir, normal, domhi_isothermal_temp[dir], geomdata, *lprobparm, qar, temp_arr);
+                  pc_isothermal_wall_fluxes(i,j,k,dir, normal, qar, temp_arr, flag_arr, area_arr[dir], flx[dir], dxinv, ltransparm);
+                });
+              }
+            }
+          }
+        }
+      }
+
       // Shut off unwanted diffusion after the fact.
       //      Under normal conditions, you either have diffusion on all or
       //      none, so this shouldn't be done this way.  However, the regression
