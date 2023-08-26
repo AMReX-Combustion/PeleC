@@ -2,7 +2,7 @@
  .. role:: cpp(code)
     :language: c++
 
- 
+
 .. _Verification:
 
 
@@ -247,3 +247,37 @@ constant Smagorinsky Large Eddy Simulation model.
 
 .. image:: /verification/les/p_error.png
    :width: 300pt
+
+Conservation and Isothermal Boundaries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A simple test cass labeled ``MassCons`` is used to verify mass and energy conservation for all major numerical schemes used in PeleC (MOL without slopes, MOL with slopes, Godunov PLM, Godunov PPM). A python script is also run for all applicable test cases without inflows, outflows, or forcing, to ensure conservation during regression testing to ensure the conservation is maintained. The results shown below demonstrate the machine-precision level conservation of mass and energy for all numerical schemes. The case is arbitrary flow in a box with different types of boundaries (``SlipWall``, ``NoSlipWall``, ``UserBC``, including isothermal options). Note energy is conserved for the isothermal case without hydro turned on because of symmetry in the boundary conditions, but is not conserved for the case with hydro because includion of hydrodynamic effects breaks the symmetry.
+
+- Mass Conservation:
+
+.. image:: /verification/masscons/figure_conservation_mass.png
+
+- Energy Conservation:
+
+.. image:: /verification/masscons/figure_conservation_energy.png
+
+This case does not include EB, but the conservation script is run for some of the EB test cases (EB-C9, EB-C11, EB-C12). However, it should be noted that the testing suite does not cover cases where EBs intersect the domain boundary at a sharp angle.
+
+The case with isothermal walls and no hydro allows the convergence of the treatment of diffusion and isothermal boundaries to be verified without using MMS. This case has an initial temperature of 700 K in the 2D domain and temperatures of 600 K, 800 K, 650 K, and 750 K for the low x, high x, low y, and high y boundaries, respectively. Verification is performed at an early time such that thermal diffusion from the various boundaries have not imacted each other yet. Therefore, the solutions are compared against the analytical result for diffusion into a semi-infinite medium:
+
+.. math::
+   \frac{T - T_{wall}}{T_{0} - T_{wall}} = \rm{erf}(x/\sqrt{4Dt})
+
+where `x` is the distance from the wall.
+
+- x temperature profile:
+
+.. image:: /verification/masscons/figure_dir0.png
+
+- y temperature profile:
+
+.. image:: /verification/masscons/figure_dir1.png
+
+- Convergence:
+
+.. image:: /verification/masscons/figure_convergence.png

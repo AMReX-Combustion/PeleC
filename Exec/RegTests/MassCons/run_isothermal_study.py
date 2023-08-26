@@ -43,7 +43,7 @@ for ngrid in npoints:
         if ngrid == npoints[-1]:
             plt.plot(data[coord], data['Ttrue'], 'k:', label ='analytical')
             plt.legend(frameon=False)
-            plt.xlabel('x (cm)')
+            plt.xlabel(coord + ' (cm)')
             plt.ylabel('T (K)')
         error[ngrid][idir+'max'] = np.max(np.abs( data['Ttrue'  ] - data['Temp']  )) #np.linalg.norm( data['Ttrue'  ] - data['Temp'], ord=2) / np.sqrt(len(data[coord]))
         error[ngrid][idir+'mse'] = np.linalg.norm( data['Ttrue'  ] - data['Temp'], ord=2) / np.sqrt(len(data[coord]))
