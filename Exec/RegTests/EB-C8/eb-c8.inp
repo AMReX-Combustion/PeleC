@@ -40,8 +40,10 @@ amr.data_log         = datlog
 amr.max_level       = 1       # maximum level number allowed
 amr.ref_ratio       = 2 2 2 2 # refinement ratio
 amr.regrid_int      = 2 2 2 2 # how often to regrid
+amr.n_error_buf     = 0 0 0 0 # number of buffer cells in error est
 amr.blocking_factor = 8       # block factor in grid generation
-amr.max_grid_size   = 32
+amr.max_grid_size   = 64
+amr.grid_eff        = 0.99
 
 # CHECKPOINT FILES
 amr.checkpoint_files_output = 0
@@ -75,13 +77,10 @@ tagging.max_dengrad_lev = 3
 tagging.tempgrad = 50.0
 tagging.max_tempgrad_lev = 3
 
-eb2.geom_type = "extruded_triangles"
-extruded_triangles.num_tri = 2
-extruded_triangles.tri_0_point_0 = -20.0 -11.662475437630437 0.0
-extruded_triangles.tri_0_point_1 = 22.0 -20.0 0.0
-extruded_triangles.tri_0_point_2 = 22.0 12.586235868333839 0.0
-
-extruded_triangles.tri_1_point_0 = -20.0 -11.431535329954588 0.0
-extruded_triangles.tri_1_point_1 = 22.0 12.817175976009688 0.0
-extruded_triangles.tri_1_point_2 = -20.0 20.0 0.0
+eb2.geom_type = "rotated_box"
+eb2.box_lo = -10.0 -0.172 -10.0
+eb2.box_hi = 10.0 0.172 10.0
+eb2.box_rotation = 30.0
+eb2.box_rotation_axe = 2
+eb2.box_has_fluid_inside = 1
 ebd.boundary_grad_stencil_type = 0

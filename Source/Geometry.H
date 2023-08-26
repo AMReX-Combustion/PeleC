@@ -87,6 +87,24 @@ public:
   build(const amrex::Geometry& geom, const int max_coarsening_level) override;
 };
 
+class RotatedCylinder : public Geometry::Register<RotatedCylinder>
+{
+public:
+  static std::string identifier() { return "rotated_cylinder"; }
+
+  void
+  build(const amrex::Geometry& geom, const int max_coarsening_level) override;
+};
+
+class RotatedBox : public Geometry::Register<RotatedBox>
+{
+public:
+  static std::string identifier() { return "rotated_box"; }
+
+  void
+  build(const amrex::Geometry& geom, const int max_coarsening_level) override;
+};
+
 class CheckpointFile : public Geometry::Register<CheckpointFile>
 {
 public:

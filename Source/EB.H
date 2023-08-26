@@ -13,6 +13,7 @@
 #include <AMReX_EB2_IF_Complement.H>
 #include <AMReX_EB2_IF_Scale.H>
 #include <AMReX_EB2_IF_Translation.H>
+#include <AMReX_EB2_IF_Rotation.H>
 #include <AMReX_EB2_IF_Lathe.H>
 #include <AMReX_EB2_IF_Box.H>
 #include <AMReX_EB2_IF_Cylinder.H>
