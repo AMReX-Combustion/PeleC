@@ -487,17 +487,17 @@ pc_flux_div(
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
-pc_set_wall_temperature(const int i,
-                        const int j,
-                        const int k,
-                        const int /*dir*/,
-                        const int /*normal*/,
-                        const amrex::Real Twall_in,
-                        amrex::GeometryData const& /*geomdata*/,
-                        ProbParmDevice const& /*prob_parm*/,
-                        const amrex::Array4<const amrex::Real>& /*q*/,
-                        const amrex::Array4<amrex::Real>& Twall
-                        )
+pc_set_wall_temperature(
+  const int i,
+  const int j,
+  const int k,
+  const int /*dir*/,
+  const int /*normal*/,
+  const amrex::Real Twall_in,
+  amrex::GeometryData const& /*geomdata*/,
+  ProbParmDevice const& /*prob_parm*/,
+  const amrex::Array4<const amrex::Real>& /*q*/,
+  const amrex::Array4<amrex::Real>& Twall)
 {
   /*
     if desired: compute x,y,z and make wall temp an arbitray function of space
@@ -512,7 +512,7 @@ pc_set_wall_temperature(const int i,
     Twall(i,j,k) = function of x, dir, normal, prob_parm
                    or set it using the fluid values (q) for adabatic
    */
-  Twall(i,j,k) = Twall_in;
+  Twall(i, j, k) = Twall_in;
 }
 
 // This function computes diffusive energy flux through isothermal walls
@@ -532,31 +532,33 @@ pc_isothermal_wall_fluxes(
   const amrex::Array4<const amrex::Real>& area,
   const amrex::Array4<amrex::Real>& flx,
   amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> const& dxinv,
-  pele::physics::transport::TransParm<pele::physics::EosType,  pele::physics::PhysicsType::transport_type> const* tparm
-                    ) {
+  pele::physics::transport::TransParm<
+    pele::physics::EosType,
+    pele::physics::PhysicsType::transport_type> const* tparm)
+{
 
   // iv: face centered index where flux is computed
-  amrex::IntVect iv{AMREX_D_DECL(i,j,k)};
+  amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
   // ivm: cell centered index of interior cell
-  amrex::IntVect ivm{AMREX_D_DECL(i,j,k)};
+  amrex::IntVect ivm{AMREX_D_DECL(i, j, k)};
   ivm[dir] += ((normal > 0) ? -1 : 0);
   // ivr: boundary cell relative to interior cell
   amrex::IntVect ivr{0};
   ivr[dir] = normal;
 
   // Only do anything if the face isn't covered by an EB
-  if (flags(ivm).isConnected(ivr) ) {
+  if (flags(ivm).isConnected(ivr)) {
 
     // First get density at wall temp (only comes into play for SRK)
     amrex::Real rho_wall = 0.0;
     const amrex::Real Twall = Twall_arr(iv);
-    const amrex::Real pwall = q(ivm,QPRES);
+    const amrex::Real pwall = q(ivm, QPRES);
     amrex::Real Ywall[NUM_SPECIES] = {0.0};
     for (int ns = 0; ns < NUM_SPECIES; ++ns) {
       Ywall[ns] = q(ivm, ns + QFS);
     }
     auto eos = pele::physics::PhysicsType::eos();
-    eos.PYT2R(pwall,Ywall,Twall,rho_wall);
+    eos.PYT2R(pwall, Ywall, Twall, rho_wall);
 
     // Now compute lambda at the wall temperature
     const int wtr_get_xi = 0;
@@ -569,13 +571,14 @@ pc_isothermal_wall_fluxes(
     amrex::Real dummy_mu, dummy_xi;
     amrex::Real lambda;
     auto trans = pele::physics::PhysicsType::transport();
-    trans.transport(wtr_get_xi, wtr_get_mu, wtr_get_lam, wtr_get_Ddiag, wtr_get_chi,
-                    Twall, rho_wall, Ywall,
-                    dummy_Ddiag, dummy_chi_mix, dummy_mu, dummy_xi, lambda, tparm);
+    trans.transport(
+      wtr_get_xi, wtr_get_mu, wtr_get_lam, wtr_get_Ddiag, wtr_get_chi, Twall,
+      rho_wall, Ywall, dummy_Ddiag, dummy_chi_mix, dummy_mu, dummy_xi, lambda,
+      tparm);
 
     // Compute Fourier flux and scale by area
-    amrex::Real dTdx = 2.0*(q(ivm,QTEMP) - Twall) * dxinv[dir] * normal;
-    flx(i,j,k, UEDEN) += lambda * dTdx * area(iv);
+    amrex::Real dTdx = 2.0 * (q(ivm, QTEMP) - Twall) * dxinv[dir] * normal;
+    flx(i, j, k, UEDEN) += lambda * dTdx * area(iv);
   }
 }
 
