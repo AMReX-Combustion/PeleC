@@ -256,11 +256,12 @@ PeleC::getMOLSrcTerm(
                 const ProbParmDevice* lprobparm = PeleC::d_prob_parm_device;
                 auto const* ltransparm = trans_parms.device_trans_parm();
                 const auto geomdata = geom.data();
+                amrex::Real domlo_temp = domlo_isothermal_temp[dir];
                 amrex::ParallelFor(
                   bbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
                     pc_set_wall_temperature(
-                      i, j, k, dir, normal, domlo_isothermal_temp[dir],
-                      geomdata, *lprobparm, qar, temp_arr);
+                      i, j, k, dir, normal, domlo_temp, geomdata, *lprobparm,
+                      qar, temp_arr);
                     pc_isothermal_wall_fluxes(
                       i, j, k, dir, normal, qar, temp_arr, flag_arr,
                       area_arr[dir], flx[dir], dxinv, ltransparm);
@@ -277,11 +278,12 @@ PeleC::getMOLSrcTerm(
                 const ProbParmDevice* lprobparm = PeleC::d_prob_parm_device;
                 auto const* ltransparm = trans_parms.device_trans_parm();
                 const auto geomdata = geom.data();
+                amrex::Real domhi_temp = domhi_isothermal_temp[dir];
                 amrex::ParallelFor(
                   bbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
                     pc_set_wall_temperature(
-                      i, j, k, dir, normal, domhi_isothermal_temp[dir],
-                      geomdata, *lprobparm, qar, temp_arr);
+                      i, j, k, dir, normal, domhi_temp, geomdata, *lprobparm,
+                      qar, temp_arr);
                     pc_isothermal_wall_fluxes(
                       i, j, k, dir, normal, qar, temp_arr, flag_arr,
                       area_arr[dir], flx[dir], dxinv, ltransparm);
