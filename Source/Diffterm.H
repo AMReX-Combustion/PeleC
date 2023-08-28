@@ -561,11 +561,11 @@ pc_isothermal_wall_fluxes(
     eos.PYT2R(pwall, Ywall, Twall, rho_wall);
 
     // Now compute lambda at the wall temperature
-    const int wtr_get_xi = 0;
-    const int wtr_get_mu = 0;
-    const int wtr_get_lam = 1;
-    const int wtr_get_Ddiag = 0;
-    const int wtr_get_chi = 0;
+    const bool wtr_get_xi = false;
+    const bool wtr_get_mu = false;
+    const bool wtr_get_lam = true;
+    const bool wtr_get_Ddiag = false;
+    const bool wtr_get_chi = false;
     amrex::Real* dummy_Ddiag = nullptr;
     amrex::Real* dummy_chi_mix = nullptr;
     amrex::Real dummy_mu, dummy_xi;
