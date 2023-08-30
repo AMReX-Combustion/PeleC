@@ -154,7 +154,9 @@ class Param(object):
 
         if language == "C++":
             if self.dtype == "dim_array":
-                ostr += "{\n  amrex::Vector<amrex::Real> tmp(AMREX_SPACEDIM, 0.0);\n"
+                ostr += "{{\n  amrex::Vector<amrex::Real> tmp(AMREX_SPACEDIM, {});\n".format(
+                    self.default
+                )
                 ostr += '  pp.queryarr("{}", tmp, 0, AMREX_SPACEDIM);\n'.format(
                     self.name
                 )

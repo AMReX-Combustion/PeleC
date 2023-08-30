@@ -239,6 +239,49 @@ PeleC::getMOLSrcTerm(
         }
       }
 
+      if (do_isothermal_walls) {
+        // Compute extensive diffusion flux at domain boundaries
+        BL_PROFILE("PeleC::isothermal_wall_fluxes()");
+        for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
+          if (
+            (typ == amrex::FabType::singlevalued) ||
+            (typ == amrex::FabType::regular)) {
+            int normalarr[2] = {-1, 1};
+            amrex::Real bc_temp_arr[2] = {
+              domlo_isothermal_temp[dir], domhi_isothermal_temp[dir]};
+            for (int inorm = 0; inorm < 2; inorm++) {
+              int normal = normalarr[inorm];
+              amrex::Real bc_temp = bc_temp_arr[inorm];
+              if (bc_temp > 0.0) {
+                amrex::Box bbox = surroundingNodes(vbox, dir);
+                if (normal == -1) {
+                  bbox.setBig(dir, geom.Domain().smallEnd(dir));
+                } else {
+                  bbox.setSmall(dir, geom.Domain().bigEnd(dir) + 1);
+                }
+                if (bbox.ok()) {
+                  amrex::FArrayBox tmpfabtemp(
+                    bbox, 1, amrex::The_Async_Arena());
+                  amrex::Array4<amrex::Real> temp_arr = tmpfabtemp.array();
+                  const ProbParmDevice* lprobparm = PeleC::d_prob_parm_device;
+                  auto const* ltransparm = trans_parms.device_trans_parm();
+                  const auto geomdata = geom.data();
+                  amrex::ParallelFor(
+                    bbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+                      pc_set_wall_temperature(
+                        i, j, k, dir, normal, bc_temp, geomdata, *lprobparm,
+                        qar, temp_arr);
+                      pc_isothermal_wall_fluxes(
+                        i, j, k, dir, normal, qar, temp_arr, flag_arr,
+                        area_arr[dir], flx[dir], dxinv, ltransparm);
+                    });
+                }
+              }
+            }
+          }
+        }
+      }
+
       // Shut off unwanted diffusion after the fact.
       //      Under normal conditions, you either have diffusion on all or
       //      none, so this shouldn't be done this way.  However, the regression
