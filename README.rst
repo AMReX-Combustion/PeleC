@@ -42,7 +42,7 @@ To add a new feature to PeleC, the procedure is:
     git checkout -b AmazingNewFeature
 
 2. Develop the feature, merging changes often from the development branch into your AmazingNewFeature branch: ::
-   
+
     git commit -m "Developed AmazingNewFeature"
     git checkout development
     git pull                     [fix any identified conflicts between local and remote branches of "development"]
@@ -82,7 +82,7 @@ Documentation
 ~~~~~~~~~~~~~
 
 The full documentation for Pele exists in the Docs directory; at present this is maintained inline using
-Sphinx  `Sphinx <http://www.sphinx-doc.org>`_. With 
+Sphinx  `Sphinx <http://www.sphinx-doc.org>`_. With
 Sphinx, documentation is written in *Restructured Text*. reST is a markup language
 similar to Markdown, but with somewhat greater capabilities (and idiosyncrasies). There
 are several `primers <http://thomas-cokelaer.info/tutorials/sphinx/rest_syntax.html>`_
@@ -100,9 +100,9 @@ To cite the PeleC software and refer to its computational performance, use the f
       author = {Marc T {Henry de Frahan} and Jon S Rood and Marc S Day and Hariswaran Sitaraman and Shashank Yellapantula and Bruce A Perry and Ray W Grout and Ann Almgren and Weiqun Zhang and John B Bell and Jacqueline H Chen},
       title = {{PeleC: An adaptive mesh refinement solver for compressible reacting flows}},
       journal = {The International Journal of High Performance Computing Applications},
-      volume = {0},
-      number = {0},
-      pages = {10943420221121151},
+      volume = {37},
+      number = {2},
+      pages = {115-131},
       year = {2022},
       doi = {10.1177/10943420221121151},
       url = {https://doi.org/10.1177/10943420221121151}
@@ -111,7 +111,7 @@ To cite the PeleC software and refer to its computational performance, use the f
 Additionally, to cite the application of PeleC to compressible reacting flows, use the following `Combustion and Flame journal article <https://doi.org/10.1016/j.combustflame.2021.111531>`_::
 
   @article{Sitaraman2021,
-    author = {Hariswaran Sitaraman and Shashank Yellapantula and Marc T. {Henry de Frahan} and Bruce Perry and Jon Rood and Ray Grout and Marc Day}
+    author = {Hariswaran Sitaraman and Shashank Yellapantula and Marc T. {Henry de Frahan} and Bruce Perry and Jon Rood and Ray Grout and Marc Day},
     title = {Adaptive mesh based combustion simulations of direct fuel injection effects in a supersonic cavity flame-holder},
     journal = {Combustion and Flame},
     volume = {232},
