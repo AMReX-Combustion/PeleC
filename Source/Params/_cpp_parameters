@@ -6,11 +6,6 @@
 
 @namespace: pelec PeleC static
 
-levmsk_interior              int         0
-levmsk_covered               int         1
-levmsk_notcovered            int         2
-levmsk_physbnd               int         3
-
 #-----------------------------------------------------------------------------
 # category: AMR
 #-----------------------------------------------------------------------------

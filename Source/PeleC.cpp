@@ -623,10 +623,11 @@ PeleC::buildMetrics()
   amrex::MultiFab::Copy(vfrac, ebfactory.getVolFrac(), 0, 0, 1, numGrow());
 
   level_mask.clear();
-  level_mask.define(grids, dmap, 1, 1);
+  level_mask.define(grids, dmap, 1, 3);
   level_mask.BuildMask(
-    geom.Domain(), geom.periodicity(), levmsk_covered, levmsk_notcovered,
-    levmsk_physbnd, levmsk_interior);
+    geom.Domain(), geom.periodicity(), constants::level_mask_covered(),
+    constants::level_mask_notcovered(), constants::level_mask_physbnd(),
+    constants::level_mask_interior());
 
   if (level == 0) {
     setGridInfo();

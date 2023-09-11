@@ -3,10 +3,6 @@
 // or add runtime parameters, please edit _cpp_parameters and then run
 // mk_params.sh
 
-int PeleC::levmsk_interior = 0;
-int PeleC::levmsk_covered = 1;
-int PeleC::levmsk_notcovered = 2;
-int PeleC::levmsk_physbnd = 3;
 int PeleC::state_interp_order = 1;
 int PeleC::lin_limit_state_interp = 1;
 int PeleC::state_nghost = 0;
