@@ -3,10 +3,6 @@
 // or add runtime parameters, please edit _cpp_parameters and then run
 // mk_params.sh
 
-static int levmsk_interior;
-static int levmsk_covered;
-static int levmsk_notcovered;
-static int levmsk_physbnd;
 static int state_interp_order;
 static int lin_limit_state_interp;
 static int state_nghost;

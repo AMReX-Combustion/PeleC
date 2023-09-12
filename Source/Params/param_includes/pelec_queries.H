@@ -3,10 +3,6 @@
 // or add runtime parameters, please edit _cpp_parameters and then run
 // mk_params.sh
 
-pp.query("levmsk_interior", levmsk_interior);
-pp.query("levmsk_covered", levmsk_covered);
-pp.query("levmsk_notcovered", levmsk_notcovered);
-pp.query("levmsk_physbnd", levmsk_physbnd);
 pp.query("state_interp_order", state_interp_order);
 pp.query("lin_limit_state_interp", lin_limit_state_interp);
 pp.query("state_nghost", state_nghost);
