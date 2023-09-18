@@ -188,10 +188,16 @@ PeleC::initialize_eb2_structs()
           nallfaces,
           [=] AMREX_GPU_DEVICE(int iface) -> int {
             const auto iv = fbox.atOffset(iface);
-            const bool covered_cells =
-              flag_arr(iv).isCovered() &&
-              flag_arr(iv - amrex::IntVect::TheDimensionVector(dir))
-                .isCovered();
+            const auto ivm = iv - amrex::IntVect::TheDimensionVector(dir);
+            bool covered_cells = false;
+            if ((tbox.contains(iv)) && (tbox.contains(ivm))) {
+              covered_cells =
+                flag_arr(iv).isCovered() && flag_arr(ivm).isCovered();
+            } else if (!(tbox.contains(iv))) {
+              covered_cells = flag_arr(ivm).isCovered();
+            } else if (!(tbox.contains(ivm))) {
+              covered_cells = flag_arr(iv).isCovered();
+            }
             return static_cast<int>((afrac_arr(iv) < 1.0) && (!covered_cells));
           },
           [=] AMREX_GPU_DEVICE(int iface, int const& x) {
@@ -206,10 +212,16 @@ PeleC::initialize_eb2_structs()
             fbox, [=] AMREX_GPU_DEVICE(
                     int i, int j, int AMREX_D_PICK(, , k)) noexcept {
               const amrex::IntVect iv(amrex::IntVect(AMREX_D_DECL(i, j, k)));
-              const bool covered_cells =
-                flag_arr(iv).isCovered() &&
-                flag_arr(iv - amrex::IntVect::TheDimensionVector(dir))
-                  .isCovered();
+              const auto ivm = iv - amrex::IntVect::TheDimensionVector(dir);
+              bool covered_cells = false;
+              if ((tbox.contains(iv)) && (tbox.contains(ivm))) {
+                covered_cells =
+                  flag_arr(iv).isCovered() && flag_arr(ivm).isCovered();
+              } else if (!(tbox.contains(iv))) {
+                covered_cells = flag_arr(ivm).isCovered();
+              } else if (!(tbox.contains(ivm))) {
+                covered_cells = flag_arr(iv).isCovered();
+              }
               if ((afrac_arr(iv) < 1.0) && (!covered_cells)) {
                 const auto iface = fbox.index(iv);
                 const auto idx = d_cutface_offset[iface];
