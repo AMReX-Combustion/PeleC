@@ -1,0 +1,10 @@
+version: 2
+
+updates:
+  - package-ecosystem: gitsubmodule
+    schedule:
+        interval: "weekly"
+    directory: /
+    allow:
+      - dependency-name: "Submodules/AMReX"
+      - dependency-name: "Submodules/PelePhysics"
