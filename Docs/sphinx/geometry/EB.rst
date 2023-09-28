@@ -71,8 +71,7 @@ Redistribution
 --------------
 .. _Redist:
 
-A straightforward implemention of the finite-volume advance of intensive conserved fields is numerically unstable (this is the well-known "small cell issue") due to presence of
-the fluid cell volume in the denominator of the conservative divergence (:math:`(DC)_l`):
+A straightforward implementation of the finite-volume advance of intensive conserved fields is numerically unstable (this is the well-known "small cell issue") due to presence of the fluid cell volume in the denominator of the conservative divergence (:math:`(DC)_l`):
 
 .. math::
   (DC)_l = \frac{1}{V_l} \sum_{k_l} \left( F_k \cdot n_k A_k \right),
@@ -143,7 +142,7 @@ Several structures exist to store geometry dependent information. These are popu
 | FaceSten       |:math:`3^2` matrix of weights to apply face-based stencil                             |
 +----------------+--------------------------------------------------------------------------------------+
 
-An array of structures is created on level creation by copying data from the AMReX dense datastrcutures on a per-FAB basis as indicated in Figure :ref:`eb_structs` .
+An array of structures is created on level creation by copying data from the AMReX dense datastructures on a per-FAB basis as indicated in Figure :ref:`eb_structs` .
 
 
 .. _eb_structs:

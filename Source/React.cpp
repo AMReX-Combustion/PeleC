@@ -82,7 +82,7 @@ PeleC::react_state(
       }
     } else {
       // in MOL update all non-reacting sources
-      // are passed into auxillary sources
+      // are passed into auxiliary sources
       non_react_src = aux_src;
     }
 

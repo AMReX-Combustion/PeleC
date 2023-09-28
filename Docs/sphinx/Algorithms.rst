@@ -83,7 +83,7 @@ chosen through the ``ppm_type`` flag:
 * ``ppm_type = 0`` uses a piecewise linear interpolation to reconstruct values at face.
 * ``ppm_type = 1`` is the original PPM method presented in Colella and Woodward [JCP 1984].
 * ``ppm_type = 2`` is the "extrema preserving" variant of the PPM method.
-* ``ppm_type = 3`` is a new hybrid PPM/WENO method developped by Motheau and Wakefield [CAMCOS 2020], that replace the interpolation and slope limiting procedures by a WENO reconstruction.
+* ``ppm_type = 3`` is a new hybrid PPM/WENO method developed by Motheau and Wakefield [CAMCOS 2020], that replace the interpolation and slope limiting procedures by a WENO reconstruction.
 
 In the remainder of this section, the extrema preserving PPM method, i.e ``ppm_type = 2``, is presented. Note that the implementation
 in PeleC is a recollection of different extension of the PPM method published in Miller and Colella [JCP 2002] and Colella and Sekora [JCP 2008].

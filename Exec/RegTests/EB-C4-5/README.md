@@ -41,7 +41,7 @@ Identical problem setup can be used to validate thermal diffusion and
 viscous diffusion (impulsively started plate). Boundary conditions would
 be more of an issue for the viscous diffusion problem.
 
-Due to bounary effects, only validate profiles in the normal direction
+Due to boundary effects, only validate profiles in the normal direction
 near the center of the planar surface where boundary effect will be smallest
 for either case.
 

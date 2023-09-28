@@ -49,7 +49,7 @@ allows the exterior pressure to be specified. This outlet specification comes fr
 This figure shows the minimum and maximum pressures in the domain as a function of time for each boundary
 condition specification. The first two approaches, which ignore the transfer of information through
 characteristics, result in unphysical behavior. In the first, the pressure ratio across the nozzle is incorrect.
-In the second, the pressure ratio is correct once the sytem reaches a steady state, but no boundary condition
+In the second, the pressure ratio is correct once the system reaches a steady state, but no boundary condition
 fixes the pressure, so the magnitude of inlet and outlet pressure evolve to undesired values. The third set of
 boundary conditions leads to the desired behavior, with the outlet pressure fixed at the specified value and
 the inlet pressure having the appropriate relationship given the inlet Mach number and area ratio across the

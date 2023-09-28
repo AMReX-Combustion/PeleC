@@ -552,7 +552,7 @@ PeleC::extend_signed_distance(
     });
   amrex::Gpu::synchronize();
 
-  // Iteratively compute the distance function in boxes, propagating accross
+  // Iteratively compute the distance function in boxes, propagating across
   // boxes using ghost cells If needed, increase the number of loop to extend
   // the reach of the distance function
   const int nMaxLoop = 4;

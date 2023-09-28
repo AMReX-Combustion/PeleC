@@ -500,7 +500,7 @@ pc_set_wall_temperature(
   const amrex::Array4<amrex::Real>& Twall)
 {
   /*
-    if desired: compute x,y,z and make wall temp an arbitray function of space
+    if desired: compute x,y,z and make wall temp an arbitrary function of space
 
     const amrex::Real* prob_lo = geom.ProbLo();
     const amrex::Real* dx = geom.CellSize();
