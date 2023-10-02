@@ -39,5 +39,3 @@ set_source_files_properties(${AMREX_SUNDIALS_DIR}/AMReX_NVector_MultiFab.cpp PRO
 set_source_files_properties(${AMREX_SUNDIALS_DIR}/AMReX_NVector_MultiFab.H PROPERTIES COMPILE_OPTIONS "${NO_WARN_CXX_FLAGS}")
 set_source_files_properties(${AMREX_SUNDIALS_DIR}/AMReX_SUNMemory.cpp PROPERTIES COMPILE_OPTIONS "${NO_WARN_CXX_FLAGS}")
 set_source_files_properties(${AMREX_SUNDIALS_DIR}/AMReX_SUNMemory.H PROPERTIES COMPILE_OPTIONS "${NO_WARN_CXX_FLAGS}")
-set_source_files_properties(${PELE_PHYSICS_MECHANISM_DIR}/mechanism.cpp PROPERTIES COMPILE_OPTIONS "${NO_WARN_CXX_FLAGS}")
-set_source_files_properties(${PELE_PHYSICS_MECHANISM_DIR}/mechanism.H PROPERTIES COMPILE_OPTIONS "${NO_WARN_CXX_FLAGS}")
