@@ -29,7 +29,7 @@ def AofX(X, inletdiam, outletdiam, nozzlestart, nozzleend):
     return np.pi * (diam / 2) ** 2
 
 
-# Nominal Conditons
+# Nominal Conditions
 M = 0.22
 indiam = 10.0
 outdiam = 10.0 / np.sqrt(2.0)

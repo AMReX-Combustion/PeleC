@@ -1,0 +1,3 @@
+[codespell]
+skip = .git,*.ipynb,*.bib,*.ps,*.patch,*~,CHANGES,*/Submodules,*/Build,*/build,*/tmp_build_dir,plt*,chk*,__pycache__,.ccls,.ccls-cache,tran.dat,GNUmakefile,*.pdf,Testing,sphinx_doc,*/html,*.cti
+ignore-words = .codespell-ignore-words

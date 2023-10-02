@@ -173,7 +173,7 @@ PeleC::monitor_extrema()
         minima[ii], pc_lev.minDerive(extrema_vars[ii], time, local_flag));
     }
 
-    // Handle species seperately
+    // Handle species separately
     auto mf = pc_lev.derive("massfrac", time, 0);
     BL_ASSERT(!(mf == nullptr));
     amrex::MultiFab sumY(pc_lev.grids, pc_lev.dmap, 1, 0);

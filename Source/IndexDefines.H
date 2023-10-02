@@ -75,7 +75,7 @@
 #define NGDNV 6
 
 #if AMREX_SPACEDIM == 1
-// hopefully we wont do EB in 1D
+// hopefully we won't do EB in 1D
 #define NLSPTS 1
 #define NEL_TRIMAT 1
 

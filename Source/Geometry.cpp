@@ -150,7 +150,7 @@ ExtrudedTriangles::build(
   amrex::Vector<amrex::Array<amrex::Real, AMREX_SPACEDIM>> alltri(
     npts_in_tri * max_tri);
 
-  // initalize all triangles with some dummy values
+  // initialize all triangles with some dummy values
   // that fall outside of the domain
   const amrex::Real* problo;
   const amrex::Real* probhi;

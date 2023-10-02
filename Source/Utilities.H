@@ -245,7 +245,7 @@ pc_ctoprim(
   q(i, j, k, QPRES) = p;
   q(i, j, k, QGAME) = p / (e * rho) + 1.0;
 
-  // Auxilary Fab
+  // Auxiliary Fab
   qa(i, j, k, QDPDR) = dpdr_e;
   qa(i, j, k, QDPDE) = dpde;
   qa(i, j, k, QGAMC) = gam1;

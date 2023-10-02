@@ -33,7 +33,7 @@ def parse_ic(fname):
     """
     Parse the file written by PeleC to understand the initial condition
 
-    Returns a dictionary for easy acces
+    Returns a dictionary for easy access
     """
 
     # Read into dataframe

@@ -289,7 +289,7 @@ fine-covered regions are masked. The following provide examples for each diagnos
     pelec.xnormP.center = 0.5                                      # Coordinate in the normal direction
     pelec.xnormP.int    = 5                                        # Frequency (as step #) for performing the diagnostic
     pelec.xnormP.interpolation = Linear                            # [OPT, DEF=Linear] Interpolation type : Linear or Quadratic
-    pelec.xnormP.field_names = x_velocity magvort density          # List of variables outputed to the 2D pltfile
+    pelec.xnormP.field_names = x_velocity magvort density          # List of variables outputted to the 2D pltfile
 
     pelec.condT.type = DiagConditional                             # Diagnostic type
     pelec.condT.file = condTest                                    # Output file prefix

@@ -39,7 +39,7 @@ PeleC::getMOLSrcTerm(
      5. Compute divergence of face-centered fluxes with hybrid divergence
      operator, include wall fluxes for diffusion and hydro,
 
-     6. Perform weigthed redistribution at the EB
+     6. Perform weighted redistribution at the EB
 
      Extra notes:
 
@@ -142,7 +142,7 @@ PeleC::getMOLSrcTerm(
               bcMask[dir].setVal(0);
             }
 
-            // Becase bcMask is read in the Riemann solver in any case,
+            // Because bcMask is read in the Riemann solver in any case,
             // here we put physbc values in the appropriate faces for the
          non-nscbc case set_bc_mask(lo, hi, domain_lo, domain_hi,
                         AMREX_D_DECL(AMREX_TO_FORTRAN(bcMask[0]),
