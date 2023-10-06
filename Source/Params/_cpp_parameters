@@ -293,7 +293,7 @@ print_energy_diagnostics     bool           (false, true)
 # how often (number of coarse timesteps) to compute integral sums (for runtime diagnostics)
 sum_interval                 int           -1
 
-# record extrema of certain variables along with the intergal sums
+# record extrema of certain variables along with the integral sums
 track_extrema               bool           true
 
 # track the extrema of this species in addition to other quantities
