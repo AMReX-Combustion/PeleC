@@ -574,7 +574,7 @@ jobs:
       - name: Configure
         run: |
           cmake -B${{runner.workspace}}/build-clang-tidy \
-          -DCMAKE_BUILD_TYPE:STRING=Debug \
+          -DCMAKE_BUILD_TYPE:STRING=Release \
           -DCMAKE_CXX_COMPILER:STRING=clang++ \
           -DCMAKE_C_COMPILER:STRING=clang \
           -DPELEC_ENABLE_MPI:BOOL=OFF \
