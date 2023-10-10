@@ -249,23 +249,22 @@ PeleC::define_body_state()
     amrex::MultiFab minIdxTmp(grids, dmap, 1, 0, amrex::MFInfo(), Factory());
     auto tmp_arrays = minIdxTmp.arrays();
 
-    amrex::IntVect bx_size = geom.Domain().size();
-    long max_idx = geom.Domain().numPts();
+    const auto& dbox = geom.Domain();
+    const long max_idx = dbox.numPts();
 
     // function minimized at the uncovered cell
     amrex::ParallelFor(
       minIdxTmp, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
-        tmp_arrays[nbx](i, j, k) =
-          flag_arrays[nbx](i, j, k).isRegular()
-            ? i * AMREX_D_TERM(1, *bx_size[1], *bx_size[2]) +
-                j * AMREX_D_TERM(1, *1, *bx_size[2]) + k
-            : max_idx;
+        const amrex::IntVect iv(amrex::IntVect(AMREX_D_DECL(i, j, k)));
+        long idx_masked =
+          flag_arrays[nbx](iv).isRegular() ? dbox.index(iv) : max_idx;
+        tmp_arrays[nbx](iv) = static_cast<amrex::Real>(idx_masked);
       });
     amrex::Gpu::synchronize();
 
     // select the data at the first uncovered cell
-    amrex::IntVect idx_min = minIdxTmp.minIndex(0);
-    amrex::Box tgt_box{idx_min, idx_min};
+    const amrex::IntVect idx_min = minIdxTmp.minIndex(0);
+    const amrex::Box tgt_box{idx_min, idx_min};
     const amrex::MultiFab& S = get_new_data(State_Type);
     for (int n = 0; n < NVAR; ++n) {
       body_state[n] = S.min(tgt_box, n);
