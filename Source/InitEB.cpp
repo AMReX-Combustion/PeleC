@@ -241,88 +241,35 @@ PeleC::define_body_state()
   // set computable values in cells outside the domain
   // We look for the lexicographically first valid point
   if (!body_state_set) {
-    const amrex::MultiFab& S = get_new_data(State_Type);
     auto const& fact =
       dynamic_cast<amrex::EBFArrayBoxFactory const&>(Factory());
     auto const& flags = fact.getMultiEBCellFlagFab();
-    amrex::Vector<int> h_minvec(AMREX_SPACEDIM, 0);
-    AMREX_D_TERM(h_minvec[0] = geom.Domain().bigEnd(0);
-                 , h_minvec[1] = geom.Domain().bigEnd(1);
-                 , h_minvec[2] = geom.Domain().bigEnd(2);)
+    auto flag_arrays = flags.const_arrays();
 
-    amrex::Gpu::DeviceVector<amrex::Real> local_body_state(NVAR, -1);
-    amrex::Gpu::DeviceVector<int> d_minvec(AMREX_SPACEDIM, 0);
-    amrex::Gpu::copy(
-      amrex::Gpu::hostToDevice, h_minvec.begin(), h_minvec.end(),
-      d_minvec.begin());
+    amrex::MultiFab minIdxTmp(grids, dmap, 1, 0, amrex::MFInfo(), Factory());
+    auto tmp_arrays = minIdxTmp.arrays();
 
-    for (amrex::MFIter mfi(S, false); mfi.isValid(); ++mfi) {
-      const amrex::Box vbox = mfi.validbox();
-      auto const& farr = S.const_array(mfi);
-      auto const& flag_arr = flags.const_array(mfi);
+    amrex::IntVect bx_size = geom.Domain().size();
+    long max_idx = geom.Domain().numPts();
 
-      const auto lo = amrex::lbound(vbox);
-      const auto hi = amrex::ubound(vbox);
-      amrex::Real* p_body_state = local_body_state.begin();
-      int* p_minvec = d_minvec.begin();
-      amrex::ParallelFor(1, [=] AMREX_GPU_DEVICE(int /*dummy*/) noexcept {
-        bool found = false;
-        for (int i = lo.x; i <= hi.x && !found; ++i) {
-          for (int j = lo.y; j <= hi.y && !found; ++j) {
-            for (int k = lo.z; k <= hi.z && !found; ++k) {
-              const amrex::IntVect iv(AMREX_D_DECL(i, j, k));
-              if (flag_arr(iv).isRegular()) {
-                found = true;
-                const amrex::IntVect iv_min_loc(p_minvec);
-                if (iv < iv_min_loc) {
-                  for (int n = 0; n < NVAR; ++n) {
-                    p_body_state[n] = farr(iv, n);
-                  }
-                  AMREX_D_TERM(p_minvec[0] = iv[0];, p_minvec[1] = iv[1];
-                               , p_minvec[2] = iv[2];)
-                }
-              }
-            }
-          }
-        }
+    // function minimized at the uncovered cell
+    amrex::ParallelFor(
+      minIdxTmp, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+        tmp_arrays[nbx](i, j, k) =
+          flag_arrays[nbx](i, j, k).isRegular()
+            ? i * AMREX_D_TERM(1, *bx_size[1], *bx_size[2]) +
+                j * AMREX_D_TERM(1, *1, *bx_size[2]) + k
+            : max_idx;
       });
-    }
-    amrex::Gpu::copy(
-      amrex::Gpu::deviceToHost, local_body_state.begin(),
-      local_body_state.end(), body_state.begin());
-    amrex::Gpu::copy(
-      amrex::Gpu::deviceToHost, d_minvec.begin(), d_minvec.end(),
-      h_minvec.begin());
+    amrex::Gpu::synchronize();
 
-    // Find proc with lexicographically first valid point, use that for all
-    amrex::Vector<int> found(
-      AMREX_SPACEDIM * amrex::ParallelDescriptor::NProcs(), 0);
-    AMREX_D_TERM(
-      found[AMREX_SPACEDIM * amrex::ParallelDescriptor::MyProc()] = h_minvec[0];
-      , found[AMREX_SPACEDIM * amrex::ParallelDescriptor::MyProc() + 1] =
-          h_minvec[1];
-      , found[AMREX_SPACEDIM * amrex::ParallelDescriptor::MyProc() + 2] =
-          h_minvec[2];)
-    amrex::ParallelDescriptor::ReduceIntSum(
-      found.data(), static_cast<int>(found.size()));
-    int body_rank = -1;
-    amrex::IntVect iv_min(geom.Domain().bigEnd());
-    for (int i = 0; i < amrex::ParallelDescriptor::NProcs(); ++i) {
-      const int offset = AMREX_SPACEDIM * i;
-      amrex::IntVect iv_test(
-        AMREX_D_DECL(found[offset], found[offset + 1], found[offset + 2]));
-      if (iv_test < iv_min) {
-        body_rank = i;
-        AMREX_D_TERM(iv_min.setVal(0, iv_test[0]);
-                     , iv_min.setVal(1, iv_test[1]);
-                     , iv_min.setVal(2, iv_test[2]);)
-      }
+    // select the data at the first uncovered cell
+    amrex::IntVect idx_min = minIdxTmp.minIndex(0);
+    amrex::Box tgt_box{idx_min, idx_min};
+    const amrex::MultiFab& S = get_new_data(State_Type);
+    for (int n = 0; n < NVAR; ++n) {
+      body_state[n] = S.min(tgt_box, n);
     }
-    AMREX_ALWAYS_ASSERT(body_rank >= 0);
-
-    amrex::ParallelDescriptor::Bcast(
-      &(body_state[0]), body_state.size(), body_rank); // NOLINT
-    body_state_set = true;
   }
 }
 
