@@ -194,8 +194,10 @@ jobs:
             ccache_cache: ~/.cache/ccache
           - build_type: Release
             ctest_args: -LE no-ci
+            ccache_size: 500M
           - build_type: Debug
             ctest_args: -R eb-c12
+            ccache_size: 500M
         exclude:
           - os: macos-latest
             build_type: Debug
@@ -214,7 +216,7 @@ jobs:
           echo "CCACHE_COMPRESS=1" >> $GITHUB_ENV
           echo "CCACHE_COMPRESSLEVEL=1" >> $GITHUB_ENV
           echo "CCACHE_LOGFILE=${{github.workspace}}/ccache.log.txt" >> $GITHUB_ENV
-          echo "CCACHE_MAXSIZE=800M" >> $GITHUB_ENV
+          echo "CCACHE_MAXSIZE=${{matrix.ccache_size}}" >> $GITHUB_ENV
           cmake -E make_directory ${{runner.workspace}}/deps
       - name: Dependencies
         run: |
