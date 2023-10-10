@@ -255,6 +255,7 @@ PeleC::define_body_state()
     // function minimized at the first uncovered cell
     amrex::ParallelFor(
       minIdxTmp, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+        amrex::ignore_unused(k);
         const amrex::IntVect iv(amrex::IntVect(AMREX_D_DECL(i, j, k)));
         const long idx_masked =
           flag_arrays[nbx](iv).isRegular() ? dbox.index(iv) : max_idx;
