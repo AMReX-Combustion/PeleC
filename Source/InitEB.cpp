@@ -269,6 +269,7 @@ PeleC::define_body_state()
     for (int n = 0; n < NVAR; ++n) {
       body_state[n] = S.min(tgt_box, n);
     }
+    body_state_set = true;
   }
 }
 
