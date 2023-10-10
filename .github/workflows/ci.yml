@@ -36,7 +36,7 @@ jobs:
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
           echo "CCACHE_COMPRESS=1" >> $GITHUB_ENV
-          echo "CCACHE_COMPRESSLEVEL=5" >> $GITHUB_ENV
+          echo "CCACHE_COMPRESSLEVEL=1" >> $GITHUB_ENV
           echo "CCACHE_LOGFILE=${{github.workspace}}/ccache.log.txt" >> $GITHUB_ENV
           echo "CCACHE_MAXSIZE=500M" >> $GITHUB_ENV
           #printf "CC=gcc-10\nCXX=g++-10\nFC=gfortran-10\nF90=gfortran-10" \
@@ -66,7 +66,7 @@ jobs:
         working-directory: ./Exec/RegTests/PMF
         run: |
           ccache -s
-          du -hs ${HOME}/.cache/ccache
+          du -hs ~/.cache/ccache
       - name: PMF debug test
         working-directory: ./Exec/RegTests/PMF
         run: ./PeleC3d.gnu.DEBUG.ex pmf-lidryer-arkode.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
@@ -91,7 +91,7 @@ jobs:
         working-directory: ./Exec/RegTests/EB-C10
         run: |
           ccache -s
-          du -hs ${HOME}/.cache/ccache
+          du -hs ~/.cache/ccache
       - name: EB debug test
         working-directory: ./Exec/RegTests/EB-C10
         run: ./PeleC3d.gnu.DEBUG.ex eb-c10.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
@@ -116,7 +116,7 @@ jobs:
         working-directory: ./Exec/RegTests/TG
         run: |
           ccache -s
-          du -hs ${HOME}/.cache/ccache
+          du -hs ~/.cache/ccache
       - name: TG debug single precision test
         working-directory: ./Exec/RegTests/TG
         run: ./PeleC3d.llvm.FLOAT.DEBUG.ex tg-2.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
@@ -141,7 +141,7 @@ jobs:
         working-directory: ./Exec/RegTests/Soot-Flame
         run: |
           ccache -s
-          du -hs ${HOME}/.cache/ccache
+          du -hs ~/.cache/ccache
       - name: Soot debug report
         working-directory: ./Exec/RegTests/Soot-Flame
         run: |
@@ -163,7 +163,7 @@ jobs:
         working-directory: ./Exec/RegTests/Soot-Flame
         run: |
           ccache -s
-          du -hs ${HOME}/.cache/ccache
+          du -hs ~/.cache/ccache
       - name: Spray debug report
         working-directory: ./Exec/RegTests/Spray-Conv
         run: |
@@ -212,7 +212,7 @@ jobs:
         run: |
           echo "NPROCS=${{matrix.procs}}" >> $GITHUB_ENV
           echo "CCACHE_COMPRESS=1" >> $GITHUB_ENV
-          echo "CCACHE_COMPRESSLEVEL=5" >> $GITHUB_ENV
+          echo "CCACHE_COMPRESSLEVEL=1" >> $GITHUB_ENV
           echo "CCACHE_LOGFILE=${{github.workspace}}/ccache.log.txt" >> $GITHUB_ENV
           echo "CCACHE_MAXSIZE=800M" >> $GITHUB_ENV
           cmake -E make_directory ${{runner.workspace}}/deps
@@ -286,9 +286,7 @@ jobs:
       - name: Ccache Report
         run: |
           ccache -s
-          if [ "${RUNNER_OS}" != "macOS" ]; then
-            du -hs ${HOME}/.cache/ccache
-          fi
+          du -hs ${{matrix.ccache_cache}}
       - name: Report
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
@@ -326,7 +324,7 @@ jobs:
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
           echo "CCACHE_COMPRESS=1" >> $GITHUB_ENV
-          echo "CCACHE_COMPRESSLEVEL=5" >> $GITHUB_ENV
+          echo "CCACHE_COMPRESSLEVEL=1" >> $GITHUB_ENV
           echo "CCACHE_LOGFILE=${{github.workspace}}/ccache.log.txt" >> $GITHUB_ENV
           echo "CCACHE_MAXSIZE=500M" >> $GITHUB_ENV
       - name: Dependencies
@@ -373,7 +371,7 @@ jobs:
       - name: Ccache Report
         run: |
           ccache -s
-          du -hs ${HOME}/.cache/ccache
+          du -hs ~/.cache/ccache
   GPU-AMD:
     name: GPU-HIP
     needs: [Formatting, CPU-GNUmake]
@@ -387,9 +385,9 @@ jobs:
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
           echo "CCACHE_COMPRESS=1" >> $GITHUB_ENV
-          echo "CCACHE_COMPRESSLEVEL=5" >> $GITHUB_ENV
+          echo "CCACHE_COMPRESSLEVEL=1" >> $GITHUB_ENV
           echo "CCACHE_LOGFILE=${{github.workspace}}/ccache.log.txt" >> $GITHUB_ENV
-          echo "CCACHE_MAXSIZE=200M" >> $GITHUB_ENV
+          echo "CCACHE_MAXSIZE=500M" >> $GITHUB_ENV
       - name: Dependencies
         run: |
           curl -O https://repo.radeon.com/rocm/rocm.gpg.key
@@ -443,7 +441,7 @@ jobs:
       - name: Ccache Report
         run: |
           ccache -s
-          du -hs ${HOME}/.cache/ccache
+          du -hs ~/.cache/ccache
   GPU-Intel:
     name: GPU-SYCL
     needs: [Formatting, CPU-GNUmake]
@@ -457,7 +455,7 @@ jobs:
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
           echo "CCACHE_COMPRESS=1" >> $GITHUB_ENV
-          echo "CCACHE_COMPRESSLEVEL=5" >> $GITHUB_ENV
+          echo "CCACHE_COMPRESSLEVEL=1" >> $GITHUB_ENV
           echo "CCACHE_LOGFILE=${{github.workspace}}/ccache.log.txt" >> $GITHUB_ENV
           echo "CCACHE_MAXSIZE=900M" >> $GITHUB_ENV
           echo "CCACHE_DEPEND=1" >> $GITHUB_ENV
@@ -508,7 +506,7 @@ jobs:
       - name: Ccache Report
         run: |
           ccache -s
-          du -hs ${HOME}/.cache/ccache
+          du -hs ~/.cache/ccache
 #  Lint-cppcheck:
 #    needs: Formatting
 #    runs-on: macos-12
@@ -556,7 +554,7 @@ jobs:
         run: |
           echo "NPROCS=${{matrix.procs}}" >> $GITHUB_ENV
           echo "CCACHE_COMPRESS=1" >> $GITHUB_ENV
-          echo "CCACHE_COMPRESSLEVEL=5" >> $GITHUB_ENV
+          echo "CCACHE_COMPRESSLEVEL=1" >> $GITHUB_ENV
           echo "CCACHE_LOGFILE=${{github.workspace}}/ccache.log.txt" >> $GITHUB_ENV
           echo "CCACHE_MAXSIZE=500M" >> $GITHUB_ENV
       - name: Install Ccache
@@ -595,7 +593,7 @@ jobs:
       - name: Ccache Report
         run: |
           ccache -s
-          du -hs ${HOME}/.cache/ccache
+          du -hs ~/.cache/ccache
       - name: Full report
         working-directory: ${{runner.workspace}}/build-clang-tidy
         run: cat clang-tidy-full-report.txt
