@@ -218,7 +218,9 @@ jobs:
           echo "CCACHE_LOGFILE=${{github.workspace}}/ccache.log.txt" >> $GITHUB_ENV
           echo "CCACHE_MAXSIZE=${{matrix.ccache_size}}" >> $GITHUB_ENV
           cmake -E make_directory ${{runner.workspace}}/deps
-          cmake -E make_directory ${{runner.workspace}}/.tmp
+          if [ "${RUNNER_OS}" != "macOS" ]; then
+            ${{github.workspace}}/submods/AMReX/.github/workflows/dependencies/ubuntu_free_disk_space.sh
+          fi
       - name: Dependencies
         run: |
           # Install MPI
@@ -282,7 +284,6 @@ jobs:
           ccache -z
           (for DIM in 2 3; do \
             printf "\n-------- Building ${DIM}D --------\n"; \
-              TMPDIR=${{runner.workspace}}/.tmp \
               cmake --build ${{runner.workspace}}/build-${DIM}d-${{matrix.os}}-${{matrix.build_type}} \
               --parallel ${{env.NPROCS}} 2>&1 | tee -a ${{runner.workspace}}/build-output.txt; \
             if [ ${PIPESTATUS[0]} -ne 0 ]; then exit 1; fi \
@@ -333,6 +334,7 @@ jobs:
           echo "CCACHE_MAXSIZE=500M" >> $GITHUB_ENV
       - name: Dependencies
         run: |
+          ${{github.workspace}}/submods/AMReX/.github/workflows/dependencies/ubuntu_free_disk_space.sh
           curl -O https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.0-1_all.deb
           sudo dpkg -i cuda-keyring_1.0-1_all.deb
           sudo apt-get update
@@ -394,6 +396,7 @@ jobs:
           echo "CCACHE_MAXSIZE=100M" >> $GITHUB_ENV
       - name: Dependencies
         run: |
+          ${{github.workspace}}/submods/AMReX/.github/workflows/dependencies/ubuntu_free_disk_space.sh
           curl -O https://repo.radeon.com/rocm/rocm.gpg.key
           sudo apt-key add rocm.gpg.key
           echo 'deb [arch=amd64] https://repo.radeon.com/rocm/apt/5.6.1 ubuntu main' \
@@ -465,6 +468,7 @@ jobs:
           echo "CCACHE_DEPEND=1" >> $GITHUB_ENV
       - name: Dependencies
         run: |
+          ${{github.workspace}}/submods/AMReX/.github/workflows/dependencies/ubuntu_free_disk_space.sh
           sudo wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
           sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
           echo "deb https://apt.repos.intel.com/oneapi all main" \
@@ -561,6 +565,7 @@ jobs:
           echo "CCACHE_COMPRESSLEVEL=1" >> $GITHUB_ENV
           echo "CCACHE_LOGFILE=${{github.workspace}}/ccache.log.txt" >> $GITHUB_ENV
           echo "CCACHE_MAXSIZE=500M" >> $GITHUB_ENV
+          ${{github.workspace}}/submods/AMReX/.github/workflows/dependencies/ubuntu_free_disk_space.sh
       - name: Install Ccache
         run: |
           wget https://github.com/ccache/ccache/releases/download/v4.8/ccache-4.8-linux-x86_64.tar.xz
