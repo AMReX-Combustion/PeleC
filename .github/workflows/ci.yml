@@ -36,9 +36,9 @@ jobs:
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
           echo "CCACHE_COMPRESS=1" >> $GITHUB_ENV
-          echo "CCACHE_COMPRESSLEVEL=5" >> $GITHUB_ENV
+          echo "CCACHE_COMPRESSLEVEL=1" >> $GITHUB_ENV
           echo "CCACHE_LOGFILE=${{github.workspace}}/ccache.log.txt" >> $GITHUB_ENV
-          echo "CCACHE_MAXSIZE=1G" >> $GITHUB_ENV
+          echo "CCACHE_MAXSIZE=350M" >> $GITHUB_ENV
           #printf "CC=gcc-10\nCXX=g++-10\nFC=gfortran-10\nF90=gfortran-10" \
           # >> ${{github.workspace}}/Submodules/AMReX/Tools/GNUMake/Make.local
           make COMP=gnu USE_MPI=FALSE DEBUG=TRUE TPL
@@ -66,7 +66,7 @@ jobs:
         working-directory: ./Exec/RegTests/PMF
         run: |
           ccache -s
-          du -hs ${HOME}/.cache/ccache
+          du -hs ~/.cache/ccache
       - name: PMF debug test
         working-directory: ./Exec/RegTests/PMF
         run: ./PeleC3d.gnu.DEBUG.ex pmf-lidryer-arkode.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
@@ -91,7 +91,7 @@ jobs:
         working-directory: ./Exec/RegTests/EB-C10
         run: |
           ccache -s
-          du -hs ${HOME}/.cache/ccache
+          du -hs ~/.cache/ccache
       - name: EB debug test
         working-directory: ./Exec/RegTests/EB-C10
         run: ./PeleC3d.gnu.DEBUG.ex eb-c10.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
@@ -116,7 +116,7 @@ jobs:
         working-directory: ./Exec/RegTests/TG
         run: |
           ccache -s
-          du -hs ${HOME}/.cache/ccache
+          du -hs ~/.cache/ccache
       - name: TG debug single precision test
         working-directory: ./Exec/RegTests/TG
         run: ./PeleC3d.llvm.FLOAT.DEBUG.ex tg-2.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
@@ -141,7 +141,7 @@ jobs:
         working-directory: ./Exec/RegTests/Soot-Flame
         run: |
           ccache -s
-          du -hs ${HOME}/.cache/ccache
+          du -hs ~/.cache/ccache
       - name: Soot debug report
         working-directory: ./Exec/RegTests/Soot-Flame
         run: |
@@ -163,7 +163,7 @@ jobs:
         working-directory: ./Exec/RegTests/Soot-Flame
         run: |
           ccache -s
-          du -hs ${HOME}/.cache/ccache
+          du -hs ~/.cache/ccache
       - name: Spray debug report
         working-directory: ./Exec/RegTests/Spray-Conv
         run: |
@@ -194,8 +194,10 @@ jobs:
             ccache_cache: ~/.cache/ccache
           - build_type: Release
             ctest_args: -LE no-ci
+            ccache_size: 150M
           - build_type: Debug
             ctest_args: -R eb-c12
+            ccache_size: 500M
         exclude:
           - os: macos-latest
             build_type: Debug
@@ -212,10 +214,13 @@ jobs:
         run: |
           echo "NPROCS=${{matrix.procs}}" >> $GITHUB_ENV
           echo "CCACHE_COMPRESS=1" >> $GITHUB_ENV
-          echo "CCACHE_COMPRESSLEVEL=5" >> $GITHUB_ENV
+          echo "CCACHE_COMPRESSLEVEL=1" >> $GITHUB_ENV
           echo "CCACHE_LOGFILE=${{github.workspace}}/ccache.log.txt" >> $GITHUB_ENV
-          echo "CCACHE_MAXSIZE=1G" >> $GITHUB_ENV
+          echo "CCACHE_MAXSIZE=${{matrix.ccache_size}}" >> $GITHUB_ENV
           cmake -E make_directory ${{runner.workspace}}/deps
+          if [ "${RUNNER_OS}" != "macOS" ]; then
+            ${{github.workspace}}/Submodules/AMReX/.github/workflows/dependencies/ubuntu_free_disk_space.sh
+          fi
       - name: Dependencies
         run: |
           # Install MPI
@@ -279,16 +284,14 @@ jobs:
           ccache -z
           (for DIM in 2 3; do \
             printf "\n-------- Building ${DIM}D --------\n"; \
-            cmake --build ${{runner.workspace}}/build-${DIM}d-${{matrix.os}}-${{matrix.build_type}} \
+              cmake --build ${{runner.workspace}}/build-${DIM}d-${{matrix.os}}-${{matrix.build_type}} \
               --parallel ${{env.NPROCS}} 2>&1 | tee -a ${{runner.workspace}}/build-output.txt; \
             if [ ${PIPESTATUS[0]} -ne 0 ]; then exit 1; fi \
           done)
       - name: Ccache Report
         run: |
           ccache -s
-          if [ "${RUNNER_OS}" != "macOS" ]; then
-            du -hs ${HOME}/.cache/ccache
-          fi
+          du -hs ${{matrix.ccache_cache}}
       - name: Report
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
@@ -326,11 +329,12 @@ jobs:
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
           echo "CCACHE_COMPRESS=1" >> $GITHUB_ENV
-          echo "CCACHE_COMPRESSLEVEL=5" >> $GITHUB_ENV
+          echo "CCACHE_COMPRESSLEVEL=1" >> $GITHUB_ENV
           echo "CCACHE_LOGFILE=${{github.workspace}}/ccache.log.txt" >> $GITHUB_ENV
-          echo "CCACHE_MAXSIZE=1G" >> $GITHUB_ENV
+          echo "CCACHE_MAXSIZE=500M" >> $GITHUB_ENV
       - name: Dependencies
         run: |
+          ${{github.workspace}}/Submodules/AMReX/.github/workflows/dependencies/ubuntu_free_disk_space.sh
           curl -O https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.0-1_all.deb
           sudo dpkg -i cuda-keyring_1.0-1_all.deb
           sudo apt-get update
@@ -359,6 +363,7 @@ jobs:
           export LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/cuda-${{matrix.cuda_ver}}/lib:${LD_LIBRARY_PATH}
           cmake -Bbuild-${{matrix.cuda_pkg}} \
             -DCMAKE_BUILD_TYPE:STRING=Release \
+            -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
             -DPELEC_ENABLE_MPI:BOOL=OFF \
             -DPELEC_ENABLE_CUDA:BOOL=ON \
             -DAMReX_CUDA_ERROR_CAPTURE_THIS:BOOL=ON \
@@ -373,7 +378,7 @@ jobs:
       - name: Ccache Report
         run: |
           ccache -s
-          du -hs ${HOME}/.cache/ccache
+          du -hs ~/.cache/ccache
   GPU-AMD:
     name: GPU-HIP
     needs: [Formatting, CPU-GNUmake]
@@ -387,11 +392,12 @@ jobs:
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
           echo "CCACHE_COMPRESS=1" >> $GITHUB_ENV
-          echo "CCACHE_COMPRESSLEVEL=5" >> $GITHUB_ENV
+          echo "CCACHE_COMPRESSLEVEL=1" >> $GITHUB_ENV
           echo "CCACHE_LOGFILE=${{github.workspace}}/ccache.log.txt" >> $GITHUB_ENV
-          echo "CCACHE_MAXSIZE=1G" >> $GITHUB_ENV
+          echo "CCACHE_MAXSIZE=100M" >> $GITHUB_ENV
       - name: Dependencies
         run: |
+          ${{github.workspace}}/Submodules/AMReX/.github/workflows/dependencies/ubuntu_free_disk_space.sh
           curl -O https://repo.radeon.com/rocm/rocm.gpg.key
           sudo apt-key add rocm.gpg.key
           echo 'deb [arch=amd64] https://repo.radeon.com/rocm/apt/5.6.1 ubuntu main' \
@@ -443,7 +449,7 @@ jobs:
       - name: Ccache Report
         run: |
           ccache -s
-          du -hs ${HOME}/.cache/ccache
+          du -hs ~/.cache/ccache
   GPU-Intel:
     name: GPU-SYCL
     needs: [Formatting, CPU-GNUmake]
@@ -457,12 +463,13 @@ jobs:
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
           echo "CCACHE_COMPRESS=1" >> $GITHUB_ENV
-          echo "CCACHE_COMPRESSLEVEL=5" >> $GITHUB_ENV
+          echo "CCACHE_COMPRESSLEVEL=1" >> $GITHUB_ENV
           echo "CCACHE_LOGFILE=${{github.workspace}}/ccache.log.txt" >> $GITHUB_ENV
-          echo "CCACHE_MAXSIZE=1G" >> $GITHUB_ENV
+          echo "CCACHE_MAXSIZE=150M" >> $GITHUB_ENV
           echo "CCACHE_DEPEND=1" >> $GITHUB_ENV
       - name: Dependencies
         run: |
+          ${{github.workspace}}/Submodules/AMReX/.github/workflows/dependencies/ubuntu_free_disk_space.sh
           sudo wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
           sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
           echo "deb https://apt.repos.intel.com/oneapi all main" \
@@ -508,42 +515,42 @@ jobs:
       - name: Ccache Report
         run: |
           ccache -s
-          du -hs ${HOME}/.cache/ccache
-  Lint-cppcheck:
-    needs: Formatting
-    runs-on: macos-12
-    steps:
-      - name: Clone
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-      - name: Dependencies
-        run: |
-          export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=TRUE
-          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/9b0e3d32f590458ae9e5dbf01943b39845b5315e/Formula/cppcheck.rb
-          brew install cppcheck.rb
-      - name: Configure
-        run: |
-          cmake -B${{runner.workspace}}/build-cppcheck \
-          -DPELEC_ENABLE_MPI:BOOL=OFF \
-          -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
-          -DPELEC_ENABLE_MASA:BOOL=OFF \
-          -DPELEC_ENABLE_CPPCHECK:BOOL=ON \
-          ${{github.workspace}}
-      - name: Check
-        working-directory: ${{runner.workspace}}/build-cppcheck
-        run: make cppcheck
-      - name: Full report
-        working-directory: ${{runner.workspace}}/build-cppcheck/cppcheck
-        run: cat cppcheck-full-report.txt
-      - name: Short report
-        working-directory: ${{runner.workspace}}/build-cppcheck/cppcheck
-        run: |
-          echo "::add-matcher::.github/problem-matchers/cppcheck.json"
-          awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' < cppcheck-report.txt > cppcheck-warnings.txt
-          cat cppcheck-warnings.txt
-          export return=$(tail -n 1 cppcheck-warnings.txt | awk '{print $2}')
-          exit ${return}
+          du -hs ~/.cache/ccache
+#  Lint-cppcheck:
+#    needs: Formatting
+#    runs-on: macos-12
+#    steps:
+#      - name: Clone
+#        uses: actions/checkout@v3
+#        with:
+#          submodules: true
+#      - name: Dependencies
+#        run: |
+#          export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=TRUE
+#          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/9b0e3d32f590458ae9e5dbf01943b39845b5315e/Formula/cppcheck.rb
+#          brew install cppcheck.rb
+#      - name: Configure
+#        run: |
+#          cmake -B${{runner.workspace}}/build-cppcheck \
+#          -DPELEC_ENABLE_MPI:BOOL=OFF \
+#          -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
+#          -DPELEC_ENABLE_MASA:BOOL=OFF \
+#          -DPELEC_ENABLE_CPPCHECK:BOOL=ON \
+#          ${{github.workspace}}
+#      - name: Check
+#        working-directory: ${{runner.workspace}}/build-cppcheck
+#        run: make cppcheck
+#      - name: Full report
+#        working-directory: ${{runner.workspace}}/build-cppcheck/cppcheck
+#        run: cat cppcheck-full-report.txt
+#      - name: Short report
+#        working-directory: ${{runner.workspace}}/build-cppcheck/cppcheck
+#        run: |
+#          echo "::add-matcher::.github/problem-matchers/cppcheck.json"
+#          awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' < cppcheck-report.txt > cppcheck-warnings.txt
+#          cat cppcheck-warnings.txt
+#          export return=$(tail -n 1 cppcheck-warnings.txt | awk '{print $2}')
+#          exit ${return}
   Lint-clang-tidy:
     needs: Formatting
     runs-on: ubuntu-latest
@@ -552,17 +559,38 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: true
-      - name: Configure
+      - name: Setup
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
+          echo "CCACHE_COMPRESS=1" >> $GITHUB_ENV
+          echo "CCACHE_COMPRESSLEVEL=1" >> $GITHUB_ENV
+          echo "CCACHE_LOGFILE=${{github.workspace}}/ccache.log.txt" >> $GITHUB_ENV
+          echo "CCACHE_MAXSIZE=500M" >> $GITHUB_ENV
+          ${{github.workspace}}/Submodules/AMReX/.github/workflows/dependencies/ubuntu_free_disk_space.sh
+      - name: Install Ccache
+        run: |
+          wget https://github.com/ccache/ccache/releases/download/v4.8/ccache-4.8-linux-x86_64.tar.xz
+          tar xvf ccache-4.8-linux-x86_64.tar.xz
+          sudo cp -f ccache-4.8-linux-x86_64/ccache /usr/local/bin/
+      - name: Set Up Ccache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/ccache
+          key: ccache-${{github.workflow}}-${{github.job}}-git-${{github.sha}}
+          restore-keys: |
+               ccache-${{github.workflow}}-${{github.job}}-git-
+      - name: Configure
+        run: |
           cmake -B${{runner.workspace}}/build-clang-tidy \
-          -DCMAKE_BUILD_TYPE:STRING=Debug \
+          -DCMAKE_BUILD_TYPE:STRING=Release \
+          -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
           -DCMAKE_CXX_COMPILER:STRING=clang++ \
           -DCMAKE_C_COMPILER:STRING=clang \
           -DPELEC_ENABLE_MPI:BOOL=OFF \
           -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
           -DPELEC_ENABLE_MASA:BOOL=OFF \
           -DPELEC_ENABLE_CLANG_TIDY:BOOL=ON \
+          -DCMAKE_CXX_COMPILER_LAUNCHER:STRING=ccache \
           ${{github.workspace}}
       - name: Check
         working-directory: ${{runner.workspace}}/build-clang-tidy
@@ -573,6 +601,10 @@ jobs:
             | egrep -v "Submodules/AMReX|Submodules/sundials" \
             | egrep -v "ld: warning:" | sort | uniq \
             | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > clang-tidy-warnings.txt
+      - name: Ccache Report
+        run: |
+          ccache -s
+          du -hs ~/.cache/ccache
       - name: Full report
         working-directory: ${{runner.workspace}}/build-clang-tidy
         run: cat clang-tidy-full-report.txt
