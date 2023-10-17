@@ -310,30 +310,6 @@ PeleC::set_body_state(amrex::MultiFab& S)
   amrex::Gpu::synchronize();
 }
 
-void
-PeleC::zero_in_body(amrex::MultiFab& S) const
-{
-  BL_PROFILE("PeleC::zero_in_body()");
-
-  if (!eb_in_domain) {
-    return;
-  }
-
-  amrex::GpuArray<amrex::Real, NVAR> zeros = {0.0};
-  auto const& fact = dynamic_cast<amrex::EBFArrayBoxFactory const&>(Factory());
-  auto const& flags = fact.getMultiEBCellFlagFab();
-
-  auto const& sarrs = S.arrays();
-  auto const& flagarrs = flags.const_arrays();
-  const amrex::IntVect ngs(0);
-  amrex::ParallelFor(
-    S, ngs, NVAR,
-    [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k, int n) noexcept {
-      pc_set_body_state(i, j, k, n, flagarrs[nbx], zeros, sarrs[nbx]);
-    });
-  amrex::Gpu::synchronize();
-}
-
 // Sets up implicit function using EB2 infrastructure
 void
 initialize_EB2(

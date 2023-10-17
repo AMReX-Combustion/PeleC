@@ -232,8 +232,6 @@ public:
 
   void set_body_state(amrex::MultiFab& S);
 
-  void zero_in_body(amrex::MultiFab& S) const;
-
   void initialize_signed_distance();
 
   void eb_distance(const int lev, amrex::MultiFab& signDistLev);
