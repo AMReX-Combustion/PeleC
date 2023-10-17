@@ -147,6 +147,13 @@ PeleC::initialize_eb2_structs()
         amrex::Abort();
       }
 
+      if (eb_noslip or eb_isothermal) {
+        amrex::Box sbox = amrex::grow(tbox, -3);
+        pc_check_bndry_grad_stencil(
+          sbox, ncutcells, flags.array(mfi),
+          sv_eb_bndry_grad_stencil[iLocal].data());
+      }
+
       sv_eb_flux[iLocal].define(sv_eb_bndry_grad_stencil[iLocal], NVAR);
       sv_eb_bcval[iLocal].define(sv_eb_bndry_grad_stencil[iLocal], QVAR);
 
