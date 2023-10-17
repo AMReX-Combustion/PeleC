@@ -222,6 +222,12 @@ void pc_fill_bndry_grad_stencil_ls(
   const amrex::Array4<amrex::EBCellFlag const>& flags,
   EBBndrySten* /*grad_stencil*/);
 
+void pc_check_bndry_grad_stencil(
+  const amrex::Box& /*bx*/,
+  const int /*Nsten*/,
+  const amrex::Array4<amrex::EBCellFlag const>& flags,
+  const EBBndrySten* /*grad_stencil*/);
+
 void pc_fill_bndry_grad_stencil_quadratic(
   const amrex::Box& /*bx*/,
   const amrex::Real /*dx*/,
