@@ -1123,6 +1123,7 @@ PeleC::post_timestep(int iteration)
   amrex::MultiFab& S_new = get_new_data(State_Type);
   int ng_pts = 0;
   computeTemp(S_new, ng_pts);
+  set_body_state(S_new);
 
 #ifdef PELEC_USE_SOOT
   clipSootMoments(S_new, ng_pts);
@@ -1404,6 +1405,14 @@ PeleC::okToContinue()
     test = 0;
 
     amrex::Print() << " Signalling a stop of the run because dt < dt_cutoff."
+                   << std::endl;
+  }
+
+  if (
+    get_new_data(State_Type).contains_nan() or
+    get_new_data(State_Type).contains_inf()) {
+    test = 0;
+    amrex::Print() << " Signalling a stop because NaNs detected in the Solution"
                    << std::endl;
   }
 
