@@ -244,6 +244,14 @@ PeleC::define_body_state()
     return;
   }
 
+  if (eb_zero_body_state) {
+    for (int n = 0; n < NVAR; ++n) {
+      body_state[n] = 0.0;
+    }
+    body_state_set = true;
+    return;
+  }
+
   // Scan over data and find a point in the fluid to use to
   // set computable values in cells outside the domain
   // We look for the lexicographically first valid point

@@ -222,6 +222,9 @@ eb_srd_max_order             int          0
 # Weight types for ML redistribution (0 = 1.0, 1 = energy, 2 = density, 3 = vfrac)
 eb_weights_type              int          2
 
+# Set body state in covered cells to 0
+eb_zero_body_state           bool         false
+
 #-----------------------------------------------------------------------------
 # category: method of manufactured solution
 #-----------------------------------------------------------------------------
