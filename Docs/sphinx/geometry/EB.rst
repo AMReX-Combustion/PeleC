@@ -162,6 +162,12 @@ Applying boundary and face stencils
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When processing geometry cells, the cached datastructures can be applied efficiently, for example, to interpolate fluxes from face centers to face centroids in cut cells.
+Two stencil types are available for computing the gradients at the EB for diffusive fluxes, and they are selected as follows:
+
+* ``ebd.boundary_grad_stencil_type = 0``: Quadratic stencil (default). On poorly resolved geometries, this stencil may reach into covered cells, in which case the simulation will
+  fail with a warning. See `Johansen and Collela <https://doi.org/10.1006/jcph.1998.5965>`_ for further details.
+
+* ``end.boundary_grad_stencil_type = 1``: Least-squares stencil. See `Anderson and Bonhaus <https://doi.org/10.1016/0045-7930(94)90023-X>`_ for further details.
 
 .. include:: /geometry/geometry_init.rst
 
@@ -182,3 +188,12 @@ These are the input options to read from a saved EB geometry:
    eb2.geom_type="chkfile"
    eb2.chkfile="chk_geom" # optional, defaults to "chk_geom"
    eb2.max_grid_size=32 # optional, defaults to 64, must match the max_grid_size used to generate the EB in the first place
+
+Setting the Covered State
+-------------------------
+
+By default, the state for all cells completely covered by the EB is set to the value of the initial condition of the first valid fluid cell on the base grid.
+The values in the covered region do not affect values in the fluid region, but should still have valid values because some basic operations are still
+carried out in the covered region, and invalid operations or NaNs may be detected during these operations if the specified values are not valid.
+For debugging purposes, one may specify ``pelec.eb_zero_body_state = true``, in which case all state variables in the covered region will be set to zero.
+This will lead to NaNs when primitive variables are computed (dividing by density), but these should not propagate into fluid cells.
