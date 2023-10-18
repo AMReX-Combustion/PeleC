@@ -5,7 +5,7 @@ stop_time = 3e-5
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic =  0   0  0
 geometry.coord_sys   =  0       # 0 => cart
-geometry.prob_lo     =  0    0    0 
+geometry.prob_lo     =  0    0    0
 
 geometry.prob_lo     =   0.0 -0.05 -0.05
 geometry.prob_hi     =   0.1 0.05  0.05
@@ -63,13 +63,13 @@ amr.plot_file       = plt
 amr.plot_int        = 100
 amr.derive_plot_vars = density xmom ymom zmom rho_E rho_e Temp rho_H2 rho_O2 rho_H2O rho_H rho_O rho_OH rho_HO2 rho_H2O2 rho_N2 rho_omega_H2 rho_omega_O2 rho_omega_H2O rho_omega_H rho_omega_O rho_omega_OH rho_omega_HO2 rho_omega_H2O2 rho_omega_N2 pressure kineng enstrophy soundspeed MachNumber entropy magvort divu eint_E eint_e logden x_velocity y_velocity z_velocity magvel radvel magmom vfrac cp cv viscosity bulk_viscosity conductivity D(H2) D(O2) D(H2O) D(H) D(O) D(OH) D(HO2) D(H2O2) D(N2)
 
-#extruded triangles lets the user create a maximum of 5 triangles 
+#extruded triangles lets the user create a maximum of 5 triangles
 #in 2D that will be extruded in the z direction
-#make sure the coordinates are in anti-clockwise direction 
+#make sure the coordinates are in anti-clockwise direction
 #eb2.geom_type = "all_regular"
 eb2.geom_type = "ICE_PistonBowl"
 
-ebd.boundary_grad_stencil_type = 0
+ebd.boundary_grad_stencil_type = 1
 #fabarray.mfiter_tile_size = 1024 1024 1024
 
 # PROBLEM PARAMETERS
