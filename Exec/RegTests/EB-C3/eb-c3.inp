@@ -70,6 +70,7 @@ amr.derive_plot_vars = density xmom ymom zmom rho_E rho_e Temp rho_H2 rho_O2 rho
 eb2.geom_type = "ICE_PistonBowl"
 
 ebd.boundary_grad_stencil_type = 1
+pelec.eb_zero_body_state = 1
 #fabarray.mfiter_tile_size = 1024 1024 1024
 
 # PROBLEM PARAMETERS

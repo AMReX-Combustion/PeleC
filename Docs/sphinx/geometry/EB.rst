@@ -196,4 +196,5 @@ By default, the state for all cells completely covered by the EB is set to the v
 The values in the covered region do not affect values in the fluid region, but should still have valid values because some basic operations are still
 carried out in the covered region, and invalid operations or NaNs may be detected during these operations if the specified values are not valid.
 For debugging purposes, one may specify ``pelec.eb_zero_body_state = true``, in which case all state variables in the covered region will be set to zero.
-This will lead to NaNs when primitive variables are computed (dividing by density), but these should not propagate into fluid cells.
+This will lead to NaNs when primitive variables are computed (dividing by density), but these should not propagate into fluid cells. The ``EB-C3`` RegTest
+is run with this option to ensure that covered cells do not affect fluid cells.
