@@ -30,8 +30,7 @@ struct PCHypFillExtDir
     const int /*orig_comp*/) const
   {
     // We need the whole state to apply physical BCs
-    AMREX_ASSERT(dcomp == 0 and numcomp == NVAR);
-    amrex::ignore_unused(dcomp, numcomp);
+    AMREX_ALWAYS_ASSERT(dcomp == 0 && numcomp == NVAR);
 
     const int* domlo = geom.Domain().loVect();
     const int* domhi = geom.Domain().hiVect();
