@@ -411,7 +411,7 @@ pc_check_bndry_grad_stencil(
               sten[L].iv_base[0] + ii, sten[L].iv_base[1] + jj,
               sten[L].iv_base[2] + kk));
             if (
-              flags(ivp).isCovered() and
+              flags(ivp).isCovered() &&
               std::abs(sten[L].val AMREX_D_TERM([ii], [jj], [kk])) > 1e-14) {
               amrex::Abort(
                 "EB Boundary Stencil for noslip/isothermal EB accesses a "

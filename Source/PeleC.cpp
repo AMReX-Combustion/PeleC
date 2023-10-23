@@ -1409,7 +1409,7 @@ PeleC::okToContinue()
   }
 
   if (
-    get_new_data(State_Type).contains_nan() or
+    get_new_data(State_Type).contains_nan() ||
     get_new_data(State_Type).contains_inf()) {
     test = 0;
     amrex::Print() << " Signalling a stop because NaNs detected in the Solution"

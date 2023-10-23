@@ -167,7 +167,7 @@ Two stencil types are available for computing the gradients at the EB for diffus
 * ``ebd.boundary_grad_stencil_type = 0``: Quadratic stencil (default). On poorly resolved geometries, this stencil may reach into covered cells, in which case the simulation will
   fail with a warning. See `Johansen and Collela <https://doi.org/10.1006/jcph.1998.5965>`_ for further details.
 
-* ``end.boundary_grad_stencil_type = 1``: Least-squares stencil. See `Anderson and Bonhaus <https://doi.org/10.1016/0045-7930(94)90023-X>`_ for further details.
+* ``ebd.boundary_grad_stencil_type = 1``: Least-squares stencil. See `Anderson and Bonhaus <https://doi.org/10.1016/0045-7930(94)90023-X>`_ for further details.
 
 .. include:: /geometry/geometry_init.rst
 
