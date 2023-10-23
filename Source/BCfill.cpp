@@ -21,14 +21,17 @@ struct PCHypFillExtDir
   void operator()(
     const amrex::IntVect& iv,
     amrex::Array4<amrex::Real> const& dest,
-    const int /*dcomp*/,
-    const int /*numcomp*/,
+    const int dcomp,
+    const int numcomp,
     amrex::GeometryData const& geom,
     const amrex::Real time,
     const amrex::BCRec* bcr,
     const int /*bcomp*/,
     const int /*orig_comp*/) const
   {
+    // We need the whole state to apply physical BCs
+    AMREX_ALWAYS_ASSERT(dcomp == 0 && numcomp == NVAR);
+
     const int* domlo = geom.Domain().loVect();
     const int* domhi = geom.Domain().hiVect();
     const amrex::Real* prob_lo = geom.ProbLo();

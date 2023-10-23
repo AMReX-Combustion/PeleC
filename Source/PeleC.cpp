@@ -1941,29 +1941,21 @@ PeleC::errorEst(
 std::unique_ptr<amrex::MultiFab>
 PeleC::derive(const std::string& name, amrex::Real time, int ngrow)
 {
-  if ((do_les) && (name == "C_s2")) {
+  if ((do_les) && ((name == "C_s2") || (name == "C_I") || (name == "Pr_T"))) {
+    AMREX_ASSERT(ngrow <= LES_Coeffs.nGrow());
     std::unique_ptr<amrex::MultiFab> derive_dat(
-      new amrex::MultiFab(grids, dmap, 1, 0));
-    amrex::MultiFab::Copy(*derive_dat, LES_Coeffs, comp_Cs2, 0, 1, 0);
-    return derive_dat;
-  }
-  if ((do_les) && (name == "C_I")) {
-    std::unique_ptr<amrex::MultiFab> derive_dat(
-      new amrex::MultiFab(grids, dmap, 1, 0));
-    amrex::MultiFab::Copy(*derive_dat, LES_Coeffs, comp_CI, 0, 1, 0);
-    return derive_dat;
-  }
-  if ((do_les) && (les_model != 1) && (name == "Pr_T")) {
-    std::unique_ptr<amrex::MultiFab> derive_dat(
-      new amrex::MultiFab(grids, dmap, 1, 0));
-    amrex::MultiFab::Copy(*derive_dat, LES_Coeffs, comp_PrT, 0, 1, 0);
-    return derive_dat;
-  }
-  if ((do_les) && (les_model == 1) && (name == "Pr_T")) {
-    std::unique_ptr<amrex::MultiFab> derive_dat(
-      new amrex::MultiFab(grids, dmap, 1, 0));
-    amrex::MultiFab::Copy(*derive_dat, LES_Coeffs, comp_Cs2ovPrT, 0, 1, 0);
-    amrex::MultiFab::Divide(*derive_dat, LES_Coeffs, comp_Cs2, 0, 1, 0);
+      new amrex::MultiFab(grids, dmap, 1, ngrow));
+    if (name == "C_s2") {
+      amrex::MultiFab::Copy(*derive_dat, LES_Coeffs, comp_Cs2, 0, 1, ngrow);
+    } else if (name == "C_I") {
+      amrex::MultiFab::Copy(*derive_dat, LES_Coeffs, comp_CI, 0, 1, ngrow);
+    } else if ((les_model != 1) && (name == "Pr_T")) {
+      amrex::MultiFab::Copy(*derive_dat, LES_Coeffs, comp_PrT, 0, 1, ngrow);
+    } else { // Pr_T, les_model==1
+      amrex::MultiFab::Copy(
+        *derive_dat, LES_Coeffs, comp_Cs2ovPrT, 0, 1, ngrow);
+      amrex::MultiFab::Divide(*derive_dat, LES_Coeffs, comp_Cs2, 0, 1, ngrow);
+    }
     return derive_dat;
   }
 
@@ -1975,6 +1967,24 @@ PeleC::derive(const std::string& name, amrex::Real time, int ngrow)
     }
     amrex::MultiFab::Copy(*mf, vfrac, 0, 0, 1, 0);
     return mf;
+  }
+
+  // Can't use the AmrLevel derive for state variables with ghost cells:
+  // That will fillpatch them individually, but we require the full state
+  // for physBCs. Therefore, instead fillpatch the full state and then grab
+  // the component we need.
+  int index, scomp;
+  if (isStateVariable(name, index, scomp) && (ngrow > 0)) {
+    amrex::MultiFab S_data(
+      get_new_data(State_Type).boxArray(),
+      get_new_data(State_Type).DistributionMap(), NVAR, ngrow, amrex::MFInfo(),
+      Factory());
+    FillPatch(
+      *this, S_data, S_data.nGrow(), time, State_Type, Density, NVAR, 0);
+    std::unique_ptr<amrex::MultiFab> derive_dat(
+      new amrex::MultiFab(grids, dmap, 1, ngrow, amrex::MFInfo(), Factory()));
+    amrex::MultiFab::Copy(*derive_dat, S_data, scomp, 0, 1, ngrow);
+    return derive_dat;
   }
 
   // For those using GrowBoxByOne we need this
