@@ -74,8 +74,7 @@ prob.right_gas = HE
 pelec.eb_boundary_T = 300.
 pelec.eb_isothermal = 1
 
-eb2.geom_type = box
-eb2.box_lo = 1.0 0.0 0.0 
-eb2.box_hi = 1.4 0.1 0.1
-eb2.box_has_fluid_inside = 0
+eb2.geom_type = plane
+eb2.plane_point = 1.0 0.0 0.0
+eb2.plane_normal = 1.0 0.0 0.0
 ebd.boundary_grad_stencil_type=0

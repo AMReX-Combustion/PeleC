@@ -6,7 +6,7 @@ stop_time = 3e-3
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic =  0   0  0
 geometry.coord_sys   =  0       # 0 => cart
-geometry.prob_lo     =  0    0    0 
+geometry.prob_lo     =  0    0    0
 
 geometry.prob_lo     =   0.0 -0.05 -0.05
 geometry.prob_hi     =   0.1 0.05  0.05
@@ -68,13 +68,13 @@ amr.plot_int        = 100
 #amr.plot_int        = 1
 amr.derive_plot_vars=ALL
 
-#extruded triangles lets the user create a maximum of 5 triangles 
+#extruded triangles lets the user create a maximum of 5 triangles
 #in 2D that will be extruded in the z direction
-#make sure the coordinates are in anti-clockwise direction 
+#make sure the coordinates are in anti-clockwise direction
 #eb2.geom_type = "all_regular"
 eb2.geom_type = "ICE_PistonBowl"
 
-ebd.boundary_grad_stencil_type = 0
+ebd.boundary_grad_stencil_type = 1
 #fabarray.mfiter_tile_size = 1024 1024 1024
 
 # PROBLEM PARAMETERS

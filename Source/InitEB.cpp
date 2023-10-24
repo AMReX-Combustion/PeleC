@@ -147,6 +147,13 @@ PeleC::initialize_eb2_structs()
         amrex::Abort();
       }
 
+      if (eb_noslip or eb_isothermal) {
+        amrex::Box sbox = amrex::grow(tbox, -3);
+        pc_check_bndry_grad_stencil(
+          sbox, ncutcells, flags.array(mfi),
+          sv_eb_bndry_grad_stencil[iLocal].data());
+      }
+
       sv_eb_flux[iLocal].define(sv_eb_bndry_grad_stencil[iLocal], NVAR);
       sv_eb_bcval[iLocal].define(sv_eb_bndry_grad_stencil[iLocal], QVAR);
 
@@ -237,6 +244,14 @@ PeleC::define_body_state()
     return;
   }
 
+  if (eb_zero_body_state) {
+    for (int n = 0; n < NVAR; ++n) {
+      body_state[n] = 0.0;
+    }
+    body_state_set = true;
+    return;
+  }
+
   // Scan over data and find a point in the fluid to use to
   // set computable values in cells outside the domain
   // We look for the lexicographically first valid point
@@ -299,30 +314,6 @@ PeleC::set_body_state(amrex::MultiFab& S)
     [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k, int n) noexcept {
       pc_set_body_state(
         i, j, k, n, flagarrs[nbx], captured_body_state, sarrs[nbx]);
-    });
-  amrex::Gpu::synchronize();
-}
-
-void
-PeleC::zero_in_body(amrex::MultiFab& S) const
-{
-  BL_PROFILE("PeleC::zero_in_body()");
-
-  if (!eb_in_domain) {
-    return;
-  }
-
-  amrex::GpuArray<amrex::Real, NVAR> zeros = {0.0};
-  auto const& fact = dynamic_cast<amrex::EBFArrayBoxFactory const&>(Factory());
-  auto const& flags = fact.getMultiEBCellFlagFab();
-
-  auto const& sarrs = S.arrays();
-  auto const& flagarrs = flags.const_arrays();
-  const amrex::IntVect ngs(0);
-  amrex::ParallelFor(
-    S, ngs, NVAR,
-    [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k, int n) noexcept {
-      pc_set_body_state(i, j, k, n, flagarrs[nbx], zeros, sarrs[nbx]);
     });
   amrex::Gpu::synchronize();
 }
