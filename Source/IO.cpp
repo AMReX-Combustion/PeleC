@@ -355,7 +355,7 @@ PeleC::setPlotVariables()
   int plot_reactions = 1;
   pp.query("plot_reactions", plot_reactions);
   if (plot_reactions == 0) {
-    for (int i = 0; i < NUM_SPECIES + 1; i++) {
+    for (int i = 0; i < NUM_SPECIES + 2; i++) {
       amrex::Amr::deleteStatePlotVar(desc_lst[Reactions_Type].name(i));
     }
   }
