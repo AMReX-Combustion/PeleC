@@ -24,6 +24,9 @@ FSANITIZER = FALSE
 THREAD_SANITIZER = FALSE
 
 # PeleC
+PELE_CVODE_FORCE_YCORDER = FALSE
+PELE_USE_MAGMA = FALSE
+PELE_COMPILE_AJACOBIAN = FALSE
 # Eos_dir := Soave-Redlich-Kwong
 Eos_Model := GammaLaw
 Chemistry_Model := Null
