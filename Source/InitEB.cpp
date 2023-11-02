@@ -333,7 +333,7 @@ initialize_EB2(
   amrex::Print() << "Initializing EB2" << std::endl;
   amrex::ParmParse ppeb2("eb2");
 
-  std::string geom_type("all_regular");
+  std::string geom_type = "all_regular";
   ppeb2.query("geom_type", geom_type);
 
   int max_coarsening_level = 0;
@@ -348,20 +348,117 @@ initialize_EB2(
     }
   }
 
-  // Custom types defined here - all_regular, plane, sphere, etc, will get
-  // picked up by default (see AMReX_EB2.cpp around L100 )
-  amrex::Vector<std::string> amrex_defaults(
-    {"all_regular", "box", "cylinder", "plane", "sphere", "torus", "parser"});
-  if (!(std::find(amrex_defaults.begin(), amrex_defaults.end(), geom_type) !=
-        amrex_defaults.end())) {
-    std::unique_ptr<pele::pelec::Geometry> geometry(
-      pele::pelec::Geometry::create(geom_type));
-    geometry->build(geom, max_coarsening_level + coarsening);
-  } else {
-    amrex::EB2::Build(
-      geom, max_coarsening_level + coarsening,
-      max_coarsening_level + coarsening);
-  }
+  // // Custom types defined here - all_regular, plane, sphere, etc, will get
+  // // picked up by default (see AMReX_EB2.cpp around L100 )
+  // amrex::Vector<std::string> amrex_defaults(
+  //   {"all_regular", "box", "cylinder", "plane", "sphere", "torus", "parser"});
+  // if (!(std::find(amrex_defaults.begin(), amrex_defaults.end(), geom_type) !=
+  //       amrex_defaults.end())) {
+  //   std::unique_ptr<pele::pelec::Geometry> geometry(
+  //     pele::pelec::Geometry::create(geom_type));
+  //   geometry->build(geom, max_coarsening_level + coarsening);
+  // }
+  // else if(geom_type == "NH3_burner"){
+
+
+    amrex::Print() << "** Initialising flame holder geometry... \n";
+    
+    amrex::ParmParse pp("EB");
+    
+    // Taper flame holder dimensions
+
+     amrex::Real inflow_diam = 0.0;
+     pp.query("inflow_diam",inflow_diam);
+   
+     amrex::Real FH_top_radius = 0.0;
+     pp.query("flame_holder_top_radius",FH_top_radius);
+
+     amrex::Real FH_bottom_radius = 0.0;
+     pp.query("flame_holder_bottom_radius",FH_bottom_radius);
+     amrex::Print() << "FH_bottom_radius = " << FH_bottom_radius << "\n";
+
+     amrex::Real FH_cylinder_height = 0.0;
+     pp.query("flame_holder_cylinder_height",FH_cylinder_height);
+     amrex::Print() << "FH_cylinder_height = " << FH_cylinder_height << "\n";
+
+     amrex::Real FH_total_height = 0.0;
+     pp.query("flame_holder_total_height",FH_total_height);
+
+     amrex::Real FH_top_cylinder_height = 0.0;
+     pp.query("flame_holder_top_cylinder_height",FH_top_cylinder_height);
+
+     amrex::Real noz_bottom_cylinder_radius = 0.0;
+     pp.query("noz_bottom_cylinder_radius",noz_bottom_cylinder_radius);
+
+     amrex::Real noz_bottom_cylinder_height = 0.0;
+     pp.query("noz_bottom_cylinder_height",noz_bottom_cylinder_height);
+
+     amrex::Real swirler_shaft_radius = 0.0;
+     pp.query("swirler_shaft_radius",swirler_shaft_radius);
+
+     amrex::Real swirler_shaft_height = 0.0;
+     pp.query("swirler_shaft_height",swirler_shaft_height);
+
+  // Taper flame holder construction
+
+     amrex::EB2::PlaneIF FH_bottom({AMREX_D_DECL(inflow_diam,5.31e-1,0.0)},
+          {AMREX_D_DECL(0.0,-1.0,0.0)}); 
+     amrex::EB2::PlaneIF FH_bottom_cyl_edge({AMREX_D_DECL(FH_bottom_radius,FH_cylinder_height,0.0)},
+          {AMREX_D_DECL(1.0,0.0,0.0)});
+     amrex::EB2::PlaneIF FH_top_cyl_edge({AMREX_D_DECL(FH_top_radius,FH_total_height,0.0)},
+          {AMREX_D_DECL(1.0,0.0,0.0)});
+     amrex::EB2::PlaneIF FH_cone_edge({AMREX_D_DECL(FH_bottom_radius,FH_cylinder_height,0.0)},
+          {AMREX_D_DECL(1.0,-0.1245565,0.0)});
+       
+      auto geom1 = amrex::EB2::makeIntersection(FH_bottom_cyl_edge,FH_cone_edge);
+      auto geom2 = amrex::EB2::makeUnion(geom1,FH_top_cyl_edge);
+      auto geom3 = amrex::EB2::makeUnion(geom2,FH_bottom);
+
+      auto flame_holder = amrex::EB2::lathe(geom3);
+
+     // Nozzle construction  
+     amrex::EB2::PlaneIF noz_bottom_cyl_edge({AMREX_D_DECL(noz_bottom_cylinder_radius,0.0,0.0)},
+          {AMREX_D_DECL(1.0,0.0,0.0)});    
+     amrex::EB2::PlaneIF noz_cone_edge({AMREX_D_DECL(noz_bottom_cylinder_radius,noz_bottom_cylinder_height,0.0)},
+          {AMREX_D_DECL(0.866025,0.50,0.0)}); 
+
+     auto geom4 = amrex::EB2::makeUnion(noz_cone_edge,noz_bottom_cyl_edge);
+     
+     auto nozzle = amrex::EB2::lathe(geom4);
+
+     // Swirler Shaft construction
+     amrex::EB2::PlaneIF shaft_horiz_top_plane({AMREX_D_DECL(0.0,swirler_shaft_height,0.0)},
+          {AMREX_D_DECL(0.0,-1.0,0.0)});
+     amrex::EB2::PlaneIF shaft_horiz_bottom_plane({AMREX_D_DECL(0.0,0.0,0.0)},
+          {AMREX_D_DECL(0.0,1.0,0.0)});     
+     amrex::EB2::PlaneIF shaft_vert_plane({AMREX_D_DECL(swirler_shaft_radius,swirler_shaft_height,0.0)},
+          {AMREX_D_DECL(-1.0,0.0,0.0)});
+
+     auto swirler_shaft1 = amrex::EB2::makeIntersection(shaft_horiz_bottom_plane,shaft_vert_plane);
+     auto swirler_shaft2 = amrex::EB2::makeIntersection(swirler_shaft1,shaft_horiz_top_plane);
+
+     auto swirler_shaft =  amrex::EB2::lathe(swirler_shaft2); 
+
+     // Final Geometry Assembly
+     auto FH_nozzle = amrex::EB2::makeIntersection(flame_holder,nozzle);
+     auto FH_nozzle_shaft = amrex::EB2::makeUnion(FH_nozzle,swirler_shaft);
+
+     //auto shop = amrex::EB2::makeShop(flame_holder);
+     //auto shop = amrex::EB2::makeShop(FH_nozzle);
+     auto shop = amrex::EB2::makeShop(FH_nozzle_shaft);
+
+     // GPU testing on
+     // auto FH = amrex::EB2::lathe(FH_top_cyl_edge);
+     // auto shop = amrex::EB2::makeShop(FH);
+     // GPU testing off
+     amrex::EB2::Build(shop, geom, max_coarsening_level,max_coarsening_level);
+
+  // }
+  // else {
+  //   amrex::EB2::Build(
+  //     geom, max_coarsening_level + coarsening,
+  //     max_coarsening_level + coarsening);
+  // }
 
   // Add finer level, might be inconsistent with the coarser level created
   // above.

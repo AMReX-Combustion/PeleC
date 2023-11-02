@@ -1,0 +1,124 @@
+# ------------------  INPUTS TO MAIN PROGRAM  -------------------
+max_step = 100
+stop_time = 5e-3
+
+# PROBLEM SIZE & GEOMETRY
+geometry.is_periodic = 0 0 0 
+geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
+geometry.prob_lo     = -44.84e-1 -44.84e-1  0.00        # x_lo y_lo (z_lo)
+geometry.prob_hi     =  44.84e-1  44.84e-1  179.36e-1  # x_hi y_hi (z_hi)
+# use with single level
+amr.n_cell           =  64 64 128
+
+
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+# Interior, UserBC, Symmetry, SlipWall, NoSlipWall
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+pelec.lo_bc       =  "NoSlipWall"  "NoSlipWall"  "UserBC" 
+pelec.hi_bc       =  "NoSlipWall"  "NoSlipWall"  "FOExtrap"
+
+# WHICH PHYSICS
+pelec.do_hydro = 1
+pelec.diffuse_vel = 1
+pelec.diffuse_temp = 1
+pelec.do_react = 1
+pelec.do_mol = 1
+
+# TIME STEP CONTROL
+pelec.cfl            = 0.05     # cfl number for hyperbolic system
+pelec.init_shrink    = 0.1     # scale back initial timestep
+pelec.change_max     = 1.1     # max time step growth
+pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
+
+# DIAGNOSTICS & VERBOSITY
+pelec.sum_interval   = 1       # timesteps between computing mass
+pelec.v              = 1       # verbosity in PeleC.cpp
+amr.v                = 1       # verbosity in Amr.cpp
+amr.data_log         = datlog
+#amr.grid_log        = grdlog  # name of grid logging file
+
+# REFINEMENT / REGRIDDING
+amr.max_level       = 1       # maximum level number allowed
+amr.ref_ratio       = 2 2 2 2 # refinement ratio
+amr.regrid_int      = 2 2 2 2 # how often to regrid
+amr.grid_eff        = 0.9     # what constitutes an efficient grid
+amr.blocking_factor = 16      # block factor in grid generation
+amr.max_grid_size   = 32
+amr.n_error_buf     = 1 1 2 2 # number of buffer cells in error est
+
+# CHECKPOINT FILES
+amr.check_file      = chk        # root name of checkpoint file
+amr.check_int       = 100        # number of timesteps between checkpoints
+
+# PLOTFILES
+amr.plot_file       = plt        # root name of plotfile
+amr.plot_int        = 100        # number of timesteps between plotfiles
+amr.plot_vars  =  density Temp
+amr.derive_plot_vars = x_velocity y_velocity z_velocity magvel magvort pressure massfrac
+
+pelec.init_pltfile = /lustre/scratch/tstanej/coarse_grid_cylsrc/plt09600
+pelec.plt_from_LMeX = true
+pelec.init_pltfile_massfrac_tol = 1.e-6
+
+#----------------------- PROBLEM PARAMETERS---------------------
+prob.P_mean = 101325.0
+prob.T_in      = 298.15
+prob.T_wall1    = 348.0
+prob.z_wall1    = 30.31e-1     # Relative to the bottom of the PeleC domain
+prob.T_wall2    = 403.15
+prob.z_wall2    = 55.31e-1
+prob.T_wall3    = 473.15
+prob.z_wall3    = 80.31e-1
+prob.T_wall4    = 723.15
+prob.z_wall4    = 130.31e-1
+prob.T_wall5    = 893.15
+prob.z_wall5    = 155.31e-1
+# eb_isothermal
+eb2.geom_type = NH3_burner
+prob.v_in      = 12.93
+prob.inflow_diam = 6.604e-1
+
+
+#------------------------- TAGGING CONTROL----------------------------
+tagging.tempgrad = 10
+tagging.max_tempgrad_lev = 2
+
+
+#------------------------- CHEMISTRY CONTROL----------------------------
+pelec.chem_integrator = "ReactorCvode"
+cvode.solve_type = "sparse_direct"
+pelec.use_typ_vals_chem = true
+
+#-------------------------EB CONTROL----------------------------
+eb2.geom_type = NH3_burner
+# eb2.geom_type = all_regular
+eb2.small_volfrac = 1.e-8
+eb2.maxiter = 500
+pelec.eb_isothermal = true
+pelec.eb_boundary_T = 300.
+ebd.boundary_grad_stencil_type = 1
+
+
+EB.inflow_diam                      =  6.604e-1
+EB.flame_holder_top_radius          =  24.57e-1
+EB.flame_holder_bottom_radius       =  11.95e-1
+EB.flame_holder_cylinder_height     =  69.29e-1
+EB.flame_holder_total_height        =  179.36e-1
+EB.flame_holder_top_cylinder_height =  14.38e-1
+
+EB.noz_bottom_cylinder_radius       =  4.28e-1
+EB.noz_bottom_cylinder_height       =  3.404e-1
+
+EB.swirler_shaft_height             =  1.75e-1
+EB.swirler_shaft_radius             =  2.38e-1
+
+#------------------------------------------------- Turbulent Inflow -------------------------------------------------------#
+turbinflows = lowZ
+turbinflow.lowZ.turb_file      = Turb
+turbinflow.lowZ.dir            = 2
+turbinflow.lowZ.side           = low
+turbinflow.lowZ.turb_scale_loc = 100.0
+turbinflow.lowZ.turb_scale_vel = 100.0
+turbinflow.lowZ.turb_center    = 0.0 0.0
+turbinflow.lowZ.turb_conv_vel  = 12.93 
+turbinflow.lowZ.turb_nplane    = 32

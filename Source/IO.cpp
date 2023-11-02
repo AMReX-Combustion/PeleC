@@ -776,6 +776,16 @@ PeleC::initLevelDataFromPlt(
           sarr(i, j, k, UMX+n) *= 100.; //[m/s] -> [cm/s]
         }
         sarr(i, j, k, URHO) *= 10.; //[kg/m3] -> [g/cm3] 
+
+        //hack
+        const amrex::Real temp = sarr(i, j, k, UTEMP);
+        if(temp < 298){
+          sarr(i, j, k, UTEMP) = 298.15;
+          sarr(i, j, k, UFS + NH3_ID) = 0.1418434;
+          sarr(i, j, k, UFS + O2_ID)  = 0.19987257;
+          sarr(i, j, k, UFS + N2_ID)  = 1.0 - sarr(i, j, k, UFS + NH3_ID) - sarr(i, j, k, UFS + O2_ID);
+          sarr(i, j, k, URHO) = 101325/287/sarr(i, j, k, UTEMP)*10.; //[g/cm3]
+        }
       }
 
 
