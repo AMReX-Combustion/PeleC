@@ -9,6 +9,7 @@ pp.query("state_nghost", state_nghost);
 pp.query("do_reflux", do_reflux);
 pp.query("do_avg_down", do_avg_down);
 pp.query("init_pltfile", init_pltfile);
+pp.query("plt_from_LMeX", plt_from_LMeX);
 pp.query("init_pltfile_massfrac_tol", init_pltfile_massfrac_tol);
 pp.query("init_pltfile_coarse_levels", init_pltfile_coarse_levels);
 pp.query("dump_old", dump_old);

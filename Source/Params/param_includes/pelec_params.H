@@ -9,6 +9,7 @@ static int state_nghost;
 static bool do_reflux;
 static bool do_avg_down;
 static std::string init_pltfile;
+static bool plt_from_LMeX;
 static amrex::Real init_pltfile_massfrac_tol;
 static int init_pltfile_coarse_levels;
 static bool dump_old;

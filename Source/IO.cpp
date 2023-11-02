@@ -731,8 +731,16 @@ PeleC::initLevelDataFromPlt(
   const auto plt_vars = pltData.getVariableList();
 
   // Read rho, u, temperature (required)
+  std::string temp_name;
+  if(plt_from_LMeX){
+    temp_name = "temp";
+  }
+  else{
+    temp_name = "Temp"; 
+  }
   std::map<std::string, int> vars{
-    {"density", -1}, {"x_velocity", -1}, {"Temp", -1}};
+    {"density", -1}, {"x_velocity", -1}, {temp_name, -1}};
+
   for (auto& var : vars) {
     var.second = find_position(plt_vars, var.first);
     if (var.second == -1) {
@@ -742,7 +750,7 @@ PeleC::initLevelDataFromPlt(
   pltData.fillPatchFromPlt(lev, geom, vars["density"], URHO, 1, S_new);
   pltData.fillPatchFromPlt(
     lev, geom, vars["x_velocity"], UMX, AMREX_SPACEDIM, S_new);
-  pltData.fillPatchFromPlt(lev, geom, vars["Temp"], UTEMP, 1, S_new);
+  pltData.fillPatchFromPlt(lev, geom, vars[temp_name], UTEMP, 1, S_new);
 
   // Copy species from the plot file
   for (int n = 0; n < spec_names.size(); n++) {
@@ -755,11 +763,21 @@ PeleC::initLevelDataFromPlt(
 
   // Sanity check the species, clean them up if they aren't too bad
   auto sarrs = S_new.arrays();
+  const bool plt_LMeX = plt_from_LMeX;
   const auto tol = init_pltfile_massfrac_tol;
   amrex::ParallelFor(
     S_new, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
       auto sarr = sarrs[nbx];
       amrex::Real sumY = 0.0;
+
+      //Convert from MKS to CGS when restarting from LMeX
+      if(plt_LMeX){
+        for (int n = 0; n < AMREX_SPACEDIM; n++) {
+          sarr(i, j, k, UMX+n) *= 100.; //[m/s] -> [cm/s]
+        }
+        sarr(i, j, k, URHO) *= 10.; //[kg/m3] -> [g/cm3] 
+      }
+
 
       for (int n = 0; n < NUM_SPECIES; n++) {
         // if the species is not too far out of bounds, clip it
