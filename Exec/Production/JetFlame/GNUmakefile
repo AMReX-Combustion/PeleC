@@ -24,6 +24,9 @@ FSANITIZER = FALSE
 THREAD_SANITIZER = FALSE
 
 # PeleC
+PELE_CVODE_FORCE_YCORDER = FALSE
+PELE_USE_MAGMA = FALSE
+PELE_COMPILE_AJACOBIAN = FALSE
 Eos_Model := Fuego
 Transport_Model := Simple
 Chemistry_Model := dodecane_lu

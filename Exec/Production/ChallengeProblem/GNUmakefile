@@ -23,10 +23,13 @@ FSANITIZER = FALSE
 THREAD_SANITIZER = FALSE
 
 # PeleC
+PELE_CVODE_FORCE_YCORDER = FALSE
+PELE_USE_MAGMA = FALSE
+PELE_COMPILE_AJACOBIAN = FALSE
+USE_MASA = FALSE
 Eos_Model := Fuego
 Chemistry_Model := dodecane_lu_qss
 Transport_Model := Simple
-USE_MASA = FALSE
 
 # Libraries
 USE_HDF5  = FALSE
