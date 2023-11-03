@@ -6,7 +6,6 @@
 #include <AMReX_MultiFab.H>
 
 #include "Constants.H"
-#include "Utilities.H"
 
 #ifdef AMREX_USE_OMP
 #include <omp.h>

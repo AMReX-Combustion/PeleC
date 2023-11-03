@@ -473,8 +473,9 @@ Filter::apply_filter(
   const int /*ncomp*/)
 {
   const auto q = in.const_array();
+  out.setVal<amrex::RunOn::Device>(0.0, box, nstart, ncnt);
   auto qh = out.array();
-  setC(box, nstart, ncnt, qh, 0.0);
+
   amrex::Gpu::DeviceVector<amrex::Real> weights(_weights.size());
   amrex::Real* w = weights.data();
   amrex::Gpu::copy(
