@@ -207,7 +207,7 @@ bcnormal(
 
 void pc_prob_close();
 
-using ProblemTags = EmptyProbTagStruct;
-using ProblemDerives = EmptyProbDeriveStruct;
+struct MyProblemSpecificFunctions : public EmptyProblemSpecificFunctions {};
+using ProblemSpecificFunctions = MyProblemSpecificFunctions;
 
 #endif

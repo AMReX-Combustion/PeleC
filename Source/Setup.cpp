@@ -626,7 +626,7 @@ PeleC::variableSetUp()
 #endif
 
   // Problem-specific derives
-  add_problem_derives<ProblemDerives>(derive_lst, desc_lst);
+  ProblemSpecificFunctions::add_problem_derive(derive_lst, desc_lst);
 
 #ifdef PELE_USE_SOOT
   soot_model.define();

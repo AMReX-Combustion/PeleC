@@ -1889,7 +1889,7 @@ PeleC::errorEst(
       const auto captured_level = level;
       amrex::ParallelFor(
         tilebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-          set_problem_tags<ProblemTags>(
+          ProblemSpecificFunctions::set_problem_tags(
             i, j, k, flag_arr, tag_arr, Sfab, tagval, dx, prob_lo, time,
             captured_level, *lprobparm);
         });

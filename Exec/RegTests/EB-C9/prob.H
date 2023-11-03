@@ -81,14 +81,14 @@ bcnormal(
 
 void pc_prob_close();
 
-using ProblemTags = EmptyProbTagStruct;
+//using ProblemTags = EmptyProbTagStruct;
 
-struct MyProbDeriveStruct
+struct MyProblemSpecificFunctions : public EmptyProblemSpecificFunctions
 {
   static amrex::Box the_same_box(const amrex::Box& b) { return b; }
 
   static void
-  add(amrex::DeriveList& derive_lst, const amrex::DescriptorList& desc_lst)
+  add_problem_derive(amrex::DeriveList& derive_lst, const amrex::DescriptorList& desc_lst)
   {
     // Add derives as follows and define the derive function below:
     derive_lst.add(
@@ -127,8 +127,31 @@ struct MyProbDeriveStruct
       arr(i, j, k, 0) = dat(i, j, k, URHO) - rho_exact;
     });
   }
+
+  AMREX_GPU_DEVICE
+  AMREX_FORCE_INLINE
+  static void set_problem_tags(
+    const int i,
+    const int j,
+    const int k,
+    amrex::Array4<amrex::EBCellFlag const> const& /*flags*/,
+    amrex::Array4<char> const& tag,
+    amrex::Array4<amrex::Real const> const& /*field*/,
+    char tagval,
+    const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> /*dx*/,
+    const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> /*prob_lo*/,
+    const amrex::Real /*time*/,
+    const int /*level*/,
+    ProbParmDevice const& /*d_prob_parm_device*/) noexcept
+  {
+    amrex::ignore_unused(k);
+    const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
+    if (i > 24) {
+      tag(iv) = tagval;
+    }
+  }
 };
 
-using ProblemDerives = MyProbDeriveStruct;
+using ProblemSpecificFunctions = MyProblemSpecificFunctions;
 
 #endif
