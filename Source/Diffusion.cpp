@@ -1,4 +1,5 @@
 #include "Diffusion.H"
+#include "prob.H"
 
 void
 PeleC::getMOLSrcTerm(
@@ -182,6 +183,8 @@ PeleC::getMOLSrcTerm(
             amrex::Array4<amrex::Real>(), coe_mu, coe_xi, coe_lambda,
             ltransparm);
         });
+
+        ProblemSpecificFunctions::problem_modify_transport_coeffs();
       }
 
       amrex::FArrayBox flux_ec[AMREX_SPACEDIM];
@@ -268,7 +271,7 @@ PeleC::getMOLSrcTerm(
                   const auto geomdata = geom.data();
                   amrex::ParallelFor(
                     bbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-                      pc_set_wall_temperature(
+                      ProblemSpecificFunctions::set_isothermal_wall_temperature(
                         i, j, k, dir, normal, bc_temp, geomdata, *lprobparm,
                         qar, temp_arr);
                       pc_isothermal_wall_fluxes(

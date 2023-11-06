@@ -480,41 +480,6 @@ pc_flux_div(
     V(i, j, k);
 }
 
-// This function sets the temperature in isothermal walls
-// TODO: expose this to users for problem-specific definition
-// for now, if nonuniform isothermal walls are desired,
-// this must be hacked
-AMREX_GPU_DEVICE
-AMREX_FORCE_INLINE
-void
-pc_set_wall_temperature(
-  const int i,
-  const int j,
-  const int k,
-  const int /*dir*/,
-  const int /*normal*/,
-  const amrex::Real Twall_in,
-  amrex::GeometryData const& /*geomdata*/,
-  ProbParmDevice const& /*prob_parm*/,
-  const amrex::Array4<const amrex::Real>& /*q*/,
-  const amrex::Array4<amrex::Real>& Twall)
-{
-  /*
-    if desired: compute x,y,z and make wall temp an arbitrary function of space
-
-    const amrex::Real* prob_lo = geom.ProbLo();
-    const amrex::Real* dx = geom.CellSize();
-    const amrex::Real x[AMREX_SPACEDIM] = {AMREX_D_DECL(
-      prob_lo[0] + static_cast<amrex::Real>(iv[0] + 0.5) * dx[0],
-      prob_lo[1] + static_cast<amrex::Real>(iv[1] + 0.5) * dx[1],
-      prob_lo[2] + static_cast<amrex::Real>(iv[2] + 0.5) * dx[2])};
-
-    Twall(i,j,k) = function of x, dir, normal, prob_parm
-                   or set it using the fluid values (q) for adabatic
-   */
-  Twall(i, j, k) = Twall_in;
-}
-
 // This function computes diffusive energy flux through isothermal walls
 // and *adds* it to the flx array
 AMREX_GPU_DEVICE

@@ -96,6 +96,8 @@ bool PeleC::do_react_load_balance = false;
 bool PeleC::do_mol_load_balance = false;
 
 amrex::Vector<std::string> PeleC::spec_names;
+amrex::Vector<std::string> PeleC::adv_names;
+amrex::Vector<std::string> PeleC::aux_names;
 
 pele::physics::transport::TransportParams<
   pele::physics::PhysicsType::transport_type>
