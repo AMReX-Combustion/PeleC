@@ -108,13 +108,11 @@ struct DefaultProblemSpecificFunctions
     */
   }
 
-  /*
-  FUTURE FUNCTIONS TO ADD
-
   static void problem_modify_transport_coeffs()
   {
   }
 
+  /* TODO
   static void something_with_ADV_AUX_transport()
   {
   }
