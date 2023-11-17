@@ -26,6 +26,8 @@
 #include "EBStencilTypes.H"
 #include "DiagBase.H"
 
+#define MAKE_AN_ERROR_SOURCE -5
+
 enum StateType { State_Type = 0, Reactions_Type, Work_Estimate_Type };
 
 // Create storage for all source terms.
