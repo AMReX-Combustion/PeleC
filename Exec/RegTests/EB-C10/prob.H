@@ -16,8 +16,6 @@
 #include "ProblemDerive.H"
 #include "prob_parm.H"
 
-#define WILL_FAIL_EXEC -9
-
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
