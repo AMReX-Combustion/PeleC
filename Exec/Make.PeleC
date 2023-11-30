@@ -36,6 +36,9 @@ Blocs += $(PELE_PHYSICS_HOME)/Utility/PltFileManager
 Bpack += $(PELE_PHYSICS_HOME)/Utility/Diagnostics/Make.package
 Blocs += $(PELE_PHYSICS_HOME)/Utility/Diagnostics
 
+Bpack += $(PELE_PHYSICS_HOME)/Utility/Filter/Make.package
+Blocs += $(PELE_PHYSICS_HOME)/Utility/Filter
+
 all: $(executable)
 ifneq ($(KEEP_BUILDINFO_CPP),TRUE)
 	$(SILENT) $(RM) AMReX_buildInfo.cpp
