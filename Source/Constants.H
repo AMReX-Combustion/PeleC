@@ -5,7 +5,7 @@ namespace constants {
 AMREX_GPU_HOST_DEVICE constexpr amrex::Real
 PI()
 {
-  return 3.14159265358979323846264338327950288;
+  return amrex::Math::pi<amrex::Real>();
 }
 AMREX_GPU_HOST_DEVICE constexpr amrex::Real
 smallu()
