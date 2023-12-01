@@ -14,7 +14,7 @@ function(build_pelec_lib pelec_lib_name)
     endif()
 
     include(SetPeleCCompileFlags)
-    
+
     target_sources(${pelec_lib_name}
       PRIVATE
       ${PELE_PHYSICS_SRC_DIR}/Utility/TurbInflow/turbinflow.cpp
@@ -34,14 +34,20 @@ function(build_pelec_lib pelec_lib_name)
       ${PELE_PHYSICS_SRC_DIR}/Utility/Diagnostics/DiagPDF.H
       ${PELE_PHYSICS_SRC_DIR}/Utility/Diagnostics/DiagPDF.cpp)
     target_include_directories(${pelec_lib_name} PUBLIC ${PELE_PHYSICS_SRC_DIR}/Utility/Diagnostics)
-    
+
     target_sources(${pelec_lib_name}
       PRIVATE
       ${PELE_PHYSICS_SRC_DIR}/Utility/PltFileManager/PltFileManager.cpp
       ${PELE_PHYSICS_SRC_DIR}/Utility/PltFileManager/PltFileManager.H
       ${PELE_PHYSICS_SRC_DIR}/Utility/PltFileManager/PltFileManagerBCFill.H)
     target_include_directories(${pelec_lib_name} PUBLIC ${PELE_PHYSICS_SRC_DIR}/Utility/PltFileManager)
-    
+
+    target_sources(${pelec_lib_name}
+      PRIVATE
+      ${PELE_PHYSICS_SRC_DIR}/Utility/Filter/Filter.cpp
+      ${PELE_PHYSICS_SRC_DIR}/Utility/Filter/Filter.H)
+    target_include_directories(${pelec_lib_name} PUBLIC ${PELE_PHYSICS_SRC_DIR}/Utility/Filter)
+
     target_sources(${pelec_lib_name} PRIVATE ${AMREX_SUNDIALS_DIR}/AMReX_Sundials.H
                                              ${AMREX_SUNDIALS_DIR}/AMReX_Sundials_Core.cpp
                                              ${AMREX_SUNDIALS_DIR}/AMReX_Sundials_Core.H
@@ -123,9 +129,9 @@ function(build_pelec_lib pelec_lib_name)
     include(AMReXBuildInfo)
     generate_buildinfo(${pelec_lib_name} ${CMAKE_SOURCE_DIR})
     target_include_directories(${pelec_lib_name} SYSTEM PUBLIC ${AMREX_SUBMOD_LOCATION}/Tools/C_scripts)
-    
+
     target_link_libraries(${pelec_lib_name} PUBLIC sundials_arkode sundials_cvode)
-    
+
     if(PELEC_ENABLE_CUDA)
       target_link_libraries(${pelec_lib_name} PUBLIC sundials_nveccuda sundials_sunlinsolcusolversp sundials_sunmatrixcusparse)
     elseif(PELEC_ENABLE_HIP)
@@ -133,11 +139,11 @@ function(build_pelec_lib pelec_lib_name)
     elseif(PELEC_ENABLE_SYCL)
       target_link_libraries(${pelec_lib_name} PUBLIC sundials_nvecsycl)
     endif()
-    
+
     if(PELEC_ENABLE_MPI)
       target_link_libraries(${pelec_lib_name} PUBLIC $<$<BOOL:${MPI_CXX_FOUND}>:MPI::MPI_CXX>)
     endif()
-    
+
     #Link to amrex libraries
     target_link_libraries(${pelec_lib_name} PUBLIC AMReX::amrex)
 
