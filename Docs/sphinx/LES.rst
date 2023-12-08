@@ -1,7 +1,7 @@
 
  .. role:: cpp(code)
     :language: c++
- 
+
  .. _LES:
 
 LES and Hybrid LES/DNS Support
@@ -89,22 +89,10 @@ should option should be turned on in the input file:
 ``pelec.use_explicit_filter = 1``. The user specifies the filter-grid
 ratio using ``pelec.les_filter_fgr = NUM``, where ``NUM`` is the
 filter-grid ratio desired, e.g. ``pelec.les_filter_fgr = 2``. The user
-also specifies a filter type through ``pelec.les_filter_type = NUM``:
-
-* ``les_filter_type = 0``: no filtering
-* ``les_filter_type = 1``: standard box filter
-* ``les_filter_type = 2``: standard Gaussian filter
-
-We have also implemented a set of filters defined in Sagaut & Grohens (1999) Int. J. Num. Meth. Fluids:
-
-* ``les_filter_type = 3``: 3 point box filter approximation (Eq. 26)
-* ``les_filter_type = 4``: 5 point box filter approximation (Eq. 27)
-* ``les_filter_type = 5``: 3 point box filter optimized approximation (Table 1)
-* ``les_filter_type = 6``: 5 point box filter optimized approximation (Table 1)
-* ``les_filter_type = 7``: 3 point Gaussian filter approximation
-* ``les_filter_type = 8``: 5 point Gaussian filter approximation (Eq. 29)
-* ``les_filter_type = 9``: 3 point Gaussian filter optimized approximation (Table 1)
-* ``les_filter_type = 10``: 5 point Gaussian filter optimized approximation (Table 1)
+also specifies a filter type through ``pelec.les_filter_type = NUM``.
+Explicit filtering utilizes the Filter utility from PelePhysics, and
+the set of available filter types may be found in the
+`PelePhysics documentation <https://amrex-combustion.github.io/PelePhysics/Utility.html#filter>`_.
 
 An example input file section for a Gaussian filter with a filter-grid
 ration of 2 would be:
@@ -114,24 +102,3 @@ ration of 2 would be:
    pelec.use_explicit_filter=1
    pelec.les_filter_type=2
    pelec.les_filter_fgr=2
-
-
-Developing
-##########
-
-The weights for these filters are set in ``Filter.cpp``. To add a
-filter type, one needs to add an enum to the ``filter_types`` and
-define a corresponding ``set_NAME_weights`` function to be called at
-initialization.
-
-The application of a filter can be done on a Fab or MultiFab. The loop nesting
-ordering was chosen to be performant on existing HPC architectures and
-discussed in PeleC milestone reports. An example call to the filtering operation is
-
-::
-
-   les_filter = Filter(les_filter_type, les_filter_fgr);
-   ...
-   les_filter.apply_filter(bxtmp, flux[i], filtered_flux[i], Density, NUM_STATE);
-
-The user must ensure that the correct number of grow cells is present in the Fab or MultiFab.

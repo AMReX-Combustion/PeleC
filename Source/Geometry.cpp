@@ -332,7 +332,7 @@ RotatedCylinder::build(
   amrex::Array<amrex::Real, AMREX_SPACEDIM> center = {
     AMREX_D_DECL(centervec[0], centervec[1], centervec[2])};
 
-  rotation = (rotation / 180.) * M_PI;
+  rotation = (rotation / 180.) * constants::PI();
 
   amrex::EB2::CylinderIF my_cyl(radius, direction, center, inside);
 
@@ -361,7 +361,7 @@ RotatedBox::build(const amrex::Geometry& geom, const int max_coarsening_level)
   pp.query("box_rotation", rotation);
   pp.query("box_rotation_axe", rotation_axe);
 
-  rotation = (rotation / 180.) * M_PI;
+  rotation = (rotation / 180.) * constants::PI();
 
   amrex::EB2::BoxIF bf(lo, hi, has_fluid_inside);
 
