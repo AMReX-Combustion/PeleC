@@ -17,7 +17,7 @@ endfunction(target_link_libraries_system)
 
 macro(init_code_checks)
   if(PELEC_ENABLE_CLANG_TIDY)
-    find_program(CLANG_TIDY_EXE NAMES "clang-tidy-15")
+    find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
     if(CLANG_TIDY_EXE)
       message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
     else()
