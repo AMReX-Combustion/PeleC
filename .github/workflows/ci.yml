@@ -582,8 +582,8 @@ jobs:
           cmake -B${{runner.workspace}}/build-clang-tidy \
           -DCMAKE_BUILD_TYPE:STRING=Release \
           -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
-          -DCMAKE_CXX_COMPILER:STRING=clang++ \
-          -DCMAKE_C_COMPILER:STRING=clang \
+          -DCMAKE_CXX_COMPILER:STRING=clang++-15 \
+          -DCMAKE_C_COMPILER:STRING=clang-15 \
           -DPELEC_ENABLE_MPI:BOOL=OFF \
           -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
           -DPELEC_ENABLE_MASA:BOOL=OFF \
