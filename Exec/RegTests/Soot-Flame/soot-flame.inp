@@ -63,8 +63,6 @@ soot.v = 0
 soot.num_subcycles = 1
 soot.temp_cutoff = 350.
 soot.conserve_mass = false
-# UNUSED PARMPARSE
-soot.max_dt_rate = 0.01
 
 pelec.add_soot_src = 1
 pelec.plot_soot = 1

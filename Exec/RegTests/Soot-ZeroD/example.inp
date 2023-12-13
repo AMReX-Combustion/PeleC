@@ -62,8 +62,6 @@ amr.plot_per        = 2.5E-5
 soot.incept_pah = A2 # Soot inception species
 soot.v = 0
 soot.conserve_mass = true
-# UNUSED PARMPARSE
-soot.max_dt_rate = 0.2
 
 pelec.add_soot_src = 1
 amr.derive_plot_vars = x_velocity y_velocity pressure soot_vars soot_large_particles
