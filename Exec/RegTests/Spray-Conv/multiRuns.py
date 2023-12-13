@@ -100,7 +100,7 @@ def multiRun(args):
 
 
 def get_runtime_params(box, args):
-    runtime_params = "amr.plot_int=100 "
+    runtime_params = "amrex.abort_on_unused_inputs=1 amr.plot_int=100 "
     runtime_params += "amr.initial_grid_file={}/gridfile_{}_1.dat ".format(
         args.test_dir, box
     )
