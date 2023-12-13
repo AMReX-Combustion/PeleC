@@ -2,8 +2,6 @@
 max_step = 10
 stop_time =  0.2
 
-dummy_bad_input = 0
-
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic = 1 0 1
 geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical

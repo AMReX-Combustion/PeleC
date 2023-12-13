@@ -40,8 +40,8 @@ amr.data_log         = datlog
 
 # REFINEMENT / REGRIDDING
 amr.max_level       = 0       # maximum level number allowed
-amr.ref_ratio       = 2 2 2 2 # refinement ratio
-amr.regrid_int      = 2 2 2 2 # how often to regrid
+#amr.ref_ratio       = 2 2 2 2 # refinement ratio
+#amr.regrid_int      = 2 2 2 2 # how often to regrid
 amr.blocking_factor = 4       # block factor in grid generation
 amr.max_grid_size   = 64
 amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
@@ -69,5 +69,3 @@ prob.rho_r_amp  = 0.2
 prob.rho_r_osc  = 5.0
 prob.idir = 1
 prob.frac=0.1
-
-ebd.boundary_grad_stencil_type = 0

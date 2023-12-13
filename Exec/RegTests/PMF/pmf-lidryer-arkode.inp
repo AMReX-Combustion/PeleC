@@ -62,8 +62,6 @@ tagging.gtemp.adjacent_difference_greater = 100
 tagging.gtemp.field_name = Temp
 tagging.gtemp.max_level = 1
 
-extern.new_Jacobian_each_cell = 0
-
 pelec.do_hydro = 1
 pelec.do_react = 1
 pelec.chem_integrator = "ReactorArkode"
@@ -74,5 +72,3 @@ pelec.diffuse_vel=1
 pelec.sdc_iters = 2
 pelec.flame_trac_name = HO2
 pelec.do_mol=0
-
-ebd.boundary_grad_stencil_type = 0

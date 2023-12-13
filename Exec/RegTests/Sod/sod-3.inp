@@ -82,6 +82,3 @@ tagging.min_eb_refine_lev = 0
 tagging.refinement_indicators = box
 tagging.box.in_box_lo =  0.6  0.125  0.125
 tagging.box.in_box_hi =  0.8  0.22  0.25
-
-# EB
-ebd.boundary_grad_stencil_type = 0

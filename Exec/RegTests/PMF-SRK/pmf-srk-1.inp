@@ -27,7 +27,7 @@ pelec.v            = 1       # verbosity in PeleC cpp files
 amr.v              = 1       # verbosity in Amr.cpp
 #amr.grid_log       = grdlog  # name of grid logging file
 
-# REFINEMENT / REGRIDDING 
+# REFINEMENT / REGRIDDING
 amr.max_level       = 1       # maximum level number allowed
 amr.ref_ratio       = 2 2 2 2 # refinement ratio
 amr.regrid_int      = 2 2 2 2 # how often to regrid
@@ -54,8 +54,6 @@ prob.pmf_datafile = "LiDryer_H2_p100_phi1_0000tu0300.dat"
 tagging.max_ftracerr_lev = 4
 tagging.ftracerr = 150.e-6
 
-extern.new_Jacobian_each_cell = 0
-
 amr.derive_plot_vars = density xmom ymom zmom eden Temp pressure x_velocity y_velocity z_velocity
 pelec.plot_rhoy = 0
 pelec.plot_massfrac = 1
@@ -69,5 +67,3 @@ pelec.diffuse_vel=1
 pelec.sdc_iters = 2
 pelec.flame_trac_name = HO2
 pelec.do_mol=0
-
-ebd.boundary_grad_stencil_type = 0
