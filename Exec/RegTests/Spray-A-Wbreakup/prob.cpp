@@ -26,7 +26,6 @@ amrex_probinit(
     pp.query("Y_H2O", PeleC::h_prob_parm_device->YX_H2O);
     pp.query("Y_CO2", PeleC::h_prob_parm_device->YX_CO2);
   }
-
 }
 }
 
