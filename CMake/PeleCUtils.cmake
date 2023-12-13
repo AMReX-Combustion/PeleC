@@ -44,7 +44,7 @@ macro(init_code_checks)
           COMMAND sed "s/isystem /I/g" compile_commands.json > cppcheck/cppcheck_compile_commands.json
           COMMAND ${CPPCHECK_EXE} --version
           COMMAND ${CPPCHECK_EXE} --template=gcc --inline-suppr --suppress=unusedFunction --suppress=useStlAlgorithm --suppress=missingIncludeSystem --std=c++17 --language=c++ --enable=all --project=cppcheck/cppcheck_compile_commands.json --output-file=cppcheck/cppcheck-full-report.txt -j ${NP}
-          COMMAND egrep "information:|error:|performance:|portability:|style:|warning:" cppcheck/cppcheck-full-report.txt | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/GoogleTest|Submodules/PelePhysics/Support/Mechanism/Models" | sort | uniq > cppcheck/cppcheck-report.txt
+          COMMAND egrep "information:|error:|performance:|portability:|style:|warning:" cppcheck/cppcheck-full-report.txt | egrep -v "Submodules/AMReX|Submodules/sundials|Submodules/PelePhysics/Mechanisms" | sort | uniq > cppcheck/cppcheck-report.txt
           COMMAND wc -l cppcheck/cppcheck-report.txt
           COMMENT "Run cppcheck on project compile_commands.json"
           BYPRODUCTS cppcheck/cppcheck-report.txt

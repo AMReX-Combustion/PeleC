@@ -30,7 +30,7 @@ Eos_Model := Fuego
 Chemistry_Model := SootReaction
 Transport_Model := Simple
 
-# PeleMP
+# Soot
 USE_SOOT = TRUE
 # If this is changed, must run a make clean and rerun make
 NUM_SOOT_MOMENTS = 3

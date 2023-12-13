@@ -30,7 +30,7 @@ Eos_Model := Fuego
 Chemistry_Model := decane_3sp
 Transport_Model := Simple
 
-# PeleMP
+# Spray
 USE_PARTICLES = TRUE
 SPRAY_FUEL_NUM = 1
 

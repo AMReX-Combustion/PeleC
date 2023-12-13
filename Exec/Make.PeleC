@@ -1,8 +1,7 @@
 PELEC_HOME        ?= ../
 PELE_PHYSICS_HOME ?= $(abspath $(lastword $(PELEC_HOME)/Submodules/PelePhysics))
-AMREX_HOME        ?= $(abspath $(lastword $(PELEC_HOME)/Submodules/AMReX))
-SUNDIALS_HOME     ?= $(abspath $(lastword $(PELEC_HOME)/Submodules/sundials))
-PELEMP_HOME       ?= $(abspath $(lastword $(PELEC_HOME)/Submodules/PeleMP))
+AMREX_HOME        ?= $(abspath $(lastword $(PELE_PHYSICS_HOME)/Submodules/amrex))
+SUNDIALS_HOME     ?= $(abspath $(lastword $(PELE_PHYSICS_HOME)/Submodules/sundials))
 
 EBASE = PeleC
 
@@ -27,17 +26,20 @@ ifeq ($(DIM), 1)
   $(error PeleC does not support 1D)
 endif
 
-Bpack += $(PELE_PHYSICS_HOME)/Utility/TurbInflow/Make.package
-Blocs += $(PELE_PHYSICS_HOME)/Utility/TurbInflow
+UTILITY_HOME = $(PELE_PHYSICS_HOME)/Source/Utility/
+VPATH_LOCATIONS += $(UTILITY_HOME)
+INCLUDE_LOCATIONS += $(UTILITY_HOME)
+Bpack += $(UTILITY_HOME)/TurbInflow/Make.package
+Blocs += $(UTILITY_HOME)/TurbInflow
 
-Bpack += $(PELE_PHYSICS_HOME)/Utility/PltFileManager/Make.package
-Blocs += $(PELE_PHYSICS_HOME)/Utility/PltFileManager
+Bpack += $(UTILITY_HOME)/PltFileManager/Make.package
+Blocs += $(UTILITY_HOME)/PltFileManager
 
-Bpack += $(PELE_PHYSICS_HOME)/Utility/Diagnostics/Make.package
-Blocs += $(PELE_PHYSICS_HOME)/Utility/Diagnostics
+Bpack += $(UTILITY_HOME)/Diagnostics/Make.package
+Blocs += $(UTILITY_HOME)/Diagnostics
 
-Bpack += $(PELE_PHYSICS_HOME)/Utility/Filter/Make.package
-Blocs += $(PELE_PHYSICS_HOME)/Utility/Filter
+Bpack += $(UTILITY_HOME)/Filter/Make.package
+Blocs += $(UTILITY_HOME)/Filter
 
 all: $(executable)
 ifneq ($(KEEP_BUILDINFO_CPP),TRUE)
@@ -65,7 +67,7 @@ ifeq ($(PELE_CVODE_FORCE_YCORDER), TRUE)
 endif
 
 # EOS
-EOS_HOME = $(PELE_PHYSICS_HOME)/Eos/
+EOS_HOME = $(PELE_PHYSICS_HOME)/Source/Eos/
 ifeq ($(Eos_Model),$(filter $(Eos_Model),GammaLaw))
    DEFINES += -DUSE_GAMMALAW_EOS
 endif
@@ -82,7 +84,7 @@ Bpack             += $(EOS_HOME)/Make.package
 Blocs             += $(EOS_HOME)
 
 # Reactions
-REACTIONS_HOME = $(PELE_PHYSICS_HOME)/Reactions
+REACTIONS_HOME = $(PELE_PHYSICS_HOME)/Source/Reactions
 EXTERN_CORE       += $(REACTIONS_HOME)
 INCLUDE_LOCATIONS += $(REACTIONS_HOME)
 VPATH_LOCATIONS   += $(REACTIONS_HOME)
@@ -91,14 +93,14 @@ Blocs += $(REACTIONS_HOME)
 include $(PELE_PHYSICS_HOME)/ThirdParty/Make.ThirdParty
 
 ifdef Chemistry_Model
-  CHEM_HOME = $(PELE_PHYSICS_HOME)/Support/Mechanism/Models/$(Chemistry_Model)
+  CHEM_HOME = $(PELE_PHYSICS_HOME)/Mechanisms/$(Chemistry_Model)
 endif
 VPATH_LOCATIONS += $(CHEM_HOME)
 Bpack += $(CHEM_HOME)/Make.package
 Blocs += $(CHEM_HOME)
 
 # Transport
-TRANSPORT_HOME = $(PELE_PHYSICS_HOME)/Transport
+TRANSPORT_HOME = $(PELE_PHYSICS_HOME)/Source/Transport
 ifeq ($(Transport_Model),$(filter $(Transport_Model),Constant))
    DEFINES += -DUSE_CONSTANT_TRANSPORT
 endif
@@ -118,26 +120,29 @@ Bdirs := $(PELEC_HOME)/Source $(PELEC_HOME)/Source/Params/param_includes
 
 Pdirs := Base Amr Boundary AmrCore EB
 
+# Spray
 ifeq ($(USE_PARTICLES), TRUE)
   Pdirs += Particle
   ifeq ($(shell test $(SPRAY_FUEL_NUM) -gt 0; echo $$?), 0)
     DEFINES+=-DPELEC_USE_SPRAY
     DEFINES+=-DSPRAY_FUEL_NUM=$(SPRAY_FUEL_NUM)
-    MPdirs := PP_Spray PP_Spray/Distribution
-    Bpack  += $(foreach dir, $(MPdirs), $(PELEMP_HOME)/Source/$(dir)/Make.package)
-    Blocs  += $(foreach dir, $(MPdirs), $(PELEMP_HOME)/Source/$(dir))
+    SPRAY_HOME = $(PELE_PHYSICS_HOME)/Source/Spray
+    Bpack += $(SPRAY_HOME)/Make.package $(SPRAY_HOME)/Distribution/Make.package $(SPRAY_HOME)/BreakupSplash/Make.package
+    Blocs += $(SPRAY_HOME) $(SPRAY_HOME)/Distribution $(SPRAY_HOME)/BreakupSplash
   endif
 endif
 
+# Soot
 ifeq ($(USE_SOOT), TRUE)
-# Ensure the number of soot moments is correct
-    ifeq (,$(filter $(NUM_SOOT_MOMENTS),3 6))
-        $(error NUM_SOOT_MOMENTS must be 3 or 6)
-    endif
+  # Ensure the number of soot moments is correct
+  ifeq (,$(filter $(NUM_SOOT_MOMENTS),3 6))
+    $(error NUM_SOOT_MOMENTS must be 3 or 6)
+  endif
+  SOOT_HOME = $(PELE_PHYSICS_HOME)/Source/Soot
   DEFINES+=-DPELEC_USE_SOOT
   DEFINES+=-DNUM_SOOT_MOMENTS=$(NUM_SOOT_MOMENTS)
-  Bpack   += $(PELEMP_HOME)/Source/Soot_Models/Make.package
-  Blocs   += $(PELEMP_HOME)/Source/Soot_Models
+  Bpack   += $(SOOT_HOME)/Make.package
+  Blocs   += $(SOOT_HOME)
 endif
 
 Bpack += $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir)/Make.package)
@@ -167,7 +172,7 @@ AMReX_buildInfo.cpp:
           --COMP "$(COMP)" --COMP_VERSION "$(COMP_VERSION)" \
           --FCOMP "$(FCOMP)" --FCOMP_VERSION "$(FCOMP_VERSION)" \
           --MODULES "$(MNAMES)" \
-          --GIT "$(PELEC_HOME) $(AMREX_HOME) $(PELE_PHYSICS_HOME) $(SUNDIALS_HOME) $(PELEMP_HOME)"
+          --GIT "$(PELEC_HOME) $(AMREX_HOME) $(PELE_PHYSICS_HOME) $(SUNDIALS_HOME)"
 
 include $(AMREX_HOME)/Tools/GNUMake/Make.rules
 

@@ -45,7 +45,7 @@ macro(setup_test)
     set(PLOT_TEST ${CURRENT_TEST_BINARY_DIR}/plt00010)
     # Find fcompare
     if(PELEC_ENABLE_FCOMPARE_FOR_TESTS)
-      set(FCOMPARE ${CMAKE_BINARY_DIR}/Submodules/AMReX/Tools/Plotfile/fcompare)
+      set(FCOMPARE ${CMAKE_BINARY_DIR}/Submodules/PelePhysics/Submodules/amrex/Tools/Plotfile/amrex_fcompare)
     endif()
     # Make working directory for test
     file(MAKE_DIRECTORY ${CURRENT_TEST_BINARY_DIR})
@@ -204,7 +204,7 @@ function(add_test_spray TEST_EXE_DIR)
       set(PELEC_NP 1)
       unset(MPI_COMMANDS)
     endif()
-    set(FCOMPARE ${CMAKE_BINARY_DIR}/Submodules/AMReX/Tools/Plotfile/fcompare)
+    set(FCOMPARE ${CMAKE_BINARY_DIR}/Submodules/PelePhysics/Submodules/amrex/Tools/Plotfile/amrex_fcompare)
     set(MULTIRUN_FLAGS "--test_dir ${CURRENT_TEST_BINARY_DIR} --run_cmd '${MPI_COMMANDS}' --pele_exec PeleC-${TEST_EXE_DIR} --fcomp_exec ${FCOMPARE} --input_file ${TEST_NAME}.inp")
     file(GLOB TEST_FILES "${CURRENT_TEST_SOURCE_DIR}/*.dat" "${CURRENT_TEST_SOURCE_DIR}/*.py")
     # Copy files to test working directory

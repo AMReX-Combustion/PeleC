@@ -69,15 +69,15 @@ if(USE_LATEST_AMREX)
   message("\n -- Update AMReX- ${CTEST_BUILD_NAME} --")
   execute_process (
     COMMAND ${CTEST_GIT_COMMAND} checkout development
-    WORKING_DIRECTORY ${CTEST_SOURCE_DIRECTORY}/Submodules/AMReX
+    WORKING_DIRECTORY ${CTEST_SOURCE_DIRECTORY}/Submodules/PelePhysics/Submodules/amrex
   )
   execute_process (
     COMMAND ${CTEST_GIT_COMMAND} pull origin development
-    WORKING_DIRECTORY ${CTEST_SOURCE_DIRECTORY}/Submodules/AMReX
+    WORKING_DIRECTORY ${CTEST_SOURCE_DIRECTORY}/Submodules/PelePhysics/Submodules/amrex
   )
   execute_process (
     COMMAND ${CTEST_GIT_COMMAND} log -1 --pretty=oneline
-    WORKING_DIRECTORY ${CTEST_SOURCE_DIRECTORY}/Submodules/AMReX
+    WORKING_DIRECTORY ${CTEST_SOURCE_DIRECTORY}/Submodules/PelePhysics/Submodules/amrex
   )
 endif()
 

@@ -31,7 +31,7 @@ jobs:
       - name: Clone
         uses: actions/checkout@v3
         with:
-          submodules: true
+          submodules: 'recursive'
       - name: Setup
         working-directory: ./Exec/RegTests/PMF
         run: |
@@ -40,8 +40,6 @@ jobs:
           echo "CCACHE_COMPRESSLEVEL=1" >> $GITHUB_ENV
           echo "CCACHE_LOGFILE=${{github.workspace}}/ccache.log.txt" >> $GITHUB_ENV
           echo "CCACHE_MAXSIZE=350M" >> $GITHUB_ENV
-          #printf "CC=gcc-10\nCXX=g++-10\nFC=gfortran-10\nF90=gfortran-10" \
-          # >> ${{github.workspace}}/Submodules/AMReX/Tools/GNUMake/Make.local
           make COMP=gnu USE_MPI=FALSE DEBUG=TRUE TPL
           make COMP=llvm USE_MPI=FALSE DEBUG=TRUE PRECISION=FLOAT TPL
       - name: Install Ccache
@@ -75,7 +73,7 @@ jobs:
         working-directory: ./Exec/RegTests/PMF
         run: |
           egrep "warning:|error:" build-output.txt \
-            | egrep -v "Submodules/AMReX|Submodules/sundials|GNUmakefile" \
+            | egrep -v "Submodules/amrex|Submodules/sundials|GNUmakefile" \
             | egrep -v "ld: warning:" | sort | uniq \
             | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
           cat warnings.txt
@@ -100,7 +98,7 @@ jobs:
         working-directory: ./Exec/RegTests/EB-C10
         run: |
           egrep "warning:|error:" build-output.txt \
-            | egrep -v "Submodules/AMReX|Submodules/sundials|GNUmakefile" \
+            | egrep -v "Submodules/amrex|Submodules/sundials|GNUmakefile" \
             | egrep -v "ld: warning:" | sort | uniq \
             | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
           cat warnings.txt
@@ -125,7 +123,7 @@ jobs:
         working-directory: ./Exec/RegTests/TG
         run: |
           egrep "warning:|error:" build-output.txt \
-            | egrep -v "Submodules/AMReX|Submodules/sundials|GNUmakefile" \
+            | egrep -v "Submodules/amrex|Submodules/sundials|GNUmakefile" \
             | egrep -v "ld: warning:" | sort | uniq \
             | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
           cat warnings.txt
@@ -147,8 +145,8 @@ jobs:
         working-directory: ./Exec/RegTests/Soot-Flame
         run: |
           egrep "warning:|error:" build-output.txt \
-            | egrep -v "Submodules/AMReX|Submodules/sundials|GNUmakefile|Submodules/PeleMP" \
-            | egrep -v "Submodules/PelePhysics/Support/Mechanism/Models" | sort | uniq \
+            | egrep -v "Submodules/amrex|Submodules/sundials|GNUmakefile" \
+            | egrep -v "Submodules/PelePhysics/Mechanisms" | sort | uniq \
             | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
           cat warnings.txt
           export return=$(tail -n 1 warnings.txt | awk '{print $2}')
@@ -169,8 +167,8 @@ jobs:
         working-directory: ./Exec/RegTests/Spray-Conv
         run: |
           egrep "warning:|error:" build-output.txt \
-            | egrep -v "Submodules/AMReX|Submodules/sundials|GNUmakefile|Submodules/PeleMP" \
-            | egrep -v "Submodules/PelePhysics/Support/Mechanism/Models" | sort | uniq \
+            | egrep -v "Submodules/amrex|Submodules/sundials|GNUmakefile" \
+            | egrep -v "Submodules/PelePhysics/Mechanisms" | sort | uniq \
             | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
           cat warnings.txt
           export return=$(tail -n 1 warnings.txt | awk '{print $2}')
@@ -206,7 +204,7 @@ jobs:
       - name: Clone
         uses: actions/checkout@v3
         with:
-          submodules: true
+          submodules: 'recursive'
       - name: Python
         uses: actions/setup-python@v4
         with:
@@ -220,7 +218,7 @@ jobs:
           echo "CCACHE_MAXSIZE=${{matrix.ccache_size}}" >> $GITHUB_ENV
           cmake -E make_directory ${{runner.workspace}}/deps
           if [ "${RUNNER_OS}" != "macOS" ]; then
-            ${{github.workspace}}/Submodules/AMReX/.github/workflows/dependencies/ubuntu_free_disk_space.sh
+            ${{github.workspace}}/Submodules/PelePhysics/Submodules/amrex/.github/workflows/dependencies/ubuntu_free_disk_space.sh
           fi
       - name: Dependencies
         run: |
@@ -297,7 +295,7 @@ jobs:
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
           egrep "warning:|error:" ${{runner.workspace}}/build-output.txt \
-            | egrep -v "Submodules/AMReX|Submodules/sundials" \
+            | egrep -v "Submodules/amrex|Submodules/sundials" \
             | egrep -v "ld: warning:" | egrep -v "lto-wrapper: warning:" | sort | uniq \
             | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > ${{runner.workspace}}/build-output-warnings.txt
           cat ${{runner.workspace}}/build-output-warnings.txt
@@ -325,7 +323,7 @@ jobs:
       - name: Clone
         uses: actions/checkout@v3
         with:
-          submodules: true
+          submodules: 'recursive'
       - name: Setup
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
@@ -335,7 +333,7 @@ jobs:
           echo "CCACHE_MAXSIZE=500M" >> $GITHUB_ENV
       - name: Dependencies
         run: |
-          ${{github.workspace}}/Submodules/AMReX/.github/workflows/dependencies/ubuntu_free_disk_space.sh
+          ${{github.workspace}}/Submodules/PelePhysics/Submodules/amrex/.github/workflows/dependencies/ubuntu_free_disk_space.sh
           curl -O https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.0-1_all.deb
           sudo dpkg -i cuda-keyring_1.0-1_all.deb
           sudo apt-get update
@@ -388,7 +386,7 @@ jobs:
       - name: Clone
         uses: actions/checkout@v3
         with:
-          submodules: true
+          submodules: 'recursive'
       - name: Setup
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
@@ -398,7 +396,7 @@ jobs:
           echo "CCACHE_MAXSIZE=100M" >> $GITHUB_ENV
       - name: Dependencies
         run: |
-          ${{github.workspace}}/Submodules/AMReX/.github/workflows/dependencies/ubuntu_free_disk_space.sh
+          ${{github.workspace}}/Submodules/PelePhysics/Submodules/amrex/.github/workflows/dependencies/ubuntu_free_disk_space.sh
           curl -O https://repo.radeon.com/rocm/rocm.gpg.key
           sudo apt-key add rocm.gpg.key
           echo 'deb [arch=amd64] https://repo.radeon.com/rocm/apt/5.6.1 ubuntu main' \
@@ -459,7 +457,7 @@ jobs:
       - name: Clone
         uses: actions/checkout@v3
         with:
-          submodules: true
+          submodules: 'recursive'
       - name: Setup
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
@@ -470,7 +468,7 @@ jobs:
           echo "CCACHE_DEPEND=1" >> $GITHUB_ENV
       - name: Dependencies
         run: |
-          ${{github.workspace}}/Submodules/AMReX/.github/workflows/dependencies/ubuntu_free_disk_space.sh
+          ${{github.workspace}}/Submodules/PelePhysics/Submodules/amrex/.github/workflows/dependencies/ubuntu_free_disk_space.sh
           sudo wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
           sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
           echo "deb https://apt.repos.intel.com/oneapi all main" \
@@ -524,7 +522,7 @@ jobs:
 #      - name: Clone
 #        uses: actions/checkout@v3
 #        with:
-#          submodules: true
+#          submodules: 'recursive'
 #      - name: Dependencies
 #        run: |
 #          export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=TRUE
@@ -559,7 +557,7 @@ jobs:
       - name: Clone
         uses: actions/checkout@v3
         with:
-          submodules: true
+          submodules: 'recursive'
       - name: Setup
         run: |
           echo "NPROCS=$(nproc)" >> $GITHUB_ENV
@@ -567,7 +565,7 @@ jobs:
           echo "CCACHE_COMPRESSLEVEL=1" >> $GITHUB_ENV
           echo "CCACHE_LOGFILE=${{github.workspace}}/ccache.log.txt" >> $GITHUB_ENV
           echo "CCACHE_MAXSIZE=500M" >> $GITHUB_ENV
-          ${{github.workspace}}/Submodules/AMReX/.github/workflows/dependencies/ubuntu_free_disk_space.sh
+          ${{github.workspace}}/Submodules/PelePhysics/Submodules/amrex/.github/workflows/dependencies/ubuntu_free_disk_space.sh
       - name: Install Ccache
         run: |
           wget https://github.com/ccache/ccache/releases/download/v4.8/ccache-4.8-linux-x86_64.tar.xz
@@ -597,9 +595,9 @@ jobs:
         working-directory: ${{runner.workspace}}/build-clang-tidy
         run: |
           #set -eu -o pipefail
-          cmake --build . --parallel ${{env.NPROCS}} 2>&1 | tee -a clang-tidy-full-report.txt
+          cmake --build . --parallel 2 2>&1 | tee -a clang-tidy-full-report.txt
           egrep "warning:|error:" clang-tidy-full-report.txt \
-            | egrep -v "Submodules/AMReX|Submodules/sundials" \
+            | egrep -v "Submodules/amrex|Submodules/sundials" \
             | egrep -v "ld: warning:" | sort | uniq \
             | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > clang-tidy-warnings.txt
       - name: Ccache Report
@@ -623,7 +621,7 @@ jobs:
       - name: Clone
         uses: actions/checkout@v3
         with:
-          submodules: true
+          submodules: 'recursive'
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
         with:
@@ -656,8 +654,7 @@ jobs:
         with:
           patterns: |
             -**/Submodules/sundials/**
-            -**/Submodules/AMReX/**
-            -**/Submodules/AMReX-Hydro/**
+            -**/Submodules/amrex/**
           input: sarif-results/cpp.sarif
           output: sarif-results/cpp.sarif
       - name: Upload CodeQL sarif

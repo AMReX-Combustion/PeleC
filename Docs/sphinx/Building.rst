@@ -20,8 +20,8 @@ Using the GNU Make build system involves first setting environment variables for
 ::
 
    export PELEC_HOME=${HOME}/PeleC
-   export AMREX_HOME=${PELEC_HOME}/Submodules/AMReX
    export PELE_PHYSICS_HOME=${PELEC_HOME}/Submodules/PelePhysics
+   export AMREX_HOME=${PELE_PHYSICS_HOME}/Submodules/amrex
 
 
 Then one edits the ``GNUMakefile`` in any of the examples in the ``Exec`` directory and uses the ``make`` command to build the executable.

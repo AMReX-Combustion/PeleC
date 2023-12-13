@@ -72,7 +72,7 @@ endif()
 ########################### AMReX #####################################
 
 message(STATUS "AMReX Configure Section")
-set(AMREX_SUBMOD_LOCATION "${CMAKE_SOURCE_DIR}/Submodules/AMReX")
+set(AMREX_SUBMOD_LOCATION "${CMAKE_SOURCE_DIR}/Submodules/PelePhysics/Submodules/amrex")
 include(SetAmrexOptions)
 list(APPEND CMAKE_MODULE_PATH "${AMREX_SUBMOD_LOCATION}/Tools/CMake")
 add_subdirectory(${AMREX_SUBMOD_LOCATION})
@@ -81,7 +81,7 @@ include(SetAmrexCompileFlags)
 ########################## SUNDIALS ###################################
 
 message(STATUS "SUNDIALS Configure Section")
-set(SUNDIALS_SUBMOD_LOCATION "${CMAKE_SOURCE_DIR}/Submodules/sundials")
+set(SUNDIALS_SUBMOD_LOCATION "${CMAKE_SOURCE_DIR}/Submodules/PelePhysics/Submodules/sundials")
 include(SetSundialsOptions)
 #BUILD_TESTING is an old CMake keyword so don't clear it in sundials configure
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)

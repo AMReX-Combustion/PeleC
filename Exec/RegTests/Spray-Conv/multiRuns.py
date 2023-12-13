@@ -23,7 +23,7 @@ import shutil
 import argparse
 
 USAGE = """
-    A script for doing CI with PeleC coupled with PeleMP sprays
+    A script for doing CI with PeleC coupled with sprays
 """
 
 
