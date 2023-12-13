@@ -1,0 +1,118 @@
+# ------------------  INPUTS TO MAIN PROGRAM  -------------------
+max_step = 10
+stop_time = 0.0038
+
+# PROBLEM SIZE & GEOMETRY
+geometry.is_periodic = 1 0 1
+geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
+geometry.prob_lo     =  0. 0. 0.
+geometry.prob_hi = 1.2 1.2 1.2
+amr.n_cell = 32 32 32
+
+# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
+# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
+pelec.lo_bc        = "Interior" "NoSlipWall" "Interior"
+pelec.hi_bc        = "Interior" "FOExtrap" "Interior"
+
+# WHICH PHYSICS
+pelec.do_hydro = 1
+pelec.diffuse_vel = 1
+pelec.diffuse_temp = 1
+pelec.diffuse_enth = 1
+pelec.diffuse_spec = 1
+pelec.do_react = 0
+pelec.chem_integrator = "ReactorNull"
+#pelec.chem_integrator = "ReactorCvode"
+#cvode.solve_type = dense_direct
+pelec.allow_negative_energy = 1
+
+# TIME STEP CONTROL
+pelec.cfl            = 0.8    # cfl number for hyperbolic system
+pelec.init_shrink    = 0.5     # scale back initial timestep
+pelec.change_max     = 1.1     # max time step growth
+pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
+
+
+# DIAGNOSTICS & VERBOSITY
+pelec.sum_interval   = -1   # timesteps between computing mass
+pelec.v              = 0   # verbosity in Castro.cpp
+amr.v                = 1    # verbosity in Amr.cpp
+#amr.data_log         = datlog
+#amr.grid_log         = grdlog  # name of grid logging file
+
+# REFINEMENT / REGRIDDING
+amr.max_level       = 1       # maximum level number allowed
+
+# Use fixed refinement base on an initial grid file
+#amr.initial_grid_file = gridfile
+#amr.regrid_int      = -1 -1 -1 # how often to regrid
+
+# Use adaptive refinement based on temperature gradients
+tagging.tempgrad = 1.3
+# Use adaptive refinement based on velocity gradients
+#tagging.velgrad = 40.
+amr.regrid_int = 4 8 8
+
+amr.ref_ratio       = 2 2 2 2 # refinement ratio
+amr.blocking_factor = 16       # block factor in grid generation
+amr.max_grid_size   = 32
+amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
+
+# PARTICLES / SPRAY
+pelec.do_spray_particles = 1
+particles.v = 0
+particles.mom_transfer = 1
+particles.mass_transfer = 1
+particles.write_ascii_files = 0
+
+particles.fuel_ref_temp = 298.15
+
+particles.fuel_species = NC10H22
+# Properties for liquid dodecane
+particles.NC10H22_crit_temp = 658.2 # K
+particles.NC10H22_boil_temp = 489. # K
+particles.NC10H22_latent = 3.0294E9
+particles.NC10H22_cp = 2.5939E7 # Cp at 298
+particles.NC10H22_rho = 0.669
+# Coefficients for saturation pressure using Antoine equation
+# These are from the NIST website
+# Last coefficient converts units, in this case bar, to dyne/cm^2
+particles.NC10H22_psat = 4.10549 1625.928 -92.839 1.E6
+
+particles.use_splash_model = false
+
+# CHECKPOINT FILES
+amr.checkpoint_files_output = 0
+amr.check_file      = chk  # root name of checkpoint file
+amr.check_int       = -1   # number of timesteps between checkpoints
+
+# PLOTFILES
+#amr.plot_files_output = 0
+amr.plot_file       = plt # root name of plotfile
+amr.plot_int        = 1
+#amr.plot_per        = 1.E-5 # number of timesteps between plotfiles
+amr.plot_vars = density Temp rho_E xmom ymom zmom rho_O2 rho_N2 rho_NC12H26
+amr.derive_plot_vars = x_velocity y_velocity z_velocity pressure   # these variables appear in the plotfile
+amr.file_name_digits = 6
+
+# PROBLEM
+# Initial fluid properties
+prob.ref_T = 900.
+prob.ref_p = 2.93E7
+prob.init_v = 0.
+prob.init_N2 = 0.767
+prob.init_O2 = 0.233
+
+# Jet properties
+spray.jet_dia = 9.E-3
+spray.spread_angle = 21.
+
+# Properties of injected particles
+spray.T = 363.
+spray.diameter = 4.5E-4
+
+spray.jets_per_dir = 2 1 2
+spray.jet_start = 0.
+spray.jet_end = 1.54E-3
+spray.jet_vel = 6.E4
+spray.mass_flow_rate = 2.3

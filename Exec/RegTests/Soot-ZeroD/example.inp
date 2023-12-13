@@ -1,38 +1,40 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
-max_step = 10000
+max_step = 1000000
 stop_time = 0.022
 
 # PROBLEM SIZE & GEOMETRY
-geometry.is_periodic = 0 1 1
+geometry.is_periodic = 1 1 1
 geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
 geometry.prob_lo     = 0. 0. 0.
-geometry.prob_hi     = 4. 0.25 0.25
-amr.n_cell           = 128 8 8
-prob.pmf_datafile = "mueller_burner.dat"
-prob.pamb = 1.E6
+geometry.prob_hi     = 1. 1. 1.
+amr.n_cell           = 4 4 4
 
-pelec.lo_bc =  "Hard" "Interior" "Interior"
-pelec.hi_bc =  "Hard" "Interior" "Interior"
+pelec.lo_bc =  "Interior" "Interior" "Interior"
+pelec.hi_bc =  "Interior" "Interior" "Interior"
 
-cvode.solve_type = GMRES
+amrex.fpe_trap_invalid = 1
+amrex.fpe_trap_zero = 1
+amrex.fpe_trap_overflow = 1
+
+cvode.solve_type = dense_direct
 
 # WHICH PHYSICS
 pelec.do_hydro = 1
-pelec.diffuse_vel = 1
-pelec.diffuse_temp = 1
-pelec.diffuse_enth = 1
-pelec.diffuse_spec = 1
+pelec.diffuse_vel = 0
+pelec.diffuse_temp = 0
+pelec.diffuse_enth = 0
+pelec.diffuse_spec = 0
 pelec.do_react = 1
 pelec.chem_integrator = "ReactorCvode"
-pelec.do_mol = 0
+pelec.do_mol = 1
 pelec.allow_negative_energy = 1
 
 # TIME STEP CONTROL
-pelec.cfl            = 0.8     # cfl number for hyperbolic system
-pelec.init_shrink    = 1.     # scale back initial timestep
+pelec.cfl            = 0.3     # cfl number for hyperbolic system
+pelec.init_shrink    = 0.1     # scale back initial timestep
 pelec.change_max     = 1.1     # max time step growth
 pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
-#pelec.fixed_dt       = 1.E-7
+pelec.fixed_dt       = 1.E-7
 
 # DIAGNOSTICS & VERBOSITY
 pelec.sum_interval   = -1      # timesteps between computing mass
@@ -54,36 +56,27 @@ amr.check_int       = 1000
 
 # PLOTFILES
 amr.plot_file       = plt # root name of plotfile
-#amr.plot_int = 1
-#amr.plot_per        = 8.E-5
+amr.plot_per        = 2.5E-5
 
 # SOOT MODELING
 soot.incept_pah = A2 # Soot inception species
 soot.v = 0
-soot.num_subcycles = 1
-soot.temp_cutoff = 350.
-soot.conserve_mass = false
+soot.conserve_mass = true
 # UNUSED PARMPARSE
-soot.max_dt_rate = 0.01
+soot.max_dt_rate = 0.2
 
 pelec.add_soot_src = 1
-pelec.plot_soot = 1
-amr.derive_plot_vars = x_velocity y_velocity pressure soot_vars
-pelec.plot_reactions = 0
+amr.derive_plot_vars = x_velocity y_velocity pressure soot_vars soot_large_particles
 pelec.plot_rhoy = 0
 pelec.plot_massfrac = 1
-pelec.plot_reactions = 0
-#amr.file_name_digits = 6
+amr.file_name_digits = 7
 
 pelec.plot_soot = 1
 
 # PROBLEM INPUT
-prob.pmf_standoff = 0.
-prob.pmf_average = 0
-
-
-#--------------------------DEBUG/REGTESTS INPUTS-----------------------------
-# amrex.regtest_reduction=1
-amrex.fpe_trap_invalid = 1
-amrex.fpe_trap_zero = 1
-amrex.fpe_trap_overflow = 1
+prob.init_T = 1300.
+prob.init_p = 1.01325E6
+prob.init_N2 = 0.6686465670855919
+prob.init_O2 = 0.20313062439007742
+prob.init_fuel = 0.12822280852433066
+prob.fuel_name = N-C7H16
