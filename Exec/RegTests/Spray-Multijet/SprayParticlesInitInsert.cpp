@@ -88,8 +88,8 @@ SprayParticleContainer::InitSprayParticles(
   for (int i = 0; i < jets_per_dir[0]; ++i) {
     amrex::Real xloc = plo[0] + div_lenx * (static_cast<amrex::Real>(i) + 0.5);
     for (int k = 0; k < jetz; ++k) {
-      amrex::Real zloc = zlo + div_lenz * (static_cast<amrex::Real>(k) + 0.5);
-      amrex::RealVect jet_cent(AMREX_D_DECL(xloc, yloc, zloc));
+      amrex::RealVect jet_cent(AMREX_D_DECL(
+        xloc, yloc, zlo + div_lenz * (static_cast<amrex::Real>(k) + 0.5)));
       std::string jet_name = "jet" + std::to_string(jindx);
       m_sprayJets[jindx] = std::make_unique<SprayJet>(
         jet_name, Geom(0), jet_cent, jet_norm, spread_angle, jet_dia, jet_vel,

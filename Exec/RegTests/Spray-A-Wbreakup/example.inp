@@ -96,6 +96,7 @@ prob.X_H2O = 0.0377
 prob.X_CO2 = 0.0652
 
 # Properties of injected particles
+spray.jet1.do_inject = 1
 spray.jet1.T = 363.
 spray.jet1.jet_dia = 9.E-3
 spray.jet1.jet_cent = 0. 0. 0.
