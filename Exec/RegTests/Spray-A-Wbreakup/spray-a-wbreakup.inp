@@ -7,7 +7,7 @@ geometry.is_periodic = 0 0 0
 geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
 geometry.prob_lo     =  -0.6 -0.6 0.
 geometry.prob_hi     = 0.6 0.6 6.
-amr.n_cell           = 32 32 160
+amr.n_cell           = 8 8 40
 
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
@@ -38,7 +38,7 @@ pelec.v              = 0   # verbosity in Castro.cpp
 amr.v                = 1    # verbosity in Amr.cpp
 
 # REFINEMENT / REGRIDDING
-amr.max_level       = 3
+amr.max_level       = 0
 
 tagging.refinement_indicators = box
 tagging.box.in_box_lo = -0.3 -0.3 0.
@@ -48,7 +48,7 @@ tagging.tempgrad = 40.
 amr.regrid_int =  4 4 4 4 4
 
 amr.ref_ratio       = 2 2 2 2 # refinement ratio
-amr.blocking_factor = 16
+amr.blocking_factor = 4
 amr.max_grid_size   = 128
 amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
 
