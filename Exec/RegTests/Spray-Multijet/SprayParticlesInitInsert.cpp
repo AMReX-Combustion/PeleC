@@ -7,16 +7,15 @@ bool
 SprayParticleContainer::injectParticles(
   amrex::Real time,
   amrex::Real dt,
-  int nstep,
+  int /*nstep*/,
   int lev,
-  int finest_level,
-  ProbParmHost const& prob_parm,
-  ProbParmDevice const& prob_parm_d)
+  int /*finest_level*/,
+  ProbParmHost const& /*prob_parm*/,
+  ProbParmDevice const& /*prob_parm_d*/)
 {
   if (lev != 0) {
     return false;
   }
-  amrex::ignore_unused(nstep, finest_level, prob_parm, prob_parm_d);
   bool inject = false;
   for (int jindx = 0; jindx < m_sprayJets.size(); ++jindx) {
     SprayJet* js = m_sprayJets[jindx].get();
@@ -32,11 +31,10 @@ SprayParticleContainer::injectParticles(
 
 void
 SprayParticleContainer::InitSprayParticles(
-  const bool init_parts,
-  ProbParmHost const& prob_parm,
-  ProbParmDevice const& prob_parm_d)
+  const bool /*init_parts*/,
+  ProbParmHost const& /*prob_parm*/,
+  ProbParmDevice const& /*prob_parm_d*/)
 {
-  amrex::ignore_unused(init_parts, prob_parm, prob_parm_d);
   amrex::ParmParse ps("spray");
   amrex::Real jet_vel = 6.E4;
   amrex::Real jet_dia = 1.E-3;
