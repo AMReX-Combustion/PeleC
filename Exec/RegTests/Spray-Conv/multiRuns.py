@@ -72,22 +72,23 @@ def multiRun(args):
         first_params += "amr.check_int = {} ".format(iter_1)
         first_params += "amr.checkpoint_files_output = 1 "
         first_params += "amr.plot_file = {}/{}_1_plt ".format(test_name, box)
+        first_params += "amrex.abort_on_unused_inputs=1 "
         # Run first test to iter_2 and save a checkpoint at iter_1
-        os.system(
+        assert(os.system(
             "{}{} {} {} {}".format(
                 run_cmd, executable, args.input_file, runtime_params, first_params
             )
-        )
+        ) == 0)
         second_params = "max_step = {} ".format(iter_2)
         second_params += "amr.restart = {}/{}_chk000{} ".format(test_name, box, iter_1)
         second_params += "amr.checkpoint_files_output = 0 "
         second_params += "amr.plot_file = {}/{}_2_plt ".format(test_name, box)
         # Restart a case from checkpoint at iter_1
-        os.system(
+        assert(os.system(
             "{}{} {} {} {}".format(
                 run_cmd, executable, args.input_file, runtime_params, second_params
             )
-        )
+        ) == 0)
         # Now delete the checkpoint files and starting plot files
         print("Deleting unused plot and checkpoint files")
         os.system("rm -r {}/*plt0000".format(test_name, box))
@@ -100,7 +101,7 @@ def multiRun(args):
 
 
 def get_runtime_params(box, args):
-    runtime_params = "amrex.abort_on_unused_inputs=1 amr.plot_int=100 "
+    runtime_params = "amr.plot_int=100 "
     runtime_params += "amr.initial_grid_file={}/gridfile_{}_1.dat ".format(
         args.test_dir, box
     )
