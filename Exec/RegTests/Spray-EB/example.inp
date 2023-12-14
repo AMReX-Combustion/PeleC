@@ -111,7 +111,8 @@ prob.init_p = 1.01325E7
 prob.init_v = 0.
 
 
-spray.jet1.do_injection = 0
+spray.jet1.do_inject = 0
+spray.jet1.T = 363.0
 spray.jet1.jet_cent = 5. 0. 5.
 spray.jet1.jet_norm = 0. 1. 0.
 spray.jet1.part_temp = 363.
