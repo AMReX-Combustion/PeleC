@@ -70,9 +70,8 @@ pelec.do_spray_particles = 1
 particles.v = 0
 particles.mom_transfer = 1
 particles.mass_transfer = 1
-particles.init_function = 0
 particles.init_file = "initspraydata_3d.dat"
-particles.write_spray_ascii_files = 1
+particles.write_ascii_files = 1
 
 particles.fuel_ref_temp = 300.
 
