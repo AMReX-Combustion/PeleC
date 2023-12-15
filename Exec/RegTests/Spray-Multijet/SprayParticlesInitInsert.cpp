@@ -73,9 +73,9 @@ SprayParticleContainer::InitSprayParticles(
   amrex::Real div_lenx =
     (phi[0] - plo[0]) / (static_cast<amrex::Real>(jets_per_dir[0]));
   int jetz = 1;
+#if AMREX_SPACEDIM == 3
   amrex::Real div_lenz = 0.;
   amrex::Real zlo = 0.;
-#if AMREX_SPACEDIM == 3
   div_lenz = (phi[2] - plo[2]) / (static_cast<amrex::Real>(jets_per_dir[2]));
   zlo = plo[2];
   jetz = jets_per_dir[2];
