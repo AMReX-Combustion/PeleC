@@ -285,7 +285,6 @@ if(PELEC_DIM GREATER 2)
   add_test_re(tg-4 TG)
   add_test_re(eb-c7 EB-C7)
   add_test_re(eb-bluffbody-1 EB-BluffBody)
-  add_test_re(eb-plane-1 EB-Plane)
 endif()
 
 #=============================================================================

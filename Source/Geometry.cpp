@@ -271,28 +271,6 @@ PolygonRevolution::build(
 }
 
 void
-MovingPlane::build(const amrex::Geometry& geom, const int max_coarsening_level)
-{
-  amrex::RealArray point;
-  point[0] = 0.5;
-  point[1] = 0.0;
-  point[2] = 0.0;
-
-  amrex::RealArray normal;
-  normal[0] = -1.0;
-  normal[1] = 0.0;
-  normal[2] = 0.0;
-
-  amrex::EB2::PlaneIF pf(point, normal);
-
-  amrex::EB2::BoxIF pipe(
-    {AMREX_D_DECL(-1.0, 0.25, -1.)}, {AMREX_D_DECL(1.5, 0.5, 1.)}, false);
-  auto gshop = amrex::EB2::makeShop(pipe);
-
-  amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
-}
-
-void
 QuarterCircle::build(
   const amrex::Geometry& geom, const int max_coarsening_level)
 {
