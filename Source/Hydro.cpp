@@ -738,15 +738,13 @@ pc_umdrv_eb(
   // Define divc, the update before redistribution
   // Also construct the redistribution weights for flux redistribution if
   // necessary
-  // FIXME
-  // Godunov_umeth_eb(amrex::Box(divc_arr), bclo, bchi, domlo, domhi, q, qaux,
-  // src_q,
-  //                  AMREX_D_DECL(flux_tmp_arr[0], flux_tmp_arr[1],
-  //                  flux_tmp_arr[2]), AMREX_D_DECL(qec_arr[0], qec_arr[1],
-  //                  qec_arr[2]), AMREX_D_DECL(apx, apy, apz), flag, dx, dt,
-  //                  small, small_dens, small_pres, smallu,
-  //                  ppm_type, use_pslope, use_flattening,
-  //                  plm_iorder, lpmap, transverse_reset_density);
+  // FIXME pass weno in here!
+  pc_umeth_eb_3D(
+    amrex::Box(divc_arr), bclo, bchi, domlo, domhi, q, qaux, src_q,
+    AMREX_D_DECL(flux_tmp_arr[0], flux_tmp_arr[1], flux_tmp_arr[2]),
+    AMREX_D_DECL(qec_arr[0], qec_arr[1], qec_arr[2]),
+    AMREX_D_DECL(apx, apy, apz), flag, dx, dt, ppm_type, use_flattening,
+    plm_iorder);
 
   // Construct divu
   AMREX_D_TERM(const amrex::Real dx0 = dx[0];, const amrex::Real dx1 = dx[1];

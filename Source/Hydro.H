@@ -461,9 +461,9 @@ eb_compute_div(
                           0.5 * (q(i, j, k, QU) * q(i, j, k, QU) +
                                  q(i, j, k, QV) * q(i, j, k, QV)));
 #else
-                           0.5 * (q(i, j, k, QU) * q(i, j, k, QU) +
-                                  q(i, j, k, QV) * q(i, j, k, QV) +
-                                  q(i, j, k, QW) * q(i, j, k, QW)));
+                          0.5 * (q(i, j, k, QU) * q(i, j, k, QU) +
+                                 q(i, j, k, QV) * q(i, j, k, QV) +
+                                 q(i, j, k, QW) * q(i, j, k, QW)));
 #endif
   } else if (eb_weights_type == 2) {
     redistwgt(i, j, k) = q(i, j, k, QRHO);
