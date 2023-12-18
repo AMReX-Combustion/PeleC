@@ -1218,21 +1218,18 @@ pc_umeth_eb_2D(
   amrex::Array4<const amrex::Real> const& apy,
   amrex::Array4<amrex::EBCellFlag const> const& flag_arr,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> del,
-  const Real dt,
-  const Real small,
-  const Real small_dens,
-  const Real const Real smallu,
+  const amrex::Real dt,
   const int ppm_type,
   const int use_flattening,
   const int iorder)
 {
   BL_PROFILE("Godunov_umeth_2D_eb()");
 
-  Real const dx = del[0];
-  Real const dy = del[1];
-  Real const hdt = 0.5 * dt;
-  Real const hdtdy = 0.5 * dt / dy;
-  Real const hdtdx = 0.5 * dt / dx;
+  amrex::Real const dx = del[0];
+  amrex::Real const dy = del[1];
+  amrex::Real const hdt = 0.5 * dt;
+  amrex::Real const hdtdy = 0.5 * dt / dy;
+  amrex::Real const hdtdx = 0.5 * dt / dx;
 
   const int bclx = bclo[0];
   const int bcly = bclo[1];
@@ -1270,9 +1267,9 @@ pc_umeth_eb_2D(
         return;
       }
 
-      Real slope[QVAR];
+      amrex::Real slope[QVAR];
 
-      Real flat = 1.0;
+      amrex::Real flat = 1.0;
       // Calculate flattening in-place
       if (use_flattening == 1) {
         for (int dir_flat = 0; dir_flat < AMREX_SPACEDIM; dir_flat++) {
@@ -1287,8 +1284,7 @@ pc_umeth_eb_2D(
         slope[n] = plm_slope_eb(i, j, k, n, 0, flag_arr, q, flat, iorder);
       }
       pc_plm_d_eb(
-        i, j, k, 0, qxmarr, qxparr, slope, q, qaux(i, j, k, QC), dx, dt,
-        small_dens, apx);
+        i, j, k, 0, qxmarr, qxparr, slope, q, qaux(i, j, k, QC), dx, dt, apx);
 
       //
       // Y slopes and interp
@@ -1297,8 +1293,7 @@ pc_umeth_eb_2D(
         slope[n] = plm_slope_eb(i, j, k, n, 1, flag_arr, q, flat, iorder);
       }
       pc_plm_d_eb(
-        i, j, k, 1, qymarr, qyparr, slope, q, qaux(i, j, k, QC), dy, dt,
-        small_dens, apy);
+        i, j, k, 1, qymarr, qyparr, slope, q, qaux(i, j, k, QC), dy, dt, apy);
     });
   } else {
     amrex::Error("ppm_type must be 0 (PLM) when using EB");
@@ -1347,9 +1342,9 @@ pc_umeth_eb_2D(
 
   ParallelFor(tybx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     if (!flag_arr(i, j, k).isCovered()) {
-      hydro_transd(
-        i, j, k, cdir, qmarr, qparr, qxmarr, qxparr, fyarr, srcQ, qaux, q2, hdt,
-        hdtdy, apx, apy);
+      pc_transd(
+        AMREX_D_DECL(i, j, k), cdir, qmarr, qparr, qxmarr, qxparr, fyarr, srcQ,
+        qaux, q2, hdt, hdtdy, apx, apy);
     }
   });
 
@@ -1374,9 +1369,9 @@ pc_umeth_eb_2D(
 
   ParallelFor(txbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     if (!flag_arr(i, j, k).isCovered()) {
-      hydro_transd(
-        i, j, k, cdir, qmarr, qparr, qymarr, qyparr, fxarr, srcQ, qaux, gdtemp,
-        hdt, hdtdx, apy, apx);
+      pc_transd(
+        AMREX_D_DECL(i, j, k), cdir, qmarr, qparr, qymarr, qyparr, fxarr, srcQ,
+        qaux, gdtemp, hdt, hdtdx, apy, apx);
     }
   });
 

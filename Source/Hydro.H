@@ -99,12 +99,9 @@ pc_compute_hyp_wallflux(
                    w * (azm - azp) * apnorminv;
 #endif
 
-  amrex::Real AMREX_D_DECL(momfluxn, momfluxt1, momfluxt2);
+  amrex::Real momfluxn, momfluxt1, momfluxt2;
 
-  amrex::Real dummy_gu, dummy_gv, dummy_gp, dummy_gg;
-#if (AMREX_SPACEDIM == 3)
-  amrex::Real dummy_gv2;
-#endif
+  amrex::Real dummy_gu, dummy_gv, dummy_gv2, dummy_gp, dummy_gg;
 
   amrex::Real rho = q(i, j, k, QRHO);
   amrex::Real p = q(i, j, k, QPRES);

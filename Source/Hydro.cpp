@@ -486,8 +486,8 @@ pc_adjust_fluxes_eb(
 
   amrex::ParallelFor(fbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_artif_visc(
-      i, j, k, fx_arr, divu_arr, u_arr, dx[0], difmag, 0, domlo_dir, domhi_dir,
-      bclo_dir, bchi_dir);
+      AMREX_D_DECL(i, j, k), fx_arr, divu_arr, u_arr, dx[0], difmag, 0,
+      domlo_dir, domhi_dir, bclo_dir, bchi_dir);
 
     // Normalize Species Flux
     if (apx(i, j, k) > 0.) {
@@ -513,8 +513,8 @@ pc_adjust_fluxes_eb(
 
   amrex::ParallelFor(fby, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_artif_visc(
-      i, j, k, fy_arr, divu_arr, u_arr, dx[1], difmag, 1, domlo_dir, domhi_dir,
-      bclo_dir, bchi_dir);
+      AMREX_D_DECL(i, j, k), fy_arr, divu_arr, u_arr, dx[1], difmag, 1,
+      domlo_dir, domhi_dir, bclo_dir, bchi_dir);
 
     // Normalize Species Flux
     if (apy(i, j, k) > 0.) {
@@ -739,12 +739,23 @@ pc_umdrv_eb(
   // Also construct the redistribution weights for flux redistribution if
   // necessary
   // FIXME pass weno in here!
+#if AMREX_SPACEDIM == 1
+  amrex::Abort("PLM isn't implemented in 1D.");
+#elif AMREX_SPACEDIM == 2
+  pc_umeth_eb_2D(
+    amrex::Box(divc_arr), bclo, bchi, domlo, domhi, q, qaux, src_q,
+    AMREX_D_DECL(flux_tmp_arr[0], flux_tmp_arr[1], flux_tmp_arr[2]),
+    AMREX_D_DECL(qec_arr[0], qec_arr[1], qec_arr[2]),
+    AMREX_D_DECL(apx, apy, apz), flag, dx, dt, ppm_type, use_flattening,
+    plm_iorder);
+#elif AMREX_SPACEDIM == 3
   pc_umeth_eb_3D(
     amrex::Box(divc_arr), bclo, bchi, domlo, domhi, q, qaux, src_q,
     AMREX_D_DECL(flux_tmp_arr[0], flux_tmp_arr[1], flux_tmp_arr[2]),
     AMREX_D_DECL(qec_arr[0], qec_arr[1], qec_arr[2]),
     AMREX_D_DECL(apx, apy, apz), flag, dx, dt, ppm_type, use_flattening,
     plm_iorder);
+#endif
 
   // Construct divu
   AMREX_D_TERM(const amrex::Real dx0 = dx[0];, const amrex::Real dx1 = dx[1];

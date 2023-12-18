@@ -103,14 +103,14 @@ plm_slope_eb(
     (order == 4) && !flags(iv).isCovered() && !flags(ivm).isCovered() &&
     !flags(ivm2).isCovered() && !flags(ivp).isCovered() &&
     !flags(ivp2).isCovered()) {
-    return plm_slope(i, j, k, n, dir, q, order);
+    return plm_slope(AMREX_D_DECL(i, j, k), n, dir, q, order);
   }
   // We have enough cells in the x-direction to do 2nd order slopes
   // centered on (i,j,k)
   else if (
     (order > 1) && !flags(iv).isCovered() && !flags(ivm).isCovered() &&
     !flags(ivp).isCovered()) {
-    return plm_slope(i, j, k, n, dir, q, 2);
+    return plm_slope(AMREX_D_DECL(i, j, k), n, dir, q, 2);
   } else {
     return 0.0;
   }
