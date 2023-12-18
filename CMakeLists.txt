@@ -24,6 +24,7 @@ option(PELEC_ENABLE_TINY_PROFILE "Enable tiny profiler in AMReX" OFF)
 option(PELEC_ENABLE_HDF5 "Enable plot file output using HDF5" OFF)
 option(PELEC_ENABLE_HDF5_ZFP "Enable ZFP compression in HDF5" OFF)
 option(PELEC_ENABLE_ASCENT "Enable Ascent in-situ visualization" OFF)
+option(PELEC_EXCLUDE_BUILD_IN_CI "Exclude some builds when running in the CI" OFF)
 set(PELEC_PRECISION "DOUBLE" CACHE STRING "Floating point precision SINGLE or DOUBLE")
 
 #Options for performance

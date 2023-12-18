@@ -273,6 +273,7 @@ jobs:
             -DPELEC_ENABLE_MPI:BOOL=ON \
             -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
             -DPELEC_ENABLE_MASA:BOOL=ON \
+            -DPELEC_EXCLUDE_BUILD_IN_CI:BOOL=ON \
             -DMASA_ROOT:PATH=${{runner.workspace}}/deps/install/MASA \
             -DCMAKE_CXX_COMPILER_LAUNCHER:STRING=ccache \
             ${{github.workspace}}; \
@@ -365,6 +366,7 @@ jobs:
             -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
             -DPELEC_ENABLE_MPI:BOOL=OFF \
             -DPELEC_ENABLE_CUDA:BOOL=ON \
+            -DPELEC_EXCLUDE_BUILD_IN_CI:BOOL=ON \
             -DAMReX_CUDA_ERROR_CAPTURE_THIS:BOOL=ON \
             -DCMAKE_CUDA_ARCHITECTURES:STRING=70 \
             -DCMAKE_CUDA_COMPILER_LAUNCHER:STRING=ccache \
@@ -430,6 +432,7 @@ jobs:
           -DCMAKE_CXX_STANDARD:STRING=17 \
           -DPELEC_ENABLE_MPI:BOOL=OFF \
           -DPELEC_ENABLE_HIP:BOOL=ON \
+          -DPELEC_EXCLUDE_BUILD_IN_CI:BOOL=ON \
           -DAMReX_AMD_ARCH:STRING=gfx90a \
           -DCMAKE_HIP_ARCHITECTURES:STRING=gfx90a \
           -DAMDGPU_TARGETS:STRING=gfx90a \
@@ -502,6 +505,7 @@ jobs:
             -DPELEC_ENABLE_MASA:BOOL=OFF \
             -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
             -DPELEC_ENABLE_SYCL:BOOL=ON \
+            -DPELEC_EXCLUDE_BUILD_IN_CI:BOOL=ON \
             -DCMAKE_CXX_COMPILER_LAUNCHER:STRING=ccache \
             ${{github.workspace}}
       - name: Build
@@ -589,6 +593,7 @@ jobs:
           -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
           -DPELEC_ENABLE_MASA:BOOL=OFF \
           -DPELEC_ENABLE_CLANG_TIDY:BOOL=ON \
+          -DPELEC_EXCLUDE_BUILD_IN_CI:BOOL=ON \
           -DCMAKE_CXX_COMPILER_LAUNCHER:STRING=ccache \
           ${{github.workspace}}
       - name: Check
@@ -638,6 +643,7 @@ jobs:
           -DPELEC_ENABLE_MPI:BOOL=OFF \
           -DPELEC_ENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
           -DPELEC_ENABLE_MASA:BOOL=OFF \
+          -DPELEC_EXCLUDE_BUILD_IN_CI:BOOL=ON \
           -DPELEC_ENABLE_CLANG_TIDY:BOOL=OFF \
           ${{github.workspace}}
       - name: Build
