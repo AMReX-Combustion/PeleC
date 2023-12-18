@@ -478,7 +478,6 @@ pc_umeth_eb_3D(
   const int ppm_type,
   const int use_flattening,
   const int iorder)
-
 {
   int cdir;
 
@@ -605,7 +604,7 @@ pc_umeth_eb_3D(
   // -4,-5,-5
   ParallelFor(xflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     if (apx(i, j, k) > 0.) {
-      hydro_cmpflx(
+      pc_cmpflx(
         i, j, k, bclx, bchx, dlx, dhx, qxmarr, qxparr, fxarr, gdtempx, qaux,
         cdir);
     }
@@ -626,7 +625,7 @@ pc_umeth_eb_3D(
   // -5,-4,-5
   ParallelFor(yflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     if (apy(i, j, k) > 0.) {
-      hydro_cmpflx(
+      pc_cmpflx(
         i, j, k, bcly, bchy, dly, dhy, qymarr, qyparr, fyarr, gdtempy, qaux,
         cdir);
     }
@@ -647,7 +646,7 @@ pc_umeth_eb_3D(
   // -5,-5,-4
   ParallelFor(zflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     if (apz(i, j, k) > 0.) {
-      hydro_cmpflx(
+      pc_cmpflx(
         i, j, k, bclz, bchz, dlz, dhz, qzmarr, qzparr, fzarr, gdtempz, qaux,
         cdir);
     }
@@ -676,7 +675,7 @@ pc_umeth_eb_3D(
     // this loop is over cells to   -5,-4,-5
     if (!flag_arr(i, j, k).isCovered()) {
       // X|Y
-      hydro_transdo(
+      pc_transdo(
         i, j, k, cdir, 1, qmxy, qpxy, qxmarr, qxparr, fyarr, qaux, gdtempy,
         cdtdy, apx, apy);
     }
@@ -690,7 +689,7 @@ pc_umeth_eb_3D(
     // this loop is over cells to   -5,-5,-4
     if (!flag_arr(i, j, k).isCovered()) {
       // X|Z
-      hydro_transdo(
+      pc_transdo(
         i, j, k, cdir, 2, qmxz, qpxz, qxmarr, qxparr, fzarr, qaux, gdtempz,
         cdtdz, apx, apz);
     }
@@ -714,7 +713,7 @@ pc_umeth_eb_3D(
   ParallelFor(xycmpbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // X|Y
     if (apx(i, j, k) > 0.) {
-      hydro_cmpflx(
+      pc_cmpflx(
         i, j, k, bclx, bchx, dlx, dhx, qmxy, qpxy, flxy, qxy, qaux, cdir);
     }
   });
@@ -726,7 +725,7 @@ pc_umeth_eb_3D(
   ParallelFor(xzcmpbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // X|Z
     if (apx(i, j, k) > 0.) {
-      hydro_cmpflx(
+      pc_cmpflx(
         i, j, k, bclx, bchx, dlx, dhx, qmxz, qpxz, flxz, qxz, qaux, cdir);
     }
   });
@@ -756,7 +755,7 @@ pc_umeth_eb_3D(
   ParallelFor(yxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // Y|X
     if (!flag_arr(i, j, k).isCovered()) {
-      hydro_transdo(
+      pc_transdo(
         i, j, k, cdir, 0, qmyx, qpyx, qymarr, qyparr, fxarr, qaux, gdtempx,
         cdtdx, apy, apx);
     }
@@ -768,7 +767,7 @@ pc_umeth_eb_3D(
   ParallelFor(yzbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // Y|Z
     if (!flag_arr(i, j, k).isCovered()) {
-      hydro_transdo(
+      pc_transdo(
         i, j, k, cdir, 2, qmyz, qpyz, qymarr, qyparr, fzarr, qaux, gdtempz,
         cdtdz, apy, apz);
     }
@@ -794,7 +793,7 @@ pc_umeth_eb_3D(
   ParallelFor(yxcmpbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // Y|X
     if (apy(i, j, k) > 0.) {
-      hydro_cmpflx(
+      pc_cmpflx(
         i, j, k, bcly, bchy, dly, dhy, qmyx, qpyx, flyx, qyx, qaux, cdir);
     }
   });
@@ -805,7 +804,7 @@ pc_umeth_eb_3D(
   ParallelFor(yzcmpbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // Y|Z
     if (apy(i, j, k) > 0.) {
-      hydro_cmpflx(
+      pc_cmpflx(
         i, j, k, bcly, bchy, dly, dhy, qmyz, qpyz, flyz, qyz, qaux, cdir);
     }
   });
@@ -836,7 +835,7 @@ pc_umeth_eb_3D(
   ParallelFor(zxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // Z|X
     if (!flag_arr(i, j, k).isCovered()) {
-      hydro_transdo(
+      pc_transdo(
         i, j, k, cdir, 0, qmzx, qpzx, qzmarr, qzparr, fxarr, qaux, gdtempx,
         cdtdx, apz, apx);
     }
@@ -848,7 +847,7 @@ pc_umeth_eb_3D(
   ParallelFor(zybx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // Z|Y
     if (!flag_arr(i, j, k).isCovered()) {
-      hydro_transdo(
+      pc_transdo(
         i, j, k, cdir, 1, qmzy, qpzy, qzmarr, qzparr, fyarr, qaux, gdtempy,
         cdtdy, apz, apy);
     }
@@ -877,7 +876,7 @@ pc_umeth_eb_3D(
   ParallelFor(zxcmpbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // Z|X
     if (apz(i, j, k) > 0.) {
-      hydro_cmpflx(
+      pc_cmpflx(
         i, j, k, bclz, bchz, dlz, dhz, qmzx, qpzx, flzx, qzx, qaux, cdir);
     }
   });
@@ -888,7 +887,7 @@ pc_umeth_eb_3D(
   ParallelFor(zycmpbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // Z|Y
     if (apz(i, j, k) > 0.) {
-      hydro_cmpflx(
+      pc_cmpflx(
         i, j, k, bclz, bchz, dlz, dhz, qmzy, qpzy, flzy, qzy, qaux, cdir);
     }
   });
@@ -912,7 +911,7 @@ pc_umeth_eb_3D(
   // amrex::Print() << "DOING TRANSDD FOR X " << bxg1 << std::endl;
   ParallelFor(bxg1, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     if (!flag_arr(i, j, k).isCovered()) {
-      hydro_transdd(
+      pc_transdd(
         i, j, k, cdir, qm, qp, qxmarr, qxparr, flyz, flzy, qyz, qzy, qaux, srcQ,
         hdt, hdtdy, hdtdz, apx, apy, apz);
     }
@@ -931,7 +930,7 @@ pc_umeth_eb_3D(
   xfbx.grow(2, 1);
   ParallelFor(xfbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     if (apx(i, j, k) > 0.) {
-      hydro_cmpflx(i, j, k, bclx, bchx, dlx, dhx, qm, qp, flx1, q1, qaux, cdir);
+      pc_cmpflx(i, j, k, bclx, bchx, dlx, dhx, qm, qp, flx1, q1, qaux, cdir);
     }
   });
 
@@ -943,7 +942,7 @@ pc_umeth_eb_3D(
   // amrex::Print() << "DOING TRANSDD FOR Y " << bxg1 << std::endl;
   ParallelFor(bxg1, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     if (!flag_arr(i, j, k).isCovered()) {
-      hydro_transdd(
+      pc_transdd(
         i, j, k, cdir, qm, qp, qymarr, qyparr, flxz, flzx, qxz, qzx, qaux, srcQ,
         hdt, hdtdx, hdtdz, apy, apx, apz);
     }
@@ -962,7 +961,7 @@ pc_umeth_eb_3D(
   yfbx.grow(2, 1);
   ParallelFor(yfbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     if (apy(i, j, k) > 0.) {
-      hydro_cmpflx(i, j, k, bcly, bchy, dly, dhy, qm, qp, flx2, q2, qaux, cdir);
+      pc_cmpflx(i, j, k, bcly, bchy, dly, dhy, qm, qp, flx2, q2, qaux, cdir);
     }
   });
 
@@ -973,7 +972,7 @@ pc_umeth_eb_3D(
   // amrex::Print() << "DOING TRANSDD FOR Y " << bxg1 << std::endl;
   ParallelFor(bxg1, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     if (!flag_arr(i, j, k).isCovered()) {
-      hydro_transdd(
+      pc_transdd(
         i, j, k, cdir, qm, qp, qzmarr, qzparr, flxy, flyx, qxy, qyx, qaux, srcQ,
         hdt, hdtdx, hdtdy, apz, apx, apy);
     }
@@ -992,7 +991,7 @@ pc_umeth_eb_3D(
   zfbx.grow(1, 1);
   ParallelFor(zfbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     if (apz(i, j, k) > 0.) {
-      hydro_cmpflx(i, j, k, bclz, bchz, dlz, dhz, qm, qp, flx3, q3, qaux, cdir);
+      pc_cmpflx(i, j, k, bclz, bchz, dlz, dhz, qm, qp, flx3, q3, qaux, cdir);
     }
   });
   qmfab.clear();
@@ -1316,7 +1315,7 @@ pc_umeth_eb_2D(
   auto const& gdtemp = qgdx.array();
   ParallelFor(xflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     if (apx(i, j, k) > 0.) {
-      hydro_cmpflx(
+      pc_cmpflx(
         i, j, k, bclx, bchx, dlx, dhx, qxmarr, qxparr, fxarr, gdtemp, qaux,
         cdir);
     }
@@ -1331,7 +1330,7 @@ pc_umeth_eb_2D(
   auto const& fyarr = fy.array();
   ParallelFor(yflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     if (apy(i, j, k) > 0.) {
-      hydro_cmpflx(
+      pc_cmpflx(
         i, j, k, bcly, bchy, dly, dhy, qymarr, qyparr, fyarr, q2, qaux, cdir);
     }
   });
@@ -1362,7 +1361,7 @@ pc_umeth_eb_2D(
   // Final Riemann problem X
   ParallelFor(xfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     if (apx(i, j, k) > 0.) {
-      hydro_cmpflx(
+      pc_cmpflx(
         i, j, k, bclx, bchx, dlx, dhx, qmarr, qparr, flx1, q1, qaux, cdir);
     }
   });
@@ -1389,7 +1388,7 @@ pc_umeth_eb_2D(
   // Final Riemann problem Y
   ParallelFor(yfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     if (apy(i, j, k) > 0.) {
-      hydro_cmpflx(
+      pc_cmpflx(
         i, j, k, bcly, bchy, dly, dhy, qmarr, qparr, flx2, q2, qaux, cdir);
     }
   });
