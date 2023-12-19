@@ -334,8 +334,8 @@ PeleC::postTimeStepParticles(int iteration)
     const ProbParmHost* lprobparm = prob_parm_host;
     const ProbParmDevice* lprobparm_d = h_prob_parm_device;
     BL_PROFILE_VAR("SprayParticles::injectParticles()", INJECT_SPRAY);
-    const bool injectParts = SprayPC->injectParticles(
-      cumtime, dtlev, nstep, level, finest_level, *lprobparm, *lprobparm_d);
+    const bool injectParts =
+      SprayPC->injectParticles(cumtime, dtlev, nstep, level, finest_level);
     BL_PROFILE_VAR_STOP(INJECT_SPRAY);
     // Sync up if we're level 0 or if we have particles that may have moved
     // off the next finest level and need to be added to our own level, or
@@ -359,9 +359,8 @@ PeleC::postInitParticles()
     const ProbParmHost* lprobparm = prob_parm_host;
     const ProbParmDevice* lprobparm_d = h_prob_parm_device;
     BL_PROFILE_VAR("SprayParticles::injectParticles()", INJECT_SPRAY);
-    const bool injectParts = SprayPC->injectParticles(
-      cumtime, dtlev, 0, level, parent->finestLevel(), *lprobparm,
-      *lprobparm_d);
+    const bool injectParts =
+      SprayPC->injectParticles(cumtime, dtlev, 0, level, parent->finestLevel());
     BL_PROFILE_VAR_STOP(INJECT_SPRAY);
     if (injectParts) {
       SprayPC->Redistribute(level, SprayPC->finestLevel(), 0);
