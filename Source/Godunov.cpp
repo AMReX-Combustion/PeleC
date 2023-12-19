@@ -11,6 +11,7 @@ pc_low_order_boundary(
   const int domlo,
   const int domhi,
   const int plm_iorder,
+  const bool use_flattening,
   const int idir,
   const amrex::Real dx,
   const amrex::Real dt,
@@ -28,8 +29,17 @@ pc_low_order_boundary(
   auto const& qbparr = qbp.array();
   amrex::ParallelFor(bdbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     amrex::Real slope[QVAR];
+
+    amrex::Real flat = 1.0;
+        // Calculate flattening in-place
+        if (use_flattening == 1) {
+           for (int dir_flat = 0; dir_flat < AMREX_SPACEDIM; dir_flat++) {
+             flat = std::min(flat, flatten(i, j, k, dir_flat, q));
+          }
+        }
+
     for (int n = 0; n < QVAR; ++n) {
-      slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, idir, q, plm_iorder);
+      slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, idir, q, flat, plm_iorder);
     }
     pc_plm_d(
       AMREX_D_DECL(i, j, k), idir, qbmarr, qbparr, slope, q, qa(i, j, k, QC),
@@ -123,16 +133,24 @@ pc_umeth_3D(
   auto const& qzparr = qzp.array();
 
   // Put the PLM and slopes in the same kernel launch to avoid unnecessary
-  // launch overhead Pelec_Slope_* are SIMD as well as PeleC_plm_* which loop
-  // over the same box
+  // launch
   if (ppm_type == 0) {
     amrex::ParallelFor(
       bxg2, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
         amrex::Real slope[QVAR];
+
+        amrex::Real flat = 1.0;
+        // Calculate flattening in-place
+        if (use_flattening == 1) {
+           for (int dir_flat = 0; dir_flat < AMREX_SPACEDIM; dir_flat++) {
+             flat = std::min(flat, flatten(i, j, k, dir_flat, q));
+          }
+        }
+
         // X slopes and interp
         int idir = 0;
         for (int n = 0; n < QVAR; ++n) {
-          slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, 0, q, plm_iorder);
+          slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, 0, q, flat, plm_iorder);
         }
         pc_plm_d(
           AMREX_D_DECL(i, j, k), idir, qxmarr, qxparr, slope, q,
@@ -141,7 +159,7 @@ pc_umeth_3D(
         // Y slopes and interp
         idir = 1;
         for (int n = 0; n < QVAR; n++) {
-          slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, 1, q, plm_iorder);
+          slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, 1, q, flat, plm_iorder);
         }
         pc_plm_d(
           AMREX_D_DECL(i, j, k), idir, qymarr, qyparr, slope, q,
@@ -150,7 +168,7 @@ pc_umeth_3D(
         // Z slopes and interp
         idir = 2;
         for (int n = 0; n < QVAR; ++n) {
-          slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, 2, q, plm_iorder);
+          slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, 2, q, flat, plm_iorder);
         }
         pc_plm_d(
           AMREX_D_DECL(i, j, k), idir, qzmarr, qzparr, slope, q,
@@ -427,7 +445,7 @@ pc_umeth_3D(
       bfbx.setBig(idir, domlo[idir]);
       if (bfbx.ok()) {
         pc_low_order_boundary(
-          bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], plm_iorder,
+          bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], plm_iorder, use_flattening,
           idir, del[idir], dt, q, qaux, flx[idir], qec[idir]);
       }
     }
@@ -439,7 +457,7 @@ pc_umeth_3D(
       bfbx.setSmall(idir, domhi[idir] + 1);
       if (bfbx.ok()) {
         pc_low_order_boundary(
-          bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], plm_iorder,
+          bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], plm_iorder,use_flattening,
           idir, del[idir], dt, q, qaux, flx[idir], qec[idir]);
       }
     }
@@ -1186,7 +1204,7 @@ pc_umeth_2D(
       bfbx.setBig(idir, domlo[idir]);
       if (bfbx.ok()) {
         pc_low_order_boundary(
-          bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], plm_iorder,
+          bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], plm_iorder,use_flattening,
           idir, del[idir], dt, q, qaux, flx[idir], qec[idir]);
       }
     }
@@ -1198,7 +1216,7 @@ pc_umeth_2D(
       bfbx.setSmall(idir, domhi[idir] + 1);
       if (bfbx.ok()) {
         pc_low_order_boundary(
-          bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], plm_iorder,
+          bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], plm_iorder,use_flattening,
           idir, del[idir], dt, q, qaux, flx[idir], qec[idir]);
       }
     }

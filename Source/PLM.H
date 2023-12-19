@@ -23,6 +23,7 @@ plm_slope(
   const int n,
   const int dir,
   amrex::Array4<const amrex::Real> const& q,
+  const amrex::Real flat,
   const int order)
 {
   if (order == 1) {
@@ -72,8 +73,7 @@ plm_slope(
 
   dtemp = 4.0 / 3.0 * dcen - 1.0 / 6.0 * (dfp + dfm);
 
-  // Flattening could be done here (see Nyx if we want to do it)
-  return dsgn * amrex::min<amrex::Real>(dlim, std::abs(dtemp));
+  return flat * dsgn * amrex::min<amrex::Real>(dlim, std::abs(dtemp));
 }
 
 AMREX_GPU_DEVICE
@@ -87,7 +87,7 @@ plm_slope_eb(
   const int dir,
   amrex::Array4<amrex::EBCellFlag const> const& flags,
   amrex::Array4<const amrex::Real> const& q,
-  amrex::Real flat,
+  const amrex::Real flat,
   const int order)
 {
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
@@ -103,14 +103,14 @@ plm_slope_eb(
     (order == 4) && !flags(iv).isCovered() && !flags(ivm).isCovered() &&
     !flags(ivm2).isCovered() && !flags(ivp).isCovered() &&
     !flags(ivp2).isCovered()) {
-    return plm_slope(AMREX_D_DECL(i, j, k), n, dir, q, order);
+    return plm_slope(AMREX_D_DECL(i, j, k), n, dir, q, flat, order);
   }
   // We have enough cells in the x-direction to do 2nd order slopes
   // centered on (i,j,k)
   else if (
     (order > 1) && !flags(iv).isCovered() && !flags(ivm).isCovered() &&
     !flags(ivp).isCovered()) {
-    return plm_slope(AMREX_D_DECL(i, j, k), n, dir, q, 2);
+    return plm_slope(AMREX_D_DECL(i, j, k), n, dir, q, flat, 2);
   } else {
     return 0.0;
   }
