@@ -1,6 +1,6 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 stop_time = 0.001
-max_step = 30000000 
+max_step = 30000000
 
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic = 1 1 1
@@ -37,10 +37,10 @@ pelec.v            = 1       # verbosity in PeleC cpp files
 amr.v              = 1       # verbosity in Amr.cpp
 #amr.grid_log       = grdlog  # name of grid logging file
 
-# REFINEMENT / REGRIDDING 
+# REFINEMENT / REGRIDDING
 amr.max_level       = 0       # maximum level number allowed
-amr.ref_ratio       = 2 2 2 2 # refinement ratio
-amr.regrid_int      = 2 2 2 2 # how often to regrid
+#amr.ref_ratio       = 2 2 2 2 # refinement ratio
+#amr.regrid_int      = 2 2 2 2 # how often to regrid
 amr.blocking_factor = 8       # block factor in grid generation
 amr.max_grid_size   = 8
 amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
@@ -71,5 +71,3 @@ tagging.ftracerr = 150e-6
 
 amrex.signal_handling=0
 #amrex.throw_handling=0
-
-ebd.boundary_grad_stencil_type = 0

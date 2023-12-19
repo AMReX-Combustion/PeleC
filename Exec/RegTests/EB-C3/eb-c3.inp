@@ -47,8 +47,8 @@ amr.v                = 1       # verbosity in Amr.cpp
 
 # REFINEMENT / REGRIDDING
 amr.max_level       = 0       # maximum level number allowed
-amr.ref_ratio       = 2 2 2 2 # refinement ratio
-amr.regrid_int      = 2       # how often to regrid
+#amr.ref_ratio       = 2 2 2 2 # refinement ratio
+#amr.regrid_int      = 2       # how often to regrid
 amr.blocking_factor = 8       # block factor in grid generation
 amr.max_grid_size   = 32
 
@@ -76,7 +76,4 @@ pelec.eb_zero_body_state = 1
 
 # PROBLEM PARAMETERS
 prob.p_init    = 1013250.0
-prob.Y_init_H2 = 0.06
-prob.Y_init_O2 = 0.5
-prob.Y_init_N2 = 0.44
 prob.T_init    = 1500.0

@@ -1,5 +1,0 @@
-set(PELEC_ENABLE_PARTICLES OFF)
-set(PELEC_EOS_MODEL GammaLaw)
-set(PELEC_CHEMISTRY_MODEL Null)
-set(PELEC_TRANSPORT_MODEL Constant)
-include(BuildExeAndLib)

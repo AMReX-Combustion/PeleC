@@ -43,8 +43,8 @@ amr.data_log         = datlog mmslog
 # REFINEMENT / REGRIDDING
 amr.max_level       = 0       # maximum level number allowed
 #amr.max_level       = 1       # maximum level number allowed
-amr.ref_ratio       = 2 2 2 2 # refinement ratio
-amr.regrid_int      = 2 2 2 2 # how often to regrid
+#amr.ref_ratio       = 2 2 2 2 # refinement ratio
+#amr.regrid_int      = 2 2 2 2 # how often to regrid
 amr.blocking_factor = 4       # block factor in grid generation
 amr.max_grid_size   = 64
 amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
@@ -72,6 +72,3 @@ prob.a_vz = 0.0
 prob.w_0_fact = 0.0
 prob.a_wy = 1.0
 prob.p_x_fact = 0.0
-
-# EB
-ebd.boundary_grad_stencil_type = 0

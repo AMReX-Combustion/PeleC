@@ -76,8 +76,6 @@ particles.NC10H22_rho = 0.640
 # Last coefficient converts units, in this case bar, to dyne/cm^2
 particles.NC10H22_psat = 4.07857 1501.268 -78.67 1.E6
 
-particles.parcel_size = 100.
-
 particles.use_splash_model = false
 
 # CHECKPOINT FILES

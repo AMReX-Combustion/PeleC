@@ -13,7 +13,7 @@ amr.n_cell           =  32 32 32
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
-pelec.lo_bc       =  "Interior"  "Interior"  "Interior" 
+pelec.lo_bc       =  "Interior"  "Interior"  "Interior"
 pelec.hi_bc       =  "Interior"  "Interior"  "Interior"
 
 # WHICH PHYSICS
@@ -35,10 +35,10 @@ amr.v                = 1       # verbosity in Amr.cpp
 amr.data_log         = datlog
 #amr.grid_log        = grdlog  # name of grid logging file
 
-# REFINEMENT / REGRIDDING 
+# REFINEMENT / REGRIDDING
 amr.max_level       = 0       # maximum level number allowed
-amr.ref_ratio       = 2 2 2 2 # refinement ratio
-amr.regrid_int      = 2 2 2 2 # how often to regrid
+#amr.ref_ratio       = 2 2 2 2 # refinement ratio
+#amr.regrid_int      = 2 2 2 2 # how often to regrid
 amr.blocking_factor = 4       # block factor in grid generation
 amr.max_grid_size   = 64
 amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
@@ -62,6 +62,3 @@ prob.reynolds_lambda0 = 100.0
 prob.mach_t0 = 0.1
 prob.prandtl = 0.71
 prob.inres = 32
-
-# EB
-ebd.boundary_grad_stencil_type = 0

@@ -69,15 +69,6 @@ public:
   build(const amrex::Geometry& geom, const int max_coarsening_level) override;
 };
 
-class MovingPlane : public Geometry::Register<MovingPlane>
-{
-public:
-  static std::string identifier() { return "moving_plane"; }
-
-  void
-  build(const amrex::Geometry& geom, const int max_coarsening_level) override;
-};
-
 class QuarterCircle : public Geometry::Register<QuarterCircle>
 {
 public:

@@ -25,7 +25,6 @@ pelec.diffuse_spec = 1
 pelec.do_react = 1
 pelec.chem_integrator = "ReactorCvode"
 pelec.do_mol = 0
-pelec.do_grav = 0
 pelec.allow_negative_energy = 1
 
 # TIME STEP CONTROL
@@ -42,8 +41,8 @@ amr.v                = 1       # verbosity in Amr.cpp
 
 # REFINEMENT / REGRIDDING
 amr.max_level       = 0       # maximum level number allowed
-amr.ref_ratio       = 2 2 2 2 # refinement ratio
-amr.regrid_int      = 2 2 2 2 # how often to regrid
+#amr.ref_ratio       = 2 2 2 2 # refinement ratio
+#amr.regrid_int      = 2 2 2 2 # how often to regrid
 amr.blocking_factor = 4       # block factor in grid generation
 amr.max_grid_size   = 32
 amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
@@ -61,7 +60,6 @@ amr.plot_file       = plt # root name of plotfile
 # SOOT MODELING
 soot.incept_pah = A2 # Soot inception species
 soot.v = 0
-soot.max_dt_rate = 0.01
 soot.num_subcycles = 1
 soot.temp_cutoff = 350.
 soot.conserve_mass = false
@@ -84,6 +82,6 @@ prob.pmf_average = 0
 
 #--------------------------DEBUG/REGTESTS INPUTS-----------------------------
 # amrex.regtest_reduction=1
-amrex.fpe_trap_invalid = 1
-amrex.fpe_trap_zero = 1
-amrex.fpe_trap_overflow = 1
+# amrex.fpe_trap_invalid = 1
+# amrex.fpe_trap_zero = 1
+# amrex.fpe_trap_overflow = 1
