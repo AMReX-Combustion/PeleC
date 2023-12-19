@@ -22,40 +22,6 @@ function(build_pelec_exe pelec_exe_name pelec_lib_name)
   target_include_directories(${pelec_exe_name} PRIVATE ${CMAKE_BINARY_DIR})
   target_include_directories(${pelec_exe_name} PRIVATE ${CMAKE_SOURCE_DIR}/Source/Params/param_includes)
 
-  # Spray
-  set(PELE_PHYSICS_SPRAY_DIR ${CMAKE_SOURCE_DIR}/Submodules/PelePhysics/Source/Spray)
-  if(PELEC_ENABLE_AMREX_PARTICLES AND PELE_SPRAY_FUEL_NUM GREATER 0)
-    target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_SPRAY)
-    target_compile_definitions(${pelec_exe_name} PRIVATE SPRAY_FUEL_NUM=${PELE_SPRAY_FUEL_NUM})
-    target_sources(${pelec_exe_name} PRIVATE
-                   SprayParticlesInitInsert.cpp
-                   ${SRC_DIR}/Particle.cpp
-                   ${PELE_PHYSICS_SPRAY_DIR}/Drag.H
-                   ${PELE_PHYSICS_SPRAY_DIR}/SprayDerive.cpp
-                   ${PELE_PHYSICS_SPRAY_DIR}/SprayFuelData.H
-                   ${PELE_PHYSICS_SPRAY_DIR}/SprayIO.cpp
-                   ${PELE_PHYSICS_SPRAY_DIR}/SprayInjection.H
-                   ${PELE_PHYSICS_SPRAY_DIR}/SprayInterpolation.H
-                   ${PELE_PHYSICS_SPRAY_DIR}/SprayJet.H
-                   ${PELE_PHYSICS_SPRAY_DIR}/SprayJet.cpp
-                   ${PELE_PHYSICS_SPRAY_DIR}/SprayParticles.H
-                   ${PELE_PHYSICS_SPRAY_DIR}/SprayParticles.cpp
-                   ${PELE_PHYSICS_SPRAY_DIR}/SpraySB.cpp
-                   ${PELE_PHYSICS_SPRAY_DIR}/SpraySetup.cpp
-                   ${PELE_PHYSICS_SPRAY_DIR}/WallFunctions.H
-                   ${PELE_PHYSICS_SPRAY_DIR}/BreakupSplash/AhamedSplash.H
-                   ${PELE_PHYSICS_SPRAY_DIR}/BreakupSplash/ReitzKHRT.H
-                   ${PELE_PHYSICS_SPRAY_DIR}/BreakupSplash/SBData.H
-                   ${PELE_PHYSICS_SPRAY_DIR}/BreakupSplash/TABBreakup.H
-                   ${PELE_PHYSICS_SPRAY_DIR}/BreakupSplash/WallFilm.H
-                   ${PELE_PHYSICS_SPRAY_DIR}/Distribution/DistBase.H
-                   ${PELE_PHYSICS_SPRAY_DIR}/Distribution/Distributions.H
-                   ${PELE_PHYSICS_SPRAY_DIR}/Distribution/Distributions.cpp)
-    target_include_directories(${pelec_exe_name} PUBLIC ${PELE_PHYSICS_SPRAY_DIR})
-    target_include_directories(${pelec_exe_name} PUBLIC ${PELE_PHYSICS_SPRAY_DIR}/Distribution)
-    target_include_directories(${pelec_exe_name} PUBLIC ${PELE_PHYSICS_SPRAY_DIR}/BreakupSplash)
-  endif()
-
   target_sources(${pelec_exe_name}
      PRIVATE
        ${SRC_DIR}/Advance.cpp
@@ -109,6 +75,13 @@ function(build_pelec_exe pelec_exe_name pelec_lib_name)
        ${SRC_DIR}/Utilities.cpp
        ${SRC_DIR}/WENO.H
   )
+
+  # Spray
+  if(PELEC_ENABLE_SPRAY)
+    target_sources(${pelec_exe_name} PRIVATE
+                   SprayParticlesInitInsert.cpp
+                   ${SRC_DIR}/Particle.cpp)
+  endif()
 
   # Soot
   if(PELEC_ENABLE_SOOT)

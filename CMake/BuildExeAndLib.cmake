@@ -1,5 +1,5 @@
 get_filename_component(DIR_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
-set(pelec_lib_name PelePhysics-Lib-${PELEC_EOS_MODEL}-${PELEC_CHEMISTRY_MODEL}-${PELEC_TRANSPORT_MODEL})
+set(pelec_lib_name PelePhysics-Lib-${PELEC_EOS_MODEL}-${PELEC_CHEMISTRY_MODEL}-${PELEC_TRANSPORT_MODEL}-"Spray${PELEC_ENABLE_SPRAY}"-"Soot${PELEC_ENABLE_SOOT}")
 set(pelec_exe_name PeleC-${DIR_NAME})
 include(BuildPeleCLib)
 include(BuildPeleCExe)

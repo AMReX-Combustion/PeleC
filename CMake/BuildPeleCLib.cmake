@@ -8,6 +8,7 @@ function(build_pelec_lib pelec_lib_name)
     set(PELE_PHYSICS_MECHANISM_DIR "${PELE_PHYSICS_SRC_DIR}/Mechanisms/${PELEC_CHEMISTRY_MODEL}")
     set(PELE_PHYSICS_UTILITY_DIR "${PELE_PHYSICS_SRC_DIR}/Source/Utility")
     set(PELE_PHYSICS_REACTIONS_DIR "${PELE_PHYSICS_SRC_DIR}/Source/Reactions")
+    set(PELE_PHYSICS_SPRAY_DIR "${PELE_PHYSICS_SRC_DIR}/Source/Spray")
     set(PELE_PHYSICS_SOOT_DIR "${PELE_PHYSICS_SRC_DIR}/Source/Soot")
     set(AMREX_SUNDIALS_DIR ${AMREX_SUBMOD_LOCATION}/Src/Extern/SUNDIALS)
 
@@ -129,6 +130,36 @@ function(build_pelec_lib pelec_lib_name)
     )
     target_include_directories(${pelec_lib_name} PUBLIC ${PELE_PHYSICS_REACTIONS_DIR})
 
+    if(PELEC_ENABLE_SPRAY)
+      target_compile_definitions(${pelec_lib_name} PUBLIC PELEC_USE_SPRAY)
+      target_compile_definitions(${pelec_lib_name} PUBLIC SPRAY_FUEL_NUM=${PELE_SPRAY_FUEL_NUM})
+      target_sources(${pelec_lib_name} PRIVATE
+                     ${PELE_PHYSICS_SPRAY_DIR}/Drag.H
+                     ${PELE_PHYSICS_SPRAY_DIR}/SprayDerive.cpp
+                     ${PELE_PHYSICS_SPRAY_DIR}/SprayFuelData.H
+                     ${PELE_PHYSICS_SPRAY_DIR}/SprayIO.cpp
+                     ${PELE_PHYSICS_SPRAY_DIR}/SprayInjection.H
+                     ${PELE_PHYSICS_SPRAY_DIR}/SprayInterpolation.H
+                     ${PELE_PHYSICS_SPRAY_DIR}/SprayJet.H
+                     ${PELE_PHYSICS_SPRAY_DIR}/SprayJet.cpp
+                     ${PELE_PHYSICS_SPRAY_DIR}/SprayParticles.H
+                     ${PELE_PHYSICS_SPRAY_DIR}/SprayParticles.cpp
+                     ${PELE_PHYSICS_SPRAY_DIR}/SpraySB.cpp
+                     ${PELE_PHYSICS_SPRAY_DIR}/SpraySetup.cpp
+                     ${PELE_PHYSICS_SPRAY_DIR}/WallFunctions.H
+                     ${PELE_PHYSICS_SPRAY_DIR}/BreakupSplash/AhamedSplash.H
+                     ${PELE_PHYSICS_SPRAY_DIR}/BreakupSplash/ReitzKHRT.H
+                     ${PELE_PHYSICS_SPRAY_DIR}/BreakupSplash/SBData.H
+                     ${PELE_PHYSICS_SPRAY_DIR}/BreakupSplash/TABBreakup.H
+                     ${PELE_PHYSICS_SPRAY_DIR}/BreakupSplash/WallFilm.H
+                     ${PELE_PHYSICS_SPRAY_DIR}/Distribution/DistBase.H
+                     ${PELE_PHYSICS_SPRAY_DIR}/Distribution/Distributions.H
+                     ${PELE_PHYSICS_SPRAY_DIR}/Distribution/Distributions.cpp)
+      target_include_directories(${pelec_lib_name} PUBLIC ${PELE_PHYSICS_SPRAY_DIR})
+      target_include_directories(${pelec_lib_name} PUBLIC ${PELE_PHYSICS_SPRAY_DIR}/Distribution)
+      target_include_directories(${pelec_lib_name} PUBLIC ${PELE_PHYSICS_SPRAY_DIR}/BreakupSplash)
+    endif()
+    
     if(PELEC_ENABLE_SOOT)
       target_compile_definitions(${pelec_lib_name} PUBLIC PELEC_USE_SOOT)
       target_compile_definitions(${pelec_lib_name} PUBLIC NUM_SOOT_MOMENTS=${PELE_NUM_SOOT_MOMENTS})
