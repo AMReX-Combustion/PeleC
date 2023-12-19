@@ -178,9 +178,7 @@ PeleC::initParticles()
     AMREX_ASSERT(SprayPC == nullptr);
     createDataParticles();
 
-    const ProbParmHost* lprobparm = prob_parm_host;
-    const ProbParmDevice* lprobparm_d = h_prob_parm_device;
-    SprayPC->SprayInitialize(*lprobparm, *lprobparm_d);
+    SprayPC->SprayInitialize();
   }
 }
 
@@ -197,10 +195,7 @@ PeleC::postRestartParticles()
     AMREX_ASSERT(SprayPC == nullptr);
     createDataParticles();
 
-    const ProbParmHost* lprobparm = prob_parm_host;
-    const ProbParmDevice* lprobparm_d = h_prob_parm_device;
-    SprayPC->SprayInitialize(
-      *lprobparm, *lprobparm_d, parent->theRestartFile());
+    SprayPC->SprayInitialize();
     amrex::Gpu::Device::streamSynchronize();
   }
 }
