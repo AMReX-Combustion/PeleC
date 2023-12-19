@@ -326,8 +326,6 @@ PeleC::postTimeStepParticles(int iteration)
     const int nstep = parent->levelSteps(0);
     const amrex::Real dtlev = parent->dtLevel(0);
     const amrex::Real cumtime = parent->cumTime() + dtlev;
-    const ProbParmHost* lprobparm = prob_parm_host;
-    const ProbParmDevice* lprobparm_d = h_prob_parm_device;
     BL_PROFILE_VAR("SprayParticles::injectParticles()", INJECT_SPRAY);
     const bool injectParts =
       SprayPC->injectParticles(cumtime, dtlev, nstep, level, finest_level);
@@ -351,8 +349,6 @@ PeleC::postInitParticles()
   const amrex::Real dtlev = parent->dtLevel(level);
   const amrex::Real cumtime = parent->cumTime();
   if (do_spray_particles) {
-    const ProbParmHost* lprobparm = prob_parm_host;
-    const ProbParmDevice* lprobparm_d = h_prob_parm_device;
     BL_PROFILE_VAR("SprayParticles::injectParticles()", INJECT_SPRAY);
     const bool injectParts =
       SprayPC->injectParticles(cumtime, dtlev, 0, level, parent->finestLevel());
