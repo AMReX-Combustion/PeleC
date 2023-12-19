@@ -116,7 +116,7 @@ endfunction(add_test_rf)
 # Regression tests no FPE trapping ever
 function(add_test_rn TEST_NAME TEST_EXE_DIR)
     setup_test()
-    set(RUNTIME_OPTIONS "max_step=10 ${RUNTIME_OPTIONS} amrex.signal_handling=0")
+    set(RUNTIME_OPTIONS "max_step=10 ${RUNTIME_OPTIONS} amrex.signal_handling=0 amrex.abort_on_unused_inputs=0")
     add_test(${TEST_NAME} sh -c "${MPI_COMMANDS} ${CURRENT_TEST_EXE} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.inp ${RUNTIME_OPTIONS} > ${TEST_NAME}.log ${SAVE_GOLDS_COMMAND} ${FCOMPARE_COMMAND}")
     set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 18000 PROCESSORS ${PELEC_NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "regression" ATTACHED_FILES_ON_FAIL "${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.log")
 endfunction(add_test_rn)
