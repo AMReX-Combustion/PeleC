@@ -556,7 +556,7 @@ jobs:
 #          exit ${return}
   Lint-clang-tidy:
     needs: Formatting
-    runs-on: ubuntu-latest
+    runs-on: macos-13
     steps:
       - name: Clone
         uses: actions/checkout@v3
@@ -564,26 +564,24 @@ jobs:
           submodules: 'recursive'
       - name: Setup
         run: |
-          echo "NPROCS=$(nproc)" >> $GITHUB_ENV
+          echo "NPROCS=$(sysctl -n hw.ncpu)" >> $GITHUB_ENV
           echo "CCACHE_COMPRESS=1" >> $GITHUB_ENV
           echo "CCACHE_COMPRESSLEVEL=1" >> $GITHUB_ENV
           echo "CCACHE_LOGFILE=${{github.workspace}}/ccache.log.txt" >> $GITHUB_ENV
           echo "CCACHE_MAXSIZE=500M" >> $GITHUB_ENV
-          ${{github.workspace}}/Submodules/PelePhysics/Submodules/amrex/.github/workflows/dependencies/ubuntu_free_disk_space.sh
       - name: Install Ccache
         run: |
-          wget https://github.com/ccache/ccache/releases/download/v4.8/ccache-4.8-linux-x86_64.tar.xz
-          tar xvf ccache-4.8-linux-x86_64.tar.xz
-          sudo cp -f ccache-4.8-linux-x86_64/ccache /usr/local/bin/
+          brew install ccache
       - name: Set Up Ccache
         uses: actions/cache@v3
         with:
-          path: ~/.cache/ccache
+          path: /Users/runner/Library/Caches/ccache
           key: ccache-${{github.workflow}}-${{github.job}}-git-${{github.sha}}
           restore-keys: |
                ccache-${{github.workflow}}-${{github.job}}-git-
       - name: Configure
         run: |
+          export PATH=$(brew --prefix llvm@15)/bin:${PATH}
           cmake -B${{runner.workspace}}/build-clang-tidy \
           -DCMAKE_BUILD_TYPE:STRING=Release \
           -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
@@ -600,7 +598,8 @@ jobs:
         working-directory: ${{runner.workspace}}/build-clang-tidy
         run: |
           #set -eu -o pipefail
-          cmake --build . --parallel 2 2>&1 | tee -a clang-tidy-full-report.txt
+          export PATH=$(brew --prefix llvm@15)/bin:${PATH}
+          cmake --build . --parallel ${{env.NPROCS}} 2>&1 | tee -a clang-tidy-full-report.txt
           egrep "warning:|error:" clang-tidy-full-report.txt \
             | egrep -v "Submodules/amrex|Submodules/sundials" \
             | egrep -v "ld: warning:" | sort | uniq \
@@ -608,7 +607,7 @@ jobs:
       - name: Ccache Report
         run: |
           ccache -s
-          du -hs ~/.cache/ccache
+          du -hs /Users/runner/Library/Caches/ccache
       - name: Full report
         working-directory: ${{runner.workspace}}/build-clang-tidy
         run: cat clang-tidy-full-report.txt
