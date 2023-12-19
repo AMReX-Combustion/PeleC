@@ -1,0 +1,118 @@
+# ------------------  INPUTS TO MAIN PROGRAM  -------------------
+max_step = 1000
+stop_time = 0.003
+
+# PROBLEM SIZE & GEOMETRY
+geometry.is_periodic = 0 0 0
+geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
+geometry.prob_lo     =  -0.6 -0.6 0.
+geometry.prob_hi     = 0.6 0.6 6.
+amr.n_cell           = 32 32 160
+
+# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
+# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
+pelec.lo_bc        = "FOExtrap" "FOExtrap" "NoSlipWall"
+pelec.hi_bc        = "FOExtrap" "FOExtrap" "FOExtrap"
+
+# WHICH PHYSICS
+pelec.do_hydro = 1
+pelec.diffuse_vel = 1
+pelec.diffuse_temp = 1
+pelec.diffuse_enth = 1
+pelec.diffuse_spec = 1
+pelec.do_react = 0
+pelec.allow_negative_energy = 1
+pelec.chem_integrator = "ReactorNull"
+pelec.plot_massfrac = 1
+
+# TIME STEP CONTROL
+pelec.cfl            = 0.5    # cfl number for hyperbolic system
+pelec.init_shrink    = 1.     # scale back initial timestep
+pelec.change_max     = 1.1     # max time step growth
+pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
+
+
+# DIAGNOSTICS & VERBOSITY
+pelec.sum_interval   = -1   # timesteps between computing mass
+pelec.v              = 0   # verbosity in Castro.cpp
+amr.v                = 1    # verbosity in Amr.cpp
+
+# REFINEMENT / REGRIDDING
+amr.max_level       = 3
+
+tagging.refinement_indicators = box
+tagging.box.in_box_lo = -0.3 -0.3 0.
+tagging.box.in_box_hi = 0.3 0.3 0.3
+# Use adaptive refinement based on temperature gradients
+tagging.tempgrad = 40.
+amr.regrid_int =  4 4 4 4 4
+
+amr.ref_ratio       = 2 2 2 2 # refinement ratio
+amr.blocking_factor = 16
+amr.max_grid_size   = 128
+amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
+
+
+# PARTICLES / SPRAY
+pelec.do_spray_particles = 1
+particles.v = 0
+particles.derive_plot_vars = 1
+particles.mom_transfer = 1
+particles.mass_transfer = 1
+
+particles.fuel_ref_temp = 298.15
+
+particles.fuel_species = NC12H26
+particles.NC12H26_crit_temp = 658.
+particles.NC12H26_boil_temp = 489.
+particles.NC12H26_latent = 3.59411E9
+particles.NC12H26_cp = 2.217E7
+particles.NC12H26_lambda = 2059.0484837579133 -2.4391762758823385 9.633688833837596e-06 6.93350414269127e-07
+particles.NC12H26_mu = -0.028611188933370675 39.40765272136905 -18125.486152106896 3021587.187559424
+particles.NC12H26_rho = 1.7799145710513213 -0.006848424883513244 1.5016559178741312e-05 -1.2149370117669905e-08
+particles.NC12H26_psat = 4.265416493004907 1741.1453093807672 -80.90351868881419 1000000.0
+particles.fuel_sigma = 15.
+
+# CHECKPOINT FILES
+#amr.checkpoint_files_output = 0
+amr.check_file      = chk  # root name of checkpoint file
+amr.check_int       = 1000
+
+# PLOTFILES
+#amr.plot_files_output = 0
+amr.plot_file       = plt # root name of plotfile
+amr.plot_per        = 2.5E-4
+amr.derive_plot_vars = x_velocity y_velocity z_velocity pressure   # these variables appear in the plotfile
+amr.file_name_digits = 6
+
+# PROBLEM
+# Initial fluid properties
+prob.ref_T = 900.
+prob.ref_p = 6.E7
+prob.init_v = 0.
+prob.X_N2 = 0.8971
+prob.X_O2 = 0.
+prob.X_H2O = 0.0377
+prob.X_CO2 = 0.0652
+
+# Properties of injected particles
+spray.jet1.do_inject = 1
+spray.jet1.T = 363.
+spray.jet1.jet_dia = 9.E-3
+spray.jet1.jet_cent = 0. 0. 0.
+spray.jet1.jet_norm = 0. 0. 1.
+spray.jet1.dist_type = Uniform
+spray.jet1.diameter = 89.E-4
+spray.jet1.inject_ppp = 0.1
+spray.jet1.spread_angle = 20.
+spray.jet1.roi_file = roi.dat
+spray.jet1.discharge_coeff = 0.89
+
+particles.use_splash_model = false
+particles.use_breakup_model = KHRT
+particles.KHRT_B0 = 0.61
+particles.KHRT_B1 = 7.3
+particles.KHRT_C3 = 5.3
+particles.breakup_parcel_factor = 0.5
+
+amrex.abort_on_out_of_gpu_memory = 1

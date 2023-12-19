@@ -1,5 +1,5 @@
 # AMReX
-DIM = 2
+DIM = 3
 COMP = gnu
 PRECISION = DOUBLE
 
@@ -28,13 +28,12 @@ PELE_CVODE_FORCE_YCORDER = FALSE
 PELE_USE_MAGMA = FALSE
 PELE_COMPILE_AJACOBIAN = FALSE
 Eos_Model := Fuego
-Chemistry_Model := SootReaction
+Chemistry_Model := dodecane_lu
 Transport_Model := Simple
 
-# Soot
-USE_SOOT = TRUE
-NUM_SOOT_MOMENTS = 3
-#NUM_SOOT_MOMENTS = 6
+# Spray
+USE_PARTICLES = TRUE
+SPRAY_FUEL_NUM = 1
 
 # GNU Make
 Bpack := ./Make.package

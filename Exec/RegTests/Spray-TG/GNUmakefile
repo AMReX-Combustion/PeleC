@@ -28,13 +28,12 @@ PELE_CVODE_FORCE_YCORDER = FALSE
 PELE_USE_MAGMA = FALSE
 PELE_COMPILE_AJACOBIAN = FALSE
 Eos_Model := Fuego
-Chemistry_Model := SootReaction
-Transport_Model := Simple
+Chemistry_Model := air
+Transport_Model := Constant
 
-# Soot
-USE_SOOT = TRUE
-NUM_SOOT_MOMENTS = 3
-#NUM_SOOT_MOMENTS = 6
+# Spray
+USE_PARTICLES = TRUE
+SPRAY_FUEL_NUM = 1
 
 # GNU Make
 Bpack := ./Make.package

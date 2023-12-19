@@ -1,0 +1,124 @@
+# ------------------  INPUTS TO MAIN PROGRAM  -------------------
+max_step = 100000
+stop_time = 0.000273365690540257
+
+# PROBLEM SIZE & GEOMETRY
+geometry.is_periodic = 0 0 1
+geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
+geometry.prob_lo    =  0. 0. 0.
+geometry.prob_hi     = 10. 10. 10.
+amr.n_cell           = 64 64 64
+
+# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
+# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
+# pelec.lo_bc = "FOExtrap" "NoSlipWall" "Interior"
+# pelec.hi_bc = "FOExtrap" "FOExtrap" "Interior"
+pelec.lo_bc = "NoSlipWall" "NoSlipWall" "Interior"
+pelec.hi_bc = "NoSlipWall" "NoSlipWall" "Interior"
+
+amrex.fpe_trap_invalid = 1
+amrex.fpe_trap_zero = 1
+amrex.fpe_trap_overflow = 1
+
+# WHICH PHYSICS
+pelec.do_hydro = 1
+pelec.diffuse_vel = 1
+pelec.diffuse_temp = 1
+pelec.diffuse_enth = 1
+pelec.diffuse_spec = 1
+pelec.do_react = 0
+pelec.allow_negative_energy = 1
+pelec.do_mol = 1
+pelec.cfl = 0.3
+
+# TIME STEP CONTROL
+pelec.init_shrink    = 1.     # scale back initial timestep
+pelec.change_max     = 1.1     # max time step growth
+pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
+#pelec.fixed_dt       = 1.e-5
+
+# EB
+#eb2.geom_type = all_regular
+eb2.geom_type = plane
+# Set plane that is 50 deg from bottom
+eb2.plane_point = 8.830222 1.786062 0.
+eb2.plane_normal = 0.7660444 -0.6427876 0.
+
+pelec.eb_boundary_T = 1500.
+pelec.eb_isothermal = 1
+ebd.boundary_grad_stencil_type = 0
+pelec.redistribution_type = "StateRedist"
+
+# DIAGNOSTICS & VERBOSITY
+pelec.sum_interval   = -1   # timesteps between computing mass
+pelec.v              = 0   # verbosity in Castro.cpp
+amr.v                = 1    # verbosity in Amr.cpp
+#amr.data_log         = datlog
+#amr.grid_log        = grdlog  # name of grid logging file
+
+# REFINEMENT / REGRIDDING
+amr.max_level       = 0       # maximum level number allowed
+amr.ref_ratio       = 2 2 2 2 # refinement ratio
+amr.regrid_int      = 2 2 2 2 # how often to regrid
+amr.blocking_factor = 8       # block factor in grid generation
+amr.max_grid_size   = 32
+amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
+
+# PARTICLES / SPRAY
+pelec.do_spray_particles = 1
+particles.v = 0
+particles.mom_transfer = 1
+particles.mass_transfer = 1
+particles.init_file = "initspraydata_3d.dat"
+particles.write_ascii_files = 1
+
+particles.fuel_ref_temp = 300.
+
+particles.fuel_species = NC7H16
+
+# properties for heptane
+particles.NC7H16_crit_temp = 540.
+particles.NC7H16_boil_temp = 371.6
+particles.NC7H16_latent = 3.63E9
+particles.NC7H16_cp = 2.2483E7
+particles.NC7H16_rho = 0.693
+# Coefficients for saturation pressure using Antoine equation
+# These are from the NIST website
+# Last coefficient converts units, in this case bar, to dyne/cm^2
+particles.NC7H16_psat = 4.02832 1268.636 -56.199 1.E6
+
+particles.use_splash_model = false
+
+# CHECKPOINT FILES
+amr.checkpoint_files_output = 0
+amr.check_file      = chk  # root name of checkpoint file
+amr.check_int       = -1   # number of timesteps between checkpoints
+#amr.restart         = chk0000100
+
+# PLOTFILES
+amr.plot_file       = plt
+amr.plot_int        = 77
+#amr.plot_per = 1.6E-4
+amr.plot_vars = density Temp rho_E xmom ymom zmom eden rho_O2 rho_N2 rho_NC10H22
+amr.derive_plot_vars = Mach x_velocity y_velocity pressure vfrac z_velocity
+#amr.derive_plot_vars = ALL
+amr.file_name_digits = 6
+
+prob.init_T = 1500.
+prob.init_p = 1.01325E7
+prob.init_v = 0.
+
+
+spray.jet1.do_inject = 0
+# spray.jet1.T = 363.0
+# spray.jet1.jet_cent = 5. 0. 5.
+# spray.jet1.jet_norm = 0. 1. 0.
+# spray.jet1.part_temp = 363.
+# spray.jet1.jet_dia = 9.E-3
+# spray.jet1.spread_angle = 20.
+# spray.jet1.dist_type = Uniform
+# spray.jet1.diameter = 4.5E-4
+# spray.jet1.jet_vel = 60000.
+# spray.jet1.jet_start = 10000.
+# spray.jet1.jet_end = -100.
+# spray.jet1.mass_flow_rate = 1.55

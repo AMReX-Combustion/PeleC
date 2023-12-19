@@ -1,0 +1,80 @@
+# ------------------  INPUTS TO MAIN PROGRAM  -------------------
+max_step = 1000000
+stop_time = 0.022
+
+# PROBLEM SIZE & GEOMETRY
+geometry.is_periodic = 1 1 1
+geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
+geometry.prob_lo     = 0. 0. 0.
+geometry.prob_hi     = 1. 1. 1.
+amr.n_cell           = 4 4 4
+
+pelec.lo_bc =  "Interior" "Interior" "Interior"
+pelec.hi_bc =  "Interior" "Interior" "Interior"
+
+amrex.fpe_trap_invalid = 1
+amrex.fpe_trap_zero = 1
+amrex.fpe_trap_overflow = 1
+
+cvode.solve_type = dense_direct
+
+# WHICH PHYSICS
+pelec.do_hydro = 1
+pelec.diffuse_vel = 0
+pelec.diffuse_temp = 0
+pelec.diffuse_enth = 0
+pelec.diffuse_spec = 0
+pelec.do_react = 1
+pelec.chem_integrator = "ReactorCvode"
+pelec.do_mol = 1
+pelec.allow_negative_energy = 1
+
+# TIME STEP CONTROL
+pelec.cfl            = 0.3     # cfl number for hyperbolic system
+pelec.init_shrink    = 0.1     # scale back initial timestep
+pelec.change_max     = 1.1     # max time step growth
+pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
+pelec.fixed_dt       = 1.E-7
+
+# DIAGNOSTICS & VERBOSITY
+pelec.sum_interval   = -1      # timesteps between computing mass
+pelec.v              = 0       # verbosity in Castro.cpp
+amr.v                = 1       # verbosity in Amr.cpp
+
+# REFINEMENT / REGRIDDING
+amr.max_level       = 0       # maximum level number allowed
+amr.ref_ratio       = 2 2 2 2 # refinement ratio
+amr.regrid_int      = 2 2 2 2 # how often to regrid
+amr.blocking_factor = 4       # block factor in grid generation
+amr.max_grid_size   = 32
+amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
+
+# CHECKPOINT FILES
+amr.checkpoint_files_output = 0
+amr.check_file      = chk        # root name of checkpoint file
+amr.check_int       = 1000
+
+# PLOTFILES
+amr.plot_file       = plt # root name of plotfile
+amr.plot_per        = 2.5E-5
+
+# SOOT MODELING
+soot.incept_pah = A2 # Soot inception species
+soot.v = 0
+soot.conserve_mass = true
+
+pelec.add_soot_src = 1
+amr.derive_plot_vars = x_velocity y_velocity pressure soot_vars soot_large_particles
+pelec.plot_rhoy = 0
+pelec.plot_massfrac = 1
+amr.file_name_digits = 7
+
+pelec.plot_soot = 1
+
+# PROBLEM INPUT
+prob.init_T = 1300.
+prob.init_p = 1.01325E6
+prob.init_N2 = 0.6686465670855919
+prob.init_O2 = 0.20313062439007742
+prob.init_fuel = 0.12822280852433066
+prob.fuel_name = N-C7H16

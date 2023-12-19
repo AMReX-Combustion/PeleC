@@ -1,0 +1,6 @@
+set(PELEC_ENABLE_AMREX_PARTICLES ON)
+set(PELEC_EOS_MODEL Fuego)
+set(PELEC_CHEMISTRY_MODEL dodecane_lu)
+set(PELEC_TRANSPORT_MODEL Simple)
+set(PELE_SPRAY_FUEL_NUM 1)
+include(BuildExeAndLib)

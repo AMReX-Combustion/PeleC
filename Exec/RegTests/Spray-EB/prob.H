@@ -1,0 +1,105 @@
+#ifndef PROB_H
+#define PROB_H
+
+#include <AMReX_Print.H>
+#include <AMReX_ParmParse.H>
+#include <AMReX_Geometry.H>
+#include <AMReX_FArrayBox.H>
+
+#include "mechanism.H"
+
+#include "IndexDefines.H"
+#include "Constants.H"
+#include "PelePhysics.H"
+#include "Tagging.H"
+#include "Transport.H"
+#include "ProblemDerive.H"
+#include "prob_parm.H"
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+pc_initdata(
+  int i,
+  int j,
+  int k,
+  amrex::Array4<amrex::Real> const& state,
+  amrex::GeometryData const& /*geomdata*/,
+  ProbParmDevice const& prob_parm)
+{
+
+  // Geometry
+  auto eos = pele::physics::PhysicsType::eos();
+
+  // TG functions
+  amrex::GpuArray<amrex::Real, 3> u = {{0.0}};
+  u[0] = prob_parm.v0;
+  const amrex::Real p = prob_parm.p0;
+  amrex::Real rho, eint;
+  amrex::GpuArray<amrex::Real, NUM_SPECIES> massfrac = {{0.0}};
+  massfrac[O2_ID] = prob_parm.Y_O2;
+  massfrac[N2_ID] = prob_parm.Y_N2;
+  amrex::Real Tval = prob_parm.T0;
+  eos.PYT2RE(p, massfrac.data(), Tval, rho, eint);
+
+  // Set the state
+  state(i, j, k, URHO) = rho;
+  state(i, j, k, UMX) = rho * u[0];
+  state(i, j, k, UMY) = rho * u[1];
+  state(i, j, k, UMZ) = rho * u[2];
+  state(i, j, k, UEINT) = rho * eint;
+  state(i, j, k, UEDEN) =
+    rho * (eint + 0.5 * (u[0] * u[0] + u[1] * u[1] + u[2] * u[2]));
+  state(i, j, k, UTEMP) = Tval;
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    state(i, j, k, UFS + n) = rho * massfrac[n];
+  }
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+bcnormal(
+  const amrex::Real* /*x*/,
+  const amrex::Real s_int[NVAR],
+  amrex::Real s_ext[NVAR],
+  const int /*idir*/,
+  const int /*sgn*/,
+  const amrex::Real /*time*/,
+  amrex::GeometryData const& /*geomdata*/,
+  ProbParmDevice const& /*prob_parm*/,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& /*turb_fluc*/)
+{
+  // This sets the values at the boundary equal to the
+  // adjacent interior values
+  for (int i = 0; i < NVAR; ++i) {
+    s_ext[i] = s_int[i];
+  }
+}
+
+struct MyProbTagStruct
+{
+  AMREX_GPU_DEVICE
+  AMREX_FORCE_INLINE
+  static void set_problem_tags(
+    const int /*i*/,
+    const int /*j*/,
+    const int /*k*/,
+    amrex::Array4<char> const& /*tag*/,
+    amrex::Array4<amrex::Real const> const& /*field*/,
+    char /*tagval*/,
+    const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> /*dx*/,
+    const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> /*prob_lo*/,
+    const amrex::Real /*time*/,
+    const int /*level*/) noexcept
+  {
+    // could do problem specific tagging here
+  }
+};
+
+void pc_prob_close();
+
+using ProblemTags = EmptyProbTagStruct;
+using ProblemDerives = EmptyProbDeriveStruct;
+
+#endif
