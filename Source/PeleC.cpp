@@ -297,20 +297,20 @@ PeleC::read_params()
   if (do_isothermal_walls) {
     for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
       if (
-        domlo_isothermal_temp[dir] > 0.0 and
-        !(lo_bc[dir] == PCPhysBCType::slip_wall ||
-          lo_bc[dir] == PCPhysBCType::no_slip_wall ||
-          lo_bc[dir] == PCPhysBCType::user_bc ||
-          lo_bc[dir] == PCPhysBCType::inflow)) {
+        domlo_isothermal_temp[dir] > 0.0 &&
+        lo_bc[dir] != PCPhysBCType::slip_wall &&
+        lo_bc[dir] != PCPhysBCType::no_slip_wall &&
+        lo_bc[dir] != PCPhysBCType::user_bc &&
+        lo_bc[dir] != PCPhysBCType::inflow) {
         amrex::Abort("Cannot have isothermal wall on a BC that isn't a wall or "
                      "user defined BC");
       }
       if (
-        domhi_isothermal_temp[dir] > 0.0 and
-        !(hi_bc[dir] == PCPhysBCType::slip_wall ||
-          hi_bc[dir] == PCPhysBCType::no_slip_wall ||
-          hi_bc[dir] == PCPhysBCType::user_bc ||
-          hi_bc[dir] == PCPhysBCType::inflow)) {
+        domhi_isothermal_temp[dir] > 0.0 &&
+        hi_bc[dir] != PCPhysBCType::slip_wall &&
+        hi_bc[dir] != PCPhysBCType::no_slip_wall &&
+        hi_bc[dir] != PCPhysBCType::user_bc &&
+        hi_bc[dir] != PCPhysBCType::inflow) {
         amrex::Abort("Cannot have isothermal wall on a BC that isn't a wall or "
                      "user defined BC");
       }

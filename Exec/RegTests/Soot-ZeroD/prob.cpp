@@ -27,11 +27,13 @@ amrex_probinit(
   pele::physics::eos::speciesNames<pele::physics::EosType>(spec_names);
   for (int sp = 0; sp < NUM_SPECIES; ++sp) {
     std::string spec_name = spec_names[sp];
-    if (spec_name == fuel_name)
+    if (spec_name == fuel_name) {
       PeleC::h_prob_parm_device->fuelIndx = sp;
+    }
   }
-  if (PeleC::h_prob_parm_device->fuelIndx < 0)
+  if (PeleC::h_prob_parm_device->fuelIndx < 0) {
     amrex::Abort("Fuel not found in chemistry mechanism");
+  }
 
   // Initial density, velocity, and material properties
   auto eos = pele::physics::PhysicsType::eos();
