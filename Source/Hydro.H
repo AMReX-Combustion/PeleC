@@ -105,10 +105,7 @@ pc_compute_hyp_wallflux(
 
   amrex::Real rho = q(i, j, k, QRHO);
   amrex::Real p = q(i, j, k, QPRES);
-  amrex::Real qrei = q(i, j, k, QREINT);
-  amrex::Real gamc = qa(i, j, k, QGAMC);
   amrex::Real cav = qa(i, j, k, QC);
-  amrex::Real smallc = qa(i, j, k, QCSML);
   amrex::Real ustar;
   amrex::Real sp[NUM_SPECIES] = {0.0};
   for (int n = 0; n < NUM_SPECIES; ++n) {
