@@ -464,8 +464,8 @@ pc_plm_d_eb(
     if (area(iv) > 0.0) {
       pc_plm_d_passive(iv, ivp, QFA + n, spzerom, spzerop, slope, q, qp, qm);
     } else {
-      qp(iv, n) = 0.0;
-      qm(ivp, n) = 0.0;
+      qp(iv, QFA + n) = 0.0;
+      qm(ivp, QFA + n) = 0.0;
     }
   }
 #endif
@@ -473,8 +473,8 @@ pc_plm_d_eb(
     if (area(iv) > 0.0) {
       pc_plm_d_passive(iv, ivp, QFS + n, spzerom, spzerop, slope, q, qp, qm);
     } else {
-      qp(iv, n) = 0.0;
-      qm(ivp, n) = 0.0;
+      qp(iv, QFS + n) = 0.0;
+      qm(ivp, QFS + n) = 0.0;
     }
   }
 #if NUM_AUX > 0
@@ -482,8 +482,8 @@ pc_plm_d_eb(
     if (area(iv) > 0.0) {
       pc_plm_d_passive(iv, ivp, QFX + n, spzerom, spzerop, slope, q, qp, qm);
     } else {
-      qp(iv, n) = 0.0;
-      qm(ivp, n) = 0.0;
+      qp(iv, QFX + n) = 0.0;
+      qm(ivp, QFX + n) = 0.0;
     }
   }
 #endif
@@ -492,8 +492,8 @@ pc_plm_d_eb(
     if (area(iv) > 0.0) {
       pc_plm_d_passive(iv, ivp, QLIN + n, spzerom, spzerop, slope, q, qp, qm);
     } else {
-      qp(iv, n) = 0.0;
-      qm(ivp, n) = 0.0;
+      qp(iv, QLIN + n) = 0.0;
+      qm(ivp, QLIN + n) = 0.0;
     }
   }
 #endif
