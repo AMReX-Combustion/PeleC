@@ -8,7 +8,7 @@
 #include <AMReX_REAL.H>
 #include <AMReX_GpuMemory.H>
 
-#ifdef PELEC_USE_MASA
+#ifdef PELE_USE_MASA
 #include <masa.h>
 using namespace MASA;
 #endif

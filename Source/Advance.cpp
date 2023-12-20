@@ -3,7 +3,7 @@
 #include "PeleC.H"
 #include "IndexDefines.H"
 
-#ifdef PELEC_USE_SPRAY
+#ifdef PELE_USE_SPRAY
 #include "SprayParticles.H"
 #endif
 
@@ -89,7 +89,7 @@ PeleC::do_mol_advance(
   }
 
   int nGrow_FP_border = numGrow() + nGrowF;
-#ifdef PELEC_USE_SPRAY
+#ifdef PELE_USE_SPRAY
   const int spray_state_ghosts = sprayStateGhosts(amr_ncycle);
   nGrow_FP_border = amrex::max(nGrow_FP_border, spray_state_ghosts);
   AMREX_ASSERT(Sborder.nGrow() >= nGrow_FP_border);
@@ -262,7 +262,7 @@ PeleC::do_sdc_iteration(
     fill_Sborder = true;
     nGrow_FP_border = numGrow();
   }
-#ifdef PELEC_USE_SPRAY
+#ifdef PELE_USE_SPRAY
   if (do_spray_particles) {
     const int spray_state_ghosts = sprayStateGhosts(amr_ncycle);
     fill_Sborder = true;

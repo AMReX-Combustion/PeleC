@@ -19,8 +19,8 @@ Using the GNU Make build system involves first setting environment variables for
 
 ::
 
-   export PELEC_HOME=${HOME}/PeleC
-   export PELE_PHYSICS_HOME=${PELEC_HOME}/Submodules/PelePhysics
+   export PELE_HOME=${HOME}/PeleC
+   export PELE_PHYSICS_HOME=${PELE_HOME}/Submodules/PelePhysics
    export AMREX_HOME=${PELE_PHYSICS_HOME}/Submodules/amrex
 
 
@@ -38,7 +38,7 @@ An example CMake configure command to build PeleC with MPI is listed below:
 ::
 
     cmake -DCMAKE_BUILD_TYPE:STRING=Release \
-          -DPELEC_ENABLE_MPI:BOOL=ON \
+          -DPELE_ENABLE_MPI:BOOL=ON \
           -DCMAKE_CXX_COMPILER:STRING=mpicxx \
           -DCMAKE_C_COMPILER:STRING=mpicc \
           .. && make

@@ -145,7 +145,7 @@ PeleC::problem_post_timestep()
   amrex::Real rhow_residual = 0.0;
   amrex::Real rhoE_residual = 0.0;
 
-#ifdef PELEC_USE_MASA
+#ifdef PELE_USE_MASA
   if (level == 0) {
     if (amrex::ParallelDescriptor::IOProcessor()) {
       amrex::Print() << "... MMS problem post timestep" << std::endl;

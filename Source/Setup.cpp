@@ -2,7 +2,7 @@
 #include <AMReX_buildInfo.H>
 #include <memory>
 
-#ifdef PELEC_USE_MASA
+#ifdef PELE_USE_MASA
 #include <masa.h>
 using namespace MASA;
 #endif
@@ -14,11 +14,11 @@ using namespace MASA;
 #include "IndexDefines.H"
 #include "prob.H"
 
-#ifdef PELEC_USE_SPRAY
+#ifdef PELE_USE_SPRAY
 #include "SprayParticles.H"
 #endif
 
-#ifdef PELEC_USE_SOOT
+#ifdef PELE_USE_SOOT
 #include "SootModel.H"
 #endif
 
@@ -26,7 +26,7 @@ ProbParmDevice* PeleC::d_prob_parm_device = nullptr;
 ProbParmDevice* PeleC::h_prob_parm_device = nullptr;
 ProbParmHost* PeleC::prob_parm_host = nullptr;
 TaggingParm* PeleC::tagging_parm = nullptr;
-#ifdef PELEC_USE_SOOT
+#ifdef PELE_USE_SOOT
 SootModel PeleC::soot_model;
 #endif
 
@@ -160,7 +160,7 @@ PeleC::variableSetUp()
   eb_in_domain = ebInDomain();
   read_params();
 
-#ifdef PELEC_USE_MASA
+#ifdef PELE_USE_MASA
   if (do_mms) {
     init_mms();
   }
@@ -196,7 +196,7 @@ PeleC::variableSetUp()
     cnt += NUM_LIN; // NOLINT
   }
 
-#ifdef PELEC_USE_SOOT
+#ifdef PELE_USE_SOOT
   // Set number of soot variables to be equal to the number of moments
   // plus a variable for the weight of the delta function
   NumSootVars = NUM_SOOT_MOMENTS + 1;
@@ -340,7 +340,7 @@ PeleC::variableSetUp()
     name[cnt] = "rho_" + aux_names[i];
   }
 
-#ifdef PELEC_USE_SOOT
+#ifdef PELE_USE_SOOT
   // Set the soot model names
   if (amrex::ParallelDescriptor::IOProcessor()) {
     amrex::Print() << NumSootVars << " Soot Variables: " << std::endl;
@@ -530,7 +530,7 @@ PeleC::variableSetUp()
     amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("magmom", desc_lst, State_Type, Density, NVAR);
 
-#ifdef PELEC_USE_SOOT
+#ifdef PELE_USE_SOOT
   if (add_soot_src) {
     addSootDerivePlotVars(derive_lst, desc_lst);
   }
@@ -596,7 +596,7 @@ PeleC::variableSetUp()
   }
 
   // MMS derives
-#ifdef PELEC_USE_MASA
+#ifdef PELE_USE_MASA
   if (do_mms) {
     derive_lst.add(
       "rhommserror", amrex::IndexType::TheCellType(), 1, pc_derrhommserror,
@@ -628,13 +628,13 @@ PeleC::variableSetUp()
   // Problem-specific derives
   add_problem_derives<ProblemDerives>(derive_lst, desc_lst);
 
-#ifdef PELEC_USE_SOOT
+#ifdef PELE_USE_SOOT
   soot_model.define();
 #endif
 
   // Set list of active sources
   set_active_sources();
-#ifdef PELEC_USE_SPRAY
+#ifdef PELE_USE_SPRAY
   defineParticles();
 #endif
 
@@ -671,7 +671,7 @@ PeleC::variableCleanUp()
   delete h_prob_parm_device;
   amrex::The_Arena()->free(d_prob_parm_device);
   trans_parms.deallocate();
-#ifdef PELEC_USE_SPRAY
+#ifdef PELE_USE_SPRAY
   SprayParticleContainer::SprayCleanUp();
 #endif
 }
@@ -706,7 +706,7 @@ PeleC::set_active_sources()
     src_list.push_back(les_src);
   }
 
-#ifdef PELEC_USE_MASA
+#ifdef PELE_USE_MASA
   // optional MMS source
   if (do_mms) {
     src_list.push_back(mms_src);

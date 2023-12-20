@@ -58,7 +58,7 @@ PeleC::fill_mms_source(
     amrex::Print() << "... Computing MMS source at time " << time << std::endl;
   }
 
-#ifdef PELEC_USE_MASA
+#ifdef PELE_USE_MASA
 
   // Store the source for later reuse
   mms_source.define(grids, dmap, NVAR, ng);
@@ -107,6 +107,6 @@ PeleC::fill_mms_source(
   mms_src_evaluated = true;
 
 #else
-  amrex::Error("MASA is not turned on. Turn on with PELEC_USE_MASA=TRUE.");
+  amrex::Error("MASA is not turned on. Turn on with PELE_USE_MASA=TRUE.");
 #endif
 }

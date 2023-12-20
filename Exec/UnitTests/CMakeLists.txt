@@ -1,7 +1,9 @@
-set(PELEC_ENABLE_PARTICLES OFF)
-set(PELEC_EOS_MODEL GammaLaw)
-set(PELEC_CHEMISTRY_MODEL Null)
-set(PELEC_TRANSPORT_MODEL Constant)
+set(PELE_PHYSICS_EOS_MODEL GammaLaw)
+set(PELE_PHYSICS_CHEMISTRY_MODEL Null)
+set(PELE_PHYSICS_TRANSPORT_MODEL Constant)
+set(PELE_PHYSICS_ENABLE_SOOT OFF)
+set(PELE_PHYSICS_ENABLE_SPRAY OFF)
+set(PELE_PHYSICS_SPRAY_FUEL_NUM 0)
 include(BuildExeAndLib)
 
 target_sources(${pelec_exe_name}
@@ -10,7 +12,7 @@ target_sources(${pelec_exe_name}
   test-config.cpp
   )
 
-if(PELEC_ENABLE_CUDA)
+if(PELE_ENABLE_CUDA)
   set_source_files_properties(unit-tests-main.cpp test-config.cpp PROPERTIES LANGUAGE CUDA)
 endif()
 

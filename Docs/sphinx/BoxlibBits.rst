@@ -127,8 +127,8 @@ It is possibly---and desirable---to create the regression testing framework loca
      mkdir -p TestData/PeleC  # this is where the test results will be written
      mkdir Repositories   # this is where the src code to be tested is put
      cd Repositories
-     export PELEC_HOME=`pwd`/PeleC; git clone git@github.com:AMReX-Combustion/PeleC.git $PELEC_HOME
-     cd $PELEC_HOME; git checkout development; cd ..
+     export PELE_HOME=`pwd`/PeleC; git clone git@github.com:AMReX-Combustion/PeleC.git $PELE_HOME
+     cd $PELE_HOME; git checkout development; cd ..
      export PELE_PHYSICS_HOME=`pwd`/PelePhysics; git clone git@github.com:AMReX-Combustion/PelePhysics.git $PELE_PHYSICS_HOME
      cd $PELE_PHYSICS_HOME; git checkout development; cd ..
      export AMREX_HOME=`pwd`/amrex; git clone git@github.com:AMReX-Codes/amrex.git $AMREX_HOME

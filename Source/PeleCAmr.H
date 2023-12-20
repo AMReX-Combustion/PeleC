@@ -1,5 +1,5 @@
-#ifndef PELECAMR_H
-#define PELECAMR_H
+#ifndef PELEAMR_H
+#define PELEAMR_H
 
 #include <AMReX_ParmParse.H>
 #include <AMReX_EB2.H>

@@ -11,15 +11,15 @@ An example ``cmake`` configure command performed in the ``Build`` directory in P
 
   cmake -DCMAKE_INSTALL_PREFIX:PATH=./install \
         -DCMAKE_BUILD_TYPE:STRING=Release \
-        -DPELEC_ENABLE_MPI:BOOL=ON \
+        -DPELE_ENABLE_MPI:BOOL=ON \
         -DCMAKE_CXX_COMPILER:STRING=mpicxx \
         -DCMAKE_C_COMPILER:STRING=mpicc \
         -DENABLE_FCOMPARE:BOOL=ON \
         -DENABLE_TESTS:BOOL=ON \
         -DENABLE_FCOMPARE_FOR_TESTS:BOOL=OFF \
-        -DPELEC_ENABLE_MASA:BOOL=ON \
+        -DPELE_ENABLE_MASA:BOOL=ON \
         -DMASA_DIR:STRING=/path/to/masa/dir \
-        -DPELEC_USE_CPP:BOOL=ON \
+        -DPELE_USE_CPP:BOOL=ON \
         ..
 
 While performing a ``cmake -LAH ..`` command will give descriptions of every option for the CMake project. Descriptions of particular options regarding the testing suite are listed below:
@@ -32,7 +32,7 @@ While performing a ``cmake -LAH ..`` command will give descriptions of every opt
 
 **ENABLE_MASA** -- enables the verification suite which checks that PeleC is second order accurate using several additional tests, but note that the verification tests can take a significant amount of time to run and certain Python modules are expected to exist on the user's system to generate PNG plot files
 
-**PELEC_ENABLE_MASA** and **MASA_DIR** -- are required when the verification suite is enabled to perform the method of manufactured solutions
+**PELE_ENABLE_MASA** and **MASA_DIR** -- are required when the verification suite is enabled to perform the method of manufactured solutions
 
 
 Building the Tests

@@ -1,6 +1,6 @@
 #include "PeleCAmr.H"
 
-#ifdef PELEC_USE_SPRAY
+#ifdef PELE_USE_SPRAY
 #include "SprayParticles.H"
 #endif
 
@@ -108,7 +108,7 @@ PeleCAmr::constructPlotMF(
         num_derive += it.numDerive();
       }
     }
-#ifdef PELEC_USE_SPRAY
+#ifdef PELE_USE_SPRAY
     // Add spray derive variables
     if (SprayParticleContainer::NumDeriveVars() > 0) {
       num_derive += SprayParticleContainer::NumDeriveVars();
@@ -158,7 +158,7 @@ PeleCAmr::constructPlotMF(
       }
     }
 
-#ifdef PELEC_USE_SPRAY
+#ifdef PELE_USE_SPRAY
     if (SprayParticleContainer::NumDeriveVars() > 0 && regular) {
       const int num_spray_derive = SprayParticleContainer::NumDeriveVars();
       PeleC::setupVirtualParticles(lev, finestLevel());
@@ -202,7 +202,7 @@ PeleCAmr::constructPlotMF(
     }
   }
 
-#ifdef PELEC_USE_SPRAY
+#ifdef PELE_USE_SPRAY
   if (SprayParticleContainer::NumDeriveVars() > 0 && regular) {
     for (const auto& spray_derive_name :
          SprayParticleContainer::DeriveVarNames()) {
@@ -295,7 +295,7 @@ PeleCAmr::writePlotFileDoit(
     HeaderFile.close();
   }
 
-#ifdef PELEC_USE_SPRAY
+#ifdef PELE_USE_SPRAY
   if (PeleC::SprayPC != nullptr) {
     if (regular) {
       for (int lev = 0; lev < nlevels; ++lev) {

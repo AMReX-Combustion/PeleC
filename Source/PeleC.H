@@ -1,5 +1,5 @@
-#ifndef PELEC_H
-#define PELEC_H
+#ifndef PELE_H
+#define PELE_H
 
 #include <AMReX_BC_TYPES.H>
 #include <AMReX_AmrLevel.H>
@@ -37,7 +37,7 @@ enum sources {
   diff_src,
   les_src,
   soot_src,
-#ifdef PELEC_USE_MASA
+#ifdef PELE_USE_MASA
   mms_src,
 #endif
   num_src
@@ -57,10 +57,10 @@ enum phys_bc_type {
 }
 
 // Forward declarations
-#ifdef PELEC_USE_SOOT
+#ifdef PELE_USE_SOOT
 class SootModel;
 #endif
-#ifdef PELEC_USE_SPRAY
+#ifdef PELE_USE_SPRAY
 class SprayParticleContainer;
 #endif
 
@@ -128,7 +128,7 @@ public:
   // Initialize grid data at problem start-up.
   void initData() override;
 
-#ifdef PELEC_USE_SPRAY
+#ifdef PELE_USE_SPRAY
 
   // Read spray related inputs
   static void readSprayParams();
@@ -340,7 +340,7 @@ public:
     int ng);
 
   static bool add_soot_src;
-#ifdef PELEC_USE_SOOT
+#ifdef PELE_USE_SOOT
   static void setSootIndx();
 
   static void addSootDerivePlotVars(
@@ -362,7 +362,7 @@ public:
   static bool plot_soot;
 #endif
 
-#ifdef PELEC_USE_MASA
+#ifdef PELE_USE_MASA
   void construct_old_mms_source(amrex::Real time);
 
   void construct_new_mms_source(amrex::Real time);
@@ -607,7 +607,7 @@ public:
   amrex::Vector<std::unique_ptr<DiagBase>> m_diagnostics;
   static amrex::Vector<std::string> m_diagVars;
 
-#ifdef PELEC_USE_SOOT
+#ifdef PELE_USE_SOOT
   static SootModel soot_model;
 #endif
 
@@ -641,7 +641,7 @@ protected:
   void init_les();
   void init_filters();
 
-#ifdef PELEC_USE_MASA
+#ifdef PELE_USE_MASA
   static void init_mms();
 #endif
 
@@ -720,7 +720,7 @@ protected:
   amrex::MultiFab LES_Coeffs;
   amrex::MultiFab filtered_les_source;
 
-#ifdef PELEC_USE_MASA
+#ifdef PELE_USE_MASA
   static bool mms_initialized;
   bool mms_src_evaluated;
   amrex::MultiFab mms_source;

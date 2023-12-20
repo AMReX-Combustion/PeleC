@@ -41,5 +41,5 @@ endif
 # GNU Make
 Bpack := ./Make.package
 Blocs := .
-PELEC_HOME := ../../..
-include $(PELEC_HOME)/Exec/Make.PeleC
+PELE_HOME := ../../..
+include $(PELE_HOME)/Exec/Make.PeleC
