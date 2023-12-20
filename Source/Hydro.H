@@ -82,45 +82,52 @@ pc_compute_hyp_wallflux(
   amrex::GpuArray<amrex::Real, NVAR>& fluxw) noexcept
 {
 
-  amrex::Real u = q(i, j, k, QU);
-  amrex::Real v = q(i, j, k, QV);
-#if (AMREX_SPACEDIM == 2)
-  amrex::Real apnorm =
-    std::sqrt((axm - axp) * (axm - axp) + (aym - ayp) * (aym - ayp));
-  amrex::Real apnorminv = 1. / apnorm;
-  amrex::Real un = u * (axm - axp) * apnorminv + v * (aym - ayp) * apnorminv;
-#else
-  amrex::Real w = q(i, j, k, QW);
-  amrex::Real apnorm = std::sqrt(
-    (axm - axp) * (axm - axp) + (aym - ayp) * (aym - ayp) +
-    (azm - azp) * (azm - azp));
-  amrex::Real apnorminv = 1. / apnorm;
-  amrex::Real un = u * (axm - axp) * apnorminv + v * (aym - ayp) * apnorminv +
-                   w * (azm - azp) * apnorminv;
-#endif
+  // Here we have 2 options. Option 1: call the Riemann solver with dummy data.
+  // Option 2 is set the known flux at the wall, as we do in MOL. We are going
+  // with option 2.
+  // clang-format off
+  // Option 1
+  // AMREX_D_TERM(amrex::Real u = q(i, j, k, QU);, amrex::Real v = q(i, j, k, QV);
+  //              , amrex::Real w = q(i, j, k, QW););
+  // const amrex::Real apnorm = std::sqrt(AMREX_D_TERM(
+  //   (axm - axp) * (axm - axp), +(aym - ayp) * (aym - ayp),
+  //   +(azm - azp) * (azm - azp)));
+  // const amrex::Real apnorminv = 1. / apnorm;
+  // amrex::Real un = AMREX_D_TERM(
+  //   u * (axm - axp) * apnorminv, +v * (aym - ayp) * apnorminv,
+  //   +w * (azm - azp) * apnorminv);
 
-  amrex::Real momfluxn, momfluxt1, momfluxt2;
+  // amrex::Real momfluxn, momfluxt1, momfluxt2;
+  // amrex::Real dummy_gu, dummy_gv, dummy_gv2, dummy_gp, dummy_gg;
+  // amrex::Real rho = q(i, j, k, QRHO);
+  // amrex::Real p = q(i, j, k, QPRES);
+  // amrex::Real cav = qa(i, j, k, QC);
+  // amrex::Real ustar;
+  // amrex::Real sp[NUM_SPECIES] = {0.0};
+  // for (int n = 0; n < NUM_SPECIES; ++n) {
+  //   sp[n] = q(i, j, k, QFS + n);
+  // }
 
-  amrex::Real dummy_gu, dummy_gv, dummy_gv2, dummy_gp, dummy_gg;
+  // const int bc_test_val = 1;
+  // riemann(
+  //   rho, un, 0., 0., p, sp, rho, un, 0., 0., p, sp, bc_test_val, cav, ustar,
+  //   fluxw[URHO], &fluxw[UFS], momfluxn, momfluxt1, momfluxt2, fluxw[UEDEN],
+  //   fluxw[UEINT], dummy_gu, dummy_gv, dummy_gv2, dummy_gp, dummy_gg);
 
-  amrex::Real rho = q(i, j, k, QRHO);
+  // // enforce that no spurious flux was created by the Riemann solver
+  // for (int n = 0; n < NVAR; n++) {
+  //   fluxw[n] = 0.;
+  // }
+  // AMREX_D_TERM(fluxw[UMX] = (axm - axp) * momfluxn;
+  //              , fluxw[UMY] = (aym - ayp) * momfluxn;
+  //              , fluxw[UMZ] = (azm - azp) * momfluxn;);
+  // clang-format on
+
+  // Option 2
+  amrex::ignore_unused(qa);
   amrex::Real p = q(i, j, k, QPRES);
-  amrex::Real cav = qa(i, j, k, QC);
-  amrex::Real ustar;
-  amrex::Real sp[NUM_SPECIES] = {0.0};
-  for (int n = 0; n < NUM_SPECIES; ++n) {
-    sp[n] = q(i, j, k, QFS + n);
-  }
-
-  const int bc_test_val = 1;
-  riemann(
-    rho, un, 0., 0., p, sp, rho, un, 0., 0., p, sp, bc_test_val, cav, ustar,
-    fluxw[URHO], &fluxw[UFS], momfluxn, momfluxt1, momfluxt2, fluxw[UEDEN],
-    fluxw[UEINT], dummy_gu, dummy_gv, dummy_gv2, dummy_gp, dummy_gg);
-
-  AMREX_D_TERM(fluxw[UMX] = (axm - axp) * momfluxn;
-               , fluxw[UMY] = (aym - ayp) * momfluxn;
-               , fluxw[UMZ] = (azm - azp) * momfluxn;);
+  AMREX_D_TERM(fluxw[UMX] = (axm - axp) * p;, fluxw[UMY] = (aym - ayp) * p;
+               , fluxw[UMZ] = (azm - azp) * p;);
 }
 
 AMREX_GPU_DEVICE AMREX_FORCE_INLINE void
