@@ -33,7 +33,7 @@ SprayParticleContainer::InitSprayParticles(const bool init_parts)
   amrex::Real Stmod = 5.;
   amrex::Real rhoRatio = 1000.;
   amrex::Real mach = 0.1;
-  const amrex::Real Pr = 0.71;
+  // const amrex::Real Pr = 0.71;
   amrex::Real reynolds, p0, T0, rho0, L, v0;
   bool convecting;
   amrex::Real mu, cs, cp, St_num;

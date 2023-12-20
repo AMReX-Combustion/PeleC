@@ -11,7 +11,7 @@ include(PeleUtils)
 
 #General options for all executables in the project
 set(PELE_DIM "3" CACHE STRING "Number of physical dimensions, 2 or 3")
-option(PELE_ENABLE_AMREX_PARTICLES "Enable particles in AMReX library and enables spray" ON)
+option(PELE_ENABLE_PARTICLES "Enable particles in AMReX library and enables spray" ON)
 option(PELE_ENABLE_CLANG_TIDY "Enable clang-tidy analysis" OFF)
 option(PELE_ENABLE_CPPCHECK "Enable cppcheck analysis" OFF)
 option(PELE_ENABLE_MASA "Enable tests that require MASA" OFF)
@@ -39,7 +39,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if(PELE_ENABLE_FCOMPARE_FOR_TESTS OR PELE_ENABLE_AMREX_PARTICLES)
+if(PELE_ENABLE_FCOMPARE_FOR_TESTS OR PELE_ENABLE_PARTICLES)
   set(PELE_ENABLE_FCOMPARE ON)
 endif()
 
@@ -58,7 +58,7 @@ if(PELE_ENABLE_CUDA)
 endif()
 
 if(PELE_DIM EQUAL 1)
-  message(FATAL_ERROR "${PROJECT_NAME} does not perform 1D simulations.")
+  message(FATAL_ERROR "${PROJECT_NAME} does not support 1D.")
 endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
