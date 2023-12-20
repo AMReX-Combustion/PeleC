@@ -42,9 +42,9 @@ pc_transdo_passive(
   amrex::Array4<const amrex::Real> const& flxx,
   amrex::Array4<amrex::Real> const& qp,
   amrex::Array4<amrex::Real> const& qm,
-  const bool no_cov_face = true,
-  const bool lo_face_not_covered = true,
-  const bool hi_face_not_covered = true)
+  const bool no_cov_face,
+  const bool lo_face_not_covered,
+  const bool hi_face_not_covered)
 {
   const int uc = u_offset + n;
   const int qc = q_offset + n;
@@ -97,9 +97,9 @@ pc_transdd_passive(
   amrex::Array4<const amrex::Real> const& flxy,
   amrex::Array4<amrex::Real> const& qp,
   amrex::Array4<amrex::Real> const& qm,
-  const bool no_cov_face = true,
-  const bool lo_face_not_covered = true,
-  const bool hi_face_not_covered = true)
+  const bool no_cov_face,
+  const bool lo_face_not_covered,
+  const bool hi_face_not_covered)
 {
 
   const int uc = u_offset + n;
@@ -151,9 +151,9 @@ pc_transd_passive(
   amrex::Array4<const amrex::Real> const& flxx,
   amrex::Array4<amrex::Real> const& qp,
   amrex::Array4<amrex::Real> const& qm,
-  const bool no_cov_face = true,
-  const bool lo_face_not_covered = true,
-  const bool hi_face_not_covered = true)
+  const bool no_cov_face,
+  const bool lo_face_not_covered,
+  const bool hi_face_not_covered)
 {
   const int uc = u_offset + n;
   const int qc = q_offset + n;
@@ -741,26 +741,30 @@ pc_transdd(
   for (int n = 0; n < NUM_ADV; n++) {
     pc_transdd_passive(
       iv, ivpn, ivpt0, ivpt1, n, UFA, QFA, cdtdx0, cdtdx1, hdt, rrr, rrl,
-      rrnewr, rrnewl, srcq, qnormp, qnormm, flxx, flxy, qp, qm);
+      rrnewr, rrnewl, srcq, qnormp, qnormm, flxx, flxy, qp, qm, no_cov_face,
+      lo_face_not_covered, hi_face_not_covered);
   }
 #endif
   for (int n = 0; n < NUM_SPECIES; n++) {
     pc_transdd_passive(
       iv, ivpn, ivpt0, ivpt1, n, UFS, QFS, cdtdx0, cdtdx1, hdt, rrr, rrl,
-      rrnewr, rrnewl, srcq, qnormp, qnormm, flxx, flxy, qp, qm);
+      rrnewr, rrnewl, srcq, qnormp, qnormm, flxx, flxy, qp, qm, no_cov_face,
+      lo_face_not_covered, hi_face_not_covered);
   }
 #if NUM_AUX > 0
   for (int n = 0; n < NUM_AUX; n++) {
     pc_transdd_passive(
       iv, ivpn, ivpt0, ivpt1, n, UFX, QFX, cdtdx0, cdtdx1, hdt, rrr, rrl,
-      rrnewr, rrnewl, srcq, qnormp, qnormm, flxx, flxy, qp, qm);
+      rrnewr, rrnewl, srcq, qnormp, qnormm, flxx, flxy, qp, qm, no_cov_face,
+      lo_face_not_covered, hi_face_not_covered);
   }
 #endif
 #if NUM_LIN > 0
   for (int n = 0; n < NUM_LIN; n++) {
     pc_transdd_passive(
       iv, ivpn, ivpt0, ivpt1, n, ULIN, QLIN, cdtdx0, cdtdx1, hdt, 1., 1., 1.,
-      1., srcq, qnormp, qnormm, flxx, flxy, qp, qm);
+      1., srcq, qnormp, qnormm, flxx, flxy, qp, qm, no_cov_face,
+      lo_face_not_covered, hi_face_not_covered);
   }
 #endif
 
@@ -923,27 +927,31 @@ pc_transd(
 #if AMREX_SPACEDIM == 2
   pc_transd_passive(
     iv, ivpn, ivpt, 0, UMZ, QW, cdtdx, hdt, flxrho, true, srcQ, qnormp, qnormm,
-    flxx, qp, qm);
+    flxx, qp, qm, no_cov_face, lo_face_not_covered, hi_face_not_covered);
 #endif
   for (int n = 0; n < NUM_ADV; n++) {
     pc_transd_passive(
       iv, ivpn, ivpt, n, UFA, QFA, cdtdx, hdt, flxrho, true, srcQ, qnormp,
-      qnormm, flxx, qp, qm);
+      qnormm, flxx, qp, qm, no_cov_face, lo_face_not_covered,
+      hi_face_not_covered);
   }
   for (int n = 0; n < NUM_SPECIES; n++) {
     pc_transd_passive(
       iv, ivpn, ivpt, n, UFS, QFS, cdtdx, hdt, flxrho, true, srcQ, qnormp,
-      qnormm, flxx, qp, qm);
+      qnormm, flxx, qp, qm, no_cov_face, lo_face_not_covered,
+      hi_face_not_covered);
   }
   for (int n = 0; n < NUM_AUX; n++) {
     pc_transd_passive(
       iv, ivpn, ivpt, n, UFX, QFX, cdtdx, hdt, flxrho, true, srcQ, qnormp,
-      qnormm, flxx, qp, qm);
+      qnormm, flxx, qp, qm, no_cov_face, lo_face_not_covered,
+      hi_face_not_covered);
   }
   for (int n = 0; n < NUM_LIN; n++) {
     pc_transd_passive(
       iv, ivpn, ivpt, n, ULIN, QLIN, cdtdx, hdt, 0., false, srcQ, qnormp,
-      qnormm, flxx, qp, qm);
+      qnormm, flxx, qp, qm, no_cov_face, lo_face_not_covered,
+      hi_face_not_covered);
   }
 
   amrex::Real dAup = 0.0, pav = 0.0, dAu = 0.0;
