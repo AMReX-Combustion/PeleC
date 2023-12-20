@@ -808,7 +808,6 @@ pc_umdrv_eb(
       rrflag_as_crse, as_fine, dm_as_fine, lev_mask, level_mask_not_covered,
       fac_for_redist, use_wts_in_divnc, 0, eb_srd_max_order);
   }
-  // FIXME
   auto const& flags = fact->getMultiEBCellFlagFab();
   const auto& flag_fab = flags[mfi];
   amrex::FabType typ = flag_fab.getType(bx);
