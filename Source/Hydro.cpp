@@ -238,7 +238,8 @@ PeleC::construct_hydro_source(
             p_rrflag_as_crse->array(), as_fine, dm_as_fine.array(),
             level_mask.const_array(mfi), dt, ppm_type, plm_iorder,
             use_flattening, difmag, bcs_d.data(), redistribution_type,
-            eb_weights_type, cflLoc);
+            eb_weights_type, eb_srd_max_order, eb_clean_massfrac,
+            eb_clean_massfrac_threshold, cflLoc);
 
         } else if (flag_fab.getType(fbxg_i) == amrex::FabType::regular) {
           BL_PROFILE("PeleC::umdrv()");
@@ -673,6 +674,9 @@ pc_umdrv_eb(
   amrex::BCRec const* bcs_d_ptr,
   const std::string& redistribution_type,
   const int eb_weights_type,
+  const int eb_srd_max_order,
+  const bool eb_clean_massfrac,
+  const amrex::Real eb_clean_massfrac_threshold,
   amrex::Real /*cflLoc*/)
 {
   BL_PROFILE("PeleC::pc_umdrv_eb()");
@@ -802,10 +806,13 @@ pc_umdrv_eb(
       AMREX_D_DECL(apx, apy, apz), vf, AMREX_D_DECL(fcx, fcy, fcz), ccc,
       bcs_d_ptr, geom, dt, redistribution_type, as_crse, drho_as_crse,
       rrflag_as_crse, as_fine, dm_as_fine, lev_mask, level_mask_not_covered,
-      fac_for_redist, use_wts_in_divnc);
+      fac_for_redist, use_wts_in_divnc, 0, eb_srd_max_order);
   }
   // FIXME
-  // pc_post_eb_redistribution(
-  //   bx, dt, eb_clean_massfrac, eb_clean_massfrac_threshold,
-  //   uin, typ, flag, redistwgt_arr, uout);
+  auto const& flags = fact->getMultiEBCellFlagFab();
+  const auto& flag_fab = flags[mfi];
+  amrex::FabType typ = flag_fab.getType(bx);
+  pc_post_eb_redistribution(
+    bx, dt, eb_clean_massfrac, eb_clean_massfrac_threshold, uin, typ, flag,
+    redistwgt_arr, uout);
 }

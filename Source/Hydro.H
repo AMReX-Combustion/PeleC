@@ -1161,6 +1161,9 @@ void pc_umdrv_eb(
   amrex::BCRec const* bcs_d_ptr,
   const std::string& redistribution_type,
   const int eb_weights_type,
+  const int eb_srd_max_order,
+  const bool eb_clean_massfrac,
+  const amrex::Real eb_clean_massfrac_threshold,
   amrex::Real cflLoc);
 
 void pc_adjust_fluxes(
