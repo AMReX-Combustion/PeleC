@@ -34,7 +34,7 @@ pc_low_order_boundary(
     // Calculate flattening in-place
     if (use_flattening == 1) {
       for (int dir_flat = 0; dir_flat < AMREX_SPACEDIM; dir_flat++) {
-        flat = std::min(flat, flatten(i, j, k, dir_flat, q));
+        flat = std::min(flat, flatten(AMREX_D_DECL(i, j, k), dir_flat, q));
       }
     }
 
@@ -1094,16 +1094,27 @@ pc_umeth_2D(
     amrex::ParallelFor(
       bxg2, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
         amrex::Real slope[QVAR];
+
+        amrex::Real flat = 1.0;
+        // Calculate flattening in-place
+        if (use_flattening == 1) {
+          for (int dir_flat = 0; dir_flat < AMREX_SPACEDIM; dir_flat++) {
+            flat = std::min(flat, flatten(AMREX_D_DECL(i, j, k), dir_flat, q));
+          }
+        }
+
         // X slopes and interp
         for (int n = 0; n < QVAR; ++n)
-          slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, 0, q, plm_iorder);
+          slope[n] =
+            plm_slope(AMREX_D_DECL(i, j, k), n, 0, q, flat, plm_iorder);
         pc_plm_d(
           AMREX_D_DECL(i, j, k), 0, qxmarr, qxparr, slope, q, qaux(i, j, k, QC),
           dx, dt);
 
         // Y slopes and interp
         for (int n = 0; n < QVAR; n++)
-          slope[n] = plm_slope(AMREX_D_DECL(i, j, k), n, 1, q, plm_iorder);
+          slope[n] =
+            plm_slope(AMREX_D_DECL(i, j, k), n, 1, q, flat, plm_iorder);
         pc_plm_d(
           AMREX_D_DECL(i, j, k), 1, qymarr, qyparr, slope, q, qaux(i, j, k, QC),
           dy, dt);
