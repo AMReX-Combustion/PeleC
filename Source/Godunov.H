@@ -165,7 +165,7 @@ pc_transd_passive(
 
   if (lo_face_not_covered) {
     rr = qnormp(iv, QRHO);
-    rrnew = rr - flxrho;
+    rrnew = divide_by_rho ? rr - flxrho : 1.0;
     compo = rr * qnormp(iv, qc) - compn;
     qp(iv, qc) = compo / rrnew + hdt * srcpass;
   } else {
@@ -174,7 +174,7 @@ pc_transd_passive(
 
   if (hi_face_not_covered) {
     rr = qnormm(ivpn, QRHO);
-    rrnew = rr - flxrho;
+    rrnew = divide_by_rho ? rr - flxrho : 1.0;
     compo = rr * qnormm(ivpn, qc) - compn;
     qm(ivpn, qc) = compo / rrnew + hdt * srcpass;
   } else {
