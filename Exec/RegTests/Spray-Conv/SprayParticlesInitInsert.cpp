@@ -38,6 +38,9 @@ SprayParticleContainer::InitSprayParticles(const bool init_parts)
   pp.get("part_temp", partTemp);
   std::array<amrex::Real, SPRAY_FUEL_NUM> partY = {0.0};
   partY[0] = 1.;
+  amrex::Real num_ppp = 1.;
+  pp.query("parcel_size", num_ppp);
   uniformSprayInit(
-    partNum, partVel, partDia, partTemp, partY.begin(), level, numRedist);
+    partNum, partVel, partDia, partTemp, partY.begin(), level, numRedist,
+    num_ppp);
 }
