@@ -425,9 +425,7 @@ eb_compute_div(
       fz(i, j, k + 1, n) = fzp;
     }
 
-    amrex::GpuArray<amrex::Real, NVAR> flux_hyp_wall;
-    for (int nnn = 0; nnn < NVAR; nnn++)
-      flux_hyp_wall[nnn] = 0.;
+    amrex::GpuArray<amrex::Real, NVAR> flux_hyp_wall = {0.0};
     pc_compute_hyp_wallflux(
       i, j, k, q, qaux, apx(i, j, k), apx(i + 1, j, k), apy(i, j, k),
       apy(i, j + 1, k), apz(i, j, k), apz(i, j, k + 1), flux_hyp_wall);

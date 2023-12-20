@@ -149,13 +149,18 @@ pc_plm_d_eb_passive(
   amrex::Real const slope[QVAR],
   amrex::Array4<const amrex::Real> const& q,
   amrex::Array4<amrex::Real> const& qp,
-  amrex::Array4<amrex::Real> const& qm)
+  amrex::Array4<amrex::Real> const& qm,
+  amrex::Array4<const amrex::Real> const& area)
 {
-  const amrex::Real acmprght = 0.5 * (-1.0 - spzerom) * slope[n];
-  qp(iv, n) = q(iv, n) + acmprght;
+  if (area(iv) > 0.0) {
+    const amrex::Real acmprght = 0.5 * (-1.0 - spzerom) * slope[n];
+    qp(iv, n) = q(iv, n) + acmprght;
+  }
 
-  const amrex::Real acmpleft = 0.5 * (1.0 - spzerop) * slope[n];
-  qm(ivp, n) = q(iv, n) + acmpleft;
+  if (area(ivp) > 0.0) {
+    const amrex::Real acmpleft = 0.5 * (1.0 - spzerop) * slope[n];
+    qm(ivp, n) = q(iv, n) + acmpleft;
+  }
 }
 
 AMREX_GPU_DEVICE
@@ -324,7 +329,7 @@ pc_plm_d_eb(
   amrex::Real const cc,
   amrex::Real const dx,
   amrex::Real const dt,
-  amrex::Array4<const amrex::Real> const& area = {})
+  amrex::Array4<const amrex::Real> const& area)
 {
   amrex::ignore_unused(k);
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
@@ -461,40 +466,24 @@ pc_plm_d_eb(
   const amrex::Real spzerop = (vel_ad >= 0) ? vel_ad * dtdx : 1.0;
 #if NUM_ADV > 0
   for (int n = 0; n < NUM_ADV; n++) {
-    if (area(iv) > 0.0) {
-      pc_plm_d_passive(iv, ivp, QFA + n, spzerom, spzerop, slope, q, qp, qm);
-    } else {
-      qp(iv, QFA + n) = 0.0;
-      qm(ivp, QFA + n) = 0.0;
-    }
+    pc_plm_d_eb_passive(
+      iv, ivp, QFA + n, spzerom, spzerop, slope, q, qp, qm, area);
   }
 #endif
   for (int n = 0; n < NUM_SPECIES; n++) {
-    if (area(iv) > 0.0) {
-      pc_plm_d_passive(iv, ivp, QFS + n, spzerom, spzerop, slope, q, qp, qm);
-    } else {
-      qp(iv, QFS + n) = 0.0;
-      qm(ivp, QFS + n) = 0.0;
-    }
+    pc_plm_d_eb_passive(
+      iv, ivp, QFS + n, spzerom, spzerop, slope, q, qp, qm, area);
   }
 #if NUM_AUX > 0
   for (int n = 0; n < NUM_AUX; n++) {
-    if (area(iv) > 0.0) {
-      pc_plm_d_passive(iv, ivp, QFX + n, spzerom, spzerop, slope, q, qp, qm);
-    } else {
-      qp(iv, QFX + n) = 0.0;
-      qm(ivp, QFX + n) = 0.0;
-    }
+    pc_plm_d_eb_passive(
+      iv, ivp, QFX + n, spzerom, spzerop, slope, q, qp, qm, area);
   }
 #endif
 #if NUM_LIN > 0
   for (int n = 0; n < NUM_LIN; n++) {
-    if (area(iv) > 0.0) {
-      pc_plm_d_passive(iv, ivp, QLIN + n, spzerom, spzerop, slope, q, qp, qm);
-    } else {
-      qp(iv, QLIN + n) = 0.0;
-      qm(ivp, QLIN + n) = 0.0;
-    }
+    pc_plm_d_eb_passive(
+      iv, ivp, QLIN + n, spzerom, spzerop, slope, q, qp, qm, area);
   }
 #endif
 }
