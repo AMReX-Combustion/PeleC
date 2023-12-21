@@ -97,20 +97,21 @@ plm_slope_eb(
 
   // We have enough cells in the x-direction to do 4th order slopes
   // centered on (i,j,k)
+  amrex::Real slope = 0.0;
   if (
     (order == 4) && !flags(iv).isCovered() && !flags(ivm).isCovered() &&
     !flags(ivm2).isCovered() && !flags(ivp).isCovered() &&
     !flags(ivp2).isCovered()) {
-    return plm_slope(AMREX_D_DECL(i, j, k), n, dir, q, flat, order);
+    slope = plm_slope(AMREX_D_DECL(i, j, k), n, dir, q, flat, order);
   }
   // We have enough cells in the x-direction to do 2nd order slopes
   // centered on (i,j,k)
   else if (
     (order > 1) && !flags(iv).isCovered() && !flags(ivm).isCovered() &&
     !flags(ivp).isCovered()) {
-    return plm_slope(AMREX_D_DECL(i, j, k), n, dir, q, flat, 2);
+    slope = plm_slope(AMREX_D_DECL(i, j, k), n, dir, q, flat, 2);
   }
-  return 0.0;
+  return slope;
 }
 
 AMREX_GPU_DEVICE
