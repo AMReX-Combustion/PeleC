@@ -95,7 +95,6 @@ amr.file_name_digits = 4
 # PROBLEM PARAMETERS
 prob.mach = 0.1
 prob.ref_T = 900.
-prob.parcel_size = 100.
 
 # Only used if particles are initialized from a function
 # and not a file
