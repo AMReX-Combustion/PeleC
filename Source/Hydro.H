@@ -479,52 +479,6 @@ pc_divu(
   amrex::Array4<const amrex::Real> const& q,
   AMREX_D_DECL(
     const amrex::Real dx, const amrex::Real dy, const amrex::Real dz),
-  amrex::Array4<amrex::Real> const& divu)
-{
-#if AMREX_SPACEDIM == 1
-  amrex::Real ux = (q(i, j, k, QU) - q(i - 1, j, k, QU)) / dx;
-#elif AMREX_SPACEDIM == 2
-  amrex::Real ux = 0.5 *
-                   (q(i, j, k, QU) - q(i - 1, j, k, QU) + q(i, j - 1, k, QU) -
-                    q(i - 1, j - 1, k, QU)) /
-                   dx;
-  amrex::Real vy = 0.5 *
-                   (q(i, j, k, QV) - q(i, j - 1, k, QV) + q(i - 1, j, k, QV) -
-                    q(i - 1, j - 1, k, QV)) /
-                   dy;
-#elif AMREX_SPACEDIM == 3
-  amrex::Real ux =
-    0.25 *
-    (q(i, j, k, QU) - q(i - 1, j, k, QU) + q(i, j, k - 1, QU) -
-     q(i - 1, j, k - 1, QU) + q(i, j - 1, k, QU) - q(i - 1, j - 1, k, QU) +
-     q(i, j - 1, k - 1, QU) - q(i - 1, j - 1, k - 1, QU)) /
-    dx;
-  amrex::Real vy =
-    0.25 *
-    (q(i, j, k, QV) - q(i, j - 1, k, QV) + q(i, j, k - 1, QV) -
-     q(i, j - 1, k - 1, QV) + q(i - 1, j, k, QV) - q(i - 1, j - 1, k, QV) +
-     q(i - 1, j, k - 1, QV) - q(i - 1, j - 1, k - 1, QV)) /
-    dy;
-  amrex::Real wz =
-    0.25 *
-    (q(i, j, k, QW) - q(i, j, k - 1, QW) + q(i - 1, j, k, QW) -
-     q(i - 1, j, k - 1, QW) + q(i, j - 1, k, QW) - q(i, j - 1, k - 1, QW) +
-     q(i - 1, j - 1, k, QW) - q(i - 1, j - 1, k - 1, QW)) /
-    dz;
-#endif
-  divu(i, j, k) = AMREX_D_TERM(ux, +vy, +wz);
-}
-
-AMREX_GPU_DEVICE
-AMREX_FORCE_INLINE
-void
-hydro_divu(
-  const int i,
-  const int j,
-  const int k,
-  amrex::Array4<const amrex::Real> const& q,
-  AMREX_D_DECL(
-    const amrex::Real dx, const amrex::Real dy, const amrex::Real dz),
   amrex::Array4<amrex::Real> const& divu,
   amrex::GpuArray<int, AMREX_SPACEDIM> const& domlo,
   amrex::GpuArray<int, AMREX_SPACEDIM> const& domhi,
