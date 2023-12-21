@@ -82,7 +82,11 @@ amrex::Real
 plm_slope_eb(
   const int i,
   const int j,
-  const int k,
+  const int
+#if (AMREX_SPACEDIM == 3)
+    k
+#endif
+  ,
   const int n,
   const int dir,
   amrex::Array4<amrex::EBCellFlag const> const& flags,
