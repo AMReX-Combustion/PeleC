@@ -80,12 +80,20 @@ tagging.max_pressgrad_lev = 3
 ebd.boundary_grad_stencil_type = 0
 pelec.eb_boundary_T = 300.
 pelec.eb_isothermal = 1
+
+# for 3D:
 eb2.geom_type = "cylinder"
 eb2.cylinder_direction = 2
 eb2.cylinder_center = 0.5 0.5 0.5
 eb2.cylinder_radius = 0.1
 eb2.cylinder_height = 1000.0
 eb2.cylinder_has_fluid_inside = 0
+
+# for 2D (need a sphere):
+# eb2.geom_type = "sphere"
+# eb2.sphere_radius = 0.1
+# eb2.sphere_center = 0.5 0.5 0.5
+# eb2.sphere_has_fluid_inside = 0
 
 # fabarray.mfiter_tile_size = 1024000 64 64
 # amrex.fpe_trap_invalid = 1
