@@ -20,7 +20,7 @@
 #include "IO.H"
 #include "IndexDefines.H"
 
-#ifdef PELEC_USE_SPRAY
+#ifdef PELE_USE_SPRAY
 #include "SprayParticles.H"
 #endif
 
@@ -242,7 +242,7 @@ PeleC::checkPoint(
 {
   amrex::AmrLevel::checkPoint(dir, os, how, dump_old);
 
-#ifdef PELEC_USE_SPRAY
+#ifdef PELE_USE_SPRAY
   if (SprayPC != nullptr) {
     SprayPC->SprayParticleIO(level, true, dir);
   }
@@ -340,7 +340,7 @@ PeleC::setPlotVariables()
     }
   }
 
-#ifdef PELEC_USE_SOOT
+#ifdef PELE_USE_SOOT
   if (plot_soot && add_soot_src) {
     for (int i = 0; i < NumSootVars; i++) {
       amrex::Amr::addStatePlotVar(desc_lst[State_Type].name(FirstSootVar + i));
@@ -695,26 +695,26 @@ PeleC::writeBuildInfo(std::ostream& os)
 
   os << std::setw(35) << std::left << "NUM_LIN=" << NUM_LIN << std::endl;
 
-#ifdef PELEC_USE_MASA
-  os << std::setw(35) << std::left << "PELEC_USE_MASA " << std::setw(6) << "ON"
+#ifdef PELE_USE_MASA
+  os << std::setw(35) << std::left << "PELE_USE_MASA " << std::setw(6) << "ON"
      << std::endl;
 #else
-  os << std::setw(35) << std::left << "PELEC_USE_MASA " << std::setw(6) << "OFF"
+  os << std::setw(35) << std::left << "PELE_USE_MASA " << std::setw(6) << "OFF"
      << std::endl;
 #endif
 
-#ifdef PELEC_USE_SPRAY
-  os << std::setw(35) << std::left << "PELEC_USE_SPRAY " << std::setw(6) << "ON"
+#ifdef PELE_USE_SPRAY
+  os << std::setw(35) << std::left << "PELE_USE_SPRAY " << std::setw(6) << "ON"
      << std::endl;
 #else
-  os << std::setw(35) << std::left << "PELEC_USE_SPRAY " << std::setw(6)
-     << "OFF" << std::endl;
+  os << std::setw(35) << std::left << "PELE_USE_SPRAY " << std::setw(6) << "OFF"
+     << std::endl;
 #endif
-#ifdef PELEC_USE_SOOT
-  os << std::setw(35) << std::left << "PELEC_USE_SOOT " << std::setw(6) << "ON"
+#ifdef PELE_USE_SOOT
+  os << std::setw(35) << std::left << "PELE_USE_SOOT " << std::setw(6) << "ON"
      << std::endl;
 #else
-  os << std::setw(35) << std::left << "PELEC_USE_SOOT " << std::setw(6) << "OFF"
+  os << std::setw(35) << std::left << "PELE_USE_SOOT " << std::setw(6) << "OFF"
      << std::endl;
 #endif
 

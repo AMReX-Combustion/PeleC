@@ -9,18 +9,13 @@ SprayParticleContainer::injectParticles( // NOLINT
   amrex::Real /*dt*/,
   int /*nstep*/,
   int /*lev*/,
-  int /*finest_level*/,
-  ProbParmHost const& /*prob_parm*/,
-  ProbParmDevice const& /*prob_parm_d*/)
+  int /*finest_level*/)
 {
   return false;
 }
 
 void
-SprayParticleContainer::InitSprayParticles(
-  const bool init_parts,
-  ProbParmHost const& /*prob_parm*/,
-  ProbParmDevice const& /*prob_parm_d*/)
+SprayParticleContainer::InitSprayParticles(const bool init_parts)
 {
   if (!init_parts) {
     return;

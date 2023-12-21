@@ -10,16 +10,16 @@
 
 #ifdef AMREX_PARTICLES
 #include <AMReX_Particles.H>
-#ifdef PELEC_USE_SPRAY
+#ifdef PELE_USE_SPRAY
 #include "SprayParticles.H"
 #endif
 #endif
 
-#ifdef PELEC_USE_SOOT
+#ifdef PELE_USE_SOOT
 #include "SootModel.H"
 #endif
 
-#ifdef PELEC_USE_MASA
+#ifdef PELE_USE_MASA
 #include <masa.h>
 using namespace MASA;
 #endif
@@ -32,7 +32,7 @@ using namespace MASA;
 #include "Tagging.H"
 #include "IndexDefines.H"
 
-#ifdef PELEC_ENABLE_FPE_TRAP
+#ifdef PELE_ENABLE_FPE_TRAP
 #if defined(__linux__)
 #include <cfenv>
 #elif defined(__APPLE__)
@@ -63,20 +63,20 @@ int PeleC::FirstSootVar = -1;
 
 bool PeleC::do_diffuse = false;
 
-#ifdef PELEC_USE_SPRAY
+#ifdef PELE_USE_SPRAY
 bool PeleC::do_spray_particles = true;
 #else
 bool PeleC::do_spray_particles = false;
 #endif
 
-#ifdef PELEC_USE_SOOT
+#ifdef PELE_USE_SOOT
 bool PeleC::add_soot_src = true;
 bool PeleC::plot_soot = true;
 #else
 bool PeleC::add_soot_src = false;
 #endif
 
-#ifdef PELEC_USE_MASA
+#ifdef PELE_USE_MASA
 bool PeleC::mms_initialized = false;
 #endif
 
@@ -393,11 +393,11 @@ PeleC::read_params()
     amrex::Error("Cannot have max_dt < fixed_dt");
   }
 
-#ifdef PELEC_USE_SPRAY
+#ifdef PELE_USE_SPRAY
   readSprayParams();
 #endif
 
-#ifdef PELEC_USE_SOOT
+#ifdef PELE_USE_SOOT
   pp.query("add_soot_src", add_soot_src);
   pp.query("plot_soot", plot_soot);
   soot_model.readSootParams();
@@ -431,7 +431,7 @@ PeleC::read_params()
 PeleC::PeleC()
   : old_sources(num_src),
     new_sources(num_src)
-#ifdef PELEC_USE_MASA
+#ifdef PELE_USE_MASA
     ,
     mms_src_evaluated(false)
 #endif
@@ -449,7 +449,7 @@ PeleC::PeleC(
   : AmrLevel(papa, lev, level_geom, bl, dm, time),
     old_sources(num_src),
     new_sources(num_src)
-#ifdef PELEC_USE_MASA
+#ifdef PELE_USE_MASA
     ,
     mms_src_evaluated(false)
 #endif
@@ -470,7 +470,7 @@ PeleC::PeleC(
   }
 
   int nGrowS = numGrow();
-#ifdef PELEC_USE_SPRAY
+#ifdef PELE_USE_SPRAY
   if (do_spray_particles) {
     if (level > 0) {
       nGrowS =
@@ -757,7 +757,7 @@ PeleC::initData()
   const auto& bcs = desc->getBCs();
   InitialRedistribution(cur_time, bcs, S_new);
 
-#ifdef PELEC_USE_SPRAY
+#ifdef PELE_USE_SPRAY
   if (level == 0) {
     initParticles();
   } else {
@@ -958,7 +958,7 @@ PeleC::estTimeStep(amrex::Real /*dt_old*/)
     }
   }
 
-#ifdef PELEC_USE_SPRAY
+#ifdef PELE_USE_SPRAY
   amrex::Real estdt_particle = max_dt;
   if (do_spray_particles) {
     estTimeStepParticles(estdt_particle);
@@ -1098,7 +1098,7 @@ PeleC::post_timestep(int iteration)
 
   const int finest_level = parent->finestLevel();
 
-#ifdef PELEC_USE_SPRAY
+#ifdef PELE_USE_SPRAY
   postTimeStepParticles(iteration);
 #else
   amrex::ignore_unused(iteration);
@@ -1125,7 +1125,7 @@ PeleC::post_timestep(int iteration)
   computeTemp(S_new, ng_pts);
   set_body_state(S_new);
 
-#ifdef PELEC_USE_SOOT
+#ifdef PELE_USE_SOOT
   clipSootMoments(S_new, ng_pts);
 #endif
 
@@ -1263,7 +1263,7 @@ PeleC::post_restart()
     amrex::Gpu::hostToDevice, PeleC::h_prob_parm_device,
     PeleC::h_prob_parm_device + 1, PeleC::d_prob_parm_device);
 
-#ifdef PELEC_USE_SPRAY
+#ifdef PELE_USE_SPRAY
   postRestartParticles();
 #endif
   // Initialize the reactor
@@ -1301,7 +1301,7 @@ PeleC::post_regrid(int lbase, int /*new_finest*/)
   BL_PROFILE("PeleC::post_regrid()");
   fine_mask.clear();
 
-#ifdef PELEC_USE_SPRAY
+#ifdef PELE_USE_SPRAY
   if (lbase == level) {
     particle_redistribute(lbase);
   }
@@ -1349,7 +1349,7 @@ PeleC::post_init(amrex::Real /*stop_time*/)
   // Allow the user to define their own post_init functions.
   problem_post_init();
 
-#ifdef PELEC_USE_SPRAY
+#ifdef PELE_USE_SPRAY
   postInitParticles();
 #endif
 
@@ -2099,7 +2099,7 @@ PeleC::init_filters()
     geom.GetFaceArea(area[dir], dir);
   }
 }
-#ifdef PELEC_USE_MASA
+#ifdef PELE_USE_MASA
 void
 PeleC::init_mms()
 {
@@ -2108,7 +2108,7 @@ PeleC::init_mms()
       amrex::Print() << "Initializing MMS" << std::endl;
     }
 // Shut of FPE for MASA initialization because it has FPEs
-#ifdef PELEC_ENABLE_FPE_TRAP
+#ifdef PELE_ENABLE_FPE_TRAP
 #if defined(__linux__)
     unsigned int prev_fpe_excepts = fegetexcept();
     fedisableexcept(prev_fpe_excepts);
@@ -2126,7 +2126,7 @@ PeleC::init_mms()
     masa_set_param("CI", PeleC::CI);
     masa_set_param("PrT", PeleC::PrT);
     mms_initialized = true;
-#ifdef PELEC_ENABLE_FPE_TRAP
+#ifdef PELE_ENABLE_FPE_TRAP
 #if defined(__linux__)
     if (prev_fpe_excepts != 0) {
       feenableexcept(prev_fpe_excepts);
