@@ -9,9 +9,7 @@ SprayParticleContainer::injectParticles(
   amrex::Real dt,
   int /*nstep*/,
   int lev,
-  int /*finest_level*/,
-  ProbParmHost const& /*prob_parm*/,
-  ProbParmDevice const& /*prob_parm_d*/)
+  int /*finest_level*/)
 {
   if (lev != 0) {
     return false;
@@ -30,10 +28,7 @@ SprayParticleContainer::injectParticles(
 }
 
 void
-SprayParticleContainer::InitSprayParticles(
-  const bool /*init_parts*/,
-  ProbParmHost const& /*prob_parm*/,
-  ProbParmDevice const& /*prob_parm_d*/)
+SprayParticleContainer::InitSprayParticles(const bool /*init_parts*/)
 {
   amrex::ParmParse ps("spray");
   amrex::Real jet_vel = 6.E4;

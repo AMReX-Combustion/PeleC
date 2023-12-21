@@ -907,7 +907,7 @@ PeleC::pc_derdiffusivity(
   });
 }
 
-#ifdef PELEC_USE_MASA
+#ifdef PELE_USE_MASA
 void
 pc_derrhommserror(
   const amrex::Box& bx,

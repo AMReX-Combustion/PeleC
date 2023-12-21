@@ -159,7 +159,7 @@ struct MyProbDeriveStruct
       amrex::DeriveRec::GrowBoxByOne);
     derive_lst.addComponent("z_vorticity", desc_lst, State_Type, 0, NVAR);
 
-#ifdef PELEC_USE_REACTIONS
+#ifdef PELE_USE_REACTIONS
     derive_lst.add(
       "heat_release", amrex::IndexType::TheCellType(), 1, pc_derheatrelease,
       the_same_box);
@@ -207,7 +207,7 @@ struct MyProbDeriveStruct
     });
   }
 
-#ifdef PELEC_USE_REACTIONS
+#ifdef PELE_USE_REACTIONS
   static void pc_derheatrelease(
     const amrex::Box& bx,
     amrex::FArrayBox& derfab,

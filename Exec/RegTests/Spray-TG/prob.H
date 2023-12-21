@@ -97,4 +97,32 @@ void pc_prob_close();
 using ProblemTags = EmptyProbTagStruct;
 using ProblemDerives = EmptyProbDeriveStruct;
 
+void diameter_solver(
+  const amrex::Real rho0,
+  const amrex::Real mu,
+  const amrex::Real tau_d,
+  const amrex::Real partRho,
+  const amrex::Real refRho,
+  const amrex::Real refU,
+  amrex::Real& dia,
+  amrex::Real& Re_d);
+
+void prob_parser(
+  const amrex_real* problo,
+  const amrex_real* probhi,
+  amrex::Real& reynolds,
+  amrex::Real& mach,
+  bool& convecting,
+  amrex::Real& p0,
+  amrex::Real& T0,
+  amrex::Real& rho0,
+  amrex::Real& Stmod,
+  amrex::Real& rhoRatio,
+  amrex::Real& L,
+  amrex::Real& v0,
+  amrex::Real& mu,
+  amrex::Real& cs,
+  amrex::Real& cp,
+  amrex::Real& St_num);
+
 #endif
