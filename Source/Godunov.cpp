@@ -579,7 +579,8 @@ pc_umeth_eb_3D(
         // X slopes and interp
         int idir = 0;
         for (int n = 0; n < QVAR; ++n) {
-          slope[n] = plm_slope_eb(i, j, k, n, 0, flag_arr, q, flat, iorder);
+          slope[n] = plm_slope_eb(
+            AMREX_D_DECL(i, j, k), n, 0, flag_arr, q, flat, iorder);
         }
         // cells -5,-5,-5
         pc_plm_d_eb(
@@ -589,7 +590,8 @@ pc_umeth_eb_3D(
         // Y slopes and interp
         idir = 1;
         for (int n = 0; n < QVAR; n++) {
-          slope[n] = plm_slope_eb(i, j, k, n, 1, flag_arr, q, flat, iorder);
+          slope[n] = plm_slope_eb(
+            AMREX_D_DECL(i, j, k), n, 1, flag_arr, q, flat, iorder);
         }
         // cells -5,-5,-5
         pc_plm_d_eb(
@@ -599,7 +601,8 @@ pc_umeth_eb_3D(
         // Z slopes and interp
         idir = 2;
         for (int n = 0; n < QVAR; ++n) {
-          slope[n] = plm_slope_eb(i, j, k, n, 2, flag_arr, q, flat, iorder);
+          slope[n] = plm_slope_eb(
+            AMREX_D_DECL(i, j, k), n, 2, flag_arr, q, flat, iorder);
         }
         // cells -5,-5,-5
         pc_plm_d_eb(
@@ -1328,7 +1331,8 @@ pc_umeth_eb_2D(
         // X slopes and interp
         //
         for (int n = 0; n < QVAR; ++n) {
-          slope[n] = plm_slope_eb(i, j, k, n, 0, flag_arr, q, flat, iorder);
+          slope[n] = plm_slope_eb(
+            AMREX_D_DECL(i, j, k), n, 0, flag_arr, q, flat, iorder);
         }
         pc_plm_d_eb(
           i, j, k, 0, qxmarr, qxparr, slope, q, qaux(i, j, k, QC), dx, dt, apx);
@@ -1337,7 +1341,8 @@ pc_umeth_eb_2D(
         // Y slopes and interp
         //
         for (int n = 0; n < QVAR; n++) {
-          slope[n] = plm_slope_eb(i, j, k, n, 1, flag_arr, q, flat, iorder);
+          slope[n] = plm_slope_eb(
+            AMREX_D_DECL(i, j, k), n, 1, flag_arr, q, flat, iorder);
         }
         pc_plm_d_eb(
           i, j, k, 1, qymarr, qyparr, slope, q, qaux(i, j, k, QC), dy, dt, apy);
