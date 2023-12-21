@@ -109,9 +109,8 @@ plm_slope_eb(
     (order > 1) && !flags(iv).isCovered() && !flags(ivm).isCovered() &&
     !flags(ivp).isCovered()) {
     return plm_slope(AMREX_D_DECL(i, j, k), n, dir, q, flat, 2);
-  } else {
-    return 0.0;
   }
+  return 0.0;
 }
 
 AMREX_GPU_DEVICE
@@ -332,7 +331,9 @@ pc_plm_d_eb(
   amrex::ignore_unused(k);
   const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
   const amrex::IntVect ivp(iv + amrex::IntVect::TheDimensionVector(dir));
-  const amrex::GpuArray<const int, 3> bdim{{dir == 0, dir == 1, dir == 2}};
+  const amrex::GpuArray<const int, 3> bdim{
+    {static_cast<int>(dir == 0), static_cast<int>(dir == 1),
+     static_cast<int>(dir == 2)}};
   const amrex::GpuArray<const int, 3> l_idx{
     {bdim[0] * 0 + bdim[1] * 1 + bdim[2] * 2,
      bdim[0] * 1 + bdim[1] * 0 + bdim[2] * 0,
