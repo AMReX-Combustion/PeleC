@@ -20,7 +20,7 @@ PeleC::construct_hydro_source(
     BL_PROFILE("PeleC::construct_hydro_source()");
 
     if ((verbose != 0) && amrex::ParallelDescriptor::IOProcessor()) {
-      amrex::Print() << "... Computing hydro advance" << std::endl;
+      amrex::Print() << "... Computing Godunov hydro advance" << std::endl;
     }
 
     AMREX_ASSERT(S.nGrow() >= numGrow() + nGrowF);
