@@ -80,13 +80,7 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 amrex::Real
 plm_slope_eb(
-  const int i,
-  const int j,
-  const int
-#if (AMREX_SPACEDIM == 3)
-    k
-#endif
-  ,
+  AMREX_D_DECL(const int i, const int j, const int k),
   const int n,
   const int dir,
   amrex::Array4<amrex::EBCellFlag const> const& flags,

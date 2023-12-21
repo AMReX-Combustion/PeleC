@@ -32,7 +32,7 @@ pc_low_order_boundary(
 
     amrex::Real flat = 1.0;
     // Calculate flattening in-place
-    if (use_flattening == 1) {
+    if (use_flattening) {
       for (int dir_flat = 0; dir_flat < AMREX_SPACEDIM; dir_flat++) {
         flat = amrex::min<amrex::Real>(
           flat, flatten(AMREX_D_DECL(i, j, k), dir_flat, q));
@@ -142,7 +142,7 @@ pc_umeth_3D(
 
         amrex::Real flat = 1.0;
         // Calculate flattening in-place
-        if (use_flattening == 1) {
+        if (use_flattening) {
           for (int dir_flat = 0; dir_flat < AMREX_SPACEDIM; dir_flat++) {
             flat = amrex::min<amrex::Real>(flat, flatten(i, j, k, dir_flat, q));
           }
@@ -498,7 +498,7 @@ pc_umeth_eb_3D(
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> del,
   const amrex::Real dt,
   const int ppm_type,
-  const int use_flattening,
+  const bool use_flattening,
   const int iorder)
 {
   int cdir;
@@ -569,7 +569,7 @@ pc_umeth_eb_3D(
 
         amrex::Real flat = 1.0;
         // Calculate flattening in-place
-        if (use_flattening == 1) {
+        if (use_flattening) {
           for (int dir_flat = 0; dir_flat < AMREX_SPACEDIM; dir_flat++) {
             flat = amrex::min<amrex::Real>(
               flat, flatten_eb(i, j, k, dir_flat, flag_arr, q));
@@ -1099,7 +1099,7 @@ pc_umeth_2D(
 
         amrex::Real flat = 1.0;
         // Calculate flattening in-place
-        if (use_flattening == 1) {
+        if (use_flattening) {
           for (int dir_flat = 0; dir_flat < AMREX_SPACEDIM; dir_flat++) {
             flat = amrex::min<amrex::Real>(
               flat, flatten(AMREX_D_DECL(i, j, k), dir_flat, q));
@@ -1265,7 +1265,7 @@ pc_umeth_eb_2D(
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> del,
   const amrex::Real dt,
   const int ppm_type,
-  const int use_flattening,
+  const bool use_flattening,
   const int iorder)
 {
   BL_PROFILE("Godunov_umeth_2D_eb()");
@@ -1317,7 +1317,7 @@ pc_umeth_eb_2D(
 
         amrex::Real flat = 1.0;
         // Calculate flattening in-place
-        if (use_flattening == 1) {
+        if (use_flattening) {
           for (int dir_flat = 0; dir_flat < AMREX_SPACEDIM; dir_flat++) {
             flat = amrex::min<amrex::Real>(
               flat, flatten_eb(i, j, k, dir_flat, flag_arr, q));

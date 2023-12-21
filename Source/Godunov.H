@@ -1199,7 +1199,7 @@ void pc_umeth_eb_3D(
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> del,
   const amrex::Real dt,
   const int ppm_type,
-  const int use_flattening,
+  const bool use_flattening,
   const int iorder);
 
 #elif AMREX_SPACEDIM == 2
@@ -1245,7 +1245,7 @@ void pc_umeth_eb_2D(
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> del,
   const amrex::Real dt,
   const int ppm_type,
-  const int use_flattening,
+  const bool use_flattening,
   const int iorder);
 #endif
 

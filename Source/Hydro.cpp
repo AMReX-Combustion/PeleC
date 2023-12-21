@@ -453,7 +453,7 @@ pc_adjust_fluxes_eb(
                , auto const& fz_arr = flux[2];);
 
   // Compute divu to be used in artificial viscosity
-  amrex::Box bx_divu = amrex::Box(q_arr);
+  auto bx_divu = amrex::Box(q_arr);
   bx_divu.grow(-1);
   bx_divu.surroundingNodes();
   amrex::FArrayBox divu(bx_divu, NVAR, amrex::The_Async_Arena());
