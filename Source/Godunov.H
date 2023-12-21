@@ -590,7 +590,7 @@ pc_transdo(
     amrex::Real pnewr =
       qnormp(iv, QPRES) - cdtdx * (dAup + pav * dAu * (c - 1.0));
     ;
-    qp(iv, QPRES) = std::max(pnewr, constants::very_small_num());
+    qp(iv, QPRES) = amrex::max<amrex::Real>(pnewr, constants::very_small_num());
   } else {
     qp(iv, QRHO) = qnormp(iv, QRHO);
     qp(iv, QU) = qnormp(iv, QU);
@@ -631,7 +631,8 @@ pc_transdo(
 
     amrex::Real pnewl =
       qnormm(ivpn, QPRES) - cdtdx * (dAup + pav * dAu * (c - 1.0));
-    qm(ivpn, QPRES) = std::max(pnewl, constants::very_small_num());
+    qm(ivpn, QPRES) =
+      amrex::max<amrex::Real>(pnewl, constants::very_small_num());
 
   } else {
     qm(ivpn, QRHO) = qnormm(ivpn, QRHO);
@@ -817,8 +818,8 @@ pc_transdd(
     qp(iv, QREINT) = renewr - rhoekinr + hdt * srce;
 
     qp(iv, QPRES) = qnormp(iv, QPRES) - pxnew - pynew + hdt * srcp;
-    qp(iv, QPRES) =
-      std::max(qp(iv, QPRES), std::numeric_limits<amrex::Real>::min());
+    qp(iv, QPRES) = amrex::max<amrex::Real>(
+      qp(iv, QPRES), std::numeric_limits<amrex::Real>::min());
   } else {
     qp(iv, QRHO) = qnormp(iv, QRHO);
     qp(iv, QU) = qnormp(iv, QU);
@@ -850,8 +851,8 @@ pc_transdd(
     qm(ivpn, QREINT) = renewl - rhoekinl + hdt * srce;
 
     qm(ivpn, QPRES) = qnormm(ivpn, QPRES) - pxnew - pynew + hdt * srcp;
-    qm(ivpn, QPRES) =
-      std::max(qm(ivpn, QPRES), std::numeric_limits<amrex::Real>::min());
+    qm(ivpn, QPRES) = amrex::max<amrex::Real>(
+      qm(ivpn, QPRES), std::numeric_limits<amrex::Real>::min());
 
   } else {
     qm(ivpn, QRHO) = qnormm(ivpn, QRHO);
@@ -998,8 +999,8 @@ pc_transd(
     pnewr += hdt * srcp;
     qp(iv, QPRES) = pnewr;
 
-    qp(iv, QPRES) =
-      std::max(qp(iv, QPRES), std::numeric_limits<amrex::Real>::min());
+    qp(iv, QPRES) = amrex::max<amrex::Real>(
+      qp(iv, QPRES), std::numeric_limits<amrex::Real>::min());
 
   } else {
     qp(iv, QRHO) = qnormp(iv, QRHO);
@@ -1039,8 +1040,8 @@ pc_transd(
       qnormm(ivpn, QPRES) - cdtdx * (dAup + pav * dAu * (c - 1.));
     qm(ivpn, QPRES) = pnewl + hdt * srcp;
 
-    qm(ivpn, QPRES) =
-      std::max(qm(ivpn, QPRES), std::numeric_limits<amrex::Real>::min());
+    qm(ivpn, QPRES) = amrex::max<amrex::Real>(
+      qm(ivpn, QPRES), std::numeric_limits<amrex::Real>::min());
 
   } else {
     qm(ivpn, QRHO) = qnormm(ivpn, QRHO);

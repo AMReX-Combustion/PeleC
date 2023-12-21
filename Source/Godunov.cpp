@@ -34,7 +34,8 @@ pc_low_order_boundary(
     // Calculate flattening in-place
     if (use_flattening == 1) {
       for (int dir_flat = 0; dir_flat < AMREX_SPACEDIM; dir_flat++) {
-        flat = std::min(flat, flatten(AMREX_D_DECL(i, j, k), dir_flat, q));
+        flat = amrex::min<amrex::Real>(
+          flat, flatten(AMREX_D_DECL(i, j, k), dir_flat, q));
       }
     }
 
@@ -143,7 +144,7 @@ pc_umeth_3D(
         // Calculate flattening in-place
         if (use_flattening == 1) {
           for (int dir_flat = 0; dir_flat < AMREX_SPACEDIM; dir_flat++) {
-            flat = std::min(flat, flatten(i, j, k, dir_flat, q));
+            flat = amrex::min<amrex::Real>(flat, flatten(i, j, k, dir_flat, q));
           }
         }
 
@@ -570,7 +571,8 @@ pc_umeth_eb_3D(
         // Calculate flattening in-place
         if (use_flattening == 1) {
           for (int dir_flat = 0; dir_flat < AMREX_SPACEDIM; dir_flat++) {
-            flat = std::min(flat, flatten_eb(i, j, k, dir_flat, flag_arr, q));
+            flat = amrex::min<amrex::Real>(
+              flat, flatten_eb(i, j, k, dir_flat, flag_arr, q));
           }
         }
 
@@ -1099,7 +1101,8 @@ pc_umeth_2D(
         // Calculate flattening in-place
         if (use_flattening == 1) {
           for (int dir_flat = 0; dir_flat < AMREX_SPACEDIM; dir_flat++) {
-            flat = std::min(flat, flatten(AMREX_D_DECL(i, j, k), dir_flat, q));
+            flat = amrex::min<amrex::Real>(
+              flat, flatten(AMREX_D_DECL(i, j, k), dir_flat, q));
           }
         }
 
@@ -1316,7 +1319,8 @@ pc_umeth_eb_2D(
         // Calculate flattening in-place
         if (use_flattening == 1) {
           for (int dir_flat = 0; dir_flat < AMREX_SPACEDIM; dir_flat++) {
-            flat = std::min(flat, flatten_eb(i, j, k, dir_flat, flag_arr, q));
+            flat = amrex::min<amrex::Real>(
+              flat, flatten_eb(i, j, k, dir_flat, flag_arr, q));
           }
         }
 

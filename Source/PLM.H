@@ -365,17 +365,18 @@ pc_plm_d_eb(
   //  Construct the right state on the i-1/2 interface
   if (area(iv) > 0.0) {
     const amrex::Real rho_ref =
-      rho - 0.5 * (1.0 + dtdx * std::min(wv[0], 0.0)) * drho;
+      rho - 0.5 * (1.0 + dtdx * amrex::min<amrex::Real>(wv[0], 0.0)) * drho;
     amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> vel_ref{
       AMREX_D_DECL(0.0, 0.0, 0.0)};
     for (int dim = 0; dim < AMREX_SPACEDIM; dim++) {
       vel_ref[dim] =
-        vel[dim] - 0.5 * (1.0 + dtdx * std::min(wv[0], 0.0)) * dvel[dim];
+        vel[dim] -
+        0.5 * (1.0 + dtdx * amrex::min<amrex::Real>(wv[0], 0.0)) * dvel[dim];
     }
     const amrex::Real p_ref =
-      p - 0.5 * (1.0 + dtdx * std::min(wv[0], 0.0)) * dp;
+      p - 0.5 * (1.0 + dtdx * amrex::min<amrex::Real>(wv[0], 0.0)) * dp;
     const amrex::Real rhoe_ref =
-      rhoe - 0.5 * (1.0 + dtdx * std::min(wv[0], 0.0)) * drhoe;
+      rhoe - 0.5 * (1.0 + dtdx * amrex::min<amrex::Real>(wv[0], 0.0)) * drhoe;
 
     const amrex::Real apright = 0.25 * dtdx * (wv[0] - wv[2]) *
                                 (1.0 - amrex::Math::copysign(1.0, wv[2])) *
@@ -396,14 +397,16 @@ pc_plm_d_eb(
                      (1.0 - amrex::Math::copysign(1.0, wv[1])) * alpha0w;)
 
     qp(iv, QRHO) = rho_ref + apright + amright + azrright;
-    qp(iv, QRHO) = std::max(qp(iv, QRHO), constants::very_small_num());
+    qp(iv, QRHO) =
+      amrex::max<amrex::Real>(qp(iv, QRHO), constants::very_small_num());
     AMREX_D_TERM(qp(iv, QU + l_idx[0]) =
                    vel_ref[l_idx[0]] + (apright - amright) * cc / rho;
                  qp(iv, QU + l_idx[1]) = 0.; qp(iv, QU + l_idx[2]) = 0.;
                  , qp(iv, QU + l_idx[1]) = vel_ref[l_idx[1]] + azv1rght;
                  , qp(iv, QU + l_idx[2]) = vel_ref[l_idx[2]] + azw1rght;);
     qp(iv, QPRES) = p_ref + (apright + amright) * cs;
-    qp(iv, QPRES) = std::max(qp(iv, QPRES), constants::very_small_num());
+    qp(iv, QPRES) =
+      amrex::max<amrex::Real>(qp(iv, QPRES), constants::very_small_num());
     qp(iv, QREINT) = rhoe_ref + (apright + amright) * enth * cs + azeright;
   } else {
     for (int n = 0; n < QVAR; n++) {
@@ -414,18 +417,19 @@ pc_plm_d_eb(
   //  Construct the left state on the i+1/2 interface
   if (area(ivp) > 0.0) {
     const amrex::Real rho_ref =
-      rho + 0.5 * (1.0 - dtdx * std::max(wv[2], 0.0)) * drho;
+      rho + 0.5 * (1.0 - dtdx * amrex::max<amrex::Real>(wv[2], 0.0)) * drho;
     amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> vel_ref{
       AMREX_D_DECL(0.0, 0.0, 0.0)};
     for (int dim = 0; dim < AMREX_SPACEDIM; dim++) {
       vel_ref[dim] =
-        vel[dim] + 0.5 * (1.0 - dtdx * std::max(wv[2], 0.0)) * dvel[dim];
+        vel[dim] +
+        0.5 * (1.0 - dtdx * amrex::max<amrex::Real>(wv[2], 0.0)) * dvel[dim];
     }
     const amrex::Real p_ref =
-      p + 0.5 * (1.0 - dtdx * std::max(wv[2], 0.0)) * dp;
+      p + 0.5 * (1.0 - dtdx * amrex::max<amrex::Real>(wv[2], 0.0)) * dp;
 
     const amrex::Real rhoe_ref =
-      rhoe + 0.5 * (1.0 - dtdx * std::max(wv[2], 0.0)) * drhoe;
+      rhoe + 0.5 * (1.0 - dtdx * amrex::max<amrex::Real>(wv[2], 0.0)) * drhoe;
 
     const amrex::Real apleft = 0.0;
     const amrex::Real amleft = 0.25 * dtdx * (wv[2] - wv[0]) *
@@ -445,14 +449,16 @@ pc_plm_d_eb(
                      0.25 * dtdx * (wv[2] - wv[1]) *
                      (1.0 + amrex::Math::copysign(1.0, wv[1])) * alpha0w;)
     qm(ivp, QRHO) = rho_ref + apleft + amleft + azrleft;
-    qm(ivp, QRHO) = std::max(qm(ivp, QRHO), constants::very_small_num());
+    qm(ivp, QRHO) =
+      amrex::max<amrex::Real>(qm(ivp, QRHO), constants::very_small_num());
     AMREX_D_TERM(qm(ivp, QU + l_idx[0]) =
                    vel_ref[l_idx[0]] + (apleft - amleft) * cc / rho;
                  qm(ivp, QU + l_idx[1]) = 0.; qm(ivp, QU + l_idx[2]) = 0.;
                  , qm(ivp, QU + l_idx[1]) = vel_ref[l_idx[1]] + azv1left;
                  , qm(ivp, QU + l_idx[2]) = vel_ref[l_idx[2]] + azw1left;);
     qm(ivp, QPRES) = p_ref + (apleft + amleft) * cs;
-    qm(ivp, QPRES) = std::max(qm(ivp, QPRES), constants::very_small_num());
+    qm(ivp, QPRES) =
+      amrex::max<amrex::Real>(qm(ivp, QPRES), constants::very_small_num());
     qm(ivp, QREINT) = rhoe_ref + (apleft + amleft) * enth * cs + azeleft;
   } else {
     for (int n = 0; n < QVAR; n++) {
