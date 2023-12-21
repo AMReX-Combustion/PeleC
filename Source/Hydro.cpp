@@ -742,7 +742,6 @@ pc_umdrv_eb(
   // Define divc, the update before redistribution
   // Also construct the redistribution weights for flux redistribution if
   // necessary
-  // FIXME pass weno in here!
 #if AMREX_SPACEDIM == 1
   amrex::Abort("PLM isn't implemented in 1D.");
 #elif AMREX_SPACEDIM == 2

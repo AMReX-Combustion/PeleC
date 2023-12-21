@@ -515,7 +515,6 @@ pc_divu(
   divu(i, j, k) = AMREX_D_TERM(ux, +vy, +wz);
 }
 
-// FIXME: cleanup and consolidate with pc_divu
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
