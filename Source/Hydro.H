@@ -494,7 +494,9 @@ pc_divu(
   int bchi_y = bchi[1];
   int domhi_y = domhi[1];
 
-#if (AMREX_SPACEDIM == 2)
+#if AMREX_SPACEDIM == 1
+  const amrex::Real ux = (q(i, j, k, QU) - q(i - 1, j, k, QU)) / dx;
+#elif (AMREX_SPACEDIM == 2)
   amrex::Real ux, vy;
 
   if (j == domlo_y && bclo_y == NoSlipWall) {
@@ -829,8 +831,8 @@ pc_eb_pdivu(
                      (q1(i + 1, j, k, GDU) - q1(i, j, k, GDU)) * dxinv[0] +
                    (q2(i, j + 1, k, GDPRES) + q2(i, j, k, GDPRES)) *
                      (q2(i, j + 1, k, GDV) - q2(i, j, k, GDV)) * dxinv[1] +
-                   (q2(i, j, k + 1, GDPRES) + q2(i, j, k, GDPRES)) *
-                     (q2(i, j, k + 1, GDW) - q2(i, j, k, GDW)) * dxinv[2]);
+                   (q3(i, j, k + 1, GDPRES) + q3(i, j, k, GDPRES)) *
+                     (q3(i, j, k + 1, GDW) - q3(i, j, k, GDW)) * dxinv[2]);
 
     divu(i, j, k, UEINT) += pdivu;
   } else if (!flag(i, j, k).isCovered()) {
@@ -1181,7 +1183,6 @@ void pc_consup_eb(
   const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>
     flux_tmp,
   const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flux,
-
-  const int l_eb_weights_type);
+  const int eb_weights_type);
 
 #endif
