@@ -453,15 +453,11 @@ eb_compute_div(
     redistwgt(i, j, k) = 1.0;
   } else if (eb_weights_type == 1) {
     redistwgt(i, j, k) =
-      q(i, j, k, QRHO) * (q(i, j, k, QREINT) +
-#if (AMREX_SPACEDIM == 2)
-                          0.5 * (q(i, j, k, QU) * q(i, j, k, QU) +
-                                 q(i, j, k, QV) * q(i, j, k, QV)));
-#else
-                          0.5 * (q(i, j, k, QU) * q(i, j, k, QU) +
-                                 q(i, j, k, QV) * q(i, j, k, QV) +
-                                 q(i, j, k, QW) * q(i, j, k, QW)));
-#endif
+      q(i, j, k, QRHO) *
+      (q(i, j, k, QREINT) + 0.5 * (AMREX_D_TERM(
+                                    q(i, j, k, QU) * q(i, j, k, QU),
+                                    +q(i, j, k, QV) * q(i, j, k, QV),
+                                    +q(i, j, k, QW) * q(i, j, k, QW))));
   } else if (eb_weights_type == 2) {
     redistwgt(i, j, k) = q(i, j, k, QRHO);
   } else if (eb_weights_type == 3) {
