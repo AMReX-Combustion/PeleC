@@ -370,14 +370,6 @@ pc_umdrv(
   }
 
   // divu
-  amrex::GpuArray<int, AMREX_SPACEDIM> ldomlo{
-    AMREX_D_DECL(domlo[0], domlo[1], domlo[2])};
-  amrex::GpuArray<int, AMREX_SPACEDIM> ldomhi{
-    AMREX_D_DECL(domhi[0], domhi[1], domhi[2])};
-  amrex::GpuArray<int, AMREX_SPACEDIM> lbclo{
-    AMREX_D_DECL(bclo[0], bclo[1], bclo[2])};
-  amrex::GpuArray<int, AMREX_SPACEDIM> lbchi{
-    AMREX_D_DECL(bchi[0], bchi[1], bchi[2])};
   amrex::ParallelFor(bxg2, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_divu(i, j, k, q, AMREX_D_DECL(dx[0], dx[1], dx[2]), divuarr);
   });
@@ -763,14 +755,6 @@ pc_umdrv_eb(
   // Construct divu
   AMREX_D_TERM(const amrex::Real dx0 = dx[0];, const amrex::Real dx1 = dx[1];
                , const amrex::Real dx2 = dx[2];);
-  amrex::GpuArray<int, AMREX_SPACEDIM> ldomlo{
-    AMREX_D_DECL(domlo[0], domlo[1], domlo[2])};
-  amrex::GpuArray<int, AMREX_SPACEDIM> ldomhi{
-    AMREX_D_DECL(domhi[0], domhi[1], domhi[2])};
-  amrex::GpuArray<int, AMREX_SPACEDIM> lbclo{
-    AMREX_D_DECL(bclo[0], bclo[1], bclo[2])};
-  amrex::GpuArray<int, AMREX_SPACEDIM> lbchi{
-    AMREX_D_DECL(bchi[0], bchi[1], bchi[2])};
 
   amrex::ParallelFor(
     bxg_ii, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
