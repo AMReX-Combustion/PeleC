@@ -697,8 +697,8 @@ pc_umdrv_eb(
     const amrex::Box eboxes = amrex::surroundingNodes(grow(bxg_ii, 1), dir);
     qec[dir].resize(eboxes, NGDNV, amrex::The_Async_Arena());
   }
-  amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> qec_arr{
-    {AMREX_D_DECL(qec[0].array(), qec[1].array(), qec[2].array())}};
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>
+    qec_arr{{AMREX_D_DECL(qec[0].array(), qec[1].array(), qec[2].array())}};
 
   // Quantities for redistribution
   amrex::FArrayBox divc, redistwgt;
@@ -730,6 +730,8 @@ pc_umdrv_eb(
   const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>
     flux_tmp_arr{{AMREX_D_DECL(
       flux_tmp[0].array(), flux_tmp[1].array(), flux_tmp[2].array())}};
+  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
+    ap{{AMREX_D_DECL(apx, apy, apz)}};
 
   // Define divc, the update before redistribution
   // Also construct the redistribution weights for flux redistribution if
@@ -739,16 +741,12 @@ pc_umdrv_eb(
 #elif AMREX_SPACEDIM == 2
   pc_umeth_eb_2D(
     amrex::Box(divc_arr), bclo, bchi, domlo, domhi, q, qaux, src_q,
-    AMREX_D_DECL(flux_tmp_arr[0], flux_tmp_arr[1], flux_tmp_arr[2]),
-    AMREX_D_DECL(qec_arr[0], qec_arr[1], qec_arr[2]),
-    AMREX_D_DECL(apx, apy, apz), flag, dx, dt, ppm_type, use_flattening,
+    flux_tmp_arr, qec_arr, ap, flag, dx, dt, ppm_type, use_flattening,
     plm_iorder);
 #elif AMREX_SPACEDIM == 3
   pc_umeth_eb_3D(
     amrex::Box(divc_arr), bclo, bchi, domlo, domhi, q, qaux, src_q,
-    AMREX_D_DECL(flux_tmp_arr[0], flux_tmp_arr[1], flux_tmp_arr[2]),
-    AMREX_D_DECL(qec_arr[0], qec_arr[1], qec_arr[2]),
-    AMREX_D_DECL(apx, apy, apz), flag, dx, dt, ppm_type, use_flattening,
+    flux_tmp_arr, qec_arr, ap, flag, dx, dt, ppm_type, use_flattening,
     plm_iorder);
 #endif
 

@@ -485,21 +485,15 @@ pc_umeth_eb_3D(
   amrex::Array4<const amrex::Real> const& q,
   amrex::Array4<const amrex::Real> const& qaux,
   amrex::Array4<const amrex::Real> const& srcQ,
-  amrex::Array4<amrex::Real> const& flx1,
-  amrex::Array4<amrex::Real> const& flx2,
-  amrex::Array4<amrex::Real> const& flx3,
-  amrex::Array4<amrex::Real> const& q1,
-  amrex::Array4<amrex::Real> const& q2,
-  amrex::Array4<amrex::Real> const& q3,
-  amrex::Array4<const amrex::Real> const& apx,
-  amrex::Array4<const amrex::Real> const& apy,
-  amrex::Array4<const amrex::Real> const& apz,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, 3>& flx,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, 3>& qec,
+  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, 3>& ap,
   amrex::Array4<amrex::EBCellFlag const> const& flag_arr,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> del,
   const amrex::Real dt,
   const int ppm_type,
   const bool use_flattening,
-  const int iorder)
+  const int plm_iorder)
 {
   int cdir;
 
@@ -580,34 +574,34 @@ pc_umeth_eb_3D(
         int idir = 0;
         for (int n = 0; n < QVAR; ++n) {
           slope[n] = plm_slope_eb(
-            AMREX_D_DECL(i, j, k), n, 0, flag_arr, q, flat, iorder);
+            AMREX_D_DECL(i, j, k), n, 0, flag_arr, q, flat, plm_iorder);
         }
         // cells -5,-5,-5
         pc_plm_d_eb(
           i, j, k, idir, qxmarr, qxparr, slope, q, qaux(i, j, k, QC), dx, dt,
-          apx);
+          ap[idir]);
 
         // Y slopes and interp
         idir = 1;
         for (int n = 0; n < QVAR; n++) {
           slope[n] = plm_slope_eb(
-            AMREX_D_DECL(i, j, k), n, 1, flag_arr, q, flat, iorder);
+            AMREX_D_DECL(i, j, k), n, 1, flag_arr, q, flat, plm_iorder);
         }
         // cells -5,-5,-5
         pc_plm_d_eb(
           i, j, k, idir, qymarr, qyparr, slope, q, qaux(i, j, k, QC), dy, dt,
-          apy);
+          ap[idir]);
 
         // Z slopes and interp
         idir = 2;
         for (int n = 0; n < QVAR; ++n) {
           slope[n] = plm_slope_eb(
-            AMREX_D_DECL(i, j, k), n, 2, flag_arr, q, flat, iorder);
+            AMREX_D_DECL(i, j, k), n, 2, flag_arr, q, flat, plm_iorder);
         }
         // cells -5,-5,-5
         pc_plm_d_eb(
           i, j, k, idir, qzmarr, qzparr, slope, q, qaux(i, j, k, QC), dz, dt,
-          apz);
+          ap[idir]);
       });
   } else {
     amrex::Error("ppm_type must be 0 (PLM) when using EB");
@@ -631,7 +625,7 @@ pc_umeth_eb_3D(
   // -4,-5,-5
   amrex::ParallelFor(
     xflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      if (apx(i, j, k) > 0.) {
+      if (ap[cdir](i, j, k) > 0.) {
         pc_cmpflx(
           i, j, k, bclx, bchx, dlx, dhx, qxmarr, qxparr, fxarr, gdtempx, qaux,
           cdir);
@@ -653,7 +647,7 @@ pc_umeth_eb_3D(
   // -5,-4,-5
   amrex::ParallelFor(
     yflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      if (apy(i, j, k) > 0.) {
+      if (ap[cdir](i, j, k) > 0.) {
         pc_cmpflx(
           i, j, k, bcly, bchy, dly, dhy, qymarr, qyparr, fyarr, gdtempy, qaux,
           cdir);
@@ -675,7 +669,7 @@ pc_umeth_eb_3D(
   // -5,-5,-4
   amrex::ParallelFor(
     zflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      if (apz(i, j, k) > 0.) {
+      if (ap[cdir](i, j, k) > 0.) {
         pc_cmpflx(
           i, j, k, bclz, bchz, dlz, dhz, qzmarr, qzparr, fzarr, gdtempz, qaux,
           cdir);
@@ -706,7 +700,7 @@ pc_umeth_eb_3D(
       // X|Y
       pc_transdo(
         i, j, k, cdir, 1, qmxy, qpxy, qxmarr, qxparr, fyarr, qaux, gdtempy,
-        cdtdy, apx, apy);
+        cdtdy, ap[cdir], ap[1]);
     }
   });
 
@@ -719,7 +713,7 @@ pc_umeth_eb_3D(
       // X|Z
       pc_transdo(
         i, j, k, cdir, 2, qmxz, qpxz, qxmarr, qxparr, fzarr, qaux, gdtempz,
-        cdtdz, apx, apz);
+        cdtdz, ap[cdir], ap[2]);
     }
   });
 
@@ -740,7 +734,7 @@ pc_umeth_eb_3D(
   amrex::ParallelFor(
     xycmpbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       // X|Y
-      if (apx(i, j, k) > 0.) {
+      if (ap[cdir](i, j, k) > 0.) {
         pc_cmpflx(
           i, j, k, bclx, bchx, dlx, dhx, qmxy, qpxy, flxy, qxy, qaux, cdir);
       }
@@ -752,7 +746,7 @@ pc_umeth_eb_3D(
   amrex::ParallelFor(
     xzcmpbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       // X|Z
-      if (apx(i, j, k) > 0.) {
+      if (ap[cdir](i, j, k) > 0.) {
         pc_cmpflx(
           i, j, k, bclx, bchx, dlx, dhx, qmxz, qpxz, flxz, qxz, qaux, cdir);
       }
@@ -780,7 +774,7 @@ pc_umeth_eb_3D(
     if (!flag_arr(i, j, k).isCovered()) {
       pc_transdo(
         i, j, k, cdir, 0, qmyx, qpyx, qymarr, qyparr, fxarr, qaux, gdtempx,
-        cdtdx, apy, apx);
+        cdtdx, ap[cdir], ap[0]);
     }
   });
 
@@ -791,7 +785,7 @@ pc_umeth_eb_3D(
     if (!flag_arr(i, j, k).isCovered()) {
       pc_transdo(
         i, j, k, cdir, 2, qmyz, qpyz, qymarr, qyparr, fzarr, qaux, gdtempz,
-        cdtdz, apy, apz);
+        cdtdz, ap[cdir], ap[2]);
     }
   });
 
@@ -812,7 +806,7 @@ pc_umeth_eb_3D(
   amrex::ParallelFor(
     yxcmpbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       // Y|X
-      if (apy(i, j, k) > 0.) {
+      if (ap[cdir](i, j, k) > 0.) {
         pc_cmpflx(
           i, j, k, bcly, bchy, dly, dhy, qmyx, qpyx, flyx, qyx, qaux, cdir);
       }
@@ -823,7 +817,7 @@ pc_umeth_eb_3D(
   amrex::ParallelFor(
     yzcmpbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       // Y|Z
-      if (apy(i, j, k) > 0.) {
+      if (ap[cdir](i, j, k) > 0.) {
         pc_cmpflx(
           i, j, k, bcly, bchy, dly, dhy, qmyz, qpyz, flyz, qyz, qaux, cdir);
       }
@@ -851,7 +845,7 @@ pc_umeth_eb_3D(
     if (!flag_arr(i, j, k).isCovered()) {
       pc_transdo(
         i, j, k, cdir, 0, qmzx, qpzx, qzmarr, qzparr, fxarr, qaux, gdtempx,
-        cdtdx, apz, apx);
+        cdtdx, ap[cdir], ap[0]);
     }
   });
 
@@ -862,7 +856,7 @@ pc_umeth_eb_3D(
     if (!flag_arr(i, j, k).isCovered()) {
       pc_transdo(
         i, j, k, cdir, 1, qmzy, qpzy, qzmarr, qzparr, fyarr, qaux, gdtempy,
-        cdtdy, apz, apy);
+        cdtdy, ap[cdir], ap[1]);
     }
   });
 
@@ -883,7 +877,7 @@ pc_umeth_eb_3D(
   amrex::ParallelFor(
     zxcmpbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       // Z|X
-      if (apz(i, j, k) > 0.) {
+      if (ap[cdir](i, j, k) > 0.) {
         pc_cmpflx(
           i, j, k, bclz, bchz, dlz, dhz, qmzx, qpzx, flzx, qzx, qaux, cdir);
       }
@@ -894,7 +888,7 @@ pc_umeth_eb_3D(
   amrex::ParallelFor(
     zycmpbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       // Z|Y
-      if (apz(i, j, k) > 0.) {
+      if (ap[cdir](i, j, k) > 0.) {
         pc_cmpflx(
           i, j, k, bclz, bchz, dlz, dhz, qmzy, qpzy, flzy, qzy, qaux, cdir);
       }
@@ -915,7 +909,7 @@ pc_umeth_eb_3D(
     if (!flag_arr(i, j, k).isCovered()) {
       pc_transdd(
         i, j, k, cdir, qm, qp, qxmarr, qxparr, flyz, flzy, qyz, qzy, qaux, srcQ,
-        hdt, hdtdy, hdtdz, apx, apy, apz);
+        hdt, hdtdy, hdtdz, ap[0], ap[1], ap[2]);
     }
   });
 
@@ -925,8 +919,10 @@ pc_umeth_eb_3D(
   xfbx.grow(1, 1);
   xfbx.grow(2, 1);
   amrex::ParallelFor(xfbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    if (apx(i, j, k) > 0.) {
-      pc_cmpflx(i, j, k, bclx, bchx, dlx, dhx, qm, qp, flx1, q1, qaux, cdir);
+    if (ap[cdir](i, j, k) > 0.) {
+      pc_cmpflx(
+        i, j, k, bclx, bchx, dlx, dhx, qm, qp, flx[cdir], qec[cdir], qaux,
+        cdir);
     }
   });
 
@@ -939,7 +935,7 @@ pc_umeth_eb_3D(
     if (!flag_arr(i, j, k).isCovered()) {
       pc_transdd(
         i, j, k, cdir, qm, qp, qymarr, qyparr, flxz, flzx, qxz, qzx, qaux, srcQ,
-        hdt, hdtdx, hdtdz, apy, apx, apz);
+        hdt, hdtdx, hdtdz, ap[1], ap[0], ap[2]);
     }
   });
 
@@ -949,8 +945,10 @@ pc_umeth_eb_3D(
   yfbx.grow(0, 1);
   yfbx.grow(2, 1);
   amrex::ParallelFor(yfbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    if (apy(i, j, k) > 0.) {
-      pc_cmpflx(i, j, k, bcly, bchy, dly, dhy, qm, qp, flx2, q2, qaux, cdir);
+    if (ap[cdir](i, j, k) > 0.) {
+      pc_cmpflx(
+        i, j, k, bcly, bchy, dly, dhy, qm, qp, flx[cdir], qec[cdir], qaux,
+        cdir);
     }
   });
 
@@ -962,7 +960,7 @@ pc_umeth_eb_3D(
     if (!flag_arr(i, j, k).isCovered()) {
       pc_transdd(
         i, j, k, cdir, qm, qp, qzmarr, qzparr, flxy, flyx, qxy, qyx, qaux, srcQ,
-        hdt, hdtdx, hdtdy, apz, apx, apy);
+        hdt, hdtdx, hdtdy, ap[2], ap[0], ap[1]);
     }
   });
 
@@ -972,10 +970,42 @@ pc_umeth_eb_3D(
   zfbx.grow(0, 1);
   zfbx.grow(1, 1);
   amrex::ParallelFor(zfbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    if (apz(i, j, k) > 0.) {
-      pc_cmpflx(i, j, k, bclz, bchz, dlz, dhz, qm, qp, flx3, q3, qaux, cdir);
+    if (ap[cdir](i, j, k) > 0.) {
+      pc_cmpflx(
+        i, j, k, bclz, bchz, dlz, dhz, qm, qp, flx[cdir], qec[cdir], qaux,
+        cdir);
     }
   });
+
+  // Fix bcnormal boundaries - always use PLM and don't do N+1/2 predictor
+  // because the user specifies conditions at N
+  // bcnormal used for "Hard" (inflow) and "UserBC" (user_bc)
+  for (int idir = 0; idir < AMREX_SPACEDIM; idir++) {
+    if (
+      bclo[idir] == PCPhysBCType::inflow ||
+      bclo[idir] == PCPhysBCType::user_bc) {
+      // Box for fluxes at this boundary
+      amrex::Box bfbx = surroundingNodes(bx_to_fill, idir);
+      bfbx.setBig(idir, domlo[idir]);
+      if (bfbx.ok()) {
+        pc_low_order_boundary(
+          bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], plm_iorder,
+          use_flattening, idir, del[idir], dt, q, qaux, flx[idir], qec[idir]);
+      }
+    }
+    if (
+      bchi[idir] == PCPhysBCType::inflow ||
+      bchi[idir] == PCPhysBCType::user_bc) {
+      // Box for fluxes at this boundary
+      amrex::Box bfbx = surroundingNodes(bx_to_fill, idir);
+      bfbx.setSmall(idir, domhi[idir] + 1);
+      if (bfbx.ok()) {
+        pc_low_order_boundary(
+          bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], plm_iorder,
+          use_flattening, idir, del[idir], dt, q, qaux, flx[idir], qec[idir]);
+      }
+    }
+  }
 }
 
 #elif AMREX_SPACEDIM == 2
@@ -1202,18 +1232,15 @@ pc_umeth_eb_2D(
   amrex::Array4<const amrex::Real> const& q,
   amrex::Array4<const amrex::Real> const& qaux,
   amrex::Array4<const amrex::Real> const& srcQ,
-  amrex::Array4<amrex::Real> const& flx1,
-  amrex::Array4<amrex::Real> const& flx2,
-  amrex::Array4<amrex::Real> const& q1,
-  amrex::Array4<amrex::Real> const& q2,
-  amrex::Array4<const amrex::Real> const& apx,
-  amrex::Array4<const amrex::Real> const& apy,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, 2>& flx,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, 2>& qec,
+  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, 2>& ap,
   amrex::Array4<amrex::EBCellFlag const> const& flag_arr,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> del,
   const amrex::Real dt,
   const int ppm_type,
   const bool use_flattening,
-  const int iorder)
+  const int plm_iorder)
 {
   BL_PROFILE("Godunov_umeth_2D_eb()");
 
@@ -1276,20 +1303,22 @@ pc_umeth_eb_2D(
         //
         for (int n = 0; n < QVAR; ++n) {
           slope[n] = plm_slope_eb(
-            AMREX_D_DECL(i, j, k), n, 0, flag_arr, q, flat, iorder);
+            AMREX_D_DECL(i, j, k), n, 0, flag_arr, q, flat, plm_iorder);
         }
         pc_plm_d_eb(
-          i, j, k, 0, qxmarr, qxparr, slope, q, qaux(i, j, k, QC), dx, dt, apx);
+          i, j, k, 0, qxmarr, qxparr, slope, q, qaux(i, j, k, QC), dx, dt,
+          ap[0]);
 
         //
         // Y slopes and interp
         //
         for (int n = 0; n < QVAR; n++) {
           slope[n] = plm_slope_eb(
-            AMREX_D_DECL(i, j, k), n, 1, flag_arr, q, flat, iorder);
+            AMREX_D_DECL(i, j, k), n, 1, flag_arr, q, flat, plm_iorder);
         }
         pc_plm_d_eb(
-          i, j, k, 1, qymarr, qyparr, slope, q, qaux(i, j, k, QC), dy, dt, apy);
+          i, j, k, 1, qymarr, qyparr, slope, q, qaux(i, j, k, QC), dy, dt,
+          ap[1]);
       });
   } else {
     amrex::Error("ppm_type must be 0 (PLM) when using EB");
@@ -1306,7 +1335,7 @@ pc_umeth_eb_2D(
   auto const& gdtemp = qgdx.array();
   amrex::ParallelFor(
     xflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      if (apx(i, j, k) > 0.) {
+      if (ap[cdir](i, j, k) > 0.) {
         pc_cmpflx(
           i, j, k, bclx, bchx, dlx, dhx, qxmarr, qxparr, fxarr, gdtemp, qaux,
           cdir);
@@ -1322,9 +1351,10 @@ pc_umeth_eb_2D(
   auto const& fyarr = fy.array();
   amrex::ParallelFor(
     yflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      if (apy(i, j, k) > 0.) {
+      if (ap[cdir](i, j, k) > 0.) {
         pc_cmpflx(
-          i, j, k, bcly, bchy, dly, dhy, qymarr, qyparr, fyarr, q2, qaux, cdir);
+          i, j, k, bcly, bchy, dly, dhy, qymarr, qyparr, fyarr, qec[cdir], qaux,
+          cdir);
       }
     });
 
@@ -1342,7 +1372,7 @@ pc_umeth_eb_2D(
     if (!flag_arr(i, j, k).isCovered()) {
       pc_transd(
         AMREX_D_DECL(i, j, k), cdir, qmarr, qparr, qxmarr, qxparr, fyarr, srcQ,
-        qaux, q2, hdt, hdtdy, apx, apy);
+        qaux, qec[1], hdt, hdtdy, ap[cdir], ap[1]);
     }
   });
 
@@ -1353,9 +1383,10 @@ pc_umeth_eb_2D(
 
   // Final Riemann problem X
   amrex::ParallelFor(xfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    if (apx(i, j, k) > 0.) {
+    if (ap[cdir](i, j, k) > 0.) {
       pc_cmpflx(
-        i, j, k, bclx, bchx, dlx, dhx, qmarr, qparr, flx1, q1, qaux, cdir);
+        i, j, k, bclx, bchx, dlx, dhx, qmarr, qparr, flx[cdir], qec[cdir], qaux,
+        cdir);
     }
   });
 
@@ -1369,7 +1400,7 @@ pc_umeth_eb_2D(
     if (!flag_arr(i, j, k).isCovered()) {
       pc_transd(
         AMREX_D_DECL(i, j, k), cdir, qmarr, qparr, qymarr, qyparr, fxarr, srcQ,
-        qaux, gdtemp, hdt, hdtdx, apy, apx);
+        qaux, gdtemp, hdt, hdtdx, ap[cdir], ap[0]);
     }
   });
 
@@ -1380,11 +1411,42 @@ pc_umeth_eb_2D(
 
   // Final Riemann problem Y
   amrex::ParallelFor(yfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    if (apy(i, j, k) > 0.) {
+    if (ap[cdir](i, j, k) > 0.) {
       pc_cmpflx(
-        i, j, k, bcly, bchy, dly, dhy, qmarr, qparr, flx2, q2, qaux, cdir);
+        i, j, k, bcly, bchy, dly, dhy, qmarr, qparr, flx[cdir], qec[cdir], qaux,
+        cdir);
     }
   });
+
+  // Fix bcnormal boundaries - always use PLM and don't do N+1/2 predictor
+  // because the user specifies conditions at N
+  // bcnormal used for "Hard" (inflow) and "UserBC" (user_bc)
+  for (int idir = 0; idir < AMREX_SPACEDIM; idir++) {
+    if (
+      bclo[idir] == PCPhysBCType::inflow ||
+      bclo[idir] == PCPhysBCType::user_bc) {
+      // Box for fluxes at this boundary
+      amrex::Box bfbx = surroundingNodes(bx_to_fill, idir);
+      bfbx.setBig(idir, domlo[idir]);
+      if (bfbx.ok()) {
+        pc_low_order_boundary(
+          bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], plm_iorder,
+          use_flattening, idir, del[idir], dt, q, qaux, flx[idir], qec[idir]);
+      }
+    }
+    if (
+      bchi[idir] == PCPhysBCType::inflow ||
+      bchi[idir] == PCPhysBCType::user_bc) {
+      // Box for fluxes at this boundary
+      amrex::Box bfbx = surroundingNodes(bx_to_fill, idir);
+      bfbx.setSmall(idir, domhi[idir] + 1);
+      if (bfbx.ok()) {
+        pc_low_order_boundary(
+          bfbx, bclo[idir], bchi[idir], domlo[idir], domhi[idir], plm_iorder,
+          use_flattening, idir, del[idir], dt, q, qaux, flx[idir], qec[idir]);
+      }
+    }
+  }
 }
 
 #endif

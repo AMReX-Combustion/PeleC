@@ -1186,21 +1186,15 @@ void pc_umeth_eb_3D(
   amrex::Array4<const amrex::Real> const& q,
   amrex::Array4<const amrex::Real> const& qaux,
   amrex::Array4<const amrex::Real> const& srcQ,
-  amrex::Array4<amrex::Real> const& flx1,
-  amrex::Array4<amrex::Real> const& flx2,
-  amrex::Array4<amrex::Real> const& flx3,
-  amrex::Array4<amrex::Real> const& q1,
-  amrex::Array4<amrex::Real> const& q2,
-  amrex::Array4<amrex::Real> const& q3,
-  amrex::Array4<const amrex::Real> const& apx,
-  amrex::Array4<const amrex::Real> const& apy,
-  amrex::Array4<const amrex::Real> const& apz,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, 3>& flx,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, 3>& qec,
+  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, 3>& ap,
   amrex::Array4<amrex::EBCellFlag const> const& flag_arr,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> del,
   const amrex::Real dt,
   const int ppm_type,
   const bool use_flattening,
-  const int iorder);
+  const int plm_iorder);
 
 #elif AMREX_SPACEDIM == 2
 
@@ -1235,18 +1229,15 @@ void pc_umeth_eb_2D(
   amrex::Array4<const amrex::Real> const& q,
   amrex::Array4<const amrex::Real> const& qaux,
   amrex::Array4<const amrex::Real> const& srcQ,
-  amrex::Array4<amrex::Real> const& flx1,
-  amrex::Array4<amrex::Real> const& flx2,
-  amrex::Array4<amrex::Real> const& q1,
-  amrex::Array4<amrex::Real> const& q2,
-  amrex::Array4<const amrex::Real> const& apx,
-  amrex::Array4<const amrex::Real> const& apy,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, 2>& flx,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, 2>& qec,
+  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, 2>& ap,
   amrex::Array4<amrex::EBCellFlag const> const& flag_arr,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> del,
   const amrex::Real dt,
   const int ppm_type,
   const bool use_flattening,
-  const int iorder);
+  const int plm_iorder);
 #endif
 
 #endif
