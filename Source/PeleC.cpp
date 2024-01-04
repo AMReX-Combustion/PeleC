@@ -403,10 +403,6 @@ PeleC::read_params()
   soot_model.readSootParams();
 #endif
 
-  // if ((!do_mol) && eb_in_domain) {
-  //   amrex::Abort("Must do_mol = 1 when using EB\n");
-  // }
-
   // TODO: What is this?
   amrex::StateDescriptor::setBndryFuncThreadSafety(
     static_cast<int>(bndry_func_thread_safe));
