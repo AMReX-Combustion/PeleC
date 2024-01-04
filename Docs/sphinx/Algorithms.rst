@@ -502,6 +502,11 @@ than PPM simulations.
    Three dimensional energy spectrum at :math:`t = 5\tau`. Solid red: PPM at :math:`N=128^3`; dashed green: MOL at :math:`N=128^3`; dot-dashed  blue: PPM at :math:`N=512^3`; dotted orange: MOL at :math:`N=512^3`; dashed black: spectral code.
 
 
+Advection schemes and EB
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The two main advection schemes (PLM and MOL) described above support the use of complex geometry in the domain (as implemented using the :ref:`Embedded Boundary (EB) formulation <EB>`). While the PLM advection scheme is preferred numerically (less dissipative scheme), the PLM implementation with EB is a recent addition and has not had the same extensive testing as the MOL scheme with EB. Both PLM and MOL may also have issues when the EB intersects the boundary at an angle (this remains to be solved).
+
 
 Diffusion
 ---------
