@@ -757,10 +757,6 @@ pc_umeth_eb_3D(
           i, j, k, bclx, bchx, dlx, dhx, qmxz, qpxz, flxz, qxz, qaux, cdir);
       }
     });
-  qxym.clear();
-  qxyp.clear();
-  qxzm.clear();
-  qxzp.clear();
 
   // *************************************************************************************
   // Y interface corrections
@@ -798,8 +794,6 @@ pc_umeth_eb_3D(
         cdtdz, apy, apz);
     }
   });
-  fz.clear();
-  qgdz.clear();
 
   // Riemann problem Y|X Y|Z
   const amrex::Box& tyfxbx = surroundingNodes(bxg2, cdir);
@@ -834,11 +828,6 @@ pc_umeth_eb_3D(
           i, j, k, bcly, bchy, dly, dhy, qmyz, qpyz, flyz, qyz, qaux, cdir);
       }
     });
-
-  qyxm.clear();
-  qyxp.clear();
-  qyzm.clear();
-  qyzp.clear();
 
   // *************************************************************************************
   // Z interface corrections
@@ -877,11 +866,6 @@ pc_umeth_eb_3D(
     }
   });
 
-  fx.clear();
-  fy.clear();
-  qgdx.clear();
-  qgdy.clear();
-
   // Riemann problem Z|X Z|Y
   const amrex::Box& tzfxbx = surroundingNodes(bxg2, cdir);
   amrex::FArrayBox fluxzx(tzfxbx, NVAR, amrex::The_Async_Arena());
@@ -916,11 +900,6 @@ pc_umeth_eb_3D(
       }
     });
 
-  qzxm.clear();
-  qzxp.clear();
-  qzym.clear();
-  qzyp.clear();
-
   amrex::FArrayBox qmfab(bxg2, QVAR, amrex::The_Async_Arena());
   amrex::FArrayBox qpfab(bxg1, QVAR, amrex::The_Async_Arena());
   auto const& qm = qmfab.array();
@@ -939,12 +918,6 @@ pc_umeth_eb_3D(
         hdt, hdtdy, hdtdz, apx, apy, apz);
     }
   });
-  qxm.clear();
-  qxp.clear();
-  fluxyz.clear();
-  gdvyzfab.clear();
-  fluxzy.clear();
-  gdvzyfab.clear();
 
   // This box must be grown by one in transverse direction so we can
   // do tangential interpolation when taking divergence later
@@ -969,12 +942,6 @@ pc_umeth_eb_3D(
         hdt, hdtdx, hdtdz, apy, apx, apz);
     }
   });
-  qym.clear();
-  qyp.clear();
-  fluxxz.clear();
-  gdvxzfab.clear();
-  fluxzx.clear();
-  gdvzxfab.clear();
 
   // This box must be grown by one in transverse direction so we can
   // do tangential interpolation when taking divergence later
@@ -998,12 +965,6 @@ pc_umeth_eb_3D(
         hdt, hdtdx, hdtdy, apz, apx, apy);
     }
   });
-  qzm.clear();
-  qzp.clear();
-  fluxxy.clear();
-  gdvxyfab.clear();
-  fluxyx.clear();
-  gdvyxfab.clear();
 
   // This box must be grown by one in transverse direction so we can
   // do tangential interpolation when taking divergence later
@@ -1015,8 +976,6 @@ pc_umeth_eb_3D(
       pc_cmpflx(i, j, k, bclz, bchz, dlz, dhz, qm, qp, flx3, q3, qaux, cdir);
     }
   });
-  qmfab.clear();
-  qpfab.clear();
 }
 
 #elif AMREX_SPACEDIM == 2
