@@ -379,9 +379,7 @@ pc_umdrv(
   amrex::GpuArray<int, AMREX_SPACEDIM> lbchi{
     AMREX_D_DECL(bchi[0], bchi[1], bchi[2])};
   amrex::ParallelFor(bxg2, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_divu(
-      i, j, k, q, AMREX_D_DECL(dx[0], dx[1], dx[2]), divuarr, ldomlo, ldomhi,
-      lbclo, lbchi);
+    pc_divu(i, j, k, q, AMREX_D_DECL(dx[0], dx[1], dx[2]), divuarr);
   });
 
   pc_adjust_fluxes(
@@ -777,9 +775,7 @@ pc_umdrv_eb(
   amrex::ParallelFor(
     bxg_ii, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       if (flag(i, j, k).isRegular()) {
-        pc_divu(
-          i, j, k, q, AMREX_D_DECL(dx0, dx1, dx2), divuarr, ldomlo, ldomhi,
-          lbclo, lbchi);
+        pc_divu(i, j, k, q, AMREX_D_DECL(dx0, dx1, dx2), divuarr);
       } else {
         divuarr(i, j, k) = amrex::Real(0.0);
       }
