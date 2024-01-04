@@ -699,7 +699,6 @@ pc_umeth_eb_3D(
   //
   amrex::Box xybx(bxg2);
   xybx.grow(1, -1);
-  // amrex::Print() << "TRANSDO: Y FLUXES CHANGING X " << xybx << std::endl;
   amrex::ParallelFor(xybx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // fyarr was made on y-faces to -5,-4,-5
     // this loop is over cells to   -5,-4,-5
@@ -713,7 +712,6 @@ pc_umeth_eb_3D(
 
   amrex::Box xzbx(bxg2);
   xzbx.grow(2, -1);
-  // amrex::Print() << "TRANSDO: Z FLUXES CHANGING X " << xzbx << std::endl;
   amrex::ParallelFor(xzbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // fzarr was made on z-faces to -5,-5,-4
     // this loop is over cells to   -5,-5,-4
@@ -739,7 +737,6 @@ pc_umeth_eb_3D(
   // Riemann problem X|Y
   amrex::Box xycmpbx(surroundingNodes(bxg1, 0).grow(2, 1));
   // this loop is over x-faces to   -4,-4,-5
-  // amrex::Print() << "DOING CMPFLX XY " << xycmpbx << std::endl;
   amrex::ParallelFor(
     xycmpbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       // X|Y
@@ -752,7 +749,6 @@ pc_umeth_eb_3D(
   // Riemann problem X|Z
   amrex::Box xzcmpbx(surroundingNodes(bxg1, 0).grow(1, 1));
   // this loop is over x-faces to   -4,-5,-4
-  // amrex::Print() << "DOING CMPFLX XZ " << xzcmpbx << std::endl;
   amrex::ParallelFor(
     xzcmpbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       // X|Z
@@ -783,7 +779,6 @@ pc_umeth_eb_3D(
 
   amrex::Box yxbx(bxg2);
   yxbx.grow(0, -1);
-  // amrex::Print() << "TRANSDO: X FLUXES CHANGING Y " << yxbx << std::endl;
   amrex::ParallelFor(yxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // Y|X
     if (!flag_arr(i, j, k).isCovered()) {
@@ -795,7 +790,6 @@ pc_umeth_eb_3D(
 
   amrex::Box yzbx(bxg2);
   yzbx.grow(2, -1);
-  // amrex::Print() << "TRANSDO: Z FLUXES CHANGING Y " << yzbx << std::endl;
   amrex::ParallelFor(yzbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // Y|Z
     if (!flag_arr(i, j, k).isCovered()) {
@@ -821,7 +815,6 @@ pc_umeth_eb_3D(
 
   // Riemann problem Y|X
   amrex::Box yxcmpbx(surroundingNodes(bxg1, 1).grow(2, 1));
-  // amrex::Print() << "DOING CMPFLX YX " << yxcmpbx << std::endl;
   amrex::ParallelFor(
     yxcmpbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       // Y|X
@@ -833,7 +826,6 @@ pc_umeth_eb_3D(
 
   // Riemann problem Y|Z
   amrex::Box yzcmpbx(surroundingNodes(bxg1, 1).grow(0, 1));
-  // amrex::Print() << "DOING CMPFLX YZ " << yzcmpbx << std::endl;
   amrex::ParallelFor(
     yzcmpbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       // Y|Z
@@ -865,7 +857,6 @@ pc_umeth_eb_3D(
 
   amrex::Box zxbx(bxg2);
   zxbx.grow(0, -1);
-  // amrex::Print() << "TRANSDO: X FLUXES CHANGING Z " << zxbx << std::endl;
   amrex::ParallelFor(zxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // Z|X
     if (!flag_arr(i, j, k).isCovered()) {
@@ -877,7 +868,6 @@ pc_umeth_eb_3D(
 
   amrex::Box zybx(bxg2);
   zybx.grow(1, -1);
-  // amrex::Print() << "TRANSDO: Y FLUXES CHANGING Z " << zybx << std::endl;
   amrex::ParallelFor(zybx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // Z|Y
     if (!flag_arr(i, j, k).isCovered()) {
@@ -906,7 +896,6 @@ pc_umeth_eb_3D(
 
   // Riemann problem Z|X
   amrex::Box zxcmpbx(surroundingNodes(bxg1, 2).grow(1, 1));
-  // amrex::Print() << "DOING CMPFLX ZX " << zxcmpbx << std::endl;
   amrex::ParallelFor(
     zxcmpbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       // Z|X
@@ -918,7 +907,6 @@ pc_umeth_eb_3D(
 
   // Riemann problem Z|Y
   amrex::Box zycmpbx(surroundingNodes(bxg1, 2).grow(0, 1));
-  // amrex::Print() << "DOING CMPFLX ZY " << zycmpbx << std::endl;
   amrex::ParallelFor(
     zycmpbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       // Z|Y
@@ -944,7 +932,6 @@ pc_umeth_eb_3D(
   cdir = 0;
 
   // this loop is over cells to   -4,-4,-4
-  // amrex::Print() << "DOING TRANSDD FOR X " << bxg1 << std::endl;
   amrex::ParallelFor(bxg1, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     if (!flag_arr(i, j, k).isCovered()) {
       pc_transdd(
@@ -975,7 +962,6 @@ pc_umeth_eb_3D(
   // *************************************************************************************
   cdir = 1;
   // this loop is over cells to   -4,-4,-4
-  // amrex::Print() << "DOING TRANSDD FOR Y " << bxg1 << std::endl;
   amrex::ParallelFor(bxg1, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     if (!flag_arr(i, j, k).isCovered()) {
       pc_transdd(
@@ -1005,7 +991,6 @@ pc_umeth_eb_3D(
   // Final Z steps
   // *************************************************************************************
   cdir = 2;
-  // amrex::Print() << "DOING TRANSDD FOR Y " << bxg1 << std::endl;
   amrex::ParallelFor(bxg1, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     if (!flag_arr(i, j, k).isCovered()) {
       pc_transdd(
