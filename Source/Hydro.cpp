@@ -188,6 +188,8 @@ PeleC::construct_hydro_source(
         const amrex::Box& fbxg_i = grow(fbx, ngrow_bx);
         if (flag_fab.getType(fbxg_i) == amrex::FabType::singlevalued) {
 
+          BL_PROFILE("PeleC::umdrv_eb()")
+
           auto const& vfrac_arr = vfrac.const_array(mfi);
 
           amrex::EBFluxRegister* fr_as_crse =
