@@ -1,0 +1,84 @@
+# ------------------  INPUTS TO MAIN PROGRAM  -------------------
+max_step = 30
+stop_time =  0.2
+
+# PROBLEM SIZE & GEOMETRY
+geometry.is_periodic = 0 0 0
+geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
+geometry.prob_lo     = -0.5 -0.5 -0.5
+geometry.prob_hi     =  0.5  0.5  0.5
+amr.n_cell           =  16   16   16
+
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+# Interior, UserBC, Symmetry, SlipWall, NoSlipWall
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+
+pelec.lo_bc       = "SlipWall"  "NoSlipWall" "Symmetry"
+pelec.hi_bc       = "UserBC"    "UserBC"     "UserBC"
+prob.wall_type    = 1            0            1
+
+# WHICH PHYSICS
+pelec.ppm_type = 0
+pelec.do_hydro = 1
+pelec.do_mol = 0
+pelec.diffuse_vel = 1
+pelec.diffuse_temp = 1
+pelec.diffuse_spec = 1
+pelec.do_react = 0
+pelec.diffuse_enth = 1
+pelec.add_ext_src = 0
+pelec.external_forcing = 0.0 0.0 0.0
+
+transport.const_viscosity = 1
+transport.const_conductivity = 2.7271624e+04
+
+# TIME STEP CONTROL
+pelec.cfl            = 0.9     # cfl number for hyperbolic system
+pelec.init_shrink    = 1.0     # scale back initial timestep
+pelec.change_max     = 1.05    # scale back initial timestep
+pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
+
+# DIAGNOSTICS & VERBOSITY
+pelec.sum_interval   = 1       # timesteps between computing mass
+pelec.v              = 1       # verbosity in PeleC.cpp
+amr.v                = 1       # verbosity in Amr.cpp
+amr.data_log         = datlog
+
+# REFINEMENT / REGRIDDING
+amr.max_level       = 0       # maximum level number allowed
+#amr.ref_ratio       = 2 2 2 2 # refinement ratio
+#amr.regrid_int      = 2 2 2 2 # how often to regrid
+amr.blocking_factor = 8       # block factor in grid generation
+amr.max_grid_size   = 64
+amr.n_error_buf     = 12 8 2 2 # number of buffer cells in error est
+
+# CHECKPOINT FILES
+amr.checkpoint_files_output = 0
+amr.check_file      = chk        # root name of checkpoint file
+amr.check_int       = 500        # number of timesteps between checkpoints
+
+# PLOTFILES
+amr.plot_files_output = 0
+amr.plot_file       = plt        # root name of plotfile
+amr.plot_int        = -1       # number of timesteps between plotfiles
+amr.plot_vars  =  density Temp
+amr.derive_plot_vars = x_velocity y_velocity z_velocity magvel magvort pressure
+pelec.plot_rhoy = 0
+pelec.plot_massfrac = 1
+
+# PROBLEM PARAMETERS
+prob.T_mean = 750.0
+prob.u0 = 10000.0
+prob.v0 =  8000.0
+prob.w0 =  5000.0
+
+# Problem setup
+eb2.geom_type = sphere
+eb2.sphere_center = 0.0 0.0 0.0
+eb2.sphere_radius = 0.2
+eb2.sphere_has_fluid_inside = 0
+pelec.eb_isothermal = 0
+
+#amrex.fpe_trap_invalid = 1
+#amrex.fpe_trap_zero = 1
+#amrex.fpe_trap_overflow = 1

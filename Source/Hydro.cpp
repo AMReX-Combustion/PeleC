@@ -20,7 +20,7 @@ PeleC::construct_hydro_source(
     BL_PROFILE("PeleC::construct_hydro_source()");
 
     if ((verbose != 0) && amrex::ParallelDescriptor::IOProcessor()) {
-      amrex::Print() << "... Computing hydro advance" << std::endl;
+      amrex::Print() << "... Computing Godunov hydro advance" << std::endl;
     }
 
     AMREX_ASSERT(S.nGrow() >= numGrow() + nGrowF);
@@ -188,6 +188,8 @@ PeleC::construct_hydro_source(
         const amrex::Box& fbxg_i = grow(fbx, ngrow_bx);
         if (flag_fab.getType(fbxg_i) == amrex::FabType::singlevalued) {
 
+          BL_PROFILE("PeleC::umdrv_eb()")
+
           auto const& vfrac_arr = vfrac.const_array(mfi);
 
           amrex::EBFluxRegister* fr_as_crse =
@@ -238,7 +240,8 @@ PeleC::construct_hydro_source(
             p_rrflag_as_crse->array(), as_fine, dm_as_fine.array(),
             level_mask.const_array(mfi), dt, ppm_type, plm_iorder,
             use_flattening, difmag, bcs_d.data(), redistribution_type,
-            eb_weights_type, cflLoc);
+            eb_weights_type, eb_srd_max_order, eb_clean_massfrac,
+            eb_clean_massfrac_threshold, cflLoc);
 
         } else if (flag_fab.getType(fbxg_i) == amrex::FabType::regular) {
           BL_PROFILE("PeleC::umdrv()");
@@ -371,7 +374,8 @@ pc_umdrv(
     pc_divu(i, j, k, q, AMREX_D_DECL(dx[0], dx[1], dx[2]), divuarr);
   });
 
-  pc_adjust_fluxes(bx, uin, flx, a, divuarr, dx, difmag);
+  pc_adjust_fluxes(
+    bx, uin, flx, a, divuarr, dx, domlo, domhi, bclo, bchi, difmag);
 
   // consup
   pc_consup(bx, uout, flx, vol, pdivuarr);
@@ -386,6 +390,10 @@ pc_adjust_fluxes(
     a,
   const amrex::Array4<const amrex::Real>& divu,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& del,
+  const int* domlo,
+  const int* domhi,
+  const int* bclo,
+  const int* bchi,
   const amrex::Real difmag)
 {
   BL_PROFILE("PeleC::pc_adjust_fluxes()");
@@ -393,14 +401,150 @@ pc_adjust_fluxes(
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
     amrex::Box const& fbx = surroundingNodes(bx, dir);
     const amrex::Real dx = del[dir];
+    const int domlo_dir = domlo[dir];
+    const int domhi_dir = domhi[dir];
+    const int bclo_dir = bclo[dir];
+    const int bchi_dir = bchi[dir];
     amrex::ParallelFor(fbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      pc_artif_visc(AMREX_D_DECL(i, j, k), flx[dir], divu, u, dx, difmag, dir);
+      pc_artif_visc(
+        AMREX_D_DECL(i, j, k), flx[dir], divu, u, dx, difmag, dir, domlo_dir,
+        domhi_dir, bclo_dir, bchi_dir);
       // Normalize Species Flux
       pc_norm_spec_flx(i, j, k, flx[dir]);
       // Make flux extensive
       pc_ext_flx(i, j, k, flx[dir], a[dir]);
     });
   }
+}
+
+void
+pc_adjust_fluxes_eb(
+  const amrex::Box& /*bx*/,
+  amrex::Array4<const amrex::Real> const& q_arr,
+  amrex::Array4<const amrex::Real> const& u_arr,
+  AMREX_D_DECL(
+    amrex::Array4<amrex::Real const> const& apx,
+    amrex::Array4<amrex::Real const> const& apy,
+    amrex::Array4<amrex::Real const> const& apz),
+  amrex::Array4<const amrex::Real> const& vfrac,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dxinv,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flux,
+  const amrex::Geometry& geom,
+  const int* bclo,
+  const int* bchi,
+  amrex::Real difmag)
+{
+  BL_PROFILE("PeleC::pc_adjust_fluxes_eb()");
+  amrex::Real areafac;
+
+  // These are the fluxes on face centroids -- they are defined in
+  // eb_compute_div
+  //    and are the fluxes that go into the flux registers
+  AMREX_D_TERM(auto const& fx_arr = flux[0];, auto const& fy_arr = flux[1];
+               , auto const& fz_arr = flux[2];);
+
+  // Compute divu to be used in artificial viscosity
+  auto bx_divu = amrex::Box(q_arr);
+  bx_divu.grow(-1);
+  bx_divu.surroundingNodes();
+  amrex::FArrayBox divu(bx_divu, NVAR, amrex::The_Async_Arena());
+  divu.setVal<amrex::RunOn::Device>(0.0);
+
+  amrex::Box nddom =
+    amrex::convert(geom.growPeriodicDomain(16), amrex::IntVect(1));
+  bx_divu &= nddom;
+
+  auto const& divu_arr = divu.array();
+  amrex::ParallelFor(
+    bx_divu, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      eb_divu(i, j, k, q_arr, divu_arr, vfrac, dxinv);
+    });
+
+  // Flux alterations
+  amrex::Box const& fbx = amrex::Box(fx_arr);
+#if (AMREX_SPACEDIM == 2)
+  areafac = dx[1];
+#elif (AMREX_SPACEDIM == 3)
+  areafac = dx[1] * dx[2];
+#endif
+
+  auto const* domlo = geom.Domain().loVect();
+  auto const* domhi = geom.Domain().hiVect();
+
+  int domlo_dir = domlo[0];
+  int domhi_dir = domhi[0];
+  int bclo_dir = bclo[0];
+  int bchi_dir = bchi[0];
+
+  amrex::ParallelFor(fbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    pc_artif_visc(
+      AMREX_D_DECL(i, j, k), fx_arr, divu_arr, u_arr, dx[0], difmag, 0,
+      domlo_dir, domhi_dir, bclo_dir, bchi_dir);
+
+    // Normalize Species Flux
+    if (apx(i, j, k) > 0.) {
+      pc_norm_spec_flx(i, j, k, fx_arr);
+    }
+
+    // Make flux extensive
+    pc_ext_flx_eb(i, j, k, fx_arr, areafac, apx);
+  });
+
+  // Flux alterations
+  amrex::Box const& fby = amrex::Box(fy_arr);
+#if (AMREX_SPACEDIM == 2)
+  areafac = dx[0];
+#elif (AMREX_SPACEDIM == 3)
+  areafac = dx[0] * dx[2];
+#endif
+
+  domlo_dir = domlo[1];
+  domhi_dir = domhi[1];
+  bclo_dir = bclo[1];
+  bchi_dir = bchi[1];
+
+  amrex::ParallelFor(fby, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    pc_artif_visc(
+      AMREX_D_DECL(i, j, k), fy_arr, divu_arr, u_arr, dx[1], difmag, 1,
+      domlo_dir, domhi_dir, bclo_dir, bchi_dir);
+
+    // Normalize Species Flux
+    if (apy(i, j, k) > 0.) {
+      pc_norm_spec_flx(i, j, k, fy_arr);
+    }
+
+    // Make flux extensive
+    pc_ext_flx_eb(i, j, k, fy_arr, areafac, apy);
+  });
+
+#if (AMREX_SPACEDIM == 3)
+  // Flux alterations
+  amrex::Box const& fbz = amrex::Box(fz_arr);
+  areafac = dx[1] * dx[0];
+
+  domlo_dir = domlo[2];
+  domhi_dir = domhi[2];
+  bclo_dir = bclo[2];
+  bchi_dir = bchi[2];
+
+  amrex::ParallelFor(fbz, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    pc_artif_visc(
+      i, j, k, fz_arr, divu_arr, u_arr, dx[2], difmag, 2, domlo_dir, domhi_dir,
+      bclo_dir, bchi_dir);
+
+    // Normalize Species Flux
+    if (apz(i, j, k) > 0.) {
+      pc_norm_spec_flx(i, j, k, fz_arr);
+    }
+
+    // Make flux extensive
+    pc_ext_flx_eb(i, j, k, fz_arr, areafac, apz);
+  });
+
+#endif
+
+  amrex::Gpu::streamSynchronize();
 }
 
 void
@@ -419,40 +563,234 @@ pc_consup(
 }
 
 void
+pc_consup_eb(
+  const amrex::Box& bx,
+  amrex::Array4<const amrex::Real> const& q_arr,
+  amrex::Array4<const amrex::Real> const& qaux_arr,
+  amrex::Array4<amrex::Real> const& divc_arr,
+  amrex::Array4<amrex::Real> const& redistwgt_arr,
+  AMREX_D_DECL(
+    amrex::Array4<amrex::Real> const& q1,
+    amrex::Array4<amrex::Real> const& q2,
+    amrex::Array4<amrex::Real> const& q3),
+  AMREX_D_DECL(
+    amrex::Array4<amrex::Real const> const& apx,
+    amrex::Array4<amrex::Real const> const& apy,
+    amrex::Array4<amrex::Real const> const& apz),
+  AMREX_D_DECL(
+    amrex::Array4<amrex::Real const> const& fcx,
+    amrex::Array4<amrex::Real const> const& fcy,
+    amrex::Array4<amrex::Real const> const& fcz),
+  amrex::Array4<const amrex::Real> const& vfrac,
+  amrex::Array4<amrex::EBCellFlag const> const& flag,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dxinv,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>
+    flux_tmp,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flux,
+
+  const int eb_weights_type)
+{
+  const amrex::Box& bxg_i = amrex::Box(divc_arr);
+
+  // These are the fluxes we computed in MOL_umeth_eb and modified in
+  // adjust_fluxes_eb
+  //  -- they live at face centers
+  AMREX_D_TERM(auto const& fx_in_arr = flux_tmp[0];
+               , auto const& fy_in_arr = flux_tmp[1];
+               , auto const& fz_in_arr = flux_tmp[2];);
+
+  // These are the fluxes on face centroids -- they are defined in
+  // eb_compute_div
+  //    and are the fluxes that go into the flux registers
+  AMREX_D_TERM(auto const& fx_out_arr = flux[0];
+               , auto const& fy_out_arr = flux[1];
+               , auto const& fz_out_arr = flux[2];);
+
+  auto const& blo = bx.smallEnd();
+  auto const& bhi = bx.bigEnd();
+
+  amrex::ParallelFor(
+    bxg_i, NVAR, [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
+      // This does the divergence but not the redistribution -- we will do that
+      // later We do compute the weights here though
+      if (!flag(i, j, k).isCovered()) {
+        eb_compute_div(
+          i, j, k, n, blo, bhi, q_arr, qaux_arr, divc_arr,
+          AMREX_D_DECL(fx_in_arr, fy_in_arr, fz_in_arr),
+          AMREX_D_DECL(fx_out_arr, fy_out_arr, fz_out_arr), flag, vfrac,
+          redistwgt_arr, AMREX_D_DECL(apx, apy, apz),
+          AMREX_D_DECL(fcx, fcy, fcz), dxinv, eb_weights_type);
+      }
+    });
+
+  // Update UEINT update with pdivu term
+  amrex::ParallelFor(bxg_i, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    if (!flag(i, j, k).isCovered()) {
+      pc_eb_pdivu(
+        i, j, k, q_arr, AMREX_D_DECL(q1, q2, q3), divc_arr, flag, vfrac,
+        AMREX_D_DECL(apx, apy, apz), AMREX_D_DECL(fcx, fcy, fcz), dxinv);
+    }
+  });
+}
+
+void
 pc_umdrv_eb(
-  const amrex::Box& /*bx*/,
-  const amrex::Box& /*bxg_i*/,
-  const amrex::MFIter& /*mfi*/,
-  const amrex::Geometry& /*geom*/,
-  const amrex::EBFArrayBoxFactory* /*fact*/,
-  const int* /*bclo*/,
-  const int* /*bchi*/,
-  const amrex::Array4<const amrex::Real>& /*uin*/,
-  const amrex::Array4<amrex::Real>& /*uout*/,
-  const amrex::Array4<const amrex::Real>& /*q*/,
-  const amrex::Array4<const amrex::Real>& /*qaux*/,
-  const amrex::Array4<const amrex::Real>& /*src_q*/,
-  const amrex::Array4<const amrex::Real>& /*vf*/,
-  const amrex::Array4<amrex::EBCellFlag const>& /*flag*/,
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& /*dx*/,
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& /*dxInv*/,
-  const amrex::
-    GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& /*flx*/,
-  const int /*as_crse*/,
-  const amrex::Array4<amrex::Real>& /*drho_as_crse*/,
-  const amrex::Array4<int const>& /*rrflag_as_crse*/,
-  const int /*as_fine*/,
-  const amrex::Array4<amrex::Real>& /*dm_as_fine*/,
-  const amrex::Array4<int const>& /*lev_mask*/,
-  const amrex::Real /*dt*/,
-  const int /*ppm_type*/,
-  const int /*plm_iorder*/,
-  const bool /*use_flattening*/,
-  const amrex::Real /*difmag*/,
-  amrex::BCRec const* /*bcs_d_ptr*/,
-  const std::string& /*redistribution_type*/,
-  const int /*eb_weights_type*/,
+  const amrex::Box& bx,
+  const amrex::Box& bxg_i,
+  const amrex::MFIter& mfi,
+  const amrex::Geometry& geom,
+  const amrex::EBFArrayBoxFactory* fact,
+  const int* bclo,
+  const int* bchi,
+  const amrex::Array4<const amrex::Real>& uin,
+  const amrex::Array4<amrex::Real>& uout,
+  const amrex::Array4<const amrex::Real>& q,
+  const amrex::Array4<const amrex::Real>& qaux,
+  const amrex::Array4<const amrex::Real>& src_q,
+  const amrex::Array4<const amrex::Real>& vf,
+  const amrex::Array4<amrex::EBCellFlag const>& flag,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& dx,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& dxInv,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flx,
+  const int as_crse,
+  const amrex::Array4<amrex::Real>& drho_as_crse,
+  const amrex::Array4<int const>& rrflag_as_crse,
+  const int as_fine,
+  const amrex::Array4<amrex::Real>& dm_as_fine,
+  const amrex::Array4<int const>& lev_mask,
+  const amrex::Real dt,
+  const int ppm_type,
+  const int plm_iorder,
+  const bool use_flattening,
+  const amrex::Real difmag,
+  amrex::BCRec const* bcs_d_ptr,
+  const std::string& redistribution_type,
+  const int eb_weights_type,
+  const int eb_srd_max_order,
+  const bool eb_clean_massfrac,
+  const amrex::Real eb_clean_massfrac_threshold,
   amrex::Real /*cflLoc*/)
 {
-  amrex::Abort("EB Godunov not implemented yet");
+  BL_PROFILE("PeleC::pc_umdrv_eb()");
+
+  const amrex::Box& bxg_ii = grow(bxg_i, 1);
+
+  amrex::Array4<amrex::Real const> AMREX_D_DECL(fcx, fcy, fcz),
+    AMREX_D_DECL(apx, apy, apz), ccc;
+  AMREX_D_TERM(fcx = fact->getFaceCent()[0]->const_array(mfi);
+               , fcy = fact->getFaceCent()[1]->const_array(mfi);
+               , fcz = fact->getFaceCent()[2]->const_array(mfi););
+  AMREX_D_TERM(apx = fact->getAreaFrac()[0]->const_array(mfi);
+               , apy = fact->getAreaFrac()[1]->const_array(mfi);
+               , apz = fact->getAreaFrac()[2]->const_array(mfi););
+  ccc = fact->getCentroid().const_array(mfi);
+
+  const auto* domlo = geom.Domain().loVect();
+  const auto* domhi = geom.Domain().hiVect();
+
+  // Temporary FArrayBoxes
+  amrex::FArrayBox divu(bxg_ii, 1, amrex::The_Async_Arena());
+  auto const& divuarr = divu.array();
+
+  amrex::FArrayBox qec[AMREX_SPACEDIM];
+  for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
+    const amrex::Box eboxes = amrex::surroundingNodes(grow(bxg_ii, 1), dir);
+    qec[dir].resize(eboxes, NGDNV, amrex::The_Async_Arena());
+  }
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>
+    qec_arr{{AMREX_D_DECL(qec[0].array(), qec[1].array(), qec[2].array())}};
+
+  // Quantities for redistribution
+  amrex::FArrayBox divc, redistwgt;
+  if (redistribution_type == "StateRedist") {
+    divc.resize(bxg_i, NVAR); // This will hold "dUdt" before redistribution
+    redistwgt.resize(
+      bxg_i, NVAR); // This will be "scratch" which holds "Uold + dt*dUdt"
+  } else {
+    divc.resize(bxg_i, NVAR); // This will hold "dUdt" before redistribution
+    redistwgt.resize(
+      bxg_i, 1); // This will hold the weights used in flux redistribution
+  }
+  divc.setVal<amrex::RunOn::Device>(0.0);
+  redistwgt.setVal<amrex::RunOn::Device>(0.0);
+
+  // Because we are going to redistribute, we put the divergence into divc
+  //    rather than directly into dsdt_arr
+  auto const& divc_arr = divc.array();
+  auto const& redistwgt_arr = redistwgt.array();
+
+  // We need one extra in flux_tmp so we can tangentially interpolate fluxes
+  amrex::FArrayBox flux_tmp[AMREX_SPACEDIM];
+  for (int idim = 0; idim < AMREX_SPACEDIM; ++idim) {
+    flux_tmp[idim].resize(
+      amrex::surroundingNodes(bxg_ii, idim), NVAR, amrex::The_Async_Arena());
+    flux_tmp[idim].setVal<amrex::RunOn::Device>(0.);
+  }
+
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>
+    flux_tmp_arr{{AMREX_D_DECL(
+      flux_tmp[0].array(), flux_tmp[1].array(), flux_tmp[2].array())}};
+  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
+    ap{{AMREX_D_DECL(apx, apy, apz)}};
+
+  // Define divc, the update before redistribution
+  // Also construct the redistribution weights for flux redistribution if
+  // necessary
+#if AMREX_SPACEDIM == 1
+  amrex::Abort("PLM isn't implemented in 1D.");
+#elif AMREX_SPACEDIM == 2
+  pc_umeth_eb_2D(
+    amrex::Box(divc_arr), bclo, bchi, domlo, domhi, q, qaux, src_q,
+    flux_tmp_arr, qec_arr, ap, flag, dx, dt, ppm_type, use_flattening,
+    plm_iorder);
+#elif AMREX_SPACEDIM == 3
+  pc_umeth_eb_3D(
+    amrex::Box(divc_arr), bclo, bchi, domlo, domhi, q, qaux, src_q,
+    flux_tmp_arr, qec_arr, ap, flag, dx, dt, ppm_type, use_flattening,
+    plm_iorder);
+#endif
+
+  // Construct divu
+  AMREX_D_TERM(const amrex::Real dx0 = dx[0];, const amrex::Real dx1 = dx[1];
+               , const amrex::Real dx2 = dx[2];);
+
+  amrex::ParallelFor(
+    bxg_ii, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      if (flag(i, j, k).isRegular()) {
+        pc_divu(i, j, k, q, AMREX_D_DECL(dx0, dx1, dx2), divuarr);
+      } else {
+        divuarr(i, j, k) = amrex::Real(0.0);
+      }
+    });
+
+  pc_adjust_fluxes_eb(
+    bx, q, uin, AMREX_D_DECL(apx, apy, apz), vf, dx, dxInv, flux_tmp_arr, geom,
+    bclo, bchi, difmag);
+
+  pc_consup_eb(
+    bx, q, qaux, divc_arr, redistwgt_arr,
+    AMREX_D_DECL(qec_arr[0], qec_arr[1], qec_arr[2]),
+    AMREX_D_DECL(apx, apy, apz), AMREX_D_DECL(fcx, fcy, fcz), vf, flag, dxInv,
+    flux_tmp_arr, flx, eb_weights_type);
+
+  const int l_ncomp = uout.nComp();
+  const int level_mask_not_covered = constants::level_mask_notcovered();
+  const bool use_wts_in_divnc = false;
+
+  const amrex::Real fac_for_redist = 1.0;
+  {
+    BL_PROFILE("ApplyMLRedistribution()");
+    ApplyMLRedistribution(
+      bx, l_ncomp, uout, divc_arr, uin, redistwgt_arr, flag,
+      AMREX_D_DECL(apx, apy, apz), vf, AMREX_D_DECL(fcx, fcy, fcz), ccc,
+      bcs_d_ptr, geom, dt, redistribution_type, as_crse, drho_as_crse,
+      rrflag_as_crse, as_fine, dm_as_fine, lev_mask, level_mask_not_covered,
+      fac_for_redist, use_wts_in_divnc, 0, eb_srd_max_order);
+  }
+  auto const& flags = fact->getMultiEBCellFlagFab();
+  const auto& flag_fab = flags[mfi];
+  amrex::FabType typ = flag_fab.getType(bx);
+  pc_post_eb_redistribution(
+    bx, dt, eb_clean_massfrac, eb_clean_massfrac_threshold, uin, typ, flag,
+    redistwgt_arr, uout);
 }
