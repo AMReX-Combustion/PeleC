@@ -122,10 +122,10 @@ function(add_test_rn TEST_NAME TEST_EXE_DIR)
 endfunction(add_test_rn)
 
 # Verification test with 1 resolution
-function(add_test_v1 TEST_NAME TEST_EXE_DIR)
+function(add_test_v1 TEST_NAME TEST_SCRIPT_NAME TEST_EXE_DIR)
     setup_test()
     set(RUN_COMMAND "rm -f mmslog datlog && ${MPI_COMMANDS} ${CURRENT_TEST_EXE} ${MPIEXEC_POSTFLAGS} ${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.inp")
-    add_test(${TEST_NAME} sh -c "${RUN_COMMAND} ${RUNTIME_OPTIONS} > ${TEST_NAME}.log && nosetests ${TEST_NAME}.py")
+    add_test(${TEST_NAME} sh -c "${RUN_COMMAND} ${RUNTIME_OPTIONS} > ${TEST_NAME}.log && nosetests ${TEST_SCRIPT_NAME}.py")
     set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT 18000 PROCESSORS ${PELE_NP} WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}/" LABELS "verification" ATTACHED_FILES_ON_FAIL "${CURRENT_TEST_BINARY_DIR}/${TEST_NAME}.log")
 endfunction(add_test_v1)
 
@@ -303,9 +303,9 @@ endif()
 # Verification tests
 #=============================================================================
 if(PELE_ENABLE_MASA AND (PELE_DIM GREATER 2))
-  add_test_v1(symmetry MMS)
-  add_test_v1(eb-symmetry-mol EB-C1)
-  add_test_v1(eb-symmetry-plm EB-C1)
+  add_test_v1(symmetry symmetry MMS)
+  add_test_v1(eb-symmetry-mol eb-symmetry EB-C1)
+  add_test_v1(eb-symmetry-plm eb-symmetry EB-C1)
 
   # Created an option to exclude these tests when using ASAN and UBSAN because they take too long
   if(NOT PELE_ENABLE_SANITIZE_FOR_TESTS)
