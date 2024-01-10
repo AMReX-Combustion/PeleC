@@ -57,8 +57,8 @@ if __name__ == "__main__":
 
     for k, fdir in enumerate(args.fdirs):
         df = pd.read_csv(os.path.join(fdir, "profiles.csv"))
-        lev = df.levels.iloc[0]
-        dx = df.dxmin.iloc[0]
+        max_lev = df.max_level.iloc[0]
+        dx = df.dxmax.iloc[0]
         for field in fields:
             plt.figure(field)
             p = plt.plot(
@@ -66,7 +66,7 @@ if __name__ == "__main__":
                 df[field],
                 lw=2,
                 color=cmap[k],
-                label=f"$l = {lev}$, $\Delta x = {dx}$",
+                label=f"$l = {max_lev}$, $\Delta x_0 = {dx}$",
             )
             p[0].set_dashes(dashseq[k])
 
