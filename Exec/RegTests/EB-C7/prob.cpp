@@ -21,6 +21,7 @@ amrex_probinit(
   pp.query("pr", PeleC::h_prob_parm_device->pr);
   pp.query("rhor", PeleC::h_prob_parm_device->rhor);
   pp.query("angle", PeleC::h_prob_parm_device->angle);
+  pp.query("Lfact", PeleC::h_prob_parm_device->Lfact);
 
   PeleC::h_prob_parm_device->L = (probhi[0] - problo[0]);
 

@@ -38,7 +38,7 @@ pc_initdata(
   const amrex::Real sint = sin(M_PI / 180.0 * prob_parm.angle);
   const amrex::Real xp = x * cost + y * sint;
 
-  if (xp < 0.5 * prob_parm.L) {
+  if (xp < prob_parm.Lfact * prob_parm.L) {
     state(i, j, k, URHO) = prob_parm.rhol;
     state(i, j, k, UMX) = 0.0;
     state(i, j, k, UMY) = 0.0;
