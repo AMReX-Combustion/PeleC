@@ -207,7 +207,9 @@ bcnormal(
 
 void pc_prob_close();
 
-struct MyProblemSpecificFunctions : public EmptyProblemSpecificFunctions {};
+struct MyProblemSpecificFunctions : public EmptyProblemSpecificFunctions
+{
+};
 using ProblemSpecificFunctions = MyProblemSpecificFunctions;
 
 #endif

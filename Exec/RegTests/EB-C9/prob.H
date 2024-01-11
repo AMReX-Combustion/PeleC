@@ -81,14 +81,14 @@ bcnormal(
 
 void pc_prob_close();
 
-//using ProblemTags = EmptyProbTagStruct;
+// using ProblemTags = EmptyProbTagStruct;
 
 struct MyProblemSpecificFunctions : public EmptyProblemSpecificFunctions
 {
   static amrex::Box the_same_box(const amrex::Box& b) { return b; }
 
-  static void
-  add_problem_derive(amrex::DeriveList& derive_lst, const amrex::DescriptorList& desc_lst)
+  static void add_problem_derive(
+    amrex::DeriveList& derive_lst, const amrex::DescriptorList& desc_lst)
   {
     // Add derives as follows and define the derive function below:
     derive_lst.add(

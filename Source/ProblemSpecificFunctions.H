@@ -10,8 +10,8 @@
 
 struct DefaultProblemSpecificFunctions
 {
-  static void
-  add_problem_derive(amrex::DeriveList& /*derive_lst*/, amrex::DescriptorList& /*desc_lst*/)
+  static void add_problem_derive(
+    amrex::DeriveList& /*derive_lst*/, amrex::DescriptorList& /*desc_lst*/)
   {
   }
 
@@ -65,52 +65,51 @@ struct DefaultProblemSpecificFunctions
   AMREX_GPU_DEVICE
   AMREX_FORCE_INLINE
   static void set_isothermal_wall_temperature(
-  const int i,
-  const int j,
-  const int k,
-  const int /*dir*/,
-  const int /*normal*/,
-  const amrex::Real Twall_in,
-  amrex::GeometryData const& /*geomdata*/,
-  ProbParmDevice const& /*prob_parm*/,
-  const amrex::Array4<const amrex::Real>& /*q*/,
-  const amrex::Array4<amrex::Real>& Twall)
+    const int i,
+    const int j,
+    const int k,
+    const int /*dir*/,
+    const int /*normal*/,
+    const amrex::Real Twall_in,
+    amrex::GeometryData const& /*geomdata*/,
+    ProbParmDevice const& /*prob_parm*/,
+    const amrex::Array4<const amrex::Real>& /*q*/,
+    const amrex::Array4<amrex::Real>& Twall)
   {
 
-  /*
-    if desired: compute x,y,z and make wall temp an arbitrary function of space
+    /*
+      if desired: compute x,y,z and make wall temp an arbitrary function of
+      space
 
-    const amrex::Real* prob_lo = geom.ProbLo();
-    const amrex::Real* dx = geom.CellSize();
-    const amrex::Real x[AMREX_SPACEDIM] = {AMREX_D_DECL(
-      prob_lo[0] + static_cast<amrex::Real>(iv[0] + 0.5) * dx[0],
-      prob_lo[1] + static_cast<amrex::Real>(iv[1] + 0.5) * dx[1],
-      prob_lo[2] + static_cast<amrex::Real>(iv[2] + 0.5) * dx[2])};
+      const amrex::Real* prob_lo = geom.ProbLo();
+      const amrex::Real* dx = geom.CellSize();
+      const amrex::Real x[AMREX_SPACEDIM] = {AMREX_D_DECL(
+        prob_lo[0] + static_cast<amrex::Real>(iv[0] + 0.5) * dx[0],
+        prob_lo[1] + static_cast<amrex::Real>(iv[1] + 0.5) * dx[1],
+        prob_lo[2] + static_cast<amrex::Real>(iv[2] + 0.5) * dx[2])};
 
-    Twall(i,j,k) = function of x, dir, normal, prob_parm
-                   or set it using the fluid values (q) for adabatic
-   */
-  Twall(i, j, k) = Twall_in;
+      Twall(i,j,k) = function of x, dir, normal, prob_parm
+                     or set it using the fluid values (q) for adabatic
+     */
+    Twall(i, j, k) = Twall_in;
   }
 
   static void problem_modify_ext_sources(
-                                         amrex::Real /*time*/,
-                                         amrex::Real /*dt*/,
-                                         const amrex::MultiFab& /*state_old*/,
-                                         const amrex::MultiFab& /*state_new*/,
-                                         amrex::MultiFab& /*ext_src*/,
-                                         int /*ng*/,
-                                         amrex::GeometryData const& /*geomdata*/,
-                                         ProbParmDevice const& /*prob_parm*/)
+    amrex::Real /*time*/,
+    amrex::Real /*dt*/,
+    const amrex::MultiFab& /*state_old*/,
+    const amrex::MultiFab& /*state_new*/,
+    amrex::MultiFab& /*ext_src*/,
+    int /*ng*/,
+    amrex::GeometryData const& /*geomdata*/,
+    ProbParmDevice const& /*prob_parm*/)
   {
     /* Notes: ext_src contains sources from velocity forcing coming in
        This function should add to rather than overwrite ext_src.
     */
   }
 
-  static void problem_modify_transport_coeffs()
-  {
-  }
+  static void problem_modify_transport_coeffs() {}
 
   /* TODO
   static void something_with_ADV_AUX_transport()
