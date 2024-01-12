@@ -271,7 +271,7 @@ PeleC::getMOLSrcTerm(
                   const auto geomdata = geom.data();
                   amrex::ParallelFor(
                     bbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-                      ProblemSpecificFunctions::set_isothermal_wall_temperature(
+                      set_isothermal_wall_temperature<ProblemSpecificFunctions>(
                         i, j, k, dir, normal, bc_temp, geomdata, *lprobparm,
                         qar, temp_arr);
                       pc_isothermal_wall_fluxes(
