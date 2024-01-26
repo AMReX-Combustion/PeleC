@@ -641,6 +641,8 @@ protected:
   void init_les();
   void init_filters();
 
+  void init_diagnostics();
+
 #ifdef PELE_USE_MASA
   static void init_mms();
 #endif
