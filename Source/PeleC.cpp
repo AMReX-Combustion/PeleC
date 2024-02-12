@@ -2030,13 +2030,12 @@ PeleC::init_les()
 
   amrex::Print() << "WARNING: LES with Fuego assumes Cp is a weak function of T"
                  << std::endl;
-  if (NUM_SPECIES > 2) {
-    amrex::Abort("LES is not supported for multi-component systems");
-  } else if (NUM_SPECIES == 2) {
-    amrex::Print()
-      << "WARNING: LES is not supported for multi-component systems"
-      << std::endl;
-  }
+#if NUM_SPECIES > 2
+  amrex::Abort("LES is not supported for multi-component systems");
+#elif NUM_SPECIES == 2
+  amrex::Print() << "WARNING: LES is not supported for multi-component systems"
+                 << std::endl;
+#endif
   if (std::is_same<
         pele::physics::PhysicsType::eos_type, pele::physics::eos::SRK>::value) {
     amrex::Abort("LES is not supported for non-ideal equations of state");
