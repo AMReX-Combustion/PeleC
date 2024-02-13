@@ -444,8 +444,8 @@ PeleC::eb_distance(const int lev, amrex::MultiFab& signDistLev)
   // dummy bcs
   amrex::Vector<amrex::BCRec> bcrec_dummy(1);
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-    bcrec_dummy[0].setLo(dir, INT_DIR);
-    bcrec_dummy[0].setHi(dir, INT_DIR);
+    bcrec_dummy[0].setLo(dir, amrex::BCType::int_dir);
+    bcrec_dummy[0].setHi(dir, amrex::BCType::int_dir);
   }
 
   // Interpolate on successive levels up to lev
