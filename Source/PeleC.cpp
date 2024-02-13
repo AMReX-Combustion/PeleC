@@ -642,8 +642,8 @@ PeleC::setGridInfo()
     const int* domhi_coarse = geom.Domain().hiVect();
 
     for (int dir = 0; dir < 3; dir++) {
-      domlo_level[dir] = (ARLIM_3D(domlo_coarse))[dir];
-      domhi_level[dir] = (ARLIM_3D(domhi_coarse))[dir];
+      domlo_level[dir] = (AMREX_ARLIM_3D(domlo_coarse))[dir];
+      domhi_level[dir] = (AMREX_ARLIM_3D(domhi_coarse))[dir];
     }
 
     for (int lev = 1; lev <= max_level; lev++) {
