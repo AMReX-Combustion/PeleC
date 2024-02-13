@@ -1127,13 +1127,17 @@ pc_artif_visc(
              divu(iv), 0.5 * (divu(iv) + divu(ivpj)),
              0.25 * (divu(iv) + divu(ivpj) + divu(ivpk) + divu(ivpp))));
 
-  bool at_bndry = ((dir == 0) && (i == domlo) && (bclo == amrex::PhysBCType::noslipwall)) ||
-                  ((dir == 0) && (i == domhi + 1) && (bchi == amrex::PhysBCType::noslipwall)) ||
-                  ((dir == 1) && (j == domlo) && (bclo == amrex::PhysBCType::noslipwall)) ||
-                  ((dir == 1) && (j == domhi + 1) && (bchi == amrex::PhysBCType::noslipwall));
+  bool at_bndry =
+    ((dir == 0) && (i == domlo) && (bclo == amrex::PhysBCType::noslipwall)) ||
+    ((dir == 0) && (i == domhi + 1) &&
+     (bchi == amrex::PhysBCType::noslipwall)) ||
+    ((dir == 1) && (j == domlo) && (bclo == amrex::PhysBCType::noslipwall)) ||
+    ((dir == 1) && (j == domhi + 1) && (bchi == amrex::PhysBCType::noslipwall));
 #if (AMREX_SPACEDIM == 3)
-  at_bndry = at_bndry || ((dir == 2) && (k == domlo) && (bclo == amrex::PhysBCType::noslipwall)) ||
-             ((dir == 2) && (k == domhi + 1) && (bchi == amrex::PhysBCType::noslipwall));
+  at_bndry =
+    at_bndry ||
+    ((dir == 2) && (k == domlo) && (bclo == amrex::PhysBCType::noslipwall)) ||
+    ((dir == 2) && (k == domhi + 1) && (bchi == amrex::PhysBCType::noslipwall));
 #endif
 
   for (int n = 0; n < NVAR; ++n) {
