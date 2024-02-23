@@ -126,7 +126,8 @@ PeleC::construct_hydro_source(
         //
         // The user should provide a bcnormal routine in bc_fill_module with
         // additional optional arguments to temporary fill ghost-cells for
-        // EXT_DIR and to provide target BC values. See the examples.
+        // amrex::BCType::ext_dir and to provide target BC values. See the
+        // examples.
 
         // Allocate fabs for bcMask. Note that we grow in the opposite direction
         // because the Riemann solver wants a face value in a ghost-cell
