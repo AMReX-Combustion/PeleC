@@ -94,7 +94,7 @@ available to get started. One gotcha is that indentation matters. To build ::
 Citation
 ~~~~~~~~
 
-To cite the PeleC software and refer to its computational performance, use the following journal articles for `PeleC <https://doi.org/10.1177/10943420221121151>`_ and the `Pele software suite <https://doi.org/10.1137/1.9781611977967.>`_::
+To cite the PeleC software and refer to its computational performance, use the following journal articles for `PeleC <https://doi.org/10.1177/10943420221121151>`_ and the `Pele software suite <https://doi.org/10.1137/1.9781611977967>`_::
 
     @article{PeleC_IJHPCA,
       author = {Marc T {Henry de Frahan} and Jon S Rood and Marc S Day and Hariswaran Sitaraman and Shashank Yellapantula and Bruce A Perry and Ray W Grout and Ann Almgren and Weiqun Zhang and John B Bell and Jacqueline H Chen},
