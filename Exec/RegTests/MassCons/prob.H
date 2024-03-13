@@ -16,7 +16,7 @@
 #include "PelePhysics.H"
 #include "Tagging.H"
 
-#include "ProblemSpecificFunctions.H"
+#include "ProblemDerive.H"
 #include "prob_parm.H"
 
 AMREX_GPU_DEVICE
@@ -83,50 +83,7 @@ bcnormal(
 
 void pc_prob_close();
 
-class MassconsProblemFunctions : public DefaultProblemSpecificFunctions {
-
-public:
-  
-  AMREX_GPU_DEVICE
-  AMREX_FORCE_INLINE
-  static void set_problem_tags(
-    const int i,
-    const int j,
-    const int k,
-    amrex::Array4<amrex::EBCellFlag const> const& /*flags*/,
-    amrex::Array4<char> const& tag,
-    amrex::Array4<amrex::Real const> const& /*field*/,
-    char tagval,
-    const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> /*dx*/,
-    const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> /*prob_lo*/,
-    const amrex::Real /*time*/,
-    const int /*level*/,
-    ProbParmDevice const& /*d_prob_parm_device*/) noexcept
-  {
-    // Tag everything just as a demo
-    tag(i,j,k) = tagval;
-  }
-  
-};
-
-template<> 
-AMREX_GPU_DEVICE
-AMREX_FORCE_INLINE
-void set_isothermal_wall_temperature<MassconsProblemFunctions>(
-    const int i,
-    const int j,
-    const int k,
-    const int /*dir*/,
-    const int /*normal*/,
-    const amrex::Real Twall_in,
-    amrex::GeometryData const& /*geomdata*/,
-    ProbParmDevice const& /*prob_parm*/,
-    const amrex::Array4<const amrex::Real>& /*q*/,
-    const amrex::Array4<amrex::Real>& Twall)
-{ 
-  Twall(i, j, k) = 0.5*Twall_in;
-}
-  
-using ProblemSpecificFunctions = MassconsProblemFunctions;
+using ProblemTags = EmptyProbTagStruct;
+using ProblemDerives = EmptyProbDeriveStruct;
 
 #endif
