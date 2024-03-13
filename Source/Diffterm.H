@@ -9,7 +9,7 @@
 #include "PelePhysics.H"
 #include "Utilities.H"
 #include "GradUtil.H"
-#include "Diffusion.H"
+#include "TransCoeff.H"
 
 // This header file contains functions and declarations for diffterm.
 
@@ -496,10 +496,11 @@ pc_isothermal_wall_fluxes(
   const amrex::Array4<amrex::EBCellFlag const>& flags,
   const amrex::Array4<const amrex::Real>& area,
   const amrex::Array4<amrex::Real>& flx,
-  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> const& dxinv,
+  const amrex::GeometryData& geomdata,
   pele::physics::transport::TransParm<
     pele::physics::EosType,
-    pele::physics::PhysicsType::transport_type> const* tparm)
+    pele::physics::PhysicsType::transport_type> const* tparm,
+  ProbParmDevice const& prob_parm)
 {
 
   // iv: face centered index where flux is computed
@@ -535,14 +536,16 @@ pc_isothermal_wall_fluxes(
     amrex::Real* dummy_chi_mix = nullptr;
     amrex::Real dummy_mu, dummy_xi;
     amrex::Real lambda;
-    auto trans = pele::physics::PhysicsType::transport();
-    trans.transport(
+
+    amrex::RealVect x = pc_cmp_loc(ivm, geomdata);
+    pc_transcoeff(
       wtr_get_xi, wtr_get_mu, wtr_get_lam, wtr_get_Ddiag, wtr_get_chi, Twall,
       rho_wall, Ywall, dummy_Ddiag, dummy_chi_mix, dummy_mu, dummy_xi, lambda,
-      tparm);
+      tparm, prob_parm, x);
 
     // Compute Fourier flux and scale by area
-    amrex::Real dTdx = 2.0 * (q(ivm, QTEMP) - Twall) * dxinv[dir] * normal;
+    amrex::Real dTdx =
+      2.0 * (q(ivm, QTEMP) - Twall) / geomdata.CellSize(dir) * normal;
     flx(i, j, k, UEDEN) += lambda * dTdx * area(iv);
   }
 }

@@ -1,7 +1,6 @@
 #include "PeleC.H"
 #include "SootModel.H"
 #include "SootModel_derive.H"
-#include "Transport.H"
 
 void
 PeleC::setSootIndx()
@@ -136,7 +135,6 @@ PeleC::fill_soot_source(
       auto const* ltransparm = trans_parms.device_trans_parm();
       amrex::ParallelFor(
         bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-          auto trans = pele::physics::PhysicsType::transport();
           amrex::Real T = qar_Tin(i, j, k);
           amrex::Real rho = qar_rhoin(i, j, k);
           amrex::GpuArray<amrex::Real, NUM_SPECIES> Y = {{0.0}};
@@ -146,7 +144,7 @@ PeleC::fill_soot_source(
           amrex::Real* diag = nullptr;
           amrex::Real mu = 0.;
           amrex::Real xi, lam;
-          trans.transport(
+          pc_transcoeff(
             get_xi, get_mu, get_lam, get_diag, get_chi, T, rho, Y.data(), diag,
             nullptr, mu, xi, lam, ltransparm);
           mu_arr(i, j, k) = mu;

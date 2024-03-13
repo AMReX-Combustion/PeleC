@@ -895,7 +895,9 @@ PeleC::estTimeStep(amrex::Real /*dt_old*/)
     }
 
     if (diffuse_vel) {
+      auto const& geomdata = geom.data();
       auto const* ltransparm = trans_parms.device_trans_parm();
+      const ProbParmDevice* lprobparm = PeleC::d_prob_parm_device;
       amrex::Real dt = amrex::ReduceMin(
         stateMF, flags, 0,
         [=] AMREX_GPU_HOST_DEVICE(
@@ -903,13 +905,15 @@ PeleC::estTimeStep(amrex::Real /*dt_old*/)
           const amrex::Array4<const amrex::EBCellFlag>& flag_arr)
           -> amrex::Real {
           return pc_estdt_veldif(
-            bx, fab_arr, flag_arr, AMREX_D_DECL(dx1, dx2, dx3), ltransparm);
+            bx, fab_arr, flag_arr, geomdata, ltransparm, *lprobparm);
         });
       estdt_vdif = amrex::min<amrex::Real>(estdt_vdif, dt);
     }
 
     if (diffuse_temp) {
+      auto const& geomdata = geom.data();
       auto const* ltransparm = trans_parms.device_trans_parm();
+      const ProbParmDevice* lprobparm = PeleC::d_prob_parm_device;
       amrex::Real dt = amrex::ReduceMin(
         stateMF, flags, 0,
         [=] AMREX_GPU_HOST_DEVICE(
@@ -917,13 +921,15 @@ PeleC::estTimeStep(amrex::Real /*dt_old*/)
           const amrex::Array4<const amrex::EBCellFlag>& flag_arr)
           -> amrex::Real {
           return pc_estdt_tempdif(
-            bx, fab_arr, flag_arr, AMREX_D_DECL(dx1, dx2, dx3), ltransparm);
+            bx, fab_arr, flag_arr, geomdata, ltransparm, *lprobparm);
         });
       estdt_tdif = amrex::min<amrex::Real>(estdt_tdif, dt);
     }
 
     if (diffuse_enth) {
+      auto const& geomdata = geom.data();
       auto const* ltransparm = trans_parms.device_trans_parm();
+      const ProbParmDevice* lprobparm = PeleC::d_prob_parm_device;
       amrex::Real dt = amrex::ReduceMin(
         stateMF, flags, 0,
         [=] AMREX_GPU_HOST_DEVICE(
@@ -931,7 +937,7 @@ PeleC::estTimeStep(amrex::Real /*dt_old*/)
           const amrex::Array4<const amrex::EBCellFlag>& flag_arr)
           -> amrex::Real {
           return pc_estdt_enthdif(
-            bx, fab_arr, flag_arr, AMREX_D_DECL(dx1, dx2, dx3), ltransparm);
+            bx, fab_arr, flag_arr, geomdata, ltransparm, *lprobparm);
         });
       estdt_edif = amrex::min<amrex::Real>(estdt_edif, dt);
     }
