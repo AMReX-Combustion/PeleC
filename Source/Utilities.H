@@ -3,9 +3,22 @@
 
 #include <AMReX_IArrayBox.H>
 #include <AMReX_FArrayBox.H>
+#include <AMReX_Geometry.H>
 #include "Constants.H"
 #include "IndexDefines.H"
 #include "PelePhysics.H"
+
+AMREX_GPU_HOST_DEVICE
+AMREX_FORCE_INLINE
+amrex::RealVect
+pc_cmp_loc(const amrex::IntVect& idx, const amrex::GeometryData& geomdata)
+{
+  amrex::RealVect x;
+  for (int dim = 0; dim < AMREX_SPACEDIM; ++dim) {
+    x[dim] = geomdata.ProbLo(dim) + (idx[dim] + 0.5) * geomdata.CellSize(dim);
+  }
+  return x;
+}
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
