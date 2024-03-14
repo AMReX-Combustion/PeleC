@@ -32,7 +32,7 @@ The source files contained in the case directory are treated preferentially and 
 
 * **prob.H** -- prob.H header file is normally used to define the user-defined embedded boundary class, if any. It is also used to define the solution initialisation and boundary condition implementation functions. User-defined functions defined in this header file include:
 
-  * ``pc_initdata``: GPU kernel that sets intial conditions at every cell individually. Must always be defined by user.
+  * ``pc_initdata``: GPU kernel that sets initial conditions at every cell individually. Must always be defined by user.
   * ``bcnormal``: GPU kernel that sets values in ghost cells at domain boundaries. At least a dummy version must be provided. This function is called for any boundaries specified as ``UserBC`` or ``Hard``.
   * ``ProblemSpecificFunctions``: a set of problem specific capabilities that can optionally be specified by the user. To simply use the defaults,
     point this to the default class defined in ``PeleC/Source/ProblemSpecificFunctions.H`` with
@@ -41,7 +41,7 @@ The source files contained in the case directory are treated preferentially and 
     are found in ``PeleC/Source/ProblemSpecificFunctions.H`` and summarized below:
     * ``add_problem_derive``: Create custom derived variables
     * ``set_problem_tags``: Create custom tagging criteria
-    * ``set_aux_names``: Name the auxilliary variables if being used
+    * ``set_aux_names``: Name the auxiliary variables if being used
     * ``set_adv_names``: Name the advected variables if being used
     * ``set_isothermal_wall_temp``: Set a spacially varying temperature for domain boundary walls (if relevant and desired)
     * ``problem_modify_ext_sources``: Add custom source terms
