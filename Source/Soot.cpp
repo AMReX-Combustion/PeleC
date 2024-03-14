@@ -147,7 +147,8 @@ PeleC::fill_soot_source(
           amrex::Real* diag = nullptr;
           amrex::Real mu = 0.;
           amrex::Real xi, lam;
-          amrex::RealVect x = pc_cmp_loc({AMREX_D_DECL(i, j, k)}, geomdata);
+          const amrex::RealVect x =
+            pc_cmp_loc({AMREX_D_DECL(i, j, k)}, geomdata);
           pc_transcoeff(
             get_xi, get_mu, get_lam, get_diag, get_chi, T, rho, Y.data(), diag,
             nullptr, mu, xi, lam, ltransparm, *lprobparm, x);

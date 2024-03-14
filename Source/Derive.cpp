@@ -812,7 +812,7 @@ PeleC::pc_derviscosity(
     amrex::Real mu = 0.0, dum1 = 0.0, dum2 = 0.0;
     const bool get_xi = false, get_mu = true, get_lam = false,
                get_Ddiag = false, get_chi = false;
-    amrex::RealVect x = pc_cmp_loc({AMREX_D_DECL(i, j, k)}, gdata);
+    const amrex::RealVect x = pc_cmp_loc({AMREX_D_DECL(i, j, k)}, gdata);
     pc_transcoeff(
       get_xi, get_mu, get_lam, get_Ddiag, get_chi, T, rho, massfrac, nullptr,
       nullptr, mu, dum1, dum2, ltransparm, *lprobparm, x);
@@ -850,7 +850,7 @@ PeleC::pc_derbulkviscosity(
     amrex::Real xi = 0.0, dum1 = 0.0, dum2 = 0.0;
     const bool get_xi = true, get_mu = false, get_lam = false,
                get_Ddiag = false, get_chi = false;
-    amrex::RealVect x = pc_cmp_loc({AMREX_D_DECL(i, j, k)}, gdata);
+    const amrex::RealVect x = pc_cmp_loc({AMREX_D_DECL(i, j, k)}, gdata);
     pc_transcoeff(
       get_xi, get_mu, get_lam, get_Ddiag, get_chi, T, rho, massfrac, nullptr,
       nullptr, dum1, xi, dum2, ltransparm, *lprobparm, x);
@@ -888,7 +888,7 @@ PeleC::pc_derconductivity(
     amrex::Real lam = 0.0, dum1 = 0.0, dum2 = 0.0;
     const bool get_xi = false, get_mu = false, get_lam = true,
                get_Ddiag = false, get_chi = false;
-    amrex::RealVect x = pc_cmp_loc({AMREX_D_DECL(i, j, k)}, gdata);
+    const amrex::RealVect x = pc_cmp_loc({AMREX_D_DECL(i, j, k)}, gdata);
     pc_transcoeff(
       get_xi, get_mu, get_lam, get_Ddiag, get_chi, T, rho, massfrac, nullptr,
       nullptr, dum1, dum2, lam, ltransparm, *lprobparm, x);
@@ -927,7 +927,7 @@ PeleC::pc_derdiffusivity(
     amrex::Real dum1 = 0.0, dum2 = 0.0, dum3 = 0.0;
     const bool get_xi = false, get_mu = false, get_lam = false,
                get_Ddiag = true, get_chi = false;
-    amrex::RealVect x = pc_cmp_loc({AMREX_D_DECL(i, j, k)}, gdata);
+    const amrex::RealVect x = pc_cmp_loc({AMREX_D_DECL(i, j, k)}, gdata);
     pc_transcoeff(
       get_xi, get_mu, get_lam, get_Ddiag, get_chi, T, rho, massfrac, ddiag,
       nullptr, dum1, dum2, dum3, ltransparm, *lprobparm, x);

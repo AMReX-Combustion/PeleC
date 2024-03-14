@@ -191,7 +191,8 @@ PeleC::getMOLSrcTerm(
               Y[n] = qar_yin(i, j, k, n);
             }
 
-            amrex::RealVect x = pc_cmp_loc({AMREX_D_DECL(i, j, k)}, geomdata);
+            const amrex::RealVect x =
+              pc_cmp_loc({AMREX_D_DECL(i, j, k)}, geomdata);
             pc_transcoeff(
               get_xi, get_mu, get_lam, get_Ddiag, get_chi, T, rho, Y, Ddiag,
               chi_mix, muloc, xiloc, lamloc, ltransparm, *lprobparm, x);

@@ -537,7 +537,7 @@ pc_isothermal_wall_fluxes(
     amrex::Real dummy_mu, dummy_xi;
     amrex::Real lambda;
 
-    amrex::RealVect x = pc_cmp_loc(ivm, geomdata);
+    const amrex::RealVect x = pc_cmp_loc(ivm, geomdata);
     pc_transcoeff(
       wtr_get_xi, wtr_get_mu, wtr_get_lam, wtr_get_Ddiag, wtr_get_chi, Twall,
       rho_wall, Ywall, dummy_Ddiag, dummy_chi_mix, dummy_mu, dummy_xi, lambda,
