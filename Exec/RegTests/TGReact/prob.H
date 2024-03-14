@@ -149,8 +149,8 @@ bcnormal(
 
 struct MyProblemSpecificFunctions : public DefaultProblemSpecificFunctions
 {
-  static void
-  add(amrex::DeriveList& derive_lst, amrex::DescriptorList& desc_lst)
+  static void add_problem_drive(
+    amrex::DeriveList& derive_lst, amrex::DescriptorList& desc_lst)
   {
     derive_lst.add(
       "z_vorticity", amrex::IndexType::TheCellType(), 1, pc_dervortz,

@@ -114,8 +114,8 @@ struct MyProblemSpecificFunctions : public DefaultProblemSpecificFunctions
     // could do problem specific tagging here
   }
 
-  static void
-  add(amrex::DeriveList& /*derive_lst*/, amrex::DescriptorList& /*desc_lst*/)
+  static void add_problem_derive(
+    amrex::DeriveList& /*derive_lst*/, amrex::DescriptorList& /*desc_lst*/)
   {
     // Add derives as follows and define the derive function below:
     // derive_lst.add(
