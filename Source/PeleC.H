@@ -350,7 +350,7 @@ public:
 
   void construct_new_soot_source(amrex::Real time, amrex::Real dt);
 
-  static void fill_soot_source(
+  void fill_soot_source(
     amrex::Real time,
     amrex::Real dt,
     amrex::MultiFab& state,

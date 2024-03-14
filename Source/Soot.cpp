@@ -1,6 +1,7 @@
 #include "PeleC.H"
 #include "SootModel.H"
 #include "SootModel_derive.H"
+#include "TransCoeff.H"
 
 void
 PeleC::setSootIndx()
@@ -133,6 +134,8 @@ PeleC::fill_soot_source(
       BL_PROFILE("PeleC::get_transport_coeffs()");
       // Get Transport coefs on GPU.
       auto const* ltransparm = trans_parms.device_trans_parm();
+      const ProbParmDevice* lprobparm = PeleC::d_prob_parm_device;
+      auto const& geomdata = geom.data();
       amrex::ParallelFor(
         bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
           amrex::Real T = qar_Tin(i, j, k);
@@ -144,9 +147,10 @@ PeleC::fill_soot_source(
           amrex::Real* diag = nullptr;
           amrex::Real mu = 0.;
           amrex::Real xi, lam;
+          amrex::RealVect x = pc_cmp_loc({AMREX_D_DECL(i, j, k)}, geomdata);
           pc_transcoeff(
             get_xi, get_mu, get_lam, get_diag, get_chi, T, rho, Y.data(), diag,
-            nullptr, mu, xi, lam, ltransparm);
+            nullptr, mu, xi, lam, ltransparm, *lprobparm, x);
           mu_arr(i, j, k) = mu;
         });
     }
