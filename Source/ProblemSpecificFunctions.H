@@ -49,17 +49,21 @@ struct DefaultProblemSpecificFunctions
   static void set_aux_names(amrex::Vector<std::string>& a_aux_names)
   {
     a_aux_names.resize(NUM_AUX);
+#if NUM_AUX > 0
     for (int n = 0; n < NUM_AUX; ++n) {
       a_aux_names[n] = "aux_" + std::to_string(n);
     }
+#endif
   }
 
   static void set_adv_names(amrex::Vector<std::string>& a_adv_names)
   {
     a_adv_names.resize(NUM_ADV);
+#if NUM_ADV > 0
     for (int n = 0; n < NUM_ADV; ++n) {
       a_adv_names[n] = "adv_" + std::to_string(n);
     }
+#endif
   }
 
   AMREX_GPU_DEVICE
