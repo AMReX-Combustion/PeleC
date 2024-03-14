@@ -78,21 +78,21 @@ void
 PeleC::fill_soot_source(
   amrex::Real time,
   amrex::Real dt,
-  amrex::MultiFab& state,
-  amrex::MultiFab& soot_src,
+  amrex::MultiFab& a_state,
+  amrex::MultiFab& a_soot_src,
   int ng)
 {
   BL_PROFILE("PeleC::fill_soot_source()");
 
   auto const& fact =
-    dynamic_cast<amrex::EBFArrayBoxFactory const&>(state.Factory());
+    dynamic_cast<amrex::EBFArrayBoxFactory const&>(a_state.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
 
   // TODO: Change to use new ParallelFor type
 #ifdef AMREX_USE_OMP
 #pragma omp parallel
 #endif
-  for (amrex::MFIter mfi(soot_src, amrex::TilingIfNotGPU()); mfi.isValid();
+  for (amrex::MFIter mfi(a_soot_src, amrex::TilingIfNotGPU()); mfi.isValid();
        ++mfi) {
     const amrex::Box& bx = mfi.growntilebox(ng);
     const auto& flag_fab = flags[mfi];
@@ -100,8 +100,8 @@ PeleC::fill_soot_source(
     if (typ == amrex::FabType::covered) {
       continue;
     }
-    amrex::FArrayBox& Sfab = state[mfi];
-    amrex::FArrayBox& soot_fab = soot_src[mfi];
+    amrex::FArrayBox& Sfab = a_state[mfi];
+    amrex::FArrayBox& soot_fab = a_soot_src[mfi];
     auto const& s_arr = Sfab.array();
     const int nqaux = NQAUX > 0 ? NQAUX : 1;
     amrex::FArrayBox mu_cc(bx, 1, amrex::The_Async_Arena());
