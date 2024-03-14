@@ -209,7 +209,7 @@ void pc_prob_close();
 
 struct MyProblemSpecificFunctions : public DefaultProblemSpecificFunctions
 {
-  AMREX_GPU_DEVICE
+  AMREX_GPU_HOST_DEVICE
   AMREX_FORCE_INLINE
   static void problem_modify_transport_coeffs(
     const bool /*get_xi*/,

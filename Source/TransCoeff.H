@@ -4,7 +4,7 @@
 #include "prob.H"
 
 // This header file contains functions and declarations for diffterm.
-AMREX_GPU_DEVICE
+AMREX_GPU_HOST_DEVICE
 AMREX_FORCE_INLINE
 void
 pc_transcoeff(
