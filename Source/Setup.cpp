@@ -32,18 +32,29 @@ SootModel PeleC::soot_model;
 
 // Components are defined in PCPhysBCType enum in PeleC.H:
 // Interior, Inflow, Outflow,  Symmetry,     SlipWall,     NoSlipWall, UserBC
-static int scalar_bc[] = {INT_DIR,      EXT_DIR,      FOEXTRAP, REFLECT_EVEN,
-                          REFLECT_EVEN, REFLECT_EVEN, EXT_DIR};
+static int scalar_bc[] = {
+  amrex::BCType::int_dir,      amrex::BCType::ext_dir,
+  amrex::BCType::foextrap,     amrex::BCType::reflect_even,
+  amrex::BCType::reflect_even, amrex::BCType::reflect_even,
+  amrex::BCType::ext_dir};
 
-static int norm_vel_bc[] = {INT_DIR,     EXT_DIR,     FOEXTRAP, REFLECT_ODD,
-                            REFLECT_ODD, REFLECT_ODD, EXT_DIR};
+static int norm_vel_bc[] = {
+  amrex::BCType::int_dir,     amrex::BCType::ext_dir,
+  amrex::BCType::foextrap,    amrex::BCType::reflect_odd,
+  amrex::BCType::reflect_odd, amrex::BCType::reflect_odd,
+  amrex::BCType::ext_dir};
 
-static int tang_vel_bc[] = {INT_DIR,      EXT_DIR,     FOEXTRAP, REFLECT_EVEN,
-                            REFLECT_EVEN, REFLECT_ODD, EXT_DIR};
+static int tang_vel_bc[] = {
+  amrex::BCType::int_dir,      amrex::BCType::ext_dir,
+  amrex::BCType::foextrap,     amrex::BCType::reflect_even,
+  amrex::BCType::reflect_even, amrex::BCType::reflect_odd,
+  amrex::BCType::ext_dir};
 
-static int react_src_bc[] = {INT_DIR,      REFLECT_EVEN, REFLECT_EVEN,
-                             REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN,
-                             REFLECT_EVEN};
+static int react_src_bc[] = {
+  amrex::BCType::int_dir,      amrex::BCType::reflect_even,
+  amrex::BCType::reflect_even, amrex::BCType::reflect_even,
+  amrex::BCType::reflect_even, amrex::BCType::reflect_even,
+  amrex::BCType::reflect_even};
 
 static void
 set_scalar_bc(amrex::BCRec& bc, const amrex::BCRec& phys_bc)

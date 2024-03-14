@@ -541,22 +541,7 @@ PeleC::PeleC(
   }
 
   // initialize diagnostics (only level 0 calls them)
-  if (lev == 0) {
-    const std::string pele_prefix = "pelec";
-    amrex::ParmParse pp(pele_prefix);
-    const int n_diags = pp.countval("diagnostics");
-    amrex::Vector<std::string> diags(n_diags);
-    for (int n = 0; n < n_diags; ++n) {
-      pp.get("diagnostics", diags[n], n);
-      const std::string diag_prefix = pele_prefix + "." + diags[n];
-      amrex::ParmParse ppd(diag_prefix);
-      std::string diag_type;
-      ppd.get("type", diag_type);
-      m_diagnostics.emplace_back(DiagBase::create(diag_type));
-      m_diagnostics[n]->init(diag_prefix, diags[n]);
-      m_diagnostics[n]->addVars(m_diagVars);
-    }
-  }
+  init_diagnostics();
 }
 
 PeleC::~PeleC()
@@ -659,8 +644,8 @@ PeleC::setGridInfo()
     const int* domhi_coarse = geom.Domain().hiVect();
 
     for (int dir = 0; dir < 3; dir++) {
-      domlo_level[dir] = (ARLIM_3D(domlo_coarse))[dir];
-      domhi_level[dir] = (ARLIM_3D(domhi_coarse))[dir];
+      domlo_level[dir] = (AMREX_ARLIM_3D(domlo_coarse))[dir];
+      domhi_level[dir] = (AMREX_ARLIM_3D(domhi_coarse))[dir];
     }
 
     for (int lev = 1; lev <= max_level; lev++) {
@@ -1288,6 +1273,9 @@ PeleC::post_restart()
   if (use_explicit_filter) {
     init_filters();
   }
+
+  // initialize diagnostics
+  init_diagnostics();
 
   problem_post_restart();
 }
@@ -2050,13 +2038,12 @@ PeleC::init_les()
 
   amrex::Print() << "WARNING: LES with Fuego assumes Cp is a weak function of T"
                  << std::endl;
-  if (NUM_SPECIES > 2) {
-    amrex::Abort("LES is not supported for multi-component systems");
-  } else if (NUM_SPECIES == 2) {
-    amrex::Print()
-      << "WARNING: LES is not supported for multi-component systems"
-      << std::endl;
-  }
+#if NUM_SPECIES > 2
+  amrex::Abort("LES is not supported for multi-component systems");
+#elif NUM_SPECIES == 2
+  amrex::Print() << "WARNING: LES is not supported for multi-component systems"
+                 << std::endl;
+#endif
   if (std::is_same<
         pele::physics::PhysicsType::eos_type, pele::physics::eos::SRK>::value) {
     amrex::Abort("LES is not supported for non-ideal equations of state");
@@ -2103,6 +2090,29 @@ PeleC::init_filters()
     geom.GetFaceArea(area[dir], dir);
   }
 }
+
+void
+PeleC::init_diagnostics()
+{
+  if (level == 0) {
+    // initialize diagnostics (only level 0 calls them)
+    const std::string pele_prefix = "pelec";
+    amrex::ParmParse pp(pele_prefix);
+    const int n_diags = pp.countval("diagnostics");
+    amrex::Vector<std::string> diags(n_diags);
+    for (int n = 0; n < n_diags; ++n) {
+      pp.get("diagnostics", diags[n], n);
+      const std::string diag_prefix = pele_prefix + "." + diags[n];
+      amrex::ParmParse ppd(diag_prefix);
+      std::string diag_type;
+      ppd.get("type", diag_type);
+      m_diagnostics.emplace_back(DiagBase::create(diag_type));
+      m_diagnostics[n]->init(diag_prefix, diags[n]);
+      m_diagnostics[n]->addVars(m_diagVars);
+    }
+  }
+}
+
 #ifdef PELE_USE_MASA
 void
 PeleC::init_mms()

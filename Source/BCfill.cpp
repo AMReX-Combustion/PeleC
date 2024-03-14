@@ -164,7 +164,7 @@ pc_bcfill_hyp(
   if (PeleC::turb_inflow.is_initialized()) {
     for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
       auto bndryBoxLO = amrex::Box(amrex::adjCellLo(geom.Domain(), dir) & bx);
-      if (bcr[1].lo()[dir] == EXT_DIR && bndryBoxLO.ok()) {
+      if (bcr[1].lo()[dir] == amrex::BCType::ext_dir && bndryBoxLO.ok()) {
         // Create box with ghost cells and set them to zero
         amrex::IntVect growVect(PeleC::numGrow());
         growVect[dir] = 0;
@@ -179,7 +179,7 @@ pc_bcfill_hyp(
       }
 
       auto bndryBoxHI = amrex::Box(amrex::adjCellHi(geom.Domain(), dir) & bx);
-      if (bcr[1].hi()[dir] == EXT_DIR && bndryBoxHI.ok()) {
+      if (bcr[1].hi()[dir] == amrex::BCType::ext_dir && bndryBoxHI.ok()) {
         // Create box with ghost cells and set them to zero
         amrex::IntVect growVect(PeleC::numGrow());
         growVect[dir] = 0;
