@@ -284,6 +284,6 @@ bcnormal(
 
 void pc_prob_close();
 
-using ProblemSpecificFunctions = EmptyProblemSpecificFunctions;
+using ProblemSpecificFunctions = DefaultProblemSpecificFunctions;
 
 #endif

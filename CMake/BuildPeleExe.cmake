@@ -66,7 +66,7 @@ function(build_pele_exe pele_exe_name pele_physics_lib_name)
        ${SRC_DIR}/PeleC.cpp
        ${SRC_DIR}/PeleCAmr.H
        ${SRC_DIR}/PeleCAmr.cpp
-       ${SRC_DIR}/ProblemDerive.H
+       ${SRC_DIR}/ProblemSpecificFunctions.H
        ${SRC_DIR}/React.cpp
        ${SRC_DIR}/Riemann.H
        ${SRC_DIR}/Setup.cpp
@@ -77,6 +77,7 @@ function(build_pele_exe pele_exe_name pele_physics_lib_name)
        ${SRC_DIR}/Tagging.H
        ${SRC_DIR}/Tagging.cpp
        ${SRC_DIR}/Timestep.H
+       ${SRC_DIR}/TransCoeff.H
        ${SRC_DIR}/Utilities.H
        ${SRC_DIR}/Utilities.cpp
        ${SRC_DIR}/WENO.H
