@@ -292,6 +292,7 @@ PeleC::variableSetUp()
 
   // Define the ADV variable names
   ProblemSpecificFunctions::set_adv_names(adv_names);
+  // NOLINTNEXTLINE(readability-container-size-empty)
   AMREX_ALWAYS_ASSERT(adv_names.size() == NUM_ADV);
 
   for (int i = 0; i < NUM_ADV; ++i) {
@@ -331,6 +332,7 @@ PeleC::variableSetUp()
 
   // Define the variable aux_names
   ProblemSpecificFunctions::set_aux_names(aux_names);
+  // NOLINTNEXTLINE(readability-container-size-empty)
   AMREX_ALWAYS_ASSERT(aux_names.size() == NUM_AUX);
 
   if (amrex::ParallelDescriptor::IOProcessor()) {
