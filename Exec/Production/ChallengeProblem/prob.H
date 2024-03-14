@@ -17,7 +17,7 @@
 #include "Constants.H"
 #include "IndexDefines.H"
 #include "PelePhysics.H"
-#include "ProblemDerive.H"
+#include "ProblemSpecificFunctions.H"
 #include "Tagging.H"
 #include "Transport.H"
 #include "Utilities.H"
@@ -364,7 +364,7 @@ bcnormal(
 
 void pc_prob_close();
 
-struct MyProbTagStruct
+struct MyProblemSpecificFunctions : public DefaultProblemSpecificFunctions
 {
   AMREX_GPU_DEVICE
   AMREX_FORCE_INLINE
@@ -416,8 +416,6 @@ struct MyProbTagStruct
   }
 };
 
-using ProblemTags = MyProbTagStruct;
-
-using ProblemDerives = EmptyProbDeriveStruct;
+using ProblemSpecificFunctions = MyProblemSpecificFunctions;
 
 #endif

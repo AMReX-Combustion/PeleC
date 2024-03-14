@@ -11,7 +11,7 @@
 #include "IndexDefines.H"
 #include "PelePhysics.H"
 #include "Tagging.H"
-#include "ProblemDerive.H"
+#include "ProblemSpecificFunctions.H"
 #include "prob_parm.H"
 #include "Constants.H"
 

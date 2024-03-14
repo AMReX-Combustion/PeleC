@@ -16,7 +16,7 @@
 #include "PelePhysics.H"
 
 #include "Tagging.H"
-#include "ProblemDerive.H"
+#include "ProblemSpecificFunctions.H"
 #include "prob_parm.H"
 
 AMREX_GPU_DEVICE
@@ -81,9 +81,7 @@ bcnormal(
 
 void pc_prob_close();
 
-// using ProblemTags = EmptyProbTagStruct;
-
-struct MyProblemSpecificFunctions : public EmptyProblemSpecificFunctions
+struct MyProblemSpecificFunctions : public DefaultProblemSpecificFunctions
 {
   static amrex::Box the_same_box(const amrex::Box& b) { return b; }
 
@@ -126,29 +124,6 @@ struct MyProblemSpecificFunctions : public EmptyProblemSpecificFunctions
                              ((x - prob_parm->cs * time) / prob_parm->sigma));
       arr(i, j, k, 0) = dat(i, j, k, URHO) - rho_exact;
     });
-  }
-
-  AMREX_GPU_DEVICE
-  AMREX_FORCE_INLINE
-  static void set_problem_tags(
-    const int i,
-    const int j,
-    const int k,
-    amrex::Array4<amrex::EBCellFlag const> const& /*flags*/,
-    amrex::Array4<char> const& tag,
-    amrex::Array4<amrex::Real const> const& /*field*/,
-    char tagval,
-    const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> /*dx*/,
-    const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> /*prob_lo*/,
-    const amrex::Real /*time*/,
-    const int /*level*/,
-    ProbParmDevice const& /*d_prob_parm_device*/) noexcept
-  {
-    amrex::ignore_unused(k);
-    const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
-    if (i > 24) {
-      tag(iv) = tagval;
-    }
   }
 };
 
