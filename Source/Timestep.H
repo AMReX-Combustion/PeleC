@@ -28,10 +28,6 @@ pc_trans4dt(
     pele::physics::PhysicsType::transport_type> const* trans_parm,
   ProbParmDevice const& prob_parm)
 {
-  amrex::GeometryData test1;
-  amrex::IntVect test0;
-  amrex::RealVect test2 = pc_cmp_loc(test0, test1);
-
   bool get_xi = false, get_mu = false, get_lam = false, get_Ddiag = false,
        get_chi = false;
   amrex::Real dum1 = 0., dum2 = 0.;
