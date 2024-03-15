@@ -13,10 +13,11 @@ AMREX_FORCE_INLINE
 amrex::RealVect
 pc_cmp_loc(const amrex::IntVect& idx, const amrex::GeometryData& geomdata)
 {
-  return {AMREX_D_DECL(
+  const amrex::RealVect x(AMREX_D_DECL(
     geomdata.ProbLo(0) + (idx[0] + 0.5) * geomdata.CellSize(0),
     geomdata.ProbLo(1) + (idx[1] + 0.5) * geomdata.CellSize(1),
-    geomdata.ProbLo(2) + (idx[2] + 0.5) * geomdata.CellSize(2))};
+    geomdata.ProbLo(2) + (idx[2] + 0.5) * geomdata.CellSize(2)));
+  return x;
 }
 
 AMREX_GPU_DEVICE
