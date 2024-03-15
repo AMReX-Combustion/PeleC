@@ -16,7 +16,7 @@
 #include "PelePhysics.H"
 
 #include "Tagging.H"
-#include "ProblemDerive.H"
+#include "ProblemSpecificFunctions.H"
 #include "prob_parm.H"
 
 AMREX_GPU_DEVICE
@@ -81,14 +81,12 @@ bcnormal(
 
 void pc_prob_close();
 
-using ProblemTags = EmptyProbTagStruct;
-
-struct MyProbDeriveStruct
+struct MyProblemSpecificFunctions : public DefaultProblemSpecificFunctions
 {
   static amrex::Box the_same_box(const amrex::Box& b) { return b; }
 
-  static void
-  add(amrex::DeriveList& derive_lst, const amrex::DescriptorList& desc_lst)
+  static void add_problem_derive(
+    amrex::DeriveList& derive_lst, const amrex::DescriptorList& desc_lst)
   {
     // Add derives as follows and define the derive function below:
     derive_lst.add(
@@ -129,6 +127,6 @@ struct MyProbDeriveStruct
   }
 };
 
-using ProblemDerives = MyProbDeriveStruct;
+using ProblemSpecificFunctions = MyProblemSpecificFunctions;
 
 #endif

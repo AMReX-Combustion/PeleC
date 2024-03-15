@@ -321,7 +321,7 @@ public:
 
   void construct_new_ext_source(amrex::Real time, amrex::Real dt);
 
-  static void fill_ext_source(
+  void fill_ext_source(
     amrex::Real time,
     amrex::Real dt,
     const amrex::MultiFab& state_old,
@@ -350,7 +350,7 @@ public:
 
   void construct_new_soot_source(amrex::Real time, amrex::Real dt);
 
-  static void fill_soot_source(
+  void fill_soot_source(
     amrex::Real time,
     amrex::Real dt,
     amrex::MultiFab& state,
@@ -737,6 +737,8 @@ protected:
   static int num_state_type;
 
   static amrex::Vector<std::string> spec_names;
+  static amrex::Vector<std::string> adv_names;
+  static amrex::Vector<std::string> aux_names;
 
   static amrex::Vector<int> src_list;
 

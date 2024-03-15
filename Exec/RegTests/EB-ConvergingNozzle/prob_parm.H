@@ -19,6 +19,7 @@ struct ProbParmDevice
   amrex::Real T0 = 300.0;
   int inlet_type = 0;
   int outlet_type = 1;
+  bool do_sponge_zones = true;
 };
 
 struct ProbParmHost

@@ -17,7 +17,7 @@
 #include "Constants.H"
 #include "IndexDefines.H"
 #include "PelePhysics.H"
-#include "ProblemDerive.H"
+#include "ProblemSpecificFunctions.H"
 #include "Tagging.H"
 #include "Transport.H"
 #include "Utilities.H"
@@ -480,7 +480,6 @@ bcnormal(
 
 void pc_prob_close();
 
-using ProblemTags = EmptyProbTagStruct;
-using ProblemDerives = EmptyProbDeriveStruct;
+using ProblemSpecificFunctions = DefaultProblemSpecificFunctions;
 
 #endif

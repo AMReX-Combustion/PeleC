@@ -1,5 +1,6 @@
 #include "PeleC.H"
 #include "IndexDefines.H"
+#include "prob.H"
 
 void
 PeleC::construct_old_ext_source(amrex::Real time, amrex::Real dt)
@@ -38,8 +39,8 @@ PeleC::construct_new_ext_source(amrex::Real time, amrex::Real dt)
 
 void
 PeleC::fill_ext_source(
-  amrex::Real /*time*/,
-  amrex::Real /*dt*/,
+  amrex::Real time,
+  amrex::Real dt,
   const amrex::MultiFab& state_old,
   const amrex::MultiFab& state_new,
   amrex::MultiFab& ext_src,
@@ -70,4 +71,9 @@ PeleC::fill_ext_source(
       }
     });
   amrex::Gpu::synchronize();
+
+  const ProbParmDevice* lprobparm = PeleC::d_prob_parm_device;
+  const auto geomdata = geom.data();
+  ProblemSpecificFunctions::problem_modify_ext_sources(
+    time, dt, state_old, state_new, ext_src, ng, geomdata, *lprobparm);
 }

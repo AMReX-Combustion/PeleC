@@ -1,4 +1,5 @@
 #include "Diffusion.H"
+#include "prob.H"
 
 void
 PeleC::getMOLSrcTerm(
@@ -175,13 +176,34 @@ PeleC::getMOLSrcTerm(
         auto const& coe_lambda = coeff_cc.array(dComp_lambda);
         BL_PROFILE("PeleC::get_transport_coeffs()");
         auto const* ltransparm = trans_parms.device_trans_parm();
-        amrex::launch(gbox, [=] AMREX_GPU_DEVICE(amrex::Box const& tbx) {
-          auto trans = pele::physics::PhysicsType::transport();
-          trans.get_transport_coeffs(
-            tbx, qar_yin, qar_Tin, qar_rhoin, coe_rhoD,
-            amrex::Array4<amrex::Real>(), coe_mu, coe_xi, coe_lambda,
-            ltransparm);
-        });
+        auto const& geomdata = geom.data();
+        const ProbParmDevice* lprobparm = PeleC::d_prob_parm_device;
+        const bool get_xi = true, get_mu = true, get_lam = true,
+                   get_Ddiag = true, get_chi = false;
+        amrex::ParallelFor(
+          gbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+            amrex::Real muloc, xiloc, lamloc;
+            amrex::Real Ddiag[NUM_SPECIES], Y[NUM_SPECIES] = {0.0};
+            amrex::Real* chi_mix = nullptr;
+            amrex::Real T = qar_Tin(i, j, k);
+            amrex::Real rho = qar_rhoin(i, j, k);
+            for (int n = 0; n < NUM_SPECIES; ++n) {
+              Y[n] = qar_yin(i, j, k, n);
+            }
+
+            const amrex::RealVect x =
+              pc_cmp_loc({AMREX_D_DECL(i, j, k)}, geomdata);
+            pc_transcoeff(
+              get_xi, get_mu, get_lam, get_Ddiag, get_chi, T, rho, Y, Ddiag,
+              chi_mix, muloc, xiloc, lamloc, ltransparm, *lprobparm, x);
+
+            for (int n = 0; n < NUM_SPECIES; ++n) {
+              coe_rhoD(i, j, k, n) = Ddiag[n];
+            }
+            coe_mu(i, j, k) = muloc;
+            coe_xi(i, j, k) = xiloc;
+            coe_lambda(i, j, k) = lamloc;
+          });
       }
 
       amrex::FArrayBox flux_ec[AMREX_SPACEDIM];
@@ -268,12 +290,13 @@ PeleC::getMOLSrcTerm(
                   const auto geomdata = geom.data();
                   amrex::ParallelFor(
                     bbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-                      pc_set_wall_temperature(
+                      ProblemSpecificFunctions::set_isothermal_wall_temperature(
                         i, j, k, dir, normal, bc_temp, geomdata, *lprobparm,
                         qar, temp_arr);
                       pc_isothermal_wall_fluxes(
                         i, j, k, dir, normal, qar, temp_arr, flag_arr,
-                        area_arr[dir], flx[dir], dxinv, ltransparm);
+                        area_arr[dir], flx[dir], geomdata, ltransparm,
+                        *lprobparm);
                     });
                 }
               }

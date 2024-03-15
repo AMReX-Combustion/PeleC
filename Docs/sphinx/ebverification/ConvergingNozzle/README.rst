@@ -10,6 +10,7 @@ This is a round inviscid converging nozzle case that can be compared against ana
 relationships for quasi-one dimensional isentropic compressible flow. The nozzle is
 set up with an inlet Mach number of 0.22, and area ratio of 2, and an
 outlet pressure of 1 bar. The case uses the gamma law equation of state with :math:`\gamma=1.4`.
+Rudimentary sponge zones are added at the inlet and outlet to absorb spurious reflected waves.
 
 Property Comparisons to Quasi-1D Flow
 #####################################
@@ -79,7 +80,7 @@ Running study
     done
 
     # change path to AMReX fextract utility executable as appropriate
-    ../../../Submodules/AMReX/Tools/Plotfile/fextract.gnu.ex run_01/plt24000
+    ../../../Submodules/PelePhysics/Submodules/amrex/Tools/Plotfile/fextract.gnu.ex run_01/plt24000
 
     # Requires: Python3 Numpy Scipy Pandas Matplotlib
     python plot.py 

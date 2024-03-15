@@ -50,8 +50,12 @@
 #define NTHERM 7
 #define QTHERM 8
 
+#ifndef NUM_ADV
 #define NUM_ADV 0
+#endif
+#ifndef NUM_AUX
 #define NUM_AUX 0
+#endif
 
 #define UFS (UFA + NUM_ADV)
 #define UFX (UFS + NUM_SPECIES)

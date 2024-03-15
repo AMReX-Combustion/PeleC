@@ -1,7 +1,7 @@
 #include "PeleC.H"
 #include "SootModel.H"
 #include "SootModel_derive.H"
-#include "Transport.H"
+#include "TransCoeff.H"
 
 void
 PeleC::setSootIndx()
@@ -78,21 +78,21 @@ void
 PeleC::fill_soot_source(
   amrex::Real time,
   amrex::Real dt,
-  amrex::MultiFab& state,
-  amrex::MultiFab& soot_src,
+  amrex::MultiFab& a_state,
+  amrex::MultiFab& a_soot_src,
   int ng)
 {
   BL_PROFILE("PeleC::fill_soot_source()");
 
   auto const& fact =
-    dynamic_cast<amrex::EBFArrayBoxFactory const&>(state.Factory());
+    dynamic_cast<amrex::EBFArrayBoxFactory const&>(a_state.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
 
   // TODO: Change to use new ParallelFor type
 #ifdef AMREX_USE_OMP
 #pragma omp parallel
 #endif
-  for (amrex::MFIter mfi(soot_src, amrex::TilingIfNotGPU()); mfi.isValid();
+  for (amrex::MFIter mfi(a_soot_src, amrex::TilingIfNotGPU()); mfi.isValid();
        ++mfi) {
     const amrex::Box& bx = mfi.growntilebox(ng);
     const auto& flag_fab = flags[mfi];
@@ -100,8 +100,8 @@ PeleC::fill_soot_source(
     if (typ == amrex::FabType::covered) {
       continue;
     }
-    amrex::FArrayBox& Sfab = state[mfi];
-    amrex::FArrayBox& soot_fab = soot_src[mfi];
+    amrex::FArrayBox& Sfab = a_state[mfi];
+    amrex::FArrayBox& soot_fab = a_soot_src[mfi];
     auto const& s_arr = Sfab.array();
     const int nqaux = NQAUX > 0 ? NQAUX : 1;
     amrex::FArrayBox mu_cc(bx, 1, amrex::The_Async_Arena());
@@ -134,9 +134,10 @@ PeleC::fill_soot_source(
       BL_PROFILE("PeleC::get_transport_coeffs()");
       // Get Transport coefs on GPU.
       auto const* ltransparm = trans_parms.device_trans_parm();
+      const ProbParmDevice* lprobparm = PeleC::d_prob_parm_device;
+      auto const& geomdata = geom.data();
       amrex::ParallelFor(
         bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-          auto trans = pele::physics::PhysicsType::transport();
           amrex::Real T = qar_Tin(i, j, k);
           amrex::Real rho = qar_rhoin(i, j, k);
           amrex::GpuArray<amrex::Real, NUM_SPECIES> Y = {{0.0}};
@@ -146,9 +147,11 @@ PeleC::fill_soot_source(
           amrex::Real* diag = nullptr;
           amrex::Real mu = 0.;
           amrex::Real xi, lam;
-          trans.transport(
+          const amrex::RealVect x =
+            pc_cmp_loc({AMREX_D_DECL(i, j, k)}, geomdata);
+          pc_transcoeff(
             get_xi, get_mu, get_lam, get_diag, get_chi, T, rho, Y.data(), diag,
-            nullptr, mu, xi, lam, ltransparm);
+            nullptr, mu, xi, lam, ltransparm, *lprobparm, x);
           mu_arr(i, j, k) = mu;
         });
     }
