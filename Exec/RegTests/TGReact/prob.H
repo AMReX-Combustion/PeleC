@@ -13,7 +13,7 @@
 #include "EOS.H"
 #include "Tagging.H"
 #include "Transport.H"
-#include "ProblemDerive.H"
+#include "ProblemSpecificFunctions.H"
 #include "prob_parm.H"
 
 AMREX_GPU_DEVICE
@@ -147,12 +147,10 @@ bcnormal(
 {
 }
 
-using ProblemTags = EmptyProbTagStruct;
-
-struct MyProbDeriveStruct
+struct MyProblemSpecificFunctions : public DefaultProblemSpecificFunctions
 {
-  static void
-  add(amrex::DeriveList& derive_lst, amrex::DescriptorList& desc_lst)
+  static void add_problem_drive(
+    amrex::DeriveList& derive_lst, amrex::DescriptorList& desc_lst)
   {
     derive_lst.add(
       "z_vorticity", amrex::IndexType::TheCellType(), 1, pc_dervortz,
@@ -246,6 +244,6 @@ struct MyProbDeriveStruct
 
 void pc_prob_close();
 
-using ProblemDerives = MyProbDeriveStruct;
+using ProblemSpecificFunctions = MyProblemSpecificFunctions;
 
 #endif

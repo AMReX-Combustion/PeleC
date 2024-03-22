@@ -8,6 +8,8 @@
 #include "PelePhysics.H"
 #include "IndexDefines.H"
 #include "Constants.H"
+#include "Utilities.H"
+#include "TransCoeff.H"
 
 // EstDt routines
 
@@ -20,9 +22,11 @@ pc_trans4dt(
   amrex::Real rho,
   amrex::Real massfrac[],
   amrex::Real& D,
+  const amrex::RealVect& x,
   pele::physics::transport::TransParm<
     pele::physics::PhysicsType::eos_type,
-    pele::physics::PhysicsType::transport_type> const* trans_parm)
+    pele::physics::PhysicsType::transport_type> const* trans_parm,
+  ProbParmDevice const& prob_parm)
 {
   bool get_xi = false, get_mu = false, get_lam = false, get_Ddiag = false,
        get_chi = false;
@@ -30,16 +34,14 @@ pc_trans4dt(
 
   if (which_trans == 0) {
     get_mu = true;
-    auto trans = pele::physics::PhysicsType::transport();
-    trans.transport(
+    pc_transcoeff(
       get_xi, get_mu, get_lam, get_Ddiag, get_chi, T, rho, massfrac, nullptr,
-      nullptr, D, dum1, dum2, trans_parm);
+      nullptr, D, dum1, dum2, trans_parm, prob_parm, x);
   } else if (which_trans == 1) {
     get_lam = true;
-    auto trans = pele::physics::PhysicsType::transport();
-    trans.transport(
+    pc_transcoeff(
       get_xi, get_mu, get_lam, get_Ddiag, get_chi, T, rho, massfrac, nullptr,
-      nullptr, dum1, dum2, D, trans_parm);
+      nullptr, dum1, dum2, D, trans_parm, prob_parm, x);
   }
 }
 
@@ -92,11 +94,11 @@ pc_estdt_veldif(
   const amrex::Box& bx,
   const amrex::Array4<const amrex::Real>& u,
   const amrex::Array4<const amrex::EBCellFlag>& flags,
-  AMREX_D_DECL(
-    const amrex::Real& dx, const amrex::Real& dy, const amrex::Real& dz),
+  const amrex::GeometryData& geomdata,
   pele::physics::transport::TransParm<
     pele::physics::PhysicsType::eos_type,
-    pele::physics::PhysicsType::transport_type> const* trans_parm) noexcept
+    pele::physics::PhysicsType::transport_type> const* trans_parm,
+  ProbParmDevice const& prob_parm) noexcept
 {
   amrex::Real dt = std::numeric_limits<amrex::Real>::max();
 
@@ -111,17 +113,21 @@ pc_estdt_veldif(
       amrex::Real T = u(i, j, k, UTEMP);
       amrex::Real D = 0.0;
       const int which_trans = 0;
-      pc_trans4dt(which_trans, T, rho, massfrac, D, trans_parm);
+      const amrex::RealVect x = pc_cmp_loc({AMREX_D_DECL(i, j, k)}, geomdata);
+      pc_trans4dt(which_trans, T, rho, massfrac, D, x, trans_parm, prob_parm);
       D *= rhoInv;
       if (D == 0.0) {
         D = constants::small_num();
       }
       AMREX_D_TERM(
-        const amrex::Real dt1 = 0.5 * dx * dx / (AMREX_SPACEDIM * D);
+        const amrex::Real dt1 = 0.5 * geomdata.CellSize(0) *
+                                geomdata.CellSize(0) / (AMREX_SPACEDIM * D);
         dt = amrex::min<amrex::Real>(dt, dt1);
-        , const amrex::Real dt2 = 0.5 * dy * dy / (AMREX_SPACEDIM * D);
+        , const amrex::Real dt2 = 0.5 * geomdata.CellSize(1) *
+                                  geomdata.CellSize(1) / (AMREX_SPACEDIM * D);
         dt = amrex::min<amrex::Real>(dt, dt2);
-        , const amrex::Real dt3 = 0.5 * dz * dz / (AMREX_SPACEDIM * D);
+        , const amrex::Real dt3 = 0.5 * geomdata.CellSize(2) *
+                                  geomdata.CellSize(2) / (AMREX_SPACEDIM * D);
         dt = amrex::min<amrex::Real>(dt, dt3););
     }
   });
@@ -137,11 +143,11 @@ pc_estdt_tempdif(
   const amrex::Box& bx,
   const amrex::Array4<const amrex::Real>& u,
   const amrex::Array4<const amrex::EBCellFlag>& flags,
-  AMREX_D_DECL(
-    const amrex::Real& dx, const amrex::Real& dy, const amrex::Real& dz),
+  const amrex::GeometryData& geomdata,
   pele::physics::transport::TransParm<
     pele::physics::PhysicsType::eos_type,
-    pele::physics::PhysicsType::transport_type> const* trans_parm) noexcept
+    pele::physics::PhysicsType::transport_type> const* trans_parm,
+  ProbParmDevice const& prob_parm) noexcept
 {
   amrex::Real dt = std::numeric_limits<amrex::Real>::max();
 
@@ -156,7 +162,8 @@ pc_estdt_tempdif(
       amrex::Real T = u(i, j, k, UTEMP);
       amrex::Real D = 0.0;
       const int which_trans = 1;
-      pc_trans4dt(which_trans, T, rho, massfrac, D, trans_parm);
+      const amrex::RealVect x = pc_cmp_loc({AMREX_D_DECL(i, j, k)}, geomdata);
+      pc_trans4dt(which_trans, T, rho, massfrac, D, x, trans_parm, prob_parm);
       amrex::Real cv;
       auto eos = pele::physics::PhysicsType::eos();
       eos.RTY2Cv(rho, T, massfrac, cv);
@@ -165,11 +172,14 @@ pc_estdt_tempdif(
         D = constants::small_num();
       }
       AMREX_D_TERM(
-        const amrex::Real dt1 = 0.5 * dx * dx / (AMREX_SPACEDIM * D);
+        const amrex::Real dt1 = 0.5 * geomdata.CellSize(0) *
+                                geomdata.CellSize(0) / (AMREX_SPACEDIM * D);
         dt = amrex::min<amrex::Real>(dt, dt1);
-        , const amrex::Real dt2 = 0.5 * dy * dy / (AMREX_SPACEDIM * D);
+        , const amrex::Real dt2 = 0.5 * geomdata.CellSize(1) *
+                                  geomdata.CellSize(1) / (AMREX_SPACEDIM * D);
         dt = amrex::min<amrex::Real>(dt, dt2);
-        , const amrex::Real dt3 = 0.5 * dz * dz / (AMREX_SPACEDIM * D);
+        , const amrex::Real dt3 = 0.5 * geomdata.CellSize(2) *
+                                  geomdata.CellSize(2) / (AMREX_SPACEDIM * D);
         dt = amrex::min<amrex::Real>(dt, dt3););
     }
   });
@@ -185,11 +195,11 @@ pc_estdt_enthdif(
   const amrex::Box& bx,
   const amrex::Array4<const amrex::Real>& u,
   const amrex::Array4<const amrex::EBCellFlag>& flags,
-  AMREX_D_DECL(
-    const amrex::Real& dx, const amrex::Real& dy, const amrex::Real& dz),
+  const amrex::GeometryData& geomdata,
   pele::physics::transport::TransParm<
     pele::physics::PhysicsType::eos_type,
-    pele::physics::PhysicsType::transport_type> const* trans_parm) noexcept
+    pele::physics::PhysicsType::transport_type> const* trans_parm,
+  ProbParmDevice const& prob_parm) noexcept
 {
   amrex::Real dt = std::numeric_limits<amrex::Real>::max();
 
@@ -207,14 +217,18 @@ pc_estdt_enthdif(
       eos.RTY2Cp(rho, T, massfrac, cp);
       amrex::Real D;
       const int which_trans = 1;
-      pc_trans4dt(which_trans, T, rho, massfrac, D, trans_parm);
+      const amrex::RealVect x = pc_cmp_loc({AMREX_D_DECL(i, j, k)}, geomdata);
+      pc_trans4dt(which_trans, T, rho, massfrac, D, x, trans_parm, prob_parm);
       D *= rhoInv / cp;
       AMREX_D_TERM(
-        const amrex::Real dt1 = 0.5 * dx * dx / (AMREX_SPACEDIM * D);
+        const amrex::Real dt1 = 0.5 * geomdata.CellSize(0) *
+                                geomdata.CellSize(0) / (AMREX_SPACEDIM * D);
         dt = amrex::min<amrex::Real>(dt, dt1);
-        , const amrex::Real dt2 = 0.5 * dy * dy / (AMREX_SPACEDIM * D);
+        , const amrex::Real dt2 = 0.5 * geomdata.CellSize(1) *
+                                  geomdata.CellSize(1) / (AMREX_SPACEDIM * D);
         dt = amrex::min<amrex::Real>(dt, dt2);
-        , const amrex::Real dt3 = 0.5 * dz * dz / (AMREX_SPACEDIM * D);
+        , const amrex::Real dt3 = 0.5 * geomdata.CellSize(2) *
+                                  geomdata.CellSize(2) / (AMREX_SPACEDIM * D);
         dt = amrex::min<amrex::Real>(dt, dt3););
     }
   });

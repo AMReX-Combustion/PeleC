@@ -20,6 +20,13 @@ function(build_pele_exe pele_exe_name pele_physics_lib_name)
   target_include_directories(${pele_exe_name} PRIVATE ${SRC_DIR})
   target_include_directories(${pele_exe_name} PRIVATE ${CMAKE_BINARY_DIR})
   target_include_directories(${pele_exe_name} PRIVATE ${CMAKE_SOURCE_DIR}/Source/Params/param_includes)
+  #Adv and Aux Variables
+  if (PELEC_NUM_ADV GREATER 0)
+    target_compile_definitions(${pelec_exe_name} PRIVATE NUM_ADV=${PELEC_NUM_ADV})
+  endif()
+  if (PELEC_NUM_AUX GREATER 0)
+    target_compile_definitions(${pelec_exe_name} PRIVATE NUM_AUX=${PELEC_NUM_AUX})
+  endif()
 
   target_sources(${pele_exe_name}
      PRIVATE
@@ -59,7 +66,7 @@ function(build_pele_exe pele_exe_name pele_physics_lib_name)
        ${SRC_DIR}/PeleC.cpp
        ${SRC_DIR}/PeleCAmr.H
        ${SRC_DIR}/PeleCAmr.cpp
-       ${SRC_DIR}/ProblemDerive.H
+       ${SRC_DIR}/ProblemSpecificFunctions.H
        ${SRC_DIR}/React.cpp
        ${SRC_DIR}/Riemann.H
        ${SRC_DIR}/Setup.cpp
@@ -70,6 +77,7 @@ function(build_pele_exe pele_exe_name pele_physics_lib_name)
        ${SRC_DIR}/Tagging.H
        ${SRC_DIR}/Tagging.cpp
        ${SRC_DIR}/Timestep.H
+       ${SRC_DIR}/TransCoeff.H
        ${SRC_DIR}/Utilities.H
        ${SRC_DIR}/Utilities.cpp
        ${SRC_DIR}/WENO.H

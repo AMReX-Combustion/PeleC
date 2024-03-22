@@ -74,6 +74,7 @@ prob.d_exit = 7.0710678119
 prob.p_exit = 1.0e6
 prob.inlet_type = 0
 prob.outlet_type = 1
+prob.do_sponge_zones = 1
 
 # TAGGING
 tagging.denerr = 1e20

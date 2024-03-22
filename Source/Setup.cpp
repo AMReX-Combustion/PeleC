@@ -290,18 +290,30 @@ PeleC::variableSetUp()
   bcs[cnt] = bc;
   name[cnt] = "Temp";
 
+  // Define the ADV variable names
+  ProblemSpecificFunctions::set_adv_names(adv_names);
+  // NOLINTNEXTLINE(readability-container-size-empty)
+  AMREX_ALWAYS_ASSERT(adv_names.size() == NUM_ADV);
+
   for (int i = 0; i < NUM_ADV; ++i) {
-    char buf[64];
-    snprintf(buf, 64, "rho_adv_%d", i);
     cnt++;
     set_scalar_bc(bc, phys_bc);
     bcs[cnt] = bc;
-    name[cnt] = std::string(buf);
+    name[cnt] = "rho_" + adv_names[i];
+  }
+
+  if (amrex::ParallelDescriptor::IOProcessor()) {
+    amrex::Print() << NUM_ADV << " Advected Variables: " << std::endl;
+    for (int i = 0; i < NUM_ADV; i++) {
+      amrex::Print() << adv_names[i] << ' ' << ' ';
+    }
+    amrex::Print() << std::endl;
   }
 
   // Get the species names from the network model
   pele::physics::eos::speciesNames<pele::physics::PhysicsType::eos_type>(
     spec_names);
+  AMREX_ALWAYS_ASSERT(spec_names.size() == NUM_SPECIES);
 
   if (amrex::ParallelDescriptor::IOProcessor()) {
     amrex::Print() << NUM_SPECIES << " Species: " << std::endl;
@@ -317,25 +329,12 @@ PeleC::variableSetUp()
     bcs[cnt] = bc;
     name[cnt] = "rho_" + spec_names[i];
   }
-  // Get the auxiliary names from the network model.
-  amrex::Vector<std::string> aux_names;
-  for (int i = 0; i < NUM_AUX; i++) {
-    int len = 20;
-    amrex::Vector<int> int_aux_names(len);
 
-    // Disabling for the GPU at the moment. Look at the species names to see
-    // how to do this in C++. AUX stuff is usually 0 anyway. This call returns
-    // the actual length of each string in "len"
-    // get_aux_names(int_aux_names.dataPtr(),&i,&len);
+  // Define the variable aux_names
+  ProblemSpecificFunctions::set_aux_names(aux_names);
+  // NOLINTNEXTLINE(readability-container-size-empty)
+  AMREX_ALWAYS_ASSERT(aux_names.size() == NUM_AUX);
 
-    char* char_aux_names = new char[len + 1];
-    for (int j = 0; j < len; j++) {
-      char_aux_names[j] = static_cast<char>(int_aux_names[j]);
-    }
-    char_aux_names[len] = '\0';
-    aux_names.push_back(std::string(char_aux_names));
-    delete[] char_aux_names;
-  }
   if (amrex::ParallelDescriptor::IOProcessor()) {
     amrex::Print() << NUM_AUX << " Auxiliary Variables: " << std::endl;
     for (int i = 0; i < NUM_AUX; i++) {
@@ -488,16 +487,15 @@ PeleC::variableSetUp()
     var_names_massfrac, pc_derspec, amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("massfrac", desc_lst, State_Type, Density, NVAR);
 
-  // adv from rho_adv
-  amrex::Vector<std::string> var_names_adv(NUM_ADV);
-  for (int i = 0; i < NUM_ADV; i++) {
-    var_names_adv[i] = "adv_" + std::to_string(i);
-  }
-
   derive_lst.add(
-    "adv", amrex::IndexType::TheCellType(), NUM_ADV, var_names_adv, pc_deradv,
+    "adv", amrex::IndexType::TheCellType(), NUM_ADV, adv_names, pc_deradv,
     amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("adv", desc_lst, State_Type, Density, NVAR);
+
+  derive_lst.add(
+    "aux", amrex::IndexType::TheCellType(), NUM_AUX, aux_names, pc_deraux,
+    amrex::DeriveRec::TheSameBox);
+  derive_lst.addComponent("aux", desc_lst, State_Type, Density, NVAR);
 
   // Species mole fractions
   amrex::Vector<std::string> var_names_molefrac(NUM_SPECIES);
@@ -637,7 +635,7 @@ PeleC::variableSetUp()
 #endif
 
   // Problem-specific derives
-  add_problem_derives<ProblemDerives>(derive_lst, desc_lst);
+  ProblemSpecificFunctions::add_problem_derive(derive_lst, desc_lst);
 
 #ifdef PELE_USE_SOOT
   soot_model.define();

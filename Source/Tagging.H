@@ -4,7 +4,6 @@
 #include <AMReX_FArrayBox.H>
 #include <AMReX_TagBox.H>
 #include <AMReX_ErrorList.H>
-#include "prob_parm.H"
 
 struct TaggingParm
 {
@@ -208,34 +207,6 @@ tag_error_bounds(
   if (((lbnd < field(iv)) && (field(iv) < ubnd)) && (!flags(iv).isCovered())) {
     tag(iv) = tagval;
   }
-}
-
-struct EmptyProbTagStruct
-{
-  AMREX_GPU_DEVICE
-  AMREX_FORCE_INLINE
-  static void set_problem_tags(
-    const int /*i*/,
-    const int /*j*/,
-    const int /*k*/,
-    amrex::Array4<amrex::EBCellFlag const> const& /*flags*/,
-    amrex::Array4<char> const& /*tag*/,
-    amrex::Array4<amrex::Real const> const& /*field*/,
-    char /*tagval*/,
-    const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> /*dx*/,
-    const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> /*prob_lo*/,
-    const amrex::Real /*time*/,
-    const int /*level*/,
-    ProbParmDevice const& /*d_prob_parm_device*/) noexcept
-  {
-  }
-};
-
-template <typename ProbTagStruct, typename... Args>
-AMREX_GPU_DEVICE AMREX_FORCE_INLINE void
-set_problem_tags(Args&&... args)
-{
-  ProbTagStruct::set_problem_tags(std::forward<Args>(args)...);
 }
 
 #endif

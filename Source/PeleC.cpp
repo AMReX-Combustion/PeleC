@@ -96,6 +96,8 @@ bool PeleC::do_react_load_balance = false;
 bool PeleC::do_mol_load_balance = false;
 
 amrex::Vector<std::string> PeleC::spec_names;
+amrex::Vector<std::string> PeleC::adv_names;
+amrex::Vector<std::string> PeleC::aux_names;
 
 pele::physics::transport::TransportParams<
   pele::physics::PhysicsType::transport_type>
@@ -878,7 +880,9 @@ PeleC::estTimeStep(amrex::Real /*dt_old*/)
     }
 
     if (diffuse_vel) {
+      auto const& geomdata = geom.data();
       auto const* ltransparm = trans_parms.device_trans_parm();
+      const ProbParmDevice* lprobparm = PeleC::d_prob_parm_device;
       amrex::Real dt = amrex::ReduceMin(
         stateMF, flags, 0,
         [=] AMREX_GPU_HOST_DEVICE(
@@ -886,13 +890,15 @@ PeleC::estTimeStep(amrex::Real /*dt_old*/)
           const amrex::Array4<const amrex::EBCellFlag>& flag_arr)
           -> amrex::Real {
           return pc_estdt_veldif(
-            bx, fab_arr, flag_arr, AMREX_D_DECL(dx1, dx2, dx3), ltransparm);
+            bx, fab_arr, flag_arr, geomdata, ltransparm, *lprobparm);
         });
       estdt_vdif = amrex::min<amrex::Real>(estdt_vdif, dt);
     }
 
     if (diffuse_temp) {
+      auto const& geomdata = geom.data();
       auto const* ltransparm = trans_parms.device_trans_parm();
+      const ProbParmDevice* lprobparm = PeleC::d_prob_parm_device;
       amrex::Real dt = amrex::ReduceMin(
         stateMF, flags, 0,
         [=] AMREX_GPU_HOST_DEVICE(
@@ -900,13 +906,15 @@ PeleC::estTimeStep(amrex::Real /*dt_old*/)
           const amrex::Array4<const amrex::EBCellFlag>& flag_arr)
           -> amrex::Real {
           return pc_estdt_tempdif(
-            bx, fab_arr, flag_arr, AMREX_D_DECL(dx1, dx2, dx3), ltransparm);
+            bx, fab_arr, flag_arr, geomdata, ltransparm, *lprobparm);
         });
       estdt_tdif = amrex::min<amrex::Real>(estdt_tdif, dt);
     }
 
     if (diffuse_enth) {
+      auto const& geomdata = geom.data();
       auto const* ltransparm = trans_parms.device_trans_parm();
+      const ProbParmDevice* lprobparm = PeleC::d_prob_parm_device;
       amrex::Real dt = amrex::ReduceMin(
         stateMF, flags, 0,
         [=] AMREX_GPU_HOST_DEVICE(
@@ -914,7 +922,7 @@ PeleC::estTimeStep(amrex::Real /*dt_old*/)
           const amrex::Array4<const amrex::EBCellFlag>& flag_arr)
           -> amrex::Real {
           return pc_estdt_enthdif(
-            bx, fab_arr, flag_arr, AMREX_D_DECL(dx1, dx2, dx3), ltransparm);
+            bx, fab_arr, flag_arr, geomdata, ltransparm, *lprobparm);
         });
       estdt_edif = amrex::min<amrex::Real>(estdt_edif, dt);
     }
@@ -1877,7 +1885,7 @@ PeleC::errorEst(
       const auto captured_level = level;
       amrex::ParallelFor(
         tilebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-          set_problem_tags<ProblemTags>(
+          ProblemSpecificFunctions::set_problem_tags(
             i, j, k, flag_arr, tag_arr, Sfab, tagval, dx, prob_lo, time,
             captured_level, *lprobparm);
         });

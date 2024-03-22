@@ -145,6 +145,14 @@ ifeq ($(USE_SOOT), TRUE)
   Blocs   += $(SOOT_HOME)
 endif
 
+
+ifeq ($(shell test 0$(PELEC_NUM_ADV) -gt 0; echo $$?), 0)
+  DEFINES+=-DNUM_ADV=$(PELEC_NUM_ADV)
+endif
+ifeq ($(shell test 0$(PELEC_NUM_AUX) -gt 0; echo $$?), 0)
+  DEFINES+=-DNUM_AUX=$(PELEC_NUM_AUX)
+endif
+
 Bpack += $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir)/Make.package)
 Blocs += $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir))
 

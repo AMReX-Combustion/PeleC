@@ -390,6 +390,28 @@ PeleC::setPlotVariables()
   }
 #endif
 
+#if NUM_AUX > 0
+  bool plot_rho_aux = true;
+  pp.query("plot_rho_aux", plot_rho_aux);
+  if (plot_rho_aux) {
+    for (int i = 0; i < NUM_AUX; i++) {
+      amrex::Amr::addStatePlotVar(desc_lst[State_Type].name(FirstAux + i));
+    }
+  } else {
+    for (int i = 0; i < NUM_AUX; i++) {
+      amrex::Amr::deleteStatePlotVar(desc_lst[State_Type].name(FirstAux + i));
+    }
+  }
+
+  bool plot_aux = false;
+  pp.query("plot_aux", plot_aux);
+  if (plot_aux) {
+    amrex::Amr::addDerivePlotVar("aux");
+  } else {
+    amrex::Amr::deleteDerivePlotVar("aux");
+  }
+#endif
+
   bool plot_moleFrac = false;
   pp.query("plot_molefrac", plot_moleFrac);
   if (plot_moleFrac) {
