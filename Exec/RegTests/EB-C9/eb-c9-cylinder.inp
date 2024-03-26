@@ -1,12 +1,12 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
-max_step = 1000
-stop_time = -1
+max_step = 100000
+stop_time = 0.0625e-2
 
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic =  1  0  0
 geometry.coord_sys   =  0       # 0 => cart
-geometry.prob_lo     =  -4.0    -4.0     -2.0
-geometry.prob_hi     =  4.0   4.0   6.0
+geometry.prob_lo     =  -50.0 -50.0  -50.0
+geometry.prob_hi     =   50.0  50.0   50.0
 amr.n_cell           =  32 32 32
 
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
@@ -41,11 +41,12 @@ pelec.sum_interval   = 1       # timesteps between computing mass
 pelec.v              = 1       # verbosity in PeleC cpp files
 amr.v                = 1       # verbosity in Amr.cpp
 #amr.grid_log         = grdlog  # name of grid logging file
+amr.data_log         = datlog
 
 # REFINEMENT / REGRIDDING
 amr.max_level       = 0       # maximum level number allowed
-amr.ref_ratio       = 2 2 2 2 # refinement ratio
-amr.regrid_int      = 2       # how often to regrid
+#amr.ref_ratio       = 2 2 2 2 # refinement ratio
+#amr.regrid_int      = 2       # how often to regrid
 amr.blocking_factor = 8       # block factor in grid generation
 amr.max_grid_size   = 32
 
@@ -57,11 +58,19 @@ amr.check_int       = -1       # number of timesteps between checkpoints
 # PLOTFILES
 amr.plot_files_output = 1
 amr.plot_file       = plt
-amr.plot_int        = 100
+amr.plot_int        = 1000
 amr.derive_plot_vars=ALL
 
 eb2.geom_type = stl
-eb2.stl_file      = cylinder.stl
-eb2.stl_scale = 1                  # default is 1
+eb2.stl_file      = cylinder-x-dir.stl
+eb2.stl_scale = 50                  # default is 1
 eb2.stl_center = 0  0  0  # default is (0,0,0)
-eb2.stl_reverse_normal = 1   # default is 0
+eb2.stl_reverse_normal = 0   # default is 0
+
+eb2.geom_type = "cylinder"
+eb2.cylinder_direction = 0
+eb2.cylinder_center = 0.0 0.0 0.0
+eb2.cylinder_radius = 25.0
+eb2.cylinder_height = 1000.0
+eb2.cylinder_has_fluid_inside = 1
+ebd.boundary_grad_stencil_type = 0
