@@ -50,10 +50,11 @@ macro(setup_test)
     # Make working directory for test
     file(MAKE_DIRECTORY ${CURRENT_TEST_BINARY_DIR})
     # Gather all files in source directory for test
-    file(GLOB TEST_FILES "${CURRENT_TEST_SOURCE_DIR}/*.dat" "${CURRENT_TEST_SOURCE_DIR}/*.py")
+    file(GLOB TEST_FILES "${CURRENT_TEST_SOURCE_DIR}/*.dat" "${CURRENT_TEST_SOURCE_DIR}/*.py" "${CURRENT_TEST_SOURCE_DIR}/*.stl")
     # Copy files to test working directory
     file(COPY ${CURRENT_TEST_SOURCE_DIR}/${TEST_NAME}.inp DESTINATION "${CURRENT_TEST_BINARY_DIR}/")
     file(COPY ${TEST_FILES} DESTINATION "${CURRENT_TEST_BINARY_DIR}/")
+    
     # Set some default runtime options for all tests
     set(RUNTIME_OPTIONS "amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1 amrex.the_arena_is_managed=0 amrex.abort_on_unused_inputs=1")
     if(PELE_ENABLE_FPE_TRAP_FOR_TESTS AND (NOT APPLE))
