@@ -81,7 +81,7 @@ Adding complicated geometries
 .. _complexGeom:
 
 Geometries beyond the set described above can be built using a combination of basic geometries and EB transformation functions in AMReX.
-It should be noted that building a generic geometry from a user-defined discretized surface (like STL files)  is currently being developed. An example of this capability is avalaible in ``Exec/Regtests/EB-C9``, but it should be considered to be in beta and
+It should be noted that building a generic geometry from a user-defined discretized surface (like STL files)  is currently being developed. An example of this capability is available in ``Exec/Regtests/EB-C9``, but it should be considered to be in beta and
 potentially unstable. Nonetheless,
 engineering relevant geometries can be achieved with the fundamental geometries and transformations.
 
