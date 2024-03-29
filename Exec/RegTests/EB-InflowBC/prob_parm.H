@@ -1,5 +1,5 @@
-#ifndef _PROB_PARM_H_
-#define _PROB_PARM_H_
+#ifndef PROB_PARM_H
+#define PROB_PARM_H
 
 #include <AMReX_REAL.H>
 #include <AMReX_GpuQualifiers.H>
@@ -23,6 +23,6 @@ struct ProbParmHost
 {
   std::string gasL = "N2";
   std::string gasR = "O2";
-  ProbParmHost() {}
+  ProbParmHost() = default;
 };
 #endif
