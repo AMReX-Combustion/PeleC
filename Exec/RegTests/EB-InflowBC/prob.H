@@ -26,14 +26,9 @@ pc_initdata(
   int j,
   int k,
   amrex::Array4<amrex::Real> const& state,
-  amrex::GeometryData const& geomdata,
+  amrex::GeometryData const& /*geomdata*/,
   ProbParmDevice const& prob_parm)
 {
-  // Geometry
-  const amrex::Real* prob_lo = geomdata.ProbLo();
-  const amrex::Real* prob_hi = geomdata.ProbHi();
-  const amrex::Real* dx = geomdata.CellSize();
-
   for (int n = 0; n < NUM_SPECIES; n++) {
     state(i, j, k, UFS + n) = 0.0;
   }
@@ -73,16 +68,16 @@ struct MyProblemSpecificFunctions : public DefaultProblemSpecificFunctions
   AMREX_FORCE_INLINE
   static bool ebfill(
     amrex::GeometryData const& geomdata,
-    const amrex::Real vf,
+    const amrex::Real /*vf*/,
     const amrex::IntVect iv,
     AMREX_D_DECL(
       const amrex::Real /*nx*/,
       const amrex::Real /*ny*/,
       const amrex::Real /*nz*/),
     const amrex::Real ql[5 + NUM_SPECIES],
-    const amrex::Real spl[NUM_SPECIES],
-    const amrex::Real rhoe_l,
-    const amrex::Real gamc_l,
+    const amrex::Real* /*spl[NUM_SPECIES]*/,
+    const amrex::Real /*rhoe_l*/,
+    const amrex::Real /*gamc_l*/,
     amrex::Real qr[5 + NUM_SPECIES],
     amrex::Real spr[NUM_SPECIES],
     amrex::Real& rhoe_r,

@@ -8,11 +8,11 @@ pc_prob_close()
 extern "C" {
 void
 amrex_probinit(
-  const int* init,
-  const int* name,
-  const int* namelen,
-  const amrex_real* problo,
-  const amrex_real* probhi)
+  const int* /*init*/,
+  const int* /*name*/,
+  const int* /*namelen*/,
+  const amrex_real* /*problo*/,
+  const amrex_real* /*probhi*/)
 {
   // Parse params
   amrex::ParmParse pp("prob");
@@ -34,7 +34,7 @@ amrex_probinit(
   } else {
     PeleC::h_prob_parm_device->right_gas_id = O2_ID;
   }
-  amrex::Real e_l, e_r, cs, cp;
+  amrex::Real e_l, e_r;
   amrex::Real massfrac_l[NUM_SPECIES] = {0.0};
   amrex::Real massfrac_r[NUM_SPECIES] = {0.0};
   massfrac_l[PeleC::h_prob_parm_device->left_gas_id] = 1.0;
