@@ -21,11 +21,11 @@ To build `PeleC` (using the default submodules for AMReX, PelePhysics, and SUNDI
 
 3. In addition to informative output to the terminal, periodic plotfiles are written in the run folder.  These may be viewed with AMReX's `Amrvis <https://amrex-codes.github.io/amrex/docs_html/Visualization.html>`_, `VisIt <https://visit-dav.github.io/visit-website/>`_, or `ParaView <https://www.paraview.org>`_:
 
-      a. In VisIt, direct the File->Open dialogue to select the file named "Header" that is inside each plotfile folder.
+   a. In VisIt, direct the File->Open dialogue to select the file named "Header" that is inside each plotfile folder.
 
-      b. In ParaViuew, navigate to the case directory, open the plotfile folder.
+   b. In ParaViuew, navigate to the case directory, open the plotfile folder.
 
-      c. With Amrvis, `$ amrvis3d plt00030`, for example.
+   c. With Amrvis, `$ amrvis3d plt00030`, for example.
 
 
 Dependencies
