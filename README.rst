@@ -6,24 +6,26 @@ PeleC: An adaptive mesh refinement solver for compressible reacting flows
 Getting Started
 ~~~~~~~~~~~~~~~
 
-* To compile and run `PeleC`, one needs a C++ compiler that supports the C++17 standard.  A hierarchical strategy for parallelism is supported, based on MPI, MPI + OpenMP, or MPI + GPU (CUDA/HIP/DPC++).  The code should work with all major MPI and OpenMP implementations.  PeleC should build and run with no modifications to the `make` system if using a Linux system with the GNU compilers, version 7 and above.  CMake, although used mostly for testing, is also an option for building the code.
+To compile and run `PeleC`, one needs a C++ compiler that supports the C++17 standard.  A hierarchical strategy for parallelism is supported, based on MPI, MPI + OpenMP, or MPI + GPU (CUDA/HIP/DPC++).  The code should work with all major MPI and OpenMP implementations.  PeleC should build and run with no modifications to the `make` system if using a Linux system with the GNU compilers, version 7 and above.  CMake, although used mostly for testing, is also an option for building the code.
 
-To build `PeleC` and run a sample 3D flame problem:
-
-1. Have PeleC use the default submodules for AMReX, PelePhysics, and SUNDIALS in its own repo by simply performing: ::
+To build `PeleC` (using the default submodules for AMReX, PelePhysics, and SUNDIALS) and run a sample 3D flame problem::
 
     git clone --recursive git@github.com:AMReX-Combustion/PeleC.git
     cd PeleC/Exec/RegTests/PMF
     make TPLrealclean && make realclean && make TPL && make -j
     ./Pele3d.xxx.yyy.ex example.inp
 
-.. note::
-   A. In the exec line above, xxx.yyy is a tag identifying your compiler and various build options, and will vary across pltaform.  (Note that GNU compilers must be at least version 7, and MPI should be at least of standard version 3).
-   B. The example is 3D premixed flame, flowing vertically upward through the domain with no gravity. The lateral boundaries are periodic.  A detailed hydrogen model is used.  The solution is initialized with a wrinkled (perturbed) 2D steady flame solution computed using the PREMIX code.  Two levels of solution-adaptive refinement are automatically triggered by the presence of the flame intermediate, HO2.
-   C. In addition to informative output to the terminal, periodic plotfiles are written in the run folder.  These may be viewed with AMReX's `Amrvis <https://amrex-codes.github.io/amrex/docs_html/Visualization.html>`_ or `VisIt <https://visit-dav.github.io/visit-website/>`_:
+1. In the exec line above, xxx.yyy is a tag identifying your compiler and various build options, and will vary across pltaform.  (Note that GNU compilers must be at least version 7, and MPI should be at least of standard version 3).
 
-      1. In VisIt, direct the File->Open dialogue to select the file named "Header" that is inside each plotfile folder..
-      2. With Amrvis, `$ amrvis3d plt00030`, for example.
+2. The example is a 3D premixed flame, flowing vertically upward through the domain with no gravity. The lateral boundaries are periodic.  A detailed hydrogen model is used.  The solution is initialized with a wrinkled (perturbed) 2D steady flame solution computed using the PREMIX code.  Two levels of solution-adaptive refinement are automatically triggered by the presence of the flame intermediate, HO2.
+
+3. In addition to informative output to the terminal, periodic plotfiles are written in the run folder.  These may be viewed with AMReX's `Amrvis <https://amrex-codes.github.io/amrex/docs_html/Visualization.html>`_, `VisIt <https://visit-dav.github.io/visit-website/>`_, or `ParaView <https://www.paraview.org>`_:
+
+      a. In VisIt, direct the File->Open dialogue to select the file named "Header" that is inside each plotfile folder.
+
+      b. In ParaViuew, navigate to the case directory, open the plotfile folder.
+
+      c. With Amrvis, `$ amrvis3d plt00030`, for example.
 
 
 Dependencies
