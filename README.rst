@@ -3,7 +3,7 @@ PeleC: An adaptive mesh refinement solver for compressible reacting flows
 
 `Documentation <https://amrex-combustion.github.io/PeleC/>`_ | `Nightly Test Results <https://my.cdash.org/index.php?project=PeleC>`_ | `Citation <https://doi.org/10.1177/10943420221121151>`_
 
-This is a link to the RST Overview: :ref:`Getting Started`
+This is a link to the RST Overview: :ref:`Getting`
 
 Getting Started
 ~~~~~~~~~~~~~~~
@@ -29,7 +29,7 @@ To build `PeleC` (using the default submodules for AMReX, PelePhysics, and SUNDI
 
    c. With Amrvis, `$ amrvis3d plt00030`, for example.
 
-
+.. _Getting
 Dependencies
 ~~~~~~~~~~~~
 
