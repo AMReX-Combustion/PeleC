@@ -62,7 +62,7 @@ To add a new feature to PeleC, the procedure is:
 
         find Source Exec \( -name "*.cpp" -o -name "*.H" \) -exec clang-format -i {} +
 
-4. Push feature branch to PeleC repository: ::
+4. If you don't already have a fork of the PeleC repository, follow the `Github instructions <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo>`_ to create one. Then, push a feature branch to your forked PeleC repository: ::
 
     git remote add remotename git@github.com:remoteurl # add a remote pointing to the user's fork
     git push -u remotename AmazingNewFeature # Note: -u option required only for the first push of new branch
