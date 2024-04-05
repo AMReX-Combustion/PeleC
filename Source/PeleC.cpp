@@ -362,6 +362,9 @@ PeleC::read_params()
     if (ppm_type != 0 && ppm_type != 1) {
       amrex::Error("PeleC::ppm_type must be 0 (PLM) or 1 (PPM)");
     }
+    if (eb_problem_state) {
+      amrex::Error("We do not support filling the EB state with do_mol = 0");
+    }
   }
 
   if (ppm_type != 1 && use_hybrid_weno) {
