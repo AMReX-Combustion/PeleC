@@ -67,6 +67,7 @@ amrex::Real PeleC::eb_clean_massfrac_threshold = 0.0;
 int PeleC::eb_srd_max_order = 0;
 int PeleC::eb_weights_type = 2;
 bool PeleC::eb_zero_body_state = false;
+bool PeleC::eb_problem_state = false;
 bool PeleC::do_mms = false;
 std::string PeleC::masa_solution_name = "ad_cns_3d_les";
 amrex::Real PeleC::fixed_dt = -1.0;

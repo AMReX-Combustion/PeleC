@@ -225,6 +225,9 @@ eb_weights_type              int          2
 # Set body state in covered cells to 0
 eb_zero_body_state           bool         false
 
+# Use the user-defined EB state
+eb_problem_state             bool         false
+
 #-----------------------------------------------------------------------------
 # category: method of manufactured solution
 #-----------------------------------------------------------------------------

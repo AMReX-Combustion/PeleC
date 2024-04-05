@@ -136,6 +136,7 @@ void pc_compute_hyp_mol_flux_eb(
   const amrex::Array4<const amrex::Real>& qaux,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& dx,
   const bool use_laxf_flux,
+  const bool eb_problem_state,
   const amrex::Array4<const amrex::Real>& vfrac,
   const EBBndryGeom* ebg,
   const int Nebg,

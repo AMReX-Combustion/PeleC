@@ -66,7 +66,7 @@ struct MyProblemSpecificFunctions : public DefaultProblemSpecificFunctions
 {
   AMREX_GPU_DEVICE
   AMREX_FORCE_INLINE
-  static bool ebfill(
+  static bool problem_eb_state(
     amrex::GeometryData const& geomdata,
     const amrex::Real /*vf*/,
     const amrex::IntVect iv,

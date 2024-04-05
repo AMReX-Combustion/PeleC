@@ -65,6 +65,7 @@ static amrex::Real eb_clean_massfrac_threshold;
 static int eb_srd_max_order;
 static int eb_weights_type;
 static bool eb_zero_body_state;
+static bool eb_problem_state;
 static bool do_mms;
 static std::string masa_solution_name;
 static amrex::Real fixed_dt;

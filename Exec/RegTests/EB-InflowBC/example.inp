@@ -79,3 +79,4 @@ eb2.geom_type = plane
 eb2.plane_point = 0.0 0.0 0.0
 eb2.plane_normal = 1.0 0.0 0.0
 ebd.boundary_grad_stencil_type = 0
+pelec.eb_problem_state = 1
