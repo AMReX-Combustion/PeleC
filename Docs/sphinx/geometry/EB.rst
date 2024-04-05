@@ -202,6 +202,6 @@ is run with this option to ensure that covered cells do not affect fluid cells.
 Problem specific inflow conditions on an EB
 -------------------------------------------
 
-It is possible for the user to define problem specific conditions on an EB surface. This is done by defining an ``ebfill`` function. An example of this is found in the ``EB-InflowBC`` case.
+It is possible for the user to define problem specific conditions on an EB surface. This is done by defining an ``problem_eb_state`` function and then including `pelec.eb_problem_state = 1` in the input file. An example of this is found in the ``EB-InflowBC`` case.
 
 .. warning:: This is a beta feature. Currently this will only affect the calculation of the hydrodynamic fluxes so this works best for advection dominated EB conditions.
