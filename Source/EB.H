@@ -8,6 +8,7 @@
 #include <AMReX_VisMF.H>
 #include <AMReX_PlotFileUtil.H>
 #include <AMReX_EB2.H>
+#include <AMReX_EBMultiFabUtil.H>
 #include <AMReX_EB2_IF_Union.H>
 #include <AMReX_EB2_IF_Intersection.H>
 #include <AMReX_EB2_IF_Complement.H>
