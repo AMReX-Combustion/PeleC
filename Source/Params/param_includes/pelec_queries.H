@@ -83,6 +83,7 @@ pp.query("eb_clean_massfrac_threshold", eb_clean_massfrac_threshold);
 pp.query("eb_srd_max_order", eb_srd_max_order);
 pp.query("eb_weights_type", eb_weights_type);
 pp.query("eb_zero_body_state", eb_zero_body_state);
+pp.query("eb_problem_state", eb_problem_state);
 pp.query("do_mms", do_mms);
 pp.query("masa_solution_name", masa_solution_name);
 pp.query("fixed_dt", fixed_dt);

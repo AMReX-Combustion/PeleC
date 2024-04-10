@@ -98,6 +98,29 @@ struct DefaultProblemSpecificFunctions
     Twall(i, j, k) = Twall_in;
   }
 
+  AMREX_GPU_DEVICE
+  AMREX_FORCE_INLINE
+  static bool problem_eb_state(
+    amrex::GeometryData const& /*geomdata*/,
+    const amrex::Real /*vf*/,
+    const amrex::IntVect /*iv*/,
+    AMREX_D_DECL(
+      const amrex::Real /*nx*/,
+      const amrex::Real /*ny*/,
+      const amrex::Real /*nz*/),
+    const amrex::Real* /*ql[5 + NUM_SPECIES]*/,
+    const amrex::Real* /*spl[NUM_SPECIES]*/,
+    const amrex::Real /*rhoe_l*/,
+    const amrex::Real /*gamc_l*/,
+    amrex::Real* /*qr[5 + NUM_SPECIES]*/,
+    amrex::Real* /*spr[NUM_SPECIES]*/,
+    amrex::Real& /*rhoe_r*/,
+    amrex::Real& /*gamc_r*/,
+    ProbParmDevice const* /*prob_parm*/)
+  {
+    return false;
+  }
+
   static void problem_modify_ext_sources(
     amrex::Real /*time*/,
     amrex::Real /*dt*/,
