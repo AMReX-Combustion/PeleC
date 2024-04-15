@@ -742,6 +742,10 @@ protected:
 
   static amrex::Vector<int> src_list;
 
+  static bool use_chem_mask;
+  static amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> lo_chem_mask_coordinate;
+  static amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> hi_chem_mask_coordinate;
+
   static bool use_typical_vals_chem;
   static bool use_typical_vals_chem_usr;
   static amrex::Real typical_rhoY_val_min;

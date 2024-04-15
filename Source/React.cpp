@@ -38,6 +38,9 @@ PeleC::react_state(
 
   const amrex::Real strt_time = amrex::ParallelDescriptor::second();
 
+  const auto plo = geom.ProbLoArray();
+  const auto dx     = geom.CellSizeArray();
+
   AMREX_ASSERT(do_react == 1);
 
   if ((verbose != 0) && amrex::ParallelDescriptor::IOProcessor()) {
@@ -170,6 +173,20 @@ PeleC::react_state(
         auto const& mask = dummyMask.array(mfi);
         auto const& fc = fctCount.array(mfi);
 
+        if(use_chem_mask)
+        {
+        	amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+            amrex::Real x=plo[0]+(i+0.5)*dx[0];
+            amrex::Real y=plo[1]+(j+0.5)*dx[1];
+            amrex::Real z=plo[2]+(k+0.5)*dx[2];
+
+            if((x>=lo_chem_mask_coordinate[0] && x<=hi_chem_mask_coordinate[0]) && ( y>=lo_chem_mask_coordinate[1] && y<=hi_chem_mask_coordinate[1])&& (z>=lo_chem_mask_coordinate[2] && z<=hi_chem_mask_coordinate[2]))
+            {
+            	mask(i,j,k)=-1;
+             }
+          });
+         }
+
         amrex::ParallelFor(
           bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
             // work on old state
@@ -235,6 +252,15 @@ PeleC::react_state(
                - 0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv // KE
                - rho_old * e_old) // old internal energy
               / dt;
+
+            if(use_chem_mask && mask(i,j,k)==-1)
+            {
+            	for(int nsp=0;nsp<NUM_SPECIES;nsp++)
+            	{
+            		rhoY(i,j,k,nsp) += nonrs_arr(i,j,k,UFS+nsp)*dt;
+            	}
+            	rhoY(i,j,k,NUM_SPECIES) += rhoedot_ext*dt;
+            }
 
             amrex::Real umnew =
               sold_arr(i, j, k, UMX) + dt * nonrs_arr(i, j, k, UMX);
