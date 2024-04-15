@@ -129,6 +129,19 @@ PeleC::react_state(
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
   {
+	  amrex::Gpu::DeviceVector<amrex::Real> dv_lo_chem_mask(lo_chem_mask_coordinate.size());
+	  amrex::Gpu::DeviceVector<amrex::Real> dv_hi_chem_mask(hi_chem_mask_coordinate.size());
+
+	  amrex::Real* lo_chem_mask_ptr = dv_lo_chem_mask.data();
+	  amrex::Real* hi_chem_mask_ptr = dv_hi_chem_mask.data();
+
+	  amrex::Gpu::copy(
+	      amrex::Gpu::hostToDevice, lo_chem_mask_coordinate.begin(), lo_chem_mask_coordinate.end(),
+		  dv_lo_chem_mask.begin());
+	  amrex::Gpu::copy(
+	      amrex::Gpu::hostToDevice, hi_chem_mask_coordinate.begin(), hi_chem_mask_coordinate.end(),
+		  dv_hi_chem_mask.begin());
+
     for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
          ++mfi) {
 
@@ -180,7 +193,7 @@ PeleC::react_state(
             amrex::Real y=plo[1]+(j+0.5)*dx[1];
             amrex::Real z=plo[2]+(k+0.5)*dx[2];
 
-            if((x>=d_lo_chem_mask_coordinate[0] && x<=d_hi_chem_mask_coordinate[0]) && ( y>=d_lo_chem_mask_coordinate[1] && y<=d_hi_chem_mask_coordinate[1])&& (z>=d_lo_chem_mask_coordinate[2] && z<=d_hi_chem_mask_coordinate[2]))
+            if((x>=lo_chem_mask_ptr[0] && x<=hi_chem_mask_ptr[0]) && ( y>=lo_chem_mask_ptr[1] && y<=hi_chem_mask_ptr[1])&& (z>=lo_chem_mask_ptr[2] && z<=hi_chem_mask_ptr[2]))
             {
             	mask(i,j,k)=-1;
              }
