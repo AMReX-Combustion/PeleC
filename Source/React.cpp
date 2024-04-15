@@ -180,7 +180,7 @@ PeleC::react_state(
             amrex::Real y=plo[1]+(j+0.5)*dx[1];
             amrex::Real z=plo[2]+(k+0.5)*dx[2];
 
-            if((x>=lo_chem_mask_coordinate[0] && x<=hi_chem_mask_coordinate[0]) && ( y>=lo_chem_mask_coordinate[1] && y<=hi_chem_mask_coordinate[1])&& (z>=lo_chem_mask_coordinate[2] && z<=hi_chem_mask_coordinate[2]))
+            if((x>=d_lo_chem_mask_coordinate[0] && x<=d_hi_chem_mask_coordinate[0]) && ( y>=d_lo_chem_mask_coordinate[1] && y<=d_hi_chem_mask_coordinate[1])&& (z>=d_lo_chem_mask_coordinate[2] && z<=d_hi_chem_mask_coordinate[2]))
             {
             	mask(i,j,k)=-1;
              }

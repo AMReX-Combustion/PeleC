@@ -112,6 +112,9 @@ bool PeleC::use_chem_mask=false;		//Flag to check if mask is activated.
 amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> PeleC::lo_chem_mask_coordinate;	//Box coordinate low
 amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> PeleC::hi_chem_mask_coordinate;	//Box coordinate high
 
+amrex::Gpu::DeviceVector<amrex::Real> PeleC::d_hi_chem_mask_coordinate;	//Box coordinate high
+amrex::Gpu::DeviceVector<amrex::Real> PeleC::d_lo_chem_mask_coordinate;	//Box coordinate high
+
 // this will be reset upon restart
 amrex::Real PeleC::previousCPUTimeUsed = 0.0;
 amrex::Real PeleC::startCPUTime = 0.0;
@@ -263,6 +266,10 @@ PeleC::read_params()
 		  pp.get("lo_chemmask", lo_chem_mask_coordinate[n], n);
 		  pp.get("hi_chemmask", hi_chem_mask_coordinate[n], n);
 	  }
+	  amrex::Gpu::copy(
+	            amrex::Gpu::hostToDevice, lo_chem_mask_coordinate.begin(), lo_chem_mask_coordinate.end(), d_lo_chem_mask_coordinate.begin());
+	  amrex::Gpu::copy(
+	  	        amrex::Gpu::hostToDevice, hi_chem_mask_coordinate.begin(), hi_chem_mask_coordinate.end(), d_hi_chem_mask_coordinate.begin());
   }
 
   if (use_typical_vals_chem_usr) {

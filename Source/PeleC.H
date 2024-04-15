@@ -745,6 +745,8 @@ protected:
   static bool use_chem_mask;
   static amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> lo_chem_mask_coordinate;
   static amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> hi_chem_mask_coordinate;
+  static amrex::Gpu::DeviceVector<amrex::Real> d_lo_chem_mask_coordinate;
+  static amrex::Gpu::DeviceVector<amrex::Real> d_hi_chem_mask_coordinate;
 
   static bool use_typical_vals_chem;
   static bool use_typical_vals_chem_usr;
