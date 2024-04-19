@@ -129,7 +129,7 @@ PeleC::react_state(
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
   {
-	  amrex::Gpu::DeviceVector<amrex::Real> dv_lo_chem_mask(lo_chem_mask_coordinate.size());
+	  /*amrex::Gpu::DeviceVector<amrex::Real> dv_lo_chem_mask(lo_chem_mask_coordinate.size());
 	  amrex::Gpu::DeviceVector<amrex::Real> dv_hi_chem_mask(hi_chem_mask_coordinate.size());
 
 	  amrex::Real* lo_chem_mask_ptr = dv_lo_chem_mask.data();
@@ -140,7 +140,15 @@ PeleC::react_state(
 		  dv_lo_chem_mask.begin());
 	  amrex::Gpu::copy(
 	      amrex::Gpu::hostToDevice, hi_chem_mask_coordinate.begin(), hi_chem_mask_coordinate.end(),
-		  dv_hi_chem_mask.begin());
+		  dv_hi_chem_mask.begin());*/
+
+	  /*Hari's suggestion*/
+
+	  amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> chemlo={AMREX_D_DECL(lo_chem_mask_coordinate[0], lo_chem_mask_coordinate[1], lo_chem_mask_coordinate[2])};
+	  amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> chemhi={AMREX_D_DECL(hi_chem_mask_coordinate[0], hi_chem_mask_coordinate[1], hi_chem_mask_coordinate[2])};
+	  amrex::RealBox Chem_Masked_Region(  AMREX_D_DECL(lo_chem_mask_coordinate[0], lo_chem_mask_coordinate[1], lo_chem_mask_coordinate[2]),
+			  	  	  	  	  	  	  	  AMREX_D_DECL(hi_chem_mask_coordinate[0], hi_chem_mask_coordinate[1], hi_chem_mask_coordinate[2]));
+
 
     for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
          ++mfi) {
@@ -189,11 +197,12 @@ PeleC::react_state(
         if(use_chem_mask)
         {
         	amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            amrex::Real x=plo[0]+(i+0.5)*dx[0];
-            amrex::Real y=plo[1]+(j+0.5)*dx[1];
-            amrex::Real z=plo[2]+(k+0.5)*dx[2];
+        		amrex::XDim3 point;
+        		point.x=plo[0]+(i+0.5)*dx[0];
+        		point.y=plo[1]+(j+0.5)*dx[1];
+        		point.z=plo[2]+(k+0.5)*dx[2];
 
-            if((x>=lo_chem_mask_ptr[0] && x<=hi_chem_mask_ptr[0]) && ( y>=lo_chem_mask_ptr[1] && y<=hi_chem_mask_ptr[1])&& (z>=lo_chem_mask_ptr[2] && z<=hi_chem_mask_ptr[2]))
+            if(Chem_Masked_Region.contains(point))
             {
             	mask(i,j,k)=-1;
              }
