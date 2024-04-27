@@ -67,7 +67,7 @@ if __name__ == "__main__":
     Lx = 2 * np.pi * 1e-3
     R = 0.785 * 1e-3
     c = 3
-    N = 2048
+    N = 256 # 2048
     x = np.linspace(0, Lx, N)
     Rd = np.sqrt((x - 0.5 * Lx) ** 2)
     phi = 0.5 * (1 + np.tanh(c * (Rd - R) / R))
