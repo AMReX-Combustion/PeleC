@@ -60,6 +60,6 @@ pelec.plot_massfrac = 1
 
 # PROBLEM PARAMETERS
 prob.u0 = 400.0
-prob.iname = "cantera/profiles.dat"
+prob.iname = "profiles.dat"
 prob.case_type = "reacting"
 prob.nx = 256
