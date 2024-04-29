@@ -255,6 +255,9 @@ jobs:
           cd ${{runner.workspace}}/deps
           git clone --recursive https://github.com/manufactured-solutions/MASA.git ${{runner.workspace}}/deps/MASA
           cd ${{runner.workspace}}/deps/MASA
+          automake --version
+          autoconf -V
+          libtool -V
           ./bootstrap
           ./configure CXX='mpicxx -std=c++11' CC=mpicc \
             METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" \
