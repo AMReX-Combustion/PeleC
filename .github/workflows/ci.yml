@@ -247,6 +247,9 @@ jobs:
           cd ${{runner.workspace}}/deps
           git clone --recursive https://github.com/roystgnr/MetaPhysicL.git ${{runner.workspace}}/deps/MetaPhysicL
           cd ${{runner.workspace}}/deps/MetaPhysicL
+          automake --version
+          autoconf -V
+          libtool -V
           ./bootstrap
           ./configure --prefix="${{runner.workspace}}/deps/install/MetaPhysicL"
           make -j ${{env.NPROCS}}
@@ -255,9 +258,6 @@ jobs:
           cd ${{runner.workspace}}/deps
           git clone --recursive https://github.com/manufactured-solutions/MASA.git ${{runner.workspace}}/deps/MASA
           cd ${{runner.workspace}}/deps/MASA
-          automake --version
-          autoconf -V
-          libtool -V
           ./bootstrap
           ./configure CXX='mpicxx -std=c++11' CC=mpicc \
             METAPHYSICL_DIR="${{runner.workspace}}/deps/install/MetaPhysicL" \
