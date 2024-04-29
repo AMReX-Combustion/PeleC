@@ -178,7 +178,7 @@ jobs:
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        os: [macos-latest]
+        os: [ubuntu-latest, macos-latest]
         build_type: [Release, Debug]
         include:
           - os: macos-latest
