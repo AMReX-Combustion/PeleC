@@ -649,7 +649,7 @@ jobs:
         run: |
           cmake --build ${{runner.workspace}}/build-codeql --parallel ${{env.NPROCS}}
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
         with:
           category: "/language:cpp"
           upload: False
@@ -663,7 +663,7 @@ jobs:
           input: sarif-results/cpp.sarif
           output: sarif-results/cpp.sarif
       - name: Upload CodeQL sarif
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: sarif-results/cpp.sarif
   Lint-codespell:
