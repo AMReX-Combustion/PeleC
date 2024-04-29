@@ -208,7 +208,7 @@ jobs:
       - name: Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.8'
+          python-version: '3.12'
       - name: Setup
         run: |
           echo "NPROCS=${{matrix.procs}}" >> $GITHUB_ENV
@@ -226,7 +226,7 @@ jobs:
           ${{matrix.install_deps}}
           # Install Python packages
           python -m pip install --upgrade pip
-          pip install nose numpy pandas
+          pip install pynose numpy pandas
       - name: Install Ccache
         run: |
           if [ "${RUNNER_OS}" != "macOS" ]; then
@@ -677,7 +677,7 @@ jobs:
       - name: Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.12'
       - name: Dependencies
         run: |
           # Install Python packages
