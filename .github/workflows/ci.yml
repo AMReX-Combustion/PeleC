@@ -48,7 +48,7 @@ jobs:
           tar xvf ccache-4.8-linux-x86_64.tar.xz
           sudo cp -f ccache-4.8-linux-x86_64/ccache /usr/local/bin/
       - name: Set Up Ccache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cache/ccache
           key: ccache-${{github.workflow}}-${{github.job}}-git-${{github.sha}}
@@ -235,7 +235,7 @@ jobs:
             sudo cp -f ccache-4.8-linux-x86_64/ccache /usr/local/bin/
           fi
       - name: Set Up Ccache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{matrix.ccache_cache}}
           key: ccache-${{github.workflow}}-${{github.job}}-${{matrix.os}}-${{matrix.build_type}}-git-${{github.sha}}
@@ -351,7 +351,7 @@ jobs:
           tar xvf ccache-4.8-linux-x86_64.tar.xz
           sudo cp -f ccache-4.8-linux-x86_64/ccache /usr/local/bin/
       - name: Set Up Ccache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cache/ccache
           key: ccache-${{github.workflow}}-${{github.job}}-git-${{github.sha}}
@@ -413,7 +413,7 @@ jobs:
           tar xvf ccache-4.8-linux-x86_64.tar.xz
           sudo cp -f ccache-4.8-linux-x86_64/ccache /usr/local/bin/
       - name: Set Up Ccache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cache/ccache
           key: ccache-${{github.workflow}}-${{github.job}}-git-${{github.sha}}
@@ -484,7 +484,7 @@ jobs:
           tar xvf ccache-4.8-linux-x86_64.tar.xz
           sudo cp -f ccache-4.8-linux-x86_64/ccache /usr/local/bin/
       - name: Set Up Ccache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cache/ccache
           key: ccache-${{github.workflow}}-${{github.job}}-git-${{github.sha}}
@@ -573,7 +573,7 @@ jobs:
         run: |
           brew install ccache
       - name: Set Up Ccache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /Users/runner/Library/Caches/ccache
           key: ccache-${{github.workflow}}-${{github.job}}-git-${{github.sha}}
