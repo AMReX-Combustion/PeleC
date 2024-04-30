@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Clone
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Check formatting
       uses: DoozyX/clang-format-lint-action@v0.16.2
       with:
@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clone
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: 'recursive'
       - name: Setup
@@ -48,7 +48,7 @@ jobs:
           tar xvf ccache-4.8-linux-x86_64.tar.xz
           sudo cp -f ccache-4.8-linux-x86_64/ccache /usr/local/bin/
       - name: Set Up Ccache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cache/ccache
           key: ccache-${{github.workflow}}-${{github.job}}-git-${{github.sha}}
@@ -182,12 +182,12 @@ jobs:
         build_type: [Release, Debug]
         include:
           - os: macos-latest
-            install_deps: brew install mpich automake ccache
+            install_deps: brew install mpich libtool automake ccache
             comp: llvm
             procs: $(sysctl -n hw.ncpu)
             ccache_cache: /Users/runner/Library/Caches/ccache
           - os: ubuntu-latest
-            install_deps: sudo apt-get update && sudo apt-get install mpich libmpich-dev
+            install_deps: sudo apt-get update && sudo apt-get install mpich libmpich-dev libtool-bin
             comp: gnu
             procs: $(nproc)
             ccache_cache: ~/.cache/ccache
@@ -202,13 +202,13 @@ jobs:
             build_type: Debug
     steps:
       - name: Clone
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: 'recursive'
       - name: Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.8'
+          python-version: '3.12'
       - name: Setup
         run: |
           echo "NPROCS=${{matrix.procs}}" >> $GITHUB_ENV
@@ -226,7 +226,7 @@ jobs:
           ${{matrix.install_deps}}
           # Install Python packages
           python -m pip install --upgrade pip
-          pip install nose numpy pandas
+          pip install pynose numpy pandas setuptools
       - name: Install Ccache
         run: |
           if [ "${RUNNER_OS}" != "macOS" ]; then
@@ -235,7 +235,7 @@ jobs:
             sudo cp -f ccache-4.8-linux-x86_64/ccache /usr/local/bin/
           fi
       - name: Set Up Ccache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{matrix.ccache_cache}}
           key: ccache-${{github.workflow}}-${{github.job}}-${{matrix.os}}-${{matrix.build_type}}-git-${{github.sha}}
@@ -322,7 +322,7 @@ jobs:
             cuda_pkg: 11-4
     steps:
       - name: Clone
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: 'recursive'
       - name: Setup
@@ -351,7 +351,7 @@ jobs:
           tar xvf ccache-4.8-linux-x86_64.tar.xz
           sudo cp -f ccache-4.8-linux-x86_64/ccache /usr/local/bin/
       - name: Set Up Ccache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cache/ccache
           key: ccache-${{github.workflow}}-${{github.job}}-git-${{github.sha}}
@@ -386,7 +386,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Clone
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: 'recursive'
       - name: Setup
@@ -413,7 +413,7 @@ jobs:
           tar xvf ccache-4.8-linux-x86_64.tar.xz
           sudo cp -f ccache-4.8-linux-x86_64/ccache /usr/local/bin/
       - name: Set Up Ccache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cache/ccache
           key: ccache-${{github.workflow}}-${{github.job}}-git-${{github.sha}}
@@ -458,7 +458,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clone
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: 'recursive'
       - name: Setup
@@ -484,7 +484,7 @@ jobs:
           tar xvf ccache-4.8-linux-x86_64.tar.xz
           sudo cp -f ccache-4.8-linux-x86_64/ccache /usr/local/bin/
       - name: Set Up Ccache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cache/ccache
           key: ccache-${{github.workflow}}-${{github.job}}-git-${{github.sha}}
@@ -524,7 +524,7 @@ jobs:
 #    runs-on: macos-12
 #    steps:
 #      - name: Clone
-#        uses: actions/checkout@v3
+#        uses: actions/checkout@v4
 #        with:
 #          submodules: 'recursive'
 #      - name: Dependencies
@@ -559,7 +559,7 @@ jobs:
     runs-on: macos-13
     steps:
       - name: Clone
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: 'recursive'
       - name: Setup
@@ -573,7 +573,7 @@ jobs:
         run: |
           brew install ccache
       - name: Set Up Ccache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /Users/runner/Library/Caches/ccache
           key: ccache-${{github.workflow}}-${{github.job}}-git-${{github.sha}}
@@ -623,11 +623,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clone
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: 'recursive'
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
           languages: cpp
           queries: +security-and-quality
@@ -649,7 +649,7 @@ jobs:
         run: |
           cmake --build ${{runner.workspace}}/build-codeql --parallel ${{env.NPROCS}}
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
         with:
           category: "/language:cpp"
           upload: False
@@ -663,7 +663,7 @@ jobs:
           input: sarif-results/cpp.sarif
           output: sarif-results/cpp.sarif
       - name: Upload CodeQL sarif
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: sarif-results/cpp.sarif
   Lint-codespell:
@@ -671,13 +671,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clone
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: false
       - name: Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.12'
       - name: Dependencies
         run: |
           # Install Python packages
@@ -694,7 +694,7 @@ jobs:
           PR_NUMBER: ${{ github.event.number }}
         run: |
           echo $PR_NUMBER > pr_number.txt
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: pr_number
           path: pr_number.txt
