@@ -182,7 +182,7 @@ jobs:
         build_type: [Release, Debug]
         include:
           - os: macos-latest
-            install_deps: brew install mpich automake ccache
+            install_deps: brew install mpich libtool automake ccache
             comp: llvm
             procs: $(sysctl -n hw.ncpu)
             ccache_cache: /Users/runner/Library/Caches/ccache
