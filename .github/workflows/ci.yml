@@ -187,7 +187,7 @@ jobs:
             procs: $(sysctl -n hw.ncpu)
             ccache_cache: /Users/runner/Library/Caches/ccache
           - os: ubuntu-latest
-            install_deps: sudo apt-get update && sudo apt-get install mpich libmpich-dev
+            install_deps: sudo apt-get update && sudo apt-get install mpich libmpich-dev libtool-bin
             comp: gnu
             procs: $(nproc)
             ccache_cache: ~/.cache/ccache
@@ -249,7 +249,6 @@ jobs:
           cd ${{runner.workspace}}/deps/MetaPhysicL
           automake --version
           autoconf -V
-          libtool -V
           ./bootstrap
           ./configure --prefix="${{runner.workspace}}/deps/install/MetaPhysicL"
           make -j ${{env.NPROCS}}
