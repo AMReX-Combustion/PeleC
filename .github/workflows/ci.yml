@@ -226,7 +226,7 @@ jobs:
           ${{matrix.install_deps}}
           # Install Python packages
           python -m pip install --upgrade pip
-          pip install pynose numpy pandas
+          pip install pynose numpy pandas setuptools
       - name: Install Ccache
         run: |
           if [ "${RUNNER_OS}" != "macOS" ]; then
