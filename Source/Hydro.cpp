@@ -430,7 +430,7 @@ pc_adjust_fluxes_eb(
   amrex::Array4<const amrex::Real> const& vfrac,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dxinv,
-  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flux,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flux,
   const amrex::Geometry& geom,
   const int* bclo,
   const int* bchi,
@@ -585,9 +585,9 @@ pc_consup_eb(
   amrex::Array4<const amrex::Real> const& vfrac,
   amrex::Array4<amrex::EBCellFlag const> const& flag,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dxinv,
-  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>&
     flux_tmp,
-  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flux,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flux,
 
   const int eb_weights_type)
 {
