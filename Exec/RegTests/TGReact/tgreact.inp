@@ -8,12 +8,12 @@ geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
 geometry.prob_lo     =   0.0 0.0 0.0
 geometry.prob_hi     =   0.62831853071795864  0.62831853071795864  0.62831853071795864
 # use with single level
-amr.n_cell           =  32    32    32
+amr.n_cell           = 32 32 32
 
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
-pelec.lo_bc       =  "Interior"  "Interior"  "Interior" 
+pelec.lo_bc       =  "Interior"  "Interior"  "Interior"
 pelec.hi_bc       =  "Interior"  "Interior"  "Interior"
 
 # WHICH PHYSICS
@@ -23,8 +23,8 @@ pelec.diffuse_temp = 1
 pelec.diffuse_spec = 1
 pelec.diffuse_enth = 1
 pelec.do_react = 1
-pelec.allow_negative_energy = 0
-pelec.chem_integrator = 2
+pelec.chem_integrator = "ReactorCvode"
+cvode.solve_type= "GMRES"
 
 # TIME STEP CONTROL
 pelec.cfl            = 0.25     # cfl number for hyperbolic system
@@ -39,10 +39,10 @@ amr.v                = 1       # verbosity in Amr.cpp
 amr.data_log         = datlog extralog
 #amr.grid_log        = grdlog  # name of grid logging file
 
-# REFINEMENT / REGRIDDING 
+# REFINEMENT / REGRIDDING
 amr.max_level       = 0       # maximum level number allowed
-amr.ref_ratio       = 2 2 2 2 # refinement ratio
-amr.regrid_int      = 2 2 2 2 # how often to regrid
+#amr.ref_ratio       = 2 2 2 2 # refinement ratio
+#amr.regrid_int      = 2 2 2 2 # how often to regrid
 amr.blocking_factor = 4       # block factor in grid generation
 amr.max_grid_size   = 64
 amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
@@ -60,6 +60,6 @@ pelec.plot_massfrac = 1
 
 # PROBLEM PARAMETERS
 prob.u0 = 400.0
-prob.iname = "cantera/profiles.dat"
+prob.iname = "profiles.dat"
 prob.case_type = "reacting"
-prob.nx = 2048
+prob.nx = 256

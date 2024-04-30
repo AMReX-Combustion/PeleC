@@ -167,8 +167,9 @@ void
 PeleC::problem_post_timestep()
 {
 
-  if ((verbose <= 0))
+  if ((verbose <= 0)) {
     return;
+  }
 
   bool local_flag = true;
 
@@ -184,8 +185,6 @@ PeleC::problem_post_timestep()
     }
 
     for (int lev = 0; lev <= finest_level; lev++) {
-      PeleC& pc_lev = getLevel(lev);
-
       max_temp = maxDerive("Temp", time, local_flag);
     }
 
@@ -214,8 +213,9 @@ void
 PeleC::problem_post_init()
 {
 
-  if ((verbose <= 0))
+  if ((verbose <= 0)) {
     return;
+  }
 
   bool local_flag = true;
 
@@ -227,8 +227,6 @@ PeleC::problem_post_init()
 
   if (level == 0) {
     for (int lev = 0; lev <= finest_level; lev++) {
-      PeleC& pc_lev = getLevel(lev);
-
       max_temp = maxDerive("Temp", time, local_flag);
     }
 

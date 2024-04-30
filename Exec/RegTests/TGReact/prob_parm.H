@@ -42,7 +42,7 @@ struct ProbParmDevice
 
 struct ProbParmHost
 {
-  std::string iname = "";
+  std::string iname;
   std::string case_type = "cold";
   amrex::Vector<amrex::Real> h_input;
   amrex::Vector<amrex::Real> h_xarray;

@@ -54,7 +54,7 @@ macro(setup_test)
     # Copy files to test working directory
     file(COPY ${CURRENT_TEST_SOURCE_DIR}/${TEST_NAME}.inp DESTINATION "${CURRENT_TEST_BINARY_DIR}/")
     file(COPY ${TEST_FILES} DESTINATION "${CURRENT_TEST_BINARY_DIR}/")
-    
+
     # Set some default runtime options for all tests
     set(RUNTIME_OPTIONS "amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1 amrex.the_arena_is_managed=0 amrex.abort_on_unused_inputs=1")
     if(PELE_ENABLE_FPE_TRAP_FOR_TESTS AND (NOT APPLE))
@@ -232,6 +232,7 @@ add_test_rv(masscons-isothermal MassCons)
 add_test_r(masscons-isothermal-whydro MassCons)
 add_test_rv(tg-1 TG)
 add_test_rv(tg-2 TG)
+add_test_rv(tgreact TGReact)
 add_test_rv(hit-1 HIT)
 add_test_rv(hit-2 HIT)
 add_test_rv(hit-3 HIT)
