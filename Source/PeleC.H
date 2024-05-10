@@ -37,6 +37,7 @@ enum sources {
   diff_src,
   les_src,
   soot_src,
+  rot_src,
 #ifdef PELE_USE_MASA
   mms_src,
 #endif
