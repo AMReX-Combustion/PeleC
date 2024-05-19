@@ -56,6 +56,7 @@ static int srf_axis;
 static amrex::Real srf_axis_x;
 static amrex::Real srf_axis_y;
 static amrex::Real srf_axis_z;
+static amrex::Real srf_dist;
 static bool diffuse_temp;
 static bool diffuse_enth;
 static bool diffuse_spec;

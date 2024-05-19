@@ -62,6 +62,7 @@ pp.query("srf_axis", srf_axis);
 pp.query("srf_axis_x", srf_axis_x);
 pp.query("srf_axis_y", srf_axis_y);
 pp.query("srf_axis_z", srf_axis_z);
+pp.query("srf_dist", srf_dist);
 pp.query("diffuse_temp", diffuse_temp);
 pp.query("diffuse_enth", diffuse_enth);
 pp.query("diffuse_spec", diffuse_spec);

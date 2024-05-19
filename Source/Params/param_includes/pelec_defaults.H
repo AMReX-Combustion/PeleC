@@ -56,6 +56,7 @@ int PeleC::srf_axis = 2;
 amrex::Real PeleC::srf_axis_x = 0.0;
 amrex::Real PeleC::srf_axis_y = 0.0;
 amrex::Real PeleC::srf_axis_z = 0.0;
+amrex::Real PeleC::srf_dist = 0.0;
 bool PeleC::diffuse_temp = false;
 bool PeleC::diffuse_enth = false;
 bool PeleC::diffuse_spec = false;

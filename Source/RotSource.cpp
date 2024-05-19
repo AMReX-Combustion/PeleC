@@ -6,46 +6,46 @@
 #include "IndexDefines.H"
 
 void
-PeleC::construct_old_mrf_source(amrex::Real /*time*/, amrex::Real /*dt*/)
+PeleC::construct_old_rot_source(amrex::Real /*time*/, amrex::Real /*dt*/)
 {
   const amrex::MultiFab& S_old = get_old_data(State_Type);
 
   int ng = 0;
 
-  old_sources[mrf_src]->setVal(0.0);
+  old_sources[rot_src]->setVal(0.0);
 
-  if (!add_mrf_src) {
+  if (!do_mrf && !do_srf) {
     return;
   }
 
-  fill_mrf_source(S_old, S_old, *old_sources[mrf_src], ng);
+  fill_rot_source(S_old, S_old, *old_sources[rot_src], ng);
 
-  old_sources[mrf_src]->FillBoundary(geom.periodicity());
+  old_sources[rot_src]->FillBoundary(geom.periodicity());
 }
 
 void
-PeleC::construct_new_mrf_source(amrex::Real /*time*/, amrex::Real /*dt*/)
+PeleC::construct_new_rot_source(amrex::Real /*time*/, amrex::Real /*dt*/)
 {
   const amrex::MultiFab& S_old = get_old_data(State_Type);
   const amrex::MultiFab& S_new = get_new_data(State_Type);
 
   int ng = 0;
 
-  new_sources[mrf_src]->setVal(0.0);
+  new_sources[rot_src]->setVal(0.0);
 
-  if (!add_mrf_src) {
+  if (!do_mrf && !do_srf) {
     return;
   }
 
-  fill_mrf_source(S_old, S_new, *new_sources[mrf_src], ng);
+  fill_rot_source(S_old, S_new, *new_sources[rot_src], ng);
 }
 
 void
-PeleC::fill_mrf_source(
+PeleC::fill_rot_source(
   const amrex::MultiFab& state_old
   /*unused*/,
   const amrex::MultiFab& state_new,
-  amrex::MultiFab& mrf_src,
+  amrex::MultiFab& rot_src,
   int ng)
 {
   auto const& fact =

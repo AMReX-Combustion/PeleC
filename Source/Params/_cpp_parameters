@@ -173,10 +173,13 @@ srf_omega                   Real        0.0
 #mrf axis
 srf_axis                   int        2
 
-#mrf locations
+#srf locations
 srf_axis_x                 Real        0.0
 srf_axis_y                 Real        0.0
 srf_axis_z                 Real        0.0
+
+#srf cut off distance
+srf_dist                   Real        0.0
 
 #-----------------------------------------------------------------------------
 # category: diffusion
