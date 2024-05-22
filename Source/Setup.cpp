@@ -723,4 +723,9 @@ PeleC::set_active_sources()
     src_list.push_back(mms_src);
   }
 #endif
+
+  if(do_srf || do_mrf)
+  {
+    src_list.push_back(rot_src);
+  }
 }

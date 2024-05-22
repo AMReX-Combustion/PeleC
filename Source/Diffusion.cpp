@@ -16,6 +16,15 @@ PeleC::getMOLSrcTerm(
     return;
   }
 
+  int rf=(mrf_on | srf_on);  
+  amrex::Real omega = (srf_on==1)?srf_omega:mrf_omega;
+  amrex::Real axis  = (srf_on==1)?srf_axis:mrf_axis;
+  amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> axis_loc={mrf_axis_x,mrf_axis_y,mrf_axis_z};
+  auto prob_lo = geom.ProbLoArray();
+  auto prob_hi = geom.ProbHiArray();
+  const auto dx = geom.CellSizeArray();
+  
+
   /*
      Across all conserved state components, compute the method of lines rhs
      = -Div(Flux). The input state, S, contained the conserved variables, and
@@ -126,7 +135,21 @@ PeleC::getMOLSrcTerm(
         BL_PROFILE("PeleC::ctoprim()");
         amrex::ParallelFor(
           gbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            pc_ctoprim(i, j, k, sar, qar, qauxar);
+
+            if(rf)
+            {
+              RealVect r(0.0,0.0,0.0);
+              r[0]=prob_lo[0]+(i+0.5)*dx[0]-axis_loc[0];
+              r[1]=prob_lo[1]+(j+0.5)*dx[1]-axis_loc[1];
+              r[2]=prob_lo[2]+(k+0.5)*dx[2]-axis_loc[2];
+              rad=std::sqrt(r[0]*r[0]+r[1]*r[1]+r[2]*r[2]);
+              pc_ctoprim(i, j, k, sar, qar, qauxar,omega,rad);
+            }
+            else
+            {
+               pc_ctoprim(i, j, k, sar, qar, qauxar,0.0,0.0);
+            }
+
           });
       }
       // TODO deal with NSCBC

@@ -38,6 +38,8 @@ pc_rst_int_e(
   const bool allow_negative_energy,
   const bool dual_energy_update_E_from_e,
   const amrex::Real dual_energy_eta2,
+  amrex::Real omega,
+  amrex::Real rad
   const int /*verbose*/)
 {
   if (std::is_same<
@@ -52,7 +54,7 @@ pc_rst_int_e(
     const amrex::Real Up = S(i, j, k, UMX) * rhoInv;
     const amrex::Real Vp = S(i, j, k, UMY) * rhoInv;
     const amrex::Real Wp = S(i, j, k, UMZ) * rhoInv;
-    const amrex::Real ke = 0.5 * (Up * Up + Vp * Vp + Wp * Wp);
+    const amrex::Real ke = 0.5 * (Up * Up + Vp * Vp + Wp * Wp) - 0.5*omega*omega*rad*rad;
     const amrex::Real eden = S(i, j, k, UEDEN) * rhoInv;
     const amrex::Real eos_state_T = constants::very_small_num();
     amrex::Real eos_state_massfrac[NUM_SPECIES] = {0.0};
@@ -109,7 +111,7 @@ pc_rst_int_e(
     const amrex::Real Up = S(i, j, k, UMX) * rhoInv;
     const amrex::Real Vp = S(i, j, k, UMY) * rhoInv;
     const amrex::Real Wp = S(i, j, k, UMZ) * rhoInv;
-    const amrex::Real ke = 0.5 * (Up * Up + Vp * Vp + Wp * Wp);
+    const amrex::Real ke = 0.5 * (Up * Up + Vp * Vp + Wp * Wp) - 0.5*omega*omega*rad*rad;
     if (
       S(i, j, k, UEDEN) <
       (S(i, j, k, URHO) * std::numeric_limits<amrex::Real>::min())) {
@@ -170,7 +172,7 @@ pc_rst_int_e(
     const amrex::Real Up = S(i, j, k, UMX) * rhoInv;
     const amrex::Real Vp = S(i, j, k, UMY) * rhoInv;
     const amrex::Real Wp = S(i, j, k, UMZ) * rhoInv;
-    const amrex::Real ke = 0.5 * (Up * Up + Vp * Vp + Wp * Wp);
+    const amrex::Real ke = 0.5 * (Up * Up + Vp * Vp + Wp * Wp) - 0.5*omega*omega*rad*rad;
     S(i, j, k, UEINT) = S(i, j, k, UEDEN) - rho * ke;
   }
 }
@@ -184,7 +186,8 @@ pc_ctoprim(
   const int k,
   amrex::Array4<const amrex::Real> const& u,
   amrex::Array4<amrex::Real> const& q,
-  amrex::Array4<amrex::Real> const& qa)
+  amrex::Array4<amrex::Real> const& qa,
+  amrex::Real omega, amrex::Real rad)
 {
   auto eos = pele::physics::PhysicsType::eos();
   const amrex::Real rho = u(i, j, k, URHO);
@@ -192,7 +195,8 @@ pc_ctoprim(
   const amrex::Real vx = u(i, j, k, UMX) * rhoinv;
   const amrex::Real vy = u(i, j, k, UMY) * rhoinv;
   const amrex::Real vz = u(i, j, k, UMZ) * rhoinv;
-  const amrex::Real kineng = 0.5 * rho * (vx * vx + vy * vy + vz * vz);
+  const amrex::Real kineng = 0.5 * rho * (vx * vx + vy * vy + vz * vz) 
+  - 0.5*rho*omega*omega*rad*rad;
   q(i, j, k, QRHO) = rho;
   q(i, j, k, QU) = vx;
   q(i, j, k, QV) = vy;

@@ -33,7 +33,11 @@ riemann(
   amrex::Real& qint_iv1,
   amrex::Real& qint_iv2,
   amrex::Real& qint_gdpres,
-  amrex::Real& qint_gdgame)
+  amrex::Real& qint_gdgame,
+  amrex::Real omegal,
+  amrex::Real radl,
+  amrex::Real omegar,
+  amrex::Real radr)
 {
   const amrex::Real wsmall = std::numeric_limits<amrex::Real>::min();
 
@@ -127,6 +131,8 @@ riemann(
   mask = ustar > 0.0;
   qint_iv1 = mask ? vl : vr;
   qint_iv2 = mask ? v2l : v2r;
+  amrex::Real omega = mask ? omegal:omegar;
+  amrex::Real rad = mask ? radl:radr;
 
   mask = (ustar == 0.0);
   qint_iv1 = mask ? 0.5 * (vl + vr) : qint_iv1;
@@ -183,7 +189,8 @@ riemann(
   uflx_w = uflx_rho * qint_iv2;
   const amrex::Real rhoetot =
     regd +
-    0.5 * rgd * (qint_iu * qint_iu + qint_iv1 * qint_iv1 + qint_iv2 * qint_iv2);
+    0.5 * rgd * (qint_iu * qint_iu + qint_iv1 * qint_iv1 + qint_iv2 * qint_iv2) +
+    -0.5 * rgd * omega*omega*rad*rad;
   uflx_eden = qint_iu * (rhoetot + qint_gdpres);
   uflx_eint = qint_iu * regd;
 }
@@ -214,7 +221,11 @@ laxfriedrich_flux(
   amrex::Real& uflx_v,
   amrex::Real& uflx_w,
   amrex::Real& uflx_eden,
-  amrex::Real& uflx_eint)
+  amrex::Real& uflx_eint,
+  amrex::Real omegal,
+  amrex::Real radl,
+  amrex::Real omegar,
+  amrex::Real radr)
 {
 
   const amrex::Real wsmall = std::numeric_limits<amrex::Real>::min();
@@ -240,8 +251,8 @@ laxfriedrich_flux(
   eos.RYP2E(rr, mfrac_r, pr, er);
 
   // rho e total
-  amrex::Real r_elt = rl * (el + 0.5 * (ul * ul + vl * vl + v2l * v2l));
-  amrex::Real r_ert = rr * (er + 0.5 * (ur * ur + vr * vr + v2r * v2r));
+  amrex::Real r_elt = rl * (el + 0.5 * (ul * ul + vl * vl + v2l * v2l) - 0.5*omegal*omegal*radl*radl);
+  amrex::Real r_ert = rr * (er + 0.5 * (ur * ur + vr * vr + v2r * v2r) - 0.5*omegar*omegar*radr*radr);
 
   const amrex::Real wl = amrex::max<amrex::Real>(wsmall, cl * rl);
   const amrex::Real wr = amrex::max<amrex::Real>(wsmall, cr * rr);

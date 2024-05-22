@@ -41,6 +41,7 @@ enum sources {
 #ifdef PELE_USE_MASA
   mms_src,
 #endif
+  rot_src,
   num_src
 };
 
@@ -374,6 +375,10 @@ public:
     amrex::MultiFab& mms_src,
     int ng);
 #endif
+  
+  void construct_old_rot_source(amrex::Real time, amrex::Real dt);
+
+  void construct_new_rot_source(amrex::Real time, amrex::Real dt);
 
   void getLESTerm(
     amrex::Real time,

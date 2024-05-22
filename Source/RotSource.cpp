@@ -58,9 +58,9 @@ PeleC::fill_rot_source(
   amrex::Real omega = (srf_on==1)?srf_omega:mrf_omega;
   amrex::Real axis  = (srf_on==1)?srf_axis:mrf_axis;
   
-  auto prob_lo = geom[lev].ProbLoArray();
-  auto prob_hi = geom[lev].ProbHiArray();
-  const auto dx = geom[lev].CellSizeArray();
+  auto prob_lo = geom.ProbLoArray();
+  auto prob_hi = geom.ProbHiArray();
+  const auto dx = geom.CellSizeArray();
 
   //need a check to prevent mrf in 2 and 1d
   //read a vector instead for mrf_axis_x and y
