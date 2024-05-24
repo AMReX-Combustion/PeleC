@@ -248,7 +248,7 @@ PeleC::react_state(
         );
 
         amrex::Gpu::Device::streamSynchronize();
-
+        bool use_chem_mask_d = use_chem_mask;
         // unpack data
         amrex::ParallelFor(
           bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -275,7 +275,7 @@ PeleC::react_state(
                - rho_old * e_old) // old internal energy
               / dt;
 
-            if(use_chem_mask && mask(i,j,k)==-1)
+            if(use_chem_mask_d && mask(i,j,k)==-1)
             {
             	for(int nsp=0;nsp<NUM_SPECIES;nsp++)
             	{
