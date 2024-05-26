@@ -189,7 +189,7 @@ use_explicit_filter          bool          false
 Cs                           Real          0.0
 
 # Constant Wale Cw coefficient
-Cw   
+Cw                           Real          0.0   
 
 # Constant Smagorinsky CI coefficient
 CI                           Real          0.0
