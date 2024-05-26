@@ -72,6 +72,7 @@ pp.query("do_isothermal_walls", do_isothermal_walls);
 pp.query("do_les", do_les);
 pp.query("use_explicit_filter", use_explicit_filter);
 pp.query("Cs", Cs);
+pp.query("Cw", Cw);
 pp.query("CI", CI);
 pp.query("PrT", PrT);
 pp.query("eb_boundary_T", eb_boundary_T);

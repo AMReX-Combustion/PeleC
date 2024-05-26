@@ -122,6 +122,14 @@ PeleC::getLESTerm(
     getDynamicSmagorinskyLESTerm(time, dt, LESTerm, reflux_factor);
     break;
 
+  case 2:
+    getWALELESTerm(time, dt, LESTerm, reflux_factor);
+    break;
+
+  case 3:
+    getVremanLESTerm(time, dt, LESTerm, reflux_factor);
+    break;
+
   default:
     amrex::Error("Invalid les_model number.");
     break;
@@ -139,6 +147,85 @@ PeleC::getLESTerm(
       Factory());
     amrex::MultiFab::Copy(
       LESTerm, filtered_les_source, 0, 0, NVAR, filtered_les_source.nGrow());
+  }
+}
+
+void 
+computeTangentialVelDerivs(
+  const amrex::Box eboxes[AMREX_SPACEDIM], 
+  amrex::FArrayBox tander_ec[AMREX_SPACEDIM],
+  amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& tanders, 
+  const amrex::Array4<amrex::Real>& q_ar, 
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx) 
+{
+  BL_PROFILE("PeleC::pc_compute_tangential_vel_derivs()");
+  for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
+    tander_ec[dir].resize(
+        eboxes[dir], GradUtils::nCompTan, amrex::The_Async_Arena());
+    tanders[dir] = tander_ec[dir].array();
+    setV(eboxes[dir], GradUtils::nCompTan, tanders[dir], 0);
+    const amrex::Real d1 = dir == 0 ? dx[1] : dx[0];
+    const amrex::Real d2 = dir == 2 ? dx[1] : dx[2];
+    amrex::ParallelFor(
+        eboxes[dir], [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+            pc_compute_tangential_vel_derivs(
+                i, j, k, q_ar, dir, d1, d2, tanders[dir]);
+        });
+  }
+    
+}
+
+void 
+resizeAndSetFlux(
+  const amrex::Box eboxes[AMREX_SPACEDIM], 
+  amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flx, 
+  amrex::FArrayBox flux_ec[AMREX_SPACEDIM]) 
+{
+  for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
+    flux_ec[dir].resize(eboxes[dir], NVAR, amrex::The_Async_Arena());
+    flx[dir] = flux_ec[dir].array();
+    setV(eboxes[dir], NVAR, flx[dir], 0);
+  }
+}
+
+void 
+computeFluxDiv(
+  amrex::MultiFab& LESTerm, 
+  const amrex::MFIter& mfi, 
+  const amrex::Box& vbox, 
+  amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flx,
+  const amrex::MultiFab& volume) 
+{
+  auto const& Lterm = LESTerm.array(mfi);
+  setV(vbox, NVAR, Lterm, 0.0);
+  {
+    BL_PROFILE("PeleC::pc_flux_div()");
+    auto const& vol = volume.array(mfi);
+    amrex::ParallelFor(
+      vbox, NVAR,
+      [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
+        pc_flux_div(
+          i, j, k, n, AMREX_D_DECL(flx[0], flx[1], flx[2]), vol, Lterm);
+      });
+  }
+}
+
+void 
+PeleC::updateFluxRegistersLES(
+  bool conditional, 
+  amrex::Real reflux_factor, 
+  const amrex::MultiFab& LESTerm, 
+  amrex::Real dt, 
+  const amrex::MFIter& mfi, 
+  amrex::FabType typ, 
+  amrex::FArrayBox flux_ec[AMREX_SPACEDIM]) 
+{
+  if (conditional && reflux_factor != 0) {
+    amrex::FArrayBox dm_as_fine(
+      amrex::Box::TheUnitBox(), LESTerm.nComp(), amrex::The_Async_Arena());
+    update_flux_registers(
+      reflux_factor * dt, mfi, typ,
+      {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dm_as_fine);
   }
 }
 
@@ -210,22 +297,8 @@ PeleC::getSmagorinskyLESTerm(
         amrex::surroundingNodes(cbox, 0), amrex::surroundingNodes(cbox, 1),
         amrex::surroundingNodes(cbox, 2))};
       amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> tanders;
-      {
-        BL_PROFILE("PeleC::pc_compute_tangential_vel_derivs()");
-        for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-          tander_ec[dir].resize(
-            eboxes[dir], GradUtils::nCompTan, amrex::The_Async_Arena());
-          tanders[dir] = tander_ec[dir].array();
-          setV(eboxes[dir], GradUtils::nCompTan, tanders[dir], 0);
-          const amrex::Real d1 = dir == 0 ? dx[1] : dx[0];
-          const amrex::Real d2 = dir == 2 ? dx[1] : dx[2];
-          amrex::ParallelFor(
-            eboxes[dir], [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-              pc_compute_tangential_vel_derivs(
-                i, j, k, q_ar, dir, d1, d2, tanders[dir]);
-            });
-        }
-      }
+
+      computeTangentialVelDerivs(eboxes, tander_ec, tanders, q_ar, dx);
 
       // Compute extensive LES fluxes, F.A
       amrex::FArrayBox flux_ec[AMREX_SPACEDIM];
@@ -234,11 +307,7 @@ PeleC::getSmagorinskyLESTerm(
         a{{AMREX_D_DECL(
           area[0].array(mfi), area[1].array(mfi), area[2].array(mfi))}};
       amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx;
-      for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-        flux_ec[dir].resize(eboxes[dir], NVAR, amrex::The_Async_Arena());
-        flx[dir] = flux_ec[dir].array();
-        setV(eboxes[dir], NVAR, flx[dir], 0);
-      }
+      resizeAndSetFlux(eboxes, flx, flux_ec);
       {
         BL_PROFILE("PeleC::pc_smagorinsky_sfs_term()");
         for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
@@ -255,27 +324,11 @@ PeleC::getSmagorinskyLESTerm(
       }
 
       // Compute flux divergence (1/Vol).Div(F.A)
-      auto const& Lterm = LESTerm.array(mfi);
-      setV(vbox, NVAR, Lterm, 0.0);
-      {
-        BL_PROFILE("PeleC::pc_flux_div()");
-        auto const& vol = volume.array(mfi);
-        amrex::ParallelFor(
-          vbox, NVAR,
-          [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
-            pc_flux_div(
-              i, j, k, n, AMREX_D_DECL(flx[0], flx[1], flx[2]), vol, Lterm);
-          });
-      }
+      computeFluxDiv(LESTerm, mfi, vbox, flx, volume);  
 
       // Refluxing
-      if (do_reflux && reflux_factor != 0) {
-        amrex::FArrayBox dm_as_fine(
-          amrex::Box::TheUnitBox(), LESTerm.nComp(), amrex::The_Async_Arena());
-        update_flux_registers(
-          reflux_factor * dt, mfi, typ,
-          {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dm_as_fine);
-      }
+      updateFluxRegistersLES(
+        reflux_factor, reflux_factor, LESTerm, dt, mfi, typ, flux_ec);
     } // End of MFIter scope
   }   // End of OMP scope
 #endif
@@ -536,11 +589,7 @@ PeleC::getDynamicSmagorinskyLESTerm(
         a{{AMREX_D_DECL(
           area[0].array(mfi), area[1].array(mfi), area[2].array(mfi))}};
       amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx;
-      for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-        flux_ec[dir].resize(eboxes[dir], NVAR, amrex::The_Async_Arena());
-        flx[dir] = flux_ec[dir].array();
-        setV(eboxes[dir], NVAR, flx[dir], 0);
-      }
+      resizeAndSetFlux(eboxes, flx, flux_ec);
       {
         BL_PROFILE("PeleC::pc_dynamic_smagorinsky_sfs_term()");
         for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
@@ -554,28 +603,221 @@ PeleC::getDynamicSmagorinskyLESTerm(
       }
 
       // Compute flux divergence (1/Vol).Div(F.A)
-      auto const& Lterm = LESTerm.array(mfi);
-      setV(vbox, NVAR, Lterm, 0.0);
+      computeFluxDiv(LESTerm, mfi, vbox, flx, volume);
+
+      // Refluxing
+      updateFluxRegistersLES(
+        reflux_factor, reflux_factor, LESTerm, dt, mfi, typ, flux_ec);
+    }
+  }
+#endif
+}
+
+// Calculate the LES term using the WALE SFS model
+void
+PeleC::getWALELESTerm(
+#if AMREX_SPACEDIM < 3
+  amrex::Real /*time*/,
+  amrex::Real /*dt*/,
+  amrex::MultiFab& /*LESTerm*/,
+  amrex::Real /*reflux_factor*/)
+{
+  amrex::Abort("LES only implemented in 3D for now");
+#else
+  amrex::Real time,
+  amrex::Real dt,
+  amrex::MultiFab& LESTerm,
+  amrex::Real reflux_factor)
+{
+  // Only use this functionality for 3D
+  const int ngrow = 1;
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx = geom.CellSizeArray();
+
+  amrex::MultiFab S(grids, dmap, NVAR, ngrow, amrex::MFInfo(), Factory());
+  FillPatch(*this, S, ngrow, time, State_Type, 0, NVAR);
+
+  auto const& fact =
+    dynamic_cast<amrex::EBFArrayBoxFactory const&>(S.Factory());
+  auto const& flags = fact.getMultiEBCellFlagFab();
+
+#ifdef AMREX_USE_OMP
+#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
+#endif
+  {
+    for (amrex::MFIter mfi(S, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
+      const amrex::Box vbox = mfi.tilebox();
+      const amrex::Box gbox = amrex::grow(vbox, ngrow);
+      const amrex::Box cbox = amrex::grow(vbox, ngrow - 1);
+
+      const auto& flag_fab = flags[mfi];
+      amrex::FabType typ = flag_fab.getType(cbox);
+      if (typ != amrex::FabType::regular) {
+        amrex::Error("LES on a non-regular EB Fab is not available.");
+      }
+      if (typ == amrex::FabType::covered) {
+        continue;
+      }
+
+      auto const& s = S.array(mfi);
+      int nqaux = NQAUX > 0 ? NQAUX : 1;
+      amrex::FArrayBox q(gbox, QVAR, amrex::The_Async_Arena());
+      amrex::FArrayBox qaux(gbox, nqaux, amrex::The_Async_Arena());
+      auto const& q_ar = q.array();
+      auto const& qauxar = qaux.array();
+
+      // Get primitives, Q, including (Y, T, p, rho) from conserved state
+      // required for L term
       {
-        BL_PROFILE("PeleC::pc_flux_div()");
-        auto const& vol = volume.array(mfi);
+        BL_PROFILE("PeleC::ctoprim()");
         amrex::ParallelFor(
-          vbox, NVAR,
-          [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
-            pc_flux_div(
-              i, j, k, n, AMREX_D_DECL(flx[0], flx[1], flx[2]), vol, Lterm);
+          gbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+            pc_ctoprim(i, j, k, s, q_ar, qauxar);
           });
       }
 
-      // Refluxing
-      if (do_reflux && reflux_factor != 0) {
-        amrex::FArrayBox dm_as_fine(
-          amrex::Box::TheUnitBox(), LESTerm.nComp(), amrex::The_Async_Arena());
-        update_flux_registers(
-          reflux_factor * dt, mfi, typ,
-          {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dm_as_fine);
+      // Get the tangential derivatives
+      amrex::FArrayBox tander_ec[AMREX_SPACEDIM];
+      const amrex::Box eboxes[AMREX_SPACEDIM] = {AMREX_D_DECL(
+        amrex::surroundingNodes(cbox, 0), amrex::surroundingNodes(cbox, 1),
+        amrex::surroundingNodes(cbox, 2))};
+      amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> tanders;
+      computeTangentialVelDerivs(eboxes,tander_ec, tanders, q_ar, dx);
+
+      // Compute extensive LES fluxes, F.A
+      amrex::FArrayBox flux_ec[AMREX_SPACEDIM];
+      const amrex::GpuArray<
+        const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
+        a{{AMREX_D_DECL(
+          area[0].array(mfi), area[1].array(mfi), area[2].array(mfi))}};
+      amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx;
+      resizeAndSetFlux(eboxes, flx, flux_ec);
+      {
+        BL_PROFILE("PeleC::pc_wale_sfs_term()");
+        for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
+          amrex::Real Cw_local = PeleC::Cw;
+          amrex::Real CI_local = PeleC::CI;
+          amrex::Real PrT_local = PeleC::PrT;
+          amrex::ParallelFor(
+            eboxes[dir], [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+              pc_wale_sfs_term(
+                i, j, k, q_ar, tanders[dir], a[dir], dx[dir], dir, Cw_local,
+                CI_local, PrT_local, flx[dir]);
+            });
+        }
       }
-    }
-  }
+
+      // Compute flux divergence (1/Vol).Div(F.A)
+      computeFluxDiv(LESTerm, mfi, vbox, flx, volume);
+
+      // Refluxing
+      updateFluxRegistersLES(
+        reflux_factor, reflux_factor, LESTerm, dt, mfi, typ, flux_ec);
+    } // End of MFIter scope
+  }   // End of OMP scope
+#endif
+}
+
+// Calculate the LES term using the Vreman SFS model
+void
+PeleC::getVremanLESTerm(
+#if AMREX_SPACEDIM < 3
+  amrex::Real /*time*/,
+  amrex::Real /*dt*/,
+  amrex::MultiFab& /*LESTerm*/,
+  amrex::Real /*reflux_factor*/)
+{
+  amrex::Abort("LES only implemented in 3D for now");
+#else
+  amrex::Real time,
+  amrex::Real dt,
+  amrex::MultiFab& LESTerm,
+  amrex::Real reflux_factor)
+{
+  // Only use this functionality for 3D
+  const int ngrow = 1;
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx = geom.CellSizeArray();
+
+  amrex::MultiFab S(grids, dmap, NVAR, ngrow, amrex::MFInfo(), Factory());
+  FillPatch(*this, S, ngrow, time, State_Type, 0, NVAR);
+
+  auto const& fact =
+    dynamic_cast<amrex::EBFArrayBoxFactory const&>(S.Factory());
+  auto const& flags = fact.getMultiEBCellFlagFab();
+
+#ifdef AMREX_USE_OMP
+#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
+#endif
+  {
+    for (amrex::MFIter mfi(S, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
+      const amrex::Box vbox = mfi.tilebox();
+      const amrex::Box gbox = amrex::grow(vbox, ngrow);
+      const amrex::Box cbox = amrex::grow(vbox, ngrow - 1);
+
+      const auto& flag_fab = flags[mfi];
+      amrex::FabType typ = flag_fab.getType(cbox);
+      if (typ != amrex::FabType::regular) {
+        amrex::Error("LES on a non-regular EB Fab is not available.");
+      }
+      if (typ == amrex::FabType::covered) {
+        continue;
+      }
+
+      auto const& s = S.array(mfi);
+      int nqaux = NQAUX > 0 ? NQAUX : 1;
+      amrex::FArrayBox q(gbox, QVAR, amrex::The_Async_Arena());
+      amrex::FArrayBox qaux(gbox, nqaux, amrex::The_Async_Arena());
+      auto const& q_ar = q.array();
+      auto const& qauxar = qaux.array();
+
+      // Get primitives, Q, including (Y, T, p, rho) from conserved state
+      // required for L term
+      {
+        BL_PROFILE("PeleC::ctoprim()");
+        amrex::ParallelFor(
+          gbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+            pc_ctoprim(i, j, k, s, q_ar, qauxar);
+          });
+      }
+
+      // Get the tangential derivatives
+      amrex::FArrayBox tander_ec[AMREX_SPACEDIM];
+      const amrex::Box eboxes[AMREX_SPACEDIM] = {AMREX_D_DECL(
+        amrex::surroundingNodes(cbox, 0), amrex::surroundingNodes(cbox, 1),
+        amrex::surroundingNodes(cbox, 2))};
+      amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> tanders;
+
+      computeTangentialVelDerivs(eboxes, tander_ec, tanders, q_ar, dx);
+
+      // Compute extensive LES fluxes, F.A
+      amrex::FArrayBox flux_ec[AMREX_SPACEDIM];
+      const amrex::GpuArray<
+        const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
+        a{{AMREX_D_DECL(
+          area[0].array(mfi), area[1].array(mfi), area[2].array(mfi))}};
+      amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx;
+      resizeAndSetFlux(eboxes, flx, flux_ec);
+      {
+        BL_PROFILE("PeleC::pc_vreman_sfs_term()");
+        for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
+          amrex::Real Cs_local = PeleC::Cs;
+          amrex::Real CI_local = PeleC::CI;
+          amrex::Real PrT_local = PeleC::PrT;
+          amrex::ParallelFor(
+            eboxes[dir], [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+              pc_vreman_sfs_term(
+                i, j, k, q_ar, tanders[dir], a[dir], dx[dir], dir, Cs_local,
+                CI_local, PrT_local, flx[dir]);
+            });
+        }
+      }
+
+      // Compute flux divergence (1/Vol).Div(F.A)
+      computeFluxDiv(LESTerm, mfi, vbox, flx, volume);
+
+      // Refluxing
+      updateFluxRegistersLES(
+        reflux_factor, reflux_factor, LESTerm, dt, mfi, typ, flux_ec);
+    } // End of MFIter scope
+  }   // End of OMP scope
 #endif
 }

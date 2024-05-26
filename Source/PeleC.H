@@ -379,6 +379,15 @@ public:
     amrex::Real dt,
     amrex::MultiFab& LESTerm,
     amrex::Real flux_factor);
+    
+  void updateFluxRegistersLES(
+    bool do_reflux, 
+    amrex::Real reflux_factor, 
+    const amrex::MultiFab& LESTerm, 
+    amrex::Real dt, 
+    const amrex::MFIter& mfi, 
+    amrex::FabType typ, 
+    amrex::FArrayBox flux_ec[AMREX_SPACEDIM]);
 
   void getSmagorinskyLESTerm(
     amrex::Real time,
@@ -392,6 +401,18 @@ public:
     amrex::MultiFab& LESTerm,
     amrex::Real flux_factor);
 
+  void getWALELESTerm(
+    amrex::Real time,
+    amrex::Real dt,
+    amrex::MultiFab& LESTerm,
+    amrex::Real flux_factor);
+
+  void getVremanLESTerm(
+    amrex::Real time,
+    amrex::Real dt,
+    amrex::MultiFab& LESTerm,
+    amrex::Real flux_factor);
+    
   void construct_old_les_source(
     amrex::Real time, amrex::Real dt, int sub_iteration, int sub_ncycle);
 

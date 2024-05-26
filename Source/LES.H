@@ -518,5 +518,596 @@ pc_dynamic_smagorinsky_sfs_term(
   flx(iv, UEDEN) = flx(iv, UEDEN) * a(iv);
 }
 
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+get_wale_sfs_stresses_xdir(
+  const int i,
+  const int j,
+  const int k,
+  const amrex::Array4<const amrex::Real>& q,
+  const amrex::Array4<const amrex::Real>& td,
+  const amrex::Real dxinv,
+  const amrex::Real deltabar,
+  amrex::Real& alphaij_xx,
+  amrex::Real& alphaij_xy,
+  amrex::Real& alphaij_xz,
+  amrex::Real& alpha,
+  amrex::Real& flux_T)
+{
+
+  amrex::Real g[3][3] = {{0.0}};
+  g[0][0] = dxinv * (q(i, j, k, QU) - q(i - 1, j, k, QU)); // dudx
+  g[0][1] = td(i, j, k, 0);                                // dudy
+  g[0][2] = td(i, j, k, 3);                                // dudz
+  g[1][0] = dxinv * (q(i, j, k, QV) - q(i - 1, j, k, QV)); // dvdx
+  g[1][1] = td(i, j, k, 1);                                // dvdy
+  g[1][2] = td(i, j, k, 4);                                // dvdz
+  g[2][0] = dxinv * (q(i, j, k, QW) - q(i - 1, j, k, QW)); // dwdx
+  g[2][1] = td(i, j, k, 2);                                // dwdy
+  g[2][2] = td(i, j, k, 5);                                // dwdz
+
+  amrex::Real g2[3][3] = {{0.0}};
+  g2[0][0] = g[0][0]*g[0][0] + g[0][1]*g[1][0] + g[0][2]*g[2][0];
+  g2[0][1] = g[0][0]*g[0][1] + g[0][1]*g[1][1] + g[0][2]*g[2][1];
+  g2[0][2] = g[0][0]*g[0][2] + g[0][1]*g[1][2] + g[0][2]*g[2][2];
+  g2[1][0] = g[1][0]*g[0][0] + g[1][1]*g[1][0] + g[1][2]*g[2][0];
+  g2[1][1] = g[1][0]*g[0][1] + g[1][1]*g[1][1] + g[1][2]*g[2][1];
+  g2[1][2] = g[1][0]*g[0][2] + g[1][1]*g[1][2] + g[1][2]*g[2][2];
+  g2[2][0] = g[2][0]*g[0][0] + g[2][1]*g[1][0] + g[2][2]*g[2][0];
+  g2[2][1] = g[2][0]*g[0][1] + g[2][1]*g[1][1] + g[2][2]*g[2][1];
+  g2[2][2] = g[2][0]*g[0][2] + g[2][1]*g[1][2] + g[2][2]*g[2][2];
+
+  amrex::Real g2kk = g2[0][0] + g2[1][1] + g2[2][2];
+
+  amrex::Real S[3][3] = {{0.0}};
+  amrex::Real Sijmag = 0;
+  amrex::Real SijSij = 0;
+  amrex::Real D[3][3] = {{0.0}};
+  amrex::Real DijDij = 0;
+  for (int m = 0; m < 3; m++) {
+    for (int n = 0; n < 3; n++) {
+      S[m][n] = 0.5 * (g[m][n] + g[n][m]);
+      SijSij += S[m][n] * S[m][n];
+      D[m][n] = 0.5 * (g2[m][n] + g2[n][m]);
+      if(m==n){
+    	  D[m][n] = D[m][n] - g2kk/3.0;
+      }
+      DijDij += D[m][n] * D[m][n];
+    }
+  }
+  Sijmag = std::sqrt(2.0 * SijSij);
+  const amrex::Real Skk = S[0][0] + S[1][1] + S[2][2];
+
+  amrex::Real DijDij3 = DijDij*DijDij*DijDij;
+  amrex::Real DijDij5 = DijDij3*DijDij*DijDij;
+  amrex::Real SijSij5 = SijSij*SijSij*SijSij*SijSij*SijSij;
+
+  const amrex::Real mut = 0.5 * (q(i, j, k, QRHO) + q(i - 1, j, k, QRHO)) *
+                          deltabar * deltabar * (std::sqrt(DijDij3)/(std::sqrt(SijSij5)+std::sqrt(std::sqrt(DijDij5))));
+
+  alphaij_xx = 2.0 * mut * (S[0][0] - Skk / 3.0);
+  alphaij_xy = 2.0 * mut * S[0][1];
+  alphaij_xz = 2.0 * mut * S[0][2];
+  alpha = 2.0 * 0.5 * (q(i, j, k, QRHO) + q(i - 1, j, k, QRHO)) * deltabar * deltabar * Sijmag * Sijmag;
+
+  const amrex::Real dTdx = dxinv * (q(i, j, k, QTEMP) - q(i - 1, j, k, QTEMP));
+  flux_T = mut * dTdx;
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+get_wale_sfs_stresses_ydir(
+  const int i,
+  const int j,
+  const int k,
+  const amrex::Array4<const amrex::Real>& q,
+  const amrex::Array4<const amrex::Real>& td,
+  const amrex::Real dxinv,
+  const amrex::Real deltabar,
+  amrex::Real& alphaij_yx,
+  amrex::Real& alphaij_yy,
+  amrex::Real& alphaij_yz,
+  amrex::Real& alpha,
+  amrex::Real& flux_T)
+{
+
+  amrex::Real g[3][3] = {{0.0}};
+  g[0][0] = td(i, j, k, 0);                                // dudx
+  g[0][1] = dxinv * (q(i, j, k, QU) - q(i, j - 1, k, QU)); // dudy
+  g[0][2] = td(i, j, k, 3);                                // dudz
+  g[1][0] = td(i, j, k, 1);                                // dvdx
+  g[1][1] = dxinv * (q(i, j, k, QV) - q(i, j - 1, k, QV)); // dvdy
+  g[1][2] = td(i, j, k, 4);                                // dvdz
+  g[2][0] = td(i, j, k, 2);                                // dwdx
+  g[2][1] = dxinv * (q(i, j, k, QW) - q(i, j - 1, k, QW)); // dwdy
+  g[2][2] = td(i, j, k, 5);                                // dwdz
+
+  amrex::Real g2[3][3] = {{0.0}};
+  g2[0][0] = g[0][0]*g[0][0] + g[0][1]*g[1][0] + g[0][2]*g[2][0];
+  g2[0][1] = g[0][0]*g[0][1] + g[0][1]*g[1][1] + g[0][2]*g[2][1];
+  g2[0][2] = g[0][0]*g[0][2] + g[0][1]*g[1][2] + g[0][2]*g[2][2];
+  g2[1][0] = g[1][0]*g[0][0] + g[1][1]*g[1][0] + g[1][2]*g[2][0];
+  g2[1][1] = g[1][0]*g[0][1] + g[1][1]*g[1][1] + g[1][2]*g[2][1];
+  g2[1][2] = g[1][0]*g[0][2] + g[1][1]*g[1][2] + g[1][2]*g[2][2];
+  g2[2][0] = g[2][0]*g[0][0] + g[2][1]*g[1][0] + g[2][2]*g[2][0];
+  g2[2][1] = g[2][0]*g[0][1] + g[2][1]*g[1][1] + g[2][2]*g[2][1];
+  g2[2][2] = g[2][0]*g[0][2] + g[2][1]*g[1][2] + g[2][2]*g[2][2];
+
+  amrex::Real g2kk = g2[0][0] + g2[1][1] + g2[2][2];
+
+  amrex::Real S[3][3] = {{0.0}};
+  amrex::Real Sijmag = 0;
+  amrex::Real SijSij = 0;
+  amrex::Real D[3][3] = {{0.0}};
+  amrex::Real DijDij = 0;
+  for (int m = 0; m < 3; m++) {
+    for (int n = 0; n < 3; n++) {
+      S[m][n] = 0.5 * (g[m][n] + g[n][m]);
+      SijSij += S[m][n] * S[m][n];
+      D[m][n] = 0.5 * (g2[m][n] + g2[n][m]);
+      if(m==n){
+    	  D[m][n] = D[m][n] - g2kk/3.0;
+      }
+      DijDij += D[m][n] * D[m][n];
+    }
+  }
+  Sijmag = std::sqrt(2.0 * SijSij);
+  const amrex::Real Skk = S[0][0] + S[1][1] + S[2][2];
+
+  amrex::Real DijDij3 = DijDij*DijDij*DijDij;
+  amrex::Real DijDij5 = DijDij3*DijDij*DijDij;
+  amrex::Real SijSij5 = SijSij*SijSij*SijSij*SijSij*SijSij;
+
+  const amrex::Real mut = 0.5 * (q(i, j, k, QRHO) + q(i, j - 1, k, QRHO)) *
+                          deltabar * deltabar * (std::sqrt(DijDij3)/(std::sqrt(SijSij5)+std::sqrt(std::sqrt(DijDij5))));
+
+  alphaij_yx = 2.0 * mut * S[1][0];
+  alphaij_yy = 2.0 * mut * (S[1][1] - Skk / 3.0);
+  alphaij_yz = 2.0 * mut * S[1][2];
+  alpha = 2.0 * 0.5 * (q(i, j, k, QRHO) + q(i, j - 1, k, QRHO)) * deltabar * deltabar * Sijmag * Sijmag;
+
+  const amrex::Real dTdy = dxinv * (q(i, j, k, QTEMP) - q(i, j - 1, k, QTEMP));
+  flux_T = mut * dTdy;
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+get_wale_sfs_stresses_zdir(
+  const int i,
+  const int j,
+  const int k,
+  const amrex::Array4<const amrex::Real>& q,
+  const amrex::Array4<const amrex::Real>& td,
+  const amrex::Real dxinv,
+  const amrex::Real deltabar,
+  amrex::Real& alphaij_zx,
+  amrex::Real& alphaij_zy,
+  amrex::Real& alphaij_zz,
+  amrex::Real& alpha,
+  amrex::Real& flux_T)
+{
+
+  amrex::Real g[3][3] = {{0.0}};
+  g[0][0] = td(i, j, k, 0);                                // dudx
+  g[0][1] = td(i, j, k, 3);                                // dudy
+  g[0][2] = dxinv * (q(i, j, k, QU) - q(i, j, k - 1, QU)); // dudz
+  g[1][0] = td(i, j, k, 1);                                // dvdx
+  g[1][1] = td(i, j, k, 4);                                // dvdy
+  g[1][2] = dxinv * (q(i, j, k, QV) - q(i, j, k - 1, QV)); // dvdz
+  g[2][0] = td(i, j, k, 2);                                // dwdx
+  g[2][1] = td(i, j, k, 5);                                // dwdy
+  g[2][2] = dxinv * (q(i, j, k, QW) - q(i, j, k - 1, QW)); // dwdz
+
+  amrex::Real g2[3][3] = {{0.0}};
+  g2[0][0] = g[0][0]*g[0][0] + g[0][1]*g[1][0] + g[0][2]*g[2][0];
+  g2[0][1] = g[0][0]*g[0][1] + g[0][1]*g[1][1] + g[0][2]*g[2][1];
+  g2[0][2] = g[0][0]*g[0][2] + g[0][1]*g[1][2] + g[0][2]*g[2][2];
+  g2[1][0] = g[1][0]*g[0][0] + g[1][1]*g[1][0] + g[1][2]*g[2][0];
+  g2[1][1] = g[1][0]*g[0][1] + g[1][1]*g[1][1] + g[1][2]*g[2][1];
+  g2[1][2] = g[1][0]*g[0][2] + g[1][1]*g[1][2] + g[1][2]*g[2][2];
+  g2[2][0] = g[2][0]*g[0][0] + g[2][1]*g[1][0] + g[2][2]*g[2][0];
+  g2[2][1] = g[2][0]*g[0][1] + g[2][1]*g[1][1] + g[2][2]*g[2][1];
+  g2[2][2] = g[2][0]*g[0][2] + g[2][1]*g[1][2] + g[2][2]*g[2][2];
+
+  amrex::Real g2kk = g2[0][0] + g2[1][1] + g2[2][2];
+
+  amrex::Real S[3][3] = {{0.0}};
+  amrex::Real Sijmag = 0;
+  amrex::Real SijSij = 0;
+  amrex::Real D[3][3] = {{0.0}};
+  amrex::Real DijDij = 0;
+  for (int m = 0; m < 3; m++) {
+    for (int n = 0; n < 3; n++) {
+      S[m][n] = 0.5 * (g[m][n] + g[n][m]);
+      SijSij += S[m][n] * S[m][n];
+      D[m][n] = 0.5 * (g2[m][n] + g2[n][m]);
+      if(m==n){
+    	  D[m][n] = D[m][n] - g2kk/3.0;
+      }
+      DijDij += D[m][n] * D[m][n];
+    }
+  }
+  Sijmag = std::sqrt(2.0 * SijSij);
+  const amrex::Real Skk = S[0][0] + S[1][1] + S[2][2];
+
+  amrex::Real DijDij3 = DijDij*DijDij*DijDij;
+  amrex::Real DijDij5 = DijDij3*DijDij*DijDij;
+  amrex::Real SijSij5 = SijSij*SijSij*SijSij*SijSij*SijSij;
+
+  const amrex::Real mut = 0.5 * (q(i, j, k, QRHO) + q(i, j, k - 1, QRHO)) *
+                          deltabar * deltabar * (std::sqrt(DijDij3)/(std::sqrt(SijSij5)+std::sqrt(std::sqrt(DijDij5))));
+
+  alphaij_zx = 2.0 * mut * S[2][0];
+  alphaij_zy = 2.0 * mut * S[2][1];
+  alphaij_zz = 2.0 * mut * (S[2][2] - Skk / 3.0);
+  alpha = 2.0 * 0.5 * (q(i, j, k, QRHO) + q(i, j, k - 1, QRHO)) * deltabar * deltabar * Sijmag * Sijmag;
+
+  const amrex::Real dTdz = dxinv * (q(i, j, k, QTEMP) - q(i, j, k - 1, QTEMP));
+  flux_T = mut * dTdz;
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+pc_wale_sfs_term(
+  const int i,
+  const int j,
+  const int k,
+  const amrex::Array4<const amrex::Real>& q,
+  const amrex::Array4<const amrex::Real>& td,
+  const amrex::Array4<const amrex::Real>& a,
+  const amrex::Real dx,
+  const int dir,
+  const amrex::Real Cw,
+  const amrex::Real CI,
+  const amrex::Real PrT,
+  const amrex::Array4<amrex::Real>& flx)
+{
+
+  const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
+  const amrex::IntVect ivm(iv - amrex::IntVect::TheDimensionVector(dir));
+
+  // SFS stress
+  const amrex::Real dxinv = 1.0 / dx;
+  const amrex::Real deltabar = dx;
+  const amrex::Real Cw2 = Cw * Cw;
+  const amrex::Real third = 1.0 / 3.0;
+  amrex::Real alphaij[AMREX_SPACEDIM] = {0.0}, alpha, flux_T;
+  if (dir == 0) {
+    get_wale_sfs_stresses_xdir(
+      i, j, k, q, td, dxinv, deltabar, alphaij[0], alphaij[1], alphaij[2],
+      alpha, flux_T);
+  } else if (dir == 1) {
+    get_wale_sfs_stresses_ydir(
+      i, j, k, q, td, dxinv, deltabar, alphaij[0], alphaij[1], alphaij[2],
+      alpha, flux_T);
+  } else {
+    get_wale_sfs_stresses_zdir(
+      i, j, k, q, td, dxinv, deltabar, alphaij[0], alphaij[1], alphaij[2],
+      alpha, flux_T);
+  }
+  const amrex::Real sigmadx =
+    Cw2 * alphaij[0] - third * CI * alpha * static_cast<amrex::Real>(dir == 0);
+  const amrex::Real sigmady =
+    Cw2 * alphaij[1] - third * CI * alpha * static_cast<amrex::Real>(dir == 1);
+  const amrex::Real sigmadz =
+    Cw2 * alphaij[2] - third * CI * alpha * static_cast<amrex::Real>(dir == 2);
+  flx(iv, UMX) = -sigmadx;
+  flx(iv, UMY) = -sigmady;
+  flx(iv, UMZ) = -sigmadz;
+
+  // SFS turbulent diffusion
+  const amrex::Real Uface[AMREX_SPACEDIM] = {
+    static_cast<amrex::Real>(0.5 * (q(iv, QU) + q(ivm, QU))),
+    static_cast<amrex::Real>(0.5 * (q(iv, QV) + q(ivm, QV))),
+    static_cast<amrex::Real>(0.5 * (q(iv, QW) + q(ivm, QW)))};
+  flx(iv, UEDEN) =
+    -sigmadx * Uface[0] - sigmady * Uface[1] - sigmadz * Uface[2];
+
+  // SFS heat flux - move state from cell centers to faces to compute cp for
+  // flux at face
+  amrex::Real T = 0.5 * (q(iv, QTEMP) + q(ivm, QTEMP));
+  amrex::Real massfrac[NUM_SPECIES];
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    massfrac[n] = 0.5 * (q(iv, QFS + n) + q(ivm, QFS + n));
+  }
+  amrex::Real cp = 0.0;
+  auto eos = pele::physics::PhysicsType::eos();
+  eos.TY2Cp(T, massfrac, cp);
+  flx(iv, UEDEN) = flx(iv, UEDEN) - cp * Cw2 / PrT * flux_T;
+
+  // Scale fluxes by area
+  flx(iv, UMX) = flx(iv, UMX) * a(iv);
+  flx(iv, UMY) = flx(iv, UMY) * a(iv);
+  flx(iv, UMZ) = flx(iv, UMZ) * a(iv);
+  flx(iv, UEDEN) = flx(iv, UEDEN) * a(iv);
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+get_vreman_sfs_stresses_xdir(
+  const int i,
+  const int j,
+  const int k,
+  const amrex::Array4<const amrex::Real>& q,
+  const amrex::Array4<const amrex::Real>& td,
+  const amrex::Real dxinv,
+  const amrex::Real deltabar,
+  amrex::Real& alphaij_xx,
+  amrex::Real& alphaij_xy,
+  amrex::Real& alphaij_xz,
+  amrex::Real& alpha,
+  amrex::Real& flux_T)
+{
+
+  amrex::Real alfa[3][3] = {{0.0}};
+  alfa[0][0] = dxinv * (q(i, j, k, QU) - q(i - 1, j, k, QU)); // dudx  d1v1
+  alfa[0][1] = td(i, j, k, 0);                                // dudy  d2v1
+  alfa[0][2] = td(i, j, k, 3);                                // dudz  d3v1
+  alfa[1][0] = dxinv * (q(i, j, k, QV) - q(i - 1, j, k, QV)); // dvdx  d1v2
+  alfa[1][1] = td(i, j, k, 1);                                // dvdy  d2v2
+  alfa[1][2] = td(i, j, k, 4);                                // dvdz  d3v2
+  alfa[2][0] = dxinv * (q(i, j, k, QW) - q(i - 1, j, k, QW)); // dwdx  d1v3
+  alfa[2][1] = td(i, j, k, 2);                                // dwdy  d2v3
+  alfa[2][2] = td(i, j, k, 5);                                // dwdz  d3v3
+
+  amrex::Real S[3][3] = {{0.0}};
+  amrex::Real beta[3][3] = {{0.0}};
+  amrex::Real Sijmag = 0;
+  amrex::Real SijSij = 0;
+  amrex::Real aijaij = 0;
+  for (int m = 0; m < 3; m++) {
+    for (int n = 0; n < 3; n++) {
+      S[m][n] = 0.5 * (alfa[m][n] + alfa[n][m]);
+      SijSij += S[m][n] * S[m][n];
+      aijaij += alfa[m][n] * alfa[m][n];
+      beta[m][n] = deltabar * deltabar * (
+    		  alfa[0][m] * alfa[0][n] +
+			  alfa[1][m] * alfa[1][n] +
+			  alfa[2][m] * alfa[2][n]);
+    }
+  }
+  amrex::Real bbeta = 0;
+  bbeta = beta[0][0] * beta[1][1] -
+		  beta[0][1] * beta[0][1] +
+		  beta[0][0] * beta[2][2] -
+		  beta[0][2] * beta[0][2] +
+		  beta[1][1] * beta[2][2] -
+		  beta[1][2] * beta[1][2];
+
+  Sijmag = std::sqrt(2.0 * SijSij);
+  const amrex::Real Skk = S[0][0] + S[1][1] + S[2][2];
+
+  const amrex::Real mut = 0.5 * (q(i, j, k, QRHO) + q(i - 1, j, k, QRHO)) *
+                          (std::sqrt(bbeta/aijaij));
+
+  alphaij_xx = 2.0 * mut * (S[0][0] - Skk / 3.0);
+  alphaij_xy = 2.0 * mut * S[0][1];
+  alphaij_xz = 2.0 * mut * S[0][2];
+  alpha = 2.0 * 0.5 * (q(i, j, k, QRHO) + q(i - 1, j, k, QRHO)) * deltabar * deltabar * Sijmag * Sijmag;
+
+  const amrex::Real dTdx = dxinv * (q(i, j, k, QTEMP) - q(i - 1, j, k, QTEMP));
+  flux_T = mut * dTdx;
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+get_vreman_sfs_stresses_ydir(
+  const int i,
+  const int j,
+  const int k,
+  const amrex::Array4<const amrex::Real>& q,
+  const amrex::Array4<const amrex::Real>& td,
+  const amrex::Real dxinv,
+  const amrex::Real deltabar,
+  amrex::Real& alphaij_yx,
+  amrex::Real& alphaij_yy,
+  amrex::Real& alphaij_yz,
+  amrex::Real& alpha,
+  amrex::Real& flux_T)
+{
+
+  amrex::Real alfa[3][3] = {{0.0}};
+  alfa[0][0] = td(i, j, k, 0);                                // dudx
+  alfa[0][1] = dxinv * (q(i, j, k, QU) - q(i, j - 1, k, QU)); // dudy
+  alfa[0][2] = td(i, j, k, 3);                                // dudz
+  alfa[1][0] = td(i, j, k, 1);                                // dvdx
+  alfa[1][1] = dxinv * (q(i, j, k, QV) - q(i, j - 1, k, QV)); // dvdy
+  alfa[1][2] = td(i, j, k, 4);                                // dvdz
+  alfa[2][0] = td(i, j, k, 2);                                // dwdx
+  alfa[2][1] = dxinv * (q(i, j, k, QW) - q(i, j - 1, k, QW)); // dwdy
+  alfa[2][2] = td(i, j, k, 5);                                // dwdz
+
+  amrex::Real S[3][3] = {{0.0}};
+  amrex::Real beta[3][3] = {{0.0}};
+  amrex::Real Sijmag = 0;
+  amrex::Real SijSij = 0;
+  amrex::Real aijaij = 0;
+  for (int m = 0; m < 3; m++) {
+    for (int n = 0; n < 3; n++) {
+      S[m][n] = 0.5 * (alfa[m][n] + alfa[n][m]);
+      SijSij += S[m][n] * S[m][n];
+      aijaij += alfa[m][n] * alfa[m][n];
+      beta[m][n] = deltabar * deltabar * (
+    		  alfa[0][m] * alfa[0][n] +
+			  alfa[1][m] * alfa[1][n] +
+			  alfa[2][m] * alfa[2][n]);
+    }
+  }
+  amrex::Real bbeta = 0;
+  bbeta = beta[0][0] * beta[1][1] -
+		  beta[0][1] * beta[0][1] +
+		  beta[0][0] * beta[2][2] -
+		  beta[0][2] * beta[0][2] +
+		  beta[1][1] * beta[2][2] -
+		  beta[1][2] * beta[1][2];
+
+  Sijmag = std::sqrt(2.0 * SijSij);
+  const amrex::Real Skk = S[0][0] + S[1][1] + S[2][2];
+
+  const amrex::Real mut = 0.5 * (q(i, j, k, QRHO) + q(i - 1, j, k, QRHO)) *
+                          (std::sqrt(bbeta/aijaij));
+
+  alphaij_yx = 2.0 * mut * S[1][0];
+  alphaij_yy = 2.0 * mut * (S[1][1] - Skk / 3.0);
+  alphaij_yz = 2.0 * mut * S[1][2];
+  alpha = 2.0 * 0.5 * (q(i, j, k, QRHO) + q(i, j - 1, k, QRHO)) * deltabar * deltabar * Sijmag * Sijmag;
+
+  const amrex::Real dTdy = dxinv * (q(i, j, k, QTEMP) - q(i, j - 1, k, QTEMP));
+  flux_T = mut * dTdy;
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+get_vreman_sfs_stresses_zdir(
+  const int i,
+  const int j,
+  const int k,
+  const amrex::Array4<const amrex::Real>& q,
+  const amrex::Array4<const amrex::Real>& td,
+  const amrex::Real dxinv,
+  const amrex::Real deltabar,
+  amrex::Real& alphaij_zx,
+  amrex::Real& alphaij_zy,
+  amrex::Real& alphaij_zz,
+  amrex::Real& alpha,
+  amrex::Real& flux_T)
+{
+
+  amrex::Real alfa[3][3] = {{0.0}};
+  alfa[0][0] = td(i, j, k, 0);                                // dudx
+  alfa[0][1] = td(i, j, k, 3);                                // dudy
+  alfa[0][2] = dxinv * (q(i, j, k, QU) - q(i, j, k - 1, QU)); // dudz
+  alfa[1][0] = td(i, j, k, 1);                                // dvdx
+  alfa[1][1] = td(i, j, k, 4);                                // dvdy
+  alfa[1][2] = dxinv * (q(i, j, k, QV) - q(i, j, k - 1, QV)); // dvdz
+  alfa[2][0] = td(i, j, k, 2);                                // dwdx
+  alfa[2][1] = td(i, j, k, 5);                                // dwdy
+  alfa[2][2] = dxinv * (q(i, j, k, QW) - q(i, j, k - 1, QW)); // dwdz
+
+  amrex::Real S[3][3] = {{0.0}};
+  amrex::Real beta[3][3] = {{0.0}};
+  amrex::Real Sijmag = 0;
+  amrex::Real SijSij = 0;
+  amrex::Real aijaij = 0;
+  for (int m = 0; m < 3; m++) {
+    for (int n = 0; n < 3; n++) {
+      S[m][n] = 0.5 * (alfa[m][n] + alfa[n][m]);
+      SijSij += S[m][n] * S[m][n];
+      aijaij += alfa[m][n] * alfa[m][n];
+      beta[m][n] = deltabar * deltabar * (
+    		  alfa[0][m] * alfa[0][n] +
+			  alfa[1][m] * alfa[1][n] +
+			  alfa[2][m] * alfa[2][n]);
+    }
+  }
+  amrex::Real bbeta = 0;
+  bbeta = beta[0][0] * beta[1][1] -
+		  beta[0][1] * beta[0][1] +
+		  beta[0][0] * beta[2][2] -
+		  beta[0][2] * beta[0][2] +
+		  beta[1][1] * beta[2][2] -
+		  beta[1][2] * beta[1][2];
+
+  Sijmag = std::sqrt(2.0 * SijSij);
+  const amrex::Real Skk = S[0][0] + S[1][1] + S[2][2];
+
+  const amrex::Real mut = 0.5 * (q(i, j, k, QRHO) + q(i - 1, j, k, QRHO)) *
+                          (std::sqrt(bbeta/aijaij));
+
+  alphaij_zx = 2.0 * mut * S[2][0];
+  alphaij_zy = 2.0 * mut * S[2][1];
+  alphaij_zz = 2.0 * mut * (S[2][2] - Skk / 3.0);
+  alpha = 2.0 * 0.5 * (q(i, j, k, QRHO) + q(i, j, k - 1, QRHO)) * deltabar * deltabar * Sijmag * Sijmag;
+
+  const amrex::Real dTdz = dxinv * (q(i, j, k, QTEMP) - q(i, j, k - 1, QTEMP));
+  flux_T = mut * dTdz;
+}
+
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+pc_vreman_sfs_term(
+  const int i,
+  const int j,
+  const int k,
+  const amrex::Array4<const amrex::Real>& q,
+  const amrex::Array4<const amrex::Real>& td,
+  const amrex::Array4<const amrex::Real>& a,
+  const amrex::Real dx,
+  const int dir,
+  const amrex::Real Cw,
+  const amrex::Real CI,
+  const amrex::Real PrT,
+  const amrex::Array4<amrex::Real>& flx)
+{
+
+  const amrex::IntVect iv{AMREX_D_DECL(i, j, k)};
+  const amrex::IntVect ivm(iv - amrex::IntVect::TheDimensionVector(dir));
+
+  // SFS stress
+  const amrex::Real dxinv = 1.0 / dx;
+  const amrex::Real deltabar = dx;
+  const amrex::Real Cw2 = Cw * Cw;
+  const amrex::Real third = 1.0 / 3.0;
+  amrex::Real alphaij[AMREX_SPACEDIM] = {0.0}, alpha, flux_T;
+  if (dir == 0) {
+    get_vreman_sfs_stresses_xdir(
+      i, j, k, q, td, dxinv, deltabar, alphaij[0], alphaij[1], alphaij[2],
+      alpha, flux_T);
+  } else if (dir == 1) {
+    get_vreman_sfs_stresses_ydir(
+      i, j, k, q, td, dxinv, deltabar, alphaij[0], alphaij[1], alphaij[2],
+      alpha, flux_T);
+  } else {
+    get_vreman_sfs_stresses_zdir(
+      i, j, k, q, td, dxinv, deltabar, alphaij[0], alphaij[1], alphaij[2],
+      alpha, flux_T);
+  }
+  const amrex::Real sigmadx =
+    Cw2 * alphaij[0] - third * CI * alpha * static_cast<amrex::Real>(dir == 0);
+  const amrex::Real sigmady =
+    Cw2 * alphaij[1] - third * CI * alpha * static_cast<amrex::Real>(dir == 1);
+  const amrex::Real sigmadz =
+    Cw2 * alphaij[2] - third * CI * alpha * static_cast<amrex::Real>(dir == 2);
+  flx(iv, UMX) = -sigmadx;
+  flx(iv, UMY) = -sigmady;
+  flx(iv, UMZ) = -sigmadz;
+
+  // SFS turbulent diffusion
+  const amrex::Real Uface[AMREX_SPACEDIM] = {
+    static_cast<amrex::Real>(0.5 * (q(iv, QU) + q(ivm, QU))),
+    static_cast<amrex::Real>(0.5 * (q(iv, QV) + q(ivm, QV))),
+    static_cast<amrex::Real>(0.5 * (q(iv, QW) + q(ivm, QW)))};
+  flx(iv, UEDEN) =
+    -sigmadx * Uface[0] - sigmady * Uface[1] - sigmadz * Uface[2];
+
+  // SFS heat flux - move state from cell centers to faces to compute cp for
+  // flux at face
+  amrex::Real T = 0.5 * (q(iv, QTEMP) + q(ivm, QTEMP));
+  amrex::Real massfrac[NUM_SPECIES];
+  for (int n = 0; n < NUM_SPECIES; n++) {
+    massfrac[n] = 0.5 * (q(iv, QFS + n) + q(ivm, QFS + n));
+  }
+  amrex::Real cp = 0.0;
+  auto eos = pele::physics::PhysicsType::eos();
+  eos.TY2Cp(T, massfrac, cp);
+  flx(iv, UEDEN) = flx(iv, UEDEN) - cp * Cw2 / PrT * flux_T;
+
+  // Scale fluxes by area
+  flx(iv, UMX) = flx(iv, UMX) * a(iv);
+  flx(iv, UMY) = flx(iv, UMY) * a(iv);
+  flx(iv, UMZ) = flx(iv, UMZ) * a(iv);
+  flx(iv, UEDEN) = flx(iv, UEDEN) * a(iv);
+}
+
 #endif // AMREX_SPACEDIM == 3
 #endif
+

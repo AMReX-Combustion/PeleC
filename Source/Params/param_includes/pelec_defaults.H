@@ -56,6 +56,7 @@ amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> PeleC::domhi_isothermal_temp = {
 bool PeleC::do_les = false;
 bool PeleC::use_explicit_filter = false;
 amrex::Real PeleC::Cs = 0.0;
+amrex::Real PeleC::Cw = 0.0;
 amrex::Real PeleC::CI = 0.0;
 amrex::Real PeleC::PrT = 1.0;
 amrex::Real PeleC::eb_boundary_T = 1.0;

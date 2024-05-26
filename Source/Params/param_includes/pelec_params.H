@@ -54,6 +54,7 @@ static amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> domhi_isothermal_temp;
 static bool do_les;
 static bool use_explicit_filter;
 static amrex::Real Cs;
+static amrex::Real Cw;
 static amrex::Real CI;
 static amrex::Real PrT;
 static amrex::Real eb_boundary_T;
