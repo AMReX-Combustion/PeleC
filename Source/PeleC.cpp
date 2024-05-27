@@ -108,9 +108,11 @@ amrex::Vector<std::string> PeleC::m_diagVars;
 
 amrex::Vector<int> PeleC::src_list;
 
-bool PeleC::use_chem_mask=false;		//Flag to check if mask is activated.
-amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> PeleC::lo_chem_mask_coordinate;	//Box coordinate low
-amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> PeleC::hi_chem_mask_coordinate;	//Box coordinate high
+bool PeleC::use_chem_mask = false; // Flag to check if mask is activated.
+amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>
+  PeleC::lo_chem_mask_coordinate; // Box coordinate low
+amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>
+  PeleC::hi_chem_mask_coordinate; // Box coordinate high
 
 // this will be reset upon restart
 amrex::Real PeleC::previousCPUTimeUsed = 0.0;
@@ -254,15 +256,14 @@ PeleC::read_params()
   pp.query("use_typ_vals_chem", use_typical_vals_chem);
   pp.query("use_typ_vals_chem_usr", use_typical_vals_chem_usr);
 
-  pp.query("chem_mask",use_chem_mask);
+  pp.query("chem_mask", use_chem_mask);
 
-  //Reading chemistry mask box coordinates
-  if(use_chem_mask)
-  {
-	  for (int n = 0; n < AMREX_SPACEDIM; ++n){
-		  pp.get("lo_chemmask", lo_chem_mask_coordinate[n], n);
-		  pp.get("hi_chemmask", hi_chem_mask_coordinate[n], n);
-	  }
+  // Reading chemistry mask box coordinates
+  if (use_chem_mask) {
+    for (int n = 0; n < AMREX_SPACEDIM; ++n) {
+      pp.get("lo_chemmask", lo_chem_mask_coordinate[n], n);
+      pp.get("hi_chemmask", hi_chem_mask_coordinate[n], n);
+    }
   }
 
   if (use_typical_vals_chem_usr) {

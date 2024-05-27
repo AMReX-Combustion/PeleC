@@ -746,7 +746,6 @@ protected:
   static amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> lo_chem_mask_coordinate;
   static amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> hi_chem_mask_coordinate;
 
-
   static bool use_typical_vals_chem;
   static bool use_typical_vals_chem_usr;
   static amrex::Real typical_rhoY_val_min;
@@ -905,6 +904,5 @@ PeleC::getFluxReg(int lev)
 {
   return getLevel(lev).getFluxReg();
 }
-
 
 #endif
