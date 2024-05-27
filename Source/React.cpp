@@ -129,23 +129,7 @@ PeleC::react_state(
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
   {
-	  /*amrex::Gpu::DeviceVector<amrex::Real> dv_lo_chem_mask(lo_chem_mask_coordinate.size());
-	  amrex::Gpu::DeviceVector<amrex::Real> dv_hi_chem_mask(hi_chem_mask_coordinate.size());
 
-	  amrex::Real* lo_chem_mask_ptr = dv_lo_chem_mask.data();
-	  amrex::Real* hi_chem_mask_ptr = dv_hi_chem_mask.data();
-
-	  amrex::Gpu::copy(
-	      amrex::Gpu::hostToDevice, lo_chem_mask_coordinate.begin(), lo_chem_mask_coordinate.end(),
-		  dv_lo_chem_mask.begin());
-	  amrex::Gpu::copy(
-	      amrex::Gpu::hostToDevice, hi_chem_mask_coordinate.begin(), hi_chem_mask_coordinate.end(),
-		  dv_hi_chem_mask.begin());*/
-
-	  /*Hari's suggestion*/
-
-	  amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> chemlo={AMREX_D_DECL(lo_chem_mask_coordinate[0], lo_chem_mask_coordinate[1], lo_chem_mask_coordinate[2])};
-	  amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> chemhi={AMREX_D_DECL(hi_chem_mask_coordinate[0], hi_chem_mask_coordinate[1], hi_chem_mask_coordinate[2])};
 	  amrex::RealBox Chem_Masked_Region(  AMREX_D_DECL(lo_chem_mask_coordinate[0], lo_chem_mask_coordinate[1], lo_chem_mask_coordinate[2]),
 			  	  	  	  	  	  	  	  AMREX_D_DECL(hi_chem_mask_coordinate[0], hi_chem_mask_coordinate[1], hi_chem_mask_coordinate[2]));
 
