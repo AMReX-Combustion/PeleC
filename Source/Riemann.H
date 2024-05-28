@@ -34,10 +34,10 @@ riemann(
   amrex::Real& qint_iv2,
   amrex::Real& qint_gdpres,
   amrex::Real& qint_gdgame,
-  amrex::Real omegal,
-  amrex::Real radl,
-  amrex::Real omegar,
-  amrex::Real radr)
+  amrex::Real omegal=0.0,
+  amrex::Real radl=0.0,
+  amrex::Real omegar=0.0,
+  amrex::Real radr=0.0)
 {
   const amrex::Real wsmall = std::numeric_limits<amrex::Real>::min();
 
@@ -222,10 +222,10 @@ laxfriedrich_flux(
   amrex::Real& uflx_w,
   amrex::Real& uflx_eden,
   amrex::Real& uflx_eint,
-  amrex::Real omegal,
-  amrex::Real radl,
-  amrex::Real omegar,
-  amrex::Real radr)
+  amrex::Real omegal=0.0,
+  amrex::Real radl=0.0,
+  amrex::Real omegar=0.0,
+  amrex::Real radr=0.0)
 {
 
   const amrex::Real wsmall = std::numeric_limits<amrex::Real>::min();

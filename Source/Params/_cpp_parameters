@@ -147,39 +147,23 @@ zl_ext_bc_type               string        ""
 # if we are doing an external +z boundary condition, who do we interpret it?
 zr_ext_bc_type               string        ""
 
-#use multi-reference frame
-do_mrf                      bool        false
+#use rotational frame (rf)
+do_rf                      bool        false
 
-#mrf rotational speed
-mrf_omega                   Real        0.0
+#rf rotational speed
+rf_omega                   Real        0.0
 
-#mrf axis
-mrf_axis                   int        2
+#rf axis
+rf_axis                   int        2
 
-#mrf locations
-mrf_axis_x                 Real        0.0
-mrf_axis_y                 Real        0.0
-mrf_axis_z                 Real        0.0
+#rf locations
+rf_axis_x                 Real        0.0
+rf_axis_y                 Real        0.0
+rf_axis_z                 Real        0.0
 
-#mrf zone radius
-mrf_rad                   Real         0.0
-
-#use multi-reference frame
-do_srf                      bool        false
-
-#mrf rotational speed
-srf_omega                   Real        0.0
-
-#mrf axis
-srf_axis                   int        2
-
-#srf locations
-srf_axis_x                 Real        0.0
-srf_axis_y                 Real        0.0
-srf_axis_z                 Real        0.0
-
-#srf cut off distance
-srf_dist                   Real        0.0
+#rf radius beyond which 
+#impose rotational velocity bc
+rf_rad                    Real         0.0
 
 #-----------------------------------------------------------------------------
 # category: diffusion

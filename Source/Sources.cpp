@@ -101,7 +101,7 @@ PeleC::construct_new_source(
 #endif
   
   case rot_src:
-    construct_new_rot_source(time);
+    construct_new_rot_source(time, dt);
     break;
 
   } // end switch

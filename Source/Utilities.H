@@ -38,9 +38,9 @@ pc_rst_int_e(
   const bool allow_negative_energy,
   const bool dual_energy_update_E_from_e,
   const amrex::Real dual_energy_eta2,
-  amrex::Real omega,
-  amrex::Real rad
-  const int /*verbose*/)
+  amrex::Real omega=0.0,
+  amrex::Real rad=0.0,
+  const int verbose=0)
 {
   if (std::is_same<
         pele::physics::PhysicsType::eos_type, pele::physics::eos::SRK>::value) {
@@ -187,7 +187,7 @@ pc_ctoprim(
   amrex::Array4<const amrex::Real> const& u,
   amrex::Array4<amrex::Real> const& q,
   amrex::Array4<amrex::Real> const& qa,
-  amrex::Real omega, amrex::Real rad)
+  amrex::Real omega=0.0, amrex::Real rad=0.0)
 {
   auto eos = pele::physics::PhysicsType::eos();
   const amrex::Real rho = u(i, j, k, URHO);

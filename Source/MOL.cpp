@@ -12,10 +12,10 @@ pc_compute_hyp_mol_flux(
   const int mol_iorder,
   const bool use_laxf_flux,
   const amrex::Array4<amrex::EBCellFlag const>& flags, 
-  const amrex::GpuArray<AMREX_SPACEDIM> plo,
-  const amrex::GpuArray<AMREX_SPACEDIM> dx,
-  const amrex::GpuArray<AMREX_SPACEDIM> axis_loc
-  amrex::Real omega,int do_rf)
+  const amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> plo,
+  const amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> dx,
+  const amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> axis_loc,
+  amrex::Real omega,int axisdir,int do_rf)
 {
   const int R_RHO = 0;
   const int R_UN = 1;
@@ -26,16 +26,9 @@ pc_compute_hyp_mol_flux(
   const int R_Y = R_ADV + NUM_ADV;
   const int R_NUM = 5 + NUM_SPECIES + NUM_ADV + NUM_LIN + NUM_AUX;
   const int bc_test_val = 1;
+  int using_rotframe=do_rf; //local capture
+  amrex::Real omega_captured=omega;
 
-  RealVect r(0.0,0.0,0.0);
-  Real rad;
-  if(do_rf)
-  {
-      r[0]=prob_lo[0]+(i+0.5)*dx[0]-axis_loc[0];
-      r[1]=prob_lo[1]+(j+0.5)*dx[1]-axis_loc[1];
-      r[2]=prob_lo[2]+(k+0.5)*dx[2]-axis_loc[2];
-      rad=std::sqrt(r[0]*r[0]+r[1]*r[1]+r[2]*r[2]);
-  }
 
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
       amrex::FArrayBox dq_fab(cbox, QVAR, amrex::The_Async_Arena());
@@ -144,96 +137,106 @@ pc_compute_hyp_mol_flux(
 
         amrex::Real flux_tmp[NVAR] = {0.0};
         amrex::Real ustar = 0.0;
+        
+        amrex::RealVect r(0.0,0.0,0.0);
+        amrex::Real rad;
+        if(using_rotframe)
+        {
+            r[0]=plo[0]+(i+0.5)*dx[0]-axis_loc[0];
+            r[1]=plo[1]+(j+0.5)*dx[1]-axis_loc[1];
+            r[2]=plo[2]+(k+0.5)*dx[2]-axis_loc[2];
+            rad=std::sqrt(r[0]*r[0]+r[1]*r[1]+r[2]*r[2]);
+        }
 
         if (!use_laxf_flux) {
-          amrex::Real qint_iu = 0.0, tmp1 = 0.0, tmp2 = 0.0, tmp3 = 0.0,
-                      tmp4 = 0.0;
-          riemann(
-            qtempl[R_RHO], qtempl[R_UN], qtempl[R_UT1], qtempl[R_UT2],
-            qtempl[R_P], spl, qtempr[R_RHO], qtempr[R_UN], qtempr[R_UT1],
-            qtempr[R_UT2], qtempr[R_P], spr, bc_test_val, cavg, ustar,
-            flux_tmp[URHO], &flux_tmp[UFS], flux_tmp[f_idx[0]],
-            flux_tmp[f_idx[1]], flux_tmp[f_idx[2]], flux_tmp[UEDEN],
-            flux_tmp[UEINT], qint_iu, tmp1, tmp2, tmp3, tmp4,omega,rad);
+            amrex::Real qint_iu = 0.0, tmp1 = 0.0, tmp2 = 0.0, tmp3 = 0.0,
+            tmp4 = 0.0;
+            riemann(
+                qtempl[R_RHO], qtempl[R_UN], qtempl[R_UT1], qtempl[R_UT2],
+                qtempl[R_P], spl, qtempr[R_RHO], qtempr[R_UN], qtempr[R_UT1],
+                qtempr[R_UT2], qtempr[R_P], spr, bc_test_val, cavg, ustar,
+                flux_tmp[URHO], &flux_tmp[UFS], flux_tmp[f_idx[0]],
+                flux_tmp[f_idx[1]], flux_tmp[f_idx[2]], flux_tmp[UEDEN],
+                flux_tmp[UEINT], qint_iu, tmp1, tmp2, tmp3, tmp4,omega_captured,rad);
 #if NUM_ADV > 0
-          for (int n = 0; n < NUM_ADV; n++) {
-            pc_cmpflx_passive(
-              ustar, flux_tmp[URHO], qtempl[R_ADV + n], qtempr[R_ADV + n],
-              flux_tmp[UFA + n]);
-          }
+            for (int n = 0; n < NUM_ADV; n++) {
+                pc_cmpflx_passive(
+                    ustar, flux_tmp[URHO], qtempl[R_ADV + n], qtempr[R_ADV + n],
+                    flux_tmp[UFA + n]);
+            }
 #endif
 #if NUM_AUX > 0
-          for (int n = 0; n < NUM_AUX; n++) {
-            pc_cmpflx_passive(
-              ustar, flux_tmp[URHO], qtempl[R_AUX + n], qtempr[R_AUX + n],
-              flux_tmp[UFX + n]);
-          }
+            for (int n = 0; n < NUM_AUX; n++) {
+                pc_cmpflx_passive(
+                    ustar, flux_tmp[URHO], qtempl[R_AUX + n], qtempr[R_AUX + n],
+                    flux_tmp[UFX + n]);
+            }
 #endif
 #if NUM_LIN > 0
-          for (int n = 0; n < NUM_LIN; n++) {
-            pc_cmpflx_passive(
-              ustar, qint_iu, qtempl[R_LIN + n], qtempr[R_LIN + n],
-              flux_tmp[ULIN + n]);
-          }
+            for (int n = 0; n < NUM_LIN; n++) {
+                pc_cmpflx_passive(
+                    ustar, qint_iu, qtempl[R_LIN + n], qtempr[R_LIN + n],
+                    flux_tmp[ULIN + n]);
+            }
 #endif
         } else {
-          amrex::Real maxeigval = 0.0;
-          laxfriedrich_flux(
-            qtempl[R_RHO], qtempl[R_UN], qtempl[R_UT1], qtempl[R_UT2],
-            qtempl[R_P], spl, qtempr[R_RHO], qtempr[R_UN], qtempr[R_UT1],
-            qtempr[R_UT2], qtempr[R_P], spr, bc_test_val, cavg, ustar,
-            maxeigval, flux_tmp[URHO], &flux_tmp[UFS], flux_tmp[f_idx[0]],
-            flux_tmp[f_idx[1]], flux_tmp[f_idx[2]], flux_tmp[UEDEN],
-            flux_tmp[UEINT],omega,rad);
+            amrex::Real maxeigval = 0.0;
+            laxfriedrich_flux(
+                qtempl[R_RHO], qtempl[R_UN], qtempl[R_UT1], qtempl[R_UT2],
+                qtempl[R_P], spl, qtempr[R_RHO], qtempr[R_UN], qtempr[R_UT1],
+                qtempr[R_UT2], qtempr[R_P], spr, bc_test_val, cavg, ustar,
+                maxeigval, flux_tmp[URHO], &flux_tmp[UFS], flux_tmp[f_idx[0]],
+                flux_tmp[f_idx[1]], flux_tmp[f_idx[2]], flux_tmp[UEDEN],
+                flux_tmp[UEINT],omega_captured,rad);
 #if NUM_ADV > 0
-          for (int n = 0; n < NUM_ADV; n++) {
-            pc_lax_cmpflx_passive(
-              qtempl[R_UN], qtempr[R_UN], qtempl[R_RHO], qtempr[R_RHO],
-              qtempl[R_ADV + n], qtempr[R_ADV + n], maxeigval,
-              flux_tmp[UFA + n]);
-          }
+            for (int n = 0; n < NUM_ADV; n++) {
+                pc_lax_cmpflx_passive(
+                    qtempl[R_UN], qtempr[R_UN], qtempl[R_RHO], qtempr[R_RHO],
+                    qtempl[R_ADV + n], qtempr[R_ADV + n], maxeigval,
+                    flux_tmp[UFA + n]);
+            }
 #endif
 #if NUM_AUX > 0
-          for (int n = 0; n < NUM_AUX; n++) {
-            pc_lax_cmpflx_passive(
-              qtempl[R_UN], qtempr[R_UN], qtempl[R_RHO], qtempr[R_RHO],
-              qtempl[R_AUX + n], qtempr[R_AUX + n], maxeigval,
-              flux_tmp[UFX + n]);
-          }
+            for (int n = 0; n < NUM_AUX; n++) {
+                pc_lax_cmpflx_passive(
+                    qtempl[R_UN], qtempr[R_UN], qtempl[R_RHO], qtempr[R_RHO],
+                    qtempl[R_AUX + n], qtempr[R_AUX + n], maxeigval,
+                    flux_tmp[UFX + n]);
+            }
 #endif
 #if NUM_LIN > 0
-          for (int n = 0; n < NUM_LIN; n++) {
-            pc_lax_cmpflx_passive(
-              qtempl[R_UN], qtempr[R_UN], 1., 1., qtempl[R_LIN + n],
-              qtempr[R_LIN + n], maxeigval, flux_tmp[ULIN + n]);
-          }
+            for (int n = 0; n < NUM_LIN; n++) {
+                pc_lax_cmpflx_passive(
+                    qtempl[R_UN], qtempr[R_UN], 1., 1., qtempl[R_LIN + n],
+                    qtempr[R_LIN + n], maxeigval, flux_tmp[ULIN + n]);
+            }
 #endif
         }
         flux_tmp[UTEMP] = 0.0;
         for (int ivar = 0; ivar < NVAR; ivar++) {
-          flx[dir](iv, ivar) += flux_tmp[ivar] * area[dir](i, j, k);
+            flx[dir](iv, ivar) += flux_tmp[ivar] * area[dir](i, j, k);
         }
-      });
+          });
   }
 }
 
 void
 pc_compute_hyp_mol_flux_eb(
-  const amrex::Box& cbox,
-  const amrex::Array4<const amrex::Real>& q,
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& dx,
-  const EBBndryGeom* ebg,
-  const int /*Nebg*/,
-  amrex::Real* ebflux,
-  const int nebflux)
+    const amrex::Box& cbox,
+    const amrex::Array4<const amrex::Real>& q,
+    const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& dx,
+    const EBBndryGeom* ebg,
+    const int /*Nebg*/,
+    amrex::Real* ebflux,
+    const int nebflux)
 {
 
-  const int nextra = 0;
+    const int nextra = 0;
 
-  const amrex::Real full_area = AMREX_D_PICK(1.0, dx[0], dx[0] * dx[1]);
-  const amrex::Box bxg = amrex::grow(cbox, nextra - 1);
+    const amrex::Real full_area = AMREX_D_PICK(1.0, dx[0], dx[0] * dx[1]);
+    const amrex::Box bxg = amrex::grow(cbox, nextra - 1);
 
-  amrex::ParallelFor(nebflux, [=] AMREX_GPU_DEVICE(int L) {
+    amrex::ParallelFor(nebflux, [=] AMREX_GPU_DEVICE(int L) {
     const amrex::IntVect& iv = ebg[L].iv;
     if (bxg.contains(iv)) {
       amrex::Real ebnorm[AMREX_SPACEDIM] = {AMREX_D_DECL(

@@ -41,7 +41,6 @@ enum sources {
 #ifdef PELE_USE_MASA
   mms_src,
 #endif
-  rot_src,
   num_src
 };
 
@@ -379,7 +378,13 @@ public:
   void construct_old_rot_source(amrex::Real time, amrex::Real dt);
 
   void construct_new_rot_source(amrex::Real time, amrex::Real dt);
-
+  
+  void fill_rot_source(
+    const amrex::MultiFab& state_old,
+    const amrex::MultiFab& state_new,
+    amrex::MultiFab& forcing_src,
+    int ng);
+  
   void getLESTerm(
     amrex::Real time,
     amrex::Real dt,
