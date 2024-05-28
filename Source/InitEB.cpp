@@ -41,7 +41,7 @@ PeleC::initialize_eb2_structs()
     std::is_standard_layout<EBBndryGeom>::value,
     "EBBndryGeom is not standard layout");
   
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx = geom.CellSizeArray();
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dxlev = geom.CellSizeArray();
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_lo =
   geom.ProbLoArray();
   amrex::Real axis  = rf_axis;
@@ -182,15 +182,9 @@ PeleC::initialize_eb2_structs()
                       amrex::ParallelFor(ncutcells, [=] AMREX_GPU_DEVICE(int L) {
                           const auto &iv = sten[L].iv;
 
-                          amrex::Real xloc=prob_lo[0];
-                          //+(iv[0]+0.5)*dx[0];
-                          //+sten[L].eb_centroid[0]*0.5*dx[0];
-                          amrex::Real yloc=prob_lo[1];
-                          //+(iv[1]+0.5)*dx[1];
-                          //+sten[L].eb_centroid[1]*0.5*dx[1];
-                          amrex::Real zloc=prob_lo[2];
-                          //+(iv[2]+0.5)*dx[2];
-                          //+sten[L].eb_centroid[2]*0.5*dx[2];
+                          amrex::Real xloc=prob_lo[0] + (iv[0]+0.5)*dxlev[0] + sten[L].eb_centroid[0]*0.5*dxlev[0];
+                          amrex::Real yloc=prob_lo[1] + (iv[1]+0.5)*dxlev[1] + sten[L].eb_centroid[1]*0.5*dxlev[1];
+                          amrex::Real zloc=prob_lo[2] + (iv[2]+0.5)*dxlev[2] + sten[L].eb_centroid[2]*0.5*dxlev[2];
 
                           amrex::RealVect r(0.0,0.0,0.0);
                           amrex::RealVect w(0.0,0.0,0.0);
@@ -200,6 +194,7 @@ PeleC::initialize_eb2_structs()
                           r[2]=zloc-axis_loc[2];
 
                           amrex::Real rmag2=r[0]*r[0]+r[1]*r[1]+r[2]*r[2];
+                          rmag2 -= r[axis]*r[axis]; //only in plane
 
                           if(rmag2 > rfdist2)
                           {

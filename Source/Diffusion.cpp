@@ -141,8 +141,11 @@ PeleC::getMOLSrcTerm(
               r[0]=prob_lo[0]+(i+0.5)*dx[0]-axis_loc[0];
               r[1]=prob_lo[1]+(j+0.5)*dx[1]-axis_loc[1];
               r[2]=prob_lo[2]+(k+0.5)*dx[2]-axis_loc[2];
-              amrex::Real rad=std::sqrt(r[0]*r[0]+r[1]*r[1]+r[2]*r[2]);
-              pc_ctoprim(i, j, k, sar, qar, qauxar,omega,rad);
+
+              amrex::Real rad=r[0]*r[0]+r[1]*r[1]+r[2]*r[2];
+              rad -= r[axisdir]*r[axisdir]; //only in-plane
+              rad = std::sqrt(rad);
+              pc_ctoprim(i, j, k, sar, qar, qauxar,omega, rad);
             }
             else
             {

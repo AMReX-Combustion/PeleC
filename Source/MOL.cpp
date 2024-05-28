@@ -27,6 +27,7 @@ pc_compute_hyp_mol_flux(
   const int R_NUM = 5 + NUM_SPECIES + NUM_ADV + NUM_LIN + NUM_AUX;
   const int bc_test_val = 1;
   int using_rotframe=do_rf; //local capture
+  int axisdir_captured=axisdir;
   amrex::Real omega_captured=omega;
 
 
@@ -145,7 +146,9 @@ pc_compute_hyp_mol_flux(
             r[0]=plo[0]+(i+0.5)*dx[0]-axis_loc[0];
             r[1]=plo[1]+(j+0.5)*dx[1]-axis_loc[1];
             r[2]=plo[2]+(k+0.5)*dx[2]-axis_loc[2];
-            rad=std::sqrt(r[0]*r[0]+r[1]*r[1]+r[2]*r[2]);
+            rad=r[0]*r[0]+r[1]*r[1]+r[2]*r[2];
+            rad-=r[axisdir_captured]*r[axisdir_captured];
+            rad=std::sqrt(rad);
         }
 
         if (!use_laxf_flux) {
