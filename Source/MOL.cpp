@@ -29,6 +29,8 @@ pc_compute_hyp_mol_flux(
   int using_rotframe=do_rf; //local capture
   int axisdir_captured=axisdir;
   amrex::Real omega_captured=omega;
+  amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> axisloc_captured
+  ={axis_loc[0],axis_loc[1],axis_loc[2]};
 
 
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
@@ -140,15 +142,22 @@ pc_compute_hyp_mol_flux(
         amrex::Real ustar = 0.0;
         
         amrex::RealVect r(0.0,0.0,0.0);
-        amrex::Real rad;
+        amrex::Real radl,radr,rad;
         if(using_rotframe)
         {
-            r[0]=plo[0]+(i+0.5)*dx[0]-axis_loc[0];
-            r[1]=plo[1]+(j+0.5)*dx[1]-axis_loc[1];
-            r[2]=plo[2]+(k+0.5)*dx[2]-axis_loc[2];
+            r[0]=plo[0]+(iv[0]+0.5)*dx[0]-axisloc_captured[0];
+            r[1]=plo[1]+(iv[1]+0.5)*dx[1]-axisloc_captured[1];
+            r[2]=plo[2]+(iv[2]+0.5)*dx[2]-axisloc_captured[2];
             rad=r[0]*r[0]+r[1]*r[1]+r[2]*r[2];
             rad-=r[axisdir_captured]*r[axisdir_captured];
-            rad=std::sqrt(rad);
+            radr=std::sqrt(rad);
+            
+            r[0]=plo[0]+(ivm[0]+0.5)*dx[0]-axisloc_captured[0];
+            r[1]=plo[1]+(ivm[1]+0.5)*dx[1]-axisloc_captured[1];
+            r[2]=plo[2]+(ivm[2]+0.5)*dx[2]-axisloc_captured[2];
+            rad=r[0]*r[0]+r[1]*r[1]+r[2]*r[2];
+            rad-=r[axisdir_captured]*r[axisdir_captured];
+            radl=std::sqrt(rad);
         }
 
         if (!use_laxf_flux) {
@@ -160,7 +169,8 @@ pc_compute_hyp_mol_flux(
                 qtempr[R_UT2], qtempr[R_P], spr, bc_test_val, cavg, ustar,
                 flux_tmp[URHO], &flux_tmp[UFS], flux_tmp[f_idx[0]],
                 flux_tmp[f_idx[1]], flux_tmp[f_idx[2]], flux_tmp[UEDEN],
-                flux_tmp[UEINT], qint_iu, tmp1, tmp2, tmp3, tmp4,omega_captured,rad);
+                flux_tmp[UEINT], qint_iu, tmp1, tmp2, tmp3, tmp4,omega_captured,radl,
+                omega_captured,radr);
 #if NUM_ADV > 0
             for (int n = 0; n < NUM_ADV; n++) {
                 pc_cmpflx_passive(
@@ -190,7 +200,7 @@ pc_compute_hyp_mol_flux(
                 qtempr[R_UT2], qtempr[R_P], spr, bc_test_val, cavg, ustar,
                 maxeigval, flux_tmp[URHO], &flux_tmp[UFS], flux_tmp[f_idx[0]],
                 flux_tmp[f_idx[1]], flux_tmp[f_idx[2]], flux_tmp[UEDEN],
-                flux_tmp[UEINT],omega_captured,rad);
+                flux_tmp[UEINT],omega_captured,radl,omega_captured,radr);
 #if NUM_ADV > 0
             for (int n = 0; n < NUM_ADV; n++) {
                 pc_lax_cmpflx_passive(
