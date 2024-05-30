@@ -61,7 +61,7 @@ amrex_probinit(
 
   PeleC::h_prob_parm_device->u0 = PeleC::h_prob_parm_device->mach * cs;
 
-  auto& trans_parm = PeleC::trans_parms.host_trans_parm();
+  auto& trans_parm = PeleC::trans_parms.host_parm();
   trans_parm.const_bulk_viscosity =
     PeleC::h_prob_parm_device->rho0 * PeleC::h_prob_parm_device->u0 *
     PeleC::h_prob_parm_device->L_x / PeleC::h_prob_parm_device->reynolds;

@@ -106,7 +106,7 @@ amrex_probinit(
     rhoRatio, PeleC::h_prob_parm_device->L, PeleC::h_prob_parm_device->v0, mu,
     cs, cp, St_num);
 
-  auto& trans_parm = PeleC::trans_parms.host_trans_parm();
+  auto& trans_parm = PeleC::trans_parms.host_parm();
   trans_parm.const_bulk_viscosity = 0.0;
   trans_parm.const_diffusivity = 0.0;
   trans_parm.const_viscosity = mu;

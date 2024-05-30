@@ -48,6 +48,17 @@ function(build_pele_physics_lib pele_physics_lib_name)
 
     target_sources(${pele_physics_lib_name}
       PRIVATE
+      ${PELE_PHYSICS_UTILITY_DIR}/BlackBoxFunc/BlackBoxFunc.cpp
+      ${PELE_PHYSICS_UTILITY_DIR}/BlackBoxFunc/BlackBoxFunc.H
+      ${PELE_PHYSICS_UTILITY_DIR}/BlackBoxFunc/BlackBoxFuncFactory.H
+      ${PELE_PHYSICS_UTILITY_DIR}/BlackBoxFunc/NeuralNetHomerolled.H
+      ${PELE_PHYSICS_UTILITY_DIR}/BlackBoxFunc/NeuralNetLayerDef.H
+      ${PELE_PHYSICS_UTILITY_DIR}/BlackBoxFunc/NeuralNetModelDef.H
+      ${PELE_PHYSICS_UTILITY_DIR}/BlackBoxFunc/Table.H)
+    target_include_directories(${pele_physics_lib_name} PUBLIC ${PELE_PHYSICS_UTILITY_DIR}/BlackBoxFunc)
+
+    target_sources(${pele_physics_lib_name}
+      PRIVATE
       ${PELE_PHYSICS_UTILITY_DIR}/Filter/Filter.cpp
       ${PELE_PHYSICS_UTILITY_DIR}/Filter/Filter.H)
     target_include_directories(${pele_physics_lib_name} PUBLIC ${PELE_PHYSICS_UTILITY_DIR}/Filter)
@@ -159,7 +170,7 @@ function(build_pele_physics_lib pele_physics_lib_name)
       target_include_directories(${pele_physics_lib_name} PUBLIC ${PELE_PHYSICS_SPRAY_DIR}/Distribution)
       target_include_directories(${pele_physics_lib_name} PUBLIC ${PELE_PHYSICS_SPRAY_DIR}/BreakupSplash)
     endif()
-    
+
     if(PELE_PHYSICS_ENABLE_SOOT)
       set(SOOT_MOMENTS_VALUES 3 6)
       if(NOT PELE_PHYSICS_NUM_SOOT_MOMENTS IN_LIST SOOT_MOMENTS_VALUES)

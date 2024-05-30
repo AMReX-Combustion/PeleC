@@ -161,8 +161,8 @@ PeleC::variableSetUp()
   tagging_parm = new TaggingParm{};
   d_prob_parm_device = static_cast<ProbParmDevice*>(
     amrex::The_Arena()->alloc(sizeof(ProbParmDevice)));
-  trans_parms.allocate();
-  if (trans_parms.host_trans_parm().use_soret) {
+  trans_parms.initialize();
+  if (trans_parms.host_parm().use_soret) {
     amrex::Abort("PeleC does not support Soret effects yet.");
   }
   turb_inflow.init(amrex::DefaultGeometry());

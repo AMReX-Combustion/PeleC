@@ -50,7 +50,7 @@ amrex_probinit(
   PeleC::h_prob_parm_device->umax = PeleC::h_prob_parm_device->Ma * cs;
   PeleC::h_prob_parm_device->uavg = 0.5 * PeleC::h_prob_parm_device->umax;
 
-  auto& trans_parm = PeleC::trans_parms.host_trans_parm();
+  auto& trans_parm = PeleC::trans_parms.host_parm();
   trans_parm.const_bulk_viscosity = 0.0;
   trans_parm.const_diffusivity = 0.0;
   trans_parm.const_viscosity = PeleC::h_prob_parm_device->rho *
