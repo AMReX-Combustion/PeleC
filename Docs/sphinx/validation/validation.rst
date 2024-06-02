@@ -48,7 +48,7 @@ was used to post-process some quantities using `visit_pp_aux_vars.py`
 
 .. code-block:: bash
 
-   $ visit -nowin -cli -s Exect/RegTests/visit_pp_aux_vars.py
+   $ visit -nowin -cli -s Exec/RegTests/visit_pp_aux_vars.py
 
 Generating the initial conditions
 #################################
