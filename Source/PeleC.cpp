@@ -2146,7 +2146,6 @@ PeleC::init_mms()
 #endif
     masa_init("mms", masa_solution_name.c_str());
     masa_set_param("Cs", PeleC::Cs);
-    masa_set_param("Cw", PeleC::Cw);
     masa_set_param("CI", PeleC::CI);
     masa_set_param("PrT", PeleC::PrT);
     mms_initialized = true;
