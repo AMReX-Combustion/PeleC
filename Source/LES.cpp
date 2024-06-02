@@ -150,36 +150,35 @@ PeleC::getLESTerm(
   }
 }
 
-void 
+void
 computeTangentialVelDerivs(
-  const amrex::Box eboxes[AMREX_SPACEDIM], 
+  const amrex::Box eboxes[AMREX_SPACEDIM],
   amrex::FArrayBox tander_ec[AMREX_SPACEDIM],
-  amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& tanders, 
-  const amrex::Array4<amrex::Real>& q_ar, 
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx) 
+  amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& tanders,
+  const amrex::Array4<amrex::Real>& q_ar,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx)
 {
   BL_PROFILE("PeleC::pc_compute_tangential_vel_derivs()");
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
     tander_ec[dir].resize(
-        eboxes[dir], GradUtils::nCompTan, amrex::The_Async_Arena());
+      eboxes[dir], GradUtils::nCompTan, amrex::The_Async_Arena());
     tanders[dir] = tander_ec[dir].array();
     setV(eboxes[dir], GradUtils::nCompTan, tanders[dir], 0);
     const amrex::Real d1 = dir == 0 ? dx[1] : dx[0];
     const amrex::Real d2 = dir == 2 ? dx[1] : dx[2];
     amrex::ParallelFor(
-        eboxes[dir], [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            pc_compute_tangential_vel_derivs(
-                i, j, k, q_ar, dir, d1, d2, tanders[dir]);
-        });
+      eboxes[dir], [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+        pc_compute_tangential_vel_derivs(
+          i, j, k, q_ar, dir, d1, d2, tanders[dir]);
+      });
   }
-    
 }
 
-void 
+void
 resizeAndSetFlux(
-  const amrex::Box eboxes[AMREX_SPACEDIM], 
-  amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flx, 
-  amrex::FArrayBox flux_ec[AMREX_SPACEDIM]) 
+  const amrex::Box eboxes[AMREX_SPACEDIM],
+  amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flx,
+  amrex::FArrayBox flux_ec[AMREX_SPACEDIM])
 {
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
     flux_ec[dir].resize(eboxes[dir], NVAR, amrex::The_Async_Arena());
@@ -188,13 +187,13 @@ resizeAndSetFlux(
   }
 }
 
-void 
+void
 computeFluxDiv(
-  amrex::MultiFab& LESTerm, 
-  const amrex::MFIter& mfi, 
-  const amrex::Box& vbox, 
+  amrex::MultiFab& LESTerm,
+  const amrex::MFIter& mfi,
+  const amrex::Box& vbox,
   amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flx,
-  const amrex::MultiFab& volume) 
+  const amrex::MultiFab& volume)
 {
   auto const& Lterm = LESTerm.array(mfi);
   setV(vbox, NVAR, Lterm, 0.0);
@@ -202,23 +201,22 @@ computeFluxDiv(
     BL_PROFILE("PeleC::pc_flux_div()");
     auto const& vol = volume.array(mfi);
     amrex::ParallelFor(
-      vbox, NVAR,
-      [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
+      vbox, NVAR, [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
         pc_flux_div(
           i, j, k, n, AMREX_D_DECL(flx[0], flx[1], flx[2]), vol, Lterm);
       });
   }
 }
 
-void 
+void
 PeleC::updateFluxRegistersLES(
-  bool conditional, 
-  amrex::Real reflux_factor, 
-  const amrex::MultiFab& LESTerm, 
-  amrex::Real dt, 
-  const amrex::MFIter& mfi, 
-  amrex::FabType typ, 
-  amrex::FArrayBox flux_ec[AMREX_SPACEDIM]) 
+  bool conditional,
+  amrex::Real reflux_factor,
+  const amrex::MultiFab& LESTerm,
+  amrex::Real dt,
+  const amrex::MFIter& mfi,
+  amrex::FabType typ,
+  amrex::FArrayBox flux_ec[AMREX_SPACEDIM])
 {
   if (conditional && reflux_factor != 0) {
     amrex::FArrayBox dm_as_fine(
@@ -324,7 +322,7 @@ PeleC::getSmagorinskyLESTerm(
       }
 
       // Compute flux divergence (1/Vol).Div(F.A)
-      computeFluxDiv(LESTerm, mfi, vbox, flx, volume);  
+      computeFluxDiv(LESTerm, mfi, vbox, flx, volume);
 
       // Refluxing
       updateFluxRegistersLES(
@@ -681,7 +679,7 @@ PeleC::getWALELESTerm(
         amrex::surroundingNodes(cbox, 0), amrex::surroundingNodes(cbox, 1),
         amrex::surroundingNodes(cbox, 2))};
       amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> tanders;
-      computeTangentialVelDerivs(eboxes,tander_ec, tanders, q_ar, dx);
+      computeTangentialVelDerivs(eboxes, tander_ec, tanders, q_ar, dx);
 
       // Compute extensive LES fluxes, F.A
       amrex::FArrayBox flux_ec[AMREX_SPACEDIM];
