@@ -59,10 +59,6 @@ PeleC::construct_hydro_source(
 
 #ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())          \
-  reduction(+ : E_added_flux, mass_added_flux)                     \
-  reduction(+ : xmom_added_flux, ymom_added_flux, zmom_added_flux) \
-  reduction(+ : mass_lost, xmom_lost, ymom_lost, zmom_lost)        \
-  reduction(+ : eden_lost, xang_lost, yang_lost, zang_lost)        \
   reduction(max : courno)
 #endif
     {
