@@ -73,7 +73,7 @@ jobs:
         working-directory: ./Exec/RegTests/PMF
         run: |
           egrep "warning:|error:" build-output.txt \
-            | egrep -v "Submodules/amrex|Submodules/sundials|GNUmakefile" \
+            | egrep -v "Submodules/amrex|Submodules/sundials|GNUmakefile|ThirdParty" \
             | egrep -v "ld: warning:" | sort | uniq \
             | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
           cat warnings.txt
@@ -98,7 +98,32 @@ jobs:
         working-directory: ./Exec/RegTests/EB-C10
         run: |
           egrep "warning:|error:" build-output.txt \
-            | egrep -v "Submodules/amrex|Submodules/sundials|GNUmakefile" \
+            | egrep -v "Submodules/amrex|Submodules/sundials|GNUmakefile|ThirdParty" \
+            | egrep -v "ld: warning:" | sort | uniq \
+            | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
+          cat warnings.txt
+          export return=$(tail -n 1 warnings.txt | awk '{print $2}')
+          exit ${return}
+      - name: EB OMP debug build
+        working-directory: ./Exec/RegTests/EB-C10
+        run: |
+          echo "::add-matcher::.github/problem-matchers/gcc.json"
+          set -eu -o pipefail
+          ccache -z
+          make -j ${{env.NPROCS}} KEEP_BUILDINFO_CPP=TRUE USE_CCACHE=TRUE COMP=gnu USE_MPI=FALSE DEBUG=TRUE USE_OMP=TRUE 2>&1 | tee -a build-output.txt
+      - name: EB OMP debug ccache report
+        working-directory: ./Exec/RegTests/EB-C10
+        run: |
+          ccache -s
+          du -hs ~/.cache/ccache
+      - name: EB OMP debug test
+        working-directory: ./Exec/RegTests/EB-C10
+        run: ./PeleC3d.gnu.DEBUG.OMP.ex eb-c10.inp max_step=2 amr.plot_files_output=0 amr.checkpoint_files_output=0
+      - name: EB OMP debug report
+        working-directory: ./Exec/RegTests/EB-C10
+        run: |
+          egrep "warning:|error:" build-output.txt \
+            | egrep -v "Submodules/amrex|Submodules/sundials|GNUmakefile|ThirdParty" \
             | egrep -v "ld: warning:" | sort | uniq \
             | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
           cat warnings.txt
@@ -123,7 +148,7 @@ jobs:
         working-directory: ./Exec/RegTests/TG
         run: |
           egrep "warning:|error:" build-output.txt \
-            | egrep -v "Submodules/amrex|Submodules/sundials|GNUmakefile" \
+            | egrep -v "Submodules/amrex|Submodules/sundials|GNUmakefile|ThirdParty" \
             | egrep -v "ld: warning:" | sort | uniq \
             | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
           cat warnings.txt
@@ -145,7 +170,7 @@ jobs:
         working-directory: ./Exec/RegTests/Soot-Flame
         run: |
           egrep "warning:|error:" build-output.txt \
-            | egrep -v "Submodules/amrex|Submodules/sundials|GNUmakefile" \
+            | egrep -v "Submodules/amrex|Submodules/sundials|GNUmakefile|ThirdParty" \
             | egrep -v "Submodules/PelePhysics/Mechanisms" | sort | uniq \
             | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
           cat warnings.txt
@@ -167,7 +192,7 @@ jobs:
         working-directory: ./Exec/RegTests/Spray-Conv
         run: |
           egrep "warning:|error:" build-output.txt \
-            | egrep -v "Submodules/amrex|Submodules/sundials|GNUmakefile" \
+            | egrep -v "Submodules/amrex|Submodules/sundials|GNUmakefile|ThirdParty" \
             | egrep -v "Submodules/PelePhysics/Mechanisms" | sort | uniq \
             | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > warnings.txt
           cat warnings.txt
