@@ -41,9 +41,6 @@ Blocs += $(UTILITY_HOME)/Diagnostics
 Bpack += $(UTILITY_HOME)/Filter/Make.package
 Blocs += $(UTILITY_HOME)/Filter
 
-Bpack += $(UTILITY_HOME)/BlackBoxFunc/Make.package
-Blocs += $(UTILITY_HOME)/BlackBoxFunc
-
 all: $(executable)
 ifneq ($(KEEP_BUILDINFO_CPP),TRUE)
 	$(SILENT) $(RM) AMReX_buildInfo.cpp
