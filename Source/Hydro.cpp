@@ -58,7 +58,7 @@ PeleC::construct_hydro_source(
     auto const& flags = fact.getMultiEBCellFlagFab();
 
 #ifdef AMREX_USE_OMP
-#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())          \
+#pragma omp parallel if (amrex::Gpu::notInLaunchRegion()) \
   reduction(max : courno)
 #endif
     {
