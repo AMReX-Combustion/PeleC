@@ -131,7 +131,7 @@ pmf(
       } else {
         dydx = (y2 - y1) / (x2 - x1);
       }
-      y_vector[j] = y1 + dydx * (xlo - x1);
+      y_vector[j] = y1 + dydx * (xmid - x1);
     }
   }
 }
