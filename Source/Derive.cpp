@@ -796,7 +796,7 @@ PeleC::pc_derviscosity(
 {
   auto const dat = datfab.const_array();
   auto mu_arr = derfab.array();
-  auto const* ltransparm = trans_parms.device_trans_parm();
+  auto const* ltransparm = trans_parms.device_parm();
   const ProbParmDevice* lprobparm = d_prob_parm_device;
   const auto& gdata = geomdata.data();
 
@@ -834,7 +834,7 @@ PeleC::pc_derbulkviscosity(
 {
   auto const dat = datfab.const_array();
   auto xi_arr = derfab.array();
-  auto const* ltransparm = trans_parms.device_trans_parm();
+  auto const* ltransparm = trans_parms.device_parm();
   const ProbParmDevice* lprobparm = d_prob_parm_device;
   const auto& gdata = geomdata.data();
 
@@ -872,7 +872,7 @@ PeleC::pc_derconductivity(
 {
   auto const dat = datfab.const_array();
   auto lam_arr = derfab.array();
-  auto const* ltransparm = trans_parms.device_trans_parm();
+  auto const* ltransparm = trans_parms.device_parm();
   const ProbParmDevice* lprobparm = d_prob_parm_device;
   const auto& gdata = geomdata.data();
 
@@ -910,7 +910,7 @@ PeleC::pc_derdiffusivity(
 {
   auto const dat = datfab.const_array();
   auto d_arr = derfab.array();
-  auto const* ltransparm = trans_parms.device_trans_parm();
+  auto const* ltransparm = trans_parms.device_parm();
   const ProbParmDevice* lprobparm = d_prob_parm_device;
   const auto& gdata = geomdata.data();
 

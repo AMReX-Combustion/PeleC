@@ -598,8 +598,9 @@ public:
   static ProbParmDevice* d_prob_parm_device;
   static ProbParmHost* prob_parm_host;
   static TaggingParm* tagging_parm;
-  static pele::physics::transport::TransportParams<
-    pele::physics::PhysicsType::transport_type>
+  static pele::physics::PeleParams<pele::physics::transport::TransParm<
+    pele::physics::PhysicsType::eos_type,
+    pele::physics::PhysicsType::transport_type>>
     trans_parms;
   static pele::physics::turbinflow::TurbInflow turb_inflow;
 

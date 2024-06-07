@@ -47,7 +47,7 @@ amrex_probinit(
   eos.TY2Cp(PeleC::h_prob_parm_device->T0, massfrac, cp);
   PeleC::h_prob_parm_device->v0 = PeleC::h_prob_parm_device->mach * cs;
 
-  auto& trans_parm = PeleC::trans_parms.host_trans_parm();
+  auto& trans_parm = PeleC::trans_parms.host_parm();
   trans_parm.const_bulk_viscosity = 0.0;
   trans_parm.const_diffusivity = 0.0;
   trans_parm.const_viscosity =
