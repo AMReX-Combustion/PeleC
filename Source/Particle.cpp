@@ -238,7 +238,7 @@ PeleC::particleMKD(
   }
   const int spray_state_ghosts = sprayStateGhosts(amr_ncycle);
   const int spray_source_ghosts = tmp_spray_source.nGrow();
-  auto const* ltransparm = PeleC::trans_parms.device_trans_parm();
+  auto const* ltransparm = PeleC::trans_parms.device_parm();
   // We will make a temporary copy of the source term array inside
   // moveKickDrift and we are only going to use the spray force out to one ghost
   // cell so we need only define spray_force_old with one ghost cell
@@ -283,7 +283,7 @@ PeleC::particleMK(
   const int spray_state_ghosts = sprayStateGhosts(amr_ncycle);
   const int spray_source_ghosts = tmp_spray_source.nGrow();
   new_sources[spray_src]->setVal(0.);
-  auto const* ltransparm = PeleC::trans_parms.device_trans_parm();
+  auto const* ltransparm = PeleC::trans_parms.device_parm();
   if (particle_verbose >= 1) {
     amrex::Print() << "moveKick ... updating velocity only\n";
   }

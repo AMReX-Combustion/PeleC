@@ -175,7 +175,7 @@ PeleC::getMOLSrcTerm(
         auto const& coe_xi = coeff_cc.array(dComp_xi);
         auto const& coe_lambda = coeff_cc.array(dComp_lambda);
         BL_PROFILE("PeleC::get_transport_coeffs()");
-        auto const* ltransparm = trans_parms.device_trans_parm();
+        auto const* ltransparm = trans_parms.device_parm();
         auto const& geomdata = geom.data();
         const ProbParmDevice* lprobparm = PeleC::d_prob_parm_device;
         const bool get_xi = true, get_mu = true, get_lam = true,
@@ -286,7 +286,7 @@ PeleC::getMOLSrcTerm(
                     bbox, 1, amrex::The_Async_Arena());
                   amrex::Array4<amrex::Real> temp_arr = tmpfabtemp.array();
                   const ProbParmDevice* lprobparm = PeleC::d_prob_parm_device;
-                  auto const* ltransparm = trans_parms.device_trans_parm();
+                  auto const* ltransparm = trans_parms.device_parm();
                   const auto geomdata = geom.data();
                   amrex::ParallelFor(
                     bbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {

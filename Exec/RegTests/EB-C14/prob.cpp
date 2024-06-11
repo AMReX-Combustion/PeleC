@@ -50,7 +50,7 @@ amrex_probinit(
     PeleC::h_prob_parm_device->T1, PeleC::h_prob_parm_device->massfrac.begin(),
     cp);
 
-  auto& trans_parm = PeleC::trans_parms.host_trans_parm();
+  auto& trans_parm = PeleC::trans_parms.host_parm();
   amrex::Real Pr = 0.7;
   trans_parm.const_conductivity = trans_parm.const_viscosity * cp / Pr;
   PeleC::trans_parms.sync_to_device();

@@ -99,8 +99,9 @@ amrex::Vector<std::string> PeleC::spec_names;
 amrex::Vector<std::string> PeleC::adv_names;
 amrex::Vector<std::string> PeleC::aux_names;
 
-pele::physics::transport::TransportParams<
-  pele::physics::PhysicsType::transport_type>
+pele::physics::PeleParams<pele::physics::transport::TransParm<
+  pele::physics::PhysicsType::eos_type,
+  pele::physics::PhysicsType::transport_type>>
   PeleC::trans_parms;
 
 pele::physics::turbinflow::TurbInflow PeleC::turb_inflow;
@@ -884,7 +885,7 @@ PeleC::estTimeStep(amrex::Real /*dt_old*/)
 
     if (diffuse_vel) {
       auto const& geomdata = geom.data();
-      auto const* ltransparm = trans_parms.device_trans_parm();
+      auto const* ltransparm = trans_parms.device_parm();
       const ProbParmDevice* lprobparm = PeleC::d_prob_parm_device;
       amrex::Real dt = amrex::ReduceMin(
         stateMF, flags, 0,
@@ -900,7 +901,7 @@ PeleC::estTimeStep(amrex::Real /*dt_old*/)
 
     if (diffuse_temp) {
       auto const& geomdata = geom.data();
-      auto const* ltransparm = trans_parms.device_trans_parm();
+      auto const* ltransparm = trans_parms.device_parm();
       const ProbParmDevice* lprobparm = PeleC::d_prob_parm_device;
       amrex::Real dt = amrex::ReduceMin(
         stateMF, flags, 0,
@@ -916,7 +917,7 @@ PeleC::estTimeStep(amrex::Real /*dt_old*/)
 
     if (diffuse_enth) {
       auto const& geomdata = geom.data();
-      auto const* ltransparm = trans_parms.device_trans_parm();
+      auto const* ltransparm = trans_parms.device_parm();
       const ProbParmDevice* lprobparm = PeleC::d_prob_parm_device;
       amrex::Real dt = amrex::ReduceMin(
         stateMF, flags, 0,
