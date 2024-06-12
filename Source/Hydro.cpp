@@ -58,8 +58,8 @@ PeleC::construct_hydro_source(
     auto const& flags = fact.getMultiEBCellFlagFab();
 
 #ifdef AMREX_USE_OMP
-#pragma omp parallel if (amrex::Gpu::notInLaunchRegion()) reduction(max \
-                                                                    : courno)
+#pragma omp parallel if (amrex::Gpu::notInLaunchRegion()) \
+  reduction(max : courno)
 #endif
     {
       amrex::Real cflLoc = std::numeric_limits<amrex::Real>::lowest();
