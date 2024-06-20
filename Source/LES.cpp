@@ -210,7 +210,7 @@ computeFluxDiv(
 
 void
 PeleC::updateFluxRegistersLES(
-  bool conditional,
+  bool do_reflux,
   amrex::Real reflux_factor,
   const amrex::MultiFab& LESTerm,
   amrex::Real dt,
@@ -218,7 +218,7 @@ PeleC::updateFluxRegistersLES(
   amrex::FabType typ,
   amrex::FArrayBox flux_ec[AMREX_SPACEDIM])
 {
-  if (conditional && reflux_factor != 0) {
+  if (do_reflux && reflux_factor != 0) {
     amrex::FArrayBox dm_as_fine(
       amrex::Box::TheUnitBox(), LESTerm.nComp(), amrex::The_Async_Arena());
     update_flux_registers(
@@ -367,7 +367,7 @@ PeleC::getDynamicSmagorinskyLESTerm(
     nGrowT = number of grow cells necessary for filtering the derived quantities (test level)
 
     ** Everything is calculated at cell centers (cc), then at the very end the coefficients and the stress terms (e.g. alpha_ij)
-       are moved to edge/faces centers (ec) to calculate the fluxes. ec quantities have length N+1 in the face-normal 
+       are moved to edge/faces centers (ec) to calculate the fluxes. ec quantities have length N+1 in the face-normal
        direction and length N in the other two directions.
 
   */
