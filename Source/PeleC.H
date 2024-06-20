@@ -381,7 +381,6 @@ public:
     amrex::Real flux_factor);
 
   void updateFluxRegistersLES(
-    bool do_reflux,
     amrex::Real reflux_factor,
     const amrex::MultiFab& LESTerm,
     amrex::Real dt,
