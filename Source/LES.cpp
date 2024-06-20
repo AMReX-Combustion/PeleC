@@ -326,7 +326,7 @@ PeleC::getSmagorinskyLESTerm(
 
       // Refluxing
       updateFluxRegistersLES(
-        reflux_factor, reflux_factor, LESTerm, dt, mfi, typ, flux_ec);
+        do_reflux, reflux_factor, LESTerm, dt, mfi, typ, flux_ec);
     } // End of MFIter scope
   }   // End of OMP scope
 #endif
@@ -605,7 +605,7 @@ PeleC::getDynamicSmagorinskyLESTerm(
 
       // Refluxing
       updateFluxRegistersLES(
-        reflux_factor, reflux_factor, LESTerm, dt, mfi, typ, flux_ec);
+        do_reflux, reflux_factor, LESTerm, dt, mfi, typ, flux_ec);
     }
   }
 #endif
@@ -709,7 +709,7 @@ PeleC::getWALELESTerm(
 
       // Refluxing
       updateFluxRegistersLES(
-        reflux_factor, reflux_factor, LESTerm, dt, mfi, typ, flux_ec);
+        do_reflux, reflux_factor, LESTerm, dt, mfi, typ, flux_ec);
     } // End of MFIter scope
   }   // End of OMP scope
 #endif
@@ -814,7 +814,7 @@ PeleC::getVremanLESTerm(
 
       // Refluxing
       updateFluxRegistersLES(
-        reflux_factor, reflux_factor, LESTerm, dt, mfi, typ, flux_ec);
+        do_reflux, reflux_factor, LESTerm, dt, mfi, typ, flux_ec);
     } // End of MFIter scope
   }   // End of OMP scope
 #endif
