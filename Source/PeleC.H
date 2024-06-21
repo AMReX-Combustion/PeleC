@@ -386,7 +386,7 @@ public:
     amrex::Real dt,
     const amrex::MFIter& mfi,
     amrex::FabType typ,
-    amrex::FArrayBox flux_ec[AMREX_SPACEDIM]);
+    const std::array<amrex::FArrayBox const*, AMREX_SPACEDIM>& flux_ec);
 
   void getSmagorinskyLESTerm(
     amrex::Real time,

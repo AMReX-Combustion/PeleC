@@ -215,14 +215,12 @@ PeleC::updateFluxRegistersLES(
   amrex::Real dt,
   const amrex::MFIter& mfi,
   amrex::FabType typ,
-  amrex::FArrayBox flux_ec[AMREX_SPACEDIM])
+  const std::array<amrex::FArrayBox const*, AMREX_SPACEDIM>& flux_ec)
 {
   if (do_reflux && reflux_factor != 0) {
     amrex::FArrayBox dm_as_fine(
       amrex::Box::TheUnitBox(), LESTerm.nComp(), amrex::The_Async_Arena());
-    update_flux_registers(
-      reflux_factor * dt, mfi, typ,
-      {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])}, dm_as_fine);
+    update_flux_registers(reflux_factor * dt, mfi, typ, flux_ec, dm_as_fine);
   }
 }
 
@@ -324,7 +322,9 @@ PeleC::getSmagorinskyLESTerm(
       computeFluxDiv(LESTerm, mfi, vbox, flx, volume);
 
       // Refluxing
-      updateFluxRegistersLES(reflux_factor, LESTerm, dt, mfi, typ, flux_ec);
+      updateFluxRegistersLES(
+        reflux_factor, LESTerm, dt, mfi, typ,
+        {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])});
     } // End of MFIter scope
   }   // End of OMP scope
 #endif
@@ -602,7 +602,9 @@ PeleC::getDynamicSmagorinskyLESTerm(
       computeFluxDiv(LESTerm, mfi, vbox, flx, volume);
 
       // Refluxing
-      updateFluxRegistersLES(reflux_factor, LESTerm, dt, mfi, typ, flux_ec);
+      updateFluxRegistersLES(
+        reflux_factor, LESTerm, dt, mfi, typ,
+        {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])});
     }
   }
 #endif
@@ -705,7 +707,9 @@ PeleC::getWALELESTerm(
       computeFluxDiv(LESTerm, mfi, vbox, flx, volume);
 
       // Refluxing
-      updateFluxRegistersLES(reflux_factor, LESTerm, dt, mfi, typ, flux_ec);
+      updateFluxRegistersLES(
+        reflux_factor, LESTerm, dt, mfi, typ,
+        {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])});
     } // End of MFIter scope
   }   // End of OMP scope
 #endif
@@ -809,7 +813,9 @@ PeleC::getVremanLESTerm(
       computeFluxDiv(LESTerm, mfi, vbox, flx, volume);
 
       // Refluxing
-      updateFluxRegistersLES(reflux_factor, LESTerm, dt, mfi, typ, flux_ec);
+      updateFluxRegistersLES(
+        reflux_factor, LESTerm, dt, mfi, typ,
+        {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])});
     } // End of MFIter scope
   }   // End of OMP scope
 #endif
