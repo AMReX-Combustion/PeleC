@@ -54,38 +54,27 @@ get_weight(const int im, const int ip)
   return diff == 0 ? 0.0 : (diff == 1 ? 1.0 : 0.5);
 }
 
-void pc_dervelx(
+template <int state_idx, int num_comp>
+void
+pc_derdividebyrho(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
-  int dcomp,
-  int ncomp,
+  int /*dcomp*/,
+  int /*ncomp*/,
   const amrex::FArrayBox& datfab,
-  const amrex::Geometry& geomdata,
-  amrex::Real time,
-  const int* bcrec,
-  const int level);
+  const amrex::Geometry& /*geomdata*/,
+  amrex::Real /*time*/,
+  const int* /*bcrec*/,
+  const int /*level*/)
+{
+  auto const dat = datfab.const_array();
+  auto derived = derfab.array();
 
-void pc_dervely(
-  const amrex::Box& bx,
-  amrex::FArrayBox& derfab,
-  int dcomp,
-  int ncomp,
-  const amrex::FArrayBox& datfab,
-  const amrex::Geometry& geomdata,
-  amrex::Real time,
-  const int* bcrec,
-  const int level);
-
-void pc_dervelz(
-  const amrex::Box& bx,
-  amrex::FArrayBox& derfab,
-  int dcomp,
-  int ncomp,
-  const amrex::FArrayBox& datfab,
-  const amrex::Geometry& geomdata,
-  amrex::Real time,
-  const int* bcrec,
-  const int level);
+  amrex::ParallelFor(
+    bx, num_comp, [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
+      derived(i, j, k, n) = dat(i, j, k, state_idx + n) / dat(i, j, k, URHO);
+    });
+}
 
 void pc_dermagvel(
   const amrex::Box& bx,
@@ -131,51 +120,7 @@ void pc_dereint1(
   const int* bcrec,
   const int level);
 
-void pc_dereint2(
-  const amrex::Box& bx,
-  amrex::FArrayBox& derfab,
-  int dcomp,
-  int ncomp,
-  const amrex::FArrayBox& datfab,
-  const amrex::Geometry& geomdata,
-  amrex::Real time,
-  const int* bcrec,
-  const int level);
-
 void pc_derlogden(
-  const amrex::Box& bx,
-  amrex::FArrayBox& derfab,
-  int dcomp,
-  int ncomp,
-  const amrex::FArrayBox& datfab,
-  const amrex::Geometry& geomdata,
-  amrex::Real time,
-  const int* bcrec,
-  const int level);
-
-void pc_derspec(
-  const amrex::Box& bx,
-  amrex::FArrayBox& derfab,
-  int dcomp,
-  int ncomp,
-  const amrex::FArrayBox& datfab,
-  const amrex::Geometry& geomdata,
-  amrex::Real time,
-  const int* bcrec,
-  const int level);
-
-void pc_deradv(
-  const amrex::Box& bx,
-  amrex::FArrayBox& derfab,
-  int dcomp,
-  int ncomp,
-  const amrex::FArrayBox& datfab,
-  const amrex::Geometry& geomdata,
-  amrex::Real time,
-  const int* bcrec,
-  const int level);
-
-void pc_deraux(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
   int dcomp,

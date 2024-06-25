@@ -466,7 +466,7 @@ PeleC::variableSetUp()
 
   // Internal energy as derived from rho*e, part of the state
   derive_lst.add(
-    "eint_e", amrex::IndexType::TheCellType(), 1, pc_dereint2,
+    "eint_e", amrex::IndexType::TheCellType(), 1, pc_derdividebyrho<UEINT, 1>,
     amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("eint_e", desc_lst, State_Type, Density, NVAR);
 
@@ -484,17 +484,18 @@ PeleC::variableSetUp()
 
   derive_lst.add(
     "massfrac", amrex::IndexType::TheCellType(), NUM_SPECIES,
-    var_names_massfrac, pc_derspec, amrex::DeriveRec::TheSameBox);
+    var_names_massfrac, pc_derdividebyrho<UFS, NUM_SPECIES>,
+    amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("massfrac", desc_lst, State_Type, Density, NVAR);
 
   derive_lst.add(
-    "adv", amrex::IndexType::TheCellType(), NUM_ADV, adv_names, pc_deradv,
-    amrex::DeriveRec::TheSameBox);
+    "adv", amrex::IndexType::TheCellType(), NUM_ADV, adv_names,
+    pc_derdividebyrho<UFA, NUM_ADV>, amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("adv", desc_lst, State_Type, Density, NVAR);
 
   derive_lst.add(
-    "aux", amrex::IndexType::TheCellType(), NUM_AUX, aux_names, pc_deraux,
-    amrex::DeriveRec::TheSameBox);
+    "aux", amrex::IndexType::TheCellType(), NUM_AUX, aux_names,
+    pc_derdividebyrho<UFX, NUM_AUX>, amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("aux", desc_lst, State_Type, Density, NVAR);
 
   // Species mole fractions
@@ -510,17 +511,17 @@ PeleC::variableSetUp()
 
   // Velocities
   derive_lst.add(
-    "x_velocity", amrex::IndexType::TheCellType(), 1, pc_dervelx,
+    "x_velocity", amrex::IndexType::TheCellType(), 1, pc_derdividebyrho<UMX, 1>,
     amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("x_velocity", desc_lst, State_Type, Density, NVAR);
 
   derive_lst.add(
-    "y_velocity", amrex::IndexType::TheCellType(), 1, pc_dervely,
+    "y_velocity", amrex::IndexType::TheCellType(), 1, pc_derdividebyrho<UMY, 1>,
     amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("y_velocity", desc_lst, State_Type, Density, NVAR);
 
   derive_lst.add(
-    "z_velocity", amrex::IndexType::TheCellType(), 1, pc_dervelz,
+    "z_velocity", amrex::IndexType::TheCellType(), 1, pc_derdividebyrho<UMZ, 1>,
     amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("z_velocity", desc_lst, State_Type, Density, NVAR);
 

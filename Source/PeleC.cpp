@@ -1693,7 +1693,7 @@ PeleC::errorEst(
 
       // Tagging vel_x
       S_derData.setVal<amrex::RunOn::Device>(0.0, datbox);
-      pc_dervelx(
+      pc_derdividebyrho<UMX, 1>(
         datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
         level);
       if (level < tagging_parm->max_velerr_lev) {
@@ -1715,7 +1715,7 @@ PeleC::errorEst(
 
       // Tagging vel_y
       S_derData.setVal<amrex::RunOn::Device>(0.0, datbox);
-      pc_dervely(
+      pc_derdividebyrho<UMY, 1>(
         datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
         level);
       if (level < tagging_parm->max_velerr_lev) {
@@ -1737,7 +1737,7 @@ PeleC::errorEst(
 
       // Tagging vel_z
       S_derData.setVal<amrex::RunOn::Device>(0.0, datbox);
-      pc_dervelz(
+      pc_derdividebyrho<UMZ, 1>(
         datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
         level);
       if (level < tagging_parm->max_velerr_lev) {
