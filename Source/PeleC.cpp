@@ -2032,7 +2032,13 @@ PeleC::init_les()
   // Fill with default coefficient values
   LES_Coeffs.define(grids, dmap, nCompC, 1, amrex::MFInfo(), Factory());
   LES_Coeffs.setVal(0.0);
-  LES_Coeffs.setVal(Cs * Cs, comp_Cs2, 1, LES_Coeffs.nGrow());
+  if (les_model == 2) {
+    LES_Coeffs.setVal(Cw * Cw, comp_Cs2, 1, LES_Coeffs.nGrow());
+  } else if (les_model == 3) {
+    LES_Coeffs.setVal(2.5 * Cs * Cs, comp_Cs2, 1, LES_Coeffs.nGrow());
+  } else {
+    LES_Coeffs.setVal(Cs * Cs, comp_Cs2, 1, LES_Coeffs.nGrow());
+  }
   LES_Coeffs.setVal(CI, comp_CI, 1, LES_Coeffs.nGrow());
   if (les_model == 1) {
     LES_Coeffs.setVal(Cs * Cs * PrT, comp_Cs2ovPrT, 1, LES_Coeffs.nGrow());
