@@ -12,9 +12,9 @@ PeleC::setSootIndx()
   sc.qSpecIndx = QFS;
   sc.qSootIndx = QFSOOT;
   sc.rhoIndx = URHO;
-  //FIXME: Hari S:
-  //not sure how to handle rotational 
-  //frames here
+  // FIXME: Hari S:
+  // not sure how to handle rotational
+  // frames here
   sc.engIndx = UEDEN;
   sc.specIndx = UFS;
   sc.sootIndx = UFSOOT;

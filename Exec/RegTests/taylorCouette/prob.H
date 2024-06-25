@@ -24,8 +24,7 @@
 #include "Utilities.H"
 #include "Geometry.H"
 
-class EBConcCylinders
-  : public pele::pelec::Geometry::Register<EBConcCylinders>
+class EBConcCylinders : public pele::pelec::Geometry::Register<EBConcCylinders>
 {
 public:
   static std::string identifier() { return "conc_cylinders"; }
@@ -48,7 +47,7 @@ pc_initdata(
   // Geometry
   const amrex::Real* prob_lo = geomdata.ProbLo();
   const amrex::Real* dx = geomdata.CellSize();
-  
+
   const amrex::Real u = 0.0;
   const amrex::Real v = 0.0;
   const amrex::Real w = 0.0;
@@ -70,12 +69,12 @@ pc_initdata(
     state(i, j, k, UFS + n) = rho * massfrac[n];
   }
 
-  if(prob_parm.do_rf)
-  {
-    amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> axis_loc={prob_parm.rf_axis_x,
-        prob_parm.rf_axis_y,prob_parm.rf_axis_z};
-    amrex::Real rotenrg=get_rot_energy(i,j,k,prob_parm.rf_omega,prob_parm.rf_axis,axis_loc,geomdata);
-    state(i,j,k,UEDEN) -= rho*rotenrg;
+  if (prob_parm.do_rf) {
+    amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
+      prob_parm.rf_axis_x, prob_parm.rf_axis_y, prob_parm.rf_axis_z};
+    amrex::Real rotenrg = get_rot_energy(
+      i, j, k, prob_parm.rf_omega, prob_parm.rf_axis, axis_loc, geomdata);
+    state(i, j, k, UEDEN) -= rho * rotenrg;
   }
 }
 
@@ -83,15 +82,15 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 bcnormal(
-    const amrex::Real* /*x[AMREX_SPACEDIM]*/,
-    const amrex::Real* /*s_int[NVAR]*/,
-    amrex::Real* /*s_ext[NVAR]*/,
-    const int /*idir*/,
-    const int /*sgn*/,
-    const amrex::Real /*time*/,
-    amrex::GeometryData const& /*geomdata*/,
-    ProbParmDevice const& /*prob_parm*/,
-    const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& /*turb_fluc*/)
+  const amrex::Real* /*x[AMREX_SPACEDIM]*/,
+  const amrex::Real* /*s_int[NVAR]*/,
+  amrex::Real* /*s_ext[NVAR]*/,
+  const int /*idir*/,
+  const int /*sgn*/,
+  const amrex::Real /*time*/,
+  amrex::GeometryData const& /*geomdata*/,
+  ProbParmDevice const& /*prob_parm*/,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& /*turb_fluc*/)
 {
 }
 

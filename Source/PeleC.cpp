@@ -1517,117 +1517,118 @@ void
 PeleC::enforce_consistent_e(amrex::MultiFab& S)
 {
 
-    auto sarrs = S.arrays();
+  auto sarrs = S.arrays();
+  amrex::ParallelFor(
+    S, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+      auto sarr = sarrs[nbx];
+      const amrex::Real rhoInv = 1.0 / sarr(i, j, k, URHO);
+      const amrex::Real u = sarr(i, j, k, UMX) * rhoInv;
+      const amrex::Real v = sarr(i, j, k, UMY) * rhoInv;
+      const amrex::Real w = sarr(i, j, k, UMZ) * rhoInv;
+      sarr(i, j, k, UEDEN) = sarr(i, j, k, UEINT) + 0.5 * sarr(i, j, k, URHO) *
+                                                      (u * u + v * v + w * w);
+    });
+
+  amrex::Gpu::synchronize();
+
+  if (do_rf) {
+    const auto geomdata = geom.data();
+    amrex::Real axis = rf_axis;
+    amrex::Real omega = rf_omega;
+    amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
+      rf_axis_x, rf_axis_y, rf_axis_z};
+
     amrex::ParallelFor(
-        S, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
-            auto sarr = sarrs[nbx];
-            const amrex::Real rhoInv = 1.0 / sarr(i, j, k, URHO);
-            const amrex::Real u = sarr(i, j, k, UMX) * rhoInv;
-            const amrex::Real v = sarr(i, j, k, UMY) * rhoInv;
-            const amrex::Real w = sarr(i, j, k, UMZ) * rhoInv;
-            sarr(i, j, k, UEDEN) = sarr(i, j, k, UEINT) + 0.5 * sarr(i, j, k, URHO) *
-            (u * u + v * v + w * w);
-        });
-    
-    amrex::Gpu::synchronize();
-    
-    if(do_rf)
-    {
-        const auto geomdata = geom.data();
-        amrex::Real axis  = rf_axis;
-        amrex::Real omega = rf_omega;
-        amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> axis_loc={rf_axis_x,rf_axis_y,rf_axis_z};
-    
-        amrex::ParallelFor(
-            S, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
-                auto sarr = sarrs[nbx];
-                
-                amrex::Real rotenrg=get_rot_energy(i,j,k,omega,rf_axis,axis_loc,geomdata); 
-                sarr(i, j, k, UEDEN) = sarr(i, j, k, UEINT) 
-                - sarr(i, j, k, URHO) * rotenrg ;
-            });
-    }
+      S, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+        auto sarr = sarrs[nbx];
+
+        amrex::Real rotenrg =
+          get_rot_energy(i, j, k, omega, rf_axis, axis_loc, geomdata);
+        sarr(i, j, k, UEDEN) =
+          sarr(i, j, k, UEINT) - sarr(i, j, k, URHO) * rotenrg;
+      });
+  }
 }
 
 void
 PeleC::avgDown(int state_indx)
 {
-    BL_PROFILE("PeleC::avgDown(state_indx)");
+  BL_PROFILE("PeleC::avgDown(state_indx)");
 
-    if (level == parent->finestLevel()) {
-        return;
+  if (level == parent->finestLevel()) {
+    return;
+  }
+
+  amrex::MultiFab& S_crse = get_new_data(state_indx);
+  const amrex::MultiFab& S_fine = getLevel(level + 1).get_new_data(state_indx);
+
+  if (eb_in_domain) {
+    PeleC& fine_lev = getLevel(level + 1);
+
+    amrex::EB_average_down(
+      S_fine, S_crse, fine_lev.Volume(), fine_lev.volFrac(), 0, S_fine.nComp(),
+      fine_ratio);
+
+    if (state_indx == State_Type) {
+      set_body_state(S_crse); // TODO: Is this necessary?
     }
+  } else {
+    const amrex::Geometry& fgeom = getLevel(level + 1).geom;
+    const amrex::Geometry& cgeom = geom;
 
-    amrex::MultiFab& S_crse = get_new_data(state_indx);
-    const amrex::MultiFab& S_fine = getLevel(level + 1).get_new_data(state_indx);
-
-    if (eb_in_domain) {
-        PeleC& fine_lev = getLevel(level + 1);
-
-        amrex::EB_average_down(
-            S_fine, S_crse, fine_lev.Volume(), fine_lev.volFrac(), 0, S_fine.nComp(),
-            fine_ratio);
-
-        if (state_indx == State_Type) {
-            set_body_state(S_crse); // TODO: Is this necessary?
-        }
-    } else {
-        const amrex::Geometry& fgeom = getLevel(level + 1).geom;
-        const amrex::Geometry& cgeom = geom;
-
-        amrex::average_down(
-            S_fine, S_crse, fgeom, cgeom, 0, S_fine.nComp(), fine_ratio);
-    }
+    amrex::average_down(
+      S_fine, S_crse, fgeom, cgeom, 0, S_fine.nComp(), fine_ratio);
+  }
 }
 
 void
 PeleC::allocOldData()
 {
-    for (int k = 0; k < num_state_type; k++) {
-        state[k].allocOldData();
-    }
+  for (int k = 0; k < num_state_type; k++) {
+    state[k].allocOldData();
+  }
 }
 
 void
 PeleC::removeOldData()
 {
-    AmrLevel::removeOldData();
+  AmrLevel::removeOldData();
 }
 
 void
 PeleC::errorEst(
-    amrex::TagBoxArray& tags,
-    int /*clearval*/,
-    int /*tagval*/,
-    amrex::Real time,
-    int /*n_error_buf*/,
-    int /*ngrow*/)
+  amrex::TagBoxArray& tags,
+  int /*clearval*/,
+  int /*tagval*/,
+  amrex::Real time,
+  int /*n_error_buf*/,
+  int /*ngrow*/)
 {
-    BL_PROFILE("PeleC::errorEst()");
+  BL_PROFILE("PeleC::errorEst()");
 
-    amrex::MultiFab S_data(
-        get_new_data(State_Type).boxArray(),
-        get_new_data(State_Type).DistributionMap(), NVAR, 1, amrex::MFInfo(),
-        Factory());
-    const amrex::Real cur_time = state[State_Type].curTime();
-    FillPatch(
-        *this, S_data, S_data.nGrow(), cur_time, State_Type, Density, NVAR, 0);
+  amrex::MultiFab S_data(
+    get_new_data(State_Type).boxArray(),
+    get_new_data(State_Type).DistributionMap(), NVAR, 1, amrex::MFInfo(),
+    Factory());
+  const amrex::Real cur_time = state[State_Type].curTime();
+  FillPatch(
+    *this, S_data, S_data.nGrow(), cur_time, State_Type, Density, NVAR, 0);
 
-    amrex::Vector<amrex::BCRec> bcs(NVAR);
-    const char tagval = amrex::TagBox::SET;
+  amrex::Vector<amrex::BCRec> bcs(NVAR);
+  const char tagval = amrex::TagBox::SET;
 
-    // Tag EB
-    if (eb_in_domain) {
-        if (
-            ((tagging_parm->eb_refine_type == "static") &&
-             (level < tagging_parm->max_eb_refine_lev)) ||
-            ((tagging_parm->eb_refine_type == "adaptive") &&
-             (level < tagging_parm->adapt_eb_refined_lev))) {
-            amrex::TagCutCells(tags, S_data);
-        }
+  // Tag EB
+  if (eb_in_domain) {
+    if (
+      ((tagging_parm->eb_refine_type == "static") &&
+       (level < tagging_parm->max_eb_refine_lev)) ||
+      ((tagging_parm->eb_refine_type == "adaptive") &&
+       (level < tagging_parm->adapt_eb_refined_lev))) {
+      amrex::TagCutCells(tags, S_data);
     }
+  }
 
-    auto const& fact =
+  auto const& fact =
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(S_data.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
 
@@ -2186,33 +2187,33 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
     auto sarrs = S_new.arrays();
     const amrex::IntVect ngs(ng);
 
-    //for Rotational frames
+    // for Rotational frames
     const auto geomdata = geom.data();
-    amrex::Real axis  = rf_axis;
+    amrex::Real axis = rf_axis;
     amrex::Real omega = rf_omega;
-    amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> axis_loc={rf_axis_x,rf_axis_y,rf_axis_z};
+    amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
+      rf_axis_x, rf_axis_y, rf_axis_z};
     amrex::ParallelFor(
-        S_new, ngs, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
-    
-            amrex::Real rad=get_rotaxis_dist(i,j,k,axis,axis_loc,geomdata);
-            pc_rst_int_e(
-                i, j, k, sarrs[nbx], captured_allow_small_energy,
-                captured_allow_negative_energy, captured_dual_energy_update_E_from_e,
-                captured_dual_energy_eta2, omega, rad, captured_verbose);
-        });
+      S_new, ngs, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+        amrex::Real rad = get_rotaxis_dist(i, j, k, axis, axis_loc, geomdata);
+        pc_rst_int_e(
+          i, j, k, sarrs[nbx], captured_allow_small_energy,
+          captured_allow_negative_energy, captured_dual_energy_update_E_from_e,
+          captured_dual_energy_eta2, omega, rad, captured_verbose);
+      });
     amrex::Gpu::synchronize();
   }
 
 #ifndef AMREX_USE_GPU
   if (parent->finestLevel() == 0 && print_energy_diagnostics) {
-      // Pass in the multifab and the component
-      amrex::Real sum = volWgtSumMF(S_new, Eden, true);
-      amrex::ParallelDescriptor::ReduceRealSum(sum0);
-      amrex::ParallelDescriptor::ReduceRealSum(sum);
-      if (amrex::ParallelDescriptor::IOProcessor() && std::abs(sum - sum0) > 0) {
-          amrex::Print() << "(rho E) added from reset terms                 : "
-          << sum - sum0 << " out of " << sum0 << std::endl;
-      }
+    // Pass in the multifab and the component
+    amrex::Real sum = volWgtSumMF(S_new, Eden, true);
+    amrex::ParallelDescriptor::ReduceRealSum(sum0);
+    amrex::ParallelDescriptor::ReduceRealSum(sum);
+    if (amrex::ParallelDescriptor::IOProcessor() && std::abs(sum - sum0) > 0) {
+      amrex::Print() << "(rho E) added from reset terms                 : "
+                     << sum - sum0 << " out of " << sum0 << std::endl;
+    }
   }
 #endif
 }
@@ -2220,69 +2221,69 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
 void
 PeleC::computeTemp(amrex::MultiFab& S, int ng)
 {
-    reset_internal_energy(S, ng);
+  reset_internal_energy(S, ng);
 
-    auto const& fact =
+  auto const& fact =
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(S.Factory());
-    auto const& flags = fact.getMultiEBCellFlagFab();
+  auto const& flags = fact.getMultiEBCellFlagFab();
 
-    auto const& sarrs = S.arrays();
-    auto const& flagarrs = flags.const_arrays();
-    const amrex::IntVect ngs(ng);
-    amrex::ParallelFor(
-        S, ngs, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
-            if (!flagarrs[nbx](i, j, k).isCovered()) {
-                pc_cmpTemp(i, j, k, sarrs[nbx]);
-            }
-        });
-    amrex::Gpu::synchronize();
+  auto const& sarrs = S.arrays();
+  auto const& flagarrs = flags.const_arrays();
+  const amrex::IntVect ngs(ng);
+  amrex::ParallelFor(
+    S, ngs, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+      if (!flagarrs[nbx](i, j, k).isCovered()) {
+        pc_cmpTemp(i, j, k, sarrs[nbx]);
+      }
+    });
+  amrex::Gpu::synchronize();
 }
 
 amrex::Real
 PeleC::getCPUTime()
 {
-    int numCores = amrex::ParallelDescriptor::NProcs();
+  int numCores = amrex::ParallelDescriptor::NProcs();
 #ifdef AMREX_USE_OMP
-    numCores = numCores * omp_get_max_threads();
+  numCores = numCores * omp_get_max_threads();
 #endif
 
-    amrex::Real T =
+  amrex::Real T =
     numCores * (amrex::ParallelDescriptor::second() - startCPUTime) +
     previousCPUTimeUsed;
 
-    return T;
+  return T;
 }
 
 amrex::MultiFab&
 PeleC::build_fine_mask()
 {
-    // Mask for zeroing covered cells
-    AMREX_ASSERT(level > 0);
+  // Mask for zeroing covered cells
+  AMREX_ASSERT(level > 0);
 
-    if (!fine_mask.empty()) {
-        return fine_mask;
-    }
+  if (!fine_mask.empty()) {
+    return fine_mask;
+  }
 
-    const amrex::BoxArray& cba = parent->boxArray(level - 1);
-    const amrex::DistributionMapping& cdm = parent->DistributionMap(level - 1);
+  const amrex::BoxArray& cba = parent->boxArray(level - 1);
+  const amrex::DistributionMapping& cdm = parent->DistributionMap(level - 1);
 
-    fine_mask.define(cba, cdm, 1, 0, amrex::MFInfo(), amrex::FArrayBoxFactory());
-    fine_mask.setVal(1.0);
+  fine_mask.define(cba, cdm, 1, 0, amrex::MFInfo(), amrex::FArrayBoxFactory());
+  fine_mask.setVal(1.0);
 
-    amrex::BoxArray fba = parent->boxArray(level);
-    amrex::iMultiFab ifine_mask = makeFineMask(cba, cdm, fba, crse_ratio, 1, 0);
+  amrex::BoxArray fba = parent->boxArray(level);
+  amrex::iMultiFab ifine_mask = makeFineMask(cba, cdm, fba, crse_ratio, 1, 0);
 
-    const auto& arrs = fine_mask.arrays();
-    const auto& iarrs = ifine_mask.const_arrays();
-    amrex::ParallelFor(
-        fine_mask, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+  const auto& arrs = fine_mask.arrays();
+  const auto& iarrs = ifine_mask.const_arrays();
+  amrex::ParallelFor(
+    fine_mask, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
 #ifdef AMREX_USE_OMP
 #pragma omp atomic write
 #endif
-            arrs[nbx](i, j, k) = iarrs[nbx](i, j, k);
-        });
-    amrex::Gpu::synchronize();
-    return fine_mask;
+      arrs[nbx](i, j, k) = iarrs[nbx](i, j, k);
+    });
+  amrex::Gpu::synchronize();
+  return fine_mask;
 }
 
 const amrex::iMultiFab*

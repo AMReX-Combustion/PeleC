@@ -725,8 +725,8 @@ void
 PeleC::initLevelDataFromPlt(
   const int lev, const std::string& dataPltFile, amrex::MultiFab& S_new)
 {
-  //FIXME:
-  //Hari S: not ready for rotational frames
+  // FIXME:
+  // Hari S: not ready for rotational frames
   amrex::Print() << "Using data (rho, u, T, Y) from pltfile " << dataPltFile
                  << std::endl;
   pele::physics::pltfilemanager::PltFileManager pltData(dataPltFile);

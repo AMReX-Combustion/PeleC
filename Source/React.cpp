@@ -122,192 +122,194 @@ PeleC::react_state(
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(S_new.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
 
-  amrex::Real rot_enrg=0.0;
+  amrex::Real rot_enrg = 0.0;
 
-  //for rotational frames
-  amrex::Real rotframeflag=do_rf;
+  // for rotational frames
+  amrex::Real rotframeflag = do_rf;
   const auto geomdata = geom.data();
-  amrex::Real axis  = rf_axis;
+  amrex::Real axis = rf_axis;
   amrex::Real omega = rf_omega;
-  amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> axis_loc={rf_axis_x,rf_axis_y,rf_axis_z};
-
+  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
+    rf_axis_x, rf_axis_y, rf_axis_z};
 
 #ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
   {
-      for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
-           ++mfi) {
+    for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
+         ++mfi) {
 
-          const amrex::Box& bx = mfi.growntilebox(ng);
+      const amrex::Box& bx = mfi.growntilebox(ng);
 
-          // old state or the state at t=0
-          auto const& sold_arr =
-          react_init ? S_new.array(mfi) : get_old_data(State_Type).array(mfi);
+      // old state or the state at t=0
+      auto const& sold_arr =
+        react_init ? S_new.array(mfi) : get_old_data(State_Type).array(mfi);
 
-          // new state
-          auto const& snew_arr = S_new.array(mfi);
-          auto const& nonrs_arr = non_react_src->array(mfi);
-          auto const& I_R = react_src.array(mfi);
+      // new state
+      auto const& snew_arr = S_new.array(mfi);
+      auto const& nonrs_arr = non_react_src->array(mfi);
+      auto const& I_R = react_src.array(mfi);
 
-          // only update beyond first step
-          // TODO: Update here? Or just get reaction source?
-          const bool do_update = !react_init;
+      // only update beyond first step
+      // TODO: Update here? Or just get reaction source?
+      const bool do_update = !react_init;
 
-          const auto& flag_fab = flags[mfi];
-          amrex::FabType typ = flag_fab.getType(bx);
-          if (typ == amrex::FabType::covered) {
-              if (do_react_load_balance) {
-                  const amrex::Box vbox = mfi.tilebox();
-                  get_new_data(Work_Estimate_Type)[mfi].plus<amrex::RunOn::Device>(
-                      0.0, vbox);
-              }
-              continue;
-          }
-          if (
-              (typ == amrex::FabType::singlevalued) ||
-              (typ == amrex::FabType::regular)) {
-              amrex::Real wt =
-              amrex::ParallelDescriptor::second(); // timing for each fab
+      const auto& flag_fab = flags[mfi];
+      amrex::FabType typ = flag_fab.getType(bx);
+      if (typ == amrex::FabType::covered) {
+        if (do_react_load_balance) {
+          const amrex::Box vbox = mfi.tilebox();
+          get_new_data(Work_Estimate_Type)[mfi].plus<amrex::RunOn::Device>(
+            0.0, vbox);
+        }
+        continue;
+      }
+      if (
+        (typ == amrex::FabType::singlevalued) ||
+        (typ == amrex::FabType::regular)) {
+        amrex::Real wt =
+          amrex::ParallelDescriptor::second(); // timing for each fab
 
-              amrex::Real current_time = 0.0;
+        amrex::Real current_time = 0.0;
 
-              auto const& rhoY = STemp.array(mfi);
-              auto const& T = STemp.array(mfi, NUM_SPECIES);
-              auto const& rhoE = STemp.array(mfi, NUM_SPECIES + 1);
-              auto const& frcExt = extsrc_rY.array(mfi);
-              auto const& frcEExt = extsrc_rE.array(mfi);
-              auto const& mask = dummyMask.array(mfi);
-              auto const& fc = fctCount.array(mfi);
+        auto const& rhoY = STemp.array(mfi);
+        auto const& T = STemp.array(mfi, NUM_SPECIES);
+        auto const& rhoE = STemp.array(mfi, NUM_SPECIES + 1);
+        auto const& frcExt = extsrc_rY.array(mfi);
+        auto const& frcEExt = extsrc_rE.array(mfi);
+        auto const& mask = dummyMask.array(mfi);
+        auto const& fc = fctCount.array(mfi);
 
-              amrex::ParallelFor(
-                  bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-                      // work on old state
-                      amrex::Real rhou = sold_arr(i, j, k, UMX);
-                      amrex::Real rhov = sold_arr(i, j, k, UMY);
-                      amrex::Real rhow = sold_arr(i, j, k, UMZ);
-                      amrex::Real rho_old = sold_arr(i, j, k, URHO);
-                      amrex::Real rhoInv = 1.0 / rho_old;
+        amrex::ParallelFor(
+          bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+            // work on old state
+            amrex::Real rhou = sold_arr(i, j, k, UMX);
+            amrex::Real rhov = sold_arr(i, j, k, UMY);
+            amrex::Real rhow = sold_arr(i, j, k, UMZ);
+            amrex::Real rho_old = sold_arr(i, j, k, URHO);
+            amrex::Real rhoInv = 1.0 / rho_old;
 
-                      amrex::Real rotenrg=0.0;
-                      if(rotframeflag)
-                      {
-                          rotenrg=get_rot_energy(i,j,k,omega,axis,axis_loc,geomdata);
-                      }
+            amrex::Real rotenrg = 0.0;
+            if (rotframeflag) {
+              rotenrg =
+                get_rot_energy(i, j, k, omega, axis, axis_loc, geomdata);
+            }
 
-                      amrex::Real e_old =
-                      (sold_arr(i, j, k, UEDEN) // total energy
-                       - 0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv) // KE
-                      * rhoInv;
-                      
-                      
-                      //note: e_den =e_int + 0.5*(u^2+v^2+w^2)-0.5*omega^2*rad^2
-                      //see Blazek, Appendix A3, Navier-Stokes in rotating frame of reference
-                      e_old += rotenrg;
+            amrex::Real e_old =
+              (sold_arr(i, j, k, UEDEN) // total energy
+               - 0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv) // KE
+              * rhoInv;
 
-                      // work on new state
-                      rhou = snew_arr(i, j, k, UMX);
-                      rhov = snew_arr(i, j, k, UMY);
-                      rhow = snew_arr(i, j, k, UMZ);
-                      rhoInv = 1.0 / snew_arr(i, j, k, URHO);
+            // note: e_den =e_int + 0.5*(u^2+v^2+w^2)-0.5*omega^2*rad^2
+            // see Blazek, Appendix A3, Navier-Stokes in rotating frame of
+            // reference
+            e_old += rotenrg;
 
-                      amrex::Real rhoedot_ext =
-                      (snew_arr(i, j, k, UEDEN) // new total energy
-                       - 0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) *
-                       rhoInv + snew_arr(i,j,k,URHO)*rotenrg // new KE
-                       - rho_old * e_old) /
-                      dt;
+            // work on new state
+            rhou = snew_arr(i, j, k, UMX);
+            rhov = snew_arr(i, j, k, UMY);
+            rhow = snew_arr(i, j, k, UMZ);
+            rhoInv = 1.0 / snew_arr(i, j, k, URHO);
 
-                      frcEExt(i, j, k) = rhoedot_ext;
-                  });
+            amrex::Real rhoedot_ext =
+              (snew_arr(i, j, k, UEDEN)          // new total energy
+               - 0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv +
+               snew_arr(i, j, k, URHO) * rotenrg // new KE
+               - rho_old * e_old) /
+              dt;
 
-              reactor->react(
-                  bx, rhoY, frcExt, T, rhoE, frcEExt, fc, mask, dt, current_time
+            frcEExt(i, j, k) = rhoedot_ext;
+          });
+
+        reactor->react(
+          bx, rhoY, frcExt, T, rhoE, frcEExt, fc, mask, dt, current_time
 #ifdef AMREX_USE_GPU
-                  ,
-                  amrex::Gpu::gpuStream()
+          ,
+          amrex::Gpu::gpuStream()
 #endif
-                  );
+        );
 
-              amrex::Gpu::Device::streamSynchronize();
+        amrex::Gpu::Device::streamSynchronize();
 
-              // unpack data
-              amrex::ParallelFor(
-                  bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-                      // work on old state
-                      amrex::Real rhou = sold_arr(i, j, k, UMX);
-                      amrex::Real rhov = sold_arr(i, j, k, UMY);
-                      amrex::Real rhow = sold_arr(i, j, k, UMZ);
-                      amrex::Real rho_old = sold_arr(i, j, k, URHO);
-                      amrex::Real rhoInv = 1.0 / rho_old;
-                      
-                      amrex::Real rotenrg=0.0;
-                      if(rotframeflag)
-                      {
-                          rotenrg=get_rot_energy(i,j,k,omega,axis,axis_loc,geomdata);
-                      }
+        // unpack data
+        amrex::ParallelFor(
+          bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+            // work on old state
+            amrex::Real rhou = sold_arr(i, j, k, UMX);
+            amrex::Real rhov = sold_arr(i, j, k, UMY);
+            amrex::Real rhow = sold_arr(i, j, k, UMZ);
+            amrex::Real rho_old = sold_arr(i, j, k, URHO);
+            amrex::Real rhoInv = 1.0 / rho_old;
 
-                      amrex::Real e_old =
-                      (sold_arr(i, j, k, UEDEN) // old total energy
-                       - 0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv) // KE
-                      * rhoInv;
-                      
-                      e_old += rotenrg;
+            amrex::Real rotenrg = 0.0;
+            if (rotframeflag) {
+              rotenrg =
+                get_rot_energy(i, j, k, omega, axis, axis_loc, geomdata);
+            }
 
-                      rhou = snew_arr(i, j, k, UMX);
-                      rhov = snew_arr(i, j, k, UMY);
-                      rhow = snew_arr(i, j, k, UMZ);
-                      rhoInv = 1.0 / snew_arr(i, j, k, URHO);
+            amrex::Real e_old =
+              (sold_arr(i, j, k, UEDEN) // old total energy
+               - 0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv) // KE
+              * rhoInv;
 
-                      amrex::Real rhoedot_ext =
-                      (snew_arr(i, j, k, UEDEN) // new total energy
-                       - 0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv // KE
-                       + snew_arr(i,j,k,URHO)*rotenrg - rho_old * e_old) // old internal energy
-                      / dt;
+            e_old += rotenrg;
 
-                      amrex::Real umnew =
-                      sold_arr(i, j, k, UMX) + dt * nonrs_arr(i, j, k, UMX);
-                      amrex::Real vmnew =
-                      sold_arr(i, j, k, UMY) + dt * nonrs_arr(i, j, k, UMY);
-                      amrex::Real wmnew =
-                      sold_arr(i, j, k, UMZ) + dt * nonrs_arr(i, j, k, UMZ);
+            rhou = snew_arr(i, j, k, UMX);
+            rhov = snew_arr(i, j, k, UMY);
+            rhow = snew_arr(i, j, k, UMZ);
+            rhoInv = 1.0 / snew_arr(i, j, k, URHO);
 
-                      // get new rho
-                      amrex::Real rhonew = 0.0;
+            amrex::Real rhoedot_ext =
+              (snew_arr(i, j, k, UEDEN) // new total energy
+               - 0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv // KE
+               + snew_arr(i, j, k, URHO) * rotenrg -
+               rho_old * e_old) // old internal energy
+              / dt;
 
-                      for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
-                          rhonew += rhoY(i, j, k, nsp);
-                      }
+            amrex::Real umnew =
+              sold_arr(i, j, k, UMX) + dt * nonrs_arr(i, j, k, UMX);
+            amrex::Real vmnew =
+              sold_arr(i, j, k, UMY) + dt * nonrs_arr(i, j, k, UMY);
+            amrex::Real wmnew =
+              sold_arr(i, j, k, UMZ) + dt * nonrs_arr(i, j, k, UMZ);
 
-                      if (do_update) {
-                          snew_arr(i, j, k, URHO) = rhonew;
-                          snew_arr(i, j, k, UMX) = umnew;
-                          snew_arr(i, j, k, UMY) = vmnew;
-                          snew_arr(i, j, k, UMZ) = wmnew;
+            // get new rho
+            amrex::Real rhonew = 0.0;
 
-                          for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
-                              snew_arr(i, j, k, UFS + nsp) = rhoY(i, j, k, nsp);
-                          }
-                          snew_arr(i, j, k, UTEMP) = T(i, j, k);
+            for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
+              rhonew += rhoY(i, j, k, nsp);
+            }
 
-                          snew_arr(i, j, k, UEINT) = rho_old * e_old + dt * rhoedot_ext;
-                          snew_arr(i, j, k, UEDEN) =
-                          snew_arr(i, j, k, UEINT) +
-                          0.5 * (umnew * umnew + vmnew * vmnew + wmnew * wmnew) / rhonew  
-                          - rhonew*rotenrg;
-                      }
+            if (do_update) {
+              snew_arr(i, j, k, URHO) = rhonew;
+              snew_arr(i, j, k, UMX) = umnew;
+              snew_arr(i, j, k, UMY) = vmnew;
+              snew_arr(i, j, k, UMZ) = wmnew;
 
-                      for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
-                          I_R(i, j, k, nsp) = (rhoY(i, j, k, nsp)              // new rhoy
-                                               - sold_arr(i, j, k, UFS + nsp)) // old rhoy
-                          / dt -
-                          nonrs_arr(i, j, k, UFS + nsp);
+              for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
+                snew_arr(i, j, k, UFS + nsp) = rhoY(i, j, k, nsp);
+              }
+              snew_arr(i, j, k, UTEMP) = T(i, j, k);
+
+              snew_arr(i, j, k, UEINT) = rho_old * e_old + dt * rhoedot_ext;
+              snew_arr(i, j, k, UEDEN) =
+                snew_arr(i, j, k, UEINT) +
+                0.5 * (umnew * umnew + vmnew * vmnew + wmnew * wmnew) / rhonew -
+                rhonew * rotenrg;
+            }
+
+            for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
+              I_R(i, j, k, nsp) = (rhoY(i, j, k, nsp)              // new rhoy
+                                   - sold_arr(i, j, k, UFS + nsp)) // old rhoy
+                                    / dt -
+                                  nonrs_arr(i, j, k, UFS + nsp);
             }
 
             I_R(i, j, k, NUM_SPECIES) =
               (rho_old * e_old + dt * rhoedot_ext // new internal energy
-               + 0.5 * (umnew * umnew + vmnew * vmnew + wmnew * wmnew) /
-                   rhonew - rhonew*rotenrg    // new KE
+               +
+               0.5 * (umnew * umnew + vmnew * vmnew + wmnew * wmnew) / rhonew -
+               rhonew * rotenrg            // new KE
                - sold_arr(i, j, k, UEDEN)) // old total energy
                 / dt -
               nonrs_arr(i, j, k, UEDEN);

@@ -14,10 +14,9 @@ PeleC::construct_old_rot_source(amrex::Real /*time*/, amrex::Real /*dt*/)
 
   old_sources[rot_src]->setVal(0.0);
 
-  if (do_rf)
-  {
-      fill_rot_source(S_old, S_old, *old_sources[rot_src], ng);
-      old_sources[rot_src]->FillBoundary(geom.periodicity());
+  if (do_rf) {
+    fill_rot_source(S_old, S_old, *old_sources[rot_src], ng);
+    old_sources[rot_src]->FillBoundary(geom.periodicity());
   }
 }
 
@@ -31,73 +30,72 @@ PeleC::construct_new_rot_source(amrex::Real /*time*/, amrex::Real /*dt*/)
 
   new_sources[rot_src]->setVal(0.0);
 
-  if (do_rf)
-  {
-      fill_rot_source(S_old, S_new, *new_sources[rot_src], ng);
+  if (do_rf) {
+    fill_rot_source(S_old, S_new, *new_sources[rot_src], ng);
   }
 }
 
 void
 PeleC::fill_rot_source(
-    const amrex::MultiFab& state_old,
-    const amrex::MultiFab& state_new,
-    amrex::MultiFab& rot_src,
-    int ng)
+  const amrex::MultiFab& state_old,
+  const amrex::MultiFab& state_new,
+  amrex::MultiFab& rot_src,
+  int ng)
 {
-    auto const& fact =
+  auto const& fact =
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(state_old.Factory());
-    auto const& flags = fact.getMultiEBCellFlagFab();
+  auto const& flags = fact.getMultiEBCellFlagFab();
 
-    const auto geomdata=geom.data();
-    int rf_on=do_rf;
-    amrex::Real omega = rf_omega;
-    amrex::Real axis  = rf_axis;
+  const auto geomdata = geom.data();
+  int rf_on = do_rf;
+  amrex::Real omega = rf_omega;
+  amrex::Real axis = rf_axis;
 
-    auto prob_lo = geom.ProbLoArray();
-    auto prob_hi = geom.ProbHiArray();
-    const auto dx = geom.CellSizeArray();
+  auto prob_lo = geom.ProbLoArray();
+  auto prob_hi = geom.ProbHiArray();
+  const auto dx = geom.CellSizeArray();
 
-    //need a check to prevent mrf in 2 and 1d
-    //read a vector instead for mrf_axis_x and y
-    amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> axis_loc={rf_axis_x,rf_axis_y,rf_axis_z};
+  // need a check to prevent mrf in 2 and 1d
+  // read a vector instead for mrf_axis_x and y
+  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
+    rf_axis_x, rf_axis_y, rf_axis_z};
 
-    auto const& sarrs = state_new.const_arrays();
-    auto const& srcs = rot_src.arrays();
-    auto const& flagarrs = flags.const_arrays();
-    const amrex::IntVect ngs(ng);
-    amrex::ParallelFor(
-        rot_src, ngs,
-        [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+  auto const& sarrs = state_new.const_arrays();
+  auto const& srcs = rot_src.arrays();
+  auto const& flagarrs = flags.const_arrays();
+  const amrex::IntVect ngs(ng);
+  amrex::ParallelFor(
+    rot_src, ngs, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+      if (!flagarrs[nbx](i, j, k).isCovered()) {
+        const auto& sarr = sarrs[nbx];
+        const auto& src = srcs[nbx];
 
-            if (!flagarrs[nbx](i, j, k).isCovered()) 
-            {
-                const auto& sarr = sarrs[nbx];
-                const auto& src = srcs[nbx];
+        amrex::RealVect r(0.0, 0.0, 0.0);
+        amrex::RealVect w(0.0, 0.0, 0.0);
+        amrex::RealVect v(0.0, 0.0, 0.0);
 
-                amrex::RealVect r(0.0,0.0,0.0);
-                amrex::RealVect w(0.0,0.0,0.0);
-                amrex::RealVect v(0.0,0.0,0.0);
+        r = get_rotaxis_vec(i, j, k, axis_loc, geomdata);
+        w[axis] = omega;
 
-                r=get_rotaxis_vec(i,j,k,axis_loc,geomdata);
-                w[axis]=omega;
+        if (rf_on) {
+          v[0] = sarr(i, j, k, UMX) / sarr(i, j, k, URHO);
+          v[1] = sarr(i, j, k, UMY) / sarr(i, j, k, URHO);
+          v[2] = sarr(i, j, k, UMZ) / sarr(i, j, k, URHO);
 
-                if(rf_on)
-                {
-                    v[0]=sarr(i, j, k, UMX)/sarr(i, j, k, URHO);
-                    v[1]=sarr(i, j, k, UMY)/sarr(i, j, k, URHO);
-                    v[2]=sarr(i, j, k, UMZ)/sarr(i, j, k, URHO);
+          // non-inertial frame case
+          amrex::RealVect w_cross_v = w.crossProduct(v);
+          amrex::RealVect w_cross_r = w.crossProduct(r);
+          amrex::RealVect w_cross_w_cross_r = w.crossProduct(w_cross_r);
 
-                    //non-inertial frame case
-                    amrex::RealVect w_cross_v = w.crossProduct(v); 
-                    amrex::RealVect w_cross_r = w.crossProduct(r);
-                    amrex::RealVect w_cross_w_cross_r=w.crossProduct(w_cross_r);
+          src(i, j, k, UMX) =
+            -sarr(i, j, k, URHO) * (2.0 * w_cross_v[0] + w_cross_w_cross_r[0]);
+          src(i, j, k, UMY) =
+            -sarr(i, j, k, URHO) * (2.0 * w_cross_v[1] + w_cross_w_cross_r[1]);
+          src(i, j, k, UMZ) =
+            -sarr(i, j, k, URHO) * (2.0 * w_cross_v[2] + w_cross_w_cross_r[2]);
+        }
+      }
+    });
 
-                    src(i, j, k, UMX) = -sarr(i,j,k,URHO)*(2.0*w_cross_v[0]+w_cross_w_cross_r[0]);
-                    src(i, j, k, UMY) = -sarr(i,j,k,URHO)*(2.0*w_cross_v[1]+w_cross_w_cross_r[1]);
-                    src(i, j, k, UMZ) = -sarr(i,j,k,URHO)*(2.0*w_cross_v[2]+w_cross_w_cross_r[2]);
-                }
-            }
-        });
-
-    amrex::Gpu::synchronize();
+  amrex::Gpu::synchronize();
 }

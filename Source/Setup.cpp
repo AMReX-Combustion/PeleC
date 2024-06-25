@@ -724,8 +724,7 @@ PeleC::set_active_sources()
   }
 #endif
 
-  if(do_rf)
-  {
+  if (do_rf) {
     src_list.push_back(rot_src);
   }
 }

@@ -419,9 +419,9 @@ pc_cmpflx(
 
   const int bc_test_val = 1;
   amrex::Real dummy_flx[NUM_SPECIES] = {0.0};
-  
-  //WIP: hard coding rotating frame stuff for now
-  //soon to be fixed
+
+  // WIP: hard coding rotating frame stuff for now
+  // soon to be fixed
   riemann(
     rhol, ul, vl, v2l, pl, spl, rhor, ur, vr, v2r, pr, spr, bc_test_val, cav,
     ustar, flx(i, j, k, URHO), dummy_flx, flx(i, j, k, f_idx[0]),

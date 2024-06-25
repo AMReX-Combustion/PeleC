@@ -12,14 +12,14 @@ struct ProbParmDevice
   amrex::Real p0 = 1e6;
   amrex::Real T0 = 300.0;
   amrex::Real mu = 0.1;
-  amrex::Real kappa=1.0;
+  amrex::Real kappa = 1.0;
   amrex::GpuArray<amrex::Real, NUM_SPECIES> massfrac = {1.0};
-  int do_rf=0;
-  amrex::Real rf_omega=0;
-  amrex::Real rf_axis=2;
-  amrex::Real rf_axis_x=0.0;
-  amrex::Real rf_axis_y=0.0;
-  amrex::Real rf_axis_z=0.0; 
+  int do_rf = 0;
+  amrex::Real rf_omega = 0;
+  amrex::Real rf_axis = 2;
+  amrex::Real rf_axis_x = 0.0;
+  amrex::Real rf_axis_y = 0.0;
+  amrex::Real rf_axis_z = 0.0;
 };
 
 struct ProbParmHost

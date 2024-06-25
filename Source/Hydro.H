@@ -20,8 +20,8 @@ pc_srctoprim(
   amrex::Array4<const amrex::Real> const& src,
   amrex::Array4<amrex::Real> const& srcq)
 {
-  //FIXME:
-  //Hari S: unsure how to incorporate rotational frames here
+  // FIXME:
+  // Hari S: unsure how to incorporate rotational frames here
 
   // Local loading Vars ==> Load once from global memory use multiple times
   const amrex::Real srcrho = src(i, j, k, URHO);

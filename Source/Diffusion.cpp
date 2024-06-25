@@ -16,15 +16,15 @@ PeleC::getMOLSrcTerm(
     return;
   }
 
-  int using_rf=do_rf;  
+  int using_rf = do_rf;
   amrex::Real omega = rf_omega;
-  int axis  = rf_axis;
-  amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> axis_loc={rf_axis_x,rf_axis_y,rf_axis_z};
+  int axis = rf_axis;
+  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
+    rf_axis_x, rf_axis_y, rf_axis_z};
   auto prob_lo = geom.ProbLoArray();
   auto prob_hi = geom.ProbHiArray();
   const auto dx = geom.CellSizeArray();
   const auto geomdata = geom.data();
-  
 
   /*
      Across all conserved state components, compute the method of lines rhs
@@ -132,21 +132,17 @@ PeleC::getMOLSrcTerm(
 
       // Get primitives, Q, including (Y, T, p, rho) from conserved state
       {
-          BL_PROFILE("PeleC::ctoprim()");
-          amrex::ParallelFor(
-              gbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-
-                  if(using_rf)
-                  {
-                      amrex::Real rad=get_rotaxis_dist(i,j,k,axis,axis_loc,geomdata);
-                      pc_ctoprim(i, j, k, sar, qar, qauxar, omega, rad);
-                  }
-                  else
-                  {
-                      pc_ctoprim(i, j, k, sar, qar, qauxar);
-                  }
-
-              });
+        BL_PROFILE("PeleC::ctoprim()");
+        amrex::ParallelFor(
+          gbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+            if (using_rf) {
+              amrex::Real rad =
+                get_rotaxis_dist(i, j, k, axis, axis_loc, geomdata);
+              pc_ctoprim(i, j, k, sar, qar, qauxar, omega, rad);
+            } else {
+              pc_ctoprim(i, j, k, sar, qar, qauxar);
+            }
+          });
       }
       // TODO deal with NSCBC
       /*
@@ -185,37 +181,37 @@ PeleC::getMOLSrcTerm(
       // Compute transport coefficients, coincident with Q
       auto const& coe_cc = coeff_cc.array();
       {
-          auto const& qar_yin = q.array(QFS);
-          auto const& qar_Tin = q.array(QTEMP);
-          auto const& qar_rhoin = q.array(QRHO);
-          auto const& coe_rhoD = coeff_cc.array(dComp_rhoD);
-          auto const& coe_mu = coeff_cc.array(dComp_mu);
-          auto const& coe_xi = coeff_cc.array(dComp_xi);
-          auto const& coe_lambda = coeff_cc.array(dComp_lambda);
-          BL_PROFILE("PeleC::get_transport_coeffs()");
-          auto const* ltransparm = trans_parms.device_trans_parm();
-          amrex::launch(gbox, [=] AMREX_GPU_DEVICE(amrex::Box const& tbx) {
-              auto trans = pele::physics::PhysicsType::transport();
-              trans.get_transport_coeffs(
-                  tbx, qar_yin, qar_Tin, qar_rhoin, coe_rhoD,
-                  amrex::Array4<amrex::Real>(), coe_mu, coe_xi, coe_lambda,
-                  ltransparm);
-          });
+        auto const& qar_yin = q.array(QFS);
+        auto const& qar_Tin = q.array(QTEMP);
+        auto const& qar_rhoin = q.array(QRHO);
+        auto const& coe_rhoD = coeff_cc.array(dComp_rhoD);
+        auto const& coe_mu = coeff_cc.array(dComp_mu);
+        auto const& coe_xi = coeff_cc.array(dComp_xi);
+        auto const& coe_lambda = coeff_cc.array(dComp_lambda);
+        BL_PROFILE("PeleC::get_transport_coeffs()");
+        auto const* ltransparm = trans_parms.device_trans_parm();
+        amrex::launch(gbox, [=] AMREX_GPU_DEVICE(amrex::Box const& tbx) {
+          auto trans = pele::physics::PhysicsType::transport();
+          trans.get_transport_coeffs(
+            tbx, qar_yin, qar_Tin, qar_rhoin, coe_rhoD,
+            amrex::Array4<amrex::Real>(), coe_mu, coe_xi, coe_lambda,
+            ltransparm);
+        });
       }
 
       amrex::FArrayBox flux_ec[AMREX_SPACEDIM];
       const amrex::Box eboxes[AMREX_SPACEDIM] = {AMREX_D_DECL(
-              amrex::surroundingNodes(cbox, 0), amrex::surroundingNodes(cbox, 1),
-              amrex::surroundingNodes(cbox, 2))};
+        amrex::surroundingNodes(cbox, 0), amrex::surroundingNodes(cbox, 1),
+        amrex::surroundingNodes(cbox, 2))};
       amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx;
       const amrex::GpuArray<
-      const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
-      area_arr{{AMREX_D_DECL(
-                  area[0].array(mfi), area[1].array(mfi), area[2].array(mfi))}};
+        const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
+        area_arr{{AMREX_D_DECL(
+          area[0].array(mfi), area[1].array(mfi), area[2].array(mfi))}};
       for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-          flux_ec[dir].resize(eboxes[dir], NVAR, amrex::The_Async_Arena());
-          flx[dir] = flux_ec[dir].array();
-          setV(eboxes[dir], NVAR, flx[dir], 0);
+        flux_ec[dir].resize(eboxes[dir], NVAR, amrex::The_Async_Arena());
+        flx[dir] = flux_ec[dir].array();
+        setV(eboxes[dir], NVAR, flx[dir], 0);
       }
 
       amrex::FArrayBox Dfab(cbox, NVAR, amrex::The_Async_Arena());
@@ -224,14 +220,14 @@ PeleC::getMOLSrcTerm(
       auto flag_arr = flags.const_array(mfi);
 
       {
-          // Compute Extensive diffusion fluxes for X, Y, Z
-          BL_PROFILE("PeleC::diffusion_flux()");
-          const bool l_transport_harmonic_mean = transport_harmonic_mean;
-          for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-              if (
-                  (typ == amrex::FabType::singlevalued) ||
-                  (typ == amrex::FabType::regular)) {
-                  amrex::ParallelFor(
+        // Compute Extensive diffusion fluxes for X, Y, Z
+        BL_PROFILE("PeleC::diffusion_flux()");
+        const bool l_transport_harmonic_mean = transport_harmonic_mean;
+        for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
+          if (
+            (typ == amrex::FabType::singlevalued) ||
+            (typ == amrex::FabType::regular)) {
+            amrex::ParallelFor(
               eboxes[dir], [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
                 amrex::GpuArray<amrex::Real, dComp_lambda + 1> cf = {0.0};
                 if (
@@ -348,7 +344,7 @@ PeleC::getMOLSrcTerm(
           BL_PROFILE("PeleC::pc_hyp_mol_flux()");
           pc_compute_hyp_mol_flux(
             cbox, qar, qauxar, flx, area_arr, plm_iorder, use_laxf_flux,
-            flags.array(mfi),prob_lo,dx,axis_loc,omega,axis,using_rf);
+            flags.array(mfi), prob_lo, dx, axis_loc, omega, axis, using_rf);
         }
 
         // Filter hydro fluxes
