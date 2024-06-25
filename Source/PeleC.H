@@ -507,7 +507,7 @@ public:
     amrex::Real dt,
     amrex::Real flux_factor);
 
-  static void enforce_consistent_e(amrex::MultiFab& S);
+  void enforce_consistent_e(amrex::MultiFab& S);
 
   amrex::Real volWgtSum(
     const std::string& name,

@@ -39,8 +39,7 @@ PeleC::construct_new_rot_source(amrex::Real /*time*/, amrex::Real /*dt*/)
 
 void
 PeleC::fill_rot_source(
-    const amrex::MultiFab& state_old
-    /*unused*/,
+    const amrex::MultiFab& state_old,
     const amrex::MultiFab& state_new,
     amrex::MultiFab& rot_src,
     int ng)
@@ -49,6 +48,7 @@ PeleC::fill_rot_source(
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(state_old.Factory());
     auto const& flags = fact.getMultiEBCellFlagFab();
 
+    const auto geomdata=geom.data();
     int rf_on=do_rf;
     amrex::Real omega = rf_omega;
     amrex::Real axis  = rf_axis;
@@ -78,10 +78,7 @@ PeleC::fill_rot_source(
                 amrex::RealVect w(0.0,0.0,0.0);
                 amrex::RealVect v(0.0,0.0,0.0);
 
-                r[0]=prob_lo[0]+(i+0.5)*dx[0]-axis_loc[0];
-                r[1]=prob_lo[1]+(j+0.5)*dx[1]-axis_loc[1];
-                r[2]=prob_lo[2]+(k+0.5)*dx[2]-axis_loc[2];
-
+                r=get_rotaxis_vec(i,j,k,axis_loc,geomdata);
                 w[axis]=omega;
 
                 if(rf_on)

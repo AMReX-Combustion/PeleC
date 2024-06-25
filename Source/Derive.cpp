@@ -146,7 +146,13 @@ pc_dereint1(
   amrex::Real /*time*/,
   const int* /*bcrec*/,
   const int /*level*/)
+  //amrex::Real omega=0.0,
+ // amrex::Real rad=0.0 )
 {
+  //FIXME:Hari S:
+  //cant seem to add omega and rad
+  //as derive functions are quite rigid
+  //
   // Compute internal energy from (rho E).
   auto const dat = datfab.const_array();
   auto e = derfab.array();
@@ -158,6 +164,8 @@ pc_dereint1(
     const amrex::Real uz = dat(i, j, k, UMZ) * rhoInv;
     e(i, j, k) =
       dat(i, j, k, UEDEN) * rhoInv - 0.5 * (ux * ux + uy * uy + uz * uz);
+    //see Blazek, Appendix A3, Navier-Stokes in rotating frame of reference
+    //e(i,j,k)-=0.5*omega*omega*rad*rad;
   });
 }
 

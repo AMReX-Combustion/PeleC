@@ -44,6 +44,8 @@ PeleC::initialize_eb2_structs()
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dxlev = geom.CellSizeArray();
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_lo =
   geom.ProbLoArray();
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_hi =
+  geom.ProbHiArray();
   amrex::Real axis  = rf_axis;
   amrex::Real omega = rf_omega;
 
@@ -172,7 +174,8 @@ PeleC::initialize_eb2_structs()
           if (eb_noslip && diffuse_vel) {
 
               if(do_rf)
-              { 
+              {
+                  //amrex::Print()<<"do_rf in init eb\n"; 
                   auto u_bcval = sv_eb_bcval[iLocal].dataPtr(QU);
                   auto v_bcval = sv_eb_bcval[iLocal].dataPtr(QV);
                   auto w_bcval = sv_eb_bcval[iLocal].dataPtr(QW);
@@ -182,9 +185,9 @@ PeleC::initialize_eb2_structs()
                       amrex::ParallelFor(ncutcells, [=] AMREX_GPU_DEVICE(int L) {
                           const auto &iv = sten[L].iv;
 
-                          amrex::Real xloc=prob_lo[0] + (iv[0]+0.5)*dxlev[0] + sten[L].eb_centroid[0]*0.5*dxlev[0];
-                          amrex::Real yloc=prob_lo[1] + (iv[1]+0.5)*dxlev[1] + sten[L].eb_centroid[1]*0.5*dxlev[1];
-                          amrex::Real zloc=prob_lo[2] + (iv[2]+0.5)*dxlev[2] + sten[L].eb_centroid[2]*0.5*dxlev[2];
+                          amrex::Real xloc=prob_lo[0] + (iv[0]+0.5 + sten[L].eb_centroid[0])*dxlev[0];
+                          amrex::Real yloc=prob_lo[1] + (iv[1]+0.5 + sten[L].eb_centroid[1])*dxlev[1];
+                          amrex::Real zloc=prob_lo[2] + (iv[2]+0.5 + sten[L].eb_centroid[2])*dxlev[2];
 
                           amrex::RealVect r(0.0,0.0,0.0);
                           amrex::RealVect w(0.0,0.0,0.0);
