@@ -7,66 +7,6 @@
 #include "TransCoeff.H"
 
 void
-pc_dervelx(
-  const amrex::Box& bx,
-  amrex::FArrayBox& derfab,
-  int /*dcomp*/,
-  int /*ncomp*/,
-  const amrex::FArrayBox& datfab,
-  const amrex::Geometry& /*geomdata*/,
-  amrex::Real /*time*/,
-  const int* /*bcrec*/,
-  const int /*level*/)
-{
-  auto const dat = datfab.const_array();
-  auto velx = derfab.array();
-
-  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    velx(i, j, k) = dat(i, j, k, UMX) / dat(i, j, k, URHO);
-  });
-}
-
-void
-pc_dervely(
-  const amrex::Box& bx,
-  amrex::FArrayBox& derfab,
-  int /*dcomp*/,
-  int /*ncomp*/,
-  const amrex::FArrayBox& datfab,
-  const amrex::Geometry& /*geomdata*/,
-  amrex::Real /*time*/,
-  const int* /*bcrec*/,
-  const int /*level*/)
-{
-  auto const dat = datfab.const_array();
-  auto vely = derfab.array();
-
-  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    vely(i, j, k) = dat(i, j, k, UMY) / dat(i, j, k, URHO);
-  });
-}
-
-void
-pc_dervelz(
-  const amrex::Box& bx,
-  amrex::FArrayBox& derfab,
-  int /*dcomp*/,
-  int /*ncomp*/,
-  const amrex::FArrayBox& datfab,
-  const amrex::Geometry& /*geomdata*/,
-  amrex::Real /*time*/,
-  const int* /*bcrec*/,
-  const int /*level*/)
-{
-  auto const dat = datfab.const_array();
-  auto velz = derfab.array();
-
-  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    velz(i, j, k) = dat(i, j, k, UMZ) / dat(i, j, k, URHO);
-  });
-}
-
-void
 pc_dermagvel(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -163,27 +103,6 @@ pc_dereint1(
 }
 
 void
-pc_dereint2(
-  const amrex::Box& bx,
-  amrex::FArrayBox& derfab,
-  int /*dcomp*/,
-  int /*ncomp*/,
-  const amrex::FArrayBox& datfab,
-  const amrex::Geometry& /*geomdata*/,
-  amrex::Real /*time*/,
-  const int* /*bcrec*/,
-  const int /*level*/)
-{
-  // Compute internal energy from (rho e).
-  auto const dat = datfab.const_array();
-  auto e = derfab.array();
-
-  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    e(i, j, k) = dat(i, j, k, UEINT) / dat(i, j, k, URHO);
-  });
-}
-
-void
 pc_derlogden(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -201,69 +120,6 @@ pc_derlogden(
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     logden(i, j, k) = log10(dat(i, j, k));
   });
-}
-
-void
-pc_derspec(
-  const amrex::Box& bx,
-  amrex::FArrayBox& derfab,
-  int /*dcomp*/,
-  int /*ncomp*/,
-  const amrex::FArrayBox& datfab,
-  const amrex::Geometry& /*geomdata*/,
-  amrex::Real /*time*/,
-  const int* /*bcrec*/,
-  const int /*level*/)
-{
-  auto const dat = datfab.const_array();
-  auto spec = derfab.array();
-
-  amrex::ParallelFor(
-    bx, NUM_SPECIES, [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
-      spec(i, j, k, n) = dat(i, j, k, UFS + n) / dat(i, j, k, URHO);
-    });
-}
-
-void
-pc_deradv(
-  const amrex::Box& bx,
-  amrex::FArrayBox& derfab,
-  int /*dcomp*/,
-  int /*ncomp*/,
-  const amrex::FArrayBox& datfab,
-  const amrex::Geometry& /*geomdata*/,
-  amrex::Real /*time*/,
-  const int* /*bcrec*/,
-  const int /*level*/)
-{
-  auto const dat = datfab.const_array();
-  auto adv = derfab.array();
-
-  amrex::ParallelFor(
-    bx, NUM_ADV, [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
-      adv(i, j, k, n) = dat(i, j, k, UFA + n) / dat(i, j, k, URHO);
-    });
-}
-
-void
-pc_deraux(
-  const amrex::Box& bx,
-  amrex::FArrayBox& derfab,
-  int /*dcomp*/,
-  int /*ncomp*/,
-  const amrex::FArrayBox& datfab,
-  const amrex::Geometry& /*geomdata*/,
-  amrex::Real /*time*/,
-  const int* /*bcrec*/,
-  const int /*level*/)
-{
-  auto const dat = datfab.const_array();
-  auto aux = derfab.array();
-
-  amrex::ParallelFor(
-    bx, NUM_AUX, [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
-      aux(i, j, k, n) = dat(i, j, k, UFX + n) / dat(i, j, k, URHO);
-    });
 }
 
 void
