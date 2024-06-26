@@ -541,6 +541,31 @@ PeleC::variableSetUp()
     amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("magmom", desc_lst, State_Type, Density, NVAR);
 
+  // Velocities in stationary frame
+  if (do_rf) {
+    derive_lst.add(
+      "x_velocity_if", amrex::IndexType::TheCellType(), 1, pc_dervel_if<0>,
+      amrex::DeriveRec::TheSameBox);
+    derive_lst.addComponent(
+      "x_velocity_if", desc_lst, State_Type, Density, NVAR);
+
+    derive_lst.add(
+      "y_velocity_if", amrex::IndexType::TheCellType(), 1, pc_dervel_if<1>,
+      amrex::DeriveRec::TheSameBox);
+    derive_lst.addComponent(
+      "y_velocity_if", desc_lst, State_Type, Density, NVAR);
+
+    derive_lst.add(
+      "z_velocity_if", amrex::IndexType::TheCellType(), 1, pc_dervel_if<2>,
+      amrex::DeriveRec::TheSameBox);
+    derive_lst.addComponent(
+      "z_velocity_if", desc_lst, State_Type, Density, NVAR);
+
+    derive_lst.add(
+      "magvel_if", amrex::IndexType::TheCellType(), 1, pc_dermagvel_if,
+      amrex::DeriveRec::TheSameBox);
+    derive_lst.addComponent("magvel_if", desc_lst, State_Type, Density, NVAR);
+  }
 #ifdef PELE_USE_SOOT
   if (add_soot_src) {
     addSootDerivePlotVars(derive_lst, desc_lst);

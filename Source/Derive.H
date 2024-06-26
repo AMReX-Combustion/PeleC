@@ -9,6 +9,7 @@ using namespace MASA;
 #endif
 
 #include "EB.H"
+#include "Utilities.H"
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
@@ -86,6 +87,38 @@ void pc_dervelz(
   amrex::Real time,
   const int* bcrec,
   const int level);
+
+template <int dir>
+void
+PeleC::pc_dervel_if(
+  const amrex::Box& bx,
+  amrex::FArrayBox& derfab,
+  int /*dcomp*/,
+  int /*ncomp*/,
+  const amrex::FArrayBox& datfab,
+  const amrex::Geometry& geomdata,
+  amrex::Real /*time*/,
+  const int* /*bcrec*/,
+  const int /*level*/)
+{
+  auto const dat = datfab.const_array();
+  auto vel = derfab.array();
+
+  int axis = rf_axis;
+  amrex::Real omega = rf_omega;
+  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
+    rf_axis_x, rf_axis_y, rf_axis_z};
+  auto const gdata = geomdata.data();
+
+  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    amrex::RealVect r = get_rotaxis_vec(i, j, k, axis_loc, gdata);
+    amrex::RealVect w(0.0, 0.0, 0.0);
+    w[axis] = omega;
+    amrex::RealVect w_cross_r = w.crossProduct(r);
+    vel(i, j, k) =
+      dat(i, j, k, UMX + dir) / dat(i, j, k, URHO) + w_cross_r[dir];
+  });
+}
 
 void pc_dermagvel(
   const amrex::Box& bx,

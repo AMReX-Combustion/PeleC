@@ -569,6 +569,27 @@ public:
     amrex::Real time,
     const int* bcrec,
     const int level);
+  template <int dir>
+  static void pc_dervel_if(
+    const amrex::Box& bx,
+    amrex::FArrayBox& derfab,
+    int dcomp,
+    int ncomp,
+    const amrex::FArrayBox& datfab,
+    const amrex::Geometry& geomdata,
+    amrex::Real time,
+    const int* bcrec,
+    const int level);
+  static void pc_dermagvel_if(
+    const amrex::Box& bx,
+    amrex::FArrayBox& derfab,
+    int dcomp,
+    int ncomp,
+    const amrex::FArrayBox& datfab,
+    const amrex::Geometry& geomdata,
+    amrex::Real time,
+    const int* bcrec,
+    const int level);
 
   static int Density, Xmom, Ymom, Zmom, Eden, Eint, Temp;
 
