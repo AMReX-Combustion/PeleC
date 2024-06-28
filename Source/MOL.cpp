@@ -12,8 +12,7 @@ pc_compute_hyp_mol_flux(
   const int mol_iorder,
   const bool use_laxf_flux,
   const amrex::Array4<amrex::EBCellFlag const>& flags,
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> plo,
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx,
+  const amrex::Geometry& geom,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc,
   amrex::Real omega,
   int axisdir,
@@ -29,6 +28,7 @@ pc_compute_hyp_mol_flux(
   const int R_NUM = 5 + NUM_SPECIES + NUM_ADV + NUM_LIN + NUM_AUX;
   const int bc_test_val = 1;
   int using_rotframe = do_rf; // local capture
+  const auto geomdata=geom.data();
   int axisdir_captured = axisdir;
   amrex::Real omega_captured = omega;
   amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axisloc_captured = {
@@ -145,19 +145,12 @@ pc_compute_hyp_mol_flux(
         amrex::RealVect r(0.0, 0.0, 0.0);
         amrex::Real radl, radr, rad;
         if (using_rotframe) {
-          r[0] = plo[0] + (iv[0] + 0.5) * dx[0] - axisloc_captured[0];
-          r[1] = plo[1] + (iv[1] + 0.5) * dx[1] - axisloc_captured[1];
-          r[2] = plo[2] + (iv[2] + 0.5) * dx[2] - axisloc_captured[2];
-          rad = r[0] * r[0] + r[1] * r[1] + r[2] * r[2];
-          rad -= r[axisdir_captured] * r[axisdir_captured];
-          radr = std::sqrt(rad);
 
-          r[0] = plo[0] + (ivm[0] + 0.5) * dx[0] - axisloc_captured[0];
-          r[1] = plo[1] + (ivm[1] + 0.5) * dx[1] - axisloc_captured[1];
-          r[2] = plo[2] + (ivm[2] + 0.5) * dx[2] - axisloc_captured[2];
-          rad = r[0] * r[0] + r[1] * r[1] + r[2] * r[2];
-          rad -= r[axisdir_captured] * r[axisdir_captured];
-          radl = std::sqrt(rad);
+          radr=get_rotaxis_dist(iv[0],iv[1],iv[2],axisdir_captured,
+                  axisloc_captured,geomdata);
+          
+          radl=get_rotaxis_dist(ivm[0],ivm[1],ivm[2],axisdir_captured,
+                  axisloc_captured,geomdata);
         }
 
         if (!use_laxf_flux) {

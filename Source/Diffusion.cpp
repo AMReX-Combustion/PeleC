@@ -344,7 +344,7 @@ PeleC::getMOLSrcTerm(
           BL_PROFILE("PeleC::pc_hyp_mol_flux()");
           pc_compute_hyp_mol_flux(
             cbox, qar, qauxar, flx, area_arr, plm_iorder, use_laxf_flux,
-            flags.array(mfi), prob_lo, dx, axis_loc, omega, axis, using_rf);
+            flags.array(mfi), geom, axis_loc, omega, axis, using_rf);
         }
 
         // Filter hydro fluxes

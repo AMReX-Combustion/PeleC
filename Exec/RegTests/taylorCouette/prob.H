@@ -7,6 +7,7 @@
 #include <AMReX_FArrayBox.H>
 #include <AMReX_REAL.H>
 #include <AMReX_GpuMemory.H>
+#include <AMReX_Geometry.H>
 
 #include "mechanism.H"
 
@@ -48,15 +49,29 @@ pc_initdata(
   const amrex::Real* prob_lo = geomdata.ProbLo();
   const amrex::Real* dx = geomdata.CellSize();
 
-  const amrex::Real u = 0.0;
-  const amrex::Real v = 0.0;
-  const amrex::Real w = 0.0;
+  amrex::Real u = 0.0;
+  amrex::Real v = 0.0;
+  amrex::Real w = 0.0;
   const amrex::Real p = prob_parm.p0;
   const amrex::Real T = prob_parm.T0;
   amrex::Real massfrac[NUM_SPECIES] = {1.0};
   amrex::Real rho, eint;
   auto eos = pele::physics::PhysicsType::eos();
   eos.PYT2RE(p, massfrac, T, rho, eint);
+  
+  if (prob_parm.do_rf) 
+  {
+    amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
+      prob_parm.rf_axis_x, prob_parm.rf_axis_y, prob_parm.rf_axis_z};
+    amrex::RealVect r = get_rotaxis_vec(
+      i, j, k, axis_loc, geomdata);
+    amrex::RealVect omgavec(0.0, 0.0, 0.0);
+     omgavec[prob_parm.rf_axis] = prob_parm.rf_omega;
+     amrex::RealVect w_cross_r = omgavec.crossProduct(r);
+     u=-w_cross_r[0];
+     v=-w_cross_r[1];
+     w=-w_cross_r[2];
+  }
 
   state(i, j, k, URHO) = rho;
   state(i, j, k, UMX) = rho * u;
