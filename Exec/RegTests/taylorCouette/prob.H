@@ -7,7 +7,6 @@
 #include <AMReX_FArrayBox.H>
 #include <AMReX_REAL.H>
 #include <AMReX_GpuMemory.H>
-#include <AMReX_Geometry.H>
 
 #include "mechanism.H"
 
@@ -58,8 +57,8 @@ pc_initdata(
   amrex::Real rho, eint;
   auto eos = pele::physics::PhysicsType::eos();
   eos.PYT2RE(p, massfrac, T, rho, eint);
-  
-  if (prob_parm.do_rf) 
+
+  if (prob_parm.do_rf)
   {
     amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
       prob_parm.rf_axis_x, prob_parm.rf_axis_y, prob_parm.rf_axis_z};
