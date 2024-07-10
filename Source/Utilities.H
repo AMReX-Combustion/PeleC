@@ -3,6 +3,7 @@
 
 #include <AMReX_IArrayBox.H>
 #include <AMReX_FArrayBox.H>
+#include <AMReX_Geometry.H>
 #include "Constants.H"
 #include "IndexDefines.H"
 #include "PelePhysics.H"
@@ -62,6 +63,18 @@ get_rot_energy(
 {
   amrex::Real rad = get_rotaxis_dist(i, j, k, axis, axis_loc, geomdata);
   return (0.5 * omega * omega * rad * rad);
+}
+
+AMREX_GPU_HOST_DEVICE
+AMREX_FORCE_INLINE
+amrex::RealVect
+pc_cmp_loc(const amrex::IntVect& idx, const amrex::GeometryData& geomdata)
+{
+  const amrex::RealVect x(AMREX_D_DECL(
+    geomdata.ProbLo(0) + (idx[0] + 0.5) * geomdata.CellSize(0),
+    geomdata.ProbLo(1) + (idx[1] + 0.5) * geomdata.CellSize(1),
+    geomdata.ProbLo(2) + (idx[2] + 0.5) * geomdata.CellSize(2)));
+  return x;
 }
 
 AMREX_GPU_DEVICE

@@ -13,7 +13,7 @@
 #include "EOS.H"
 #include "Tagging.H"
 #include "Transport.H"
-#include "ProblemDerive.H"
+#include "ProblemSpecificFunctions.H"
 #include "prob_parm.H"
 
 AMREX_GPU_DEVICE
@@ -30,7 +30,6 @@ pc_initdata(
 
   // Geometry
   const amrex::Real* prob_lo = geomdata.ProbLo();
-  const amrex::Real* prob_hi = geomdata.ProbHi();
   const amrex::Real* dx = geomdata.CellSize();
   const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
   const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
@@ -45,7 +44,7 @@ pc_initdata(
   u[1] = -prob_parm.u0 * cos(prob_parm.omega_x * x / prob_parm.L_x) *
          sin(prob_parm.omega_y * y / prob_parm.L_y) *
          cos(prob_parm.omega_z * z / prob_parm.L_z);
-  amrex::Real rho, eint, p, T;
+  amrex::Real rho = 0.0, eint = 0.0, p, T;
   amrex::Real massfrac[NUM_SPECIES] = {0.0};
   auto eos = pele::physics::PhysicsType::eos();
 
@@ -127,8 +126,9 @@ pc_initdata(
   state(i, j, k, UEDEN) =
     rho * (eint + 0.5 * (u[0] * u[0] + u[1] * u[1] + u[2] * u[2]));
   state(i, j, k, UTEMP) = T;
-  for (int n = 0; n < NUM_SPECIES; n++)
+  for (int n = 0; n < NUM_SPECIES; n++) {
     state(i, j, k, UFS + n) = rho * massfrac[n];
+  }
 }
 
 AMREX_GPU_DEVICE
@@ -147,12 +147,10 @@ bcnormal(
 {
 }
 
-using ProblemTags = EmptyProbTagStruct;
-
-struct MyProbDeriveStruct
+struct MyProblemSpecificFunctions : public DefaultProblemSpecificFunctions
 {
-  static void
-  add(amrex::DeriveList& derive_lst, amrex::DescriptorList& desc_lst)
+  static void add_problem_drive(
+    amrex::DeriveList& derive_lst, amrex::DescriptorList& desc_lst)
   {
     derive_lst.add(
       "z_vorticity", amrex::IndexType::TheCellType(), 1, pc_dervortz,
@@ -170,13 +168,13 @@ struct MyProbDeriveStruct
   static void pc_dervortz(
     const amrex::Box& bx,
     amrex::FArrayBox& derfab,
-    int dcomp,
+    int /*dcomp*/,
     int /*ncomp*/,
     const amrex::FArrayBox& datfab,
     const amrex::Geometry& geomdata,
     amrex::Real /*time*/,
     const int* /*bcrec*/,
-    int level)
+    int /*level*/)
   {
     auto const dat = datfab.array();
     auto vort = derfab.array();
@@ -195,7 +193,6 @@ struct MyProbDeriveStruct
 
     const amrex::Real dx = geomdata.CellSize(0);
     const amrex::Real dy = geomdata.CellSize(1);
-    const amrex::Real dz = geomdata.CellSize(2);
 
     // Calculate vorticity.
     amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -211,13 +208,13 @@ struct MyProbDeriveStruct
   static void pc_derheatrelease(
     const amrex::Box& bx,
     amrex::FArrayBox& derfab,
-    int dcomp,
+    int /*dcomp*/,
     int /*ncomp*/,
     const amrex::FArrayBox& datfab,
     const amrex::Geometry& geomdata,
     amrex::Real /*time*/,
     const int* /*bcrec*/,
-    int level)
+    int /*level*/)
   {
     auto const dat = datfab.array();
     auto hr = derfab.array();
@@ -246,6 +243,6 @@ struct MyProbDeriveStruct
 
 void pc_prob_close();
 
-using ProblemDerives = MyProbDeriveStruct;
+using ProblemSpecificFunctions = MyProblemSpecificFunctions;
 
 #endif

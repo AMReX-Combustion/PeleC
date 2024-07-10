@@ -11,7 +11,7 @@
 #include "IndexDefines.H"
 #include "PelePhysics.H"
 #include "Tagging.H"
-#include "ProblemDerive.H"
+#include "ProblemSpecificFunctions.H"
 #include "prob_parm.H"
 #include "Constants.H"
 
@@ -131,7 +131,7 @@ pmf(
       } else {
         dydx = (y2 - y1) / (x2 - x1);
       }
-      y_vector[j] = y1 + dydx * (xlo - x1);
+      y_vector[j] = y1 + dydx * (xmid - x1);
     }
   }
 }
@@ -284,7 +284,6 @@ bcnormal(
 
 void pc_prob_close();
 
-using ProblemTags = EmptyProbTagStruct;
-using ProblemDerives = EmptyProbDeriveStruct;
+using ProblemSpecificFunctions = DefaultProblemSpecificFunctions;
 
 #endif

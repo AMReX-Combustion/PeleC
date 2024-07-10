@@ -35,6 +35,8 @@ constant Smagorinsky. The user can pick the LES model by setting
 
 * ``les_model = 0``: constant Smagorinsky model
 * ``les_model = 1``: dynamic Smagorinsky model
+* ``les_model = 2``: WALE model
+* ``les_model = 3``: Vreman model
 
 For the constant Smagorinsky model, the user may define the model
 coefficients: ``pelec.Cs``, ``pelec.CI``, and ``pelec.PrT``. These

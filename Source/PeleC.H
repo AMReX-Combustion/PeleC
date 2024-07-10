@@ -322,7 +322,7 @@ public:
 
   void construct_new_ext_source(amrex::Real time, amrex::Real dt);
 
-  static void fill_ext_source(
+  void fill_ext_source(
     amrex::Real time,
     amrex::Real dt,
     const amrex::MultiFab& state_old,
@@ -351,7 +351,7 @@ public:
 
   void construct_new_soot_source(amrex::Real time, amrex::Real dt);
 
-  static void fill_soot_source(
+  void fill_soot_source(
     amrex::Real time,
     amrex::Real dt,
     amrex::MultiFab& state,
@@ -391,6 +391,14 @@ public:
     amrex::MultiFab& LESTerm,
     amrex::Real flux_factor);
 
+  void updateFluxRegistersLES(
+    amrex::Real reflux_factor,
+    const amrex::MultiFab& LESTerm,
+    amrex::Real dt,
+    const amrex::MFIter& mfi,
+    amrex::FabType typ,
+    const std::array<amrex::FArrayBox const*, AMREX_SPACEDIM>& flux_ec);
+
   void getSmagorinskyLESTerm(
     amrex::Real time,
     amrex::Real dt,
@@ -398,6 +406,18 @@ public:
     amrex::Real flux_factor);
 
   void getDynamicSmagorinskyLESTerm(
+    amrex::Real time,
+    amrex::Real dt,
+    amrex::MultiFab& LESTerm,
+    amrex::Real flux_factor);
+
+  void getWALELESTerm(
+    amrex::Real time,
+    amrex::Real dt,
+    amrex::MultiFab& LESTerm,
+    amrex::Real flux_factor);
+
+  void getVremanLESTerm(
     amrex::Real time,
     amrex::Real dt,
     amrex::MultiFab& LESTerm,
@@ -630,8 +650,9 @@ public:
   static ProbParmDevice* d_prob_parm_device;
   static ProbParmHost* prob_parm_host;
   static TaggingParm* tagging_parm;
-  static pele::physics::transport::TransportParams<
-    pele::physics::PhysicsType::transport_type>
+  static pele::physics::PeleParams<pele::physics::transport::TransParm<
+    pele::physics::PhysicsType::eos_type,
+    pele::physics::PhysicsType::transport_type>>
     trans_parms;
   static pele::physics::turbinflow::TurbInflow turb_inflow;
 
@@ -769,6 +790,8 @@ protected:
   static int num_state_type;
 
   static amrex::Vector<std::string> spec_names;
+  static amrex::Vector<std::string> adv_names;
+  static amrex::Vector<std::string> aux_names;
 
   static amrex::Vector<int> src_list;
 

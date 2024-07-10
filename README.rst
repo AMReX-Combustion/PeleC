@@ -1,30 +1,31 @@
 PeleC: An adaptive mesh refinement solver for compressible reacting flows
 -------------------------------------------------------------------------
 
-`Documentation <https://amrex-combustion.github.io/PeleC/>`_ | `Nightly Test Results <https://my.cdash.org/index.php?project=PeleC>`_ | `Citation <https://doi.org/10.1177/10943420221121151>`_
+`Documentation <https://amrex-combustion.github.io/PeleC/>`_ | `Nightly Test Results <https://my.cdash.org/index.php?project=PeleC>`_ | `PeleC Citation <https://doi.org/10.1177/10943420221121151>`_ | `Pele Citation <https://doi.org/10.1137/1.9781611977967.2>`_
 
 Getting Started
 ~~~~~~~~~~~~~~~
 
-* To compile and run `PeleC`, one needs a C++ compiler that supports the C++17 standard.  A hierarchical strategy for parallelism is supported, based on MPI, MPI + OpenMP, or MPI + GPU (CUDA/HIP/DPC++).  The code should work with all major MPI and OpenMP implementations.  PeleC should build and run with no modifications to the `make` system if using a Linux system with the GNU compilers, version 7 and above.  CMake, although used mostly for testing, is also an option for building the code.
+To compile and run `PeleC`, one needs a C++ compiler that supports the C++17 standard.  A hierarchical strategy for parallelism is supported, based on MPI, MPI + OpenMP, or MPI + GPU (CUDA/HIP/DPC++).  The code should work with all major MPI and OpenMP implementations.  PeleC should build and run with no modifications to the `make` system if using a Linux system with the GNU compilers, version 7 and above.  CMake, although used mostly for testing, is also an option for building the code.
 
-To build `PeleC` and run a sample 3D flame problem:
-
-1. Have PeleC use the default submodules for AMReX, PelePhysics, and SUNDIALS in its own repo by simply performing: ::
+To build `PeleC` (using the default submodules for AMReX, PelePhysics, and SUNDIALS) and run a sample 3D flame problem::
 
     git clone --recursive git@github.com:AMReX-Combustion/PeleC.git
     cd PeleC/Exec/RegTests/PMF
     make TPLrealclean && make realclean && make TPL && make -j
     ./Pele3d.xxx.yyy.ex example.inp
 
-.. note::
-   A. In the exec line above, xxx.yyy is a tag identifying your compiler and various build options, and will vary across pltaform.  (Note that GNU compilers must be at least version 7, and MPI should be at least of standard version 3).
-   B. The example is 3D premixed flame, flowing vertically upward through the domain with no gravity. The lateral boundaries are periodic.  A detailed hydrogen model is used.  The solution is initialized with a wrinkled (perturbed) 2D steady flame solution computed using the PREMIX code.  Two levels of solution-adaptive refinement are automatically triggered by the presence of the flame intermediate, HO2.
-   C. In addition to informative output to the terminal, periodic plotfiles are written in the run folder.  These may be viewed with AMReX's `Amrvis <https://amrex-codes.github.io/amrex/docs_html/Visualization.html>`_ or `VisIt <https://visit-dav.github.io/visit-website/>`_:
+1. In the exec line above, xxx.yyy is a tag identifying your compiler and various build options, and will vary across pltaform.  (Note that GNU compilers must be at least version 7, and MPI should be at least of standard version 3).
 
-      1. In VisIt, direct the File->Open dialogue to select the file named "Header" that is inside each plotfile folder..
-      2. With Amrvis, `$ amrvis3d plt00030`, for example.
+2. The example is a 3D premixed flame, flowing vertically upward through the domain with no gravity. The lateral boundaries are periodic.  A detailed hydrogen model is used.  The solution is initialized with a wrinkled (perturbed) 2D steady flame solution computed using the PREMIX code.  Two levels of solution-adaptive refinement are automatically triggered by the presence of the flame intermediate, HO2.
 
+3. In addition to informative output to the terminal, periodic plotfiles are written in the run folder.  These may be viewed with AMReX's `Amrvis <https://amrex-codes.github.io/amrex/docs_html/Visualization.html>`_, `VisIt <https://visit-dav.github.io/visit-website/>`_, or `ParaView <https://www.paraview.org>`_:
+
+   a. In VisIt, direct the File->Open dialogue to select the file named "Header" that is inside each plotfile folder.
+
+   b. In ParaViuew, navigate to the case directory, open the plotfile folder.
+
+   c. With Amrvis, `$ amrvis3d plt00030`, for example.
 
 Dependencies
 ~~~~~~~~~~~~
@@ -45,24 +46,27 @@ To add a new feature to PeleC, the procedure is:
 
     git commit -m "Developed AmazingNewFeature"
     git checkout development
-    git pull                     [fix any identified conflicts between local and remote branches of "development"]
+    git pull                      # fix any identified conflicts between local and remote branches of "development"
     git checkout AmazingNewFeature
-    git rebase development        [fix any identified conflicts between "development" and "AmazingNewFeature"]
+    git rebase development        # fix any identified conflicts between "development" and "AmazingNewFeature"
 
-3a. Build and run the full test suite using CMake and CTest (See the `Build` directory for an example script). Please do not introduce warnings. PeleC is checked against `clang-tidy` and `cppcheck` in the CI. To use `cppcheck` and `clang-tidy` locally use these CMake options: ::
+3. Build and run
 
-   -DPELE_ENABLE_CLANG_TIDY:BOOL=ON
-   -DPELE_ENABLE_CPPCHECK:BOOL=ON
+   a. Build and run the full test suite using CMake and CTest (See the `Build` directory for an example script). Please do not introduce warnings. PeleC is checked against `clang-tidy` and `cppcheck` in the CI. To use `cppcheck` and `clang-tidy` locally use these CMake options: ::
 
-3b. Run `clang-tidy` by using an LLVM compiler and making sure `clang-tidy` is found during configure. Then `make` will run `clang-tidy` along with compilation. Once verifying `cppcheck` was found during configure, using the `make cppcheck` target should run its checks on the `compile_commands.json` database generated by CMake. More information on these checks can be seen in the CI files used for GitHub Actions in the `.github/workflows` directory.
+        -DPELE_ENABLE_CLANG_TIDY:BOOL=ON
+        -DPELE_ENABLE_CPPCHECK:BOOL=ON
 
-3c. To easily format all source files before commit, use the following command: ::
+   b. Run `clang-tidy` by using an LLVM compiler and making sure `clang-tidy` is found during configure. Then `make` will run `clang-tidy` along with compilation. Once verifying `cppcheck` was found during configure, using the `make cppcheck` target should run its checks on the `compile_commands.json` database generated by CMake. More information on these checks can be seen in the CI files used for GitHub Actions in the `.github/workflows` directory.
 
-    find Source Exec \( -name "*.cpp" -o -name "*.H" \) -exec clang-format -i {} +
+   c. To easily format all source files before commit, use the following command: ::
 
-4. Push feature branch to PeleC repository: ::
+        find Source Exec \( -name "*.cpp" -o -name "*.H" \) -exec clang-format -i {} +
 
-    git push -u origin AmazingNewFeature [Note: -u option required only for the first push of new branch]
+4. If you don't already have a fork of the PeleC repository, follow the `Github instructions <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo>`_ to create one. Then, push a feature branch to your forked PeleC repository: ::
+
+    git remote add remotename git@github.com:remoteurl # add a remote pointing to the user's fork
+    git push -u remotename AmazingNewFeature # Note: -u option required only for the first push of new branch
 
 5. Submit a pull request through git@github.com:AMReX-Combustion/PeleC.git, and make sure you are requesting a merge against the development branch
 
@@ -94,7 +98,7 @@ available to get started. One gotcha is that indentation matters. To build ::
 Citation
 ~~~~~~~~
 
-To cite the PeleC software and refer to its computational performance, use the following `journal article <https://doi.org/10.1177/10943420221121151>`_::
+To cite the PeleC software and refer to its computational performance, use the following journal articles for `PeleC <https://doi.org/10.1177/10943420221121151>`_ and the `Pele software suite <https://doi.org/10.1137/1.9781611977967.2>`_::
 
     @article{PeleC_IJHPCA,
       author = {Marc T {Henry de Frahan} and Jon S Rood and Marc S Day and Hariswaran Sitaraman and Shashank Yellapantula and Bruce A Perry and Ray W Grout and Ann Almgren and Weiqun Zhang and John B Bell and Jacqueline H Chen},
@@ -107,6 +111,21 @@ To cite the PeleC software and refer to its computational performance, use the f
       doi = {10.1177/10943420221121151},
       url = {https://doi.org/10.1177/10943420221121151}
     }
+
+    @article{PeleSoftware,
+      author = {Marc T. {Henry de Frahan} and Lucas Esclapez and Jon Rood and Nicholas T. Wimer and Paul Mullowney and Bruce A. Perry and Landon Owen and Hariswaran Sitaraman and Shashank Yellapantula and Malik Hassanaly and Mohammad J. Rahimi and Michael J. Martin and Olga A. Doronina and Sreejith N. A. and Martin Rieth and Wenjun Ge and Ramanan Sankaran and Ann S. Almgren and Weiqun Zhang and John B. Bell and Ray Grout and Marc S. Day and Jacqueline H. Chen},
+      title = {The Pele Simulation Suite for Reacting Flows at Exascale},
+      booktitle = {Proceedings of the 2024 SIAM Conference on Parallel Processing for Scientific Computing},
+      journal = {Proceedings of the 2024 SIAM Conference on Parallel Processing for Scientific Computing},
+      chapter = {},
+      pages = {13-25},
+      doi = {10.1137/1.9781611977967.2},
+      URL = {https://epubs.siam.org/doi/abs/10.1137/1.9781611977967.2},
+      eprint = {https://epubs.siam.org/doi/pdf/10.1137/1.9781611977967.2},
+      year = {2024},
+      publisher = {Proceedings of the 2024 SIAM Conference on Parallel Processing for Scientific Computing}
+    }
+
 
 Additionally, to cite the application of PeleC to compressible reacting flows, use the following `Combustion and Flame journal article <https://doi.org/10.1016/j.combustflame.2021.111531>`_::
 

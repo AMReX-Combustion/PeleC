@@ -51,12 +51,13 @@ if __name__ == "__main__":
     ct.add_directory(".")
 
     # Define fuel and oxidizer
-    fuel = ct.Solution("LiDryer.cti", "gas")
+    mechanism = '../../../../Submodules/PelePhysics/Mechanisms/LiDryer/mechanism.yaml'
+    fuel = ct.Solution(mechanism, "gas")
     fuel_XH2 = 0.45
     fuel_XN2 = 0.55
     fuel.TPX = 300.0, ct.one_atm, f"H2:{fuel_XH2},N2:{fuel_XN2}"
 
-    oxidizer = ct.Solution("LiDryer.cti", "gas")
+    oxidizer = ct.Solution(mechanism, "gas")
     oxidizer_XO2 = 0.21
     oxidizer_XN2 = 0.79
     oxidizer.TPX = 300.0, ct.one_atm, f"O2:{oxidizer_XO2},N2:{oxidizer_XN2}"
@@ -66,7 +67,7 @@ if __name__ == "__main__":
     Lx = 2 * np.pi * 1e-3
     R = 0.785 * 1e-3
     c = 3
-    N = 2048
+    N = 256 # 2048
     x = np.linspace(0, Lx, N)
     Rd = np.sqrt((x - 0.5 * Lx) ** 2)
     phi = 0.5 * (1 + np.tanh(c * (Rd - R) / R))
@@ -86,7 +87,7 @@ if __name__ == "__main__":
     YH2O2s_equ = np.zeros(len(x))
     YN2s_equ = np.zeros(len(x))
     for i, (YH2, YO2) in enumerate(zip(YH2s, YO2s)):
-        mixture = ct.Solution("LiDryer.cti", "gas")
+        mixture = ct.Solution(mechanism, "gas")
         mixture.TPY = T0, ct.one_atm, f"H2:{YH2},O2:{YO2},N2:{1-(YH2+YO2)}"
 
         mixture.equilibrate("HP")

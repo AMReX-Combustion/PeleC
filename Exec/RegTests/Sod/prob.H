@@ -16,7 +16,7 @@
 #include "PelePhysics.H"
 #include "Tagging.H"
 
-#include "ProblemDerive.H"
+#include "ProblemSpecificFunctions.H"
 #include "prob_parm.H"
 
 AMREX_GPU_DEVICE
@@ -137,7 +137,6 @@ bcnormal(
 
 void pc_prob_close();
 
-using ProblemTags = EmptyProbTagStruct;
-using ProblemDerives = EmptyProbDeriveStruct;
+using ProblemSpecificFunctions = DefaultProblemSpecificFunctions;
 
 #endif

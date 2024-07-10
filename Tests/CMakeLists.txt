@@ -50,10 +50,11 @@ macro(setup_test)
     # Make working directory for test
     file(MAKE_DIRECTORY ${CURRENT_TEST_BINARY_DIR})
     # Gather all files in source directory for test
-    file(GLOB TEST_FILES "${CURRENT_TEST_SOURCE_DIR}/*.dat" "${CURRENT_TEST_SOURCE_DIR}/*.py")
+    file(GLOB TEST_FILES "${CURRENT_TEST_SOURCE_DIR}/*.dat" "${CURRENT_TEST_SOURCE_DIR}/*.py" "${CURRENT_TEST_SOURCE_DIR}/*.stl")
     # Copy files to test working directory
     file(COPY ${CURRENT_TEST_SOURCE_DIR}/${TEST_NAME}.inp DESTINATION "${CURRENT_TEST_BINARY_DIR}/")
     file(COPY ${TEST_FILES} DESTINATION "${CURRENT_TEST_BINARY_DIR}/")
+
     # Set some default runtime options for all tests
     set(RUNTIME_OPTIONS "amr.plot_file=plt amr.checkpoint_files_output=0 amr.plot_files_output=1 amrex.the_arena_is_managed=0 amrex.abort_on_unused_inputs=1")
     if(PELE_ENABLE_FPE_TRAP_FOR_TESTS AND (NOT APPLE))
@@ -231,9 +232,13 @@ add_test_rv(masscons-isothermal MassCons)
 add_test_r(masscons-isothermal-whydro MassCons)
 add_test_rv(tg-1 TG)
 add_test_rv(tg-2 TG)
+add_test_rv(tgreact TGReact)
 add_test_rv(hit-1 HIT)
 add_test_rv(hit-2 HIT)
 add_test_rv(hit-3 HIT)
+if(PELE_DIM GREATER 2)
+  add_test_rv(hit-les HIT)
+endif()
 add_test_r(sod-1 Sod)
 add_test_r(sod-2 Sod)
 add_test_rv(sod-3 Sod)
@@ -248,6 +253,7 @@ add_test_rv(eb-c11 EB-C11)
 add_test_rv(eb-c12 EB-C12)
 # add_test_r(eb-c14 EB-C14) # disable due to FPE in ghost cells
 add_test_r(eb-converging-nozzle EB-ConvergingNozzle)
+add_test_r(eb-inflowbc EB-InflowBC)
 if(PELE_DIM GREATER 2)
   add_test_r(shock-cylinder Sod) # can run in 2D but needs input file change
 endif()

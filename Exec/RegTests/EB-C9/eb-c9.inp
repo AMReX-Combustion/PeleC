@@ -61,10 +61,16 @@ amr.plot_file       = plt
 amr.plot_int        = 1000
 amr.derive_plot_vars=ALL
 
-eb2.geom_type = "cylinder"
-eb2.cylinder_direction = 0
-eb2.cylinder_center = 0.0 0.0 0.0
-eb2.cylinder_radius = 25.0
-eb2.cylinder_height = 1000.0
-eb2.cylinder_has_fluid_inside = 1
-ebd.boundary_grad_stencil_type = 0
+eb2.geom_type = stl
+eb2.stl_file    = cylinder-r50.stl
+eb2.stl_scale = 1                 # default is 1
+eb2.stl_center = -55  0  0  # default is (0,0,0)
+eb2.stl_reverse_normal = 1   # default is 0
+
+# eb2.geom_type = "cylinder"
+# eb2.cylinder_direction = 0
+# eb2.cylinder_center = 0.0 0.0 0.0
+# eb2.cylinder_radius = 25.0
+# eb2.cylinder_height = 1000.0
+# eb2.cylinder_has_fluid_inside = 1
+# ebd.boundary_grad_stencil_type = 0

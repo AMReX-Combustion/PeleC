@@ -13,7 +13,7 @@
 #include "EOS.H"
 #include "Tagging.H"
 #include "Transport.H"
-#include "ProblemDerive.H"
+#include "ProblemSpecificFunctions.H"
 #include "prob_parm.H"
 #include "EB.H"
 #include <AMReX_EB2_IF_Rotation.H>
@@ -207,7 +207,52 @@ bcnormal(
 
 void pc_prob_close();
 
-using ProblemTags = EmptyProbTagStruct;
-using ProblemDerives = EmptyProbDeriveStruct;
+struct MyProblemSpecificFunctions : public DefaultProblemSpecificFunctions
+{
+  AMREX_GPU_HOST_DEVICE
+  AMREX_FORCE_INLINE
+  static void problem_modify_transport_coeffs(
+    const bool /*get_xi*/,
+    const bool get_mu,
+    const bool get_lam,
+    const bool /*get_Ddiag*/,
+    const bool /*get_chi*/,
+    const amrex::Real /*Tloc*/,
+    const amrex::Real /*rholoc*/,
+    amrex::Real* /*Yloc*/,
+    amrex::Real* /*Ddiag*/,
+    amrex::Real* /*chi_mix*/,
+    amrex::Real& mu,
+    amrex::Real& /*xi*/,
+    amrex::Real& lam,
+    pele::physics::transport::TransParm<
+      pele::physics::PhysicsType::eos_type,
+      pele::physics::PhysicsType::transport_type> const* /*tparm*/,
+    ProbParmDevice const& prob_parm,
+    const amrex::RealVect& x)
+  {
+
+    // Create sponge zones at inlet and outlet
+    if (prob_parm.do_sponge_zones) {
+      amrex::Real stretch = 2.0;
+      amrex::Real buffer = 3.0;
+      amrex::Real end = 18.0;
+      amrex::Real beg = 0.0;
+      amrex::Real factor =
+        0.5 * (1 + std::tanh(stretch * (beg + buffer - x[0]))) +
+        0.5 * (1 + std::tanh(stretch * (x[0] - end + buffer)));
+
+      amrex::Real visc = 1.0;
+      if (get_mu) {
+        mu = factor * visc;
+      }
+      amrex::Real cond = 1.0;
+      if (get_lam) {
+        lam = factor * cond;
+      }
+    }
+  }
+};
+using ProblemSpecificFunctions = MyProblemSpecificFunctions;
 
 #endif

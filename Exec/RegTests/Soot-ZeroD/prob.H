@@ -13,7 +13,7 @@
 #include "PelePhysics.H"
 #include "Tagging.H"
 #include "Transport.H"
-#include "ProblemDerive.H"
+#include "ProblemSpecificFunctions.H"
 #include "prob_parm.H"
 #include "SootModel.H"
 
@@ -89,6 +89,5 @@ bcnormal(
 
 void pc_prob_close();
 
-using ProblemTags = EmptyProbTagStruct;
-using ProblemDerives = EmptyProbDeriveStruct;
+using ProblemSpecificFunctions = DefaultProblemSpecificFunctions;
 #endif

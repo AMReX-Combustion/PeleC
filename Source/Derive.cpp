@@ -1,69 +1,10 @@
 #include "mechanism.H"
 
-#include "PelePhysics.H"
+#include "Utilities.H"
 #include "Derive.H"
 #include "PeleC.H"
 #include "IndexDefines.H"
-
-void
-pc_dervelx(
-  const amrex::Box& bx,
-  amrex::FArrayBox& derfab,
-  int /*dcomp*/,
-  int /*ncomp*/,
-  const amrex::FArrayBox& datfab,
-  const amrex::Geometry& /*geomdata*/,
-  amrex::Real /*time*/,
-  const int* /*bcrec*/,
-  const int /*level*/)
-{
-  auto const dat = datfab.const_array();
-  auto velx = derfab.array();
-
-  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    velx(i, j, k) = dat(i, j, k, UMX) / dat(i, j, k, URHO);
-  });
-}
-
-void
-pc_dervely(
-  const amrex::Box& bx,
-  amrex::FArrayBox& derfab,
-  int /*dcomp*/,
-  int /*ncomp*/,
-  const amrex::FArrayBox& datfab,
-  const amrex::Geometry& /*geomdata*/,
-  amrex::Real /*time*/,
-  const int* /*bcrec*/,
-  const int /*level*/)
-{
-  auto const dat = datfab.const_array();
-  auto vely = derfab.array();
-
-  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    vely(i, j, k) = dat(i, j, k, UMY) / dat(i, j, k, URHO);
-  });
-}
-
-void
-pc_dervelz(
-  const amrex::Box& bx,
-  amrex::FArrayBox& derfab,
-  int /*dcomp*/,
-  int /*ncomp*/,
-  const amrex::FArrayBox& datfab,
-  const amrex::Geometry& /*geomdata*/,
-  amrex::Real /*time*/,
-  const int* /*bcrec*/,
-  const int /*level*/)
-{
-  auto const dat = datfab.const_array();
-  auto velz = derfab.array();
-
-  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    velz(i, j, k) = dat(i, j, k, UMZ) / dat(i, j, k, URHO);
-  });
-}
+#include "TransCoeff.H"
 
 void
 pc_dermagvel(
@@ -205,27 +146,6 @@ pc_dereint1(
 }
 
 void
-pc_dereint2(
-  const amrex::Box& bx,
-  amrex::FArrayBox& derfab,
-  int /*dcomp*/,
-  int /*ncomp*/,
-  const amrex::FArrayBox& datfab,
-  const amrex::Geometry& /*geomdata*/,
-  amrex::Real /*time*/,
-  const int* /*bcrec*/,
-  const int /*level*/)
-{
-  // Compute internal energy from (rho e).
-  auto const dat = datfab.const_array();
-  auto e = derfab.array();
-
-  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    e(i, j, k) = dat(i, j, k, UEINT) / dat(i, j, k, URHO);
-  });
-}
-
-void
 pc_derlogden(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -243,48 +163,6 @@ pc_derlogden(
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     logden(i, j, k) = log10(dat(i, j, k));
   });
-}
-
-void
-pc_derspec(
-  const amrex::Box& bx,
-  amrex::FArrayBox& derfab,
-  int /*dcomp*/,
-  int /*ncomp*/,
-  const amrex::FArrayBox& datfab,
-  const amrex::Geometry& /*geomdata*/,
-  amrex::Real /*time*/,
-  const int* /*bcrec*/,
-  const int /*level*/)
-{
-  auto const dat = datfab.const_array();
-  auto spec = derfab.array();
-
-  amrex::ParallelFor(
-    bx, NUM_SPECIES, [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
-      spec(i, j, k, n) = dat(i, j, k, UFS + n) / dat(i, j, k, URHO);
-    });
-}
-
-void
-pc_deradv(
-  const amrex::Box& bx,
-  amrex::FArrayBox& derfab,
-  int /*dcomp*/,
-  int /*ncomp*/,
-  const amrex::FArrayBox& datfab,
-  const amrex::Geometry& /*geomdata*/,
-  amrex::Real /*time*/,
-  const int* /*bcrec*/,
-  const int /*level*/)
-{
-  auto const dat = datfab.const_array();
-  auto adv = derfab.array();
-
-  amrex::ParallelFor(
-    bx, NUM_ADV, [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
-      adv(i, j, k, n) = dat(i, j, k, UFA + n) / dat(i, j, k, URHO);
-    });
 }
 
 void
@@ -810,14 +688,16 @@ PeleC::pc_derviscosity(
   int /*dcomp*/,
   int /*ncomp*/,
   const amrex::FArrayBox& datfab,
-  const amrex::Geometry& /*geomdata*/,
+  const amrex::Geometry& geomdata,
   amrex::Real /*time*/,
   const int* /*bcrec*/,
   int /*level*/)
 {
   auto const dat = datfab.const_array();
   auto mu_arr = derfab.array();
-  auto const* ltransparm = trans_parms.device_trans_parm();
+  auto const* ltransparm = trans_parms.device_parm();
+  const ProbParmDevice* lprobparm = d_prob_parm_device;
+  const auto& gdata = geomdata.data();
 
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     amrex::Real massfrac[NUM_SPECIES];
@@ -828,13 +708,13 @@ PeleC::pc_derviscosity(
     for (int n = 0; n < NUM_SPECIES; n++) {
       massfrac[n] = dat(i, j, k, UFS + n) * rhoInv;
     }
-    auto trans = pele::physics::PhysicsType::transport();
     amrex::Real mu = 0.0, dum1 = 0.0, dum2 = 0.0;
     const bool get_xi = false, get_mu = true, get_lam = false,
                get_Ddiag = false, get_chi = false;
-    trans.transport(
+    const amrex::RealVect x = pc_cmp_loc({AMREX_D_DECL(i, j, k)}, gdata);
+    pc_transcoeff(
       get_xi, get_mu, get_lam, get_Ddiag, get_chi, T, rho, massfrac, nullptr,
-      nullptr, mu, dum1, dum2, ltransparm);
+      nullptr, mu, dum1, dum2, ltransparm, *lprobparm, x);
     mu_arr(i, j, k) = mu;
   });
 }
@@ -846,14 +726,16 @@ PeleC::pc_derbulkviscosity(
   int /*dcomp*/,
   int /*ncomp*/,
   const amrex::FArrayBox& datfab,
-  const amrex::Geometry& /*geomdata*/,
+  const amrex::Geometry& geomdata,
   amrex::Real /*time*/,
   const int* /*bcrec*/,
   int /*level*/)
 {
   auto const dat = datfab.const_array();
   auto xi_arr = derfab.array();
-  auto const* ltransparm = trans_parms.device_trans_parm();
+  auto const* ltransparm = trans_parms.device_parm();
+  const ProbParmDevice* lprobparm = d_prob_parm_device;
+  const auto& gdata = geomdata.data();
 
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     amrex::Real massfrac[NUM_SPECIES];
@@ -864,13 +746,13 @@ PeleC::pc_derbulkviscosity(
     for (int n = 0; n < NUM_SPECIES; n++) {
       massfrac[n] = dat(i, j, k, UFS + n) * rhoInv;
     }
-    auto trans = pele::physics::PhysicsType::transport();
     amrex::Real xi = 0.0, dum1 = 0.0, dum2 = 0.0;
     const bool get_xi = true, get_mu = false, get_lam = false,
                get_Ddiag = false, get_chi = false;
-    trans.transport(
+    const amrex::RealVect x = pc_cmp_loc({AMREX_D_DECL(i, j, k)}, gdata);
+    pc_transcoeff(
       get_xi, get_mu, get_lam, get_Ddiag, get_chi, T, rho, massfrac, nullptr,
-      nullptr, dum1, xi, dum2, ltransparm);
+      nullptr, dum1, xi, dum2, ltransparm, *lprobparm, x);
     xi_arr(i, j, k) = xi;
   });
 }
@@ -882,14 +764,16 @@ PeleC::pc_derconductivity(
   int /*dcomp*/,
   int /*ncomp*/,
   const amrex::FArrayBox& datfab,
-  const amrex::Geometry& /*geomdata*/,
+  const amrex::Geometry& geomdata,
   amrex::Real /*time*/,
   const int* /*bcrec*/,
   int /*level*/)
 {
   auto const dat = datfab.const_array();
   auto lam_arr = derfab.array();
-  auto const* ltransparm = trans_parms.device_trans_parm();
+  auto const* ltransparm = trans_parms.device_parm();
+  const ProbParmDevice* lprobparm = d_prob_parm_device;
+  const auto& gdata = geomdata.data();
 
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     amrex::Real massfrac[NUM_SPECIES];
@@ -900,13 +784,13 @@ PeleC::pc_derconductivity(
     for (int n = 0; n < NUM_SPECIES; n++) {
       massfrac[n] = dat(i, j, k, UFS + n) * rhoInv;
     }
-    auto trans = pele::physics::PhysicsType::transport();
     amrex::Real lam = 0.0, dum1 = 0.0, dum2 = 0.0;
     const bool get_xi = false, get_mu = false, get_lam = true,
                get_Ddiag = false, get_chi = false;
-    trans.transport(
+    const amrex::RealVect x = pc_cmp_loc({AMREX_D_DECL(i, j, k)}, gdata);
+    pc_transcoeff(
       get_xi, get_mu, get_lam, get_Ddiag, get_chi, T, rho, massfrac, nullptr,
-      nullptr, dum1, dum2, lam, ltransparm);
+      nullptr, dum1, dum2, lam, ltransparm, *lprobparm, x);
     lam_arr(i, j, k) = lam;
   });
 }
@@ -918,14 +802,16 @@ PeleC::pc_derdiffusivity(
   int /*dcomp*/,
   int /*ncomp*/,
   const amrex::FArrayBox& datfab,
-  const amrex::Geometry& /*geomdata*/,
+  const amrex::Geometry& geomdata,
   amrex::Real /*time*/,
   const int* /*bcrec*/,
   int /*level*/)
 {
   auto const dat = datfab.const_array();
   auto d_arr = derfab.array();
-  auto const* ltransparm = trans_parms.device_trans_parm();
+  auto const* ltransparm = trans_parms.device_parm();
+  const ProbParmDevice* lprobparm = d_prob_parm_device;
+  const auto& gdata = geomdata.data();
 
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     amrex::Real massfrac[NUM_SPECIES];
@@ -937,13 +823,13 @@ PeleC::pc_derdiffusivity(
     for (int n = 0; n < NUM_SPECIES; n++) {
       massfrac[n] = dat(i, j, k, UFS + n) * rhoInv;
     }
-    auto trans = pele::physics::PhysicsType::transport();
     amrex::Real dum1 = 0.0, dum2 = 0.0, dum3 = 0.0;
     const bool get_xi = false, get_mu = false, get_lam = false,
                get_Ddiag = true, get_chi = false;
-    trans.transport(
+    const amrex::RealVect x = pc_cmp_loc({AMREX_D_DECL(i, j, k)}, gdata);
+    pc_transcoeff(
       get_xi, get_mu, get_lam, get_Ddiag, get_chi, T, rho, massfrac, ddiag,
-      nullptr, dum1, dum2, dum3, ltransparm);
+      nullptr, dum1, dum2, dum3, ltransparm, *lprobparm, x);
     for (int n = 0; n < NUM_SPECIES; n++) {
       d_arr(i, j, k, n) = ddiag[n];
     }

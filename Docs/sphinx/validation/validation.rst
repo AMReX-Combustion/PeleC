@@ -2,7 +2,7 @@
  .. role:: cpp(code)
     :language: c++
 
- 
+
 .. _Validation:
 
 
@@ -48,7 +48,7 @@ was used to post-process some quantities using `visit_pp_aux_vars.py`
 
 .. code-block:: bash
 
-   $ visit -nowin -cli -s Exect/RegTests/visit_pp_aux_vars.py
+   $ visit -nowin -cli -s Exec/RegTests/visit_pp_aux_vars.py
 
 Generating the initial conditions
 #################################
@@ -59,11 +59,8 @@ the following energy spectrum:
 .. math::
    E(k) \sim k^4 \exp(-2 (k/k_0)^2), \frac{3 u'}{2} = \int_0^\infty E(k) \mathrm{d}k
 
-and can be generated with the Python script in the HIT directory:
-
-.. code-block:: bash
-
-   $ python3 gen_hit_ic.py
+and can be generated with the Python script in the PelePhysics
+`TurbFileHIT <https://amrex-combustion.github.io/PelePhysics/Support.html#generating-an-hit-file>`_ support code.
 
 Building and running
 ####################
@@ -248,13 +245,13 @@ limit.
    :align: center
    :figwidth: 40%
 
-   Fuel mass density is shown in left figure in g/cm3 (0(red)-1e-4(yellow)), oxygen mass density 
-   is shown in the middle figure (0 (red)-1e-5 (yellow)) and temperature is shown in right figure (1800K (red) - 2300 (yellow)) along with 
+   Fuel mass density is shown in left figure in g/cm3 (0(red)-1e-4(yellow)), oxygen mass density
+   is shown in the middle figure (0 (red)-1e-5 (yellow)) and temperature is shown in right figure (1800K (red) - 2300 (yellow)) along with
    velocity vectors.
 
 .. note::
 
-   A quantitative comparison with Cantera for varying strain-rates is work in progress 
+   A quantitative comparison with Cantera for varying strain-rates is work in progress
 
 Counter flow premixed flame
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

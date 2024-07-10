@@ -408,7 +408,8 @@ initialize_EB2(
   // Custom types defined here - all_regular, plane, sphere, etc, will get
   // picked up by default (see AMReX_EB2.cpp around L100 )
   amrex::Vector<std::string> amrex_defaults(
-    {"all_regular", "box", "cylinder", "plane", "sphere", "torus", "parser"});
+    {"all_regular", "box", "cylinder", "plane", "sphere", "torus", "parser",
+     "stl"});
   if (!(std::find(amrex_defaults.begin(), amrex_defaults.end(), geom_type) !=
         amrex_defaults.end())) {
     std::unique_ptr<pele::pelec::Geometry> geometry(
@@ -422,8 +423,12 @@ initialize_EB2(
 
   // Add finer level, might be inconsistent with the coarser level created
   // above.
-  if (geom_type != "chkfile") {
+  // EY: This condition is not acceptable in AMReX with stl format
+  if ((geom_type != "chkfile") && (geom_type != "stl")) {
     amrex::EB2::addFineLevels(max_level - eb_max_level);
+  } else {
+    // The AMReX implementation for these does not support addFineLevels
+    AMREX_ALWAYS_ASSERT(max_level == eb_max_level);
   }
 
   bool write_chk_geom = false;

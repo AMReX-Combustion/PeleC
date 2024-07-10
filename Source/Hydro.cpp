@@ -58,11 +58,7 @@ PeleC::construct_hydro_source(
     auto const& flags = fact.getMultiEBCellFlagFab();
 
 #ifdef AMREX_USE_OMP
-#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())          \
-  reduction(+ : E_added_flux, mass_added_flux)                     \
-  reduction(+ : xmom_added_flux, ymom_added_flux, zmom_added_flux) \
-  reduction(+ : mass_lost, xmom_lost, ymom_lost, zmom_lost)        \
-  reduction(+ : eden_lost, xang_lost, yang_lost, zang_lost)        \
+#pragma omp parallel if (amrex::Gpu::notInLaunchRegion()) \
   reduction(max : courno)
 #endif
     {
@@ -430,7 +426,7 @@ pc_adjust_fluxes_eb(
   amrex::Array4<const amrex::Real> const& vfrac,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dxinv,
-  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flux,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flux,
   const amrex::Geometry& geom,
   const int* bclo,
   const int* bchi,
@@ -585,9 +581,9 @@ pc_consup_eb(
   amrex::Array4<const amrex::Real> const& vfrac,
   amrex::Array4<amrex::EBCellFlag const> const& flag,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dxinv,
-  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>&
     flux_tmp,
-  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flux,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flux,
 
   const int eb_weights_type)
 {
