@@ -32,7 +32,7 @@ amrex_probinit(
   pp_pelec.query("rf_axis_y", PeleC::h_prob_parm_device->rf_axis_y);
   pp_pelec.query("rf_axis_z", PeleC::h_prob_parm_device->rf_axis_z);
 
-  auto& trans_parm = PeleC::trans_parms.host_trans_parm();
+  auto& trans_parm = PeleC::trans_parms.host_parm();
   trans_parm.const_bulk_viscosity = 0.0;
   trans_parm.const_diffusivity = 0.0;
   trans_parm.const_viscosity = PeleC::h_prob_parm_device->mu;

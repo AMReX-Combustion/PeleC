@@ -17,7 +17,7 @@
 #include "EOS.H"
 
 #include "Tagging.H"
-#include "ProblemDerive.H"
+#include "ProblemSpecificFunctions.H"
 #include "prob_parm.H"
 #include "EB.H"
 #include <AMReX_EB2_IF_Rotation.H>
@@ -110,8 +110,7 @@ bcnormal(
 
 void pc_prob_close();
 
-using ProblemTags = EmptyProbTagStruct;
-using ProblemDerives = EmptyProbDeriveStruct;
+using ProblemSpecificFunctions = DefaultProblemSpecificFunctions;
 
 /*using ProblemTags = EmptyProbTagStruct;
 
@@ -169,8 +168,6 @@ prob_parm->alpha * std::exp(
 arr(i, j, k, 0) = dat(i, j, k, URHO) - rho_exact;
 });
 }
-};
-
-using ProblemDerives = MyProbDeriveStruct;*/
+}; */
 
 #endif
