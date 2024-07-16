@@ -1,7 +1,7 @@
 # 2D Hagen–Poiseuille flow over a cylinder
 
-Building on the EB-C10 case, this case prescribes Hagen-Poiseuille flow over a cylinder.
-[EB-C10](https://amrex-combustion.github.io/PeleC/ebverification/C10/README.html).
+Building on the [EB-C10 case](https://amrex-combustion.github.io/PeleC/ebverification/C10/README.html), case, this case prescribes Hagen-Poiseuille flow over a cylinder.
+
 
 ## Short case description
 
