@@ -6,6 +6,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
 include(CMakePackageConfigHelpers)
 include(PeleUtils)
+enable_testing()
+include(CTest)
 
 ########################## OPTIONS #####################################
 
@@ -121,7 +123,4 @@ init_code_checks()
 include(SetRpath)
 
 add_subdirectory(Exec)
-
-enable_testing()
-include(CTest)
 add_subdirectory(Tests)
