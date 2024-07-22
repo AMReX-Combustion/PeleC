@@ -252,7 +252,7 @@ add_test_r(eb-c10 EB-C10)
 add_test_rv(eb-c11 EB-C11)
 add_test_rv(eb-c12 EB-C12)
 if(PELE_DIM EQUAL 2)
-    add_test_r(EB-FlowPastCylinder EB-FlowPastCylinder)
+    add_test_r(EB-FlowPastCylinder-Re500 EB-FlowPastCylinder)
 endif()
 # add_test_r(eb-c14 EB-C14) # disable due to FPE in ghost cells
 add_test_r(eb-converging-nozzle EB-ConvergingNozzle)
