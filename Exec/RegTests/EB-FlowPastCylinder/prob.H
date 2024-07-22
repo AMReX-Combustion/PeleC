@@ -24,7 +24,7 @@ pc_initdata(
   int j,
   int k,
   amrex::Array4<amrex::Real> const& state,
-  amrex::GeometryData const& geomdata,
+  amrex::GeometryData const& /*geomdata*/,
   ProbParmDevice const& prob_parm)
 {
 
