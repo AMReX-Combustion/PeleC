@@ -8,7 +8,6 @@
 struct ProbParmDevice
 {
   amrex::Real p = 1013250.0;
-  amrex::Real dpdx = 0.0;
   amrex::Real T = 300.0;
   amrex::Real rho = 0.0;
   amrex::Real eint = 0.0;

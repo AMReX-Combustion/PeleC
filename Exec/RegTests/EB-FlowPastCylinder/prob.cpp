@@ -57,15 +57,10 @@ amrex_probinit(
     trans_parm.const_viscosity * cp / PeleC::h_prob_parm_device->Pr;
   PeleC::trans_parms.sync_to_device();
 
-  PeleC::h_prob_parm_device->G =
-    PeleC::h_prob_parm_device->umax * 4 * trans_parm.const_viscosity /
-    (R * R);
-  PeleC::h_prob_parm_device->dpdx = -PeleC::h_prob_parm_device->G;
-
   // Output IC
   std::ofstream ofs("ic.txt", std::ofstream::out);
   amrex::Print(ofs)
-    << "L, D, R, cs, rho, umax, p, T, gamma, mu, k, Re, Ma, Pr, dpdx, G"
+    << "L, D, R, cs, rho, umax, p, T, gamma, mu, k, Re, Ma, Pr"
     << std::endl;
   amrex::Print(ofs).SetPrecision(17)
     << L << "," 
@@ -73,12 +68,15 @@ amrex_probinit(
     << R << ","
     << cs << ","
     << PeleC::h_prob_parm_device->rho << ","
-    << PeleC::h_prob_parm_device->umax << "," << PeleC::h_prob_parm_device->p
-    << "," << PeleC::h_prob_parm_device->T << "," << eos.gamma << ","
-    << trans_parm.const_viscosity << "," << trans_parm.const_conductivity << ","
-    << PeleC::h_prob_parm_device->Re << "," << PeleC::h_prob_parm_device->Ma
-    << "," << PeleC::h_prob_parm_device->Pr << ","
-    << PeleC::h_prob_parm_device->dpdx << "," << PeleC::h_prob_parm_device->G
+    << PeleC::h_prob_parm_device->umax << "," 
+    << PeleC::h_prob_parm_device->p
+    << "," << PeleC::h_prob_parm_device->T 
+    << "," << eos.gamma << ","
+    << trans_parm.const_viscosity << "," 
+    << trans_parm.const_conductivity << ","
+    << PeleC::h_prob_parm_device->Re << "," 
+    << PeleC::h_prob_parm_device->Ma << "," 
+    << PeleC::h_prob_parm_device->Pr << ","
     << std::endl;
   ofs.close();
 }

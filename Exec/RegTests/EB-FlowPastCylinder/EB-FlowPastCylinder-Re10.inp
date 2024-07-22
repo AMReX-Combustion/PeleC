@@ -1,6 +1,6 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 # max_step = 100
-stop_time = 0.06
+stop_time = 0.05
 
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic =  0  0  0
@@ -19,7 +19,7 @@ pelec.hi_bc       =  "Hard" "SlipWall" "FOExtrap"
 # Problem setup
 prob.p = 1013250.
 prob.T = 298.
-prob.Re = 500.
+prob.Re = 10.
 prob.Ma = 0.2
 prob.Pr = 0.7
 pelec.eb_boundary_T = 298.
@@ -37,7 +37,7 @@ pelec.diffuse_enth = 1
 
 # TIME STEP CONTROL
 pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
-pelec.cfl            = 0.7     # cfl number for hyperbolic system
+pelec.cfl            = 0.9     # cfl number for hyperbolic system
 pelec.init_shrink    = 0.1    # scale back initial timestep
 pelec.change_max     = 1.05     # maximum increase in dt over successive steps
 
@@ -55,14 +55,14 @@ amr.blocking_factor = 16       # block factor in grid generation
 amr.max_grid_size   = 64
 
 # CHECKPOINT FILES
-amr.checkpoint_files_output = 0
-amr.check_file      = chk      # root name of checkpoint file
-amr.check_int       = 10000       # number of timesteps between checkpoints
+amr.checkpoint_files_output = 1
+amr.check_file      = chkReLow      # root name of checkpoint file
+amr.check_int       = 100000       # number of timesteps between checkpoints
 
 # PLOTFILES
 amr.plot_files_output = 1
-amr.plot_file       = plt
-amr.plot_int        = 5000
+amr.plot_file       = pltReLow
+amr.plot_int        = 20000
 amr.derive_plot_vars=ALL
 
 # EB

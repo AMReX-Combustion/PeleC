@@ -27,13 +27,8 @@ pc_initdata(
   amrex::GeometryData const& geomdata,
   ProbParmDevice const& prob_parm)
 {
-  // Geometry
-  const amrex::Real* prob_lo = geomdata.ProbLo();
-  const amrex::Real* dx = geomdata.CellSize();
 
-  const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
-
-  const amrex::Real p = prob_parm.dpdx * x + prob_parm.p;
+  const amrex::Real p = prob_parm.p;
   amrex::Real rho = 0.0, eint = 0.0;
   amrex::Real massfrac[NUM_SPECIES] = {0.0};
   for (int n = 0; n < NUM_SPECIES; n++) {
@@ -70,21 +65,30 @@ bcnormal(
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& /*turb_fluc*/)
 {
   if (idir == 0) {
+    
     amrex::Real rho = 0.0, u = 0.0, v = 0.0, w = 0.0, eint = 0.0, T = 0.0;
-    amrex::Real massfrac[NUM_SPECIES] = {0.0};
-    for (int n = 0; n < NUM_SPECIES; n++) {
-      massfrac[n] = prob_parm.massfrac[n];
-    }
     auto eos = pele::physics::PhysicsType::eos();
 
     if (sgn == 1) {
-      const amrex::Real p = prob_parm.dpdx * x[0] + prob_parm.p;
-      T = prob_parm.T;
-      eos.PYT2RE(p, massfrac, T, rho, eint);
 
-      u = s_inter[UMX] / s_inter[URHO];
-      v = s_inter[UMY] / s_inter[URHO];
-      w = s_inter[UMZ] / s_inter[URHO];
+      T = prob_parm.T;
+      amrex::Real p_inter = 0.0;
+      amrex::Real massfrac_inter[NUM_SPECIES] = {0.0};
+      for (int n = 0; n < NUM_SPECIES; n++) {
+        massfrac_inter[n] = s_inter[UFS+n]/s_inter[URHO];
+      }
+      
+      // Ghost state p_d = p_inter (dp/dx = 0)
+      eos.RTY2P(s_inter[URHO],s_inter[UTEMP],massfrac_inter,p_inter);
+      
+      // Ghost state rho and eint (constant T)
+      eos.PYT2RE(p_inter, massfrac_inter, T, rho, eint);
+
+      // Ghost state for velocity      
+      u = prob_parm.umax;
+      v = 0.0;
+      w = 0.0;
+
 
     } else if (sgn == -1) {
 
@@ -100,12 +104,16 @@ bcnormal(
       const amrex::Real w_inter = s_inter[UMZ] / rho_inter;
       const amrex::Real T_inter = s_inter[UTEMP];
       amrex::Real p_inter = 0.0, cs_inter = 0.0;
+      amrex::Real massfrac[NUM_SPECIES] = {0.0};
+      for (int n = 0; n < NUM_SPECIES; n++) {
+        massfrac[n] = s_inter[UFS+n]/s_inter[URHO];
+      }
       eos.RTY2P(rho_inter, T_inter, massfrac, p_inter);
       eos.RTY2Cs(rho_inter, T_inter, massfrac, cs_inter);
 
       // Boundary state (point b)
       const amrex::Real xb = prob_hi[0];
-      const amrex::Real pb = prob_parm.dpdx * xb + prob_parm.p;
+      const amrex::Real pb = prob_parm.p;
       const amrex::Real rhob =
         s_inter[URHO] + (pb - p_inter) / (cs_inter * cs_inter);
       const amrex::Real ub = u_inter + (p_inter - pb) / (rho_inter * cs_inter);
