@@ -65,7 +65,7 @@ bcnormal(
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& /*turb_fluc*/)
 {
   if (idir == 0) {
-    
+
     amrex::Real rho = 0.0, u = 0.0, v = 0.0, w = 0.0, eint = 0.0, T = 0.0;
     auto eos = pele::physics::PhysicsType::eos();
 
@@ -75,20 +75,19 @@ bcnormal(
       amrex::Real p_inter = 0.0;
       amrex::Real massfrac_inter[NUM_SPECIES] = {0.0};
       for (int n = 0; n < NUM_SPECIES; n++) {
-        massfrac_inter[n] = s_inter[UFS+n]/s_inter[URHO];
+        massfrac_inter[n] = s_inter[UFS + n] / s_inter[URHO];
       }
-      
+
       // Ghost state p_d = p_inter (dp/dx = 0)
-      eos.RTY2P(s_inter[URHO],s_inter[UTEMP],massfrac_inter,p_inter);
-      
+      eos.RTY2P(s_inter[URHO], s_inter[UTEMP], massfrac_inter, p_inter);
+
       // Ghost state rho and eint (constant T)
       eos.PYT2RE(p_inter, massfrac_inter, T, rho, eint);
 
-      // Ghost state for velocity      
+      // Ghost state for velocity
       u = prob_parm.umax;
       v = 0.0;
       w = 0.0;
-
 
     } else if (sgn == -1) {
 
@@ -106,7 +105,7 @@ bcnormal(
       amrex::Real p_inter = 0.0, cs_inter = 0.0;
       amrex::Real massfrac[NUM_SPECIES] = {0.0};
       for (int n = 0; n < NUM_SPECIES; n++) {
-        massfrac[n] = s_inter[UFS+n]/s_inter[URHO];
+        massfrac[n] = s_inter[UFS + n] / s_inter[URHO];
       }
       eos.RTY2P(rho_inter, T_inter, massfrac, p_inter);
       eos.RTY2Cs(rho_inter, T_inter, massfrac, cs_inter);
