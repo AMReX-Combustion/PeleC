@@ -51,6 +51,8 @@ description and the source code for these test cases are included below.
    +------------------------------------------------------------------------------------------------+---------------------------------------+---+---+---+---+
    | :ref:`EB-ConvergingNozzle`                                                                     | analytical                            | x |   |   |   |
    +------------------------------------------------------------------------------------------------+---------------------------------------+---+---+---+---+
+   | :ref:`EB-FlowPastCylinder`                                                                     | vortex shedding for high Re           | x |   |   |   |
+   +------------------------------------------------------------------------------------------------+---------------------------------------+---+---+---+---+
 
 
 .. toctree::
@@ -66,3 +68,4 @@ description and the source code for these test cases are included below.
    C13/README
    C14/README
    ConvergingNozzle/README
+   FlowPastCylinder/README
