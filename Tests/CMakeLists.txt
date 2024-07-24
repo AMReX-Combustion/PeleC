@@ -37,10 +37,10 @@ endif()
 macro(setup_test)
     # Set variables for respective binary and source directories for the test
     set(CURRENT_TEST_SOURCE_DIR ${CMAKE_SOURCE_DIR}/Exec/RegTests/${TEST_EXE_DIR})
-    set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/Exec/RegTests/${TEST_EXE_DIR}/tests/${TEST_NAME})
+    set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/Exec/RegTests/${TEST_EXE_DIR}/${TEST_NAME})
     set(CURRENT_TEST_EXE ${CMAKE_BINARY_DIR}/Exec/RegTests/${TEST_EXE_DIR}/${PROJECT_NAME}-${TEST_EXE_DIR})
-    # Gold files should be submodule organized by machine and compiler (these are output during configure)
-    set(PLOT_GOLD ${GOLD_FILES_DIRECTORY}/${TEST_EXE_DIR}/tests/${TEST_NAME}/plt00010)
+    # Gold files should be organized by machine and compiler (these are output during configure)
+    set(PLOT_GOLD ${GOLD_FILES_DIRECTORY}/${TEST_EXE_DIR}/${TEST_NAME}/plt00010)
     # Test plot is currently expected to be after 10 steps
     set(PLOT_TEST ${CURRENT_TEST_BINARY_DIR}/plt00010)
     # Find fcompare
