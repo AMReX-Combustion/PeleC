@@ -181,6 +181,15 @@ PeleC::construct_hydro_source(
             area[0].const_array(mfi), area[1].const_array(mfi),
             area[2].const_array(mfi))}};
 
+        amrex::FArrayBox dm_as_fine(
+          amrex::Box::TheUnitBox(), hydro_source.nComp(),
+          amrex::The_Async_Arena());
+        amrex::FArrayBox fab_drho_as_crse(
+          amrex::Box::TheUnitBox(), hydro_source.nComp(),
+          amrex::The_Async_Arena());
+        amrex::IArrayBox fab_rrflag_as_crse(
+          amrex::Box::TheUnitBox(), 1, amrex::The_Async_Arena());
+
         const int ngrow_bx = (redistribution_type == "StateRedist") ? 3 : 2;
         const amrex::Box& fbxg_i = grow(fbx, ngrow_bx);
         if (flag_fab.getType(fbxg_i) == amrex::FabType::singlevalued) {
@@ -198,15 +207,6 @@ PeleC::construct_hydro_source(
 
           const int as_crse = static_cast<int>(fr_as_crse != nullptr);
           const int as_fine = static_cast<int>(fr_as_fine != nullptr);
-
-          amrex::FArrayBox dm_as_fine(
-            amrex::Box::TheUnitBox(), hydro_source.nComp(),
-            amrex::The_Async_Arena());
-          amrex::FArrayBox fab_drho_as_crse(
-            amrex::Box::TheUnitBox(), hydro_source.nComp(),
-            amrex::The_Async_Arena());
-          amrex::IArrayBox fab_rrflag_as_crse(
-            amrex::Box::TheUnitBox(), 1, amrex::The_Async_Arena());
 
           auto* p_drho_as_crse = (fr_as_crse != nullptr)
                                    ? fr_as_crse->getCrseData(mfi)
@@ -281,9 +281,6 @@ PeleC::construct_hydro_source(
         // Refluxing
         if (do_reflux && sub_iteration == sub_ncycle - 1) {
           const amrex::FabType gtyp = flag_fab.getType(amrex::grow(bx, 1));
-          amrex::FArrayBox dm_as_fine(
-            amrex::Box::TheUnitBox(), hyd_src.nComp(),
-            amrex::The_Async_Arena());
           update_flux_registers(
             dt, mfi, gtyp,
             {{AMREX_D_DECL(flux.data(), &(flux[1]), &(flux[2]))}}, dm_as_fine);
