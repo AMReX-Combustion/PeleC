@@ -188,7 +188,7 @@ main(int argc, char* argv[])
                    << time_now.tm_mday << "." << std::endl;
   }
 
-  int raise_failure = (amrptr->okToContinue() == 0);
+  bool raise_failure = (amrptr->okToContinue() == 0);
   delete amrptr;
 
   // This MUST follow the above delete as ~Amr() may dump files to disk
