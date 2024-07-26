@@ -226,7 +226,7 @@ main(int argc, char* argv[])
   BL_PROFILE_SET_RUN_TIME(dRunTime2);
 
   if (raise_failure) {
-    amrex::Abort("Simulation Stopped Early");
+    amrex::Abort("Simulation stopped early");
   }
 
 // Defined and finalized when in gnumake, but not defined in cmake and
