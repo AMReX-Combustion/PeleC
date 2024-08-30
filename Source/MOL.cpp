@@ -102,13 +102,6 @@ pc_compute_hyp_mol_flux(
           qtempr[R_ADV + n] = q(iv, QFA + n) - 0.5 * dq(iv, QFA + n);
         }
 #endif
-#if NUM_AUX > 0
-        const int R_AUX = R_Y + NUM_SPECIES;
-        for (int n = 0; n < NUM_AUX; n++) {
-          qtempl[R_AUX + n] = q(ivm, QFX + n) + 0.5 * dq(ivm, QFX + n);
-          qtempr[R_AUX + n] = q(iv, QFX + n) - 0.5 * dq(iv, QFX + n);
-        }
-#endif
 #if NUM_LIN > 0
         const int R_LIN = R_Y + NUM_SPECIES + NUM_AUX;
         for (int n = 0; n < NUM_LIN; n++) {
@@ -149,13 +142,6 @@ pc_compute_hyp_mol_flux(
               flux_tmp[UFA + n]);
           }
 #endif
-#if NUM_AUX > 0
-          for (int n = 0; n < NUM_AUX; n++) {
-            pc_cmpflx_passive(
-              ustar, flux_tmp[URHO], qtempl[R_AUX + n], qtempr[R_AUX + n],
-              flux_tmp[UFX + n]);
-          }
-#endif
 #if NUM_LIN > 0
           for (int n = 0; n < NUM_LIN; n++) {
             pc_cmpflx_passive(
@@ -178,14 +164,6 @@ pc_compute_hyp_mol_flux(
               qtempl[R_UN], qtempr[R_UN], qtempl[R_RHO], qtempr[R_RHO],
               qtempl[R_ADV + n], qtempr[R_ADV + n], maxeigval,
               flux_tmp[UFA + n]);
-          }
-#endif
-#if NUM_AUX > 0
-          for (int n = 0; n < NUM_AUX; n++) {
-            pc_lax_cmpflx_passive(
-              qtempl[R_UN], qtempr[R_UN], qtempl[R_RHO], qtempr[R_RHO],
-              qtempl[R_AUX + n], qtempr[R_AUX + n], maxeigval,
-              flux_tmp[UFX + n]);
           }
 #endif
 #if NUM_LIN > 0
@@ -325,14 +303,6 @@ pc_compute_hyp_mol_flux_eb(
                 flux_tmp[UFA + n]);
             }
 #endif
-#if NUM_AUX > 0
-            const int R_AUX = R_Y + NUM_SPECIES;
-            for (int n = 0; n < NUM_AUX; n++) {
-              pc_cmpflx_passive(
-                ustar, flux_tmp[URHO], qtempl[R_AUX + n], qtempr[R_AUX + n],
-                flux_tmp[UFX + n]);
-            }
-#endif
 #if NUM_LIN > 0
             const int R_LIN = R_Y + NUM_SPECIES + NUM_AUX;
             for (int n = 0; n < NUM_LIN; n++) {
@@ -355,15 +325,6 @@ pc_compute_hyp_mol_flux_eb(
                 qtempl[R_UN], qtempr[R_UN], qtempl[R_RHO], qtempr[R_RHO],
                 qtempl[R_ADV + n], qtempr[R_ADV + n], maxeigval,
                 flux_tmp[UFA + n]);
-            }
-#endif
-#if NUM_AUX > 0
-            const int R_AUX = R_Y + NUM_SPECIES;
-            for (int n = 0; n < NUM_AUX; n++) {
-              pc_lax_cmpflx_passive(
-                qtempl[R_UN], qtempr[R_UN], qtempl[R_RHO], qtempr[R_RHO],
-                qtempl[R_AUX + n], qtempr[R_AUX + n], maxeigval,
-                flux_tmp[UFX + n]);
             }
 #endif
 #if NUM_LIN > 0
