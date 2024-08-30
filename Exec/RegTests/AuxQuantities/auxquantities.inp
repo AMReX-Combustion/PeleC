@@ -43,8 +43,8 @@ pelec.diffuse_enth = 1
 # TIME STEP CONTROL
 pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
 pelec.cfl            = 0.7     # cfl number for hyperbolic system
-pelec.init_shrink    = 0.1    # scale back initial timestep
-pelec.change_max     = 1.05     # maximum increase in dt over successive steps
+pelec.init_shrink    = 0.1     # scale back initial timestep
+pelec.change_max     = 1.05    # maximum increase in dt over successive steps
 
 # DIAGNOSTICS & VERBOSITY
 pelec.sum_interval   = 1       # timesteps between computing mass
@@ -52,10 +52,10 @@ pelec.v              = 1       # verbosity in PeleC cpp files
 amr.v                = 1       # verbosity in Amr.cpp
 
 # REFINEMENT / REGRIDDING
-amr.max_level       = 1       # maximum level number allowed
-amr.ref_ratio       = 2 2 2 2 # refinement ratio
-amr.regrid_int      = 5       # how often to regrid
-amr.blocking_factor = 8       # block factor in grid generation
+amr.max_level       = 1        # maximum level number allowed
+amr.ref_ratio       = 2 2 2 2  # refinement ratio
+amr.regrid_int      = 5        # how often to regrid
+amr.blocking_factor = 8        # block factor in grid generation
 amr.max_grid_size   = 64
 
 # TAGGING
@@ -69,8 +69,8 @@ tagging.adv_1.max_level = 1
 
 # CHECKPOINT FILES
 amr.checkpoint_files_output = 0
-amr.check_file      = chk      # root name of checkpoint file
-amr.check_int       = 10000       # number of timesteps between checkpoints
+amr.check_file      = chk       # root name of checkpoint file
+amr.check_int       = 10000     # number of timesteps between checkpoints
 
 # PLOTFILES
 amr.plot_files_output = 1

@@ -95,7 +95,7 @@ The inviscid equations for primitive variables namely density, velocity, and pre
   && \quad\qquad\qquad\qquad+\ S_{{\rm ext},\rho E} - \mathbf{u}\cdot\left(\mathbf{S}_{{\rm ext},\rho\mathbf{u}} - \frac{\mathbf{u}}{2}S_{{\rm ext},\rho}\right)\Biggr] 
   
 
-The advected quantities appear as:
+The advected and auxiliary quantities appear as:
 
 .. math::
   
@@ -105,7 +105,7 @@ The advected quantities appear as:
   \frac{\partial A_k}{\partial t} &=& -\mathbf{u}\cdot\nabla A_k + \frac{1}{\rho}
                                      ( S_{{\rm ext},\rho A_k} - A_k S_{{\rm ext},\rho} ),
 
-  \frac{\partial B_k}{\partial t} &=& -\mathbf{u}\cdot\nabla B_k + \frac{1}{\rho} 
+  \frac{\partial B_k}{\partial t} &=&  \frac{1}{\rho} 
                                      ( S_{{\rm ext},\rho B_k}  - B_k S_{{\rm ext},\rho} ).
   
 

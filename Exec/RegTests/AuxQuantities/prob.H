@@ -42,8 +42,7 @@ pc_initdata(
   state(i, j, k, UMY) = 0.0;
   state(i, j, k, UMZ) = 0.0;
   state(i, j, k, UEINT) = rho * eint;
-  state(i, j, k, UEDEN) =
-    rho * (eint + 0.5 * (prob_parm.U * prob_parm.U));
+  state(i, j, k, UEDEN) = rho * (eint + 0.5 * (prob_parm.U * prob_parm.U));
   state(i, j, k, UTEMP) = prob_parm.T;
   for (int n = 0; n < NUM_SPECIES; n++) {
     state(i, j, k, UFS + n) = rho * prob_parm.massfrac[n];
@@ -53,67 +52,67 @@ pc_initdata(
   const amrex::Real* prob_lo = geomdata.ProbLo();
   const amrex::Real* dx = geomdata.CellSize();
   const amrex::Real x[AMREX_SPACEDIM] = {AMREX_D_DECL(
-        prob_lo[0] + static_cast<amrex::Real>(i + 0.5) * dx[0],
-        prob_lo[1] + static_cast<amrex::Real>(j + 0.5) * dx[1],
-        prob_lo[2] + static_cast<amrex::Real>(k + 0.5) * dx[2])};
-  
-  // Initial AUX quantity 
-  #if NUM_AUX > 0
-    amrex::Real aux[NUM_AUX] = {0.0};
-    
-    // Initial state for aux quantities
-    amrex::Real aux_0[NUM_AUX] = {0.0};
-    for (int n = 0; n < NUM_AUX; n++) {
-      aux_0[n] = (n+1) * prob_parm.aux_IC;
-    }
-    
-    // Create NUM_AUX boxes in the domain from (x_strt,y_strt) to (x_end,y_end)
-    for (int n = 0; n < NUM_AUX; n++) {   
-      amrex::Real x_strt = prob_parm.aux_xy_lo + n*4.*prob_parm.aux_length;
-      amrex::Real x_end = x_strt + prob_parm.aux_length;
-      amrex::Real y_strt = prob_parm.aux_xy_lo;
-      amrex::Real y_end = y_strt + prob_parm.aux_height;
-      if ((x[0] > x_strt) && (x[1] > y_strt)){
-        if ((x[0] < x_end) && (x[1] < y_end)){
-            aux[n] = aux_0[n];     
-        }
+    prob_lo[0] + static_cast<amrex::Real>(i + 0.5) * dx[0],
+    prob_lo[1] + static_cast<amrex::Real>(j + 0.5) * dx[1],
+    prob_lo[2] + static_cast<amrex::Real>(k + 0.5) * dx[2])};
+
+// Initial AUX quantity
+#if NUM_AUX > 0
+  amrex::Real aux[NUM_AUX] = {0.0};
+
+  // Initial state for aux quantities
+  amrex::Real aux_0[NUM_AUX] = {0.0};
+  for (int n = 0; n < NUM_AUX; n++) {
+    aux_0[n] = (n + 1) * prob_parm.aux_IC;
+  }
+
+  // Create NUM_AUX boxes in the domain from (x_strt,y_strt) to (x_end,y_end)
+  for (int n = 0; n < NUM_AUX; n++) {
+    amrex::Real x_strt = prob_parm.aux_xy_lo + n * 4. * prob_parm.aux_length;
+    amrex::Real x_end = x_strt + prob_parm.aux_length;
+    amrex::Real y_strt = prob_parm.aux_xy_lo;
+    amrex::Real y_end = y_strt + prob_parm.aux_height;
+    if ((x[0] > x_strt) && (x[1] > y_strt)) {
+      if ((x[0] < x_end) && (x[1] < y_end)) {
+        aux[n] = aux_0[n];
       }
     }
-    // Add to state variable
-    for (int n = 0; n < NUM_AUX; n++) {
-      state(i, j, k, UFX + n) = rho * aux[n];
-    }
-  #endif
+  }
+  // Add to state variable
+  for (int n = 0; n < NUM_AUX; n++) {
+    state(i, j, k, UFX + n) = rho * aux[n];
+  }
+#endif
 
-  // Initial ADV quantity
-  #if NUM_ADV > 0 
-    amrex::Real adv[NUM_ADV] = {0.0};
+// Initial ADV quantity
+#if NUM_ADV > 0
+  amrex::Real adv[NUM_ADV] = {0.0};
 
-    // Initial state for adv quantities
-    amrex::Real adv_0[NUM_ADV] = {0.0};
-    for (int n = 0; n < NUM_ADV; n++) {
-      adv_0[n] = (n+1) * prob_parm.aux_IC;
-    }
+  // Initial state for adv quantities
+  amrex::Real adv_0[NUM_ADV] = {0.0};
+  for (int n = 0; n < NUM_ADV; n++) {
+    adv_0[n] = (n + 1) * prob_parm.aux_IC;
+  }
 
-    amrex::Real adv_xy_lo = prob_parm.aux_xy_lo + prob_parm.aux_length;
-    for (int n = 0; n < NUM_ADV; n++) {
-      // Create NUM_ADV boxes in the domain from (x_strt,y_strt) to (x_end,y_end)
-      amrex::Real x_strt = adv_xy_lo + n*4.*prob_parm.aux_length;
-      amrex::Real x_end = x_strt + prob_parm.aux_length;
-      amrex::Real y_strt = prob_parm.aux_xy_lo;
-      amrex::Real y_end = y_strt + prob_parm.aux_height;
-      if ((x[0] > x_strt) && (x[1] > y_strt)){
-        if ((x[0] < x_end) && (x[1] < y_end)){
-            adv[n] = adv_0[n];     
-        }
+  amrex::Real adv_xy_lo = prob_parm.aux_xy_lo + prob_parm.aux_length;
+  for (int n = 0; n < NUM_ADV; n++) {
+    // Create NUM_ADV boxes in the domain from (x_strt,y_strt) to (x_end,y_end)
+    amrex::Real x_strt = adv_xy_lo + n * 4. * prob_parm.aux_length;
+    amrex::Real x_end = x_strt + prob_parm.aux_length;
+    amrex::Real y_strt = prob_parm.aux_xy_lo;
+    amrex::Real y_end = y_strt + prob_parm.aux_height;
+    if ((x[0] > x_strt) && (x[1] > y_strt)) {
+      if ((x[0] < x_end) && (x[1] < y_end)) {
+        adv[n] = adv_0[n];
       }
     }
-    
-    // Add to state variable
-    for (int n = 0; n < NUM_ADV; n++) {
-      state(i, j, k, UFA + n) = rho * adv[n];
-    }
-  #endif
+  }
+
+  // Add to state variable
+  for (int n = 0; n < NUM_ADV; n++) {
+    state(i, j, k, UFA + n) = rho * adv[n];
+  }
+#endif
 }
 
 AMREX_GPU_DEVICE
@@ -217,23 +216,23 @@ struct MyProblemSpecificFunctions : public DefaultProblemSpecificFunctions
   static void set_aux_names(amrex::Vector<std::string>& a_aux_names)
   {
     a_aux_names.resize(NUM_AUX);
-    #if NUM_AUX > 0
-        for (int n = 0; n < NUM_AUX; ++n) {
-          a_aux_names[n] = "B_" + std::to_string(n);
-        }
-    #endif
+#if NUM_AUX > 0
+    for (int n = 0; n < NUM_AUX; ++n) {
+      a_aux_names[n] = "B_" + std::to_string(n);
+    }
+#endif
   }
 
   static void set_adv_names(amrex::Vector<std::string>& a_adv_names)
   {
     a_adv_names.resize(NUM_ADV);
-    #if NUM_ADV > 0
-        for (int n = 0; n < NUM_ADV; ++n) {
-          a_adv_names[n] = "A_" + std::to_string(n);
-        }
-    #endif
+#if NUM_ADV > 0
+    for (int n = 0; n < NUM_ADV; ++n) {
+      a_adv_names[n] = "A_" + std::to_string(n);
+    }
+#endif
   }
-  
+
   static void problem_modify_ext_sources(
     amrex::Real /*time*/,
     amrex::Real /*dt*/,
@@ -252,23 +251,22 @@ struct MyProblemSpecificFunctions : public DefaultProblemSpecificFunctions
     auto const& Sns = state_new.const_arrays();
     auto const& Farrs = ext_src.arrays();
 
-    //#if NUM_AUX > 0
-      amrex::ParallelFor(
-          state_old, ngs, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
-              
-              // Source terms for the auxiliarry quantities
-              amrex::Real Bn = 0.0;
-              amrex::Real rho = 0.0;
-              for (int n = 0; n < NUM_AUX; n++) {
-                Bn = Sns[nbx](i,j,k,UFX+n);
-                rho = Sns[nbx](i,j,k,URHO); 
-                Farrs[nbx](i,j,k,UFX+n) += rho * prob_parm.aux_srcstrength * Bn;
-              }
-          });
-      amrex::Gpu::synchronize();
-    //#endif
+    // #if NUM_AUX > 0
+    amrex::ParallelFor(
+      state_old, ngs,
+      [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+        // Source terms for the auxiliarry quantities
+        amrex::Real Bn = 0.0;
+        amrex::Real rho = 0.0;
+        for (int n = 0; n < NUM_AUX; n++) {
+          Bn = Sns[nbx](i, j, k, UFX + n);
+          rho = Sns[nbx](i, j, k, URHO);
+          Farrs[nbx](i, j, k, UFX + n) += rho * prob_parm.aux_srcstrength * Bn;
+        }
+      });
+    amrex::Gpu::synchronize();
+    // #endif
   }
-  
 };
 using ProblemSpecificFunctions = MyProblemSpecificFunctions;
 #endif
