@@ -7,7 +7,7 @@ This demonstrates the use of the advected and auxiliary quantities described in 
 
 |                    | description                                         |
 |:-------------------|:----------------------------------------------------|
-| Problem definition | Advected and auxiliaru quantities                   |
+| Problem definition | advected and auxiliaru quantities                   |
 | EB geometry        | embedded cylinder (optional)                        |
 | EOS                | GammaLaw                                            |
 | Multi-level        | yes                                                 |
