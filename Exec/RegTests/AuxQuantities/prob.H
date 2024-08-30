@@ -234,7 +234,6 @@ struct MyProblemSpecificFunctions : public DefaultProblemSpecificFunctions
     #endif
   }
   
-  
   static void problem_modify_ext_sources(
     amrex::Real /*time*/,
     amrex::Real /*dt*/,
@@ -259,9 +258,11 @@ struct MyProblemSpecificFunctions : public DefaultProblemSpecificFunctions
               
               // Source terms for the auxiliarry quantities
               amrex::Real Bn = 0.0;
+              amrex::Real rho = 0.0;
               for (int n = 0; n < NUM_AUX; n++) {
-                Bn = Sns[nbx](i,j,k,UFX+n); 
-                Farrs[nbx](i,j,k,UFX+n) += prob_parm.aux_srcstrength * Bn;
+                Bn = Sns[nbx](i,j,k,UFX+n);
+                rho = Sns[nbx](i,j,k,URHO); 
+                Farrs[nbx](i,j,k,UFX+n) += rho * prob_parm.aux_srcstrength * Bn;
               }
           });
       amrex::Gpu::synchronize();
