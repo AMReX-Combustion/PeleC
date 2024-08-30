@@ -28,7 +28,7 @@ PeleC advances the following set of fully compressible equations for the conserv
 
   \frac{\partial (\rho A_k)}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} A_k) + S_{{\rm ext},\rho A_k},
 
-  \frac{\partial (\rho B_k)}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} B_k) + S_{{\rm ext},\rho B_k}.
+  \frac{\partial (\rho B_k)}{\partial t} &=&  S_{{\rm ext},\rho B_k}.
 
 
 Here :math:`\rho, \mathbf{u}, T`, and :math:`p` are the density, velocity,
@@ -38,7 +38,7 @@ and chemical energy (species heats of formation) and is conserved across chemica
 :math:`Y_k` is the mass fraction of the :math:`k^{\rm th}` species,
 with associated production rate, :math:`\dot\omega_k`.  Here :math:`\mathbf{g}` is the gravitational vector, and
 :math:`S_{{\rm ext},\rho}, \mathbf{S}_{{\rm ext},\rho\mathbf{u}}`, etc., are user-specified
-source terms.  :math:`A_k` is an advected quantity, i.e., a tracer.  Also
+source terms.  :math:`A_k` is an advected quantity, i.e., a tracer. :math:`B_k` is spatially stationary quantity.  Also
 :math:`\boldsymbol{\mathcal{F}}_{m}, \mathbf{\Pi}`, and :math:`\boldsymbol{\mathcal{Q}}` are
 the diffusive transport fluxes for species, momentum and heat.  Note that the internal
 energy for species :math:`k` includes its heat of formation (and can therefore take on negative and
