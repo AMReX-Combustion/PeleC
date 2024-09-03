@@ -48,7 +48,7 @@ pc_initdata(
     state(i, j, k, UFS + n) = rho * prob_parm.massfrac[n];
   }
 
-  // Determin x,y,z locations for location of AUX quantity
+  // Determine x,y,z locations of AUX quantity
   const amrex::Real* prob_lo = geomdata.ProbLo();
   const amrex::Real* dx = geomdata.CellSize();
   const amrex::Real x[AMREX_SPACEDIM] = {AMREX_D_DECL(
