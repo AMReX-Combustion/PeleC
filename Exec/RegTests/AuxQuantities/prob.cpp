@@ -65,23 +65,19 @@ amrex_probinit(
   // Output IC
   amrex::Print() << "\nGenerate ic.txt" << std::endl;
   std::ofstream ofs("ic.txt", std::ofstream::out);
-  amrex::Print(ofs) << "L = " << L << "\nH = " << H
-                    << "\np = " << PeleC::h_prob_parm_device->p
-                    << "\nT = " << PeleC::h_prob_parm_device->T
-                    << "\ngamma = " << eos.gamma << "\ncs = " << cs
-                    << "\nU = " << PeleC::h_prob_parm_device->U
-                    << "\nrho = " << PeleC::h_prob_parm_device->rho
-                    << "\nviscosity = " << trans_parm.const_viscosity
-                    << "\nconductivity = " << trans_parm.const_conductivity
-                    << "\nRe = " << PeleC::h_prob_parm_device->Re
-                    << "\nMa = " << PeleC::h_prob_parm_device->Ma
-                    << "\nPr = " << PeleC::h_prob_parm_device->Pr
-                    << "\nNUM_AUX = " << NUM_AUX
-                    << "\naux_xy_lo =" << PeleC::h_prob_parm_device->aux_xy_lo
-                    << "\naux_xy_length ="
-                    << PeleC::h_prob_parm_device->aux_length
-                    << "\naux_xy_height"
-                    << PeleC::h_prob_parm_device->aux_height << std::endl;
+  amrex::Print(ofs)
+    << "L = " << L << "\nH = " << H << "\np = " << PeleC::h_prob_parm_device->p
+    << "\nT = " << PeleC::h_prob_parm_device->T << "\ngamma = " << eos.gamma
+    << "\ncs = " << cs << "\nU = " << PeleC::h_prob_parm_device->U
+    << "\nrho = " << PeleC::h_prob_parm_device->rho
+    << "\nviscosity = " << trans_parm.const_viscosity
+    << "\nconductivity = " << trans_parm.const_conductivity
+    << "\nRe = " << PeleC::h_prob_parm_device->Re
+    << "\nMa = " << PeleC::h_prob_parm_device->Ma
+    << "\nPr = " << PeleC::h_prob_parm_device->Pr << "\nNUM_AUX = " << NUM_AUX
+    << "\naux_xy_lo = " << PeleC::h_prob_parm_device->aux_xy_lo
+    << "\naux_length = " << PeleC::h_prob_parm_device->aux_length
+    << "\naux_height = " << PeleC::h_prob_parm_device->aux_height << std::endl;
   ofs.close();
 }
 }
