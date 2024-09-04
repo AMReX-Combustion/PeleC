@@ -48,69 +48,81 @@ pc_initdata(
     state(i, j, k, UFS + n) = rho * prob_parm.massfrac[n];
   }
 
-  // Determine x,y,z locations of AUX quantity
-  const amrex::Real* prob_lo = geomdata.ProbLo();
-  const amrex::Real* dx = geomdata.CellSize();
-  const amrex::Real x[AMREX_SPACEDIM] = {AMREX_D_DECL(
-    prob_lo[0] + static_cast<amrex::Real>(i + 0.5) * dx[0],
-    prob_lo[1] + static_cast<amrex::Real>(j + 0.5) * dx[1],
-    prob_lo[2] + static_cast<amrex::Real>(k + 0.5) * dx[2])};
-
 // Initial AUX quantity
 #if NUM_AUX > 0
-  amrex::Real aux[NUM_AUX] = {0.0};
+  {
+    amrex::Real aux[NUM_AUX] = {0.0};
 
-  // Initial state for aux quantities
-  amrex::Real aux_0[NUM_AUX] = {0.0};
-  for (int n = 0; n < NUM_AUX; n++) {
-    aux_0[n] = (n + 1) * prob_parm.aux_IC;
-  }
+    // Initial state for aux quantities
+    amrex::Real aux_0[NUM_AUX] = {0.0};
+    for (int n = 0; n < NUM_AUX; n++) {
+      aux_0[n] = (n + 1) * prob_parm.aux_IC;
+    }
 
-  // Create NUM_AUX boxes in the domain from (x_strt,y_strt) to (x_end,y_end)
-  for (int n = 0; n < NUM_AUX; n++) {
-    amrex::Real x_strt = prob_parm.aux_xy_lo + n * 4. * prob_parm.aux_length;
-    amrex::Real x_end = x_strt + prob_parm.aux_length;
-    amrex::Real y_strt = prob_parm.aux_xy_lo;
-    amrex::Real y_end = y_strt + prob_parm.aux_height;
-    if ((x[0] > x_strt) && (x[1] > y_strt)) {
-      if ((x[0] < x_end) && (x[1] < y_end)) {
-        aux[n] = aux_0[n];
+    // Current x,y,z locations
+    const amrex::Real* prob_lo = geomdata.ProbLo();
+    const amrex::Real* dx = geomdata.CellSize();
+    const amrex::Real x[AMREX_SPACEDIM] = {AMREX_D_DECL(
+      prob_lo[0] + static_cast<amrex::Real>(i + 0.5) * dx[0],
+      prob_lo[1] + static_cast<amrex::Real>(j + 0.5) * dx[1],
+      prob_lo[2] + static_cast<amrex::Real>(k + 0.5) * dx[2])};
+
+    // Create NUM_AUX boxes in the domain from (x_strt,y_strt) to (x_end,y_end)
+    for (int n = 0; n < NUM_AUX; n++) {
+      amrex::Real x_strt = prob_parm.aux_xy_lo + n * 4. * prob_parm.aux_length;
+      amrex::Real x_end = x_strt + prob_parm.aux_length;
+      amrex::Real y_strt = prob_parm.aux_xy_lo;
+      amrex::Real y_end = y_strt + prob_parm.aux_height;
+      if ((x[0] > x_strt) && (x[1] > y_strt)) {
+        if ((x[0] < x_end) && (x[1] < y_end)) {
+          aux[n] = aux_0[n];
+        }
       }
     }
-  }
-  // Add to state variable
-  for (int n = 0; n < NUM_AUX; n++) {
-    state(i, j, k, UFX + n) = rho * aux[n];
+    // Add to state variable
+    for (int n = 0; n < NUM_AUX; n++) {
+      state(i, j, k, UFX + n) = rho * aux[n];
+    }
   }
 #endif
 
 // Initial ADV quantity
 #if NUM_ADV > 0
-  amrex::Real adv[NUM_ADV] = {0.0};
+  {
+    amrex::Real adv[NUM_ADV] = {0.0};
 
-  // Initial state for adv quantities
-  amrex::Real adv_0[NUM_ADV] = {0.0};
-  for (int n = 0; n < NUM_ADV; n++) {
-    adv_0[n] = (n + 1) * prob_parm.aux_IC;
-  }
+    // Initial state for adv quantities
+    amrex::Real adv_0[NUM_ADV] = {0.0};
+    for (int n = 0; n < NUM_ADV; n++) {
+      adv_0[n] = (n + 1) * prob_parm.aux_IC;
+    }
 
-  amrex::Real adv_xy_lo = prob_parm.aux_xy_lo + prob_parm.aux_length;
-  for (int n = 0; n < NUM_ADV; n++) {
-    // Create NUM_ADV boxes in the domain from (x_strt,y_strt) to (x_end,y_end)
-    amrex::Real x_strt = adv_xy_lo + n * 4. * prob_parm.aux_length;
-    amrex::Real x_end = x_strt + prob_parm.aux_length;
-    amrex::Real y_strt = prob_parm.aux_xy_lo;
-    amrex::Real y_end = y_strt + prob_parm.aux_height;
-    if ((x[0] > x_strt) && (x[1] > y_strt)) {
-      if ((x[0] < x_end) && (x[1] < y_end)) {
-        adv[n] = adv_0[n];
+    // Current locations
+    const amrex::Real* prob_lo = geomdata.ProbLo();
+    const amrex::Real* dx = geomdata.CellSize();
+    const amrex::Real x[AMREX_SPACEDIM] = {AMREX_D_DECL(
+      prob_lo[0] + static_cast<amrex::Real>(i + 0.5) * dx[0],
+      prob_lo[1] + static_cast<amrex::Real>(j + 0.5) * dx[1],
+      prob_lo[2] + static_cast<amrex::Real>(k + 0.5) * dx[2])};
+
+    amrex::Real adv_xy_lo = prob_parm.aux_xy_lo + prob_parm.aux_length;
+    for (int n = 0; n < NUM_ADV; n++) {
+      // Create NUM_ADV boxes in the domain from (x_strt,y_strt) to (x_end,y_end)
+      amrex::Real x_strt = adv_xy_lo + n * 4. * prob_parm.aux_length;
+      amrex::Real x_end = x_strt + prob_parm.aux_length;
+      amrex::Real y_strt = prob_parm.aux_xy_lo;
+      amrex::Real y_end = y_strt + prob_parm.aux_height;
+      if ((x[0] > x_strt) && (x[1] > y_strt)) {
+        if ((x[0] < x_end) && (x[1] < y_end)) {
+          adv[n] = adv_0[n];
+        }
       }
     }
-  }
 
-  // Add to state variable
-  for (int n = 0; n < NUM_ADV; n++) {
-    state(i, j, k, UFA + n) = rho * adv[n];
+    // Add to state variable
+    for (int n = 0; n < NUM_ADV; n++) {
+      state(i, j, k, UFA + n) = rho * adv[n];
+    }
   }
 #endif
 }
