@@ -107,7 +107,8 @@ pc_initdata(
 
     amrex::Real adv_xy_lo = prob_parm.aux_xy_lo + prob_parm.aux_length;
     for (int n = 0; n < NUM_ADV; n++) {
-      // Create NUM_ADV boxes in the domain from (x_strt,y_strt) to (x_end,y_end)
+      // Create NUM_ADV boxes in the domain from (x_strt,y_strt) to
+      // (x_end,y_end)
       amrex::Real x_strt = adv_xy_lo + n * 4. * prob_parm.aux_length;
       amrex::Real x_end = x_strt + prob_parm.aux_length;
       amrex::Real y_strt = prob_parm.aux_xy_lo;
