@@ -48,9 +48,9 @@ pc_initdata(
     state(i, j, k, UFS + n) = rho * prob_parm.massfrac[n];
   }
 
-// Initial AUX quantity
-#if NUM_AUX > 0
+  // Initial AUX quantity
   {
+#if NUM_AUX > 0
     amrex::Real aux[NUM_AUX] = {0.0};
 
     // Initial state for aux quantities
@@ -83,12 +83,12 @@ pc_initdata(
     for (int n = 0; n < NUM_AUX; n++) {
       state(i, j, k, UFX + n) = rho * aux[n];
     }
-  }
 #endif
+  }
 
-// Initial ADV quantity
-#if NUM_ADV > 0
+  // Initial ADV quantity
   {
+#if NUM_ADV > 0
     amrex::Real adv[NUM_ADV] = {0.0};
 
     // Initial state for adv quantities
@@ -124,8 +124,8 @@ pc_initdata(
     for (int n = 0; n < NUM_ADV; n++) {
       state(i, j, k, UFA + n) = rho * adv[n];
     }
-  }
 #endif
+  }
 }
 
 AMREX_GPU_DEVICE
