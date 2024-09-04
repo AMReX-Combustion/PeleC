@@ -264,7 +264,6 @@ struct MyProblemSpecificFunctions : public DefaultProblemSpecificFunctions
     auto const& Sns = state_new.const_arrays();
     auto const& Farrs = ext_src.arrays();
 
-    // #if NUM_AUX > 0
     amrex::ParallelFor(
       state_old, ngs,
       [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
@@ -278,7 +277,6 @@ struct MyProblemSpecificFunctions : public DefaultProblemSpecificFunctions
         }
       });
     amrex::Gpu::synchronize();
-    // #endif
   }
 };
 using ProblemSpecificFunctions = MyProblemSpecificFunctions;
