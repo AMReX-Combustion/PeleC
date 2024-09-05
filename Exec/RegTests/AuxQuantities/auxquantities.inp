@@ -25,7 +25,7 @@ prob.U = 100.
 prob.aux_xy_lo = -1.
 prob.aux_length = 1.
 prob.aux_height = 2.
-prob.aux_srcstrength = -8500.
+prob.aux_srcstrength = -30.
 
 # Add user specified source term(s)
 pelec.add_ext_src = 1

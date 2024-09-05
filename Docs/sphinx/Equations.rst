@@ -13,7 +13,7 @@ Equations
 Conservative system
 -------------------
 
-PeleC advances the following set of fully compressible equations for the conserved state vector: :math:`\mathbf{U} = (\rho, \rho \mathbf{u}, \rho E, \rho Y_k, \rho A_k, \rho B_k):`
+PeleC advances the following set of fully compressible equations for the conserved state vector: :math:`\mathbf{U} = (\rho, \rho \mathbf{u}, \rho E, \rho Y_k, \rho A_k, B_k):`
 
 .. math::
  
@@ -28,7 +28,7 @@ PeleC advances the following set of fully compressible equations for the conserv
 
   \frac{\partial (\rho A_k)}{\partial t} &=& - \nabla \cdot (\rho \mathbf{u} A_k) + S_{{\rm ext},\rho A_k},
 
-  \frac{\partial (\rho B_k)}{\partial t} &=&  S_{{\rm ext},\rho B_k}.
+  \frac{\partial B_k}{\partial t} &=&  S_{{\rm ext}, B_k}.
 
 
 Here :math:`\rho, \mathbf{u}, T`, and :math:`p` are the density, velocity,
@@ -105,8 +105,7 @@ The advected and auxiliary quantities appear as:
   \frac{\partial A_k}{\partial t} &=& -\mathbf{u}\cdot\nabla A_k + \frac{1}{\rho}
                                      ( S_{{\rm ext},\rho A_k} - A_k S_{{\rm ext},\rho} ),
 
-  \frac{\partial B_k}{\partial t} &=&  \frac{1}{\rho} 
-                                     ( S_{{\rm ext},\rho B_k}  - B_k S_{{\rm ext},\rho} ).
+  \frac{\partial B_k}{\partial t} &=&   S_{{\rm ext}, B_k}.
   
 
 
@@ -140,7 +139,7 @@ accounted for in the characteristic integration in the PPM algorithm.  The sourc
     \nabla\cdot k_{\rm th} \nabla T + S_{{\rm ext},\rho E} \\
     \frac{1}{\rho}S_{{\rm ext},\rho Y_k} \\
     \frac{1}{\rho}S_{{\rm ext},\rho A_k} \\
-    \frac{1}{\rho}S_{{\rm ext},\rho B_k}
+    S_{{\rm ext},B_k}
     \end{array}\right)^n,
     
 
@@ -153,7 +152,7 @@ accounted for in the characteristic integration in the PPM algorithm.  The sourc
     S_{\rho E} \\
     S_{\rho Y_k} \\
     S_{\rho A_k} \\
-    S_{\rho B_k}
+    S_{ B_k}
     \end{array}\right)^n
     =
     \left(\begin{array}{c}
@@ -162,5 +161,5 @@ accounted for in the characteristic integration in the PPM algorithm.  The sourc
     \rho \mathbf{u} \cdot \mathbf{g} + \nabla\cdot k_{\rm th} \nabla T + S_{{\rm ext},\rho E} \\
     S_{{\rm ext},\rho Y_k} \\
     S_{{\rm ext},\rho A_k} \\
-    S_{{\rm ext},\rho B_k}
+    S_{{\rm ext}, B_k}
     \end{array}\right)^n.

@@ -67,7 +67,7 @@ pc_initdata(
       prob_lo[1] + static_cast<amrex::Real>(j + 0.5) * dx[1],
       prob_lo[2] + static_cast<amrex::Real>(k + 0.5) * dx[2])};
 
-    // Create NUM_AUX boxes in the domain from (x_strt,y_strt) to (x_end,y_end)
+    // Create NUM_AUX boxes from (x_strt,y_strt) to (x_end,y_end)
     for (int n = 0; n < NUM_AUX; n++) {
       amrex::Real x_strt = prob_parm.aux_xy_lo + n * 4. * prob_parm.aux_length;
       amrex::Real x_end = x_strt + prob_parm.aux_length;
@@ -81,7 +81,7 @@ pc_initdata(
     }
     // Add to state variable
     for (int n = 0; n < NUM_AUX; n++) {
-      state(i, j, k, UFX + n) = rho * aux[n];
+      state(i, j, k, UFX + n) = aux[n];
     }
 #endif
   }
@@ -107,8 +107,7 @@ pc_initdata(
 
     amrex::Real adv_xy_lo = prob_parm.aux_xy_lo + prob_parm.aux_length;
     for (int n = 0; n < NUM_ADV; n++) {
-      // Create NUM_ADV boxes in the domain from (x_strt,y_strt) to
-      // (x_end,y_end)
+      // Create NUM_ADV boxes from (x_strt,y_strt) to (x_end,y_end)
       amrex::Real x_strt = adv_xy_lo + n * 4. * prob_parm.aux_length;
       amrex::Real x_end = x_strt + prob_parm.aux_length;
       amrex::Real y_strt = prob_parm.aux_xy_lo;
@@ -269,11 +268,9 @@ struct MyProblemSpecificFunctions : public DefaultProblemSpecificFunctions
       [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
         // Source terms for the auxiliarry quantities
         amrex::Real Bn = 0.0;
-        amrex::Real rho = 0.0;
         for (int n = 0; n < NUM_AUX; n++) {
           Bn = Sns[nbx](i, j, k, UFX + n);
-          rho = Sns[nbx](i, j, k, URHO);
-          Farrs[nbx](i, j, k, UFX + n) += rho * prob_parm.aux_srcstrength * Bn;
+          Farrs[nbx](i, j, k, UFX + n) += prob_parm.aux_srcstrength * Bn;
         }
       });
     amrex::Gpu::synchronize();

@@ -347,7 +347,7 @@ PeleC::variableSetUp()
     cnt++;
     set_scalar_bc(bc, phys_bc);
     bcs[cnt] = bc;
-    name[cnt] = "rho_" + aux_names[i];
+    name[cnt] = aux_names[i];
   }
 
 #ifdef PELE_USE_SOOT

@@ -255,7 +255,7 @@ add_test_r(eb-c10 EB-C10)
 add_test_rv(eb-c11 EB-C11)
 add_test_rv(eb-c12 EB-C12)
 if(PELE_DIM EQUAL 2)
-    add_test_r(eb-flowpastcylinder-re500 EB-FlowPastCylinder) # 
+    add_test_r(eb-flowpastcylinder-re500 EB-FlowPastCylinder)  
 endif()
 if(PELE_DIM EQUAL 2)
   add_test_r(auxquantities_eb AuxQuantities)
