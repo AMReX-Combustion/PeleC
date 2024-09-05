@@ -94,12 +94,6 @@ mol_slope(
                             (qaux(iv, QC) * qaux(iv, QC))
                       : 0.0;
   }
-#if NUM_AUX > 0
-  for (int n = 0; n < NUM_AUX; n++) {
-    dlft[QFX + n] = flagArrayL ? q(iv, QFX + n) - q(ivm, QFX + n) : 0.0;
-    drgt[QFX + n] = flagArrayR ? q(ivp, QFX + n) - q(iv, QFX + n) : 0.0;
-  }
-#endif
 #if NUM_LIN > 0
   for (int n = 0; n < NUM_LIN; n++) {
     dlft[QLIN + n] = flagArrayL ? q(iv, QLIN + n) - q(ivm, QLIN + n) : 0.0;

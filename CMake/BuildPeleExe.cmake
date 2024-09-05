@@ -22,10 +22,10 @@ function(build_pele_exe pele_exe_name pele_physics_lib_name)
   target_include_directories(${pele_exe_name} PRIVATE ${CMAKE_SOURCE_DIR}/Source/Params/param_includes)
   #Adv and Aux Variables
   if (PELEC_NUM_ADV GREATER 0)
-    target_compile_definitions(${pelec_exe_name} PRIVATE NUM_ADV=${PELEC_NUM_ADV})
+    target_compile_definitions(${pele_exe_name} PRIVATE NUM_ADV=${PELEC_NUM_ADV})
   endif()
   if (PELEC_NUM_AUX GREATER 0)
-    target_compile_definitions(${pelec_exe_name} PRIVATE NUM_AUX=${PELEC_NUM_AUX})
+    target_compile_definitions(${pele_exe_name} PRIVATE NUM_AUX=${PELEC_NUM_AUX})
   endif()
 
   target_sources(${pele_exe_name}

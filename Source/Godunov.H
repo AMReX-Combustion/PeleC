@@ -438,12 +438,6 @@ pc_cmpflx(
     const int qc = QFS + n;
     pc_cmpflx_passive(ustar, flxrho, ql(iv, qc), qr(iv, qc), flx(iv, UFS + n));
   }
-#if NUM_AUX > 0
-  for (int n = 0; n < NUM_AUX; n++) {
-    const int qc = QFX + n;
-    pc_cmpflx_passive(ustar, flxrho, ql(iv, qc), qr(iv, qc), flx(iv, UFX + n));
-  }
-#endif
 #if NUM_LIN > 0
   for (int n = 0; n < NUM_LIN; n++) {
     const int qc = QLIN + n;
@@ -527,13 +521,6 @@ pc_transdo(
       iv, ivpn, ivpt, n, UFS, QFS, cdtdx, flxrho, true, qnormp, qnormm, flxx,
       qp, qm, no_cov_face, lo_face_not_covered, hi_face_not_covered);
   }
-#if NUM_AUX > 0
-  for (int n = 0; n < NUM_AUX; n++) {
-    pc_transdo_passive(
-      iv, ivpn, ivpt, n, UFX, QFX, cdtdx, flxrho, true, qnormp, qnormm, flxx,
-      qp, qm, no_cov_face, lo_face_not_covered, hi_face_not_covered);
-  }
-#endif
 #if NUM_LIN > 0
   for (int n = 0; n < NUM_LIN; n++) {
     pc_transdo_passive(
@@ -752,14 +739,6 @@ pc_transdd(
       rrnewr, rrnewl, srcq, qnormp, qnormm, flxx, flxy, qp, qm, no_cov_face,
       lo_face_not_covered, hi_face_not_covered);
   }
-#if NUM_AUX > 0
-  for (int n = 0; n < NUM_AUX; n++) {
-    pc_transdd_passive(
-      iv, ivpn, ivpt0, ivpt1, n, UFX, QFX, cdtdx0, cdtdx1, hdt, rrr, rrl,
-      rrnewr, rrnewl, srcq, qnormp, qnormm, flxx, flxy, qp, qm, no_cov_face,
-      lo_face_not_covered, hi_face_not_covered);
-  }
-#endif
 #if NUM_LIN > 0
   for (int n = 0; n < NUM_LIN; n++) {
     pc_transdd_passive(
@@ -939,12 +918,6 @@ pc_transd(
   for (int n = 0; n < NUM_SPECIES; n++) {
     pc_transd_passive(
       iv, ivpn, ivpt, n, UFS, QFS, cdtdx, hdt, flxrho, true, srcQ, qnormp,
-      qnormm, flxx, qp, qm, no_cov_face, lo_face_not_covered,
-      hi_face_not_covered);
-  }
-  for (int n = 0; n < NUM_AUX; n++) {
-    pc_transd_passive(
-      iv, ivpn, ivpt, n, UFX, QFX, cdtdx, hdt, flxrho, true, srcQ, qnormp,
       qnormm, flxx, qp, qm, no_cov_face, lo_face_not_covered,
       hi_face_not_covered);
   }
@@ -1140,7 +1113,7 @@ pc_artif_visc(
     ((dir == 2) && (k == domhi + 1) && (bchi == amrex::PhysBCType::noslipwall));
 #endif
 
-  for (int n = 0; n < NVAR; ++n) {
+  for (int n = 0; n < NVAR; n++) {
     if (n != UTEMP) {
 #if (AMREX_SPACEDIM == 2)
       bool is_tang_vel = (dir == 0 && n == UMY) || (dir == 1 && n == UMX);
@@ -1155,6 +1128,11 @@ pc_artif_visc(
     }
   }
   flx(iv, UTEMP) = 0.0;
+#if NUM_AUX > 0
+  for (int n = 0; n < NUM_AUX; n++) {
+    flx(iv, UFX + n) = 0.0;
+  }
+#endif
 }
 
 // Host Functions

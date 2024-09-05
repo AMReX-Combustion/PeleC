@@ -53,8 +53,7 @@ pc_srctoprim(
   }
 #if NUM_AUX > 0
   for (int n = 0; n < NUM_AUX; n++) {
-    srcq(i, j, k, QFX + n) =
-      (src(i, j, k, UFX + n) - q(i, j, k, QFX + n) * srcrho) * rhoinv;
+    srcq(i, j, k, QFX + n) = src(i, j, k, UFX + n);
   }
 #endif
 #if NUM_LIN > 0

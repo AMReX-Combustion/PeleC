@@ -220,7 +220,7 @@ pc_ctoprim(
   }
 #if NUM_AUX > 0
   for (int n = 0; n < NUM_AUX; n++) {
-    q(i, j, k, QFX + n) = u(i, j, k, UFX + n) / rho;
+    q(i, j, k, QFX + n) = u(i, j, k, UFX + n);
   }
 #endif
   // Handle passive variables that are not per unit mass

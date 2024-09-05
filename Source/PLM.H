@@ -300,11 +300,6 @@ pc_plm_d(
   for (int n = 0; n < NUM_SPECIES; n++) {
     pc_plm_d_passive(iv, ivp, QFS + n, spzerom, spzerop, slope, q, qp, qm);
   }
-#if NUM_AUX > 0
-  for (int n = 0; n < NUM_AUX; n++) {
-    pc_plm_d_passive(iv, ivp, QFX + n, spzerom, spzerop, slope, q, qp, qm);
-  }
-#endif
 #if NUM_LIN > 0
   for (int n = 0; n < NUM_LIN; n++) {
     pc_plm_d_passive(iv, ivp, QLIN + n, spzerom, spzerop, slope, q, qp, qm);
@@ -480,12 +475,6 @@ pc_plm_d_eb(
     pc_plm_d_eb_passive(
       iv, ivp, QFS + n, spzerom, spzerop, slope, q, qp, qm, area);
   }
-#if NUM_AUX > 0
-  for (int n = 0; n < NUM_AUX; n++) {
-    pc_plm_d_eb_passive(
-      iv, ivp, QFX + n, spzerom, spzerop, slope, q, qp, qm, area);
-  }
-#endif
 #if NUM_LIN > 0
   for (int n = 0; n < NUM_LIN; n++) {
     pc_plm_d_eb_passive(
