@@ -20,7 +20,6 @@ struct ProbParmDevice
   amrex::Real aux_length = 0.5;
   amrex::Real aux_height = 1.0;
   amrex::Real aux_srcstrength = 0.0;
-  amrex::Real G = 0.0;
   amrex::GpuArray<amrex::Real, NUM_SPECIES> massfrac = {1.0};
 };
 

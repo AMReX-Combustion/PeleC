@@ -1113,7 +1113,7 @@ pc_artif_visc(
     ((dir == 2) && (k == domhi + 1) && (bchi == amrex::PhysBCType::noslipwall));
 #endif
 
-  for (int n = 0; n < NVAR; ++n) {
+  for (int n = 0; n < NVAR; n++) {
     if (n != UTEMP) {
 #if (AMREX_SPACEDIM == 2)
       bool is_tang_vel = (dir == 0 && n == UMY) || (dir == 1 && n == UMX);
@@ -1129,7 +1129,7 @@ pc_artif_visc(
   }
   flx(iv, UTEMP) = 0.0;
 #if NUM_AUX > 0
-  for (int n = 0; n < NUM_AUX; ++n) {
+  for (int n = 0; n < NUM_AUX; n++) {
     flx(iv, UFX + n) = 0.0;
   }
 #endif
