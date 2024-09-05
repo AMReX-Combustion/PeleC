@@ -94,10 +94,10 @@
 <span id="id1"></span><h1>Equations<a class="headerlink" href="#equations" title="Link to this heading"></a></h1>
 <section id="conservative-system">
 <h2>Conservative system<a class="headerlink" href="#conservative-system" title="Link to this heading"></a></h2>
-<p>PeleC advances the following set of fully compressible equations for the conserved state vector: <span class="math notranslate nohighlight">\(\mathbf{U} = (\rho, \rho \mathbf{u}, \rho E, \rho Y_k, \rho A_k, \rho B_k):\)</span></p>
+<p>PeleC advances the following set of fully compressible equations for the conserved state vector: <span class="math notranslate nohighlight">\(\mathbf{U} = (\rho, \rho \mathbf{u}, \rho E, \rho Y_k, \rho A_k, B_k):\)</span></p>
 <div class="math notranslate nohighlight">
 \[ \begin{align}\begin{aligned}\frac{\partial \rho}{\partial t} &amp;=&amp; - \nabla \cdot (\rho \mathbf{u}) + S_{{\rm ext},\rho},\\\frac{\partial (\rho \mathbf{u})}{\partial t} &amp;=&amp; - \nabla \cdot (\rho \mathbf{u} \otimes \mathbf{u} + \mathbf{\Pi}) - \nabla p +\rho \mathbf{g} + \mathbf{S}_{{\rm ext},\rho\mathbf{u}},\\\frac{\partial (\rho E)}{\partial t} &amp;=&amp; - \nabla \cdot (\rho \mathbf{u} E + p \mathbf{u}) - \nabla \cdot (\mathbf{\Pi} \cdot \mathbf{u}) + \rho \mathbf{u} \cdot \mathbf{g} + \nabla\cdot \boldsymbol{\mathcal{Q}}+ S_{{\rm ext},\rho E},\\\frac{\partial (\rho Y_k)}{\partial t} &amp;=&amp; - \nabla \cdot (\rho \mathbf{u} Y_k)
-- \nabla \cdot \boldsymbol{\mathcal{F}}_{k} + \rho \dot\omega_k + S_{{\rm ext},\rho Y_k},\\\frac{\partial (\rho A_k)}{\partial t} &amp;=&amp; - \nabla \cdot (\rho \mathbf{u} A_k) + S_{{\rm ext},\rho A_k},\\\frac{\partial (\rho B_k)}{\partial t} &amp;=&amp; - \nabla \cdot (\rho \mathbf{u} B_k) + S_{{\rm ext},\rho B_k}.\end{aligned}\end{align} \]</div>
+- \nabla \cdot \boldsymbol{\mathcal{F}}_{k} + \rho \dot\omega_k + S_{{\rm ext},\rho Y_k},\\\frac{\partial (\rho A_k)}{\partial t} &amp;=&amp; - \nabla \cdot (\rho \mathbf{u} A_k) + S_{{\rm ext},\rho A_k},\\\frac{\partial B_k}{\partial t} &amp;=&amp;  S_{{\rm ext}, B_k}.\end{aligned}\end{align} \]</div>
 <p>Here <span class="math notranslate nohighlight">\(\rho, \mathbf{u}, T\)</span>, and <span class="math notranslate nohighlight">\(p\)</span> are the density, velocity,
 temperature and pressure, respectively. <span class="math notranslate nohighlight">\(E
 = e + \mathbf{u} \cdot \mathbf{u} / 2\)</span> is the total energy with <span class="math notranslate nohighlight">\(e\)</span> representing the internal energy, which is defined as in the CHEMKIN standard to include both sensible
@@ -105,7 +105,7 @@ and chemical energy (species heats of formation) and is conserved across chemica
 <span class="math notranslate nohighlight">\(Y_k\)</span> is the mass fraction of the <span class="math notranslate nohighlight">\(k^{\rm th}\)</span> species,
 with associated production rate, <span class="math notranslate nohighlight">\(\dot\omega_k\)</span>.  Here <span class="math notranslate nohighlight">\(\mathbf{g}\)</span> is the gravitational vector, and
 <span class="math notranslate nohighlight">\(S_{{\rm ext},\rho}, \mathbf{S}_{{\rm ext},\rho\mathbf{u}}\)</span>, etc., are user-specified
-source terms.  <span class="math notranslate nohighlight">\(A_k\)</span> is an advected quantity, i.e., a tracer.  Also
+source terms.  <span class="math notranslate nohighlight">\(A_k\)</span> is an advected quantity, i.e., a tracer. <span class="math notranslate nohighlight">\(B_k\)</span> is spatially stationary quantity.  Also
 <span class="math notranslate nohighlight">\(\boldsymbol{\mathcal{F}}_{m}, \mathbf{\Pi}\)</span>, and <span class="math notranslate nohighlight">\(\boldsymbol{\mathcal{Q}}\)</span> are
 the diffusive transport fluxes for species, momentum and heat.  Note that the internal
 energy for species <span class="math notranslate nohighlight">\(k\)</span> includes its heat of formation (and can therefore take on negative and
@@ -139,12 +139,11 @@ vector. This task is performed in the function <code class="docutils literal not
 \[ \begin{align}\begin{aligned}\frac{\partial\rho}{\partial t} &amp;=&amp; -\mathbf{u}\cdot\nabla\rho - \rho\nabla\cdot\mathbf{u} + S_{{\rm ext},\rho}\\\frac{\partial\mathbf{u}}{\partial t} &amp;=&amp; -\mathbf{u}\cdot\nabla\mathbf{u} - \frac{1}{\rho}\nabla p + \mathbf{g} +
 \frac{1}{\rho} (\mathbf{S}_{{\rm ext},\rho\mathbf{u}} - \mathbf{u} \; S_{{\rm ext},\rho})\\\frac{\partial p}{\partial t} &amp;=&amp; -\mathbf{u}\cdot\nabla p - \rho c^2\nabla\cdot\mathbf{u} +
 \left(\frac{\partial p}{\partial \rho}\right)_{e,Y}S_{{\rm ext},\rho}\nonumber\\&amp;&amp;+\  \frac{1}{\rho}\sum_k\left(\frac{\partial p}{\partial Y_k}\right)_{\rho,e,Y_j,j\neq k}\left(\rho\dot\omega_k + S_{{\rm ext},\rho Y_k} - Y_kS_{{\rm ext},\rho}\right)\nonumber\\&amp;&amp; +\  \frac{1}{\rho}\left(\frac{\partial p}{\partial e}\right)_{\rho,Y}\left[-eS_{{\rm ext},\rho} - \sum_k\rho q_k\dot\omega_k + \nabla\cdot k_{\rm th}\nabla T \right.\nonumber\\&amp;&amp; \quad\qquad\qquad\qquad+\ S_{{\rm ext},\rho E} - \mathbf{u}\cdot\left(\mathbf{S}_{{\rm ext},\rho\mathbf{u}} - \frac{\mathbf{u}}{2}S_{{\rm ext},\rho}\right)\Biggr]\end{aligned}\end{align} \]</div>
-<p>The advected quantities appear as:</p>
+<p>The advected and auxiliary quantities appear as:</p>
 <div class="math notranslate nohighlight">
 \[ \begin{align}\begin{aligned}\frac{\partial Y_k}{\partial t} &amp;=&amp; -\mathbf{u}\cdot\nabla Y_k + \dot\omega_k + \frac{1}{\rho}
                                    ( S_{{\rm ext},\rho Y_k}  - Y_k S_{{\rm ext},\rho} ),\\\frac{\partial A_k}{\partial t} &amp;=&amp; -\mathbf{u}\cdot\nabla A_k + \frac{1}{\rho}
-                                   ( S_{{\rm ext},\rho A_k} - A_k S_{{\rm ext},\rho} ),\\\frac{\partial B_k}{\partial t} &amp;=&amp; -\mathbf{u}\cdot\nabla B_k + \frac{1}{\rho}
-                                   ( S_{{\rm ext},\rho B_k}  - B_k S_{{\rm ext},\rho} ).\end{aligned}\end{align} \]</div>
+                                   ( S_{{\rm ext},\rho A_k} - A_k S_{{\rm ext},\rho} ),\\\frac{\partial B_k}{\partial t} &amp;=&amp;   S_{{\rm ext}, B_k}.\end{aligned}\end{align} \]</div>
 <p>When accessing the primitive variable state vector, the integer variable
 keys for the different quantities are listed in the header file <code class="docutils literal notranslate"><span class="pre">Source/IndexDefines.H</span></code>.</p>
 </section>
@@ -171,7 +170,7 @@ S_{B_k}
 \nabla\cdot k_{\rm th} \nabla T + S_{{\rm ext},\rho E} \\
 \frac{1}{\rho}S_{{\rm ext},\rho Y_k} \\
 \frac{1}{\rho}S_{{\rm ext},\rho A_k} \\
-\frac{1}{\rho}S_{{\rm ext},\rho B_k}
+S_{{\rm ext},B_k}
 \end{array}\right)^n,\end{split}\]</div>
 <div class="math notranslate nohighlight">
 \[\begin{split}\mathbf{S}_{\mathbf{U}}^n =
@@ -181,7 +180,7 @@ S_{B_k}
 S_{\rho E} \\
 S_{\rho Y_k} \\
 S_{\rho A_k} \\
-S_{\rho B_k}
+S_{ B_k}
 \end{array}\right)^n
 =
 \left(\begin{array}{c}
@@ -190,7 +189,7 @@ S_{\rho B_k}
 \rho \mathbf{u} \cdot \mathbf{g} + \nabla\cdot k_{\rm th} \nabla T + S_{{\rm ext},\rho E} \\
 S_{{\rm ext},\rho Y_k} \\
 S_{{\rm ext},\rho A_k} \\
-S_{{\rm ext},\rho B_k}
+S_{{\rm ext}, B_k}
 \end{array}\right)^n.\end{split}\]</div>
 </section>
 </section>

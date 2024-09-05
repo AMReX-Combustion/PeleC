@@ -16,7 +16,7 @@ where :math:`\rho` is the density and :math:`\mu` is the dynamic viscosity.
 
 Domain definition
 ##################################
-The cylinder with radius :math:`r=5` is centered at (0,0) on the upstream side of the domain as seen below. 
+The cylinder with radius :math:`r=0.5` [cm] is centered at (0,0) on the upstream side of the domain as seen below. 
 
 .. image:: /ebverification/FlowPastCylinder/domain.png
    :width: 450pt
