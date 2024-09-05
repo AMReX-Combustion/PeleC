@@ -1128,6 +1128,11 @@ pc_artif_visc(
     }
   }
   flx(iv, UTEMP) = 0.0;
+#if NUM_AUX > 0
+  for (int n = 0; n < NUM_AUX; ++n) {
+    flx(iv, UFX + n) = 0.0;
+  }
+#endif
 }
 
 // Host Functions
