@@ -684,6 +684,9 @@ PeleC::variableCleanUp()
 #ifdef PELE_USE_SPRAY
   SprayParticleContainer::SprayCleanUp();
 #endif
+#ifdef PELE_USE_SOOT
+  soot_model.cleanup();
+#endif
 }
 
 void
