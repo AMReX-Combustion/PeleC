@@ -417,7 +417,7 @@ pc_dynamic_smagorinsky_coeffs(
 
   // "resolved turbulent stresses" and others
   for (int dir = 0; dir < AMREX_SPACEDIM * AMREX_SPACEDIM; dir++) {
-    M[dir] = betaij[dir] * alphaij(i, j, k, dir);
+    M[dir] = betaij[dir] - alphaij(i, j, k, dir);
   }
 
   L[i00] = Kij(i, j, k, 0) - q(i, j, k, QRHO) * q(i, j, k, QU) * q(i, j, k, QU);
