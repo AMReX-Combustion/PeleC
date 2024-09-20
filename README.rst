@@ -126,6 +126,18 @@ To cite the PeleC software and refer to its computational performance, use the f
       publisher = {Proceedings of the 2024 SIAM Conference on Parallel Processing for Scientific Computing}
     }
 
+    @article{Hassanaly2024,
+      author = {Malik Hassanaly and Nicholas T. Wimer and Anne Felden and Lucas Esclapez and Julia Ream and Marc T. {Henry de Frahan} and Jon Rood and Marc Day},
+      title = {Symbolic construction of the chemical Jacobian of quasi-steady state (QSS) chemistries for Exascale computing platforms},
+      journal = {Combustion and Flame},
+      volume = {270},
+      pages = {113740},
+      year = {2024},
+      issn = {0010-2180},
+      doi = {https://doi.org/10.1016/j.combustflame.2024.113740},
+      url = {https://www.sciencedirect.com/science/article/pii/S0010218024004498},
+    }
+
 
 Additionally, to cite the application of PeleC to compressible reacting flows, use the following `Combustion and Flame journal article <https://doi.org/10.1016/j.combustflame.2021.111531>`_::
 
