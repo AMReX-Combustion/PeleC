@@ -484,9 +484,14 @@ pc_dynamic_smagorinsky_sfs_term(
 
   // SFS stress
   const amrex::Real sigmadx =
-    coeff(iv, comp_Cs2) * alphaij(iv, 0) - coeff(iv, comp_CI) * alpha(iv) / 3.0;
-  const amrex::Real sigmady = coeff(iv, comp_Cs2) * alphaij(iv, 1);
-  const amrex::Real sigmadz = coeff(iv, comp_Cs2) * alphaij(iv, 2);
+    coeff(iv, comp_Cs2) * alphaij(iv, 0) -
+    coeff(iv, comp_CI) * alpha(iv) / 3.0 * static_cast<amrex::Real>(dir == 0);
+  const amrex::Real sigmady =
+    coeff(iv, comp_Cs2) * alphaij(iv, 1) -
+    coeff(iv, comp_CI) * alpha(iv) / 3.0 * static_cast<amrex::Real>(dir == 1);
+  const amrex::Real sigmadz =
+    coeff(iv, comp_Cs2) * alphaij(iv, 2) -
+    coeff(iv, comp_CI) * alpha(iv) / 3.0 * static_cast<amrex::Real>(dir == 2);
   flx(iv, UMX) = -sigmadx;
   flx(iv, UMY) = -sigmady;
   flx(iv, UMZ) = -sigmadz;
