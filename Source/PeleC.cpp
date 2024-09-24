@@ -1555,7 +1555,7 @@ PeleC::enforce_consistent_e(amrex::MultiFab& S)
         auto sarr = sarrs[nbx];
 
         amrex::Real rotenrg =
-          get_rot_energy(i, j, k, omega, rf_axis, axis_loc, geomdata);
+          get_rot_energy(i, j, k, omega, axis, axis_loc, geomdata);
         sarr(i, j, k, UEDEN) =
           sarr(i, j, k, UEINT) - sarr(i, j, k, URHO) * rotenrg;
       });
