@@ -417,7 +417,7 @@ pc_dynamic_smagorinsky_coeffs(
 
   // "resolved turbulent stresses" and others
   for (int dir = 0; dir < AMREX_SPACEDIM * AMREX_SPACEDIM; dir++) {
-    M[dir] = betaij[dir] * alphaij(i, j, k, dir);
+    M[dir] = betaij[dir] - alphaij(i, j, k, dir);
   }
 
   L[i00] = Kij(i, j, k, 0) - q(i, j, k, QRHO) * q(i, j, k, QU) * q(i, j, k, QU);
@@ -484,9 +484,14 @@ pc_dynamic_smagorinsky_sfs_term(
 
   // SFS stress
   const amrex::Real sigmadx =
-    coeff(iv, comp_Cs2) * alphaij(iv, 0) - coeff(iv, comp_CI) * alpha(iv) / 3.0;
-  const amrex::Real sigmady = coeff(iv, comp_Cs2) * alphaij(iv, 1);
-  const amrex::Real sigmadz = coeff(iv, comp_Cs2) * alphaij(iv, 2);
+    coeff(iv, comp_Cs2) * alphaij(iv, 0) -
+    coeff(iv, comp_CI) * alpha(iv) / 3.0 * static_cast<amrex::Real>(dir == 0);
+  const amrex::Real sigmady =
+    coeff(iv, comp_Cs2) * alphaij(iv, 1) -
+    coeff(iv, comp_CI) * alpha(iv) / 3.0 * static_cast<amrex::Real>(dir == 1);
+  const amrex::Real sigmadz =
+    coeff(iv, comp_Cs2) * alphaij(iv, 2) -
+    coeff(iv, comp_CI) * alpha(iv) / 3.0 * static_cast<amrex::Real>(dir == 2);
   flx(iv, UMX) = -sigmadx;
   flx(iv, UMY) = -sigmady;
   flx(iv, UMZ) = -sigmadz;

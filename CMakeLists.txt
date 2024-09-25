@@ -1,11 +1,13 @@
 ############################ BASE ######################################
 
-cmake_minimum_required (VERSION 3.14 FATAL_ERROR)
+cmake_minimum_required (VERSION 3.23 FATAL_ERROR)
 project(PeleC CXX)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
 include(CMakePackageConfigHelpers)
 include(PeleUtils)
+enable_testing()
+include(CTest)
 
 ########################## OPTIONS #####################################
 
@@ -121,7 +123,4 @@ init_code_checks()
 include(SetRpath)
 
 add_subdirectory(Exec)
-
-enable_testing()
-include(CTest)
 add_subdirectory(Tests)

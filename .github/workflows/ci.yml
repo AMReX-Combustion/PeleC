@@ -18,12 +18,12 @@ jobs:
     - name: Clone
       uses: actions/checkout@v4
     - name: Check formatting
-      uses: DoozyX/clang-format-lint-action@v0.16.2
+      uses: DoozyX/clang-format-lint-action@v0.18.2
       with:
         source: './Source ./Exec'
         exclude: '.'
         extensions: 'H,h,cpp'
-        clangFormatVersion: 16
+        clangFormatVersion: 18
   CPU-GNUmake:
     needs: Formatting
     runs-on: ubuntu-latest

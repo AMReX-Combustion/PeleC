@@ -1,0 +1,83 @@
+# ------------------  INPUTS TO MAIN PROGRAM  -------------------
+#max_step = 100
+stop_time = 0.1
+
+# PROBLEM SIZE & GEOMETRY
+geometry.is_periodic =  0  0  0
+geometry.coord_sys   =  0       # 0 => cart
+geometry.prob_lo     =  -2.   -2.  -2.
+geometry.prob_hi     =  10.  2.   2.
+amr.n_cell           =  96 32 8
+
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+# Interior, UserBC, Symmetry, SlipWall, NoSlipWall
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+
+pelec.lo_bc       =  "Hard" "SlipWall" "FOExtrap"
+pelec.hi_bc       =  "Hard" "SlipWall" "FOExtrap"
+
+# Problem setup
+prob.p = 1013250.
+prob.T = 100.
+prob.Re = 100.
+prob.Pr = 0.7
+prob.U = 100. 
+prob.aux_xy_lo = -1.
+prob.aux_length = 1.
+prob.aux_height = 2.
+prob.aux_srcstrength = -30.
+
+# Add user specified source term(s)
+pelec.add_ext_src = 1
+
+# WHICH PHYSICS
+pelec.do_hydro = 1
+pelec.do_mol = 0
+pelec.do_react = 0
+pelec.allow_negative_energy = 0
+pelec.diffuse_temp = 1
+pelec.diffuse_vel  = 1
+pelec.diffuse_spec = 0
+pelec.diffuse_enth = 1
+
+# TIME STEP CONTROL
+pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
+pelec.cfl            = 0.7     # cfl number for hyperbolic system
+pelec.init_shrink    = 0.1     # scale back initial timestep
+pelec.change_max     = 1.05    # maximum increase in dt over successive steps
+
+# DIAGNOSTICS & VERBOSITY
+pelec.sum_interval   = 1       # timesteps between computing mass
+pelec.v              = 1       # verbosity in PeleC cpp files
+amr.v                = 1       # verbosity in Amr.cpp
+
+# REFINEMENT / REGRIDDING
+amr.max_level       = 1        # maximum level number allowed
+amr.ref_ratio       = 2 2 2 2  # refinement ratio
+amr.regrid_int      = 5        # how often to regrid
+amr.blocking_factor = 8        # block factor in grid generation
+amr.max_grid_size   = 64
+
+# TAGGING
+tagging.refinement_indicators = adv_0 adv_1
+tagging.adv_0.field_name = rho_A_0
+tagging.adv_0.adjacent_difference_greater = 0.01
+tagging.adv_0.max_level = 1
+tagging.adv_1.field_name = rho_A_1
+tagging.adv_1.adjacent_difference_greater = 0.02
+tagging.adv_1.max_level = 1
+
+# CHECKPOINT FILES
+amr.checkpoint_files_output = 0
+amr.check_file      = chk       # root name of checkpoint file
+amr.check_int       = 10000     # number of timesteps between checkpoints
+
+# PLOTFILES
+amr.plot_files_output = 1
+amr.plot_file       = plt
+amr.plot_int        = 1000
+amr.derive_plot_vars= x_velocity y_velocity z_velocity
+
+# EB
+ebd.boundary_grad_stencil_type = 0
+eb2.geom_type = "all_regular"
