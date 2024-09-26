@@ -5,9 +5,9 @@ stop_time = 0.06
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic =  1  1  1
 geometry.coord_sys   =  0       # 0 => cart
-geometry.prob_lo     =  -50.0 -50.0  -12.5
-geometry.prob_hi     =   50.0  50.0   12.5
-amr.n_cell           =  128 128 32
+geometry.prob_lo     =  -50.0 -50.0  -6.25
+geometry.prob_hi     =   50.0  50.0   6.25
+amr.n_cell           =  256 256 32
 
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
@@ -50,12 +50,12 @@ amr.max_grid_size   = 16
 # CHECKPOINT FILES
 amr.checkpoint_files_output = 0
 amr.check_file      = chk      # root name of checkpoint file
-amr.check_int       = -1       # number of timesteps between checkpoints
+amr.check_int       = 10000       # number of timesteps between checkpoints
 
 # PLOTFILES
 amr.plot_files_output = 1
 amr.plot_file       = plt
-amr.plot_int        = 1000
+amr.plot_int        = 5000
 amr.derive_plot_vars=ALL
 
 eb2.geom_type = "conc_cylinders"
