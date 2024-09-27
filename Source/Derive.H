@@ -92,30 +92,27 @@ PeleC::pc_dervel_if(
 {
   auto const dat = datfab.const_array();
   auto vel = derfab.array();
-  int rotframeflag=do_rf;
+  int rotframeflag = do_rf;
 
   int axis = rf_axis;
   amrex::Real omega = rf_omega;
-  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {AMREX_D_DECL(
-    rf_axis_x, rf_axis_y, rf_axis_z)};
+  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
+    AMREX_D_DECL(rf_axis_x, rf_axis_y, rf_axis_z)};
   auto const gdata = geomdata.data();
 
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    if(rotframeflag) {
+    if (rotframeflag) {
 #if AMREX_SPACEDIM > 2
-    amrex::RealVect r = get_rotaxis_vec(i, j, k, axis_loc, gdata);
-    amrex::RealVect w(AMREX_D_DECL(0.0, 0.0, 0.0));
-    w[axis] = omega;
-    amrex::RealVect w_cross_r = w.crossProduct(r);
-    vel(i, j, k) =
-      dat(i, j, k, UMX + dir) / dat(i, j, k, URHO) + w_cross_r[dir];
+      amrex::RealVect r = get_rotaxis_vec(i, j, k, axis_loc, gdata);
+      amrex::RealVect w(AMREX_D_DECL(0.0, 0.0, 0.0));
+      w[axis] = omega;
+      amrex::RealVect w_cross_r = w.crossProduct(r);
+      vel(i, j, k) =
+        dat(i, j, k, UMX + dir) / dat(i, j, k, URHO) + w_cross_r[dir];
 #endif
+    } else {
+      vel(i, j, k) = dat(i, j, k, UMX + dir) / dat(i, j, k, URHO);
     }
-    else {
-    vel(i, j, k) =
-      dat(i, j, k, UMX + dir) / dat(i, j, k, URHO);
-    }
-
   });
 }
 

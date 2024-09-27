@@ -88,7 +88,7 @@ PeleC::fill_rot_source(
             -sarr(i, j, k, URHO) * (2.0 * w_cross_v[0] + w_cross_w_cross_r[0]);
           src(i, j, k, UMY) =
             -sarr(i, j, k, URHO) * (2.0 * w_cross_v[1] + w_cross_w_cross_r[1]);
- 
+
           src(i, j, k, UMZ) =
             -sarr(i, j, k, URHO) * (2.0 * w_cross_v[2] + w_cross_w_cross_r[2]);
         }

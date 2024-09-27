@@ -46,114 +46,113 @@ PeleC::pc_dermagvel_if(
   auto magvel = derfab.array();
 
   int axis = rf_axis;
-  int rotframeflag=do_rf;
+  int rotframeflag = do_rf;
   amrex::Real omega = rf_omega;
-  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {AMREX_D_DECL(
-    rf_axis_x, rf_axis_y, rf_axis_z)};
+  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
+    AMREX_D_DECL(rf_axis_x, rf_axis_y, rf_axis_z)};
   auto const gdata = geomdata.data();
 
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      if(rotframeflag) {
+    if (rotframeflag) {
 #if AMREX_SPACEDIM > 2
-          amrex::RealVect r = get_rotaxis_vec(i, j, k, axis_loc, gdata);
-          amrex::RealVect w(0.0, 0.0, 0.0);
-          w[axis] = omega;
-          amrex::RealVect w_cross_r = w.crossProduct(r);
+      amrex::RealVect r = get_rotaxis_vec(i, j, k, axis_loc, gdata);
+      amrex::RealVect w(0.0, 0.0, 0.0);
+      w[axis] = omega;
+      amrex::RealVect w_cross_r = w.crossProduct(r);
 
-          const amrex::Real datinv = 1.0 / dat(i, j, k, URHO);
-          const amrex::Real dat1 = dat(i, j, k, UMX) * datinv + w_cross_r[0];
-          const amrex::Real dat2 = dat(i, j, k, UMY) * datinv + w_cross_r[1];
-          const amrex::Real dat3 = dat(i, j, k, UMZ) * datinv + w_cross_r[2];
-          magvel(i, j, k) = sqrt((dat1 * dat1) + (dat2 * dat2) + (dat3 * dat3));
+      const amrex::Real datinv = 1.0 / dat(i, j, k, URHO);
+      const amrex::Real dat1 = dat(i, j, k, UMX) * datinv + w_cross_r[0];
+      const amrex::Real dat2 = dat(i, j, k, UMY) * datinv + w_cross_r[1];
+      const amrex::Real dat3 = dat(i, j, k, UMZ) * datinv + w_cross_r[2];
+      magvel(i, j, k) = sqrt((dat1 * dat1) + (dat2 * dat2) + (dat3 * dat3));
 #endif
-      }
-      else {
-          const amrex::Real datinv = 1.0 / dat(i, j, k, URHO);
-          const amrex::Real dat1 = dat(i, j, k, UMX) * datinv;
-          const amrex::Real dat2 = dat(i, j, k, UMY) * datinv;
-          const amrex::Real dat3 = dat(i, j, k, UMZ) * datinv;
-          magvel(i, j, k) = sqrt((dat1 * dat1) + (dat2 * dat2) + (dat3 * dat3));
-      }
+    } else {
+      const amrex::Real datinv = 1.0 / dat(i, j, k, URHO);
+      const amrex::Real dat1 = dat(i, j, k, UMX) * datinv;
+      const amrex::Real dat2 = dat(i, j, k, UMY) * datinv;
+      const amrex::Real dat3 = dat(i, j, k, UMZ) * datinv;
+      magvel(i, j, k) = sqrt((dat1 * dat1) + (dat2 * dat2) + (dat3 * dat3));
+    }
   });
 }
 
 void
 pc_dermagmom(
-    const amrex::Box& bx,
-    amrex::FArrayBox& derfab,
-    int /*dcomp*/,
-    int /*ncomp*/,
-    const amrex::FArrayBox& datfab,
-    const amrex::Geometry& /*geomdata*/,
-    amrex::Real /*time*/,
-    const int* /*bcrec*/,
-    const int /*level*/)
+  const amrex::Box& bx,
+  amrex::FArrayBox& derfab,
+  int /*dcomp*/,
+  int /*ncomp*/,
+  const amrex::FArrayBox& datfab,
+  const amrex::Geometry& /*geomdata*/,
+  amrex::Real /*time*/,
+  const int* /*bcrec*/,
+  const int /*level*/)
 {
-    auto const dat = datfab.const_array();
-    auto magmom = derfab.array();
+  auto const dat = datfab.const_array();
+  auto magmom = derfab.array();
 
-    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-        magmom(i, j, k) = sqrt(
-            dat(i, j, k, UMX) * dat(i, j, k, UMX) +
-            dat(i, j, k, UMY) * dat(i, j, k, UMY) +
-            dat(i, j, k, UMZ) * dat(i, j, k, UMZ));
-    });
+  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    magmom(i, j, k) = sqrt(
+      dat(i, j, k, UMX) * dat(i, j, k, UMX) +
+      dat(i, j, k, UMY) * dat(i, j, k, UMY) +
+      dat(i, j, k, UMZ) * dat(i, j, k, UMZ));
+  });
 }
 
 void
 pc_derkineng(
-    const amrex::Box& bx,
-    amrex::FArrayBox& derfab,
-    int /*dcomp*/,
-    int /*ncomp*/,
-    const amrex::FArrayBox& datfab,
-    const amrex::Geometry& /*geomdata*/,
-    amrex::Real /*time*/,
-    const int* /*bcrec*/,
-    const int /*level*/)
+  const amrex::Box& bx,
+  amrex::FArrayBox& derfab,
+  int /*dcomp*/,
+  int /*ncomp*/,
+  const amrex::FArrayBox& datfab,
+  const amrex::Geometry& /*geomdata*/,
+  amrex::Real /*time*/,
+  const int* /*bcrec*/,
+  const int /*level*/)
 {
-    auto const dat = datfab.const_array();
-    auto kineng = derfab.array();
+  auto const dat = datfab.const_array();
+  auto kineng = derfab.array();
 
-    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-        const amrex::Real datxsq = dat(i, j, k, UMX) * dat(i, j, k, UMX);
-        const amrex::Real datysq = dat(i, j, k, UMY) * dat(i, j, k, UMY);
-        const amrex::Real datzsq = dat(i, j, k, UMZ) * dat(i, j, k, UMZ);
-        kineng(i, j, k) = 0.5 / dat(i, j, k, URHO) * (datxsq + datysq + datzsq);
-    });
+  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    const amrex::Real datxsq = dat(i, j, k, UMX) * dat(i, j, k, UMX);
+    const amrex::Real datysq = dat(i, j, k, UMY) * dat(i, j, k, UMY);
+    const amrex::Real datzsq = dat(i, j, k, UMZ) * dat(i, j, k, UMZ);
+    kineng(i, j, k) = 0.5 / dat(i, j, k, URHO) * (datxsq + datysq + datzsq);
+  });
 }
 
 void
 pc_dereint1(
-    const amrex::Box& bx,
-    amrex::FArrayBox& derfab,
-    int /*dcomp*/,
-    int /*ncomp*/,
-    const amrex::FArrayBox& datfab,
-    const amrex::Geometry& /*geomdata*/,
-    amrex::Real /*time*/,
-    const int* /*bcrec*/,
-    const int /*level*/)
-    // amrex::Real omega=0.0,
-    // amrex::Real rad=0.0 )
+  const amrex::Box& bx,
+  amrex::FArrayBox& derfab,
+  int /*dcomp*/,
+  int /*ncomp*/,
+  const amrex::FArrayBox& datfab,
+  const amrex::Geometry& /*geomdata*/,
+  amrex::Real /*time*/,
+  const int* /*bcrec*/,
+  const int /*level*/)
+// amrex::Real omega=0.0,
+// amrex::Real rad=0.0 )
 {
-    // FIXME:Hari S:
-    // can't seem to add omega and rad
-    // as derive functions are quite rigid
-    //  Compute internal energy from (rho E).
-    auto const dat = datfab.const_array();
-    auto e = derfab.array();
+  // FIXME:Hari S:
+  // can't seem to add omega and rad
+  // as derive functions are quite rigid
+  //  Compute internal energy from (rho E).
+  auto const dat = datfab.const_array();
+  auto e = derfab.array();
 
-    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-        const amrex::Real rhoInv = 1.0 / dat(i, j, k, URHO);
-        const amrex::Real ux = dat(i, j, k, UMX) * rhoInv;
-        const amrex::Real uy = dat(i, j, k, UMY) * rhoInv;
-        const amrex::Real uz = dat(i, j, k, UMZ) * rhoInv;
-        e(i, j, k) =
-        dat(i, j, k, UEDEN) * rhoInv - 0.5 * (ux * ux + uy * uy + uz * uz);
-        // see Blazek, Appendix A3, Navier-Stokes in rotating frame of reference
-        // e(i,j,k)-=0.5*omega*omega*rad*rad;
-    });
+  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    const amrex::Real rhoInv = 1.0 / dat(i, j, k, URHO);
+    const amrex::Real ux = dat(i, j, k, UMX) * rhoInv;
+    const amrex::Real uy = dat(i, j, k, UMY) * rhoInv;
+    const amrex::Real uz = dat(i, j, k, UMZ) * rhoInv;
+    e(i, j, k) =
+      dat(i, j, k, UEDEN) * rhoInv - 0.5 * (ux * ux + uy * uy + uz * uz);
+    // see Blazek, Appendix A3, Navier-Stokes in rotating frame of reference
+    // e(i,j,k)-=0.5*omega*omega*rad*rad;
+  });
 }
 
 void

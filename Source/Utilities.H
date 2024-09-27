@@ -9,7 +9,6 @@
 #include "PelePhysics.H"
 #include <AMReX_Geometry.H>
 
-
 AMREX_GPU_HOST_DEVICE
 AMREX_FORCE_INLINE
 amrex::RealVect
@@ -34,11 +33,11 @@ get_rotaxis_vec(
 {
   const amrex::Real* prob_lo = geomdata.ProbLo();
   const amrex::Real* dx = geomdata.CellSize();
-  amrex::IntVect iv(AMREX_D_DECL(i,j,k));
+  amrex::IntVect iv(AMREX_D_DECL(i, j, k));
 
-  amrex::RealVect axloc(AMREX_D_DECL(axis_loc[0],axis_loc[1],axis_loc[2])); 
+  amrex::RealVect axloc(AMREX_D_DECL(axis_loc[0], axis_loc[1], axis_loc[2]));
   amrex::RealVect r(AMREX_D_DECL(0.0, 0.0, 0.0));
-  amrex::RealVect x=pc_cmp_loc(iv, geomdata);
+  amrex::RealVect x = pc_cmp_loc(iv, geomdata);
   r = x - axloc;
   return (r);
 }

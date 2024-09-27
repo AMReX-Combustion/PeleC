@@ -63,8 +63,8 @@ PeleC::initialize_eb2_structs()
   sv_eb_flux.resize(vfrac.local_size());
   sv_eb_bcval.resize(vfrac.local_size());
 
-  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {AMREX_D_DECL(
-    rf_axis_x, rf_axis_y, rf_axis_z)};
+  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
+    AMREX_D_DECL(rf_axis_x, rf_axis_y, rf_axis_z)};
   amrex::Real rfdist2 = rf_rad * rf_rad;
 
   auto const& flags = ebfactory.getMultiEBCellFlagFab();

@@ -1547,8 +1547,8 @@ PeleC::enforce_consistent_e(amrex::MultiFab& S)
     const auto geomdata = geom.data();
     int axis = rf_axis;
     amrex::Real omega = rf_omega;
-    amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {AMREX_D_DECL(
-      rf_axis_x, rf_axis_y, rf_axis_z)};
+    amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
+      AMREX_D_DECL(rf_axis_x, rf_axis_y, rf_axis_z)};
 
     amrex::ParallelFor(
       S, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
@@ -2208,8 +2208,8 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
     const auto geomdata = geom.data();
     int axis = rf_axis;
     amrex::Real omega = rf_omega;
-    amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {AMREX_D_DECL(
-      rf_axis_x, rf_axis_y, rf_axis_z)};
+    amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
+      AMREX_D_DECL(rf_axis_x, rf_axis_y, rf_axis_z)};
     amrex::ParallelFor(
       S_new, ngs, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
         amrex::Real rad = get_rotaxis_dist(i, j, k, axis, axis_loc, geomdata);
