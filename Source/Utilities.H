@@ -31,8 +31,6 @@ get_rotaxis_vec(
   amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc,
   amrex::GeometryData const& geomdata)
 {
-  const amrex::Real* prob_lo = geomdata.ProbLo();
-  const amrex::Real* dx = geomdata.CellSize();
   amrex::IntVect iv(AMREX_D_DECL(i, j, k));
 
   amrex::RealVect axloc(AMREX_D_DECL(axis_loc[0], axis_loc[1], axis_loc[2]));

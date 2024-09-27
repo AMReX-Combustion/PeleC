@@ -81,6 +81,7 @@ function(build_pele_exe pele_exe_name pele_physics_lib_name)
        ${SRC_DIR}/Utilities.H
        ${SRC_DIR}/Utilities.cpp
        ${SRC_DIR}/WENO.H
+       ${SRC_DIR}/RotSource.cpp
   )
 
   if(PELE_PHYSICS_ENABLE_SPRAY)
