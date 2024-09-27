@@ -126,7 +126,7 @@ pc_dereint1(
 // amrex::Real rad=0.0 )
 {
   // FIXME:Hari S:
-  // cant seem to add omega and rad
+  // can't seem to add omega and rad
   // as derive functions are quite rigid
   //  Compute internal energy from (rho E).
   auto const dat = datfab.const_array();
