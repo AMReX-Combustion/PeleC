@@ -1545,7 +1545,7 @@ PeleC::enforce_consistent_e(amrex::MultiFab& S)
 
   if (do_rf) {
     const auto geomdata = geom.data();
-    amrex::Real axis = rf_axis;
+    int axis = rf_axis;
     amrex::Real omega = rf_omega;
     amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
       rf_axis_x, rf_axis_y, rf_axis_z};
@@ -2207,7 +2207,7 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
 
     // for Rotational frames
     const auto geomdata = geom.data();
-    amrex::Real axis = rf_axis;
+    int axis = rf_axis;
     amrex::Real omega = rf_omega;
     amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
       rf_axis_x, rf_axis_y, rf_axis_z};

@@ -137,7 +137,7 @@ pc_compute_hyp_mol_flux(
         amrex::Real ustar = 0.0;
 
         amrex::RealVect r(0.0, 0.0, 0.0);
-        amrex::Real radl, radr, rad;
+        amrex::Real radl, radr;
         if (using_rotframe) {
 
           radr = get_rotaxis_dist(

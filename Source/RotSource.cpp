@@ -49,11 +49,7 @@ PeleC::fill_rot_source(
   const auto geomdata = geom.data();
   int rf_on = do_rf;
   amrex::Real omega = rf_omega;
-  amrex::Real axis = rf_axis;
-
-  auto prob_lo = geom.ProbLoArray();
-  auto prob_hi = geom.ProbHiArray();
-  const auto dx = geom.CellSizeArray();
+  int axis = rf_axis;
 
   // need a check to prevent mrf in 2 and 1d
   // read a vector instead for mrf_axis_x and y

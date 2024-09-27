@@ -22,10 +22,7 @@ PeleC::getMOLSrcTerm(
   int axis = rf_axis;
   amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
     rf_axis_x, rf_axis_y, rf_axis_z};
-  auto prob_lo = geom.ProbLoArray();
-  auto prob_hi = geom.ProbHiArray();
   const auto dx = geom.CellSizeArray();
-  const auto geomdata = geom.data();
 
   /*
      Across all conserved state components, compute the method of lines rhs
@@ -133,6 +130,7 @@ PeleC::getMOLSrcTerm(
 
       // Get primitives, Q, including (Y, T, p, rho) from conserved state
       {
+        const auto geomdata = geom.data();
         BL_PROFILE("PeleC::ctoprim()");
         amrex::ParallelFor(
           gbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {

@@ -45,9 +45,7 @@ PeleC::initialize_eb2_structs()
     geom.CellSizeArray();
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_lo =
     geom.ProbLoArray();
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_hi =
-    geom.ProbHiArray();
-  amrex::Real axis = rf_axis;
+  int axis = rf_axis;
   amrex::Real omega = rf_omega;
 
   const auto& ebfactory =

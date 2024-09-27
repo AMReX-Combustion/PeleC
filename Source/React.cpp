@@ -122,12 +122,10 @@ PeleC::react_state(
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(S_new.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
 
-  amrex::Real rot_enrg = 0.0;
-
   // for rotational frames
   amrex::Real rotframeflag = do_rf;
   const auto geomdata = geom.data();
-  amrex::Real axis = rf_axis;
+  int axis = rf_axis;
   amrex::Real omega = rf_omega;
   amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
     rf_axis_x, rf_axis_y, rf_axis_z};
