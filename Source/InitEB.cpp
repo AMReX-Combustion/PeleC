@@ -191,7 +191,7 @@ PeleC::initialize_eb2_structs()
               amrex::Real zloc =
                 prob_lo[2] + (iv[2] + 0.5 + sten[L].eb_centroid[2]) * dxlev[2];
 
-              amrex::RealVect r(AMRE_D_DECL(0.0, 0.0, 0.0));
+              amrex::RealVect r(AMREX_D_DECL(0.0, 0.0, 0.0));
               amrex::RealVect w(AMREX_D_DECL(0.0, 0.0, 0.0));
 
               r[0] = xloc - axis_loc[0];
