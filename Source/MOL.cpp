@@ -29,7 +29,7 @@ pc_compute_hyp_mol_flux(
   const int R_NUM = 5 + NUM_SPECIES + NUM_ADV + NUM_LIN + NUM_AUX;
   const int bc_test_val = 1;
   int using_rotframe = do_rf; // local capture
-  const auto geomdata=geom.data();
+  const auto geomdata = geom.data();
   int axisdir_captured = axisdir;
   amrex::Real omega_captured = omega;
   amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axisloc_captured = {
@@ -140,11 +140,12 @@ pc_compute_hyp_mol_flux(
         amrex::Real radl, radr, rad;
         if (using_rotframe) {
 
-          radr=get_rotaxis_dist(iv[0],iv[1],iv[2],axisdir_captured,
-                  axisloc_captured,geomdata);
-          
-          radl=get_rotaxis_dist(ivm[0],ivm[1],ivm[2],axisdir_captured,
-                  axisloc_captured,geomdata);
+          radr = get_rotaxis_dist(
+            iv[0], iv[1], iv[2], axisdir_captured, axisloc_captured, geomdata);
+
+          radl = get_rotaxis_dist(
+            ivm[0], ivm[1], ivm[2], axisdir_captured, axisloc_captured,
+            geomdata);
         }
 
         if (!use_laxf_flux) {

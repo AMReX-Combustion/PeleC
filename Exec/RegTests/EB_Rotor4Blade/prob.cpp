@@ -65,50 +65,49 @@ EBConcCylinders::build(
   amrex::ParmParse ppprob("prob");
   ppprob.query("d_inner", PeleC::h_prob_parm_device->d_inner);
   ppprob.query("d_outer", PeleC::h_prob_parm_device->d_outer);
-  
+
   ProbParmDevice const* pp = PeleC::h_prob_parm_device;
-  
-  amrex::Real r_in=0.5*pp->d_inner;
-  amrex::Real bladelen=1.5*r_in;
-  amrex::Real bladethick=0.4*r_in;
-  amrex::Real zlen=phi[2]-plo[2];
+
+  amrex::Real r_in = 0.5 * pp->d_inner;
+  amrex::Real bladelen = 1.5 * r_in;
+  amrex::Real bladethick = 0.4 * r_in;
+  amrex::Real zlen = phi[2] - plo[2];
 
   // infinite cylinders
-  amrex::EB2::CylinderIF inner(
-    r_in, 2, {AMREX_D_DECL(0.0, 0, 0)}, false); 
- 
-  amrex::RealArray lo,hi;
+  amrex::EB2::CylinderIF inner(r_in, 2, {AMREX_D_DECL(0.0, 0, 0)}, false);
 
-  lo[0]=0.5*r_in;
-  hi[0]=lo[0]+bladelen;
-  lo[1]=-0.5*bladethick;
-  hi[1]=0.5*bladethick;
-  lo[2]=plo[2]-2.0*zlen;
-  hi[2]=phi[2]+2.0*zlen;
+  amrex::RealArray lo, hi;
+
+  lo[0] = 0.5 * r_in;
+  hi[0] = lo[0] + bladelen;
+  lo[1] = -0.5 * bladethick;
+  hi[1] = 0.5 * bladethick;
+  lo[2] = plo[2] - 2.0 * zlen;
+  hi[2] = phi[2] + 2.0 * zlen;
   amrex::EB2::BoxIF bf1(lo, hi, false);
-  
-  hi[0]=-0.5*r_in;
-  lo[0]=hi[0]-bladelen;
-  lo[1]=-0.5*bladethick;
-  hi[1]=0.5*bladethick;
-  lo[2]=plo[2]-2.0*zlen;
-  hi[2]=phi[2]+2.0*zlen;
+
+  hi[0] = -0.5 * r_in;
+  lo[0] = hi[0] - bladelen;
+  lo[1] = -0.5 * bladethick;
+  hi[1] = 0.5 * bladethick;
+  lo[2] = plo[2] - 2.0 * zlen;
+  hi[2] = phi[2] + 2.0 * zlen;
   amrex::EB2::BoxIF bf2(lo, hi, false);
-  
-  lo[1]=0.5*r_in;
-  hi[1]=lo[1]+bladelen;
-  lo[0]=-0.5*bladethick;
-  hi[0]=0.5*bladethick;
-  lo[2]=plo[2]-2.0*zlen;
-  hi[2]=phi[2]+2.0*zlen;
+
+  lo[1] = 0.5 * r_in;
+  hi[1] = lo[1] + bladelen;
+  lo[0] = -0.5 * bladethick;
+  hi[0] = 0.5 * bladethick;
+  lo[2] = plo[2] - 2.0 * zlen;
+  hi[2] = phi[2] + 2.0 * zlen;
   amrex::EB2::BoxIF bf3(lo, hi, false);
-  
-  hi[1]=-0.5*r_in;
-  lo[1]=hi[1]-bladelen;
-  lo[0]=-0.5*bladethick;
-  hi[0]=0.5*bladethick;
-  lo[2]=plo[2]-2.0*zlen;
-  hi[2]=phi[2]+2.0*zlen;
+
+  hi[1] = -0.5 * r_in;
+  lo[1] = hi[1] - bladelen;
+  lo[0] = -0.5 * bladethick;
+  hi[0] = 0.5 * bladethick;
+  lo[2] = plo[2] - 2.0 * zlen;
+  hi[2] = phi[2] + 2.0 * zlen;
   amrex::EB2::BoxIF bf4(lo, hi, false);
 
   amrex::EB2::CylinderIF outer(

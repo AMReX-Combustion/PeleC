@@ -58,18 +58,16 @@ pc_initdata(
   auto eos = pele::physics::PhysicsType::eos();
   eos.PYT2RE(p, massfrac, T, rho, eint);
 
-  if (prob_parm.do_rf)
-  {
+  if (prob_parm.do_rf) {
     amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
       prob_parm.rf_axis_x, prob_parm.rf_axis_y, prob_parm.rf_axis_z};
-    amrex::RealVect r = get_rotaxis_vec(
-      i, j, k, axis_loc, geomdata);
+    amrex::RealVect r = get_rotaxis_vec(i, j, k, axis_loc, geomdata);
     amrex::RealVect omgavec(0.0, 0.0, 0.0);
-     omgavec[prob_parm.rf_axis] = prob_parm.rf_omega;
-     amrex::RealVect w_cross_r = omgavec.crossProduct(r);
-     u=-w_cross_r[0];
-     v=-w_cross_r[1];
-     w=-w_cross_r[2];
+    omgavec[prob_parm.rf_axis] = prob_parm.rf_omega;
+    amrex::RealVect w_cross_r = omgavec.crossProduct(r);
+    u = -w_cross_r[0];
+    v = -w_cross_r[1];
+    w = -w_cross_r[2];
   }
 
   state(i, j, k, URHO) = rho;

@@ -212,7 +212,7 @@ PeleC::react_state(
             rhoInv = 1.0 / snew_arr(i, j, k, URHO);
 
             amrex::Real rhoedot_ext =
-              (snew_arr(i, j, k, UEDEN)          // new total energy
+              (snew_arr(i, j, k, UEDEN) // new total energy
                - 0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv +
                snew_arr(i, j, k, URHO) * rotenrg // new KE
                - rho_old * e_old) /

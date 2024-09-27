@@ -187,14 +187,13 @@ riemann(
   uflx_u = uflx_rho * qint_iu + qint_gdpres;
   uflx_v = uflx_rho * qint_iv1;
   uflx_w = uflx_rho * qint_iv2;
-  // Hari S: see Blazek's textbook, 
+  // Hari S: see Blazek's textbook,
   // Computational fluid dynamics: principles and applications
   // Appendix A3, Navier-Stokes in rotating frame of reference
   const amrex::Real rhoetot =
     regd +
-    0.5 * rgd *
-      (qint_iu * qint_iu + qint_iv1 * qint_iv1 + qint_iv2 * qint_iv2) 
-    //rotational frame energy
+    0.5 * rgd * (qint_iu * qint_iu + qint_iv1 * qint_iv1 + qint_iv2 * qint_iv2)
+    // rotational frame energy
     - 0.5 * rgd * omega * omega * rad * rad;
   uflx_eden = qint_iu * (rhoetot + qint_gdpres);
   uflx_eint = qint_iu * regd;
@@ -256,14 +255,16 @@ laxfriedrich_flux(
   eos.RYP2E(rr, mfrac_r, pr, er);
 
   // rho e total
-  // Hari S: see Blazek's textbook, 
+  // Hari S: see Blazek's textbook,
   // Computational fluid dynamics: principles and applications
   // Appendix A3, Navier-Stokes in rotating frame of reference
-  amrex::Real r_elt = rl * (el + 0.5 * (ul * ul + vl * vl + v2l * v2l)
-                            //rotational frame energy
+  amrex::Real r_elt = rl * (el +
+                            0.5 * (ul * ul + vl * vl + v2l * v2l)
+                            // rotational frame energy
                             - 0.5 * omegal * omegal * radl * radl);
-  amrex::Real r_ert = rr * (er + 0.5 * (ur * ur + vr * vr + v2r * v2r) 
-                            //rotational frame energy
+  amrex::Real r_ert = rr * (er +
+                            0.5 * (ur * ur + vr * vr + v2r * v2r)
+                            // rotational frame energy
                             - 0.5 * omegar * omegar * radr * radr);
 
   const amrex::Real wl = amrex::max<amrex::Real>(wsmall, cl * rl);
