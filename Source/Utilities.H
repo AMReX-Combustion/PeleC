@@ -109,8 +109,7 @@ pc_rst_int_e(
   const bool dual_energy_update_E_from_e,
   const amrex::Real dual_energy_eta2,
   amrex::Real omega = 0.0,
-  amrex::Real rad = 0.0,
-  const int /*verbose = 0*/)
+  amrex::Real rad = 0.0)
 {
   if (std::is_same<
         pele::physics::PhysicsType::eos_type, pele::physics::eos::SRK>::value) {
