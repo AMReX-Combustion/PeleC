@@ -63,8 +63,8 @@ PeleC::initialize_eb2_structs()
   sv_eb_flux.resize(vfrac.local_size());
   sv_eb_bcval.resize(vfrac.local_size());
 
-  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
-    rf_axis_x, rf_axis_y, rf_axis_z};
+  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {AMREX_D_DECL(
+    rf_axis_x, rf_axis_y, rf_axis_z)};
   amrex::Real rfdist2 = rf_rad * rf_rad;
 
   auto const& flags = ebfactory.getMultiEBCellFlagFab();
@@ -183,6 +183,7 @@ PeleC::initialize_eb2_structs()
             amrex::ParallelFor(ncutcells, [=] AMREX_GPU_DEVICE(int L) {
               const auto& iv = sten[L].iv;
 
+#if AMREX_SPACEDIM > 2
               amrex::Real xloc =
                 prob_lo[0] + (iv[0] + 0.5 + sten[L].eb_centroid[0]) * dxlev[0];
               amrex::Real yloc =
@@ -190,14 +191,14 @@ PeleC::initialize_eb2_structs()
               amrex::Real zloc =
                 prob_lo[2] + (iv[2] + 0.5 + sten[L].eb_centroid[2]) * dxlev[2];
 
-              amrex::RealVect r(0.0, 0.0, 0.0);
-              amrex::RealVect w(0.0, 0.0, 0.0);
+              amrex::RealVect r(AMRE_D_DECL(0.0, 0.0, 0.0));
+              amrex::RealVect w(AMREX_D_DECL(0.0, 0.0, 0.0));
 
               r[0] = xloc - axis_loc[0];
               r[1] = yloc - axis_loc[1];
               r[2] = zloc - axis_loc[2];
 
-              amrex::Real rmag2 = r[0] * r[0] + r[1] * r[1] + r[2] * r[2];
+              amrex::Real rmag2 = r.radSquared();
               rmag2 -= r[axis] * r[axis]; // only in plane
 
               if (rmag2 > rfdist2) {
@@ -212,6 +213,7 @@ PeleC::initialize_eb2_structs()
                 v_bcval[L] = 0.0;
                 w_bcval[L] = 0.0;
               }
+#endif
             });
           }
         } else {

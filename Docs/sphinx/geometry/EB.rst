@@ -210,7 +210,7 @@ Rotational frames
 ------------------------------
 
 .. warning:: PeleC has limited support for simulations using rotating frames using the single-reference-frame (SRF) 
-   method and needs the MOL scheme when using this feature.
+   method only in 3D and needs the MOL scheme when using this feature.
 
 
 Single-reference-frame implementation

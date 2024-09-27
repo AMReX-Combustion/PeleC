@@ -32,8 +32,8 @@ pc_compute_hyp_mol_flux(
   const auto geomdata = geom.data();
   int axisdir_captured = axisdir;
   amrex::Real omega_captured = omega;
-  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axisloc_captured = {
-    axis_loc[0], axis_loc[1], axis_loc[2]};
+  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axisloc_captured = {AMREX_D_DECL(
+    axis_loc[0], axis_loc[1], axis_loc[2])};
 
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
     amrex::FArrayBox dq_fab(cbox, QVAR, amrex::The_Async_Arena());
@@ -136,7 +136,6 @@ pc_compute_hyp_mol_flux(
         amrex::Real flux_tmp[NVAR] = {0.0};
         amrex::Real ustar = 0.0;
 
-        amrex::RealVect r(0.0, 0.0, 0.0);
         amrex::Real radl, radr;
         if (using_rotframe) {
 

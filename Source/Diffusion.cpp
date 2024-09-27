@@ -20,8 +20,8 @@ PeleC::getMOLSrcTerm(
   int using_rf = do_rf;
   amrex::Real omega = rf_omega;
   int axis = rf_axis;
-  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
-    rf_axis_x, rf_axis_y, rf_axis_z};
+  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {AMREX_D_DECL(
+    rf_axis_x, rf_axis_y, rf_axis_z)};
   const auto dx = geom.CellSizeArray();
 
   /*

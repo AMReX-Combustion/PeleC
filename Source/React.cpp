@@ -123,12 +123,12 @@ PeleC::react_state(
   auto const& flags = fact.getMultiEBCellFlagFab();
 
   // for rotational frames
-  amrex::Real rotframeflag = do_rf;
+  int rotframeflag = do_rf;
   const auto geomdata = geom.data();
   int axis = rf_axis;
   amrex::Real omega = rf_omega;
-  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
-    rf_axis_x, rf_axis_y, rf_axis_z};
+  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {AMREX_D_DECL(
+    rf_axis_x, rf_axis_y, rf_axis_z)};
 
 #ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())

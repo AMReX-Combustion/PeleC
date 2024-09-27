@@ -9,6 +9,19 @@
 #include "PelePhysics.H"
 #include <AMReX_Geometry.H>
 
+
+AMREX_GPU_HOST_DEVICE
+AMREX_FORCE_INLINE
+amrex::RealVect
+pc_cmp_loc(const amrex::IntVect& idx, const amrex::GeometryData& geomdata)
+{
+  const amrex::RealVect x(AMREX_D_DECL(
+    geomdata.ProbLo(0) + (idx[0] + 0.5) * geomdata.CellSize(0),
+    geomdata.ProbLo(1) + (idx[1] + 0.5) * geomdata.CellSize(1),
+    geomdata.ProbLo(2) + (idx[2] + 0.5) * geomdata.CellSize(2)));
+  return x;
+}
+
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 amrex::RealVect
@@ -21,14 +34,12 @@ get_rotaxis_vec(
 {
   const amrex::Real* prob_lo = geomdata.ProbLo();
   const amrex::Real* dx = geomdata.CellSize();
+  amrex::IntVect iv(AMREX_D_DECL(i,j,k));
 
-  amrex::RealVect r(0.0, 0.0, 0.0);
-  amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
-  amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
-  amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];
-  r[0] = x - axis_loc[0];
-  r[1] = y - axis_loc[1];
-  r[2] = z - axis_loc[2];
+  amrex::RealVect axloc(AMREX_D_DECL(axis_loc[0],axis_loc[1],axis_loc[2])); 
+  amrex::RealVect r(AMREX_D_DECL(0.0, 0.0, 0.0));
+  amrex::RealVect x=pc_cmp_loc(iv, geomdata);
+  r = x - axloc;
   return (r);
 }
 
@@ -63,18 +74,6 @@ get_rot_energy(
 {
   amrex::Real rad = get_rotaxis_dist(i, j, k, axis, axis_loc, geomdata);
   return (0.5 * omega * omega * rad * rad);
-}
-
-AMREX_GPU_HOST_DEVICE
-AMREX_FORCE_INLINE
-amrex::RealVect
-pc_cmp_loc(const amrex::IntVect& idx, const amrex::GeometryData& geomdata)
-{
-  const amrex::RealVect x(AMREX_D_DECL(
-    geomdata.ProbLo(0) + (idx[0] + 0.5) * geomdata.CellSize(0),
-    geomdata.ProbLo(1) + (idx[1] + 0.5) * geomdata.CellSize(1),
-    geomdata.ProbLo(2) + (idx[2] + 0.5) * geomdata.CellSize(2)));
-  return x;
 }
 
 AMREX_GPU_DEVICE
