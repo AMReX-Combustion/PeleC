@@ -45,7 +45,7 @@ std::string PeleC::zl_ext_bc_type;
 std::string PeleC::zr_ext_bc_type;
 bool PeleC::do_rf = false;
 amrex::Real PeleC::rf_omega = 0.0;
-int PeleC::rf_axis = 2;
+int PeleC::rf_axis = 0;
 amrex::Real PeleC::rf_axis_x = 0.0;
 amrex::Real PeleC::rf_axis_y = 0.0;
 amrex::Real PeleC::rf_axis_z = 0.0;

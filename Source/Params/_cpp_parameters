@@ -154,7 +154,7 @@ do_rf                      bool        false
 rf_omega                   Real        0.0
 
 #rf axis
-rf_axis                   int        2
+rf_axis                   int        0
 
 #rf locations
 rf_axis_x                 Real        0.0
