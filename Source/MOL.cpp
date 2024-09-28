@@ -139,12 +139,11 @@ pc_compute_hyp_mol_flux(
         amrex::Real radl, radr;
         if (using_rotframe) {
 
-          radr = get_rotaxis_dist(
-            iv[0], iv[1], iv[2], axisdir_captured, axisloc_captured, geomdata);
+          radr =
+            get_rotaxis_dist(iv, axisdir_captured, axisloc_captured, geomdata);
 
-          radl = get_rotaxis_dist(
-            ivm[0], ivm[1], ivm[2], axisdir_captured, axisloc_captured,
-            geomdata);
+          radl =
+            get_rotaxis_dist(ivm, axisdir_captured, axisloc_captured, geomdata);
         }
 
         if (!use_laxf_flux) {

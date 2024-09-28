@@ -25,14 +25,10 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 amrex::RealVect
 get_rotaxis_vec(
-  const int i,
-  const int j,
-  const int k,
+  const amrex::IntVect& iv,
   amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc,
   amrex::GeometryData const& geomdata)
 {
-  amrex::IntVect iv(AMREX_D_DECL(i, j, k));
-
   amrex::RealVect axloc(AMREX_D_DECL(axis_loc[0], axis_loc[1], axis_loc[2]));
   amrex::RealVect r(AMREX_D_DECL(0.0, 0.0, 0.0));
   amrex::RealVect x = pc_cmp_loc(iv, geomdata);
@@ -44,15 +40,13 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 amrex::Real
 get_rotaxis_dist(
-  const int i,
-  const int j,
-  const int k,
+  const amrex::IntVect& iv,
   int axis,
   amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc,
   amrex::GeometryData const& geomdata)
 {
-  amrex::RealVect r = get_rotaxis_vec(i, j, k, axis_loc, geomdata);
-  amrex::Real rad2 = r[0] * r[0] + r[1] * r[1] + r[2] * r[2];
+  amrex::RealVect r = get_rotaxis_vec(iv, axis_loc, geomdata);
+  amrex::Real rad2 = r.radSquared();
   rad2 -= r[axis] * r[axis]; // only in plane
   return (std::sqrt(rad2));
 }
@@ -61,15 +55,13 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 amrex::Real
 get_rot_energy(
-  const int i,
-  const int j,
-  const int k,
+  const amrex::IntVect& iv,
   amrex::Real omega,
   int axis,
   amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc,
   amrex::GeometryData const& geomdata)
 {
-  amrex::Real rad = get_rotaxis_dist(i, j, k, axis, axis_loc, geomdata);
+  amrex::Real rad = get_rotaxis_dist(iv, axis, axis_loc, geomdata);
   return (0.5 * omega * omega * rad * rad);
 }
 

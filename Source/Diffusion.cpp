@@ -135,8 +135,8 @@ PeleC::getMOLSrcTerm(
         amrex::ParallelFor(
           gbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
             if (using_rf) {
-              amrex::Real rad =
-                get_rotaxis_dist(i, j, k, axis, axis_loc, geomdata);
+              amrex::IntVect iv(AMREX_D_DECL(i, j, k));
+              amrex::Real rad = get_rotaxis_dist(iv, axis, axis_loc, geomdata);
               pc_ctoprim(i, j, k, sar, qar, qauxar, omega, rad);
             } else {
               pc_ctoprim(i, j, k, sar, qar, qauxar);

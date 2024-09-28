@@ -37,25 +37,30 @@ PeleC::pc_dermagvel_if(
   int /*dcomp*/,
   int /*ncomp*/,
   const amrex::FArrayBox& datfab,
+#if AMREX_SPACEDIM > 2
   const amrex::Geometry& geomdata,
+#else
+  const amrex::Geometry& /*geomdata*/,
+#endif
   amrex::Real /*time*/,
   const int* /*bcrec*/,
   const int /*level*/)
 {
   auto const dat = datfab.const_array();
   auto magvel = derfab.array();
-
-  int axis = rf_axis;
   int rotframeflag = do_rf;
-  amrex::Real omega = rf_omega;
-  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
-    AMREX_D_DECL(rf_axis_x, rf_axis_y, rf_axis_z)};
-  auto const gdata = geomdata.data();
 
-  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    if (rotframeflag) {
+  if (rotframeflag) {
 #if AMREX_SPACEDIM > 2
-      amrex::RealVect r = get_rotaxis_vec(i, j, k, axis_loc, gdata);
+    int axis = rf_axis;
+    amrex::Real omega = rf_omega;
+    amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
+      AMREX_D_DECL(rf_axis_x, rf_axis_y, rf_axis_z)};
+    auto const gdata = geomdata.data();
+
+    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      amrex::IntVect iv(AMREX_D_DECL(i, j, k));
+      amrex::RealVect r = get_rotaxis_vec(iv, axis_loc, gdata);
       amrex::RealVect w(0.0, 0.0, 0.0);
       w[axis] = omega;
       amrex::RealVect w_cross_r = w.crossProduct(r);
@@ -65,15 +70,17 @@ PeleC::pc_dermagvel_if(
       const amrex::Real dat2 = dat(i, j, k, UMY) * datinv + w_cross_r[1];
       const amrex::Real dat3 = dat(i, j, k, UMZ) * datinv + w_cross_r[2];
       magvel(i, j, k) = sqrt((dat1 * dat1) + (dat2 * dat2) + (dat3 * dat3));
+    });
 #endif
-    } else {
+  } else {
+    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       const amrex::Real datinv = 1.0 / dat(i, j, k, URHO);
       const amrex::Real dat1 = dat(i, j, k, UMX) * datinv;
       const amrex::Real dat2 = dat(i, j, k, UMY) * datinv;
       const amrex::Real dat3 = dat(i, j, k, UMZ) * datinv;
       magvel(i, j, k) = sqrt((dat1 * dat1) + (dat2 * dat2) + (dat3 * dat3));
-    }
-  });
+    });
+  }
 }
 
 void

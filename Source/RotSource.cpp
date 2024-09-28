@@ -35,6 +35,7 @@ PeleC::construct_new_rot_source(amrex::Real /*time*/, amrex::Real /*dt*/)
   }
 }
 
+#if AMREX_SPACEDIM > 2
 void
 PeleC::fill_rot_source(
   const amrex::MultiFab& state_old,
@@ -42,7 +43,6 @@ PeleC::fill_rot_source(
   amrex::MultiFab& rot_src,
   int ng)
 {
-#if AMREX_SPACEDIM > 2
   auto const& fact =
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(state_old.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
@@ -71,7 +71,8 @@ PeleC::fill_rot_source(
         amrex::RealVect w(AMREX_D_DECL(0.0, 0.0, 0.0));
         amrex::RealVect v(AMREX_D_DECL(0.0, 0.0, 0.0));
 
-        r = get_rotaxis_vec(i, j, k, axis_loc, geomdata);
+        amrex::IntVect iv(AMREX_D_DECL(i, j, k));
+        r = get_rotaxis_vec(iv, axis_loc, geomdata);
         w[axis] = omega;
 
         if (rf_on) {
@@ -96,5 +97,14 @@ PeleC::fill_rot_source(
     });
 
   amrex::Gpu::synchronize();
-#endif
 }
+#else
+void
+PeleC::fill_rot_source(
+  const amrex::MultiFab& /*state_old*/,
+  const amrex::MultiFab& /*state_new*/,
+  amrex::MultiFab& /*rot_src*/,
+  int /*ng*/)
+{
+}
+#endif

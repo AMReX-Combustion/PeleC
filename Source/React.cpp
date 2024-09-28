@@ -180,6 +180,7 @@ PeleC::react_state(
 
         amrex::ParallelFor(
           bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+            amrex::IntVect iv(AMREX_D_DECL(i, j, k));
             // work on old state
             amrex::Real rhou = sold_arr(i, j, k, UMX);
             amrex::Real rhov = sold_arr(i, j, k, UMY);
@@ -189,8 +190,7 @@ PeleC::react_state(
 
             amrex::Real rotenrg = 0.0;
             if (rotframeflag) {
-              rotenrg =
-                get_rot_energy(i, j, k, omega, axis, axis_loc, geomdata);
+              rotenrg = get_rot_energy(iv, omega, axis, axis_loc, geomdata);
             }
 
             amrex::Real e_old =
@@ -233,6 +233,7 @@ PeleC::react_state(
         amrex::ParallelFor(
           bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
             // work on old state
+            amrex::IntVect iv(AMREX_D_DECL(i, j, k));
             amrex::Real rhou = sold_arr(i, j, k, UMX);
             amrex::Real rhov = sold_arr(i, j, k, UMY);
             amrex::Real rhow = sold_arr(i, j, k, UMZ);
@@ -241,8 +242,7 @@ PeleC::react_state(
 
             amrex::Real rotenrg = 0.0;
             if (rotframeflag) {
-              rotenrg =
-                get_rot_energy(i, j, k, omega, axis, axis_loc, geomdata);
+              rotenrg = get_rot_energy(iv, omega, axis, axis_loc, geomdata);
             }
 
             amrex::Real e_old =

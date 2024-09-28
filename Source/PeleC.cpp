@@ -1553,9 +1553,9 @@ PeleC::enforce_consistent_e(amrex::MultiFab& S)
     amrex::ParallelFor(
       S, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
         auto sarr = sarrs[nbx];
-
+        amrex::IntVect iv(AMREX_D_DECL(i, j, k));
         amrex::Real rotenrg =
-          get_rot_energy(i, j, k, omega, axis, axis_loc, geomdata);
+          get_rot_energy(iv, omega, axis, axis_loc, geomdata);
         sarr(i, j, k, UEDEN) =
           sarr(i, j, k, UEINT) - sarr(i, j, k, URHO) * rotenrg;
       });
@@ -2212,7 +2212,8 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
       AMREX_D_DECL(rf_axis_x, rf_axis_y, rf_axis_z)};
     amrex::ParallelFor(
       S_new, ngs, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
-        amrex::Real rad = get_rotaxis_dist(i, j, k, axis, axis_loc, geomdata);
+        amrex::IntVect iv(AMREX_D_DECL(i, j, k));
+        amrex::Real rad = get_rotaxis_dist(iv, axis, axis_loc, geomdata);
         pc_rst_int_e(
           i, j, k, sarrs[nbx], captured_allow_small_energy,
           captured_allow_negative_energy, captured_dual_energy_update_E_from_e,
