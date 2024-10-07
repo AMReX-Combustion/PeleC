@@ -159,9 +159,9 @@ ExtrudedTriangles::build(
   problo = geom.ProbLo();
   probhi = geom.ProbHi();
 
-  maxlen = amrex::max<amrex::Real>(
-    amrex::max<amrex::Real>(geom.ProbLength(0), geom.ProbLength(1)),
-    geom.ProbLength(2));
+  AMREX_D_TERM(maxlen = geom.ProbLength(0);
+               , maxlen = amrex::max<amrex::Real>(maxlen, geom.ProbLength(1));
+               , maxlen = amrex::max<amrex::Real>(maxlen, geom.ProbLength(2)););
 
   // setting all triangles to be waaay outside the domain initially
   for (int itri = 0; itri < max_tri; itri++) {
