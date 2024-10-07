@@ -165,17 +165,20 @@ ExtrudedTriangles::build(
 
   // setting all triangles to be waaay outside the domain initially
   for (int itri = 0; itri < max_tri; itri++) {
-    alltri[npts_in_tri * itri + 0][0] = problo[0] + 100.0 * maxlen;
-    alltri[npts_in_tri * itri + 0][1] = problo[1] - 100.0 * maxlen;
-    alltri[npts_in_tri * itri + 0][2] = 0.0;
+    AMREX_D_TERM(alltri[npts_in_tri * itri + 0][0] = problo[0] + 100.0 * maxlen;
+                 ,
+                 alltri[npts_in_tri * itri + 0][1] = problo[1] - 100.0 * maxlen;
+                 , alltri[npts_in_tri * itri + 0][2] = 0.0;);
 
-    alltri[npts_in_tri * itri + 1][0] = probhi[0] + 100.0 * maxlen;
-    alltri[npts_in_tri * itri + 1][1] = problo[1] - 100.0 * maxlen;
-    alltri[npts_in_tri * itri + 1][2] = 0.0;
+    AMREX_D_TERM(alltri[npts_in_tri * itri + 1][0] = probhi[0] + 100.0 * maxlen;
+                 ,
+                 alltri[npts_in_tri * itri + 1][1] = problo[1] - 100.0 * maxlen;
+                 , alltri[npts_in_tri * itri + 1][2] = 0.0;);
 
-    alltri[npts_in_tri * itri + 2][0] = probhi[0] + 100.0 * maxlen;
-    alltri[npts_in_tri * itri + 2][1] = problo[1] + 100.0 * maxlen;
-    alltri[npts_in_tri * itri + 2][2] = 0.0;
+    AMREX_D_TERM(alltri[npts_in_tri * itri + 2][0] = probhi[0] + 100.0 * maxlen;
+                 ,
+                 alltri[npts_in_tri * itri + 2][1] = problo[1] + 100.0 * maxlen;
+                 , alltri[npts_in_tri * itri + 2][2] = 0.0;);
   }
 
   // get user defined number of triangles
@@ -217,17 +220,14 @@ ExtrudedTriangles::build(
     point1 = alltri[npts_in_tri * itri + 1];
     point2 = alltri[npts_in_tri * itri + 2];
 
-    norm0[0] = -(point1[1] - point0[1]);
-    norm0[1] = (point1[0] - point0[0]);
-    norm0[2] = 0.0;
+    AMREX_D_TERM(norm0[0] = -(point1[1] - point0[1]);
+                 , norm0[1] = (point1[0] - point0[0]);, norm0[2] = 0.0;);
 
-    norm1[0] = -(point2[1] - point1[1]);
-    norm1[1] = (point2[0] - point1[0]);
-    norm1[2] = 0.0;
+    AMREX_D_TERM(norm1[0] = -(point2[1] - point1[1]);
+                 , norm1[1] = (point2[0] - point1[0]);, norm1[2] = 0.0;);
 
-    norm2[0] = -(point0[1] - point2[1]);
-    norm2[1] = (point0[0] - point2[0]);
-    norm2[2] = 0.0;
+    AMREX_D_TERM(norm2[0] = -(point0[1] - point2[1]);
+                 , norm2[1] = (point0[0] - point2[0]);, norm2[2] = 0.0;);
 
     // normalize so that magnitude is 1
     amrex::Real norm = sqrt(norm0[0] * norm0[0] + norm0[1] * norm0[1]);
