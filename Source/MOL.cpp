@@ -136,8 +136,8 @@ pc_compute_hyp_mol_flux(
         amrex::Real flux_tmp[NVAR] = {0.0};
         amrex::Real ustar = 0.0;
 
-        amrex::Real radl=0.0;
-        amrex::Real radr=0.0;
+        amrex::Real radl = 0.0;
+        amrex::Real radr = 0.0;
         if (using_rotframe) {
 
           radr =
