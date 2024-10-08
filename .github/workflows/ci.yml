@@ -586,7 +586,7 @@ jobs:
       - name: Clone
         uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: 'recursive'
       - name: Setup
         run: |
           echo "NPROCS=$(sysctl -n hw.ncpu)" >> $GITHUB_ENV
