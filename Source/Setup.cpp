@@ -114,7 +114,7 @@ set_z_vel_bc(amrex::BCRec& bc, const amrex::BCRec& phys_bc)
 void
 PeleC::check_params()
 {
-  // After reading params, make sure everything is compatibile
+  // After reading params, make sure everything is compatible
 
   // rotational frame
   if (do_rf) {
