@@ -581,33 +581,40 @@ jobs:
 #          exit ${return}
   Lint-clang-tidy:
     needs: Formatting
-    runs-on: macos-13
+    runs-on: ubuntu-latest
     steps:
       - name: Clone
         uses: actions/checkout@v4
         with:
-          submodules: 'recursive'
+          submodules: true
       - name: Setup
         run: |
           echo "NPROCS=$(sysctl -n hw.ncpu)" >> $GITHUB_ENV
           echo "CCACHE_COMPRESS=1" >> $GITHUB_ENV
           echo "CCACHE_COMPRESSLEVEL=1" >> $GITHUB_ENV
           echo "CCACHE_LOGFILE=${{github.workspace}}/ccache.log.txt" >> $GITHUB_ENV
+          echo "CCACHE_EXTRAFILES=${{github.workspace}}/.clang-tidy" >> $GITHUB_ENV
           echo "CCACHE_MAXSIZE=500M" >> $GITHUB_ENV
+          echo "CTCACHE_DIR=~/.cache/ctcache" >> $GITHUB_ENV
       - name: Install Ccache
         run: |
-          brew install ccache
+          wget https://github.com/ccache/ccache/releases/download/v4.8/ccache-4.8-linux-x86_64.tar.xz
+          sudo curl https://raw.githubusercontent.com/matus-chochlik/ctcache/7fd516e91c17779cbc6fc18bd119313d9532dd90/clang-tidy-cache -Lo /usr/bin/clang-tidy-cache
+          tar xvf ccache-4.8-linux-x86_64.tar.xz
+          sudo cp -f ccache-4.8-linux-x86_64/ccache /usr/local/bin/
+          sudo chmod +x /usr/bin/clang-tidy-cache
+          mkdir -p ~/.cache/ctcache
       - name: Set Up Ccache
         uses: actions/cache@v4
         with:
-          path: /Users/runner/Library/Caches/ccache
+          path: ~/.cache
           key: ccache-${{github.workflow}}-${{github.job}}-git-${{github.sha}}
           restore-keys: |
                ccache-${{github.workflow}}-${{github.job}}-git-
       - name: Configure
         run: |
-          export PATH=$(brew --prefix llvm@15)/bin:${PATH}
-          cmake -B${{runner.workspace}}/build-clang-tidy \
+          cmake \
+          -B ${{runner.workspace}}/build-clang-tidy \
           -DCMAKE_BUILD_TYPE:STRING=Release \
           -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
           -DCMAKE_CXX_COMPILER:STRING=clang++ \
@@ -622,8 +629,6 @@ jobs:
       - name: Check
         working-directory: ${{runner.workspace}}/build-clang-tidy
         run: |
-          #set -eu -o pipefail
-          export PATH=$(brew --prefix llvm@15)/bin:${PATH}
           cmake --build . --parallel ${{env.NPROCS}} 2>&1 | tee -a clang-tidy-full-report.txt
           egrep "warning:|error:" clang-tidy-full-report.txt \
             | egrep -v "Submodules/amrex|Submodules/sundials" \
@@ -631,8 +636,12 @@ jobs:
             | awk 'BEGIN{i=0}{print $0}{i++}END{print "Warnings: "i}' > clang-tidy-warnings.txt
       - name: Ccache Report
         run: |
+          ls ~/.cache
+          ls ~/.cache/ccache
+          du -hs ~/.cache/ccache
+          ls ~/.cache/ctcache
+          du -hs ~/.cache/ctcache
           ccache -s
-          du -hs /Users/runner/Library/Caches/ccache
       - name: Full report
         working-directory: ${{runner.workspace}}/build-clang-tidy
         run: cat clang-tidy-full-report.txt
