@@ -61,7 +61,8 @@ pc_initdata(
   if (prob_parm.do_rf) {
     amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
       prob_parm.rf_axis_x, prob_parm.rf_axis_y, prob_parm.rf_axis_z};
-    amrex::RealVect r = get_rotaxis_vec(i, j, k, axis_loc, geomdata);
+    amrex::IntVect iv(AMREX_D_DECL(i, j, k));
+    amrex::RealVect r = get_rotaxis_vec(iv, axis_loc, geomdata);
     amrex::RealVect omgavec(0.0, 0.0, 0.0);
     omgavec[prob_parm.rf_axis] = prob_parm.rf_omega;
     amrex::RealVect w_cross_r = omgavec.crossProduct(r);
@@ -84,8 +85,9 @@ pc_initdata(
   if (prob_parm.do_rf) {
     amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
       prob_parm.rf_axis_x, prob_parm.rf_axis_y, prob_parm.rf_axis_z};
+    amrex::IntVect iv(AMREX_D_DECL(i, j, k));
     amrex::Real rotenrg = get_rot_energy(
-      i, j, k, prob_parm.rf_omega, prob_parm.rf_axis, axis_loc, geomdata);
+      iv, prob_parm.rf_omega, prob_parm.rf_axis, axis_loc, geomdata);
     state(i, j, k, UEDEN) -= rho * rotenrg;
   }
 }
