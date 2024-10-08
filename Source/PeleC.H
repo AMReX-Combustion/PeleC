@@ -714,6 +714,8 @@ protected:
 
   static void read_params();
 
+  static void check_params();
+
   static void read_tagging_params();
 
   PeleC& getLevel(int lev);

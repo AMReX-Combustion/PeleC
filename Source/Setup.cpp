@@ -112,6 +112,20 @@ set_z_vel_bc(amrex::BCRec& bc, const amrex::BCRec& phys_bc)
 }
 
 void
+PeleC::check_params()
+{
+  // After reading params, make sure everything is compatibile
+
+  // rotational frame
+  if (do_rf != 0) {
+    AMREX_ALWAYS_ASSERT_WITH_MESSAGE(
+      AMREX_SPACEDIM == 3, "Rotational frame only supported in 3D for now");
+    AMREX_ALWAYS_ASSERT_WITH_MESSAGE(
+      do_mol, "Rotational frame simulations require use of MOL");
+  }
+}
+
+void
 PeleC::variableSetUp()
 {
   // PeleC::variableSetUp is called in the constructor of Amr.cpp, so
@@ -170,6 +184,7 @@ PeleC::variableSetUp()
   // Get options, set phys_bc
   eb_in_domain = ebInDomain();
   read_params();
+  check_params();
 
 #ifdef PELE_USE_MASA
   if (do_mms) {
