@@ -174,10 +174,10 @@ PeleC::initialize_eb2_structs()
             AMREX_D_DECL(rf_axis_x, rf_axis_y, rf_axis_z)};
           amrex::Real rfdist2 = rf_rad * rf_rad;
 
-          auto u_bcval = sv_eb_bcval[iLocal].dataPtr(QU);
-          auto v_bcval = sv_eb_bcval[iLocal].dataPtr(QV);
-          auto w_bcval = sv_eb_bcval[iLocal].dataPtr(QW);
-          auto sten = sv_eb_bndry_geom[iLocal].data();
+          auto* u_bcval = sv_eb_bcval[iLocal].dataPtr(QU);
+          auto* v_bcval = sv_eb_bcval[iLocal].dataPtr(QV);
+          auto* w_bcval = sv_eb_bcval[iLocal].dataPtr(QW);
+          auto* sten = sv_eb_bndry_geom[iLocal].data();
           if (ncutcells > 0) {
             amrex::ParallelFor(ncutcells, [=] AMREX_GPU_DEVICE(int L) {
               const auto& iv = sten[L].iv;

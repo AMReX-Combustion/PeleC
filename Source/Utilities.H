@@ -7,7 +7,6 @@
 #include "Constants.H"
 #include "IndexDefines.H"
 #include "PelePhysics.H"
-#include <AMReX_Geometry.H>
 
 AMREX_GPU_HOST_DEVICE
 AMREX_FORCE_INLINE

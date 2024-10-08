@@ -17,7 +17,7 @@ PeleC::getMOLSrcTerm(
     return;
   }
 
-  int using_rf = do_rf;
+  bool using_rf = do_rf;
   amrex::Real omega = rf_omega;
   int axis = rf_axis;
   amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {

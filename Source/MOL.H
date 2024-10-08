@@ -126,7 +126,7 @@ void pc_compute_hyp_mol_flux(
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc,
   amrex::Real omega,
   int axisdir,
-  int do_rf);
+  bool do_rf);
 
 void pc_compute_hyp_mol_flux_eb(
   amrex::Geometry const& geom,

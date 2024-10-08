@@ -48,9 +48,8 @@ PeleC::pc_dermagvel_if(
 {
   auto const dat = datfab.const_array();
   auto magvel = derfab.array();
-  int rotframeflag = do_rf;
 
-  if (rotframeflag) {
+  if (do_rf) {
 #if AMREX_SPACEDIM > 2
     int axis = rf_axis;
     amrex::Real omega = rf_omega;
@@ -144,8 +143,7 @@ PeleC::pc_dereint1(
   //  Compute internal energy from (rho E).
   auto const dat = datfab.const_array();
   auto e = derfab.array();
-  int rotframeflag = do_rf;
-  if (rotframeflag) {
+  if (do_rf) {
 #if AMREX_SPACEDIM > 2
     int axis = rf_axis;
     amrex::Real omega = rf_omega;

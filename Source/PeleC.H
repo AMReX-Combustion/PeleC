@@ -382,7 +382,7 @@ public:
   void fill_rot_source(
     const amrex::MultiFab& state_old,
     const amrex::MultiFab& state_new,
-    amrex::MultiFab& forcing_src,
+    amrex::MultiFab& rot_src,
     int ng);
 
   void getLESTerm(

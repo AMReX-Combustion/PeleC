@@ -117,7 +117,7 @@ PeleC::check_params()
   // After reading params, make sure everything is compatibile
 
   // rotational frame
-  if (do_rf != 0) {
+  if (do_rf) {
     AMREX_ALWAYS_ASSERT_WITH_MESSAGE(
       AMREX_SPACEDIM == 3, "Rotational frame only supported in 3D for now");
     AMREX_ALWAYS_ASSERT_WITH_MESSAGE(

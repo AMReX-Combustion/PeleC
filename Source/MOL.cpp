@@ -17,7 +17,7 @@ pc_compute_hyp_mol_flux(
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc,
   amrex::Real omega,
   int axisdir,
-  int do_rf)
+  bool do_rf)
 {
   const int R_RHO = 0;
   const int R_UN = 1;
@@ -28,7 +28,7 @@ pc_compute_hyp_mol_flux(
   const int R_Y = R_ADV + NUM_ADV;
   const int R_NUM = 5 + NUM_SPECIES + NUM_ADV + NUM_LIN + NUM_AUX;
   const int bc_test_val = 1;
-  int using_rotframe = do_rf; // local capture
+  const bool using_rotframe = do_rf; // local capture
   const auto geomdata = geom.data();
   int axisdir_captured = axisdir;
   amrex::Real omega_captured = omega;
@@ -139,10 +139,8 @@ pc_compute_hyp_mol_flux(
         amrex::Real radl = 0.0;
         amrex::Real radr = 0.0;
         if (using_rotframe) {
-
           radr =
             get_rotaxis_dist(iv, axisdir_captured, axisloc_captured, geomdata);
-
           radl =
             get_rotaxis_dist(ivm, axisdir_captured, axisloc_captured, geomdata);
         }

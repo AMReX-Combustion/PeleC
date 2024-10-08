@@ -48,7 +48,7 @@ PeleC::fill_rot_source(
   auto const& flags = fact.getMultiEBCellFlagFab();
 
   const auto geomdata = geom.data();
-  int rf_on = do_rf;
+  const bool rf_on = do_rf;
   amrex::Real omega = rf_omega;
   int axis = rf_axis;
 

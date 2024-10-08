@@ -123,7 +123,7 @@ PeleC::react_state(
   auto const& flags = fact.getMultiEBCellFlagFab();
 
   // for rotational frames
-  int rotframeflag = do_rf;
+  const bool rotframeflag = do_rf;
   const auto geomdata = geom.data();
   int axis = rf_axis;
   amrex::Real omega = rf_omega;
