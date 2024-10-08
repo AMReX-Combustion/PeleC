@@ -20,8 +20,9 @@ pc_srctoprim(
   amrex::Array4<const amrex::Real> const& src,
   amrex::Array4<amrex::Real> const& srcq)
 {
-  // FIXME:
-  // Hari S: unsure how to incorporate rotational frames here
+  // Note (Hari S):
+  // rotational frame not incorporated here, but shouldn't be called because
+  // RF required MOL and this is only used for SDC/Godunov
 
   // Local loading Vars ==> Load once from global memory use multiple times
   const amrex::Real srcrho = src(i, j, k, URHO);
