@@ -22,7 +22,6 @@ Checks: 'bugprone-*,
          -readability-function-size'
 WarningsAsErrors: ''
 HeaderFilterRegex: 'PeleC\/Source|PeleC\/Exec|PeleC\/Submodules\/PelePhysics\/Source|PeleC\/Submodules\/PelePhysics\/Mechanism'
-AnalyzeTemporaryDtors: false
 FormatStyle:     none
 User:            user
 CheckOptions:
