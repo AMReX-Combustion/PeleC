@@ -155,17 +155,6 @@ void pc_derkineng(
   const int* bcrec,
   const int level);
 
-void pc_dereint1(
-  const amrex::Box& bx,
-  amrex::FArrayBox& derfab,
-  int dcomp,
-  int ncomp,
-  const amrex::FArrayBox& datfab,
-  const amrex::Geometry& geomdata,
-  amrex::Real time,
-  const int* bcrec,
-  const int level);
-
 void pc_derlogden(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,

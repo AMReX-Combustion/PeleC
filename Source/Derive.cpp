@@ -130,36 +130,53 @@ pc_derkineng(
 }
 
 void
-pc_dereint1(
+PeleC::pc_dereint1(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
   int /*dcomp*/,
   int /*ncomp*/,
   const amrex::FArrayBox& datfab,
-  const amrex::Geometry& /*geomdata*/,
+  const amrex::Geometry& geomdata,
   amrex::Real /*time*/,
   const int* /*bcrec*/,
   const int /*level*/)
-// amrex::Real omega=0.0,
-// amrex::Real rad=0.0 )
 {
-  // FIXME:Hari S:
-  // can't seem to add omega and rad
-  // as derive functions are quite rigid
   //  Compute internal energy from (rho E).
   auto const dat = datfab.const_array();
   auto e = derfab.array();
-
-  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    const amrex::Real rhoInv = 1.0 / dat(i, j, k, URHO);
-    const amrex::Real ux = dat(i, j, k, UMX) * rhoInv;
-    const amrex::Real uy = dat(i, j, k, UMY) * rhoInv;
-    const amrex::Real uz = dat(i, j, k, UMZ) * rhoInv;
-    e(i, j, k) =
-      dat(i, j, k, UEDEN) * rhoInv - 0.5 * (ux * ux + uy * uy + uz * uz);
-    // see Blazek, Appendix A3, Navier-Stokes in rotating frame of reference
-    // e(i,j,k)-=0.5*omega*omega*rad*rad;
-  });
+  int rotframeflag = do_rf;
+  if (rotframeflag) {
+#if AMREX_SPACEDIM > 2
+    int axis = rf_axis;
+    amrex::Real omega = rf_omega;
+    amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
+      AMREX_D_DECL(rf_axis_x, rf_axis_y, rf_axis_z)};
+    auto const gdata = geomdata.data();
+    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      amrex::IntVect iv(AMREX_D_DECL(i, j, k));
+      amrex::Real roteng = get_rot_energy(iv, omega, axis, axis_loc, gdata);
+      const amrex::Real rhoInv = 1.0 / dat(i, j, k, URHO);
+      const amrex::Real ux = dat(i, j, k, UMX) * rhoInv;
+      const amrex::Real uy = dat(i, j, k, UMY) * rhoInv;
+      const amrex::Real uz = dat(i, j, k, UMZ) * rhoInv;
+      e(i, j, k) =
+        dat(i, j, k, UEDEN) * rhoInv - 0.5 * (ux * ux + uy * uy + uz * uz);
+      // see Blazek, Appendix A3, Navier-Stokes in rotating frame of reference
+      e(i, j, k) -= roteng;
+    });
+#else
+    amrex::ignore_unused(geomdata);
+#endif
+  } else {
+    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      const amrex::Real rhoInv = 1.0 / dat(i, j, k, URHO);
+      const amrex::Real ux = dat(i, j, k, UMX) * rhoInv;
+      const amrex::Real uy = dat(i, j, k, UMY) * rhoInv;
+      const amrex::Real uz = dat(i, j, k, UMZ) * rhoInv;
+      e(i, j, k) =
+        dat(i, j, k, UEDEN) * rhoInv - 0.5 * (ux * ux + uy * uy + uz * uz);
+    });
+  }
 }
 
 void
