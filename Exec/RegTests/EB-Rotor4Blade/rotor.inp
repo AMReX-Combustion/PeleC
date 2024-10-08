@@ -5,9 +5,9 @@ stop_time = 0.06
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic =  1  1  1
 geometry.coord_sys   =  0       # 0 => cart
-geometry.prob_lo     =  -50.0 -50.0  -6.25
-geometry.prob_hi     =   50.0  50.0   6.25
-amr.n_cell           =  256 256 32
+geometry.prob_lo     =  -50.0 -50.0  -1.5625
+geometry.prob_hi     =   50.0  50.0   1.5625
+amr.n_cell           =  256 256 8
 
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
