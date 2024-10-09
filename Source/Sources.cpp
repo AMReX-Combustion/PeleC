@@ -47,6 +47,10 @@ PeleC::construct_old_source(
     construct_old_mms_source(time);
     break;
 #endif
+
+  default:
+    amrex::Abort("Unrecognized source term");
+    break;
   } // end switch
 }
 
@@ -95,6 +99,10 @@ PeleC::construct_new_source(
     construct_new_mms_source(time);
     break;
 #endif
+
+  default:
+    amrex::Abort("Unrecognized source term");
+    break;
   } // end switch
 }
 

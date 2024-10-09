@@ -38,7 +38,7 @@ PeleC::initialize_eb2_structs()
   amrex::Print() << "Initializing EB2 structs" << std::endl;
 
   static_assert(
-    std::is_standard_layout<EBBndryGeom>::value,
+    std::is_standard_layout_v<EBBndryGeom>,
     "EBBndryGeom is not standard layout");
 
   const auto& ebfactory =
