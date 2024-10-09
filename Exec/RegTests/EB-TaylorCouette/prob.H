@@ -44,10 +44,6 @@ pc_initdata(
   amrex::GeometryData const& geomdata,
   ProbParmDevice const& prob_parm)
 {
-  // Geometry
-  const amrex::Real* prob_lo = geomdata.ProbLo();
-  const amrex::Real* dx = geomdata.CellSize();
-
   amrex::Real u = 0.0;
   amrex::Real v = 0.0;
   amrex::Real w = 0.0;
