@@ -127,7 +127,7 @@ the end of each time step. The re-redistribution is performed every time the ref
 presented in `Pember et al. <https://www.sciencedirect.com/science/article/pii/S0021999185711655>`_. A forthcoming paper will describe the methodology for this procedure when using state redistribution.
 
 
-Date Structures and utility functions
+Data Structures and utility functions
 -------------------------------------
 
 Several structures exist to store geometry dependent information. These are populated on creation of a new AMRLevel and stored in the PeleC object so that they are available for computation. These facilitate accessing the EB data. The datatypes are:
@@ -205,3 +205,90 @@ Problem specific inflow conditions on an EB
 It is possible for the user to define problem specific conditions on an EB surface. This is done by defining an ``problem_eb_state`` function and then including `pelec.eb_problem_state = 1` in the input file. An example of this is found in the ``EB-InflowBC`` case.
 
 .. warning:: This is a beta feature. Currently this will only affect the calculation of the hydrodynamic fluxes so this works best for advection dominated EB conditions.
+
+Rotational frames
+------------------------------
+
+.. warning:: PeleC has limited support for simulations using rotating frames using the single-reference-frame (SRF) 
+   method only in 3D and needs the MOL scheme when using this feature.
+
+
+Single-reference-frame implementation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+PeleC currently supports a non-inertial frame based implementation 
+for rotating bodies, which are relevant for turbomachinery applications. 
+The source terms for momentum and energy equations
+are applied in the non-inertial reference frame for cylindrically symmetric
+embedded boundaries. The total energy in the non-inertial frame is 
+modified with the inclusion of rotatational kinetic energy:
+
+.. math::
+   E = e + \frac{u^2+v^2+w^2}{2} - \frac{\omega^2 r^2}{2} 
+
+where E is the total specific energy, e is specific internal energy,
+u,v,w are the velocity components, :math:`\omega` is the angular velocity, and 
+r is the distance from the rotational axis.
+The momentum equation includes additional source terms for 
+Coriolis, centrifugal, and rotational acceleration:
+
+.. math::
+
+        \frac{\partial}{\partial t} (\rho \mathbf{v})+ \mathbf{\nabla} \cdot (\rho V V)=-\mathbf{\nabla}P + \mathbf{\nabla} \cdot \bar{\bar{\tau}}
+        -\rho (2 \mathbf{\omega} \times \mathbf{V} + \mathbf{\omega} \times (\mathbf{\omega} \times r) + \dot{\mathbf{\omega}} \times r)
+
+For further details, refer to Appendix A.3 
+*Navier-Stokes Equations in Rotating Frame of Reference* 
+in textbook *Computational fluid dynamics: principles and applications* by J. Blazek. 
+
+Single-reference-frame usage
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Most often in turbomachinery applications, there is rotor and 
+a stator, which will be represented in PeleC as embedded boundaries.
+The rotor will most often include blades and other components that are 
+not rotational symmetric like a cylindrical stator surface. This capability
+will solve the governing equations in the non inertial frame where the 
+rotor boundary would then be a no-slip wall while the stator, which is rotationally 
+symmetric, will be a slip wall. Therefore, the user in this case
+has to differentiate where the stator is using ``pelec.rf_rad`` parameter that 
+says anything beyond this radius will be a stator.
+The rotational frame capability can be turned on by using these inputs:
+
+::
+
+   pelec.do_rf=1  #turn on rotational frames
+   pelec.rf_omega=500.0 #rotational speed (rad/s)
+   pelec.rf_axis=2      #axis of rotation (0-x,1-y,2-z)
+   pelec.rf_axis_x=0.0  #x location of axis 
+   pelec.rf_axis_y=0.0  #y location of axis
+   pelec.rf_axis_z=0.0  #z location of axis
+   pelec.rf_rad=20.0    #non-zero EB velocity beyond this radius
+   pelec.do_mol = 1     #rotational frames only implemented with MOL
+
+The velocities in the plot files will be in the rotating frame.
+But, one can turn on ``amr.derive_plot_vars`` to add new variables 
+that transform velocity back to inertial frame. These variable names 
+include ``x_velocity_if``, ``y_velocity_if`` , ``z_velocity_if`` and 
+``magvel_if``.
+ 
+Some example test cases
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+We have tested this SRF implementation using a Taylor-Couette example (see ``Exec/EB_TaylorCouette``)
+for which we obtain solutions matching the analytic solution as shown in
+Figure :ref:`rotational-frame-verification <rotframe>` (a).
+
+We have also done a comparison with the incompressible SRF solver in OpenFOAM for a
+4 bladed rotor case (see ``Exec/EB_Rotor4Blade``). 
+The solutions agree reasonably well, as shown in Figure :ref:`rotational-frame-verification <rotframe>` (b) 
+with minor differences due to the compressible formulation in PeleC. 
+
+.. _rotframe:
+
+.. figure:: rotframetests.png
+   :alt: EB Cell
+   :width: 400
+
+   \(a) solution to Taylor-Couette flow compared to analytic solution and (b) 
+   comparison of velocity magntiude for a 4 blade rotor case with incompressible 
+   SRF solver from OpenFOAM. 

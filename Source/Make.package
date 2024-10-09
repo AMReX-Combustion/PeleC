@@ -26,6 +26,7 @@ CEXE_sources += LES.cpp
 CEXE_sources += EB.cpp
 CEXE_sources += Geometry.cpp
 CEXE_sources += InitEB.cpp
+CEXE_sources += RotSource.cpp
 
 #C++ headers
 CEXE_headers += PeleC.H

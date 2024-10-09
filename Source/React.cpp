@@ -122,6 +122,14 @@ PeleC::react_state(
     dynamic_cast<amrex::EBFArrayBoxFactory const&>(S_new.Factory());
   auto const& flags = fact.getMultiEBCellFlagFab();
 
+  // for rotational frames
+  const bool rotframeflag = do_rf;
+  const auto geomdata = geom.data();
+  int axis = rf_axis;
+  amrex::Real omega = rf_omega;
+  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
+    AMREX_D_DECL(rf_axis_x, rf_axis_y, rf_axis_z)};
+
 #ifdef AMREX_USE_OMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
@@ -172,6 +180,7 @@ PeleC::react_state(
 
         amrex::ParallelFor(
           bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+            amrex::IntVect iv(AMREX_D_DECL(i, j, k));
             // work on old state
             amrex::Real rhou = sold_arr(i, j, k, UMX);
             amrex::Real rhov = sold_arr(i, j, k, UMY);
@@ -179,10 +188,20 @@ PeleC::react_state(
             amrex::Real rho_old = sold_arr(i, j, k, URHO);
             amrex::Real rhoInv = 1.0 / rho_old;
 
+            amrex::Real rotenrg = 0.0;
+            if (rotframeflag) {
+              rotenrg = get_rot_energy(iv, omega, axis, axis_loc, geomdata);
+            }
+
             amrex::Real e_old =
               (sold_arr(i, j, k, UEDEN) // total energy
                - 0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv) // KE
               * rhoInv;
+
+            // note: e_den =e_int + 0.5*(u^2+v^2+w^2)-0.5*omega^2*rad^2
+            // see Blazek, Appendix A3, Navier-Stokes in rotating frame of
+            // reference
+            e_old += rotenrg;
 
             // work on new state
             rhou = snew_arr(i, j, k, UMX);
@@ -192,8 +211,8 @@ PeleC::react_state(
 
             amrex::Real rhoedot_ext =
               (snew_arr(i, j, k, UEDEN) // new total energy
-               - 0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) *
-                   rhoInv // new KE
+               - 0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv +
+               snew_arr(i, j, k, URHO) * rotenrg // new KE
                - rho_old * e_old) /
               dt;
 
@@ -214,16 +233,24 @@ PeleC::react_state(
         amrex::ParallelFor(
           bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
             // work on old state
+            amrex::IntVect iv(AMREX_D_DECL(i, j, k));
             amrex::Real rhou = sold_arr(i, j, k, UMX);
             amrex::Real rhov = sold_arr(i, j, k, UMY);
             amrex::Real rhow = sold_arr(i, j, k, UMZ);
             amrex::Real rho_old = sold_arr(i, j, k, URHO);
             amrex::Real rhoInv = 1.0 / rho_old;
 
+            amrex::Real rotenrg = 0.0;
+            if (rotframeflag) {
+              rotenrg = get_rot_energy(iv, omega, axis, axis_loc, geomdata);
+            }
+
             amrex::Real e_old =
               (sold_arr(i, j, k, UEDEN) // old total energy
                - 0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv) // KE
               * rhoInv;
+
+            e_old += rotenrg;
 
             rhou = snew_arr(i, j, k, UMX);
             rhov = snew_arr(i, j, k, UMY);
@@ -233,7 +260,8 @@ PeleC::react_state(
             amrex::Real rhoedot_ext =
               (snew_arr(i, j, k, UEDEN) // new total energy
                - 0.5 * (rhou * rhou + rhov * rhov + rhow * rhow) * rhoInv // KE
-               - rho_old * e_old) // old internal energy
+               + snew_arr(i, j, k, URHO) * rotenrg -
+               rho_old * e_old) // old internal energy
               / dt;
 
             amrex::Real umnew =
@@ -264,7 +292,8 @@ PeleC::react_state(
               snew_arr(i, j, k, UEINT) = rho_old * e_old + dt * rhoedot_ext;
               snew_arr(i, j, k, UEDEN) =
                 snew_arr(i, j, k, UEINT) +
-                0.5 * (umnew * umnew + vmnew * vmnew + wmnew * wmnew) / rhonew;
+                0.5 * (umnew * umnew + vmnew * vmnew + wmnew * wmnew) / rhonew -
+                rhonew * rotenrg;
             }
 
             for (int nsp = 0; nsp < NUM_SPECIES; nsp++) {
@@ -276,8 +305,9 @@ PeleC::react_state(
 
             I_R(i, j, k, NUM_SPECIES) =
               (rho_old * e_old + dt * rhoedot_ext // new internal energy
-               + 0.5 * (umnew * umnew + vmnew * vmnew + wmnew * wmnew) /
-                   rhonew                  // new KE
+               +
+               0.5 * (umnew * umnew + vmnew * vmnew + wmnew * wmnew) / rhonew -
+               rhonew * rotenrg            // new KE
                - sold_arr(i, j, k, UEDEN)) // old total energy
                 / dt -
               nonrs_arr(i, j, k, UEDEN);

@@ -121,7 +121,12 @@ void pc_compute_hyp_mol_flux(
     area,
   const int mol_iorder,
   const bool use_laxf_flux,
-  const amrex::Array4<amrex::EBCellFlag const>& flags);
+  const amrex::Array4<amrex::EBCellFlag const>& flags,
+  const amrex::Geometry& geom,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc,
+  amrex::Real omega,
+  int axisdir,
+  bool do_rf);
 
 void pc_compute_hyp_mol_flux_eb(
   amrex::Geometry const& geom,

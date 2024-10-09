@@ -112,6 +112,20 @@ set_z_vel_bc(amrex::BCRec& bc, const amrex::BCRec& phys_bc)
 }
 
 void
+PeleC::check_params()
+{
+  // After reading params, make sure everything is compatible
+
+  // rotational frame
+  if (do_rf) {
+    AMREX_ALWAYS_ASSERT_WITH_MESSAGE(
+      AMREX_SPACEDIM == 3, "Rotational frame only supported in 3D for now");
+    AMREX_ALWAYS_ASSERT_WITH_MESSAGE(
+      do_mol, "Rotational frame simulations require use of MOL");
+  }
+}
+
+void
 PeleC::variableSetUp()
 {
   // PeleC::variableSetUp is called in the constructor of Amr.cpp, so
@@ -170,6 +184,7 @@ PeleC::variableSetUp()
   // Get options, set phys_bc
   eb_in_domain = ebInDomain();
   read_params();
+  check_params();
 
 #ifdef PELE_USE_MASA
   if (do_mms) {
@@ -540,6 +555,31 @@ PeleC::variableSetUp()
     amrex::DeriveRec::TheSameBox);
   derive_lst.addComponent("magmom", desc_lst, State_Type, Density, NVAR);
 
+  // Velocities in stationary frame
+  if (do_rf) {
+    derive_lst.add(
+      "x_velocity_if", amrex::IndexType::TheCellType(), 1, pc_dervel_if<0>,
+      amrex::DeriveRec::TheSameBox);
+    derive_lst.addComponent(
+      "x_velocity_if", desc_lst, State_Type, Density, NVAR);
+
+    derive_lst.add(
+      "y_velocity_if", amrex::IndexType::TheCellType(), 1, pc_dervel_if<1>,
+      amrex::DeriveRec::TheSameBox);
+    derive_lst.addComponent(
+      "y_velocity_if", desc_lst, State_Type, Density, NVAR);
+
+    derive_lst.add(
+      "z_velocity_if", amrex::IndexType::TheCellType(), 1, pc_dervel_if<2>,
+      amrex::DeriveRec::TheSameBox);
+    derive_lst.addComponent(
+      "z_velocity_if", desc_lst, State_Type, Density, NVAR);
+
+    derive_lst.add(
+      "magvel_if", amrex::IndexType::TheCellType(), 1, pc_dermagvel_if,
+      amrex::DeriveRec::TheSameBox);
+    derive_lst.addComponent("magvel_if", desc_lst, State_Type, Density, NVAR);
+  }
 #ifdef PELE_USE_SOOT
   if (add_soot_src) {
     addSootDerivePlotVars(derive_lst, desc_lst);
@@ -725,4 +765,8 @@ PeleC::set_active_sources()
     src_list.push_back(mms_src);
   }
 #endif
+
+  if (do_rf) {
+    src_list.push_back(rot_src);
+  }
 }

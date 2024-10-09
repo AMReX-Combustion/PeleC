@@ -161,7 +161,62 @@ PeleC::initialize_eb2_structs()
         sv_eb_bcval[iLocal].setVal(eb_boundary_T, QTEMP);
       }
       if (eb_noslip && diffuse_vel) {
-        sv_eb_bcval[iLocal].setVal(0, QU, AMREX_SPACEDIM);
+
+        if (do_rf) {
+#if AMREX_SPACEDIM > 2
+          const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dxlev =
+            geom.CellSizeArray();
+          const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_lo =
+            geom.ProbLoArray();
+          int axis = rf_axis;
+          amrex::Real omega = rf_omega;
+          amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
+            AMREX_D_DECL(rf_axis_x, rf_axis_y, rf_axis_z)};
+          amrex::Real rfdist2 = rf_rad * rf_rad;
+
+          auto* u_bcval = sv_eb_bcval[iLocal].dataPtr(QU);
+          auto* v_bcval = sv_eb_bcval[iLocal].dataPtr(QV);
+          auto* w_bcval = sv_eb_bcval[iLocal].dataPtr(QW);
+          auto* sten = sv_eb_bndry_geom[iLocal].data();
+          if (ncutcells > 0) {
+            amrex::ParallelFor(ncutcells, [=] AMREX_GPU_DEVICE(int L) {
+              const auto& iv = sten[L].iv;
+
+              amrex::Real xloc =
+                prob_lo[0] + (iv[0] + 0.5 + sten[L].eb_centroid[0]) * dxlev[0];
+              amrex::Real yloc =
+                prob_lo[1] + (iv[1] + 0.5 + sten[L].eb_centroid[1]) * dxlev[1];
+              amrex::Real zloc =
+                prob_lo[2] + (iv[2] + 0.5 + sten[L].eb_centroid[2]) * dxlev[2];
+
+              amrex::RealVect r(AMREX_D_DECL(0.0, 0.0, 0.0));
+              amrex::RealVect w(AMREX_D_DECL(0.0, 0.0, 0.0));
+
+              r[0] = xloc - axis_loc[0];
+              r[1] = yloc - axis_loc[1];
+              r[2] = zloc - axis_loc[2];
+
+              amrex::Real rmag2 = r.radSquared();
+              rmag2 -= r[axis] * r[axis]; // only in plane
+
+              if (rmag2 > rfdist2) {
+                w[axis] = omega;
+                amrex::RealVect w_cross_r = w.crossProduct(r);
+
+                u_bcval[L] = -w_cross_r[0];
+                v_bcval[L] = -w_cross_r[1];
+                w_bcval[L] = -w_cross_r[2];
+              } else {
+                u_bcval[L] = 0.0;
+                v_bcval[L] = 0.0;
+                w_bcval[L] = 0.0;
+              }
+            });
+          }
+#endif
+        } else {
+          sv_eb_bcval[iLocal].setVal(0, QU, AMREX_SPACEDIM);
+        }
       }
 
     } else {
