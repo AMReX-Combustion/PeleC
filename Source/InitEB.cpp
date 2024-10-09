@@ -560,9 +560,7 @@ PeleC::extend_signed_distance(
                       +((j - jj) * dx[1] * (j - jj) * dx[1]),
                       +((k - kk) * dx[2] * (k - kk) * dx[2])));
                     const amrex::Real distToEB = distToCell + sd_cc(ii, jj, kk);
-                    if (distToEB < closestEBDist) {
-                      closestEBDist = distToEB;
-                    }
+                    closestEBDist = amrex::min(distToEB, closestEBDist);
                   }
                 }
               }
