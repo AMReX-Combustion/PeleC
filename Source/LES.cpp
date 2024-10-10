@@ -152,8 +152,8 @@ PeleC::getLESTerm(
 
 void
 computeTangentialVelDerivs(
-  const amrex::Box eboxes[AMREX_SPACEDIM],
-  amrex::FArrayBox tander_ec[AMREX_SPACEDIM],
+  const amrex::Array<const amrex::Box, AMREX_SPACEDIM>& eboxes,
+  amrex::Array<amrex::FArrayBox, AMREX_SPACEDIM>& tander_ec,
   amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& tanders,
   const amrex::Array4<amrex::Real>& q_ar,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx)
@@ -176,9 +176,9 @@ computeTangentialVelDerivs(
 
 void
 resizeAndSetFlux(
-  const amrex::Box eboxes[AMREX_SPACEDIM],
+  const amrex::Array<const amrex::Box, AMREX_SPACEDIM>& eboxes,
   amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flx,
-  amrex::FArrayBox flux_ec[AMREX_SPACEDIM])
+  amrex::Array<amrex::FArrayBox, AMREX_SPACEDIM>& flux_ec)
 {
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
     flux_ec[dir].resize(eboxes[dir], NVAR, amrex::The_Async_Arena());
@@ -215,7 +215,7 @@ PeleC::updateFluxRegistersLES(
   amrex::Real dt,
   const amrex::MFIter& mfi,
   amrex::FabType typ,
-  const std::array<amrex::FArrayBox const*, AMREX_SPACEDIM>& flux_ec)
+  const amrex::Array<amrex::FArrayBox const*, AMREX_SPACEDIM>& flux_ec)
 {
   if (do_reflux && reflux_factor != 0) {
     amrex::FArrayBox dm_as_fine(
@@ -287,16 +287,17 @@ PeleC::getSmagorinskyLESTerm(
       }
 
       // Get the tangential derivatives
-      amrex::FArrayBox tander_ec[AMREX_SPACEDIM];
-      const amrex::Box eboxes[AMREX_SPACEDIM] = {AMREX_D_DECL(
-        amrex::surroundingNodes(cbox, 0), amrex::surroundingNodes(cbox, 1),
-        amrex::surroundingNodes(cbox, 2))};
+      amrex::Array<amrex::FArrayBox, AMREX_SPACEDIM> tander_ec;
+      const amrex::Array<const amrex::Box, AMREX_SPACEDIM> eboxes = {
+        AMREX_D_DECL(
+          amrex::surroundingNodes(cbox, 0), amrex::surroundingNodes(cbox, 1),
+          amrex::surroundingNodes(cbox, 2))};
       amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> tanders;
 
       computeTangentialVelDerivs(eboxes, tander_ec, tanders, q_ar, dx);
 
       // Compute extensive LES fluxes, F.A
-      amrex::FArrayBox flux_ec[AMREX_SPACEDIM];
+      amrex::Array<amrex::FArrayBox, AMREX_SPACEDIM> flux_ec;
       const amrex::GpuArray<
         const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
         a{{AMREX_D_DECL(
@@ -324,7 +325,7 @@ PeleC::getSmagorinskyLESTerm(
       // Refluxing
       updateFluxRegistersLES(
         reflux_factor, LESTerm, dt, mfi, typ,
-        {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])});
+        {AMREX_D_DECL(flux_ec.data(), &flux_ec[1], &flux_ec[2])});
     } // End of MFIter scope
   } // End of OMP scope
 #endif
@@ -521,9 +522,10 @@ PeleC::getDynamicSmagorinskyLESTerm(
       // 6. Get the SFS term
 
       // First step: move everything needed to compute fluxes to ec (faces)
-      const amrex::Box eboxes[AMREX_SPACEDIM] = {AMREX_D_DECL(
-        amrex::surroundingNodes(cbox, 0), amrex::surroundingNodes(cbox, 1),
-        amrex::surroundingNodes(cbox, 2))};
+      const amrex::Array<const amrex::Box, AMREX_SPACEDIM> eboxes = {
+        AMREX_D_DECL(
+          amrex::surroundingNodes(cbox, 0), amrex::surroundingNodes(cbox, 1),
+          amrex::surroundingNodes(cbox, 2))};
       amrex::FArrayBox coeff_ec[AMREX_SPACEDIM];
       amrex::FArrayBox alphaij_ec[AMREX_SPACEDIM];
       amrex::FArrayBox alpha_ec[AMREX_SPACEDIM];
@@ -579,7 +581,7 @@ PeleC::getDynamicSmagorinskyLESTerm(
 
       // Compute the fluxes at the faces: all values passed are at faces
       // except for Q, V, and Lterm
-      amrex::FArrayBox flux_ec[AMREX_SPACEDIM];
+      amrex::Array<amrex::FArrayBox, AMREX_SPACEDIM> flux_ec;
       const amrex::GpuArray<
         const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
         a{{AMREX_D_DECL(
@@ -604,7 +606,7 @@ PeleC::getDynamicSmagorinskyLESTerm(
       // Refluxing
       updateFluxRegistersLES(
         reflux_factor, LESTerm, dt, mfi, typ,
-        {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])});
+        {AMREX_D_DECL(flux_ec.data(), &flux_ec[1], &flux_ec[2])});
     }
   }
 #endif
@@ -673,15 +675,17 @@ PeleC::getWALELESTerm(
       }
 
       // Get the tangential derivatives
-      amrex::FArrayBox tander_ec[AMREX_SPACEDIM];
-      const amrex::Box eboxes[AMREX_SPACEDIM] = {AMREX_D_DECL(
-        amrex::surroundingNodes(cbox, 0), amrex::surroundingNodes(cbox, 1),
-        amrex::surroundingNodes(cbox, 2))};
+      amrex::Array<amrex::FArrayBox, AMREX_SPACEDIM> tander_ec;
+      const amrex::Array<const amrex::Box, AMREX_SPACEDIM> eboxes = {
+        AMREX_D_DECL(
+          amrex::surroundingNodes(cbox, 0), amrex::surroundingNodes(cbox, 1),
+          amrex::surroundingNodes(cbox, 2))};
       amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> tanders;
       computeTangentialVelDerivs(eboxes, tander_ec, tanders, q_ar, dx);
 
       // Compute extensive LES fluxes, F.A
-      amrex::FArrayBox flux_ec[AMREX_SPACEDIM];
+      amrex::Array<amrex::FArrayBox, AMREX_SPACEDIM> flux_ec;
+
       const amrex::GpuArray<
         const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
         a{{AMREX_D_DECL(
@@ -709,7 +713,7 @@ PeleC::getWALELESTerm(
       // Refluxing
       updateFluxRegistersLES(
         reflux_factor, LESTerm, dt, mfi, typ,
-        {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])});
+        {AMREX_D_DECL(flux_ec.data(), &flux_ec[1], &flux_ec[2])});
     } // End of MFIter scope
   } // End of OMP scope
 #endif
@@ -778,16 +782,17 @@ PeleC::getVremanLESTerm(
       }
 
       // Get the tangential derivatives
-      amrex::FArrayBox tander_ec[AMREX_SPACEDIM];
-      const amrex::Box eboxes[AMREX_SPACEDIM] = {AMREX_D_DECL(
-        amrex::surroundingNodes(cbox, 0), amrex::surroundingNodes(cbox, 1),
-        amrex::surroundingNodes(cbox, 2))};
+      amrex::Array<amrex::FArrayBox, AMREX_SPACEDIM> tander_ec;
+      const amrex::Array<const amrex::Box, AMREX_SPACEDIM> eboxes = {
+        AMREX_D_DECL(
+          amrex::surroundingNodes(cbox, 0), amrex::surroundingNodes(cbox, 1),
+          amrex::surroundingNodes(cbox, 2))};
       amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> tanders;
 
       computeTangentialVelDerivs(eboxes, tander_ec, tanders, q_ar, dx);
 
       // Compute extensive LES fluxes, F.A
-      amrex::FArrayBox flux_ec[AMREX_SPACEDIM];
+      amrex::Array<amrex::FArrayBox, AMREX_SPACEDIM> flux_ec;
       const amrex::GpuArray<
         const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
         a{{AMREX_D_DECL(
@@ -815,7 +820,7 @@ PeleC::getVremanLESTerm(
       // Refluxing
       updateFluxRegistersLES(
         reflux_factor, LESTerm, dt, mfi, typ,
-        {AMREX_D_DECL(&flux_ec[0], &flux_ec[1], &flux_ec[2])});
+        {AMREX_D_DECL(flux_ec.data(), &flux_ec[1], &flux_ec[2])});
     } // End of MFIter scope
   } // End of OMP scope
 #endif
