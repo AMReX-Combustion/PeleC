@@ -1109,5 +1109,24 @@ pc_vreman_sfs_term(
   flx(iv, UEDEN) = flx(iv, UEDEN) * a(iv);
 }
 
+void computeTangentialVelDerivs(
+  const amrex::Array<const amrex::Box, AMREX_SPACEDIM>& eboxes,
+  amrex::Array<amrex::FArrayBox, AMREX_SPACEDIM>& tander_ec,
+  amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& tanders,
+  const amrex::Array4<amrex::Real>& q_ar,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx);
+
+void resizeAndSetFlux(
+  const amrex::Array<const amrex::Box, AMREX_SPACEDIM>& eboxes,
+  amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flx,
+  amrex::Array<amrex::FArrayBox, AMREX_SPACEDIM>& flux_ec);
+
+void computeFluxDiv(
+  amrex::MultiFab& LESTerm,
+  const amrex::MFIter& mfi,
+  const amrex::Box& vbox,
+  amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM>& flx,
+  const amrex::MultiFab& volume);
+
 #endif // AMREX_SPACEDIM == 3
 #endif

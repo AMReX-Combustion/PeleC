@@ -38,7 +38,7 @@ PeleC::initialize_eb2_structs()
   amrex::Print() << "Initializing EB2 structs" << std::endl;
 
   static_assert(
-    std::is_standard_layout<EBBndryGeom>::value,
+    std::is_standard_layout_v<EBBndryGeom>,
     "EBBndryGeom is not standard layout");
 
   const auto& ebfactory =
@@ -560,9 +560,7 @@ PeleC::extend_signed_distance(
                       +((j - jj) * dx[1] * (j - jj) * dx[1]),
                       +((k - kk) * dx[2] * (k - kk) * dx[2])));
                     const amrex::Real distToEB = distToCell + sd_cc(ii, jj, kk);
-                    if (distToEB < closestEBDist) {
-                      closestEBDist = distToEB;
-                    }
+                    closestEBDist = amrex::min(distToEB, closestEBDist);
                   }
                 }
               }

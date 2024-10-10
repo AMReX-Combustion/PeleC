@@ -16,13 +16,14 @@ Checks: 'bugprone-*,
          -readability-identifier-naming,
          -readability-isolate-declaration,
          -readability-avoid-const-params-in-decls,
+         -readability-avoid-nested-conditional-operator,
+         -readability-math-missing-parentheses,
          -readability-static-accessed-through-instance,
          -readability-identifier-length,
          -readability-function-cognitive-complexity,
          -readability-function-size'
 WarningsAsErrors: ''
-HeaderFilterRegex: 'PeleC\/Source|PeleC\/Exec|PeleC\/Submodules\/PelePhysics\/Source|PeleC\/Submodules\/PelePhysics\/Mechanism'
-AnalyzeTemporaryDtors: false
+HeaderFilterRegex: 'PeleC\/Source|PeleC\/Exec|PeleC\/Submodules\/PelePhysics\/Source|PeleC\/Submodules\/PelePhysics\/Mechanisms'
 FormatStyle:     none
 User:            user
 CheckOptions:
