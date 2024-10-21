@@ -51,6 +51,10 @@ PeleC::construct_old_source(
   case rot_src:
     construct_old_rot_source(time, dt);
     break;
+
+  default:
+    amrex::Abort("Unrecognized source term");
+    break;
   } // end switch
 }
 
@@ -104,6 +108,9 @@ PeleC::construct_new_source(
     construct_new_rot_source(time, dt);
     break;
 
+  default:
+    amrex::Abort("Unrecognized source term");
+    break;
   } // end switch
 }
 

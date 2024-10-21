@@ -98,8 +98,8 @@ pc_rst_int_e(
   amrex::Real omega = 0.0,
   amrex::Real rad = 0.0)
 {
-  if (std::is_same<
-        pele::physics::PhysicsType::eos_type, pele::physics::eos::SRK>::value) {
+  if (std::is_same_v<
+        pele::physics::PhysicsType::eos_type, pele::physics::eos::SRK>) {
     if ((!allow_small_energy) || (!allow_negative_energy)) {
       amrex::Error("Small/negative energy must be allowed for nonideal EOS");
     }

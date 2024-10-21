@@ -581,7 +581,7 @@ jobs:
 #          exit ${return}
   Lint-clang-tidy:
     needs: Formatting
-    runs-on: macos-13
+    runs-on: macos-latest
     steps:
       - name: Clone
         uses: actions/checkout@v4
@@ -594,9 +594,10 @@ jobs:
           echo "CCACHE_COMPRESSLEVEL=1" >> $GITHUB_ENV
           echo "CCACHE_LOGFILE=${{github.workspace}}/ccache.log.txt" >> $GITHUB_ENV
           echo "CCACHE_MAXSIZE=500M" >> $GITHUB_ENV
-      - name: Install Ccache
+      - name: Dependencies
         run: |
           brew install ccache
+          brew install llvm
       - name: Set Up Ccache
         uses: actions/cache@v4
         with:
@@ -606,7 +607,7 @@ jobs:
                ccache-${{github.workflow}}-${{github.job}}-git-
       - name: Configure
         run: |
-          export PATH=$(brew --prefix llvm@15)/bin:${PATH}
+          export PATH=$(brew --prefix llvm)/bin:${PATH}
           cmake -B${{runner.workspace}}/build-clang-tidy \
           -DCMAKE_BUILD_TYPE:STRING=Release \
           -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
@@ -622,8 +623,7 @@ jobs:
       - name: Check
         working-directory: ${{runner.workspace}}/build-clang-tidy
         run: |
-          #set -eu -o pipefail
-          export PATH=$(brew --prefix llvm@15)/bin:${PATH}
+          export PATH=$(brew --prefix llvm)/bin:${PATH}
           cmake --build . --parallel ${{env.NPROCS}} 2>&1 | tee -a clang-tidy-full-report.txt
           egrep "warning:|error:" clang-tidy-full-report.txt \
             | egrep -v "Submodules/amrex|Submodules/sundials" \
