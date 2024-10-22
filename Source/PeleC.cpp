@@ -1528,6 +1528,7 @@ PeleC::avgDown()
 void
 PeleC::enforce_consistent_e(amrex::MultiFab& S)
 {
+
   auto sarrs = S.arrays();
   amrex::ParallelFor(
     S, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
@@ -1539,7 +1540,26 @@ PeleC::enforce_consistent_e(amrex::MultiFab& S)
       sarr(i, j, k, UEDEN) = sarr(i, j, k, UEINT) + 0.5 * sarr(i, j, k, URHO) *
                                                       (u * u + v * v + w * w);
     });
+
   amrex::Gpu::synchronize();
+
+  if (do_rf) {
+    const auto geomdata = geom.data();
+    int axis = rf_axis;
+    amrex::Real omega = rf_omega;
+    amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
+      AMREX_D_DECL(rf_axis_x, rf_axis_y, rf_axis_z)};
+
+    amrex::ParallelFor(
+      S, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+        auto sarr = sarrs[nbx];
+        amrex::IntVect iv(AMREX_D_DECL(i, j, k));
+        amrex::Real rotenrg =
+          get_rot_energy(iv, omega, axis, axis_loc, geomdata);
+        sarr(i, j, k, UEDEN) =
+          sarr(i, j, k, UEINT) - sarr(i, j, k, URHO) * rotenrg;
+      });
+  }
 }
 
 void
@@ -2180,18 +2200,40 @@ PeleC::reset_internal_energy(amrex::MultiFab& S_new, int ng)
     const auto captured_allow_negative_energy = allow_negative_energy;
     const auto captured_dual_energy_update_E_from_e =
       dual_energy_update_E_from_e;
-    const auto captured_verbose = verbose;
     const auto captured_dual_energy_eta2 = dual_energy_eta2;
     auto sarrs = S_new.arrays();
     const amrex::IntVect ngs(ng);
-    amrex::ParallelFor(
-      S_new, ngs, [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
-        pc_rst_int_e(
-          i, j, k, sarrs[nbx], captured_allow_small_energy,
-          captured_allow_negative_energy, captured_dual_energy_update_E_from_e,
-          captured_dual_energy_eta2, captured_verbose);
-      });
-    amrex::Gpu::synchronize();
+
+    // for Rotational frames
+    if (do_rf) {
+      const auto geomdata = geom.data();
+      int axis = rf_axis;
+      amrex::Real omega = rf_omega;
+      amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
+        AMREX_D_DECL(rf_axis_x, rf_axis_y, rf_axis_z)};
+      amrex::ParallelFor(
+        S_new, ngs,
+        [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+          amrex::IntVect iv(AMREX_D_DECL(i, j, k));
+          amrex::Real rad = get_rotaxis_dist(iv, axis, axis_loc, geomdata);
+          pc_rst_int_e(
+            i, j, k, sarrs[nbx], captured_allow_small_energy,
+            captured_allow_negative_energy,
+            captured_dual_energy_update_E_from_e, captured_dual_energy_eta2,
+            omega, rad);
+        });
+      amrex::Gpu::synchronize();
+    } else {
+      amrex::ParallelFor(
+        S_new, ngs,
+        [=] AMREX_GPU_DEVICE(int nbx, int i, int j, int k) noexcept {
+          pc_rst_int_e(
+            i, j, k, sarrs[nbx], captured_allow_small_energy,
+            captured_allow_negative_energy,
+            captured_dual_energy_update_E_from_e, captured_dual_energy_eta2);
+        });
+      amrex::Gpu::synchronize();
+    }
   }
 
 #ifndef AMREX_USE_GPU

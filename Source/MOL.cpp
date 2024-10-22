@@ -12,7 +12,12 @@ pc_compute_hyp_mol_flux(
     area,
   const int mol_iorder,
   const bool use_laxf_flux,
-  const amrex::Array4<amrex::EBCellFlag const>& flags)
+  const amrex::Array4<amrex::EBCellFlag const>& flags,
+  const amrex::Geometry& geom,
+  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc,
+  amrex::Real omega,
+  int axisdir,
+  bool do_rf)
 {
   const int R_RHO = 0;
   const int R_UN = 1;
@@ -23,6 +28,12 @@ pc_compute_hyp_mol_flux(
   const int R_Y = R_ADV + NUM_ADV;
   const int R_NUM = 5 + NUM_SPECIES + NUM_ADV + NUM_LIN + NUM_AUX;
   const int bc_test_val = 1;
+  const bool using_rotframe = do_rf; // local capture
+  const auto geomdata = geom.data();
+  int axisdir_captured = axisdir;
+  amrex::Real omega_captured = omega;
+  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axisloc_captured = {
+    AMREX_D_DECL(axis_loc[0], axis_loc[1], axis_loc[2])};
 
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
     amrex::FArrayBox dq_fab(cbox, QVAR, amrex::The_Async_Arena());
@@ -125,6 +136,15 @@ pc_compute_hyp_mol_flux(
         amrex::Real flux_tmp[NVAR] = {0.0};
         amrex::Real ustar = 0.0;
 
+        amrex::Real radl = 0.0;
+        amrex::Real radr = 0.0;
+        if (using_rotframe) {
+          radr =
+            get_rotaxis_dist(iv, axisdir_captured, axisloc_captured, geomdata);
+          radl =
+            get_rotaxis_dist(ivm, axisdir_captured, axisloc_captured, geomdata);
+        }
+
         if (!use_laxf_flux) {
           amrex::Real qint_iu = 0.0, tmp1 = 0.0, tmp2 = 0.0, tmp3 = 0.0,
                       tmp4 = 0.0;
@@ -134,7 +154,8 @@ pc_compute_hyp_mol_flux(
             qtempr[R_UT2], qtempr[R_P], spr, bc_test_val, cavg, ustar,
             flux_tmp[URHO], &flux_tmp[UFS], flux_tmp[f_idx[0]],
             flux_tmp[f_idx[1]], flux_tmp[f_idx[2]], flux_tmp[UEDEN],
-            flux_tmp[UEINT], qint_iu, tmp1, tmp2, tmp3, tmp4);
+            flux_tmp[UEINT], qint_iu, tmp1, tmp2, tmp3, tmp4, omega_captured,
+            radl, omega_captured, radr);
 #if NUM_ADV > 0
           for (int n = 0; n < NUM_ADV; n++) {
             pc_cmpflx_passive(
@@ -157,7 +178,7 @@ pc_compute_hyp_mol_flux(
             qtempr[R_UT2], qtempr[R_P], spr, bc_test_val, cavg, ustar,
             maxeigval, flux_tmp[URHO], &flux_tmp[UFS], flux_tmp[f_idx[0]],
             flux_tmp[f_idx[1]], flux_tmp[f_idx[2]], flux_tmp[UEDEN],
-            flux_tmp[UEINT]);
+            flux_tmp[UEINT], omega_captured, radl, omega_captured, radr);
 #if NUM_ADV > 0
           for (int n = 0; n < NUM_ADV; n++) {
             pc_lax_cmpflx_passive(

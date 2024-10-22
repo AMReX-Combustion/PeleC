@@ -37,6 +37,7 @@ enum sources {
   diff_src,
   les_src,
   soot_src,
+  rot_src,
 #ifdef PELE_USE_MASA
   mms_src,
 #endif
@@ -374,6 +375,16 @@ public:
     int ng);
 #endif
 
+  void construct_old_rot_source(amrex::Real time, amrex::Real dt);
+
+  void construct_new_rot_source(amrex::Real time, amrex::Real dt);
+
+  void fill_rot_source(
+    const amrex::MultiFab& state_old,
+    const amrex::MultiFab& state_new,
+    amrex::MultiFab& rot_src,
+    int ng);
+
   void getLESTerm(
     amrex::Real time,
     amrex::Real dt,
@@ -516,7 +527,7 @@ public:
     amrex::Real dt,
     amrex::Real flux_factor);
 
-  static void enforce_consistent_e(amrex::MultiFab& S);
+  void enforce_consistent_e(amrex::MultiFab& S);
 
   amrex::Real volWgtSum(
     const std::string& name,
@@ -569,6 +580,37 @@ public:
     const int* bcrec,
     const int level);
   static void pc_derdiffusivity(
+    const amrex::Box& bx,
+    amrex::FArrayBox& derfab,
+    int dcomp,
+    int ncomp,
+    const amrex::FArrayBox& datfab,
+    const amrex::Geometry& geomdata,
+    amrex::Real time,
+    const int* bcrec,
+    const int level);
+  template <int dir>
+  static void pc_dervel_if(
+    const amrex::Box& bx,
+    amrex::FArrayBox& derfab,
+    int dcomp,
+    int ncomp,
+    const amrex::FArrayBox& datfab,
+    const amrex::Geometry& geomdata,
+    amrex::Real time,
+    const int* bcrec,
+    const int level);
+  static void pc_dermagvel_if(
+    const amrex::Box& bx,
+    amrex::FArrayBox& derfab,
+    int dcomp,
+    int ncomp,
+    const amrex::FArrayBox& datfab,
+    const amrex::Geometry& geomdata,
+    amrex::Real time,
+    const int* bcrec,
+    const int level);
+  static void pc_dereint1(
     const amrex::Box& bx,
     amrex::FArrayBox& derfab,
     int dcomp,
@@ -671,6 +713,8 @@ protected:
   static void clear_prob();
 
   static void read_params();
+
+  static void check_params();
 
   static void read_tagging_params();
 

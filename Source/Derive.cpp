@@ -31,6 +31,58 @@ pc_dermagvel(
 }
 
 void
+PeleC::pc_dermagvel_if(
+  const amrex::Box& bx,
+  amrex::FArrayBox& derfab,
+  int /*dcomp*/,
+  int /*ncomp*/,
+  const amrex::FArrayBox& datfab,
+#if AMREX_SPACEDIM > 2
+  const amrex::Geometry& geomdata,
+#else
+  const amrex::Geometry& /*geomdata*/,
+#endif
+  amrex::Real /*time*/,
+  const int* /*bcrec*/,
+  const int /*level*/)
+{
+  auto const dat = datfab.const_array();
+  auto magvel = derfab.array();
+
+  if (do_rf) {
+#if AMREX_SPACEDIM > 2
+    int axis = rf_axis;
+    amrex::Real omega = rf_omega;
+    amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
+      AMREX_D_DECL(rf_axis_x, rf_axis_y, rf_axis_z)};
+    auto const gdata = geomdata.data();
+
+    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      amrex::IntVect iv(AMREX_D_DECL(i, j, k));
+      amrex::RealVect r = get_rotaxis_vec(iv, axis_loc, gdata);
+      amrex::RealVect w(0.0, 0.0, 0.0);
+      w[axis] = omega;
+      amrex::RealVect w_cross_r = w.crossProduct(r);
+
+      const amrex::Real datinv = 1.0 / dat(i, j, k, URHO);
+      const amrex::Real dat1 = dat(i, j, k, UMX) * datinv + w_cross_r[0];
+      const amrex::Real dat2 = dat(i, j, k, UMY) * datinv + w_cross_r[1];
+      const amrex::Real dat3 = dat(i, j, k, UMZ) * datinv + w_cross_r[2];
+      magvel(i, j, k) = sqrt((dat1 * dat1) + (dat2 * dat2) + (dat3 * dat3));
+    });
+#endif
+  } else {
+    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      const amrex::Real datinv = 1.0 / dat(i, j, k, URHO);
+      const amrex::Real dat1 = dat(i, j, k, UMX) * datinv;
+      const amrex::Real dat2 = dat(i, j, k, UMY) * datinv;
+      const amrex::Real dat3 = dat(i, j, k, UMZ) * datinv;
+      magvel(i, j, k) = sqrt((dat1 * dat1) + (dat2 * dat2) + (dat3 * dat3));
+    });
+  }
+}
+
+void
 pc_dermagmom(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
@@ -77,29 +129,52 @@ pc_derkineng(
 }
 
 void
-pc_dereint1(
+PeleC::pc_dereint1(
   const amrex::Box& bx,
   amrex::FArrayBox& derfab,
   int /*dcomp*/,
   int /*ncomp*/,
   const amrex::FArrayBox& datfab,
-  const amrex::Geometry& /*geomdata*/,
+  const amrex::Geometry& geomdata,
   amrex::Real /*time*/,
   const int* /*bcrec*/,
   const int /*level*/)
 {
-  // Compute internal energy from (rho E).
+  //  Compute internal energy from (rho E).
   auto const dat = datfab.const_array();
   auto e = derfab.array();
-
-  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    const amrex::Real rhoInv = 1.0 / dat(i, j, k, URHO);
-    const amrex::Real ux = dat(i, j, k, UMX) * rhoInv;
-    const amrex::Real uy = dat(i, j, k, UMY) * rhoInv;
-    const amrex::Real uz = dat(i, j, k, UMZ) * rhoInv;
-    e(i, j, k) =
-      dat(i, j, k, UEDEN) * rhoInv - 0.5 * (ux * ux + uy * uy + uz * uz);
-  });
+  if (do_rf) {
+#if AMREX_SPACEDIM > 2
+    int axis = rf_axis;
+    amrex::Real omega = rf_omega;
+    amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
+      AMREX_D_DECL(rf_axis_x, rf_axis_y, rf_axis_z)};
+    auto const gdata = geomdata.data();
+    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      amrex::IntVect iv(AMREX_D_DECL(i, j, k));
+      amrex::Real roteng = get_rot_energy(iv, omega, axis, axis_loc, gdata);
+      const amrex::Real rhoInv = 1.0 / dat(i, j, k, URHO);
+      const amrex::Real ux = dat(i, j, k, UMX) * rhoInv;
+      const amrex::Real uy = dat(i, j, k, UMY) * rhoInv;
+      const amrex::Real uz = dat(i, j, k, UMZ) * rhoInv;
+      e(i, j, k) =
+        dat(i, j, k, UEDEN) * rhoInv - 0.5 * (ux * ux + uy * uy + uz * uz);
+      // see Blazek, Appendix A3, Navier-Stokes in rotating frame of reference
+      e(i, j, k) -= roteng;
+    });
+#else
+    amrex::ignore_unused(geomdata);
+#endif
+  } else {
+    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      const amrex::Real rhoInv = 1.0 / dat(i, j, k, URHO);
+      const amrex::Real ux = dat(i, j, k, UMX) * rhoInv;
+      const amrex::Real uy = dat(i, j, k, UMY) * rhoInv;
+      const amrex::Real uz = dat(i, j, k, UMZ) * rhoInv;
+      e(i, j, k) =
+        dat(i, j, k, UEDEN) * rhoInv - 0.5 * (ux * ux + uy * uy + uz * uz);
+    });
+  }
 }
 
 void

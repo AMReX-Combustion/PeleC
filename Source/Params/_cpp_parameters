@@ -147,6 +147,24 @@ zl_ext_bc_type               string        ""
 # if we are doing an external +z boundary condition, who do we interpret it?
 zr_ext_bc_type               string        ""
 
+#use rotational frame (rf)
+do_rf                      bool        false
+
+#rf rotational speed
+rf_omega                   Real        0.0
+
+#rf axis
+rf_axis                   int        0
+
+#rf locations
+rf_axis_x                 Real        0.0
+rf_axis_y                 Real        0.0
+rf_axis_z                 Real        0.0
+
+#rf radius beyond which 
+#impose rotational velocity bc
+rf_rad                    Real         0.0
+
 #-----------------------------------------------------------------------------
 # category: diffusion
 #-----------------------------------------------------------------------------

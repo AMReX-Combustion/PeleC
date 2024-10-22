@@ -17,6 +17,13 @@ PeleC::getMOLSrcTerm(
     return;
   }
 
+  bool using_rf = do_rf;
+  amrex::Real omega = rf_omega;
+  int axis = rf_axis;
+  amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> axis_loc = {
+    AMREX_D_DECL(rf_axis_x, rf_axis_y, rf_axis_z)};
+  const auto dx = geom.CellSizeArray();
+
   /*
      Across all conserved state components, compute the method of lines rhs
      = -Div(Flux). The input state, S, contained the conserved variables, and
@@ -59,7 +66,6 @@ PeleC::getMOLSrcTerm(
   */
 
   const int nCompTr = dComp_lambda + 1;
-  const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx = geom.CellSizeArray();
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dxinv =
     geom.InvCellSizeArray();
 
@@ -124,44 +130,51 @@ PeleC::getMOLSrcTerm(
 
       // Get primitives, Q, including (Y, T, p, rho) from conserved state
       {
+        const auto geomdata = geom.data();
         BL_PROFILE("PeleC::ctoprim()");
         amrex::ParallelFor(
           gbox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            pc_ctoprim(i, j, k, sar, qar, qauxar);
+            if (using_rf) {
+              amrex::IntVect iv(AMREX_D_DECL(i, j, k));
+              amrex::Real rad = get_rotaxis_dist(iv, axis, axis_loc, geomdata);
+              pc_ctoprim(i, j, k, sar, qar, qauxar, omega, rad);
+            } else {
+              pc_ctoprim(i, j, k, sar, qar, qauxar);
+            }
           });
       }
       // TODO deal with NSCBC
       /*
-            for (int dir = 0; dir < AMREX_SPACEDIM ; dir++)  {
-              const amrex::Box& bxtmp = amrex::surroundingNodes(vbox,dir);
-              amrex::Box TestBox(bxtmp);
-              for(int d=0; d<AMREX_SPACEDIM; ++d) {
-                if (dir!=d) TestBox.grow(d,1);
-              }
+         for (int dir = 0; dir < AMREX_SPACEDIM ; dir++)  {
+         const amrex::Box& bxtmp = amrex::surroundingNodes(vbox,dir);
+         amrex::Box TestBox(bxtmp);
+         for(int d=0; d<AMREX_SPACEDIM; ++d) {
+         if (dir!=d) TestBox.grow(d,1);
+         }
 
-              bcMask[dir].resize(TestBox,1, amrex::The_Async_Arena());
-              bcMask[dir].setVal(0);
-            }
+         bcMask[dir].resize(TestBox,1, amrex::The_Async_Arena());
+         bcMask[dir].setVal(0);
+         }
 
-            // Because bcMask is read in the Riemann solver in any case,
-            // here we put physbc values in the appropriate faces for the
-         non-nscbc case set_bc_mask(lo, hi, domain_lo, domain_hi,
-                        AMREX_D_DECL(AMREX_TO_FORTRAN(bcMask[0]),
-                               AMREX_TO_FORTRAN(bcMask[1]),
-                               AMREX_TO_FORTRAN(bcMask[2])));
+      // Because bcMask is read in the Riemann solver in any case,
+      // here we put physbc values in the appropriate faces for the
+      non-nscbc case set_bc_mask(lo, hi, domain_lo, domain_hi,
+      AMREX_D_DECL(AMREX_TO_FORTRAN(bcMask[0]),
+      AMREX_TO_FORTRAN(bcMask[1]),
+      AMREX_TO_FORTRAN(bcMask[2])));
 
-            if (nscbc_diff == 1)
-            {
-              impose_NSCBC(lo, hi, domain_lo, domain_hi,
-                           AMREX_TO_FORTRAN(Sfab),
-                           AMREX_TO_FORTRAN(q.fab()),
-                           AMREX_TO_FORTRAN(qaux.fab()),
-                           AMREX_D_DECL(AMREX_TO_FORTRAN(bcMask[0]),
-                                  AMREX_TO_FORTRAN(bcMask[1]),
-                                  AMREX_TO_FORTRAN(bcMask[2])),
-                           &flag_nscbc_isAnyPerio, flag_nscbc_perio,
-                           &time, dx, &dt);
-            }
+      if (nscbc_diff == 1)
+      {
+      impose_NSCBC(lo, hi, domain_lo, domain_hi,
+      AMREX_TO_FORTRAN(Sfab),
+      AMREX_TO_FORTRAN(q.fab()),
+      AMREX_TO_FORTRAN(qaux.fab()),
+      AMREX_D_DECL(AMREX_TO_FORTRAN(bcMask[0]),
+      AMREX_TO_FORTRAN(bcMask[1]),
+      AMREX_TO_FORTRAN(bcMask[2])),
+      &flag_nscbc_isAnyPerio, flag_nscbc_perio,
+      &time, dx, &dt);
+      }
       */
 
       // Compute transport coefficients, coincident with Q
@@ -352,7 +365,7 @@ PeleC::getMOLSrcTerm(
           BL_PROFILE("PeleC::pc_hyp_mol_flux()");
           pc_compute_hyp_mol_flux(
             cbox, qar, qauxar, flx, area_arr, plm_iorder, use_laxf_flux,
-            flags.array(mfi));
+            flags.array(mfi), geom, axis_loc, omega, axis, using_rf);
         }
 
         // Filter hydro fluxes
