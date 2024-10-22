@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../">
 <head>
@@ -6,19 +8,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Geometry treatment in PeleC &mdash; PeleC 0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=2709fde1"></script>
-        <script src="../_static/doctools.js?v=9a2dae69"></script>
-        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
-        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -37,9 +35,6 @@
           <a href="../index.html" class="icon icon-home">
             PeleC
           </a>
-              <div class="version">
-                0.1
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -59,7 +54,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#redistribution">Redistribution</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#mass-fractions-at-the-eb">Mass fractions at the EB</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#re-redistribution">Re-redistribution</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#date-structures-and-utility-functions">Date Structures and utility functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#data-structures-and-utility-functions">Data Structures and utility functions</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#applying-boundary-and-face-stencils">Applying boundary and face stencils</a></li>
 </ul>
 </li>
@@ -72,6 +67,12 @@
 <li class="toctree-l2"><a class="reference internal" href="#saving-and-reloading-an-eb-geometry">Saving and reloading an EB geometry</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#setting-the-covered-state">Setting the Covered State</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#problem-specific-inflow-conditions-on-an-eb">Problem specific inflow conditions on an EB</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rotational-frames">Rotational frames</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#single-reference-frame-implementation">Single-reference-frame implementation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#single-reference-frame-usage">Single-reference-frame usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#some-example-test-cases">Some example test cases</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../LES.html">LES and Hybrid LES/DNS Support</a></li>
@@ -126,7 +127,8 @@ Step 4 is implemented using a “method-of-lines” update within PeleC (see sec
 <section id="embedded-boundary-representation">
 <h2>Embedded Boundary Representation<a class="headerlink" href="#embedded-boundary-representation" title="Link to this heading"></a></h2>
 <figure class="align-default" id="id1">
-<span id="eb-cell-fig1"></span><a class="reference internal image-reference" href="../_images/EB_sample.png"><img alt="EB Cell" src="../_images/EB_sample.png" style="width: 400px;" /></a>
+<span id="eb-cell-fig1"></span><a class="reference internal image-reference" href="../_images/EB_sample.png"><img alt="EB Cell" src="../_images/EB_sample.png" style="width: 400px;" />
+</a>
 <figcaption>
 <p><span class="caption-number">4 </span><span class="caption-text">Embedded boundary representation of geometry</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
 </figcaption>
@@ -134,13 +136,15 @@ Step 4 is implemented using a “method-of-lines” update within PeleC (see sec
 <p>Geometry is treated in PeleC using an embedded boundary (EB) formulation, based on datastructures and algorithmic components provided by AMReX.   In the EB formalism, geometry is represented by volume fractions (<span class="math notranslate nohighlight">\(v_l\)</span>)
 and apertures (<span class="math notranslate nohighlight">\(A_l^k\)</span>) for each cell <span class="math notranslate nohighlight">\(l\)</span> that have faces <span class="math notranslate nohighlight">\(1,...,k,6\)</span>. See <a class="reference internal" href="#eb-f"><span class="std std-ref">Embedded boundary representation of geometry</span></a> for an illustration where the grey area represents the region excluded from the solution domain and the arrows represent fluxes. The fluid volume in a given cell is given by  (<span class="math notranslate nohighlight">\(V_l = v_l\,\,dx\,dy\,dz`=v_l\,dx^3\)</span>); it should be noted that the grid spacing along each direction is the same in PeleC.</p>
 <figure class="align-default" id="id2">
-<span id="eb-f"></span><a class="reference internal image-reference" href="../_images/EB_F.png"><img alt="EB Cell" src="../_images/EB_F.png" style="width: 200px;" /></a>
+<span id="eb-f"></span><a class="reference internal image-reference" href="../_images/EB_F.png"><img alt="EB Cell" src="../_images/EB_F.png" style="width: 200px;" />
+</a>
 <figcaption>
 <p><span class="caption-number">5 </span><span class="caption-text">Embedded boundary representation of geometry</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <figure class="align-default" id="id3">
-<span id="eb-a"></span><a class="reference internal image-reference" href="../_images/EB_AVfrac.png"><img alt="EB Cell" src="../_images/EB_AVfrac.png" style="width: 200px;" /></a>
+<span id="eb-a"></span><a class="reference internal image-reference" href="../_images/EB_AVfrac.png"><img alt="EB Cell" src="../_images/EB_AVfrac.png" style="width: 200px;" />
+</a>
 <figcaption>
 <p><span class="caption-number">6 </span><span class="caption-text">Embedded boundary representation of geometry</span><a class="headerlink" href="#id3" title="Link to this image"></a></p>
 </figcaption>
@@ -176,7 +180,8 @@ and apertures (<span class="math notranslate nohighlight">\(A_l^k\)</span>) for 
 <section id="re-redistribution">
 <h2>Re-redistribution<a class="headerlink" href="#re-redistribution" title="Link to this heading"></a></h2>
 <figure class="align-default" id="id4">
-<span id="eb-re-redist"></span><a class="reference internal image-reference" href="../_images/EB_re_redist.png"><img alt="EB Cell" src="../_images/EB_re_redist.png" style="width: 600px;" /></a>
+<span id="eb-re-redist"></span><a class="reference internal image-reference" href="../_images/EB_re_redist.png"><img alt="EB Cell" src="../_images/EB_re_redist.png" style="width: 600px;" />
+</a>
 <figcaption>
 <p><span class="caption-number">7 </span><span class="caption-text">(a) an example situation with an EB spanning a coarse-fine boundary, (b) same situation as seen by the coarse level and (c) same situation as seen by the fine level. The cells with the dotted lines are ghost cells.</span><a class="headerlink" href="#id4" title="Link to this image"></a></p>
 </figcaption>
@@ -199,8 +204,8 @@ because the correct distributed mass has to come from the left-coarse-real-cell.
 the end of each time step. The re-redistribution is performed every time the reflux function is called in post_timestep. More details regarding re-redistribution are
 presented in <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S0021999185711655">Pember et al.</a>. A forthcoming paper will describe the methodology for this procedure when using state redistribution.</p>
 </section>
-<section id="date-structures-and-utility-functions">
-<h2>Date Structures and utility functions<a class="headerlink" href="#date-structures-and-utility-functions" title="Link to this heading"></a></h2>
+<section id="data-structures-and-utility-functions">
+<h2>Data Structures and utility functions<a class="headerlink" href="#data-structures-and-utility-functions" title="Link to this heading"></a></h2>
 <p>Several structures exist to store geometry dependent information. These are populated on creation of a new AMRLevel and stored in the PeleC object so that they are available for computation. These facilitate accessing the EB data. The datatypes are:</p>
 <table class="docutils align-default">
 <thead>
@@ -222,7 +227,8 @@ presented in <a class="reference external" href="https://www.sciencedirect.com/s
 </table>
 <p>An array of structures is created on level creation by copying data from the AMReX dense datastructures on a per-FAB basis as indicated in Figure <a class="reference internal" href="#eb-structs"><span class="std std-ref">Storage for sparse EB structures</span></a> .</p>
 <figure class="align-default" id="id5">
-<span id="eb-structs"></span><a class="reference internal image-reference" href="../_images/EB_Struct.png"><img alt="EB Structure storage" src="../_images/EB_Struct.png" style="width: 500px;" /></a>
+<span id="eb-structs"></span><a class="reference internal image-reference" href="../_images/EB_Struct.png"><img alt="EB Structure storage" src="../_images/EB_Struct.png" style="width: 500px;" />
+</a>
 <figcaption>
 <p><span class="caption-number">8 </span><span class="caption-text">Storage for sparse EB structures</span><a class="headerlink" href="#id5" title="Link to this image"></a></p>
 </figcaption>
@@ -367,7 +373,8 @@ that uses splines, cylinder, lathe and union transform, is shown below.</p>
 </div>
 <p>#.. _EB_pistonbowl:</p>
 <figure class="align-default" id="id6">
-<a class="reference internal image-reference" href="../_images/EB_PistonBowl.png"><img alt="EB Cell" src="../_images/EB_PistonBowl.png" style="width: 400px;" /></a>
+<a class="reference internal image-reference" href="../_images/EB_PistonBowl.png"><img alt="EB Cell" src="../_images/EB_PistonBowl.png" style="width: 400px;" />
+</a>
 <figcaption>
 <p><span class="caption-number">9 </span><span class="caption-text">An example geometry of piston-bowl created using basic geometries.</span><a class="headerlink" href="#id6" title="Link to this image"></a></p>
 </figcaption>
@@ -404,6 +411,83 @@ is run with this option to ensure that covered cells do not affect fluid cells.<
 <p class="admonition-title">Warning</p>
 <p>This is a beta feature. Currently this will only affect the calculation of the hydrodynamic fluxes so this works best for advection dominated EB conditions.</p>
 </div>
+</section>
+<section id="rotational-frames">
+<h2>Rotational frames<a class="headerlink" href="#rotational-frames" title="Link to this heading"></a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>PeleC has limited support for simulations using rotating frames using the single-reference-frame (SRF)
+method only in 3D and needs the MOL scheme when using this feature.</p>
+</div>
+<section id="single-reference-frame-implementation">
+<h3>Single-reference-frame implementation<a class="headerlink" href="#single-reference-frame-implementation" title="Link to this heading"></a></h3>
+<p>PeleC currently supports a non-inertial frame based implementation
+for rotating bodies, which are relevant for turbomachinery applications.
+The source terms for momentum and energy equations
+are applied in the non-inertial reference frame for cylindrically symmetric
+embedded boundaries. The total energy in the non-inertial frame is
+modified with the inclusion of rotatational kinetic energy:</p>
+<div class="math notranslate nohighlight">
+\[E = e + \frac{u^2+v^2+w^2}{2} - \frac{\omega^2 r^2}{2}\]</div>
+<p>where E is the total specific energy, e is specific internal energy,
+u,v,w are the velocity components, <span class="math notranslate nohighlight">\(\omega\)</span> is the angular velocity, and
+r is the distance from the rotational axis.
+The momentum equation includes additional source terms for
+Coriolis, centrifugal, and rotational acceleration:</p>
+<div class="math notranslate nohighlight">
+\[\frac{\partial}{\partial t} (\rho \mathbf{v})+ \mathbf{\nabla} \cdot (\rho V V)=-\mathbf{\nabla}P + \mathbf{\nabla} \cdot \bar{\bar{\tau}}
+-\rho (2 \mathbf{\omega} \times \mathbf{V} + \mathbf{\omega} \times (\mathbf{\omega} \times r) + \dot{\mathbf{\omega}} \times r)\]</div>
+<p>For further details, refer to Appendix A.3
+<em>Navier-Stokes Equations in Rotating Frame of Reference</em>
+in textbook <em>Computational fluid dynamics: principles and applications</em> by J. Blazek.</p>
+</section>
+<section id="single-reference-frame-usage">
+<h3>Single-reference-frame usage<a class="headerlink" href="#single-reference-frame-usage" title="Link to this heading"></a></h3>
+<p>Most often in turbomachinery applications, there is rotor and
+a stator, which will be represented in PeleC as embedded boundaries.
+The rotor will most often include blades and other components that are
+not rotational symmetric like a cylindrical stator surface. This capability
+will solve the governing equations in the non inertial frame where the
+rotor boundary would then be a no-slip wall while the stator, which is rotationally
+symmetric, will be a slip wall. Therefore, the user in this case
+has to differentiate where the stator is using <code class="docutils literal notranslate"><span class="pre">pelec.rf_rad</span></code> parameter that
+says anything beyond this radius will be a stator.
+The rotational frame capability can be turned on by using these inputs:</p>
+<div class="highlight-rst notranslate"><div class="highlight"><pre><span></span>pelec.do_rf=1  #turn on rotational frames
+pelec.rf_omega=500.0 #rotational speed (rad/s)
+pelec.rf_axis=2      #axis of rotation (0-x,1-y,2-z)
+pelec.rf_axis_x=0.0  #x location of axis
+pelec.rf_axis_y=0.0  #y location of axis
+pelec.rf_axis_z=0.0  #z location of axis
+pelec.rf_rad=20.0    #non-zero EB velocity beyond this radius
+pelec.do_mol = 1     #rotational frames only implemented with MOL
+</pre></div>
+</div>
+<p>The velocities in the plot files will be in the rotating frame.
+But, one can turn on <code class="docutils literal notranslate"><span class="pre">amr.derive_plot_vars</span></code> to add new variables
+that transform velocity back to inertial frame. These variable names
+include <code class="docutils literal notranslate"><span class="pre">x_velocity_if</span></code>, <code class="docutils literal notranslate"><span class="pre">y_velocity_if</span></code> , <code class="docutils literal notranslate"><span class="pre">z_velocity_if</span></code> and
+<code class="docutils literal notranslate"><span class="pre">magvel_if</span></code>.</p>
+</section>
+<section id="some-example-test-cases">
+<h3>Some example test cases<a class="headerlink" href="#some-example-test-cases" title="Link to this heading"></a></h3>
+<p>We have tested this SRF implementation using a Taylor-Couette example (see <code class="docutils literal notranslate"><span class="pre">Exec/EB_TaylorCouette</span></code>)
+for which we obtain solutions matching the analytic solution as shown in
+Figure <a class="reference internal" href="#rotframe"><span class="std std-ref">rotational-frame-verification</span></a> (a).</p>
+<p>We have also done a comparison with the incompressible SRF solver in OpenFOAM for a
+4 bladed rotor case (see <code class="docutils literal notranslate"><span class="pre">Exec/EB_Rotor4Blade</span></code>).
+The solutions agree reasonably well, as shown in Figure <a class="reference internal" href="#rotframe"><span class="std std-ref">rotational-frame-verification</span></a> (b)
+with minor differences due to the compressible formulation in PeleC.</p>
+<figure class="align-default" id="id7">
+<span id="rotframe"></span><a class="reference internal image-reference" href="../_images/rotframetests.png"><img alt="EB Cell" src="../_images/rotframetests.png" style="width: 400px;" />
+</a>
+<figcaption>
+<p><span class="caption-number">10 </span><span class="caption-text">(a) solution to Taylor-Couette flow compared to analytic solution and (b)
+comparison of velocity magntiude for a 4 blade rotor case with incompressible
+SRF solver from OpenFOAM.</span><a class="headerlink" href="#id7" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
 </section>
 </section>
 
